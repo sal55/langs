@@ -5,7 +5,7 @@
 ! mrandomint(n)        Random positive signed 0 to n-1 (64 bits)
 ! mrandomrange(a,b)    Random positive signed [a .. b] inclusive (64 bits)
 ! mrandomreal()        Random positive (64-bit) float [0.0 .. 1.0) (excludes 1.0)
-! mrandomreal1()       Random positive (64-bit) float [0.0 .. 1.1] (includes 1.0)
+! mrandomreal1()       Random positive (64-bit) float [0.0 .. 1.0] (includes 1.0)
 
 ! rem means % in C
 ! ixor means ^ in C
