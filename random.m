@@ -1,4 +1,4 @@
-!prng library
+!PRNG Library
 
 ! mrandom()            Random unsigned 0 to 2**64-1
 ! mrandomp()           Random positive signed 0 to 2**63-1
@@ -11,6 +11,8 @@
 ! iand means & in C
 ! seed[] array is 1-based
 ! real means 64-bit double in C
+
+!Adapted from xorshift+ here: https://en.wikipedia.org/wiki/Xorshift
 
 var [2]int seed = (0x2989'8811'1111'1272',0x1673'2673'7335'8264)
 
@@ -56,8 +58,13 @@ global function mrandomrange(int a,b)int=
     return (mrandomp() rem span)+a
 end
 
-global function mrandomreal:real =
-!positive random real value from 0 to 0.999999999999999999891579782751449556599254719913005828857421875
-!upper limit is (2**63-1)/(2**63)
-    return real(mrandomp())/9223372036854775808.0
+global function mrandomreal:real x=
+!positive random real value from 0 to just under (but not including) 1.0
+    repeat x:=mrandomp()/9223372036854775808.0 until x<>1.0
+	x
+end
+
+global function mrandomreal1:real=
+!positive random real value from 0 to 1.0 inclusive
+    return mrandomp()/9223372036854775807
 end
