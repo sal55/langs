@@ -11,11 +11,13 @@
 ! ixor means ^ in C
 ! iand means & in C
 ! seed[] array is 1-based
-! real means 64-bit double in C
+! int is int64
+! word is word64
+! real is float64 (double in C)
 
 !Adapted from xorshift+ here: https://en.wikipedia.org/wiki/Xorshift
 
-var [2]int seed = (0x2989'8811'1111'1272',0x1673'2673'7335'8264)
+var [2]word seed = (0x2989'8811'1111'1272',0x1673'2673'7335'8264)
 
 global proc mseed(word64 a,b=0)=
     seed[1]:=a
