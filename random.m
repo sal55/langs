@@ -3,8 +3,9 @@
 ! mrandom()            Random unsigned 0 to 2**64-1
 ! mrandomp()           Random positive signed 0 to 2**63-1
 ! mrandomint(n)        Random positive signed 0 to n-1 (64 bits)
-! mrandomrange(a,b)    Random positive signed a to b inclusive (64 bits)
-! mrandomreal()        Random positive (64-bit) float 0.0 to 1.0-epsilon approx
+! mrandomrange(a,b)    Random positive signed [a .. b] inclusive (64 bits)
+! mrandomreal()        Random positive (64-bit) float [0.0 .. 1.0) (excludes 1.0)
+! mrandomreal1()       Random positive (64-bit) float [0.0 .. 1.1] (includes 1.0)
 
 ! rem means % in C
 ! ixor means ^ in C
@@ -61,7 +62,7 @@ end
 global function mrandomreal:real x=
 !positive random real value from 0 to just under (but not including) 1.0
     repeat x:=mrandomp()/9223372036854775808.0 until x<>1.0
-	x
+    return x
 end
 
 global function mrandomreal1:real=
