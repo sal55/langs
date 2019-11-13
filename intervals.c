@@ -3,8 +3,8 @@
 #include <string.h>
 
 char* allocstring(char* s){
-	char *t=malloc(strlen(s)+1);
-	strcpy(t,s);
+	char *t = malloc(strlen(s)+1);
+	strcpy(t, s);
 	return t;
 }
 
@@ -17,7 +17,7 @@ int main(void) {
   int start = nums[0];
   int end   = nums[lenNums-1];
   char *interval = "";
-  char **intervals=malloc(sizeof(char*) * lenNums);
+  char **intervals = malloc(sizeof(char*) * lenNums);
 
   //check for no open intervals
   if((end-start)==(lenNums-1)) {
@@ -35,7 +35,7 @@ int main(void) {
         //end of algorithm
 
         sprintf(interval,"(%d,%d)",start,end);
-        intervals[x] = allocstring(interval);    //assignment seems to work
+        intervals[x] = allocstring(interval);
         printf("%s x=%d ",intervals[x],x);
         x++;
 
@@ -45,8 +45,6 @@ int main(void) {
 
 printf("\n\n");
 
-//Why do the following not work, given that the
-//assignment and printf() in the loop above seems to?
 printf("Interval 1 = %s\n",intervals[0]);
 printf("Interval 2 = %s\n",intervals[1]);
 printf("Interval 3 = %s\n",intervals[2]);
