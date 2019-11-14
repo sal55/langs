@@ -1,5 +1,3 @@
-! C to M Converter
-
 import clib
 import oslib
 import opengl
