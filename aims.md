@@ -15,7 +15,7 @@ To see if a C implementation can be created that:
 
 * Can be extremely fast (despite largely using simple, linear data structures)
 
-* [Can generate reasonable quality code even with no optimiser (and that is better than Tiny C's!)] This has been dropped for the time being. Getting correctly running programs was more important. \[Added Nov 2019: at this time I'd switched to a dumb code generator with very poor output. It's since been switched to a better one. And generably outperforms tcc, but not by much\]
+* [Can generate reasonable quality code even with no optimiser (and that is better than Tiny C's!)] This has been dropped for the time being. Getting correctly running programs was more important. \[*Added Nov 2019: at this time I'd switched to a dumb code generator with very poor output. It's since been switched to a better one. And generably outperforms tcc, but not by much*\]
 
 #### To Do:
 
