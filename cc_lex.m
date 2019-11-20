@@ -11,7 +11,7 @@ import cc_tables
 import cc_headers
 import cc_lib
 
-!(this struct def exists in cc_decls but is duplication here for this demo file)
+!(this struct def exists in cc_decls but is duplicated here for this demo file)
 global record tokenrec =        !should be 32-byte record
     union
         var int64 value             !64-bit int
