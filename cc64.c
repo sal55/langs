@@ -5471,7 +5471,7 @@ static byte *  cc_headers_h_safelib = (byte*)"/* Header safelib.h */\r\n";
 static byte *  cc_headers_h_wchar = (byte*)"/* Header wchar.h */\r\n\r\n#include <stddef.h>\r\n\r\n#define _WCHAR_T_DEFINED\r\ntypedef unsigned short wint_t;\r\n//typedef unsigned short wchar_t;\r\ntypedef signed short wchar_t;\r\n\r\nsize_t wcslen(const wchar_t*);\r\nwchar_t* wcscpy(wchar_t*,const wchar_t*);\r\n//wchar_t* _wgetenv(constwchar_t*);\r\nwchar_t* wcstok(wchar_t*,wchar_t*,wchar_t**);\r\nwchar_t* wcstok_s(wchar_t*,wchar_t*,wchar_t**);\r\n\r\nwchar_t* wcschr(wchar_t*,wchar_t);\r\nwchar_t* wcsstr(const wchar_t*,const wchar_t*);\r\n\r\n\r\nint wcscmp(const wchar_t*,const wchar_t*);\r\n";
 static byte *  cc_headers_h_wctype = (byte*)"/* Header wctype.h */\r\n";
 static byte *  cc_headers_h_systypes = (byte*)"/* types.h */\r\n#ifndef $systypes\r\n#define $systypes 1\r\n\r\ntypedef long int off_t;\r\ntypedef long int ino_t;\r\ntypedef unsigned int dev_t;\r\n\r\ntypedef long time_t;\r\n\r\n#endif\r\n";
-static byte *  cc_headers_h_sysstat = (byte*)"/* stat.h */\r\n\r\n#ifndef $sysstat\r\n#define $sysstat\r\n\r\nstruct _stat {\r\n\tunsigned int\tst_dev;\r\n\tunsigned short\tst_ino;\r\n\tunsigned short\tst_mode;\r\n\tshort\t\t\tst_nlink;\r\n\tshort\t\t\tst_uid;\r\n\tshort\t\t\tst_gid;\r\n\tunsigned long\tst_rdev;\r\n\tunsigned int\tst_size;\r\n\tunsigned long long int\tst_atime;\r\n\tunsigned long long int\tst_mtime;\r\n\tunsigned long long int\tst_ctime;\r\n};\r\n\r\n#define stat _stat\r\n#define _stati64 _stat\r\n\r\n#define _S_IFMT 0xF000\r\n#define _S_IFDIR 0x4000\r\n#define _S_IFCHR 0x2000\r\n#define _S_IFIFO 0x1000\r\n#define _S_IFREG 0x8000\r\n#define _S_IREAD 0x0100\r\n#define _S_IWRITE 0x0080\r\n#define _S_IEXEC 0x0040\r\n\r\n#define S_IFMT 0xF000\r\n#define S_IFDIR 0x4000\r\n#define S_IFCHR 0x2000\r\n#define S_IFIFO 0x1000\r\n#define S_IFREG 0x8000\r\n#define S_IREAD 0x0100\r\n#define S_IWRITE 0x0080\r\n#define S_IEXEC 0x0040\r\n\r\n#define S_ISCHR(nd) (((nd) & S_IFMT) == S_IFCHR)\r\n#define S_ISDIR(nd) (((nd) & S_IFMT) == S_IFDIR)\r\n#define S_ISFIFO(nd) (((nd) & S_IFMT) == S_IFIFO)\r\n#define S_ISREG(nd) (((nd) & S_IFMT) == S_IFREG)\r\n\r\n\r\nint stat(const char *, struct stat*);\r\n\r\nint _fstati64(int, struct stat*);\r\n\r\nint fstat(int, struct stat *);\r\n#define _fstat fstat\r\n\r\nint _wstati64(const wchar_t,struct _stati64 *buffer);  \r\n\r\n\r\n\r\n#endif\r\n";
+static byte *  cc_headers_h_sysstat = (byte*)"/* stat.h */\r\n\r\n#ifndef $sysstat\r\n#define $sysstat\r\n\r\n#include <stddef.h>\r\n\r\nstruct _stat {\r\n\tunsigned int\tst_dev;\r\n\tunsigned short\tst_ino;\r\n\tunsigned short\tst_mode;\r\n\tshort\t\t\tst_nlink;\r\n\tshort\t\t\tst_uid;\r\n\tshort\t\t\tst_gid;\r\n\tunsigned long\tst_rdev;\r\n\tunsigned int\tst_size;\r\n\tunsigned long long int\tst_atime;\r\n\tunsigned long long int\tst_mtime;\r\n\tunsigned long long int\tst_ctime;\r\n};\r\n\r\n#define stat _stat\r\n#define _stati64 _stat\r\n\r\n#define _S_IFMT 0xF000\r\n#define _S_IFDIR 0x4000\r\n#define _S_IFCHR 0x2000\r\n#define _S_IFIFO 0x1000\r\n#define _S_IFREG 0x8000\r\n#define _S_IREAD 0x0100\r\n#define _S_IWRITE 0x0080\r\n#define _S_IEXEC 0x0040\r\n\r\n#define S_IFMT 0xF000\r\n#define S_IFDIR 0x4000\r\n#define S_IFCHR 0x2000\r\n#define S_IFIFO 0x1000\r\n#define S_IFREG 0x8000\r\n#define S_IREAD 0x0100\r\n#define S_IWRITE 0x0080\r\n#define S_IEXEC 0x0040\r\n\r\n#define S_ISCHR(nd) (((nd) & S_IFMT) == S_IFCHR)\r\n#define S_ISDIR(nd) (((nd) & S_IFMT) == S_IFDIR)\r\n#define S_ISFIFO(nd) (((nd) & S_IFMT) == S_IFIFO)\r\n#define S_ISREG(nd) (((nd) & S_IFMT) == S_IFREG)\r\n\r\n\r\nint stat(const char *, struct stat*);\r\n\r\nint _fstati64(int, struct stat*);\r\n\r\nint fstat(int, struct stat *);\r\n#define _fstat fstat\r\n\r\nint _wstati64(const wchar_t,struct _stati64 *buffer);  \r\n\r\n\r\n\r\n#endif\r\n";
 static byte *  cc_headers_h_systimeb = (byte*)"/* timeb.h */\r\n\r\n#ifndef $timeb\r\n#define $timeb\r\n\r\n#include <time.h>\r\n\r\nstruct _timeb {\r\n\ttime_t time;\r\n\tunsigned short millitm;\r\n\tshort timezone;\r\n\tshort dstflag;\r\n};\r\n#define timeb _timeb\r\n\r\nvoid _ftime64(struct _timeb*);\r\n#define _ftime _ftime64\r\n#define ftime _ftime64\r\n\r\n#endif\r\n";
 static byte *  cc_headers_h_sysutime = (byte*)"/* sys/utime.h header */\r\n\r\n#ifndef $utime\r\n#define $utime\r\n\r\nstruct _utimbuf {\r\n\tlong actime;\r\n\tlong modtime;\r\n};\r\n\r\n\r\n#endif\r\n";
 static byte *  cc_headers_h_memory = (byte*)"#include <malloc.h>\r\n";
@@ -7859,7 +7859,7 @@ static void cc_showcaption(void) {
     msysnewc_m_print_startcon();
     msysnewc_m_print_str((byte*)"BCC 'C' Compiler",NULL);
     msysnewc_m_print_str((byte*)"21-Nov-2019",NULL);
-    msysnewc_m_print_str((byte*)"11:28:51",NULL);
+    msysnewc_m_print_str((byte*)"12:54:43",NULL);
     msysnewc_m_print_newline();
     msysnewc_m_print_end();
     ;
@@ -15698,15 +15698,35 @@ L483 :;
 
 byte * cc_headers_findheader(byte * name) {
     i64 i;
+    byte newname[256];
+    byte *  s;
+    byte *  t;
     i64 av_1;
-    L485 :;
-    for (i=(i64)1;i<=(i64)42;++i) {
+    if (!!(strchr((i8 *)(name),(i64)92))) {
+        s = name;
+        t = newname;
+        L485 :;
+        while (!!((u64)((*s)))) {
+            if (((u64)((*s)) == (u64)92u)) {
+                (*t++) = '/';
+            } else {
+                (*t++) = (u64)((*s));
+            };
+            ++s;
 L486 :;
+        }L487 :;
+        ;
+        (*t) = (u64)0u;
+        name = newname;
+    };
+    L488 :;
+    for (i=(i64)1;i<=(i64)42;++i) {
+L489 :;
         if (!!(mlib_eqstring(name,cc_headers_stdhdrnames[(i)-1]))) {
             return (*cc_headers_stdhdrtext[(i)-1]);
         };
-L487 :;
-    }L488 :;
+L490 :;
+    }L491 :;
     ;
     return (byte *)(0);
 }
@@ -15716,9 +15736,9 @@ void cc_headers_writeheaders(void) {
     byte *  ifile;
     i64 i;
     i64 av_1;
-    L489 :;
+    L492 :;
     for (i=(i64)1;i<=(i64)42;++i) {
-L490 :;
+L493 :;
         ifile = mlib_changeext(cc_headers_stdhdrnames[(i)-1],(byte*)"hdr");
         msysnewc_m_print_startcon();
         msysnewc_m_print_str((byte*)"Writing internal",NULL);
@@ -15731,8 +15751,8 @@ L490 :;
         f = fopen((i8 *)(ifile),(i8 *)((byte*)"wb"));
         fwrite((void *)((*cc_headers_stdhdrtext[(i)-1])),(u64)((i64)1),strlen((i8 *)((*cc_headers_stdhdrtext[(i)-1]))),f);
         fclose(f);
-L491 :;
-    }L492 :;
+L494 :;
+    }L495 :;
     ;
 }
 
@@ -15763,14 +15783,14 @@ byte * cc_headers_getbcclib(void) {
 i64 cc_headers_isheaderfile(byte * file) {
     i64 av_1;
     i64 i;
-    L493 :;
+    L496 :;
     for (i=(i64)1;i<=(i64)42;++i) {
-L494 :;
+L497 :;
         if (!!(mlib_eqstring(cc_headers_stdhdrnames[(i)-1],file))) {
             return (i64)1;
         };
-L495 :;
-    }L496 :;
+L498 :;
+    }L499 :;
     ;
     return (i64)0;
 }
@@ -15794,12 +15814,12 @@ void cc_lib_printst(void * f,struct cc_decls_strec * p,i64 level) {
     };
     cc_lib_printstrec(f,p,level);
     q = (*p).deflist;
-    L497 :;
+    L500 :;
     while ((q != 0)) {
         cc_lib_printst(f,q,(level + (i64)1));
         q = (*q).nextdef;
-L498 :;
-    }L499 :;
+L501 :;
+    }L502 :;
     ;
 }
 
@@ -15817,11 +15837,11 @@ static void cc_lib_printstrec(void * f,struct cc_decls_strec * p,i64 level) {
     offset = (i64)0;
     av_1 = level;
     while (av_1-- > 0) {
-L500 :;
+L503 :;
         mlib_gs_str(d,(byte*)"    ");
         offset += (i64)4;
-L501 :;
-    }L502 :;
+L504 :;
+    }L505 :;
     ;
     mlib_gs_str(d,(byte*)":");
     if (!!((u64)((*p).blockno))) {
@@ -15942,15 +15962,15 @@ L501 :;
     if (((i64)((u64)((*p).nameid)) == (i64)6)) {
         mlib_gs_line(d);
         pm = (*p).paramlist;
-        L503 :;
+        L506 :;
         while (!!(pm)) {
             mlib_gs_str(d,(byte*)"\t\tParam: ");
             mlib_gs_leftstr(d,(!!((*pm).def)?(*(*pm).def).name:(byte*)"Anon"),(i64)10,(i64)45);
             mlib_gs_str(d,cc_tables_pmflagnames[((i64)((*pm).flags))]);
             mlib_gs_line(d);
             pm = (*pm).nextparam;
-L504 :;
-        }L505 :;
+L507 :;
+        }L508 :;
         ;
     };
     mlib_gs_println(d,f);
@@ -15970,9 +15990,9 @@ void cc_lib_printstflat(void * f) {
     msysnewc_m_print_newline();
     msysnewc_m_print_end();
     ;
-    L506 :;
+    L509 :;
     for (i=(i64)0;i<=(cc_decls_hstsize - (i64)1);++i) {
-L507 :;
+L510 :;
         p = (*cc_decls_hashtable)[(i)];
         if (!!((*p).name)) {
             if (((i64)((*p).symbol)==(i64)68)) {
@@ -15987,7 +16007,7 @@ L507 :;
                 msysnewc_m_print_end();
                 ;
                 p = (*p).nextdupl;
-                L510 :;
+                L513 :;
                 while (!!(p)) {
                     msysnewc_m_print_startfile(f);
                     msysnewc_m_print_str((byte*)"\t",NULL);
@@ -16007,13 +16027,13 @@ L507 :;
                     msysnewc_m_print_end();
                     ;
                     p = (*p).nextdupl;
-L511 :;
-                }L512 :;
+L514 :;
+                }L515 :;
                 ;
             };
         };
-L508 :;
-    }L509 :;
+L511 :;
+    }L512 :;
     ;
 }
 
@@ -16110,15 +16130,15 @@ i64 cc_lib_getoptocode(i64 opc) {
     };
     strcpy((i8 *)(str),(i8 *)(cc_tables_jtagnames[(opc)]));
     strcat((i8 *)(str),(i8 *)((byte*)"to"));
-    L513 :;
+    L516 :;
     for (i=(i64)0;i<=(i64)78;++i) {
-L514 :;
+L517 :;
         if (!!(mlib_eqstring(cc_tables_jtagnames[(i)],str))) {
             opctotable[(opc)] = i;
             return i;
         };
-L515 :;
-    }L516 :;
+L518 :;
+    }L519 :;
     ;
     msysnewc_m_print_startcon();
     msysnewc_m_print_str(cc_tables_jtagnames[(opc)],NULL);
@@ -16212,12 +16232,12 @@ void cc_lib_setnameptr(struct cc_decls_unitrec * p) {
 
 void cc_lib_printcode_all(void * f,byte * caption) {
     i64 i;
-    L517 :;
+    L520 :;
     for (i=(i64)1;i<=cc_decls_nmodules;++i) {
-L518 :;
+L521 :;
         cc_lib_printcode(f,caption,i);
-L519 :;
-    }L520 :;
+L522 :;
+    }L523 :;
     ;
 }
 
@@ -16231,7 +16251,7 @@ void cc_lib_printcode(void * f,byte * caption,i64 n) {
     msysnewc_m_print_newline();
     msysnewc_m_print_end();
     ;
-    L521 :;
+    L524 :;
     while (!!(p)) {
         if (((i64)((*p).nameid)==(i64)6)) {
             if (!!((*p).code)) {
@@ -16251,8 +16271,8 @@ void cc_lib_printcode(void * f,byte * caption,i64 n) {
             };
         };
         p = (*p).nextdef;
-L522 :;
-    }L523 :;
+L525 :;
+    }L526 :;
     ;
 }
 
@@ -16366,11 +16386,11 @@ void cc_lib_printunit(void * dev,struct cc_decls_unitrec * p,i64 level,byte * pr
         t = (i64)((*p).mode);
         if ((t == cc_decls_trefchar)) {
             if (!(!!((u64)((*p).isstrconst)))) {
-                goto L524 ;
+                goto L527 ;
 ;
             };
             //dostring:
-L525 :;
+L528 :;
 ;
             if (((i64)((*p).slength) > (i64)256)) {
                 msysnewc_m_print_startfile(dev);
@@ -16396,7 +16416,7 @@ L525 :;
             };
         } else if ((t == cc_decls_trefwchar)) {
             if (!(!!((u64)((*p).iswstrconst)))) {
-                goto L524 ;
+                goto L527 ;
 ;
             };
             msysnewc_m_print_startfile(dev);
@@ -16425,11 +16445,11 @@ L525 :;
             ;
         } else if ((cc_decls_ttbasetype[(t)] == (i64)16)) {
             if (!!((u64)((*p).isstrconst))) {
-                goto L525 ;
+                goto L528 ;
 ;
             };
             //doref:
-L524 :;
+L527 :;
 ;
             msysnewc_m_print_startfile(dev);
             msysnewc_m_print_ptr((void *)((*p).value),NULL);
@@ -16437,7 +16457,7 @@ L524 :;
             ;
         } else if ((cc_decls_ttbasetype[(t)] == (i64)19)) {
             if (!!((u64)((*p).isstrconst))) {
-                goto L525 ;
+                goto L528 ;
 ;
             };
             cc_support_serror((byte*)"PRINTUNIT/CONST/aRRAY");
@@ -16515,12 +16535,12 @@ L524 :;
     }else if (((i64)((*p).tag)==(i64)23)) {
         pc = (*p).nextcase;
         n = (i64)0;
-        L526 :;
+        L529 :;
         while (!!(pc)) {
             ++n;
             pc = (*pc).nextcase;
-L527 :;
-        }L528 :;
+L530 :;
+        }L531 :;
         ;
         msysnewc_m_print_startfile(dev);
         msysnewc_m_print_ptr((*p).nextcase,NULL);
@@ -16563,12 +16583,12 @@ static void cc_lib_printunitlist(void * dev,struct cc_decls_unitrec * p,i64 leve
     if ((p == 0)) {
         return;
     };
-    L529 :;
+    L532 :;
     while (!!(p)) {
         cc_lib_printunit(dev,p,level,prefix);
         p = (*p).nextunit;
-L530 :;
-    }L531 :;
+L533 :;
+    }L534 :;
     ;
 }
 
@@ -16592,10 +16612,10 @@ static byte * cc_lib_getprefix(i64 level,byte * prefix,struct cc_decls_unitrec *
     };
     av_1 = level;
     while (av_1-- > 0) {
-L532 :;
+L535 :;
         strcat((i8 *)(indentstr),(i8 *)((byte*)"|---"));
-L533 :;
-    }L534 :;
+L536 :;
+    }L537 :;
     ;
     strcpy((i8 *)(str),(i8 *)(cc_lib_getlineinfok()));
     strcat((i8 *)(str),(i8 *)(indentstr));
@@ -16612,15 +16632,15 @@ byte * cc_lib_getdottedname(struct cc_decls_strec * p) {
     struct cc_decls_strec *  owner;
     strcpy((i8 *)(str),(i8 *)((*p).name));
     owner = (*p).owner;
-    L535 :;
+    L538 :;
     while ((!!(owner) && ((i64)((u64)((*owner).nameid)) != (i64)2))) {
         strcpy((i8 *)(str2),(i8 *)(str));
         strcpy((i8 *)(str),(i8 *)((*owner).name));
         strcat((i8 *)(str),(i8 *)((byte*)"."));
         strcat((i8 *)(str),(i8 *)(str2));
         owner = (*owner).owner;
-L536 :;
-    }L537 :;
+L539 :;
+    }L540 :;
     ;
     if (!!((u64)((*p).blockno))) {
         msysnewc_m_print_startstr(str2);
@@ -16668,7 +16688,7 @@ void cc_lib_convertstring(byte * s,byte * t,i64 length) {
     t0 = t;
     av_1 = length;
     while (av_1-- > 0) {
-L538 :;
+L541 :;
         c = (i64)((*s++));
         switch (c) {
         case 34:;
@@ -16738,8 +16758,8 @@ L538 :;
         }
         } //SW
 ;
-L539 :;
-    }L540 :;
+L542 :;
+    }L543 :;
     ;
     (*t) = (u64)0u;
 }
@@ -16758,11 +16778,11 @@ static void cc_lib_jeval(struct mlib_strbuffer * dest,struct cc_decls_unitrec * 
     if (((i64)((*p).tag)==(i64)1)) {
         if (((t = (i64)((*p).mode)) == cc_decls_trefchar)) {
             if (((i64)((*p).slength) == (i64)0)) {
-                goto L541 ;
+                goto L544 ;
 ;
             };
             if (!(!!((u64)((*p).isstrconst)))) {
-                goto L541 ;
+                goto L544 ;
 ;
             };
             if (((i64)((*p).slength) > (i64)8000)) {
@@ -16783,7 +16803,7 @@ static void cc_lib_jeval(struct mlib_strbuffer * dest,struct cc_decls_unitrec * 
         } else {
             if ((cc_decls_ttbasetype[((i64)((*p).mode))]==(i64)16)) {
                 //doref:
-L541 :;
+L544 :;
 ;
                 msysnewc_m_print_startstr(str);
                 msysnewc_m_print_ptr((void *)((*p).svalue),NULL);
@@ -16823,15 +16843,15 @@ L541 :;
         cc_lib_jeval(dest,(*p).a);
         cc_support_gs_additem(dest,(byte*)"(");
         q = (*p).b;
-        L542 :;
+        L545 :;
         while (!!(q)) {
             cc_lib_jeval(dest,q);
             q = (*q).nextunit;
             if (!!(q)) {
                 cc_support_gs_additem(dest,(byte*)",");
             };
-L543 :;
-        }L544 :;
+L546 :;
+        }L547 :;
         ;
         cc_support_gs_additem(dest,(byte*)")");
     }else if (((i64)((*p).tag)==(i64)50)) {
@@ -16846,15 +16866,15 @@ L543 :;
         lb = ((i64)((*p).tag) == (i64)30);
         cc_support_gs_additem(dest,(!!(lb)?(byte*)"(":(byte*)"{"));
         q = (*p).a;
-        L545 :;
+        L548 :;
         while (!!(q)) {
             cc_lib_jeval(dest,q);
             q = (*q).nextunit;
             if (!!(q)) {
                 cc_support_gs_additem(dest,(byte*)",");
             };
-L546 :;
-        }L547 :;
+L549 :;
+        }L550 :;
         ;
         cc_support_gs_additem(dest,(!!(lb)?(byte*)")":(byte*)"}"));
     }else if (((i64)((*p).tag)==(i64)12)) {
@@ -16992,7 +17012,7 @@ void cc_lib_istrmode(i64 m,i64 expand,byte * dest) {
         d = cc_decls_ttnamedef[(m)];
         needcomma = (i64)0;
         q = (*d).deflist;
-        L548 :;
+        L551 :;
         while (!!(q)) {
             if (!!(needcomma)) {
                 strcat((i8 *)(dest),(i8 *)((byte*)","));
@@ -17002,8 +17022,8 @@ void cc_lib_istrmode(i64 m,i64 expand,byte * dest) {
             strcat((i8 *)(dest),(i8 *)((byte*)" "));
             strcat((i8 *)(dest),(i8 *)((*q).name));
             q = (*q).nextdef;
-L549 :;
-        }L550 :;
+L552 :;
+        }L553 :;
         ;
         strcat((i8 *)(dest),(i8 *)((byte*)")"));
     }else if ((t==(i64)1)) {
@@ -17012,16 +17032,16 @@ L549 :;
         strcpy((i8 *)(dest),(i8 *)((byte*)"proc[PM]("));
         pm = cc_decls_ttparams[(m)];
         n = (i64)((*pm).nparams);
-        L551 :;
+        L554 :;
         for (i=(i64)1;i<=n;++i) {
-L552 :;
+L555 :;
             cc_lib_istrmode((i64)((*pm).mode),(i64)0,(dest + (i64)(strlen((i8 *)(dest)))));
             if ((i != n)) {
                 strcat((i8 *)(dest),(i8 *)((byte*)","));
             };
             pm = (*pm).nextparam;
-L553 :;
-        }L554 :;
+L556 :;
+        }L557 :;
         ;
         strcat((i8 *)(dest),(i8 *)((byte*)")"));
         cc_lib_istrmode(cc_decls_tttarget[(m)],(i64)0,(dest + (i64)(strlen((i8 *)(dest)))));
@@ -17043,12 +17063,12 @@ L553 :;
 i64 cc_lib_countunits(struct cc_decls_unitrec * p) {
     i64 n;
     n = (i64)0;
-    L555 :;
+    L558 :;
     while (!!(p)) {
         ++n;
         p = (*p).nextunit;
-L556 :;
-    }L557 :;
+L559 :;
+    }L560 :;
     ;
     return n;
 }
@@ -17076,14 +17096,14 @@ void cc_lib_purgesymbollist(struct cc_decls_strec * p,i64 ismodule,i64 del) {
 }
 
 void cc_lib_purgeprocs(struct cc_decls_strec * p,i64 del) {
-    L558 :;
+    L561 :;
     while (!!(p)) {
         if (((i64)((u64)((*p).nameid)) == (i64)6)) {
             cc_lib_purgeproc(p,del);
         };
         p = (*p).nextdef;
-L559 :;
-    }L560 :;
+L562 :;
+    }L563 :;
     ;
 }
 
@@ -17093,7 +17113,7 @@ void cc_lib_purgeproc(struct cc_decls_strec * p,i64 del) {
     struct cc_decls_strec *  r;
     q = (*p).deflist;
     prev = (struct cc_decls_strec *)(0);
-    L561 :;
+    L564 :;
     while (!!(q)) {
         r = (*q).nextdef;
         if (((i64)((u64)((*q).nameid)) == (i64)8)) {
@@ -17102,8 +17122,8 @@ void cc_lib_purgeproc(struct cc_decls_strec * p,i64 del) {
             prev = q;
         };
         q = r;
-L562 :;
-    }L563 :;
+L565 :;
+    }L566 :;
     ;
 }
 
@@ -17135,9 +17155,9 @@ void cc_lib_printmodelist(void * f) {
     mlib_gs_leftstr(dest,(byte*)"Tag",(i64)8,(i64)32);
     mlib_gs_leftstr(dest,(byte*)"Mode",(i64)32,(i64)32);
     mlib_gs_println(dest,f);
-    L564 :;
+    L567 :;
     for (m=(i64)0;m<=cc_decls_ntypes;++m) {
-L565 :;
+L568 :;
         mlib_gs_init(dest);
         mlib_gs_leftint(dest,m,(i64)4,(i64)32);
         mlib_gs_leftstr(dest,cc_lib_typename(m),(i64)13,(i64)32);
@@ -17175,8 +17195,8 @@ L565 :;
             mlib_gs_str(dest,mstr);
         };
         mlib_gs_println(dest,f);
-L566 :;
-    }L567 :;
+L569 :;
+    }L570 :;
     ;
     msysnewc_m_print_startfile(f);
     msysnewc_m_print_newline();
@@ -17336,39 +17356,39 @@ void cc_lib_inittypetables(void) {
     i64 av_1;
     i64 av_2;
     i64 av_3;
-    L568 :;
+    L571 :;
     for (i=(i64)0;i<=(i64)21;++i) {
-L569 :;
+L572 :;
         cc_decls_ttbasetype[(i)] = i;
         bitsize = (i64)(cc_tables_stdtypewidths[(i)]);
         size = (bitsize / (i64)8);
         cc_decls_ttsize[(i)] = size;
         cc_decls_ttbitwidth[(i)] = bitsize;
-L570 :;
-    }L571 :;
+L573 :;
+    }L574 :;
     ;
     cc_decls_ntypes = (i64)21;
     cc_decls_trefchar = cc_lib_createrefmode((i64)2);
     cc_decls_trefwchar = cc_lib_createrefmode((i64)3);
-    L572 :;
+    L575 :;
     for (i=(i64)1;i<=(i64)144;++i) {
-L573 :;
+L576 :;
         s = (i64)(cc_tables_dominantsetuptable[(i)-1][((i64)1)-1]);
         t = (i64)(cc_tables_dominantsetuptable[(i)-1][((i64)2)-1]);
         u = (i64)(cc_tables_dominantsetuptable[(i)-1][((i64)3)-1]);
         cc_tables_dominantmode[(s)][(t)] = (u64)(u);
-L574 :;
-    }L575 :;
-    ;
-    L576 :;
-    for (i=(i64)1;i<=(i64)144;++i) {
 L577 :;
+    }L578 :;
+    ;
+    L579 :;
+    for (i=(i64)1;i<=(i64)144;++i) {
+L580 :;
         s = (i64)(cc_tables_convsetuptable[(i)-1][((i64)1)-1]);
         t = (i64)(cc_tables_convsetuptable[(i)-1][((i64)2)-1]);
         u = (i64)(cc_tables_convsetuptable[(i)-1][((i64)3)-1]);
         cc_tables_conversionops[(s)][(t)] = (u64)(u);
-L578 :;
-    }L579 :;
+L581 :;
+    }L582 :;
     ;
     cc_decls_ntypesreset = cc_decls_ntypes;
 }
@@ -17411,7 +17431,7 @@ struct cc_decls_strec * cc_lib_createnewproc(struct cc_decls_strec * owner,struc
     struct cc_decls_strec *  q;
     p = cc_lib_createdupldef(owner,symptr,(i64)6);
     q = p;
-    L580 :;
+    L583 :;
     while (!!((q = (*q).nextdupl))) {
         if (((*q).owner == owner)) {
             msysnewc_m_print_startcon();
@@ -17423,8 +17443,8 @@ struct cc_decls_strec * cc_lib_createnewproc(struct cc_decls_strec * owner,struc
             ;
             cc_support_serror((byte*)"Dupl proc name");
         };
-L581 :;
-    }L582 :;
+L584 :;
+    }L585 :;
     ;
     return p;
 }
@@ -17439,22 +17459,22 @@ struct cc_decls_strec * cc_lib_resolvename(struct cc_decls_strec * owner,struct 
     if ((!!(blockno) && ((i64)(cc_decls_blockcounts[(blockno)]) == (i64)0))) {
         blockno = (i64)(cc_decls_blockowner[(blockno)]);
     };
-    L583 :;
+    L586 :;
     while (1) {
         nsblock = ((ns << (i64)16) | blockno);
         d = symptr;
-        L585 :;
+        L588 :;
         while (!!((d = (*d).nextdupl))) {
             if ((((*d).owner == owner) && ((i64)((u64)((*d).nsblock)) == nsblock))) {
                 return d;
             };
-L586 :;
-        }L587 :;
+L589 :;
+        }L590 :;
         ;
         if ((blockno == (i64)0)) {
             if (((i64)((*owner).nameid)==(i64)6)) {
                 owner = cc_decls_stmodule;
-                goto L583 ;
+                goto L586 ;
             }else if (((i64)((*owner).nameid)==(i64)13)) {
                 owner = (*owner).owner;
                 if ((owner == 0)) {
@@ -17466,7 +17486,7 @@ L586 :;
         } else if (((blockno = (i64)(cc_decls_blockowner[(blockno)])) == (i64)0)) {
             owner = cc_decls_stmodule;
         };
-    }L584 :;
+    }L587 :;
     ;
     return (struct cc_decls_strec *)(0);
 }
@@ -17476,13 +17496,13 @@ struct cc_decls_strec * cc_lib_checkdupl(struct cc_decls_strec * owner,struct cc
     struct cc_decls_strec *  d;
     d = symptr;
     nsblock = ((ns << (i64)16) | blockno);
-    L588 :;
+    L591 :;
     while (!!((d = (*d).nextdupl))) {
         if ((((*d).owner == owner) && ((i64)((u64)((*d).nsblock)) == nsblock))) {
             return d;
         };
-L589 :;
-    }L590 :;
+L592 :;
+    }L593 :;
     ;
     return (struct cc_decls_strec *)(0);
 }
@@ -17492,13 +17512,13 @@ struct cc_decls_strec * cc_lib_checkdupl_inproc(struct cc_decls_strec * owner,st
     struct cc_decls_strec *  d;
     d = symptr;
     nsblock = ((ns << (i64)16) | blockno);
-    L591 :;
+    L594 :;
     while ((!!((d = (*d).nextdupl)) && ((*d).owner == owner))) {
         if (((i64)((u64)((*d).nsblock)) == nsblock)) {
             return d;
         };
-L592 :;
-    }L593 :;
+L595 :;
+    }L596 :;
     ;
     return (struct cc_decls_strec *)(0);
 }
@@ -17592,7 +17612,7 @@ static void cc_parse_readmodule(void) {
     i64 t;
     i64 nitems;
     i64 wasenum;
-    L594 :;
+    L597 :;
     while (((i64)((u64)(cc_decls_lx.symbol)) != (i64)57)) {
         nitems = (i64)0;
         if (((i64)(cc_decls_lx.symbol)==(i64)97)) {
@@ -17605,7 +17625,7 @@ static void cc_parse_readmodule(void) {
             msysnewc_m_print_newline();
             msysnewc_m_print_end();
             ;
-            goto L595 ;
+            goto L598 ;
         }else if (((i64)(cc_decls_lx.symbol)==(i64)100)) {
             nitems = (i64)1;
         }else if (((i64)(cc_decls_lx.symbol)==(i64)9)) {
@@ -17617,7 +17637,7 @@ static void cc_parse_readmodule(void) {
         };
         mbase = cc_parse_readdeclspec(cc_decls_stmodule,&linkage);
         commaseen = (i64)0;
-        L597 :;
+        L600 :;
         if (((i64)(cc_decls_lx.symbol)==(i64)68) || ((i64)(cc_decls_lx.symbol)==(i64)24) || ((i64)(cc_decls_lx.symbol)==(i64)12)) {
             ++nitems;
             m = cc_parse_readtype(cc_decls_stmodule,&d,mbase,&pm);
@@ -17632,20 +17652,20 @@ static void cc_parse_readmodule(void) {
                 cc_parse_constantseen = (u64)((i64)0);
             } else if (!!(pm)) {
                 //readfn:
-L599 :;
+L602 :;
 ;
                 if ((((i64)((u64)(cc_decls_lx.symbol)) == (i64)16) && !!(commaseen))) {
                     cc_support_serror((byte*)"fn def after comma");
                 };
                 d = cc_parse_readfunction(d,m,linkage,pm,&wasdef);
                 if (!!(wasdef)) {
-                    goto L598 ;
+                    goto L601 ;
                 };
             } else if ((cc_decls_ttbasetype[(m)] == (i64)17)) {
                 pm = cc_decls_ttparams[(m)];
                 m = cc_decls_tttarget[(m)];
                 cc_parse_constantseen = (u64)((i64)0);
-                goto L599 ;
+                goto L602 ;
 ;
             } else {
                 d = cc_parse_readmodulevar(d,m,linkage);
@@ -17656,26 +17676,26 @@ L599 :;
                 cc_lex_lex();
             } else {
                 cc_lib_skipsymbol((i64)9);
-                goto L598 ;
+                goto L601 ;
             };
         }else if (((i64)(cc_decls_lx.symbol)==(i64)102)) {
             cc_parse_constantseen = (u64)((i64)1);
             cc_lex_lex();
-            goto L595 ;
+            goto L598 ;
         }else if (((i64)(cc_decls_lx.symbol)==(i64)103)) {
             cc_parse_readstructinfosym();
         } else {
             if ((cc_decls_ttbasetype[(mbase)]==(i64)15) || (cc_decls_ttbasetype[(mbase)]==(i64)20) || (cc_decls_ttbasetype[(mbase)]==(i64)21)) {
                 cc_lib_skipsymbol((i64)9);
-                goto L598 ;
+                goto L601 ;
             }else if ((cc_decls_ttbasetype[(mbase)]==(i64)4)) {
                 cc_lib_skipsymbol((i64)9);
-                goto L598 ;
+                goto L601 ;
             } else {
                 cc_support_serror_s((byte*)"Decl error %s",cc_lib_typename(mbase));
             };
-        }goto L597 ;
-L598 :;
+        }goto L600 ;
+L601 :;
         ;
         if (((nitems == (i64)0) && !!(cc_decls_fmodern))) {
             if ((cc_decls_ttbasetype[(mbase)]==(i64)20) || (cc_decls_ttbasetype[(mbase)]==(i64)21) || (cc_decls_ttbasetype[(mbase)]==(i64)15)) {
@@ -17691,8 +17711,8 @@ L598 :;
                 };
             };
         };
-L595 :;
-    }L596 :;
+L598 :;
+    }L599 :;
     ;
 }
 
@@ -17720,7 +17740,7 @@ static i64 cc_parse_readdeclspec(struct cc_decls_strec * owner,i64 * linkage) {
     i64 fstruct;
     memset((void *)(&d),(i64)0,(u64)((i64)15));
     fstruct = (mod = (i64)0);
-    L600 :;
+    L603 :;
     switch ((i64)(cc_decls_lx.symbol)) {
     case 71:;
     {
@@ -17736,7 +17756,7 @@ static i64 cc_parse_readdeclspec(struct cc_decls_strec * owner,i64 * linkage) {
                 if (!!(fstruct)) {
                     cc_lib_checksymbol((i64)9);
                 } else {
-                    goto L602 ;
+                    goto L605 ;
 ;
                 };
             };
@@ -17745,7 +17765,7 @@ static i64 cc_parse_readdeclspec(struct cc_decls_strec * owner,i64 * linkage) {
         case 3:;
         {
             if (((!!((u64)(d.isshort)) || !!((u64)(d.islong))) || !!((u64)(d.isllong)))) {
-                goto L602 ;
+                goto L605 ;
 ;
             };
             d.isshort = (u64)((mod = (i64)1));
@@ -17753,7 +17773,7 @@ static i64 cc_parse_readdeclspec(struct cc_decls_strec * owner,i64 * linkage) {
         case 4:;
         {
             if ((!!((u64)(d.isllong)) || !!((u64)(d.isshort)))) {
-                goto L602 ;
+                goto L605 ;
 ;
             } else if (!!((u64)(d.islong))) {
                 d.islong = (u64)((i64)0);
@@ -17766,7 +17786,7 @@ static i64 cc_parse_readdeclspec(struct cc_decls_strec * owner,i64 * linkage) {
         case 8:;
         {
             if ((!!((u64)(d.issigned)) || !!((u64)(d.isunsigned)))) {
-                goto L602 ;
+                goto L605 ;
 ;
             };
             d.issigned = (u64)((mod = (i64)1));
@@ -17774,7 +17794,7 @@ static i64 cc_parse_readdeclspec(struct cc_decls_strec * owner,i64 * linkage) {
         case 9:;
         {
             if ((!!((u64)(d.issigned)) || !!((u64)(d.isunsigned)))) {
-                goto L602 ;
+                goto L605 ;
 ;
             };
             d.isunsigned = (u64)((mod = (i64)1));
@@ -17782,14 +17802,14 @@ static i64 cc_parse_readdeclspec(struct cc_decls_strec * owner,i64 * linkage) {
         case 11:;
         {
             if (((!!((i64)(d.typeno)) && ((i64)(d.typeno) != (i64)11)) && ((i64)(d.typeno) != (i64)12))) {
-                goto L602 ;
+                goto L605 ;
 ;
             };
             d.typeno = (i64)14;
         }break;
         default: {
             //tserror:
-L602 :;
+L605 :;
 ;
             cc_support_serror_s((byte*)"declspec/ts %s",cc_tables_typespecnames[((i64)(cc_decls_lx.subcode))-1]);
         }
@@ -17849,7 +17869,7 @@ L602 :;
         if ((!(!!((i64)(d.typeno))) && !!((m = cc_parse_isusertype(owner))))) {
             if (!!(mod)) {
                 d.typeno = (i64)4;
-                goto L601 ;
+                goto L604 ;
             };
             d.typeno = m;
             d.isusertype = (u64)((i64)1);
@@ -17861,7 +17881,7 @@ L602 :;
             if (((i64)(d.typeno) == (i64)0)) {
                 d.typeno = (i64)4;
             };
-            goto L601 ;
+            goto L604 ;
         };
     }break;
     case 98:;
@@ -17880,11 +17900,11 @@ L602 :;
         cc_parse_dostaticassert();
     }break;
     default: {
-        goto L601 ;
+        goto L604 ;
     }
     } //SW
-goto L600 ;
-L601 :;
+goto L603 ;
+L604 :;
     ;
     t = (!!((i64)(d.typeno))?(i64)(d.typeno):(i64)4);
     if (!(!!((u64)(d.isusertype)))) {
@@ -17970,15 +17990,15 @@ static struct cc_decls_unitrec * cc_parse_readexpression(void) {
     p = cc_parse_readassignexpr();
     if (((i64)((u64)(cc_decls_lx.symbol)) == (i64)8)) {
         ulist = (ulistx = (struct cc_decls_unitrec *)(0));
-        L603 :;
+        L606 :;
         while (1) {
             cc_lib_addlistunit(&ulist,&ulistx,p);
             if (((i64)((u64)(cc_decls_lx.symbol)) != (i64)8)) {
-                goto L604 ;
+                goto L607 ;
             };
             cc_lex_lex();
             p = cc_parse_readassignexpr();
-        }L604 :;
+        }L607 :;
         ;
         p = cc_lib_createunit1((i64)30,ulist);
         if (!!(ulistx)) {
@@ -18000,7 +18020,7 @@ static struct cc_decls_unitrec * cc_parse_readassignexpr(void) {
     }else if (((i64)(cc_decls_nextlx.symbol)==(i64)11)) {
         p = cc_parse_readterm();
         opc = (i64)(cc_decls_lx.symbol);
-        goto L605 ;
+        goto L608 ;
 ;
     };
     p = cc_parse_readcondexpr();
@@ -18018,7 +18038,7 @@ static struct cc_decls_unitrec * cc_parse_readassignexpr(void) {
     case 50:;
     {
         //gotp:
-L605 :;
+L608 :;
 ;
         cc_lex_lex();
         oldpmode = (i64)((*p).mode);
@@ -18099,7 +18119,7 @@ static struct cc_decls_unitrec * cc_parse_readorlexpr(void) {
     struct cc_decls_unitrec *  x;
     struct cc_decls_unitrec *  y;
     x = cc_parse_readandlexpr();
-    L606 :;
+    L609 :;
     while (((i64)((u64)(cc_decls_lx.symbol)) == (i64)30)) {
         cc_lex_lex();
         y = cc_parse_readandlexpr();
@@ -18107,12 +18127,12 @@ static struct cc_decls_unitrec * cc_parse_readorlexpr(void) {
         cc_parse_coercecond(y);
         if ((((i64)((*x).tag) == (i64)1) && ((i64)((*y).tag) == (i64)1))) {
             (*x).value = ((!!((*x).value) || !!((*y).value))?(i64)1:(i64)0);
-            goto L607 ;
+            goto L610 ;
         };
         x = cc_lib_createunit2((i64)26,x,y);
         (*x).mode = (i64)4;
-L607 :;
-    }L608 :;
+L610 :;
+    }L611 :;
     ;
     return x;
 }
@@ -18121,7 +18141,7 @@ static struct cc_decls_unitrec * cc_parse_readandlexpr(void) {
     struct cc_decls_unitrec *  x;
     struct cc_decls_unitrec *  y;
     x = cc_parse_readiorexpr();
-    L609 :;
+    L612 :;
     while (((i64)((u64)(cc_decls_lx.symbol)) == (i64)31)) {
         cc_lex_lex();
         y = cc_parse_readiorexpr();
@@ -18129,12 +18149,12 @@ static struct cc_decls_unitrec * cc_parse_readandlexpr(void) {
         cc_parse_coercecond(y);
         if ((((i64)((*x).tag) == (i64)1) && ((i64)((*y).tag) == (i64)1))) {
             (*x).value = ((!!((*x).value) && !!((*y).value))?(i64)1:(i64)0);
-            goto L610 ;
+            goto L613 ;
         };
         x = cc_lib_createunit2((i64)25,x,y);
         (*x).mode = (i64)4;
-L610 :;
-    }L611 :;
+L613 :;
+    }L614 :;
     ;
     return x;
 }
@@ -18144,7 +18164,7 @@ static struct cc_decls_unitrec * cc_parse_readiorexpr(void) {
     struct cc_decls_unitrec *  y;
     i64 u;
     x = cc_parse_readixorexpr();
-    L612 :;
+    L615 :;
     while (((i64)((u64)(cc_decls_lx.symbol)) == (i64)27)) {
         cc_lex_lex();
         y = cc_parse_readixorexpr();
@@ -18160,13 +18180,13 @@ static struct cc_decls_unitrec * cc_parse_readiorexpr(void) {
         if ((((i64)((*x).tag) == (i64)1) && ((i64)((*y).tag) == (i64)1))) {
             if ((u==(i64)4) || (u==(i64)5) || (u==(i64)9) || (u==(i64)10)) {
                 (*x).value |= (*y).value;
-                goto L613 ;
+                goto L616 ;
             };
         };
         x = cc_lib_createunit2((i64)46,x,y);
         (*x).mode = u;
-L613 :;
-    }L614 :;
+L616 :;
+    }L617 :;
     ;
     return x;
 }
@@ -18176,7 +18196,7 @@ static struct cc_decls_unitrec * cc_parse_readixorexpr(void) {
     struct cc_decls_unitrec *  y;
     i64 u;
     x = cc_parse_readiandexpr();
-    L615 :;
+    L618 :;
     while (((i64)((u64)(cc_decls_lx.symbol)) == (i64)29)) {
         cc_lex_lex();
         y = cc_parse_readiandexpr();
@@ -18192,13 +18212,13 @@ static struct cc_decls_unitrec * cc_parse_readixorexpr(void) {
         if ((((i64)((*x).tag) == (i64)1) && ((i64)((*y).tag) == (i64)1))) {
             if ((u==(i64)4) || (u==(i64)5)) {
                 (*x).value ^= (*y).value;
-                goto L616 ;
+                goto L619 ;
             };
         };
         x = cc_lib_createunit2((i64)47,x,y);
         (*x).mode = u;
-L616 :;
-    }L617 :;
+L619 :;
+    }L620 :;
     ;
     return x;
 }
@@ -18208,7 +18228,7 @@ static struct cc_decls_unitrec * cc_parse_readiandexpr(void) {
     struct cc_decls_unitrec *  y;
     i64 u;
     x = cc_parse_readeqexpr();
-    L618 :;
+    L621 :;
     while (((i64)((u64)(cc_decls_lx.symbol)) == (i64)28)) {
         cc_lex_lex();
         y = cc_parse_readeqexpr();
@@ -18234,13 +18254,13 @@ static struct cc_decls_unitrec * cc_parse_readiandexpr(void) {
         if ((((i64)((*x).tag) == (i64)1) && ((i64)((*y).tag) == (i64)1))) {
             if ((u==(i64)4) || (u==(i64)5)) {
                 (*x).value &= (*y).value;
-                goto L619 ;
+                goto L622 ;
             };
         };
         x = cc_lib_createunit2((i64)45,x,y);
         (*x).mode = u;
-L619 :;
-    }L620 :;
+L622 :;
+    }L623 :;
     ;
     return x;
 }
@@ -18255,7 +18275,7 @@ static struct cc_decls_unitrec * cc_parse_readeqexpr(void) {
     i64 ss;
     i64 tt;
     x = cc_parse_readrelexpr();
-    L621 :;
+    L624 :;
     while ((((opc = (i64)(cc_decls_lx.symbol)) == (i64)39) || (opc == (i64)40))) {
         cc_lex_lex();
         y = cc_parse_readrelexpr();
@@ -18288,13 +18308,13 @@ static struct cc_decls_unitrec * cc_parse_readeqexpr(void) {
                 } else {
                     (*x).value = ((*x).value != (*y).value);
                 };
-                goto L622 ;
+                goto L625 ;
             };
         };
         x = cc_lib_createunit2((i64)(cc_tables_symboltojtag[(opc)-1]),x,y);
         (*x).mode = (i64)4;
-L622 :;
-    }L623 :;
+L625 :;
+    }L626 :;
     ;
     return x;
 }
@@ -18313,7 +18333,7 @@ static struct cc_decls_unitrec * cc_parse_readrelexpr(void) {
     u64 bb;
     u64 cc;
     x = cc_parse_readshiftexpr();
-    L624 :;
+    L627 :;
     while ((((((opc = (i64)(cc_decls_lx.symbol)) == (i64)41) || (opc == (i64)42)) || (opc == (i64)43)) || (opc == (i64)44))) {
         cc_lex_lex();
         y = cc_parse_readshiftexpr();
@@ -18341,7 +18361,7 @@ static struct cc_decls_unitrec * cc_parse_readrelexpr(void) {
                     c = (a > b);
                 };
                 (*x).value = c;
-                goto L625 ;
+                goto L628 ;
             }else if ((u==(i64)9) || (u==(i64)10)) {
                 aa = (u64)((*x).value);
                 bb = (u64)((*y).value);
@@ -18355,13 +18375,13 @@ static struct cc_decls_unitrec * cc_parse_readrelexpr(void) {
                     cc = (u64)((aa > bb));
                 };
                 (*x).value = (i64)(cc);
-                goto L625 ;
+                goto L628 ;
             };
         };
         x = cc_lib_createunit2((i64)(cc_tables_symboltojtag[(opc)-1]),x,y);
         (*x).mode = (i64)4;
-L625 :;
-    }L626 :;
+L628 :;
+    }L629 :;
     ;
     return x;
 }
@@ -18372,7 +18392,7 @@ static struct cc_decls_unitrec * cc_parse_readshiftexpr(void) {
     i64 opc;
     i64 u;
     x = cc_parse_readaddexpr();
-    L627 :;
+    L630 :;
     while ((((opc = (i64)(cc_decls_lx.symbol)) == (i64)32) || (opc == (i64)33))) {
         cc_lex_lex();
         y = cc_parse_readaddexpr();
@@ -18388,20 +18408,20 @@ static struct cc_decls_unitrec * cc_parse_readshiftexpr(void) {
                 } else {
                     (*x).value = ((*x).value >> (*y).value);
                 };
-                goto L628 ;
+                goto L631 ;
             }else if ((u==(i64)9) || (u==(i64)10)) {
                 if ((opc == (i64)32)) {
                     (*x).uvalue = ((*x).uvalue << (*y).value);
                 } else {
                     (*x).uvalue = ((*x).uvalue >> (*y).value);
                 };
-                goto L628 ;
+                goto L631 ;
             };
         };
         x = cc_lib_createunit2(((opc == (i64)32)?(i64)48:(i64)49),x,y);
         (*x).mode = u;
-L628 :;
-    }L629 :;
+L631 :;
+    }L632 :;
     ;
     return x;
 }
@@ -18411,7 +18431,7 @@ static struct cc_decls_unitrec * cc_parse_readaddexpr(void) {
     struct cc_decls_unitrec *  q;
     i64 opc;
     p = cc_parse_readmulexpr();
-    L630 :;
+    L633 :;
     while ((((opc = (i64)(cc_decls_lx.symbol)) == (i64)22) || (opc == (i64)23))) {
         cc_lex_lex();
         q = cc_parse_readmulexpr();
@@ -18420,8 +18440,8 @@ static struct cc_decls_unitrec * cc_parse_readaddexpr(void) {
         } else {
             p = cc_parse_createsubop(p,q);
         };
-L631 :;
-    }L632 :;
+L634 :;
+    }L635 :;
     ;
     return p;
 }
@@ -18431,7 +18451,7 @@ static struct cc_decls_unitrec * cc_parse_readmulexpr(void) {
     struct cc_decls_unitrec *  q;
     i64 opc;
     p = cc_parse_readterm();
-    L633 :;
+    L636 :;
     while (((((opc = (i64)(cc_decls_lx.symbol)) == (i64)24) || (opc == (i64)25)) || (opc == (i64)26))) {
         cc_lex_lex();
         q = cc_parse_readterm();
@@ -18442,8 +18462,8 @@ static struct cc_decls_unitrec * cc_parse_readmulexpr(void) {
         }else if ((opc==(i64)26)) {
             p = cc_parse_createremop(p,q);
         };
-L634 :;
-    }L635 :;
+L637 :;
+    }L638 :;
     ;
     return p;
 }
@@ -18492,12 +18512,12 @@ static struct cc_decls_unitrec * cc_parse_readterm(void) {
                 (*p).def = d;
                 (*p).mode = cc_lib_createrefmode(cc_lib_createprocmode((i64)((*d).mode),(*d).paramlist));
             } else {
-                goto L636 ;
+                goto L639 ;
 ;
             };
         } else {
             //doname:
-L636 :;
+L639 :;
 ;
             p = cc_lib_createname(d);
             (*p).mode = (t = (i64)((*d).mode));
@@ -18525,7 +18545,7 @@ L636 :;
         fwide = ((i64)((u64)(cc_decls_lx.symbol)) == (i64)64);
         s = cc_decls_lx.svalue;
         slength = (i64)(cc_decls_lx.length);
-        L637 :;
+        L640 :;
         while (((i64)((u64)(cc_decls_nextlx.symbol)) == (i64)63)) {
             newlen = (slength + (i64)(cc_decls_nextlx.length));
             ss = (byte *)(mlib_pcm_alloc((newlen + (i64)1)));
@@ -18535,8 +18555,8 @@ L636 :;
             s = ss;
             slength = newlen;
             cc_lex_lex();
-L638 :;
-        }L639 :;
+L641 :;
+        }L642 :;
         ;
         if (!!(fwide)) {
             p = cc_lib_createwstringconstunit((u16 *)(s),slength);
@@ -18560,12 +18580,12 @@ L638 :;
         pbyte = cc_decls_lx.svalue;
         av_1 = (i64)(cc_decls_lx.length);
         while (av_1-- > 0) {
-L640 :;
+L643 :;
             a = (a | (i64)(((u64)((*pbyte)) << shift)));
             shift += (i64)8;
             ++pbyte;
-L641 :;
-        }L642 :;
+L644 :;
+        }L645 :;
         ;
         p = cc_lib_createconstunit((u64)(a),(i64)4);
         cc_lex_lex();
@@ -18716,7 +18736,7 @@ L641 :;
     }
     } //SW
 ;
-    L643 :;
+    L646 :;
     switch ((i64)(cc_decls_lx.symbol)) {
     case 14:;
     {
@@ -18758,11 +18778,11 @@ L641 :;
         p = cc_parse_createincrop((i64)76,p);
     }break;
     default: {
-        goto L644 ;
+        goto L647 ;
     }
     } //SW
-goto L643 ;
-L644 :;
+goto L646 ;
+L647 :;
     ;
     return p;
 }
@@ -18771,15 +18791,15 @@ static struct cc_decls_unitrec * cc_parse_readexprlist(struct cc_decls_unitrec *
     struct cc_decls_unitrec *  ulist;
     struct cc_decls_unitrec *  ulistx;
     ulist = (ulistx = p);
-    L645 :;
+    L648 :;
     while (1) {
         p = cc_parse_readassignexpr();
         cc_lib_addlistunit(&ulist,&ulistx,p);
         if (((i64)((u64)(cc_decls_lx.symbol)) != (i64)8)) {
-            goto L646 ;
+            goto L649 ;
         };
         cc_lex_lex();
-    }L646 :;
+    }L649 :;
     ;
     return ulist;
 }
@@ -18797,7 +18817,7 @@ static struct cc_decls_strec * cc_parse_readmodulevar(struct cc_decls_strec * d,
         if ((emode != m)) {
             if (!(!!(cc_parse_comparemode(emode,m)))) {
                 //redef:
-L647 :;
+L650 :;
 ;
                 cc_support_serror_s((byte*)"var: redefining %s",(*e).name);
             };
@@ -18805,7 +18825,7 @@ L647 :;
                 if ((cc_decls_ttlength[(emode)] == (i64)0)) {
                     (*e).mode = m;
                 } else if ((!!(cc_decls_ttlength[(m)]) && (cc_decls_ttlength[(emode)] != cc_decls_ttlength[(m)]))) {
-                    goto L647 ;
+                    goto L650 ;
 ;
                 };
             };
@@ -18900,9 +18920,9 @@ static i64 cc_parse_readtype(struct cc_decls_strec * owner,struct cc_decls_strec
     nmodifiers = (i64)0;
     (*pm) = (struct cc_decls_paramrec *)(0);
     cc_parse_readnamedtype(owner,d,&modtype,&modvalue,&nmodifiers);
-    L648 :;
+    L651 :;
     for (i=nmodifiers;i>=(i64)1;--i) {
-L649 :;
+L652 :;
         if ((modtype[(i)-1]==(i64)65)) {
             m = cc_lib_createarraymode(m,(i64)(modvalue[(i)-1]));
         }else if ((modtype[(i)-1]==(i64)82)) {
@@ -18916,8 +18936,8 @@ L649 :;
                 m = cc_lib_createprocmode(m,(struct cc_decls_paramrec *)(modvalue[(i)-1]));
             };
         };
-L650 :;
-    }L651 :;
+L653 :;
+    }L654 :;
     ;
     return m;
 }
@@ -18932,12 +18952,12 @@ static void cc_parse_readnamedtype(struct cc_decls_strec * owner,struct cc_decls
     if (((i64)((u64)(cc_decls_lx.symbol)) == (i64)88)) {
         cc_lex_lex();
     };
-    L652 :;
+    L655 :;
     while (((i64)((u64)(cc_decls_lx.symbol)) == (i64)24)) {
         ++nrefs;
         fconst[(nrefs)-1] = (i64)0;
         cc_lex_lex();
-        L655 :;
+        L658 :;
         while (((i64)((u64)(cc_decls_lx.symbol)) == (i64)87)) {
             if (((i64)(cc_decls_lx.subcode)==(i64)1)) {
                 fconst[(nrefs)-1] = (i64)1;
@@ -18946,11 +18966,11 @@ static void cc_parse_readnamedtype(struct cc_decls_strec * owner,struct cc_decls
                 cc_support_serror((byte*)"rnt1");
             };
             cc_lex_lex();
-L656 :;
-        }L657 :;
+L659 :;
+        }L660 :;
         ;
-L653 :;
-    }L654 :;
+L656 :;
+    }L657 :;
     ;
     if (((i64)(cc_decls_lx.symbol)==(i64)68)) {
         (*d) = cc_decls_lx.symptr;
@@ -18960,7 +18980,7 @@ L653 :;
         cc_parse_readnamedtype(owner,d,modtype,modvalue,nmodifiers);
         cc_lib_skipsymbol((i64)13);
     };
-    L658 :;
+    L661 :;
     if (((i64)(cc_decls_lx.symbol)==(i64)14)) {
         cc_lex_lex();
         if (((i64)((u64)(cc_decls_lx.symbol)) == (i64)15)) {
@@ -18985,19 +19005,19 @@ L653 :;
         (*modtype)[(++(*nmodifiers))-1] = (i64)70;
         (*modvalue)[((*nmodifiers))-1] = (void *)(cc_parse_readparams(owner));
     } else {
-        goto L659 ;
-    }goto L658 ;
-L659 :;
+        goto L662 ;
+    }goto L661 ;
+L662 :;
     ;
-    L660 :;
+    L663 :;
     while (!!(nrefs)) {
         if (!!(fconst[(nrefs)-1])) {
             (*modtype)[(++(*nmodifiers))-1] = (i64)67;
         };
         (*modtype)[(++(*nmodifiers))-1] = (i64)82;
         --nrefs;
-L661 :;
-    }L662 :;
+L664 :;
+    }L665 :;
     ;
 }
 
@@ -19043,7 +19063,7 @@ static struct cc_decls_unitrec * cc_parse_readinitexpr2(struct cc_decls_strec * 
             melem = cc_decls_tttarget[(m)];
             if (((cc_decls_ttbasetype[(melem)] == (i64)7) && ((i64)((u64)(cc_decls_lx.symbol)) == (i64)63))) {
                 braces = (i64)1;
-                goto L663 ;
+                goto L666 ;
 ;
             };
         }else if ((mbase==(i64)20) || (mbase==(i64)21)) {
@@ -19060,7 +19080,7 @@ static struct cc_decls_unitrec * cc_parse_readinitexpr2(struct cc_decls_strec * 
             return p;
         };
         ulist = (ulistx = (struct cc_decls_unitrec *)(0));
-        L664 :;
+        L667 :;
         while (1) {
             p = cc_parse_readinitexpr2(owner,melem,(i64)0);
             ++count;
@@ -19089,26 +19109,26 @@ static struct cc_decls_unitrec * cc_parse_readinitexpr2(struct cc_decls_strec * 
             }else if ((mbase==(i64)21)) {
                 p = cc_parse_coercemode(p,melem);
                 ulist = (ulistx = p);
-                goto L666 ;
+                goto L669 ;
 ;
             };
             cc_lib_addlistunit(&ulist,&ulistx,p);
             if (((i64)((u64)(cc_decls_lx.symbol)) != (i64)8)) {
-                goto L665 ;
+                goto L668 ;
             };
             if (((i64)((u64)(cc_decls_nextlx.symbol)) == (i64)17)) {
                 cc_lex_lex();
-                goto L665 ;
+                goto L668 ;
             };
             cc_lex_lex();
-        }L665 :;
+        }L668 :;
         ;
         if (((mbase == (i64)19) && (dim == (i64)0))) {
             cc_decls_ttlength[(m)] = count;
             cc_decls_ttsize[(m)] = (count * cc_decls_ttsize[(melem)]);
         };
         //donestruct:
-L666 :;
+L669 :;
 ;
         cc_lib_skipsymbol((i64)17);
         p = cc_lib_createunit1((i64)29,ulist);
@@ -19118,7 +19138,7 @@ L666 :;
         braces = (i64)0;
         if ((mbase==(i64)19)) {
             //doarraystring:
-L663 :;
+L666 :;
 ;
             if (((((i64)((u64)(cc_decls_lx.symbol)) != (i64)63) && ((i64)((u64)(cc_decls_lx.symbol)) != (i64)64)) && (cc_decls_tttarget[(m)] != (i64)7))) {
                 cc_support_terror((byte*)"{} initialiser expected");
@@ -19164,12 +19184,12 @@ static void cc_parse_pushblock(void) {
     ++cc_decls_nextblockno;
     n = cc_decls_currblockno;
     m = cc_decls_blocklevel;
-    L667 :;
+    L670 :;
     while ((!!(m) && ((i64)(cc_decls_blockcounts[((i64)(cc_decls_blockstack[(m)]))]) == (i64)0))) {
         --m;
         n = (i64)(cc_decls_blockstack[(m)]);
-L668 :;
-    }L669 :;
+L671 :;
+    }L672 :;
     ;
     cc_decls_blockowner[(cc_decls_nextblockno)] = n;
     cc_decls_currblockno = (i64)((cc_decls_blockstack[(cc_decls_blocklevel)] = cc_decls_nextblockno));
@@ -19191,14 +19211,14 @@ static struct cc_decls_unitrec * cc_parse_readcompoundstmt(i64 params) {
     if (!!(params)) {
         cc_decls_blockcounts[((i64)1)] = (i64)1;
     };
-    L670 :;
+    L673 :;
     while (((i64)((u64)(cc_decls_lx.symbol)) != (i64)17)) {
         p = cc_parse_readstatement();
         if ((p == 0)) {
-            goto L671 ;
+            goto L674 ;
         };
         if (((i64)((*p).tag) == (i64)7)) {
-            L673 :;
+            L676 :;
             do {
                 q = (*p).nextunit;
                 if ((!!((*(*p).def).code) && ((i64)((u64)((*(*p).def).nameid)) != (i64)7))) {
@@ -19207,14 +19227,14 @@ static struct cc_decls_unitrec * cc_parse_readcompoundstmt(i64 params) {
                     cc_lib_addlistunit(&ulist,&ulistx,p);
                 };
                 p = q;
-L674 :;
-            } while (!(p == 0));L675 :;
+L677 :;
+            } while (!(p == 0));L678 :;
             ;
         } else {
             cc_lib_addlistunit(&ulist,&ulistx,p);
         };
-L671 :;
-    }L672 :;
+L674 :;
+    }L675 :;
     ;
     cc_lex_lex();
     cc_parse_popblock();
@@ -19271,11 +19291,11 @@ static struct cc_decls_unitrec * cc_parse_readstatement(void) {
     case 81:;
     {
         index = cc_parse_loopindex;
-        L676 :;
+        L679 :;
         while ((!!(index) && ((u64)(cc_parse_looptypestack[(index)-1]) != (u64)76u))) {
             --index;
-L677 :;
-        }L678 :;
+L680 :;
+        }L681 :;
         ;
         if ((index == (i64)0)) {
             cc_support_serror((byte*)"continue outside loop");
@@ -19363,7 +19383,7 @@ L677 :;
         } else {
             cc_parse_ist_symptr = (struct cc_decls_strec *)(0);
             if (!!(cc_parse_isusertype(cc_decls_currproc))) {
-                goto L679 ;
+                goto L682 ;
 ;
             };
             if (!!(cc_parse_ist_symptr)) {
@@ -19382,7 +19402,7 @@ L677 :;
     case 98:;
     {
         //doreaddecl:
-L679 :;
+L682 :;
 ;
         return cc_parse_readlocaldecl();
     }break;
@@ -19434,7 +19454,7 @@ static struct cc_decls_unitrec * cc_parse_readforstmt(void) {
             cc_parse_pushblock();
             mbase = cc_parse_readdeclspec(cc_decls_currproc,&linkage);
             ulist = (ulistx = (struct cc_decls_unitrec *)(0));
-            L680 :;
+            L683 :;
             if (((i64)(cc_decls_lx.symbol)==(i64)68) || ((i64)(cc_decls_lx.symbol)==(i64)24) || ((i64)(cc_decls_lx.symbol)==(i64)12)) {
                 m = cc_parse_readtype(cc_decls_currproc,&d,mbase,&pm);
                 if ((d == 0)) {
@@ -19454,12 +19474,12 @@ static struct cc_decls_unitrec * cc_parse_readforstmt(void) {
                 if (((i64)(cc_decls_lx.symbol)==(i64)8)) {
                     cc_lex_lex();
                 } else {
-                    goto L681 ;
+                    goto L684 ;
                 };
             } else {
                 cc_support_serror((byte*)"For decl error");
-            }goto L680 ;
-L681 :;
+            }goto L683 ;
+L684 :;
             ;
             pinit = cc_lib_createunit3((i64)6,ulist,(struct cc_decls_unitrec *)(0),ulistx);
         } else {
@@ -19620,7 +19640,7 @@ static struct cc_decls_unitrec * cc_parse_readlocaldecl(void) {
     wasenum = (i64)(cc_decls_lx.symbol);
     mbase = cc_parse_readdeclspec(cc_decls_currproc,&linkage);
     nitems = (i64)0;
-    L682 :;
+    L685 :;
     if (((i64)(cc_decls_lx.symbol)==(i64)68) || ((i64)(cc_decls_lx.symbol)==(i64)24) || ((i64)(cc_decls_lx.symbol)==(i64)12)) {
         ++nitems;
         m = cc_parse_readtype(cc_decls_currproc,&d,mbase,&pm);
@@ -19644,20 +19664,20 @@ static struct cc_decls_unitrec * cc_parse_readlocaldecl(void) {
             cc_lex_lex();
         } else {
             cc_lib_skipsymbol((i64)9);
-            goto L683 ;
+            goto L686 ;
         };
     } else {
         if ((cc_decls_ttbasetype[(mbase)]==(i64)15) || (cc_decls_ttbasetype[(mbase)]==(i64)20) || (cc_decls_ttbasetype[(mbase)]==(i64)21)) {
             cc_lib_skipsymbol((i64)9);
-            goto L683 ;
+            goto L686 ;
         }else if ((cc_decls_ttbasetype[(mbase)]==(i64)4)) {
             cc_lib_skipsymbol((i64)9);
-            goto L683 ;
+            goto L686 ;
         } else {
             cc_support_serror_s((byte*)"Local decl error %s",cc_lib_typename(m));
         };
-    }goto L682 ;
-L683 :;
+    }goto L685 ;
+L686 :;
     ;
     if (((nitems == (i64)0) && !!(cc_decls_fmodern))) {
         if ((cc_decls_ttbasetype[(mbase)]==(i64)20) || (cc_decls_ttbasetype[(mbase)]==(i64)21) || (cc_decls_ttbasetype[(mbase)]==(i64)15)) {
@@ -19709,12 +19729,12 @@ static struct cc_decls_paramrec * cc_parse_readparams(struct cc_decls_strec * ow
         cc_parse_iscallbackfnx = (u64)((i64)1);
         cc_decls_callbackflag = (i64)0;
     };
-    L684 :;
+    L687 :;
     while (((i64)((u64)(cc_decls_lx.symbol)) != (i64)13)) {
         if (((i64)((u64)(cc_decls_lx.symbol)) == (i64)20)) {
             variadic = (i64)1;
             cc_lex_lex();
-            goto L686 ;
+            goto L689 ;
         };
         m = cc_parse_readcasttype(&d,(i64)1,&pm);
         if (!!(pm)) {
@@ -19730,14 +19750,14 @@ static struct cc_decls_paramrec * cc_parse_readparams(struct cc_decls_strec * ow
         if (!!(d)) {
             ++nnames;
             q = ulist;
-            L687 :;
+            L690 :;
             while (!!(q)) {
                 if (((*q).def == d)) {
                     cc_support_serror_ss((byte*)"Param name reused %s %s",(*d).name,cc_tables_namenames[((i64)((*d).nameid))]);
                 };
                 q = (*q).nextparam;
-L688 :;
-            }L689 :;
+L691 :;
+            }L692 :;
             ;
         };
         cc_lib_addlistparam(&ulist,&ulistx,pm);
@@ -19747,8 +19767,8 @@ L688 :;
         } else {
             cc_support_serror((byte*)"bad symbol in paramlist");
         };
-L685 :;
-    }L686 :;
+L688 :;
+    }L689 :;
     ;
     flags = (i64)0;
     cc_lib_skipsymbol((i64)13);
@@ -19853,14 +19873,14 @@ static void cc_parse_readfunctionbody(struct cc_decls_strec * f) {
     if (!!((*pm).def)) {
         av_1 = (i64)((*pm).nparams);
         while (av_1-- > 0) {
-L690 :;
+L693 :;
             e = cc_lib_createdupldef(f,(*pm).def,(i64)9);
             (*e).blockno = (u64)((i64)1);
             (*e).mode = (i64)((*pm).mode);
             pm = (*pm).nextparam;
             pmcount = (i64)1;
-L691 :;
-        }L692 :;
+L694 :;
+        }L695 :;
         ;
     } else if (!!((i64)((*pm).nparams))) {
         cc_support_serror((byte*)"Param names missing");
@@ -19887,14 +19907,14 @@ static struct cc_decls_unitrec * cc_parse_createnegop(struct cc_decls_unitrec * 
         };
     };
     //retry:
-L693 :;
+L696 :;
 ;
     if (((t >= (i64)2) && (t <= (i64)13))) {
         cc_parse_coercebasetype(p);
         q = cc_lib_createunit1((i64)59,p);
     } else if (!!((u64)(cc_decls_ttconst[(t)]))) {
         t = cc_decls_ttconsttype[(t)];
-        goto L693 ;
+        goto L696 ;
 ;
     } else {
         msysnewc_m_print_startcon();
@@ -20049,7 +20069,7 @@ static struct cc_decls_unitrec * cc_parse_createaddrofop(struct cc_decls_unitrec
     i64 alength;
     alength = (i64)0;
     //restartx:
-L694 :;
+L697 :;
 ;
     t = (i64)((*p).mode);
     switch ((i64)((*p).tag)) {
@@ -20075,7 +20095,7 @@ L694 :;
             p = cc_lib_createconstunit((u64)(((i64)((*p).offset) + (*(*q).a).value)),(i64)4);
             return p;
         };
-        goto L695 ;
+        goto L698 ;
 ;
     }break;
     case 54:;
@@ -20088,7 +20108,7 @@ L694 :;
     case 4:;
     {
         p = (*p).a;
-        goto L694 ;
+        goto L697 ;
 ;
     }break;
     case 5:;
@@ -20097,7 +20117,7 @@ L694 :;
     }break;
     default: {
         //cad1:
-L695 :;
+L698 :;
 ;
         cc_parse_checklvalue(p);
     }
@@ -20124,7 +20144,7 @@ static struct cc_decls_unitrec * cc_parse_createaddop(struct cc_decls_unitrec * 
         y = cc_parse_coercemode(y,u);
     } else if ((s == (i64)16)) {
         //doaddref:
-L696 :;
+L699 :;
 ;
         u = (i64)((*x).mode);
         elemsize = cc_decls_ttsize[(cc_decls_tttarget[(u)])];
@@ -20139,7 +20159,7 @@ L696 :;
         return z;
     } else if ((t == (i64)16)) {
         {struct cc_decls_unitrec *  temp = x; x = y; y = temp; };
-        goto L696 ;
+        goto L699 ;
 ;
     } else {
         cc_support_terror((byte*)"Sub bad types");
@@ -20376,7 +20396,7 @@ static i64 cc_parse_eval_convert(struct cc_decls_unitrec * p,i64 t,i64 opc) {
     i64 s;
     if ((opc == (i64)1)) {
         //dosoft:
-L697 :;
+L700 :;
 ;
         (*p).mode = t;
         return (i64)1;
@@ -20392,7 +20412,7 @@ L697 :;
             return (i64)1;
         }else if ((t==(i64)10) || (t==(i64)5) || (t==(i64)9) || (t==(i64)4) || (t==(i64)3) || (t==(i64)2) || (t==(i64)7) || (t==(i64)8)) {
             //dotrunc:
-L698 :;
+L701 :;
 ;
             if ((cc_decls_ttsize[(t)]==(i64)1)) {
                 (*p).value &= (i64)255;
@@ -20401,7 +20421,7 @@ L698 :;
             }else if ((cc_decls_ttsize[(t)]==(i64)4)) {
                 (*p).value = ((*p).value & (i64)4294967295);
             };
-            goto L697 ;
+            goto L700 ;
 ;
         };
         if (!!((u64)(cc_decls_ttisref[(t)]))) {
@@ -20415,7 +20435,7 @@ L698 :;
             (*p).mode = t;
             return (i64)1;
         }else if ((t==(i64)10) || (t==(i64)5) || (t==(i64)4) || (t==(i64)9) || (t==(i64)10) || (t==(i64)8) || (t==(i64)2) || (t==(i64)7) || (t==(i64)3)) {
-            goto L698 ;
+            goto L701 ;
 ;
         };
         if (!!((u64)(cc_decls_ttisref[(t)]))) {
@@ -20448,15 +20468,15 @@ static void cc_parse_coercecond(struct cc_decls_unitrec * p) {
         return;
     };
     //retry:
-L699 :;
+L702 :;
 ;
     if ((cc_decls_ttbasetype[(t)]==(i64)11) || (cc_decls_ttbasetype[(t)]==(i64)12) || (cc_decls_ttbasetype[(t)]==(i64)16)) {
-        goto L700 ;
+        goto L703 ;
 ;
     } else {
         if (!!(cc_lib_isintcc(t))) {
             //doint:
-L700 :;
+L703 :;
 ;
             if ((((i64)((*p).tag) == (i64)1) && !!((*p).value))) {
                 (*p).value = (i64)1;
@@ -20465,7 +20485,7 @@ L700 :;
             };
         } else if (!!((u64)(cc_decls_ttconst[(t)]))) {
             t = cc_decls_ttconsttype[(t)];
-            goto L699 ;
+            goto L702 ;
 ;
         } else {
             cc_support_serror_s((byte*)"Invalid condition %s",cc_lib_strmode(t,(i64)1));
@@ -20499,7 +20519,7 @@ static void cc_parse_checklvalue(struct cc_decls_unitrec * p) {
     }else if (((i64)((*p).tag)==(i64)50)) {
     }else if (((i64)((*p).tag)==(i64)1)) {
         if (!(!!((u64)(cc_decls_ttisref[((i64)((*p).mode))])))) {
-            goto L701 ;
+            goto L704 ;
 ;
         };
     }else if (((i64)((*p).tag)==(i64)57)) {
@@ -20508,7 +20528,7 @@ static void cc_parse_checklvalue(struct cc_decls_unitrec * p) {
         };
     } else {
         //notlv:
-L701 :;
+L704 :;
 ;
         cc_lib_printunit(0,p,(i64)0,(byte*)"*");
         cc_support_terror_s((byte*)"Not lvalue: %s",cc_tables_jtagnames[((i64)((*p).tag))]);
@@ -20536,17 +20556,17 @@ static struct cc_decls_unitrec * cc_parse_createcall(struct cc_decls_unitrec * p
     d = (struct cc_decls_strec *)(0);
     if (((i64)((*p).tag)==(i64)53)) {
         //doptr:
-L702 :;
+L705 :;
 ;
         mproc = (i64)((*p).mode);
-        L703 :;
+        L706 :;
         while ((cc_decls_ttbasetype[(mproc)] == (i64)16)) {
             r = cc_lib_createunit1((i64)53,p);
             mproc = cc_decls_tttarget[(mproc)];
             (*r).mode = mproc;
             p = r;
-L704 :;
-        }L705 :;
+L707 :;
+        }L708 :;
         ;
         if ((cc_decls_ttbasetype[(mproc)] != (i64)17)) {
             msysnewc_m_print_startcon();
@@ -20572,14 +20592,14 @@ L704 :;
             r = cc_lib_createunit1((i64)53,p);
             (*r).mode = cc_decls_tttarget[((i64)((*d).mode))];
             p = r;
-            goto L702 ;
+            goto L705 ;
 ;
         };
     }else if (((i64)((*p).tag)==(i64)50) || ((i64)((*p).tag)==(i64)31) || ((i64)((*p).tag)==(i64)32)) {
         r = cc_lib_createunit1((i64)53,p);
         (*r).mode = cc_decls_tttarget[((i64)((*p).mode))];
         p = r;
-        goto L702 ;
+        goto L705 ;
 ;
     } else {
         msysnewc_m_print_startcon();
@@ -20594,12 +20614,12 @@ L704 :;
     nparams = (i64)((*pm).nparams);
     aparams = (i64)0;
     s = q;
-    L706 :;
+    L709 :;
     while (!!(s)) {
         ++aparams;
         s = (*s).nextunit;
-L707 :;
-    }L708 :;
+L710 :;
+    }L711 :;
     ;
     if ((aparams < nparams)) {
         cc_support_terror((byte*)"Too few args");
@@ -20617,9 +20637,9 @@ L707 :;
         };
     };
     s = q;
-    L709 :;
+    L712 :;
     for (i=(i64)1;i<=aparams;++i) {
-L710 :;
+L713 :;
         if ((i <= nparams)) {
             cc_parse_coercemode_inplace(s,(i64)((*pm).mode));
             pm = (*pm).nextparam;
@@ -20630,8 +20650,8 @@ L710 :;
             cc_parse_coercebasetype(s);
         };
         s = (*s).nextunit;
-L711 :;
-    }L712 :;
+L714 :;
+    }L715 :;
     ;
     r = cc_lib_createunit2((i64)31,p,q);
     (*r).mode = retmode;
@@ -20640,7 +20660,7 @@ L711 :;
         ss = (*q).svalue;
         tt = str;
         u = (*q).nextunit;
-        L713 :;
+        L716 :;
         while (!!((c = (i64)((*ss++))))) {
             if ((((c == (i64)37) && (((*ss) == (i64)63) || ((*ss) == (i64)61))) && !!(u))) {
                 if (((u64)((*ss)) == '=')) {
@@ -20650,10 +20670,10 @@ L711 :;
                     mlib_convucstring(uu);
                     av_1 = (i64)((*exprstr).length);
                     while (av_1-- > 0) {
-L716 :;
+L719 :;
                         (*tt++) = (u64)((*uu++));
-L717 :;
-                    }L718 :;
+L720 :;
+                    }L721 :;
                     ;
                     (*tt++) = '=';
                 };
@@ -20686,8 +20706,8 @@ L717 :;
             } else {
                 (*tt++) = (u64)(c);
             };
-L714 :;
-        }L715 :;
+L717 :;
+        }L718 :;
         ;
         (*tt) = (u64)0u;
         (*q).svalue = mlib_pcm_copyheapstring(str);
@@ -20809,10 +20829,10 @@ static i64 cc_parse_readstructdecl(struct cc_decls_strec * owner) {
     maxalignment = (i64)1;
     fieldlist = (struct cc_decls_fieldrec *)(0);
     m = (i64)-1;
-    L719 :;
+    L722 :;
     while (((i64)((u64)(cc_decls_lx.symbol)) != (i64)17)) {
         mbase = cc_parse_readdeclspec(currrecord,&linkage);
-        L722 :;
+        L725 :;
         if (((i64)(cc_decls_lx.symbol)==(i64)68) || ((i64)(cc_decls_lx.symbol)==(i64)24) || ((i64)(cc_decls_lx.symbol)==(i64)12)) {
             m = cc_parse_readtype(currrecord,&d,mbase,&pm);
             if ((d == 0)) {
@@ -20829,7 +20849,7 @@ static i64 cc_parse_readstructdecl(struct cc_decls_strec * owner) {
                 cc_support_serror((byte*)"Can't use ss in struct");
             };
             //addanonfield:
-L724 :;
+L727 :;
 ;
             d = cc_lib_createdupldef((struct cc_decls_strec *)(0),d,(i64)10);
             (*d).mode = m;
@@ -20860,18 +20880,18 @@ L724 :;
                 cc_lex_lex();
             } else {
                 cc_lib_skipsymbol((i64)9);
-                goto L723 ;
+                goto L726 ;
             };
         }else if (((i64)(cc_decls_lx.symbol)==(i64)10)) {
             cc_lex_lex();
             cc_parse_readassignexpr();
             cc_lib_skipsymbol((i64)9);
-            goto L723 ;
+            goto L726 ;
         } else {
             if ((cc_decls_ttbasetype[(mbase)]==(i64)20) || (cc_decls_ttbasetype[(mbase)]==(i64)21)) {
                 d = cc_lib_getautofieldname();
                 m = mbase;
-                goto L724 ;
+                goto L727 ;
 ;
             } else {
                 if ((m == (i64)-1)) {
@@ -20880,11 +20900,11 @@ L724 :;
                     cc_support_serror_s((byte*)"Struct decl error %s",cc_lib_typename(m));
                 };
             };
-        }goto L722 ;
-L723 :;
+        }goto L725 ;
+L726 :;
         ;
-L720 :;
-    }L721 :;
+L723 :;
+    }L724 :;
     ;
     cc_lib_skipsymbol((i64)17);
     (*currrecord).nextfield = fieldlist;
@@ -21023,7 +21043,7 @@ static void cc_parse_readenumnames(struct cc_decls_strec * owner) {
     } else {
         owner = (!!(cc_decls_currproc)?cc_decls_currproc:cc_decls_stmodule);
     };
-    L725 :;
+    L728 :;
     while (((i64)((u64)(cc_decls_lx.symbol)) == (i64)68)) {
         d = cc_lib_checkdupl(owner,cc_decls_lx.symptr,(i64)2,cc_decls_currblockno);
         if (!!(d)) {
@@ -21042,8 +21062,8 @@ static void cc_parse_readenumnames(struct cc_decls_strec * owner) {
         if (((i64)((u64)(cc_decls_lx.symbol)) == (i64)8)) {
             cc_lex_lex();
         };
-L726 :;
-    }L727 :;
+L729 :;
+    }L730 :;
     ;
     cc_lib_skipsymbol((i64)17);
 }
@@ -21069,34 +21089,34 @@ static struct cc_decls_unitrec * cc_parse_createdotop(i64 opc,struct cc_decls_un
     };
     prec = cc_decls_ttnamedef[(m)];
     f = d;
-    L728 :;
+    L731 :;
     while (!!((f = (*f).nextdupl))) {
         if (((*f).owner == prec)) {
             offset = (*f).offset;
-            goto L730 ;
+            goto L733 ;
         };
-L729 :;
-    }L730 :;
+L732 :;
+    }L733 :;
     ;
     if (!(!!(f))) {
         gend = d;
-        L731 :;
+        L734 :;
         while (!!((*gend).prevdupl)) {
             gend = (*gend).prevdupl;
-L732 :;
-        }L733 :;
+L735 :;
+        }L736 :;
         ;
         fl = (*prec).nextfield;
-        L734 :;
+        L737 :;
         while (!!(fl)) {
             if (((*fl).gendef == gend)) {
                 f = (*fl).def;
                 offset = (*fl).offset;
-                goto L736 ;
+                goto L739 ;
             };
             fl = (*fl).nextfield;
-L735 :;
-        }L736 :;
+L738 :;
+        }L739 :;
         ;
     };
     if (!(!!(f))) {
@@ -21183,11 +21203,11 @@ static void cc_parse_addnewfield(struct cc_decls_fieldrec * * flist,struct cc_de
     if (((u64)((*(*d).name)) != '$')) {
         f = (struct cc_decls_fieldrec *)(mlib_pcm_allocz((i64)32));
         (*f).def = d;
-        L737 :;
+        L740 :;
         while (!!((*d).prevdupl)) {
             d = (*d).prevdupl;
-L738 :;
-        }L739 :;
+L741 :;
+        }L742 :;
         ;
         (*f).gendef = d;
         (*f).offset = offset;
@@ -21195,12 +21215,12 @@ L738 :;
         (*flist) = f;
     } else {
         e = (*cc_decls_ttnamedef[((i64)((*d).mode))]).deflist;
-        L740 :;
+        L743 :;
         while (!!(e)) {
             cc_parse_addnewfield(flist,e,(offset + (*e).offset));
             e = (*e).nextdef;
-L741 :;
-        }L742 :;
+L744 :;
+        }L745 :;
         ;
     };
 }
@@ -21226,11 +21246,11 @@ static void cc_parse_addcasevalue(i64 value) {
     struct cc_decls_caserec *  p;
     i64 index;
     index = cc_parse_loopindex;
-    L743 :;
+    L746 :;
     while ((!!(index) && ((u64)(cc_parse_looptypestack[(index)-1]) != (u64)83u))) {
         --index;
-L744 :;
-    }L745 :;
+L747 :;
+    }L748 :;
     ;
     if ((index == (i64)0)) {
         cc_support_serror((byte*)"case not inside switch stmt");
@@ -21248,11 +21268,11 @@ static i64 cc_parse_roundoffset(i64 offset,i64 alignment) {
             return offset;
         };
         mask = (alignment - (i64)1);
-        L746 :;
+        L749 :;
         while (!!((offset & mask))) {
             ++offset;
-L747 :;
-        }L748 :;
+L750 :;
+        }L751 :;
         ;
     };
     return offset;
@@ -21278,7 +21298,7 @@ static struct cc_decls_unitrec * cc_parse_docast(struct cc_decls_unitrec * p,i64
     i64 opc;
     s = (i64)((*p).mode);
     //retry:
-L749 :;
+L752 :;
 ;
     if ((s == t)) {
         return p;
@@ -21293,11 +21313,11 @@ L749 :;
         };
     } else if (!!((u64)(cc_decls_ttconst[(s)]))) {
         s = cc_decls_ttconsttype[(s)];
-        goto L749 ;
+        goto L752 ;
 ;
     } else if (!!((u64)(cc_decls_ttconst[(t)]))) {
         t = cc_decls_ttconsttype[(t)];
-        goto L749 ;
+        goto L752 ;
 ;
     } else if ((((!!((u64)(cc_decls_ttisref[(t)])) && !!(cc_lib_isintcc(s))) && ((i64)((*p).tag) == (i64)1)) && ((*p).value == (i64)0))) {
         opc = (i64)1;
@@ -21415,7 +21435,7 @@ static struct cc_decls_unitrec * cc_parse_createsizeofop(struct cc_decls_unitrec
         if (!!((i64)((*p).alength))) {
             size = (cc_decls_ttsize[(cc_decls_tttarget[(t)])] * (i64)((*p).alength));
         } else {
-            goto L750 ;
+            goto L753 ;
 ;
         };
     }break;
@@ -21431,7 +21451,7 @@ static struct cc_decls_unitrec * cc_parse_createsizeofop(struct cc_decls_unitrec
     }break;
     default: {
         //cad1:
-L750 :;
+L753 :;
 ;
         size = cc_decls_ttsize[(t)];
     }
@@ -21464,7 +21484,7 @@ static struct cc_decls_unitrec * cc_parse_readgeneric(void) {
     def = (i64)0;
     count = (i64)0;
     cc_lib_checksymbol((i64)8);
-    L751 :;
+    L754 :;
     do {
         cc_lex_lex();
         if (((i64)((u64)(cc_decls_lx.symbol)) == (i64)75)) {
@@ -21488,8 +21508,8 @@ static struct cc_decls_unitrec * cc_parse_readgeneric(void) {
             pmatch = p;
             ++count;
         };
-L752 :;
-    } while (!((i64)((u64)(cc_decls_lx.symbol)) != (i64)8));L753 :;
+L755 :;
+    } while (!((i64)((u64)(cc_decls_lx.symbol)) != (i64)8));L756 :;
     ;
     cc_lib_checksymbol((i64)13);
     cc_lex_lex();
@@ -21519,12 +21539,12 @@ static void cc_parse_readstructinfosym(void) {
     d = cc_decls_tttypedef[(m)];
     e = (*d).deflist;
     nfields = (i64)0;
-    L754 :;
+    L757 :;
     while (!!(e)) {
         ++nfields;
         e = (*e).nextdef;
-L755 :;
-    }L756 :;
+L758 :;
+    }L759 :;
     ;
     name = (*d).name;
     msysnewc_m_print_startstr(str);
@@ -21547,7 +21567,7 @@ L755 :;
     ;
     e = (*cc_decls_ttnamedef[(m)]).deflist;
     nfields = (i64)0;
-    L757 :;
+    L760 :;
     while (!!(e)) {
         msysnewc_m_print_startfile(f);
         msysnewc_m_print_str((byte*)"    {\"#\", #,#,#,#,#,#}#",NULL);
@@ -21564,8 +21584,8 @@ L755 :;
         ;
         ++nfields;
         e = (*e).nextdef;
-L758 :;
-    }L759 :;
+L761 :;
+    }L762 :;
     ;
     msysnewc_m_print_startfile(f);
     msysnewc_m_print_str((byte*)"};",NULL);
@@ -21615,13 +21635,13 @@ i64 cc_genmcl_codegen_mcl(i64 n) {
     cc_libmcl_mclinit();
     cc_decls_stmodule = cc_decls_moduletable[(n)].stmodule;
     d = (*cc_decls_stmodule).deflist;
-    L760 :;
+    L763 :;
     while (!!(d)) {
         if (((i64)((*d).nameid)==(i64)7)) {
             cc_genmcl_dostaticvar(d);
         }else if (((i64)((*d).nameid)==(i64)6)) {
             e = (*d).deflist;
-            L763 :;
+            L766 :;
             while (!!(e)) {
                 if (((i64)((*e).nameid)==(i64)7)) {
                     cc_genmcl_dostaticvar_fn(e);
@@ -21633,17 +21653,17 @@ i64 cc_genmcl_codegen_mcl(i64 n) {
                     };
                 };
                 e = (*e).nextdef;
-L764 :;
-            }L765 :;
+L767 :;
+            }L768 :;
             ;
         };
         d = (*d).nextdef;
-L761 :;
-    }L762 :;
+L764 :;
+    }L765 :;
     ;
     cc_libmcl_modulecode = cc_libmcl_mccode;
     d = (*cc_decls_stmodule).deflist;
-    L766 :;
+    L769 :;
     while (!!(d)) {
         if (((i64)((*d).nameid)==(i64)6)) {
             if (!!((*d).code)) {
@@ -21651,8 +21671,8 @@ L761 :;
             };
         };
         d = (*d).nextdef;
-L767 :;
-    }L768 :;
+L770 :;
+    }L771 :;
     ;
     return (i64)1;
 }
@@ -21681,7 +21701,7 @@ static void cc_genmcl_genprocdef(struct cc_decls_strec * p) {
     paramoffset = (i64)16;
     nparams = (i64)0;
     d = (*p).deflist;
-    L769 :;
+    L772 :;
     while (!!(d)) {
         switch ((i64)((*d).nameid)) {
         case 8:;
@@ -21703,8 +21723,8 @@ static void cc_genmcl_genprocdef(struct cc_decls_strec * p) {
         } //SW
 ;
         d = (*d).nextdef;
-L770 :;
-    }L771 :;
+L773 :;
+    }L774 :;
     ;
     cc_libmcl_structretoffset = (i64)0;
     cc_libmcl_stacksetinstr = (struct cc_libmcl_mclrec *)(0);
@@ -21718,18 +21738,18 @@ L770 :;
     cc_libmcl_parambytes = (paramoffset - (i64)16);
     cc_libmcl_iscallbackproc = cc_libmcl_iscallbackfn(p);
     n = (i64)7;
-    L772 :;
+    L775 :;
     while (!!((cc_libmcl_framebytes & n))) {
         ++cc_libmcl_framebytes;
         --cc_libmcl_frameoffset;
-L773 :;
-    }L774 :;
-    ;
-    L775 :;
-    while (!!((cc_libmcl_parambytes & n))) {
-        ++cc_libmcl_parambytes;
 L776 :;
     }L777 :;
+    ;
+    L778 :;
+    while (!!((cc_libmcl_parambytes & n))) {
+        ++cc_libmcl_parambytes;
+L779 :;
+    }L780 :;
     ;
     cc_libmcl_setsegment((i64)67,(i64)1);
     ismain = (i64)0;
@@ -21746,19 +21766,19 @@ L776 :;
     if (!!(nparams)) {
         np = ((i64)4<nparams?(i64)4:nparams);
         if (((i64)((*(*p).paramlist).flags) == (i64)3)) {
-            L778 :;
+            L781 :;
             for (i=(np + (i64)1);i<=(i64)4;++i) {
-L779 :;
+L782 :;
                 paramtypes[(i)-1] = (i64)1;
-L780 :;
-            }L781 :;
+L783 :;
+            }L784 :;
             ;
             np = (i64)4;
         };
         offset = (i64)16;
-        L782 :;
+        L785 :;
         for (i=(i64)1;i<=np;++i) {
-L783 :;
+L786 :;
             ax = cc_libmcl_genireg((i64)15,(i64)8);
             (*ax).value = offset;
             (*ax).valtype = (u64)((i64)1);
@@ -21768,8 +21788,8 @@ L783 :;
                 cc_libmcl_genmc((i64)5,ax,cc_libmcl_genreg((((i64)11 + i) - (i64)1),(i64)8));
             };
             offset += (i64)8;
-L784 :;
-        }L785 :;
+L787 :;
+        }L788 :;
         ;
     };
     if (!!(cc_libmcl_structretoffset)) {
@@ -21896,29 +21916,29 @@ static void cc_genmcl_genidata(struct cc_decls_unitrec * p,i64 doterm,i64 am,i64
         if ((cc_decls_ttbasetype[(t)] == (i64)19)) {
             length = cc_decls_ttlength[(t)];
             q = a;
-            L786 :;
+            L789 :;
             for (i=(i64)1;i<=n;++i) {
-L787 :;
+L790 :;
                 cc_genmcl_genidata(q,(i64)1,(i64)1,(i64)0);
                 q = (*q).nextunit;
-L788 :;
-            }L789 :;
+L791 :;
+            }L792 :;
             ;
             if ((n < length)) {
                 n = ((length - n) * cc_decls_ttsize[(cc_decls_tttarget[(t)])]);
-                L790 :;
+                L793 :;
                 while ((n >= (i64)8)) {
                     cc_libmcl_genmc((i64)61,cc_libmcl_genint((i64)0,(i64)8),(struct cc_libmcl_opndrec *)(0));
                     n -= (i64)8;
-L791 :;
-                }L792 :;
+L794 :;
+                }L795 :;
                 ;
                 av_1 = n;
                 while (av_1-- > 0) {
-L793 :;
+L796 :;
                     cc_libmcl_genmc((i64)58,cc_libmcl_genint((i64)0,(i64)4),(struct cc_libmcl_opndrec *)(0));
-L794 :;
-                }L795 :;
+L797 :;
+                }L798 :;
                 ;
             };
         } else {
@@ -21927,9 +21947,9 @@ L794 :;
             size = cc_decls_ttsize[(t)];
             offset1 = (offset2 = (i64)0);
             q = a;
-            L796 :;
+            L799 :;
             for (i=(i64)1;i<=n;++i) {
-L797 :;
+L800 :;
                 cc_genmcl_genidata(q,(i64)0,(i64)1,(i64)0);
                 if (((cc_decls_ttbasetype[((i64)((*q).mode))] == (i64)16) && !!((u64)((*q).strarray)))) {
                     offset1 += (i64)((*q).slength);
@@ -21951,24 +21971,24 @@ L797 :;
                     offset1 = offset2;
                 };
                 q = (*q).nextunit;
-L798 :;
-            }L799 :;
+L801 :;
+            }L802 :;
             ;
             if ((offset2 < size)) {
                 n = (size - offset2);
-                L800 :;
+                L803 :;
                 while ((n >= (i64)8)) {
                     cc_libmcl_genmc((i64)61,cc_libmcl_genint((i64)0,(i64)8),(struct cc_libmcl_opndrec *)(0));
                     n -= (i64)8;
-L801 :;
-                }L802 :;
+L804 :;
+                }L805 :;
                 ;
                 av_2 = n;
                 while (av_2-- > 0) {
-L803 :;
+L806 :;
                     cc_libmcl_genmc((i64)58,cc_libmcl_genint((i64)0,(i64)4),(struct cc_libmcl_opndrec *)(0));
-L804 :;
-                }L805 :;
+L807 :;
+                }L808 :;
                 ;
             };
         };
@@ -21984,7 +22004,7 @@ L804 :;
         } else if ((cc_decls_ttbasetype[(t)] == (i64)16)) {
             padding = (i64)0;
             //doref:
-L806 :;
+L809 :;
 ;
             if (((*p).value == (i64)0)) {
                 cc_libmcl_genmc((i64)61,cc_libmcl_genint((i64)0,(i64)8),(struct cc_libmcl_opndrec *)(0));
@@ -22012,7 +22032,7 @@ L806 :;
             };
         } else if ((cc_decls_ttbasetype[(t)] == (i64)19)) {
             padding = ((cc_decls_ttlength[(t)] - (i64)((*p).slength)) * cc_decls_ttsize[(cc_decls_tttarget[(t)])]);
-            goto L806 ;
+            goto L809 ;
 ;
         } else {
             msysnewc_m_print_startcon();
@@ -22236,13 +22256,13 @@ struct cc_libmcl_opndrec * cc_libmcl_genindex(i64 areg,i64 ireg,i64 scale,i64 of
 static void cc_libmcl_writemclblock(struct cc_libmcl_mclrec * m) {
     i64 i;
     i = (i64)1;
-    L807 :;
+    L810 :;
     while (!!(m)) {
         cc_libmcl_writemcl(i,m);
         ++i;
         m = (*m).nextmcl;
-L808 :;
-    }L809 :;
+L811 :;
+    }L812 :;
     ;
 }
 
@@ -22255,7 +22275,7 @@ struct mlib_strbuffer * cc_libmcl_writemclcode(byte * caption,i64 nmodule) {
     cc_libmcl_writemclblock(cc_libmcl_modulecode);
     mlib_gs_strln(cc_libmcl_dest,(byte*)"---------------------------------------------");
     d = (*cc_decls_moduletable[(nmodule)].stmodule).deflist;
-    L810 :;
+    L813 :;
     while (!!(d)) {
         if ((((i64)((u64)((*d).nameid)) == (i64)6) && !!((*d).mclcode))) {
             mlib_gs_str(cc_libmcl_dest,(byte*)"PROC:");
@@ -22263,8 +22283,8 @@ struct mlib_strbuffer * cc_libmcl_writemclcode(byte * caption,i64 nmodule) {
             cc_libmcl_writemclblock((struct cc_libmcl_mclrec *)((*d).mclcode));
         };
         d = (*d).nextdef;
-L811 :;
-    }L812 :;
+L814 :;
+    }L815 :;
     ;
     mlib_gs_strln(cc_libmcl_dest,(byte*)"---------------------------------------------");
     return cc_libmcl_dest;
@@ -22589,11 +22609,11 @@ byte * cc_libmcl_getprocname(struct cc_decls_strec * d) {
 }
 
 i64 cc_libmcl_widenstr(byte * s,i64 w) {
-    L813 :;
+    L816 :;
     while (((i64)(strlen((i8 *)(s))) >= (w - (i64)2))) {
         w += (i64)8;
-L814 :;
-    }L815 :;
+L817 :;
+    }L818 :;
     ;
     return w;
 }
@@ -22894,11 +22914,11 @@ byte * cc_libmcl_getfullname(struct cc_decls_strec * d) {
 }
 
 i64 cc_libmcl_roundsizetg(i64 size) {
-    L816 :;
+    L819 :;
     while (!!((size & (i64)7))) {
         ++size;
-L817 :;
-    }L818 :;
+L820 :;
+    }L821 :;
     ;
     return size;
 }
@@ -22994,7 +23014,7 @@ static i64 cc_libmcl_issimple0(struct cc_decls_unitrec * p,i64 level) {
     case 47:;
     {
         //dobin:
-L819 :;
+L822 :;
 ;
         if ((!!(cc_libmcl_issimple0(a,level)) && !!(cc_libmcl_issimple0((*p).b,level)))) {
             return (i64)1;
@@ -23003,7 +23023,7 @@ L819 :;
     case 42:;
     {
         if ((cc_libmcl_gettypecat(p) == (i64)73)) {
-            goto L819 ;
+            goto L822 ;
 ;
         };
     }break;
@@ -23145,14 +23165,14 @@ i64 cc_libmcl_ispoweroftwo(i64 x) {
     n = (i64)0;
     av_1 = (i64)30;
     while (av_1-- > 0) {
-L820 :;
+L823 :;
         ++n;
         a = (a << (i64)1);
         if ((a == x)) {
             return n;
         };
-L821 :;
-    }L822 :;
+L824 :;
+    }L825 :;
     ;
     return (i64)0;
 }
@@ -23197,11 +23217,11 @@ void cc_libmcl_genmsource(i64 lineno) {
 
 i64 cc_libmcl_roundto(i64 a,i64 n) {
     --n;
-    L823 :;
+    L826 :;
     while (!!((a & n))) {
         ++a;
-L824 :;
-    }L825 :;
+L827 :;
+    }L828 :;
     ;
     return a;
 }
@@ -23221,10 +23241,10 @@ void cc_libmcl_pushstackfp(i64 n) {
         cc_libmcl_genmc((i64)5,cc_libmcl_genreg((i64)14,(i64)8),cc_libmcl_genint((i64)0,(i64)4));
         av_1 = (n / (i64)8);
         while (av_1-- > 0) {
-L826 :;
+L829 :;
             cc_libmcl_genmc((i64)6,cc_libmcl_genreg((i64)14,(i64)8),(struct cc_libmcl_opndrec *)(0));
-L827 :;
-        }L828 :;
+L830 :;
+        }L831 :;
         ;
         if (!!((n & (i64)8))) {
             cc_libmcl_stackaligned ^= (i64)1;
@@ -23273,11 +23293,11 @@ void cc_libmcl_doblockcall(i64 size) {
     if (!!(cc_libmcl_retbeforeblock)) {
         cc_support_gerror((byte*)"Block call after return",(struct cc_decls_unitrec *)(0));
     };
-    L829 :;
+    L832 :;
     while (!!((size & (i64)15))) {
         ++size;
-L830 :;
-    }L831 :;
+L833 :;
+    }L834 :;
     ;
     if ((cc_libmcl_currblocksize == (i64)0)) {
         cc_libmcl_currblocksize = size;
@@ -23296,11 +23316,11 @@ L830 :;
 
 struct cc_libmcl_opndrec * cc_libmcl_getblockreg(i64 size) {
     struct cc_libmcl_opndrec *  ax;
-    L832 :;
+    L835 :;
     while (!!((size & (i64)15))) {
         ++size;
-L833 :;
-    }L834 :;
+L836 :;
+    }L837 :;
     ;
     if ((cc_libmcl_currblocksize < size)) {
         cc_support_gerror((byte*)"getblockreg?",(struct cc_decls_unitrec *)(0));
@@ -23374,12 +23394,12 @@ void cc_blockmcl_do_stmt(struct cc_decls_unitrec * p) {
     switch ((i64)((*p).tag)) {
     case 6:;
     {
-        L835 :;
+        L838 :;
         while (!!(a)) {
             cc_blockmcl_do_stmt(a);
             a = (*a).nextunit;
-L836 :;
-        }L837 :;
+L839 :;
+        }L840 :;
         ;
     }break;
     case 8:;
@@ -23437,18 +23457,18 @@ L836 :;
             cc_libmcl_genmc((i64)3,cc_libmcl_genlabel((*cc_blockmcl_sw_labeltable)[((((i64)((*p).index) - cc_blockmcl_sw_lower) + (i64)1))-1],(i64)0),(struct cc_libmcl_opndrec *)(0));
         } else {
             value = (i64)((*p).index);
-            L838 :;
+            L841 :;
             for (i=(i64)1;i<=cc_blockmcl_sw_ncases;++i) {
-L839 :;
+L842 :;
                 if (((*cc_blockmcl_sw_valuetable)[(i)-1] == value)) {
                     cc_libmcl_genmc((i64)3,cc_libmcl_genlabel((*cc_blockmcl_sw_labeltable)[(i)-1],(i64)0),(struct cc_libmcl_opndrec *)(0));
-                    goto L841 ;
+                    goto L844 ;
                 };
-L840 :;
+L843 :;
             }
             {
                 cc_support_gerror((byte*)"case: serial switch not found",(struct cc_decls_unitrec *)(0));
-            }L841 :;
+            }L844 :;
             ;
         };
         cc_blockmcl_do_stmt(a);
@@ -23952,7 +23972,7 @@ static struct cc_libmcl_opndrec * cc_blockmcl_dx_add(struct cc_decls_unitrec * a
     };
     if (!!(cc_libmcl_issimple(b))) {
         //simpleadd:
-L842 :;
+L845 :;
 ;
         ax = cc_blockmcl_loadexpr(a,reg,(i64)0);
         bx = cc_blockmcl_evalexpr(b,cc_libmcl_getnextreg(ax,reg));
@@ -24163,12 +24183,12 @@ static void cc_blockmcl_genjumpcond(i64 opc,struct cc_decls_unitrec * p,i64 lab,
     }break;
     case 30:;
     {
-        L843 :;
+        L846 :;
         while ((!!(q) && !!((r = (*q).nextunit)))) {
             cc_blockmcl_dx_expr(q,reg,(i64)1);
             q = r;
-L844 :;
-        }L845 :;
+L847 :;
+        }L848 :;
         ;
         cc_blockmcl_genjumpcond(opc,q,lab,reg);
     }break;
@@ -24415,7 +24435,7 @@ static i64 cc_blockmcl_pushffparams(struct cc_decls_unitrec * p,i64 variadic) {
     struct cc_decls_unitrec *  q;
     struct cc_decls_unitrec *  paramlist[200];
     n = (i64)0;
-    L846 :;
+    L849 :;
     while (!!(p)) {
         if ((n >= (i64)200)) {
             cc_support_gerror((byte*)"TOO MANY PARAMS",(struct cc_decls_unitrec *)(0));
@@ -24423,8 +24443,8 @@ static i64 cc_blockmcl_pushffparams(struct cc_decls_unitrec * p,i64 variadic) {
         ++n;
         paramlist[(n)-1] = p;
         p = (*p).nextunit;
-L847 :;
-    }L848 :;
+L850 :;
+    }L851 :;
     ;
     m = (n>(i64)4?n:(i64)4);
     dummypush = (i64)0;
@@ -24437,17 +24457,17 @@ L847 :;
     } else {
         popbytes = (m * (i64)8);
     };
-    L849 :;
+    L852 :;
     for (i=n;i>=(i64)5;--i) {
-L850 :;
+L853 :;
         q = paramlist[(i)-1];
         if ((!!(variadic) && (cc_decls_ttbasetype[((i64)((*q).mode))] == (i64)11))) {
             cc_blockmcl_pushfloatparam(q);
         } else {
             cc_blockmcl_pushexpr(q,(i64)1);
         };
-L851 :;
-    }L852 :;
+L854 :;
+    }L855 :;
     ;
     if ((!!(dummypush) && (n <= (i64)4))) {
         cc_libmcl_pushstack((i64)40);
@@ -24460,9 +24480,9 @@ L851 :;
         return popbytes;
     };
     ncomplex = (i64)0;
-    L853 :;
+    L856 :;
     for (i=n;i>=(i64)1;--i) {
-L854 :;
+L857 :;
         q = paramlist[(i)-1];
         if (!!(cc_libmcl_issimplepm(q))) {
             iscomplex[(i)-1] = (u64)((i64)0);
@@ -24471,12 +24491,12 @@ L854 :;
             iscomplex[(i)-1] = (u64)((i64)1);
             ++ncomplex;
         };
-L855 :;
-    }L856 :;
-    ;
-    L857 :;
-    for (i=(i64)1;i<=n;++i) {
 L858 :;
+    }L859 :;
+    ;
+    L860 :;
+    for (i=(i64)1;i<=n;++i) {
+L861 :;
         q = paramlist[(i)-1];
         if ((cc_libmcl_gettypecat(q) != (i64)82)) {
             if (!!((u64)(iscomplex[(i)-1]))) {
@@ -24500,8 +24520,8 @@ L858 :;
                 };
             };
         };
-L859 :;
-    }L860 :;
+L862 :;
+    }L863 :;
     ;
     return popbytes;
 }
@@ -24577,11 +24597,11 @@ static struct cc_libmcl_opndrec * cc_blockmcl_dx_call(struct cc_decls_unitrec * 
     };
     if (((i64)((*a).tag)==(i64)53)) {
         m = (i64)((*a).mode);
-        L861 :;
+        L864 :;
         while ((cc_decls_ttbasetype[(m)] == (i64)16)) {
             m = cc_decls_tttarget[(m)];
-L862 :;
-        }L863 :;
+L865 :;
+        }L866 :;
         ;
         pm = cc_decls_ttparams[(m)];
         isfnptr = (i64)1;
@@ -24604,21 +24624,21 @@ L862 :;
         } else {
             nregparams = (nparams<(i64)4?nparams:(i64)4);
             sx = cc_libmcl_genireg((i64)16,(i64)8);
-            L864 :;
+            L867 :;
             for (i=(i64)1;i<=nregparams;++i) {
-L865 :;
+L868 :;
                 cc_libmcl_genmc((i64)5,cc_libmcl_applyoffset(sx,((i - (i64)1) * (i64)8),(i64)0),cc_libmcl_genreg((((i64)11 + i) - (i64)1),(i64)8));
-L866 :;
-            }L867 :;
+L869 :;
+            }L870 :;
             ;
             cx = cc_libmcl_changeopndsize(cc_blockmcl_loadexpr((*a).a,(i64)1,(i64)0),(i64)8);
             sx = cc_libmcl_genireg((i64)16,(i64)8);
-            L868 :;
+            L871 :;
             for (i=(i64)1;i<=nregparams;++i) {
-L869 :;
+L872 :;
                 cc_libmcl_genmc((i64)5,cc_libmcl_genreg((((i64)11 + i) - (i64)1),(i64)8),cc_libmcl_applyoffset(sx,((i - (i64)1) * (i64)8),(i64)0));
-L870 :;
-            }L871 :;
+L873 :;
+            }L874 :;
             ;
             cc_libmcl_genmc((i64)15,cx,(struct cc_libmcl_opndrec *)(0));
         };
@@ -24660,7 +24680,7 @@ static struct cc_libmcl_opndrec * cc_blockmcl_dx_sub(struct cc_decls_unitrec * a
     doneg = (i64)0;
     if (!!(cc_libmcl_issimple(b))) {
         //simplesub:
-L872 :;
+L875 :;
 ;
         ax = cc_blockmcl_loadexpr(a,reg,(i64)0);
         bx = cc_blockmcl_evalexpr(b,cc_libmcl_getnextreg(ax,reg));
@@ -24883,7 +24903,7 @@ static struct cc_libmcl_opndrec * cc_blockmcl_makeindexopnd(struct cc_decls_unit
     if (((i64)((*a).tag) == (i64)3)) {
         d = (*a).def;
         if ((((i64)((u64)((*d).nameid)) == (i64)9) && !!(cc_lib_isstructunion((i64)((*d).mode))))) {
-            goto L873 ;
+            goto L876 ;
 ;
         };
         if (!!(index)) {
@@ -24900,7 +24920,7 @@ static struct cc_libmcl_opndrec * cc_blockmcl_makeindexopnd(struct cc_decls_unit
         };
     } else {
         //mx2:
-L873 :;
+L876 :;
 ;
         if (!!(index)) {
             if (!!(cc_libmcl_issimple(a))) {
@@ -25004,13 +25024,13 @@ static struct cc_libmcl_opndrec * cc_blockmcl_dx_addptr(struct cc_decls_unitrec 
         if (((i64)((*a).tag)==(i64)56)) {
             pname = (*a).a;
             if (((i64)((*pname).tag) != (i64)3)) {
-                goto L874 ;
+                goto L877 ;
 ;
             };
             m = cc_libmcl_genindex((i64)0,(i64)0,(i64)1,offset,size,(i64)0,(*pname).def);
         } else {
             //other:
-L874 :;
+L877 :;
 ;
             cc_blockmcl_loadexpr(a,reg,(i64)0);
             m = cc_libmcl_genindex(reg,(i64)0,scale,(*b).value,size,(i64)0,(struct cc_decls_strec *)(0));
@@ -25040,7 +25060,7 @@ L874 :;
         m = cc_libmcl_genindex(reg1,reg,scale,(i64)0,size,(i64)0,(struct cc_decls_strec *)(0));
     } else {
         //cxcx:
-L875 :;
+L878 :;
 ;
         tx = cc_blockmcl_saveexpr(b,reg);
         ax = cc_blockmcl_loadexpr(a,reg,(i64)0);
@@ -25102,7 +25122,7 @@ static struct cc_libmcl_opndrec * cc_blockmcl_dx_subptr(struct cc_decls_unitrec 
         ax = cc_blockmcl_loadexpr(a,reg1,(i64)0);
     } else {
         //cxcx:
-L876 :;
+L879 :;
 ;
         tx = cc_blockmcl_saveexpr(b,reg);
         ax = cc_blockmcl_loadexpr(a,reg,(i64)0);
@@ -25128,7 +25148,7 @@ static struct cc_libmcl_opndrec * cc_blockmcl_dx_convert(struct cc_decls_unitrec
     };
     if ((opc==(i64)1)) {
         //dosoft:
-L877 :;
+L880 :;
 ;
         return ax;
     }else if ((opc==(i64)2)) {
@@ -25177,7 +25197,7 @@ static void cc_blockmcl_do_decl(struct cc_decls_strec * d) {
     a = (*d).code;
     if (((i64)((*a).tag) != (i64)29)) {
         if (((cc_decls_ttbasetype[((i64)((*d).mode))] == (i64)19) && ((i64)((*a).tag) == (i64)1))) {
-            goto L878 ;
+            goto L881 ;
 ;
         };
         if ((cc_libmcl_gettypecat(a) == (i64)82)) {
@@ -25198,7 +25218,7 @@ static void cc_blockmcl_do_decl(struct cc_decls_strec * d) {
         return;
     };
     //copyl:
-L878 :;
+L881 :;
 ;
     nbytes = cc_decls_ttsize[((i64)((*d).mode))];
     cc_libmcl_pushstack((i64)32);
@@ -25283,12 +25303,12 @@ static struct cc_libmcl_opndrec * cc_blockmcl_do_assignblock(struct cc_decls_uni
         rx = cc_libmcl_genreg(workreg,(i64)8);
         av_1 = nwords;
         while (av_1-- > 0) {
-L879 :;
+L882 :;
             cc_libmcl_genmc((i64)5,rx,cc_libmcl_applyoffset(bx,offset,(i64)0));
             cc_libmcl_genmc((i64)5,cc_libmcl_applyoffset(ax,offset,(i64)0),rx);
             offset += (i64)8;
-L880 :;
-        }L881 :;
+L883 :;
+        }L884 :;
         ;
         rs = bx;
         rd = ax;
@@ -25409,7 +25429,7 @@ static void cc_blockmcl_do_switch(struct cc_decls_unitrec * p,struct cc_decls_un
     i64 old_breaklabel;
     pcase = (*p).nextcase;
     ncases = (length = (i64)0);
-    L882 :;
+    L885 :;
     while (!!(pcase)) {
         ++ncases;
         if ((ncases > (i64)500)) {
@@ -25423,8 +25443,8 @@ static void cc_blockmcl_do_switch(struct cc_decls_unitrec * p,struct cc_decls_un
             upper = (upper>value?upper:value);
         };
         pcase = (*pcase).nextcase;
-L883 :;
-    }L884 :;
+L886 :;
+    }L887 :;
     ;
     if (!!((*p).nextcase)) {
         length = ((upper - lower) + (i64)1);
@@ -25436,14 +25456,14 @@ L883 :;
     if ((length > (i64)500)) {
         serialsw = (u64)((i64)1);
         ax = cc_blockmcl_loadexpr(a,(i64)1,(i64)0);
-        L885 :;
+        L888 :;
         for (i=(i64)1;i<=ncases;++i) {
-L886 :;
+L889 :;
             labeltable[(i)-1] = cc_libmcl_createfwdlabel();
             cc_libmcl_genmc((i64)32,ax,cc_libmcl_genint(valuetable[(i)-1],(i64)4));
             cc_libmcl_genmc_cond((i64)19,(i64)4,cc_libmcl_genlabel(labeltable[(i)-1],(i64)0),(struct cc_libmcl_opndrec *)(0));
-L887 :;
-        }L888 :;
+L890 :;
+        }L891 :;
         ;
         cc_libmcl_genmc((i64)18,cc_libmcl_genlabel(defaultlabel,(i64)0),(struct cc_libmcl_opndrec *)(0));
     } else if ((length == (i64)0)) {
@@ -25451,16 +25471,16 @@ L887 :;
     } else {
         serialsw = (u64)((i64)0);
         memset((void *)(&flags),(i64)0,(u64)(length));
-        L889 :;
+        L892 :;
         for (i=(i64)1;i<=length;++i) {
-L890 :;
+L893 :;
             labeltable[(i)-1] = defaultlabel;
-L891 :;
-        }L892 :;
-        ;
-        L893 :;
-        for (i=(i64)1;i<=ncases;++i) {
 L894 :;
+        }L895 :;
+        ;
+        L896 :;
+        for (i=(i64)1;i<=ncases;++i) {
+L897 :;
             value = valuetable[(i)-1];
             index = ((value - lower) + (i64)1);
             labeltable[(index)-1] = cc_libmcl_createfwdlabel();
@@ -25468,8 +25488,8 @@ L894 :;
                 cc_support_gerror_s((byte*)"Dupl case value: %d",(byte *)(value),(struct cc_decls_unitrec *)(0));
             };
             flags[(index)-1] = (u64)((i64)1);
-L895 :;
-        }L896 :;
+L898 :;
+        }L899 :;
         ;
         switchlabel = cc_libmcl_createfwdlabel();
         ax = cc_blockmcl_loadexpr(a,(i64)1,(i64)0);
@@ -25479,12 +25499,12 @@ L895 :;
         cc_libmcl_genmc((i64)18,cc_libmcl_genindex((i64)0,(i64)1,(i64)8,(i64)0,(i64)0,switchlabel,(struct cc_decls_strec *)(0)),(struct cc_libmcl_opndrec *)(0));
         cc_libmcl_setsegment((i64)73,(i64)8);
         cc_libmcl_definefwdlabel(switchlabel);
-        L897 :;
+        L900 :;
         for (i=(i64)1;i<=length;++i) {
-L898 :;
+L901 :;
             cc_libmcl_genmc((i64)61,cc_libmcl_genlabel(labeltable[(i)-1],(i64)0),(struct cc_libmcl_opndrec *)(0));
-L899 :;
-        }L900 :;
+L902 :;
+        }L903 :;
         ;
         cc_libmcl_setsegment((i64)67,(i64)1);
     };
@@ -25698,23 +25718,23 @@ static struct cc_libmcl_opndrec * cc_blockmcl_dx_eq(struct cc_decls_unitrec * p,
 }
 
 static void cc_blockmcl_do_exprlist(struct cc_decls_unitrec * a) {
-    L901 :;
+    L904 :;
     while (!!(a)) {
         cc_blockmcl_do_stmt(a);
         a = (*a).nextunit;
-L902 :;
-    }L903 :;
+L905 :;
+    }L906 :;
     ;
 }
 
 static struct cc_libmcl_opndrec * cc_blockmcl_dx_exprlist(struct cc_decls_unitrec * a,i64 reg) {
     struct cc_libmcl_opndrec *  ax;
-    L904 :;
+    L907 :;
     while (!!(a)) {
         ax = cc_blockmcl_dx_expr(a,reg,(i64)1);
         a = (*a).nextunit;
-L905 :;
-    }L906 :;
+L908 :;
+    }L909 :;
     ;
     return ax;
 }
@@ -26001,15 +26021,15 @@ i64 cc_genasm_codegen_writeasm(i64 moduleno,byte * outfile) {
     mlib_gs_strln(cc_libmcl_dest,(byte*)".c");
     cc_genasm_writetoasm(cc_libmcl_modulecode);
     d = (*cc_decls_stmodule).deflist;
-    L907 :;
+    L910 :;
     while (!!(d)) {
         if (((i64)((*d).nameid)==(i64)6)) {
             cc_decls_currproc = d;
             cc_genasm_writetoasm((struct cc_libmcl_mclrec *)((*d).mclcode));
         };
         d = (*d).nextdef;
-L908 :;
-    }L909 :;
+L911 :;
+    }L912 :;
     ;
     cc_genasm_writefabs();
     cc_genasm_genstringtable();
@@ -26050,12 +26070,12 @@ void cc_genasm_terma64(void) {
 }
 
 static void cc_genasm_writetoasm(struct cc_libmcl_mclrec * m) {
-    L910 :;
+    L913 :;
     while (!!(m)) {
         cc_genasm_mcltoa64(m);
         m = (*m).nextmcl;
-L911 :;
-    }L912 :;
+L914 :;
+    }L915 :;
     ;
 }
 
@@ -26858,12 +26878,12 @@ static void cc_genasm_strmclasm(struct cc_libmcl_mclrec * mcl) {
         cc_genasm_asmstr((cc_libmcl_mclnames[(opcode)-1] + ((opcode <= (i64)68)?(i64)2:(i64)3)));
     };
     n = (cc_genasm_asmptr - cc_genasm_asmstart);
-    L913 :;
+    L916 :;
     while ((n < (i64)11)) {
         cc_genasm_asmchar((i64)32);
         ++n;
-L914 :;
-    }L915 :;
+L917 :;
+    }L918 :;
     ;
     if ((!!(a) && !!(b))) {
         sizepref = cc_libmcl_needsizeprefix(opcode,a,b);
@@ -26921,11 +26941,11 @@ void cc_genasm_stropndx(struct cc_libmcl_opndrec * a,i64 sizeprefix,i64 debug) {
             if (((u64)((*p)) == ' ')) {
                 av_1 = ((cc_genasm_asmptr - p) - (i64)1);
                 while (av_1-- > 0) {
-L916 :;
+L919 :;
                     (*p) = (u64)((*(p + (i64)1)));
                     ++p;
-L917 :;
-                }L918 :;
+L920 :;
+                }L921 :;
                 ;
                 --cc_genasm_asmptr;
             };
@@ -27173,16 +27193,16 @@ static void cc_genasm_genstringtable(void) {
     if (!!(cc_libmcl_kk0used)) {
         mlib_gs_strln(cc_libmcl_dest,(byte*)"kk0:    db 0");
     };
-    L919 :;
+    L922 :;
     for (i=(i64)1;i<=cc_genasm_nstrings;++i) {
-L920 :;
+L923 :;
         col = (i64)((*cc_libmcl_dest).length);
         mlib_gs_str(cc_libmcl_dest,cc_genasm_getstringname(i));
         mlib_gs_str(cc_libmcl_dest,(byte*)":");
         mlib_gs_padto(cc_libmcl_dest,(i64)8,(i64)32);
         cc_genasm_genstring((*cc_genasm_stringtable)[(i)-1],(*cc_genasm_stringlentable)[(i)-1]);
-L921 :;
-    }L922 :;
+L924 :;
+    }L925 :;
     ;
     mlib_gs_line(cc_libmcl_dest);
 }
@@ -27198,16 +27218,16 @@ static void cc_genasm_genwstringtable(void) {
     mlib_gs_str(cc_libmcl_dest,(byte*)"\talign ");
     mlib_gs_strint(cc_libmcl_dest,(i64)8);
     mlib_gs_line(cc_libmcl_dest);
-    L923 :;
+    L926 :;
     for (i=(i64)1;i<=cc_genasm_nwstrings;++i) {
-L924 :;
+L927 :;
         col = (i64)((*cc_libmcl_dest).length);
         mlib_gs_str(cc_libmcl_dest,cc_genasm_getwstringname(i));
         mlib_gs_str(cc_libmcl_dest,(byte*)":");
         mlib_gs_padto(cc_libmcl_dest,(i64)8,(i64)32);
         cc_genasm_genwstring(cc_genasm_wstringtable[(i)-1],cc_genasm_wstringlentable[(i)-1]);
-L925 :;
-    }L926 :;
+L928 :;
+    }L929 :;
     ;
     mlib_gs_line(cc_libmcl_dest);
 }
@@ -27235,9 +27255,9 @@ static void cc_genasm_genrealtable(void) {
     mlib_gs_str(cc_libmcl_dest,(byte*)"\talign ");
     mlib_gs_strint(cc_libmcl_dest,(i64)8);
     mlib_gs_line(cc_libmcl_dest);
-    L927 :;
+    L930 :;
     for (i=(i64)1;i<=cc_genasm_nreals;++i) {
-L928 :;
+L931 :;
         x = (*cc_genasm_realtable)[(i)-1];
         fp.x64 = x;
         mlib_gs_str(cc_libmcl_dest,cc_genasm_getrealname(i));
@@ -27250,14 +27270,14 @@ L928 :;
         mlib_gs_str(cc_libmcl_dest,str);
         strcpy((i8 *)(str),(i8 *)(msysnewc_strreal(x,(byte*)".30g")));
         mlib_gs_strln(cc_libmcl_dest,str);
-L929 :;
-    }L930 :;
+L932 :;
+    }L933 :;
     ;
     mlib_gs_line(cc_libmcl_dest);
     mlib_gs_strln(cc_libmcl_dest,(byte*)"!Real32 Table");
-    L931 :;
+    L934 :;
     for (i=(i64)1;i<=cc_genasm_nreals;++i) {
-L932 :;
+L935 :;
         x = (*cc_genasm_realtable)[(i)-1];
         fp.x32 = (float)(x);
         mlib_gs_str(cc_libmcl_dest,cc_genasm_getsrealname(i));
@@ -27271,8 +27291,8 @@ L932 :;
         msysnewc_m_print_end();
         ;
         mlib_gs_strln(cc_libmcl_dest,str);
-L933 :;
-    }L934 :;
+L936 :;
+    }L937 :;
     ;
     mlib_gs_line(cc_libmcl_dest);
 }
@@ -27288,17 +27308,17 @@ static void cc_genasm_gendinttable(void) {
     mlib_gs_str(cc_libmcl_dest,(byte*)"\talign ");
     mlib_gs_strint(cc_libmcl_dest,(i64)8);
     mlib_gs_line(cc_libmcl_dest);
-    L935 :;
+    L938 :;
     for (i=(i64)1;i<=cc_genasm_ndints;++i) {
-L936 :;
+L939 :;
         x = (*cc_genasm_dinttable)[(i)-1];
         mlib_gs_str(cc_libmcl_dest,cc_genasm_getdintname(i));
         mlib_gs_str(cc_libmcl_dest,(byte*)":");
         mlib_gs_str(cc_libmcl_dest,(byte*)"dq ");
         mlib_gs_strint(cc_libmcl_dest,x);
         mlib_gs_line(cc_libmcl_dest);
-L937 :;
-    }L938 :;
+L940 :;
+    }L941 :;
     ;
     mlib_gs_line(cc_libmcl_dest);
 }
@@ -27319,33 +27339,33 @@ static void cc_genasm_writefabs(void) {
 }
 
 static void cc_genasm_domclseq(struct cc_libmcl_mclrec * m) {
-    L939 :;
+    L942 :;
     while (!!(m)) {
         cc_genasm_mcltoa64(m);
         m = (*m).nextmcl;
-L940 :;
-    }L941 :;
-    ;
-}
-
-static void cc_genasm_asmstr(byte * s) {
-    L942 :;
-    while (!!((u64)((*s)))) {
-        (*cc_genasm_asmptr++) = (u64)((*s++));
 L943 :;
     }L944 :;
     ;
 }
 
+static void cc_genasm_asmstr(byte * s) {
+    L945 :;
+    while (!!((u64)((*s)))) {
+        (*cc_genasm_asmptr++) = (u64)((*s++));
+L946 :;
+    }L947 :;
+    ;
+}
+
 static void cc_genasm_asmstrln(byte * s) {
     byte c;
-    L945 :;
+    L948 :;
     while (!!((u64)((c = (u64)((*s)))))) {
         (*cc_genasm_asmptr) = (u64)(c);
         ++cc_genasm_asmptr;
         ++s;
-L946 :;
-    }L947 :;
+L949 :;
+    }L950 :;
     ;
     (*cc_genasm_asmptr) = (u64)10u;
     ++cc_genasm_asmptr;
@@ -27551,7 +27571,7 @@ static void cc_genasm_genstring(byte * s,i64 length) {
     state = (i64)0;
     av_1 = length;
     while (av_1-- > 0) {
-L948 :;
+L951 :;
         a = (i64)((*s++));
         if ((((a < (i64)32) || (a >= (i64)127)) || (a == (i64)34))) {
             if ((state == (i64)1)) {
@@ -27567,8 +27587,8 @@ L948 :;
             };
             mlib_gs_char(cc_libmcl_dest,a);
         };
-L949 :;
-    }L950 :;
+L952 :;
+    }L953 :;
     ;
     if ((state == (i64)1)) {
         mlib_gs_str(cc_libmcl_dest,(byte*)"\",");
@@ -27586,13 +27606,13 @@ static void cc_genasm_genwstring(u16 * s,i64 length) {
         return;
     };
     state = (i64)0;
-    L951 :;
+    L954 :;
     for (i=(i64)1;i<=length;++i) {
-L952 :;
+L955 :;
         mlib_gs_strint(cc_libmcl_dest,(i64)((*s++)));
         mlib_gs_str(cc_libmcl_dest,(byte*)",");
-L953 :;
-    }L954 :;
+L956 :;
+    }L957 :;
     ;
     mlib_gs_str(cc_libmcl_dest,(byte*)"0");
     mlib_gs_line(cc_libmcl_dest);
@@ -27606,12 +27626,12 @@ static void cc_genasm_extendrealtable(void) {
     oldrealtable = cc_genasm_realtable;
     cc_genasm_realtablesize *= (i64)2;
     cc_genasm_realtable = (double (*)[])(mlib_pcm_alloc(((i64)8 * cc_genasm_realtablesize)));
-    L955 :;
+    L958 :;
     for (i=(i64)1;i<=cc_genasm_nreals;++i) {
-L956 :;
+L959 :;
         (*cc_genasm_realtable)[(i)-1] = (*oldrealtable)[(i)-1];
-L957 :;
-    }L958 :;
+L960 :;
+    }L961 :;
     ;
     mlib_pcm_free((void *)(oldrealtable),((i64)8 * oldrealtablesize));
 }
@@ -27624,12 +27644,12 @@ static void cc_genasm_extenddinttable(void) {
     olddinttable = cc_genasm_dinttable;
     cc_genasm_dinttablesize *= (i64)2;
     cc_genasm_dinttable = (i64 (*)[])(mlib_pcm_alloc(((i64)8 * cc_genasm_dinttablesize)));
-    L959 :;
+    L962 :;
     for (i=(i64)1;i<=cc_genasm_ndints;++i) {
-L960 :;
+L963 :;
         (*cc_genasm_dinttable)[(i)-1] = (*olddinttable)[(i)-1];
-L961 :;
-    }L962 :;
+L964 :;
+    }L965 :;
     ;
     mlib_pcm_free((void *)(olddinttable),((i64)8 * olddinttablesize));
 }
@@ -27645,13 +27665,13 @@ static void cc_genasm_extendstringtable(void) {
     cc_genasm_stringtablesize *= (i64)2;
     cc_genasm_stringtable = (byte * (*)[])(mlib_pcm_alloc(((i64)8 * cc_genasm_stringtablesize)));
     cc_genasm_stringlentable = (i64 (*)[])(mlib_pcm_alloc(((i64)8 * cc_genasm_stringtablesize)));
-    L963 :;
+    L966 :;
     for (i=(i64)1;i<=cc_genasm_nstrings;++i) {
-L964 :;
+L967 :;
         (*cc_genasm_stringtable)[(i)-1] = (*oldstringtable)[(i)-1];
         (*cc_genasm_stringlentable)[(i)-1] = (*oldstringlentable)[(i)-1];
-L965 :;
-    }L966 :;
+L968 :;
+    }L969 :;
     ;
     mlib_pcm_free((void *)(oldstringtable),((i64)8 * oldstringtablesize));
     mlib_pcm_free((void *)(oldstringlentable),((i64)8 * oldstringtablesize));
@@ -27669,11 +27689,11 @@ void cc_export_writemheader(byte * infile) {
     cc_export_mmstrln((byte*)" =");
     cc_decls_stmodule = cc_decls_moduletable[((i64)1)].stmodule;
     d = (*cc_decls_stmodule).deflist;
-    L967 :;
+    L970 :;
     while (!!(d)) {
         if (!!(cc_headers_isheaderfile(cc_decls_sourcefilenames[((i64)(((u64)((*d).lineno) >> (i64)24)))]))) {
             d = (*d).nextdef;
-            goto L968 ;
+            goto L971 ;
         };
         if (((i64)((*d).nameid)==(i64)7)) {
             cc_export_mmstr((byte*)"    var ");
@@ -27701,12 +27721,12 @@ void cc_export_writemheader(byte * infile) {
             cc_export_writerecord((i64)((*d).mode),(i64)82,(i64)1);
         };
         d = (*d).nextdef;
-L968 :;
-    }L969 :;
-    ;
-    L970 :;
-    for (i=(i64)0;i<=cc_decls_hstmask;++i) {
 L971 :;
+    }L972 :;
+    ;
+    L973 :;
+    for (i=(i64)0;i<=cc_decls_hstmask;++i) {
+L974 :;
         e = (*cc_decls_hashtable)[(i)];
         if (((!!((*e).name) && ((i64)((u64)((*e).symbol)) == (i64)68)) && ((i64)((u64)((*e).nameid)) == (i64)1))) {
             if (!(!!(cc_headers_isheaderfile(cc_decls_sourcefilenames[((i64)(((u64)((*e).lineno) >> (i64)24)))])))) {
@@ -27719,8 +27739,8 @@ L971 :;
                 };
             };
         };
-L972 :;
-    }L973 :;
+L975 :;
+    }L976 :;
     ;
     cc_export_mmstrln((byte*)"end");
     cc_decls_moduletable[((i64)1)].mhdrstr = (*cc_export_mm).strptr;
@@ -27746,12 +27766,12 @@ L972 :;
 }
 
 static void cc_export_showmacroseq(struct cc_decls_tokenrec * tk) {
-    L974 :;
+    L977 :;
     while (!!(tk)) {
         cc_lex_emittoken(tk,cc_export_mm,(i64)0);
         tk = (*tk).nexttoken;
-L975 :;
-    }L976 :;
+L978 :;
+    }L979 :;
     ;
 }
 
@@ -27795,16 +27815,16 @@ static void cc_export_writefunction(struct cc_decls_strec * d) {
     pm = (*d).paramlist;
     n = (i64)((*pm).nparams);
     isvar = ((i64)((*pm).flags) == (i64)3);
-    L977 :;
+    L980 :;
     for (i=(i64)1;i<=n;++i) {
-L978 :;
+L981 :;
         cc_export_mmmode((i64)((*pm).mode),(i64)1);
         if (((i != n) || !!(isvar))) {
             cc_export_mmstr((byte*)",");
         };
         pm = (*pm).nextparam;
-L979 :;
-    }L980 :;
+L982 :;
+    }L983 :;
     ;
     if (!!(isvar)) {
         cc_export_mmstr((byte*)"...");
@@ -27856,10 +27876,10 @@ static void cc_export_writerecord(i64 m,i64 rectype,i64 level) {
     i64 av_4;
     av_1 = level;
     while (av_1-- > 0) {
-L981 :;
+L984 :;
         cc_export_mmstr((byte*)"    ");
-L982 :;
-    }L983 :;
+L985 :;
+    }L986 :;
     ;
     ++level;
     d = cc_decls_ttnamedef[(m)];
@@ -27874,22 +27894,22 @@ L982 :;
     if ((e == 0)) {
         av_2 = level;
         while (av_2-- > 0) {
-L984 :;
+L987 :;
             cc_export_mmstr((byte*)"    ");
-L985 :;
-        }L986 :;
+L988 :;
+        }L989 :;
         ;
         cc_export_mmstrln((byte*)"var int dummy    !empty record");
     };
-    L987 :;
+    L990 :;
     while (!!(e)) {
         emode = (i64)((*e).mode);
         av_3 = level;
         while (av_3-- > 0) {
-L990 :;
+L993 :;
             cc_export_mmstr((byte*)"    ");
-L991 :;
-        }L992 :;
+L994 :;
+        }L995 :;
         ;
         if (!!(strchr((i8 *)((*e).name),(i64)36))) {
             if ((cc_decls_ttbasetype[(emode)]==(i64)21)) {
@@ -27904,15 +27924,15 @@ L991 :;
             cc_export_mmstrln(cc_export_fixname((*e).name));
         };
         e = (*e).nextdef;
-L988 :;
-    }L989 :;
+L991 :;
+    }L992 :;
     ;
     av_4 = (level - (i64)1);
     while (av_4-- > 0) {
-L993 :;
+L996 :;
         cc_export_mmstr((byte*)"    ");
-L994 :;
-    }L995 :;
+L997 :;
+    }L998 :;
     ;
     cc_export_mmstrln((byte*)"end");
     cc_export_mmline();
@@ -27933,16 +27953,16 @@ static void cc_export_writefnptr(i64 m) {
     pm = cc_decls_ttparams[(m)];
     n = (i64)((*pm).nparams);
     isvar = ((i64)((*pm).flags) == (i64)3);
-    L996 :;
+    L999 :;
     for (i=(i64)1;i<=n;++i) {
-L997 :;
+L1000 :;
         cc_export_mmmode((i64)((*pm).mode),(i64)1);
         if (((i != n) || !!(isvar))) {
             cc_export_mmstr((byte*)",");
         };
         pm = (*pm).nextparam;
-L998 :;
-    }L999 :;
+L1001 :;
+    }L1002 :;
     ;
     if (!!(isvar)) {
         cc_export_mmstr((byte*)"...");
@@ -27958,16 +27978,16 @@ static byte * cc_export_fixname(byte * name) {
     byte str[128];
     i64 av_1;
     i64 i;
-    L1000 :;
+    L1003 :;
     for (i=(i64)1;i<=(i64)8;++i) {
-L1001 :;
+L1004 :;
         if (!!(mlib_eqstring(reservedwords[(i)-1],name))) {
             strcpy((i8 *)(str),(i8 *)(name));
             strcat((i8 *)(str),(i8 *)((byte*)"$"));
             return mlib_pcm_copyheapstring(str);
         };
-L1002 :;
-    }L1003 :;
+L1005 :;
+    }L1006 :;
     ;
     return name;
 }
@@ -27975,12 +27995,12 @@ L1002 :;
 i64 cc_assembler_assembler(byte * outputfile,byte * (*asmfiles)[],byte * (*dllfiles)[],i64 nasmfiles,i64 ndllfiles,i64 fobj,i64 fcaption,byte * (*assemsources)[],byte * entrypointname) {
     i64 i;
     cc_assembler_initall();
-    L1004 :;
+    L1007 :;
     for (i=(i64)1;i<=nasmfiles;++i) {
-L1005 :;
+L1008 :;
         cc_assembler_addmodule((*asmfiles)[(i)-1]);
-L1006 :;
-    }L1007 :;
+L1009 :;
+    }L1010 :;
     ;
     ax_decls_searchlibs[((i64)1)-1] = (byte*)"ucrtbase";
     ax_decls_searchlibs[((i64)1)-1] = (byte*)"msvcrt";
@@ -27988,12 +28008,12 @@ L1006 :;
     ax_decls_searchlibs[((i64)3)-1] = (byte*)"user32";
     ax_decls_searchlibs[((i64)4)-1] = (byte*)"kernel32";
     ax_decls_nsearchlibs = (i64)4;
-    L1008 :;
+    L1011 :;
     for (i=(i64)1;i<=ndllfiles;++i) {
-L1009 :;
+L1012 :;
         cc_assembler_addsearchlib((*dllfiles)[(i)-1]);
-L1010 :;
-    }L1011 :;
+L1013 :;
+    }L1014 :;
     ;
     if ((ax_decls_nmodules == (i64)0)) {
         cc_assembler_loaderror((byte*)"No input files specified");
@@ -28023,9 +28043,9 @@ L1010 :;
 static void cc_assembler_loadsourcefiles(byte * (*assemsources)[]) {
     i64 i;
     byte *  source;
-    L1012 :;
+    L1015 :;
     for (i=(i64)1;i<=ax_decls_nmodules;++i) {
-L1013 :;
+L1016 :;
         if (!!(assemsources)) {
             source = (*assemsources)[(i)-1];
         } else {
@@ -28035,17 +28055,17 @@ L1013 :;
             };
         };
         ax_decls_moduletable[(i)-1].source = source;
-L1014 :;
-    }L1015 :;
+L1017 :;
+    }L1018 :;
     ;
 }
 
 static void cc_assembler_parsemodules(void) {
     i64 i;
     struct ax_lib_mclrec *  m;
-    L1016 :;
+    L1019 :;
     for (i=(i64)1;i<=ax_decls_nmodules;++i) {
-L1017 :;
+L1020 :;
         ax_decls_currmoduleno = i;
         ax_decls_modulenamelist = (struct ax_decls_strec *)(0);
         ax_parse_readmodule(i);
@@ -28061,17 +28081,17 @@ L1017 :;
         };
         cc_assembler_scanglobals();
         cc_assembler_resethashtable();
-L1018 :;
-    }L1019 :;
+L1021 :;
+    }L1022 :;
     ;
     m = ax_lib_mccode;
-    L1020 :;
+    L1023 :;
     while (!!(m)) {
         cc_assembler_fixopnd((*m).a);
         cc_assembler_fixopnd((*m).b);
         m = (*m).nextmcl;
-L1021 :;
-    }L1022 :;
+L1024 :;
+    }L1025 :;
     ;
 }
 
@@ -28151,15 +28171,15 @@ static struct ax_decls_strec * cc_assembler_findduplname(struct ax_decls_strec *
         return (*d).basedef;
     };
     e = ax_decls_dupltable[((i64)((*d).htfirstindex))];
-    L1023 :;
+    L1026 :;
     while (!!(e)) {
         if ((((u64)((*d).namelen) == (u64)((*e).namelen)) && ((i64)(memcmp((void *)((*d).name),(void *)((*e).name),(u64)((*d).namelen))) == (i64)0))) {
             (*d).basedef = e;
             return e;
         };
         e = (*e).nextdupl;
-L1024 :;
-    }L1025 :;
+L1027 :;
+    }L1028 :;
     ;
     return (struct ax_decls_strec *)(0);
 }
@@ -28173,7 +28193,7 @@ static void cc_assembler_scanglobals(void) {
     struct ax_decls_strec *  d;
     struct ax_decls_strec *  e;
     d = ax_decls_modulenamelist;
-    L1026 :;
+    L1029 :;
     while (!!(d)) {
         if (((i64)((*d).symbol)==(i64)21)) {
             e = cc_assembler_findduplname(d);
@@ -28217,20 +28237,20 @@ static void cc_assembler_scanglobals(void) {
             };
         };
         d = (*d).nextdef;
-L1027 :;
-    }L1028 :;
+L1030 :;
+    }L1031 :;
     ;
 }
 
 static void cc_assembler_resethashtable(void) {
     struct ax_decls_strec *  d;
     d = ax_decls_modulenamelist;
-    L1029 :;
+    L1032 :;
     while (!!(d)) {
         ax_decls_lexhashtable[((i64)((*d).htindex))] = cc_assembler_getemptyst(d);
         d = (*d).nextdef;
-L1030 :;
-    }L1031 :;
+L1033 :;
+    }L1034 :;
     ;
     ax_decls_modulenamelist = (struct ax_decls_strec *)(0);
 }
@@ -28243,7 +28263,7 @@ void ax_lex_lex(void) {
     i64 length;
     byte *  pstart;
     ax_lex_lxsubcode = (i64)0;
-    L1032 :;
+    L1035 :;
     switch ((c = (i64)((*ax_lex_lxsptr++)))) {
     case 97:;
     case 98:;
@@ -28277,10 +28297,10 @@ void ax_lex_lex(void) {
     {
         pstart = (ax_lex_lxsptr - (i64)1);
         //doname:
-L1034 :;
+L1037 :;
 ;
         hsum = (csum = c);
-        L1035 :;
+        L1038 :;
         switch ((c = (i64)((*ax_lex_lxsptr++)))) {
         case 97:;
         case 98:;
@@ -28358,11 +28378,11 @@ L1034 :;
         }break;
         default: {
             --ax_lex_lxsptr;
-            goto L1036 ;
+            goto L1039 ;
         }
         } //SW
-goto L1035 ;
-L1036 :;
+goto L1038 ;
+L1039 :;
         ;
         ax_lex_lxlength = (ax_lex_lxsptr - pstart);
         ax_lex_lxhashvalue = ((hsum << (i64)5) ^ csum);
@@ -28407,7 +28427,7 @@ L1036 :;
     {
         pstart = (ax_lex_lxsptr - (i64)1);
         c = (i64)((u64)(((*pstart) = (u64)(((i64)((u64)((*pstart))) + (i64)32)))));
-        goto L1034 ;
+        goto L1037 ;
 ;
     }break;
     case 48:;
@@ -28428,7 +28448,7 @@ L1036 :;
     {
         pstart = ax_lex_lxsptr;
         hsum = (csum = (i64)0);
-        L1037 :;
+        L1040 :;
         switch ((c = (i64)((*ax_lex_lxsptr)))) {
         case 65:;
         case 66:;
@@ -28501,11 +28521,11 @@ L1036 :;
             hsum = ((hsum << (i64)3) + csum);
         }break;
         default: {
-            goto L1038 ;
+            goto L1041 ;
         }
         } //SW
-goto L1037 ;
-L1038 :;
+goto L1040 ;
+L1041 :;
         ;
         ax_lex_lxsymbol = (i64)17;
         if ((pstart == ax_lex_lxsptr)) {
@@ -28525,10 +28545,10 @@ L1038 :;
     case 59:;
     case 35:;
     {
-        L1039 :;
+        L1042 :;
         while (!!((u64)(ax_lex_commentmap[((i64)((*ax_lex_lxsptr++)))]))) {
-L1040 :;
-        }L1041 :;
+L1043 :;
+        }L1044 :;
         ;
         if (((i64)((u64)((*(ax_lex_lxsptr - (i64)1)))) == (i64)0)) {
             --ax_lex_lxsptr;
@@ -28585,12 +28605,12 @@ L1040 :;
     case 39:;
     {
         pstart = ax_lex_lxsptr;
-        L1042 :;
+        L1045 :;
         while (1) {
             switch ((i64)((*ax_lex_lxsptr++))) {
             case 39:;
             {
-                goto L1043 ;
+                goto L1046 ;
             }break;
             case 13:;
             case 10:;
@@ -28601,16 +28621,16 @@ L1040 :;
             }
             } //SW
 ;
-        }L1043 :;
+        }L1046 :;
         ;
         length = ((ax_lex_lxsptr - pstart) - (i64)1);
         ax_lex_lxvalue = (i64)0;
-        L1044 :;
+        L1047 :;
         for (i=length;i>=(i64)1;--i) {
-L1045 :;
+L1048 :;
             ax_lex_lxvalue = ((ax_lex_lxvalue << (i64)8) + (i64)((u64)((*((pstart + i) - (i64)1)))));
-L1046 :;
-        }L1047 :;
+L1049 :;
+        }L1050 :;
         ;
         ax_lex_lxsymbol = (i64)14;
         return;
@@ -28618,7 +28638,7 @@ L1046 :;
     case 34:;
     {
         pstart = ax_lex_lxsptr;
-        L1048 :;
+        L1051 :;
         while (1) {
             switch ((i64)((*ax_lex_lxsptr++))) {
             case 34:;
@@ -28640,7 +28660,7 @@ L1046 :;
             }
             } //SW
 ;
-        }L1049 :;
+        }L1052 :;
         ;
     }break;
     case 32:;
@@ -28669,8 +28689,8 @@ L1046 :;
         return;
     }
     } //SW
-goto L1032 ;
-L1033 :;
+goto L1035 ;
+L1036 :;
     ;
 }
 
@@ -28679,9 +28699,9 @@ void ax_lex_initlex(void) {
     ax_lex_lxsubcode = (i64)0;
     ax_lex_lxsymbol = (i64)1;
     ax_decls_lxlineno = (i64)0;
-    L1050 :;
+    L1053 :;
     for (i=(i64)0;i<=(i64)255;++i) {
-L1051 :;
+L1054 :;
         switch (i) {
         case 65:;
         case 66:;
@@ -28773,8 +28793,8 @@ L1051 :;
         } //SW
 ;
         ax_lex_commentmap[(i)] = (u64)1u;
-L1052 :;
-    }L1053 :;
+L1055 :;
+    }L1056 :;
     ;
     ax_lex_commentmap[((i64)0)] = (u64)0u;
     ax_lex_commentmap[((i64)10)] = (u64)0u;
@@ -28805,7 +28825,7 @@ static void ax_lex_readreal(byte (*s)[],i64 slen,i64 intlen,i64 exponseen) {
             --ax_lex_lxsptr;
         };
         digs = (i64)0;
-        L1054 :;
+        L1057 :;
         switch ((c = (i64)((*ax_lex_lxsptr++)))) {
         case 48:;
         case 49:;
@@ -28823,11 +28843,11 @@ static void ax_lex_readreal(byte (*s)[],i64 slen,i64 intlen,i64 exponseen) {
         }break;
         default: {
             --ax_lex_lxsptr;
-            goto L1055 ;
+            goto L1058 ;
         }
         } //SW
-goto L1054 ;
-L1055 :;
+goto L1057 ;
+L1058 :;
         ;
         if ((digs == (i64)0)) {
             ax_lex_lxerror((byte*)"Exponent error");
@@ -28838,29 +28858,29 @@ L1055 :;
     };
     expon = (expon - fractlen);
     ax_lex_lxxvalue = (double)0.;
-    L1056 :;
+    L1059 :;
     for (i=(i64)1;i<=slen;++i) {
-L1057 :;
+L1060 :;
         c = (i64)((*s)[(i)-1]);
         ax_lex_lxxvalue = ((ax_lex_lxxvalue * (double)10.) + (double)((c - (i64)48)));
-L1058 :;
-    }L1059 :;
+L1061 :;
+    }L1062 :;
     ;
     if ((expon > (i64)0)) {
         av_1 = expon;
         while (av_1-- > 0) {
-L1060 :;
+L1063 :;
             ax_lex_lxxvalue = (ax_lex_lxxvalue * (double)10.);
-L1061 :;
-        }L1062 :;
+L1064 :;
+        }L1065 :;
         ;
     } else if ((expon < (i64)0)) {
         av_2 = -(expon);
         while (av_2-- > 0) {
-L1063 :;
+L1066 :;
             ax_lex_lxxvalue = (ax_lex_lxxvalue / (double)10.);
-L1064 :;
-        }L1065 :;
+L1067 :;
+        }L1068 :;
         ;
     };
     ax_lex_lxsymbol = (i64)15;
@@ -28894,7 +28914,7 @@ static void ax_lex_readnumber(i64 c) {
     str[((i64)1)-1] = (u64)(c);
     slen = (i64)1;
     intlen = (i64)0;
-    L1066 :;
+    L1069 :;
     switch ((c = (i64)((*ax_lex_lxsptr++)))) {
     case 48:;
     case 49:;
@@ -28926,11 +28946,11 @@ static void ax_lex_readnumber(i64 c) {
     }break;
     default: {
         --ax_lex_lxsptr;
-        goto L1067 ;
+        goto L1070 ;
     }
     } //SW
-goto L1066 ;
-L1067 :;
+goto L1069 ;
+L1070 :;
     ;
     if (!!(intlen)) {
         ax_lex_readreal(&str,slen,intlen,(i64)0);
@@ -28941,12 +28961,12 @@ L1067 :;
     };
     ax_lex_lxsymbol = (i64)14;
     ax_lex_lxvalue = (i64)0;
-    L1068 :;
+    L1071 :;
     for (i=(i64)1;i<=slen;++i) {
-L1069 :;
+L1072 :;
         ax_lex_lxvalue = (((ax_lex_lxvalue * (i64)10) + (i64)(str[(i)-1])) - (i64)48);
-L1070 :;
-    }L1071 :;
+L1073 :;
+    }L1074 :;
     ;
 }
 
@@ -28954,7 +28974,7 @@ static void ax_lex_readbinary(void) {
     i64 ndigs;
     ndigs = (i64)0;
     ax_lex_lxvalue = (i64)0;
-    L1072 :;
+    L1075 :;
     switch ((i64)((*ax_lex_lxsptr++))) {
     case 48:;
     {
@@ -28984,11 +29004,11 @@ static void ax_lex_readbinary(void) {
     }break;
     default: {
         --ax_lex_lxsptr;
-        goto L1073 ;
+        goto L1076 ;
     }
     } //SW
-goto L1072 ;
-L1073 :;
+goto L1075 ;
+L1076 :;
     ;
     if ((ndigs == (i64)0)) {
         ax_lex_lxerror((byte*)"No bin digits");
@@ -29003,7 +29023,7 @@ static void ax_lex_readhex(void) {
     i64 c;
     ndigs = (i64)0;
     ax_lex_lxvalue = (i64)0;
-    L1074 :;
+    L1077 :;
     switch ((c = (i64)((*ax_lex_lxsptr++)))) {
     case 48:;
     case 49:;
@@ -29046,11 +29066,11 @@ static void ax_lex_readhex(void) {
     }break;
     default: {
         --ax_lex_lxsptr;
-        goto L1075 ;
+        goto L1078 ;
     }
     } //SW
-goto L1074 ;
-L1075 :;
+goto L1077 ;
+L1078 :;
     ;
     if ((ndigs == (i64)0)) {
         ax_lex_lxerror((byte*)"No hex digits");
@@ -29080,13 +29100,13 @@ void ax_lex_printsymbol(void * dev) {
     ;
     av_1 = ((i64)14 - (i64)(strlen((i8 *)(str))));
     while (av_1-- > 0) {
-L1076 :;
+L1079 :;
         msysnewc_m_print_startfile(dev);
         msysnewc_m_print_str((byte*)" ",NULL);
         msysnewc_m_print_end();
         ;
-L1077 :;
-    }L1078 :;
+L1080 :;
+    }L1081 :;
     ;
     if ((ax_lex_lxsymbol==(i64)17)) {
         msysnewc_m_print_startfile(dev);
@@ -29156,78 +29176,78 @@ static void ax_lex_inithashtable(void) {
     if (((i64)2097152 > (i64)65536)) {
     };
     ax_lex_clearhashtable();
-    L1079 :;
+    L1082 :;
     for (i=(i64)1;i<=(i64)139;++i) {
-L1080 :;
+L1083 :;
         ax_lex_addreservedword((ax_tables_mclnames[(i)-1] + (i64)2),(i64)23,i);
-L1081 :;
-    }L1082 :;
-    ;
-    L1083 :;
-    for (i=(i64)1;i<=(i64)136;++i) {
 L1084 :;
+    }L1085 :;
+    ;
+    L1086 :;
+    for (i=(i64)1;i<=(i64)136;++i) {
+L1087 :;
         ax_lex_addreservedword(ax_tables_dregnames[(i)-1],(i64)24,(i64)(ax_tables_regindices[(i)-1]));
         (*ax_lex_lxsymptr).regsize = (u64)(ax_tables_regsizes[(i)-1]);
-L1085 :;
-    }L1086 :;
-    ;
-    L1087 :;
-    for (i=(i64)1;i<=(i64)16;++i) {
 L1088 :;
+    }L1089 :;
+    ;
+    L1090 :;
+    for (i=(i64)1;i<=(i64)16;++i) {
+L1091 :;
         ax_lex_addreservedword(ax_tables_xregnames[(i)-1],(i64)25,i);
-L1089 :;
-    }L1090 :;
-    ;
-    L1091 :;
-    for (i=(i64)1;i<=(i64)8;++i) {
 L1092 :;
+    }L1093 :;
+    ;
+    L1094 :;
+    for (i=(i64)1;i<=(i64)8;++i) {
+L1095 :;
         ax_lex_addreservedword(ax_tables_fregnames[(i)-1],(i64)26,i);
-L1093 :;
-    }L1094 :;
-    ;
-    L1095 :;
-    for (i=(i64)1;i<=(i64)8;++i) {
 L1096 :;
-        ax_lex_addreservedword(ax_tables_mregnames[(i)-1],(i64)27,i);
-L1097 :;
-    }L1098 :;
+    }L1097 :;
     ;
-    L1099 :;
-    for (i=(i64)1;i<=(i64)16;++i) {
-L1100 :;
-        ax_lex_addreservedword(ax_tables_jmpccnames[(i)-1],(i64)28,(i64)(ax_tables_jmpcccodes[(i)-1]));
-L1101 :;
-    }L1102 :;
-    ;
-    L1103 :;
-    for (i=(i64)1;i<=(i64)16;++i) {
-L1104 :;
-        ax_lex_addreservedword(ax_tables_setccnames[(i)-1],(i64)29,(i64)(ax_tables_setcccodes[(i)-1]));
-L1105 :;
-    }L1106 :;
-    ;
-    L1107 :;
-    for (i=(i64)1;i<=(i64)16;++i) {
-L1108 :;
-        ax_lex_addreservedword(ax_tables_cmovccnames[(i)-1],(i64)30,(i64)(ax_tables_cmovcccodes[(i)-1]));
-L1109 :;
-    }L1110 :;
-    ;
-    L1111 :;
+    L1098 :;
     for (i=(i64)1;i<=(i64)8;++i) {
-L1112 :;
-        ax_lex_addreservedword(ax_tables_prefixnames[(i)-1],(i64)31,(i64)(ax_tables_prefixsizes[(i)-1]));
-L1113 :;
-    }L1114 :;
+L1099 :;
+        ax_lex_addreservedword(ax_tables_mregnames[(i)-1],(i64)27,i);
+L1100 :;
+    }L1101 :;
     ;
-    L1115 :;
-    for (i=(i64)1;i<=(i64)5;++i) {
+    L1102 :;
+    for (i=(i64)1;i<=(i64)16;++i) {
+L1103 :;
+        ax_lex_addreservedword(ax_tables_jmpccnames[(i)-1],(i64)28,(i64)(ax_tables_jmpcccodes[(i)-1]));
+L1104 :;
+    }L1105 :;
+    ;
+    L1106 :;
+    for (i=(i64)1;i<=(i64)16;++i) {
+L1107 :;
+        ax_lex_addreservedword(ax_tables_setccnames[(i)-1],(i64)29,(i64)(ax_tables_setcccodes[(i)-1]));
+L1108 :;
+    }L1109 :;
+    ;
+    L1110 :;
+    for (i=(i64)1;i<=(i64)16;++i) {
+L1111 :;
+        ax_lex_addreservedword(ax_tables_cmovccnames[(i)-1],(i64)30,(i64)(ax_tables_cmovcccodes[(i)-1]));
+L1112 :;
+    }L1113 :;
+    ;
+    L1114 :;
+    for (i=(i64)1;i<=(i64)8;++i) {
+L1115 :;
+        ax_lex_addreservedword(ax_tables_prefixnames[(i)-1],(i64)31,(i64)(ax_tables_prefixsizes[(i)-1]));
 L1116 :;
+    }L1117 :;
+    ;
+    L1118 :;
+    for (i=(i64)1;i<=(i64)5;++i) {
+L1119 :;
         strcpy((i8 *)(str),(i8 *)(ax_tables_segmentnames[(i)-1]));
         str[(((i64)(strlen((i8 *)(str))) - (i64)3))-1] = (u64)0u;
         ax_lex_addreservedword(mlib_pcm_copyheapstring(str),(i64)32,i);
-L1117 :;
-    }L1118 :;
+L1120 :;
+    }L1121 :;
     ;
     ax_lex_addreservedword((byte*)"aframe",(i64)24,(i64)15);
     (*ax_lex_lxsymptr).regsize = (u64)((i64)4);
@@ -29271,15 +29291,15 @@ void ax_lex_printhashtable(void * devx,byte * caption) {
     msysnewc_m_print_end();
     ;
     count = (i64)0;
-    L1119 :;
+    L1122 :;
     for (i=(i64)0;i<=(i64)2097151;++i) {
-L1120 :;
+L1123 :;
         r = ax_decls_lexhashtable[(i)];
         if ((!!(r) && !!((*r).name))) {
             count += (i64)1;
         };
-L1121 :;
-    }L1122 :;
+L1124 :;
+    }L1125 :;
     ;
     msysnewc_m_print_startfile(devx);
     msysnewc_m_print_i64(count,NULL);
@@ -29301,11 +29321,11 @@ static i64 ax_lex_lookuplex(byte * name,i64 length) {
     };
     firstj = (j = (ax_lex_lxhashvalue & (i64)2097151));
     wrapped = (i64)0;
-    L1123 :;
+    L1126 :;
     while (1) {
         ax_lex_lxsymptr = ax_decls_lexhashtable[(j)];
         if ((ax_lex_lxsymptr == 0)) {
-            goto L1124 ;
+            goto L1127 ;
         };
         if ((((i64)((u64)((*ax_lex_lxsymptr).namelen)) == length) && ((i64)(memcmp((void *)((*ax_lex_lxsymptr).name),(void *)(name),(u64)(length))) == (i64)0))) {
             return (i64)1;
@@ -29324,7 +29344,7 @@ static i64 ax_lex_lookuplex(byte * name,i64 length) {
             wrapped = (i64)1;
             j = (i64)1;
         };
-    }L1124 :;
+    }L1127 :;
     ;
     if (!!(insource)) {
         name = ax_lex_makestring(name,length);
@@ -29370,22 +29390,22 @@ static i64 ax_lex_gethashvalue(byte * s) {
     i64 csum;
     i64 c;
     hsum = (csum = (i64)0);
-    L1125 :;
+    L1128 :;
     while (!!((c = (i64)((*s++))))) {
         csum += c;
         hsum = ((hsum << (i64)3) + csum);
-L1126 :;
-    }L1127 :;
+L1129 :;
+    }L1130 :;
     ;
     return ((hsum << (i64)5) ^ csum);
 }
 
 void ax_lex_skiptoeol(void) {
-    L1128 :;
+    L1131 :;
     do {
         ax_lex_lex();
-L1129 :;
-    } while (!((ax_lex_lxsymbol == (i64)11) || (ax_lex_lxsymbol == (i64)12)));L1130 :;
+L1132 :;
+    } while (!((ax_lex_lxsymbol == (i64)11) || (ax_lex_lxsymbol == (i64)12)));L1133 :;
     ;
 }
 
@@ -29403,7 +29423,7 @@ void ax_parse_readmodule(i64 moduleno) {
     ax_lex_initsourcefile(ax_decls_moduletable[(moduleno)-1].source);
     ax_lex_lxsymbol = (i64)11;
     ax_lib_genmc((i64)110,ax_lib_genint((i64)1,(i64)4),(struct ax_decls_opndrec *)(0));
-    L1131 :;
+    L1134 :;
     while ((ax_lex_lxsymbol == (i64)11)) {
         ax_lex_lex();
         switch (ax_lex_lxsymbol) {
@@ -29424,7 +29444,7 @@ void ax_parse_readmodule(i64 moduleno) {
                 ax_lib_genmc((i64)4,ax_lib_genlab(symptr,(i64)4),(struct ax_decls_opndrec *)(0));
                 (*symptr).reftype = (u64)((i64)1);
                 ax_lex_lxsymbol = (i64)11;
-                goto L1131 ;
+                goto L1134 ;
             } else {
                 msysnewc_m_print_startcon();
                 msysnewc_m_print_str((*symptr).name,NULL);
@@ -29446,7 +29466,7 @@ void ax_parse_readmodule(i64 moduleno) {
                 (*symptr).symbol = ((ax_lex_lxsymbol == (i64)3)?(u64)((i64)20):(u64)((i64)22));
                 (*symptr).reftype = (u64)((i64)1);
                 ax_lex_lxsymbol = (i64)11;
-                goto L1131 ;
+                goto L1134 ;
             } else {
                 ax_lib_serror((byte*)"Instruction expected");
             };
@@ -29493,8 +29513,8 @@ void ax_parse_readmodule(i64 moduleno) {
         }
         } //SW
 ;
-L1132 :;
-    }L1133 :;
+L1135 :;
+    }L1136 :;
     ;
     ax_lib_serror((byte*)"EOL expected");
 }
@@ -29502,7 +29522,7 @@ L1132 :;
 void ax_parse_checkundefined(void) {
     struct ax_decls_strec *  d;
     d = ax_decls_modulenamelist;
-    L1134 :;
+    L1137 :;
     while (!!(d)) {
         if (((i64)((u64)((*d).symbol)) == (i64)19)) {
             msysnewc_m_print_startcon();
@@ -29514,8 +29534,8 @@ void ax_parse_checkundefined(void) {
             ++ax_decls_nundefined;
         };
         d = (*d).nextdef;
-L1135 :;
-    }L1136 :;
+L1138 :;
+    }L1139 :;
     ;
 }
 
@@ -29546,7 +29566,7 @@ static void ax_parse_readinstr(void) {
     case 108:;
     case 109:;
     {
-        L1137 :;
+        L1140 :;
         while (1) {
             if ((ax_lex_lxsymbol == (i64)16)) {
                 a = ax_lib_genstrimm(ax_lex_lxsvalue);
@@ -29559,9 +29579,9 @@ static void ax_parse_readinstr(void) {
             if ((ax_lex_lxsymbol == (i64)2)) {
                 ax_lex_lex();
             } else {
-                goto L1138 ;
+                goto L1141 ;
             };
-        }L1138 :;
+        }L1141 :;
         ;
     }break;
     case 110:;
@@ -29595,11 +29615,11 @@ static void ax_parse_readinstr(void) {
     }break;
     case 8:;
     {
-        L1139 :;
+        L1142 :;
         do {
             ax_lex_lex();
-L1140 :;
-        } while (!(ax_lex_lxsymbol == (i64)11));L1141 :;
+L1143 :;
+        } while (!(ax_lex_lxsymbol == (i64)11));L1144 :;
         ;
     }break;
     default: {
@@ -29673,7 +29693,7 @@ static struct ax_decls_opndrec * ax_parse_readexpression(void) {
     i64 valuex;
     i64 typex;
     ax_parse_readterm();
-    L1142 :;
+    L1145 :;
     if ((ax_lex_lxsymbol==(i64)7)) {
         labelx = ax_parse_exprlabeldef;
         valuex = ax_parse_exprvalue;
@@ -29703,9 +29723,9 @@ static struct ax_decls_opndrec * ax_parse_readexpression(void) {
         };
         ax_parse_exprvalue = (valuex - ax_parse_exprvalue);
     } else {
-        goto L1143 ;
-    }goto L1142 ;
-L1143 :;
+        goto L1146 ;
+    }goto L1145 ;
+L1146 :;
     ;
     return ax_lib_genimm_expr(ax_parse_exprlabeldef,ax_parse_exprvalue,ax_parse_exprtype,(i64)4);
 }
@@ -29869,27 +29889,27 @@ void ax_lib_initlib(void) {
     i64 reg;
     i64 size;
     ax_lib_zero_opnd = ax_lib_genint((i64)0,(i64)4);
-    L1144 :;
+    L1147 :;
     for (reg=(i64)1;reg<=(i64)16;++reg) {
-L1145 :;
-        L1148 :;
+L1148 :;
+        L1151 :;
         for (size=(i64)1;size<=(i64)8;++size) {
-L1149 :;
+L1152 :;
             if ((size==(i64)1) || (size==(i64)2) || (size==(i64)4) || (size==(i64)8)) {
                 ax_lib_regtable[(reg)-1][(size)-1] = ax_lib_genreg0(reg,size);
             };
-L1150 :;
-        }L1151 :;
-        ;
-L1146 :;
-    }L1147 :;
-    ;
-    L1152 :;
-    for (reg=(i64)17;reg<=(i64)20;++reg) {
 L1153 :;
+        }L1154 :;
+        ;
+L1149 :;
+    }L1150 :;
+    ;
+    L1155 :;
+    for (reg=(i64)17;reg<=(i64)20;++reg) {
+L1156 :;
         ax_lib_regtable[(reg)-1][((i64)1)-1] = ax_lib_genreg0(reg,(i64)1);
-L1154 :;
-    }L1155 :;
+L1157 :;
+    }L1158 :;
     ;
     ax_decls_ss_symboltable = (struct ax_decls_strec * (*)[])(mlib_pcm_alloc((i64)131072));
     ax_decls_ss_symboltablesize = (i64)16384;
@@ -29967,13 +29987,13 @@ struct mlib_strbuffer * ax_lib_writemclblock(void) {
     mlib_gs_strln(ax_lib_dest,(byte*)"MC CODE");
     m = ax_lib_mccode;
     i = (i64)1;
-    L1156 :;
+    L1159 :;
     while (!!(m)) {
         ax_lib_writemcl(i,m);
         m = (*m).nextmcl;
         ++i;
-L1157 :;
-    }L1158 :;
+L1160 :;
+    }L1161 :;
     ;
     return ax_lib_dest;
 }
@@ -30327,12 +30347,12 @@ byte * ax_lib_xgetregname(i64 reg) {
 void ax_lib_printst(void * f) {
     struct ax_decls_strec *  r;
     r = ax_decls_modulenamelist;
-    L1159 :;
+    L1162 :;
     while (!!(r)) {
         ax_lib_printstrec(f,r);
         r = (*r).nextdef;
-L1160 :;
-    }L1161 :;
+L1163 :;
+    }L1164 :;
     ;
 }
 
@@ -30489,11 +30509,11 @@ static void ax_lib_bufferexpand(struct ax_decls_dbuffer * a) {
 }
 
 void ax_lib_buffercheck(struct ax_decls_dbuffer * a,i64 n) {
-    L1162 :;
+    L1165 :;
     while ((((*a).pend - (*a).pcurr) < n)) {
         ax_lib_bufferexpand(a);
-L1163 :;
-    }L1164 :;
+L1166 :;
+    }L1167 :;
     ;
 }
 
@@ -30535,7 +30555,7 @@ void ax_lib_printmodulesymbols(void * f) {
     msysnewc_m_print_end();
     ;
     d = ax_decls_modulenamelist;
-    L1165 :;
+    L1168 :;
     while (!!(d)) {
         msysnewc_m_print_startfile(f);
         msysnewc_m_print_str((byte*)"   ",NULL);
@@ -30557,7 +30577,7 @@ void ax_lib_printmodulesymbols(void * f) {
             msysnewc_m_print_str((byte*)"||",NULL);
             msysnewc_m_print_end();
             ;
-            L1168 :;
+            L1171 :;
             while (!!(e)) {
                 msysnewc_m_print_startfile(f);
                 msysnewc_m_print_str((byte*)"(",NULL);
@@ -30568,8 +30588,8 @@ void ax_lib_printmodulesymbols(void * f) {
                 msysnewc_m_print_end();
                 ;
                 e = (*e).nextdupl;
-L1169 :;
-            }L1170 :;
+L1172 :;
+            }L1173 :;
             ;
         };
         msysnewc_m_print_startfile(f);
@@ -30580,8 +30600,8 @@ L1169 :;
         msysnewc_m_print_end();
         ;
         d = (*d).nextdef;
-L1166 :;
-    }L1167 :;
+L1169 :;
+    }L1170 :;
     ;
     msysnewc_m_print_startfile(f);
     msysnewc_m_print_newline();
@@ -30599,7 +30619,7 @@ void ax_lib_printimportsymbols(void * f) {
     msysnewc_m_print_end();
     ;
     p = ax_decls_globalimportlist;
-    L1171 :;
+    L1174 :;
     while (!!(p)) {
         d = (*p).def;
         msysnewc_m_print_startfile(f);
@@ -30618,8 +30638,8 @@ void ax_lib_printimportsymbols(void * f) {
         msysnewc_m_print_end();
         ;
         p = (*p).nextitem;
-L1172 :;
-    }L1173 :;
+L1175 :;
+    }L1176 :;
     ;
     msysnewc_m_print_startfile(f);
     msysnewc_m_print_newline();
@@ -30637,9 +30657,9 @@ void ax_lib_printdupltable(void * f) {
     msysnewc_m_print_newline();
     msysnewc_m_print_end();
     ;
-    L1174 :;
+    L1177 :;
     for (i=(i64)0;i<=(i64)2097151;++i) {
-L1175 :;
+L1178 :;
         if (!!(ax_decls_dupltable[(i)])) {
             d = ax_decls_dupltable[(i)];
             msysnewc_m_print_startfile(f);
@@ -30649,7 +30669,7 @@ L1175 :;
             msysnewc_m_print_str((byte*)":",NULL);
             msysnewc_m_print_end();
             ;
-            L1178 :;
+            L1181 :;
             while (!!(d)) {
                 msysnewc_m_print_startstr(str);
                 msysnewc_m_print_setfmt((byte*)"(# # (#) #) ");
@@ -30660,16 +30680,16 @@ L1175 :;
                 msysnewc_m_print_end();
                 ;
                 d = (*d).nextdupl;
-L1179 :;
-            }L1180 :;
+L1182 :;
+            }L1183 :;
             ;
             msysnewc_m_print_startfile(f);
             msysnewc_m_print_newline();
             msysnewc_m_print_end();
             ;
         };
-L1176 :;
-    }L1177 :;
+L1179 :;
+    }L1180 :;
     ;
     msysnewc_m_print_startfile(f);
     msysnewc_m_print_newline();
@@ -30692,13 +30712,13 @@ void ax_genss_genss(void) {
     ax_genss_extraparam = (struct ax_decls_opndrec *)(0);
     m = ax_lib_mccode;
     index = (i64)0;
-    L1181 :;
+    L1184 :;
     while (!!(m)) {
         ax_decls_alineno = (*m).lineno;
         ax_genss_doinstr(m,++index);
         m = (*m).nextmcl;
-L1182 :;
-    }L1183 :;
+L1185 :;
+    }L1186 :;
     ;
     ax_genss_switchseg((i64)0);
     if (!!(ax_lib_bufferlength(ax_decls_ss_zdata))) {
@@ -30896,18 +30916,18 @@ static void ax_genss_doinstr(struct ax_lib_mclrec * m,i64 index) {
             if ((ax_genss_currseg==(i64)1)) {
                 av_1 = n;
                 while (av_1-- > 0) {
-L1184 :;
+L1187 :;
                     ax_genss_genbyte((i64)144);
-L1185 :;
-                }L1186 :;
+L1188 :;
+                }L1189 :;
                 ;
             }else if ((ax_genss_currseg==(i64)2)) {
                 av_2 = n;
                 while (av_2-- > 0) {
-L1187 :;
+L1190 :;
                     ax_genss_genbyte((i64)0);
-L1188 :;
-                }L1189 :;
+L1191 :;
+                }L1192 :;
                 ;
             } else {
                 ax_decls_ss_zdatalen += n;
@@ -30924,18 +30944,18 @@ L1188 :;
                 ax_lib_gerror((byte*)"align2");
             };
             if ((ax_genss_currseg != (i64)3)) {
-                L1190 :;
+                L1193 :;
                 while (!!((ax_lib_bufferlength(ax_genss_currdata) % x))) {
                     ax_genss_genbyte(((ax_genss_currseg == (i64)1)?(i64)144:(i64)0));
-L1191 :;
-                }L1192 :;
-                ;
-            } else {
-                L1193 :;
-                while (!!((ax_decls_ss_zdatalen % x))) {
-                    ++ax_decls_ss_zdatalen;
 L1194 :;
                 }L1195 :;
+                ;
+            } else {
+                L1196 :;
+                while (!!((ax_decls_ss_zdatalen % x))) {
+                    ++ax_decls_ss_zdatalen;
+L1197 :;
+                }L1198 :;
                 ;
             };
         } else {
@@ -31193,11 +31213,11 @@ static void ax_genss_genopnd(struct ax_decls_opndrec * a,i64 size) {
         if ((length > (i64)100)) {
             ax_lib_buffercheck(ax_genss_currdata,msysnewc_m_imax((i64)1024,(length + (i64)1)));
         };
-        L1196 :;
+        L1199 :;
         while (!!((u64)((*s)))) {
             ax_genss_genbyte((i64)((*s++)));
-L1197 :;
-        }L1198 :;
+L1200 :;
+        }L1201 :;
         ;
         return;
     }break;
@@ -31342,7 +31362,7 @@ static void ax_genss_dofwdrefs(struct ax_decls_strec * d) {
         return;
     };
     f = (*d).fwdrefs;
-    L1199 :;
+    L1202 :;
     while (!!(f)) {
         offset = (i64)((*f).offset);
         if (((i64)((*f).reltype)==(i64)4)) {
@@ -31375,8 +31395,8 @@ static void ax_genss_dofwdrefs(struct ax_decls_strec * d) {
             ax_lib_gerror((byte*)"DOFWDREFS/CAN'T DO RELTYPE");
         };
         f = (*f).nextfwd;
-L1200 :;
-    }L1201 :;
+L1203 :;
+    }L1204 :;
     ;
 }
 
@@ -31699,7 +31719,7 @@ static void ax_genss_do_arith(struct ax_decls_opndrec * a,struct ax_decls_opndre
             ax_genss_genamode(b,am);
         }else if (((i64)((*b).mode)==(i64)2)) {
             //doregimm:
-L1202 :;
+L1205 :;
 ;
             if (!!((*b).labeldef)) {
                 if (((code < (i64)0) || (code > (i64)7))) {
@@ -31756,7 +31776,7 @@ L1202 :;
             ax_genss_genbyte(opc);
             ax_genss_genamode(a,am);
         }else if (((i64)((*b).mode)==(i64)2)) {
-            goto L1202 ;
+            goto L1205 ;
 ;
         } else {
             ax_lib_gerror((byte*)"ADD mem,???");
@@ -31824,7 +31844,7 @@ static void ax_genss_do_mov(struct ax_decls_opndrec * a,struct ax_decls_opndrec 
                         ax_lib_gerror((byte*)"1:exceeding word32 value");
                     };
                     //doreg32:
-L1203 :;
+L1206 :;
 ;
                     ax_genss_genrex();
                     ax_genss_genbyte(((i64)184 + regcode));
@@ -31838,7 +31858,7 @@ L1203 :;
                     ax_genss_genopnd(b,(i64)8);
                 } else {
                     if (((value >= (i64)0) && (value <= (i64)4294967295))) {
-                        goto L1203 ;
+                        goto L1206 ;
 ;
                     };
                     ax_genss_rex |= (i64)8;
@@ -32237,7 +32257,7 @@ static void ax_genss_do_test(struct ax_decls_opndrec * a,struct ax_decls_opndrec
         };
     } else if ((((i64)((u64)((*a).mode)) == (i64)1) && (((i64)((u64)((*b).mode)) == (i64)1) || ((i64)((u64)((*b).mode)) == (i64)3)))) {
         //doregmem:
-L1204 :;
+L1207 :;
 ;
         regcode = ax_genss_getregcoder((i64)((*a).reg));
         am = ax_genss_genrm(b,regcode);
@@ -32249,7 +32269,7 @@ L1204 :;
         ax_genss_genamode(b,am);
     } else if ((((i64)((u64)((*a).mode)) == (i64)3) && ((i64)((u64)((*b).mode)) == (i64)1))) {
         {struct ax_decls_opndrec *  temp = a; a = b; b = temp; };
-        goto L1204 ;
+        goto L1207 ;
 ;
     } else {
         ax_lib_gerror((byte*)"test opnds");
@@ -32673,15 +32693,15 @@ static i64 ax_genss_checkshortjump(struct ax_lib_mclrec * m,struct ax_decls_stre
     return (i64)0;
     n = (i64)0;
     m = (*m).nextmcl;
-    L1205 :;
+    L1208 :;
     while ((!!(m) && (n <= (i64)8))) {
         ++n;
         if ((((*m).opcode == (i64)4) && ((*(*m).a).labeldef == d))) {
             return (i64)1;
         };
         m = (*m).nextmcl;
-L1206 :;
-    }L1207 :;
+L1209 :;
+    }L1210 :;
     ;
     return (i64)0;
 }
@@ -32793,12 +32813,12 @@ static void ax_genss_extendsymboltable(void) {
     msysnewc_m_print_end();
     ;
     ax_decls_ss_symboltable = (struct ax_decls_strec * (*)[])(mlib_pcm_alloc(((i64)8 * ax_decls_ss_symboltablesize)));
-    L1208 :;
+    L1211 :;
     for (i=(i64)1;i<=ax_decls_ss_nsymbols;++i) {
-L1209 :;
+L1212 :;
         (*ax_decls_ss_symboltable)[(i)-1] = (*oldsymboltable)[(i)-1];
-L1210 :;
-    }L1211 :;
+L1213 :;
+    }L1214 :;
     ;
     mlib_pcm_free((void *)(oldsymboltable),((i64)8 * oldsymboltablesize));
 }
@@ -32810,20 +32830,20 @@ void ax_writeexe_writeexe(byte * outfile) {
     ax_writeexe_writepesig();
     ax_writeexe_writefileheader();
     ax_writeexe_writeoptheader();
-    L1212 :;
+    L1215 :;
     for (i=(i64)1;i<=ax_writeexe_nsections;++i) {
-L1213 :;
+L1216 :;
         ax_writeexe_writesectionheader(&ax_writeexe_sectiontable[(i)-1]);
-L1214 :;
-    }L1215 :;
+L1217 :;
+    }L1218 :;
     ;
     ax_writeexe_writepadding(ax_writeexe_sectiontable[((i64)1)-1].rawoffset);
-    L1216 :;
+    L1219 :;
     for (i=(i64)1;i<=ax_writeexe_nsections;++i) {
-L1217 :;
+L1220 :;
         ax_writeexe_writesectiondata(&ax_writeexe_sectiontable[(i)-1]);
-L1218 :;
-    }L1219 :;
+L1221 :;
+    }L1222 :;
     ;
     if (!!(ax_decls_fverbose)) {
         msysnewc_m_print_startcon();
@@ -32856,9 +32876,9 @@ static void ax_writeexe_loadlibs(void) {
     i64 i;
     i64 hinst;
     byte filename[300];
-    L1220 :;
+    L1223 :;
     for (i=(i64)1;i<=ax_decls_nsearchlibs;++i) {
-L1221 :;
+L1224 :;
         strcpy((i8 *)(filename),(i8 *)(ax_decls_searchlibs[(i)-1]));
         strcat((i8 *)(filename),(i8 *)((byte*)".dll"));
         hinst = (i64)(oswindows_os_getdllinst(filename));
@@ -32872,8 +32892,8 @@ L1221 :;
         };
         ax_writeexe_libinsttable[(i)-1] = hinst;
         ax_writeexe_libinstnames[(i)-1] = mlib_pcm_copyheapstring(filename);
-L1222 :;
-    }L1223 :;
+L1225 :;
+    }L1226 :;
     ;
 }
 
@@ -32966,9 +32986,9 @@ static void ax_writeexe_showsectiondata(struct ax_writeexe_sectionrec * d) {
     msysnewc_m_print_end();
     ;
     mlib_gs_str(ax_lib_dest,str2);
-    L1224 :;
+    L1227 :;
     for (i=(i64)1;i<=length;++i) {
-L1225 :;
+L1228 :;
         bb = (i64)((*p++));
         msysnewc_m_print_startstr(str2);
         msysnewc_m_print_i64(bb,(byte*)"z2H");
@@ -32988,11 +33008,11 @@ L1225 :;
             if ((k < (i64)16)) {
                 av_1 = ((i64)16 - k);
                 while (av_1-- > 0) {
-L1228 :;
+L1231 :;
                     mlib_gs_str(ax_lib_dest,(byte*)"   ");
                     strcat((i8 *)(str),(i8 *)((byte*)" "));
-L1229 :;
-                }L1230 :;
+L1232 :;
+                }L1233 :;
                 ;
             };
             mlib_gs_str(ax_lib_dest,(byte*)"\t[");
@@ -33009,8 +33029,8 @@ L1229 :;
             ;
             mlib_gs_str(ax_lib_dest,str2);
         };
-L1226 :;
-    }L1227 :;
+L1229 :;
+    }L1230 :;
     ;
     if ((k == (i64)0)) {
         mlib_gs_line(ax_lib_dest);
@@ -33035,13 +33055,13 @@ static void ax_writeexe_showsectioncode(struct ax_writeexe_sectionrec * p) {
     codestart = (codeptr = (byte *)(ax_lib_bufferelemptr((*p).data,(i64)0)));
     codeend = (codeptr + length);
     baseaddr = (byte *)(((i64)4194304 + (*p).virtoffset));
-    L1231 :;
+    L1234 :;
     while ((codeptr < codeend)) {
         offset = (codeptr - codestart);
         s = (byte *)(0);
         s = ax_disasm_decodeinstr(&codeptr,(baseaddr + offset));
         if ((s == 0)) {
-            goto L1233 ;
+            goto L1236 ;
         };
         msysnewc_m_print_startstr(str);
         msysnewc_m_print_i64(offset,(byte*)"4");
@@ -33051,8 +33071,8 @@ static void ax_writeexe_showsectioncode(struct ax_writeexe_sectionrec * p) {
         ;
         mlib_gs_str(ax_lib_dest,str);
         mlib_gs_strln(ax_lib_dest,s);
-L1232 :;
-    }L1233 :;
+L1235 :;
+    }L1236 :;
     ;
     mlib_gs_line(ax_lib_dest);
 }
@@ -33065,7 +33085,7 @@ static void ax_writeexe_showsectionrelocs2(byte * caption,struct ax_decls_relocr
     mlib_gs_strint(ax_lib_dest,nrelocs);
     mlib_gs_line(ax_lib_dest);
     r = relocs;
-    L1234 :;
+    L1237 :;
     while (!!(r)) {
         mlib_gs_str(ax_lib_dest,(byte*)"Reloc: ");
         mlib_gs_str(ax_lib_dest,ax_objdecls_relocnames[((*r).reloctype)]);
@@ -33077,8 +33097,8 @@ static void ax_writeexe_showsectionrelocs2(byte * caption,struct ax_decls_relocr
         mlib_gs_str(ax_lib_dest,(*(*ax_decls_ss_symboltable)[((*r).stindex)-1]).name);
         mlib_gs_line(ax_lib_dest);
         r = (*r).nextreloc;
-L1235 :;
-    }L1236 :;
+L1238 :;
+    }L1239 :;
     ;
     mlib_gs_line(ax_lib_dest);
 }
@@ -33101,14 +33121,14 @@ static void ax_writeexe_gs_value(byte * caption,i64 value) {
 static void ax_writeexe_showsymboltable2(void) {
     i64 i;
     mlib_gs_strln(ax_lib_dest,(byte*)"Proc Symbol Table");
-    L1237 :;
+    L1240 :;
     for (i=(i64)1;i<=ax_decls_ss_nsymbols;++i) {
-L1238 :;
+L1241 :;
         mlib_gs_strint(ax_lib_dest,i);
         mlib_gs_str(ax_lib_dest,(byte*)": ");
         mlib_gs_strln(ax_lib_dest,(*(*ax_decls_ss_symboltable)[(i)-1]).name);
-L1239 :;
-    }L1240 :;
+L1242 :;
+    }L1243 :;
     ;
     mlib_gs_line(ax_lib_dest);
 }
@@ -33118,9 +33138,9 @@ static void ax_writeexe_showimporttable(void) {
     struct ax_writeexe_importrec p;
     i64 i;
     mlib_gs_strln(ax_lib_dest,(byte*)"Proc Dll List");
-    L1241 :;
+    L1244 :;
     for (i=(i64)1;i<=ax_writeexe_ndlls;++i) {
-L1242 :;
+L1245 :;
         mlib_gs_strint(ax_lib_dest,i);
         mlib_gs_str(ax_lib_dest,(byte*)": ");
         mlib_gs_str(ax_lib_dest,ax_writeexe_dlltable[(i)-1].name);
@@ -33130,14 +33150,14 @@ L1242 :;
         ax_writeexe_gs_value((byte*)"\t\tName Table Offset",ax_writeexe_dlltable[(i)-1].nametableoffset);
         ax_writeexe_gs_value((byte*)"\t\tAddr Table Offset",ax_writeexe_dlltable[(i)-1].addrtableoffset);
         ax_writeexe_gs_value((byte*)"\t\tDLL Name Offset  ",ax_writeexe_dlltable[(i)-1].dllnameoffset);
-L1243 :;
-    }L1244 :;
+L1246 :;
+    }L1247 :;
     ;
     mlib_gs_line(ax_lib_dest);
     mlib_gs_strln(ax_lib_dest,(byte*)"Proc Import List");
-    L1245 :;
+    L1248 :;
     for (i=(i64)1;i<=ax_writeexe_nimports;++i) {
-L1246 :;
+L1249 :;
         memcpy(&p,&ax_writeexe_importtable[(i)-1],48);
         mlib_gs_strint(ax_lib_dest,i);
         mlib_gs_str(ax_lib_dest,(byte*)": ");
@@ -33157,8 +33177,8 @@ L1246 :;
             mlib_gs_str(ax_lib_dest,str);
             mlib_gs_strln(ax_lib_dest,(byte*)" (---)");
         };
-L1247 :;
-    }L1248 :;
+L1250 :;
+    }L1251 :;
     ;
     mlib_gs_line(ax_lib_dest);
 }
@@ -33175,9 +33195,9 @@ static void ax_writeexe_showsections(void) {
     i64 i;
     mlib_gs_strln(ax_lib_dest,(byte*)"proc Section Headersxxx");
     mlib_gs_line(ax_lib_dest);
-    L1249 :;
+    L1252 :;
     for (i=(i64)1;i<=ax_writeexe_nsections;++i) {
-L1250 :;
+L1253 :;
         memcpy(&s,&ax_writeexe_sectiontable[(i)-1],72);
         mlib_gs_str(ax_lib_dest,(byte*)"Section ");
         mlib_gs_strint(ax_lib_dest,i);
@@ -33193,8 +33213,8 @@ L1250 :;
         ax_writeexe_gs_value((byte*)"    Nrelocs",s.nrelocs);
         ax_writeexe_gs_value((byte*)"    Data",(i64)(s.data));
         mlib_gs_line(ax_lib_dest);
-L1251 :;
-    }L1252 :;
+L1254 :;
+    }L1255 :;
     ;
 }
 
@@ -33206,26 +33226,26 @@ static byte * ax_writeexe_extractlibname(byte * name,i64 * libno,i64 moduleno) {
     i64 n;
     name2 = (byte *)(0);
     //reenter:
-L1253 :;
+L1256 :;
 ;
     s = name;
     (*libno) = (i64)0;
-    L1254 :;
+    L1257 :;
     while (!!((u64)((*s)))) {
         if (((u64)((*s)) == '.')) {
             memcpy((void *)(str),(void *)(name),(u64)((s - name)));
             str[(((s - name) + (i64)1))-1] = (u64)0u;
             strcat((i8 *)(str),(i8 *)((byte*)".dll"));
-            L1257 :;
+            L1260 :;
             for (i=(i64)1;i<=ax_writeexe_ndlls;++i) {
-L1258 :;
+L1261 :;
                 if (!!(mlib_eqstring(str,ax_writeexe_dlltable[(i)-1].name))) {
                     (*libno) = i;
                     ++ax_writeexe_dlltable[((*libno))-1].nprocs;
                     return (!!(name2)?name2:(s + (i64)1));
                 };
-L1259 :;
-            }L1260 :;
+L1262 :;
+            }L1263 :;
             ;
             if ((ax_writeexe_ndlls >= (i64)50)) {
                 ax_lib_gerror((byte*)"Too many libs");
@@ -33236,17 +33256,17 @@ L1259 :;
             return (!!(name2)?name2:(s + (i64)1));
         };
         ++s;
-L1255 :;
-    }L1256 :;
+L1258 :;
+    }L1259 :;
     ;
-    L1261 :;
+    L1264 :;
     for (i=(i64)1;i<=ax_decls_nsearchlibs;++i) {
-L1262 :;
+L1265 :;
         if (!!(oswindows_os_getdllprocaddr(ax_writeexe_libinsttable[(i)-1],name))) {
             n = i;
-            goto L1264 ;
+            goto L1267 ;
         };
-L1263 :;
+L1266 :;
     }
     {
         msysnewc_m_print_startcon();
@@ -33256,7 +33276,7 @@ L1263 :;
         msysnewc_m_print_end();
         ;
         ax_lib_gerror((byte*)"Can't find external function");
-    }L1264 :;
+    }L1267 :;
     ;
     if (!!(((*libno) = ax_writeexe_libnotable[(n)-1]))) {
         ++ax_writeexe_dlltable[((*libno))-1].nprocs;
@@ -33279,9 +33299,9 @@ static void ax_writeexe_scanst(void) {
     i64 libno;
     struct ax_decls_strec *  d;
     byte *  name;
-    L1265 :;
+    L1268 :;
     for (i=(i64)1;i<=ax_decls_ss_nsymbols;++i) {
-L1266 :;
+L1269 :;
         d = (*ax_decls_ss_symboltable)[(i)-1];
         if (((i64)((*d).symbol)==(i64)21)) {
             if ((ax_writeexe_nimports >= (i64)3000)) {
@@ -33308,8 +33328,8 @@ L1266 :;
                 };
             };
         };
-L1267 :;
-    }L1268 :;
+L1270 :;
+    }L1271 :;
     ;
 }
 
@@ -33323,7 +33343,7 @@ static void ax_writeexe_relocdata(struct ax_writeexe_sectionrec * s) {
     i64 thunkoffset;
     p = (byte *)(ax_lib_bufferelemptr((*s).data,(i64)0));
     r = (*s).relocs;
-    L1269 :;
+    L1272 :;
     while (!!(r)) {
         d = (*ax_decls_ss_symboltable)[((*r).stindex)-1];
         index = (i64)((*d).importindex);
@@ -33356,8 +33376,8 @@ static void ax_writeexe_relocdata(struct ax_writeexe_sectionrec * s) {
             ax_lib_gerror((byte*)"Can't do this rel type");
         };
         r = (*r).nextreloc;
-L1270 :;
-    }L1271 :;
+L1273 :;
+    }L1274 :;
     ;
 }
 
@@ -33648,21 +33668,21 @@ static void ax_writeexe_getoffsets(void) {
     imageoffset = (i64)4096;
     codesize = ax_writeexe_sectiontable[((i64)1)-1].virtsize;
     pcode = (byte *)(ax_lib_bufferelemptr(ax_decls_ss_code,codesize));
-    L1272 :;
+    L1275 :;
     while (!!((codesize & (i64)7))) {
         (*pcode++) = (u64)((i64)144);
         ++codesize;
-L1273 :;
-    }L1274 :;
+L1276 :;
+    }L1277 :;
     ;
     thunkoffset = codesize;
     codesize += (ax_writeexe_nimports * (i64)8);
     ax_writeexe_sectiontable[((i64)1)-1].virtsize = codesize;
     ax_writeexe_sectiontable[((i64)1)-1].rawsize = ax_writeexe_roundtoblock(codesize,(i64)512);
     ax_lib_buffercheck(ax_decls_ss_code,((codesize - thunkoffset) + (i64)16));
-    L1275 :;
+    L1278 :;
     for (i=(i64)1;i<=ax_writeexe_nsections;++i) {
-L1276 :;
+L1279 :;
         if ((ax_writeexe_sectiontable[(i)-1].segtype != (i64)3)) {
             ax_writeexe_sectiontable[(i)-1].rawoffset = fileoffset;
         };
@@ -33675,45 +33695,45 @@ L1276 :;
             impdirno = i;
         };
         imageoffset = ax_writeexe_roundtoblock((imageoffset + ax_writeexe_sectiontable[(i)-1].virtsize),(i64)4096);
-L1277 :;
-    }L1278 :;
+L1280 :;
+    }L1281 :;
     ;
     diroffset += ((ax_writeexe_ndlls + (i64)1) * (i64)20);
-    L1279 :;
+    L1282 :;
     for (i=(i64)1;i<=ax_writeexe_ndlls;++i) {
-L1280 :;
+L1283 :;
         ax_writeexe_dlltable[(i)-1].nametableoffset = diroffset;
         diroffset += ((ax_writeexe_dlltable[(i)-1].nprocs + (i64)1) * (i64)8);
-L1281 :;
-    }L1282 :;
+L1284 :;
+    }L1285 :;
     ;
     ax_writeexe_fileiatoffset = diroffset;
-    L1283 :;
+    L1286 :;
     for (i=(i64)1;i<=ax_writeexe_ndlls;++i) {
-L1284 :;
+L1287 :;
         ax_writeexe_dlltable[(i)-1].addrtableoffset = diroffset;
         diroffset += ((ax_writeexe_dlltable[(i)-1].nprocs + (i64)1) * (i64)8);
-L1285 :;
-    }L1286 :;
+L1288 :;
+    }L1289 :;
     ;
     ax_writeexe_fileiatsize = (diroffset - ax_writeexe_fileiatoffset);
     hinttableoffset = diroffset;
-    L1287 :;
+    L1290 :;
     for (i=(i64)1;i<=ax_writeexe_nimports;++i) {
-L1288 :;
+L1291 :;
         length = ((i64)(strlen((i8 *)(ax_writeexe_importtable[(i)-1].name))) + (i64)3);
         if (!!((length & (i64)1))) {
             ++length;
         };
         ax_writeexe_importtable[(i)-1].hintnameoffset = diroffset;
         diroffset += length;
-L1289 :;
-    }L1290 :;
+L1292 :;
+    }L1293 :;
     ;
     diroffset = ax_writeexe_roundtoblock(diroffset,(i64)4);
-    L1291 :;
+    L1294 :;
     for (i=(i64)1;i<=ax_writeexe_ndlls;++i) {
-L1292 :;
+L1295 :;
         length = ((i64)(strlen((i8 *)(ax_writeexe_dlltable[(i)-1].name))) + (i64)1);
         if (!!((length & (i64)1))) {
             ++length;
@@ -33722,8 +33742,8 @@ L1292 :;
         diroffset += (ax_writeexe_dlltable[(i)-1].nprocs * (i64)4);
         ax_writeexe_dlltable[(i)-1].dllnameoffset = diroffset;
         diroffset += length;
-L1293 :;
-    }L1294 :;
+L1296 :;
+    }L1297 :;
     ;
     dirstartoffset = ax_writeexe_sectiontable[(impdirno)-1].virtoffset;
     offset = (diroffset - dirstartoffset);
@@ -33733,9 +33753,9 @@ L1293 :;
     ax_writeexe_imagesize = ax_writeexe_roundtoblock((imageoffset + (diroffset - dirstartoffset)),(i64)4096);
     pimpdir = (ax_writeexe_sectiontable[(impdirno)-1].bytedata = (byte *)(mlib_pcm_allocz(offset)));
     pdir = (struct ax_objdecls_importdirrec *)(pimpdir);
-    L1295 :;
+    L1298 :;
     for (i=(i64)1;i<=ax_writeexe_ndlls;++i) {
-L1296 :;
+L1299 :;
         (*pdir).implookuprva = (u64)(ax_writeexe_dlltable[(i)-1].nametableoffset);
         (*pdir).impaddressrva = (u64)(ax_writeexe_dlltable[(i)-1].addrtableoffset);
         (*pdir).namerva = (u64)(ax_writeexe_dlltable[(i)-1].dllnameoffset);
@@ -33743,9 +33763,9 @@ L1296 :;
         iatoffset = ax_writeexe_dlltable[(i)-1].addrtableoffset;
         paddr = (i64 *)(((pimpdir + iatoffset) - dirstartoffset));
         pname = (i64 *)(((pimpdir + ax_writeexe_dlltable[(i)-1].nametableoffset) - dirstartoffset));
-        L1299 :;
+        L1302 :;
         for (j=(i64)1;j<=ax_writeexe_nimports;++j) {
-L1300 :;
+L1303 :;
             if ((ax_writeexe_importtable[(j)-1].libno == i)) {
                 (*pname) = ((*paddr) = ax_writeexe_importtable[(j)-1].hintnameoffset);
                 ax_writeexe_importtable[(j)-1].iatoffset = iatoffset;
@@ -33753,45 +33773,45 @@ L1300 :;
                 ++pname;
                 ++paddr;
             };
-L1301 :;
-        }L1302 :;
-        ;
-L1297 :;
-    }L1298 :;
-    ;
-    L1303 :;
-    for (i=(i64)1;i<=ax_writeexe_nimports;++i) {
 L1304 :;
+        }L1305 :;
+        ;
+L1300 :;
+    }L1301 :;
+    ;
+    L1306 :;
+    for (i=(i64)1;i<=ax_writeexe_nimports;++i) {
+L1307 :;
         phint = ((pimpdir + ax_writeexe_importtable[(i)-1].hintnameoffset) - dirstartoffset);
         phint += (i64)2;
         strcpy((i8 *)(phint),(i8 *)(ax_writeexe_importtable[(i)-1].name));
-L1305 :;
-    }L1306 :;
+L1308 :;
+    }L1309 :;
     ;
     xxx = dirstartoffset;
-    L1307 :;
+    L1310 :;
     for (i=(i64)1;i<=ax_writeexe_ndlls;++i) {
-L1308 :;
+L1311 :;
         pextra = (u32 *)(((pimpdir + ax_writeexe_dlltable[(i)-1].dllextraoffset) - dirstartoffset));
-        L1311 :;
+        L1314 :;
         for (j=(i64)1;j<=ax_writeexe_dlltable[(i)-1].nprocs;++j) {
-L1312 :;
+L1315 :;
             (*pextra) = (u64)(xxx);
             ++pextra;
-L1313 :;
-        }L1314 :;
+L1316 :;
+        }L1317 :;
         ;
         xxx += (i64)20;
         phint = ((pimpdir + ax_writeexe_dlltable[(i)-1].dllnameoffset) - dirstartoffset);
         strcpy((i8 *)(phint),(i8 *)(ax_writeexe_dlltable[(i)-1].name));
-L1309 :;
-    }L1310 :;
+L1312 :;
+    }L1313 :;
     ;
     thunkptr = (byte *)(ax_lib_bufferelemptr(ax_decls_ss_code,thunkoffset));
     codebase = (byte *)(ax_lib_bufferelemptr(ax_decls_ss_code,(i64)0));
-    L1315 :;
+    L1318 :;
     for (i=(i64)1;i<=ax_writeexe_nimports;++i) {
-L1316 :;
+L1319 :;
         ax_writeexe_importtable[(i)-1].thunkoffset = (thunkptr - codebase);
         (*thunkptr++) = (u64)((i64)72);
         (*thunkptr++) = (u64)((i64)255);
@@ -33800,8 +33820,8 @@ L1316 :;
         thunkaddr = ((i64)4194304 + ax_writeexe_importtable[(i)-1].iatoffset);
         (*(i32 *)(thunkptr)) = thunkaddr;
         thunkptr += (i64)4;
-L1317 :;
-    }L1318 :;
+L1320 :;
+    }L1321 :;
     ;
 }
 
@@ -33823,7 +33843,7 @@ byte * ax_disasm_decodeinstr(byte * * cptr,byte * baseaddr) {
     ax_disasm_f2override = (ax_disasm_f3override = (ax_disasm_sizeoverride = (ax_disasm_addroverride = (i64)0)));
     ax_disasm_basereg = (ax_disasm_indexreg = (ax_disasm_offset = (i64)0));
     //retry:
-L1319 :;
+L1322 :;
 ;
     switch ((opc = (i64)((*ax_disasm_codeptr++)))) {
     case 0:;
@@ -33932,7 +33952,7 @@ L1319 :;
     case 79:;
     {
         ax_disasm_rex = opc;
-        goto L1319 ;
+        goto L1322 ;
 ;
     }break;
     case 80:;
@@ -33973,13 +33993,13 @@ L1319 :;
     case 102:;
     {
         ax_disasm_sizeoverride = (i64)1;
-        goto L1319 ;
+        goto L1322 ;
 ;
     }break;
     case 103:;
     {
         ax_disasm_addroverride = (i64)1;
-        goto L1319 ;
+        goto L1322 ;
 ;
     }break;
     case 104:;
@@ -34109,7 +34129,7 @@ L1319 :;
     case 144:;
     {
         if (!!(ax_disasm_rex)) {
-            goto L1320 ;
+            goto L1323 ;
 ;
         };
         ax_disasm_genstr((byte*)"nop");
@@ -34123,7 +34143,7 @@ L1319 :;
     case 151:;
     {
         //doexch:
-L1320 :;
+L1323 :;
 ;
         reg = ((opc & (i64)7) + (i64)1);
         if (!!((ax_disasm_rex & (i64)1))) {
@@ -34343,7 +34363,7 @@ L1320 :;
             ax_disasm_genstr((byte*)"repne");
         } else {
             ax_disasm_f2override = (i64)1;
-            goto L1319 ;
+            goto L1322 ;
 ;
         };
     }break;
@@ -34353,7 +34373,7 @@ L1320 :;
             ax_disasm_genstr((byte*)"repe");
         } else {
             ax_disasm_f3override = (i64)1;
-            goto L1319 ;
+            goto L1322 ;
 ;
         };
     }break;
@@ -34379,14 +34399,14 @@ L1320 :;
     case 254:;
     {
         w = (i64)0;
-        goto L1321 ;
+        goto L1324 ;
 ;
     }break;
     case 255:;
     {
         w = (i64)1;
         //doff:
-L1321 :;
+L1324 :;
 ;
         ax_disasm_decodeaddr(w);
         if ((ax_disasm_rmopc==(i64)0)) {
@@ -34437,7 +34457,7 @@ L1321 :;
     n = (ax_disasm_codeptr - pstart);
     av_1 = n;
     while (av_1-- > 0) {
-L1322 :;
+L1325 :;
         msysnewc_m_print_startstr(str2);
         msysnewc_m_print_i64((i64)((*pstart++)),(byte*)"z2H");
         msysnewc_m_print_nogap();
@@ -34445,15 +34465,15 @@ L1322 :;
         msysnewc_m_print_end();
         ;
         strcat((i8 *)(str),(i8 *)(str2));
-L1323 :;
-    }L1324 :;
+L1326 :;
+    }L1327 :;
     ;
     av_2 = ((i64)14 - n);
     while (av_2-- > 0) {
-L1325 :;
+L1328 :;
         strcat((i8 *)(str),(i8 *)((byte*)"-- "));
-L1326 :;
-    }L1327 :;
+L1329 :;
+    }L1330 :;
     ;
     strcat((i8 *)(str),(i8 *)(ax_disasm_deststr));
     (*cptr) = ax_disasm_codeptr;
@@ -34585,7 +34605,7 @@ static void ax_disasm_decodetwobyteinstr(void) {
     {
         opcstr = (byte*)"adds";
         //doarith:
-L1328 :;
+L1331 :;
 ;
         ax_disasm_genstr(opcstr);
         ax_disasm_decodeaddr((i64)1);
@@ -34603,7 +34623,7 @@ L1328 :;
     case 89:;
     {
         opcstr = (byte*)"muls";
-        goto L1328 ;
+        goto L1331 ;
 ;
     }break;
     case 90:;
@@ -34624,25 +34644,25 @@ L1328 :;
     case 92:;
     {
         opcstr = (byte*)"subs";
-        goto L1328 ;
+        goto L1331 ;
 ;
     }break;
     case 93:;
     {
         opcstr = (byte*)"mins";
-        goto L1328 ;
+        goto L1331 ;
 ;
     }break;
     case 94:;
     {
         opcstr = (byte*)"divs";
-        goto L1328 ;
+        goto L1331 ;
 ;
     }break;
     case 95:;
     {
         opcstr = (byte*)"maxs";
-        goto L1328 ;
+        goto L1331 ;
 ;
     }break;
     case 110:;
@@ -35469,7 +35489,7 @@ static void ax_writeobj_writerelocs(struct ax_decls_relocrec * r,i64 nrelocs) {
     if ((nrelocs == (i64)0)) {
         return;
     };
-    L1329 :;
+    L1332 :;
     while (!!(r)) {
         if (((*r).reloctype==(i64)2) || ((*r).reloctype==(i64)1)) {
             d = (*ax_decls_ss_symboltable)[((*r).stindex)-1];
@@ -35492,8 +35512,8 @@ static void ax_writeobj_writerelocs(struct ax_decls_relocrec * r,i64 nrelocs) {
         memcpy((void *)(ax_writeobj_dataptr),(void *)(&s),(u64)((i64)10));
         ax_writeobj_dataptr += (i64)10;
         r = (*r).nextreloc;
-L1330 :;
-    }L1331 :;
+L1333 :;
+    }L1334 :;
     ;
 }
 
@@ -35504,12 +35524,12 @@ static void ax_writeobj_writedata(struct ax_decls_dbuffer * data) {
 
 static void ax_writeobj_writesymboltable(void) {
     i64 i;
-    L1332 :;
+    L1335 :;
     for (i=(i64)1;i<=ax_writeobj_nsymbols;++i) {
-L1333 :;
+L1336 :;
         ax_writeobj_writerecord((void *)(&ax_writeobj_symboltable[(i)]),(i64)18);
-L1334 :;
-    }L1335 :;
+L1337 :;
+    }L1338 :;
     ;
 }
 
@@ -35520,14 +35540,14 @@ static void ax_writeobj_writestringtable(void) {
     p = (i32 *)(ax_writeobj_dataptr);
     (*p) = ax_writeobj_nextstringoffset;
     ax_writeobj_dataptr += (i64)4;
-    L1336 :;
+    L1339 :;
     for (i=(i64)1;i<=ax_writeobj_nstrings;++i) {
-L1337 :;
+L1340 :;
         n = (ax_writeobj_stringlengths[(i)-1] + (i64)1);
         memcpy((void *)(ax_writeobj_dataptr),(void *)(ax_writeobj_stringtable[(i)-1]),(u64)(n));
         ax_writeobj_dataptr += n;
-L1338 :;
-    }L1339 :;
+L1341 :;
+    }L1342 :;
     ;
 }
 
@@ -35578,12 +35598,12 @@ static struct ax_objdecls_imagesymbol * ax_writeobj_strtoaux(byte * s) {
     p = (byte *)(&r);
     memset((void *)(p),(i64)0,(u64)((i64)18));
     n = (i64)0;
-    L1340 :;
+    L1343 :;
     while ((((i64)((*s)) != (i64)0) && (n < (i64)18))) {
         (*p++) = (u64)((*s++));
         ++n;
-L1341 :;
-    }L1342 :;
+L1344 :;
+    }L1345 :;
     ;
     return &r;
 }
@@ -35621,9 +35641,9 @@ static void ax_writeobj_convertsymboltable(void) {
     ax_writeobj_stoffset = (ax_writeobj_nsymbols - (i64)1);
     ax_writeobj_nstrings = (i64)0;
     ax_writeobj_nextstringoffset = (i64)4;
-    L1343 :;
+    L1346 :;
     for (i=(i64)1;i<=ax_decls_ss_nsymbols;++i) {
-L1344 :;
+L1347 :;
         s = (*ax_decls_ss_symboltable)[(i)-1];
         name = (*s).name;
         if (((i64)((*s).segment)==(i64)3)) {
@@ -35643,8 +35663,8 @@ L1344 :;
             scope = (i64)0;
         };
         ax_writeobj_addsymbol(ax_writeobj_makesymbol((*s).name,(i64)((*s).namelen),(i64)((*s).offset),sect,(i64)0,scope,(i64)0));
-L1345 :;
-    }L1346 :;
+L1348 :;
+    }L1349 :;
     ;
 }
 
