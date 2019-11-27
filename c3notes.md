@@ -22,7 +22,7 @@ Another problem was that, while the M compiler is very fast (near instant for pr
 
 ### @bitcast
 
-This is type-punning. While M normally casts as T(X) to convert X to T, type-punning using T@(X) to reinterpret bits without conversion, which seems to be what @bitcast does.
+This is type-punning. While M normally casts as T(X) to convert X to T, type-punning uses T@(X) to reinterpret bits without conversion, which seems to be what @bitcast does.
 
 It also works for expressions, while the equivalent in C only works for lvalues (eg. \*(T\*)&(X)), so another thing that won't easily translate to C.
 
