@@ -8,25 +8,25 @@ But there are also general comments.
 
 I made an attempt at a C to M conversion, but it was very poor. It the end it was simply used as a way to view C source, in my own more Algol-like M syntax, but the resulting code can't run as the semantics are too different. As one example, C's chaotic 'switch' statement cannot always be reliably translated.
 
-I do make use of the translator for C library headers, to get a starting point for a manually tweaked version to end up with an interface file in my language. One killer here is dealing with C's crude textual macros (my language doesn't have text-based macros).
+I do make use of the translator for C library headers, to get a starting point that can be manually edited to end up with an interface file in my language. One killer here is dealing with C's crude textual macros (my language doesn't have text-based macros).
 
 ### Transpile-compile via gcc, tcc, clang
 
 My M compiler only directly targets x64 native code for Windows. For anything else, I have reintroduced a C source target, which can be compiled with gcc or tcc (clang doesn't work on my machine), and which extends the range to 32-bit machines, Linux, and ARM processors.
 
-But they have always had difficulties, and the C target doesn't support many features of mine, so it effectively works for a subset only. (One big difficulty was using printf format codes, either used implicity, or explicitly (when M calls printf as a foreign function. What format to use for my int64 types? To work across platforms, it needs to be a macro like PRId64, but that only exists if coding directly in C. Use of *printf functions had to be all but eliminated.)
+But they have always had difficulties, and the C target doesn't support many features of mine, so it effectively works for a subset only. (One big difficulty was using printf format codes, either used implicity, or explicitly (when M calls printf as a foreign function. What format to use for my int64 types? To work across platforms, it needs to be a macro like PRId64, but that only exists if coding directly in C. Use of \*printf functions had to be all but eliminated.)
 
-Another problem was that, while the M compiler is very fast (near instant for programs a few tens of thousands of lines) it would hit a brick wall as soon as gcc was invoked, so the favoured compiler is tcc.
+Another problem was that, while the M compiler is very fast (near instant for programs a few tens of thousands of lines) it would hit a brick wall as soon as gcc was invoked, so the favoured C 'back-end' compiler is tcc.
 
 (This is significant because M is a whole-program compiler; all modules are compiled, and the output file, whether .exe or .c, is a single file. So for a C target, it will produce a large monolithic C file.)
 
 ### @bitcast
 
-This is type-punning. While M normally casts as T(X) to convert X to T, type-punning usings T@(X) to reinterpret bits without conversion, which seems to be what @bitcast does.
+This is type-punning. While M normally casts as T(X) to convert X to T, type-punning using T@(X) to reinterpret bits without conversion, which seems to be what @bitcast does.
 
-It also works for expressions, while the equivalent in C only works for lvalues (eg. *(T*)&(X)), another thing that won't easily translate to C.
+It also works for expressions, while the equivalent in C only works for lvalues (eg. \*(T\*)&(X)), so another thing that won't easily translate to C.
 
-(I recently made changes which mean that T(X) syntax is ambiguous - T can introduce a declaration, or a cast. So except for the simplest cases, casts are now written as cast(X,T) and cast@(X,T) for type-punning.
+(I recently made changes which mean that T(X) syntax is ambiguous - T can introduce a declaration, or a cast. So except for the simplest cases, casts are now written as cast(X,T) and cast@(X,T) for type-punning, which is not for your bitcast.
 
 Note that this also works as cast(X) where it will automatically cast to whatever type is called for, which is incredibly handy.)
 
@@ -34,7 +34,7 @@ Note that this also works as cast(X) where it will automatically cast to whateve
 
 Looking only at binary operators, C had too many. C3 has fewer, but in M there are fewer still, as <<,>> have the same precedence as * and / (since they do the same job of scaling up or down).
 
-And ^, | and & the same as + and - (since there is no particular reason why one group should be higher or lower than the other, and hence harder to remember which is which).
+And ^, | and & have the same as + and - (since there is no particular reason why one group should be higher or lower than the other, which hence makes it harder to remember which is which).
 
 ### Member access using . even for pointers
 
@@ -48,13 +48,13 @@ Now, the dereference can be added by the compiler, to give less cluttered code, 
 
 As mentioned in my reddit post, this another feature that is a massive change from C. And one of the many things that make conversion *from* C hard (also indexing of pointers with array syntax).
 
-(M also use value arrays, but with limited support, as from my experience of having them for decades, they were rarely used. At least, there isn't a big hole in the type system as happens with C.)
+(M also uses value arrays, but with limited support, as from my experience of having them for decades, they were rarely used. At least, there isn't a big hole in the type system as happens with C.)
 
 ### Fixed arrays
 
 You say the length of the array is part of its type. This might be making the same mistake as Pascal (one of its biggest).
 
-Typically, you will have a function that takes a pointer to array, but you might variously want to pass it a pointer to an int\[4\] array, or an int\[400\] array (with whatever arrangements to pass the length). Or are there are features to help with that (I think I remember seeing slices).
+Typically, you will have a function that takes a pointer to array, but you might variously want to pass it a pointer to an int\[4\] array, or an int\[400\] array (with whatever arrangements to pass the length). Or are there are features to help with that (I think I remember seeing slices)?
 
 Yes, looking further, there is a chart of types int\[4\], int\[\], int\[:\], int\[4\]\*, int\*, which I have to say looks somewhat bewildering (what's difference between copy and assign?).
 
@@ -65,7 +65,7 @@ Yes, looking further, there is a chart of types int\[4\], int\[\], int\[:\], int
                 with any ref[N], with lengths dealt with explicitly)
     slice[]T    View-slice array of T, comprising (pointer, length), always set at runtime
 
-Slices not really working properly, but you can turn \[\]T into a slice, which is about as far as it goes. Slices are mainly a mechanism used in function parameters, so that you can pass a slice\[\]T value, or more usefully any \[\]T value, with the length taken care of implicitly.)
+Slices not really working yet, but you can turn \[\]T into a slice, which is about as far as it goes. Slices are mainly a mechanism used in function parameters, so that you can pass a slice\[\]T value, or more usefully any \[\]T value, with the length taken care of implicitly.)
 
 ### Function named arguments
 
@@ -77,8 +77,7 @@ Is "=" not an assignment in an expression as it is in C? If not, then that is an
 
 It would be ambiguous here because 'times' could be a local variable, that you are setting to 1, then passing that same value to testNamed.
 
-(M uses ":" for that purpose. There, "=", means equality, so it would still be ambiguous. In an older language, I did use "=" for named parameters; but I had to use (times=1) (equality) to disambiguate from time=1 (keyword parameter).)
-
+(M uses ":" for that purpose. There, "=", means equality, so it would still be ambiguous. In an older language, I did use "=" for named parameters; but I had to use (times=1) (equality) to disambiguate from times=1 (keyword parameter).)
 
 
 ### Naming Rules
@@ -100,19 +99,19 @@ Do *init* etc serve the purpose of an IDE, but from the command-line? Some peopl
 
 I take it that the examples with "\[\[executable\]\]" and so on are written inside C3 source modules?
 
-I find this part very confusing. (But then I've never managed to use make files either.)
+I find this part confusing too. (But then I've never managed to use make files either.)
 
 ### Importing modules
 
-The module system I also found a little confusing. You use example files "file_a.c3" and "file_b.c3", but both start with the line "**module foo;**".
+The module system I also found hard to understand. You use example files "file_a.c3" and "file_b.c3", but both start with the line "**module foo;**".
 
-But now I look further up, and you say that a module can consiste of multile files. Now it is definitely confusing!
+But now I look further up, and you say that a module can consist of multile files. Now it is definitely confusing!
 
-Also, since the module name, say "foo", is only found inside, not only one file, but possibly half a dozen files, how is the compiler going to find those files? Does it have to look inside all of them?
+Also, since the module name, say "foo", is only found inside, not only one file, but possibly half a dozen files, how is the compiler going to find the files corresponding to module foo, when it sees 'import foo'? Does it have to look inside all of them?
 
-Under Visibility you say: "All files in the same module...". Huh? You mean all files comprising the same module?
+Under Visibility you say: "All files in the same module...". You mean all files comprising the same module?
 
-I'm sorry, but this does look a very poor and hard-to-understand way of implementing modules.
+I'm sorry, but this does look a very poor way of implementing modules.
 
 (M has a simpler module system. Each source file comprises a module, with the same name as the file (module names must be valid identifiers so that imposes a restriction).
 
@@ -120,7 +119,7 @@ So no 'module' keyword. To import a specific module, you say:
 
     import files
 
-to import the source file files.m. To use an alias, use:
+to import the source file files.m. To use an alias, write:
 
     import files as fs
 
@@ -156,13 +155,13 @@ Yep, I have that, written like this:
 
     []byte file = bininclude("zip.exe")
     
-Although this binary version is not yet used much. I do extensively use this form:
+Although this binary version is not yet used much (and is implemented inefficiently). I do extensively use this form:
 
-    ichar file = strinclude "lib.m"
+    ichar file = strinclude "lib.m"       # ichar is like 'char&'
 
 This incorporates an entire text file into the program source, as a string constant (with control characters changed to escape sequences). I used this to include, for example, all the standard headers of my C compiler, so that it operates from one executable file, nothing else.
 
-(With a dynamic language where strings can include binary data, strinclude can already deal with binary files.)
+(With my dynamic language where strings can include binary data, strinclude can already deal with binary files.)
 
 #### Case as a range
 
@@ -170,11 +169,11 @@ That is fairly standard (even gcc-C has it), why is it crazy?
 
 #### Extended case
 
-I have a form of that, but I haven't really used it yet. If you want something crazy that I *do* use, try this. First, in M, there these 3 kinds of long statements:
+I have a form of that, but I haven't really used it yet. If you want something crazy that I *do* use, try this. First, in M, there are these 3 kinds of long statements:
 
     if ... then ... elsif ... then .... end if
     case expr when a,b,c then ... when d then ... else ... end case
-    switch expr when a, b, c then ....   (same as case, but for constant ints only using a jumptable)
+    switch expr when a,b,c then ....   (same as case, but for constant ints only using a jumptable)
 
 The crazy thing is being able to mix them up like this:
 
@@ -193,6 +192,18 @@ The crazy thing is being able to mix them up like this:
 So at the 'else' point, you can switch to any of the three forms. All to save some indentation.
 
 Less crazy, but also used a lot, are looping versions of case and switch, called docase and doswitch.
-
-
     
+#### Generic modules
+
+Possibly that idea belongs in this crazy section. But in case in requires a better example of exactly how it would be used. And what does it emulate, if anything: classes, templates?
+
+
+### Enums
+
+You have .min and .max, which looks interesting. However, isn't there a danger of an assumption that the set of enums will be consecutive between .min and .max values, or that people may try and iterate between those?
+
+Because it seems enums can still be arbitrary sets of values: {a = 64, b=64, c=a-1, d=3}. Here min/max will be 3/64, with one itermediate value of 63, and two values sharing 64.
+
+The naming also suggests that the enums can be used in normal arithmetic.
+
+(M doesn't do much with basic enums (except enums names can refer to each other in any order), but it introduces a 'tabledata' feature which can define enums as well as parallel sets of data. Different enough from enums that I won't go into it further.)
