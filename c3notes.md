@@ -154,7 +154,7 @@ Yep, I have that, written like this:
     
 Although this binary version is not yet used much (and is implemented inefficiently). I do extensively use this form:
 
-    ichar file = strinclude "lib.m"       # ichar is like 'char&'
+    ichar file = strinclude "lib.m"       # ichar is like 'char*'
 
 This incorporates an entire text file into the program source, as a string constant (with control characters changed to escape sequences). I used this to include, for example, all the standard headers of my C compiler, so that it operates from one executable file, nothing else.
 
