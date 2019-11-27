@@ -14,7 +14,7 @@ I do make use of the translator for C library headers, to get a starting point t
 
 My M compiler only directly targets x64 native code for Windows. For anything else, I have reintroduced a C source target, which can be compiled with gcc or tcc (clang doesn't work on my machine), and which extends the range to 32-bit machines, Linux, and ARM processors.
 
-But they have always had difficulties, and the C target doesn't support many features of mine, so it effectively works for a subset only. (One big difficulty was using printf format codes, either used implicity, or explicitly (when M calls printf as a foreign function. What format to use for my int64 types? To work across platforms, it needs to be a macro like PRId64, but that only exists if coding directly in C. Use of \*printf functions had to be all but eliminated.)
+But they have always had difficulties, and the C target doesn't support many features of mine, so it effectively works for a subset only. (One big difficulty was using printf format codes, either used implicity, or explicitly. When M calls printf as a foreign function, which format to use for my int64 types? To work across platforms, it needs to be a macro like PRId64, but that only exists if coding directly in C. Use of \*printf functions had to be all but eliminated.)
 
 Another problem was that, while the M compiler is very fast (near instant for programs a few tens of thousands of lines) it would hit a brick wall as soon as gcc was invoked, so the favoured C 'back-end' compiler is tcc.
 
@@ -26,7 +26,7 @@ This is type-punning. While M normally casts as T(X) to convert X to T, type-pun
 
 It also works for expressions, while the equivalent in C only works for lvalues (eg. \*(T\*)&(X)), so another thing that won't easily translate to C.
 
-(I recently made changes which mean that T(X) syntax is ambiguous - T can introduce a declaration, or a cast. So except for the simplest cases, casts are now written as cast(X,T) and cast@(X,T) for type-punning, which is not for your bitcast.
+(I recently made changes which mean that T(X) syntax is ambiguous - T can introduce a declaration, or a cast. So except for the simplest cases, casts are now written as cast(X,T) and cast@(X,T) for type-punning, which is not far from your bitcast.
 
 Note that this also works as cast(X) where it will automatically cast to whatever type is called for, which is incredibly handy.)
 
@@ -34,7 +34,7 @@ Note that this also works as cast(X) where it will automatically cast to whateve
 
 Looking only at binary operators, C had too many. C3 has fewer, but in M there are fewer still, as <<,>> have the same precedence as * and / (since they do the same job of scaling up or down).
 
-And ^, | and & have the same as + and - (since there is no particular reason why one group should be higher or lower than the other, which hence makes it harder to remember which is which).
+And ^, | and & have the same as + and - (since there is no particular reason why one group should be higher or lower than the other, hence it makes it harder to remember which is which).
 
 ### Member access using . even for pointers
 
@@ -79,7 +79,6 @@ It would be ambiguous here because 'times' could be a local variable, that you a
 
 (M uses ":" for that purpose. There, "=", means equality, so it would still be ambiguous. In an older language, I did use "=" for named parameters; but I had to use (times=1) (equality) to disambiguate from times=1 (keyword parameter).)
 
-
 ### Naming Rules
 
 You don't allow $ in identifiers. While not officially allowed in C, many compilers support $, so that if translating from C to C3, that could cause problems. As could that 31-character limit (why?).
@@ -95,7 +94,7 @@ I found that a little confusing. My M compiler (called 'mm') can be run like thi
 ```
 This builds (and can run) the entire program (= one .exe file) given only the lead module prog.m.
 
-Do *init* etc serve the purpose of an IDE, but from the command-line? Some people may prefer to use their own!
+Do **init** etc serve the purpose of an IDE, but from the command-line? Some people may prefer to use their own!
 
 I take it that the examples with "\[\[executable\]\]" and so on are written inside C3 source modules?
 
@@ -103,9 +102,7 @@ I find this part confusing too. (But then I've never managed to use make files e
 
 ### Importing modules
 
-The module system I also found hard to understand. You use example files "file_a.c3" and "file_b.c3", but both start with the line "**module foo;**".
-
-But now I look further up, and you say that a module can consist of multile files. Now it is definitely confusing!
+The module system I also found hard to understand. You use example files "file_a.c3" and "file_b.c3", but both start with the line "**module foo;**". But now I look further up, and you say that a module can consist of multile files. Now it is definitely confusing!
 
 Also, since the module name, say "foo", is only found inside, not only one file, but possibly half a dozen files, how is the compiler going to find the files corresponding to module foo, when it sees 'import foo'? Does it have to look inside all of them?
 
@@ -189,21 +186,21 @@ The crazy thing is being able to mix them up like this:
     ....
     elseswitch....
     
-So at the 'else' point, you can switch to any of the three forms. All to save some indentation.
+So at the 'else' point, you can switch to any of the three forms. All to save some indentation and nesting.
 
 Less crazy, but also used a lot, are looping versions of case and switch, called docase and doswitch.
     
 #### Generic modules
 
-Possibly that idea belongs in this crazy section. But in case in requires a better example of exactly how it would be used. And what does it emulate, if anything: classes, templates?
+Possibly that idea belongs in this crazy section. But in any case it requires a better example of exactly how it would be used. And what does it emulate, if anything: classes, templates?
 
 
 ### Enums
 
 You have .min and .max, which looks interesting. However, isn't there a danger of an assumption that the set of enums will be consecutive between .min and .max values, or that people may try and iterate between those?
 
-Because it seems enums can still be arbitrary sets of values: {a = 64, b=64, c=a-1, d=3}. Here min/max will be 3/64, with one itermediate value of 63, and two values sharing 64.
+Because it seems enums can still be arbitrary sets of values: {a = 64, b=64, c=a-1, d=3}. Here min/max will be 3/64, with one intermediate value of 63, and two values sharing 64.
 
-The naming also suggests that the enums can be used in normal arithmetic.
+The naming also suggests that the enums can be used in normal arithmetic and that the ordering is important.
 
 (M doesn't do much with basic enums (except enums names can refer to each other in any order), but it introduces a 'tabledata' feature which can define enums as well as parallel sets of data. Different enough from enums that I won't go into it further.)
