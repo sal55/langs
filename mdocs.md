@@ -104,5 +104,118 @@ A Variant has a tagged, dynamic type which is assigned at runtime. It can contai
 ````
 Apart from the basic numeric types, these are unavailable in this form outside of variant type.
 
-### Example Program
+### Hello World
+```
+    proc start =
+        println "Hello, World!"
+    end
+```
+
+### Program Structure
+
+A program is a collection of source modules. Each module has this structure:
+
+* Imports
+* Function, variable, named const, type and macro definitions
+
+All such names will have 'module scope'.
+
+### Out of Order Definitions
+
+Functions can be written in any order. Code can refer to a function later in a module without any prior declaration.
+
+Variables can be declared in any order (although at module level, they normally go before any functions). Inside a function, local variables they can even all be defined at the end of the function.
+
+The same with types, named constants, and macros.
+
+Modules can be imported in any order. Circular and mutual imports are allowed.
+
+### M is Case Insensitive
+
+In M, the identifiers 'abc' and 'ABC' are equivalent. As are 'Abc', 'ABc', 'aBC' and 'abC'.
+
+Names imported from outside may need to be declared inside quotes unless they are all lower-case. But once declated, the name can be written in any combination of case.
+
+### Identifiers
+
+Thes are case-insensitive as mentioned, and consist of A-Z, a-z, 0-9, $ and \_. They cannot start with 0-9.
+
+### Source Character Set
+
+Input files are expected to be 8-bits. Program code and identifiers uses ASCII. UTF8 sequences can be used inside comments and string constants, but M otherwise knows nothing about UTF8.
+
+### Function Scope
+
+M doesn't have block scope like many languages. The body of a function forms exactly one scope. And one namespace.
+
+(Compare with C with an unlimited number of scopes inside a function, so that the same identifier can be reused any number of times even inside nested blocks, and which has three separate namespaces: normal, struct/enum tags, and labels.)
+
+### Static Variables
+
+All variables at module scope will be 'static'. Inside a function, a static variable needs 'static':
+```
+    int abc
+    int def = 400
+
+    proc fred =
+        static int ghi = 500
+    end
+```
+
+These all start off as all-zeros unless initialised. Any initialised variable must be a compile-time constant. Inside a function, a static variable keeps its last value from last time it was called.
+
+The ghi variable above will only stay at 500 until it's modified or reassigned. If fred() was recursive with multiple invocations and multiple sets of local frame variables, there will only be one ghi variable.
+
+Note all static initialisations are with "=". Runtime assignments are done with ":=".
+
+### Variable Declarations
+
+All variables need declaring, including variants (possible those can be optional at some settings to match how script languages work). Examples:
+```
+    int a, b, c
+    real x, y
+    word u, v
+
+    int d := 100
+    static int e = 200
+```
+
+### **mut** and **let**
+
+Variables can be declared like this:
+```
+    mut int a,b,c
+```
+To show that they are mutable (can be reassigned, or modified in-place). But 'mut' is optional so rarely appears (and would be a pain to have to write everywhere).
+
+There are also 'variables', if they can be called that, which can only be initialised once, then they are readonly:
+```
+    let d:=100
+```
+Now these cannot be reassigned or modified. (Although M doesn't try too hard to avoid that.)
+
+### The Module Scheme
+
+Module-level names can be exported (made available to other modules) by prefixing with 'global':
+```
+    global proc fred ...
+    global int abc
+```
+If the above is in sourc file B.m, then those names can be imported into file A.m like this:
+```
+    import b
+```
+Module B can now use names fred and abc, without any qualifiers. Only if other modules exporting fred and abc are also
+imported by A, causing ambiguity, is it necessary to use b.fred and b.abc.
+
+# Define Everything Once
+
+No separate declarations are required in M. Just define a module-level entity X on one place, and it's visible in any part of the same module, or in any part of the program by making it 'global', and importing to import the module containing X.
+
+Declarations are still needed for entities imported from outside the program. This will be names from external DLL shared libraries. Even then, only one declaration is needed.
+
+Usually, such names are declared inside an 'importdll' block. The names in such a block are automatically made global to other modules that import this module. Then those just need something like this:
+```
+    import clib     # clib.m contains some C runtime imports
+'''
 
