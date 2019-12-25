@@ -2,19 +2,60 @@
 
 I've no idea about writing a proper language reference or even a tutorial. The following is just a random collection of topics. Since I don't really expect anyone else to want to use this language, or even learn something about it, this is just to refresh my own memory about what features there are and how they work. Or to give notes as to what might need attention.
 
----
+### Overview
 
-M is a low level systems programming language, and can be used as modern alternative to C.( Although that is highly unlikely; most people seem happy to use C.)
+* M is a low level systems programming language first developed in early 80s to compile on and for 8-bit microprocessors.
 
-In some ways it is a little higher level than C and has a few more features, but then a lot of things in C are not available, such as its macro system. For a list of comparisons, see [List](list.md).
+* The non-brace syntax was inspired by Algol 68, Pascal and Ada.
 
-The original syntax was based on Algol68, although it has since moved on. There is very little influence from C as I wasn't familar with it when M was first developed in early 80s.
+* It's been through several generations since then and now targets x64 processors running Windows.
+
+* Some programs (not using unsupported features) can be compiled into a C source file.
+
+* It has also recently become a hybrid language, with a high-level 'variant' data type so that it can also be used for scripting.
+
+* It can and has been used as a superior replacement for C.
+
+### Current Aims
+
+Although I don't really have a need for any language now, the project is being kept alive as a completely self-contained language implementation, one kept simple and easy to understand by anybody. It has these characteristics:
+
+* Very fast whole-project compiler
+
+* Written in itself and builds to a one self-contained executable (no other files needed)
+
+* Small size (by PC standards) of around 700KB, including its standard libraries
+
+* M compiler can be distributed as one .exe file, or one M source file, or C source file, depending on compiler options. (While I can build M with an existing M compiler, anyone else who wants to bootstrap from source file, needs to use the one-file C version and use a C compile.)
+
+* The language is devoid of new-fangled language ideas of the last few decades. It is a more sophisticated version of the same 1980s language, designed to do a job of work. There are no features requiring degrees in computer science to understand.
+
+### Self-Contained Compiler
+
+This is true in that:
+
+* The compiler is written in M
+
+* All the libraries are written in M
+
+* When built, the one executable includes the sources of the libraries, so that only the one file is needed to build a project. The compiler will direct turn the .m source files of a project into a .exe executable.
+
+* The only dependencies for building the M compiler, compiling programs with it, or running those programs, are a Windows OS and the msvcrt.dll C library, which is present on every OS.
+
+External dependencies are needed in these cases:
+
+* When generating a DLL file rather than .exe. This is because M doesn't yet directly support the .dll files (like .exe but more complex with extra sections). It is necessary to generate a .obj file, then use something like gcc to produce the .dll.
+
+* When generating code to run on Linux, which must be done via a C target. Then a C compiler is needed. (I happen to have my own C compiler, however it only generates code for Windows.)
+
+* When someone else (not me) needs to bootstrap the compiler from source, then they will need to use the C representation I provide, and a C compiler.
+
 
 ### M Targets
 
 M directly targets x64 processors running Windows.
 
-Up to now, it has also been possible to target C source, to allow some programs to work on other platforms, but it is not clear if that has been maintained.
+Up to now, it has also been possible to target C source, to allow some programs to work on other platforms, but it is not clear how long that can be maintained. There are already features not supported by the C target.
 
 ### How the M Compiler Works
 
@@ -61,7 +102,7 @@ However, circular definitions are not allowed, for example:
 
 ### Identifiers
 
-Identifier names consist of A-Z, a-z, 0-9 and _ and $.
+Identifier names consist of A-Z, a-z, 0-9 and _ and $ (can't start with a digit).
 
 Identifiers are case-insensitive throughout M source code, so abc, Abc and ABC (as well as abC, aBc, aBC, AbC and ABc) are all equivalent.
 
@@ -155,10 +196,9 @@ The usual entry point to an M program is the 'start' proc which takes no paramet
 
 This is a special name, and the compiler will add a call to an initialisation routine just inside start(), which accesses the command line parameters and sets up globals nsysparams and sysparams\[\].
 
-(Global function names 'main' and 'WinMain' are also accepted by M's linker, but these will not have the expected parameters. Only the equivalent of C's main(void) can be used, but this will not perform the special initialisation that is added
-to start().)
+(The function name 'main', always global, is also accepted by M's linker, but this do the expected setup. This is useful for minimal programs that don't include M's runtime modules, when using the -nosys option.)
 
-### Include and Strinclude
+### Include, Strinclude and Bininclude
 
 The **include** directive is nothing to do with modules or headers, but is sometimes used to incorporate source code from another file. (When that code has been generated by a program for example.)
 
@@ -169,27 +209,34 @@ The **include** directive is nothing to do with modules or headers, but is somet
 
     ichar s = strinclude "stdio.h"
 
-(This is used within my C compiler to incorporate all the standard header files into the C compiler executable.)
+(This is used within my C compiler to incorporate all the standard header files into the C compiler executable.
 
-At present, strinclude doesn't work with embedded zeros, so it can't be used for arbitrary binary files.
+At present, strinclude doesn't work with text that has embedded zeros. For binary files, there is 'bininclude', but that is rather inefficient, and is used to initialise a byte-array. M's new variant type has a string type that can contain binary data, so it is hoped that can be adapted to work with strinclude.)
 
 ### Data Types
 
-These include the usual:
+These include:
 
 * **integers**
 * **floating point**
 * **pointers**
 * **fixed-length arrays**
 * **records** 
+* **slices**
 
-These are always 'flat' types of a width or length known at compile-time, except for certain arrays.
+The above are 'packed' types, flat types of a width or length known at compile-time.
 
-Records are collections of all the other types, including other records. But they also go beyond what is possible in a C struct by allowing named constants, types and functions to be defined inside them.
+Records are collections of any packed types, including other records. But they also go beyond what is possible in a C struct by allowing named constants, types and functions to be defined inside them.
 
-Arrays are sequences of the same type, including records and other arrays. The ones defined directly (as variables, inside a record, or an element of another array) will have a fixed length.
+Arrays are sequences of the same packed type, including records and other arrays. Arrays can be defined with a fixed length only, or unbounded, but only as a pointer target (eg. for passing to functions).
 
-Arrays that are the target of pointer can be unbounded, with a length determined by other means. These include pointers to arrays passed to functions, or to arrays allocated on the heap.
+Then there are:
+
+* **variants**
+
+These have been added from my separate scripting language. They have a dynamic, tagged type and can deal with higher-level, more flexible data.  More on variants below.
+
+So M's types are split between low-level, fixed-length, packed/flat types, and variants. A bit of an odd mix, but I'll see how it goes.
 
 ### Numeric Data Types
 
@@ -219,18 +266,11 @@ Aliases:
     byte   =  word8
     char   =  word8
 
-Machine types (whose width depends on target):
+Machine alias that depend on whether a target is 32 or 64 bits:
 
-    intm   =  int32  (32-bit target)
-           =  int64  (64-bit)
-    wordm  =  word32 (32-bit)
-           =  word64 (64-bit)
-    intp   =  int32  (32-bit pointers)
-           =  int64  (64-bit pointers)
-    wordp  =  word32 (32-bit pointers)
-           =  word64 (64-bit pointers)
-	   
-Note that the 128-bit types have been recently added and have little support.
+    intm   =  int32 or int64
+    wordm  =  word32 or word64
+
 
 ### Pointer Types
 
@@ -276,16 +316,22 @@ In the case of integers, the following are the types of an integer constant, whi
     word64                # Up to 2**64-1
     int128                # Up to 2**127-1
     word128               # Up to 2**128-1
+    decimal               # 2**128 or over (decimal is a variant type only)
 ````
-(Numbers above 2\*\*128-1 have type 'longint', ie. of big integers, but these are not supported here, only in the companion Q language, where they start at 2\*\*64.)
 
-There are no suffixes to control type of a constant. To modify the the type, use a cast:
+There are no suffixes to control the type of a constant, except for -L. To modify the the type, use a cast:
 ````
     int16(0)
     int128(0)
+    0L                    # L means decimal type
 ````
 
-Real constants at the moment will be r64, which has to be changed with a cast (that is usually automatic if the values needs to be r32 in any context).
+Real constants at the moment will be r64, which has to be changed with a cast (that is usually automatic if values needs to be r32 in any context). Too large, too small or too precise real constants will overflow/underflow with no error, just wrong values. However, by using a -L suffix, then such constants can be formed into a decimal constant:
+```
+    123.456e+1000000         # yields incorrect result
+    123.456e+1000000L        # yields decimal constant
+```
+It's just that M doesn't automatically detect that an -L is needed; only for integers.
 
 The range of a word64 constant is quite narrow: numbers that are too large to fit into i64, but you don't want to jump straight into the inefficient i128 type with poor support.
 
@@ -309,11 +355,21 @@ For a type or expression size, use:
 
 For array lengths and bounds, there is a whole set of properties that can be extracted; see section on Lengths and Bounds.
 
+(Doesn't work on decimal, but the limits there are very wide, approx +/- 10^(+/- 2000'000'000))
+
 ### Character Constants
 
 M uses ASCII. So 'A' is equivalent to the number 65.
 
 Multiple characters like 'ABC' will return 0x434241, ordered so that it's the same pattern in memory as the string "ABC" would make. (This is for little-endian machines, which I believe the main targets of M use: x86 and ARM, if it ever works on that.)
+
+Character constants can be up to 128 bits wide; here constants are all 64 bits exect the last:
+```
+    'A'
+    'ABCD'
+    'ABCDEFGH'
+    'ABCDEFGHIJKLMNOP'      # 128 bits
+```
 
 ### User Types
 
@@ -423,6 +479,20 @@ Nothing much to say about this. Declarations are in Algol style:
 
 declares three ints, of which b is initialised.
 
+All variables are mutable, and this can be indicated like this:
+
+    mut int a,b,c
+
+But usually I never bother with 'mut'; it is just for completeness.
+
+There are 'let' that can be used in place of 'mut':
+
+    let int a:=123, b:=456           # initialisation is required
+
+These are intended as read-only values, so cannot be reassigned, but M doesn't really deal with that vigorously: it complains about a let variable on the left of an assignment, or taking its address, but that's about it.
+   
+
+
 ### Static Variables
 
 Module-level variables are always static (reside at a fixed location in bss or data segments) rather then be on the stack (or on the heap). A 'static' prefix would be an error.
@@ -467,8 +537,9 @@ If A is a pointer to array, R is a pointer to a record, and F is a pointer to a 
 These refer mainly to flat arrays of fixed, compile-time bounds:
 
     [10]int A                    # 10-element array, 40 bytes
-    []int B = (10,20,30)        # 3-element array (defined by init data); 12 bytes
+    []int B = (10,20,30)         # 3-element array (defined by init data); 12 bytes
     [10,20]int C                 # 10x20 2D array, 800 bytes
+    array[30]int D               # 'array' optional unless ambiguous
 
 The default lower-bound is 1, but it can be anything.
 
@@ -483,6 +554,8 @@ Then this can be indexed as P^\[i\], with bounds of 1..N. However, slices are a 
 Arrays are treated as value types throughout, however support for manipulating value arrays is limited (restricted to assignment, or passing arrays of 1, 2, 4, 8, or 16 bytes).
 
 (Old versions of M implemented pass-by-value of arrays and records of any size. But my recollection is that that feature was never used, over over decades. But value arrays play a important part in keeping the type system consistent. See what happens in C when you have the discontinuity caused when value arrays are written out.)
+
+(An 'array' prefix might be needed inside a function, as "\[" can be denote the start of an set constructor).
 
 ### Array Bounds
 
