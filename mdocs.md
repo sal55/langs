@@ -220,7 +220,7 @@ If the above is in source file B.m, then those names can be imported into file A
 Module A can now use names fred and abc, without any qualifiers. Only if other modules exporting fred and abc are also
 imported by A, causing ambiguity, is it necessary to use b.fred and b.abc.
 
-# Define Everything Once
+### Define Everything Once
 
 No separate declarations are required in M. Just define a module-level entity X on one place, and it's visible in any part of the same module, or in any part of the program by making it 'global', and importing the module containing X.
 
