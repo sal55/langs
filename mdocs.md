@@ -48,7 +48,7 @@ to generate a one-file C source version. Then only a C compiler is needed (no ot
 Note that this language is primarily for Windows. Programs can be written to run on Linux, but
 that involves getting M to generate C code which is then passed through a C compiler.
 
-To maintain the fast development cycle, it is recommended that Tiny C is used, otherwise after using the M compiler to convert .m to .c files, it will hit a brick wall as soon as gcc is invoked.
+To maintain the fast development cycle, it is recommended that Tiny C is used, otherwise after using the M compiler to convert all .m files of a project one one .c files, it will hit a brick wall as soon as gcc is invoked. This is made worse since the output will be one large C file.
 
 ### M Compiler Versions
 
