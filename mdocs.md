@@ -186,7 +186,7 @@ All variables need declaring, examples:
 Exceptions: for-loop index variables don't need declaring. Possible, a compile option will allow 'var' local variables to not need declaring, to match how it works in script languages.
 
 
-### **mut** and **let**
+### *mut*, *let* and *const*
 
 Variables can be declared like this:
 ```
@@ -196,11 +196,17 @@ To show that they are mutable (can be reassigned, or modified in-place). But 'mu
 
 There are also 'variables', if they can be called that, which can only be initialised once, then they are readonly:
 ```
-    let d:=100
+    let int d:=100
 ```
 Now these cannot be reassigned or modified. (Although M doesn't try too hard to avoid that.)
 
-### The Module Scheme
+True constants are defined as as follows:
+```
+    const e = 200
+```
+The expression must be evaluatable at compile-time. Note the use of "=" which means this is not a runtime assignment. Such named constants are mainly used for integers, reals, and strings. The type of the constant is worked out from the expression, or it can be added in.
+
+### The Module System
 
 Module-level names can be exported (made available to other modules) by prefixing with 'global':
 ```
