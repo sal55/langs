@@ -149,6 +149,12 @@ A program is a collection of source modules. Each module has this structure:
 
 All such names will have 'module scope'. One module defines a function start() or main(), which is the entry point.
 
+### Entry Point
+
+### Import
+
+### ImportDLL
+
 ### Out of Order Definitions
 
 Functions can be written in any order. Code can refer to a function later in a module without any prior declaration.
@@ -298,5 +304,170 @@ Declarations are still needed for entities imported from outside the program. Th
 Usually, such names are declared inside an 'importdll' block. The names in such a block are automatically made global to other modules that import this module. Then those just need something like this:
 ```
     import clib     # clib.m contains some C runtime imports
-'''
+```
+
+### Defining a Function
+
+
+### For Loops
+
+### Forall Loops
+
+### While and Repeat Loops
+
+### Repeat N-times Loops
+
+### Endless Loops
+
+### Loop Controls
+
+### Function Return
+
+### Type Syntax
+
+### Pointers
+
+### Arrays
+
+### Array Bounds
+
+### Multi-Dimensional Arrays
+
+### Records
+
+### Integer Types
+
+### Floating Point Types
+
+### Slices
+
+### Numeric Constants
+
+### Types of Numeric Constants
+
+### Character Constants
+
+### String Constants
+
+### User Types
+
+### Function Pointers
+
+### typeof()
+
+### Address-of
+
+### Nested Functions
+
+### Multiple Assignment
+
+### Multiple Return Values
+
+
+
+### Comments
+
+### Doc Strings
+
+### Semicolons and Newlines
+
+### Numeric Limits and Type Sizes
+
+### Include, Strinclude and Bininclude
+
+### Lengths and Bounds
+
+### Operators and Precedence Levels
+
+### Array Indexing
+
+### Pointer Dereferencing
+
+### 2-Way and N-Way Selection Operators
+
+### Bit-indexing and Bit-Slicing Operators
+
+### Min/Max and Clamp
+
+### Assignment and Equality
+
+### Augmented Assignments
+
+### Expressions List
+
+### Chained Compare Operators
+
+### Swap
+
+### Promotions
+
+### Mixed-sign Arithmetic
+
+### Type Conversion and Punning
+
+### *If* Statements
+
+### Conditional Suffixes
+
+### Switch Statement
+
+### Case Statement
+
+### Looping Switch and Case
+
+### Table Data
+
+### Print and Println
+
+### Read and Readln
+
+### Range Construct
+
+### Set Construct
+
+### Equivalence
+
+### Function Tables
+
+### Foreign Functions
+
+### Compiler Variables
+
+### System Constants
+
+### Standard Libraries
+
+### Standalone Expressions
+
+### Inline Assembly
+
+### Using Macros
+
+### Variants
+
+#### Strings
+
+#### Lists
+
+#### Records
+
+#### Ranges
+
+#### Sets
+
+#### Arrays
+
+#### Bit-Arrays
+
+#### Dicts
+
+#### Structs
+
+#### Void
+
+#### Pointers
+
+#### Refs
+
+#### Shallow and Deep Assignments
 
