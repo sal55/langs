@@ -106,9 +106,37 @@ A Variant has a tagged, dynamic type which is assigned at runtime. It can contai
 Apart from the basic numeric types, these are unavailable in this form outside of variant type.
 
 ### Hello World
+Native:
 ```
     proc start =
         println "Hello, World!"
+    end
+```
+C-like:
+```
+    import clib
+    
+    proc start =
+        printf("Hello, World!\n")
+    end
+```
+WinAPI 1:
+```
+    import winapi
+    
+    proc start =
+        messagebox(mess:"Hello, World!", caption:"Hello")
+    end
+```
+WinAPI 2:
+```
+    import gxlib
+    
+    proc start =
+        var w
+        w := gxcreatewindow(dim:(300,200))
+        gxtext(w, "Hello, World!")
+        waitclosemess()
     end
 ```
 
