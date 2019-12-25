@@ -2,16 +2,17 @@
 
 This is a somewhat random collection of topics, largely to remind myself of what's in the language, and how it works.
 
+Just bear in mind the original context of this language was an in-house one developed to compile on and for 8-bit microprocessors, based on my experience of using Algol, Pascal, Fortran and assembly in the late 70s. It has been become more accomplished but not more sophisticated - a language to do a job of work.
+
 ### Quick Overview
 
 * Originally created in 1980s for 8-bit and 16-bit microcomputers but has gone through several updates
 * Now a hybrid language:
   * Primarily a systems programming language with low-level types
   * Also includes some scripting features in the form of variant types
-* Currently targets 64-bit x64 processors running Windows.
-* Default 64-bit types
+* Currently targets 64-bit x64 processors running Windows with default 64-bit data types.
 * Can also target C source code that is then compiled for 32/64 bits, ARM/x86, Windows/Linux, but restricted to a language subset
-* Can be used as a superior alternative to C
+* Can be used as a superior alternative to C (and has been since early 80s)
 * Non-brace syntax inspired by Algol-68, Pascal and Ada
 * Uses a fast whole-project compiler, written in itself, run as one 0.6MB self-contained executable.
 * Minimal standard library
@@ -26,7 +27,7 @@ are simple, practical and easy to understand. But to list a few things not inclu
  * Other meta-programming features
  * Build systems (not needed)
  * Extensive libraries
- * Automatic linking to external libraries (it is necessarily to painstakingly create an interface to such libraries)
+ * Automatic linking to external libraries (it is necessary to painstakingly create interfaces to such libraries)
 
 ### +Scripting Language
 
@@ -47,7 +48,7 @@ to generate a one-file C source version. Then only a C compiler is needed (no ot
 Note that this language is primarily for Windows. Programs can be written to run on Linux, but
 that involves getting M to generate C code which is then passed through a C compiler.
 
-To maintain the fast development cycle, it is recommended that Tiny C is used.
+To maintain the fast development cycle, it is recommended that Tiny C is used, otherwise after using the M compiler to convert .m to .c files, it will hit a brick wall as soon as gcc is invoked.
 
 ### M Compiler Versions
 
@@ -64,8 +65,8 @@ support it for demonstration versions. 32-bit targets have been dropped.
 
 Primitive Types:
 ````
-  int        8/16/32/64/128 bits
-  word       8/16/32/64/128 bits
+  int        8/16/32/64/128 bits (signed)
+  word       8/16/32/64/128 bits (unsigned)
   real       32/64 bits
   char       8/16/64 bits (middle size will be 16 or 32)
   void       Only as target of pointer
@@ -118,17 +119,19 @@ A program is a collection of source modules. Each module has this structure:
 * Imports
 * Function, variable, named const, type and macro definitions
 
-All such names will have 'module scope'.
+All such names will have 'module scope'. One module defines a function start() or main(), which is the entry point.
 
 ### Out of Order Definitions
 
 Functions can be written in any order. Code can refer to a function later in a module without any prior declaration.
 
-Variables can be declared in any order (although at module level, they normally go before any functions). Inside a function, local variables they can even all be defined at the end of the function.
+Variables can be declared in any order (although at module level, they normally go before any functions). Inside a function, local variables can even all be defined at the end of the function.
 
 The same with types, named constants, and macros.
 
 Modules can be imported in any order. Circular and mutual imports are allowed.
+
+Only import statements must got at the top of the file before anything else (to allow determining the module structure by peeking at the beginning of each module).
 
 ### M is Case Insensitive
 
@@ -146,7 +149,7 @@ Input files are expected to be 8-bits. Program code and identifiers uses ASCII. 
 
 ### Function Scope
 
-M doesn't have block scope like many languages. The body of a function forms exactly one scope. And one namespace.
+M doesn't have block scopes like many languages. The body of a function forms exactly one scope. And one namespace.
 
 (Compare with C with an unlimited number of scopes inside a function, so that the same identifier can be reused any number of times even inside nested blocks, and which has three separate namespaces: normal, struct/enum tags, and labels.)
 
@@ -159,18 +162,19 @@ All variables at module scope will be 'static'. Inside a function, a static vari
 
     proc fred =
         static int ghi = 500
+        int j,k
     end
 ```
 
-These all start off as all-zeros unless initialised. Any initialised variable must be a compile-time constant. Inside a function, a static variable keeps its last value from last time it was called.
+These all start off as all-zeros unless initialised. Any initialisation expression must be reducible to a compile-time constant. Inside a function, a static variable keeps its last value from last time it was called.
 
-The ghi variable above will only stay at 500 until it's modified or reassigned. If fred() was recursive with multiple invocations and multiple sets of local frame variables, there will only be one ghi variable.
+The ghi variable above will only stay at 500 until it's modified or reassigned. If fred() was recursive with multiple invocations and multiple instances of j and k, there will only be one ghi variable instance.
 
-Note all static initialisations are with "=". Runtime assignments are done with ":=".
+Note all static initialisations use "=". Runtime assignments are done with ":=".
 
 ### Variable Declarations
 
-All variables need declaring, including variants (possible those can be optional at some settings to match how script languages work). Examples:
+All variables need declaring, examples:
 ```
     int a, b, c
     real x, y
@@ -179,6 +183,8 @@ All variables need declaring, including variants (possible those can be optional
     int d := 100
     static int e = 200
 ```
+Exceptions: for-loop index variables don't need declaring. Possible, a compile option will allow 'var' local variables to not need declaring, to match how it works in script languages.
+
 
 ### **mut** and **let**
 
@@ -201,16 +207,16 @@ Module-level names can be exported (made available to other modules) by prefixin
     global proc fred ...
     global int abc
 ```
-If the above is in sourc file B.m, then those names can be imported into file A.m like this:
+If the above is in source file B.m, then those names can be imported into file A.m like this:
 ```
     import b
 ```
-Module B can now use names fred and abc, without any qualifiers. Only if other modules exporting fred and abc are also
+Module A can now use names fred and abc, without any qualifiers. Only if other modules exporting fred and abc are also
 imported by A, causing ambiguity, is it necessary to use b.fred and b.abc.
 
 # Define Everything Once
 
-No separate declarations are required in M. Just define a module-level entity X on one place, and it's visible in any part of the same module, or in any part of the program by making it 'global', and importing to import the module containing X.
+No separate declarations are required in M. Just define a module-level entity X on one place, and it's visible in any part of the same module, or in any part of the program by making it 'global', and importing the module containing X.
 
 Declarations are still needed for entities imported from outside the program. This will be names from external DLL shared libraries. Even then, only one declaration is needed.
 
