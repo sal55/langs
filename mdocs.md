@@ -173,11 +173,10 @@ The ghi variable above will only stay at 500 until it's modified or reassigned. 
 Note all static initialisations use "=". Runtime assignments are done with ":=".
 
 ### Variable Declarations
-
 All variables need declaring, examples:
 ```
     int a, b, c
-    real x, y
+    mut real x, y
     word u, v
 
     int d := 100
@@ -185,26 +184,68 @@ All variables need declaring, examples:
 ```
 Exceptions: for-loop index variables don't need declaring. Possible, a compile option will allow 'var' local variables to not need declaring, to match how it works in script languages.
 
+All variables are read-write, or mutable, and technically each of these should have 'mut' in front like 'mut real x,t', but 'mut' is optional and is assumed to be present.
 
-### *mut*, *let* and *const*
 
-Variables can be declared like this:
+### Read-only Variables
+These are declared with 'let':
 ```
-    mut int a,b,c
+    let int f:=300
 ```
-To show that they are mutable (can be reassigned, or modified in-place). But 'mut' is optional so rarely appears (and would be a pain to have to write everywhere).
+These need to be initialised, but then cannot be assigned to again, unless that piece of code is re-executed.
 
-There are also 'variables', if they can be called that, which can only be initialised once, then they are readonly:
-```
-    let int d:=100
-```
-Now these cannot be reassigned or modified. (Although M doesn't try too hard to avoid that.)
+M doesn't try too hard to stop a Let variable being written to: it doesn't like it on the left of an assignment, and doesn't allow its address to be taken, which has its own problems, such as being unable to pass a Let array to a function (although that can be done with slices).
 
-True constants are defined as as follows:
+So Let is more of a token. But by using Let in place of a regular variable, then there will be a benefit if and when read-only data is taken more seriously.
+
+M has no concept of a read-only attribute as part of the type system, such as 'const' in C.
+
+Note that for-loop variables, where auto-declared, will be declared as Let. I have considered 'Let' to be used for ordinary or 'in' parameters to functions (Let itself can't be used as that syntax is only for regular declarations), but at the moment parameters are read/write.
+
+### Named Constants
+
+True read-only values are declared as:
 ```
-    const e = 200
+   const e = 200                   ! type is optional; taken from the expression
+   const real f = e+100
 ```
-The expression must be evaluatable at compile-time. Note the use of "=" which means this is not a runtime assignment. Such named constants are mainly used for integers, reals, and strings. The type of the constant is worked out from the expression, or it can be added in.
+The expression has to be fully evaluated at compile-time. Note the use of "=" which means this is not a runtime assignment. Such named constants are mainly used for integers, reals, and strings. The type of the constant is worked out from the expression, or it can be added in.
+
+Such constants are limited to int, real, and string types. (Anything else, the line being constant and a let variable is blurred. There is a tentative idea of a 'table' constant, for array data that goes into read-only memory. but I haven't done anything with that yet.)
+
+Both const and enum names can be used where a compile-time expression is needed: fixed-length array bounds, and switch-when expressions.
+
+### Enum Names
+These are integer-only named constants where the names normally form a connected set:
+```
+   enum (a, b, c = 100, d, e)
+```
+The default value starts at 1, and is incrememented by 1, except where overridden. The values here are 1, 2, 100, 101, 102.
+The type of such values is always int:
+```
+    int x := b
+```
+Such enum names are 'open', and will clash with the same names in a different enum. Enums can be put inside a type:
+```
+    type colours = (red, green, blue)
+    type lights = enum (red, amber, green)             ! 'enum' optional here
+```
+However, now each name needs to be qualified:
+```
+    print colours.green, lights.green                  !2 and 3
+```
+The type system is not advanced enough to able to do this:
+```
+    colours c := green          ! not possible
+    lights  l := green          ! not possible
+```
+Where it can work out which green to use. M is not Ada! You have to do:
+```
+    int c := colours.green      ! etc
+```
+
+Note that such enums are actually little used; mostly they are declared as part of a 'tabledata' block, which defines enums  plus associated data and even enum names, as parallel arrays of data. See later on.
+
 
 ### The Module System
 
