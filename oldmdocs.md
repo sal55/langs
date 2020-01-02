@@ -10,8 +10,6 @@ I've no idea about writing a proper language reference or even a tutorial. The f
 
 * It's been through several generations since then and now targets x64 processors running Windows.
 
-* Some programs (not using unsupported features) can be compiled into a C source file.
-
 * It has also recently become a hybrid language, with a high-level 'variant' data type so that it can also be used for scripting.
 
 * It can and has been used as a superior replacement for C.
@@ -26,7 +24,7 @@ Although I don't really have a need for any language now, the project is being k
 
 * Small size (by PC standards) of around 700KB, including its standard libraries
 
-* M compiler can be distributed as one .exe file, or one M source file, or C source file, depending on compiler options. (While I can build M with an existing M compiler, anyone else who wants to bootstrap from source file, needs to use the one-file C version and use a C compile.)
+* M compiler can be distributed as one .exe file, or one M source file. (To bootstrap from source code, requires an existing M compiler binary. See 'C Target' below.)
 
 * The language is devoid of new-fangled language ideas of the last few decades. It is a more sophisticated version of the same 1980s language, designed to do a job of work. There are no features requiring degrees in computer science to understand.
 
@@ -46,16 +44,17 @@ External dependencies are needed in these cases:
 
 * When generating a DLL file rather than .exe. This is because M doesn't yet directly support the .dll files (like .exe but more complex with extra sections). It is necessary to generate a .obj file, then use something like gcc to produce the .dll.
 
-* When generating code to run on Linux, which must be done via a C target. Then a C compiler is needed. (I happen to have my own C compiler, however it only generates code for Windows.)
+### Targeting C Source Code
 
-* When someone else (not me) needs to bootstrap the compiler from source, then they will need to use the C representation I provide, and a C compiler.
+This has been supported at various times, to get M code to run on various combinations of Windows/Linux, 32/64 bits, x86/ARM, but has now been dropped completely. It was too much effort to keep supporting, and anyway a growing number of M features were not supported for a C target, or not capable of being supported.
 
+Now I can write M source with no such worries. Except that:
 
-### M Targets
+* M can only target Windows/x64/64 bits
 
-M directly targets x64 processors running Windows.
+* I can't pass M's C output through an optimising C compiler (M does not optimise) to get extra performance
 
-Up to now, it has also been possible to target C source, to allow some programs to work on other platforms, but it is not clear how long that can be maintained. There are already features not supported by the C target.
+* No one else can build the M compiler from source (it would have been a C version) with a C compiler; they will need the M compiler binary, which will have AV issues.
 
 ### How the M Compiler Works
 
@@ -1748,10 +1747,3 @@ Note that augmented ops such as +:=, which are two tokens, will have their own c
 This feature is not available for ops such as len or []. (If ever operator overloading is added, then they must be treated as other operators.)
 
 
-### C Target
-
-One feature which had been added to M, had been to write out the program as a C source code. Because of how the M compiler works, this would be a single C source file representing the entire program.
-
-This then could be used to run M programs on targets not directly supported, or to pass them through an optimising C compiler.
-
-However, some old and new features don't translate easily to C. So it might not always work.
