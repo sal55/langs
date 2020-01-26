@@ -1,6 +1,6 @@
 // Simple arbitrary-precision integer and float library
 // Header exporting functions and types
-// <no available>
+// Docs: <not available>
 
 // This source code is placed in the public domain.
 // You can do with it as you please.
