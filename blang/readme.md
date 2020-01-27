@@ -74,12 +74,27 @@ Includes many features from my current dynamic language, such as flexible data t
 
 #### Array and Slice Bounds
 
-Full bounds only used for fixed arrays. Slices and managed arrays only have an optional lower-bound, which is fixed at compile-time. Possibilities are:
+Full bounds only used for fixed arrays. Slices and managed arrays only have an optional lower-bound, which is fixed at compile-time. Possibilities for simple arrays are:
 
-    []T            Unbounded: for simple arrays, size either set by init data, or not used when target of a pointer.
-                   Or used for slices and managed arrays where bounds are handled differently. Lower bound is 1
+    []T            Unbounded: size either set by init data, or not used when target of a pointer.
+    [A:]           Unbounded array with lower bound of A
     [N]T           Bounds are 1..N inclusive, length is N
     [A..B]T        Bounds are A..B, length is B-A+1
-    [A:]           Unbounded array, slices, managed array with lower bound of A
-    [A:N]          Bounds are A..A+N-1, length is N
+    [A:N]T         Bounds are A..A+N-1, length is N
+
+For slices, flex and managed arrays:
+
+    []T            Lower bound is 1, length stored inside object (.len); bounds are 1..X.len
+    [A:]T          Lower bounds is A; bounds are A..A+X.len-1
+
+All an object X, for arrays, slices and strings, can be obtained with:
+
+    X.lwb          Lower bound
+    X.upb          Upper bound (both inclusive)
+    X.len          Length
+    X.bounds       Returns a range X.lwb..X.upb
+
+For managed string objects, X.len and X.lenstr are the same thing. For lower level strings (eg. char arrays) containing terminated stringz sequences, then X.len gives the length of the array, while X.lenstr is the length of the string as determined by the zero terminator
+
+    
 
