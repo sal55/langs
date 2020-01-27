@@ -39,7 +39,7 @@ Includes many features from my current dynamic language, such as flexible data t
     type colours = enum (red,green,blue)  # Typed enumerations
 
 #### Compound
-    [bounds]T          Fixed-length or unbounded array of simple types or bits
+    []T                Fixed-length or unbounded array of simple types or bits
     record name =      Collection of simple (non-managed) types
         T a,b,c
         U d,e
@@ -71,3 +71,15 @@ Includes many features from my current dynamic language, such as flexible data t
     type           Integer representing a type
     proc           Pointer target only (function pointer)
     label          Pointer target only
+
+#### Array and Slice Bounds
+
+Full bounds only used for fixed arrays. Slices and managed arrays only have an optional lower-bound, which is fixed at compile-time. Possibilities are:
+
+    []T            Unbounded: for simple arrays, size either set by init data, or not used when target of a pointer.
+                   Or used for slices and managed arrays where bounds are handled differently. Lower bound is 1
+    [N]T           Bounds are 1..N inclusive, length is N
+    [A..B]T        Bounds are A..B, length is B-A+1
+    [A:]           Unbounded array, slices, managed array with lower bound of A
+    [A:N]          Bounds are A..A+N-1, length is N
+
