@@ -35,31 +35,39 @@ Includes many features from my current dynamic language, such as flexible data t
     bit4     u4
 
 #### Enumerations
-    enum           Open or Typed sets of enumerated values
+    enum (red,green,blue)                 # Open enumeration (names not typed)
+    type colours = enum (red,green,blue)  # Typed enumerations
 
 #### Compound
-    Arrays         Fixed-length or unbounded array of simple types
-    Bits           Fixed-length or unbounded array of bit types
-    Records        Collection of simple (non-managed) types
-    Range          Two in64 values
-    Taggedunion    Declare enums and mixed collection of simple types
-    Tuple          Anonymous collection of simple types (used for function return types)
+    [bounds]T          Fixed-length or unbounded array of simple types or bits
+    record name =      Collection of simple (non-managed) types
+        T a,b,c
+        U d,e
+    end
+    range              Two in64 values
+    taggedunion name = Declare enums and mixed collection of simple types
+        red:   T a
+        green: U b
+        blue:  V c
+    end
+        
+    (T, U, V)          Anonymous collection of simple types (used for function return types)
 
 #### Pointer and Slice
     ref T          Pointer to any type including bit type
-    slice          Reference to array/subarray with length
-    slice2d        Reference to table (not subtable) with width/height
-    flex           Extensible reference to array/subarray
+    slice[]T       Reference to array/subarray with length
+    slice2d[]T     Reference to table (not subtable) with width/height
+    flex[]T        Extensible reference to array/subarray
 #### Managed (non-simple types)
-    String         Flex, extensible, sharable string
-    Array          Flex, extensible, sharable array of simple types
-    Set            Array with unique set of elements
-    Dict           Shareable collection of key:value pairs
-    Record         Sharable, managed record
-    Decimal        Sharable, managed decimal arbitrary precision integer/float
+    string         Flex, extensible, sharable string
+    array[]T       Flex, extensible, sharable array of simple types
+    set T          Array with unique set of elements
+    dict[T]U       Shareable collection of key:value pairs, of types T and U
+    record ...     Sharable, managed record
+    decimal        Sharable, managed decimal arbitrary precision integer/float
 #### Special
-    Void           Pointer target only
-    Auto           Temporary/default type that needs to be inferred
-    Type           Integer representing a type
-    Proc           Pointer target only (function pointer)
-    Label          Pointer target only
+    void           Pointer target only
+    auto           Temporary/default type that needs to be inferred
+    type           Integer representing a type
+    proc           Pointer target only (function pointer)
+    label          Pointer target only
