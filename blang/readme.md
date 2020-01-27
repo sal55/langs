@@ -72,7 +72,7 @@ Includes many features from my current dynamic language, such as flexible data t
     proc           Pointer target only (function pointer)
     label          Pointer target only
 
-#### Array and Slice Bounds
+### Array and Slice Bounds
 
 Full bounds only used for fixed arrays. Slices and managed arrays only have an optional lower-bound, which is fixed at compile-time. Possibilities for simple arrays are:
 
