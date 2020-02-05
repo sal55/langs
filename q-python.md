@@ -2,6 +2,8 @@
 
 A selection of 50 or so features (some of which I consider fundamental) effortlessly available out-of-the-box with Q, which either don't exist with Python, or only possible with cumbersome add-ons, sometimes half-a-dozen competing version, none of which are as effective.
 
+(Q is my own scripting language, not as dynamic as Python, but that fact makes some of these features possible. Python is *too* dynamic.)
+
 #### Single File Implementation
 
 The Q compiler/interpreter is a single executable, currently 0.8MB, which includes the standard library (admittedly not too big, however it will still be a single file).
@@ -14,7 +16,7 @@ Contrast the vast sprawling Python implemementations, and applications consistin
 
 #### Blazing Fast Bytecode Compiler
 
-Q programs need all modules known at compile-time, and all must be byte-code compiled before execution can start. This needs a very fast compiler. The one used works at between 500,000 and 1,000,000 lines per second.
+Q programs need all modules known at compile-time, and all must be byte-code compiled before execution can start. This needs a very fast compiler. The one used works at between 500,000 and 1,000,000 lines per second. This makes run-from-source viable too, but usually programs are run from pre-compiled byte-code.
 
 #### Common Syntax
 
@@ -45,7 +47,7 @@ Names declared in a module are local to that module, unless exported:
    var abc              # not exported
    global var def       # exported
 ```
-In Python, all such names are visible from any module that imports this one.
+In Python, all such variables, types anf functions are visible from any module that imports this one.
 
 #### Numeric Separators
 
@@ -101,13 +103,13 @@ They declare only named integer constants.
 
 #### Reference Parameters
 
-These allow a function to change the value of its callers data, in a way not possible with Python.
+These allow a function to change the value of its caller's data, in a way not possible with Python.
 
-So you can write a swap() functon in Q, but not in Python.
+So you could write a swap() function in Q, but not in Python.
 
 #### Optional, Default and Keyword Parameters
 
-These I believe are available in Python with some work (although I remember default parameters had some funny issues). But in Python, they are dealt with at runtime.
+These I believe are available in Python (although I remember default parameters had some funny issues). But in Python, they are dealt with at runtime.
 
 In Q, the compiler will sort out what needs to be passed, without any extra runtime overhead (limited when function pointers are used).
 
@@ -119,18 +121,16 @@ These are a little used, low-level feature (pointers are used internally to impl
 
 Used to set up pointers to objects or data:
 ```
-     p := ^a
-     q := &a
+     p := ^a             # pointer to variant
+     q := &a             # pointer to underlying packed type
 ```
-The ^ form is to create a pointer to variant object (so a pointer to any type that a variant can hold).
 
-The & form creates a pointer to the underlying packed data, and is a pointer to a specific packed type.
 
 #### Extra Loop Controls
 
 Q allows **exit**, **next**, **redo** and **restart*. **exit** corresponds to **break** in Python.
 
-All of them work with nested loops too, unlike pretty much every language.
+All of them work with nested loops too, unlike pretty much every other language.
 
 #### Conditional Statements
 
@@ -171,7 +171,7 @@ These are covenient to use, especially 'to N' which otherwise requires a for-loo
     forall i,x in A do
         ...
 ```
-The extra 'i' control varible tells it to expose the loop index. (Needs enumerate() in Python.)
+The extra 'i' control variable tells it to expose the loop index. (Needs enumerate() in Python.)
  
 **for** in Q interates over two integer values only.
  
@@ -191,13 +191,13 @@ This is well-known:
     end switch
 ```
 But it requires 'when' expressions to be compile-time expressions, in order to be able to use a fast jump-table.
-This makes it impractical in Python, as any named values must always to looked up at runtime.
+This makes switch impractical in Python, as any named values must always be looked up at runtime.
 
 A variation is **doswitch**, which loops.
 
 #### Case Statement
 
-If switch-like statement is needed, but the when expressions are not integers, nor constants, or the range of values is too wide, then a **case** statement can be used:
+If a switch-like statement is needed, but the when expressions are not integers, or are not constants, or the range of values is too wide, then a **case** statement can be used:
 ```
     case expr
     when a, b then
@@ -240,7 +240,7 @@ Such types are used when constructing arrays, structs, pointers to such types, a
 
 #### Arrays and Bit Arrays
 
-Normal lists are variants, which are can be of any type. Arrays are lists of the same packed type. Bit arrays are sequences of 1, 2 or 4 bits. A billion-element bit array occupies 128MB. (I've no idea with support Python has for such arrays, if any.)
+Normal lists are variants, which are can be of any type. Arrays are lists of the same packed type. Bit arrays are sequences of 1, 2 or 4 bits. A billion-element bit array occupies 128MB. (I've no idea what with support Python has for such arrays, if any, but I remember is has byte-arrays.)
 
 #### Structs
 A struct is a C-like record (although always constructed with 'pack(1)' as padding is never added). It is defined like this:
@@ -250,12 +250,7 @@ A struct is a C-like record (although always constructed with 'pack(1)' as paddi
         int16 year
     end
 ```
-cdate occupies 4 bytes. It is used just like a record (except elements can't be indexed at present):
-```
-     d := cdate(15,8,2018)
-     println d.year          # display 2018
-     println d               # display (15,8,2018)
-```
+cdate occupies 4 bytes. It is used just like a record (except elements can't be indexed at present).
 
 This is necessary for foreign function interfacing. Python's version of this is done with addons and is very clunky with structs defined via function calls.
 
@@ -297,11 +292,7 @@ This is an extension of the 2-way select:
 ```
     x := (n | a,b,c,... |z)
 ```
-x is set to one of a,b,c... depending on n=1,2,3 (as Q is 1-based). When n is out of range, then the default z is assigned. Elements can be any expressions. It looks a little like indexing a list:
-```
-    x := (a,b,c,...)[n]
-```
-except that only *one* expression is evaluated (not all of them as in this list), and there is a default value when n is out of range. This ought to work as an lvalue (but I need to check that).
+x is set to one of a,b,c... depending on n=1,2,3 (as Q is 1-based). When n is out of range, then the default z is assigned. Only one rhs value is evaluated, so this can't easily be emulated in Python.
 
 #### Increment and Decrement
 These just the usual ++a and ++b, plus the ability to use them inside expressions, where --a and a-- are different. Python does't have these, although ++a and --b are valid expressions - they just do different things (+(+a) and -(-b)).
@@ -425,10 +416,12 @@ No other declarations are needed. Inside the host, callable functions like this 
 #### Big Numbers
 Q's big integers are poorly integrated: they are a separate type from normal integers (usally 64-bit signed, sometimes unsigned). Arithmetic doesn't automatically overflow into big integers. Mixed arithmetic exists but in a limited form.
 
-Since big integers are actually rarely needed, I wanted to keep most arithmetic efficient for the 99.99% of operations that will fit into 64 bits. It is also useful for many int operations to work like they do in C, where if you shift '1' left enough times, you eventually get zero. In Python, it never will (you'll just exhaust memory).
+Since big integers are actually rarely needed, I wanted to keep most arithmetic efficient for the 99.99% of operations that will fit into 64 bits. It is also useful for many int operations to work like they do in C, where if you shift '1' left enough times, you eventually get zero. In Python, it never will (you'll just exhaust memory with bigger and bigger numbers).
+
+(Note Q's big numbers now also represent floating point, so more like Python's Decimal type.)
 
 #### Unsigned integers
-As mentioned, the default integer type (unless a number is too big) is int64. But an unsigned word64 type (ie. uint64) also exists. This helps with some algorithms ported from C. And allows numbers between 2**63 and 2**64-1 without needing a Bignum.
+As mentioned, the default integer type (unless a number is too big) is int64. But an unsigned word64 type (ie. uint64) also exists. This helps with some algorithms ported from C. And allows numbers between 2\*\*63 and 2\*\*64-1 without needing a Bignum.
 
 #### Operator and Type Constants
 Writing (+) forms a special kind of operator constant. It can be used like this:
@@ -456,7 +449,7 @@ It's just very convenient to write.
 
 Integer algorithms are generally faster executing in Q than in CPython.
 
-Q's interpreter also has an accelerator that can be switched in when executing on x64 using M's native code. It can make some code 2-3 times as fast.
+Q's interpreter also has an accelerator that can be switched in when executing on x64. It can make some code 2-3 times as fast.
 
 The performance of PyPy is variable, and can be very good with lots of loops. But I suspect it is not still executing bytecode at that point as Q's accelerator still does. PyPy is also fantastically more complex than Q's interpreter, whose accelerator is part of the same program:
 ```
