@@ -1,6 +1,6 @@
 ## Q / Python Comparison
 
-A selection of 50 or so features (some of which I consider fundamental) effortlessly available out-of-the-box with Q, which either don't exist with Python, or only possible with cumbersome add-ons, sometimes half-a-dozen competing version, none of which are as effective.
+A selection of 50 or so features (some of which I consider fundamental) effortlessly available out-of-the-box with Q, which either don't exist with Python, or only possible with cumbersome add-ons, sometimes half-a-dozen competing versions (eg for named tuples), none of which are as effective.
 
 (Q is my own scripting language, not as dynamic as Python, but that fact makes some of these features possible. Python is *too* dynamic.)
 
