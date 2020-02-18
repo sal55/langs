@@ -362,10 +362,7 @@ global proc bn_setprec(bignum a,int prec)=
 
     oldlength:=a^.length
 
-!CPL =OLDLENGTH,=NEWLENGTH
-!   if oldlength=newlength then
     if oldlength<=newlength then
-!   if oldlength>=newlength then
         return
     fi
 
