@@ -213,3 +213,9 @@
 **106** Plus, 'extern' can also be used in a function - to declare a name defined outside the function.
 
 **107** I haven't touched on the preprocessor at all. But conside this: 0x123D+2 means, of course, the hex value 0x123D with 2 added. And 0x123F+2 means 0x123F with 2 added. But 0x123E+2 is supposed to be an illegal preprocessor token (a malformed hex floating point constant)
+
+**108** You can't easily print a type of, say, int64_t. The format will be %ld on some systems (where int64_t is defined on top of 'long'), or %lld on others. You have to use a macro like PRIi64: print ("A =" PRIi64 "\n", a).
+
+**109** You can't easily write a small constant that needs to be of type int64_t; you can't use 0L or or 0LL for the same reasons as in **108**. I believe there are yet another set of macros for these.
+
+**110** Touched on in **60**, but if P is a 'pointer to array of int', then you'd access an element by dereferencing first, then indexing: (\*P)\[i\]. Except that C allows you to do it backwards, index first then dereference: \*(P\[i\]). This is obviously wrong (and such a reference will likely crash the program), but is legal C! Due to being able to dereference any array name as though it was a pointer, and being able to index any pointer as an array.
