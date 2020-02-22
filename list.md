@@ -22,11 +22,11 @@ This is a list of language features that can be considered enhancements over C:
 
 * Leading zeros can be used on decimal numbers
 
-* Numeric constants can have separators
+* Numeric constants can have separators (_ ' or `)
 
 * Numeric constants can have scale factors (like, 5 million)
 
-* Raw string constants
+* Raw string constants where '\' is not interpreted as escape sequence
 
 * Uses := and = for assignment and equality
 
@@ -34,19 +34,19 @@ This is a list of language features that can be considered enhancements over C:
 
 * Not case sensitive (so no need to remember exact pattern of upper/lower case)
 
-* Multi-character constants well-defined
+* Multi-character constants well-defined, up to 'ABCDEFGH' for 64 bit, and 'ABCDEFGHIJKLMNOP' for 128-bit
 
 * Vastly simpler type declarations, written left to right
 
 * Simple set of built-in numeric types of fixed widths
 
-* Signed types are called int8/16/32/64/128 with 'int' aliases for int64
+* Signed types are called int8/16/32/64/128 with 'int' aliase for int64
 
 * Unsigned types are called word8/16/32/64/128 with 'word' for word64
 
 * Dedicated 'byte' type, alias for word8
 
-* 'char' type, alias for byte or word8
+* Separate 'char' type
 
 * Floating point types are called real32/64 with 'real' alias for real64
 
@@ -206,7 +206,7 @@ This is a list of language features that can be considered enhancements over C:
 
 * If X is an instance of T, then access to such members can also be done as X.K, X.V, or X.F() (the latter is equivalent to T.F(X))
 
-* Uses **unless** statement, with opposite logic to **if**
+* Includes **unless** statement, with opposite logic to **if**
 
 * Some kinds of statements end with a conditional stub, eg. **return when** a=b. Can use **when**, **if* or **unless**, and mainly applies to control of transfer instructions: **return**, **goto**, **exit** etc.
 
@@ -220,37 +220,37 @@ This is a list of language features that can be considered enhancements over C:
 
 * Function definitions can be nested (but no access to auto-vars in outer scopes)
 
-* There is a **tabledata** feature for parallel sets of enums of arrays
+* There is a **tabledata** feature for parallel sets of enums and arrays
 
 * There is still a textual 'include' feature, but this is rarely used
 
 * There is a **strinclude** feature to import any text file as a string constant
 
-* Special types intm, wordm, intp and wordp exist for machine word and pointer sizes
+* Special types intm and wordm for machine word and pointer sizes
 
 * **stop** statement used to terminate a program: stop or stop 123
 
-* 'typeof' can be used to extract the type of an expression, **typeof**(x) a,b,c
+* Inline assembly is always available with a simple interface
 
-* Inline assembly is always available with a simple interface \[not with C target\]
+* Foreign functions from Windows and C external libraries can be declared within special import blocks **importdll** ... **end**.
 
-* Foreign functions from Windows and C external libraries are can be declared within special import blocks **importdll** ... **end**.
+* Bit indexing on ints, eg. A.\[i\] to get the i'th bit. Also A.odd, A.even
 
-* Bit and bitfield indexing on ints, eg. A.\[i\] to get the i'th bit.
+* Bitfield indexing on ints, eg. A.\[0..7\]. Also A.lsb etc
 
 * Fast whole-project compiler (M compiler builds itself from sources to .exe in 0.25 seconds.)
 
-* Compile a project by just submitting the main module
+* Compile a project by just submitting the main module - no make files needed
 
-* Optional C target, will automatically convert whole project to single, self-contained C source file.
+* Optional C target, will automatically convert whole project to single, self-contained C source file. (Feature dropped)
 
 * Module imports can be circular or mutual
 
 * Multiple return values from functions: a,b,c := f() \[experimental, limited to three scalar types\]
 
-* Multiple assignment: a,b,c := d,e,f
+* Multiple assignment: (a,b,c) := (d,e,f)
 
-* Accessible function data (tables of names and addresses of all functions in project)
+* Accessible function data (tables of names and addresses of all functions in project can be scanned by applications)
 
 * Dynamically typed companion language is available using *the same syntax*.
 
@@ -258,5 +258,5 @@ This is a list of language features that can be considered enhancements over C:
 
 * Set syntax: if a in \[10,20..30\] then ... (Limited to values of 0 to 127. A set construct denotes an integer constant of 64 or 128 bits.)
 
-* Experimental slicing features.
+* Slice type, implemented as 128-bit (pointer,length) allows arrays and sub-arrays to be passed together with their lengths. Also allows counted strings using char arrays.
 
