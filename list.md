@@ -124,7 +124,7 @@ This is a list of language features that can be considered enhancements over C:
 
 * There are no block scopes in a function
 
-* Variables and types can be declared anywhere in a function, even at the end. (However, initiaised variables must be at the start of the function, as the initialisation is done on entry)
+* Variables and types can be declared anywhere in a function, even at the end.
 
 * There is a 'raw' function type with no entry or exit code (called **threaded proc** as it is used for threaded 'functions' in my interpreter).
 
