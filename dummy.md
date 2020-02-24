@@ -687,32 +687,6 @@ Note that "." is also used for selecting names from a namespace. A namespace mig
 
 It's not possible to tell, until resolved, whether both dots select fields, or just the second, or neither.
         
-### 2-way and N-way Selection Operators
-
-The 2-way operator This is the equivalent of  C's ?: operator, and is written like this:
-
-    (a | b | c)
-
-always with parentheses. It's equivalent to if a then b else c fi
-
-An extension of that is the N-way operator:
-
-    (n | a, b, c, ... | z)
-
-This select's the nth (1-based) element from the list, or the default z when n is out of range. Only one element is evaluated.
-
-Both operators can be used on the left size of an assignment:
-
-    (cond | a | b) := 0
-
-Here, either a or b is set to zero. Some operations will also propagate inside, so that:
-
-    &(a | b | c)
-
-is the same as:
-
-    (a | &b | &c)
-
 ### Min/Max and Clamp
 
 min/max are built-in operators, and can be used like this:
