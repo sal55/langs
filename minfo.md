@@ -12,8 +12,8 @@ http://www.bcas.freeuk.com/mm.exe  for the M compiler binary (right-click and 's
 
 Any comments, you can contact me on bart4858@gmail.com.
 
-For the feature list of M itself, that will be here:
+For the feature list of M itself, a first version, covering around 100 assorted features, is now here:
 
    [mfeatures.md](mfeatures.md)
-   
-Currently empty, I will download a first version tomorrow (Tuesday CET); there's quite a lot of stuff in there!
+
+Note that this is still quite low-level. One big features of my languages is that that tend to stay simple, without all the complicated, head-scratching stuff that new languages like to have.
