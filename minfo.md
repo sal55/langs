@@ -16,4 +16,4 @@ For the feature list of M itself, a first version, covering around 100 assorted 
 
    [mfeatures.md](mfeatures.md)
 
-Note that this is still quite low-level. One big features of my languages is that that tend to stay simple, without all the complicated, head-scratching stuff that new languages like to have.
+Note that all this is still quite low-level as most features are minor. I like to keep my languages simple and easy to understand.
