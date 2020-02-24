@@ -328,12 +328,35 @@ Records can contain other definitions such as types, named constants, and functi
 
 The concept is easy however, it can provide simple encapsulation.
 
-### Pointers
- -------------------
+### Pointers and Strings
 
-### Strings
+Pointers work as they might do in C. In a type spec, 'ref' is used to means pointer-to:
 
+     ref int P = nil         # Nil is the equivalent of C's NULL
 
+Low-level strings are zero-terminated sequences like C, but here there sequence of a char type which is distinct from a byte:
+
+     ref char S
+     ichar T                 # ichar is a synonym for 'ref char'
+
+Such strings are generally passed as 'ref char' (or ichar) types, rather than ref[]char which allows normal index.
+
+### Char Array Initialisation
+
+    []char S = ('A','B','C')
+
+This would be a lot of work to write like this. C allows such an array to be initialised from "ABC", but "ABC" has the wrong type (a C quirk allows it). In M, special string constants exist:
+
+    []char S = a"ABC"             # 3-char array, non-terminated
+    []char S = z"ABC"             # 4-char array, zero-terminated
+
+### Raw String Constants
+
+These are:
+
+    F"C:\ABC\DEF.G"
+
+where string escapes are ignored.
 
 ### Statements and Expressions are the Same
 This is another concept from Algol68 - any expression can be used as a statement, and any statement can be used as an expression, and yield a value, although usually that would be 'void'.
@@ -403,9 +426,6 @@ Return values can be ignored:
    fn3()            # discard all
 
 
-### Lengths and Bounds
-
-
 ### Define Variables
 This is fairly standard; inside a function (anywhere in the function actually):
 
@@ -433,6 +453,16 @@ I've never been a fan of C's 'const' attribute, which really complicates the typ
 Here, the initialisation is mandatory, as A can't be used as an lvalue like in an assignment. This provides some weak protection, but won't do much for more complex variables, such as arrays or pointers to data structures. Let is experimental.
 
 (Also experimental are 'in', 'out' and 'inout' attributes for function parameters. 'out' vaguely corresponds to '&' used for reference parameters. I haven't played with this attributes yet, and I'm not sure whether an 'in' parameter should be equivalent to 'let'.)
+
+### Static Variables
+
+All variables defined outside a function are static. They are either set to all zeros,
+or can be initialised with an expression or construct that must be a compile-time constant:
+
+    int A = 100         # "=" must be used, not the ":=" of assignment
+
+Inside a function, a 'static' prefix is needed.
+
 
 ### Named Constants
 This is very simple feature, naming compile-time expressions:
@@ -1445,3 +1475,4 @@ Lots of nice features listed, but there are plenty of issues too:
 * There is no optimiser.
 
 Basically, the main problem is that it is not C. Even though C is a ghastly language, it is everywhere, there are loads of tools for it, and huge numbers of people are familiar with it.
+
