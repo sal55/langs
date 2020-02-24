@@ -5,11 +5,15 @@ M is a systems language first devised for 8-bit Z80 systems in early 1980s, sinc
 The following is not a formal reference but is a random collection of features, ideas and aims that may be useful to others. Or to help understand M source code.
 
 
-**The M Compiler** This is written in M. It build to a single executable file that I usually call mm.exe, currently some 0.6MB, which includes it small set of libraries. (That is, the sources for the libraries are part of the executable.)
+**The M Compiler**
+
+This is written in M. It build to a single executable file that I usually call mm.exe, currently some 0.6MB, which includes it small set of libraries. (That is, the sources for the libraries are part of the executable.)
 
 This gives a tidy self-contained compiler.
 
-**Dependencies** There are none, when mm builds a .exe file, other than needing a Windows computer. M programs make use of the C standard library, via the MSVCRT.DLL library that comes with every Windows system.
+**Dependencies**
+
+There are none, when mm builds a .exe file, other than needing a Windows computer. M programs make use of the C standard library, via the MSVCRT.DLL library that comes with every Windows system.
 
 However, there is no direct support for .dll files; these require that mm generates a .obj file instead, and an external linker (eg. gcc) used to create the .dll.  **Whole Program Compiler** A 'program' in this sense is the collection of modules and file that form a single .exe or .dll file. M will always compile all modules from scratch. (Effectively, the 'compilation unit', or granularity, moves from one module, to one program.)
 
