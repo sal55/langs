@@ -4,6 +4,7 @@ M is a systems language first devised for 8-bit Z80 systems in early 1980s, sinc
 
 The following is not a formal reference but is a random collection of features, ideas and aims that may be useful to others. Or to help understand M source code.
 
+This is an early draft, and there will be typos and omissions, mistakes and probably duplicates. It is also disorganised, but should be enough to get an idea of the language. I can't promise everything mentioned works in the actual M compiler.
 
 ### The M Compiler
 
@@ -82,7 +83,7 @@ Newlines in source files must use CR/LF or LF sequences.
 ### Case-Insensitive
 Another departure from most languages, especially those associated with C and/or Unix. M is case-insensitive, which means that all of these names are treated identically:
 
-   abc abC aBc aBC Abc AbC ABc ABC
+    abc abC aBc aBC Abc AbC ABc ABC
 
 Identifiers in M use: A-Z a-z 0-9 _ $ and can't start with a digit.
 
@@ -93,7 +94,7 @@ Identifiers in M use: A-Z a-z 0-9 _ $ and can't start with a digit.
 Here, it is necessary because 'exit' is a loop control statement in M.)
 
 ### Program Entry Point
- his is usually the start() function, which is always global (ie. exported, no 'global' needed.) start() takes no parameters.
+This is usually the start() function, which is always global (ie. exported, no 'global' needed.) start() takes no parameters.
 
 M will insert a call to a start-up routine in M's runtime module, to set up command-line parameters etc as global variables (nsysparams, and sysparams, the latter being an array of strings).
 
@@ -114,7 +115,7 @@ M has no preprocessor and no conditional directives for code (there used to be, 
 
 Conditional code is handled at the module rather than line level. It can look like this:
 
-  mapmodule pc_assem => pc_assemc when ctarget
+    mapmodule pc_assem => pc_assemc when ctarget
 
 Where, when 'import pc_assem' is encountered, it will instead import 'pc_assemc' (in this case a dummy module with empty functions). 'ctarget' can be a built-in flag or one set with compiler options/
 
@@ -177,16 +178,30 @@ These are defaults before any casts are applied:
 (No suffixes are used, except that in the next M version -L is used to force a decimal type for integers and floats.)
 
 ### Numeric Separators
- ------------------
-### Numeric Scaling
- ----------------
 
+Numeric constants including floating point can use ' _ or \` to separate groups of digits.
+
+### Numeric Scaling
+
+M allows scale factors such as 'million', used like this:
+
+    4 million           # 4000000
+
+There used to be other (like m, cm and km to scale lengths to the same units), but this part of the language will be revised to try and have user-definable scale factors.
+
+Such names are in their own namespace; 'million' can still be used as an identifier.
 
 ### Number Bases
 
+Number bases from 2 to 16 can be used for integers and floats, eg:
 
-
-
+    2x100    # base 2; 4
+    3x121    # base 3; 16
+    8x377    # octal: 255
+    12xBBB   # base 12: 1727 (not sure if bases 10x to 15x work in this language)
+    0xFFF    # hex
+    5x3.4    # base 5: 3.8 (3 and 4/5)
+    
 ### Numeric Limits and Type Sizes
 Given any numeric type T or expression X, then:
 
@@ -286,8 +301,8 @@ For multi-dimensions, use:
 ### Value Arrays
 M arrays are always handled by value (C converts them always to a pointer, with a schism in the type system to ensure that). So:
 
-   [10]int A,B
-   A := B
+    [10]int A,B
+    A := B
 
 However, there is little support for passing value arrays to functions or returning such arrays. (I used to allow that long ago, but it was never used.) Better ways to pass arrays are by pointer, by reference, or via a slice.
 
@@ -368,17 +383,17 @@ This is another concept from Algol68 - any expression can be used as a statement
 ### Functions and Procs
 M likes to make a stronger distinction between functions that return a value, and those that don't. The latter are defined with 'proc'
 
-   function add(int a,b)int =
-      return a+b
-   end
+    function add(int a,b)int =
+        return a+b
+    end
 
-   proc addto(int &a, b) =
-      a +:= b
-   end
+    proc addto(int &a, b) =
+        a +:= b
+    end
 
 Here the '&' signifies a reference parameter. Functions require a return type, and they need to return a value. Alternate syntax:
 
-   function add(int a,b) => int = {a+b}
+    function add(int a,b) => int = {a+b}
 
 This demonstrates:
 
@@ -413,37 +428,35 @@ Functions can be nested, but in a limited manner because a nested function can't
 ### Multiple Return Values
 An experimental feature limited to 3 scalar return types:
 
-   function fn => int, int, int =
-      return (10, 20, 30)
-   end
+    function fn => int, int, int =
+       return (10, 20, 30)
+    end
 
-   (a,b,c) := fn3()
+    (a,b,c) := fn3()
 
 Return values can be ignored:
 
-   (a,b) := fn3()   # discard last
-   a := fn3()       # discard last two
-   fn3()            # discard all
+    (a,b) := fn3()   # discard last
+    a := fn3()       # discard last two
+    fn3()            # discard all
 
 
 ### Define Variables
 This is fairly standard; inside a function (anywhere in the function actually):
 
-  int a, b:=123, c
+    int a, b:=123, c
 
 M syntax actually required 'var':
 
-  var int a, b:=123, c
+    var int a, b:=123, c
 
 but I tried this for a few months, and it was a pain. So now 'var' is optional. Note that writing this, which needs 'var':
 
-  var A, B
+    var A, B
 
 is not an error. Currently omitting a type makes A and B variants. I want to drop variants; in the next language version, omitting the type like this makes A and B have 'auto' type, which means it is inferred from initialisation or from the first assignment.
 
 At the moment, variables are not automatically initialised to anything, like C.
-
-
 
 ### Readonly Variables
 I've never been a fan of C's 'const' attribute, which really complicates the type system. M never had anything like until recently, when it was possible to use 'let' instead of 'var':
@@ -467,9 +480,9 @@ Inside a function, a 'static' prefix is needed.
 ### Named Constants
 This is very simple feature, naming compile-time expressions:
 
-   const A     = B+C
-   const int B = 100
-   const C     = 200
+    const A     = B+C
+    const int B = 100
+    const C     = 200
 
 When no type is used, it is infered from the expression. (The example demonstrates out-of-order definitions.) Such constants can be exported using 'global const.
 
@@ -477,20 +490,19 @@ Use of A, B or C in source are synonyms for the constants 300, 100 and 200.
 
 'const' is useful for numeric types, but less so for anything else.
 
-
 ### Enums
 These are a little like C:
 
-   enum (A, B, C=10, D)         # A=1, B=2, C=10, D=11
+    enum (A, B, C=10, D)         # A=1, B=2, C=10, D=11
 
 Or can also part of a type:
 
-   type colours = enum (red, green, blue)
-   type lights  = enum (red, amber, green)
+    type colours = enum (red, green, blue)
+    type lights  = enum (red, amber, green)
 
 Here, the names need to be qualified: you have to write colours.green (2), or lights.green (3). However the type system isn't that sophisticated, so the actual types are merely ints, and nothing stops you using colours.green or lights.green interchangeably.
 
-Type-d enums are not used much, and actually, enums themselves are rare because I normally use the **tabledata** features next:
+Typed enums are not used much, and actually, enums themselves are rare because I normally use the **tabledata** features next:
 
 ### Tabledata
  This is an unusual feature that defined sets of enums, and parallel data arrays, at the same time:
@@ -512,6 +524,7 @@ The arrays can be zero-based (or some other value): use [0:] on the array declar
 The () in tabledata() can contain a type name to contain the enums, as suggested above, eg:
 
     tabledata(colours) ....
+
 Or the () can be omitted, then it just defines parallel arrays, no enums.
 
 ### Lengths and Bounds
@@ -636,9 +649,9 @@ When slicing gets added, then a slice can be created using:
 
     A[i..j]
 
-(This results in a slice that can be indexed like an array, so A[i..j][k], which can be written as: A[i..j,k]. Or it can be further sliced: A[i..j, k..l])
+(This results in a slice that can be indexed like an array, so A[i..j][k], which can be written as: A[i..j,k]. Or it can be further sliced: A\[i..j, k..l\])
 
-As a convenience, the special symbol $ used in an array index, returns the upper bound of that array. So A[$] is the last value, equivalent to A[A.upb].
+As a convenience, the special symbol $ used in an array index, returns the upper bound of that array. So A[$] is the last value, equivalent to A\[A.upb\].
 
 ### Pointer Dereferencing
 
@@ -673,7 +686,6 @@ Note that "." is also used for selecting names from a namespace. A namespace mig
     a.b.c
 
 It's not possible to tell, until resolved, whether both dots select fields, or just the second, or neither.
-
         
 ### 2-way and N-way Selection Operators
 
@@ -701,18 +713,6 @@ is the same as:
 
     (a | &b | &c)
 
-
-
-### Bit Indexing and Slicing Operators
-
-Int types can have their bits accessed as follows:
-
-    int A
-    A.[i]          # bit i (0 is lsb, 63 is msb)
-    A.[i..j]       # bitfield i..j
- 
-These can be used as lvalues, but in a restricted form (otherwise arbitrary bitfield pointers are needed).
-
 ### Min/Max and Clamp
 
 min/max are built-in operators, and can be used like this:
@@ -720,7 +720,7 @@ min/max are built-in operators, and can be used like this:
     c := min(a,b)
     a max:=b
 
-The will work on numeric types.
+They will work on numeric types.
 
 Clamp is used as follows:
 
@@ -744,7 +744,7 @@ which means a := a+b. In M, these are only allowed as standalone statements, as 
 
 Such assignments are allowed for +, -, \*, /, iand, ior, ixor, min and max:
 
-   a min:= b
+    a min:= b
 
 Unusually, M allows augmented assignments for some unary operators too:
 
@@ -757,17 +757,17 @@ Unusually, M allows augmented assignments for some unary operators too:
 
 This is similar to what is used in Python:
 
-   (a, b, c) = (b, c, a)
+    (a, b, c) = (b, c, a)
 
-   (a, b) = (10, 20)
+    (a, b) = (10, 20)
 
-   a, b = b, a
+    a, b = b, a
 
 The last will do the swap operation, but not as efficiently with complex terms as each is evaluated twice.
 
 This can also be used when the right-hand-size is a function returning multiple values:
 
-   a, b = fn()
+    a, b = fn()
 
 ### Expression List
 
@@ -806,7 +806,7 @@ If you need to use the 1/0 return value of a=b, then break it up using parenthes
 
 Any two fixed size compatible values can be exchanged like this:
 
-   swap(a, b)
+    swap(a, b)
 
 This is more efficient that doing it via (a,b):=(b,a), as terms are written once with less chance of error.
 
@@ -984,6 +984,8 @@ There is an alternative syntax:
     for i in A do             # uses A.lwb to A.upb
     
 (There is an experimental version called forall, which iterates over values not indices, but in the revised language, that will be changed so that both use 'for'. So avoid.)
+
+Note: loop index variables don't need to be declared. They are auto-defined as 'let', so that you can't assign to them.
 
 ### Loop Controls
 
@@ -1461,6 +1463,9 @@ They can be initialised from a construct, but only for static variables (ie. usi
 
 Outside of a function. 'static' is not needed.
 
+### Bugs and Limitations
+
+There will be loads. This one problem with languages used by too few people, it does not get exercised enough. It is easy to get around limitations or bugs, or there will be ranges of features that haven't be used enough to know how well or otherwise they work.
 
 ### Shortcomings
 
