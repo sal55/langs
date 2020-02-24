@@ -483,3 +483,965 @@ The () in tabledata() can contain a type name to contain the enums, as suggested
 
     tabledata(colours) ....
 Or the () can be omitted, then it just defines parallel arrays, no enums.
+
+### Lengths and Bounds
+
+The following can be applied to arrays and slices:
+
+    .len    # length of array or slice
+    .lwb    # lower bound
+    .upb    # upper bound
+    .bounds    # returns a range lower..upper (compile-time only)
+
+The following for any type:
+
+    .bytes    # byte-size in any type or expr
+
+And this for primitive types:
+
+    .bitwidth
+
+### Binary Operators and Precedence Levels
+
+    :=      9   assign
+
+    +       4   (binary) add
+    -       4   (binary) subtract
+    *       3   multiply
+    /       3   divide (both integer and floating point)
+    rem     3   remainder (modulo)
+    **      2   raise to power
+    iand    4   bitwise and
+    ior     4   bitwise or
+    ixor    4   bitwise xor
+    <<      3   shift left
+    >>      3   shift right
+    in      6   (see range/set constructs)
+    notin   6   also 'not in'; opposite of 'in'
+    min     4   binary minimum
+    max     4   binary maximum
+    clamp   -   clamp(x,a,b) restricts x to being within a..b
+
+    and     7   logical and (short circuit operators used in conditional exprs)
+    or      8   logical or
+    not     -   logical not
+
+    =       6   equals
+    <>      6   not equals
+    <       6   less than
+    >       6   greater then
+    <=      6   less than or equal
+    >=      6   greater than or equal
+
+    ..      5   Make range
+
+### Unary Operators
+
+    +       -   plus
+    -       -   (unary) negate
+    inot    -   bitwise not
+    abs     -   absolute value
+    
+    ++      -   increment (used as prefix or postfix)
+    --      -   decrement (used as prefix or postfix)
+
+    sqr     -   square (x*x)
+    sqrt    -   square root
+    sign
+    sin
+    cos
+    tan
+    asin
+    acos
+    atan
+    ln
+    lg
+    log
+    exp
+    round
+    floor
+    ceil
+    fract
+    fmod
+    atan2
+
+Note that many of these are functions in other languages, but are operators here. That means parenthese are not needed (but usually advised), but also they are properly overloaded.
+
+For example, **abs** can be applied to ints or reals, and will give the expected answer (try using abs() in C on a float rather than int):
+
+    int a; real x
+    a := abs a
+    x := abs y
+
+### Precedence Levels
+
+    2   **                             # highest
+    3   * / rem << >>
+    4   + - iand ior ixor
+    5   ..
+    6   = <> < <= >= > not notin
+    7   and
+    8   or
+
+    9   :=                             # lowest
+
+Disregarding "\*\*" and ".." which don't exist in C, there are seven levels, compared to a dozen in C.
+
+### Array Indexing
+
+This is very simple. If A is an array, then you can index it as:
+
+    A[i]
+
+If A is a pointer to array, it must be dereferenced first:
+
+    A^[i]
+
+Where there are mult-dimensions of a flat array (no pointers to arrays inside), then the indexing goes like this:
+
+    A[i,j,k]
+    A[i][j][k]          # C style alternative
+
+When slicing gets added, then a slice can be created using:
+
+    A[i..j]
+
+(This results in a slice that can be indexed like an array, so A[i..j][k], which can be written as: A[i..j,k]. Or it can be further sliced: A[i..j, k..l])
+
+As a convenience, the special symbol $ used in an array index, returns the upper bound of that array. So A[$] is the last value, equivalent to A[A.upb].
+
+### Pointer Dereferencing
+
+This is done with the "^" symbols, applying as as suffix to a term:
+
+    P^
+    (P+i)^
+
+And can be used consistently with multiple defers:
+
+    Q^^
+    R^.S^.T
+
+Each ^ can be cancelled by one &, so that &Q^^ is equal to Q, and &&Q^ equals &Q.
+
+When mixing ^ with ++ and --, it needs to be used like this:
+
+    P++^        # Increment P then deref the original value
+    ++P^        # Increment P then deref the new value
+
+
+### Field Selection
+
+Little to say about this, except it used the usual "." notation:
+
+    pt.x + pt.y
+
+When used with a pointer to a record P, it's like this: P^.x.
+
+Note that "." is also used for selecting names from a namespace. A namespace might be a module, function or record. That use is detected and resolved at compile time:
+
+    a.b.c
+
+It's not possible to tell, until resolved, whether both dots select fields, or just the second, or neither.
+
+        
+### 2-way and N-way Selection Operators
+
+The 2-way operator This is the equivalent of  C's ?: operator, and is written like this:
+
+    (a | b | c)
+
+always with parentheses. It's equivalent to if a then b else c fi
+
+An extension of that is the N-way operator:
+
+    (n | a, b, c, ... | z)
+
+This select's the nth (1-based) element from the list, or the default z when n is out of range. Only one element is evaluated.
+
+Both operators can be used on the left size of an assignment:
+
+    (cond | a | b) := 0
+
+Here, either a or b is set to zero. Some operations will also propagate inside, so that:
+
+    &(a | b | c)
+
+is the same as:
+
+    (a | &b | &c)
+
+
+
+### Bit Indexing and Slicing Operators
+
+Int types can have their bits accessed as follows:
+
+    int A
+    A.[i]          # bit i (0 is lsb, 63 is msb)
+    A.[i..j]       # bitfield i..j
+ 
+These can be used as lvalues, but in a restricted form (otherwise arbitrary bitfield pointers are needed).
+
+### Min/Max and Clamp
+
+min/max are built-in operators, and can be used like this:
+
+    c := min(a,b)
+    a max:=b
+
+The will work on numeric types.
+
+Clamp is used as follows:
+
+    c:=clamp(x,a,b)
+
+and is equivalent to c:=min(max(x,a),b)
+
+### Assignment and Equality
+
+Assignment always uses ":=" for assignment, and "=" for equality. This reduces the potential for mistakes as is common when "=" and "==" are used.
+
+Assignments can of course be used inside an expressions which is how the mixup arises.
+
+### Augmented Assignments
+
+These are assigments such:
+
+    a +:= b
+ 
+which means a := a+b. In M, these are only allowed as standalone statements, as their use inside expressions is confusing.
+
+Such assignments are allowed for +, -, \*, /, iand, ior, ixor, min and max:
+
+   a min:= b
+
+Unusually, M allows augmented assignments for some unary operators too:
+
+       -:= a       # a := -a
+     abs:= a       # a := abs a
+     not:= a       # a := not a
+    inot:= a       # a := inot a
+ 
+### Multiple Assignment
+
+This is similar to what is used in Python:
+
+   (a, b, c) = (b, c, a)
+
+   (a, b) = (10, 20)
+
+   a, b = b, a
+
+The last will do the swap operation, but not as efficiently with complex terms as each is evaluated twice.
+
+This can also be used when the right-hand-size is a function returning multiple values:
+
+   a, b = fn()
+
+### Expression List
+
+This is the equivalent of C's comma-operator:
+
+    a + (x; y; z)
+
+but is written with ";", and with mandatory parentheses. x and y are evaluated first (usually they will have some side-effects), then z, which is the result of the expression list.
+
+(Here, also, x, y, z can be statements.)
+
+### Chained Compare Operators
+
+The compare operators are =, <>, <, <=, >= and >.
+
+When combined like this:
+
+    if a = b = c
+
+then that means:
+
+    if a = b and b = c
+
+Other examples:
+
+    if a <= b < c            # a <= b and b < c
+    if a > b < c = d         # if a > b and b < c and c <= d
+    
+If you need to use the 1/0 return value of a=b, then break it up using parentheses:
+
+    if (a = b) = (c = d)
+
+(Note: middle terms are evaluated twice. This will be fixed eventually, but most uses have simple terms.)
+
+### Swap
+
+Any two fixed size compatible values can be exchanged like this:
+
+   swap(a, b)
+
+This is more efficient that doing it via (a,b):=(b,a), as terms are written once with less chance of error.
+
+### Promotions
+
+Like C, narrow integer types are widened, but to int64 rather than int32 as is common for C.
+
+The same applies to the char type, widened to C64. But real32 floats are not widened to real64.
+
+This usually applies to any term of an expression, except for terms like X.type, X.typestr, X.bytes, X.bitwidth where the non-promoted type of X is used.
+
+
+### Mixed Sign Arithmetic
+
+In M, this will be done in signed mode: the unsigned operand is converted to signed. The rules here (combined with promotion) are simple compared with C:
+
+    Unsigned + Unsigned   => Unsigned
+    Unsigned + Signed     => Signed
+    Signed   + Unsigned   => Signed
+    Signed   + Signed     => Signed
+
+There are no exceptions, and they do not depend on the width of the types.
+
+### Type Conversion and Punning
+
+Type conversions are written like this:
+
+Simple type conversions are written like this:
+
+    int(x)
+
+although it has to be a conversion that is allowed. However, an ambiguity in the current syntax means that elaborate types have to use this more general form:
+
+    cast(x, int)
+
+There is also type punning, which is a re-interpretation of a type without changing anything:
+
+    real x := 1.1
+
+    println int64(x)       # display 1
+    println int64@(x)      # display 4607632778762754458 (0x3FF199999999999A)
+
+The @ symbol makes it type punning (equivalent to \*(int64_t\*)&x in C).
+
+Again, for complex types, use cast@(x,int64).
+
+Sometimes, it can be difficult to get on top of which precise conversion is needed, as happens with pointer types. Then, 'cast' can be used to automate it:
+
+    ref int64 p
+    ref []int q
+
+    p := cast(q)
+
+'cast' will apply whatever cast is required. This is handy when the necessary type needs to be tracked down, or when it is likely to change.
+
+### Conditional Statements
+
+This is mainly the **if** statement:
+
+    if cond then
+       stmt1
+       stmt2
+    elsif cond then
+       ....
+    elsif cond then
+       ...
+    else
+       ...
+    fi
+
+With elsif and else both optional so that a simple if-statement is:
+
+    if cond then
+       stmts...
+    fi
+
+(Don't worry, you can use **end**, **end if** or **endif** in place of **fi**)
+
+There is also:
+
+    unless cond then
+        stmts....
+    else                   # optional
+        stmts....
+    end
+ 
+with the opposite logic. (Sometimes this helps, sometimes not.)
+
+When you have this pattern: if x=a then.. elsif x=b then ..., then consider using the **case** statement which is designed for exactly that.
+
+Sometimes, if, case and switch can be combine to form a composite statement:
+
+    if cond then
+    elsif 
+    elsecase x
+    when a then
+    when b,c then
+    else
+    fi
+ 
+But use sparingly as it looks funny.
+ 
+### Conditional Suffixes
+
+Some control-flow statements can have a conditional suffix. For example:
+
+    goto finish when x=0
+    return 3 unless n<0
+
+The possible condition keywords can be:
+
+    when expr
+    unless expr          # this one has the opposite logic
+
+('if' used to be allowed but in the revised language that has an ambiguity.)
+
+The statements where such a suffix is allowed are:
+
+    return
+    goto
+    stop
+    exit
+    redo
+    restart
+    next
+
+### Loops
+
+Modern languages seem to be lacking in looping constructs even though, as mere syntax, they have little cost. M offers:
+
+    do ... od                   # endless loop
+    to n do ... od             # repeat n times
+    for i:=a to b do ... od    # iterate from a to b
+    forall x in a do ... od    # iterate over values in a
+    while x do ... od
+    repeat ... until x
+
+There are also looping versions of **switch** and **case** statements.
+
+There is no equivalent of C's open 'for' loop which encourages all sorts of weird  and wonderful constructions, usually all on the same line. (There was something similar based on 'while', but it was never used.)
+
+Loop controls include **restart**, **redo**, **next** and **exit**, and can be used to any level of nested loop.
+
+Some loops (for) can have an **else** part, which is executed on normal exit (abnormal ones include **goto**, **exit**, **return** and **stop**).
+
+### For Loops
+
+The full syntax is:
+
+    for i := a to b by c when d do
+      ....
+    else
+      ....
+    end
+
+This iterates the loop variable of over a to b inclusive, stepping by c. 'when d' can be used to conditionally execute any particular iteration. The 'else' part executes on normal termination.
+
+But many parts are optional, and a more typical loop is:
+
+    for i := a to b do
+        ....
+    end
+
+Even shorter forms include:
+
+    for i to b do             # start from 1
+    to b do                   # this is now the repeat-n-times loop
+    do                        # and this is the endless loop
+    
+Note that such a loop will always count upwards. To count downwards, use 'downto' instead of 'to'.
+    
+There is an alternative syntax:
+
+    for i in a..b do          # a, b are numbers
+    for i in A do             # uses A.lwb to A.upb
+    
+(There is an experimental version called forall, which iterates over values not indices, but in the revised language, that will be changed so that both use 'for'. So avoid.)
+
+### Loop Controls
+
+* **restart** Restart the loop (mainly applies to for loops)
+* **redo** Repeat this iteration
+* **next** Continue to next iteration
+* **exit** Break out of the loop
+
+This can be used with nested loops by supplying a loop index:
+
+    exit         # Exit from this inner loop
+    exit 1       # Same thing
+    exit 2       # Exit from next outer loop
+    exit 0       # Exit from outermost loop
+    exit all     # Same thing
+
+All these controls can also be used with a conditional suffix:
+
+    exit when c=0
+
+### Switch Statement
+
+Switch statements use an integer index and are designed to map to a jump table:
+
+    switch x
+    when a, b then
+        ....
+    when c then
+        ....
+    else
+        ....
+    end switch
+
+x is an integer expression; a,b and c should be constant int expressions, and should not span a greater range than is suitable for a jump table.
+
+Test expressions can be ranges:
+
+    switch c
+    when 'A'..'Z','a'..'z', '_' then
+        ....
+
+There is a limit of a few hundred values between smallest and largest in a switch. If exceeded, try using a **case** statement.
+
+### Case Statement
+
+When x is not an integer, or a, b are not integers or not constants, or the range is too wide, then a **case** statement can be used in place of switch:
+
+    case x
+    when a, b then
+        ....
+    when c then
+        ....
+    else
+        ....
+    esac
+
+Case statements will sequentially test x against a, b and c in turn, until the first match.
+
+One variation on case is when the test expression is omitted:
+
+    case
+    when a=b, c=d then
+        ....
+    when e<0 then
+        ....
+
+Then it will evaluate expressions until one returns true, then it will execute that when-block.
+
+### Looping Switch and Case
+
+Both switch and case statements have looping equivalents:
+
+    doswitch p++^
+    when a,b,c then
+    when ...
+    else
+    end switch
+
+    docase x
+        ...
+    end
+
+At the end of each when or else block, it will jump back to the start to repeat. Some means is usually needed to exit at some point (exit, goto, return, stop).
+
+### Print and Println
+
+M still retains print and println as statements:
+
+    println a,b,c
+
+This displays a, b and c, whatever type they happen to be, then adds a newline. **print** doesn't add the newline.
+
+To print to a file open as handle f, use:
+
+    println @f, a,b,c
+
+The values are written with spaces in between. To suppress the space, use a double comma:
+
+    print a,,b,c
+
+This gets very ugly and is not satisfactory, but it will do for informal printing. For that purpose, there is also the "=" prefix:
+
+    println =a,=b,=c
+
+which adds "A=", "B=" and "C=" before each value respectively.
+
+Otherwise, it is necessary to use formatted printed, which looks like this:
+
+    fprintln "#-#.(#)",a,b,c
+
+If a is 10, b="abc" and c is a pointer with value 0x0001234, then the output will be 10-abc.(0001234).
+
+Individual formatting is done like this:
+
+    fprintln "#-#.(#)",a:"z10",b,c
+
+In this example, a is shown in a field 10 chars wide, with leading zeros.
+
+There also ways to print into a string:
+
+    println @&.str, "One","Two"
+
+### Read and Readln
+
+Read and Readln are also available, but I'd need to research more how they work. They are used as follows:
+
+    int a,b
+    real c
+
+    print "?"
+    readln a,b,c
+
+or:
+
+    readln
+    read a,b,c
+
+**readln** reads the next whole line into a buffer, from the console (or from
+a file using readln @f). Then read statements consume inputs from that buffer.
+
+That's why they can be part of the readln, or follow later.
+
+
+### Range Construct
+
+A range is a pair of ints defining a sequence, such as 1..10, which means to 1 to 10 inclusive, and always stepping by 1.
+
+It's not a type in itself (it will be in the next version), but it can be used as a construct:
+
+* For array bounds
+* In switch-when expressions
+* With the **in** operator
+* As part of a Set constructor.
+
+Examples:
+
+    [1..10]int a
+    
+    switch c
+    when 'A'..'Z' then
+    ....
+    
+    if a in [32..63] then ...
+    
+    ... ['0'..'9','-','+','.']
+    
+
+### Set Construct
+
+Like a range, a set is not a proper type (I will try and have one in the next version).
+
+Here, sets are used to construct int values of 64 or 128 bits. Such a construct can be used with the **in** operator:
+
+    if c in ['A'..'Z', 'a'..z']
+    if a in [1,2,4,8,16]
+
+Since they are just integers, logical operations can be done between then.
+
+Also, set inclusion can also be done with dot indexing:
+
+    ['A'..'Z','a'..'z'].[c]
+    const alpha = ['A'..'Z','a'..'z'].[c]
+    alpha.[c]
+    
+However these will not do the range checking that **in** will do.
+
+### Equivalence
+
+This feature allows two variables to share memory:
+
+    real x
+    int a @ &x
+
+Here, a shares the same memory as x. Note that a should not be smaller than x (unless that is the intention, or perhaps x is itself equivalenced to a larger variable).
+
+The expressions available are simple: &x or &x+3, with the offset always in bytes. Possibly, indexing can be added to allow:
+
+### Label Pointers
+
+This is a possible feature (also implemented in C by gcc), where you can take the address of a label, store it in arrays and so on, and use that later in an indirect goto.
+
+But at the moment its't not implemented. (For some kinds of programs, it results in faster execution that using a switch.)
+
+### Foreign Functions
+
+Foreign functions are any that are not directly part of this program. That is, not defined in any of the source modules that are compiled together to build this executable.
+
+They must reside in an external DLL.
+
+To use them, they must be declared in an **importdll** block, for example:
+
+    importdll msvcrt =
+        clang proc puts(ichar)
+        clang function printf(ichar, ...)int
+    end
+
+Such names will be made available to the rest of the module. And also, if this module is imported elsewhere, they are exported to those other modules.
+
+Each declaration must start with the language the function uses. Or rather the call convention used. Currently there are three possibilities:
+
+* **clang**
+* **windows**
+
+**windows** is not a language, it is to show the Windows call convention is used
+rather then normal C.
+
+(On Win64, both Windows and C use the same call convention. M uses its own.)
+
+Where a foreign function has a case-senstive name, it must be in quotes:
+
+    import windowsdlls =
+        windows function "MessageBoxA" (int=0, ichar message, caption="Title", int=0)int
+    end
+
+But then it can be used like this:
+
+    messageboxa(message:"hello")
+
+This also demonstrates adding optional parameters with default values, and  using keyword parameters.
+
+(There used to be an option to supply an alias to function, such as:
+
+    function "MesssageBoxA" as "messagebox" ...
+
+but it's missing at the moment. You can try using macros.)
+
+### Compiler Variables
+
+These are special built-in variables that can be used to determine various aspects of the compilation:
+
+    $lineno         Current line number as an int constant
+    $strlineno      Line number as a string
+    $modulename
+    $filename
+    $function       Current function name
+    $date           String constants containing date or time
+    $time
+    $version
+
+### Standard Libraries
+
+* **msys**    Support library implicitly imported in every module
+* **mlib**    Small runtime library
+* **clib**    Interface to some C library functions
+* **oslib**   Selection of functions implemented by the OS
+* **osdll**   DLL function handling when names/params not known until runtime
+
+### **nil** Pointer Constant
+
+This is designated by **nil**, which has type 'ref void'.
+
+### System Constants
+
+There are a small number of predefined constants, such as **pi**, but I'm going to revise this part of the language.
+
+### Inline Assembly
+
+The M language has always had inline assembler available in a straightforward manner:
+
+    assem                   # block of assem instructions
+        mov D0,[a]
+        add D0,4
+    end
+
+    asm inc dword [b]       # one instruction at a time
+
+Since M's register usage is unsophisticated, interaction with M is simple.
+
+### Using the M Compiler
+
+Given a program consisting of multiple modules, of which the lead module (containing the start() function) is prog.m, and the M compiler is called mm.exe then use:
+
+    mm prog
+
+assuming mm is in a suitable search path.
+
+This will compile prog.m and **all** linked imported files, into prog.exe.
+
+For other options, try 'mm -help'.
+
+### Grouped Imports
+
+Sometimes there are modules A, B, C which work together to provide some functionality, but you need to import all of them. It is tider to put those imports into a new module X:
+
+    import A
+    import B
+    import C
+
+Then just do this in your program:
+
+    import* X
+
+This will make all the modules imported by X, also known to this program.
+
+X needn't be an an empty module; it can have useful content. So if A already imports B and C, you can do this:
+
+    import* A
+
+
+### Naked Functions
+
+What are sometimes called naked functions, are those with no entry or exit code.
+
+In M, they are written like this:
+
+    threadedproc fn =
+     ....
+    end
+
+They are called threadproc because they were created to implented threaded-code handlers for an interpreter. There, you would jump to such a procedure, and then jump to the next, without using normal call and return.
+
+For such reasons, parameters and local frame variables are not possible (only static ones).
+
+### Macros
+
+There is a new, simple implementation of macros, example:
+
+    macro getopnd = (pcptr+1)^
+    macro dist(x,y) = sqrt(x*x+y*y)
+
+That second form can be used for inline functions. The body of a macro must always be a single, well-formed expression or term. However, a sequence of statements can be trivially be turned into an expression:
+
+     (s1; s2; s3)
+
+So multi-line macro bodies are possible. What is not allowed are definitions (as macros are expanded in a later pass after the symbol table is completed).
+
+### Bit Indexing
+
+If A is an integer, then it can be indexed like this:
+
+    print A.[i]                # 1 or 0
+    A.[j] := 0
+
+Indexing starts at zero, and goes up to 7, 15, 32, 63 or 127 depending on the size of A.
+
+### Bitfield Indexing
+
+If A is an integer, then an arbitrary bitfield can be extracted using:
+
+    A.[i..j]               # i/j can be either order, eg. 0..7 or 7..0
+    A.[i..j] := x          # insert x into that bitfield
+
+### Standard Bit/Bitfield Codes
+
+    A.msb          Top byte (most significant)
+    A.lsb          Bottom byte (least significant)
+    A.msbit        Top bit
+    A.lsbit        Bottom bit
+    A.msw          Top half
+    A.lsw          Bottom half
+    A.odd          1 when bottom bit is 1 (read-only)
+    A.even         1 when bottom bit is 0 (read-only)
+
+### Address-of Operator
+
+This like it is in C, but it is a little different for arrays:
+
+    [10]int A
+    &A           # type is ref[10]int
+    &A[1]        # type is ref int
+
+When you need a pointer to the first array element, then having to know the first element, or type &A[A.lwb], is a nuisance. Then it is possible to type:
+
+    &.A
+
+(This is a rare instance where C is more convenient. But this is a stop-gap until the correct address-of op is done automatically.)
+
+### Stop Statement
+
+    stop             Stop the program (like exit(0) in C)
+    stop N           Stop with return code N (like exit(N))
+
+### Slices
+
+This is a new feature and quite a big subject to describe. Some examples:
+
+    [10]int A           # normal array
+    slice[]int S        # A slice
+
+A slice is composite type consisting of (pointer, length). A slice can be initialised like this:
+
+    S := (P,100)        # Construct from a normal pointer
+    S := (&.A, A.len)   # slice to whole of A, but...
+    S := A              # ... the conversion is automatic anyway.
+    S := A[3..6]        # Slice to subarray
+
+With a function F taking a slice type, it is possible to call it as:
+
+    F(S)
+    F(A)
+    F(A[3..6])
+    F((P,100))
+
+While F might look like this:
+
+    proc F(slice[]int S)=
+       for i in A do
+           println a,A[i]
+       od
+    end
+
+or (using 'forall' which will change):
+
+    proc F(slice[]int S)=
+        forall i,x in A do
+            println i,x
+        od
+    end
+
+Applied to char arrays, this provides counted strings.
+
+### 2-way Selection
+
+Like C's ?: operator, M's is written like this:
+
+     (A | B | C)
+
+Evaluate either B or C depending on whether A is true or false. Unlike C, this can be used as an lvalue:
+
+    (A | B | C) := 0          # set either B or C to zero
+    &(A | B | C)              # evaluate &B or &C as & propagates inside.
+
+In M, (a|b|c) is just another way of writing a regular if-statement. Nothing stops you using the regular form:
+
+    print if a then "true" else "false" fi
+    if A then B else C fi := 0 
+
+Actually, a long-form 'if' can be used too:
+
+   print if a then b elsif c then d ...
+
+but is not recommended as an expression.
+
+### N-way Selection
+
+This extension to 2-way selects is written is:
+
+     (n | a, b, c, ... | z)
+
+This evaluates a, b, c ... according to n = 1, 2, 3 ... If out of range, z is evaluated. Again, this can be an lvalue. (There is no long form.)
+
+For more complex selections, normal switch and case statements can be used.
+
+### Initialisation of Arrays and Records
+
+Scalars can be initialised in the same way they can be assigned to. But it is not possible to assign to arrays and records from an array/record constructor:
+
+     [3]int A
+
+     A := (10,20,x)           # not allowed, even if x is constant
+
+They can be initialised from a construct, but only for static variables (ie. using '=' rather than ':='), and the constructs must consist of compile-time expressions, or static addresses in the case of pointers:
+
+     static [3]int A = (10,20,30)    # Note '=' not ':='
+
+Outside of a function. 'static' is not needed.
+
+
+### Shortcomings
+
+Lots of nice features listed, but there are plenty of issues too:
+
+* Not known to external tools so syntax highlighting either can't be applied, or will be wrong
+
+* Most external libraries that might be compatible, will have C APIs. That requires interfaces for any library to be written as an **importdll** block in M. That is a lot of work. (Sometimes, you can create a smaller, tidier set of interface functions in C, then the interface in M to those functions will be smaller. But then you have an extra C dependency.)
+
+* There is a limited amount of source code in M (currently some 100Kloc), so the tools will not have got the testing they would get if applied to a billion lines of C code. So there will be inevitable bugs, corner cases that have never been tested etc as well as language features that don't work as well as expected.
+
+* There is no optimiser.
+
+Basically, the main problem is that it is not C. Even though C is a ghastly language, it is everywhere, there are loads of tools for it, and huge numbers of people are familiar with it.
