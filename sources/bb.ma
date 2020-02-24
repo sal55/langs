@@ -1,30 +1,23 @@
-mafile 25
-  1 bb.m               18235     1005
-  2 clibnew.m           3397    19264
-  3 mlib.m             26695    22682
-  4 msysnew.m          46919    49401
-  5 oswindows.m        12536    96346
-  6 bb_lex.m           40973   108905
-  7 bb_decls.m          9896   149903
-  8 bb_tables.m        42458   159825
-  9 bb_support.m       13629   202310
- 10 bb_lib.m           41400   215963
- 11 bb_diags.m         13937   257389
- 12 bb_mcldecls.m      13305   271355
- 13 bb_parse.m         89362   284686
- 14 mvar.m             11777   374070
- 15 var_decls.m         6644   385874
- 16 var_tables.m        3540   392546
- 17 var_numbers.m       6385   396115
- 18 var_objects.m      15562   402529
- 19 var_support.m       3821   418120
- 20 var_strings.m       9023   421970
- 21 var_lists.m         8799   431020
- 22 var_decimals.m      4121   439849
- 23 mbignum.m          30191   443995
- 24 var_arrays.m        6547   474214
- 25 var_print.m         3114   480788
-=== bb.m 1/25 ===
+mafile 18
+  1 bb.m               19684      732
+  2 clibnew.m           3397    20440
+  3 mlib.m             26695    23858
+  4 msysnew.m          46919    50577
+  5 oswindows.m        12536    97522
+  6 bb_lex.m           41054   110081
+  7 bb_decls.m         10885   151160
+  8 bb_tables.m        43486   162071
+  9 bb_support.m       13695   205584
+ 10 bb_lib.m           41476   219303
+ 11 bb_diags.m         14660   260805
+ 12 bb_mcldecls.m      13305   275494
+ 13 bb_parse.m         89673   288825
+ 14 bb_name.m          17855   378523
+ 15 bb_type.m          65736   396403
+ 16 bb_genpcl.m         9614   462166
+ 17 bb_libpcl.m        24449   471807
+ 18 bb_blockpcl.m      68880   496285
+=== bb.m 1/18 ===
 import clib
 import mlib
 import oslib
@@ -36,27 +29,45 @@ import bb_parse
 import bb_lib
 import bb_diags
 import bb_mcldecls
+import bb_name
+import bb_type
+import bb_genpcl
+import bb_libpcl
+
 
 tabledata() []ichar optionnames=
-	(exe_sw,		"exe"),			!generate .exe (default)
-	(obj_sw,		"obj"),			!generate .obj
 
-	(opt_sw,		"opt"),			!optimise
+	(prod_sw,		"prod"),
+	(debug_sw,		"debug"),
 
 	(compile_sw,	"c"),			!compile only to .asm
-	(link_sw,		"link"),		!compile and generate .exe or .obj (default)
+	(coff_sw,		"coff"),		!compile and generate .obj (default)
+	(build_sw,		"build"),		!compile and generate .exe (default)
 	(run_sw,		"run"),			!for .exe target, also run the result
 
 	(load_sw,		"load"),
 	(parse_sw,		"parse"),
-	(ba_sw,			"ba"),
+	(fixup_sw,		"fixup"),
 	(name_sw,		"name"),
 	(type_sw,		"type"),
-	(gen1_sw,		"gen1"),
-	(gen2_sw,		"gen2"),
-	(gen3_sw,		"gen3"),
-	(gen4_sw,		"gen4"),
+	(pcl_sw,		"pcl"),
+	(mcl_sw,		"mcl"),
+	(asm_sw,		"asm"),
+	(obj_sw,		"obj"),
+	(exe_sw,		"exe"),
 
+	(ba_sw,			"ba"),
+	(opt_sw,		"opt"),			!optimise
+
+	(ast1_sw,		"ast1"),
+	(ast2_sw,		"ast2"),
+	(ast3_sw,		"ast3"),
+	(showpcl_sw,	"showpcl"),
+	(showmcl_sw,	"showmcl"),
+	(st_sw,			"st"),
+	(stflat_sw,		"stflat"),
+	(types_sw,		"types"),
+	(overloads_sw,	"overloads"),
 
 	(time_sw,		"time"),
 	(v_sw,			"v"),
@@ -68,7 +79,6 @@ tabledata() []ichar optionnames=
 	(out_sw,		"out"),
 	(nosys_sw,		"nosys"),
 	(unused_sw,		"unused"),
-	(debug_sw,		"debug"),
 	(set_sw,		"set"),
 !	(writelibs_sw,	"writelibs")
 end
@@ -84,16 +94,11 @@ proc start=
 unit p,q,r
 int m,fileno,ntokens,t
 
-CPL =STREC.BYTES
-
-!fshowast1:=1
-!fshowst:=1
-!fshowtypes:=1
-!fshowoverloads:=1
-
 initdata()
 
 getinputoptions()
+
+!showoptions()
 
 initsearchdirs()
 remove(logfile)
@@ -101,76 +106,97 @@ remove(logfile)
 t:=clock()
 loadmainmodule(inputfiles[1])
 
-!CPL "LOADED",INPUTFILES[1]
-!
-!CPL =NMODULES
-!FOR I TO NMODULES DO
-!	CPL I,,":",MODULETABLE[I].NAME,"FILENO:",moduletable[i].fileno
-!OD
-!CPL
-!global proc addoverload(moduleno, opc, amode, bmode, rmode, pfunc)=
-
-!addoverload(1,j_add,ti64,ti64,ti64,nil)
+!showmodules()
 
 do_parse()
-t:=clock()
 
-CPL "PARSETIME=",T,=nalllines
+do_name()
 
-!CPL "CALLCOUNTS:"
-!SHOWCALLCOUNTS()
+do_type()
 
-!CPL =NLOOKUPS
-!CPL =NCLASHES:"s,"
+do_genpcl()
 
-if fshowast1 then showast("AST1") fi
-
+!t:=clock()
+!
+!CPL "PARSETIME=",T,=nalllines
 showlogfile()
 
 CPL
 end
 
 proc do_parse=
+
+	if debugmode and passlevel<parse_pass then return fi
+
 	for i:=2 to nmodules do
 		parsemodule(i)
 	od
 	parsemodule(1)
 
-!	fixusertypes()
+	if not debugmode or passlevel>=fixup_pass then fixusertypes() fi
+
+	if debugmode and fshowast1 then showast("AST1") fi
+end
+
+proc do_name=
+	if debugmode and passlevel<name_pass then return fi
+
+	for i:=2 to nmodules do
+		rx_module(i)
+	od
+	rx_module(1)
+
+	if debugmode and fshowast2 then showast("AST2") fi
+end
+
+proc do_type=
+	if debugmode and passlevel<type_pass then return fi
+
+	tx_typetable()
+
+	for i:=1 to nmodules do
+		tx_module(i)
+	od
+
+	if debugmode and fshowast3 then showast("AST3") fi
+end
+
+proc do_genpcl=
+	if debugmode and passlevel<pcl_pass then return fi
+
+	codegen_pcl()
+
+	if debugmode and fshowpcl then showpcl("PCL") fi
 end
 
 proc showlogfile=
 [256]char str
 filehandle logdev
+int show
+
+if not debugmode then return fi
+
+show:=0
 
 !CPL "SHOWLOGFILE1",=FSHOWAST1
-if fshowpcl1 or fshowpcl2 or fshowast1 or fshowast2 or fshowast3 or\
-	fshowst or fshowstflat or fshowtypes or fshowmcl1 or fshowss or
-	fshowoverloads then
-	logdev:=fopen(logfile,"w")
+logdev:=fopen(logfile,"w")
 
-!LOGDEV:=NIL
+if fshowasm and  passlevel=asm_pass then	show:=1; addtolog(outfilesource,logdev) fi
+!if fshowss and   passlevel=exe_pass then	show:=1; addtolog("SS",logdev) fi
+if fshowmcl and  passlevel>=mcl_pass then	show:=1; addtolog("MCL",logdev) fi
+if fshowpcl and  passlevel>=pcl_pass then	show:=1; addtolog("PCL",logdev) fi
 
-!CPL "SHOWLOGFILE2"
-!	if fshowss then addtolog("SS",logdev) fi
-!	if fshowmcl1 then addtolog("MCL",logdev) fi
-!	if fshowmcl1 then addtolog("MCL.ASM",logdev) fi
-	if fshowmcl1 then addtolog(outfilesource,logdev) fi
-!	if fshowpcl2 then addtolog("PCL2",logdev) fi
-	if fshowpcl1 then addtolog("PCL",logdev) fi
-	if fshowast3 then addtolog("AST3",logdev) fi
-	if fshowast2 then addtolog("AST2",logdev) fi
-	if fshowast1 then addtolog("AST1",logdev) fi
+if fshowast3 and passlevel>=type_pass then	show:=1; addtolog("AST3",logdev) fi
+if fshowast2 and passlevel>=name_pass then	show:=1; addtolog("AST2",logdev) fi
+if fshowast1 and passlevel>=parse_pass then	show:=1; addtolog("AST1",logdev) fi
+if fshowst then								show:=1; showsttree("SYMBOL TABLE",logdev) fi
+if fshowstflat then							show:=1; showstflat("FLAT SYMBOL TABLE",logdev) fi
+if fshowtypes then							show:=1; printmodelist(logdev) fi
+if fshowoverloads then						show:=1; printoverloads(logdev) fi
 
-	if fshowst then	showsttree("SYMBOL TABLE",logdev) fi
-!	if fshowst then	showsttree("SYMBOL TABLE",nil) fi
+fclose(logdev)
 
-!	if fshowstflat then	showstflat("FLAT SYMBOL TABLE",logdev) fi
-	if fshowtypes then printmodelist(logdev) fi
-	if fshowoverloads then printoverloads(logdev) fi
-!	if fshowtypes then printmodelist(nil) fi
-
-	fclose(logdev)
+if show then
 
 !	sprintf(&.str,"\\m\\med.bat %s",logfile)
 !	print @&.str,"\\m\\med.bat",logfile
@@ -183,9 +209,17 @@ if fshowpcl1 or fshowpcl2 or fshowast1 or fshowast2 or fshowast3 or\
 		println "Diagnostic outputs written to",logfile
 	fi
 fi
-!CPL =NUNITS:"s,",=UNITREC.BYTES
 
 stop 0
+end
+
+global proc showpcl(ichar filename)=
+	ref strbuffer pclstr
+
+	gs_init(dest)
+	pclstr:=writepclcode(filename)
+
+	writegsfile(filename,pclstr)
 end
 
 proc initdata=
@@ -563,13 +597,18 @@ while pmtype:=nextcmdparam(paramno,name,value,"b") do
 
 od
 
-!if cc_mode=0 then
-!	cc_mode:=link_mode
-!fi
-!
-if linkoption=nil then linkoption:="exe" fi
+if debugmode then
+	if passlevel=0 then passlevel:=pcl_pass fi
+else
+	passlevel:=prodpasslevel
+	if passlevel=0 then passlevel:=exe_pass fi
 
-!if ninputfiles=0 and not fwritelibs then
+	if fnobsys then
+		if passlevel>=exe_pass then fnobsys:=0 fi
+	fi
+
+fi
+
 if ninputfiles=0 then
 	showcaption()
 	println "Usage:"
@@ -588,24 +627,7 @@ elsif ninputfiles=1 then
 !!	fi
 !
 	outfilesource:=pcm_copyheapstring(changeext(filename,"asm"))
-!
-!	if islinux and eqstring(linkoption,"exe") then
-!		linkoption:=""
-!	fi
-!
-	outfilebin:=pcm_copyheapstring(changeext(filename,linkoption))
-!
-!
-!	if cc_mode=compile_mode then
-!		if destfilename then outfilesource:=destfilename fi
-!		outfile:=outfilesource
-!	else
-!		if destfilename then outfilebin:=destfilename fi
-!		outfile:=outfilebin
-!	fi
-!!CPL =OUTFILE
-!!CPL =OUTFILESOURCE
-!CPL =OUTFILEBIN
+	outfilebin:=pcm_copyheapstring(changeext(filename,(passlevel>=exe_pass|"exe"|"obj")))
 else
 	loaderror("Specify one lead module only")
 fi
@@ -616,21 +638,18 @@ int length
 
 case sw
 when compile_sw then
-	cc_mode:=compile_mode
+	prodpasslevel:=asm_pass
 
-when link_sw then
-	cc_mode:=link_mode
+when coff_sw then
+	prodpasslevel:=obj_pass
+
+when build_sw then
+	prodpasslevel:=exe_pass
 
 when run_sw then
-	cc_mode:=run_mode
+	prodpasslevel:=run_pass
 
 when opt_sw then foptimise:=1
-
-when exe_sw then
-	linkoption:="exe"
-
-when obj_sw then
-	linkoption:="obj"
 
 when time_sw then
 	fshowtiming:=1
@@ -661,19 +680,31 @@ when nosys_sw then
 	fnobsys:=1
 
 when debug_sw then
-	fdebugcompiler:=1
+	debugmode:=1
 
-when load_sw then passlevel:=0
-when parse_sw then passlevel:=1
-when name_sw then passlevel:=2
-when type_sw then passlevel:=3
-when gen1_sw then passlevel:=4
-when gen2_sw then passlevel:=5
-when gen3_sw then passlevel:=6
-when gen4_sw then passlevel:=7
+when prod_sw then
+	debugmode:=0
 
-!when set_sw then
-!	dosetoptionvar(value)
+when load_sw then passlevel:=load_pass
+when parse_sw then passlevel:=parse_pass
+when fixup_sw then passlevel:=fixup_pass
+when name_sw then passlevel:=name_pass
+when type_sw then passlevel:=type_pass
+when pcl_sw then passlevel:=pcl_pass
+when mcl_sw then passlevel:=mcl_pass
+when asm_sw then passlevel:=asm_pass
+when obj_sw then passlevel:=obj_pass
+when exe_sw then passlevel:=exe_pass
+
+when ast1_sw then fshowast1:=1
+when ast2_sw then fshowast2:=1
+when ast3_sw then fshowast3:=1
+when showpcl_sw then fshowpcl:=1
+when showmcl_sw then fshowmcl:=1
+when st_sw then fshowst:=1
+when stflat_sw then fshowstflat:=1
+when types_sw then fshowtypes:=1
+when overloads_sw then fshowoverloads:=1
 
 when ba_sw then
 	fwriteba:=1
@@ -938,7 +969,43 @@ addreservedword("dstack",regsym,r15,8)
 addreservedword("dprog",regsym,r8,8)
 addreservedword("dsptr",regsym,r9,8)
 end
-=== clibnew.m 2/25 ===
+
+proc writegsfile(ichar filename, ref strbuffer d)=
+	filehandle f
+
+	f:=fopen(filename,"w")
+	gs_println(d,f)
+	fclose(f)
+end
+
+proc showmodules=
+
+println "Searchdirs:",nsearchdirs
+FOR I TO NSEARCHDIRS DO
+	CPL I, SEARCHDIRS[I]
+OD
+
+println "Modules:",nmodules
+for i to nmodules do
+	cpl moduletable[i].name, sourcefilepaths[moduletable[i].fileno]
+od
+
+end
+
+proc showoptions=
+CPL =DEBUGMODE
+CPL =PASSNAMES[PASSLEVEL]
+CPL =FSHOWAST1
+CPL =FSHOWAST2
+CPL =FSHOWAST3
+CPL =FSHOWST
+CPL =FSHOWSTFLAT
+CPL =FSHOWTYPES
+CPL =FSHOWOVERLOADS
+CPL =FNOBSYS
+
+end
+=== clibnew.m 2/18 ===
 global type filehandle=ref void
 
 importlib $cstd=
@@ -1037,7 +1104,7 @@ global const c_eof		=-1
 global const seek_set	= 0
 global const seek_curr	= 1
 global const seek_end	= 2
-=== mlib.m 3/25 ===
+=== mlib.m 3/18 ===
 import msys
 import clib
 import oslib
@@ -2383,7 +2450,7 @@ packfileptr:=packexeptr+offset+int32.bytes
 
 return packfileptr
 end
-=== msysnew.m 4/25 ===
+=== msysnew.m 4/18 ===
 import clib
 import mlib
 
@@ -4800,7 +4867,7 @@ global function m$floor(real x)real = {`floor(x)}
 global function m$ceil(real x)real = {`ceil(x)}
 global function m$fract(real x)real = {abortprogram("FRACT");0}
 global function m$round(real x)real = {abortprogram("ROUND");0}
-=== oswindows.m 5/25 ===
+=== oswindows.m 5/18 ===
 import clib
 import mlib
 
@@ -5398,7 +5465,7 @@ array [100]byte m
 		PeekMessageA(&m,nil,0,0,0)
 	fi
 end
-=== bb_lex.m 6/25 ===
+=== bb_lex.m 6/18 ===
 import msys
 import mlib
 import clib
@@ -7091,6 +7158,8 @@ proc lxreadstring(int termchar)=
 	int c, d, length, hasescape
 	[8]char str
 
+!CPL "READSTRING",CHR(TERMCHAR)
+
 	if termchar='"' then
 		lx.symbol:=stringconstsym
 	else
@@ -7124,12 +7193,15 @@ proc lxreadstring(int termchar)=
 		endswitch
 	when '"','\'' then		!possible terminators
 		if c=termchar then		!terminator char
+!CPL "TERM SEEN",CHR(C)
 			if lxsptr^=c then		!repeated, assume embedded term char
 				++lxsptr
 				++length
 			else			!was end of string
 				exit
 			fi
+		else
+			++length
 		fi
 	when cr,lf,0 then
 		lxerror("String not terminated")
@@ -7414,7 +7486,7 @@ SKIP::
 	return &tokenlist[1]
 end
 
-=== bb_decls.m 7/25 ===
+=== bb_decls.m 7/18 ===
 import bb_tables
 
 global const maxmodule=50
@@ -7463,13 +7535,22 @@ global record procrec =
 end
 
 global record typenamerec=
-	ref strec owner
+	ref strec owner			!owner of scope where typename was encountered
+							!moduleno required by resolvetypename can be derived from owner
+!A/B used as follows
+!  nil B			Simple typename B
+!  A   B			Dotted pair A.B
+!  A   nil          I think represents a typeof(x) where x is a name
 	ref strec defa
 	union
 		ref strec defb
 		ref strec def
 	end
 	ref int32 pmode
+end
+
+global record posrec=
+	word32 pos: (lineno:24, fileno:8)
 end
 
 global record uflagsrec =
@@ -7486,7 +7567,7 @@ global record strec =
 	ref strec nextdupl
 	ref strec firstdupl			!point to generic version
 
-	ref unitrec code
+	ref unitrec code			!var idata/proc body/taggedunion tag value/etc
 	int32 mode
 
 	byte namelen
@@ -7500,7 +7581,8 @@ global record strec =
 	end
 	int32 offset
 
-	int32 lineno
+!	int32 lineno
+	word32 pos: (lineno:24, fileno:8)
 	byte flags: (isglobal:1, isstatic:1, used:1, txdone:1, circflag:1, islet:1)
 	byte moduleno
 	byte imported			!1=imported name; 0=local or global name
@@ -7543,7 +7625,12 @@ global record strec =
 		end
 
 		struct						!macro param
+			ref void macro_dummy	!needs nextparam
 			ref strec nulldef		!generic st entry
+		end
+
+		struct						!when a tagged union
+			int32 enumtagmode
 		end
 
 		[24]byte dummy
@@ -7562,7 +7649,8 @@ end
 global record unitrec =
 	byte tag				!kcode tag number
 	byte hasa, hasb, hasc	!whether .a, .b or .c points to a unit/unitlist
-	int32 lineno			!source lineno associated with item; fileno is in top byte
+!	int32 lineno			!source lineno associated with item; fileno is in top byte
+	word32 pos: (lineno:24, fileno:8)
 
 	ref unitrec nextunit
 
@@ -7719,6 +7807,7 @@ global [0:maxtype]byte	ttisref			!is a pointer
 
 global const int maxtypename=5'000
 global [0:maxtypename]typenamerec typenames
+global [0:maxtypename]posrec typenamepos
 global int ntypenames
 
 global [0:maxtype]byte typestarterset
@@ -7764,7 +7853,6 @@ global [maxdllproc]dllprocrec dllproctable
 
 global byte fverbose=0		!whether to display message for each pass
 global byte fquiet=0
-global byte fdebugcompiler		!1 for debug compile, 0 (default) for production compile
 
 !global int foptimise=0		!whether to generate optimised j-codes
 
@@ -7780,9 +7868,8 @@ global byte fobj
 global byte fwritelibs
 global byte fshowtiming
 global byte fshowss
-global byte fshowpcl1
-global byte fshowpcl2
-global byte fshowmcl1
+global byte fshowpcl
+global byte fshowmcl
 global byte fshowast1
 global byte fshowast2
 global byte fshowast3
@@ -7791,112 +7878,138 @@ global byte fshowstflat
 global byte fshowtypes
 global byte fshowoverloads
 global byte foptimise
+global byte fshowasm
 global byte fcheckunusedlocals=0
 
 global byte dointlibs=1
 
-global tabledata() []ichar ccmodenames =
-	(compile_mode,	$),
-	(link_mode,		$),
-	(run_mode,		$),
+!global tabledata() []ichar ccmodenames =
+!	(compile_mode,	$),
+!	(link_mode,		$),
+!	(run_mode,		$),
+!end
+!
+!global int cc_mode			!compile_mode/link_mode/run_mode
+
+global tabledata() []ichar passnames =
+	(load_pass,		$),
+	(parse_pass,	$),
+	(fixup_pass,	$),
+	(name_pass,		$),
+	(type_pass,		$),
+	(pcl_pass,		$),
+	(mcl_pass,		$),		!all-inclusive up to this point (includes all prev passes)
+	(asm_pass,		$),		!only one of these 3 will be done
+	(obj_pass,		$),		!
+	(exe_pass,		$),		!
+	(run_pass,		$),		!
 end
 
-global int cc_mode			!compile_mode/link_mode/run_mode
-
 !passlevel used for compiler debug only
-global int passlevel=6		!1=parse, 2=name, 3=type, 4=gen1, 5=gen2, 6=asm, 7=link
+global int passlevel=0
+global int prodpasslevel=0
+global int debugmode=0
 
 global ichar outfile					!one of the following two
 global ichar outfilesource				!.asm or .c filename
 global ichar outfilebin				!.exe or .obj filename
 global ichar destfilename				!nil, or sets outfilebin
 
-global ichar linkoption				!exe or obj
+!global ichar linkoption				!exe or obj
 
 global ref strec extendtypelist
 
 global [0:jtagnames.len]ref overloadrec overloadtable
-=== bb_tables.m 8/25 ===
-global tabledata() [0:]ichar stdtypenames, [0:]byte stdtypebits =
-	(tvoid=0,		$,		0),
 
-	(ti8,			$,		8),
-	(ti16,			$,		16),
-	(ti32,			$,		32),
-	(ti64,			$,		64),
-	(ti128,			$,		128),
+global int labelno=0
+global [sysfnnames.len]int sysfnlabels
+global [sysfnnames.len]int sysfnproclabels
 
-	(tu1,			$,		1),
-	(tu2,			$,		2),
-	(tu4,			$,		4),
+=== bb_tables.m 8/18 ===
+global tabledata() [0:]ichar stdtypenames, [0:]byte stdtypebits,
+		 [0:]byte stdtypecats =
+	(tvoid=0,		$,		0,		0),
 
-	(tu8,			$,		8),
-	(tu16,			$,		16),
-	(tu32,			$,		32),
-	(tu64,			$,		64),
-	(tu128,			$,		128),
+	(ti8,			$,		8,		tc_d124),
+	(ti16,			$,		16,		tc_d124),
+	(ti32,			$,		32,		tc_d124),
+	(ti64,			$,		64,		tc_d8),
+	(ti128,			$,		128,	tc_d16),
 
-	(tc8,			$,		8),
-	(tc16,			$,		16),
-	(tc64,			$,		64),
+	(tu1,			$,		1,		tc_bit),
+	(tu2,			$,		2,		tc_bit),
+	(tu4,			$,		4,		tc_bit),
 
-	(tr32,			$,		32),
-	(tr64,			$,		64),
+	(tu8,			$,		8,		tc_d124),
+	(tu16,			$,		16,		tc_d124),
+	(tu32,			$,		32,		tc_d124),
+	(tu64,			$,		64,		tc_d8),
+	(tu128,			$,		128,	tc_d16),
 
-	(tref,			$,		64),
+	(tc8,			$,		8,		tc_d124),
+	(tc16,			$,		16,		tc_d124),
+	(tc64,			$,		64,		tc_d8),
 
-	(tenum,			$,		0),
+	(tr32,			$,		32,		tc_d124),
+	(tr64,			$,		64,		tc_d8),
 
-	(tauto,			$,		0),
-	(tany,			$,		0),
-	(tproc,			$,		0),
-	(tlabel,		$,		0),
-	(ttype,			$,		64),
-	(tbitfield,		$,		8),
+	(tref,			$,		64,		tc_d8),
 
-	(trange,		$,		128),
-	(tarray,		$,		0),
-	(tsmallarray,	$,		0),
-	(tbits,			$,		0),
-	(tsmallbits,	$,		0),
-	(trecord,		$,		0),
-	(tsmallrecord,	$,		0),
-	(ttaggedunion,	$,		0),
-	(ttuple,		$,		0),
-	(tmult,			$,		0),
+	(tenum,			$,		0,		tc_d8),
 
-	(trefbit,		$,		128),
-	(tslice,		$,		128),
-	(tslice2d,		$,		128),
-	(tflex,			$,		128),
+	(tauto,			$,		0,		0),
+	(tany,			$,		0,		0),
+	(tproc,			$,		0,		0),
+	(tlabel,		$,		0,		0),
+	(tgenerator,	$,		128,	0),
+	(ttype,			$,		64,		tc_d8),
+	(tbitfield,		$,		8,		tc_bit),
 
-	(tstring,		$,		0),
-	(tmanarray,		$,		0),
-	(tmanbits,		$,		0),
-	(tset,			$,		0),
-	(tdict,			$,		0),
-	(tdecimal,		$,		0),
-	(tmanrecord,	$,		0),
+	(trange,		$,		128,	tc_d16),
+	(tarray,		$,		0,		tc_blk),
+	(tsmallarray,	$,		0,		tc_d8),
+	(tbits,			$,		0,		tc_blk),
+	(tsmallbits,	$,		0,		tc_d8),
+	(trecord,		$,		0,		tc_blk),
+	(tsmallrecord,	$,		0,		tc_d8),
+	(ttaggedunion,	$,		0,		tc_blk),
+	(ttuple,		$,		0,		0),
+!	(tmult,			$,		0,		0),
 
-	(tparam1,		$,		0),
-	(tparam2,		$,		0),
-	(tparam3,		$,		0),
-	(tparam4,		$,		0),
+	(trefbit,		$,		128,	tc_d16),
+	(tslice,		$,		128,	tc_d16),
+	(tslice2d,		$,		128,	tc_d16),
+	(tflex,			$,		128,	tc_d8),
 
-	(tpending,		$,		0),
+	(tstring,		$,		64,		tc_man8),
+	(tmanarray,	"tarray",	64,		tc_man8),
+	(tmanbits,		$,		64,		tc_man8),
+	(tset,			$,		64,		tc_man8),
+	(tdict,			$,		64,		tc_man8),
+	(tdecimal,		$,		64,		tc_man8),
+	(tmanrecord,	$,		64,		tc_man8),
 
-	(tlast,			$,		0)
+	(tparam1,		$,		0,		0),
+	(tparam2,		$,		0,		0),
+	(tparam3,		$,		0,		0),
+	(tparam4,		$,		0,		0),
+
+	(tpending,		$,		0,		0),
+
+	(tlast,			$,		0,		0)
 end
 
-global tabledata() [0:]ichar stdtypecats =
-	(tscalar,		$),
-	(tfloat,		$),
-	(twide,			$),
-	(tblock,		$),
-	(tmanaged,		$),
+global tabledata() [0:]ichar typecatnames =
+	(tc_none=0,		$),
+	(tc_d8,			$),		!generic 64-bit value, int/ptr/float/small block
+	(tc_x8,			$),		!64-bit float when it needs to be an actual float
+	(tc_d16,		$),		!128-bit value (int/slice/small block etc)
+	(tc_blk,		$),		!N-byte block
+	(tc_man8,		$),		!Handle of managed, ref-counted type
 
-	(tshortscalar,	$),
-	(tshortfloat,	$),
+	(tc_d124,		$),		!8/16/32-bit value
+	(tc_x4,			$),		!32-bit float
+	(tc_bit,		$),		!1..7 bits (can be more for some bitfields)
 end
 
 global const tuser	= tlast
@@ -7915,6 +8028,8 @@ global int trefchar
 
 global tabledata() [0:]ichar jtagnames, [0:]byte jisexpr=
 !Basic units; these don't follow normal rules of params needing to be units or lists
+!jisexpr=1/2 when unit returns a value; 1 means unary, 2 binary op,
+! 3 means returns a value, but is not a unaru or binary op 
 
 !a,b,c are unitrec refs, which can be a single unit, or a linked-list chain
 !(usually in forward order)
@@ -7922,15 +8037,16 @@ global tabledata() [0:]ichar jtagnames, [0:]byte jisexpr=
 !	u means .a/b/c pointing to a single unit
 !	u/nil means can be nil
 
+
 ![a=u] means a is a unit/list, or is nil
 
 	(j_none=0,		$,		0), ! For tagname lookups when tag is zero
-	(j_const,		$,		1), ! value/etc=value, typeno=type code
-	(j_null,		$,		1), ! Place holder unit: means 'param no present' when used where a param is expected
-	(j_name,		$,		1), ! def=nameptr
+	(j_const,		$,		3), ! value/etc=value, typeno=type code
+	(j_null,		$,		3), ! Place holder unit: means 'param no present' when used where a param is expected
+	(j_name,		$,		3), ! def=nameptr
 	(j_block,		$,		0), ! a=L
 	(j_stmtblock,	$,		0), ! a=L
-	(j_decimal,		$,		1), ! svalue=str, slength
+	(j_decimal,		$,		3), ! svalue=str, slength
 	(j_assem,		$,		0), ! svalue=str, slength
 	(j_assemmacro,	$,		0), !
 	(j_assemreg,	$,		0), !
@@ -7939,104 +8055,104 @@ global tabledata() [0:]ichar jtagnames, [0:]byte jisexpr=
 
 !Logical Operators
 
-	(j_andl,		$,		1), ! a b	This group are for conditional expressions (no result)
-	(j_andb,		$,		1), ! a b
-	(j_orl,			$,		1), ! a b
-	(j_orb,			$,		1), ! a b
-	(j_xorl,		$,		1), ! a b
-	(j_xorb,		$,		1), ! a b
+	(j_andl,		$,		2), ! a b	This group are for conditional expressions (no result)
+	(j_andb,		$,		2), ! a b
+	(j_orl,			$,		2), ! a b
+	(j_orb,			$,		2), ! a b
+	(j_xorl,		$,		2), ! a b
+	(j_xorb,		$,		2), ! a b
 	(j_notl,		$,		1), ! a
 	(j_istruel,		$,		1), ! a
 
 !Expressions and Operators
 
-	(j_makelist,	$,		1), ! a=L, b=[u], length=N; element list/lower bound expr
-	(j_makerange,	$,		1), ! a b
-	(j_makeset,		$,		1), ! a=L, length=N
-	(j_makedict,	$,		1), !
-	(j_makeslice,	$,		1), !
-	(j_exprlist,	$,		1), ! a=u...	List of expressions, as (a;b;c), rather than (a,b,c)
-	(j_multexpr,	$,		1), !
-	(j_returnmult,	$,		1), !
+	(j_makelist,	$,		3), ! a=L, b=[u], length=N; element list/lower bound expr
+	(j_makerange,	$,		3), ! a b
+	(j_makeset,		$,		3), ! a=L, length=N
+	(j_makedict,	$,		3), !
+	(j_makeslice,	$,		3), !
+	(j_exprlist,	$,		3), ! a=u...	List of expressions, as (a;b;c), rather than (a,b,c)
+	(j_multexpr,	$,		3), !
+	(j_returnmult,	$,		3), !
 
-	(j_keyword,		$,		1), ! def=st entry
-	(j_keyvalue,	$,		1), ! a b
-	(j_assignx,		$,		1), ! a b
-	(j_deepcopyx,	$,		1), ! a b
-	(j_callfn,		$,		1), ! a b
+	(j_keyword,		$,		3), ! def=st entry
+	(j_keyvalue,	$,		3), ! a b
+	(j_assignx,		$,		3), ! a b
+	(j_deepcopyx,	$,		3), ! a b
+	(j_callfn,		$,		3), ! a b
 !	(j_applyop,		$,		0), ! opcode b c
 !	(j_applyopx,	$,		1), ! opcode b c
-	(j_new,			$,		1), ! newmode=T, a=L, length=N
+	(j_new,			$,		3), ! newmode=T, a=L, length=N
 	(j_destroy,		$,		0), ! a=L, length=N
 	(j_clear,		$,		0), !
 
 !Binary Ops
 
-	(j_eq,			$,		1), ! a b
-	(j_ne,			$,		1), ! a b
-	(j_lt,			$,		1), ! a b
-	(j_le,			$,		1), ! a b
-	(j_gt,			$,		1), ! a b
-	(j_ge,			$,		1), ! a b
+	(j_eq,			$,		2), ! a b
+	(j_ne,			$,		2), ! a b
+	(j_lt,			$,		2), ! a b
+	(j_le,			$,		2), ! a b
+	(j_gt,			$,		2), ! a b
+	(j_ge,			$,		2), ! a b
 
-	(j_same,		$,		1), ! a b
+	(j_same,		$,		2), ! a b
 
-	(j_add,			$,		1), ! a b
-	(j_sub,			$,		1), ! a b
-	(j_mul,			$,		1), ! a b
-	(j_div,			$,		1), ! a b
-	(j_idiv,		$,		1), ! a b
-	(j_irem,		$,		1), ! a b
-	(j_idivrem,		$,		1), ! a b
-	(j_iand,		$,		1), ! a b
-	(j_ior,			$,		1), ! a b
-	(j_ixor,		$,		1), ! a b
-	(j_shl,			$,		1), ! a b
-	(j_shr,			$,		1), ! a b
-	(j_in,			$,		1), ! a b
-	(j_notin,		$,		1), ! a b
-	(j_inrev,		$,		1), ! a b
-	(j_inrange,		$,		1), ! a b
+	(j_add,			$,		2), ! a b
+	(j_sub,			$,		2), ! a b
+	(j_mul,			$,		2), ! a b
+	(j_div,			$,		2), ! a b
+	(j_idiv,		$,		2), ! a b
+	(j_irem,		$,		2), ! a b
+	(j_idivrem,		$,		2), ! a b
+	(j_iand,		$,		2), ! a b
+	(j_ior,			$,		2), ! a b
+	(j_ixor,		$,		2), ! a b
+	(j_shl,			$,		2), ! a b
+	(j_shr,			$,		2), ! a b
+	(j_in,			$,		2), ! a b
+	(j_notin,		$,		2), ! a b
+	(j_inrev,		$,		2), ! a b
+	(j_inrange,		$,		2), ! a b
 !	(j_notinrange,	$,		1), ! a b
-	(j_inset,		$,		1), ! a b
+	(j_inset,		$,		2), ! a b
 !	(j_notinset,	$,		1), ! a b
-	(j_min,			$,		1), ! a b
-	(j_max,			$,		1), ! a b
-	(j_subref,		$,		1), ! a b
-	(j_addoffset,	$,		1), ! a b
-	(j_suboffset,	$,		1), ! a b
-	(j_concat,		$,		1), ! a b
-	(j_append,		$,		1), ! a b
-	(j_clamp,		$,		1), ! a b
+	(j_min,			$,		2), ! a b
+	(j_max,			$,		2), ! a b
+	(j_subref,		$,		2), ! a b
+	(j_addoffset,	$,		2), ! a b
+	(j_suboffset,	$,		2), ! a b
+	(j_concat,		$,		2), ! a b
+	(j_append,		$,		2), ! a b
+	(j_clamp,		$,		2), ! a b
 
 !	(j_insert,		$,		1), ! a b
 !	(j_delete,		$,		1), ! a b
 
-	(j_prepend,		$,		1), ! a b
-	(j_flexptr,		$,		1), ! a b
-	(j_stringz,		$,		1), ! a b
-	(j_sliceptr,	$,		1), ! a b
+	(j_prepend,		$,		2), ! a b
+	(j_flexptr,		$,		3), ! a b
+	(j_stringz,		$,		3), ! a b
+	(j_sliceptr,	$,		3), ! a b
 
-	(j_index,		$,		1), ! a b		a[b]
-	(j_slice,		$,		1), ! a b		a[b]
-	(j_dot,			$,		1), ! a b opcode	a.b; opcode=0/1/2 used for signalling in rx pass
-	(j_dotindex,	$,		1), ! a b		a[b]
-	(j_dotslice,	$,		1), ! a b		a[b]
-	(j_anddotslice,	$,		1), ! a b		a[b]
-	(j_anddotindex,	$,		1), ! a b		a[b]
+	(j_index,		$,		3), ! a b		a[b]
+	(j_slice,		$,		3), ! a b		a[b]
+	(j_dot,			$,		3), ! a b opcode	a.b; opcode=0/1/2 used for signalling in rx pass
+	(j_dotindex,	$,		3), ! a b		a[b]
+	(j_dotslice,	$,		3), ! a b		a[b]
+	(j_anddotslice,	$,		3), ! a b		a[b]
+	(j_anddotindex,	$,		3), ! a b		a[b]
 
-	(j_power,		$,		1), ! a b	a**b				int/real
+	(j_power,		$,		2), ! a b	a**b				int/real
 
-	(j_ptr,			$,		1), ! a		a^
-	(j_addrof,		$,		1), ! a		&a
-	(j_addroffirst,	$,		1), ! a		&a
-	(j_convert,		$,		1), ! typeno=T a		T(a)			T
+	(j_ptr,			$,		3), ! a		a^
+	(j_addrof,		$,		3), ! a		&a
+	(j_addroffirst,	$,		3), ! a		&a
+	(j_convert,		$,		3), ! typeno=T a		T(a)			T
 !	(j_convertref,	$,		1), ! typeno=T a		T(a)			T
-	(j_autocast,	$,		1), ! typeno=T a		T(a)			T
-	(j_typepun,		$,		1), ! typeno=T a		T@(a)			T
-	(j_typeconst,	$,		1), ! typeno=T			typeconst(T)
-	(j_operator,	$,		1), ! opcode=opc
-	(j_upper,		$,		1), ! a		$					T
+	(j_autocast,	$,		3), ! typeno=T a		T(a)			T
+	(j_typepun,		$,		3), ! typeno=T a		T@(a)			T
+	(j_typeconst,	$,		3), ! typeno=T			typeconst(T)
+	(j_operator,	$,		3), ! opcode=opc
+	(j_upper,		$,		3), ! a		$					T
 
 !Monadic Ops
 
@@ -8074,22 +8190,22 @@ global tabledata() [0:]ichar jtagnames, [0:]byte jisexpr=
 	(j_lenstr,		$,		1), ! a							int
 	(j_bitwidth,	$,		1), ! a
 	(j_bytesize,	$,		1), ! a
-	(j_typeof,		$,		1), ! a
+	(j_typeof,		$,		3), ! a
 	(j_typestr,		$,		1), ! a
 !	(j_sliceptr,	$,		1), ! a
-	(j_bitfield,	$,		1), ! a
+	(j_bitfield,	$,		3), ! a
 
-	(j_minvalue,	$,		1), ! a
-	(j_maxvalue,	$,		1), ! a
+	(j_minvalue,	$,		3), ! a
+	(j_maxvalue,	$,		3), ! a
 
 !Increment
 
-	(j_preincrx,	$,		1), ! a	++a
-	(j_predecrx,	$,		1), ! a	--a
-	(j_postincrx,	$,		1), ! a	a++
-	(j_postdecrx,	$,		1), ! a	a--
-	(j_incr,		$,		1), ! a	++a
-	(j_decr,		$,		1), ! a	--a
+	(j_preincrx,	$,		3), ! a	++a
+	(j_predecrx,	$,		3), ! a	--a
+	(j_postincrx,	$,		3), ! a	a++
+	(j_postdecrx,	$,		3), ! a	a--
+	(j_incr,		$,		3), ! a	++a
+	(j_decr,		$,		3), ! a	--a
 
 !In-place operators
 
@@ -8123,25 +8239,25 @@ global tabledata() [0:]ichar jtagnames, [0:]byte jisexpr=
 
 !Translator Variables
 
-	(j_cvlineno,	$,		1), ! 
-	(j_cvstrlineno,	$,		1), ! 
-	(j_cvmodulename,$,		1), ! 
-	(j_cvfilename,	$,		1), ! 
-	(j_cvfunction,	$,		1), ! 
-	(j_cvdate,		$,		1), ! 
-	(j_cvtime,		$,		1), ! 
-	(j_cvversion,	$,		1), ! 
-	(j_cvtypename,	$,		1), ! 
-	(j_cvtargetbits,$,		1), ! 
-	(j_cvtargetsize,$,		1), ! 
-	(j_cvtargetcode,$,		1), ! 
-	(j_cvnil,		$,		1), ! 
-	(j_cvpi,		$,		1), ! 
+	(j_cvlineno,	$,		3), ! 
+	(j_cvstrlineno,	$,		3), ! 
+	(j_cvmodulename,$,		3), ! 
+	(j_cvfilename,	$,		3), ! 
+	(j_cvfunction,	$,		3), ! 
+	(j_cvdate,		$,		3), ! 
+	(j_cvtime,		$,		3), ! 
+	(j_cvversion,	$,		3), ! 
+	(j_cvtypename,	$,		3), ! 
+	(j_cvtargetbits,$,		3), ! 
+	(j_cvtargetsize,$,		3), ! 
+	(j_cvtargetcode,$,		3), ! 
+	(j_cvnil,		$,		3), ! 
+	(j_cvpi,		$,		3), ! 
 
 	(j_whenthen,	$,		0), ! a=L b=u
 	(j_elsif,		$,		0), ! opcode=condcode, a
-	(j_fmtitem,		$,		1), ! a b  x/fmtstr
-	(j_nogap,		$,		1), ! 
+	(j_fmtitem,		$,		3), ! a b  x/fmtstr
+	(j_nogap,		$,		3), ! 
 
 !Statements
 
@@ -8152,8 +8268,8 @@ global tabledata() [0:]ichar jtagnames, [0:]byte jisexpr=
 	(j_assign,		$,		0), ! a b
 	(j_deepcopy,	$,		0), ! a b
 	(j_to,			$,		0), ! a=N, b=body, c=tempvar/nil, def=name
-	(j_if,			$,		1), ! condcode a=then b=else
-	(j_longif,		$,		1), ! a=(elsif ...) b=else		L is series of kelsif pairs
+	(j_if,			$,		3), ! condcode a=then b=else
+	(j_longif,		$,		3), ! a=(elsif ...) b=else		L is series of kelsif pairs
 	(j_forup,		$,		0), ! a=x b=x c=x d=Body [e=Else]		Body is single item or list
 	(j_fordown,		$,		0), ! a=x b=x c=x d=Body [e=Else]
 	(j_while,		$,		0), ! a=x b=u
@@ -8165,12 +8281,12 @@ global tabledata() [0:]ichar jtagnames, [0:]byte jisexpr=
 	(j_next,		$,		0), ! [a=x]
 	(j_exit,		$,		0), ! [a=x]
 	(j_do,			$,		0), ! [a=u
-	(j_case,		$,		1), ! a=x b=L [c=else]		L is series of whenthen pairs
+	(j_case,		$,		3), ! a=x b=L [c=else]		L is series of whenthen pairs
 	(j_docase,		$,		0), ! a=x b=L [c=else]
-	(j_switch,		$,		1), ! a=x b=L [c=else]
+	(j_switch,		$,		3), ! a=x b=L [c=else]
 	(j_doswitch,	$,		0), ! a=x b=L [c=else]
 	(j_swap,		$,		0), ! a b
-	(j_select,		$,		1), ! Not implemented
+	(j_select,		$,		3), ! Not implemented
 	(j_recase,		$,		0), ! Not implemented
 
 	(j_print,		$,		0), ! [a=dev] b=L
@@ -8191,10 +8307,10 @@ global tabledata() [0:]ichar jtagnames, [0:]byte jisexpr=
 	(j_yield,		$,		0), ! "
 	(j_raise,		$,		0), ! "
 !	(j_callhostproc,$,		0), ! "
-	(j_eval,		$,		1), ! "
+	(j_eval,		$,		3), ! "
 
 
-	(j_dummy,		$,		1)
+	(j_dummy,		$,		3)
 end
 
 global tabledata() []ichar bitfieldnames=
@@ -8432,7 +8548,7 @@ global tabledata() []ichar symbolnames,
 	(kerrorsym,			$,		0,	0,	0,	0,	0),		! PC_ERROR etc
 !	(sysconstsym,		$,		0,	0,	0,	0,	0),		! nil, etc
 	(kassemsym,			$,		0,	0,	0,	0,	0),		! ASM/ASSEM
-	(ksyscallsym,		$,		0,	0,	0,	0,	0),		! $get_procname etc
+	(ksyscallsym,		$,		0,	0,	0,	0,	1),		! $get_procname etc
 
 	(kdummysym,			$,		0,	0,	0,	0,	0),		!
 end
@@ -8498,6 +8614,7 @@ global tabledata() [0:]ichar namenames, [0:]byte defaultnamecat =
 	(dllprocid,		$,	dllproc_cat),	!Dll Proc/function name
 	(dllvarid,		$,	dllvar_cat),	!Dll variable name
 	(genprocid,		$,	proc_cat),		!generic proc name
+	(generatorid,	$,	proc_cat),		!generator proc name
 	(constid,		$,	0),				!Named constant in type, proc or module
 	(staticid,		$,	static_cat),	!Static in type or proc or module
 	(frameid,		$,	frame_cat),		!Local var
@@ -8606,19 +8723,19 @@ global tabledata []ichar stnames, []int stsymbols, []int stsubcodes=
 !	("table",		kconstsym,		1),
 	("enum",		kenumsym,		0),
 
-!	("$get_nprocs",		ksyscallsym,		sysfn_get_nprocs),
-!	("$get_procname",	ksyscallsym,		sysfn_get_procname),
-!	("$get_procaddr",	ksyscallsym,		sysfn_get_procaddr),
-!
-!	("$get_nexports",	ksyscallsym,		sysfn_get_nexports),
-!	("$get_procexport",	ksyscallsym,		sysfn_get_procexport),
-!
-!	("$nprocs",			ksyscallsym,		sysfn_nprocs),
-!	("$nexports",		ksyscallsym,		sysfn_nexports),
-!	("$procnames",		ksyscallsym,		sysfn_procnames),
-!	("$procaddrs",		ksyscallsym,		sysfn_procaddrs),
-!	("$procexports",	ksyscallsym,		sysfn_procexports),
-!
+	("$get_nprocs",		ksyscallsym,		sysfn_get_nprocs),
+	("$get_procname",	ksyscallsym,		sysfn_get_procname),
+	("$get_procaddr",	ksyscallsym,		sysfn_get_procaddr),
+
+	("$get_nexports",	ksyscallsym,		sysfn_get_nexports),
+	("$get_procexport",	ksyscallsym,		sysfn_get_procexport),
+
+	("$nprocs",			ksyscallsym,		sysfn_nprocs),
+	("$nexports",		ksyscallsym,		sysfn_nexports),
+	("$procnames",		ksyscallsym,		sysfn_procnames),
+	("$procaddrs",		ksyscallsym,		sysfn_procaddrs),
+	("$procexports",	ksyscallsym,		sysfn_procexports),
+
 	("importdll",	kimportmodulesym,	0),
 	("importlib",	kimportmodulesym,	0),
 	("import",		kimportsym,			0),
@@ -8706,6 +8823,7 @@ global tabledata []ichar stnames, []int stsymbols, []int stsubcodes=
 	("set",			stdtypesym,		tset),
 	("dict",		kdictsym,		0),
 	("decimal",		stdtypesym,		tdecimal),
+	("generator",	stdtypesym,		tgenerator),
 
 	("$t",			stdtypesym,		tparam1),
 	("$u",			stdtypesym,		tparam2),
@@ -8923,6 +9041,7 @@ global tabledata() []ichar sysfnnames =
 	(sysfn_print_end,			$),
 	(sysfn_read_i64,			$),
 	(sysfn_read_r64,			$),
+	(sysfn_read_str,			$),
 	(sysfn_read_fileline,		$),
 	(sysfn_read_strline,		$),
 	(sysfn_read_conline,		$),
@@ -9265,7 +9384,7 @@ global [][4]byte typesetuptable=(
 global []int D_typestarterset= (stdtypesym,lsqsym,krefsym,kenumsym,krecordsym,
 		kicharsym, ktypeofsym, kslicesym, kdictsym)
 
-=== bb_support.m 9/25 ===
+=== bb_support.m 9/18 ===
 import clib
 import msys
 import mlib
@@ -9386,11 +9505,11 @@ if currproc and currproc^.nameid=procid then
 	print "In function",currproc^.name,," "
 fi
 
-println "On line",lx.lineno iand 16777215,"in file",sourcefilepaths[lx.fileno],sourcefilenames[lx.fileno]
+println "On line",lx.lineno,"in file",sourcefilepaths[lx.fileno],sourcefilenames[lx.fileno]
 
 println
 println "**** Syntax Error:",mess,"****"
-stopcompiler(sourcefilepaths[lx.fileno],lx.lineno iand 16777215)
+stopcompiler(sourcefilepaths[lx.fileno],lx.lineno)
 end
 
 proc stopcompiler(ichar filename,int lineno)=
@@ -9419,11 +9538,12 @@ global proc error_gen(int pass,ichar mess,unit p=nil)=
 !pass='N' 'T' or 'G'
 int lineno,fileno
 
-if p then
-	fileno:=p^.lineno>>24
-	lineno:=p^.lineno iand 16777215
-else
+!CPL "ERRORGEN",=P,=MLINENO,=P.LINENO
 
+if p then
+	fileno:=p.fileno
+	lineno:=p.lineno
+else
 	fileno:=mlineno>>24
 	lineno:=mlineno iand 16777215
 fi
@@ -9447,10 +9567,10 @@ os_getch()
 stopcompiler(sourcefilepaths[fileno],lineno iand 16777215)
 end
 
-!global proc rxerror(ichar mess,unit p=nil)=
-!error_gen('N',mess,p)
-!end
-!
+global proc rxerror(ichar mess,unit p=nil)=
+error_gen('N',mess,p)
+end
+
 global proc gerror(ichar mess,unit p=nil)=
 error_gen('G',mess,p)
 end
@@ -9460,34 +9580,34 @@ end
 !error_gen('A',mess)
 !end
 !
-!global proc txerror(ichar mess,unit p=nil)=
-!error_gen('T',mess,p)
-!end
-!
-!global proc txerror_s(ichar mess,a,unit p=nil)=
-![256]char str
-!fprint @&.str,mess,a
-!error_gen('T',&.str,p)
-!end
-!
-!global proc txerror_ss(ichar mess,a,b)=
-![256]char str
-!fprint @&.str,mess,a,b
-!error_gen('T',&.str)
-!end
-!
-!global proc rxerror_s(ichar mess,a,unit p=nil)=
-![256]char str
-!fprint @&.str,mess,a
-!error_gen('N',&.str,p)
-!end
-!
-!global proc gerror_s(ichar mess,s,ref unitrec p=nil)=
-![256]char str
-!
-!fprint @&.str,mess,s
-!error_gen('G',&.str,p)
-!end
+global proc txerror(ichar mess,unit p=nil)=
+error_gen('T',mess,p)
+end
+
+global proc txerror_s(ichar mess,a,unit p=nil)=
+[256]char str
+fprint @&.str,mess,a
+error_gen('T',&.str,p)
+end
+
+global proc txerror_ss(ichar mess,a,b)=
+[256]char str
+fprint @&.str,mess,a,b
+error_gen('T',&.str)
+end
+
+global proc rxerror_s(ichar mess,a,unit p=nil)=
+[256]char str
+fprint @&.str,mess,a
+error_gen('N',&.str,p)
+end
+
+global proc gerror_s(ichar mess,s,ref unitrec p=nil)=
+[256]char str
+
+fprint @&.str,mess,s
+error_gen('G',&.str,p)
+end
 
 global proc lxerror_gen(ichar mess)=
 
@@ -9612,6 +9732,8 @@ for i:=0 to tlast-1 do
 
 !	ttisbit[i]		:= (tu1<=i<=tu4|1|0)
 
+	tttypecat[i]	:= stdtypecats[i]
+
 	if i=tref then
 		ttisref[i]		:= 1
 	fi
@@ -9635,6 +9757,8 @@ for i:=1 to typesetuptable.len do
 	conversionops[s,t]:=v
 
 od
+!CPL "COPS::::",CONVERSIONOPS[TI64,TC8]
+
 end
 
 global proc addspecialtypes=
@@ -9654,6 +9778,7 @@ function findfile(ichar filename)ichar=
 !CPL "FIND FILE:",FILENAME,=NSEARCHDIRS
 
 	for i:=nsearchdirs downto 1 do
+!CPL "FIND",I,SEARCHDIRS[I]
 		strcpy(&.filespec,searchdirs[i])
 		strcat(&.filespec,filename)
 
@@ -9876,7 +10001,7 @@ for i:=1 to D_typestarterset.len do typestarterset[D_typestarterset[i]]:=1 od
 
 end
 
-=== bb_lib.m 10/25 ===
+=== bb_lib.m 10/18 ===
 import msys
 import mlib
 import clib
@@ -9965,7 +10090,7 @@ ref strec p
 p:=pcm_alloc(strec.bytes)
 memset(p,0,strec.bytes)
 
-p^.lineno:=lx.lineno
+p^.pos:=lx.pos
 p^.moduleno:=currmoduleno
 return p
 end
@@ -10109,7 +10234,8 @@ memset(p,0,unitrec.bytes)
 p^.tag:=tag
 p^.lineno:=q^.lineno
 p^.a:=q
-CPL "INSERTUNIT",STRMODE(MODE)
+p.hasa:=1
+!CPL "INSERTUNIT",STRMODE(MODE)
 p^.mode:=mode
 p^.nextunit:=nextunit
 end
@@ -10218,6 +10344,8 @@ global function newtypename(ref strec a,b)int=
 	typenames[ntypenames].defa:=a		!leave .owner/.pmode to be filled in
 	typenames[ntypenames].defb:=b		!used type's mode is used
 
+	typenamepos[ntypenames].pos:=lx.pos
+
 	return -ntypenames
 end
 
@@ -10233,7 +10361,7 @@ ttname[ntypes]:=stname^.name
 
 ttnamedef[ntypes]:=stname
 ttbasetype[ntypes]:=tvoid
-ttlineno[ntypes]:=lx.lineno
+ttlineno[ntypes]:=lx.pos
 
 stname^.mode:=ntypes
 
@@ -10304,6 +10432,7 @@ ttdimexpr[m]:=dimexpr
 !tttarget[m]:=target
 storemode(owner,target,tttarget[m])
 ttowner[m]:=owner
+tttypecat[m]:=tc_blk
 
 return m
 end
@@ -10439,6 +10568,7 @@ fi
 storemode(owner,target,tttarget[m])
 !tttarget[m]:=target
 ttowner[m]:=owner
+tttypecat[m]:=tc_d16
 
 return m
 end
@@ -10469,31 +10599,6 @@ ttowner[m]:=owner
 return m
 end
 
-global function createstringmode(int t,length,typedefx)int=		!CREATESTRINGMODE
-!create fixed-bound string mode
-!length is max length of string (including any count or terminator)
-!ts is tstring or tcstring
-int k,m
-
-if typedefx=0 then			!typedefx=1 means creating usertype; can't share
-	for k:=tlast to ntypes do
-		if ttusercat[k]=0 and ttbasetype[k]=t and ttlength[k]=length then
-			return k
-		fi
-	od
-	m:=createusertypefromstr(nextautotype())
-else
-	m:=typedefx
-fi
-
-ttbasetype[m]:=t
-ttlower[m]:=(t=trefchar|1|0)
-ttsize[m]:=length
-ttlength[m]:=length
-
-return m
-end
-
 global function createrefmode(ref strec owner,int target,typedefx=0)int=		!CREATEREFPACKMODE
 int k,m
 
@@ -10514,6 +10619,7 @@ storemode(owner,target,tttarget[m])
 ttbasetype[m]:=(target in [tu1,tu2,tu4]|trefbit|tref)
 ttsize[m]:=ttsize[tref]
 ttisref[m]:=1
+tttypecat[m]:=tc_d8
 !tttypecode[m]:='P'
 
 return m
@@ -10585,6 +10691,7 @@ ttbasetype[m]:=tref
 
 ttsize[m]:=ttsize[tref]
 ttisref[m]:=1
+tttypecat[m]:=tc_d8
 
 return m
 end
@@ -10608,6 +10715,8 @@ ttbasetype[m]:=tdict
 storemode(owner,valuetype,tttarget[m])
 storemode(owner,keytype,ttkeytype[m])
 ttowner[m]:=owner
+tttypecat[m]:=tc_man8
+ttsize[m]:=ttsize[tdict]
 
 return m
 end
@@ -10724,6 +10833,7 @@ else
 fi
 ttbasetype[m]:=trecord
 ttusercat[m]:=1
+tttypecat[m]:=tc_blk
 
 return m
 end
@@ -10781,6 +10891,7 @@ else
 fi
 ttbasetype[m]:=tenum
 ttusercat[m]:=1
+tttypecat[m]:=tc_d8
 
 return m
 end
@@ -11118,7 +11229,7 @@ typenamerec tn
 !FI
 
 if m<0 then
-	strcpy(dest,"*")
+	strcpy(dest,"XX*")
 	tn:=typenames[-m]
 
 	if tn.defb=nil then			!assume typeof
@@ -11165,7 +11276,7 @@ when trefbit then
 !	fi
 
 !when tarray,tbits then
-when tarray,tbits then
+when tarray,tbits,tsmallarray,tsmallbits then
 	if ttdimexpr[m] then
 		gs_copytostr(strexpr(ttdimexpr[m]),&.strdim)
 		fprint @dest,"@[#]",&.strdim
@@ -11198,7 +11309,6 @@ when tslice,tslice2d,tflex,tmanarray,tmanbits then
 	istrmode(tttarget[m],0,dest+strlen(dest))
 
 when tdict then
-
 	strcpy(dest,"dict[")
 	istrmode(ttkeytype[m],0,dest+strlen(dest))
 	strcat(dest,"]")
@@ -11229,7 +11339,7 @@ when tenum then
 
 	strcat(dest,")")
 
-when trecord,ttaggedunion then
+when trecord,ttaggedunion,tsmallrecord then
 	strcpy(dest,"")
 	if not expand then
 		strcpy(dest,typename(m))
@@ -11373,7 +11483,7 @@ int nwords
 if remainingunits-- then
 	p:=unitheapptr
 	++unitheapptr
-	p^.lineno:=lx.lineno
+	p^.pos:=lx.pos
 	p^.moduleno:=currmoduleno
 	return p
 fi
@@ -11384,7 +11494,9 @@ p:=unitheapptr:=pcm_alloc(unitheapsize*unitrec.bytes)
 memset(p,0,unitheapsize*unitrec.bytes)
 remainingunits:=unitheapsize-1
 ++unitheapptr
-p^.lineno:=lx.lineno
+!p^.lineno:=lx.lineno
+p.pos:=lx.pos
+
 p^.moduleno:=currmoduleno
 return p
 end
@@ -11428,18 +11540,26 @@ global function duplunit(unit p,int lineno=0)unit=
 unit q
 if p=nil then return nil fi
 
+!q:=createunit0(p^.tag)
+!
+!q^.a:=duplunit(p^.a,lineno)
+!q^.b:=duplunit(p^.b,lineno)
+!q^.c:=duplunit(p^.c,lineno)
+!q^.lineno:=(lineno|lineno|p^.lineno)
+!q^.value:=p^.value			!copy main field of each union
+!q^.opcode:=p^.opcode
+!!CPL "DUPLUNIT",STRMODE(P.MODE)
+!q^.mode:=p^.mode
+!q^.moduleno:=p^.moduleno
+!q^.isastring:=p^.isastring
+
 q:=createunit0(p^.tag)
 
-q^.a:=duplunit(p^.a,lineno)
-q^.b:=duplunit(p^.b,lineno)
-q^.c:=duplunit(p^.c,lineno)
-q^.lineno:=(lineno|lineno|p^.lineno)
-q^.value:=p^.value			!copy main field of each union
-q^.opcode:=p^.opcode
-CPL "DUPLUNIT",STRMODE(P.MODE)
-q^.mode:=p^.mode
-q^.moduleno:=p^.moduleno
-q^.isastring:=p^.isastring
+q^:=p^
+q.nextunit:=nil
+if q.hasa then q.a:=duplunit(q.a); q.hasa:=1 fi
+if q.hasb then q.b:=duplunit(q.b); q.hasb:=1 fi
+if q.hasc then q.c:=duplunit(q.c); q.hasc:=1 fi
 
 return q
 end
@@ -11714,12 +11834,6 @@ global function strconstopnd(unit p)ichar=
 	return &.str
 end
 
-global function gettypecat_t(int m)int=
-	GERROR("GETTYPECAT")
-RETURN 0
-!	return stdtypecat[ttbasetype[m]]
-end
-
 global function getalignment(int m)int=
 !return alignment needed for type m, as 1,2,4,8
 int a
@@ -11841,6 +11955,9 @@ global function storemode(ref strec owner, int m, int32 &pmode)int =
 		r.owner:=owner
 		pmode:=m
 		r.pmode:=&pmode
+
+IF R.PMODE=NIL THEN SERROR("PMODE=NIL") FI
+
 		return m
 	fi
 
@@ -11874,7 +11991,19 @@ global proc addoverload(int moduleno, opc, amode, bmode, rmode, unit pfunc)=
 
 	overloadtable[opc]:=p
 end
-=== bb_diags.m 11/25 ===
+
+global function gettypebase(int m)int=
+	switch ttbasetype[m]
+!	when ti64,tu64,tr64,ti128,tu128,tc64 then m
+	when ti8,ti16,ti32 then ti64
+	when tu8,tu16,tu32 then tu64
+	when tr32 then tr64
+	when tc8,tc16 then tc64
+	else
+		m
+	end switch
+end
+=== bb_diags.m 11/18 ===
 import mlib
 import clib
 import oslib
@@ -11887,6 +12016,7 @@ import bb_lib
 import bb_mcldecls
 
 int currlineno
+int currfileno
 
 global proc printmodelist(filehandle f)=		!PRINTMODELIST
 const wtypeno	= 4
@@ -11901,6 +12031,7 @@ const wlength	= 6
 !const wnallfields	= 4
 const wsize		= 6
 const wusercat	= 4
+const wtypecat	= 6
 const wused		= 4
 const wmode		= 24
 !const wcategory	= 32
@@ -11926,6 +12057,7 @@ gs_leftstr(dest,"Len",wlength)
 !gs_leftstr(dest,"AF",wnallfields)
 gs_leftstr(dest,"Size",wsize)
 gs_leftstr(dest,"Cat",wusercat)
+gs_leftstr(dest,"TCat",wtypecat)
 gs_leftstr(dest,"Usd ",wused)
 gs_leftstr(dest,"Mode",wmode)
 !gs_leftstr(dest,"Category",wcategory)
@@ -11968,6 +12100,10 @@ for m:=0 to ntypes do
 
 	gs_leftint(dest,ttsize[m],wsize)
 	gs_leftint(dest,ttusercat[m],wusercat)
+
+	gs_leftstr(dest,typecatnames[tttypecat[m]]+3,wtypecat)
+!CPL =M,=TYPECATNAMES[M]
+!	gs_leftstr(dest,"FRED",wtypecat)
 
 	mstr:=strmode(m)
 	if strlen(mstr)<wmode then
@@ -12193,7 +12329,7 @@ when fieldid,paramid then
 	gs_strint(d,p^.uflags.ulength)
 
 	if p^.code then
-		gs_str(d,":=")
+		gs_str(d,"/:=")
 		gs_strvar(d,strexpr(p^.code))
 	fi
 
@@ -12244,6 +12380,10 @@ when typeid then
 		gs_str(d,"Baseclass:")
 !		gs_str(d,ttname[p^.base_class])
 		gs_str(d,typename(p^.base_class))
+	fi
+	if ttbasetype[p.mode]=ttaggedunion then
+		gs_str(d,"Tagmode:")
+		gs_str(d,strmode(p.enumtagmode))
 	fi
 when enumid then
 	gs_str(d,"Enum:")
@@ -12360,10 +12500,23 @@ if p=nil then
 	return
 fi
 
+!CPL "PRINTUNIT",jtagnames[p.tag],=p,=p.a,=p.b, =p.c, =p.hasa, =p.hasb, =p.hasc,
+!"//",P.LINENO, SOURCEFILENAMES[P.FILENO]
+
+!IF P.TAG=J_MAKESET THEN
+!CPL P.A,P.B,P.C
+!
+! RETURN FI
+
 if p^.lineno then
-	currlineno:=p^.lineno iand 16777215
+	currlineno:=p^.lineno
+	currfileno:=p^.fileno
 fi
 
+!IF P.TAG=J_PTR THEN
+!CPL "PTR",=P,P.A,P.B,P.C
+!!	PRINTUNIT(P.A)
+!FI
 !print @dev,p^.popflag,,":"
 
 print @dev,p,":"
@@ -12522,6 +12675,11 @@ when j_assemmem then
 when j_maths then
 	print @dev,mathsnames[p.opcode]+3
 
+when j_makeset then
+!	if p.isconst then
+!		print @dev,p.range_lower,,"..",,p.range_upper
+!	fi
+!
 esac
 
 if p^.isconst then
@@ -12592,10 +12750,11 @@ static [40]char str
 
 !sprintf(&.str,"%04d ",currlineno)
 print @&.str,currlineno:"z4",," "
+print @&.str,CURRFILENO:"Z2",currlineno:"z4",," "
 return &.str
 end
 
-=== bb_mcldecls.m 12/25 ===
+=== bb_mcldecls.m 12/18 ===
 import bb_decls
 !import ax_decls
 
@@ -13197,7 +13356,7 @@ global tabledata() [0:]ichar reftypenames =	!use during pass2
 	(back_ref,			$),		!has been reached
 end
 
-=== bb_parse.m 13/25 ===
+=== bb_parse.m 13/18 ===
 import msys
 import mlib
 import clib
@@ -13239,6 +13398,7 @@ int ndollar=0
 int inmultexpr=0
 int insiderecord=0
 int insidedllimport=0
+int yieldseen=0
 
 global function parsemodule(int n)int=
 modulerec m
@@ -13377,21 +13537,21 @@ do
 		dimport:=lx.symptr
 		name:=mapimport(dimport^.name)
 
-!		for i:=1 to nmodules do
-!			if eqstring(name, moduletable[i].name) then
-!				stimport:=moduletable[i].stmodule
-!				exit
-!			fi
-!		else
-!			CPL lx.symptr^.name
-!			serror("Import stmt out of position?")
-!		od
-
+		for i:=1 to nmodules do
+			if eqstring(name, moduletable[i].name) then
+				stimport:=moduletable[i].stmodule
+				exit
+			fi
+		else
+			CPL lx.symptr^.name
+			serror("Import stmt out of position?")
+		od
 		lex()
-!		domappedalias(dimport,stimport)
-!		if lx.symbol=namesym and eqstring(lx.symptr^.name,"as") then
-!			readimportalias(dimport)
-!		fi
+
+		domappedalias(dimport,stimport)
+		if lx.symbol=namesym and eqstring(lx.symptr.name,"as") then
+			readimportalias(dimport)
+		fi
 
 	when semisym then
 		lex()
@@ -13474,7 +13634,7 @@ fi
 end
 
 function getcurrline:int=
-return lx.lineno
+return lx.pos
 end
 
 function checkbegin(int fbrack)int=				!CHECKBEGIN
@@ -13880,8 +14040,8 @@ checksymbol(rbracksym)
 lex()
 
 p:=createunit1(opc,p)
-p.newmode:=t
-!storemode(5,currproc,t,&p^.newmode)
+!p.newmode:=t
+storemode(currproc,t,p.newmode)
 return p
 end
 
@@ -14084,7 +14244,7 @@ when j_cvlineno then
 	return p
 
 when j_cvstrlineno then
-	getstrint(lx.lineno iand 16777215,&.str)
+	getstrint(lx.lineno,&.str)
 
 when j_cvmodulename then
 	p:=createunit0(j_cvmodulename)
@@ -14154,8 +14314,9 @@ function readcastx:unit=
 	lex()
 
 	p:=createunit1(opc,p)
-	p.newmode:=m
-!	if m then storemode(5,currproc,m,&p^.newmode) fi
+!	p.newmode:=m
+	storemode(currproc,m,p.newmode)
+
 	return p
 end
 
@@ -14174,7 +14335,6 @@ proc lexchecksymbol(int symbol)=
 end
 
 global function readtypespec(ref strec owner,int typedefx=0)int=			!READTYPESPEC
-!function readtypespec(ref strec owner,int typedefx=0)int=			!READTYPESPEC
 !at initial symbol of a type, or where type is expected
 !read simple type (which will have a single name) or a more elaborate type-spec
 !returns a moderec handle
@@ -14547,6 +14707,8 @@ int kwd,startline,closesym
 ref strec stproc,q,stname
 
 kwd:=lx.symbol
+yieldseen:=0
+
 stproc:=readprocdecl(procowner,isglobal,fflang)
 
 checkequals()
@@ -14572,6 +14734,9 @@ stproc^.code:=readsunit()
 checkbeginend(closesym,kwd,startline)
 
 stproc^.equals:=1
+if yieldseen then
+	stproc.nameid:=generatorid
+fi
 
 if ndocstrings then
 	PRINTLN CURRPROC.NAME,,":"
@@ -14686,7 +14851,10 @@ if nretvalues and (kwd<>kfunctionsym) then		!proc: result given
 	serror("Proc can't return value")
 fi
 
+!CPL =NRETVALUES
+
 stproc^.paramlist:=paramlist
+stproc^.nretvalues:=nretvalues
 
 case nretvalues
 when 0 then
@@ -14904,10 +15072,10 @@ end
 
 function readif:unit=
 !at 'if'
-int line, kwd, lineno
+int pos1, kwd, pos2
 unit pthen,pcond, plist,plistx, pelse, p, pelsif
 
-line:=lx.lineno
+pos1:=lx.pos
 
 kwd:=lx.symbol			!in case coming from elsecase etc
 
@@ -14921,18 +15089,18 @@ lex()
 pthen:=readsunit()
 
 if lx.symbol=kelsifsym then
-	lineno:=lx.lineno
+	pos2:=lx.pos
 	plist:=plistx:=createunit2(j_elsif,pcond,pthen)
 
 	while lx.symbol=kelsifsym do
-		lineno:=lx.lineno
+		pos2:=lx.pos
 		lex()
 		pcond:=readunit()
 		checksymbol(kthensym)
 		lex()
 		pthen:=readsunit()
 		pelsif:=createunit2(j_elsif,pcond,pthen)
-		pelsif^.lineno:=lineno
+		pelsif^.pos:=pos2
 		addlistunit(&plist,&plistx,pelsif)
 
 	od
@@ -14953,7 +15121,7 @@ if lx.symbol=kelsifsym then
 	esac
 
 	p:=createunit2(j_longif,plist,pelse)
-	p^.lineno:=line
+	p^.pos:=pos1
 	return p
 fi
 
@@ -14973,7 +15141,7 @@ else
 esac
 
 p:=createunit3(j_if,pcond,pthen,pelse)
-p^.lineno:=line
+p^.pos:=pos1
 return p
 end
 
@@ -14999,9 +15167,9 @@ return readcondsuffix(createunit1(gototag,p))
 end
 
 function readunless:unit=
-int line
+int pos
 unit pcond, pthen, pelse, p
-line:=lx.lineno
+pos:=lx.pos
 lex()
 pcond:=readsunit()
 checksymbol(kthensym)
@@ -15018,15 +15186,15 @@ fi
 checkend(kendsym,kunlesssym)
 lex()
 p:=createunit3(j_if,createunit1(j_notl,pcond),pthen,pelse)
-p^.lineno:=line
+p^.pos:=pos
 return p
 end
 
 function readswitchcase:unit=
-int line, kwd, opc, lineno,rangeused, nwhen
+int pos1, kwd, opc, pos2,rangeused, nwhen
 unit pexpr,pwhenlist,pwhenlistx,pwhen,pwhenx,pelse,p,pthen,pwhenthen,q
 
-line:=lx.lineno
+pos1:=lx.pos
 kwd:=lx.symbol			!remember kcasesym etc
 opc:=lx.subcode			!pick up tag: kcase etc
 
@@ -15048,13 +15216,13 @@ nwhen:=0
 
 skipsemi()
 while lx.symbol=kwhensym do	!read list of when-then pairs
-	lineno:=lx.lineno
+	pos2:=lx.pos
 	lex()
 	pwhen:=pwhenx:=nil
 	do
 		p:=readunit()
 		++nwhen
-		p^.lineno:=lineno
+		p^.pos:=pos2
 		if p^.tag=j_makerange then rangeused:=1 fi
 		addlistunit(&pwhen,&pwhenx,p)
 		if lx.symbol<>commasym then exit fi
@@ -15064,7 +15232,7 @@ while lx.symbol=kwhensym do	!read list of when-then pairs
 	lex()
 	pthen:=readsunit()
 	pwhenthen:=createunit2(j_whenthen,pwhen,pthen)
-	pwhenthen^.lineno:=lineno
+	pwhenthen^.pos:=pos2
 	addlistunit(&pwhenlist,&pwhenlistx,pwhenthen)
 od
 
@@ -15088,7 +15256,7 @@ else
 esac
 
 p:=createunit3(opc,pexpr,pwhenlist,pelse)
-p^.lineno:=line
+p^.pos:=pos1
 return p
 end
 
@@ -15129,23 +15297,23 @@ end
 
 function readdo:unit=
 	unit p
-	int line
+	int pos
 
-	line:=lx.lineno
+	pos:=lx.pos
 	lex()
 	p:=readsunit()
 	checkend(kendsym,kdosym)
 	lex()
 	p:=createunit1(j_do,p)
-	p^.lineno:=line
+	p^.pos:=pos
 	return p
 end
 
 function readto:unit=
-int line,id
+int pos,id
 unit p, pcount, pbody
 
-line:=lx.lineno
+pos:=lx.pos
 lex()
 
 pcount:=readunit()
@@ -15159,15 +15327,15 @@ id:=frameid
 if currproc^.nameid<>procid then id:=staticid fi
 
 p:=createunit3(j_to,pcount,pbody,createname(getavname(currproc,id)))
-p^.lineno:=line
+p^.pos:=pos
 return p
 end
 
 function readwhile:unit=
-int line,id
+int pos,id
 unit pcond, pa, pb, pc, pbody, p
 
-line:=lx.lineno
+pos:=lx.pos
 lex()
 
 pcond:=readsunit(1)
@@ -15180,22 +15348,22 @@ checkend(kendsym,kwhilesym,kdosym)
 lex()
 
 p:=createunit2(j_while,pcond,pbody)
-p^.lineno:=line
+p^.pos:=pos
 return p
 end
 
 function readrepeat:unit=
-int line
+int pos
 unit pbody, pcond, p
 
-line:=lx.lineno
+pos:=lx.pos
 lex()
 pbody:=readsunit()
 checksymbol(kuntilsym)
 lex()
 pcond:=readunit()
 p:=createunit2(j_repeat,pbody,pcond)
-p^.lineno:=line
+p^.pos:=pos
 return p
 end
 
@@ -15418,7 +15586,7 @@ function readfor:unit=
 !	A	used with forall autovar storing value of 'to' limit, which is the list
 !		to iterate over
 
-	int line, opc, kwd
+	int pos, opc, kwd
 	unit pindex, plocal, pfrom, pto, pstep, prange, plist, passign
 	unit pcond, pbody, pelse
 	unit pto_temp, pstep_temp, ptemp, ptempx, plist_temp, prange_temp
@@ -15428,7 +15596,7 @@ function readfor:unit=
 
 	kwd:=lx.symbol				!for/forall/foreach
 
-	line:=lx.lineno
+	pos:=lx.pos
 	lex()						!skip 'for' kwd
 
 !do pindex/plocal
@@ -15572,7 +15740,7 @@ function readfor:unit=
 
 	p:=createunit3(opc,pindex,pbody,ptemp)
 
-	p^.lineno:=line
+	p^.pos:=pos
 	return p
 end
 
@@ -15609,27 +15777,27 @@ if t>=0 then
 	when tslice then
 	when trecord then
 	when tenum then
+	when tdict then
 	else
 		tttarget[m]:=t
 	fi
 else
-	tttarget[m]:=t
+	storemode(owner,t,tttarget[m])
 fi
 
 if t>=0 then
 	ttisint[m]		:= ttisint[t]
 	ttisword[m]		:= ttisword[t]
-!	ttiswordchar[m]	:= ttiswordchar[t]
 	ttisreal[m]		:= ttisreal[t]
 	ttisinteger[m]	:= ttisinteger[t]
 	ttisnumeric[m]	:= ttisinteger[t] ior ttisreal[t]
 	ttisshortint[m]	:= ttisshortint[t]
 !	ttisbit[m]		:= ttisbit[t]
 	ttisref[m]		:= ttisref[t]
+	tttypecat[m]	:= tttypecat[t]
 else
 	ttbasetype[m]:=tpending
 fi
-
 end
 
 global proc readrecordfields(ref strec owner,int m)=
@@ -15959,15 +16127,11 @@ when kfunctionsym,kprocsym then
 	else
 		readprocdef(owner,0)
 	fi
-when kclasssym then
-	lex()
-	serror("CLASS CLASS")
-when krecordsym then
-	lex()
-	serror("CLASS RECORD")
+when kclasssym,krecordsym then
+	readclassdef(owner,0)
+
 when ktypesym then
-	lex()
-	serror("CLASS TYPE")
+	readtypedef(owner)
 when eofsym then
 	serror("Class eof?")
 	exit
@@ -16084,7 +16248,8 @@ while lx.symbol=namesym do
 	if not isanon then
 		stname:=getduplnameptr(owner,nameptr,enumid)
 		stname^.code:=pindex
-		stname.mode:=typedefx
+!		stname.mode:=typedefx
+		stname.mode:=tint
 		adddef(owner,stname)
 	else
 		stname:=getduplnameptr(enumowner,nameptr,constid)
@@ -16195,9 +16360,9 @@ end
 proc readimportbody(ref strec owner)=
 !positioned at first symbol of statement (which can be empty)
 !return knode containing statement, or nil if not found (at 'end etc)
-int lineno,fflang
+int pos,fflang
 
-lineno:=lx.lineno
+pos:=lx.pos
 
 do
 	skipsemi()
@@ -16417,7 +16582,7 @@ if lx.symbol=namesym and nexttoken.symbol in [colonsym,dcolonsym] then	!normal l
 elsif lx.symbol=mulsym then		!*name	macro invocation
 	lexchecksymbol(namesym)
 	pname:=createname(lx.symptr)
-	pname^.lineno:=lx.lineno
+	pname^.pos:=lx.pos
 
 	lex()
 	if lx.symbol<>semisym then
@@ -16486,9 +16651,9 @@ noperands:=0
 
 		++noperands
 		case noperands
-		when 1 then p.a:=q
-		when 2 then p.b:=q
-		when 3 then p.c:=q
+		when 1 then p.a:=q; p.hasa:=1
+		when 2 then p.b:=q; p.hasb:=1
+		when 3 then p.c:=q; p.hasc:=1
 		else
 			serror("Too many asm opnds")
 		esac
@@ -16720,14 +16885,14 @@ function istypestarter:int=
 end
 
 function readassignment:unit p=
-	int lineno,opc
+	int pos,opc
 
 	case lx.symbol
 	when namesym then
 		case nexttoken.symbol
 		when semisym, commasym, rbracksym then
 			p:=createname(lx.symptr)
-			p.lineno:=lx.lineno
+			p.pos:=lx.pos
 			lex()
 			return p
 		esac
@@ -16736,55 +16901,55 @@ function readassignment:unit p=
 	p:=readorterms()
 
 	if (opc:=lx.symbol) in [assignsym,deepcopysym] then
-		lineno:=lx.lineno
+		pos:=lx.pos
 		lex()
 		p:=createunit2((opc=assignsym|j_assign|j_deepcopy),p,readassignment())
-		p.lineno:=lineno
+		p.pos:=pos
 	fi
 	return p
 end
 
 function readorterms:unit p=
-	int lineno
+	int pos
 
 	p:=readandterms()
 
 	while lx.symbol=orlsym do
-		lineno:=lx.lineno
+		pos:=lx.pos
 		lex()
 		p:=createunit2(j_orl,p,readandterms())
-		p.lineno:=lineno
+		p.pos:=pos
 	od
 
 	return p
 end
 
 function readandterms:unit p=
-	int lineno
+	int pos
 
 	p:=readcmpterms()
 
 	while lx.symbol=andlsym do
-		lineno:=lx.lineno
+		pos:=lx.pos
 		lex()
 		p:=createunit2(j_andl,p,readcmpterms())
-		p.lineno:=lineno
+		p.pos:=pos
 	od
 
 	return p
 end
 
 function readcmpterms:unit p=
-	int lineno,opc
+	int pos,opc
 
 	p:=readrangeterm()
 
 	doswitch opc:=lx.symbol
 	when eqsym, nesym, ltsym, lesym, gesym, gtsym, insym, notinsym then
-		lineno:=lx.lineno
+		pos:=lx.pos
 		lex()
 		p:=createunit2(symboljtags[opc],p,readrangeterm())
-		p.lineno:=lineno
+		p.pos:=pos
 	else
 		exit
 	end doswitch
@@ -16793,40 +16958,40 @@ function readcmpterms:unit p=
 end
 
 function readrangeterm:unit p=
-	int lineno,opc
+	int pos,opc
 
 	p:=readaddterms()
 
 	if lx.symbol=rangesym then
-		lineno:=lx.lineno
+		pos:=lx.pos
 		lex()
 		p:=createunit2(j_makerange,p,readaddterms())
-		p.lineno:=lineno
+		p.pos:=pos
 	fi
 
 	return p
 end
 
 function readaddterms:unit p=
-	int lineno,opc
+	int pos,opc
 
 	p:=readmulterms()
 
 	doswitch opc:=lx.symbol
 	when addsym, subsym, iandsym, iorsym, ixorsym, andbsym, orbsym, xorbsym,
 		concatsym, appendsym, prependsym, minsym, maxsym then
-		lineno:=lx.lineno
+		pos:=lx.pos
 		lex()
 
 		if lx.symbol=assignsym then
 			lex()
 			p:=createunit2(symboljtotags[opc],p,readassignment())
-			p.lineno:=lineno
+			p.pos:=pos
 			exit
 		fi
 
 		p:=createunit2(symboljtags[opc],p,readmulterms())
-		p.lineno:=lineno
+		p.pos:=pos
 	else
 		exit
 	end doswitch
@@ -16835,24 +17000,24 @@ function readaddterms:unit p=
 end
 
 function readmulterms:unit p=
-	int lineno,opc
+	int pos,opc
 
 	p:=readpowerterms()
 
 	doswitch opc:=lx.symbol
 	when mulsym, divsym, idivsym, iremsym, shlsym, shrsym then
-		lineno:=lx.lineno
+		pos:=lx.pos
 		lex()
 
 		if lx.symbol=assignsym then
 			lex()
 			p:=createunit2(symboljtotags[opc],p,readassignment())
-			p.lineno:=lineno
+			p.pos:=pos
 			exit
 		fi
 
 		p:=createunit2(symboljtags[opc],p,readpowerterms())
-		p.lineno:=lineno
+		p.pos:=pos
 	else
 		exit
 	end doswitch
@@ -16861,15 +17026,15 @@ function readmulterms:unit p=
 end
 
 function readpowerterms:unit p=
-	int lineno,opc
+	int pos,opc
 
 	p:=readterm2()
 
 	while lx.symbol=powersym do
-		lineno:=lx.lineno
+		pos:=lx.pos
 		lex()
 		p:=createunit2(j_power,p,readpowerterms())
-		p.lineno:=lineno
+		p.pos:=pos
 	od
 
 	return p
@@ -16880,9 +17045,9 @@ function readterm2:unit=
 	unit p,q,r
 	ref char pbyte
 	word64 a
-	int oldipl,opc,oldinrp,lineno,shift,t
+	int oldipl,opc,oldinrp,pos,shift,t
 
-	lineno:=lx.lineno
+	pos:=lx.pos
 
 	p:=readterm()
 
@@ -16895,7 +17060,7 @@ function readterm2:unit=
 		checksymbol(rbracksym)
 		lex()
 		if p.tag=j_syscall then
-			p.a:=q
+			p.a:=q; p.hasa:=1
 		else
 			p:=createunit2(j_callfn,p,q)
 		fi
@@ -16942,7 +17107,7 @@ function readterm2:unit=
 		exit
 	enddoswitch
 
-	p^.lineno:=lineno
+	p^.pos:=pos
 
 	return p
 end
@@ -16951,9 +17116,9 @@ function readterm:unit=
 unit p,q,r
 ref char pbyte
 word64 a
-int oldipl,opc,oldinrp,lineno,shift,t
+int oldipl,opc,oldinrp,pos,shift,t
 
-	lineno:=lx.lineno
+	pos:=lx.pos
 
 	switch lx.symbol
 	when namesym then
@@ -16961,7 +17126,7 @@ int oldipl,opc,oldinrp,lineno,shift,t
 			p:=readcast()
 		else
 			p:=createname(lx.symptr)
-			p^.lineno:=lx.lineno
+			p^.pos:=lx.pos
 			lex()
 		fi
 
@@ -17143,6 +17308,11 @@ int oldipl,opc,oldinrp,lineno,shift,t
 	when kraisesym then	!todo
 		p:=readraise()
 
+	when kyieldsym then
+		lex()
+		p:=createunit1(j_yield,readunit())
+		yieldseen:=1
+
 	when kswapsym then			!swap using function syntax
 		lexchecksymbol(lbracksym)
 		lex()
@@ -17181,7 +17351,8 @@ int oldipl,opc,oldinrp,lineno,shift,t
 		serror("readterm?")
 	endswitch
 
-	p^.lineno:=lineno
+!	p^.lineno:=lineno
+	p^.pos:=pos
 	return p
 end
 
@@ -17190,11 +17361,11 @@ function readxunit:unit=
 end
 
 function readsunit(int inwhile=0)unit=
-int lineno,m,sym,opc
+int pos,m,sym,opc
 unit ulist,ulistx,p,q,r
 ref strec stname
 
-lineno:=lx.lineno
+pos:=lx.pos
 ulist:=ulistx:=nil
 
 repeat
@@ -17436,11 +17607,15 @@ proc adddocstring(ichar s)=
 end
 
 global proc readtaggeduniondef(ref strec owner,int isglobal)=
-int  m, startline, closesym, mtagged
+int  m, startline, closesym, mtagged,enummode
 ref strec nameptr, sttype
 
 lexchecksymbol(namesym)
 nameptr:=lx.symptr
+lexchecksymbol(lbracksym)
+lex()
+enummode:=readtypespec(owner,0)
+checksymbol(rbracksym)
 
 lex()
 checkequals()
@@ -17453,6 +17628,7 @@ m:=createusertype(sttype)
 
 mtagged:=createtaggedunionmode(owner, m)
 sttype.mode:=mtagged
+sttype.enumtagmode:=enummode
 
 closesym:=checkbegin(1)
 
@@ -17470,7 +17646,8 @@ proc readtaggedunionbody(ref strec owner)=
 !read fields, constants, types, methods.
 !classkwd=kclasssym or krecordsym
 int kwd,t
-ref strec d
+ref strec d,stname
+unit tagvalue
 
 doswitch lx.symbol
 when semisym then
@@ -17479,25 +17656,42 @@ when semisym then
 when kendsym,rbracksym,rcurlysym then
 	exit
 
-when kmutsym then
-
-	lex()
-	if istypestarter() then
-readvar::
-		++insiderecord
-		t:=readtypespec(owner)
-		--insiderecord
-	else
-		serror("need type")
-	fi
-	readtaggedfields(owner,t)
-
 else
-	if istypestarter() then
-		goto readvar
+	inreadprint:=1
+	tagvalue:=readunit()
+	inreadprint:=0
+	checksymbol(colonsym)
+	lex()
+
+	case lx.symbol
+	when kmutsym then
+
+		lex()
+		if istypestarter() then
+	readvar::
+			++insiderecord
+			t:=readtypespec(owner)
+			--insiderecord
+		else
+			serror("need type")
+		fi
+!		readtaggedfields(owner,t)
+		checksymbol(namesym)
+		stname:=getduplnameptr(owner,lx.symptr,fieldid)
+		storemode(owner,t,stname.mode)
+		adddef(owner,stname)
+
+		stname.code:=tagvalue
+
+		lex()
+
 	else
-		serror("tagged union?")
-	fi
+		if istypestarter() then
+			goto readvar
+		else
+			serror("tagged union?")
+		fi
+	esac
 enddoswitch
 end
 
@@ -17648,5338 +17842,9513 @@ CPL =P
 
 	addoverload(owner.moduleno,opc, amode,bmode,rmode,p)
 end
-=== mvar.m 14/25 ===
-!VAR Support Library
-!Support functions for Vars can be of 3 kinds:
-
-! 1 High level; params and return types can be actual objects.
-!   Body uses normal operations on vars, but implicit free etc
-!   is called on params. Return value is in return slot on stac
-! 2 Mid level; params and return type are explicit varrec records,
-!   which expose variant structures. Since these are just normal
-!   records, but small enough to fit into registers, no special
-!   freeing is done. I think that return value is in D1:D0 (including
-!   floats as those are inside a variant)
-
-!	Could be defined as procs, with explicit loading to d1:d0, but
-!	can also be functions provided they will be simple functions.
-
-! 3 Low level; params are passed via registers, and return value will
-!   be D1:D0. Not a normal call; likely to be via MCL code
-
-! In cases (1) and (2), parameters for those implementing binary ops
-! can be in inverse order, ie. (y,x) rather than (x,y), since the PCL
-! stack will push x first, in the place where the second argument normally
-! goes (normal function calls push right to left)
-
+=== bb_name.m 14/18 ===
+import mlib
 import clib
-import var_decls
-import var_tables
-import var_numbers
-import var_print
-import var_objects
-import var_strings
-import var_lists
-import var_support
-import var_decimals
-import var_arrays
 
-global function m$make_int(int a)object p=
-	return int_make(a)
-end
+import bb_decls
+import bb_tables
+import bb_support
+import bb_lib
+import bb_diags
+!import bb_type
 
-global function m$make_real(real x)object p=
-	return real_make(x)
-end
+ref strec currstproc
+int allowmodname=0
+int noexpand, noassem
+int macrolevels
 
-global function m$make_string(ichar s)object p=
-	return string_make(s)
-end
+const maxmacroparams=50
+[maxmacroparams]ref strec macroparams
+[maxmacroparams]ref strec macroparamsgen
+[maxmacroparams]unit macroargs
+int nmacroparams
+int nmacroargs
 
-global function m$make_dec(ichar s)object p=
-	return decimal_make(s)
-end
+global proc rx_unit(ref strec owner, unit p)=
+ref strec d
+unit a,b
+int n,oldnoexpand,oldnoassem
 
-global function m$make_list(int n, lower, object a)object p=
+a:=p^.a
+b:=p^.b
+mlineno:=p.pos
 
-	p:=list_make(&a, n, lower)
+!CPL "RXUNIT",JTAGNAMES[P.TAG]
 
-!no freeing needed as list_make will take over ownership
-	return p
-end
+switch p^.tag
+when j_name then
+	resolvename(owner,p)
+	if p^.def^.nameid=macroid and not noexpand then
+		++macrolevels
+		expandmacro(p,p,nil)
+		rx_unit(owner,p)
+		--macrolevels
+	fi
 
-global function m$make_listz(int lower)object p=
+when j_keyword then
+	rx_unit(owner,b)		!do param value only
 
-	p:=list_make(nil, 0, lower)
-	return p
-end
+when j_dot then
+	resolvedot(owner,p)
 
-global function m$make_range(int upper,lower)object p=
-	return range_make(lower,upper)
-end
-
-global function m$var_to_int(object p)int=
-	case p.tag
-	when vt_int then
-		return p.unum.value
-	when vt_real then
-		return p.unum.xvalue
-	when vt_decimal then
-		return decimal_toint(p)
-
+when j_callproc, j_callfn then
+!CPL "RX/CALLFN",JTAGNAMES[A.TAG],=b
+	if a^.tag=j_name then			!can expand possible macro if params not ready
+		oldnoexpand:=noexpand; noexpand:=1
+		rx_unit(owner,a)
+		noexpand:=oldnoexpand
 	else
-		vxerror("var->int?")
-		return 0
-	esac
-end
+!CPL "CALL2"
+		rx_unit(owner,a)
+!CPL "CALL3"
+	fi
 
-global function m$var_to_real(object p)real=
-	case p.tag
-	when vt_int then
-		return p.unum.value
-	when vt_real then
-		return p.unum.xvalue
-	when vt_decimal then
-		return decimal_toreal(p)
+	rx_unitlist(owner,b)
+!CPL "CALL4",A,A.NEXTUNIT,A.A,A.B,A.C,"//",A.HASA
+!PRINTUNIT(A)
 
-	else
-		vxerror("var->real?")
-		return 0
-	esac
-end
 
-global function m$var_to_string(object p)ichar=
-	case p.tag
-	when vt_string then
-		if p.ustr.length=0 then
-			return ""
+	if a^.tag=j_name then
+		d:=a^.def
+		case d^.nameid
+		when typeid then		!change to type conversion
+			p^.tag:=j_convert
+			storemode(owner,d^.mode,p.newmode)
+			p^.a:=b
+			p^.b:=nil; p.hasb:=0
+			if b^.nextunit then
+				p^.a:=createunit1(j_makelist,b)
+				n:=0
+				while b do
+					++n
+					b:=b^.nextunit
+				od
+				p^.a^.length:=n
+!				rxerror("cast on list")
+			fi
+		when macroid then
+			++macrolevels
+			expandmacro(p,a,b)
+			rx_unit(owner,p)
+			--macrolevels
 		else
-			return convtostringz(p.ustr.strptr,p.ustr.length)
-		fi
+			if d^.mode=tvoid then
+				p^.tag:=j_callproc
+			fi
+		esac
+	fi
+
+when j_eq,j_ne, j_lt,j_le,j_ge,j_gt then
+
+	case p^.a^.tag
+	when j_eq,j_ne, j_lt,j_le,j_ge,j_gt then
+		converteqeq(owner,p)
 	else
-		vxerror("var->string?")
-		return nil
+		go to doabc
 	esac
-end
-
-global proc m$initmemz_var(iobject p)=
-	p^:=void_new()
-end
-
-global proc m$popmem_var(iobject pdest, object a)=
-!free dest at given dest, transfer ownership of a to pdest
-!CPL "POPMEM",PDEST, PDEST^
-!	m$obj_mon_m(v_unshare,pdest^)
-!	obj_unshare(pdest^)
-	m$unshare_var(pdest^)
-!global function m$unshare_var	(object a)object	= {m$obj_mon_m(v_unshare,a)}
-	pdest^:=a
-end
-
-global proc m$freemem_var(object a)=
-!CPL "FREEMEM"
-!	obj_unshare(a)
-	m$unshare_var(a)
-end
-
-global proc m$print_var(object a,ichar fmtstyle=nil)=
-	obj_print(a,fmtstyle)	
-end
-
-function m$obj_bin_m(int opc, object a,b)object c=
-	c:=obj_bin(opc,a,b)
-	if --a.refcount=0 then obj_free(a) fi
-	if --b.refcount=0 then obj_free(b) fi
-	return c
-end
-
-proc m$obj_binto_m(int opc, iobject a, object b)=
-	obj_binto(opc,a,b)
-!	if --a.refcount=0 then obj_free(a) fi
-	if --b.refcount=0 then obj_free(b) fi
-end
-
-proc m$obj_monto_m(int opc, iobject a)=
-	obj_monto(opc,a)
-!CPL "HERE",A.REFCOUNT
-!	if --a.refcount=0 then obj_free(a^) fi
-end
-
-function m$obj_mon_m(int opc, object a)object c=
-	c:=obj_mon(opc,a)
-	if --a.refcount=0 then obj_free(a) fi
-	return c
-end
-
-function m$obj_intbin_m(int opc, object a,b)int res=
-	res:=obj_intbin(opc,a,b)
-	if --a.refcount=0 then obj_free(a) fi
-	if --b.refcount=0 then obj_free(b) fi
-	return res
-end
-
-function m$obj_intmon_m(int opc, object a)int res=
-	res:=obj_intmon(opc,a)
-!	if --a.refcount=0 then obj_free(a) fi
-	return res
-end
-
-
-global function m$add_var	(object b,a)object	= {m$obj_bin_m(v_add,a,b)}
-global function m$sub_var	(object b,a)object	= {m$obj_bin_m(v_sub,a,b)}
-global function m$mul_var	(object b,a)object	= {m$obj_bin_m(v_mul,a,b)}
-global function m$div_var	(object b,a)object	= {m$obj_bin_m(v_div,a,b)}
-global function m$idiv_var	(object b,a)object	= {m$obj_bin_m(v_idiv,a,b)}
-global function m$irem_var	(object b,a)object	= {m$obj_bin_m(v_irem,a,b)}
-global function m$power_var	(object b,a)object	= {m$obj_bin_m(v_power,a,b)}
-global function m$iand_var	(object b,a)object	= {m$obj_bin_m(v_iand,a,b)}
-global function m$ior_var	(object b,a)object	= {m$obj_bin_m(v_ior,a,b)}
-global function m$ixor_var	(object b,a)object	= {m$obj_bin_m(v_ixor,a,b)}
-global function m$shl_var	(object b,a)object	= {m$obj_bin_m(v_shl,a,b)}
-global function m$shr_var	(object b,a)object	= {m$obj_bin_m(v_shr,a,b)}
-global function m$andl_var	(object b,a)object	= {m$obj_bin_m(v_andl,a,b)}
-global function m$orl_var	(object b,a)object	= {m$obj_bin_m(v_orl,a,b)}
-global function m$append_var(object b,a)object	= {m$obj_bin_m(v_append,a,b)}
-global function m$concat_var(object b,a)object	= {m$obj_bin_m(v_concat,a,b)}
-global function m$min_var	(object b,a)object	= {m$obj_bin_m(v_min,a,b)}
-global function m$max_var	(object b,a)object	= {m$obj_bin_m(v_max,a,b)}
-global function m$atan2_var	(object b,a)object	= {m$obj_bin_m(v_atan2,a,b)}
-
-global function m$eq_var	(object b,a)int	= {m$obj_intbin_m(v_equal,a,b)}
-global function m$ne_var	(object b,a)int	= {not m$obj_intbin_m(v_equal,a,b)}
-global function m$lt_var	(object b,a)int	= {m$obj_intbin_m(v_compare,a,b)<0}
-global function m$le_var	(object b,a)int	= {m$obj_intbin_m(v_compare,a,b)<=0}
-global function m$ge_var	(object b,a)int	= {m$obj_intbin_m(v_compare,a,b)>=0}
-global function m$gt_var	(object b,a)int	= {m$obj_intbin_m(v_compare,a,b)>0}
-global function m$in_var	(object b,a)int = {obj_in(a,b)}
-
-global function m$isequal_var	(object b,a)int	= {m$obj_intbin_m(v_same,a,b)}
-
-global function m$neg_var		(object a)object	= {m$obj_mon_m(v_neg,a)}
-global function m$abs_var		(object a)object	= {m$obj_mon_m(v_abs,a)}
-global function m$inot_var		(object a)object	= {m$obj_mon_m(v_inot,a)}
-global function m$sqrt_var		(object a)object	= {m$obj_mon_m(v_sqrt,a)}
-global function m$sin_var		(object a)object	= {m$obj_mon_m(v_sin,a)}
-global function m$cos_var		(object a)object	= {m$obj_mon_m(v_cos,a)}
-global function m$tan_var		(object a)object	= {m$obj_mon_m(v_tan,a)}
-global function m$asin_var		(object a)object	= {m$obj_mon_m(v_asin,a)}
-global function m$acos_var		(object a)object	= {m$obj_mon_m(v_acos,a)}
-global function m$atan_var		(object a)object	= {m$obj_mon_m(v_atan,a)}
-global function m$exp_var		(object a)object	= {m$obj_mon_m(v_exp,a)}
-global function m$ln_var		(object a)object	= {m$obj_mon_m(v_ln,a)}
-global function m$log_var		(object a)object	= {m$obj_mon_m(v_log,a)}
-global function m$round_var		(object a)object	= {m$obj_mon_m(v_round,a)}
-global function m$floor_var		(object a)object	= {m$obj_mon_m(v_floor,a)}
-global function m$ceil_var		(object a)object	= {m$obj_mon_m(v_ceil,a)}
-global function m$fract_var		(object a)object	= {m$obj_mon_m(v_fract,a)}
-global function m$chr_var		(object a)object	= {m$obj_mon_m(v_chr,a)}
-global function m$bounds_var	(object a)object	= {m$obj_mon_m(v_bounds,a)}
-global function m$share_var		(object a)object	= {m$obj_mon_m(v_share,a)}
-
-!global function m$unshare_var	(object a)object	= {m$obj_mon_m(v_unshare,a)}
-global proc m$unshare_var	(object a) =
-!CPL "M$UNSHARE",A,VARTYPENAMES[A.TAG]
-	if --a.refcount<=0 then
-		obj_free(a)
-	fi
-end
-
-! {m$obj_mon_m(v_unshare,a)}
-
-global function m$free_var		(object a)object	= {m$obj_mon_m(v_free,a)}
-global function m$dupl_var		(object a)object	= {m$obj_mon_m(v_dupl,a)}
-
-global function m$notl_var		(object a)int		= {m$obj_intmon_m(v_notl,a)}
-global function m$istruel_var	(object a)int		= {m$obj_intmon_m(v_istruel,a)}
-global function m$lwb_var		(object a)int		= {m$obj_intmon_m(v_lwb,a)}
-global function m$upb_var		(object a)int		= {m$obj_intmon_m(v_upb,a)}
-global function m$len_var		(object a)int		= {m$obj_intmon_m(v_len,a)}
-global function m$asc_var		(object a)int		= {m$obj_intmon_m(v_asc,a)}
-
-global proc		m$addto_var		(object b, iobject a)	= {m$obj_binto_m(v_addto,a,b)}
-global proc		m$subto_var		(object b, iobject a)	= {m$obj_binto_m(v_subto,a,b)}
-global proc		m$multo_var		(object b, iobject a)	= {m$obj_binto_m(v_multo,a,b)}
-global proc		m$divto_var		(object b, iobject a)	= {m$obj_binto_m(v_divto,a,b)}
-global proc		m$idivto_var	(object b, iobject a)	= {m$obj_binto_m(v_idivto,a,b)}
-global proc		m$iremto_var	(object b, iobject a)	= {m$obj_binto_m(v_iremto,a,b)}
-global proc		m$iandto_var	(object b, iobject a)	= {m$obj_binto_m(v_iandto,a,b)}
-global proc		m$iorto_var		(object b, iobject a)	= {m$obj_binto_m(v_iorto,a,b)}
-global proc		m$ixorto_var	(object b, iobject a)	= {m$obj_binto_m(v_ixorto,a,b)}
-global proc		m$shlto_var		(object b, iobject a)	= {m$obj_binto_m(v_shlto,a,b)}
-global proc		m$shrto_var		(object b, iobject a)	= {m$obj_binto_m(v_shrto,a,b)}
-global proc		m$andto_var		(object b, iobject a)	= {m$obj_binto_m(v_andto,a,b)}
-global proc		m$orto_var		(object b, iobject a)	= {m$obj_binto_m(v_orto,a,b)}
-global proc		m$appendto_var	(object b, iobject a)	= {m$obj_binto_m(v_appendto,a,b)}
-global proc		m$concatto_var	(object b, iobject a)	= {m$obj_binto_m(v_concatto,a,b)}
-global proc		m$minto_var		(object b, iobject a)	= {m$obj_binto_m(v_minto,a,b)}
-global proc		m$maxto_var		(object b, iobject a)	= {m$obj_binto_m(v_maxto,a,b)}
-
-global proc		m$negto_var		(iobject a)	= {m$obj_monto_m(v_negto,a)}
-global proc		m$absto_var		(iobject a)	= {m$obj_monto_m(v_absto,a)}
-global proc		m$inotto_var	(iobject a)	= {m$obj_monto_m(v_inotto,a)}
-global proc		m$notlto_var	(iobject a)	= {m$obj_monto_m(v_notlto,a)}
-global proc		m$incrto_var	(iobject a)	= {m$obj_monto_m(v_incrto,a)}
-global proc		m$decrto_var	(iobject a)	= {m$obj_monto_m(v_decrto,a)}
-
-global function m$getindex_var		(int index, object a)object		= {obj_getindex(a,index)}
-global proc		m$putindex_var		(int index, iobject a, object x)	= {obj_putindex(a,index,x)}
-
-global function m$getdotindex_var	(int index, object a)object		= {obj_getdotindex(a,index)}
-global proc		m$putdotindex_var	(int index, iobject a, object x)	= {obj_putdotindex(a,index, x)}
-!
-global function m$getslice_var		(object a, int j,i)object	= {obj_getslice(a,i,j)}
-!global proc		 m$putslice_var		(object d,c,b,a)		= {obj_putslice(a,b,c,d)}
-!global function m$getdotslice_var	(object c,b,a)object	= {obj_getdotslice(a,b,c)}
-!global proc		m$putdotslice_var	(object d,c,b,a)		= {obj_putdotslice(a,b,c,d)}
-!
-!global function m$getkeyindex_var	(object c,b,a)object	= {obj_getkeyindex(a,b,c)}
-!global proc		m$putkeyindex_var	(object c,b,a)			= {obj_putkeyindex(a,b,c)}
-
-!global function m$insert_var	(object c,b,a)object	= {obj_insert(a,b,c)}
-!global function m$delete_var	(object b,a)object	= {obj_delete(a,b)}
-!global function m$resize_var	(object b,a)object	= {obj_resize(a,b)}
-!
-
-!global function newarray(int elemt, object dims)var=
-!	case dims.tag
-!	when vt_int then
-!		return new_array(vt,
-!
-!	return obj_new(vt)
-!end
-!
-
-
-global function newarray(int tag, length, lower=1)var v=
-	return cast@(array_new(tag, length, lower),var)
-end
-
-global function newarrayr(int tag, lower, upper)var v=
-	return var@(array_new(tag, upper-lower+1, lower))
-end
-
-=== var_decls.m 15/25 ===
-import msys
-import clib
-
-import var_tables
-
-!global macro tu1 = tbit
-!global macro tu2 = tbit2
-!global macro tu4 = tbit4
-
-global type object  = ref objrec
-global type iobject  = ref object
-
-global const objectsize  = object.bytes
-global const iobjectsize  = iobject.bytes
-
-record listrec =
-	word32		refcount
-	byte		tag
-	struct
-		byte	objtype
-		byte	mutable
-		byte	spare
-	end
-
-	union
-		iobject		iobjptr
-		word64		padding1
-	end
-
-	word32		length
-	int32		lower
-
-	union
-		object	objptr2
-		word32	allocated
-		word64	padding2
-	end
-end
-
-record stringrec =
-	word32		refcount
-	byte		tag
-	struct
-		byte	objtype
-		byte	mutable
-		byte	rectype
-	end
-
-	union
-		ichar		strptr
-		word64		padding1
-	end
-
-	int32		length
-	int32		lower
-
-	union
-		object	objptr2
-		word32	allocated
-	end
-end
-
-record recordrec =
-	word32		refcount
-	byte		tag
-	struct
-		byte	spare
-		byte	mutable
-		byte	rectype
-	end
-
-	union
-		iobject		iobjptr
-		ref byte	ptr
-		word64		padding1
-	end
-
-	word32		length		!make is easier to index like a list
-	int32		lower
-
-	union
-		object	recobj
-		word32	spare3
-	end
-end
-
-record decimalrec =
-	word32		refcount
-	byte		tag
-	byte		spare1
-	byte		spare2
-	byte		spare3
-
-	union
-		ref void	bnptr
-		word64		padding1
-	end
-
-	int			spare4
-	int			spare5
-end
-
-record numrec =
-	word32		refcount
-	byte		tag
-	byte		spare1
-	byte		spare2
-	byte		spare3
-
-	union
-		int64		value
-		word64		uvalue
-		real64		xvalue
-	end
-
-	int			spare4
-	int			spare5
-end
-
-record rangerec =
-	word32		refcount
-	byte		tag
-	byte		spare1
-	byte		spare2
-	byte		spare3
-
-	int64		lower
-	int64		upper
-
-	int64		spare4
-end
-
-record setrec =
-	word32		refcount
-	byte		tag
-	struct
-		byte	spare
-		byte	mutable
-		byte	spare2
-	end
-
-	union
-		ref byte	ptr
-		word64		padding1
-	end
-
-	word32		length
-	int16		lower
-	int16		elemtag
-
-	word64		allocated64
-end
-
-record dictrec =
-	word32		refcount
-	byte		tag
-	struct
-		byte	spare
-		byte	mutable
-		byte	spare2
-	end
-
-	union
-		iobject		iobjptr
-		word64		padding1
-	end
-
-	word32		length
-	int32		lower
-
-	union
-		struct
-			word32		allocated
-			word32		dictitems
-		end
-		object			objptr2
-	end
-end
-
-record arrayrec =
-	word32		refcount
-	byte		tag
-	struct
-		byte	objtype
-		byte	mutable
-		byte	spare
-	end
-
-	union
-		ref byte	ptr
-		word64		padding1
-	end
-
-	word32		length
-	int16		lower
-	int16		elemtype
-
-	union
-		object	objptr2
-		word32	allocated
-	end
-end
-
-record bitsrec =
-	word32		refcount
-	byte		tag
-	struct
-		byte	objtype
-		byte	mutable
-		byte	spare
-	end
-
-	union
-		ref byte	ptr
-		word64		padding1
-	end
-
-	word32		length
-	int16		lower
-	byte		elemtype
-	byte		bitoffset
-
-	union
-		object	objptr2
-		word64	allocated64
-	end
-end
-
-record structrec =
-	word32		refcount
-	byte		tag
-	struct
-		byte	spare
-		byte	mutable
-		byte	spare2
-	end
-
-	union
-		ref byte	ptr
-		word64		padding1
-	end
-
-	word32		length
-	int16		lower
-	int16		elemtag
-
-	union
-		object	objptr2
-		word32	allocated
-	end
-end
-
-global record objrec =				!32 bytes
-	union
-		struct
-			word32		refcount
-			byte		tag
-			byte		objtype		!normal/slice/ext for string/list/array/struct
-			byte		spare1
-			byte		spare2
-
-			word64		spare3
-			word64		spare4
-			union
-				object	objptr2		!share with string/list/array/struct?
-				word64	dummy4
-			end
-		end
-
-		listrec				ulist
-		stringrec			ustr
-		recordrec			urec
-		decimalrec			udec
-		numrec				unum
-		rangerec			urange
-		setrec				uset
-		dictrec				udict
-		arrayrec			uarray
-		bitsrec				ubits
-		structrec			ustruct
-	end
-end
-
-!global record genfieldnamerec =
-!	ichar name					!after bc load
-!	int32 dataindex
-!	union
-!		int32 datalength
-!		int32 datalast
-!	end
-!end
-!
-!global record genfielddatarec =
-!	int32 fieldindex
-!	int32 recordtype
-!	int32 fieldtype			!-procid, -constid, -staticid, -typeid are special codes
-!	union
-!		int32 offset			!or const value
-!		word32 index			!into proctable, statictable, or type code
-!		word32 procoffset
-!	end
-!end
-
-global record fmtrec=
-	byte	minwidth	! (0)   min field width (0 if not used or don't care)
-	i8	precision	! (0)   number of decimals/significant figures/max width
-	byte	base		! (10)  2,8,10,16
-
-	char	quotechar	! (0)   0/'"'/c
-	char	padchar		! (' ') ' '/'0'/c
-	char	realfmt		! ('f') 'e'/'f'/'g'
-
-	char	plus		! (0)   0/'+'
-	char	sepchar		! (0)   0/','/c placed every 3 (base=10) or 4 digits
-	char	lettercase	! ('A') 'A'/'a'
-	char	justify		! ('R') 'L'/'R'/'C'?
-	char	suffix		! (0)   0/'B'/'H'/c
-	char	usigned		! (0)   0/'U' force unsigned o/p for ints (eg. for hex display)
-	char	charmode	! (0)  0/'U'/'M'	o/p int as int/single char/multi-char
-	char	showtype	! (0) 0/'Y'	Show type
-	[2]byte	spare
-end
-
-global const int maxtype=300
-
-global int ntypes
-global [0:maxtype]int32 ttbasetype		!basetype
-global [0:maxtype]ichar ttname 			!name of type
-global [0:maxtype]int32 ttbitwidth
-
-global [0:maxtype]int64 ttsize 			!.size in bytes
-global [0:maxtype]int32 ttlower 		!.lbound (default 1 or case unused)
-global [0:maxtype]word32 ttlength 		!elements in array/record (actual fields) (/string
-global [0:maxtype]int32 ttstartfield 	!start index in pcfieldtable^[]
-global [0:maxtype]int32 ttstructfields	!entries in pcfieldtable^[]
-
-global [0:maxtype]int32 tttarget 		!for array/ref types
-global [0:maxtype]byte ttusercat
-
-global const hasrefmask = 0x10000		!1st bit of 3rd byte, when writing to .tagx
-
-global tabledata() [0:]ichar objtypenames =
-	(normal_obj=0,	$),
-	(slice_obj,		$),
-	(extslice_obj,	$)
-end
-
-global const int objsize=objrec.bytes
-
-global [0..255]object chrtable		!remember single-character objects
-
-!global const maxgenfields=1000
-!global [maxgenfields]genfieldnamerec genfieldnames
-!global [maxgenfields]genfielddatarec genfielddata
-!global [maxgenfields]ref intpc genfieldpcaddress
-!global int ngenfieldnames
-!global int ngenfielddata
-
-!global const int maxcmdparam=32
-!global int ncmdparams
-!global [0..maxcmdparam]ichar cmdparamtable
-!
-!global ref procrec proclist			!linked list of all procs
-!global int nproclist
-
-!!for bc file generation
-!global int nstrings=0
-!global int nsymbols=0
-!global int nstructfields=0
-!
-!global ref[]ichar stringtable
-!global ref[]int stringlentable
-
-
-global [binopnames.len,32,32]ref void binoptable
-!global [intbinopnames.len,32,32]ref void intbinoptable
-global [monopnames.len,32]ref void monoptable
-global [ibinopnames.len,32,32]ref void ibinoptable
-global [imonopnames.len,32]ref void imonoptable
-
-global [-256..+256]object inttable
-=== var_tables.m 16/25 ===
-global tabledata() [0:]ichar vartypenames =
-	(vt_void=0,		$),	! means variant is unassigned
-
-	(vt_int,		$),		! 64-bit signed int
-	(vt_word,		$),		! 64-bit unsigned int
-	(vt_real,		$),		! 64-bit float
-	(vt_range,		$),		! 64+64-bit int:int
-	(vt_decimal,	$),		! Arbitrary precision integer/float
-
-	(vt_string,		$),		! 8-bit string, flex and mutable
-	(vt_wstring,	$),		! 16/32-bit string
-	(vt_list,		$),		! Sequence of variants
-	(vt_record,		$),		! Record of shorts and longs
-	(vt_dict,		$),		! Dictionary of V:V keys and values
-	(vt_recordlink,	$),		! Link to record object
-
-	(vt_set,		$),		! Pascal-like bit-set
-	(vt_array,		$),		! Sequence of packed
-	(vt_bits,		$),		! Sequence of bits
-	(vt_struct,		$),		! Record of packed and flat arrays/structs
-
-	(vt_type,		$),		! Represents a type-code
-	(vt_refproc,	$),		! Pointer to Q proc
-	(vt_refdllproc,	$),		! Pointer to foreign function
-end
-
-global tabledata() [0:]ichar packtypenames, [0:]byte packtypewidths,
-					[0:]byte packtypesizes =
-
-	(pt_void=0,		$,	0,		0),
-
-	(pt_u1,			$,	1,		1),
-	(pt_u2,			$,	2,		1),
-	(pt_u4,			$,	4,		1),
-	(pt_u8,			$,	8,		1),
-	(pt_u16,		$,	16,		2),
-	(pt_u32,		$,	32,		4),
-	(pt_u64,		$,	64,		8),
-	(pt_u128,		$,	128,	16),
-
-	(pt_i8,			$,	8,		1),
-	(pt_i16,		$,	16,		2),
-	(pt_i32,		$,	32,		4),
-	(pt_i64,		$,	64,		8),
-	(pt_i128,		$,	128,	16),
-
-	(pt_r32,		$,	32,		4),
-	(pt_r64,		$,	64,		8),
-
-	(pt_ref,		$,	64,		8),
-end
-
-global tabledata() []ichar binopnames, []byte intbinop =
-	(v_add,			$,		0),
-	(v_sub,			$,		0),
-	(v_mul,			$,		0),
-	(v_div,			$,		0),
-	(v_idiv,		$,		0),
-	(v_irem,		$,		0),
-	(v_power,		$,		0),
-	(v_equal,		$,		1),
-	(v_compare,		$,		1),
-	(v_same,		$,		1),
-	(v_iand,		$,		0),
-	(v_ior,			$,		0),
-	(v_ixor,		$,		0),
-	(v_shl,			$,		0),
-	(v_shr,			$,		0),
-	(v_andl,		$,		1),
-	(v_orl,			$,		1),
-	(v_append,		$,		0),
-	(v_concat,		$,		0),
-	(v_min,			$,		0),
-	(v_max,			$,		0),
-	(v_atan2,		$,		0),
-	(v_in,			$,		1),
-end
-
-global tabledata() []ichar monopnames, []byte intmonop =
-	(v_neg,			$,		0),
-	(v_abs,			$,		0),
-	(v_inot,		$,		0),
-	(v_notl,		$,		1),
-	(v_istruel,		$,		1),
-	(v_sqrt,		$,		0),
-	(v_sin,			$,		0),
-	(v_cos,			$,		0),
-	(v_tan,			$,		0),
-	(v_asin,		$,		0),
-	(v_acos,		$,		0),
-	(v_atan,		$,		0),
-	(v_exp,			$,		0),
-	(v_ln,			$,		0),
-	(v_log,			$,		0),
-	(v_round,		$,		0),
-	(v_floor,		$,		0),
-	(v_ceil,		$,		0),
-	(v_fract,		$,		0),
-	(v_asc,			$,		0),
-	(v_chr,			$,		0),
-	(v_lwb,			$,		0),
-	(v_upb,			$,		0),
-	(v_len,			$,		0),
-	(v_bounds,		$,		0),
-	(v_share,		$,		0),
-	(v_unshare,		$,		0),
-	(v_free,		$,		0),
-	(v_dupl,		$,		0),
-end
-
-global tabledata() []ichar ibinopnames =
-	(v_addto,		$),
-	(v_subto,		$),
-	(v_multo,		$),
-	(v_divto,		$),
-	(v_idivto,		$),
-	(v_iremto,		$),
-	(v_iandto,		$),
-	(v_iorto,		$),
-	(v_ixorto,		$),
-	(v_shlto,		$),
-	(v_shrto,		$),
-	(v_andto,		$),
-	(v_orto,		$),
-	(v_appendto,	$),
-	(v_concatto,	$),
-	(v_minto,		$),
-	(v_maxto,		$),
-end
-
-global tabledata() []ichar imonopnames =
-	(v_negto,		$),
-	(v_absto,		$),
-	(v_inotto,		$),
-	(v_notlto,		$),
-	(v_incrto,		$),
-	(v_decrto,		$),
-end
-
-global tabledata() []ichar miscopnames =
-	(v_new,			$),
-	(v_make,		$),
-	(v_print,		$),
-	(v_tostr,		$),
-	(v_getdot,		$),
-	(v_putdot,		$),
-	(v_getindex,	$),
-	(v_putindex,	$),
-	(v_getdotindex,	$),
-	(v_putdotindex,	$),
-	(v_getslice,	$),
-	(v_putslice,	$),
-	(v_getdotslice,	$),
-	(v_putdotslice,	$),
-	(v_getkeyindex,	$),
-	(v_putkeyindex,	$),
-	(v_insert,		$),
-	(v_delete,		$),
-	(v_resize,		$),
-end
-=== var_numbers.m 17/25 ===
-import mlib
-import var_decls
-import var_tables
-import var_objects
-import var_strings
-
-global function int_make(int a)object p=
-!share this for common values
-
-!CPL "INTMAKE1",A
-	if a>=inttable.lwb and a<=inttable.upb then
-		obj_share(p:=inttable[a])
-		return p
+	goto doabc
+
+!when j_makelist then
+!when j_index,j_dotindex then
+!when j_upper then
+!when j_hardconv then
+!when j_assem then
+!	if not noassem then
+!!		rx_assem(owner,p,a,b)
+!	fi
+
+when j_assemmacro then
+	resolvename(owner,a)
+	if not noexpand then
+		++macrolevels
+		oldnoassem:=noassem
+		noassem:=1
+		expandmacro(p,a,b)
+		noassem:=oldnoassem
+		rx_unit(owner,p)
+		--macrolevels
 	fi
 
-!CPL "INTMAKE2",A
-	p:=obj_new(vt_int)
-	p.unum.value:=a
-
-	return p
-end
-
-global function real_make(real x)object p=
-!share this for common values
-
-!	if a>=inttable.lwb and a<=inttable.upb then
-!		obj_share(p:=inttable[a])
-!		return p
+!when j_forup,j_fordown then			!a will be j_name unit
+!	unit pindex,pfrom,pto,pstep,plocal
+!	pindex:=a
+!	pfrom:=pindex.nextunit
+!	pto:=pfrom.nextunit
+!	pstep:=pto.nextunit
+!	plocal:=pstep.nextunit
+!
+!	resolvename(owner,pindex,ti64)
+!	rx_unit(owner,pfrom)
+!	rx_unit(owner,pto)
+!	rx_unit(owner,pstep)
+!	if plocal then
+!		resolvename(owner,pindex,tany)
 !	fi
 !
-	p:=obj_new(vt_real)
-	p.unum.xvalue:=x
+!	goto dobc
 
-	return p
+!when j_forall, j_forallrev then			!a will be j_name unit
+!!CPL "RX/FORALL"
+!	resolvename(owner,a,ti64)
+!!CPL "RX/FORALL2"
+!	a:=a^.nextunit
+!!CPL "NAME1:",NAMENAMES[A.DEF.NAMEID]
+!!CPL "RX/FORALL3"
+!	resolvename(owner,a,tany)			!won't know type until later
+!!CPL "NAME2:",NAMENAMES[A.DEF.NAMEID]
+!	a:=a^.nextunit
+!	goto doabc
+
+else
+!CPL "ABC"
+doabc::
+	if p.hasa then rx_unitlist(owner,a) fi
+	if p.hasb then rx_unitlist(owner,b) fi
+	if p.hasc then rx_unitlist(owner,p.c) fi
+!	rx_unitlist(owner,a)
+!dobc::
+!	if b then
+!		rx_unitlist(owner,b)
+!		if p^.c then rx_unitlist(owner,p^.c) fi
+!	fi
+endswitch
 end
 
-global function range_make(int lower, upper)object p=
-	p:=obj_new(vt_range)
-	p.urange.lower:=lower
-	p.urange.upper:=upper
-	return p
+global function rx_module(int n)int=
+modulerec m
+ref strec stmodule, d
+int globalflag,status
+
+currmoduleno:=n
+
+rx_passdef(stprogram,moduletable[n].stmodule)
+
+return 1
 end
 
-proc int_unshare(object a)=
-!CPL "UNSHARE INT",A.REFCOUNT, A.UNUM.VALUE
-	if --a.refcount<=0 then
-!CPL "FREE INT"
-		pcm_free32(a)
-	fi
-end
-
-proc real_unshare(object a)=
-	int_unshare(a)
-end
-
-global function int_add(object a,b)object c=
-	return int_make(a.unum.value + b.unum.value)
-end
-
-global function int_sub(object a,b)object c=
-	return int_make(a.unum.value - b.unum.value)
-end
-
-global function real_sub(object a,b)object c=
-	return real_make(a.unum.xvalue - b.unum.xvalue)
-end
-
-global function int_mul(object a,b)object c=
-	return int_make(a.unum.value * b.unum.value)
-end
-
-global function real_mul(object a,b)object c=
-	return real_make(a.unum.xvalue * b.unum.xvalue)
-end
-
-global function int_div(object a,b)object c=
-	return real_make(real(a.unum.value)/b.unum.value)
-end
-
-global function int_idiv(object a,b)object c=
-	return int_make(a.unum.value % b.unum.value)
-end
-
-global function int_irem(object a,b)object c=
-	return int_make(a.unum.value rem b.unum.value)
-end
-
-global function int_iand(object a,b)object c=
-	return int_make(a.unum.value iand b.unum.value)
-end
-
-global function int_ior(object a,b)object c=
-	return int_make(a.unum.value ior b.unum.value)
-end
-
-global function int_ixor(object a,b)object c=
-	return int_make(a.unum.value ixor b.unum.value)
-end
-
-global function int_shl(object a,b)object c=
-	return int_make(a.unum.value << b.unum.value)
-end
-
-global function int_shr(object a,b)object c=
-	return int_make(a.unum.value >> b.unum.value)
-end
-
-global function int_min(object a,b)object c=
-	return int_make(a.unum.value min b.unum.value)
-end
-
-global function int_max(object a,b)object c=
-	return int_make(a.unum.value max b.unum.value)
-end
-
-global function int_power(object a,b)object c=
-	return int_make(a.unum.value ** b.unum.value)
-end
-
-global function int_equal(object a,b)int c=
-	return a.unum.value=b.unum.value
-end
-
-global function int_compare(object a,b)int c=
-	if a.unum.value<b.unum.value then
-		return -1
-	elsif a.unum.value>b.unum.value then
-		return 1
-	else
-		return 0
-	fi
-end
-
-global function real_compare(object a,b)int c=
-	if a.unum.xvalue<b.unum.xvalue then
-		return -1
-	elsif a.unum.xvalue>b.unum.xvalue then
-		return 1
-	else
-		return 0
-	fi
-end
-
-global function int_neg(object a)object=
-	return int_make(-a.unum.value)
-end
-
-global function int_abs(object a)object=
-	return int_make(abs a.unum.value)
-end
-
-global function int_inot(object a)object=
-	return int_make(inot a.unum.value)
-end
-
-global function int_notl(object a)int=
-	return not a.unum.value
-end
-
-global function int_istruel(object a)int=
-	return istrue a.unum.value
-end
-
-global function int_chr(object a)object=
-	[8]char str
-	str[1]:=a.unum.value
-	str[2]:=0
-	return string_make(&.str)
-end
-
-global function int_sqrt(object a)object=
-	return real_make(sqrt a.unum.value)
-end
-
-!global function int_sin(object a)object={real_make(a.unum.value)}
-!global function real_sin(object a)object={real_make(a.unum.value)}
-
-global proc int_addto(iobject pa, object b)=
-	object a
-
-	a:=pa^
-	pa^:=int_make(a.unum.value + b.unum.value)
-	obj_unshare(a)
-end
-
-global proc int_subto(iobject pa, object b)=
-	object a
-
-	a:=pa^
-	pa^:=int_make(a.unum.value - b.unum.value)
-	obj_unshare(a)
-end
-
-global proc int_multo(iobject pa, object b)=
-	object a
-
-	a:=pa^
-	pa^:=int_make(a.unum.value * b.unum.value)
-	obj_unshare(a)
-end
-
-global proc int_divto(iobject pa, object b)=
-	object a
-
-	a:=pa^
-	pa^:=int_make(real(a.unum.value) * b.unum.value)
-	obj_unshare(a)
-end
-
-global proc int_idivto(iobject pa, object b)=
-	object a
-
-	a:=pa^
-	pa^:=int_make(a.unum.value / b.unum.value)
-	obj_unshare(a)
-end
-
-global proc int_iremto(iobject pa, object b)=
-	object a
-
-	a:=pa^
-	pa^:=int_make(a.unum.value rem b.unum.value)
-	obj_unshare(a)
-end
-
-global proc int_iandto(iobject pa, object b)=
-	object a
-
-	a:=pa^
-	pa^:=int_make(a.unum.value iand b.unum.value)
-	obj_unshare(a)
-end
-
-global proc int_iorto(iobject pa, object b)=
-	object a
-
-	a:=pa^
-	pa^:=int_make(a.unum.value ior b.unum.value)
-	obj_unshare(a)
-end
-
-global proc int_ixorto(iobject pa, object b)=
-	object a
-
-	a:=pa^
-	pa^:=int_make(a.unum.value ixor b.unum.value)
-	obj_unshare(a)
-end
-
-global proc int_shlto(iobject pa, object b)=
-	object a
-
-	a:=pa^
-	pa^:=int_make(a.unum.value << b.unum.value)
-	obj_unshare(a)
-end
-
-global proc int_shrto(iobject pa, object b)=
-	object a
-
-	a:=pa^
-	pa^:=int_make(a.unum.value >> b.unum.value)
-	obj_unshare(a)
-end
-
-global proc int_minto(iobject pa, object b)=
-	object a
-
-	a:=pa^
-	pa^:=int_make(a.unum.value min b.unum.value)
-	obj_unshare(a)
-end
-
-global proc int_maxto(iobject pa, object b)=
-	object a
-
-	a:=pa^
-	pa^:=int_make(a.unum.value max b.unum.value)
-	obj_unshare(a)
-end
-
-global proc int_negto(iobject pa)=
-	object a
-
-	a:=pa^
-	pa^:=int_make(-a.unum.value)
-	obj_unshare(a)
-end
-
-global proc int_absto(iobject pa)=
-	object a
-
-	a:=pa^
-	pa^:=int_make(abs a.unum.value)
-	obj_unshare(a)
-end
-
-global proc int_inotto(iobject pa)=
-	object a
-
-	a:=pa^
-	pa^:=int_make(inot a.unum.value)
-	obj_unshare(a)
-end
-
-global proc int_notlto(iobject pa)=
-	object a
-
-	a:=pa^
-	pa^:=int_make(not a.unum.value)
-	obj_unshare(a)
-end
-
-global proc int_incrto(iobject pa)=
-	object a
-
-	a:=pa^
-	pa^:=int_make(a.unum.value+1)
-	obj_unshare(a)
-end
-
-global proc int_decrto(iobject pa)=
-	object a
-
-	a:=pa^
-	pa^:=int_make(a.unum.value-1)
-	obj_unshare(a)
-end
-
-global function real_add(object a,b)object c=
-	return real_make(a.unum.xvalue + b.unum.xvalue)
-end
-=== var_objects.m 18/25 ===
-import clib
-!import msys
-import mlib
-!import oslib
-
-import var_decls
-import var_tables
-import var_support
-import var_strings
-import var_lists
-import var_numbers
-import var_decimals
-import var_arrays
-
-global object zeroobj
-global object emptylist
-global object emptystring
-global object emptyset
-global objrec voidobj
-
-proc $init=
-	object p
-
-	zeroobj:=pcm_allocz(objrec.bytes)
-	zeroobj.refcount:=1
-
-	emptylist:=obj_new(vt_list)
-	emptylist.ulist.lower:=1
-	emptylist.objtype:=normal_obj
-
-	emptystring:=obj_new(vt_string)
-	emptystring.objtype:=normal_obj
-
-	emptyset:=obj_new(vt_set)
-	emptyset.objtype:=normal_obj
-
-!	voidobj:=zeroobj
-!	voidobj.refcount:=0x8000'0000		!void calls to free
-
-	for i in inttable do
-		p:=obj_new(vt_int)
-		p.unum.value:=i
-		inttable[i]:=p
+global proc rx_deflist(ref strec owner,p)=
+ref strec pstart:=p
+	while p do
+		rx_passdef(owner,p)
+		p:=p^.nextdef
 	od
-
 end
 
-global function obj_bin(int opc, object a,b)object=
-	ref function(object a,b)object fnptr
+global proc rx_passdef(ref strec owner,p)=
+ref strec d
 
-	fnptr:=binoptable[opc,a.tag,b.tag]
-	if fnptr=nil then
-		fnptr:=binoptable[opc,a.tag,b.tag]:=getbinophandler(opc,a.tag,b.tag)
-		if fnptr=nil then
-			novxhandler(binopnames[opc],a.tag,b.tag)
+case p^.nameid
+when moduleid,dllmoduleid then
+	rx_deflist(p,p^.deflist)
+
+when procid then
+	rx_deflist(p,p^.deflist)
+	currstproc:=p
+	rx_unit(p,p^.code)
+	currstproc:=nil
+
+when dllprocid then
+	rx_deflist(p,p^.deflist)
+
+when constid,staticid,frameid,paramid then
+	if p^.at=1 then
+		rx_unit(owner,p^.equivvar)
+	fi
+	if p^.code then
+		rx_unit(owner,p^.code)
+	fi
+when typeid then
+
+else
+esac
+end
+
+proc rx_unitlist(ref strec owner, unit p)=
+while p do
+	rx_unit(owner,p)
+	p:=p^.nextunit
+od
+end
+
+global function resolvetopname(ref strec owner,stnewname,int moduleno,fmodule)ref strec=
+!stnewname points to a symrec with nullid
+!This is a top-level name (left-most name of any dotted sequence, or standalone name)
+!Search through all the duplicate symrecs (all names with identical names have symrecs that
+!are linked together, always starting with a nullid symrec) looking for the best match
+!moduleno is the module where the currently generic name is encountered
+!(derived from a unit if in an expression, or an STREC if a type in a declaration)
+
+int i,m,extcount,modno
+ref strec p,powner,d,e,dlldef,extdef,moddef,extmod,q
+[10]ref strec ambiglist
+
+!CPL "RST1"
+if owner^.nameid=procid then
+	q:=owner^.deflist
+	while q do
+		if q^.firstdupl=stnewname then		!use that match
+			return q
+		fi
+		q:=q^.nextdef
+	od
+fi
+
+!CPL "RST2"
+p:=stnewname^.nextdupl
+
+extcount:=0
+extmod:=dlldef:=extdef:=moddef:=nil
+
+while p do						!for each possibe st entry of the same name
+!CPL "RST3"
+	powner:=p^.owner			!the owner of that entry
+
+	switch powner^.nameid
+	when procid then
+		if powner=owner then			!immediate match
+			return p
+		fi
+	when moduleid then			!p is file-scope item
+		if powner^.moduleno=moduleno then		!same module
+			if owner^.nameid=moduleid then	!immediate match
+				return p
+			fi
+			moddef:=p			!take note, but continue searching (in case proc etc)
+		elsif moduletable[moduleno].importmap[powner^.moduleno] then
+			if p^.isglobal then
+								!matches an external module imported by this name's module
+				++extcount			!if an ext match is closest, there can only be one
+				extdef:=p
+				if extcount<ambiglist.len then
+					ambiglist[extcount]:=extdef
+				fi
+			fi
+		fi
+	when dllmoduleid then
+		modno:=powner^.owner^.moduleno
+		if modno=moduleno or moduletable[moduleno].importmap[modno] then
+			dlldef:=p
+		fi
+
+	when typeid then
+		if powner=owner then			!immediate match
+			return p
+		fi
+	when programid then					!p is a module
+		if p^.nameid=moduleid then		!match a module name
+			if p^.moduleno=moduleno then
+				if fmodule then
+					return p			!immediate match (unless proc but that would have
+				fi						!matched by now
+			else						!ext module
+				extmod:=p				!keep it in reserve
+			fi
+		fi
+!	when macroid then
+	endswitch
+
+	p:=p^.nextdupl
+od
+
+!CPL "RST4"
+!if here, then no immediate match
+!either of moddef/dlldef will be set
+if moddef then				!go with that first
+!CPL "RST41"
+	return moddef
+fi
+if extdef then
+!CPL "RST42"
+	if extcount>1 then
+!CPL "RST43"
+		for i:=1 to extcount do
+			extdef:=ambiglist[i]
+			println i,extdef^.owner^.name,namenames[extdef^.owner^.nameid]
+		od
+		rxerror_s("Ambiguous ext name: #",extdef^.name)
+	fi
+!CPL "RST44",EXTDEF
+	return extdef
+fi
+!CPL "RST5"
+if extmod then return extmod fi
+return dlldef				!will be nil when no match
+end
+
+global proc resolvename(ref strec owner, unit p)=
+!p is a name tag inside given owner
+!resolve name
+!report error if unresolved, unless mode is not void. Then an unresolved
+!name is added as a frame (assumes this is a proc)
+
+	ref strec d,e
+	unit q
+	int moduleno, mode
+
+	d:=p^.def
+	moduleno:=p^.moduleno
+
+	if d^.nameid<>nullid then			!assume already resolved
+		return
+	fi
+
+	e:=resolvetopname(owner,d,moduleno,allowmodname)
+	if not e then
+		mode:=tvoid
+		case p.avcode
+		when 'I', 'T', 'S' then mode:=ti64
+		when 'L','A' then mode:=tany
+		esac
+			
+
+!CPL "UNDEF",P.LINENO
+
+		if mode=tvoid then
+			rxerror_s("Undefined: #",d^.name,p)
+		else
+			e:=addframevar(owner,d,moduleno,mode)
+			e^.lineno:=p^.lineno
+			if mode<>tany then e^.islet:=1 fi
 		fi
 	fi
 
-	return fnptr^(a,b)
-end
+	e^.used:=1
 
-global function obj_intbin(int opc, object a,b)int=
-	ref function(object a,b)int fnptr
-
-	fnptr:=binoptable[opc,a.tag,b.tag]
-	if fnptr=nil then
-		fnptr:=binoptable[opc,a.tag,b.tag]:=getbinophandler(opc,a.tag,b.tag)
-		if fnptr=nil then
-			novxhandler(binopnames[opc],a.tag,b.tag)
-		fi
-	fi
-
-	return fnptr^(a,b)
-end
-
-global proc obj_binto(int opc, iobject pa, object b)=
-	ref function(iobject pa,object b)object fnptr
-
-	fnptr:=ibinoptable[opc,pa.tag,b.tag]
-	if fnptr=nil then
-		fnptr:=ibinoptable[opc,pa.tag,b.tag]:=getibinophandler(opc,pa.tag,b.tag)
-		if fnptr=nil then
-			novxhandler(ibinopnames[opc],pa.tag,b.tag)
-		fi
-	fi
-
-	fnptr^(pa,b)
-end
-
-global function obj_mon(int opc, object a)object=
-	ref function(object a)object fnptr
-
-	fnptr:=monoptable[opc,a.tag]
-	if fnptr=nil then
-		fnptr:=monoptable[opc,a.tag]:=getmonophandler(opc,a.tag)
-		if fnptr=nil then
-			novxhandler(monopnames[opc],a.tag,vt_void)
-		fi
-	fi
-
-	return fnptr^(a)
-end
-
-global proc obj_monto(int opc, iobject pa)=
-	ref function(iobject pa)object fnptr
-
-	fnptr:=imonoptable[opc,pa.tag]
-	if fnptr=nil then
-		fnptr:=imonoptable[opc,pa.tag]:=getimonophandler(opc,pa.tag)
-		if fnptr=nil then
-			novxhandler(imonopnames[opc],pa.tag,vt_void)
-		fi
-	fi
-
-	fnptr^(pa)
-end
-
-global function obj_intmon(int opc, object a)int=
-	ref function(object a)int fnptr
-
-	fnptr:=monoptable[opc,a.tag]
-	if fnptr=nil then
-		fnptr:=monoptable[opc,a.tag]:=getmonophandler(opc,a.tag)
-		if fnptr=nil then
-			novxhandler(monopnames[opc],a.tag,vt_void)
-		fi
-	fi
-
-	return fnptr^(a)
-end
-proc novxhandler(ichar opname, int taga, tagb)=
-	println opname,vartypenames[taga],vartypenames[tagb]
-	vxerror("Can't find handler")
-end
-
-global function obj_new(int tag)object p=
-!create new object descriptor, which all fields set to zero
-!except refcount=1
-
-!CPL "OBJNEW1"
-	p:=pcm_alloc32()
-	p^:=zeroobj^			!includes refcount=1
-	p.tag:=tag
-!
-	return p
-end
-
-global function obj_newobj(object a, b=nil, c=nil, d=nil)object p=
-!create new object descriptor, which all fields set to zero
-!except refcount=1
-	int tag
-
-	checkobj(a,vt_int)
-	tag:=a.unum.value	
-
-	case tag
-	when vt_array then
-!!		return array_new(getint(b),getc,d)
-!
-!	when vt_list then
-!		return list_new(b,c)
+	if e^.nameid=paramid and e^.parammode=out_param then
+		p^.tag:=j_ptr
+		p^.a:=createname(e)
+		p.hasa:=1; p.hasb:=p.hasc:=0
 	else
-		vxerror("obj/newobj")
+		p^.def:=e			!update link in kcode
+
+		case e^.nameid
+		when procid then
+			if e^.isglobal then e^.namecat:=globalproc_cat fi
+		esac
+	fi
+
+end
+
+global function finddupl(ref strec d, pdupl)ref strec=
+!trying to resolve a field name, by scanning a dupllist headed by pdupl
+!which ought to point to nullid entry
+!d will be the owner of the matching entry
+
+if pdupl^.nameid<>nullid then		!assume already resolved
+	return pdupl
+fi
+pdupl:=pdupl^.nextdupl
+
+while pdupl do
+	if pdupl^.owner=d then
+		return pdupl
+	fi
+	pdupl:=pdupl^.nextdupl
+od
+return nil
+end
+
+proc resolvedot(ref strec owner,unit p)=
+unit lhs,rhs
+ref strec d,e,t
+int m
+
+lhs:=p^.a
+rhs:=p^.b
+e:=rhs^.def				!p.b will be a name type (could perhaps be stored as p^.def)
+
+rx_unit(owner,lhs)
+
+case lhs^.tag
+when j_name then
+	d:=lhs^.def
+	case d^.nameid
+	when moduleid,typeid,procid,typeid,dllmoduleid then
+		e:=finddupl(d,e)
+		if e then
+			p^.tag:=j_name			!convert to dot to name
+			p^.a:=p^.b:=nil
+			p.hasa:=p.hasb:=0
+			p^.def:=e
+			case e^.nameid
+			when enumid then
+			when constid then
+			when macroid then
+				if e^.nameid=macroid and not noexpand then
+					++macrolevels
+					expandmacro(p,p,nil)
+					rx_unit(owner,p)
+					--macrolevels
+				fi
+			esac
+		else
+			rxerror_s("Can't resolve .#",p^.b^.def^.name,p)
+		fi
+
+	when frameid, staticid, paramid then		!.x applied to normal var
+		m:=d^.mode
+		case ttbasetype[m]
+		when trecord then
+		when tref then
+			do
+				m:=tttarget[m]
+				case ttbasetype[m]
+				when trecord then
+					exit
+				when tref then
+				else
+					rxerror("2:record expected")
+				esac
+			od
+		else
+			rxerror("record expected")
+		esac
+		t:=ttnamedef[m]
+
+		e:=finddupl(t,e)
+		if e then
+			p^.b^.def:=e
+		else
+			rxerror_s("Not a field: #",rhs^.def^.name)
+		fi
 	esac
+!when j_ptr then
 
-!CPL "OBJNEW1"
-	p:=pcm_alloc32()
-	p^:=zeroobj^			!includes refcount=1
-	p.tag:=tag
-!
-	return p
+else
+!Can't fully resolve at this time; leave to next pass
+	unless e^.nextdupl then
+		rxerror_s("Not a field: #",e^.name)
+	endunless
+esac
 end
 
-proc checkobj(object p, int tag)=
-	if p.tag<>tag then
-		cpl "Was",vartypenames[p.tag],"not",vartypenames[tag]
-		vxerror("Unexpected type")
-	fi
-end
+!proc fixmode(ref typenamerec p, ref posrec pos)=
+proc fixmode(ref typenamerec p)=
+!p refers to a negative mode that is a typename index
+!fix that up if possible
+	ref int32 pmode
+	ref strec a,d,e,f,owner
+	int m,moduleno
 
-global function obj_dupl(object p)object q=
-	int tp
+	pmode:=p.pmode
 
-	switch p.tag
-	when vt_int,vt_real,vt_void then
-		++p.refcount
-		return p
+	m:=-pmode^					!typename index
 
-	when vt_list,vt_record then
-		q:=list_dupl(p)
-	when vt_string then
-		q:=string_dupl(p)
+!CPL "FIXMODE1"
 
-	when vt_decimal then
-		q:=decimal_dupl(p)
+	d:=owner:=p.owner
+	while d.nameid<>moduleid do d:=d.owner od
+	moduleno:=d.moduleno
 
-!	when vt_struct then
-!		tp:=p.ustruct.packtype
-!		q:=struct_new(tp)
-!		memcpy(q.ustruct.ptr,p.ustruct.ptr,ppsize[tp])
+	a:=p.defa
+	d:=p.defb
 
-	else
-	CPL VARTYPENAMES[P.TAG]
-		VXERROR("CAN'T DUPL: ")
-	end switch
+!cpl "FIX",OWNER,=A,=D
+	if a=nil and d then			!simple type name V
 
-	return q
-end
+!CPL "RESOLVE:",OWNER.NAME, D.NAME, MODULENO
+		e:=resolvetopname(owner,d,moduleno,0)
+!CPL =E
 
-global proc freeobject(object p)=
-	pcm_free32(p)
-end
+	elsif d=nil and a then		!typeno
+		rxerror("Fixmode can't do typeof yet")
+	else						!assume a.d type reference
+!CPL "DOING A.B"
+		e:=resolvetopname(owner,a,moduleno,0)
+!CPL =E
+		if e then
+			f:=e.deflist
+			e:=nil
+			while f do
+				if f.nameid=typeid and f.firstdupl=d then
+!CPL "FOUND F",F.NAME,STRMODE(F.MODE)
 
-global function void_new:object p=
-	return &voidobj
-end
-
-!global function array_new(int ta, elemtype, length,lower)object p=
-!!create a packed array type ta, with element-type t, given length and lower bound.
-!!it will be initialised to zeros
-!
-!	ref byte q
-!	int elemsize
-!
-!	elemsize:=ttsize[elemtype]
-!
-!	p:=obj_new(ta)
-!	p.uarray.mutable:=1
-!	p.uarray.lower:=lower
-!	p.uarray.length:=length
-!	p.uarray.objtype:=normal_obj
-!	p.uarray.elemtype:=elemtype
-!
-!	if length then
-!		q:=p.uarray.ptr:=pcm_allocz(length*elemsize)
-!		p.uarray.allocated:=allocbytes/elemsize
-!	fi
-!
-!	return p
-!end
-!
-!global function list_new(int length,lower=1, object defval=nil)object p=
-!	iobject q
-!
-!	p:=obj_new(vt_list)
-!	p.ulist.mutable:=1
-!	p.ulist.lower:=lower
-!	p.ulist.length:=length
-!	p.ulist.objtype:=normal_obj
-!
-!	if length then
-!		q:=p.ulist.iobjptr:=pcm_alloc(length*objectsize)
-!		p.ulist.allocated:=allocbytes/objectsize
-!		to length do
-!			if defval then
-!				q^:=obj_share(defval)
+					e:=f
+					exit
+				fi
+				f:=f.nextdef
 !			else
-!				q^:=&voidobj
-!			fi
-!			++q
-!		od
-!	fi
-!
-!	return p
-!end
-!
-!global function set_new(int length,lower)object p=
-!!create a packed array type ta, with element-type t, given length and lower bound.
-!!it will be initialised to zeros
-!
-!	p:=bits_new(pt_u1,length,lower)
-!	p.tag:=vt_set
-!
-!	return p
-!end
-!
-!global function bits_new(int elemtype,length,lower)object p=
-!!create a packed array type ta, with element-type t, given length and lower bound.
-!!it will be initialised to zeros
-!
-!	ref byte q
-!	int bitwidthx,nbits,nbytes
-!
-!	p:=obj_new(vt_bits)
-!	p.ubits.mutable:=1
-!	p.ubits.lower:=lower
-!	p.ubits.length:=length
-!	p.ubits.objtype:=normal_obj
-!	p.ubits.elemtype:=elemtype
-!
-!	bitwidthx:=ttbitwidth[elemtype]		!should be 1, 2 or 4 bits
-!	nbits:=length*bitwidthx				!total bits needed
-!
-!	nbytes := ((nbits-1)/64+1)*8		!bytes required in 64-bit blocks
-!
-!!CPL "BITSNEW",=LENGTH,P.UBITS.LENGTH
-!
-!
-!	if length then
-!!		p.ubits.ptr := pcm_allocz(nbytes)              !(turns total allocated in 'allocbytes')
-!		p.ubits.ptr := pcm_alloc(nbytes)              !(turns total allocated in 'allocbytes')
-!
-!!CPL "BITS/NEW",=NBYTES
-!
-!		p.ubits.allocated64 := word64(allocbytes)*(8/bitwidthx)
-!
-!		pcm_clearmem(p.ubits.ptr,allocbytes)
-!	else
-!		p.ubits.ptr:=nil
-!	fi
-!
-!	return p
-!end
-!
-!global function struct_new(int ut)object p=
-!	p:=obj_new(vt_struct)
-!	p.ustruct.mutable:=1
-!
-!	p.ustruct.ptr:=pcm_allocz(ttsize[ut])
-!	p.ustruct.allocated:=allocbytes
-!
-!	return p
-!end
-!
-!global function dict_new(int n)object p=
-!	int m
-!
-!	m:=max(16,nextpoweroftwo(n*2))		!list has 2n entries, min 16, rounded up to 2**x
-!
-!
-!	p:=list_new(m,1,nil)
-!	p.tag:=vt_dict
-!	p.udict.dictitems:=0
-!	return p
-!
-!end
-!
-!global function record_new(int ut)object p=
-!	iobject q
-!
-!	p:=obj_new(vt_record)
-!	p.urec.rectype:=ut
-!	p.urec.mutable:=1
-!!	p.urec.lower:=1
-!	p.urec.length:=ttlength[ut]
-!!	p.urec.objtype:=normal_obj
-!
-!!	p.urec.vptr:=pcm_alloc(p.urec.length*varrec.bytes)
-!	p.urec.iobjptr:=q:=pcm_allocz(ttlength[ut]*objectsize)
-!!	p.urec.allocated:=allocbytes/objectsize
-!	to p.urec.length do
-!		q^:=void_new()
-!		++q
-!	od
-!!
-!	return p
-!end
-!
-!global proc list_free(object p)=
-!!free contents of list, but not p itself
-!	if p.ulist.length then
-!!CPL "FREEING",P.ULIST.ALLOCATED*VARREC.BYTES
-!		pcm_free(p.ulist.iobjptr,p.ulist.allocated*objectsize)
-!	fi
-!end
-!
-!global proc record_free(object p)=
-!!free contents of list, but not p itself
-!	pcm_free(p.urec.iobjptr,ttlength[p.urec.rectype]*objectsize)
-!end
-!
-!global proc array_free(object p)=
-!!free contents of list, but not p itself
-!	if p.ulist.length then
-!		pcm_free(p.uarray.ptr,p.uarray.allocated*ttsize[p.uarray.elemtype])
-!	fi
-!end
-!
-!global proc bits_free(object p)=
-!!free contents of list, but not p itself
-!	if p.ulist.length then
-!		pcm_free(p.ubits.ptr,bits_bytesize(p))
-!	fi
-!end
-!
-!global proc dict_free(object p)=
-!!free contents of list, but not p itself
-!
-!	if p.udict.length then
-!		pcm_free(p.udict.iobjptr,p.udict.allocated*objectsize)
-!	fi
-!
-!end
-!
-!global function bits_bytesize(object p)int=
-!!return how many bytes are used by the object
-!!should be bits, but set should work; also array?
-!	int elemtype,nbits
-!
-!	elemtype:=p.ubits.elemtype
-!
-!	case elemtype
-!	when pt_u1,pt_u2,pt_u4 then
-!		nbits:=ttbitwidth[elemtype]*p.ubits.length
-!		if nbits iand 7 then			!fractional number of bytes
-!			return nbits/8+1
-!		else
-!			return nbits/8
-!		fi
-!	esac
-!	return ttsize[elemtype]*p.uarray.length		!array?
-!end
-!
-!global proc list_resize(object p,int n)=
-!	iobject q
-!
-!	if n<=p.ulist.allocated then
-!		p.ulist.length:=n
-!	else
-!!CPL "LIST RESIZE"
-!		q:=pcm_alloc(n*objectsize)
-!		if p.ulist.length then
-!			memcpy(q,p.ulist.iobjptr,p.ulist.length*objectsize)
-!			pcm_free(p.ulist.iobjptr,p.ulist.allocated*objectsize)
-!		fi
-!		p.ulist.iobjptr:=q
-!		p.ulist.length:=n
-!		p.ulist.allocated:=allocbytes/objectsize
-!	fi
-!end
-!
-!global proc array_resize(object p,int n)=
-!	ref byte q
-!	int elemsize
-!
-!	elemsize:=ttsize[p.uarray.elemtype]
-!
-!	if n<=p.uarray.allocated then
-!		p.uarray.length:=n
-!	else
-!		q:=pcm_alloc(n*elemsize)
-!		if p.uarray.length then
-!			memcpy(q,p.uarray.ptr,p.uarray.length*elemsize)
-!			pcm_free(p.uarray.ptr,p.uarray.allocated*elemsize)
-!		fi
-!		p.uarray.ptr:=q
-!		p.uarray.length:=n
-!		p.uarray.allocated:=allocbytes/elemsize
-!	fi
-!end
-!
-!global proc bits_resize(object p,int n)=
-!	object pnew
-!	ref byte q
-!	int elemsize,oldrefcount
-!
-!	if n<=p.ubits.allocated64 then
-!		p.ubits.length:=n
-!		return
-!	fi
-!
-!	pnew:=bits_new(p.ubits.elemtype,p.ubits.length,p.ubits.lower)
-!
-!	memcpy(pnew.ubits.ptr, p.ubits.ptr, bits_bytesize(p))
-!
-!	oldrefcount:=p.ubits.refcount
-!	bits_free(p)
-!	p^:=pnew^
-!	p.refcount:=oldrefcount
-!end
-!
-!global proc string_resize(object p,int n)=
-!	ref char q
-!	int elemsize
-!
-!	if n<=p.ustr.allocated then
-!		p.ustr.length:=n
-!	else
-!		q:=pcm_alloc(n)
-!		if p.ustr.length then
-!			memcpy(q,p.ustr.strptr,p.ustr.length)
-!			pcm_free(p.ustr.strptr,p.ustr.allocated)
-!		fi
-!
-!		p.ustr.strptr:=q
-!		p.ustr.length:=n
-!		p.ustr.allocated:=allocbytes
-!	fi
-!end
-!
-!!global function copyonwrite(object p,int tag)object=
-!!!if p is not writable, then make a writable copy
-!!!return new object
-!!var object q
-!!var varrec v
-!!
-!!if p.ulist.mutable then return p fi
-!!
-!!v.tagx:=tag+hasrefmask
-!!v.objptr:=p
-!!
-!!pc_dupl(&v)
-!!
-!!q:=v.objptr
-!!q.ulist.mutable:=1
-!!return q
-!!end
-!
-!global function make_strslicexobj(ichar s, int length)object=
-!!s is an existing non-allocated or external string
-!!create a special string slice object, which for now has the format::
-! .objtype=extslice, but .objptr2=0
-!length can be 0, then s can be nil or ""
-!
-!	object p
-!
-!	if length=0 then s:=nil fi
-!
-!	p:=obj_new(vt_string)
-!	p.ustr.strptr:=s
-!	p.ustr.mutable:=1
-!	p.ustr.length:=length
-!	p.objtype:=extslice_obj		!.objptr2 will be zero
-!	return p
-!end
-!
-!global function bignum_make(ref void bn)object p=
-!
-!	p:=obj_new(vt_decimal)
-!	p.udec.bnptr:=bn
-!
-!	return p
-!end
-!
-global function obj_share(object p)object=
-	++p^.refcount
-	return p
-end
-
-global proc obj_free(object p)=
-!remove p's resources when no more references to it
-!CPL "///FREE OBJ REF COUNT=0"
-!cPL "///FREE OBJ",P.TAG,VARTYPENAMES[P.TAG], =P.REFCOUNT
-	object s
-
-	switch p.tag
-	when vt_int,vt_real, vt_range then
-!CPL "FREE INT",p.refcount,P.UNUM.VALUE
-		pcm_free32(p)
-
-	when vt_list,vt_record then
-		list_free(p)
-
-	when vt_array then
-		array_free(p)
-
-	when vt_string then
-!CPL "FREE STR"
-		string_free(p)
-
-	when vt_decimal then
-		decimal_free(p)
-
-	when vt_struct then
-!	
-!		s:=p.ustruct.structdef
-!		pcm_free(p.ustruct.ptr,s.ustructdef.size)
-!		pcm_free32(p)
-
-	when vt_void then				!voids aren't freed
-
-	else
-		CPL "FREE",VARTYPENAMES[P.TAG]
-
-	end switch
-end
-
-global proc obj_unshare(object p)=
-CPL "OBJ_UNSHARE",=P,VARTYPENAMES[P.TAG],P.REFCOUNT
-
-	if --p^.refcount>0 then
-		return
-	fi
-
-	obj_free(p)
-end
-
-global function obj_getindex(object a,int index)object c=
-	case a.tag
-	when vt_list then
-		return list_getindex(a,index)
-	when vt_string then
-		return string_getindex(a,index)
-	else
-		vxerror("getindex")
-	esac
-	return c
-end
-
-global proc obj_putindex(iobject a, int index,object c)=
-	case a.tag
-	when vt_list then
-		list_putindex(a,index,c)
-	when vt_string then
-		string_putindex(a,index,c)
-	else
-		vxerror("putindex")
-	esac
-end
-
-global function obj_getdotindex(object a,int index)object c=
-	case a.tag
-!	when vt_list then
-!		return list_getindex(a,index)
-	when vt_string then
-		return string_getdotindex(a,index)
-	else
-		vxerror("getdorindex")
-	esac
-	return c
-end
-
-global proc obj_putdotindex(iobject a,int index, object c)=
-	case a.tag
-!	when vt_list then
-!		list_putindex(a,index,c)
-	when vt_string then
-		string_putdotindex(a,index,c)
-	else
-		vxerror("putdotindex")
-	esac
-end
-
-global function obj_getslice(object a, int i,j)object=
-	case a.tag
-	when vt_list then
-		return list_getslice(a,i,j)
-	when vt_string then
-		return string_getslice(a,i,j)
-	else
-		vxerror("getslice")
-	esac
-	return nil
-end
-
-!global proc obj_putslice(object a,b,c,d)=
-!	vxerror("putslice")
-!end
-!
-!global function obj_getdotslice(object a,b,c)object d=
-!	vxerror("getdotslice")
-!	return d
-!end
-!
-!global proc obj_putdotslice(object a,b,c,d)=
-!	vxerror("putdotslice")
-!end
-!
-!global function obj_getkeyindex(object a,b,c)object d=
-!	vxerror("getkeyindex")
-!	return d
-!end
-!
-!global proc obj_putkeyindex(object a,b,c)=
-!	vxerror("putkeyindex")
-!end
-!
-!
-
-proc void_unshare(object p)=
-end
-
-global function obj_equal(object a,b)int=
-!compare objects that must have compatible types
-!return 1/0 for equal/not equal
-
-	if a.tag<>b.tag then
-		VXERROR("EQUAL/MIXED")
-!		return domixed_arith_int(a,b,cast(obj_equal))
-	fi
-
-	switch a.tag
-	when vt_int then return a.unum.value=b.unum.value
-	when vt_real then return (a.unum.xvalue=b.unum.xvalue|1|0)
-	when vt_string then
-		return string_equal(a,b)
-	when vt_list then
-		return list_equal(a,b)
-	when vt_void then
-		return 1
-	else
-		cpl vartypenames[a.tag]
-		vxerror("obj/equal not ready")
-	end switch
-	return 0
-end
-
-global function obj_in(object a,b)int=
-	case b.tag
-	when vt_list then
-		return list_in(a,b)
-	when vt_string then
-		return string_in(a,b)
-	else
-		cpl vartypenames[b.tag]
-		vxerror("obj/in not ready")
-	esac
-	return 0
-end
-
-global function obj_compare(object a,b)int=
-!compare objects that must have compatible types
-!return -1/0/1 for less than/equal/greater than
-
-	if a.tag<>b.tag then
-		VXERROR("CMP/MIXED")
-!		return domixed_arith_int(a,b,cast(obj_equal))
-	fi
-
-	switch a.tag
-	when vt_int then return int_compare(a,b)
-	when vt_real then return real_compare(a,b)
-	when vt_string then
-		return string_compare(a,b)
-!	when vt_list then
-!		return list_equal(a,b)
-	when vt_void then
-		return 0
-	else
-		cpl vartypenames[a.tag]
-		vxerror("obj/compare not ready")
-	end switch
-	return 0
-end
-
-=== var_support.m 19/25 ===
-import clib
-import mlib
-
-import var_tables
-
-global function nextpoweroftwo(int x)int=
-!return next power of 2 >= x
-
-	if x=0 then return 0 fi
-
-	int a:=1
-	while a<x do
-		a<<:=1
-	od
-	return a
-end
-
-global proc vxerror(ichar mess)=
-	println "*** Lib error:",mess
-	abortprogram("Stopping")
-end
-
-global function getzstring(ichar s, int length)ichar t=
-	if length=0 then
-		return ""
-	fi
-	t:=pcm_alloc(length+1)
-	memcpy(t,s,length)
-	(t+length)^:=0
-	return t
-end
-
-global function getbinophandler(int opc,s,t)ref void =
-!find handler for binary op
-!look for function names in this form:
-!    tag_opc           eg. int_add				when s=t
-!	 taga_tagb_opc     eg. int_real_add			when s,t are different
-!	 mixed_opc         eg. mixed_add			try this when no taga/b found
-
-	[32]char name
-	ref void fnptr
-
-	strcpy(&.name,vartypenames[s]+3)
-	strcat(&.name,"_")
-	if t<>s then						!mixed types
-		strcat(&.name,vartypenames[t]+3)
-		strcat(&.name,"_")
-	fi
-	strcat(&.name,binopnames[opc]+2)
-!CPL "GETBINOP:",&.NAME
-
-	fnptr:=findproc(&.name)
-	if fnptr=nil then
-		strcpy(&.name,"mixed_")
-		strcat(&.name,binopnames[opc]+2)
-		fnptr:=findproc(&.name)
-	fi
-
-	return fnptr
-end
-
-global function getibinophandler(int opc,s,t)ref void =
-!find handler for bintp op
-
-	[32]char name
-	ref void fnptr
-
-	strcpy(&.name,vartypenames[s]+3)
-	strcat(&.name,"_")
-	if t<>s then						!mixed types
-		strcat(&.name,vartypenames[t]+3)
-		strcat(&.name,"_")
-	fi
-	strcat(&.name,ibinopnames[opc]+2)
-
-!CPL =&.NAME
-	fnptr:=findproc(&.name)
-!	if fnptr=nil then
-!		strcpy(&.name,"mixed_")
-!		strcat(&.name,ibinopnames[opc]+2)
-!CPL "SECOND TRY",=&.NAME
-!		fnptr:=findproc(&.name)
-!	fi
-
-	return fnptr
-end
-
-global function getmonophandler(int opc,s)ref void =
-!find handler for binary op
-!look for function names in this form:
-!    tag_opc           eg. int_neg
-
-	[32]char name
-	ref void fnptr
-
-	strcpy(&.name,vartypenames[s]+3)
-	strcat(&.name,"_")
-	strcat(&.name,monopnames[opc]+2)
-
-	fnptr:=findproc(&.name)
-
-	return fnptr
-end
-
-global function getimonophandler(int opc,s)ref void =
-!find handler for binary op
-!look for function names in this form:
-!    tag_opc           eg. int_neg
-
-	[32]char name
-	ref void fnptr
-
-	strcpy(&.name,vartypenames[s]+3)
-	strcat(&.name,"_")
-	strcat(&.name,imonopnames[opc]+2)
-
-	fnptr:=findproc(&.name)
-
-	return fnptr
-end
-
-global function findproc(ichar name)ref void=
-	int n
-	n:=$get_nprocs()
-
-	for i to n do
-		if eqstring($get_procname(i),name) then
-			return $get_procaddr(i)
-		fi
-	od
-	return nil
-end
-
-global function convtostringz(ref char svalue,int length)ref char =
-! a contains a string object which is a NON-zero-terminated string.
-! Set up a pointer to a proper zero-terminated one and return that.
-! This uses a ring of 3 static string objects it will only work for strings up to
-! a certain length, and only if not more than 3 are needed for any single call.
-
-	enum (strbufflen=2000)
-	static [0:strbufflen]char strbuffer1
-	static [0:strbufflen]char strbuffer2
-	static [0:strbufflen]char strbuffer3
-!	static [0:strbufflen]char strbuffer4
-!	static [0:strbufflen]char strbuffer5
-!	static [0:strbufflen]char strbuffer6
-	static int strindex=0		!index of current buffer: cycles between 0,1,2
-	static [0:]ref [0:]char table=(
-		&strbuffer1,&strbuffer2,&strbuffer3)
-!		&strbuffer4,&strbuffer5,&strbuffer6)
-!	cast(strbuffer1),cast(strbuffer2),cast(strbuffer3),
-!	cast(strbuffer4),cast(strbuffer5),cast(strbuffer6))
-	ref[0:]char p
-
-	if length>=strbufflen then
-		vxerror("Convtostringz>=2000")
-	fi
-
-	if svalue=nil then
-		return ""
-	fi
-
-	if ++strindex=table.len then
-		strindex:=0
-	fi
-	p:=table[strindex]
-	memcpy(p,svalue,length)
-!(p+length)^:=0
-	p^[length]:=0
-	return cast(p)
-end
-
-=== var_strings.m 20/25 ===
-import clib
-import msys
-import mlib
-
-import var_decls
-import var_tables
-import var_support
-import var_objects
-import var_numbers
-
-global function string_make(ichar s, int length=-1)object=
-!create a ivariant string from given string
-!string will be copied to heap
-	ref char t
-
-	if s=nil then
-		return string_makex(nil,0,0)
-	fi
-
-	if length=-1 then
-		length:=strlen(s)
-	fi
-
-	if length=0 then
-		return string_makex(t,0,0)
-	else
-		t:=pcm_alloc(length)
-		memcpy(t,s,length)
-		return string_makex(t,length,allocbytes)
-	fi
-end
-
-global function string_makex(ichar s, int length,allocated)object=
-!create a ivariant string from given string
-!string is already on the heap
-	ref char t
-	object p
-
-	if length=-1 then
-		length:=strlen(s)
-	fi
-
-	p:=obj_new(vt_string)
-
-	if length=0 then
-		p^.ustr.strptr:=nil
-	else
-		p^.ustr.strptr:=s
-		p^.ustr.length:=length
-		p^.ustr.allocated:=allocated
-	fi
-	p^.ustr.lower:=1
-	p^.ustr.mutable:=1
-	p^.ustr.refcount:=1
-
-	return p
-end
-
-global proc string_concatto(iobject pa, object b)=
-!.refcount<=refc, assume sole owner of string, so do actual in-place append
-!Otherwise, create a duplicate first. Or, better, just do 'ADD'.
-	int alen,blen,newlen
-
-	object a:=pa^
-
-!CPL "CONCAT TO",PA,A,VARTYPENAMES[A.TAG]
-	if not a.ustr.mutable then vxerror("string not mutable") fi
-
-	alen:=a.ustr.length
-	blen:=b.ustr.length
-
-	if alen=0 then
-		if blen then
-			pa^:=obj_share(b)
-		else
-			pa^:=string_make("",0)
-		fi
-
-	elsif blen=0 then		!x+"" use x unchanged
-!		return obj_share(a)
-	fi
-
-!do actual in-place append
-
-	if blen=1 then					!add single character
-		if ++alen>a.ustr.allocated then
-			string_resize(a,alen)
-		fi
-		a.ustr.length:=alen
-!		if bint then
-!			(a.ustr.strptr+alen-1)^:=b.unumber.value
-!		else
-			(a.ustr.strptr+alen-1)^:=b.ustr.strptr^
-!		fi
-	else
-		newlen:=alen+blen
-		if newlen>a.ustr.allocated then
-			string_resize(a,newlen)
-		fi
-		a.ustr.length:=newlen
-		memcpy(a.ustr.strptr+alen,b.ustr.strptr,blen)
-	fi
-end
-
-global proc string_appendto(iobject pa, object b)=
-	string_concatto(pa,b)
-end
-
-global proc string_addto(iobject pa, object b)=
-	string_concatto(pa,b)
-end
-
-global function string_add(object a,b)object c=
-	return string_concat(a,b)
-end
-
-global function string_append(object a,b)object c=
-	return string_concat(a,b)
-end
-
-global function string_concat(object a,b)object c=
-	int alen,blen,bint
-!	object d
-	[16]char str
-
-!	d:=nil
-!	if b.tag=tint then
-!		str[1]:=b.unumber.value
-!		str[2]:=0
-!		b:=d:=string_make(&.str,1)
-!	fi
-
-	alen:=a.ustr.length
-
-	blen:=b.ustr.length
-
-!CPL =A.USTRING.MUTABLE,=A.REFCOUNT
-
-	if alen=0 then
-		if blen then
-			c:=obj_share(b)
-		else
-			c:=string_make("",0)
-		fi
-
-	elsif blen=0 then		!x+"" use x unchanged
-		c:=obj_share(a)
-	else 				!x+y: need to do some actual work!
-		c:=string_maken(alen+blen)
-		memcpy(c.ustr.strptr,a.ustr.strptr,alen)
-		memcpy(c.ustr.strptr+alen,b.ustr.strptr,blen)
-	fi
-
-!	if d then obj_unshare(d) fi
-
-	return c
-end
-
-function string_maken(int length)object=
-!create an empty, uninitialised string of given length
-	object p
-
-	p:=obj_new(vt_string)
-
-	if length then
-		p^.ustr.strptr:=pcm_alloc(length)
-	fi
-	p^.ustr.mutable:=1
-	p^.ustr.length:=length
-	p^.ustr.lower:=1
-	p^.ustr.allocated:=allocbytes
-!	p^.refcount:=1
-	return p
-end
-
-global function string_getslice(object a, int i,j)object=
-	object b
-
-	b:=obj_new(vt_string)
-	b^.ustr.objtype:=slice_obj
-	b^.ustr.mutable:=a^.ustr.mutable
-	b^.ustr.lower:=1
-
-	case a^.ustr.objtype
-	when slice_obj then				!slice of a slice!
-		b^.ustr.objptr2:=a^.ustr.objptr2		!link to original
-		++b^.ustr.objptr2^.refcount
-	when extslice_obj then
-		b^.ustr.objptr2:=nil
-		b^.ustr.objtype:=extslice_obj
-	else
-		++a^.refcount
-		b^.ustr.objptr2:=a				!link to original
-	esac
-	b^.ustr.strptr:=a^.ustr.strptr+i-1
-
-	b^.ustr.length:=j-i+1
-
-	return b
-end
-
-global function string_getindex(object a, int index)object=
-
-	if index<1 or index>a^.ustr.length then
-		abortprogram("str/index/bounds")
-	fi
-
-	return string_getslice(a,index,index)
-end
-
-global function string_getdotindex(object a, int index)object=
-
-	if index<1 or index>a^.ustr.length then
-		abortprogram("str/dotindex/bounds")
-	fi
-
-	return int_make((a.ustr.strptr+index-1)^)
-end
-
-global proc string_putindex(iobject pa, int index,object c)=
-!a is a string, b is an int; store c in a
-	int ch	
-	object a:=pa^
-
-	--index
-	if index<0 then
-		vxerror("pop/str[int] lwb")
-	elsif index>=a.ustr.length then		!don't allow appending
-		vxerror("pop/str bounds")
-	fi
-
-	case c.tag
-	when vt_string then
-		if c.ustr.length<1 then vxerror("null str") fi
-		ch:=c.ustr.strptr^
-	when vt_int then
-		ch:=c.unum.value
-	else
-		vxerror("str[i]:=?")
-	esac
-
-	(a.ustr.strptr+index)^:=ch
-end
-
-global proc string_putdotindex(iobject pa, int index,object c)=
-!a is a string, b is an int; store c in a
-	object a:=pa^
-
-	--index
-	if index<0 then
-		vxerror("popdot/str[int] lwb")
-	elsif index>=a.ustr.length then
-		vxerror("popdot/str bounds")
-	fi
-
-	case c.tag
-	when vt_int then
-		(a.ustr.strptr+index)^:=c.unum.value
-	else
-		vxerror("str.[i]:=?")
-	esac
-
-end
-
-global proc string_free(object p)=
-
-	case p.ustr.objtype
-	when normal_obj then
-		if p.ustr.length then
-			pcm_free(p.ustr.strptr,p.ustr.allocated)
-		fi
-
-	when slice_obj then
-		obj_unshare(p.ustr.objptr2)
-	when extslice_obj then
-	esac
-
-	pcm_free32(p)
-end
-
-proc string_unshare(object p)=
-CPL "UNSHARE STRING"
-	if --p.refcount=0 then
-		string_free(p)
-	fi
-end
-
-global function string_dupl(object p)object q=
-
-	q:=obj_new(vt_void)
-!CPL "STRDUPL",=P.REFCOUNT
-!CPL "STRDUPL",=Q.REFCOUNT
-	q^:=p^
-	q.refcount:=1
-	q.ulist.mutable:=1
-
-	if p.ustr.length=0 then
-		return q
-	fi
-
-	q.ustr.strptr:=pcm_alloc(p.ustr.length)
-	q.ustr.allocated:=allocbytes
-
-	memcpy(q.ustr.strptr,p.ustr.strptr,p.ustr.length)
-	return q
-end
-
-global proc string_resize(object p,int n)=
-	ref byte q
-	int32 allocated
-
-	if n<=p.ustr.allocated then
-		p.ustr.length:=n
-		return
-	fi
-!CPL "RESIZE"
-
-	q:=pcm_alloc(n)
-
-	if p.ustr.length then					!copy existing data then delete it
-		memcpy(q,p.ustr.strptr,p.ustr.length)
-!CPL "ALLOCATE:",P.USTRING.LENGTH
-!CPL "FREE",P.USTRING.ALLOCATED
-		pcm_free(p.ustr.strptr,p.ustr.allocated)
-	fi
-
-	p.ustr.strptr:=cast(q)
-	p.ustr.allocated:=allocbytes
-	p.ustr.length:=n
-end
-
-global function string_equal(object a,b)int=
-	if a.ustr.length<>b.ustr.length then return 0 fi
-	if a.ustr.length then
-		return eqbytes(a.ustr.strptr,b.ustr.strptr,a.ustr.length)
-	fi
-	return 1				!both empty
-end
-
-global function string_int_mul(object a,b)object c=
-	int m, oldlen, newlen
-	ichar s
-
-	m:=b.unum.value
-
-	if m<0 then
-		vxerror("string*neg")
-	elsif m=0 then
-		return string_make("")
-	elsif m=1 then
-		return obj_share(a)
-	else
-		oldlen:=a.ustr.length
-		if oldlen then
-			newlen:=oldlen*m
-			c:=string_maken(newlen)
-			s:=c.ustr.strptr
-			to m do
-				memcpy(s,a.ustr.strptr,oldlen)
-				s+:=oldlen
+!				e:=nil
 			od
 
-		else
-			return string_make("")
-		fi
-	fi
-	return c
-end
-
-global function string_compare(object a,b)int=
-	int slen:=a.ustr.length
-	int tlen:=b.ustr.length
-	ref char s:=a.ustr.strptr
-	ref char t:=b.ustr.strptr
-
-	if slen=0 then
-		if tlen=0 then
-			return 0
-		else
-			return -1
-		fi
-	elsif tlen=0 then
-		return 1
-	elsif slen=tlen then
-		if slen=1 then
-			if s^<t^ then return -1
-			elsif s^>t^ then return 1
-			else
-				return 0
-			fi
-		fi
-		return cmpstringn(s,t,slen)
-	else
-		return cmpstring(convtostringz(s,slen), convtostringz(t,tlen))
-	fi
-!RETURN 0
-end
-
-global function string_len(object a)int = {a.ustr.length}
-global function string_lwb(object a)int = {1}
-global function string_upb(object a)int= {a.ustr.length+a.ustr.lower-1}
-global function string_bounds(object a)object=
-	return range_make(a.ustr.lower, a.ustr.length+a.ustr.lower-1)
-end
-
-global function string_notl(object a)int = {a.ustr.length=0}
-global function string_istruel(object a)int = {a.ustr.length<>0}
-
-global function string_asc(object a)int =
-	if a.ustr.length then
-		return a.ustr.strptr^
-	fi
-	return 0
-end
-
-global function string_min(object a,b)object c=
-	if string_compare(a,b)<=0 then
-		return obj_share(a)
-	else
-		return obj_share(b)
-	fi
-end
-
-global function string_max(object a,b)object c=
-	if string_compare(a,b)>=0 then
-		return obj_share(a)
-	else
-		return obj_share(b)
-	fi
-end
-
-global function string_in(object a,b)int =
-	int alen,blen,result,i,j,k
-	ref char sx, sy
-
-	alen:=a.ustr.length
-	blen:=b.ustr.length
-
-	if alen=0 or blen=0 then		!at least one is empty
-		return 0
-	fi
-
-	k:=blen-alen
-	for i:=0 to k do			!all start positions
-		sx:=a.ustr.strptr
-		sy:=b.ustr.strptr+i
-		for j:=1 to alen do			!all chars in y
-			if sx^<>sy^  then
-				goto nextpos
-			fi
-			++sx; ++sy
-		od
-		return i+1
-nextpos::
-	od
-	return 0
-end
-=== var_lists.m 21/25 ===
-import clib
-import msys
-import mlib
-import var_decls
-import var_tables
-import var_support
-import var_numbers
-import var_objects
-
-global proc list_free(object p)=
-	iobject q
-
-	case p.uarray.objtype
-	when normal_obj then
-		q:=p.ulist.iobjptr
-		to p.ulist.length do
-			obj_unshare(q^)
-			++q
-		od
-		if p.tag=vt_list and p.ulist.length then
-			pcm_free(p.ulist.iobjptr,p.ulist.allocated*object.bytes)
-		elsif p.ulist.length then				!assume record
-			pcm_free(p.urec.iobjptr,p.urec.length*object.bytes)
 		fi
 
-	when slice_obj then
-		obj_unshare(p.ulist.objptr2)
-	when extslice_obj then
-	esac
-
-	pcm_free32(p)
-end
-
-global function list_new(int length,lower=1, object defval=nil)object p=
-	iobject q
-
-	p:=obj_new(vt_list)
-	p.ulist.mutable:=1
-	p.ulist.lower:=lower
-	p.ulist.length:=length
-	p.ulist.objtype:=normal_obj
-
-	if length then
-		q:=p.ulist.iobjptr:=pcm_alloc(length*object.bytes)
-		p.ulist.allocated:=allocbytes/object.bytes
-		to length do
-			if defval then
-				q^:=obj_share(defval)
-			else
-				q^:=&voidobj
-			fi
-			++q
-		od
 	fi
 
-	return p
-end
-
-global function list_make(iobject a, int length,lower=1)object p=
-!create a list of length objects starting from a
-!will transfer ownership of objects so caller doesn't need to free them.
-
-!VAR INT SS:=SMALLMEMTOTAL
-
-	p:=obj_new(vt_list)
-	p.ulist.mutable:=1
-	p.ulist.lower:=lower
-	p.ulist.length:=length
-	p.ulist.objtype:=normal_obj
-	if length then
-		p.ulist.iobjptr:=pcm_alloc(length*object.bytes)
-		p.ulist.allocated:=allocbytes/object.bytes
-		memcpy(p.ulist.iobjptr,a,length*object.bytes)
-	fi
-
-	return p
-end
-
-global function list_getindex(object a, int index)object=
-!a is a list, b is an int; return list[int]
-	word offset
-
-	offset:=index-a.ulist.lower
-	if offset>=word(a.ulist.length) then
-		vxerror("list[int] bounds")
-	fi
-
-	return obj_share((a.ulist.iobjptr+offset)^)
-end
-
-global proc list_putindex(iobject pa, int index,object c)=
-!a is a list, b is an int; store c in a
-	word offset
-	object a:=pa^,b
-
-	offset:=index-a.ulist.lower
-	if offset>=word(a.ulist.length) then
-		if offset<0 then
-			vxerror("pop/list[int] lwb")
-		else
-			if offset=a.ulist.length then
-				list_appendto(pa,c)
-				return
-			else
-				vxerror("pop/list bounds")
-			fi
-		fi
-	fi
-
-	(a.ulist.iobjptr+offset)^:=c
-end
-
-global function list_append(object a,object b)object c=
-!do in-place append of b to list a
-	int n
-
-	c:=list_dupl(a)
-	n:=c.ulist.length+1			!new length
-
-	if n>c.ulist.allocated then		!need more space
-		list_resize(c,n)
-	else
-		c.ulist.length:=n
-	fi
-
-	(c.ulist.iobjptr+n-1)^:=obj_share(b)			!set new element
-
-	return c
-end
-
-global proc list_appendto(iobject pa, object b)=
-!do in-place append of b to list a
-	int n
-	object a:=pa^
-
-	if a.ulist.objtype<>normal_obj then
-		vxerror("Can't extend slice")
-	fi
-
-	if not a.ulist.mutable then
-		vxerror("list/append not mutable")
-	fi
-
-!	if a.refcount>refc then
-!		return list_append(pa,b)
-!	fi
-
-	n:=a.ulist.length+1			!new length
-
-	if n>a.ulist.allocated then		!need more space
-		list_resize(a,n)
-	else
-		a.ulist.length:=n
-	fi
-
-	(a.ulist.iobjptr+n-1)^:=obj_share(b)			!set new element
-end
-
-global function list_concat(object a,object b)object c=
-!do in-place append of b to list a
-	iobject p
-
-	if a.ulist.length=0 then
-		return list_dupl(b)
-
-	elsif b.ulist.length=0 then
-		return list_dupl(a)
-
-	else								!both non-empty
-		c:=list_dupl(a)
-		p:=b.ulist.iobjptr
-		to b.ulist.length do
-			list_appendto(&c,p^)
-			++p
-		od
-
-		return c
-	fi
-end
-
-global proc list_concatto(iobject pa, object b)=
-!do in-place append of b to list a
-	int n
-	object a:=pa^
-	iobject q
-
-	if a.ulist.objtype<>normal_obj then
-		vxerror("Can't extend slice")
-	fi
-
-	if not a.ulist.mutable then
-		vxerror("list/concat not mutable")
-	fi
-
-	q:=b.ulist.iobjptr
-	to b.ulist.length do
-		list_appendto(pa,q^)
-		++q
-	od
-end
-
-global proc list_resize(object p,int n)=
-	iobject q
-
-	if n<=p.ulist.allocated then
-		p.ulist.length:=n
-	else
-		q:=pcm_alloc(n*objectsize)
-		if p.ulist.length then
-			memcpy(q,p.ulist.iobjptr,p.ulist.length*objectsize)
-			pcm_free(p.ulist.iobjptr,p.ulist.allocated*objectsize)
-		fi
-		p.ulist.iobjptr:=q
-		p.ulist.length:=n
-		p.ulist.allocated:=allocbytes/objectsize
-	fi
-end
-
-
-global function list_dupl(object p)object q=
-	ref object plist,qlist
-
-	q:=obj_new(vt_void)
-	q^:=p^
-	q.refcount:=1
-	q.ulist.mutable:=1
-
-	if p.ulist.length=0 then
-		return q
-	fi
-
-	qlist:=q.ulist.iobjptr:=pcm_alloc(p.ulist.length*object.bytes)
-	q.ulist.allocated:=allocbytes/object.bytes	!probably same as p.allocated	
-	plist:=p.ulist.iobjptr
-
-	to q.ulist.length do
-		qlist^:=obj_dupl(plist^)
-		++qlist
-		++plist
-	od
-
-	return q
-end
-
-global function list_mul(object p, int n)object q=
-!global proc pc_mul_listi(ivariant a,b,c) =		!PC_MUL_LISTI
-!a is a list, b is an int; c::=a*b
-!Usually c coincides with a
-	iobject r
-	int newlength,oldlength
-
-	oldlength:=p.ulist.length
-	newlength:=oldlength*n
-
-	if not oldlength then		!duplicating b times has no effect (leave c=a)
-		return p
-	fi
-
-	if newlength<0 then
-		vxerror("mullist 0")
-	elsif newlength=0 then
-		return list_new(0,1)
-	fi
-
-	if oldlength=1 then
-		q:=list_new(newlength,p.ulist.lower)
-		r:=q.ulist.iobjptr
-
-		to newlength do
-			r^:=obj_share(p.ulist.iobjptr^)
-			++r
-		od
+	if e then
+!CPL "FM2"
+		pmode^:=e.mode
+!CPL "FM3"
 
 	else
-		vxerror("MULLISTINT/COMPLEX")
+		rxerror_s("2:Can't resolve tentative type: #",d.name)
 	fi
-
-	return q
 end
 
-global function record_new(object p,pinit)object q=
-	iobject r
+global proc fixusertypes=
+	ref typenamerec p
+	int npasses,notresolved,m,zerosizes
 
-	q:=obj_new(vt_record)
-	q.urec.recobj:=p
-	q.urec.length:=p.urec.length
-	q.urec.lower:=1
 
-	q.urec.iobjptr:=r:=pcm_alloc(q.urec.length*object.bytes)
-	to q.urec.length do
-		obj_share(pinit)
-		r^:=pinit
-		++r
-	od
-	return q
-end
+!CPL("FIXUSERTYPES")
+!RXERROR("FIXUSERTYPES")
 
-global function record_make(object prec, iobject p, int n)object q=
-!prec is a recorddef; p points to n objects on the stack
-!construct a record object matching p
-	int nfields
-	iobject r
+	npasses:=0
 
-VXERROR("RECORD/MAKE")
-
-!	nfields:=prec.urecdef.nfields
+!FOR I TO NTYPENAMES DO
+!	IF TYPENAMES[I].PMODE=NIL THEN
 !
-!	if n>nfields then
-!		vxerror("Too many record fields")
-!	elsif n<nfields then
-!		vxerror("Too few record fields")
-!	fi
-!
-!	q:=obj_new(trecord)
-!	q.urec.recobj:=prec
-!	q.urec.length:=nfields
-!	q.urec.lower:=1
-!
-!	q.urec.iobjptr:=r:=pcm_alloc(nfields*object.bytes)
-!	to nfields do
-!!		obj_share(p^)
-!		r^:=p^
-!		++r
-!		++p
-!	od
-
-	return q
-end
-
-global function list_getslice(object p,int i,j)object q=
-	int alower
-
-	alower:=p.ulist.lower
-
-	if i<alower or j>p.ulist.length+alower-1 or i>j then
-		vxerror("list/slice bounds")
-	fi
-
-	q:=obj_new(vt_list)				!create slice object
-	q.ulist.objtype:=slice_obj
-	q.ulist.mutable:=p.ulist.mutable
-	q.ulist.lower:=1
-
-	case p.ulist.objtype
-	when slice_obj then				!slice of a slice!
-		q.ulist.objptr2:=p.ulist.objptr2		!link to original
-		++q.refcount
-	when extslice_obj then
-		q.ulist.objptr2:=nil
-		q.ulist.objtype:=extslice_obj
-	else
-		q.ulist.objptr2:=p				!link to original
-		++q.ulist.objptr2.refcount
-	esac
-	q.ulist.iobjptr:=p.ulist.iobjptr+i-alower
-	q.ulist.length:=j-i+1
-
-	return q
-end
-
-global function list_len(object a)int= {a.ulist.length}
-global function list_lwb(object a)int= {a.ulist.lower}
-global function list_upb(object a)int= {a.ulist.length+a.ulist.lower-1}
-global function list_bounds(object a)object=
-	return range_make(a.ulist.lower, a.ulist.length+a.ulist.lower-1)
-end
-
-global function list_notl(object a)int={a.ulist.length=0}
-global function list_istruel(object a)int={a.ulist.length<>0}
-
-global function list_equal(object a,b)int=
-	iobject p,q
-
-	if a.ulist.length<>b.ulist.length then return 0 fi
-	if a.ulist.length then
-		p:=a.ulist.iobjptr
-		q:=b.ulist.iobjptr
-		to a.ulist.length do
-			if not obj_equal(p^,q^) then return 0 fi
-			++p
-			++q
-		od
-		return 1				!all elements match
-	else
-		return 1				!both empty
-	fi
-end
-
-global function list_in(object a,b)int=
-	iobject p
-	int offset,j
-
-	offset:=b.ulist.lower-1			!offset turns 1..n index into lwb..upb
-	if offset<0 then vxerror("in/list/lwb?") fi		!lwb not 1 or more
-
-	p:=b.ulist.iobjptr
-	for i to b.ulist.length do
-		j:=i+offset
-		if obj_equal(a,p^) then
-			return j
-		fi
-		++p
-	od
-
-	return 0
-end
-
-global function list_int_mul(object a,b)object c=
-	int m, oldlen, newlen, k, alen
-	iobject p
-
-	m:=b.unum.value
-	oldlen:=a.ulist.length
-	newlen:=oldlen*m
-
-	if oldlen=0 then
-		return list_new(0)
-	fi
-
-	if newlen<0 then
-		vxerror("list*neg?")
-	elsif newlen=0 then
-		return list_new(0)
-	fi
-
-	c:=list_new(newlen)
-
-	p:=a.ulist.iobjptr
-	k:=1
-	alen:=a.ulist.length
-
-	for i to newlen do
-		list_putindex(&c,i,p^)
-
-		++p
-		++k
-		if k>alen then
-			p:=a.ulist.iobjptr
-			k:=1
-		fi
-	od
-
-	return c
-end
-=== var_decimals.m 22/25 ===
-import clib
-import msys
-import mlib
-import mbignum
-
-import var_decls
-import var_tables
-import var_support
-import var_objects
-import var_numbers
-
-
-global function decimal_make(ichar s, int length=-1)object=
-!turn string into a decimal bignum, then wrap that up as an object
-
-	if length=-1 then
-		length:=strlen(s)
-	fi
-
-	return makebnobj(bn_makestr(s,length))
-end
-
-global function makebnobj(bignum bn=nil)object c=
-	if bn=nil then
-		bn:=bn_init()
-	fi
-
-	c:=obj_new(vt_decimal)
-	c.udec.bnptr:=bn
-	return c
-end
-
-global function decimal_add(object a,b)object c=
-	c:=makebnobj()
-	bn_add(c.udec.bnptr,a.udec.bnptr, b.udec.bnptr)
-	return c
-end
-
-global function decimal_sub(object a,b)object c=
-	c:=makebnobj()
-	bn_sub(c.udec.bnptr,a.udec.bnptr, b.udec.bnptr)
-	return c
-end
-
-global function decimal_mul(object a,b)object c=
-	c:=makebnobj()
-	bn_mul(c.udec.bnptr,a.udec.bnptr, b.udec.bnptr)
-	return c
-end
-
-global function decimal_div(object a,b)object c=
-	c:=makebnobj()
-	bn_div(c.udec.bnptr,a.udec.bnptr, b.udec.bnptr)
-	return c
-end
-
-global function decimal_idiv(object a,b)object c=
-	c:=makebnobj()
-	bn_idiv(c.udec.bnptr,a.udec.bnptr, b.udec.bnptr)
-	return c
-end
-
-global function decimal_irem(object a,b)object c=
-	c:=makebnobj()
-	bn_irem(c.udec.bnptr,a.udec.bnptr, b.udec.bnptr)
-	return c
-end
-
-global function decimal_shl(object a,b)object c=
-	bignum d
-	if b.tag<>vt_decimal then vxerror("dec/shl not int") fi
-	c:=makebnobj()
-	d:=bn_makeint(2**bn_toint(b.udec.bnptr))
-	bn_mul(c.udec.bnptr,a.udec.bnptr, d)
-	bn_free(d)
-	return c
-end
-
-global function decimal_shr(object a,b)object c=
-	bignum d
-	if b.tag<>vt_decimal then vxerror("dec/shr not int") fi
-	c:=makebnobj()
-	d:=bn_makeint(2**bn_toint(b.udec.bnptr))
-	bn_idiv(c.udec.bnptr,a.udec.bnptr, d)
-	bn_free(d)
-	return c
-end
-
-global proc decimal_free(object p)=
-!CPL "DECIMAL_FREE"
-	bn_free(p.udec.bnptr)
-	pcm_free32(p)
-end
-
-global function decimal_dupl(object a)object c =
-	c:=makebnobj()
-	bn_dupl(c.udec.bnptr,a.udec.bnptr)
-	return c
-end
-
-global function decimal_equal(object a,b)int=
-	return bn_equal(a.udec.bnptr,b.udec.bnptr)
-end
-
-global function decimal_compare(object a,b)int=
-	return bn_cmp(a.udec.bnptr,b.udec.bnptr)
-end
-
-global function decimal_notl(object a)int = {bn_iszero(a.udec.bnptr)}
-global function decimal_istruel(object a)int = {not bn_iszero(a.udec.bnptr)}
-
-global function decimal_min(object a,b)object c=
-	if decimal_compare(a,b)<=0 then
-		return obj_share(a)
-	else
-		return obj_share(b)
-	fi
-end
-
-global function decimal_max(object a,b)object c=
-	if decimal_compare(a,b)>=0 then
-		return obj_share(a)
-	else
-		return obj_share(b)
-	fi
-end
-
-global function decimal_toint(object a)int=
-	return bn_toint(a.udec.bnptr)
-end
-
-global function decimal_toreal(object a)real=
-	return bn_tofloat(a.udec.bnptr)
-end
-
-global function decimal_neg(object a)object c=
-	c:=obj_dupl(a)
-	bn_negto(c.udec.bnptr)
-	return c
-end
-
-global function decimal_abs(object a)object c=
-	c:=obj_dupl(a)
-	bn_absto(c.udec.bnptr)
-	return c
-end
-
-global proc decimal_addto(iobject pa,object b)=
-	bn_add(pa.udec.bnptr,pa.udec.bnptr, b.udec.bnptr)
-end
-
-global proc decimal_subto(iobject pa,object b)=
-	bn_sub(pa.udec.bnptr,pa.udec.bnptr, b.udec.bnptr)
-end
-
-global proc decimal_multo(iobject pa,object b)=
-	bn_mul(pa.udec.bnptr,pa.udec.bnptr, b.udec.bnptr)
-end
-
-global proc decimal_divto(iobject pa,object b)=
-CPL "DIVTO"
-	bn_div(pa.udec.bnptr,pa.udec.bnptr, b.udec.bnptr)
-end
-
-global proc decimal_idivto(iobject pa,object b)=
-	bn_idiv(pa.udec.bnptr,pa.udec.bnptr, b.udec.bnptr)
-end
-
-global proc decimal_iremto(iobject pa,object b)=
-	bn_irem(pa.udec.bnptr,pa.udec.bnptr, b.udec.bnptr)
-end
-
-global proc decimal_negto(iobject pa)=
-	bn_negto(pa.udec.bnptr)
-end
-
-global proc decimal_absto(iobject pa)=
-	bn_absto(pa.udec.bnptr)
-end
-
-global proc decimal_incrto(iobject pa)=
-	bn_add(pa.udec.bnptr,pa.udec.bnptr,bn_const(1))
-end
-
-global proc decimal_decrto(iobject pa)=
-	bn_sub(pa.udec.bnptr,pa.udec.bnptr,bn_const(1))
-end
-
-=== mbignum.m 23/25 ===
-!(Decimal 'bignumber' library for integers and floats)
-
-import clib
-import mlib
-import oslib
-
-const digitwidth   = 9
-const digitbase	= 1000000000
-const digitfmt	 = "%09d"
-const mdigitfmt	 = "z9"
-
-INT NMAKE
-INT NFREE
-
-
-const digitmax	 = digitbase-1
-
-global type bignum  = ref bignumrec
-type elemtype = int32
-const elemsize = elemtype.bytes
-
-record bignumrec =
-	ref[0:]elemtype num
-	int length
-	int expon
-	int32 neg
-	int32 numtype
-end
-
-record constrec =
-	int64 value
-	bignum bnvalue
-	ref constrec nextconst
-end
-
-!special values for bignum types
-tabledata() [0:]ichar fpnames =
-	(zero_type = 0,	 $),
-	(normal_type,	   $),
-	(inf_type,	 	 $),
-	(nan_type,	 	 $),
-end
-
-!recognised combinations of bignum types (bintypes)
-enum (
-	nn_types,	 	  ! both numbers (non-zero)
-	zz_types,	 	  ! both zero
-	ii_types,	 	  ! both infinity
-	xx_types,	 	  ! one or both is nan
-
-	nz_types,	 	  ! number/zero
-	ni_types,	 	  ! number/infinity
-
-	zn_types,	 	  ! zero/number
-	in_types,	 	  ! infinity/number
-
-	zi_types,	 	  ! zero/infinity
-	iz_types)	 	  ! infinity/zero
-
-const maxprec	  = 10 million
-!int currprec	   = 100/digitwidth
-int currprec	   = 300/digitwidth
-
-int stblz	 	 	 !global set by smalltobig
-
-ref constrec constlist=nil	  !use linked list of constant values
-
-global function bn_init()bignum=
-	bignum a
-
-	a:=makebignum(0)
-	return a
-end
-
-function readexpon(ichar s)int=
-!s points just after 'e' or 'E'
-	int neg, expon
-	neg:=expon:=0
-
-	case s^
-	when '+' then ++s
-	when '-' then neg:=1; ++s
-	esac
-
-	doswitch s^
-	when '0'..'9' then
-		expon:=expon*10+(s^-'0')
-		++s
-	when '_', '\'', '`', ' ' then
-		++s
-	when 0 then
-		exit
-	else
-		bn_error("make expon?")
-	end doswitch
-
-	return (neg|-expon|expon)
-end
-
-global proc bn_print(bignum a,int format=0)=
-	ichar s
-
-	s:=bn_tostring(a,format)
-	print s
-!   free(s)
-end
-
-global proc bn_println(bignum a, int format=0)=
-	bn_print(a,format)
-	println
-end
-
-function getbintype(bignum a,b)int=
-!return bintype code for combination of a and b
-	int atype:=a^.numtype, btype:=b^.numtype
-
-	if atype=nan_type or btype=nan_type then
-		return xx_types
-	fi
-
-	case atype
-	when normal_type then
-		case btype
-		when normal_type then
-	 	   return nn_types
-		when zero_type then
-	 	   return nz_types
-		else
-	 	   return ni_types
-		esac
-	when zero_type then
-		case btype
-		when normal_type then
-	 	   return zn_types
-		when zero_type then
-	 	   return zz_types
-		else
-	 	   return zi_types
-		esac
-	else
-		case btype
-		when normal_type then
-	 	   return in_types
-		when zero_type then
-	 	   return iz_types
-		else
-	 	   return ii_types
-		esac
-	esac
-
-end
-
-function makebignum(int length)bignum=
-!ndigits=0 to create a zero value
-!these are wide digits
-	bignum a
-
-!CPL "MAKEBIGNUM",++NMAKE
-	a:=bn_alloc(bignumrec.bytes)
-	if length then
-		a^.num:=bn_alloc(length*elemsize)
-		a^.numtype:=normal_type
-	else
-		a^.num:=nil
-		a^.numtype:=zero_type
-	fi
-	a^.length:=length
-	a^.expon:=0
-	a^.neg:=0
-
-	return a
-end
-
-function makesmallnum(int length)ref elemtype=
-	return bn_alloc(length*elemsize)
-end
-
-function smalltobig(bignum c, ref elemtype a, int length,alloc,offset=0)bignum =
-!copy numeric data from smallnum into new bignum
-!also normalises by removing trailing zeros and leading zeros
-!sets up expon with assumption that sequence represents an int
-!will also free alloc elemente of a, provided memory is not reused
-!offset is to be added to a, when a doesn't point to original allocation
-
-	ref elemtype p
-	int leadingzeros, trailingzeros, nonzeros, newlength
-
-	bn_setzero(c)
-
-	p:=a
-	leadingzeros:=trailingzeros:=nonzeros:=0
-	to length do
-		if p++^ then
-	 	   nonzeros:=1
-	 	   trailingzeros:=0
-		else
-	 	   if nonzeros then
-	 	 	  ++trailingzeros
-	 	   else
-	 	 	  ++leadingzeros
-	 	   fi
-		fi
-	od
-
-	stblz:=leadingzeros
-
-	if nonzeros then
-
-		newlength:=length-trailingzeros-leadingzeros
-
-		if newlength=length=alloc then	 	 !can use data in a directly
-	 	   c^.num:=cast(a)
-		else
-	 	   c^.num:=cast(makesmallnum(newlength))
-	 	   memcpy(c^.num,a+leadingzeros,newlength*elemsize)
-	 	   freesmall(a+offset,alloc)
-		fi
-		c^.length:=newlength
-		c^.numtype:=normal_type
-		c^.expon:=length-1-leadingzeros	 		!include trailing zeros, but not leading ones?
-	elsif alloc then	 	 	 	 	 	 	  !result stays at zero
-		freesmall(a+offset,alloc)
-	fi
-
-	return c
-end
-
-proc freesmall(ref elemtype p, int length)=
-	freemem(p,length*elemsize)
-end
-
-global function bn_alloc(int size)ref void=
-	ref void p
-
-	p:=pcm_alloc(size)
-	if p=nil then
-		abortprogram("bignum:out of memory")
-	fi
-
-	return p
-end
-
-global function checkedmalloc(int size)ref void=
-	ref void p
-
-	p:=malloc(size)
-	if p=nil then
-		abortprogram("CM:Out of memory")
-	fi
-
-	return p
-end
-
-global proc bn_free(bignum a)=
-!free digit memory and descriptor
-	if a then
-!CPL "	FREE BIG NUM",++NFREE
-		bn_setzero(a)
-		freemem(a,bignumrec.bytes)
-	fi
-end
-
-proc freemem(ref void p, int size)=
-!(my own deallocator needs the size; C's free() doesn't)
-!   free(p)
-	pcm_free(p,size)
-end
-
-global proc bn_setzero(bignum a)=
-!clear digit memory only; clear descriptor to a zero number
-	if a then
-		if a^.num then
-	 	   freesmall(cast(a^.num),a^.length)
-		fi
-		a^.num:=nil
-		a^.length:=0
-		a^.neg:=0
-		a^.expon:=0
-		a^.numtype:=zero_type
-	fi
-end
-
-global proc bn_move(bignum a,b)=
-!move contents of b to a. Original value of a is cleared; b becomes zero
-
-bn_setzero(a)
-a^:=b^
-memset(b,0,bignumrec.bytes)
-end
-
-global proc bn_dupl(bignum a,b)=
-!copy contents of b to a. Each copy is independent
-	bignum c
-	int size
-
-!   if a=b then
-		c:=bn_init()
-		c^:=b^
-		if c^.length then
-			c^.num:=cast(makesmallnum(size:=c^.length))
-			memcpy(c^.num,b^.num, size*elemsize)
-		fi
-		bn_move(a,c)
-		bn_free(c)
-!   fi
-
-!   bn_setzero(a)
-!   a^:=b^
-!   if a^.length then
-!	   a^.num:=bn_alloc(a^.length*elemtype.bytes)
-!   fi
-end
-
-global proc bn_setinf(bignum dest) =
-	bn_setzero(dest)
-	dest^.numtype:=inf_type
-end
-
-global proc bn_setnan(bignum dest) =
-	bn_setzero(dest)
-	dest^.numtype:=nan_type
-end
-
-proc bn_error(ichar mess) =
-	print "BN:"
-	abortprogram(mess)
-end
-
-global function bn_iszero(bignum a)int=
-	return a^.numtype=zero_type
-end
-
-global proc bn_negto(bignum a)=
-	if not bn_iszero(a) then
-		a^.neg:=not a^.neg
-	fi
-end
-
-global proc bn_absto(bignum a)=
-	a^.neg:=0
-end
-
-global function bn_isint(bignum a)int =
-	return a^.length<=a^.expon+1
-end
-
-global function bn_getprec(bignum a)int=
-	return a^.length*digitwidth
-end
-
-global proc bn_setprec(bignum a,int prec)=
-	int oldlength,newlength
-	bignum c
-
-	if a^.numtype<>normal_type then
-		return
-	fi
-
-	if prec<1 or prec>maxprec then
-		return
-	fi
-
-!prec is digit count, not words
-	prec:=((prec-1)/digitwidth+1)*digitwidth		!must be multiple of digitwidth
-
-!prec should be rounded up as needed to next multiple of digitwith
-	newlength:=prec/digitwidth	 	 	 	   !no. words
-
-	oldlength:=a^.length
-
-!CPL =OLDLENGTH,=NEWLENGTH
-!   if oldlength=newlength then
-	if oldlength<=newlength then
-!   if oldlength>=newlength then
-		return
-	fi
-
-	c:=makebignum(newlength)
-	c^.neg:=a^.neg
-	c^.expon:=a^.expon
-
-	for i:=0 to newlength-1 do
-		if i<oldlength then
-	 	   c^.num^[i]:=a^.num^[i]
-		else
-	 	   c^.num^[i]:=0
-		fi
-	od
-
-	bn_move(a,c)
-	bn_free(c)
-end
-
-global function bn_getglobalprec:int=
-	return currprec*digitwidth
-end
-
-global proc bn_setglobalprec(int prec)=
-	currprec:=((prec-1)/digitwidth+1)
-end
-
-global function bn_makeint(int x)bignum =
-	bignum a
-	[256]char str
-
-	if x=0 then
-		a:=makebignum(0)
-	elsif x in 0..digitmax then
-		a:=makebignum(1)
-		a^.num^[0]:=x
-	elsif -x in 0..digitmax then
-		a:=makebignum(1)
-		a^.num^[0]:=-x
-		a^.neg:=1
-	else
-		sprintf(&.str,"%lld",x)
-		a:=bn_makestr(&.str)
-	fi
-
-	return a
-end
-
-global function bn_makefloat(real64 x)bignum =
-	bignum a
-	[2048]char str
-
-	sprintf(&.str,"%.30g",x)
-!   sprintf(&.str,"%.17e",x)
-
-CPL =&.STR
-
-	return bn_makestr(&.str)
-end
-
-global proc bn_ipower(bignum d, a,int64 n)=
-!return a**b for bigints
-	bignum e,f
-
-	if n<0 then
-		bn_setzero(d)
-
-	elsif n=0 then
-		bn_move(d,bn_makeint(1))
-
-	elsif n=1 then
-		bn_dupl(d,a)
-!
-	elsif (n iand 1)=0 then
-		e:=bn_init()
-		bn_mulu(e,a,a)
-		bn_ipower(d,e,n/2)
-		bn_free(e)	  
-
-	else	 	   !assume odd
-		e:=bn_init()
-		f:=bn_init()
-		bn_mulu(e,a,a)
-		bn_ipower(f,e,(n-1)/2)
-		bn_mulu(d,a,f)
-		bn_free(e)
-		bn_free(f)
-
-	fi
-end
-
-function smallsubto(ref elemtype p,q, int plen, qlen)int=
-!subtract q from p, return new length. New p will be moved up if smaller
-!p>=q, and plen>=qlen
-	ref elemtype pp,qq
-	int carry,diff,z
-
-	pp:=p+plen-1
-	qq:=q+qlen-1
-	carry:=0
-	z:=0	 	 	 	 !leading zeros
-
-	to plen do
-		if qq>=q then
-	 	   diff:=pp^-qq^-carry
-	 	   --qq
-		else
-	 	   diff:=pp^-carry
-		fi
-
-		if diff<0 then
-	 	   carry:=1
-	 	   pp^:=diff+digitbase
-		else
-	 	   pp^:=diff
-	 	   carry:=0
-		fi
-		if pp^ then
-	 	   z:=0
-		else
-	 	   ++z
-		fi
-		--pp
-	od
-	if carry then bn_error("SSUBTO/CARRY?") fi
-
-	if z=plen then --z fi	 	  !result is zero, needs at least one digit
-
-	if z then
-		plen-:=z
-		pp:=p
-		qq:=p+z
-		to plen do
-	 	   pp++^:=qq++^
-		od
-	fi
-
-	return plen
-end
-
-function smallmulto(ref elemtype p,q, int plen, m)int=
-!multiply bignum sequence p inplace, by single digit m
-!return new length (will be plen or plen+1, unless result is zero)
-!p must be long enough to store the extra digit
-
-	ref elemtype pp,qq
-	int carry,d
-
-	case m
-	when 0 then
-		p^:=0
-		return 1
-	when 1 then
-		memcpy(p,q,plen*elemsize)
-		return plen
-	esac
-
-	pp:=p+plen-1
-	qq:=q+plen-1
-	carry:=0
-
-	to plen do
-		d:=int64(qq^)*m+carry
-		pp^:=d rem digitbase
-		carry:=d/digitbase
-		--qq
-		--pp
-	od
-
-	if carry then	 	 	 !need extra digit
-		pp:=p+plen
-		to plen do
-	 	   pp^:=(pp-1)^
-	 	   --pp
-		od
-		pp^:=carry
-		++plen
-	fi
-
-	return plen
-end
-
-global function bn_equal(bignum a,b)int=
-	if a^.length<>b^.length or \
-	   a^.numtype<>b^.numtype or \
-	   a^.neg<>b^.neg or \
-	   a^.expon<>b^.expon then
-		return 0
-	fi
-
-	if a^.length=0 then return 1 fi
-
-	return eqbytes(a^.num,b^.num,a^.length*elemsize)
-end
-
-global proc bn_addu(bignum dest,a,b)=
-	int preca, precb, precc
-	int uppera,upperb,upperc, offset, carry,expona,exponb
-	int dc
-	word j
-	ref[0:]elemtype pa,pb
-	ref elemtype pax,pbx
-	ref elemtype c,c2
-
-	if a^.expon<b^.expon then	   !A has definite smaller magnitude
-		swap(a,b)	 	 	 	!make sure A is always bigger or (approx) equal
-	fi
-
-	expona:=a^.expon
-	exponb:=b^.expon
-	preca:=a^.length
-	precb:=b^.length
-
-	offset:=expona-exponb	 	  !for indexing B elements shift to match A
-	uppera:=preca-1
-	upperb:=precb-1
-
-	if uppera>(upperb+offset) then  !A defines overall precision; B contained within A
-		upperc:=uppera
-	else	 	 	 	 		!B extends overall precision
-		upperc:=upperb+offset
-	fi
-	precc:=upperc+1
-
-	c:=makesmallnum(precc)	 	 !no space for carry
-	carry:=0
-	pa:=a^.num
-	pb:=b^.num
-
-	for i:=upperc downto 0 do	 	  !do the add, starting from ls digit
-
-		j:=i-offset	 	 	 	  !index of A/C in terms of B
-		if i<=uppera and j<=word(upperb) then
-	 	   dc:=pa^[i]+pb^[j]+carry
-		elsif i<=uppera then
-	 	   dc:=pa^[i]+carry
-		elsif j<=word(upperb) then
-	 	   dc:=pb^[j]+carry
-		else
-	 	   dc:=carry
-		fi
-
-		if dc>=digitbase then
-	 	   carry:=1
-	 	   (c+i)^:=dc-digitbase
-		else
-	 	   (c+i)^:=dc
-	 	   carry:=0
-		fi
-	od
-
-	if carry then
-		c2:=makesmallnum(precc+1)
-		c2^:=carry
-		memcpy(c2+1,c,precc*elemsize)
-		freesmall(c,precc)
-		c:=c2
-		++precc
-	fi
-
-	smalltobig(dest,c,precc,precc)
-
-	dest^.expon:=expona+carry
-end
-
-proc bn_subu(bignum dest,a,b)=
-	int preca, precb, precc
-	int uppera,upperb,upperc, offset, carry, expona
-	int da,db,dc, isneg, z, newprec,diff
-	word j
-	ref[0:]elemtype pa,pb
-	ref elemtype c
-
-!can only do subtract when a>=b; do some basic checks
-	isneg:=0
-	if a^.expon<b^.expon then	   !A has definite smaller magnitude
-		swap(a,b)	 	 	 	!make sure A is always bigger or (approx) equal
-		isneg:=1
-	fi
-
-!know that a>=b, and that isneg might be true
-retry::
-	expona:=a^.expon
-	preca:=a^.length
-	precb:=b^.length
-
-	offset:=expona-b^.expon	 	!for indexing B elements shift to match A
-	uppera:=preca-1
-	upperb:=precb-1
-
-	if uppera>(upperb+offset) then  !A defines overall precision; B contained within A
-		upperc:=uppera
-	else	 	 	 	 		!B extends overall precision
-		upperc:=upperb+offset
-	fi
-	precc:=upperc+1
-
-	c:=makesmallnum(precc)
-	carry:=0
-	pa:=a^.num
-	pb:=b^.num
-
-	for i:=upperc downto 0 do	 	  !do the add, starting from ls digit
-		j:=i-offset	 	 	 	  !index of A/C in terms of B
-		if i<=uppera and j<=word(upperb) then
-
-	 	   diff:=pa^[i]-pb^[j]-carry
-		elsif i<=uppera then
-	 	   diff:=pa^[i]-carry
-		elsif j<=word(upperb) then
-	 	   diff:=-pb^[j]-carry
-		else
-	 	   diff:=-carry
-		fi
-
-		if diff<0 then
-	 	   carry:=1
-	 	   (c+i)^:=diff+digitbase
-		else
-	 	   (c+i)^:=diff
-	 	   carry:=0
-		fi
-		
-	od
-
-	if carry then
-		if isneg then	 	  !already swapped
-	 	   bn_error("SUBU/CARRY")
-		fi
-		swap(a,b)
-		isneg:=1
-		freesmall(c,precc)
-		goto retry
-	fi
-
-	smalltobig(dest,c,precc,precc)
-	dest^.neg:=isneg
-	dest^.expon:=expona-stblz
-
-end
-
-proc bn_mulu(bignum dest, a,b) =
-!unsigned multiply, c:=a*b
-!general scheme A1/B1 are least significant words
-!x is total overflows (product overflow and carry) from previous column
-
-!(A4 A3 A2 A1) * (B3 B2 B1)
-!
-!0	 0	 x	 A4.B1 A3.B1 A2.B1 A1.B1
-!0	 x	 A4.B2 A3.B2 A2.B2 A1.B2 0
-!x	 A4.B3 A3.B3 A2.B3 A1.B3 0	 0
-
-	int uppera, upperb, upperc
-	int precc,expona,exponb
-	int ax,bx,cx		!indices within a,b,c
-	int i,cx1, nc2
-	i64 p,carry,x
-	bignum d
-	ref elemtype c
-	i64 pdquot,pdrem
-
-	expona:=a^.expon
-	exponb:=b^.expon
-	uppera:=a^.length-1
-	upperb:=b^.length-1
-
-	precc:=uppera+upperb+2
-	nc2:=precc
-
-	c:=makesmallnum(nc2)
-	memset(c,0,precc*elemsize)
-!   c^.expon:=a^.expon+b^.expon+1
-	cx:=precc-1
-
-	for bx:=upperb downto 0 do
-		carry:=0
-
-		cx1:=cx
-		for ax:=uppera downto 0 do
-	 	   p:=i64((a^.num^[ax]))*i64((b^.num^[bx]))+carry
-	 	   pdquot:=p/digitbase
-!	 	  x:=int(c^.num^[cx1])+p rem digitbase
-	 	   x:=int64((c+cx1)^)+p rem digitbase
-	 	   if x>digitmax then
-	 	 	  carry:=pdquot+x/digitbase
-!	 	 	 c^.num^[cx1--]:=x rem digitbase
-	 	 	  (c+cx1--)^:=x rem digitbase
-	 	   else
-	 	 	  carry:=pdquot
-!	 	 	 c^.num^[cx1--]:=x
-	 	 	  (c+cx1--)^:=x
-	 	   fi
-
-		od
-		(c+cx1)^:=carry
-		--cx	 	 	  !for next row, start at next column in dest
-	od
-
-	smalltobig(dest,c,precc,nc2)
-	dest^.expon:=expona+exponb+1-stblz
-
-end
-
-function smalldiv(ref elemtype x, b, int &xlen, nb)elemtype =
-!x,b are smallnums: arrays of elements, of the exact lengths given
-!x is same length as b, or at most one element longer
-!(x can also be smaller, but then result is just 0)
-!return integer x/b as machine word type 0..digitmax
-!when digits are 0..9, then result of x/b is always going to be 0 to 9.
-
-	int k,count
-	int64 xx,y
-	elemtype xi,bi
-	ref elemtype e
-	int esize,ne,nx
-
-	nx:=xlen
-	k:=0
-	count:=0
-	e:=makesmallnum(esize:=(nb+1))
-
-	do
-		if nx<nb then	 	 	 !completed this k
-	 	   exit
-		elsif nx>nb then	 	   !x will be at most 1 digit wider than b
-	 	   xx:=int64(x^)*digitbase+int64((x+1)^)
-	 	   y:=xx/(b^+1)
-		else	 	 	 	 	 	   !x,b are same length
-	 	   if x^>=(b^+1) then
-	 	 	  y:=x^/(b^+1)
-	 	   else
-	 	 	  y:=1
-	 	 	  for i:=0 to nb-1 do
-	 	 	 	 xi:=(x+i)^
-	 	 	 	 bi:=(b+i)^
-	 	 	 	 if xi<bi then
-	 	 	 	 	y:=0
-	 	 	 	 	exit all
-	 	 	 	 elsif xi>bi then
-	 	 	 	 	exit
-	 	 	 	 fi
-	 	 	  od
-
-	 	   fi
-		fi
-		k+:=y
-		if y>1 then
-	 	   ne:=smallmulto(e,b,nb,y)
-	 	   nx:=smallsubto(x,e,nx,ne)
-		elsif y then
-	 	   nx:=smallsubto(x,b,nx,nb)
-		else
-	 	   BN_ERROR("smalldiv:Y=0")
-		fi
-	od
-
-	freesmall(e,esize)
-	xlen:=nx	 	 	 	 !return modified x, and new length of x
-	return k
-end
-
-global proc bn_idivu(bignum dest,a,b,rm=nil)=
-!neither a nor b are zero; both are positive
-!integer divide
-
-	ref elemtype c,x,e
-	int expona, exponb, badjust, exponc
-	int na,nb,nc,nx,ne,nx2,ne2, cx,nupper
-	int uppera, upperb, upperc
-	int n, k, nexta
-	int64 xx,y
-	ref elemtype pa,pb
-
-	na:=a^.length
-	nb:=b^.length
-	expona:=a^.expon
-	exponb:=b^.expon
-	badjust:=exponb+1-nb
-
-	if na>expona+1 or nb>exponb+1 then
-		bn_error("idivu:a or b not int")
-	fi
-	nc:=expona+1
-
-	if expona<exponb then
-		bn_setzero(dest)
-		if  rm then
-	 	   bn_dupl(rm,a)
-		fi
-		return
-	fi
-
-	uppera:=na-1
-	upperb:=nb-1
-	upperc:=nc-1
-	pa:=cast(a^.num)
-	pb:=cast(b^.num)	 	   !p is not zero, and all digits of interest are present
-
-!x is the moving and changing window into a that b is divided into get next digit of result
-!use a permanently allocated smallnum, 1 digit wider than b
-	n:=nb	 	 	 	!n is also how many digits of a we're into so far
-	x:=makesmallnum(nx2:=n+1)	   !allow one extra digit
-	nx:=n	 	 	 	 	   !current x size
-	nupper:=nc-badjust
-
-	for i:=0 to upperb do
-		if i<=uppera then
-	 	   (x+i)^:=(pa+i)^
-		else
-	 	   (x+i)^:=0
-		fi
-	od
-
-	c:=makesmallnum(nc)
-	cx:=0
-
-	do
-		k:=smalldiv(x,pb,nx,nb)
-
-		(c+cx++)^:=k
-		if n>=nupper then	 	 	 	!finished with A 
-	 	   exit
-		fi
-
-		nexta:=(n>uppera|0|(pa+n)^)
-		++n
-		if nx=1 and x^=0 then
-	 	   x^:=nexta	 	 	 !x is 1 digit long
-		else
-	 	   (x+nx)^:=nexta	 	 !next digit from a
-	 	   ++nx
-		fi
-	od
-
-	if rm and exponb<nb then		!no trailing zeros in b
-		smalltobig(rm,x,nx,nx2)
-	else
-		freesmall(x,nx2)
-	fi
-
-	if cx=1 and c^=0 then
-		freesmall(c,nc)
-		bn_setzero(dest)
-		if rm then
-	 	   bn_dupl(rm,a)
-		fi
-		return
-	fi
-
-	if c^=0 and cx>=2 then	 	 	!leading zero (may not need cx check)
-		smalltobig(dest,c+1,cx-1,nc,-1)
-	else
-		smalltobig(dest,c,cx,nc)
-	fi
-!   freesmall(c,nc)
-
-	if rm and exponb>=nb then	 	  !has trailing zeros so natural rem doesn't work
-		bignum d
-		d:=bn_init()
-		bn_mulu(d,b,dest)
-		bn_subu(rm,a,d)
-		bn_free(d)
-	fi
-
-end
-
-function strvaln(ref char s,int n)int=	  !STRVALN
-!convert first n chars of s to int value and return result will fit into 32 bits
-	int a
-
-	a:=0
-	to n do
-		if s^<>'_' then
-	 	   a:=a*10+s^-'0'
-		fi
-		++s
-	od
-	return a
-end
-
-global function bn_makestr(ichar s, int length=0)bignum=
-	ichar t,u
-	int neg,dpindex,expon,nonzeros,talloc,dpseen
-	int leadingzeros, trailingzeros,zerosafterdp
-	int d,n,wd,dp,wdp,w,d2,na,nb
-	bignum a
-
-	if length=0 then
-		length:=strlen(s)
-	fi
-	if length<=0 then
-		return badnumber()
-	fi
-	talloc:=length+1+10	 	!allow for extending last wdigit group
-
-	neg:=0
-	case s^
-	when '+' then ++s
-	when '-' then neg:=1; ++s
-	esac
-
-	t:=u:=bn_alloc(talloc)	  !accummulate sig digits into t
-	dpindex:=-1
-	dpseen:=zerosafterdp:=0
-	nonzeros:=0
-	leadingzeros:=trailingzeros:=0
-	expon:=0
-
-	doswitch s^
-	when '1'..'9' then
-		u++^:=s++^
-		trailingzeros:=0
-		nonzeros:=1
-	when '0' then
-		if nonzeros then
-	 	   ++trailingzeros
-	 	   u++^:=s++^
-		else
-	 	   ++leadingzeros
-	 	   if dpseen then
-	 	 	  ++zerosafterdp
-	 	   fi
-	 	   ++s
-		fi
-	when '_', '\'', '`', ' ',13,10 then
-		++s
-	when '.' then
-		if dpseen or dpindex>=0 then return badnumber() fi
-		if nonzeros then
-	 	   dpindex:=u-t
-		else
-	 	   dpseen:=1
-		fi
-!	   trailingzeros:=0
-		++s
-	when 0 then
-		exit
-	when 'e','E' then
-		expon:=readexpon(s+1)
-		exit
-	else
-		return badnumber()
-	end doswitch
-
-	u^:=0
-	length:=u-t	 	 	   !new length of extracted digits
-	if dpindex<0 then
-		if dpseen then
-	 	   dpindex:=-zerosafterdp
-		else
-	 	   dpindex:=length
-		fi
-	fi
-	length-:=trailingzeros	  !adjust precision to ignore trailing zeros
-	(t+length)^:=0
-
-	if length=0 then
-		return bn_makeint(0)
-	fi
-
-	d:=dpindex-1+expon
-	n:=length
-	dp:=0
-	na:=1
-	nb:=n-na
-
-	w:=digitwidth
-
-	if d>=0 then
-		wd:=d/w
-		wdp:=d rem w
-	else
-		d2:=abs(d+1)
-		wd:=-(d2/w+1)
-		wdp:=w-1-(d2 rem w)
-	fi
-
-	na:=wdp+1
-	nb:=max(n-na,0)
-	while nb rem w do ++nb od
-	length:=nb/w+1
-	u:=t+n
-	to na+nb-n do
-		u++^:='0'
-	od
-	n:=na+nb
-	(t+n)^:=0
-
-	a:=makebignum(length)
-	a^.neg:=neg
-	a^.expon:=wd
-	u:=t
-	a^.num^[0]:=strvaln(u,na)
-	u+:=na
-	
-	for i:=1 to length-1 do
-		a^.num^[i]:=strvaln(u,w)
-		u+:=w
-	od
-
-	freemem(t,talloc)
-
-	return a
-end
-
-proc bn_fdivu(bignum dest,a,b,int precision)=
-!neither a nor b are zero; both are positive
-!integer divide
-
-	ref elemtype c,x,e
-	int expona, exponb, badjust, exponc
-	int na,nb,nc,nx,ne,nx2,ne2, cx,nupper,nc2
-	int uppera, upperb, upperc
-	int n, k, nexta
-	int64 xx,y
-	ref elemtype pa,pb
-
-	na:=a^.length
-	nb:=b^.length
-	expona:=a^.expon
-	exponb:=b^.expon
-
-	if precision then
-		precision:=((precision-1)/digitwidth+1)	 	!must be multiple of digitwidth
-	else
-		precision:=currprec
-	fi
-	nc:=precision
-
-	uppera:=na-1
-	upperb:=nb-1
-	upperc:=nc-1
-	pa:=cast(a^.num)
-	pb:=cast(b^.num)	 	   !p is not zero, and all digits of interest are present
-
-!x is the moving and changing window into a that b is divided into get next digit of result
-!use a permanently allocated smallnum, 1 digit wider than b
-	n:=nb	 	 	 	!n is also how many digits of a we're into so far
-	x:=makesmallnum(nx2:=n+1)	   !allow one extra digit
-	nx:=n	 	 	 	 	   !current x size
-
-	for i:=0 to upperb do
-		if i<=uppera then
-	 	   (x+i)^:=(pa+i)^
-		else
-	 	   (x+i)^:=0
-		fi
-	od
-
-	c:=makesmallnum(nc2:=nc+1)
-	cx:=0
-
-	do
-		k:=smalldiv(x,pb,nx,nb)
-
-		(c+cx++)^:=k
-
-		if cx>nc then	 	 	 !reached given precision
-	 	   exit
-		fi
-
-		nexta:=(n>uppera|0|(pa+n)^)
-		++n
-		if nx=1 and x^=0 then
-	 	   x^:=nexta	 	 	 !x is 1 digit long
-		else
-	 	   (x+nx)^:=nexta	 	 !next digit from a
-	 	   ++nx
-		fi
-	od
-
-	freesmall(x,nx2)
-
-	if cx=1 and c^=0 then
-		freesmall(c,nc2)
-		bn_setzero(dest)
-		return
-	fi
-
-	if c^=0 and cx>=2 then	 	 	!leading zero (may not need cx check)
-		smalltobig(dest,c+1,cx-1,nc2,-1)
-		dest^.expon:=expona-exponb-1
-	else
-		smalltobig(dest,c,cx,nc2)
-		dest^.expon:=expona-exponb
-	fi
-!   freesmall(c,nc2)
-end
-
-function tostring_float(bignum a,int fmt)ichar=
-!a is an actual number (not zero, infinity etc)
-	int expon,upper,nchars,w,prel,n,showdot
-	ichar s,t
-
-	expon:=a^.expon
-	upper:=a^.length-1
-
-	if fmt='I' and bn_isint(a) then
-		showdot:=0
-	else
-		showdot:=1
-	fi
-
-	w:=digitwidth
-	nchars:=3	 	 	 !sign and trailing .0
-	if expon<0 then
-		nchars+:=abs(expon-1)*w
-	fi
-	nchars+:=a^.length*w
-	if expon-upper>0 then
-		nchars+:=(expon-upper)*w
-	fi
-	nchars+:=8	 	 		!margin
-
-!   s:=t:=bn_alloc(nchars)
-	s:=t:=checkedmalloc(nchars)
-	
-	if a^.neg then
-		t++^:='-'
-	fi
-
-	prel:=0
-	if expon<0 then
-		prel:=1
-		t++^:='0'
-		t++^:='.'
-		to abs(expon)-1 do
-	 	   to digitwidth do
-	 	 	  t++^:='0'
-	 	   od
-		od
-	fi
-
-	for i:=0 to upper do
-!	   t++^:='*'
-		n:=sprintf(t,(i>0 or prel|digitfmt|"%d"),a^.num^[i])
-		t+:=n
-!	   print a^.num^[i]
-		if expon=i and i<upper and showdot then
-	 	   t++^:='.'
-		fi
-	od
-
-	to expon-upper do
-!print "+"
-		to digitwidth do
-	 	   t++^:='0'
-		od
-	od
-	if expon>=upper and showdot then
-		t++^:='.'
-		t++^:='0'
-	fi
-
-	t^:=0
-	return s
-end
-
-global function bn_tostring(bignum a,int fmt=0)ichar=
-	int expon,upper
-	ichar s,t
-
-	t:=nil
-	if a=nil then
-		t:="<void>"
-	else
-		case a^.numtype
-		when zero_type then t:=(fmt='E' or fmt='F'|"0.0"|"0")
-		when inf_type then t:="<inf>"
-		when nan_type then t:="<nan>"
-		esac
-	fi
-
-	if t then
-		s:=checkedmalloc(strlen(t)+1)
-		strcpy(s,t)
-		return s
-	fi
-
-	if fmt=0 or fmt='A' then
-		if bn_isint(a) and (a^.expon-a^.length)*digitwidth<60 then
-	 	   fmt:='I'
-		elsif abs(a^.expon*digitwidth)<60 then
-	 	   fmt:='F'
-		else
-	 	   fmt:='E'
-		fi
-	fi
-
-	if fmt='E' then
-		s:=tostring_scient(a)
-	else
-		s:=tostring_float(a,fmt)
-	fi
-	return s
-end
-
-function tostring_scient(bignum a)ichar=
-!a is an actual number
-	ichar s,t
-	int expon,nchars,n,shift
-	int64 x,scale
-
-	nchars:=3
-
-	expon:=a^.expon*digitwidth
-
-	x:=a^.num^[0]
-	scale:=1
-	shift:=0
-	while x>=10 do
-		x:=x/10
-		scale*:=10
-		++expon
-		++shift
-	od
-
-	nchars:=a^.length*digitwidth+16	 !allow for 1., and exponent
-
-	s:=t:=checkedmalloc(nchars)
-
-	if a^.neg then
-		t++^:='-'
-	fi
-
-!	n:=sprintf(t,"%d.",x)
-	print @t,x,,"."
-	t+:=strlen(t)
-
-	if shift then
-!		n:=sprintf(t,"%0*d", shift, a^.num^[0]-x*scale)
-		print @t, shift:"v",,a^.num^[0]-x*scale:"z*"
-		t+:=strlen(t)
-	fi
-
-	for i to a^.length-1 do
-!		n:=sprintf(t,digitfmt, a^.num^[i])
-!		fprint @t,digitfmt, a^.num^[i]
-		print @t,a^.num^[i]:mdigitfmt
-		t+:=strlen(t)
-	od
-
-	while (t-1)^='0' and (t-2)^<>'.' do
-		--t
-	od
-
-!	n:=sprintf(t,"e%d", expon)
-	print @t,"e",,expon
-	t+:=strlen(t)
-	t^:=0
-
-	return s
-end
-
-global function bn_add(bignum dest,a,b)int=
-	int nega,negb
-
-	switch getbintype(a,b)
-	when nn_types then
-	when zz_types then
-		bn_setzero(dest)
-		return 1
-	when nz_types then
-		bn_dupl(dest,a)
-		return 1
-	when zn_types then
-		bn_dupl(dest,b)
-		return 1
-	else
-		bn_setnan(dest)
-		return 0
-	end switch
-
-	nega:=a^.neg
-	negb:=b^.neg
-
-	if not nega and not negb then	   !both positive
-		bn_addu(dest,a,b)
-	elsif nega and negb then	 	   !both negative
-		bn_addu(dest,a,b)
-		bn_negto(dest)
-	elsif not nega and negb then		!a positive, b negative
-		bn_subu(dest,a,b)
-	else
-		bn_subu(dest,b,a)	 	 	 !a negative, b positive
-	fi
-
-	return 1
-end
-
-global function bn_sub(bignum dest,a,b)int=
-	int nega,negb
-
-	switch getbintype(a,b)
-	when nn_types then
-	when zz_types then
-		bn_setzero(dest)
-		return 1
-	when nz_types then
-		bn_dupl(dest,a)
-		return 1
-	when zn_types then
-		bn_dupl(dest,b)
-		bn_negto(dest)
-		return 1
-	else
-		bn_setnan(dest)
-		return 0
-	end switch
-
-	nega:=a^.neg
-	negb:=b^.neg
-
-	if not nega and not negb then	   !both positive
-		bn_subu(dest,a,b)
-	elsif nega and negb then	 	   !both negative
-		bn_subu(dest,b,a)
-	elsif not nega and negb then		!a positive, b negative
-		bn_addu(dest,a,b)
-	else	 	 	 	 	 	   !a negative, b positive
-		bn_subu(dest,b,a)
-	fi
-
-	return 1
-end
-
-global function bn_mul(bignum dest,a,b)int=
-	int neg
-
-	switch getbintype(a,b)
-	when nn_types then
-	when zz_types,nz_types,zn_types then
-		bn_setzero(dest)
-		return 1
-	else
-		bn_setnan(dest)
-		return 0
-	end switch
-
-	neg:=a^.neg<>b^.neg
-	bn_mulu(dest,a,b)
-	if neg then	 !different signs
-		bn_negto(dest)
-	fi
-	return 1
-end
-
-global function bn_mulp(bignum dest,a,b, int prec)int=
-	int res:=bn_mul(dest,a,b)
-	if res then
-		bn_setprec(dest,(prec=0|currprec|prec))
-	fi
-	return res
-end
-
-global function bn_div(bignum dest,a,b,int prec=0)int=
-	int neg
-
-	switch getbintype(a,b)
-	when nn_types then
-	when zn_types then
-		bn_setzero(dest)
-		return 1
-	when zz_types,nz_types then
-		bn_setinf(dest)
-		return 0
-	else
-		bn_setnan(dest)
-		return 0
-	end switch
-
-	neg:=a^.neg<>b^.neg
-
-	bn_fdivu(dest,a,b,prec)
-!   bn_idivu(dest,a,b)
-
-	if neg then
-		bn_negto(dest)
-	fi
-	return 1
-end
-
-global function bn_idiv(bignum dest,a,b)int=
-	int neg
-	switch getbintype(a,b)
-	when nn_types then
-	when zn_types then
-		bn_setzero(dest)
-		return 1
-	when zz_types,nz_types then
-		bn_setinf(dest)
-		return 0
-	else
-		bn_setnan(dest)
-		return 0
-	end switch
-
-	neg:=a^.neg<>b^.neg
-	bn_idivu(dest,a,b)
-	if neg then
-		bn_negto(dest)
-	fi
-	return 1
-end
-
-global function bn_idivrem(bignum dest,rm,a,b)int=
-	int nega,negb
-
-	switch getbintype(a,b)
-	when nn_types then
-	when zn_types then
-		bn_setzero(dest)
-		bn_setzero(rm)
-		return 1
-	when zz_types,nz_types then
-		bn_setinf(dest)
-		bn_setzero(rm)
-		return 0
-	else
-		bn_setnan(dest)
-		return 0
-	end switch
-
-	nega:=a^.neg
-	negb:=b^.neg
-	bn_idivu(dest,a,b,rm)
-	if nega<>negb then	  !different signs
-		bn_negto(dest)
-	fi
-	if nega then bn_negto(rm) fi
-	return 1
-end
-
-global function bn_irem(bignum dest,a,b)int=
-	bignum rm,d
-	int nega
-
-	switch getbintype(a,b)
-	when nn_types then
-	when zn_types then
-		bn_dupl(dest,b)
-		return 1
-	when zz_types,nz_types then
-		bn_setinf(dest)
-		bn_setzero(dest)
-		return 0
-	else
-		bn_setnan(dest)
-		return 0
-	end switch
-
-	nega:=a^.neg
-	d:=bn_init()
-	bn_idivu(d,a,b,dest)
-	if nega then bn_negto(dest) fi
-	bn_free(d)
-	return 1
-end
-
-global function bn_cmp(bignum a,b)int=
-	bignum d
-	int neg
-
-	if bn_equal(a,b) then
-		return 0
-	fi
-
-	d:=bn_init()
-	bn_sub(d,a,b)
-	neg:=d^.neg
-	bn_free(d)
-	return (neg|-1|1)
-end
-
-global function bn_const(int value)bignum =
-	ref constrec p
-	bignum c
-
-	p:=constlist
-
-	while p do
-		if p^.value=value then
-	 	   return p^.bnvalue
-		fi
-		p:=p^.nextconst
-	od
-
-!not encountered before
-	p:=bn_alloc(constrec.bytes)
-	p^.bnvalue:=bn_makeint(value)
-	p^.value:=value
-	p^.nextconst:=constlist
-	constlist:=p
-	return p^.bnvalue
-end
-
-global function bn_sign(bignum a)int=
-	if bn_iszero(a) then
-		return 0
-	elsif a^.neg then
-		return -1
-	else
-		return 0
-	fi
-end
-
-function badnumber:bignum=
-	bignum c
-	c:=makebignum(0)
-	c^.numtype:=nan_type
-	return c
-end
-
-global function bn_digits(bignum a)int=
-!return number of digits in integer a
-	int n
-	[32]char str
-
-	if not bn_isint(a) then
-		return 0
-	fi
-	if bn_iszero(a) then
-		return 1
-	fi
-
-	n:=sprintf(&.str,"%d",a^.num^[0])
-	return n+a^.expon*digitwidth
-end
-
-global function bn_toint(bignum a)int64=
-	int64 x
-	if not bn_isint(a) then
-		return 0
-	fi
-	if bn_iszero(a) then
-		return 0
-	fi
-
-	x:=0
-	for i:=0 to a^.length-1 do
-		x:=x*digitbase+a^.num^[i]
-	od
-
-	if a^.neg then
-		return -x
-	else
-		return x
-	fi
-end
-
-global function bn_tofloat(bignum a)real64=
-	real64 x
-	ichar s
-
-	if bn_iszero(a) then
-		return 0.0
-	fi
-
-	s:=bn_tostring(a,'E')
-
-	sscanf(s,"%lf", &x)
-	return x
-end
-
-global proc bn_fix(bignum c, a) =
-	if bn_iszero(a) or a^.expon<0 then
-		bn_setzero(c)
-		return
-	fi
-
-	bn_dupl(c,a)
-	if not bn_isint(c) then
-		bn_setprec(c,(c^.expon+1))
-	fi
-end
-=== var_arrays.m 24/25 ===
-import clib
-import msys
-import mlib
-
-import var_decls
-import var_tables
-import var_support
-import var_objects
-import var_numbers
-
-global proc array_free(object p)=
-	ref byte q
-	int elemsize
-
-	case p.uarray.objtype
-	when normal_obj then
-		q:=p.uarray.ptr
-		elemsize:=ttsize[p.uarray.elemtype]
-
-		if p.uarray.length then
-			pcm_free(q,p.uarray.allocated*elemsize)
-		fi
-	when slice_obj then
-		obj_unshare(p.uarray.objptr2)
-	when extslice_obj then
-	esac
-
-	pcm_free32(p)
-end
-
-global function array_new(int tp, length,lower)object p=
-!create a packed array with element-type t, given length and lower bound.
-!it will be initialised to zeros
-
-	ref byte q
-	int elemsize
-
-CPL "array new",tp
-	elemsize:=ttsize[tp]
-
-	p:=obj_new(vt_array)
-	p.uarray.mutable:=1
-	p.uarray.lower:=lower
-	p.uarray.length:=length
-	p.uarray.objtype:=normal_obj
-	p.uarray.elemtype:=tp
-
-	if length then
-		q:=p.uarray.ptr:=pcm_allocz(length*elemsize)
-		p.uarray.allocated:=allocbytes/elemsize
-
-!FOR I TO LENGTH DO
-!	Q^:=I
-!	++Q
+!		CPL I,"NIL PMODE....",TYPENAMEPOS[I].LINENO,SOURCEFILENAMES[TYPENAMEPOS[I].FILENO]
+!		STOP
+!	FI
 !OD
 
-	fi
 
-	return p
-end
+	repeat
+		++npasses
+		notresolved:=0
 
-global function array_getindex(object a, int index)object=
-!a is a list, b is an int; return list[int]
-	word offset
-	int elemtype
-	ref byte q
+		for i to ntypenames do
+			p:=&typenames[i]
 
-!CPL "ARRAY/GETINDEX",=INDEX, =A.UARRAY.LENGTH,=A.UARRAY.LOWER
-	elemtype:=a.uarray.elemtype
-	q:=a.uarray.ptr
-
-	offset:=index-a.uarray.lower
-!CPL =OFFSET,INT@(OFFSET),=INDEX-
-	if offset>=word(a.uarray.length) then
-		vxerror("array[int] bounds")
-	fi
-
-	return int_make(getpackptr(q,offset,elemtype))
-end
-
-!global function array_getindexref_int(object a, int index)object=
-!!a is a array, b is an int; return array[int]
-!	word offset,elemsize
-!	ref byte q
-!
-!	offset:=index-a.uarray.lower
-!	if offset>=word(a.uarray.length) then
-!		vxerror("array[int] bounds")
-!	fi
-!
-!	q:=a.uarray.ptr
-!	elemsize:=packtypesizes[a.uarray.elemtype]
-!
-!	return refpack_make(q+offset*elemsize,a.uarray.elemtype,1,a)
-!end
-
-global proc array_putindex(object a, int index,object c)=
-!a is the array, b is an int; store c in a
-	word offset
-	int value
-	ref byte q
-
-!CPL "LPI1"
-
-	offset:=index-a.uarray.lower
-	if offset>=word(a.uarray.length) then
-		if offset<0 then
-			vxerror("pop/array[int] lwb")
-		else
-			if offset=a.uarray.length then
-VXERROR("ARRAY APPEND")
-!				array_iappend(a,c)
-				return
-			else
-				vxerror("pop/array bounds")
+			if p.pmode^<0 then
+				mlineno:=typenamepos[i].pos
+				fixmode(p)
+				if p.pmode^<0 then
+					++notresolved
+				fi
 			fi
+		od
+
+		if npasses>5 then
+			rxerror("Fixtypes: too many passes (cyclic ref?)")
 		fi
-	fi
-!CPL "LPIX",=A.IOBJPTR,OFFSET
-	if c.tag<>vt_int then
-		vxerror("putarray/not int")
-	fi
-	value:=c.unum.value
-	q:=a.uarray.ptr
 
-	putpackptr(q,offset,a.uarray.elemtype,value)
+	until notresolved=0
+
+
+!!	repeat
+!		zerosizes:=0
+!		for i:=tlast to ntypes when ttbasetype[i]=tpending do
+!	CPL "FIXUPUT/PENDING:",I,TTNAMEDEF[I].NAME
+!			m:=tttarget[i]
+!			if ttsize[m] then
+!	CPL "TARGET=",STRMODE(M)
+!				ttbasetype[i]:=ttbasetype[m]
+!				ttsize[i]:=ttsize[m]
+!				ttlower[i]:=ttlower[m]
+!				ttlength[i]:=ttlength[m]
+!			else
+!				++zerosizes
+!			fi
+!		od
+!	until zerosizes=0
+!	CPL =NPASSES
+
 end
 
-function getpackptr(ref void p, int offset,tp)int=
-!extract the packed value pointer to by p, according to tp
+proc rx_assem(ref strec owner, unit p,a,b)=
+!.a is just a const string containing the asm line, but with "#" inserted where
+! resolved name is to go
+!.b is a list of j_name units, each one pointing to a generic strec entry
+! corresponding to the next # in the assem string
+!First, resolve names
+!Second, replace each # by resolved name
 
-CPL "GETPACKPTR",OFFSET,PACKTYPENAMES[TP]
-	switch tp
-	when pt_u8 then
-		return (ref byte(p)+offset)^
-	when pt_i32 then
-		return (ref int32(p)+offset)^
-	when pt_i64 then
-		return (ref int64(p)+offset)^
+unit q
+ref strec d
+ref char s,pdest
+[512]char str
+ref strbuffer expr
+int c
+
+CPL "RX/ASSEM"
+
+q:=b
+while q do					!resolve name list
+	if q^.tag=j_name then
+		resolvename(owner, q)
+	fi
+	q:=q^.nextunit
+od
+
+pdest:=&.str
+
+s:=a^.svalue
+q:=b
+
+while c:=s++^ do
+	if c='#' then
+
+		case q^.tag
+		when j_name then
+
+			d:=q^.def
+			case d^.nameid
+			when constid then
+RXERROR("ASM/TXNC")
+!				tx_namedconst(d)
+!				addint(pdest,d^.code^.value)
+!			expr:=strexpr(d^.code)
+!			addstr(pdest,expr^.strptr)
+			when frameid, paramid then
+!				addstr(pdest,"Aframe+")
+!				addstr(pdest,getfullname(d,1))
+			else
+!				addstr(pdest,getfullname(d))
+			esac
+		when j_const then
+!			if gettypecode_t(q^.mode)<>'I' then rxerror("assem/macro/not int") fi
+			if not ttisint[q^.mode]<>'I' then rxerror("assem/macro/not int") fi
+!			addint(pdest,q^.value)
+		else
+			rxerror("assem/macro/arg?")
+		esac
+		q:=q^.nextunit
 	else
-		vxerror("getpackptr/tp?")
-		return 0
-	endswitch
+!		addchar(pdest,c)
+	fi
+od
+pdest^:=0
+a^.svalue:=pcm_copyheapstring(&.str)
+a^.slength:=strlen(&.str)
 end
 
-proc putpackptr(ref void p, int offset,tp, value)=
-!store value as a packed value at location pointer to by p, according to tp
+global function resolve_equiv_name(ref strec owner,p)ref strec=
+!@p or @p+offset used for a field offset
+!owner is record type of which it should be a member
+!currently, p is at strec that might be null
+!return matching fieldid name
+if p^.nameid=fieldid then
+	return p
+fi
 
+RXERROR("RESOLVE EQUIV FIELD/COMPLEX")
 
-	switch tp
-	when pt_u8 then
-		(ref byte(p)+offset)^:=value
-	when pt_i32 then
-		(ref int32(p)+offset)^:=value
-	when pt_i64 then
-		(ref int64(p)+offset)^:=value
-	else
-CPL =TP
-		vxerror("putpackptr/tp?")
-	endswitch
+return nil
 end
 
-global function array_append(object a,b)object c=
-!do in-place append of b to array a
-	int n
-
-	c:=array_dupl(a)
-
-	n:=c.uarray.length+1			!new length
-
-	if n>c.uarray.allocated then		!need more space
-		array_resize(a,n)
-	else
-		c.uarray.length:=n
-	fi
-
-	if b.tag<>vt_int then
-		vxerror("appendarray/not int")
-	fi
-
-	putpackptr(c.uarray.ptr,n-1,c.uarray.elemtype,b.unum.value)
-
-	return c
+function addframevar(ref strec owner, d, int moduleno, mode)ref strec=
+!owner should be a proc; d is a generic st entry
+!add framewith the name of d and given mode to the proc
+	ref strec e
+	e:=getduplnameptr(owner,d,frameid)
+	storemode(owner,mode,e^.mode)
+	adddef(owner,e)
+	return e
 end
 
-global function array_iappend(object a,b, int refc)object c=
-!do in-place append of b to array a
-	int n
+proc converteqeq(ref strec owner,ref unitrec p)=
+!detect exprs such as a=b=c and convert to a=b and b=c
+int leftop,rightop
+ref unitrec w,y1,y2,z
 
-	if a.refcount>refc then
-		return array_append(a,b)
-	fi
+w:=p^.a				!w is the x=y branch
+y1:=w^.b				!split y into two
 
-	if a.uarray.objtype<>normal_obj then
-		vxerror("Can't extend array slice")
-	fi
+y2:=duplunit(y1)
 
-	if not a.uarray.mutable then
-		vxerror("array/append not mutable")
-	fi
+z:=p^.b
 
-	n:=a.uarray.length+1			!new length
+leftop:=w^.tag
+rightop:=p^.tag
+p^.tag:=j_andl
+p^.b:=createunit2(rightop,y2,z)
+p^.b^.lineno:=p^.lineno
 
-	if n>a.uarray.allocated then		!need more space
-		array_resize(a,n)
-	else
-		a.uarray.length:=n
-	fi
-
-	if b.tag<>vt_int then
-		vxerror("appendarray/not int")
-	fi
-
-	putpackptr(a.uarray.ptr,n-1,a.uarray.elemtype,b.unum.value)
-	return obj_share(a)
+rx_unitlist(owner,w)
+rx_unitlist(owner,y2)
+rx_unitlist(owner,z)
 end
 
-global proc array_resize(object p,int n)=
-	ref byte q
-	word32 allocated
-	int elemsize
+function copylistunit(unit p)unit=
+unit q
 
-	elemsize:=packtypesizes[p.uarray.elemtype]
+unit plist,plistx
+plist:=plistx:=nil
+while p do
+	q:=copyunit(p)
+	addlistunit(&plist,&plistx,q)
+	p:=p^.nextunit
+od
+return plist
+end
 
-	if n<=p.uarray.allocated then
-		p.uarray.length:=n
-	else
-		q:=pcm_alloc(n*elemsize)
-		p.uarray.allocated:=allocbytes/elemsize
-		if p.uarray.length then
-			memcpy(q,p.uarray.ptr,p.uarray.length*elemsize)
+function copyunit(unit p)unit=
+unit q
+ref strec d
+
+if p=nil then return nil fi
+
+!need to quickly check if a name unit is a macroparam
+
+if p^.tag=j_name then
+	d:=p^.def
+	for i to nmacroparams do
+		if macroparamsgen[i]=d then
+			return copyunit(macroargs[i])
+			exit
 		fi
-		p.uarray.ptr:=q
-		p.uarray.length:=n
+	od
+fi
+
+q:=createunit0(p^.tag)
+
+!!q^.b:=copylistunit(p^.b)
+!!q^.c:=copylistunit(p^.c)
+!!q^.lineno:=p^.lineno
+!q^.pos:=p^.pos
+!q^.value:=p^.value			!copy main field of each union
+!q^.opcode:=p^.opcode
+!q^.mode:=p^.mode
+!q^.newmode:=p^.newmode
+!q^.moduleno:=p^.moduleno
+!q^.isastring:=p^.isastring
+!q^.nextunit:=nil
+!
+!q.reginfo:=p.reginfo
+
+q^:=p^
+q.nextunit:=nil
+if q.hasa then q.a:=copylistunit(q.a); q.hasa:=1 fi
+if q.hasb then q.b:=copylistunit(q.b); q.hasb:=1 fi
+if q.hasc then q.c:=copylistunit(q.c); q.hasc:=1 fi
+
+return q
+end
+
+proc replaceunit(unit p,q)=
+!replace p with q, keeping same address of p, and same next pointer
+!original contents discarded
+unit pnext
+pnext:=p^.nextunit
+p^:=q^
+p^.nextunit:=pnext
+end
+
+proc expandmacro(unit p, a, b)=
+!is is a macro name unit, b is a macro parameter list (rx-processed), which
+!can be nil
+!p is either the call-unit as this may originally have been, or the same as a::
+!M => (NAME)
+!M(A,B) => (CALL NAME (A,B))
+!Need to replace M or M(A,B) with the duplicated AST from a^.code.
+!When a name appears in the AST which is a local macroparam name, then that is
+!replaced by the corresponding argument from B;
+!The new code replaces P (either CALL or NAME)
+!Supplied args may be more than macro takes (error) or may be less (error,
+!or allow default arg values to be specified)
+ref strec d,pm
+unit pnew
+int ignoreargs
+
+!CPL "EXPANDMACRO"
+if macrolevels>10 then
+	rxerror("Too many macro levels (recursive macro?)")
+fi
+
+d:=a^.def
+
+!First step: get list of macro formal parameters
+!CPL =D.NAME,NAMENAMES[D.NAMEID]
+
+pm:=d^.paramlist
+nmacroparams:=0
+while pm do
+!CPL =PM.NAME,=PM.NEXTPARAM,NAMENAMES[PM.NAMEID]
+	if nmacroparams>=maxmacroparams then
+		rxerror("macro param overflow")
 	fi
-end
+	macroparams[++nmacroparams]:=pm
+	macroparamsgen[nmacroparams]:=pm^.nulldef
+	pm:=pm^.nextparam
+od
 
-!global function refpack_getptr(object p)object q=
-!	word value
-!
-!	if p.tag<>trefpack then vxerror("getptr") fi
-!
-!	value:=getpackptr(p.urefpack.ptr,0,p.urefpack.target)
-!
-!!convert return value into an object
-!	switch p.urefpack.target
-!	when pt_i8..pt_i64, pt_u8..pt_u32 then
-!		return int_make(value)
-!	when pt_r64 then
-!		return real_make(real@(value))
-!	else
-!		vxerror("refpack/getptr?")
-!	endswitch
-!	return nil
-!end
-!
-!global proc refpack_putptr(object p,x)=
-!	word value
-!
-!	if p.tag<>trefpack then vxerror("putptr") fi
-!
-!!CPL "REFPACK PUT",P.UREFPACK.MUTABLE
-!
-!	case x.tag
-!	when vt_int then
-!		value:=x.unum.value
-!	when vt_real then
-!		value:=int@(x.unum.xvalue)
-!	else
-!		vxerror("refpack/putptr?")
-!	esac
-!
-!	if not p.urefpack.mutable then
-!		vxerror("putptr - not mutable")
-!	fi
-!
-!	putpackptr(p.urefpack.ptr,0,p.urefpack.target,value)
-!end
+!CPL =NMACROPARAMS
 
-global function array_dupl(object p)object q=
-	int elemsize
+!now get macro args into a list
+nmacroargs:=0
 
-	q:=obj_new(vt_void)
-	q^:=p^
-	q.refcount:=1
-	q.uarray.mutable:=1
+!RETURN
 
-	elemsize:=packtypesizes[p.uarray.elemtype]
-
-	if p.uarray.length=0 then
-		return q
+while b do
+	if nmacroargs>=maxmacroparams then
+		rxerror("macro arg overflow")
 	fi
+	macroargs[++nmacroargs]:=b
+	b:=b^.nextunit
+od
 
-	q.uarray.ptr:=pcm_alloc(p.uarray.length*elemsize)
-	q.uarray.allocated:=allocbytes/elemsize
+if nmacroargs<nmacroparams then
+	rxerror("Too few macro args")
+fi
 
-	memcpy(q.uarray.ptr, p.uarray.ptr, p.uarray.length*elemsize)
-	return q
+ignoreargs:=0
+if nmacroargs>0 and nmacroparams=0 then		!ignore extra params
+	ignoreargs:=1
+	nmacroargs:=nmacroparams:=0
+
+elsif nmacroargs>nmacroparams then
+	rxerror("Too many macro args")
+fi
+
+pnew:=copyunit(d.code)
+
+if not ignoreargs then				!normal expansion
+	replaceunit(p,pnew)
+else								!keep call and paramlist; just replace fn name
+	p^.a:=pnew						!with expansion
+fi
 end
 
-global function array_len(object a)int= {a.uarray.length}
-global function array_lwb(object a)int= {a.uarray.lower}
-global function array_upb(object a)int= {a.uarray.length+a.uarray.lower-1}
-global function array_bounds(object a)object=
-	return range_make(a.uarray.lower, a.uarray.length+a.uarray.lower-1)
-end
-
-global function array_notl(object a)int={a.uarray.length=0}
-global function array_istruel(object a)int={a.uarray.length<>0}
-
-=== var_print.m 25/25 ===
-import clib
+=== bb_type.m 15/18 ===
 import msys
 import mlib
-import mbignum
+import clib
+import oslib
 
-import var_decls
-import var_tables
-import var_support
-import var_objects
-import var_strings
-import var_arrays
+import bb_decls
+import bb_tables
+import bb_support
+import bb_lib
+import bb_name
+import bb_diags
 
-const maxlistdepth=4
-int listdepth=0		!recursive nesting levels for lists/records
+!* LV=0		Allow normal rvalue
+!* LV=1		Must be lvalue
+!* LV=2		Is INDEX or DOT operand: block data catagories
+!			should be treated as values, with ADDROF inserted, if possible.
+!* LV=3		Must lvalue and insert ADDROF
 
-global proc obj_print(object p,ichar sfmt=nil)=
-	[0:360]char str
-	object q
-!	ichar sfmt
-	fmtrec format
-	ref fmtrec fmt
+tabledata() [0:]ichar lvnames =
+	(no_lv=0,		$),
+	(need_lv,		$),
+	(addrof_lv,		$),
+	(index_lv,		$),
+	(indexlv_lv,	$),
+end
 
-!CPL "PRINT OBJ"
+const maxparams=100
+const maxfields=200
+int countedfields
+int inassem
 
-!	sfmt:=objgetfmt(pfmt)
+proc tpass(unit p, int t=tany, lv=no_lv)=
+ref strec d
+unit a,b
+int oldmlineno,m,nparams,paramtype,restype
 
-	if sfmt=nil then
-		if needgap then
-			printstr_n(" ",1)
+if p=nil then return fi
+
+!if lv in [need_lv, addrof_lv, indexlv_lv] and (not refunitset[p^.tag] or 
+!	p.tag=j_slice) then
+!
+!	case p.tag
+!	when j_const, j_callfn, j_callproc then
+!		txerror("not allowed as lvalue")
+!	esac
+!fi
+
+oldmlineno:=mlineno
+
+mlineno:=p^.pos
+
+a:=p^.a
+b:=p^.b
+
+!CPL "TPASS",JTAGNAMES[P.TAG]
+
+switch p^.tag
+when j_name then
+	tx_name(p,t,lv)
+when j_const, j_decimal then
+
+when j_typeconst then
+	p^.mode:=ti64
+
+when j_bytesize, j_bitwidth then
+	tx_bytesize(p,a)
+
+when j_add, j_sub then
+	tx_add(p,a,b)
+
+when j_mul, j_div, j_idiv,j_irem, j_min, j_max then
+	tx_mul(p,a,b)
+
+when j_assign,j_deepcopy then
+	tx_assign(p,a,b,tvoid)
+
+when j_assignx,j_deepcopyx then
+	tx_assign(p,a,b,t)
+
+when j_multexpr then
+	while a do
+		tpass(a)
+		a:=a^.nextunit
+	od
+
+when j_maths then
+	tx_maths(p,a,b)
+
+!when j_atan2, j_fmod then
+!	tx_atan2(p,a,b)
+
+when j_shl, j_shr then
+	tx_shl(p,a,b)
+
+when j_iand, j_ior, j_ixor then
+	tx_iand(p,a,b)
+
+when j_eq, j_ne then
+	tx_eq(p,a,b)
+
+when j_lt, j_le, j_ge, j_gt then
+	tx_lt(p,a,b)
+
+when j_same then
+	tx_same(p,a,b)
+
+when j_addrof then
+	if a^.tag=j_ptr then
+		deleteunit(p,a)
+		deleteunit(p,p^.a)
+		tpass(p,t)
+	else
+		tpass(a,,need_lv)
+		p^.mode:=createrefmode(nil,a^.mode)
+	fi
+
+when j_addroffirst then
+	tx_addroffirst(p,a,t)
+
+!when j_addrof, j_ptrto then
+when j_addto, j_subto, j_multo, j_divto, j_idivto,j_shlto, j_shrto, j_minto, j_maxto,
+		j_iremto then
+	tx_addto(p,a,b)
+
+when j_iandto, j_iorto, j_ixorto, j_andlto, j_orlto, j_appendto, j_concatto then
+	tx_iandto(p,a,b)
+
+when j_if then
+	tx_if(p,a,b,p^.c,t,lv)
+
+when j_longif then
+	tx_longif(p,a,b,t,lv)
+
+when j_index then
+	tx_index(p,a,b,t,lv)
+
+when j_ptr then
+	tx_ptr(p,a,t,lv)
+
+when j_callproc, j_callfn then
+	tx_callproc(p,a,b,t)
+
+when j_dot then
+	tx_dot(p,a,b,lv)
+
+when j_sqrt then
+	tx_sqrt(p,a)
+
+!when j_sqrt, j_sin, j_cos, j_tan, j_asin, j_acos, j_atan,
+!	 j_ln, j_lg, j_log, j_exp, j_round, j_floor, j_ceil, j_fract  then
+
+when j_sign then
+	tx_sign(p,a)
+
+when j_power then
+	tx_power(p,a,b)
+
+when j_andl, j_orl, j_xorl, j_andb, j_orb then
+	tx_andl(p,a,b)
+
+when j_neg, j_abs, j_sqr then
+	tx_neg(p,a,b)
+
+when j_inot then
+	tx_inot(p,a)
+
+when j_notl then
+	tx_notl(p,a)
+
+when j_istruel then
+	tx_istruel(p,a)
+
+when j_convert then
+	tx_convert(p,a,1)
+
+!!when j_autocast then
+when j_typepun then
+	tx_typepun(p,a)
+
+when j_len then
+	tx_len(p,a)
+
+when j_lenstr then
+	tx_lenstr(p,a)
+
+when j_lwb then
+	tx_lwb(p,a)
+
+when j_upb then
+	tx_upb(p,a)
+
+when j_bounds then
+	tx_bounds(p,a)
+
+when j_sliceptr then
+	tx_sliceptr(p,a)
+
+when j_preincrx, j_predecrx, j_postincrx, j_postdecrx then
+	tx_preincr(p,a,t)
+
+!when j_incr, j_decr then
+!	tx_preincr(p,a)
+!
+when j_makerange then
+	tx_makerange(p,a,b)
+
+when j_makeset then
+	tx_makeset(p,a,t)
+
+when j_makedict then
+	tx_makedict(p,a,t)
+
+when j_swap then
+	tx_swap(p,a,b)
+
+when j_select then
+	tx_select(p,a,b,p^.c,t,lv)
+
+when j_switch, j_doswitch then
+	tx_switch(p,a,b,p^.c,t,lv)
+
+when j_case, j_docase then
+	tx_case(p,a,b,p^.c,t,lv)
+
+when j_exprlist then
+	tx_exprlist(p,a,t)
+
+!!when j_copymem then
+!!when j_clearmem then
+!!when j_stack then
+!!when j_unstack then
+!when j_cvtypename then
+
+when j_dotindex, j_dotslice, j_anddotindex then
+	tx_dotindex(p,a,b,lv)
+
+when j_slice then
+	tx_slice(p,a,b)
+
+!when j_keyindex then
+!	tx_keyindex(p,a,b,p.c,lv)
+
+!when j_anddotindex then
+!when j_dotslice then
+!when j_anddotslice then
+when j_minvalue, j_maxvalue then
+	tx_minvalue(p,a)
+
+!when j_addto,j_subto then
+!when j_multo,j_divto,j_minto,j_maxto then
+!when j_shlto, j_shrto then
+!when j_iandto, j_iorto, j_ixorto then
+!when j_negto, j_absto then
+when j_negto, j_absto, j_inotto, j_notlto then
+	tx_negto(p,a)
+
+!when j_inotto then
+
+when j_block,j_stmtblock then
+	tx_block(p,a,t,lv)
+
+when j_eval then
+!	tx_unit(a)
+	tpass(a,tany)
+	p^.mode:=a^.mode
+
+when j_do then
+!	tx_unit(a)
+	tpass(a,tvoid)
+
+
+when j_return then
+	tx_return(p,a,t)
+
+when j_print,j_println,j_fprint,j_fprintln then
+	tx_unitlist(a)
+	while b do
+!		tx_unitlist(b)
+		if b.tag=j_fmtitem then
+			tpass(b.a)
+			tpass(b.b,trefchar)
 		else
-			needgap:=1
+			tpass(b)
+		fi
+		b:=b.nextunit
+	od
+	tx_unitlist(p^.c)
+
+when j_forup, j_fordown then
+	tx_for(a,b,p^.c)
+
+!when j_forall, j_forallrev then
+!	tx_forall(a,b,p^.c)
+
+when j_to then
+	tpass(a,ti64)
+	tpass(b,tvoid)
+
+when j_autocast then
+	tpass(a)
+	if t=tany then txerror("cast() needs type") fi
+	coerceunit(a,t,1)
+	deleteunit(p,a)
+
+when j_makelist then
+	tx_makelist(p,a,t,lv)
+
+when j_stop then
+	tpass(a,ti64)
+
+when j_exit,j_redo, j_restart, j_next then
+	tx_exit(p,a)
+
+when j_goto then
+	tx_goto(p,a)
+
+when j_labeldef then
+
+when j_while then
+	tcond(a)
+	tpass(b,tvoid)
+
+when j_repeat then
+	tpass(a,tvoid)
+	tcond(b)
+
+when j_nogap then
+
+when j_assem then
+	if t<>tvoid then
+		p^.mode:=t
+	fi
+
+	inassem:=1
+	tx_unitlist(a)
+	tx_unitlist(b)
+	tx_unitlist(p.c)
+	inassem:=0
+
+when j_assemreg,j_assemxreg then
+when j_assemmem then
+	tpass(a)
+
+when j_typeof then
+	tpass(a)
+	if a^.tag=j_typeconst then
+		p^.value:=a^.value
+	else
+		p^.value:=a^.mode
+	fi
+	p^.tag:=j_typeconst
+	p^.mode:=ti64
+	p^.a:=nil
+
+when j_typestr then
+	tpass(a)
+	if a^.tag=j_typeconst then
+		m:=a^.value
+	else
+		tpass(a)
+		m:=a^.mode
+	fi
+	p^.tag:=j_const
+	p^.mode:=trefchar
+	p^.svalue:=pcm_copyheapstring(strmode(m,0))
+	p^.slength:=strlen(p^.svalue)
+	p^.isastring:=1
+	p^.a:=nil
+
+!when j_whenthen then
+
+!when j_convertref then
+!	tpass(a)
+!
+when j_fmtitem then
+	tpass(a)
+	tpass(b)
+
+when j_readln then
+	tpass(a)
+
+when j_read then
+	if a then
+		tpass(a,tc64)
+	fi
+	if ttisnumeric[t] then
+		t:=gettypebase(t)
+	fi
+	p.mode:=t
+
+when j_in, j_notin then
+	tx_in(p,a,b)
+
+when j_recase then
+	tpass(a,ti64)
+	if a^.tag<>j_const then
+		txerror("recase must be const")
+	fi
+
+!when j_head, j_tail, j_init, j_last, j_take, j_drop, j_reverse, j_left, j_right,
+!	 j_convlc, j_convuc, j_flexptr, j_stringz, j_dupl then
+!	tx_head(p,a,b)
+
+when j_prepend, j_append,j_concat then
+	tx_concat(p,a,b)
+
+when j_cvlineno then
+	p^.mode:=ti64
+when j_cvfilename,j_cvmodulename then
+	p^.mode:=trefchar
+
+when j_bitfield then
+	tx_bitfield(p,a,lv)
+
+when j_syscall then
+	restype:=tvoid
+	paramtype:=tvoid
+	case p.opcode
+	when sysfn_get_nprocs then restype:=ti64
+	when sysfn_get_nexports then restype:=ti64
+	when sysfn_get_procname then paramtype:=ti64; restype:=trefchar; 
+	when sysfn_get_procaddr then paramtype:=ti64; restype:=tref; 
+	when sysfn_get_procexport then paramtype:=ti64; restype:=tref; 
+	esac
+
+	if paramtype<>tvoid then
+		if a=nil then txerror("sys: arg missing") fi
+		tpass(a,paramtype)
+		if a.nextunit then txerror("sys: too many args") fi
+	elsif a then txerror("sys: too many args")
+	fi
+
+	p.mode:=restype
+
+!when j_asc then
+!	tpass(a,tvar)
+!	p.mode:=ti64
+!
+!when j_chr then
+!	tpass(a,tvar)
+!	p.mode:=tvar
+
+else
+CPL "TXUNIT: CAN'T DO:",jtagnames[p^.tag]
+doelse::
+	tx_unitlist(a,t)
+	tx_unitlist(b,t)
+	tx_unitlist(p^.c,t)
+endswitch
+
+!CPL "TPASS5"
+tevaluate(p)
+!CPL "TPASS6"
+
+case p^.tag
+when j_makelist, j_return then
+else
+!if p^.tag<>j_makelist and p^.tag<>jthen
+	if t<>tany and t<>tvoid and p^.mode<>t then		!does not already match
+!CPL "TPASS65",P,T
+		coerceunit(p,t)			!apply soft conversion
+!CPL "TPASS66"
+	fi
+esac
+!CPL "TPASS7"
+if t=tvoid then
+	fixvoidunit(p)
+fi
+!CPL "TPASS8"
+
+mlineno:=oldmlineno
+end
+
+proc tx_block(unit p,a, int t,lv)=
+	while a and a^.nextunit do
+		tpass(a,tvoid)
+		a:=a^.nextunit
+	od
+	if a then
+		tx_unitlist(a,t,lv)
+		p^.mode:=(t<>tvoid|a^.mode|tvoid)
+	fi
+end
+
+global proc tx_typetable=
+	int i,u
+
+	for i:=tuser to ntypes do
+
+		setmodesize(i)
+	od
+end
+
+proc setmodesize(int m)=
+	int size,target
+
+	if ttsize[m] then return fi
+
+	mlineno:=ttlineno[m]
+	case ttbasetype[m]
+	when tarray then
+		setarraysize(m)
+	when trecord then
+		setrecordsize(m)
+	when tvoid,tproc then
+	when tslice then
+		setslicesize(m)
+	when tauto then
+TXERROR("SETMODESIZE/AUTO?")
+	when tany then
+
+	when tpending then
+		target:=tttarget[m]
+		setmodesize(target)
+
+		ttbasetype[m]:=ttbasetype[target]
+		ttsize[m]:=ttsize[target]
+		ttlower[m]:=ttlower[target]
+		ttlength[m]:=ttlength[target]
+		ttnamedef[m]:=ttnamedef[target]
+		tttypecat[m]:=tttypecat[target]
+
+
+	when tenum then
+!CPL "SMS/ENUM",TTSIZE[M]
+	ttsize[m]:=8
+
+	else
+		if size:=ttsize[ttbasetype[m]] then
+			ttsize[m]:=size
+			return
+		fi
+
+
+
+
+
+		cpl "SIZE 0:",strmode(m),=m,=stdtypenames[ttbasetype[m]],ttnamedef[m].name
+!		txerror("can't set mode size")
+CPL"********",strmode(m), ttlineno[m]
+		CPL("Can't set mode size")
+!txerror("SMS")
+	esac
+end
+
+proc setarraysize(int m)=
+int lower,length,elemsize,target
+unit pdim,a,b
+
+	if ttsizeset[m] then return fi
+
+	pdim:=ttdimexpr[m]
+
+	if pdim then
+		a:=pdim^.a
+		b:=pdim^.b
+		rx_unit(ttowner[m],pdim)
+
+		case pdim^.tag
+		when j_makerange then
+			tpass(a)
+			tpass(b)
+			lower:=getconstint(a)
+			length:=getconstint(b)-lower+1
+		when j_keyvalue then
+			tpass(a)
+			lower:=getconstint(a)
+			if b then
+				tpass(b)
+				length:=getconstint(b)
+			else
+				length:=0
+			fi
+		else
+			tpass(pdim)
+			length:=getconstint(pdim)
+			lower:=1
+		esac
+	else
+		lower:=1
+		length:=0
+	fi
+
+	ttdimexpr[m]:=nil
+
+	ttlower[m]:=lower
+	ttlength[m]:=length
+
+	target:=tttarget[m]
+	setmodesize(target)
+	elemsize:=ttsize[tttarget[m]]
+	ttsize[m]:=length*elemsize
+	ttsizeset[m]:=1
+
+!CPL "SAS",=M,TTSIZE[M]
+	case ttsize[m]
+	when 1,2,4 then tttypecat[m]:=tc_d124
+	when 8 then tttypecat[m]:=tc_d8
+	when 16 then tttypecat[m]:=tc_d16
+	esac
+	if tttypecat[m]<>tc_blk then
+		ttbasetype[m]:=tsmallarray
+	fi
+
+end
+
+proc setslicesize(int m)=
+unit pdim
+
+	if ttsize[m] then return fi
+
+	pdim:=ttdimexpr[m]
+
+	if pdim then
+		rx_unit(ttowner[m],pdim)
+		tpass(pdim)
+		ttlower[m]:=getconstint(pdim)
+		ttdimexpr[m]:=nil
+	else
+		ttlower[m]:=1
+	fi
+
+	setmodesize(tttarget[m])
+	ttsize[m]:=ttsize[tslice]
+end
+
+proc tcond(unit p)=
+unit a,b
+
+a:=p^.a
+b:=p^.b
+
+case p^.tag
+when j_andl, j_orl, j_xorl then
+	tcond(a)
+	tcond(b)
+when j_notl then
+	tcond(a)
+	if a^.tag=j_notl then
+		deleteunit(p,a)
+		p^.tag:=j_istruel
+		if isboolunit(p.a) then
+			deleteunit(p,p^.a)
+		fi
+	fi
+
+when j_istruel then
+	tpass(a)
+	if isboolunit(a) then
+		deleteunit(p,a)
+	fi
+else
+	tpass(p)
+	twidenopnd(p)
+	if not isboolunit(p) then
+		insertunit(p,j_istruel)
+	fi
+esac
+
+
+p^.mode:=ti64
+end
+
+global function tx_module(int n)int=
+modulerec m
+ref strec stmodule, d
+int globalflag,status
+
+currmoduleno:=n
+
+!CPL "TXMODULE",MODULETABLE[N].NAME
+
+tx_passdef(moduletable[n].stmodule)
+
+return 1
+end
+
+global proc tx_passdef(ref strec p)=
+ref strec d
+int oldmlineno,simplefunc
+unit q
+
+if p^.txdone then
+	return
+fi
+
+oldmlineno:=mlineno
+mlineno:=p^.pos
+simplefunc:=1
+
+d:=p^.deflist
+while d do
+	tx_passdef(d)
+
+!	if p^.nameid in [procid,frameid] and d^.nameid=paramid then
+	if p^.nameid=procid and d^.nameid in [frameid,paramid] then
+!	if p^.nameid=procid and d^.nameid =paramid then
+		unless issimpletype(d^.mode) then
+!IF eqstring(p.name,"readparamsff_types") then
+! CPL "1",P.NAME,"SETTING SIMPLE 0",D.NAME,STRMODE(D.MODE) FI
+			simplefunc:=0
+		end
+	fi
+
+	d:=d^.nextdef
+od
+
+q:=p^.code
+
+case p^.nameid
+when procid then
+	currproc:=p
+!CPL "PROC",P.NAME
+    tpass(q,(currproc^.nretvalues>1|ttuple|p^.mode))
+!IF eqstring(p.name,"readparamsff_types") then CPL "2",P.NAME,=SIMPLEFUNC FI
+
+!see if simple function
+	if p^.nretvalues>1 or not issimpletype(p^.mode) then
+		simplefunc:=0
+	fi
+
+!IF eqstring(p.name,"readparamsff_types") then CPL "3",P.NAME,=SIMPLEFUNC FI
+
+	p^.simplefunc:=simplefunc
+
+	currproc:=nil
+when constid,enumid then
+	tx_namedconst(p)
+when staticid, frameid, paramid then
+	tx_namedef(p)
+!when TYPEID THEN
+esac
+p^.txdone:=1
+mlineno:=oldmlineno
+end
+
+proc tx_unitlist(unit p, int t=tany, lv=no_lv)=
+	while p do
+		tpass(p,t)
+		p:=p^.nextunit
+	od
+end
+
+proc tx_namedef(ref strec d)=
+int m
+unit dcode
+
+m:=d^.mode
+setmodesize(m)
+
+if d^.circflag then
+	txerror("Circular reference detected")
+fi
+if d^.txdone then return fi
+dcode:=d^.code
+
+d^.circflag:=1
+
+if d^.at=1 then
+	tpass(d^.equivvar,tref)
+fi
+
+if dcode and d^.nameid<>frameid then
+
+!CPL "----------HERE",STRMODE(M)
+
+	if ttbasetype[m]=tslice and dcode^.tag=j_const and dcode^.mode=trefchar then
+		tpass(dcode,trefchar)
+	else
+		tpass(dcode,m)
+	fi
+	d^.circflag:=0
+	d^.txdone:=1
+	if d^.nameid=staticid then
+		checkconstexpr(d^.code)
+	fi
+
+	if ttbasetype[m] in [tarray,tsmallarray] and ttlength[m]=0 then
+		d^.mode:=dcode^.mode
+	fi
+else
+	d^.circflag:=0
+	d^.txdone:=1
+fi
+end
+
+global proc tx_namedconst(ref strec d)=
+int m
+
+if d^.circflag then
+	txerror("Circular const reference detected")
+fi
+
+unit q
+if d^.txdone then return fi
+q:=d^.code
+
+m:=d^.mode
+
+d^.circflag:=1
+tx_expr(q,(m=tauto|tany|m))
+
+d^.circflag:=0
+checkconstexpr(q)
+if m=tauto then
+	d^.mode:=q^.mode
+fi
+
+d^.txdone:=1
+end
+
+proc tx_expr(unit p, int t=tany)=
+tpass(p,t)
+end
+
+proc checkconstexpr(unit p)=
+!check whether p is const expr
+unit q
+int pmode
+
+case p^.tag
+when j_const then
+	return
+when j_makelist then
+	q:=p^.a
+	while q do
+		checkconstexpr(q)
+		q:=q^.nextunit
+	od
+
+!when j_convertref then
+!	if tttarget[p^.a^.mode]=tvoid then
+!		p^.a^.mode:=p^.mode
+!		deleteunit(p,p^.a)
+!	else
+!		goto error
+!	fi
+
+when j_convert then
+!	if p^.opcode<>c_soft then
+	case p^.opcode
+	when c_soft,c_none,c_ichartostring then
+	else
+		goto error
+	esac
+
+when j_addrof then
+	case p^.a^.tag
+	when j_name then
+	else
+		goto error
+	esac
+
+else
+error::
+	println jtagnames[p^.tag],STRMODE(P^.MODE)
+PRINTUNIT(P)
+	txerror("Getconstexpr: not const")
+esac
+end
+
+function getconstint(unit q, int t=tany)int64=
+checkconstexpr(q)
+
+if ttisinteger[q.mode] then
+!case tttypecode[q^.mode]
+!when 'I','U' then
+	if ttsize[q^.mode]=16 then
+		GERROR("GETCONSTINT/128")
+	fi
+	return q^.value
+elsif ttisreal[q.mode] then
+!when 'R' then
+	return q^.xvalue
+else
+	cpl strmode(q^.mode)
+	txerror("Getconstint: not int32/64")
+fi
+return 0
+end
+
+proc tevaluate(unit p)=
+unit a,b
+int ischar
+int tag:=p^.tag
+
+!CPL "EVALX",P
+if jisexpr[tag]=2 then
+	tevalbinop(p)
+
+elsif jisexpr[tag]=1 then
+	tevalmonop(p)
+
+elsecase tag
+when j_makerange then
+	a:=p^.a
+	b:=p^.b
+	if ttsize[a^.mode]<=8 then			!const range only for 32-bits
+		tevaluate(a)
+		tevaluate(b)
+		if a^.tag=j_const and b^.tag=j_const then
+			p^.isconst:=a^.isconst iand b^.isconst
+		fi
+	fi
+
+when j_convert then
+	tevalconvert(p)
+fi
+
+end
+
+proc tevalbinop(unit p)=
+int64 a,b,c
+real x,y,z
+
+!CPL "EVALB"
+
+if p^.a^.tag<>j_const or p^.b^.tag<>j_const then
+	return
+fi
+
+if ttsize[p^.mode]>8 then return fi
+
+if ttisint[p.mode] then
+!case tttypecode[p^.mode]
+!when 'I' then
+	a:=p^.a^.value
+	b:=p^.b^.value
+
+	switch p^.tag
+	when j_add then
+
+		c:=a+b
+	when j_sub then
+		c:=a-b
+	when j_mul then
+		c:=a*b
+	when j_div,j_idiv then
+		if b=0 then txerror("div by 0") fi
+		c:=a/b
+
+	when j_irem then
+		if b=0 then txerror("div by 0") fi
+		c:=a rem b
+
+	when j_shl then
+		c:=a<<b
+
+	when j_shr then
+		c:=a>>b
+
+	when j_iand then
+		c:=a iand b
+
+	when j_ior then
+		c:=a ior b
+
+	when j_ixor then
+		c:=a ixor b
+
+	else
+		return
+	end
+	makenewconst(p,c)
+elsif ttisreal[p.mode] then
+!when 'R' then
+	x:=p^.a^.xvalue
+	y:=p^.b^.xvalue
+
+	switch p^.tag
+	when j_add then
+		z:=x+y
+	when j_sub then
+		z:=x-y
+	when j_mul then
+		z:=x*y
+	when j_div then
+		if y=0 then txerror("div by 0") fi
+		z:=x/y
+
+	else
+		return
+	end
+	makenewconst(p,int64@(z))
+fi
+
+end
+
+proc tevalmonop(unit p)=
+unit a
+int64 ix,iy,iz
+real x,z
+
+!CPL "EVALM"
+
+a:=p^.a
+
+if ttsize[p^.mode]>8 then return fi
+
+if a^.tag<>j_const then
+	case p^.tag
+	when j_bytesize then
+		if a^.tag=j_typeconst then
+			makenewconst(p,ttsize[a^.value])
+		else
+!CPL =STRMODE(A.MODE),TTSIZE[TREF]
+			makenewconst(p,ttsize[a^.mode])
+		fi
+	when j_bitwidth then
+TXERROR("BITWIDTH")
+!		if a^.tag=j_typeconst then
+!			makenewconst(p,ttbitwidth[a^.value])
+!		else
+!			makenewconst(p,ttbitwidth[a^.mode])
+!		fi
+	esac
+
+	return
+fi
+
+if ttisinteger[p.mode] then
+!case tttypecode[p^.mode]
+!when 'I','U' then
+
+	ix:=a^.value
+
+	switch p^.tag
+	when j_neg then
+		iz:=-ix
+
+	when j_inot then
+		iz:=inot ix
+
+	when j_notl then
+		iz:=not ix
+
+	when j_abs then
+		iz:=abs ix
+
+	when j_bytesize then
+		iz:=ttsize[p^.mode]
+	else
+		return
+	end
+
+	makenewconst(p,iz)
+
+elsif ttisreal[p.mode] then
+!when 'R' then
+	x:=a^.xvalue
+	switch p^.tag
+	when j_neg then
+		z:=-x
+	else
+		return
+	end
+	makenewconst(p,int64@(z))
+
+fi
+end
+
+proc tevalconvert(unit p)=
+unit q
+int64 a,b
+int32 a32
+word64 u
+real64 x
+real32 x32
+int s,t
+ref int128 p128
+
+!CPL "EVALC",JTAGNAMES[P.TAG]
+
+q:=p^.a
+!CPL "EVALC1",Q
+
+tevaluate(q)
+!CPL "EVALC2"
+
+s:=q^.mode
+case p^.opcode
+when c_soft then
+DOSOFT::
+delmode::
+	q^.mode:=p^.mode
+	deleteunit(p,q)
+	return
+
+when c_reftoref then
+	goto dosoft
+when c_inttoref,c_reftoint then
+	goto dosoft
+
+esac
+
+if q^.tag<>j_const then
+	return
+fi
+
+if s=trefchar then		!not much that can be done with strings
+	return
+fi
+
+!assume numeric conversion of numeric constants
+t:=ttbasetype[p^.newmode]
+
+if s=t then
+	deleteunit(p,q)
+fi
+
+x:=q^.xvalue
+a:=q^.value
+u:=q^.uvalue
+
+case p^.opcode
+when c_softtruncate,c_truncate then
+!	if s=ti128 or s=tu128 then
+!		a:=getlow128(q^.pvalue128)
+!	fi
+	case t
+	when tu8,tc8 then	b:=a iand 255
+	when tu16,tc16 then	b:=a iand 65535
+	when tu32 then	b:=a iand 0xFFFF'FFFF
+	when tu64,ti64,tc64 then	b:=a
+	when ti8 then	b:=int64(int8(a iand 255))
+	when ti16 then	b:=int64(int16(a iand 65535))
+	when ti32 then	b:=int64(int32(a iand 0xFFFF'FFFF))
+	else
+CPL =STRMODE(S),"=>",STRMODE(T)
+		txerror("EVALC/TRUNC")
+
+	esac
+
+	makenewconst(p,b)
+
+when c_iwiden, c_uwiden then
+	case t
+	when ti128,tu128 then
+		p128:=pcm_allocz(int128.bytes)
+		putlow128(p128,a)
+		if ttisint[s] and a<0 then
+			puthigh128(p128,0xFFFF'FFFF'FFFF'FFFF)
+		fi
+		makenewconst(p,int64@(p128))
+	else
+		makenewconst(p,u)
+	esac
+
+when c_ifloat then
+	x:=real(a)
+	makenewconst(p,int64@(x))
+when c_ufloat then
+	x:=real(a)
+	makenewconst(p,int64@(x))
+when c_ifix then
+	a:=p^.value:=x
+	makenewconst(p,int(x))
+
+when c_ufix then
+	TXERROR("UFIX")
+
+when c_fwiden then
+	txerror("EVALC/FWIDEN")
+
+when c_fnarrow then
+	makenewconst(p,int64@(x),tr32)
+
+when c_narrow then txerror("EVALC/NARROW")
+else
+!	CPL "OTHER EVALC:",CONVNAMES[P^.OPCODE],P^.A^.VALUE
+esac
+end
+
+proc makenewconst(unit p,int64 x,int t=tvoid)=
+!modify p (usually a binop, monop, convert op etc) to a new const unit
+!p will usually already have the result mode
+!the x value will do for int/word/real
+
+p^.tag:=j_const
+p.a:=p.b:=nil
+p.hasa:=p.hasb:=0
+p^.value:=x
+p^.isconst:=1
+if t<>tvoid then
+	p^.mode:=t
+fi
+end
+
+proc tx_name(unit p,int t,lv)=
+ref strec d
+int oldmlineno
+unit pcode
+oldmlineno:=mlineno
+
+d:=p^.def
+mlineno:=d^.pos
+
+switch d^.nameid
+when constid,enumid then			!note: currently, rxpass converts names to constants
+
+	if lv then txerror("&const") fi
+
+	tx_namedconst(d)
+	pcode:=d^.code
+
+	p^.tag:=j_const
+	p^.def:=nil
+	p^.a:=nil
+
+    p^.c:=nil
+
+	if pcode^.tag=j_convert then		!assume c_soft
+		p^.value:=pcode^.a^.value
+
+	else
+		p^.value:=pcode^.value
+	fi
+
+	p^.slength:=pcode^.slength
+	p^.mode:=d^.mode
+	p^.isconst:=1
+	p^.isastring:=pcode^.isastring
+
+when staticid,frameid,paramid then
+
+if d^.islet and lv then
+CPL D.NAME,=LV,D.ISLET
+	txerror("Can't use 'let' as lvalue")
+fi
+
+!CPL "TX/NAME",=INASSEM
+
+	tx_namedef(d)
+
+	if not inassem then
+		p^.mode:=d^.mode
+		twiden(p,lv)
+	else
+		p.mode:=trefchar
+	fi
+
+when procid,dllprocid then
+
+	p^.mode:=trefproc	!use generic refproc mode (yields return type of actual proc mode
+			!after a call op, or actual refproc in other context. Don't use actual
+			!refproc here, to avoid generating thousands of ref proc modes, one
+			!for each call, that will never be needed
+
+when labelid,blockid then
+	p^.mode:=treflabel
+
+when moduleid then
+	txerror_s("Module name can't be used on it's own: #",d^.name)
+
+when fieldid then
+	p^.mode:=d^.mode
+
+when typeid then
+	p^.tag:=j_typeconst
+	p^.value:=d^.mode
+	p^.mode:=ti64
+
+when dllvarid then
+	if d.code then
+		txerror("Can't init dllvar")
+	fi
+	p.mode:=d.mode
+
+else
+CPL =MLINENO,=d.pos,=p.pos
+MLINENO:=P.POS
+CPL NAMENAMES[D.NAMEID]
+	txerror_ss("TNAME? # #",namenames[d^.nameid],d^.name)
+endswitch
+mlineno:=oldmlineno
+
+end
+
+proc getdominantmode(int tag,s,t, &u,&v)=
+int sbase:=ttbasetype[s],tbase:=ttbasetype[t]
+
+if sbase<=tany and tbase<=tany then
+	u:=dominantmode[sbase,tbase]
+	if u=tref then			!can't return ref void; choose one
+		u:=s
+	fi
+	v:=u
+	return
+fi
+
+u:=v:=s
+
+!if s=tvar or t=tvar then
+!	u:=v:=tvar
+if comparemodes(s,t) then
+else
+	u:=v:=0
+fi
+
+end
+
+proc getdominantmodepp(unit p,a,b, int &u,&v)=
+int abase,bbase,amode,bmode,tag
+
+abase:=ttbasetype[amode:=a^.mode]
+bbase:=ttbasetype[bmode:=b^.mode]
+
+!CPL "GETDOMPP",STRMODE(ABASE),STRMODE(BBASE),AMODE,BMODE,=COMPAREMODES(AMODE,BMODE)
+
+u:=v:=amode
+tag:=p^.tag
+
+if abase=tref then						!special rules for refs
+	if bbase=tref then					!ref+ref
+		switch tag
+		when j_eq,j_ne then
+			if tttarget[amode]=tvoid or tttarget[bmode]=tvoid then
+				return
+			fi
+		when j_lt,j_le,j_ge,j_gt, j_if then
+		when j_sub then
+			p^.tag:=j_subref
+		else
+			if p^.tag=j_add and amode=trefchar and bmode=trefchar and \
+				a^.tag=j_const and b^.tag=j_const and a^.isastring and b^.isastring then
+				joinstrings(p,a,b)
+				return
+			fi
+
+			txerror("ref+ref")
+		end switch
+
+		if not comparemodes(amode,bmode) then
+			u:=v:=0
+		fi
+
+	elsif ttisinteger[bbase] then		!ref+int
+		unless tag in [j_add,j_sub] then
+			txerror("ref+T")
+		end
+		p^.tag:=(tag=j_add|j_addoffset|j_suboffset)
+		v:=ti64
+
+!	elsif bbase=tflexstring and amode=trefchar then
+!		u:=v:=bmode
+	else								!error
+		u:=v:=0
+	fi
+
+	return
+
+elsif abase<=tany and abase<=tany then
+!CPL "GETDOMPP/ABASE<TANY"
+	if ttisshortint[abase] then
+		abase:=twidenshort(a)
+	fi
+	if ttisshortint[bbase] then
+		bbase:=twidenshort(b)
+	fi
+
+	u:=dominantmode[abase,bbase]
+	if u=tref then			!can't return ref void; choose one
+		u:=amode
+	fi
+	v:=u
+	return
+elsif comparemodes(amode,bmode) then
+	return
+
+!elsif abase=tvar or bbase:=tvar then
+!	u:=v:=tvar
+!	return
+fi
+
+u:=v:=0
+end
+
+proc coerceunit(unit p,int t,hard=0)=
+!p's mode is not t; apply coercion
+!hard=0: is an implicit conversion
+!hard=1: is an explicit conversion
+int s,sbase,tbase,cc,starget,ttarget,result
+
+if t=tvoid then return fi
+
+s:=p^.mode
+
+retry::
+
+
+!CPL "COERCE",STRMODE(S), "=>",STRMODE(T)
+
+if s=t then return fi
+
+if comparemodes(s,t) then return fi
+
+if s=tvoid and t<>tvoid then
+CPL "COERCE"; PRINTUNIT(P)
+	txerror("Void type not allowed in expr")
+fi
+
+sbase:=ttbasetype[s]
+tbase:=ttbasetype[t]
+result:=t
+
+if sbase>=tany or tbase>=tany then			!at least one not simple scalar
+	cc:=0
+	case sbase
+	when tarray,tsmallarray then
+		case tbase
+		when tslice then
+			insertunit(p,j_slice)
+			p.mode:=t
+			return
+		esac
+	when tref then
+		if s=trefchar and tbase=tslice then
+			tstringslice(p,t)
+			return
+		fi
+	when ttuple then
+		if p^.tag=j_callfn and p^.a^.tag=j_name then
+			s:=p^.a^.def^.mode
+			goto retry
+		else
+			txerror("coerce/mult")
+		fi
+
+	esac
+
+	if cc=0 then				!no conversion found
+		if not hard then
+			txerror_ss("Explicit cast needed: # => #",strmode(s),strmode2(t))
+		else
+			cc:=c_hard
+		fi
+	fi
+elsif ttisinteger[sbase] and ttisshortint[tbase] then		!narrow
+	cc:=(hard|c_truncate|c_softtruncate)
+elsif ttisshortint[sbase] and ttisinteger[tbase] then		!widen
+	twidenopnd(p)
+	p^.mode:=p^.newmode:=t
+	tevalconvert(p)
+	return
+elsif ttisshortint[sbase] and ttisreal[tbase] then			!short to float
+	cc:=(ttisint[sbase]|c_ifloat|c_ufloat)
+	goto gotcc
+elsif ttisreal[sbase] and ttisshortint[tbase] then			!float to short
+	cc:=(ttisint[tbase]|c_ifix|c_ufix)
+
+elsif ttisinteger[sbase] and tbase=tenum then
+	p.mode:=t
+	return
+!	cc:=cc_none
+
+else									!both under tany so scalars
+	cc:=conversionops[sbase,tbase]
+
+gotcc::
+	case cc
+	when c_error then
+		txerror_ss("Conversion not allowed: # => #",strmode(s),strmode2(t))
+	when c_none then
+	when c_reftoref then
+		starget:=tttarget[s]
+		ttarget:=tttarget[t]
+		if starget=ttarget then
+			return
+		elsif starget=tvoid or ttarget=tvoid then
+		elsif not hard then
+			if not comparemodes(s,t) then
+				cpl Strmode(s),"||",Strmode2(t)
+				txerror("ref->ref needs explicit cast")
+			fi
+		fi
+	when c_inttoref, c_reftoint then
+		if not hard then
+			txerror_ss("ref<=>int need explicit cast: # => #",strmode(s),strmode2(t))
+		fi
+	esac
+fi
+
+if cc=0 then
+CPL "COERCEUNIT",STRMODE(S),STRMODE(T),HARD
+PRINTUNIT(P)
+	TXERROR("CONV CODE=0")
+fi
+
+insertunit(p,j_convert)
+if cc=c_softtruncate and hard then
+	cc:=c_truncate
+fi
+p^.opcode:=cc
+p^.newmode:=t
+p^.mode:=result
+tevalconvert(p)
+end
+
+proc tx_add(unit p,a,b)=
+!add/sub
+int u,v
+
+tpass(a)
+tpass(b)
+
+getdominantmodepp(p,a,b,u,v)
+
+if p^.tag=j_const then			!assume str+str => str
+	return
+fi
+
+coerceunit(a,u)
+coerceunit(b,v)
+p^.mode:=u
+
+
+if u=0 then					!probably not numeric
+CPL =STRMODE(A.MODE), =STRMODE(B.MODE)
+	txerror("add/no dom",p)
+fi
+
+coerceunit(a,u)
+coerceunit(b,v)
+p^.mode:=u
+
+if p^.tag=j_subref and ttisref[v] then
+	p^.mode:=ti64
+fi
+
+if ttbasetype[u]=tref then
+	if b^.tag=j_const and ttbasetype[b^.mode]<>tref then			!scale offset and keep as normal add (won't be sub)
+		b^.value*:=ttsize[tttarget[a^.mode]]
+		case p^.tag					!lose the add/subptr as no special scaling needed
+		when j_addoffset then p^.tag:=j_add
+		when j_suboffset then p^.tag:=j_sub
+		esac
+	fi
+fi
+
+end
+
+proc tx_mul(unit p,a,b)=
+!mul/div/rem/min/max
+int u,v
+tpass(a)
+tpass(b)
+
+!getdominantmode(p^.tag,a^.mode,b^.mode,u,v)
+getdominantmodepp(p,a,b,u,v)
+if u=tvoid then
+	txerror("Bad mul/div/rem types",p)
+fi
+
+coerceunit(a,u)
+coerceunit(b,v)
+p^.mode:=u
+
+!if stdtypecode[u]<>'R' and p^.tag=j_div and u<>tvar then
+if not ttisreal[u]<>'R' and p^.tag=j_div then
+	p^.tag:=j_idiv
+fi
+
+end
+
+proc tx_shl(unit p,a,b)=
+!shl/shr
+tpass(a)
+tpass(b)
+
+twidenopnd(a)
+
+unless ttisinteger[a.mode] then
+	txerror("SHL/not int")
+endunless
+
+!if b.mode<>tvar then
+	coerceunit(b,ti64)
+!fi
+p^.mode:=a^.mode
+end
+
+proc tx_iand(unit p,a,b)=
+!iand/ior/ixor
+int u,v
+
+tpass(a)
+tpass(b)
+
+getdominantmodepp(p,a,b,u,v)
+
+unless ttisinteger[u] then
+	txerror("IAND/not int")
+endunless
+
+coerceunit(a,u)
+coerceunit(b,u)
+p^.mode:=u
+end
+
+proc tx_eq(unit p,a,b)=
+int abase,bbase,atype,btype,u,v
+
+tpass(a)
+tpass(b)
+
+if ttisref[a.mode] and ttisref[b.mode] and
+	(tttarget[a.mode]=tvoid or tttarget[b.mode]=tvoid) then
+else
+	getdominantmodepp(p,a,b,u,v)
+	if u=0 then
+		txerror("EQ/NE")
+	fi
+
+	coerceunit(a,u)
+	coerceunit(b,u)
+fi
+
+p^.mode:=ti64
+end
+
+proc tx_same(unit p,a,b)=
+int abase,bbase,atype,btype,u,v
+
+tpass(a)
+tpass(b)
+
+TXERROR("SAME")
+!unless a.mode=b.mode=tvar then
+!	txerror("isequal: must be vars")
+!end
+
+p^.mode:=ti64
+end
+
+proc tx_lt(unit p,a,b)=
+int amode,abase,bmode,bbase,u,v
+
+tpass(a)
+tpass(b)
+
+getdominantmodepp(p,a,b,u,v)
+if u=0 then
+	txerror("lt/le/ge/gt")
+fi
+
+coerceunit(a,u)
+coerceunit(b,u)
+
+p^.mode:=ti64
+end
+
+proc tx_callproc (unit p,a,pargs,int t)=
+!deal with both callproc and callfn (perhaps calldll too)
+unit q
+ref strec d,e,pm
+[maxparams]ref strec paramlist
+[maxparams]unit arglist,newarglist
+int nparams,i,j,k,nargs,m,kwdused,qm
+ichar name
+
+tpass(a)
+
+nargs:=nparams:=0
+
+case a^.tag
+when j_name then
+	d:=a^.def
+
+getparams::
+	e:=d^.deflist
+	while e do
+		if e^.nameid=paramid then
+			if nparams>=maxparams then txerror("Param overflow") fi
+			paramlist[++nparams]:=e
+		fi
+		e:=e^.nextdef
+	od
+
+else
+	d:=ttnamedef[a^.mode]
+	goto getparams
+esac
+
+q:=pargs
+while q do
+	if nargs>=maxparams then txerror("Param overflow") fi
+	arglist[++nargs]:=q
+	q:=q^.nextunit
+OD
+
+p^.mode:=d^.mode				!type returned by function (will be void for procs)
+if d^.nretvalues>1 then
+	p^.mode:=ttuple
+fi
+
+if p^.mode=tvoid and p^.tag=j_callfn then
+	p^.tag:=j_callproc
+fi
+
+if p^.mode then
+	twiden(p,no_lv)
+fi
+
+if d^.varparams then
+	for i to nargs do
+
+		if i<=nparams then
+			tpass(arglist[i],paramlist[i]^.mode)
+		else
+			tpass(arglist[i])
+		fi
+		if targetbits=64 then
+			twidenopnd(arglist[i])
+		fi
+	od
+	return
+
+fi
+
+!I have formal params in paramlist, and actual args in arglist
+!Now create new set of args in arglist, which maps any keyword parameters,
+!while missing args (represented as nullunit) replaced with nil
+
+!Create new set of actual parameters in params(), with optional/default values filled in
+!and any conversions applied
+k:=0
+kwdused:=0
+for i to nparams do
+	newarglist[i]:=nil
+od
+
+for i to nargs do
+	q:=arglist[i]
+	switch q^.tag
+	when j_keyword then
+		name:=q^.a^.def^.name
+		for j to nparams do
+			if eqstring(paramlist[j]^.name,name) then
+				exit
+			fi
+		else
+			txerror_s("Can't find kwd param: #",name)
+		od
+
+		if newarglist[j] then
+			txerror_s("Kwd: # already used or was implicit",name)
+		fi
+		newarglist[j]:=q^.b
+		kwdused:=1
+
+	when j_null then			!missing param
+		if kwdused then
+			txerror("Normal param follows kwd")
+		fi
+		q:=nil
+		goto doregparam
+	else
+doregparam::
+		if kwdused then
+			txerror("Normal param follows kwd")
+		fi
+		if k>=nparams then
+			cpl =k, =nparams
+			txerror("Too many params supplied")
+		fi
+		newarglist[++k]:=q
+	endswitch
+od
+
+!scan params, and fill in optional/default params as needed
+!!params[i>naparams] might be void if there were fewer actual parameters
+
+for i to nparams do
+	q:=newarglist[i]			!will be nil of not supplied
+	pm:=paramlist[i]			!formal param (an st entry)
+	if q=nil then
+		unless pm^.optional then
+			txerror_s("Param not optional: #",strint(i))
+		end
+		if pm^.code then		!provide default value
+			newarglist[i]:=duplunit(pm^.code,p^.lineno)
+		else
+			newarglist[i]:=createconstunit(0,ti64)
+		fi
+	fi
+od
+
+!final pass: do type-pass on each param, and apply any conversion
+!I also need to build a new argument list for the call unit
+unit ulist:=nil, ulistx
+
+for i to nparams do
+	pm:=paramlist[i]
+	q:=newarglist[i]
+
+	if pm^.parammode=out_param then
+		tpass(q,,need_lv)
+		m:=tttarget[pm^.mode]
+		qm:=q^.mode
+
+		if not comparemodes(qm,m) then
+			txerror("&param: type mismatch")
+		fi
+
+		insertunit(q,j_addrof)
+		q^.mode:=createrefmode(nil,qm)
+
+	else
+		tpass(q,pm^.mode)
+		if targetbits=64 then
+			twidenopnd(q)
+		fi
+	fi
+
+	if ulist=nil then
+		ulist:=q
+	else
+		ulistx^.nextunit:=q
+	fi
+	ulistx:=q
+	q^.nextunit:=nil
+od
+p^.b:=ulist
+end
+
+proc tx_neg(unit p,a,b)=
+int u
+
+tpass(a)
+!if not (ttflags[ttbasetype[a^.mode]] iand m_numeric) then
+if not isnumericmode(a^.mode) then
+CPL =STRMODE(A.MODE)
+	txerror("Neg: not numeric",a)
+fi
+twidenopnd(a)
+
+u:=a^.mode
+coerceunit(a,u)
+p^.mode:=u
+end
+
+proc tx_if (unit p,a,b,c,int t,lv) =
+	int u,v
+
+	tcond(a)
+
+	tpass(b,t,lv)
+	if t<>tvoid and not c then
+		txerror("if needs else")
+	fi
+	tpass(c,t,lv)
+
+	if t=tany then			!unknown types (eg. print)
+!CPL "IF/ANY"
+		getdominantmodepp(p, b,c,u,v)
+!CPL =STRMODE(U),STRMODE(V)
+		coerceunit(b,u)
+		coerceunit(c,u)
+		p^.mode:=u
+	else				!know exactly what type needed
+		p^.mode:=t
+	fi
+end
+
+proc tx_longif (unit p,a,b,int t,lv) =
+	unit q,r
+	int u,v
+
+	u:=tvoid
+
+	q:=a
+	while q do				!all elseif unots
+		tcond(q^.a)
+		r:=q^.b
+		tpass(r,t,lv)
+
+		if t=tany then
+			if u=tvoid then
+				u:=r^.mode
+			else
+				getdominantmode(0,u,r^.mode,u,v)
+			fi
+		fi
+
+		q:=q^.nextunit
+	od
+
+	if t<>tvoid and b=nil then
+		txerror("longif needs else")
+	fi
+	tpass(b,t,lv)
+
+	if t=tany then
+		getdominantmode(0,u,b^.mode,u,v)
+	fi
+
+	if t<>tvoid then
+		q:=a
+		while q do				!all elseif unots
+			if t=tany then
+				coerceunit(q^.b,u)
+			fi
+			q^.mode:=q^.b^.mode
+			q:=q^.nextunit
+		od
+		if t=tany then
+			coerceunit(b,u)
+		fi
+		p^.mode:=b^.mode
+	fi
+end
+
+proc tx_preincr(unit p,a,int t)=
+tpass(a,,need_lv)
+unless ttisinteger[a^.mode] or ttisref[a^.mode] then
+	txerror("incr: not int/ref/var")
+end
+
+if t=tvoid then
+	case p^.tag
+	when j_preincrx, j_postincrx then p^.tag:=j_incr
+	when j_predecrx, j_postdecrx then p^.tag:=j_decr
+	esac
+
+else
+	p^.mode:=a^.mode	!only meaningful for -x versions
+fi
+if t<>tvoid then
+	twiden(p,0)
+fi
+end
+
+proc tx_for(unit pindex,pbody,ptemps)=
+unit pfrom, pto, pstep, plocal, plist
+int u,mlist,elemtype
+
+pfrom:=pindex.nextunit
+pto:=pfrom^.nextunit
+pstep:=pto^.nextunit
+plocal:=pstep.nextunit
+
+tpass(pindex)
+u:=pindex.mode
+
+tpass(pfrom,u)
+tpass(pto,u)
+tpass(pstep,u)
+
+if plocal then
+	plist:=plocal.nextunit
+	tpass(plist)
+	mlist:=plist.mode
+
+	case ttbasetype[mlist]
+	when tarray,tsmallarray then
+		elemtype:=tttarget[mlist]
+!	when tvar then
+!		elemtype:=tvar
+	when tslice then
+		elemtype:=tttarget[mlist]
+	else
+		txerror("forall/can't iterate")
+	esac
+
+	tpass(plocal)
+	if plocal.mode=tany then
+		plocal.mode:=elemtype
+		plocal.def.mode:=elemtype
+	fi
+fi
+
+tpass(pbody,tvoid)
+tpass(pbody^.nextunit,tvoid)	!optional else
+end
+
+proc tx_index(unit p,a,b,int t,lv) =
+!p is an index unit
+!a is an array, b is an index
+!t is the needed type for the element being indexed
+int amode,emode,pmode,tmode,tbasemode
+
+tpass(a,,lv)
+deref(a)
+amode:=a.mode
+
+!tpass(b)			!index
+tpass(b,ti64)			!index
+
+!if b.mode<>tvar then
+!	coerceunit(b,ti64)
+!fi
+
+if ttbasetype[amode] not in [tarray, tsmallarray, tslice, tmanarray] then
+	txerror_s("Can't index: #",strmode(amode))
+fi
+!case ttbasetype[amode]
+!when tvar then
+!	p.mode:=tvar
+!else
+	p.mode:=tttarget[amode]
+	twiden(p,lv)
+!esac
+end
+
+proc tx_makerange(unit p,a,b)=
+int u,v, amode,bmode
+
+tpass(a)
+tpass(b)
+
+amode:=a^.mode
+bmode:=b^.mode
+
+!if ttisvar[amode] or ttisvar[bmode] then
+!	coerceunit(a,tvar)
+!	coerceunit(b,tvar)
+!	p.mode:=tvar
+!	return
+!fi
+
+if not ttisinteger[amode] or not ttisinteger[bmode] then
+	txerror("range not int")
+fi
+!if tttypecode[amode]<>tttypecode[bmode] then
+!	txerror("range: mixed i64/u64")
+!fi
+getdominantmodepp(p,a,b,u,v)
+
+if ttisint[amode] then
+	coerceunit(a,ti64)
+	coerceunit(b,ti64)
+else
+	coerceunit(a,tu64)
+	coerceunit(b,tu64)
+fi
+p^.mode:=trange
+end
+
+proc tx_makeset(unit p,a, int t)=
+int x,y,isconst
+int64 lower,upper
+ref void pvoid
+
+if t=tvoid then
+	txerror("open(var) set type")
+fi
+
+lower:=2 billion
+upper:=-2 billion
+
+isconst:=1
+
+while a do
+	tpass(a)
+
+	if not a^.isconst then
+!TXERROR("MAKESET NOT CONST")
+		isconst:=0
+	else
+		case a^.tag
+		when j_makerange then
+			lower min:=a^.a^.value
+			upper max:=a^.b^.value
+		when j_const then
+			coerceunit(a,ti64)
+			lower min:=y:=a^.value
+			upper max:=y:=a^.value
+		esac
+	fi
+	a:=a^.nextunit
+od
+
+p^.isconst:=isconst
+!p.hasa:=p.hasb:=0
+!p^.range_lower:=lower
+!p^.range_upper:=upper
+!if isconst then
+!	p^.mode:=createsetmodek(nil,(p^.length|upper+1|0),0)
+!else
+
+p^.mode:=tset
+!fi
+end
+
+proc tx_makedict(unit p,a, int t)=
+int x,y,isconst,km,vm
+ref void pvoid
+
+if t=tvoid then
+	txerror("open(var) dict type")
+fi
+
+!if ttbasetype[t]<>tflexdict then
+!	txerror("not dict type")
+!fi
+
+!km:=ttkeymode[t]
+!vm:=tttarget[t]
+!
+!isconst:=1
+!while a do					!a is a keyvalue type
+!	tpass(a^.a,km)
+!	tpass(a^.b,vm)
+!
+!	a:=a^.nextunit
+!od
+
+p^.isconst:=isconst
+p^.mode:=tdict
+end
+
+proc tx_ptr(unit p,a,int t,lv)=
+ref strec d
+
+case p^.tag
+when j_name then
+	d:=p^.def
+	case d^.nameid
+	when staticid, frameid, paramid then
+	else
+		txerror_s("Can't use as ptr: ",d^.name)
+	esac
+esac
+tpass(a)
+
+case ttbasetype[a^.mode]
+when tvoid then
+	txerror("Deref Void")
+when tref then
+	p^.mode:=tttarget[a^.mode]
+when tslice then
+	txerror("Can't deref slice")
+!when tvar then
+!	p^.mode:=tvar
+else
+	txerror("PTR: need ref T")
+esac
+twiden(p,lv)
+end
+
+proc setrecordsize(int m)=
+	[maxfields+8]ref strec fieldlist
+	int i,nfields,indent,nrfields,size,index
+	ref strec d,e
+	ref char flags
+	const ss='S', ee='E'
+	int flag
+
+	if ttsize[m] then return fi
+
+	d:=ttnamedef[m]
+	e:=d^.deflist
+	nfields:=0
+
+	fieldlist[++nfields]:=ref strec@(ss)
+
+	while e do
+		if nfields>=maxfields then
+			gerror("srs:too many fields")
+		fi
+
+		setmodesize(e^.mode)
+		flags:=cast(&e^.uflags)
+		docase flags^
+		when 'S', 'U' then
+			flag:=flags^
+			fieldlist[++nfields]:=ref strec@(flag)
+			++flags
+		else
+			exit
+		end docase
+
+		fieldlist[++nfields]:=e
+
+		do
+			flag:=flags++^
+			case flag
+			when '*'  then
+			when 'E' then
+				fieldlist[++nfields]:=ref strec@(ee)
+			else
+				exit
+			esac
+		od
+
+		e:=e^.nextdef
+	od
+
+	fieldlist[++nfields]:=ref strec@(ee)
+	fieldlist[nfields+1]:=nil			!terminator
+
+	countedfields:=0
+	index:=2
+	scanrecord('S',&fieldlist,index,size,0)
+	ttsize[m]:=size
+	ttlength[m]:=countedfields
+	ttlower[m]:=1
+
+	case ttsize[m]
+	when 1,2,4 then tttypecat[m]:=tc_d124
+	when 8 then tttypecat[m]:=tc_d8
+	when 16 then tttypecat[m]:=tc_d16
+	esac
+	if tttypecat[m]<>tc_blk then
+		ttbasetype[m]:=tsmallrecord
+	fi
+end
+
+proc scanrecord(int state,ref[]ref strec fields, int &index, &isize, offset)=
+ 	ref strec e,f,ea
+	int size:=0,fieldsize,bitoffset
+
+	while f:=fields^[index++] do
+		case int(f)
+		when 'S','U' then
+			scanrecord(int(f),fields, index,fieldsize, offset)
+		when 'E' then			!end of this nested block
+			if state='U' then ++countedfields fi
+			isize:=size
+			return
+		else
+			if f^.mode=tbitfield then
+				fieldsize:=0	
+				ea:=f^.equivfield
+				f^.offset:=ea^.offset
+				f^.bitoffset:=bitoffset
+				bitoffset+:=f^.bitfieldwidth
+!				if bitoffset>ttbitwidth[f^.equivfield^.mode] then
+				if bitoffset>ttsize[f.equivfield.mode]*8 then
+					txerror("Bit fields overflow type")
+				fi
+
+			elsif f^.at then
+				bitoffset:=0
+				e:=f^.equivfield
+				fieldsize:=0
+				ea:=resolve_equiv_name(f^.owner,e)
+				f^.offset:=ea^.offset
+			else
+				bitoffset:=0
+				if state='S' then ++countedfields fi
+				fieldsize:=ttsize[f^.mode]
+!		if ttisref[f.mode] then
+!			fieldsize:=8
+!		fi
+				f^.offset:=offset
+				f^.offset:=offset
+			fi
+		esac
+		if state='S' then
+			offset+:=fieldsize
+			size+:=fieldsize
+		else
+			size:=max(size,fieldsize)
+		fi
+	od
+end
+
+proc tx_convert(unit p,a,int hard=0)=
+if a^.tag=j_makelist then
+	tx_makelist(a,a^.a,p^.newmode,no_lv)
+else
+	tpass(a)
+	coerceunit(a,p^.newmode,hard)
+fi
+deleteunit(p,a)			!get rid of this convert (may be replaced by new convert unit)
+end
+
+proc tx_makelist(unit p,a, int t,lv)=
+	int alength,tlength,elemtype,newt, i, nfields,isconst, m
+	unit q,b
+	ref strec e
+
+	alength:=p^.length
+	newt:=0
+	isconst:=1
+
+	tlength:=ttlength[t]
+
+	if tlength then
+		if alength<tlength then
+			txerror("Too few elements")
+		elsif alength>tlength then
+			txerror("Too many elements")
+		fi
+	fi
+
+	case ttbasetype[t]
+	when tarray,tsmallarray then
+		elemtype:=tttarget[t]
+		if tlength=0 then
+			newt:=createarraymodek(nil, elemtype, ttlower[t],alength,0)
+		else
+			newt:=t
+		fi
+		q:=a
+		while q do
+			tpass(q,elemtype,lv)
+			unless q^.tag=j_const then isconst:=0 end
+			q:=q^.nextunit
+		od
+
+		p^.mode:=newt
+
+	when trecord,tsmallrecord then
+		e:=ttnamedef[t]^.deflist
+		q:=a
+		while q and e do
+			while e^.mode=tbitfield do
+				e:=e^.nextdef
+				if not e then exit fi
+			od
+
+			tpass(q,e^.mode,lv)
+			unless q^.tag=j_const then isconst:=0 end
+			q:=q^.nextunit
+			e:=e^.nextdef
+		od
+		while e and e^.mode=tbitfield do
+			e:=e^.nextdef
+		od
+		if q or e then
+			txerror("Can't initialise unions")
+		fi
+		p^.mode:=t
+	when tslice then
+!CPL "MAKELIST/SL"
+		if a=nil or (b:=a^.nextunit; b=nil) or b^.nextunit then
+			txerror("bad slice init")
+		fi
+		p.b:=b
+		a.nextunit:=nil
+		tpass(a,,lv)
+		if ttbasetype[a^.mode]<>tref then txerror("slice init not ref") fi
+		if not comparemodes(tttarget[a.mode],tttarget[t]) then
+!CPL =STRMODE(TTTARGET[A.MODE])
+!CPL =STRMODE(TTTARGET[T])
+			txerror("slice/ptr mismatch")
+		fi
+!m:=tttarget[a.mode]
+!CPL =STRMODE(M),STRMODE(A.MODE)
+
+		tpass(b,ti64)
+		p^.mode:=t
+		p.tag:=j_makeslice
+
+!	when tflexarray then
+!		elemtype:=tttarget[t]
+!		q:=a
+!		while q do
+!			tpass(q,elemtype,lv)
+!			unless q^.tag=j_const then isconst:=0 end
+!			q:=q^.nextunit
+!		od
+!
+!		p^.mode:=t
+
+!	when tvoid,tvar then
+	when tvoid then
+		q:=a
+		if p.makearray then
+			if q=nil then txerror("array()?") fi
+			tpass(q,,lv)
+			m:=q.mode
+			q:=q.nextunit
+		else
+TXERROR("MAKELIST1")
+!			m:=tvar
+		fi
+
+		while q do
+			tpass(q,m,lv)
+			unless q^.tag=j_const then isconst:=0 end
+			q:=q^.nextunit
+		od
+
+!*!		p^.mode:=tvar
+	else
+		txerror_s("Unknown makelist type: #",strmode(t))
+	esac
+
+	p^.isconst:=isconst
+
+	tpass(p.b,ti64)
+
+end
+
+proc tx_dot(unit p,a,b,int lv)=
+int recmode,recbasemode,i,j,newtag,tmode
+unit q,pindex
+ref strec d,dequiv
+
+tpass(a,,lv)			!lhs, yeields ref array type
+
+recmode:=a^.mode
+
+recbasemode:=ttbasetype[recmode]
+
+while recbasemode=tref do
+	tmode:=tttarget[recmode]
+	insertunit(a,j_ptr)
+	recmode:=a^.mode:=tmode
+	recbasemode:=ttbasetype[recmode]
+od
+
+if ttbasetype[recmode] not in [trecord,tsmallrecord] then
+	txerror("Bad record type")
+fi
+
+d:=b^.def
+
+if d^.nameid=nullid then			!not resolved; lhs mode wasn't available
+	d:=b^.def:=resolvefield(d,recmode)
+fi
+
+if d^.mode=tbitfield then
+	i:=d^.bitoffset
+	j:=i+d^.bitfieldwidth-1
+	dequiv:=d^.equivfield
+	b^.def:=dequiv				!change from bitfield field to containing int
+	b^.mode:=dequiv^.mode
+	p^.offset:=d^.offset
+
+	if i=j then					!single bit
+		pindex:=createconstunit(i,ti64)
+		newtag:=j_dotindex
+	else						!bit slice
+		pindex:=createunit2(j_makerange,createconstunit(i,ti64),createconstunit(j,ti64))
+		pindex^.mode:=trange
+		newtag:=j_dotslice
+	fi
+
+	p^.mode:=b^.mode
+	twiden(p,lv)
+	insertunit(p,newtag)
+	p^.mode:=tu64
+	p^.b:=pindex
+
+	return
+
+fi
+
+b^.mode:=d^.mode
+p^.mode:=d^.mode
+
+!if ttisvar[d^.mode] then
+!	CPL "DOT:NEED TO REMOVE ADDR OF"
+!	removeaddrof(a)
+!FI
+
+p^.offset:=d^.offset
+twiden(p,lv)
+end
+
+function resolvefield(ref strec d, int m)ref strec=
+	ref strec e,t
+
+	case ttbasetype[m]
+	when trecord,tsmallrecord then
+	when tref then
+		m:=tttarget[m]
+		if ttbasetype[m] not in [trecord,tsmallrecord] then
+			txerror("3:record expected")
 		fi
 	else
-		nextfmtchars(0)
+		txerror("4:record expected")
+	esac
+	t:=ttnamedef[m]
+
+	e:=finddupl(t,d)
+	if not e then
+		txerror_s("Not a field: #",d^.name)
 	fi
-
-	q:=string_make("")
-	listdepth:=0
-
-!	switch p.tag
-!	when tstring then
-!		if pfmt.tag=tvoid then
-!			printstr_n(cast(p.strptr),p.length)
-!			return
-!		fi
-!	when tint, treal, trange, tword then	! small numeric types: use local string
-!		q:=str_make("")
-!		pch_tostr(q,p,fmtstr)
-!		printstr_n(q.strptr,q.length)
-!		str_free(q)
-!		return
-!	endswitch
-
-	q:=string_make("")
-!	strdest:=q
-
-	pch_tostr(p,sfmt)
-
-!	printstr_n(q.ustring.strptr,q.ustring.length)
-
-	string_free(q)
+	return e
 end
 
-proc list_print(object p, ichar fmt)=
-	iobject q
-	printstr("(")
+function comparemodes(int s,t)int=
+!return 1 if s/t are comparable modes
+!a direct compare may be false because refs/arrays but be constructed at
+!different times
+int sbase, tbase
+ref strec d,e
 
-	if p.ulist.lower<>1 then
-		printstr(strint(p.ulist.lower))
-		printstr(":")
+!CPL "COMPAREMODES", =strmode(S), STRMODE(T)
+
+if s=t then return 1 fi
+sbase:=ttbasetype[s]
+tbase:=ttbasetype[t]
+
+if sbase<>tbase then return 0 fi
+case sbase
+when tref then
+	return comparemodes(tttarget[s],tttarget[t])
+when tarray, tsmallarray then
+	if comparemodes(tttarget[s],tttarget[t]) and (ttlength[s]=ttlength[t] or\
+		ttlength[s]=0 or ttlength[t]=0) then
+		return 1
 	fi
+when tslice then
+	return comparemodes(tttarget[s],tttarget[t])
 
-	q:=p.ulist.iobjptr
-
-	for i to p.ulist.length do
-		pch_tostr(q^,fmt)
-		++q
-		if i<p.ulist.length then printstr(",") fi
-	od
-
-	printstr(")")
-
+when tproc then
+	d:=ttnamedef[s]
+	e:=ttnamedef[t]
+	if d and e then
+		if not comparemodes(d^.mode,e^.mode) then return 0 fi
+		if d^.paramlist=nil and e^.paramlist=nil then return 1 fi
+	fi
+!else needs complex param/result-matching
+!...
+esac
+return 0
 end
 
-proc pch_tostr(object p,ichar fmt)=
-	[256]char str
-
-!	q:=str_make("")
-!	listdepth:=0
-
-!CPL "PCHTOSTR",TTNAME[P.TAG]
+function isboolunit(unit p)int=
+!check that unit p has an inherent bool result, and return 1 if so, otherwise 0.
+!This is done without checking types, so an EQ unit will always be bool
+!Used by caller to determine whether an istrue op needs to be inserted
 
 	switch p.tag
-	when vt_int then
-		print @&.str,p.unum.value:fmt
+	when j_eq, j_ne, j_lt, j_le, j_ge, j_gt, j_andb, j_orb,
+		j_andl, j_orl, j_notl, j_istruel, j_xorl, j_inrange, j_inset then
+		1
+	else
+		0
+	end switch
+end
 
-	when vt_real then
-		print @&.str,p.unum.xvalue:fmt
+proc checkbool(int m)=
+!check that mode can be converted to bool, ie. can have istrue applied
 
-	when vt_void then
-		printstr_n("Void",-1)
-		return
+!unless tttypecode[m] then
+!!unless stdtypeflags[m] iand (m_numeric + m_ref) then
+!	txerror_s("Can't convert to bool: #",strmode(m))
+!end unless
+end
 
-	when vt_string then
-		printstr_n(p.ustr.strptr,p.ustr.length)
-		return
+proc tx_andl(unit p,a,b)=
 
-!	when vt_proc then
-!		proc_print(p)
-!
-	when vt_list then
-		list_print(p,fmt)
-		return
+tpass(a)
+tpass(b)
+if not isboolunit(a) then insertunit(a,j_istruel) fi
+if not isboolunit(b) then insertunit(b,j_istruel) fi
 
-	when vt_array then
-		array_print(p,fmt)
-		return
+checkbool(a^.mode)
+checkbool(b^.mode)
+p^.mode:=ti64
+end
 
-	when vt_range then
-		print @&.str,p.urange.lower,,"..",,p.urange.upper
+proc convintconst(unit p,int64 x)=				!CONVINTCONST
+!convert unit p into int const x
+p^.tag:=j_const
+p^.mode:=ti64
+p^.value:=x
+p^.a:=p^.b:=p^.c:=nil
+p^.isconst:=1
+end
 
-	when vt_record then
-		printstr("Record")
-!		list_print(p,fmt)
-		return
+proc tx_upb(unit p,a)=
+int m
 
-!	when vt_type then
-!		printstr("<")
-!		printstr(ttname[p.unumber.value])
-!		printstr(">")
+tpass(a)
+deref(a)
+m:=a^.mode
 
-	when vt_struct then
-!!		sprintf(&.str,"(Struct:%s*%d)",p.ustruct.structdef.ustructdef.name,
-!!			p.ustruct.structdef.ustructdef.nfields)
-!		fprint &.str,"(Struct:#*#)",p.ustruct.structdef.ustructdef.name,
-!			p.ustruct.structdef.ustructdef.nfields
-!
-		printstr("<STRUCT>")
-		return
+case ttbasetype[m]
+when tarray,tsmallarray then
+	convintconst(p,ttlower[m]+ttlength[m]-1)
+when tslice,tmanarray then
+else
+	txerror_s("UPB #",strmode(m))
+esac
+p^.mode:=ti64
+end
 
-	when vt_decimal then
-		decimal_print(p,fmt)
-		return
+proc tx_len(unit p,a)=
+int m
+
+tpass(a)
+deref(a)
+
+m:=a^.mode
+
+case ttbasetype[m]
+when tarray,tsmallarray then
+	convintconst(p,ttlength[m])
+when tslice,tmanarray then
+else
+	txerror_s("LEN #",strmode(m))
+esac
+p^.mode:=ti64
+end
+
+proc tx_lenstr(unit p,a)=
+	int m
+
+	tpass(a)
+	m:=a^.mode
+
+	if m<>trefchar then
+		txerror("ichar expected")
+	fi
+
+	if a.tag=j_const then
+!CPL "ISCONST"
+		deleteunit(p,a)
+		p.tag:=j_const
+		p.value:=p.slength
+	fi
+
+	p.mode:=ti64
+	p.isastring:=0
+
+!	TXERROR("LENSTR")
+!case ttbasetype[m]
+!when tarray then
+!	convintconst(p,ttlength[m])
+!when tslice,tvar then
+!else
+!	txerror_s("LEN #",strmode(m))
+!esac
+!p^.mode:=ti64
+end
+
+proc tx_lwb(unit p,a)=
+int m
+
+tpass(a)
+deref(a)
+m:=a^.mode
+
+case ttbasetype[m]
+when tarray, tsmallarray then
+	convintconst(p,ttlower[m])
+when tslice then
+	convintconst(p,ttlower[m])
+!when tvar then
+
+!when tflexstring then
+!	convintconst(p,1)
+else
+	txerror_s("LWB #",strmode(m))
+esac
+p^.mode:=ti64
+end
+
+proc tx_bounds(unit p,a)=
+int m,lower,upper
+ref int128 p128
+
+tpass(a)
+deref(a)
+m:=a^.mode
+
+case ttbasetype[m]
+when tarray,tsmallarray then
+	lower:=ttlower[m]
+	upper:=lower+ttlength[m]-1
+when tslice,tmanarray then
+	p.mode:=trange
+	return
+else
+	txerror_s("BOUNDS #",strmode(m))
+esac
+
+p^.tag:=j_const
+p^.mode:=trange	!createrangemode(currproc,ti64,0)
+
+TXERROR("BOUNDS")
+
+!p128:=pcm_alloc(int128.bytes)
+!putlow128(p128,lower)
+!putlow128(p128,upper)
+!p^.pvalue128:=p128
+p^.a:=p^.b:=p^.c:=nil
+p^.isconst:=1
+end
+
+proc tx_sliceptr(unit p,a)=
+int m,tmode
+
+tpass(a)
+m:=a^.mode
+
+case ttbasetype[m]
+when tslice then
+else
+	txerror_s("SLICEPTR #",strmode(m))
+esac
+
+!for when ptr is to be pointer to the array
+tmode:=createarraymodek(nil, tttarget[m], ttlower[m],0,0)
+
+!for when ptr is to be pointer to the array element (although either can be
+!cast to the other); although try alternate .sliceptr versions too
+!tmode:=tttarget[m]
+
+p^.mode:=createrefmode(nil,tmode)
+end
+
+proc tx_inot(unit p,a)=
+int u,atype
+
+	tpass(a)
+
+!	if a.mode=tvar then
+!		p.mode:=tvar
+!		return
+!	fi
+
+	unless ttisinteger[a.mode] then
+		txerror("INOT/not int")
+	end unless
+	twidenopnd(a)
+
+	u:=ttbasetype[a^.mode]
+	coerceunit(a,u)
+	p^.mode:=u
+end
+
+proc tx_atan2(unit p,a,b)=
+int u
+
+tpass(a)
+tpass(b)
+
+!if a.mode=tvar or b.mode=tvar then
+!	u:=tvar
+!else
+	u:=tr64
+!fi
+
+coerceunit(a,u)
+coerceunit(b,u)
+p.mode:=u
+
+if not ttisreal[u] and p^.tag=j_div then
+	p^.tag:=j_idiv
+fi
+end
+
+proc tx_swap(unit p,a,b)=
+tpass(a,,need_lv)
+tpass(b,,need_lv)
+
+if not comparemodes(a^.mode,b^.mode) then
+	txerror("SWAP: type mismatch")
+fi
+
+p^.mode:=tvoid
+end
+
+proc tx_select(unit p,a,b,c, int t,lv)=
+int i,u,v
+unit q
+
+tpass(a,ti64)
+
+q:=b
+while q do
+	tpass(q,t,lv)
+	if q=b then
+		u:=q^.mode
+	else
+		getdominantmode(0,u,q^.mode,u,v)
+	fi
+
+	q:=q^.nextunit
+od
+
+tpass(c,t,lv)
+getdominantmode(0,u,c^.mode,u,v)
+
+q:=b
+while q do
+	coerceunit(q,u)
+	q:=q^.nextunit
+od
+
+p^.mode:=u
+end
+
+proc tx_case(unit p,a,b,c, int t,lv)=
+int amode,u,v
+unit wt,w
+
+if p^.tag=j_docase and lv then gerror("&docase") fi
+
+tpass(a)
+
+if a=nil then
+	amode:=tany
+else
+	amode:=a^.mode
+fi
+
+!if ttflags[amode] iand m_int and ttsize[amode]<8 then
+if ttisinteger[amode] and ttsize[amode]<8 then
+	coerceunit(a,tint)
+	amode:=tint
+fi
+u:=tvoid
+
+!CPL "CASE"
+
+wt:=b
+while wt do				!whenthen chain
+	w:=wt^.a
+	while w do				!each expr between when...then
+		tpass(w)
+		if w^.tag=j_makerange then
+			unless ttisinteger[amode] then txerror("case: need int index") end
+		else
+			coerceunit(w,amode)
+			if amode=tany and not isboolunit(w) then
+				insertunit(w,j_istruel)
+			fi
+		fi
+		w:=w^.nextunit
+	od
+	tpass(wt^.b,t,lv)			!process block
+	if t<>tvoid then
+		if u then
+			getdominantmode(0,u,wt^.b^.mode,u,v)
+		else
+			u:=wt^.b^.mode
+		fi
+	fi
+	wt:=wt^.nextunit
+od
+
+if c then
+	tpass(c,t,lv)
+	if t=tany then
+		getdominantmode(0,u,c^.mode,u,v)
+	fi
+elsif t<>tvoid then
+	txerror("case needs else")
+fi
+
+if t<>tvoid then
+	p.mode:=u
+else
+	p.mode:=tvoid
+fi
+
+end
+
+proc tx_notl(unit p,a)=
+tpass(a)
+
+case a^.tag
+when j_notl then
+	deleteunit(p,a)
+	p^.tag:=j_istruel
+esac
+
+if p^.tag=j_istruel and isboolunit(p^.a) then
+	deleteunit(p,p^.a)
+fi
+
+checkbool(a^.mode)
+
+p^.mode:=ti64
+end
+
+proc tx_istruel(unit p,a)=
+tpass(a)
+
+if isboolunit(a) then
+	deleteunit(p,a)
+fi
+
+checkbool(a^.mode)
+
+p^.mode:=ti64
+end
+
+proc tx_addto(unit p,a,b)=
+int issub, atype, btype, u
+
+tpass(a,,need_lv)
+tpass(b)
+
+issub:=p^.tag=j_sub
+atype:=ttbasetype[a^.mode]
+btype:=ttbasetype[b^.mode]
+
+if p^.tag=j_divto and not ttisreal[atype] then
+	p^.tag:=j_idivto
+fi
+
+u:=atype
+case atype
+when tref then
+	if btype=tref then
+		if not issub then
+			txerror("ref+ref")
+		fi
+		if not comparemodes(a^.mode,b^.mode) then
+			txerror("ref-ref bad types")
+		fi
+		u:=btype
 
 	else
-		PRINTSTR("(TAG ")
-		PRINTSTR(VARTYPENAMES[P.TAG])
-		PRINTSTR(")")
-		RETURN
-	endswitch
+		u:=ti64
+	fi
+!when tflexstring then
+!	if ttisinteger[btype] then
+!		u:=ti64
+!	fi
 
-	printstr_n(&.str)
-!	addstring(&.str,-1)
+esac
+
+coerceunit(b,u)
+
+if isrefmode(atype) then
+	if b^.tag=j_const and btype<>tref then			!scale offset and keep as normal add (won't be sub)
+		b^.value*:=ttsize[tttarget[a^.mode]]
+	else							!else convert to addptr/subptr
+		p^.tag:=(p^.tag=j_addto|j_addoffsetto|j_suboffsetto)
+	fi
+fi
+p^.mode:=tvoid
 end
 
-proc array_print(object p, ichar fmt)=
-	object q
-	[32]char str
-	int lower, upper
+proc tx_iandto(unit p,a,b)=
+tpass(a,,need_lv)
+tpass(b,ttbasetype[a^.mode])
 
-	printstr("A(")
+unless ttisinteger[a.mode] then
+	txerror("iandto: not int")
+end
+p^.mode:=tvoid
+end
 
-	lower:=p.uarray.lower
-	upper:=p.uarray.length+lower-1
+proc tx_negto(unit p,a)=
+int issub, atype, btype, u
 
-!	q:=p.uarray.ptr
+tpass(a,,need_lv)
 
-	for i:=lower to upper do
-		q:=array_getindex(p,i)
-		pch_tostr(q,fmt)
-		obj_free(q)
-		if i<upper then printstr(",") fi
+p^.mode:=tvoid
+end
+
+proc tx_typepun(unit p,a)=
+case a^.tag
+when j_makelist then
+	TXERROR("TYPEPUN/LIST")
+else
+	tpass(a)
+	p^.mode:=p^.newmode
+esac
+end
+
+proc tx_bytesize(unit p,a)=
+tpass(a)
+p^.mode:=ti64
+end
+
+proc tx_exit(unit p,a)=
+if a=nil then return fi
+tpass(a,ti64)
+if a^.tag<>j_const then
+	txerror("exit/etc not const")
+fi
+p^.index:=a^.value
+p^.a:=nil
+
+end
+
+proc tx_goto(unit p,a)=
+int m
+
+tpass(a)
+m:=a^.mode
+if ttbasetype[m]<>tref or ttbasetype[tttarget[m]]<>tlabel then
+	txerror("goto: not label")
+fi
+end
+
+proc tx_switch(unit p,a,b,c,int t,lv)=
+[0:2001]byte valueset
+unit wt, w
+int ax,bx,i,u,v
+
+if p^.tag=j_doswitch and lv then gerror("&doswitch") fi
+
+tpass(a,ti64)
+
+memset(&valueset,0,valueset.bytes)
+u:=tvoid
+
+wt:=b
+while wt do
+
+	w:=wt^.a
+	while w do
+		tpass(w)
+
+		if not isconstunit(w) then txerror("Switch not constant") fi
+
+		case ttbasetype[w^.mode]
+		when trange then			!assume makerange
+			ax:=w^.a^.value
+			bx:=w^.b^.value
+dorange::
+			for i:=ax to bx do
+				if i<valueset.lwb or i>valueset.upb then
+					txerror("switch: value out of range")
+				fi
+				if valueset[i] then
+					cpl i
+					txerror("Duplicate switch value")
+				fi
+				valueset[i]:=1
+			od
+		else
+			coerceunit(w,ti64,0)
+			tevaluate(w)
+			if w.tag<>j_const then
+				txerror("Switch value: not const int")
+			fi
+			ax:=bx:=w^.value
+			goto dorange
+		esac
+		w:=w^.nextunit
+	od
+	tpass(wt^.b,t,lv)
+
+	if t=tany then
+		if u then
+			getdominantmode(0,u,wt^.b^.mode,u,v)
+		else
+			u:=wt^.b^.mode
+		fi
+	fi
+
+	wt:=wt^.nextunit
+od
+
+if c then
+	tpass(c,t,lv)
+	if t=tany then
+		getdominantmode(0,u,c^.mode,u,v)
+	fi
+elsif t<>tvoid then
+	txerror("switch needs else")
+fi
+
+if t<>tvoid then
+	w:=b^.a
+	while w do				!all elseif unots
+		if t=tany then
+			coerceunit(b^.b,u)
+		fi
+		w^.mode:=b^.b^.mode
+		w:=w^.nextunit
+	od
+	if t=tany then
+		coerceunit(c,u)
+		p^.mode:=u
+	else
+		p^.mode:=t
+	fi
+else
+	p^.mode:=tvoid
+fi
+end
+
+proc tx_power(unit p,a,b)=
+int u,v
+
+tpass(a)
+tpass(b)
+
+getdominantmodepp(p,a,b,u,v)
+!u:=v:=dominantmode[a^.mode, b^.mode]
+coerceunit(a,u)
+coerceunit(b,v)
+p^.mode:=u
+end
+
+proc tx_addroffirst(unit p,a,int t)=
+!&.x maps to &x[x.lwb]
+	int m
+
+	tpass(a)
+	m:=a^.mode
+	if ttbasetype[m] not in [tarray,tsmallarray] then
+		txerror("&. ref[] expected")
+	fi
+
+	m:=createrefmode(nil,tttarget[m])
+	if a^.tag=j_name then
+		a^.addroffirst:=1
+	fi
+	p^.mode:=m
+end
+
+proc tx_minvalue(unit p,a)=
+!x.minvalue/.maxvalue
+int u,tmax
+int64 x
+ref int128 aa
+
+if a^.tag=j_typeconst then
+	u:=ttbasetype[a^.value]
+dotypeconst::
+    tmax:=ti64
+    if p^.tag=j_minvalue then
+        case u
+        when ti8 then x:=-128
+        when ti16 then x:=-32768
+        when ti32 then x:=-2_147_483_648
+        when ti64 then x:=int64.minvalue
+        when ti128 then
+			aa:=pcm_allocz(int128.bytes)
+			puthigh128(aa,0x8000'0000'0000'0000)
+			x:=cast(aa)
+			tmax:=ti128
+        when tu8,tu16,tu32,tu64,tu128,tc8,tc16 then x:=0
+        else
+            txerror_s("Can't do minvalue on #",strmode(u))
+        esac
+    else
+        case u
+        when ti8 then x:=127
+        when ti16 then x:=32767
+        when ti32 then x:=2_147_483_647
+        when ti64 then x:=0x7fff'ffff'ffff'ffff
+        when ti128 then
+			aa:=pcm_allocz(int128.bytes)
+			putlow128(aa,0xFFFF'FFFF'FFFF'FFFF)
+			puthigh128(aa,0x7FFF'FFFF'FFFF'FFFF)
+			x:=cast(aa)
+			tmax:=ti128
+        when tu8,tc8 then x:=255
+        when tu16,tc16 then x:=65535
+        when tu32 then x:=4294967295
+        when tu64 then x:=0; --x; tmax:=tu64
+        when tu128 then
+			aa:=pcm_allocz(int128.bytes)
+			putlow128(aa,0xFFFF'FFFF'FFFF'FFFF)
+			puthigh128(aa,0xFFFF'FFFF'FFFF'FFFF)
+			x:=cast(aa)
+			tmax:=tu128
+        else
+            txerror_s("Can't do maxvalue on #",strmode(u))
+        esac
+    fi
+    p^.tag:=j_const
+    p^.value:=x
+    p^.a:=nil
+    p^.mode:=tmax
+	p^.isconst:=1
+else
+	tpass(a)
+	if a.tag=j_typeconst then
+		u:=ttbasetype[a^.value]
+	else
+		u:=ttbasetype[a^.mode]
+	fi
+	goto dotypeconst
+fi
+end
+
+proc tx_return(unit p,a, int t)=
+ 	int m,nvalues,nret,i
+	unit q
+
+	m:=currproc^.mode
+	nret:=currproc^.nretvalues
+!CPL =CURRPROC.NRETVALUES
+
+	if a=nil then
+		if nret then
+			txerror("return value(s) missing")
+		fi
+		return
+	elsif nret=0 then
+		txerror("Superfluous return value")
+	fi
+
+	if a^.tag=j_makelist then
+CPL "RETURN/MAKELIST"
+!		a^.tag:=j_returnmult
+!		if a^.length<>nret then
+!			txerror("Wrong number of return values")
+!		fi
+!		q:=a^.a				!point to list of return values
+!		for i to nret do
+!			tpass(q,currproc^.modelist[i])
+!			q:=q^.nextunit
+!		od
+!
+!		deleteunit(p,a)			!don't need return
+!		if t=tvoid then
+!			p^.mode:=tvoid
+!		else
+!			p^.mode:=tmult
+!		fi
+
+	else
+		if nret>1 then txerror("RETERROR?") fi
+		tpass(a,m)
+
+		if t=tvoid then					!regular out-of-line return
+			p^.mode:=tvoid
+		else
+			deleteunit(p,a)
+		fi
+	fi
+end
+
+proc tx_dotindex(unit p,a,b,int lv) =
+!a.[b], a is an int
+int pmode
+unit i,j
+
+tpass(a,,lv)			!lhs
+
+pmode:=tu64
+
+if not ttisinteger[a.mode] then
+!	case a^.mode
+!	when tvar then
+!		pmode:=tvar
+!	else
+		txerror("a.[i]: not int/str value")
+!	esac
+fi
+
+tpass(b)			!index
+
+case ttbasetype[b^.mode]
+when trange then
+	i:=b.a
+	j:=b.b
+	if i.tag=j.tag=j_const then
+		if i.value>j.value then
+			swap(b^.a,b^.b)
+		fi
+	fi
+!when tvar then
+else					!assume simple index
+	coerceunit(b,ti64)
+esac
+
+p^.mode:=pmode
+end
+
+proc tx_slice(unit p,a,b) =
+!a[b], b is a rtange
+
+!CPL "SLICE"
+
+	tpass(a)			!lhs
+	tpass(b)			!will be a range
+
+!CPL =STRMODE(A.MODE)
+
+	if a.mode=trefchar then
+		p.mode:=createslicemodek(currproc,tc8,1,0)
+	else
+		deref(a)
+		case ttbasetype[a.mode]
+		when tarray,tsmallarray then
+			p.mode:=createslicemodek(currproc,tttarget[a.mode],1, 0)
+	
+		when tslice then
+			p.mode:=a.mode
+	
+!		when tvar then
+!			p.mode:=tvar
+		else
+	CPL =STRMODE(A.MODE)
+			txerror("a[i..j]: not array")
+		esac
+	fi
+end
+
+proc tx_assign(unit p,a,b,int t)=
+int m
+
+case a^.tag
+when j_makelist then
+	tx_multassign(a,b)
+when j_dotindex, j_dotslice then
+	tx_dotindex(a,a^.a,a^.b,need_lv)
+	tpass(b,a.mode)
+else
+!CPL "ASSIGN",JTAGNAMES[A.TAG]
+	if a.tag=j_name and a.def.islet and p.initlet then
+!CPL "HERE"
+		tpass(a)
+	else
+		tpass(a,,need_lv)
+	fi
+	m:=a^.mode
+
+	if ttisshortint[m] then
+		tpass(b,gettypebase(m))
+		p^.mode:=m
+
+		if t<>tvoid then
+			twidenopnd(p)
+		fi
+	else
+		tpass(b,m)
+		p^.mode:=m
+	fi
+esac
+end
+
+proc tx_multassign(unit a,b)=
+!a is a multexpr; b might be multexpr, or a function with multiple returns
+unit p,q,lhs,rhs
+int nretmodes,i
+ref strec d				!point to def containing return mode info
+
+nretmodes:=0
+
+if b^.tag<>j_makelist then
+
+	tpass(b)
+	d:=getprocretmodes(b)
+	nretmodes:=d^.nretvalues
+
+	if a^.length>nretmodes then
+		txerror("mult ass/mult returns don't agree in number")
+	fi
+	if nretmodes<=1 then
+		txerror("mult ass rhs needs fn yielding 2+ values")
+	fi
+
+	p:=a^.a
+	i:=1
+	while p do
+		tpass(p,,need_lv)
+TXERROR("MULTASS/MODELIST")
+!		if p^.mode<>d^.modelist[i++] then
+!			txerror("mult ass/mult fn needs exact type match")
+!		fi
+		p:=p^.nextunit
+	od
+	return
+fi
+
+if a^.length<>b^.length then
+	txerror("Mult assign: count mismatch")
+fi
+if a^.length=0 then
+	txerror("Invalid assignment")
+fi
+rhs:=b^.a
+lhs:=a^.a
+
+p:=lhs
+while p do
+	tpass(p,,need_lv)
+	p:=p^.nextunit
+od
+
+p:=lhs
+
+q:=rhs
+while q do
+	tpass(q,p^.mode)
+	p:=p^.nextunit
+	q:=q^.nextunit
+od
+end
+
+proc tx_in(unit p,a,b)=
+	tpass(a)
+	tpass(b)
+	p.mode:=ti64
+
+!	if a.mode=tvar or a.mode=tvar then
+!		coerceunit(a,tvar)
+!		coerceunit(b,tvar)
+!		return
+!	fi
+
+	unless ttisinteger[a.mode] then
+		txerror("'in' opnd must be int")
+	end
+
+	case b.tag
+	when j_makerange then
+		if p^.tag=j_notin then
+			p^.tag:=j_inrange
+			insertunit(p,j_notl)
+		else
+			p^.tag:=j_inrange
+		fi
+
+	when j_makeset then
+		if p^.tag=j_notin then
+			p^.tag:=j_inset
+			insertunit(p,j_notl)
+		else
+			p^.tag:=j_inset
+		fi
+
+	elsif ttisinteger[b.mode] then
+!when 'I','U' then
+	else
+		txerror("in rhs must be range/set")
+	esac
+
+end
+
+function getprocretmodes(unit p)ref strec=
+!p must be a call unit, for a proc with multiple values; at least one expected
+!however, here it only populates retmodes with the available types
+ref strec d
+unit a
+
+if p^.tag<>j_callfn then txerror("multass/need multfn") fi
+a:=p^.a
+
+case a^.tag
+when j_name then
+	return a^.def
+else
+	return ttnamedef[tttarget[a^.mode]]
+esac
+end
+
+proc tx_exprlist(unit p,a,int t)=
+unit q
+
+q:=a
+while q and q^.nextunit do
+	tpass(q)
+	q:=q^.nextunit
+od
+
+!q points to last expr
+
+tpass(q,t)
+p^.mode:=q^.mode
+end
+
+proc tx_sign(unit p,a)=
+
+tpass(a)
+if ttisreal[a^.mode] then
+	coerceunit(a,tr64)
+	p^.mode:=tr64
+else
+	coerceunit(a,ti64)
+	p^.mode:=ti64
+fi
+end
+
+proc fixvoidunit(unit a)=
+!a's result is not used as requested type is void
+!deal with getting rid of an unwanted result, and convert
+!some units to non-value-returning versions as they are handled differently
+
+!CPL $FUNCTION,STRMODE(A^.MODE),=JTAGNAMES[A^.TAG]
+	case a^.tag
+	when j_assignx then
+		a^.tag:=j_assign
+!	when j_callfn then
+!		a^.tag:=j_callproc
+	when j_if, j_longif, j_case, j_switch, j_return, j_select,
+		 j_block then
+		if a^.mode<>tvoid then
+			a^.popflag:=1
+		fi
+
+	when j_deepcopyx then
+		a^.tag:=j_deepcopy
+
+	when j_return then
+		if a^.a then
+		fi
+
+	elsif a^.mode=tvoid then			!unit returns no value anyway
+
+	else							!unit returns something, so pop
+		a^.popflag:=1
+	esac
+end
+
+proc twiden(unit p, int lv)=
+!intended for widening narrow types for memory access nodes Name, Index, Dot, Ptr.
+!But will also be used to generally apply
+	int m,u,mbase
+
+!CPL "WIDEN",LVNAMES[LV]
+	mbase:=ttbasetype[m:=p^.mode]
+
+	case lv
+	when need_lv then               !assume is OK (since this is only called for mem opnds)
+	when index_lv,indexlv_lv then
+!		unless ttisvar[m] then
+!			if lv=indexlv_lv or (stdtypecode[mbase]='A' and stdtypecat[mbase]=tblock) or\
+TXERROR("TWIDEN")
+
+!			if lv=indexlv_lv or (mbase in [tarray,tslice, tmanarray] and stdtypecat[mbase]=tblock) or\
+!				 mbase=trecord then		!insert ref
+!				if p^.tag=j_ptr then
+!					deleteunit(p,p^.a)
+!				else
+!					insertunit(p,j_addrof)
+!					p^.mode:=createrefmode(nil,m)
+!				fi
+!			fi
+!		end unless
+	when addrof_lv then
+		txerror("widen/addrof")
+	esac
+end
+
+function twidenshort(unit p)int=
+	if p^.tag=j_const then
+		p^.mode:=gettypebase(p.mode)
+		return p^.mode
+	fi
+
+	insertunit(p,j_convert)
+	case p^.newmode:=gettypebase(p.mode)
+	when ti64 then p^.opcode:=c_iwiden
+	when tu64,tc64 then p^.opcode:=c_uwiden
+	esac
+
+	p^.mode:=p^.newmode
+
+	return p^.mode
+end
+
+proc tx_concat(unit p,a,b)=
+!does all of head tail init drop reverse prepend append concat left right
+	int u,v
+
+	tpass(a)
+	tpass(b)
+	p^.mode:=a^.mode
+!	if a.mode<>tvar then
+		txerror("head/etc can't be used with this type")
+!	fi
+
+	getdominantmodepp(p,a,b,u,v)
+	coerceunit(a,u)
+	coerceunit(b,v)
+
+end
+
+proc twidenopnd(unit p)=
+	if ttisshortint[p^.mode] then
+		twidenshort(p)
+	fi
+end
+
+proc joinstrings(unit p,a,b)=
+!do str+str; both a and b are const units with actual strings
+	int newlen,alen:=a^.slength, blen:=b^.slength
+	ref char newstr
+	newlen:=alen+blen
+	newstr:=pcm_alloc(newlen+1)
+
+	if alen then memcpy(newstr,a^.svalue,alen) fi
+	if blen then memcpy(newstr+alen,b^.svalue,blen) fi
+	(newstr+alen+blen)^:=0
+
+	a^.svalue:=newstr
+	a^.slength:=newlen
+
+	deleteunit(p,a)
+
+end
+
+proc removeaddrof(unit p)=
+!p is a lhs of dot operator used for flex/var
+!will need to remove any addrof that has been applied
+if p=nil then return fi
+case p^.tag
+when j_addrof then
+	deleteunit(p,p^.a)
+when j_if then
+	removeaddrof(p^.b)
+	removeaddrof(p^.c)
+else
+	txerror("dot/flex: complex record expr, can't remove &")
+esac
+
+end
+
+proc tstringslice(unit p, int slicemode)=
+!p is a string; insert conversions to turn it into a slice:
+	unit b
+
+	if tttarget[slicemode]<>tc8 then
+		txerror("Not char slice")
+	fi
+
+	insertunit(p,j_slice)
+
+	b:=duplunit(p.a)
+	insertunit(b,j_lenstr)
+	tx_lenstr(b,b.a)
+	p.b:=createunit2(j_makerange,createconstunit(1,ti64),b)
+	p.b.mode:=trange
+
+	p.mode:=slicemode
+end
+
+proc tx_bitfield(unit p,a,int lv)=
+int i,j,bitsize,topbit
+unit r
+
+tpass(a,,lv)
+
+if not ttisinteger[a^.mode] then
+	txerror("Int needed")
+fi
+
+bitsize:=ttsize[ttbasetype[a^.mode]]*8
+topbit:=bitsize-1
+
+case p^.opcode
+when bf_lsb then
+	i:=0; j:=7
+
+when bf_msb then
+	j:=topbit
+	i:=topbit-7
+
+when bf_lsbit then
+	i:=j:=0
+
+when bf_odd,bf_even then
+	if lv then
+		txerror("Can't assign")
+	fi
+	i:=j:=0
+
+when bf_msbit then
+	i:=j:=topbit
+
+when bf_lsw then
+	i:=0
+	j:=bitsize/2-1
+
+when bf_msw then
+	i:=bitsize/2
+	j:=topbit
+esac
+
+if i=j then			!single bit
+	p^.tag:=j_dotindex
+	p^.b:=createconstunit(i,ti64)
+
+	if p^.opcode=bf_even then
+		p^.mode:=tu64
+		insertunit(p,j_notl)
+	fi
+
+else
+	r:=createunit2(j_makerange,createconstunit(i,ti64),createconstunit(j,ti64))
+	r^.mode:=trange
+	p^.tag:=j_dotslice
+	p^.b:=r
+fi
+
+p^.mode:=tu64
+end
+
+proc deref(unit a)=
+!a is a unit that needs to be dereferenced because it's about to used as:
+! a[i]
+! a[i..j]
+! a.lwb, a.upb, a.len
+!Ie in an array context
+int abasemode, tmode
+
+abasemode:=ttbasetype[a.mode]
+
+while abasemode=tref do
+	tmode:=tttarget[a.mode]
+	insertunit(a,j_ptr)
+	a.mode:=tmode
+	abasemode:=ttbasetype[a.mode]
+od
+
+end
+
+proc tx_sqrt(unit p,a)=
+	tpass(a)
+
+	unless isnumericmode(a^.mode) then
+		txerror("maths: not numeric")
+	end unless
+	coerceunit(a,tr64)
+	p.mode:=tr64
+end
+
+proc tx_maths(unit p,a,b)=
+!CPL "TXMATHS"
+	tpass(a)
+
+!	unless isnumericmode(a^.mode) then
+!		txerror("maths: not numeric")
+!	end unless
+	coerceunit(a,tr64)
+	if b then
+		tpass(b,tr64)
+	fi
+
+	p.mode:=tr64
+end
+=== bb_genpcl.m 16/18 ===
+import mlib
+import clib
+import oslib
+
+import bb_decls
+import bb_support
+import bb_tables
+import bb_lib
+import bb_libpcl
+import bb_blockpcl
+import bb_diags
+
+!const entrypointname = "main"
+const entrypointname = "start"
+const entrypointname2 = "main"
+
+global function codegen_pcl:int=
+!generate code for module n
+ref strec d,e
+ref procrec pp
+
+pclinit()
+
+pp:=staticlist
+while pp do
+	d:=pp^.def
+	dostaticvar(d)
+	pp:=pp^.nextproc
+od
+
+genpc(k_blank)
+genpc(k_csegment)
+
+geninitproc()
+
+pp:=proclist
+while pp do
+	genprocdef(currproc:=pp^.def)
+	pp:=pp^.nextproc
+od
+
+allpclcode:=pccode
+
+return 1
+end
+
+proc genprocdef (ref strec p) =	!GENPROCDEF
+[256]char str
+[256]char name
+int paramoffset,nparams,retaddrbytes
+ref strec d
+int n,lab,np,offset,reg,i,xreg,isstart,structret,isfloat,hasparams,hasequiv
+unit q
+
+!*!setalign(16)
+
+!CPL "PROCDEF",P.NAME,=P.SIMPLEFUNC
+
+!sprintf(&.str,"proc %s ----------------",p^.name)
+strcpy(&.name,p.name)
+convucstring(&.name)
+fprint @&.str,"PROC # #",&.name,"=":"60P="
+gencomment(&.str)
+
+currproc:=p
+
+!do local decls
+frameoffset:=0
+hasparams:=0
+hasequiv:=0
+
+d:=p^.deflist
+while d do
+	case d^.nameid
+	when frameid then
+		if d^.at then
+			hasequiv:=1
+		else
+			frameoffset-:=roundsizetg(ttsize[d^.mode])
+			d^.offset:=frameoffset
+		fi
+	when paramid then
+		hasparams:=1
+	esac
+	d:=d^.nextdef
+od
+
+if hasequiv then
+	d:=p^.deflist
+	while d do
+		case d^.nameid
+		when frameid then
+			if d^.at then
+				d^.offset:=getconstframeoffset(d^.equivvar)
+			fi
+		esac
+		d:=d^.nextdef
+	od
+fi
+nparams:=0
+
+d:=p^.deflist
+retaddrbytes:=(frameoffset or hasparams|16|8)
+paramoffset:=0
+
+while d do
+	if d^.nameid=paramid then
+		d^.offset:=paramoffset+retaddrbytes
+		if ttsize[d^.mode]=16 then
+			paramoffset+:=16
+		else
+			paramoffset+:=8
+		fi
+		++nparams
+	fi
+	d:=d^.nextdef
+od
+
+framebytes:=-frameoffset
+parambytes:=paramoffset
+iscallbackproc:=iscallbackfn(p)
+
+n:=targetsize-1					!round to 4 or 8
+while framebytes iand n do ++framebytes; --frameoffset od
+while parambytes iand n do ++parambytes od
+
+!setsegment('C')
+isstart:=0
+if p.isglobal and (eqstring(p^.name,entrypointname) or
+					 eqstring(p.name,entrypointname2)) then
+	isstart:=1
+	print @&.str,p.name,,"::"
+!	genpc(k_userlabel,genstrimm(&.str))
+	genpc(k_labelname,genstrimm(&.str))
+!	genpc(k_labeldef,genstrimm("ABC"))
+!	genpc(k_labelname,genname(&.str))
+!	genpc(k_label, genlabel(++labelno))
+	p.index:=labelno
+fi
+
+!if p.isglobal and eqstring(p^.name,entrypointname2) then
+!	print @&.str,p.name,,"::"
+!	genpc(k_labelname,genname(&.str))
+!fi
+
+genprocentry(framebytes,parambytes,isstart)
+
+if p^.asmused then		!declare local vars as named offsets
+	d:=p^.deflist
+	while d do
+		case d^.nameid
+		when frameid,paramid then
+			genframedef(d)
+		esac
+		d:=d^.nextdef
+	od
+fi
+
+if isstart then
+	do_syscallproc(sysfn_init,0)
+!	do_syscallproc(sysfn_initstatics,0)
+!CPL =INITSTATICSINDEX
+!GENCOMMENT("88888888888888888888888888888888")
+
+!	genjumpl(initstaticsindex)
+!	genpc(k_jump, genlabel(initstaticsindex))
+	genpc(k_call, genlabel(initstaticsindex))
+!	genpc(k_call, genlabel(initstaticsindex))
+!do_syscallproc(sysfn_initstatics,0)
+fi
+
+d:=p^.deflist
+while d do
+!	if d^.nameid=frameid and ttisvar[d.mode] then
+!		initframedef(d)
+!	fi
+	d:=d^.nextdef
+od
+
+retindex:=lab:=createfwdlabel()
+
+gencomment("-------------------------------------------------")
+
+GENCOMMENT("EXECUTABLE CODE GOES HERE")
+evalunit(p^.code)
+
+if p^.mode<>tvoid and p^.nretvalues<2 then
+
+	isfloat:=ttisreal[p^.mode]
+	if isfloat then
+		makefloatopnds()
+	fi
+
+	if currproc^.simplefunc then
+		genpc(k_moveretval)
+	else
+		genpc(k_popretval,genint(parambytes))
+	fi
+	setpclcat_u(p^.code)
+	if isfloat then
+		makefloatopnds()
+	fi
+fi
+
+definefwdlabel(retindex)
+gencomment("-------------------------------------------------")
+
+d:=p^.deflist
+while d do
+!	if d^.nameid in [frameid,paramid] and gettypecat_t(d^.mode)=tvar then
+!		freeframevar(d)
+!	fi
+	d:=d^.nextdef
+od
+
+if isstart then
+!	pushstack(40)					!stack misaligned here
+	pushstack(32)
+	genpc(k_pushint, zero_opnd);
+!	setpclmode_t(ti64)
+!	do_syscallproc(stop_fn)
+	do_syscallproc(sysfn_stop,1)
+!	genpc(k_call, genname("msys.m$stop"))
+else
+	genreturn(framebytes,parambytes)
+fi
+
+if p^.mode<>tvoid then
+	if not checkblockreturn(p^.code) then
+		gerror_s("Function needs explicit return: ",p^.name)
+	fi
+fi
+
+gencomment("")
+
+end
+
+proc genprocentry(int fbytes,pbytes,isstart)=
+!proc entry code
+	genpc(k_procentry,genmemaddr_d(currproc),genint(pbytes))
+	pccodex^.b.fbytes:=fbytes
+	pccodex^.isglobal:=isstart
+end
+
+proc genframedef(ref strec d)=
+!if not fshowframevars then return fi
+[256]char str
+int offset
+
+GENCOMMENT("GENFRAMEDEF")
+!offset:=d^.offset
+!
+!if abs(offset)<1000 then
+!!	sprintf(&.str,"\t%-20s = %3d",getfullname(d,1),offset)
+!	fprint @&.str,"\t# = #",getfullname(d,1):"jr20",offset:"3"
+!else
+!!	sprintf(&.str,"\t%-20s = %d",getfullname(d,1),offset)
+!	fprint @&.str,"\t# = #",getfullname(d,1):"jr20",offset
+!fi
+!genassem(&.str)
+end
+
+proc dostaticvar(ref strec d)=
+	unit p
+
+	if d^.imported then return fi
+
+	if d^.at=1 then
+		p:=d^.equivvar
+
+		case p^.tag
+		when j_addrof then
+			genpc(k_equiv,genmem_d(d),genmem_u(p^.a))
+		when j_const then
+			genpc(k_equiv,genmem_d(d),genint(p^.value))
+		else
+			printunit(p)
+			gerror("equiv/not simple")
+		esac
+	elsif d^.code then
+		if tttypecat[d.mode]<>tc_man8 then
+			genpc(k_istatic,genmem_d(d))
+			pccodex.align:=getalignment(d.mode)
+			genidata(d.code)
+		else
+			goto dozstatic
+		fi
+	else
+dozstatic::
+		genpc(k_zstatic,genmem_d(d),genint(ttsize[d^.mode]))
+		pccodex^.align:=getalignment(d^.mode)
+	fi
+end
+
+proc dostaticvariant(ref strec d)=
+	unit p
+
+!GERROR("STATIC VAR")
+
+!	if d^.imported or d^.at=1 or not d^.code then return fi
+	if d^.imported or d^.at=1 then return fi
+
+	if tttypecat[d.mode]<>tc_man8 then return fi
+GERROR("INIT STATIC MANVAR")
+
+!no init needed when not initialised, as it will start off as all zeros
+!which is 'void'
+
+!	if d^.code then				!have an expression to assign
+!		evalunit(d^.code)
+!		genpc(k_popmem,genmem_d(d))
+!		pccodex^.catmode:=tscalar
+!	else						!
+!		genpc(k_initmemz,genmemaddr_d(d))
+!		pccodex^.catmode:=tvar
+!	fi
+
+end
+
+proc genidata(unit p,int doterm=1, am='A')=
+int t,length,n,i,j,nwords,offset1,offset2,size,padding,isunion,tbase
+unit q,a,b
+ref strec d
+real32 sx
+ref pclopndrec ax
+
+t:=p^.mode
+mlineno:=p^.lineno
+tbase:=ttbasetype[t]
+
+case p^.tag
+when j_const then
+!	case tttypecode[p^.mode]
+	if ttisref[p.mode] then
+!	when 'P' then
+		if p^.mode=trefchar then
+			if p^.svalue then
+				genpc(k_dq,genstrimm(p^.svalue,p^.slength))
+			else
+				genpc(k_dq, genint(0))
+			fi
+		else
+			genpc(k_dq,genint(p^.value))
+		fi
+	elsif ttisreal[p.mode] then
+		case ttsize[p^.mode]
+		when 4 then
+			genpc(k_dd,genreal(p^.xvalue,4))
+		when 8 then
+			genpc(k_dq,genreal(p^.xvalue))
+		else
+			gerror_s("IDATA/REAL:%s",strmode(p^.mode),p)
+		esac
+
+	else						!assume int/word
+		ax:=genint(p^.value)
+		case ttsize[p^.mode]
+		when 1 then
+			genpc(k_db,ax)
+		when 2 then
+			genpc(k_dw,ax)
+		when 4 then
+			genpc(k_dd,ax)
+		when 8 then
+			genpc(k_dq,ax)
+		when 16 then
+			genpc(k_dq,genint(p.range_lower))
+			genpc(k_dq,genint(p.range_upper))
+		else
+			gerror_s("IDATA/INT:%s",strmode(p^.mode),p)
+		esac
+
+	fi
+
+when j_makelist then
+	q:=p^.a
+	while q do
+		genidata(q)
+		q:=q^.nextunit
 	od
 
-	printstr(")")
+when j_name then
+	d:=p^.def
+	case d^.nameid
+	when staticid,procid,dllprocid then
+		genpc((am='P' or ttsize[p^.mode]=8|k_dq|k_dd), genmemaddr_d(d))
+	else
+		gerror("Idata &frameXXX")
+	esac	
+	return
+when j_convert then
+	genidata(p^.a)
+when j_addrof then
+	genidata(p^.a,am:'P')
+else
+	gerror_s("IDATA: %s",jtagnames[p^.tag],p)
+
+esac
+end
+
+proc geninitproc=
+ref procrec pp
+ref strec d
+
+gencomment("proc ---------------- m$initstatics")
+
+!genpc(k_procentry,genname("m$initstatics:"),genint(0))
+!initstaticsindex:=sysfnlabels[sysfn_initstatics]:=definelabel()
+initstaticsindex:=definelabel()
+
+
+!genpc(k_procentry,genname("m$initstatics:"),genint(0))
+pccodex^.b.fbytes:=0
+pccodex^.isglobal:=1
+
+GENCOMMENT("INIT CODE GOES HERE")
+pp:=staticlist
+while pp do
+	d:=pp^.def
+	dostaticvariant(d)
+	pp:=pp^.nextproc
+od
+gencomment("-------------------------------------------------")
+
+for i:=nmodules downto 1 do
+	d:=moduletable[i].stinitproc
+	if d then
+		genpc(k_call,genmemaddr_d(d),genint(0))
+	fi
+od
+
+!genpc(k_procexit)
+genpc(k_return)
+gencomment("")
+end
+
+proc initframedef(ref strec d)=
+!d is a type that must be initialised
+!can't use any actual initial value, as that might not be done until later
+!in the code
+!	genpc(k_initmemz,genmem_d(d))
+!	setpclcat_t(tvar)
+end
+
+proc freeframevar(ref strec d)=
+!d is a type that must be freed
+!	genpc(k_freemem,genmem_d(d))
+!	setpclcat_t(tvar)
+end
+
+function getconstframeoffset(unit p)int=
+!p is the @ equiv expression
+!extract offset if possible
+unit a
+ref strec d
+int offset
+
+a:=p^.a
+d:=nil
+offset:=0
+
+!CPL =JTAGNAMES[P^.TAG]
+
+case p^.tag
+when j_addrof,j_addroffirst then
+	if a^.tag=j_name then
+		d:=a^.def
+	fi
+when j_add then
+	if a^.tag=j_addroffirst and a^.a^.tag=j_name and p^.b^.tag=j_const then
+		d:=a^.a^.def
+		offset:=p^.b^.value
+	fi
+esac
+
+if d=nil then
+PRINTUNIT(P)
+	gerror("Can't do @Frame var")
+fi
+if d^.nameid not in [frameid,paramid] then
+	gerror("@ local static")
+fi
+
+return d^.offset+offset
+end
+=== bb_libpcl.m 17/18 ===
+import msys
+import mlib
+import clib
+import oslib
+
+import bb_decls
+import bb_support
+import bb_tables
+import bb_lib
+!import mc_common
+
+global int retindex
+global int initstaticsindex
+
+global const ptrsize=8
+
+global record pclopndrec =
+	union
+		ref strec def
+		unit code
+		int value
+		word uvalue
+		real xvalue
+		ichar svalue
+		ref int128 pvalue128
+		ref word128 puvalue128
+		int labelno
+		int pbytes
+		int floatmap
+	end
+	int16 optype
+	int16 size			!for real: 4 or 8 bytes
+	union
+!		int32 size
+		int32 fbytes
+		int32 nargs
+	end
+end
+
+global record pclrec =
+	int16 opcode
+	union
+		int16 cond
+		int16 align
+		int16 index
+	end
+	int32 size
+	int16 mode				!actual mode for catmode
+	int16 mode2				!actual mode for catmode2
+
+	byte catmode			!basetype or category mode
+	byte catmode2
+	byte isglobal
+	byte isfunction
+	byte isvariadic
+	byte SPARE3
+	int16 fileno
+
+	int32 lineno
+	ref pclrec nextpcl
+	pclopndrec a,b
+end
+
+!Stack model opcodes
+!NOTE: this model has changed so that a nominal 'stack' based on the
+!register file of the target machine is used.
+!That is called the Operand Stack or Opstack
+
+!Stack operands labeled X,Y,Z::
+!suffix c,b,a indicates stack-rel position: a is always top, b is next etc
+!Xa				Xa is top of stack, when only operand; or Xa is new tos
+!Xb, Ya			Ya is top of stack, when 2 operands
+!Xc, Yb, Za		Za is top of stack, when 3 operand
+!Inline operands are::
+!	A or L		First operand
+!	B			Second operand
+!Use of X/Y/Z on rvalue will pop it unless specified otherwise
+!Use of X (or Y) as lvalue will push a new value, replacing any popped values
+!   T			Type of first or dummy operand
+
+global tabledata() []ichar pclnames =
+
+	(k_comment,		$),	! str
+	(k_blank,		$),	!
+
+	(k_label,		$),	! L::
+	(k_labelname,	$),	!
+!	(k_userlabel,	$),	!
+
+	(k_procentry,	$),	!
+	(k_procexit,	$),	!
+
+	(k_stackall,	$),	!
+	(k_startmult,	$),	!
+	(k_resetmult,	$),	!
+	(k_endmult,		$),	!
+
+	(k_istatic,		$),	!
+	(k_zstatic,		$),	!
+!	(k_staticfn,	$),	!
+	(k_equiv,		$),	!
+
+	(k_pushmem,		$),	! Xa := A (mem strec)
+!	(k_pushconst,	$),	! Xa := A (const unit)
+!	(k_dpushconst,	$),	! Xa := A (const unit) then stack
+	(k_dpushmem,	$),	! Xa := A (mem strec) then stack
+!	(k_pushimm,		$),	! Xa := A (imm int/word/real/string etc)
+!	(k_pushdec,		$),	! Xa := A (imm int/word/real/string etc)
+	(k_pushaddr,	$),	! Xa := &A (mem)
+	(k_pushptr,		$),	! Xa := Xa^
+	(k_pushretslot,	$),	! Xa := Empty(T)
+	(k_pushffretval,$),	! Xa := <value in D0 or XMM0>
+	(k_pushretval,	$),	! Xa := <value in D1/D0 or XMM0>
+	(k_stackargs,	$),	! Force last operand to be on real stack
+
+	(k_pushint,		$),	! Xa := A (int64/word64)
+	(k_pushreal,	$),	! Xa := A (real64)
+	(k_pushint128,	$),	! Xa := A (int128/word128)
+	(k_pushstr,		$),	! Xa := A (ref char)
+
+	(k_dpushint,	$),	! Xa := A (int64/word64) then stack
+	(k_dpushreal,	$),	! Xa := A (real64) then stack
+
+	(k_makeint,		$),	! Xa := var(A), A is int
+	(k_makereal,	$),	! Xa := var(A), A is real
+	(k_makestr,		$),	! Xa := var(A), A is ref stringz
+	(k_makedec,		$),	! Xa := var(A), A is ref stringz to become a Decimal
+
+	(k_popmem,		$),	! A := Xa
+	(k_popmemz,		$),	! A := Xa; dest not freed
+	(k_popptr,		$),	! Ya^ := Xb
+	(k_storemem,	$),	! (Xb, Ya) := Xa, A := Xa (duplicate stack then pop one)
+	(k_storeptr,	$),	! ??(Xb, Ya) := Xa, A := Xa (duplicate stack then pop one)
+	(k_unstack,		$),	! SP -:= A
+	(k_popretval,	$),	! Store return value into return slot (fns that use vars)
+	(k_moveretval,	$),	! Ensure return value is in D0/XMM0/D1:D0 (simple fns)
+	(k_copyblock,	$),	! Xb^ := Ya^ for blocks
+	(k_initmemz,	$),	! A := Empty
+	(k_freemem,		$),	! free(A)
+	(k_dupl,		$),	! dupl(A)
+
+!	(k_pushsx,		$),	! Xa := size-extend(A) (mem)
+!	(k_pushzx,		$),	! Xa := zero-extend(A) (mem)
+!	(k_poptx,		$),	! A := truncate(Xa)
+
+	(k_free,		$),	! free(Xa), SP+:=1
+
+	(k_add,			$),	! Xa := Xb+Ya
+	(k_sub,			$),	! Xa := Xb-Ya
+	(k_mul,			$),	! Xa := Xb*Ya
+	(k_div,			$),	! Xa := Xb/Ya
+	(k_idiv,		$),	! Xa := Xb%Ya
+	(k_irem,		$),	! Xa := Xb rem Ya
+	(k_muli,		$),	! Xa := Xb*Ya (flex*int)
+
+	(k_neg,			$),	! Xa := -Xa
+	(k_abs,			$),	! Xa := abs(Xa)
+	(k_inot,		$),	! Xa := inot(Xa)
+	(k_notl,		$),	! Xa := not(Xa)
+	(k_istruel,		$),	! Xa := istrue(Xa)
+
+	(k_call,		$),	! Call A, B args
+	(k_return,		$),	! Return
+	(k_callptr,		$),	! Call Xa, A args
+	(k_callff,		$),	! Call A, B args
+	(k_callptrff,	$),	! Call Xa, A args
+	(k_syscall,		$),	! Call system function .index
+	(k_jump,		$),	! Goto L
+	(k_jumpcc,		$),	! Goto L when Xb cc Ya
+	(k_jumpccimm,	$),	! Goto L when Xa cc A
+	(k_jumptrue,	$),	! Goto L when Xa
+	(k_jumpfalse,	$),	! Goto L when not Xa
+	(k_jumpinyz,	$),	! Goto L when Xc in Yb..Za
+	(k_jumpnotinyz,	$),	! Goto L when Xc notin Yb..Za
+	(k_casejumpeq,	$),	! Goto L pop both when Xb=Ya; else pop Ya only
+	(k_casejumpne,	$),	! Goto L pop Ya only when Xb<>Ya; else pop both
+
+	(k_setjumpeq,	$),	! Goto L Xb=Ya; pop Ya only
+	(k_setjumpeqx,	$),	! Goto L Xb=Ya; pop both
+	(k_setjumpne,	$),	! Goto L Xb<>Ya; pop both
+
+	(k_switch,		$),	!
+	(k_switchlab,	$),	!
+	(k_info,		$),	!
+	(k_endswitch,	$),	!
+
+	(k_setcc,		$),	! Xa := Xb cc Ya
+	(k_compare,		$),	! Xa := (Xb>Ya|1|(Xb<Ya|-1|0))
+
+	(k_isequal,		$),	! Xa := Xb == Ya
+
+	(k_iand,		$),	! Xa := Xb iand Ya
+	(k_iandc,		$),	! Xa := Xa iand A
+	(k_ior,			$),	! Xa := Xb ior  Ya
+	(k_ixor,		$),	! Xa := Xb ixor Ya
+	(k_shl,			$),	! Xa := Xb << Ya
+	(k_shr,			$),
+	(k_shlc,		$),	! Xa := Xa << A
+	(k_shrc,		$),
+	(k_in,			$),
+	(k_min,			$),
+	(k_max,			$),
+	(k_subref,		$),
+	(k_addoffset,	$),
+	(k_suboffset,	$),
+	(k_concat,		$),
+	(k_append,		$),
+	(k_andl,		$),
+	(k_orl,			$),
+
+	(k_index,		$),
+	(k_indexc,		$),
+	(k_indexmem,	$),
+	(k_indexmemc,	$),
+	(k_popindex,	$),
+	(k_popindexmem,	$),
+	(k_popindexmemc,$),
+	(k_storeindex,	$),
+	(k_dotindex,	$),
+	(k_anddotindex,	$),
+	(k_dotslice,	$),
+	(k_dot,			$),
+	(k_popdot,		$),
+	(k_storedot,	$),
+	(k_keyindex,	$),
+	(k_storekeyindex,$),
+	(k_popkeyindex,	$),
+
+	(k_storeslice,	$),
+	(k_popslice,	$),
+
+	(k_indexref,	$),
+	(k_indexmemref,	$),
+	(k_indexmemcref,$),
+	(k_keyindexref,	$),
+!	(k_dotindexref,	$),
+	(k_popdotindex,	$),
+	(k_popdotslice,	$),
+	(k_dotref,		$),
+
+	(k_slice,		$),
+!	(k_popslice,	$),
+
+	(k_lwb,			$),
+	(k_upb,			$),
+	(k_len,			$),
+	(k_bounds,		$),
+	(k_lenstr,		$),
+
+	(k_sqrt,		$),
+	(k_sqr,			$),
+	(k_sign,		$),
+	(k_sin,			$),
+	(k_cos,			$),
+	(k_tan,			$),
+	(k_asin,		$),
+	(k_acos,		$),
+	(k_atan,		$),
+	(k_atan2,		$),
+	(k_ln,			$),
+	(k_lg,			$),
+	(k_log,			$),
+	(k_exp,			$),
+	(k_round,		$),
+	(k_floor,		$),
+	(k_ceil,		$),
+	(k_fract,		$),
+	(k_fmod,		$),
+	(k_power,		$),
+	(k_asc,			$),
+	(k_chr,			$),
+
+	(k_addto,		$),	! Xb^ +:= Ya (where result is needed, then dupl Ya first)
+	(k_subto,		$),	! or: Ya^ +:= Xb (dupl Xb first if result needed)
+	(k_multo,		$),	!
+	(k_divto,		$),	!
+	(k_idivto,		$),	!
+	(k_iremto,		$),	!
+
+	(k_iandto,		$),	! Xb^ iand:= Ya
+	(k_iorto,		$),	!
+	(k_ixorto,		$),	!
+	(k_shlto,		$),	!
+	(k_shrto,		$),
+	(k_shlcto,		$),	! Xa^ <<:= A
+	(k_shrcto,		$),
+	(k_minto,		$),
+	(k_maxto,		$),
+	(k_addoffsetto,	$),
+	(k_suboffsetto,	$),
+	(k_appendto,	$),
+	(k_concatto,	$),
+	(k_andlto,		$),
+	(k_orlto,		$),
+
+	(k_addmemto,	$),	! A^ +:= Xa
+	(k_submemto,	$),
+	(k_iandmemto,	$),
+	(k_iormemto,	$),
+	(k_ixormemto,	$),
+	(k_shlcmemto,	$),	! A^^ <<:= B
+	(k_shrcmemto,	$),
+
+	(k_negto,		$),
+	(k_absto,		$),
+	(k_inotto,		$),
+	(k_notlto,		$),
+
+	(k_incrtomem,	$),	! ++A
+	(k_decrtomem,	$),	! --A
+	(k_incrto,		$),	! ++Xa^
+	(k_decrto,		$),	! --Xa^
+
+	(k_preincrtox,	$),
+	(k_predecrtox,	$),
+	(k_postincrtox,$),
+	(k_postdecrtox,$),
+
+	(k_convert,		$),
+	(k_iwiden,		$),
+	(k_uwiden,		$),
+	(k_ifloat,		$),
+	(k_ufloat,		$),
+	(k_ifix,		$),
+	(k_ufix,		$),
+	(k_narrow,		$),
+	(k_softtruncate,$),
+	(k_truncate,	$),
+	(k_fnarrow,		$),
+	(k_fwiden,		$),
+	(k_unbox,		$),
+	(k_box,			$),
+	(k_typepun,		$),
+	(k_ichartostring,	$),
+
+	(k_swap,		$),
+	(k_makerange,	$),
+	(k_makelist,	$),
+	(k_makeslice,	$),
+	(k_makeset,		$),
+	(k_slicelen,	$),
+	(k_sliceupb,	$),
+	(k_sliceptr,	$),
+
+	(k_assem,		$),
+	(k_csegment,	$),	!
+	(k_isegment,	$),	!
+	(k_zsegment,	$),	!
+	(k_db,			$),
+	(k_dw,			$),
+	(k_dd,			$),
+	(k_dq,			$),
+	(k_resb,		$),
+	(k_resw,		$),
+	(k_resd,		$),
+	(k_resq,		$),
+
+!	(k_stop,		$),	! stop Xa
+
+	(k_dummy,		$),
+end
+
+global tabledata() [0:]ichar opndnames =
+	(no_opnd=0,			$),
+
+	(mem_opnd,			$),	!j_name
+	(memaddr_opnd,		$),
+
+	(intimm_opnd,		$),
+	(int128imm_opnd,	$),
+	(realimm_opnd,		$),
+	(strimm_opnd,		$),
+
+	(proc_opnd,			$),
+	(dllproc_opnd,		$),
+	(field_opnd,		$),
+	(genfield_opnd,		$),
+	(label_opnd,		$),
+	(type_opnd,			$),
+	(operator_opnd,		$),
+	(syscall_opnd,		$),
+	(assem_opnd,		$),
+end
+
+global ref pclrec pccode, pccodex		!genpc adds to this linked list
+
+global ref pclrec allpclcode
+
+[1..4]pclopndrec pclbuffers				!operand data written into this circular buffer
+int nextpclindex=1						!next available slot
+
+global int framebytes			!local stackframe size
+global int parambytes
+global int frameoffset
+global int isthreadedproc
+global int iscallbackproc
+
+pclopndrec $zero_opnd
+global ref pclopndrec zero_opnd
+
+global proc pclinit=
+	$zero_opnd:=genint(0)^
+	zero_opnd:=&$zero_opnd
+
+	initpcdest()
+end
+
+global proc initpcdest=
+!reset pccode/pccodex
+!called should have saved any values from last linked list 
+
+pccode:=pccodex:=nil
+end
+
+global proc genpc(int opcode, ref pclopndrec a=nil,b=nil)=
+ref pclrec p, oldp
+
+p:=pcm_allocz(pclrec.bytes)
+
+p^.lineno:=mlineno
+p^.opcode:=opcode
+
+if a then
+	p^.a:=a^
+	if b then
+		p^.b:=b^
+	fi
+fi
+
+addpcl(p)
 
 end
 
-proc decimal_print(object p, ichar fmt)=
-	ichar s
-	s:=bn_tostring(p.udec.bnptr,0)
-	printstr(s)
-	free(s)
+proc addpcl(ref pclrec p)=
+
+if pccode then
+	pccodex^.nextpcl:=p
+	pccodex:=p
+else
+	pccode:=pccodex:=p
+fi
 end
 
+global proc genpc_condlab(int opcode, cond, int lab)=
+genpc(opcode,genlabel(lab))
+pccodex^.cond:=cond
+end
+
+global function lastpc:ref pclrec=
+return pccodex
+end
+
+global proc genpcstr(int opcode,ichar s)=
+!as genpc but uses a single immediate string operand
+
+genpc(opcode,genstrimm(s))
+end
+
+function newpclopnd:ref pclopndrec=
+ref pclopndrec a
+
+a:=&pclbuffers[nextpclindex++]
+
+if nextpclindex>pclbuffers.len then
+	nextpclindex:=1
+fi
+return a
+end
+
+global function duplopnd(ref pclopndrec a)ref pclopndrec=
+ref pclopndrec b
+b:=newpclopnd()
+if a=b then gerror("DUPLOPND/CLASH") fi
+b^:=a^
+return b
+end
+
+proc writepclblock(ref pclrec m)=
+!block single block of mc code, usually belonging to one proc
+!initstr=1 to initialise string o/p for single block
+!initgenstr() when initstr
+int i
+
+i:=1
+
+while m do
+	writepcl(i,m)
+	++i
+	m:=m^.nextpcl
+od
+end
+
+global function writepclcode(ichar caption)ref strbuffer=
+!write all pcl code in system by scanning all procs
+!pcl code is only stored per-proc
+ref strec d
+ref procrec pp
+
+gs_str(dest,"PROC ")
+gs_strln(dest,caption)
+gs_strln(dest,"---------------------------------------------")
+
+writepclblock(allpclcode)
+
+gs_strln(dest,"---------------------------------------------")
+
+return dest
+end
+
+global proc gencomment(ichar s)=
+if s=nil or s^=0 then
+	genpc(k_blank)
+else
+	genpcstr(k_comment,s)
+fi
+end
+
+global function genstrimm(ichar s,int length=-1)ref pclopndrec=
+	ref pclopndrec a
+	a:=newpclopnd()
+	a^.optype:=strimm_opnd
+	if length<0 then
+		length:=strlen(s)
+	fi
+	a^.svalue:=pcm_alloc(length+1)
+	memcpy(a^.svalue,s,length+1)
+
+!	a^.size:=length
+	return a
+end
+
+global function genname(ichar s)ref pclopndrec=
+	ref pclopndrec a
+	a:=newpclopnd()
+	a^.optype:=strimm_opnd
+	a^.svalue:=pcm_copyheapstring(s)
+!	a^.size:=ptrsize
+	return a
+end
+
+global function gensys(int fnindex)ref pclopndrec=
+	ref pclopndrec a
+	a:=newpclopnd()
+	a^.optype:=syscall_opnd
+	a^.value:=fnindex
+!	a^.size:=ptrsize
+	return a
+end
+
+proc writepcl(int index,ref pclrec pcl)=
+!	gs_strint(dest,pcl^.lineno iand 16777215)
+	gs_leftint(dest,pcl^.lineno iand 16777215,4)
+	gs_str(dest,"  ")
+	gs_strln(dest,strpcl(pcl))
+end
+
+global function strpcl(ref pclrec pcl)ichar=
+!static [512]char str
+static [1512]char str
+[1512]char opnds
+[1256]char opnd2
+[1128]char opcname
+pclopndrec a,b
+int opcode,cond,sizepref
+
+opcode:=pcl^.opcode
+
+cond:=pcl^.cond
+a:=pcl^.a
+b:=pcl^.b
+
+case opcode
+!when k_assem then
+!	return "<assem>"
+
+when k_blank then
+	return ""
+when k_comment then
+!	sprintf(&.str,";%s",a.svalue)
+	print @&.str,";",,a.svalue
+	return &.str
+
+when k_labelname then				!label name will be complete and will have colon(s)
+	return a.svalue
+
+!when k_userlabel then
+!!	sprintf(&.str,"!%s:",a.svalue)
+!	fprint @&.str,"!#:",a.svalue
+!	return &.str
+
+when k_label then
+!	if b then
+!		sprintf(&.str,"L%d:%s	<%s>",a^.value,(a^.isglobal|":"|""),b^.def^.name)
+!	else
+!		sprintf(&.str,"L%d:%s",a^.value,(a^.isglobal|":"|""))
+!	fi
+	if b.optype then
+!		sprintf(&.str,"L%d:	<%s>",a.value,b.def^.name)
+		fprint @&.str,"L#:	<#>",a.value,b.def^.name
+	else
+!		sprintf(&.str,"L%d:",a.value)
+		fprint @&.str,"L#:",a.value
+	fi
+	return &.str
+
+when k_istatic then
+!	sprintf(&.str,"istatic %s:",a.def^.name)
+	fprint @&.str,"istatic #:",a.def.name
+	return &.str
+
+when k_zstatic then
+!	sprintf(&.str,"zstatic %s: %d",a.def^.name, b.value)
+	fprint @&.str,"zstatic #: #",a.def.name, b.value
+	return &.str
+esac
+
+case opcode
+when k_jumpcc then
+!	sprintf(&.opcname,"jump.%s",jtagnames[cond]+2)
+	print @&.opcname,"jump.",,jtagnames[cond]+2
+
+when k_setcc then
+!	sprintf(&.opcname,"set.%s",jtagnames[cond]+2)
+	print @&.opcname,"set.",,jtagnames[cond]+2
+
+!when k_syscall then
+!	sprintf(&.opcname,"callsys    %.*s",strlen(syscallnames[cond])-3,syscallnames[cond])
+
+else
+	strcpy(&.opcname,pclnames[opcode]+2)
+esac
+
+if pcl^.catmode then
+	strcat(&.opcname,".")
+!	strcat(&.opcname,stdtypenames[pcl^.catmode])
+	strcat(&.opcname,typecatnames[pcl.catmode]+3)
+fi
+
+ipadstr(&.opcname,16," ")
+
+strcpy(&.str,"  ")
+
+
+ipadstr(&.str,8)
+
+strcat(&.str,&.opcname)
+
+if a.optype and b.optype then		!2 operands
+	strcpy(&.opnd2,stropnd(&b))
+!	sprintf(&.opnds,"%s,\t%s", stropnd(&a),&.opnd2)
+!	fprint @&.opnds,"#,\t#", stropnd(&a),&.opnd2
+	fprint @&.opnds,"#,   #", stropnd(&a),&.opnd2
+
+elsif a.optype then								!1 operand
+	strcpy(&.opnds,stropnd(&a))
+else
+	opnds[1]:=0
+fi
+
+
+if opnds[1] then
+	strcat(&.str,&.opnds)
+fi
+
+if opcode=k_procentry then
+!	sprintf(&.opnds,", Framesize: %d",pcl^.b.fbytes)
+	print @&.opnds,", Framesize:",pcl.b.fbytes
+	strcat(&.str,&.opnds)
+fi
+
+if pcl^.mode and pcl^.mode<>pcl^.catmode then
+!	sprintf(&.opnds," (%s)",strmode(pcl^.mode))
+	fprint @&.opnds," (#)",strmode(pcl^.mode)
+	strcat(&.str,&.opnds)
+fi
+
+!if pcl^.catmode2 or pcl^.mode2 then
+!!	sprintf(&.opnds," Target: %s (%s)",stdtypenames[pcl^.catmode2],
+!!			(pcl^.mode2|strmode(pcl^.mode2)|"-"))
+!	fprint @&.opnds," Target: # (#)",stdtypenames[pcl^.catmode2],
+!			(pcl^.mode2|strmode(pcl^.mode2)|"-")
+!	strcat(&.str,&.opnds)
+!fi
+
+!if pcl^.align and opcode not in [k_syscall, k_jumpcc] then
+if pcl^.align then
+	case opcode
+	when k_syscall, k_jumpcc, k_jumpccimm then
+	else
+		print @&.opnds," Align:",,pcl^.align
+		strcat(&.str,&.opnds)
+	esac
+fi
+
+if opcode in [k_callff, k_callptrff] then
+!	sprintf(&.opnds," Nargs:%d",pcl^.a.nargs)
+	print @&.opnds," Nargs:",,pcl^.a.nargs
+	strcat(&.str,&.opnds)
+fi
+
+
+ipadstr(&.str,54,"-")
+strcat(&.str," C:"); strcat(&.str,typecatnames[pcl.catmode]+3)
+ipadstr(&.str,63)
+strcat(&.str," M:"); strcat(&.str,strmodev(pcl.mode))
+ipadstr(&.str,80,"-")
+strcat(&.str," ||C2:"); strcat(&.str,typecatnames[pcl.catmode2]+3)
+ipadstr(&.str,88)
+strcat(&.str," M2:"); strcat(&.str,strmodev(pcl.mode2))
+ipadstr(&.str,96)
+strcat(&.str,"cai:")
+strcat(&.str,strint(pcl.cond))
+
+
+return &.str
+end
+
+function strmodev(int m)ichar=
+	if m=tvoid then return "-" fi
+	return strmode(m)
+end
+
+global function stropnd(ref pclopndrec a)ichar=
+static [512]char str
+
+case a^.optype
+when no_opnd then
+	return ""
+
+when mem_opnd then
+	return strmemopnd(a^.def)
+
+when memaddr_opnd then
+	return strmemaddropnd(a^.def)
+
+!when const_opnd then
+!	return strconstopnd(a^.code)
+
+when intimm_opnd then
+	print @&.str,a^.value
+
+!when wordimm_opnd then
+!	print @&.str,a^.uvalue
+
+when realimm_opnd then
+	print @&.str,a^.xvalue,(a.size=4|"*4"|"")
+
+when strimm_opnd then
+	if strlen(a^.svalue)>=str.len then
+		return "<LONGSTR>"
+	else
+		fprint @&.str,"""#""",a^.svalue
+	fi
+
+when syscall_opnd then
+	fprint @&.str,"<#: #>",sysfnnames[a^.value],sysfnlabels[a.value]
+
+when int128imm_opnd then
+	print @&.str,a^.pvalue128^
+
+when assem_opnd then
+!	fprint @&.str,"<#: #>",sysfnnames[a^.value],sysfnlabels[a.value]
+	fprint @&.str,"<ASSEM>",jtagnames[a.code.tag]
+
+when label_opnd then
+	fprint @&.str,"L#",a^.labelno
+
+else
+cpl "BAD OPND",A^.OPTYPE
+	return "<UNIMPL OPND>"
+esac
+
+return &.str
+end
+
+global function getprocname(ref strec d)ichar=
+	case d^.name
+	when "main" then
+		return "main"
+	when "start" then
+		return "start"
+	else
+		return getdottedname(d)
+	esac
+	return ""
+end
+
+global function strlabel(int n)ichar=
+static [16]char str
+!sprintf(&.str,"L%d",n)
+print @&.str,"L",,n
+return &.str
+end
+
+global function isframe(ref strec d)int=
+!don't know how to mark non-frame temps
+!might just look at enclosing proc
+case d^.nameid
+when frameid, paramid then
+	return 1
+esac
+return 0
+end
+
+global proc genreturn(int fbytes,pbytes)=
+!assume returning from currproc
+[256]char str
+int iscallback
+
+	iscallback:=iscallbackfn(currproc)
+
+	genpc(k_procexit)
+end
+
+global function genint(int64 x,int size=8)ref pclopndrec=
+ref pclopndrec a
+a:=newpclopnd()
+a^.optype:=intimm_opnd
+
+a^.value:=x
+return a
+end
+
+global function genint128(ref int128 pa)ref pclopndrec=
+ref pclopndrec a
+
+a:=newpclopnd()
+a.optype:=int128imm_opnd
+
+a.pvalue128:=pa
+return a
+return a
+end
+
+global function genreal(real64 x,int size=8)ref pclopndrec=
+ref pclopndrec a
+
+a:=newpclopnd()
+a^.optype:=realimm_opnd
+a^.xvalue:=x
+a^.size:=size
+return a
+end
+
+!global function genconst_u(unit p,int size=0)ref pclopndrec=
+!!assume p is a const unit, or possible a name (gives a name
+!	ref pclopndrec a
+!
+!	a:=newpclopnd()
+!	a^.optype:=const_opnd
+!	a^.code:=p
+!!	a^.mode:=p^.mode
+!!	a^.size:=(size|size|ttsize[p^.mode])
+!
+!return a
+!end
+
+global function genassem_u(unit p)ref pclopndrec=
+!assume p is a const unit, or possible a name (gives a name
+	ref pclopndrec a
+
+	a:=newpclopnd()
+	a^.optype:=assem_opnd
+	a^.code:=p
+	return a
+end
+
+global function genlabel(int x,isglobal=0)ref pclopndrec=
+!x is a label index
+!generate immediate operand containing label
+	ref pclopndrec a
+
+	a:=newpclopnd()
+	a^.optype:=label_opnd
+	a^.labelno:=x
+	return a
+end
+
+global function genmem_u(unit p,int size=0)ref pclopndrec=
+return genmem_d(p^.def,ttsize[p^.mode])
+end
+
+global function genmem_d(ref strec d,int size=0)ref pclopndrec=
+	ref pclopndrec a
+
+	a:=newpclopnd()
+	a^.optype:=mem_opnd
+
+	a^.def:=d
+!	a^.mode:=d^.mode
+!	a^.size:=(size|size|ttsize[d^.mode])
+	return a
+end
+
+global function genmemaddr_u(unit p)ref pclopndrec=
+	return genmemaddr_d(p^.def)
+end
+
+global function genmemaddr_d(ref strec d)ref pclopndrec=
+	ref pclopndrec a
+
+	a:=newpclopnd()
+	a^.optype:=memaddr_opnd
+
+	a^.def:=d
+!	a^.size:=ptrsize
+
+	return a
+end
+
+global function getopndsize_u(unit p)int=
+	return ttsize[p^.mode]
+end
+
+global function getopndsize_d(ref strec d)int=
+	return ttsize[d^.mode]
+end
+
+global function isint32const(unit p)int=
+int64 a
+	if isconstint(p) and ttsize[p^.mode]<=8 then
+		a:=p^.value
+		if a<=int32.maxvalue and a >=int32.minvalue then
+			return 1
+		fi
+	fi
+	return 0
+end
+
+global function roundto(int64 a,n)int64=
+!round a to be multiple of n
+!n will be a power of two
+--n
+while (a iand n) do ++a od
+return a
+end
+
+global proc pushstack(int n)=
+!	GENCOMMENT("PUSHSTACK")
+!	if n then
+!		genpc(k_sub,dstackopnd,genint(n))
+!	fi
+end
+
+global proc popstack(int n)=
+!	GENCOMMENT("POPSTACK")
+!	if n then
+!		genpc(k_add,dstackopnd,genint(n))
+!	fi
+end
+
+global function definelabel:int =
+genpc(k_label,genlabel(++labelno))
+return labelno
+end
+
+global function createfwdlabel:int =
+return ++labelno
+end
+
+global proc definefwdlabel(int lab) =
+genpc(k_label,genlabel(lab))
+end
+
+global proc genjumpl(int lab) =
+genpc(k_jump,genlabel(lab))
+end
+
+global proc do_syscallproc(int fnindex, nparams, int retmode=tvoid)=
+	[256]char str
+
+!	if fncall then
+!		lsif simplefunc then
+!		else
+!			genpc(k_pushretslot)
+!			setpclcat_u(p)
+!			if ttisreal[p^.mode] then
+!				makefloatopnds()
+!			fi
+!			pccodex^.mode:=p^.mode
+!		fi
+!	fi
+!
+	if nparams then
+		genpc(k_stackargs)
+	fi
+	genpc(k_syscall,gensys(fnindex), genint(nparams))
+
+!CPL "SYSCALL",STRMODE(RETMODE)
+
+	if retmode then
+		genpc(k_pushretval)			!dummy op: put d0/x0 return value onto opnd stack
+
+		setpclcat_t(retmode)
+		if ttisreal[retmode] then
+			makefloatopnds()
+		fi
+		pccodex^.mode:=retmode
+	fi
+end
+!
+function strmemopnd(ref strec d)ichar=
+	static [256]char str
+	fprint @&.str,"[#]",d^.name
+	return &.str
+end
+
+function strmemaddropnd(ref strec d)ichar=
+	static [256]char str
+	fprint @&.str,"&#",d^.name
+	return &.str
+end
+
+global function roundsizetg(int size)int=
+!make sure size is round up to next multiple of targetsize (4 or 8)
+while size iand (targetsize-1) do ++size od
+return size
+end
+
+global function getpclop(int tag)int=
+!convert j-tag to matching pcl code
+!not all tags need to be listed, only those treated as a group so that
+!this mapping is convenient. Otherwise the pcl code is just hardcoded
+
+static [,2]int16 maptable = (
+	(j_add,		k_add),
+	(j_sub,		k_sub),
+	(j_mul,		k_mul),
+	(j_div,		k_div),
+	(j_idiv,	k_idiv),
+	(j_irem,	k_irem),
+	(j_neg,		k_neg),
+	(j_abs,		k_abs),
+	(j_inot,	k_inot),
+	(j_iand,	k_iand),
+	(j_ior,		k_ior),
+	(j_ixor,	k_ixor),
+	(j_shl,		k_shl),
+	(j_shr,		k_shr),
+	(j_in,		k_in),
+	(j_min,		k_min),
+	(j_max,		k_max),
+	(j_concat,	k_concat),
+	(j_append,	k_append),
+	(j_lwb,		k_lwb),
+	(j_upb,		k_upb),
+	(j_len,		k_len),
+	(j_bounds,	k_bounds),
+	(j_sqrt,	k_sqrt),
+	(j_sqr,		k_sqr),
+!	(j_maths,	k_maths),
+!	(j_sin,		k_sin),
+!	(j_cos,		k_cos),
+!	(j_tan,		k_tan),
+!	(j_asin,	k_asin),
+!	(j_acos,	k_acos),
+!	(j_atan,	k_atan),
+!	(j_ln,		k_ln),
+!	(j_lg,		k_lg),
+!	(j_log,		k_log),
+!	(j_exp,		k_exp),
+!	(j_round,	k_round),
+!	(j_floor,	k_floor),
+!	(j_ceil,	k_ceil),
+!	(j_fract,	k_fract),
+!	(j_fmod,	k_fmod),
+
+	(j_addto,	k_addto),
+	(j_subto,	k_subto),		!to be completed...
+
+	(0,	0))
+
+static [0..jtagnames.upb]int16 convtable
+int opc
+
+if opc:=convtable[tag] then
+	return opc
+fi
+for i to maptable.upb do
+	if maptable[i,1]=tag then
+		convtable[i]:=opc:=maptable[i,2]
+		return opc
+	fi
+od
+cpl =jtagnames[tag]
+gerror("Can't find pcl op")
+return 0
+end
+
+function strshortmode(int m)ichar=
+	return stdtypenames[ttbasetype[m]]
+end
+
+global function islogical(unit p)int=			!ISLOGICAL
+!return 1 if p is known to have a logical value
+case p^.tag
+when j_istruel,j_notl,j_andl,j_orl,j_xorl then
+	return 1
+esac
+return 0
+end
+
+global proc makefloatopnds=
+!turn operands of last pcl rec to float
+	case pccodex^.opcode
+	when k_index,k_dot, k_indexref, k_dotref,k_popindex,k_storeindex,
+		 k_storedot, k_popdot, k_indexmem then
+		case pccodex^.catmode2
+		when tc_d124 then pccodex^.catmode2:=tc_x4
+		when tc_d8 then pccodex^.catmode2:=tc_x4
+		when tc_d16 then gerror("widefloat?")
+		esac
+	else
+
+		case pccodex^.catmode
+		when tc_d124 then pccodex^.catmode:=tc_x4
+		when tc_d8 then pccodex^.catmode:=tc_x8
+		when tc_d16 then gerror("widefloat2?")
+!		when tr32 then
+!			if pccodex^.opcode=k_pushreal then
+!				pccodex^.catmode:=tc_x4
+!			fi
+		esac
+	esac
+end
+
+global proc setpclcat_u(unit p)=
+	setpclcat_t(p^.mode)
+end
+
+global proc setpclcat_t(int m)=
+!set catmode to broad category mode
+	pccodex^.catmode:=tttypecat[m]
+	pccodex^.mode:=m
+
+!	if ttcat[m] then				!set up for records
+!		pccodex^.catmode:=ttcat[m]		!to block/wide/scalar etc
+!	fi
+end
+
+global proc setpclmode_u(unit p)=
+	setpclmode_t(p^.mode)
+end
+
+global proc setpclmode_t(int m)=
+!set catmode to basetype
+!for records, a basic trecord will do (no matter if block or wide)
+	pccodex^.catmode:=tttypecat[ttbasetype[m]]
+	pccodex^.mode:=m
+end
+=== bb_blockpcl.m 18/18 ===
+import mlib
+import clib
+import oslib
+
+import bb_decls
+import bb_support
+import bb_tables
+import bb_lib
+import bb_libpcl
+import bb_diags
+
+const kjumpt = 1		!pseudo ops used for conditional jump logic
+const kjumpf = 0
+
+!const dodotchains=0
+const dodotchains=1
+
+const maxnestedloops	= 50
+
+[maxnestedloops,4]int loopstack
+int loopindex							!current level of nested loop/switch blocks
+
+const maxparams=100
+
+const maxswitchrange=500
+const maxcases=maxswitchrange
+
+const maxcasedepth=20
+[maxcasedepth]unit casestmt
+[maxcasedepth]int caseelse
+int casedepth
+
+ref[]int sw_labeltable			!set from do-switch
+ref[]int sw_valuetable
+int sw_lower
+int sw_ncases					!1..n for serial switch; 0 for simple
+byte sw_defaultseen				!starts at 0, set to 1 when default: seen
+int sw_defaultlabel
+int sw_breaklabel
+
+int maxreg=0
+
+global proc evalunit(unit p)=
+!p is a single executable unitrec; not a list or const
+!should be called via execblock() to executate a code item in a unitrec
+unit a,b
+ref strec d
+STATIC INT LEVEL
+
+!	mlineno:=p^.lineno
+	mlineno:=p^.pos
+
+	a:=p^.a
+	b:=p^.b
+
+!++LEVEL
+!TO LEVEL DO PRINT "   " OD
+!CPL "EVALUNIT",JTAGNAMES[P.TAG],MLINENO IAND 16777215, SOURCEFILENAMES[MLINENO>>24]
+!CPL "EVALUNIT",JTAGNAMES[P.TAG],MLINENO:"H"
+
+	switch p^.tag
+	when j_const         then do_const(p)
+	when j_null          then do_null(p,a,b)
+	when j_name          then do_name(p)
+	when j_block,j_stmtblock         then do_block(p,a)
+	when j_decimal       then do_decimal(p,a,b)
+!	when j_whenthen      then do_whenthen(p,a,b)
+!	when j_elsif         then do_elsif(p,a,b)
+!	when j_fmtitem       then do_fmtitem(p,a,b)
+!	when j_nogap         then do_nogap(p,a,b)
+	when j_callproc      then do_callproc(p,a,b,0)
+	when j_return        then do_return(p,a,b)
+	when j_returnmult    then do_returnmult(p,a,b)
+	when j_assign        then do_assign(p,a,b,0)
+!	when j_shallowcopy   then do_shallowcopy(p,a,b)
+	when j_deepcopy      then do_assign(p,a,b,0)
+	when j_to            then do_to(p,a,b)
+	when j_if            then do_if(p,a,b,p^.c,0)
+	when j_longif        then do_longif(p,a,b,0)
+	when j_forup         then do_for(p,a,b,p^.c,0)
+	when j_fordown       then do_for(p,a,b,p^.c,1)
+!	when j_forstep       then do_forstep(p,a,b)
+!	when j_forall        then do_forall(p,a,b)
+!	when j_forallrev     then do_forallrev(p,a,b)
+!	when j_foreach       then do_foreach(p,a,b)
+!	when j_foreachrev    then do_foreachrev(p,a,b)
+	when j_while         then do_while(p,a,b)
+	when j_repeat        then do_repeat(p,a,b)
+	when j_goto          then do_goto(p,a,b)
+!	when j_gotoblock     then do_gotoblock(p,a,b)
+	when j_labeldef      then do_labeldef(p)
+	when j_restart       then do_exit(p,1)
+	when j_redo          then do_exit(p,2)
+	when j_next          then do_exit(p,3)
+	when j_exit          then do_exit(p,4)
+	when j_do            then do_do(p,a,b)
+	when j_case          then do_case(p,a,b,p^.c,0,0)
+	when j_docase        then do_case(p,a,b,p^.c,1,0)
+	when j_switch        then do_switch(p,a,b,p^.c,0,0)
+	when j_doswitch      then do_switch(p,a,b,p^.c,1,0)
+	when j_swap          then do_swap(p,a,b)
+	when j_select        then do_select(p,a,b,p^.c,0)
+	when j_print         then do_print(p,a,b)
+	when j_println       then do_print(p,a,b)
+	when j_fprint        then do_print(p,a,b)
+	when j_fprintln      then do_print(p,a,b)
+	when j_cprint        then do_cprint(p,a,b)
+	when j_cprintln      then do_cprintln(p,a,b)
+	when j_sprint        then do_sprint(p,a,b)
+	when j_sfprint       then do_sfprint(p,a,b)
+	when j_read	         then do_read(p,a)
+	when j_readln        then do_readln(a)
+	when j_sread         then do_sread(p,a,b)
+	when j_sreadln       then do_sreadln(p,a,b)
+	when j_stop          then do_stop(p,a)
+	when j_try           then do_try(p,a,b)
+	when j_except        then do_except(p,a,b)
+	when j_yield         then do_yield(p,a,b)
+	when j_raise         then do_raise(p,a,b)
+!	when j_callhostproc  then do_callhostproc(p,a,b)
+	when j_eval          then do_eval(p,a,b)
+!	when j_lambda        then do_lambda(p,a,b)
+
+!	when j_andl          then do_andl(p,a,b)		!short-circuit code
+!	when j_orl           then do_orl(p,a,b)			!(has problems with eg. byte operands)
+
+	when j_andl          then do_bin(p,a,b,k_iand)	!non-short-circuit code
+	when j_orl           then do_bin(p,a,b,k_ior)
+
+	when j_xorl          then do_bin(p,a,b,k_ixor)
+
+
+	when j_andb          then do_bin(p,a,b,k_iand)
+	when j_orb           then do_bin(p,a,b,k_ior)
+
+!	when j_xorl          then do_xorl(p,a,b)
+
+	when j_notl          then do_notl(p,a)
+	when j_istruel       then do_istruel(p,a)
+	when j_makelist      then do_makelist(p,a,b)
+	when j_makerange     then do_makerange(p,a,b)
+	when j_makeset       then do_makeset(p,a,b)
+	when j_makedict      then do_makedict(p,a,b)
+	when j_exprlist      then do_exprlist(p,a,b)
+	when j_multexpr      then do_multexpr(p,a,b)
+	when j_keyword       then do_keyword(p,a,b)
+	when j_keyvalue      then do_keyvalue(p,a,b)
+	when j_assignx       then do_assign(p,a,b,1)
+	when j_deepcopyx     then do_assign(p,a,b,1)
+	when j_callfn        then do_callproc(p,a,b,1)
+!	when j_applyop       then do_applyop(p,a,b)
+!	when j_applyopx      then do_applyopx(p,a,b)
+!	when j_andand        then do_andand(p,a,b)
+	when j_eq            then do_setcc(p,a,b)
+	when j_ne            then do_setcc(p,a,b)
+	when j_lt            then do_setccx(p,a,b)
+	when j_le            then do_setccx(p,a,b)
+	when j_ge            then do_setccx(p,a,b)
+	when j_gt            then do_setccx(p,a,b)
+	when j_same          then do_same(p,a,b)
+	when j_add           then do_bin(p,a,b,k_add)
+	when j_sub           then do_bin(p,a,b,k_sub)
+	when j_mul           then do_muldiv(p,a,b,k_mul)
+	when j_div           then do_bin(p,a,b,k_div)
+	when j_idiv          then do_muldiv(p,a,b,k_idiv)
+	when j_irem          then do_muldiv(p,a,b,k_irem)
+!	when j_divrem        then do_bin(p,a,b,k_divrem)
+	when j_iand          then do_bin(p,a,b,k_iand)
+	when j_ior           then do_bin(p,a,b,k_ior)
+	when j_ixor          then do_bin(p,a,b,k_ixor)
+	when j_shl           then do_shl(p,a,b,k_shl,k_shlc)
+	when j_shr           then do_shl(p,a,b,k_shr,k_shrc)
+	when j_in            then do_bin(p,a,b,k_in)
+!	when j_notin         then do_bin(p,a,b,k_)
+!	when j_inrev         then do_bin(p,a,b)
+	when j_min           then do_bin(p,a,b,k_min)
+	when j_max           then do_bin(p,a,b,k_max)
+	when j_addoffset     then do_bin(p,a,b,k_addoffset)
+	when j_suboffset     then do_bin(p,a,b,k_suboffset)
+	when j_subref        then do_bin(p,a,b,k_subref)
+	when j_concat        then do_bin(p,a,b,k_concat)
+	when j_append        then do_bin(p,a,b,k_append)
+	when j_clamp         then do_clamp(p,a,b)
+!	when j_index         then do_index(p,a,b)
+	when j_index         then do_index(p,0)
+	when j_slice         then do_slice(p,a,b)
+	when j_makeslice     then do_makeslice(p,a,b)
+	when j_dotindex      then do_dotindex(p,a,b)
+	when j_dotslice      then do_dotslice(p,a,b)
+	when j_anddotindex   then do_anddotindex(p,a,b)
+	when j_anddotslice   then do_anddotslice(p,a,b)
+!	when j_keyindex      then do_keyindex(p,a,b,0)
+!	when j_dot           then do_dot(p,a,p^.offset,0)
+	when j_dot           then do_dot(p,0)
+!	when j_dotattr       then do_dotattr(p,a,b)
+!	when j_atan2         then do_atan2(p,a,b)
+!	when j_power         then do_power(p,a,b)
+	when j_ptr           then do_ptr(p,a,b)
+	when j_addrof        then do_addrof(p,a)
+	when j_addroffirst   then do_addrof(p,a)
+	when j_convert       then do_convert(p,a,b)
+!	when j_convertref    then do_convertref(p,a,b)
+	when j_autocast      then do_autocast(p,a,b)
+	when j_typepun       then do_typepun(p,a,b)
+	when j_typeconst     then do_typeconst(p)
+	when j_operator      then do_operator(p,a,b)
+	when j_upper         then do_upper(p,a,b)
+	when j_neg           then do_unary(p,a,k_neg)
+	when j_abs           then do_unary(p,a,k_abs)
+	when j_inot          then do_unary(p,a,k_inot)
+	when j_sqrt          then
+		evalunit(a)
+		genpc(k_sqrt)
+		setpclmode_u(a)
+
+	when j_sqr           then do_sqr(p,a,b)
+	when j_maths         then do_maths(p,a,b)
+!	when j_sign          then do_sign(p,a,b)
+!	when j_sin           then do_maths(p,a,sysfn_sin,k_sin)
+!	when j_cos           then do_maths(p,a,sysfn_cos,k_cos)
+!	when j_tan           then do_maths(p,a,sysfn_tan,k_tan)
+!	when j_asin          then do_maths(p,a,sysfn_asin,k_asin)
+!	when j_acos          then do_maths(p,a,sysfn_acos,k_acos)
+!	when j_atan          then do_maths(p,a,sysfn_atan,k_atan)
+!	when j_ln            then do_maths(p,a,sysfn_ln,k_ln)
+!!	when j_lg            then do_maths(p,a,sysfn_lg,k_log)
+!	when j_log           then do_maths(p,a,sysfn_log,k_log)
+!	when j_exp           then do_maths(p,a,sysfn_exp,k_exp)
+!	when j_round         then do_maths(p,a,sysfn_round,k_round)
+!	when j_floor         then do_maths(p,a,sysfn_floor,k_floor)
+!	when j_ceil          then do_maths(p,a,sysfn_ceil,k_ceil)
+!	when j_fract         then do_maths(p,a,sysfn_fract,k_fract)
+!	when j_fmod          then do_fmod(p,a,b)
+	when j_lwb           then do_unary(p,a,k_lwb)
+	when j_upb           then do_unary(p,a,k_upb)
+	when j_len           then do_unary(p,a,k_len)
+	when j_lenstr        then do_unary(p,a,k_lenstr)
+	when j_bounds        then do_unary(p,a,k_bounds)
+	when j_asc           then do_unary(p,a,k_asc)
+	when j_chr           then do_unary(p,a,k_chr)
+
+	when j_bitwidth      then do_bitwidth(p,a)
+	when j_bytesize      then do_bytesize(p,a)
+	when j_typeof        then do_typeof(p,a,b)
+	when j_typestr       then do_typestr(p,a,b)
+	when j_sliceptr      then do_sliceptr(p,a)
+	when j_minvalue      then do_minvalue(p,a,b)
+	when j_maxvalue      then do_maxvalue(p,a,b)
+
+	when j_incr,j_decr	 then do_incr(p,a)
+
+	when j_preincrx      then do_incrx(p,a,k_preincrtox)
+	when j_predecrx      then do_incrx(p,a,k_predecrtox)
+	when j_postincrx     then do_incrx(p,a,k_postincrtox)
+	when j_postdecrx     then do_incrx(p,a,k_postdecrtox)
+
+	when j_addto         then do_binto(p,a,b,k_addto)
+	when j_subto         then do_binto(p,a,b,k_subto)
+	when j_multo         then do_binto(p,a,b,k_multo)
+	when j_divto         then do_binto(p,a,b,k_divto)
+	when j_idivto        then do_binto(p,a,b,k_idivto)
+	when j_iremto        then do_binto(p,a,b,k_iremto)
+	when j_iandto        then do_binto(p,a,b,k_iandto)
+	when j_iorto         then do_binto(p,a,b,k_iorto)
+	when j_ixorto        then do_binto(p,a,b,k_ixorto)
+	when j_shlto         then do_shlto(p,a,b,k_shlto,k_shlcto)
+	when j_shrto         then do_shlto(p,a,b,k_shrto,k_shrcto)
+	when j_minto         then do_binto(p,a,b,k_minto)
+	when j_maxto         then do_binto(p,a,b,k_maxto)
+	when j_addoffsetto   then do_binto(p,a,b,k_addoffsetto)
+	when j_suboffsetto   then do_binto(p,a,b,k_suboffsetto)
+
+	when j_andlto        then do_binto(p,a,b,k_andlto)
+	when j_orlto         then do_binto(p,a,b,k_orlto)
+	when j_appendto      then do_binto(p,a,b,k_appendto)
+	when j_concatto      then do_binto(p,a,b,k_concatto)
+
+	when j_negto         then do_unaryto(p,a,k_negto)
+	when j_absto         then do_unaryto(p,a,k_absto)
+	when j_inotto        then do_unaryto(p,a,k_inotto)
+	when j_notlto        then do_unaryto(p,a,k_notlto)
+
+!	when j_head, j_tail, j_init, j_last, j_flexptr, j_stringz,j_reverse,
+!		 j_dupl then
+!!		doflexop(p,a,jtagnames[p^.tag]+2)
+!		do_flexunartop(p,a,jtagnames[p^.tag]+2)
+!
+!	when j_take, j_drop, j_left, j_right,j_convlc, j_convuc then
+!		do_flexbinop(p,a,b,0,jtagnames[p^.tag]+2)
+
+	when j_recase        then do_recase(p,a)
+
+!	when j_isvoid        then do_isvoid(p,a,b)
+!	when j_isdef         then do_isdef(p,a,b)
+!	when j_isint         then do_isint(p,a,b)
+!	when j_isreal        then do_isreal(p,a,b)
+!	when j_isstring      then do_isstring(p,a,b)
+!	when j_islist        then do_islist(p,a,b)
+!	when j_isrecord      then do_isrecord(p,a,b)
+!	when j_isarray       then do_isarray(p,a,b)
+!	when j_isset         then do_isset(p,a,b)
+!	when j_ispointer     then do_ispointer(p,a,b)
+!	when j_ismutable     then do_ismutable(p,a,b)
+
+	when j_cvlineno      then do_cvlineno(p,a,b)
+!	when j_cvstrlineno   then do_cvstrlineno(p,a,b)
+	when j_cvmodulename  then do_cvmodulename(p,a,b)
+	when j_cvfilename    then do_cvfilename(p,a,b)
+!	when j_cvfunction    then do_cvfunction(p,a,b)
+!	when j_cvdate        then do_cvdate(p,a,b)
+!	when j_cvtime        then do_cvtime(p,a,b)
+!	when j_cvversion     then do_cvversion(p,a,b)
+!	when j_cvtypename    then do_cvtypename(p,a,b)
+!	when j_cvtargetbits  then do_cvtargetbits(p,a,b)
+!	when j_cvtargetsize  then do_cvtargetsize(p,a,b)
+!	when j_cvtargetcode  then do_cvtargetcode(p,a,b)
+
+	when j_syscall then
+		if a then
+			evalunit(a)
+			do_syscallproc(p.opcode,1,p.mode)
+		else
+			do_syscallproc(p.opcode,0,p.mode)
+		fi
+
+	when j_assem         then do_assem(p,a)
+	else
+		gerror_s("UNSUPPORTED TAG: #",JTAGNAMES[P^.TAG])
+	endswitch
+
+!CPL "DONE"
+
+	if ttisreal[p^.mode] then
+		makefloatopnds()
+	fi
+
+	if p^.popflag then
+!		if ttisflexvar[p^.mode] then
+!			callflexhandler(p^.mode,"free",1)
+!		elsif p^.mode=tmult then
+
+		if ttbasetype[p.mode]=ttuple then
+GERROR("MULTRET2")
+!			if p^.tag=j_callfn and p^.a^.tag=j_name then
+!				d:=p^.a^.def
+!				for i to d^.nretvalues do
+!					genpc(k_free)
+!					setpclcat_t(d^.modelist[i])
+!					if ttisreal[d^.modelist[i]] then
+!						makefloatopnds()
+!					fi
+!				od
+!			else
+!				gerror("Can't free mult/ret values")
+!			fi
+!
+		else
+			genpc(k_free)
+			setpclcat_t(p^.mode)
+			if ttisreal[p^.mode] then
+				makefloatopnds()
+			fi
+		fi
+		p^.popflag:=0
+	fi
+!TO LEVEL DO PRINT "   " OD
+!CPL "DONE2",JTAGNAMES[P.TAG]
+!--LEVEL
+end
+
+proc evalref(unit p)=
+	unit a,b,c
+	a:=p^.a
+	b:=p^.b
+	c:=p^.c
+
+	switch p^.tag
+	when j_name then
+		genpc(k_pushaddr,genmem_d(p^.def))
+
+	when j_index then
+		do_index(p,1)
+
+!	when j_keyindex then
+!		do_keyindex(p,a,b,1)
+
+	when j_slice then
+		do_slice(p,a,b,1)
+
+	when j_dot then
+		do_dot(p,1)
+
+	when j_ptr then
+		evalunit(p^.a)
+
+	else
+		case p^.tag
+		when j_if then
+			do_if(p,a,b,c,1)
+		when j_longif then
+			do_longif(p,a,b,1)
+		when j_select then
+			do_select(p,a,b,c,1)
+		when j_switch then
+			do_switch(p,a,b,c,0,1)
+		when j_case then
+			do_case(p,a,b,c,0,1)
+		else
+			PRINTUNIT(P)
+			gerror("evalref")
+		esac
+	end switch
+end
+
+proc genjumpcond(int opc,unit p,int lab)=
+!p is some conditional expression of arbitrary complexity
+!opc is kjumpf or kjumpt
+!evaluate and generate jumps as needed
+pclopndrec lx,mx
+unit q,r,s
+int lab2
+
+q:=p^.a
+r:=p^.b
+
+switch p^.tag
+when j_andl then
+	case opc
+	when kjumpf then
+		genjumpcond(kjumpf,q,lab)
+		genjumpcond(kjumpf,r,lab)
+	when kjumpt then
+		lab2:=createfwdlabel()
+		genjumpcond(kjumpf,q,lab2)
+		genjumpcond(kjumpt,r,lab)
+		definefwdlabel(lab2)
+	esac
+
+when j_orl then
+	case opc
+	when kjumpf then
+		lab2:=createfwdlabel()
+		genjumpcond(kjumpt,q,lab2)
+		genjumpcond(kjumpf,r,lab)
+		definefwdlabel(lab2)
+	when kjumpt then
+		genjumpcond(kjumpt,q,lab)
+		genjumpcond(kjumpt,r,lab)
+	esac
+
+when j_notl then
+	case opc
+	when kjumpf then
+		genjumpcond(kjumpt,q,lab)
+	when kjumpt then
+		genjumpcond(kjumpf,q,lab)
+	esac
+
+when j_istruel then
+	genjumpcond(opc,q,lab)
+
+when j_block then
+	while q and q^.nextunit do
+		evalunit(q)
+		q:=q^.nextunit
+	od
+	genjumpcond(opc,q,lab)
+
+when j_eq,j_ne,j_lt,j_le,j_ge,j_gt then
+
+	gcomparejump(opc,p,q,r,lab)
+
+when j_inrange then
+	evalunit(q)
+	evalunit(r^.a)
+	evalunit(r^.b)
+	genpc((opc=kjumpf|k_jumpnotinyz|k_jumpinyz),genlabel(lab))
+	setpclmode_u(q)
+
+when j_inset then
+	s:=r^.a
+	if s=nil then
+		gerror("empty set")
+	fi
+	if s^.nextunit=nil then			!treat as x=y
+		p^.tag:=j_eq
+		gcomparejump(opc,p,q,s,lab)
+		return
+	fi
+
+	if opc=kjumpf then
+		lx:=genlabel(lab)^
+		lab2:=createfwdlabel()
+		mx:=genlabel(lab2)^
+		evalunit(q)
+
+		while s do
+			evalunit(s)
+			s:=s^.nextunit
+			if s then
+				genpc(k_setjumpeq,&mx)
+			else
+				genpc(k_setjumpne,&lx)
+			fi
+			setpclcat_u(q)
+		od
+		definefwdlabel(lab2)
+	else
+		lx:=genlabel(lab)^
+		evalunit(q)
+
+		while s do
+			evalunit(s)
+			s:=s^.nextunit
+			genpc((s|k_setjumpeq|k_setjumpeqx),&lx)
+			setpclcat_u(q)
+		od
+	fi
+
+else			!other, single expression
+!	if ttisvar[p.mode] then
+!!		genpc(k_pushretslot)
+!!		setpclcat_t(ti64)
+!		evalunit(p)
+!		genpc(k_istruel)
+!		setpclcat_u(p)
+!!		callflexhandler(p^.mode,"istrue",1)
+!		genpc((opc=kjumpt|k_jumptrue|k_jumpfalse),genlabel(lab))
+!		setpclmode_t(ti64)
+!	else
+		evalunit(p)
+
+		genpc((opc=kjumpt|k_jumptrue|k_jumpfalse),genlabel(lab))
+		setpclmode_u(p)
+!	fi
+endswitch
+end
+
+proc gcomparejump(int jumpopc,unit p,lhs,rhs,int lab)=
+!jumpopc is the base cmdcode needed: kjumpt or kjumpt
+!p is the eq/compare unit
+!convert into jumpcc cmdcode
+	int cond
+
+	cond:=p^.tag				!eqop,neop, etc
+
+	if jumpopc=kjumpf then			!need to reverse condition
+		cond:=reversecond(cond)		!eqop => neop, etc
+	fi
+
+	evalunit(lhs)
+
+	evalunit(rhs)
+	genpc_condlab(k_jumpcc,cond,lab)
+	setpclmode_u(lhs)
+end
+
+proc genjumpl(int lab)=
+!generate unconditional jump to label
+	genpc(k_jump,genlabel(lab))
+end
+
+function reversecond(int op)int=
+!reverse conditional operator
+
+	case op
+	when j_eq then return j_ne
+	when j_ne then return j_eq
+	when j_lt then return j_ge
+	when j_le then return j_gt
+	when j_ge then return j_lt
+	when j_gt then return j_le
+	esac
+	return 0
+end
+
+proc stacklooplabels(int a,b,c,d)=
+!don't check for loop depth as that has been done during parsing
+	++loopindex
+	if loopindex>maxnestedloops then
+		gerror("Too many nested loops")
+	fi
+
+	loopstack[loopindex,1]:=a
+	loopstack[loopindex,2]:=b
+	loopstack[loopindex,3]:=c
+	loopstack[loopindex,4]:=d
+
+end
+
+function findlooplabel(int k,n)int=
+!k is 1,2,3,4 for label A,B,C,D
+!n is a 1,2,3, etc, according to loop nesting index
+int i
+
+i:=loopindex-(n-1)		!point to entry
+if i<1 or i>loopindex then gerror("Bad loop index") fi
+return loopstack[i,k]
+end
+
+proc unimpl(ichar mess)=
+	gerror_s("Unimplemented: #",mess)
+end
+
+proc do_const(unit p) =
+	int mode:=p.mode
+
+	if ttisinteger[mode] then
+		if ttsize[mode]<16 then
+			genpc(k_pushint,genint(p.value))
+!			setpclmode_t((ttisint[mode]|ti64|tu64))
+		else
+			genpc(k_pushint128,genint128(&p.value128))
+!			setpclmode_t((ttisint[mode]|ti128|tu128))
+!			gerror("PUSHINT128")
+		fi
+	elsif ttisreal[mode] then
+		genpc(k_pushreal,genreal(p.xvalue))
+		setpclmode_t(tr64)
+
+	elsif ttisref[mode] then
+		if p.isastring then
+			genpc(k_pushstr,genstrimm(p.svalue,p.length))
+		else
+			genpc(k_pushint, genint(p.value))
+		fi
+	else
+		gerror("do_const")
+	fi
+
+!	case p^.mode
+!	when ti8,ti16,ti32 then
+!		setpclmode_t(ti64)
+!	when tu8,tu16,tu32 then
+!		setpclmode_t(tu64)
+!	else
+!		if p^.isastring then
+!			setpclmode_t(trefchar)
+!		else
+!			setpclmode_u(p)
+!		fi
+!	esac
+end
+
+proc do_null(unit p,a,b) =
+	unimpl("do_null")
+end
+
+proc do_name(unit p) =
+	ref strec d
+
+	d:=p^.def
+	case d^.nameid
+	when procid,dllprocid then
+		genpc(k_pushaddr,genmem_u(p))
+	when labelid then
+		if d^.index=0 then
+			d^.index:=++labelno
+		fi
+		genpc(k_jump, genlabel(d^.index))
+		p^.popflag:=0
+
+	else
+		genpc(k_pushmem,genmem_u(p))
+!CPL "SETPCLCAT FOR NAME",TTSIZE[P.MODE],STRMODE(TTCAT[P.MODE]),
+!	STRMODE(P.MODE),
+!STRMODE(TTBASETYPE[P.MODE]),
+!STRMODE(STDTYPECAT[TTBASETYPE[P.MODE]])
+
+		setpclcat_u(p)
+!CPL "DONE",STRMODE(PCCODEX.CATMODE)
+
+	esac
+end
+
+proc do_block(unit p,a) =
+	while a and a^.nextunit do
+		evalunit(a)
+		a:=a^.nextunit
+	od
+	if a then
+		evalunit(a)
+	fi
+end
+
+proc do_decimal(unit p,a,b) =
+CPL "DECIMAL",P.SVALUE,P.LENGTH
+!	unimpl("do_decimal")
+	genpc(k_makedec,genstrimm(p.svalue,p.length))
+
+end
+
+proc do_callproc(unit p,a,b,int fncall) =
+[maxparams]unit params
+int nparams,m,simplefunc
+ref strec d,e
+unit q
+
+	case a^.tag
+	when j_name then
+		d:=a^.def
+		simplefunc:=d^.simplefunc
+	when j_ptr then
+!		isfnptr:=1
+		d:=ttnamedef[a^.mode]
+		simplefunc:=1
+
+		e:=d^.paramlist
+		while e<>nil do
+			unless issimpletype(d^.mode) then
+				simplefunc:=0
+			end
+			e:=e^.nextdef
+		od
+
+	else
+		gerror("call/not ptr")
+	esac
+
+	if d^.fflang in [clangff,windowsff] then
+		do_callff(p,a,b,d,fncall)
+		return
+	fi
+
+	if fncall then
+		if ttbasetype[p.mode]=ttuple then
+GERROR("MULTRET1")
+
+!			for i:=d^.nretvalues downto 1 do
+!				genpc(k_pushretslot)
+!				m:=d^.modelist[i]
+!				setpclcat_t(m)
+!				if ttisreal[m] then
+!					makefloatopnds()
+!				fi
+!				pccodex^.mode:=m
+!			od
+		elsif simplefunc then
+!		if simplefunc then
+		else
+			genpc(k_pushretslot)
+			setpclcat_u(p)
+			if ttisreal[p^.mode] then
+				makefloatopnds()
+			fi
+			pccodex^.mode:=p^.mode
+		fi
+	fi
+
+	nparams:=0
+	while b do
+		params[++nparams]:=b
+		b:=b^.nextunit
+	od
+	for i:=nparams downto 1 do
+		q:=params[i]
+
+!		if isshortconst(q) then
+!			genpc(k_dpushconst,genconst_u(q))
+!			setpclcat_u(q)
+!		elsif isshortmem(q) then
+		if isshortmem(q) then
+			genpc(k_dpushmem,genmem_u(q))
+			setpclcat_u(q)
+		else
+			evalunit(q)
+		fi
+	od
+	genpc(k_stackargs)
+
+	case a^.tag
+	when j_name then
+		genpc(k_call, genmemaddr_u(a),genint(nparams))
+	else
+		evalunit(a^.a)
+		genpc(k_callptr,genint(nparams))
+	esac
+
+	if fncall and simplefunc then
+		genpc(k_pushretval)			!dummy op: put d0/x0 return value onto opnd stack
+		setpclcat_u(p)
+		if ttisreal[p^.mode] then
+			makefloatopnds()
+		fi
+		pccodex^.mode:=p^.mode
+	fi
+end
+
+proc do_return(unit p,a,b) =
+	if a then
+		evalunit(a)
+		if currproc^.simplefunc then
+			genpc(k_moveretval)
+		else
+			genpc(k_popretval,genint(parambytes))
+		fi
+		setpclcat_u(a)
+		if ttisreal[a^.mode] then
+			makefloatopnds()
+		fi
+	fi
+
+	if currproc^.simplefunc then
+		genpc(k_procexit)
+	else
+		genjumpl(retindex)
+	fi
+end
+
+proc do_returnmult(unit p,a,b) =
+	int offset
+
+	offset:=0
+	while a do
+		evalunit(a)
+		genpc(k_popretval,genint(parambytes+offset))
+		setpclcat_u(a)
+
+		if ttisreal[a^.mode] then
+			makefloatopnds()
+		fi
+		offset+:=ttsize[a^.mode]
+		a:=a^.nextunit
+	od
+	if p^.mode=tvoid then
+		genjumpl(retindex)
+	fi
+end
+
+proc do_assign(unit p,a,b, int fstore) =
+!fstore=1 when result is needed
+	unit c
+	ref strec d
+	int offset
+
+!CPL "ASSIGN1"
+	if tttypecat[a.mode]=tc_blk and fstore=0 then
+!CPL "POSSIBLE BLOCK",TTSIZE[A.MODE]
+!		if ttcat[a.mode]<>twide then
+!		if ttbasetype[a.mode]<>trecord or ttsize[a.mode] not in [16,8,4,2,1] then
+!CPL "DOBLOCK"
+			do_assignblock(p,a,b)
+			return
+!		fi
+	fi
+
+!	if ttisvar[a^.mode] then
+!		do_assignvariant(p,a,b,fstore)
+!		return
+!	fi
+
+!CPL "ASSIGN4"
+
+	case a^.tag
+	when j_makelist then
+		if fstore then gerror("multassign/store?") fi
+		do_multassign(a,b)
+		return
+	when j_index then
+		do_popindex(p,a.a, a.b, b, (fstore|k_storeindex|k_popindex))
+		return
+	when j_slice then
+		do_popslice(p,a.a, a.b, b, (fstore|k_storeslice|k_popslice))
+		return
+!	when j_keyindex then
+!		do_popkeyindex(p,a.a, a.b, b, (fstore|k_storekeyindex|k_popkeyindex))
+!		return
+	when j_dot then
+		do_popdot(p,a.a,b, a.offset,(fstore|k_storedot|k_popdot))
+		return
+	esac
+
+	evalunit(b)
+
+	switch a^.tag
+	when j_name then
+		genpc((fstore|k_storemem|k_popmem),genmem_u(a))
+!	when j_slice then
+!CPL "ASSIGN/SLICE"
+!		evalref(a)
+!		genpc((fstore|k_storeptr|k_popptr),genint(0))
+	when j_ptr then
+		c:=a^.a
+		offset:=0
+		if c.tag in [j_add, j_sub] and c.b^.tag=j_const then
+			offset:=(c.tag=j_add|c.b.value|-c.b.value)
+			evalunit(c.a)
+		else
+			evalunit(c)
+		fi
+		genpc((fstore|k_storeptr|k_popptr),genint(offset))
+	when j_if, j_longif, j_case, j_switch, j_select then
+		evalref(a)
+		genpc((fstore|k_storeptr|k_popptr),genint(0))
+	when j_dotindex then
+		evalref(a^.a)
+		evalunit(a^.b)
+		if fstore then
+			gerror("storedotix?")
+		else
+			genpc(k_popdotindex)
+		fi
+		setpclcat_u(a)
+		return
+	when j_dotslice then
+		evalref(a^.a)
+		evalunit(a^.b^.a)
+		evalunit(a^.b^.b)
+
+		if fstore then
+			gerror("storedotsl?")
+		else
+			genpc(k_popdotslice)
+		fi
+		setpclcat_u(a)
+		return
+	else
+		cpl jtagnames[a^.tag]
+		gerror("Can't assign")
+	end switch
+
+	setpclcat_u(a)
+
+	if ttbasetype[b.mode]=ttuple then
+GERROR("MULTRET3")
+!		if fstore then gerror("chained assign not allowed") fi
+!!CPL "NORMAL ASSIGN: RHS IS MULT"
+!		if b^.tag<>j_callfn or b^.a^.tag<>j_name then
+!			gerror("assign/mult/call error")
+!		fi
+!		d:=b^.a^.def
+!!CPL "RET VALUES",D^.NRETVALUES
+!		for i:=2 to d^.nretvalues do
+!			genpc(k_free)
+!			setpclcat_t(d^.modelist[i])
+!			if ttisreal[d^.modelist[i]] then
+!				makefloatopnds()
+!			fi
+!		od
+	fi
+
+end
+
+proc do_shallowcopy(unit p,a,b) =
+	unimpl("do_shallowcopy")
+end
+
+!proc do_deepcopy(unit p,a,b) =
+!	unimpl("do_deepcopy")
+!end
+
+proc do_to(unit p,a,b) =
+	unit avar
+	pclopndrec avaropnd
+	int lab_a,lab_b,lab_c,lab_d,count
+
+	avar:=p^.c
+	avaropnd:=genmem_u(avar)^
+
+	lab_a:=definelabel()
+	a^.mode:=ti64
+
+	evalunit(a)
+	genpc(k_popmem,&avaropnd)
+	setpclcat_t(ti64)
+
+	lab_b:=createfwdlabel()
+	lab_c:=createfwdlabel()
+	lab_d:=createfwdlabel()
+	stacklooplabels(lab_a,lab_b,lab_c,lab_d)
+
+!check for count being nonzero
+	if a^.tag<>j_const then			!assume const limit is non-zero
+		genpc(k_pushmem,&avaropnd)
+		setpclcat_t(ti64)
+		genpc(k_pushint,zero_opnd)
+		genpc_condlab(k_jumpcc,j_le,lab_d)
+		setpclmode_t(ti64)
+
+!		genmc(m_cmp,avaropnd,zero_opnd)
+!		genmc(m_jmpcc,genlabel(lab_d))
+!		mccodex^.cond:=le_cond
+	else
+		count:=a^.value
+		if count<=0 then
+			genjumpl(lab_d)
+		fi
+	fi
+
+	definefwdlabel(lab_b)
+	evalunit(b)			!main body
+
+	definefwdlabel(lab_c)
+
+	genpc(k_decrtomem,&avaropnd)
+!	setpclmode_t(ti64)
+	setpclcat_t(ti64)
+	genpc(k_pushmem,&avaropnd)
+	setpclcat_t(ti64)
+	genpc(k_jumptrue,genlabel(lab_b))
+	setpclmode_t(ti64)
+
+	definefwdlabel(lab_d)
+	--loopindex
+end
+
+proc do_if(unit p,a,b,c,int isref) =
+	int lab1,lab2,ismult
+
+	ismult:=p^.mode<>tvoid
+	if ismult then genpc(k_startmult) fi
+	lab1:=createfwdlabel()
+
+	genjumpcond(kjumpf,a,lab1)
+
+	if isref then evalref(b) else evalunit(b) fi
+	if ismult then genpc(k_resetmult) fi
+
+	if c then
+		lab2:=createfwdlabel()			!label past else part
+		genjumpl(lab2)
+		definefwdlabel(lab1)
+		if isref then evalref(c) else evalunit(c) fi
+		if ismult then genpc(k_endmult) fi
+		definefwdlabel(lab2)
+	else
+		definefwdlabel(lab1)
+	fi
+end
+
+proc do_longif(unit p,a,b,int isref) =
+	int labend,i,lab2,ismult
+	unit pcond
+
+	labend:=createfwdlabel()
+	ismult:=p^.mode<>tvoid
+
+	pcond:=a
+	i:=0
+	if ismult then genpc(k_startmult) fi
+!IF ISMULT THEN
+!	CPL "LONGIF/MULT"
+!FI
+
+	while pcond do
+		++i
+		lab2:=createfwdlabel()
+
+		genjumpcond(kjumpf,pcond^.a,lab2)
+
+!		evalunit(pcond^.b)
+		if isref then evalref(pcond^.b) else evalunit(pcond^.b) fi
+		if ismult then genpc(k_resetmult) fi
+
+		if pcond^.nextunit or b then
+			genjumpl(labend)
+		fi
+		definefwdlabel(lab2)
+		pcond:=pcond^.nextunit
+	od
+
+	if b then
+		if isref then evalref(b) else evalunit(b) fi
+		if ismult then genpc(k_endmult) fi
+	fi
+	definefwdlabel(labend)
+end
+
+proc do_for(unit p,ivar,pbody,pautovar,int down) =
+	unit pfrom, pto, pstep, pelse, px, plimit
+	pclopndrec indexopnd,autoopnd
+	int lab_a,lab_b,lab_c,lab_d,lab_e
+	int a,b
+
+	if ivar^.tag<>j_name then
+		gerror("complex (non-i64) for-loop var?")
+	fi
+
+	pfrom:=ivar^.nextunit
+	pto:=pfrom^.nextunit
+
+	if pto^.tag=j_ptr then
+		px:=pto^.a
+		ref strec d
+		if px^.tag=j_name and (d:=px^.def)^.nameid=paramid and\
+			 d^.parammode=out_param then
+			gerror("Possibly using &param as for-loop limit")
+		fi
+	fi
+
+	pstep:=pto^.nextunit
+
+	pelse:=pbody^.nextunit
+
+	lab_a:=definelabel()
+	lab_b:=createfwdlabel()
+	lab_c:=createfwdlabel()
+	lab_d:=createfwdlabel()
+	if pelse then
+		lab_e:=createfwdlabel()
+	else
+		lab_e:=lab_d
+	fi
+
+!	genlabel(lab_d)
+
+	stacklooplabels(lab_a, lab_b, lab_c, lab_d)
+
+!now start generating code
+	evalunit(pfrom)
+	indexopnd:=genmem_u(ivar)^
+	genpc(k_popmem,&indexopnd)
+	setpclcat_u(ivar)
+
+	if pautovar then
+		pautovar^.mode:=ti64
+		evalunit(pto)
+		genpc(k_popmem,genmem_u(pautovar))
+		setpclcat_u(pautovar)
+		plimit:=pautovar
+	else
+		plimit:=pto
+!	elsecase pto^.tag
+!	when j_const then
+!		limopnd:=genconst_u(pto)^
+!		limopc:=k_pushconst
+!	when j_name then
+!		limopnd:=genmem_u(pto)^
+!		limopc:=k_pushmem
+	fi
+
+	if pfrom^.tag=j_const and pto^.tag=j_const then
+		a:=pfrom^.value
+		b:=pto^.value
+		if (down and a>=b) or (not down and a<=b) then	!in range
+		else							!loop not executed
+			genpc(k_jump, genlabel(lab_e))
+!			gerror("For/0 iters")
+		fi
+!	elsif issimple(pfrom) then						!initial check needed
+	else
+!	XXX::
+		if pfrom^.tag=j_const then				!reverse condition; compare mem:imm
+			evalunit(plimit)
+!			genpc(limopc,&limopnd)
+!			setpclcat_u(pto)
+
+!			evalunit(pfrom)
+!			genpc_condlab(k_jumpcc,(down|j_gt|j_lt),lab_d)
+			genpc_condlab(k_jumpccimm,(down|j_gt|j_lt),lab_e)
+!			pccodex^.b:=genconst_u(pfrom)^
+			pccodex^.b:=genint(pfrom^.value)^
+
+		else
+			genpc(k_pushmem,&indexopnd)
+			setpclcat_u(ivar)
+
+			evalunit(plimit)
+			genpc_condlab(k_jumpcc,(down|j_lt|j_gt),lab_e)
+		fi
+		setpclmode_t(ti64)
+!	else
+!		goto xxx
+!!		gerror("FOR/FROM/CX")
+	fi
+
+	definefwdlabel(lab_b)
+
+	evalunit(pbody)				!do loop body
+
+	definefwdlabel(lab_c)
+
+	if pstep then
+!	lhs:=evalexpr(pstep,r0)
+!		if pstep^.tag=j_const then
+			genpc(k_pushmem,&indexopnd)
+			setpclcat_u(ivar)
+			evalunit(pstep)
+!			genpc((down|k_sub|k_add),gentos(ti64))
+			genpc((down|k_sub|k_add))
+			setpclmode_t(ti64)
+			genpc(k_popmem,&indexopnd)
+			setpclcat_u(ivar)
+!		else
+!			gerror("CAN'T DO FOR/BY/VAR")
+!!			rhs:=loadexpr(pstep,r0)
+!!			genmc((down|m_sub|m_add),genmem_u(ivar),rhs)
+!		fi
+	else
+		genpc((down|k_decrtomem|k_incrtomem),&indexopnd)
+		setpclcat_t(ti64)
+	fi
+
+	genpc(k_pushmem,&indexopnd)
+	setpclcat_u(ivar)
+
+	if isshortconst(plimit) then
+		genpc_condlab(k_jumpccimm,(down|j_ge|j_le),lab_b)
+		pccodex^.b:=genint(plimit.value)^
+	else
+		evalunit(plimit)
+		genpc_condlab(k_jumpcc,(down|j_ge|j_le),lab_b)
+	fi
+	setpclmode_t(ti64)
+
+	if pelse then
+!CPL "FOR-ELSE SEEN",PELSE^.LINENO IAND 16777215, SOURCEFILENAMES[P^.LINENO>>24]
+!GERROR("FOR-ELSE SEEN")
+		definefwdlabel(lab_e)
+		evalunit(pelse)
+	fi
+
+	definefwdlabel(lab_d)
+	--loopindex
+end
+
+proc do_while(unit p,pcond,pbody) =
+	int lab_b,lab_c,lab_d
+
+	lab_b:=createfwdlabel()
+	lab_c:=createfwdlabel()
+	lab_d:=createfwdlabel()
+
+	stacklooplabels(lab_c, lab_b, lab_c, lab_d)
+
+	genjumpl(lab_c)		!direct to condition code which is at the end
+
+	definefwdlabel(lab_b)
+
+	evalunit(pbody)
+
+	definefwdlabel(lab_c)
+
+	genjumpcond(kjumpt,pcond,lab_b)
+	definefwdlabel(lab_d)
+	--loopindex
+end
+
+proc do_repeat(unit p,a,b) =
+	int lab_ab, lab_c, lab_d
+
+	lab_ab:=definelabel()
+	lab_c:=createfwdlabel()
+	lab_d:=createfwdlabel()
+
+	stacklooplabels(lab_ab, lab_ab, lab_c, lab_d)
+
+	evalunit(a)
+
+	definefwdlabel(lab_c)
+
+	unless b^.tag=j_const and b^.value=0 then
+		genjumpcond(kjumpf,b,lab_ab)
+	end
+
+	definefwdlabel(lab_d)
+	--loopindex
+end
+
+proc do_goto(unit p,a,b) =
+	ref strec d
+	case a^.tag
+	when j_name then
+		d:=a^.def
+		if d^.index=0 then
+			d^.index:=++labelno
+		fi
+		genpc(k_jump, genlabel(d^.index))
+	else
+		gerror("GOTO PTR")
+	esac
+end
+
+!proc do_gotoblock(unit p,a,b) =
+!	unimpl("do_gotoblock")
+!end
+
+proc do_labeldef(unit p) =
+	ref strec d
+	d:=p^.def
+	if d^.index=0 then
+		d^.index:=++labelno
+	fi
+!	genpcstr(k_userlabel,getfullname(d))
+	gencomment(d.name)
+	genpc(k_label,genlabel(d^.index))
+end
+
+proc do_exit(unit p,int k) =
+	int n,index
+
+	index:=p^.index
+	if index=0 then index:=loopindex fi
+
+	n:=findlooplabel(k,index)
+	if n=0 then
+		gerror("Bad exit/loop index",p)
+	else
+		genjumpl(n)
+	fi
+end
+
+proc do_do(unit p,a,b) =
+	int lab_abc,lab_d
+
+	lab_abc:=definelabel()
+	lab_d:=createfwdlabel()
+
+	stacklooplabels(lab_abc, lab_abc, lab_abc, lab_d)
+
+	evalunit(a)
+
+	genjumpl(lab_abc)
+	definefwdlabel(lab_d)
+	--loopindex
+end
+
+proc do_case(unit p,pindex,pwhenthen,pelse, int loopsw,isref)=
+	const maxcase=256
+	[maxcase]int labtable
+	[maxcase]unit unittable
+	int ncases
+
+	int lab_abc, lab_d, fmult, labnextwhen, labstmtstart, ismult,labelse
+	unit w,wt
+
+	if pindex=nil then
+		GERROR("EMPTY CASE NOT DONE")
+	fi
+
+	ismult:=p^.mode<>tvoid and not loopsw
+
+	if loopsw then
+		lab_abc:=definelabel()		!start of loop
+		lab_d:=createfwdlabel()	!end of case/end of loop
+		stacklooplabels(lab_abc,lab_abc,lab_abc,lab_d)
+	else
+		lab_d:=createfwdlabel()	!end of case/end of loop
+	fi
+
+	if ismult then genpc(k_startmult) fi
+	evalunit(pindex)			!load test expr p to t
+
+	if casedepth>=maxcasedepth then
+		gerror("case nested too deeply")
+	fi
+	casestmt[++casedepth]:=p
+
+	ncases:=0
+	wt:=pwhenthen
+	while wt do
+		w:=wt^.a
+		if ncases>=maxcase then
+			gerror("too many cases")
+		fi
+		labtable[++ncases]:=createfwdlabel()
+		unittable[ncases]:=wt^.b
+
+		while w do
+!CPL "WLOOP",JTAGNAMES[W^.TAG]
+			evalunit(w)
+			genpc(k_casejumpeq,genlabel(w^.whenlabel:=labtable[ncases]))
+			setpclmode_u(w)
+			w:=w^.nextunit
+		od
+
+		wt:=wt^.nextunit
+	od
+
+	genpc(k_free)				!pop index expression
+	setpclcat_u(pindex)
+
+	labelse:=createfwdlabel()
+	caseelse[casedepth]:=labelse
+	genjumpl(labelse)
+
+	for i:=1 to ncases do
+		definefwdlabel(labtable[i])
+		if isref then evalref(unittable[i]) else evalunit(unittable[i]) fi
+		if ismult then genpc(k_resetmult) fi
+
+		if loopsw then
+			genjumpl(lab_abc)
+		else
+			genjumpl(lab_d)
+		fi
+	od
+
+	definefwdlabel(labelse)
+
+	if pelse then
+		if isref then evalref(pelse) else evalunit(pelse) fi
+		if ismult then genpc(k_endmult) fi
+	fi
+
+	if loopsw then
+		genjumpl(lab_abc)
+		definefwdlabel(lab_d)
+		--loopindex
+	else
+		definefwdlabel(lab_d)
+	fi
+
+	--casedepth
+end
+
+proc do_emptycase(unit p,pindex,pwhenthen,pelse, int loopsw,isref)=
+	int lab_abc, lab_d, fmult, labnextwhen, labstmtstart, ismult
+	unit w,wt
+
+	ismult:=p^.mode<>tvoid and not loopsw
+
+	if loopsw then
+		lab_abc:=definelabel()		!start of loop
+		lab_d:=createfwdlabel()	!end of case/end of loop
+		stacklooplabels(lab_abc,lab_abc,lab_abc,lab_d)
+	else
+		lab_d:=createfwdlabel()	!end of case/end of loop
+	fi
+
+	if ismult then genpc(k_startmult) fi
+	if pindex then
+		evalunit(pindex)			!load test expr p to t
+	fi
+
+	wt:=pwhenthen
+	while wt do
+		w:=wt^.a
+		fmult:=w^.nextunit<>nil
+		labnextwhen:=createfwdlabel()
+		if fmult then
+			labstmtstart:=createfwdlabel()
+		fi
+
+		while w do
+			if pindex then
+				evalunit(w)
+				if w^.nextunit then
+					genpc(k_casejumpeq,genlabel(labstmtstart))
+				else
+					genpc(k_casejumpne,genlabel(labnextwhen))
+				fi
+				setpclmode_u(w)
+
+			else
+				if w^.nextunit then
+					genjumpcond(kjumpt,w,labstmtstart)
+				else
+					genjumpcond(kjumpf,w,labnextwhen)
+				fi
+			fi
+			w:=w^.nextunit
+		od
+		if fmult then
+			definefwdlabel(labstmtstart)
+		fi
+		if pindex then
+			genpc(k_free)
+			setpclcat_u(pindex)
+		fi
+
+		if isref then evalref(wt^.b) else evalunit(wt^.b) fi
+		if ismult then genpc(k_resetmult) fi
+
+		if not loopsw then
+			if wt^.nextunit or pelse then
+				genjumpl(lab_d)
+			fi
+		else
+			genjumpl(lab_abc)
+		fi
+		definefwdlabel(labnextwhen)
+		wt:=wt^.nextunit
+	od
+
+	if pindex then
+		genpc(k_free)				!pop index expression
+		setpclcat_u(pindex)
+	fi
+
+	if pelse then
+		if isref then evalref(pelse) else evalunit(pelse) fi
+		if ismult then genpc(k_endmult) fi
+	fi
+
+	if loopsw then
+		genjumpl(lab_abc)
+		definefwdlabel(lab_d)
+		--loopindex
+	else
+		definefwdlabel(lab_d)
+	fi
+end
+
+proc do_switch(unit p,pindex,pwhenthen,pelse,int loopsw,isref) =
+	const maxlabels = 1000
+	int minlab,maxlab,n,iscomplex,i
+	int lab_a,lab_b,lab_d, labjump, elselab, labstmt,ax,bx,ismult
+	ref pclopndrec ixopnd
+	[0..maxlabels]ref pclrec labels
+	unit w,wt
+
+	ismult:=p^.mode<>tvoid and not loopsw
+
+	minlab:=1000000
+	maxlab:=-1000000		!highest index seen
+
+	n:=0				!no. different values
+	iscomplex:=0			!whether complex switch
+
+	wt:=pwhenthen
+	while wt do
+		w:=wt^.a
+		while w do		!for each when expression
+			case w^.tag
+			when j_makerange then
+				ax:=w^.a^.value
+				bx:=w^.b^.value
+	dorange::
+				for i:=ax to bx do
+					minlab := min(i,minlab)
+					maxlab := max(i,maxlab)
+				od
+			when j_const then		!assume int
+				ax:=bx:=w^.value
+				goto dorange
+			else
+				gerror_s("Switch when2: not const: #",strexpr(w)^.strptr)
+			esac
+			w:=w^.nextunit
+		od
+		wt:=wt^.nextunit
+	od
+
+!at this point::
+! valueset: set of all switch values
+! minlab: lowest index used in valueset
+! maxlab: highest index used in valueset
+
+	n:=maxlab-minlab+1
+	if n>maxlabels then
+		gerror("Switch too big")
+	fi
+
+	if loopsw then
+		lab_a:=definelabel()
+		lab_d:=createfwdlabel()
+		stacklooplabels(lab_a,lab_a,lab_a,lab_d)
+	else
+		lab_d:=createfwdlabel()
+	fi
+
+	if ismult then genpc(k_startmult) fi
+	evalunit(pindex)
+
+	labjump:=createfwdlabel()
+	elselab:=createfwdlabel()
+
+	genpc(k_info,genint(minlab),genint(maxlab))
+	genpc(k_switch,genlabel(labjump),genlabel(elselab))
+
+	definefwdlabel(labjump)
+
+	for i:=minlab to maxlab do			!fill with else labels first
+		genpc(k_switchlab,genlabel(elselab))
+		labels[i]:=pccodex
+	od
+	genpc(k_endswitch)
+
+!scan when statements again, o/p statements
+!	if ismult then genpc(k_startmult) fi
+
+	wt:=pwhenthen
+	while wt do
+		labstmt:=definelabel()
+		w:=wt^.a
+		while w do
+			case w^.tag
+			when j_makerange then
+				ax:=w^.a^.value
+				bx:=w^.b^.value
+			when j_const then
+					ax:=bx:=int(w^.value)
+			esac
+			for i:=ax to bx do
+				labels[i]^.a:=genlabel(labstmt)^
+			od
+			w:=w^.nextunit
+		od
+!		evalunit(wt^.b)
+		if isref then evalref(wt^.b) else evalunit(wt^.b) fi
+		if ismult then genpc(k_resetmult) fi
+		genjumpl((loopsw|lab_a|lab_d))
+		wt:=wt^.nextunit
+	od
+
+	definefwdlabel(elselab)
+	if pelse then
+!		evalunit(pelse)
+		if isref then evalref(pelse) else evalunit(pelse) fi
+		if ismult then genpc(k_endmult) fi
+	fi
+
+	if loopsw then
+		genjumpl(lab_a)
+		definefwdlabel(lab_d)
+		--loopindex
+	else
+		definefwdlabel(lab_d)
+	fi
+end
+
+proc do_swap(unit p,a,b) =
+	if a^.tag=j_name and b^.tag=j_name then
+		evalunit(a)
+		evalunit(b)
+		genpc(k_popmem,genmem_u(a))
+		setpclcat_u(b)
+		genpc(k_popmem,genmem_u(b))
+		setpclcat_u(a)
+	else
+		evalref(a)
+		evalref(b)
+		genpc(k_swap)
+		setpclcat_u(a)
+	fi
+end
+
+proc do_select(unit p,a,b,c,int isref) =
+	const maxlabels=256
+	[maxlabels]ref pclrec labels
+	int labend,labjump,n,i,elselab,labstmt,ismult
+	unit q
+
+	ismult:=p^.mode<>tvoid
+
+	q:=b
+	n:=0
+	while q do
+		if n>=maxlabels then gerror("selectx: too many labels") fi
+		++n
+		q:=q^.nextunit
+	od
+
+	labend:=createfwdlabel()
+	labjump:=createfwdlabel()
+	elselab:=createfwdlabel()
+
+	if ismult then genpc(k_startmult) fi
+	evalunit(a)
+
+	genpc(k_info,genint(1),genint(n))
+	genpc(k_switch,genlabel(labjump),genlabel(elselab))
+
+	definefwdlabel(labjump)
+
+	q:=b
+	i:=0
+	for i:=1 to n do
+		genpc(k_switchlab,genlabel(elselab))
+		labels[i]:=pccodex
+	od
+	genpc(k_endswitch)
+
+	q:=b
+	i:=0
+!	if ismult then genpc(k_startmult) fi
+	while q do
+		labstmt:=definelabel()
+		++i
+		labels[i]^.a:=genlabel(labstmt)^
+!		evalunit(q)
+		if isref then evalref(q) else evalunit(q) fi
+		if ismult then genpc(k_resetmult) fi
+		genjumpl(labend)
+		q:=q^.nextunit
+	od
+
+	definefwdlabel(elselab)
+
+	if isref then evalref(c) else evalunit(c) fi
+!	evalunit(c)
+	if ismult then genpc(k_endmult) fi
+
+	definefwdlabel(labend)
+
+end
+
+proc do_print(unit p,a,b) =
+	unit q,r
+	int m,widenop, fn
+
+	if a then
+		evalunit(a)
+
+		if ttbasetype[a^.mode]<>tref then gerror("@dev no ref") fi
+		case ttbasetype[tttarget[a^.mode]]
+		when tvoid then
+			do_syscallproc(sysfn_print_startfile,1)
+		when tc8 then
+			do_syscallproc(sysfn_print_startstr,1)
+		when tref then
+			do_syscallproc(sysfn_print_startptr,1)
+		else
+			gerror("@dev?")
+		esac
+	else
+		do_syscallproc(sysfn_print_startcon,0)
+	fi
+
+	q:=b
+
+	case p^.tag
+	when j_fprint,j_fprintln then
+		if ttbasetype[q^.mode]<>tref or ttbasetype[tttarget[q^.mode]]<>tc8 then
+			gerror("string expected")
+		fi
+		evalunit(q)
+!		genpc(k_stackargs)
+		do_syscallproc(sysfn_print_setfmt,1)
+		q:=p^.c
+	esac
+
+	while q do
+		case q^.tag
+		when j_fmtitem then
+			evalunit(q^.b)
+			genpc(k_stackargs)
+			r:=q^.a
+			m:=r^.mode
+		when j_nogap then
+			do_syscallproc(sysfn_print_nogap,0)
+			q:=q^.nextunit
+			next
+		else
+			genpc(k_pushint,zero_opnd)
+!		setpclcat_t(ti64)
+			r:=q
+			m:=q^.mode
+		esac
+
+		widenop:=0
+		switch ttbasetype[m]
+		when ti64 then
+			fn:=sysfn_print_i64
+		when ti8,ti16,ti32 then
+			fn:=sysfn_print_i64
+			widenop:=k_iwiden
+		when tu64 then
+			fn:=sysfn_print_u64
+		when tu8,tu16,tu32 then
+			fn:=sysfn_print_u64
+			widenop:=k_uwiden
+		when tr32 then
+			fn:=sysfn_print_r64
+			widenop:=k_fwiden
+		when tr64 then
+			fn:=sysfn_print_r64
+		when ti128 then
+			fn:=sysfn_print_i128
+		when tu128 then
+			fn:=sysfn_print_u128
+!		when tflexstring then
+!			fn:=sysfn_print_flexstr
+		when tref then
+			if tttarget[m]=tc8 or tttarget[m]=tarray and tttarget[tttarget[m]]=tc8 then
+				fn:=sysfn_print_str
+			else
+				fn:=sysfn_print_ptr
+			fi
+		when tarray then
+			GERROR("PRINTARRAY")
+!		do_printarray(x,m)
+			q:=q^.nextunit
+		when trecord then
+			GERROR("PRINTRECORD")
+		when tslice then
+			if tttarget[m]=tc8 then
+				fn:=sysfn_print_strsl
+			else
+				gerror("PRINTSLICE")
+			fi
+
+		when tc8,tc16,tc64 then
+			fn:=sysfn_print_c8
+
+!		when tvar then
+!			fn:=sysfn_print_var
+
+		else
+			gerror_s("PRINT/T=#",strmode(m))
+		end switch
+
+		evalunit(r)
+		if widenop then
+			genpc(widenop)
+			pccodex^.mode:=m
+			case widenop
+			when k_iwiden then pccodex^.mode2:=ti64
+			when k_uwiden then pccodex^.mode2:=tu64
+			when k_fwiden then pccodex^.mode2:=tr64
+			esac
+		fi
+!		genpc(k_stackargs)
+		do_syscallproc(fn,2)
+		q:=q^.nextunit
+	od
+
+	case p^.tag
+	when j_println,j_fprintln then
+		do_syscallproc(sysfn_print_newline,0)
+	esac
+	do_syscallproc(sysfn_print_end,0)
+
+end
+
+proc do_read(unit p,a) =
+	int m
+
+	if a then			!format
+		evalunit(a)
+	else
+		genpc(k_pushint, zero_opnd)
+	fi
+
+	m:=p.mode
+
+	if ttisinteger[m] then
+		do_syscallproc(sysfn_read_i64,1)
+	elsif ttisreal[m] then
+		do_syscallproc(sysfn_read_r64,1)
+	elsif m=trefchar then
+		do_syscallproc(sysfn_read_str,1)
+	else
+		GERROR("CAN'T READ THIS ITEM")
+	fi
+	genpc(k_pushretval)			!dummy op: put d0/x0 return value onto opnd stack
+	setpclcat_u(p)
+	if ttisreal[p^.mode] then
+		makefloatopnds()
+	fi
+	pccodex^.mode:=p^.mode
+end
+
+proc do_readln(unit a) =
+!	ref opndrec lhs,ax
+
+	if a then
+		evalunit(a)
+		if ttbasetype[a^.mode]<>tref then gerror("@dev no ref") fi
+		case ttbasetype[tttarget[a^.mode]]
+		when tvoid then
+			do_syscallproc(sysfn_read_fileline,1)
+		when tu8 then
+			do_syscallproc(sysfn_read_strline,1)
+		else
+			gerror("rd@dev?")
+		esac
+	else
+		do_syscallproc(sysfn_read_conline,0)
+	fi
+end
+
+proc do_cprint(unit p,a,b) =
+	unimpl("do_cprint")
+end
+
+proc do_cprintln(unit p,a,b) =
+	unimpl("do_cprintln")
+end
+
+proc do_sprint(unit p,a,b) =
+	unimpl("do_sprint")
+end
+
+proc do_sfprint(unit p,a,b) =
+	unimpl("do_sfprint")
+end
+
+proc do_sread(unit p,a,b) =
+	unimpl("do_sread")
+end
+
+proc do_sreadln(unit p,a,b) =
+	unimpl("do_sreadln")
+end
+
+proc do_stop(unit p,a) =
+	if a then
+		evalunit(a)
+	else
+		genpc(k_pushint,zero_opnd)
+!SETPCLCAT_T(TI64)
+	fi
+	do_syscallproc(sysfn_stop,1)
+!	genpc(k_stop)
+end
+
+proc do_try(unit p,a,b) =
+	unimpl("do_try")
+end
+
+proc do_except(unit p,a,b) =
+	unimpl("do_except")
+end
+
+proc do_yield(unit p,a,b) =
+	unimpl("do_yield")
+end
+
+proc do_raise(unit p,a,b) =
+	unimpl("do_raise")
+end
+
+!proc do_callhostproc(unit p,a,b) =
+!	unimpl("do_callhostproc")
+!end
+
+proc do_eval(unit p,a,b) =
+	evalunit(a)
+end
+
+!proc do_lambda(unit p,a,b) =
+!	unimpl("do_lambda")
+!end
+
+proc do_andl(unit p,a,b) =
+	int labfalse, labend
+
+	genpc(k_startmult)
+
+	labfalse:=createfwdlabel()
+	labend:=createfwdlabel()
+
+	genjumpcond(kjumpf,a,labfalse)
+	genjumpcond(kjumpf,b,labfalse)
+
+	genpc(k_pushint,genint(1))
+	genpc(k_resetmult)
+	genjumpl(labend)
+
+	definefwdlabel(labfalse)
+	genpc(k_pushint,genint(0))
+	genpc(k_endmult)
+
+	definefwdlabel(labend)
+end
+
+proc do_orl(unit p,a,b) =
+	int labtrue, labfalse, labend
+
+	genpc(k_startmult)
+	labtrue:=createfwdlabel()
+	labfalse:=createfwdlabel()
+	labend:=createfwdlabel()
+
+	genjumpcond(kjumpt,a,labtrue)
+	genjumpcond(kjumpf,b,labfalse)
+
+	definefwdlabel(labtrue)
+	genpc(k_pushint,genint(1))
+	genpc(k_resetmult)
+	genjumpl(labend)
+
+	definefwdlabel(labfalse)
+	genpc(k_pushint,genint(0))
+	genpc(k_endmult)
+
+	definefwdlabel(labend)
+end
+
+proc do_xorl(unit p,a,b) =
+	unimpl("do_xorl")
+end
+
+proc do_notl(unit p,a) =
+	evalunit(a)
+!	if not ttisvar[a.mode] 	and not islogical(a) then
+	if not islogical(a) then
+		genpc(k_istruel)
+		setpclcat_u(a)
+	fi
+	genpc(k_notl)
+	setpclcat_u(a)
+end
+
+proc do_istruel(unit p,a) =
+	evalunit(a)
+	if not islogical(a) then
+		genpc(k_istruel)
+	fi
+	setpclcat_u(a)
+end
+
+proc do_makelist(unit p,a,b) =
+	int lower
+	unit a0
+	a0:=a
+
+!	while a do			!will be in reverse order
+!		evalunit(a)
+!		a:=a^.nextunit
+!	od
+
+	if a then
+		evalrest(a)
+	fi
+
+	if ttbasetype[p^.mode]=tslice then
+		genpc(k_makeslice)
+	else
+GERROR("MAKELIST")
+!		if p.makearray then
+!CPL "ARRAY",=A0,STRMODE(A0.MODE)
+!FI
+!		lower:=1
+!		if p.b then
+!			if p.b.tag=j_const then
+!				lower:=p.b.value
+!			else
+!				gerror("lwb not const")
+!			fi
+!		fi
+!		genpc(k_makelist,genint(p.length),genint(lower))
+!		setpclcat_t(tvar)
+!		if p.makearray and a0 then
+!			pccodex.mode:=a0.mode
+!		fi
+
+	fi
+end
+
+proc evalrest(unit a)=
+!a is a list; evaluate trailing units first then this one
+	if a.nextunit then
+		evalrest(a.nextunit)
+	fi
+	evalunit(a)
+end
+
+proc do_makerange(unit p,a,b) =
+	evalunit(a)
+	evalunit(b)
+	genpc(k_makerange)
+end
+
+proc do_makeset(unit p,a,b) =
+GERROR("MAKESET")
+!	while a do			!will be in reverse order
+!		evalunit(a)
+!		a:=a^.nextunit
+!	od
+!	genpc(k_makeset,genint(p.length))
+!	setpclcat_t(tvar)
+end
+
+proc do_makedict(unit p,a,b) =
+	unimpl("do_makedict")
+end
+
+proc do_exprlist(unit p,a,b) =
+	unimpl("do_exprlist")
+end
+
+proc do_multexpr(unit p,a,b) =
+	unimpl("do_multexpr")
+end
+
+proc do_keyword(unit p,a,b) =
+	unimpl("do_keyword")
+end
+
+proc do_keyvalue(unit p,a,b) =
+	unimpl("do_keyvalue")
+end
+
+!proc do_assignx(unit p,a,b) =
+!	unimpl("do_assignx")
+!end
+
+!proc do_callfn(unit p,a,b) =
+!	unimpl("do_callfn")
+!end
+!
+!proc do_callmfn(unit p,a,b) =
+!	unimpl("do_callmfn")
+!end
+
+proc do_applyop(unit p,a,b) =
+	unimpl("do_applyop")
+end
+
+proc do_applyopx(unit p,a,b) =
+	unimpl("do_applyopx")
+end
+
+proc do_andand(unit p,a,b) =
+	unimpl("do_andand")
+end
+
+proc do_eq(unit p,a,b) =
+	unimpl("do_eq")
+end
+
+proc do_ne(unit p,a,b) =
+	unimpl("do_ne")
+end
+
+proc do_lt(unit p,a,b) =
+	unimpl("do_lt")
+end
+
+proc do_le(unit p,a,b) =
+	unimpl("do_le")
+end
+
+proc do_gt(unit p,a,b) =
+	unimpl("do_gt")
+end
+
+proc do_ge(unit p,a,b) =
+	unimpl("do_ge")
+end
+
+proc do_same(unit p,a,b) =
+	unimpl("do_same")
+end
+
+proc do_muldiv(unit p,a,b,int opc) =
+!used for mul, idiv, irem; only mul can be float
+	int n
+
+!	if ttisvar[a^.mode] then
+!		if opc=k_mul and ttisinteger[b^.mode] then
+!			opc:=k_muli
+!		fi
+!	fi
+
+	if opc=k_mul and ttisreal[a^.mode] then
+		evalunit(a)
+		evalunit(b)
+		genpc(opc)
+		setpclmode_u(p)
+		return
+	fi
+
+	evalunit(a)
+	if b^.tag=j_const and (n:=ispoweroftwo(b^.value)) then
+		if opc=k_irem then		!might do ianding/etc but goes wrong if a is neg?
+GOTO ISREM
+		else
+			genpc((opc=k_mul|k_shlc|k_shrc),genint(n))
+		fi
+	else
+ISREM::
+		evalunit(b)
+		genpc(opc)
+	fi
+	setpclmode_u(p)
+end
+
+proc do_bin(unit p,a,b,int opc) =
+	evalunit(a)
+	evalunit(b)
+	genpc(opc)
+	case opc
+	when k_addoffset, k_suboffset, k_in then
+		setpclmode_u(a)
+	else
+		setpclmode_u(p)
+	esac
+
+	if opc=k_subref then
+		pccodex^.mode2:=a^.mode
+	fi
+end
+
+proc do_shl(unit p,a,b,int opc,opcc) =
+	evalunit(a)
+	if b^.tag=j_const then
+		genpc(opcc,genint(b^.value))
+	else
+		evalunit(b)
+		genpc(opc)
+	fi
+	setpclmode_u(p)
+end
+
+proc do_shlto(unit p,a,b,int opc,opcc) =
+
+	if b^.tag=j_const then
+
+		if ttisinteger[a.mode] and a.tag=j_name and ttsize[a.mode]=8 then
+			case opcc
+			when k_shlcto then opcc:=k_shlcmemto
+			when k_shrcto then opcc:=k_shrcmemto
+			esac
+
+			genpc(opcc,genmem_u(a),genint(b^.value))
+		else
+			evalref(a)
+			genpc(opcc,genint(b^.value))
+		fi
+	else
+		evalref(a)
+		evalunit(b)
+		genpc(opc)
+	fi
+	setpclmode_u(a)
+end
+
+proc do_setcc(unit p,a,b) =
+	evalunit(a)
+	evalunit(b)
+	genpc(k_setcc)
+	pccodex^.cond:=p^.tag
+	setpclmode_u(a)
+end
+
+proc do_setccx(unit p,a,b) =
+	if p^.tag not in [j_eq, j_ne] and ttisreal[a^.mode] then
+		evalunit(a)
+		evalunit(b)
+	else
+		evalunit(a)
+		evalunit(b)
+	fi
+	genpc(k_setcc)
+	pccodex^.cond:=p^.tag
+	setpclmode_u(a)
+end
+
+proc do_clamp(unit p,a,b) =
+	unimpl("do_clamp")
+end
+
+proc do_index(unit p,int doref=0) =
+	ref pclopndrec ix
+	ref pclrec px
+	unit q,a,b
+	int abase
+
+	a:=p^.a
+	b:=p^.b
+
+	abase:=ttbasetype[a.mode]
+
+	if abase in [tmanarray,tslice] and not doref then
+		evalunit(a)
+		evalunit(b)
+		genpc(k_index)
+
+	elsif a.tag=j_name and not doref then
+		evalunit(b)
+		genpc(k_indexmem, genmem_u(a))
+
+	else
+		evalref(a)
+		evalunit(b)
+		genpc((doref|k_indexref|k_index))
+	fi
+
+	setpclcat_u(p)
+	pccodex^.catmode2:=pccodex^.catmode
+	pccodex^.mode2:=pccodex^.mode		!is void anyway?
+
+	pccodex.catmode:=abase
+	pccodex^.mode:=a.mode
+end
+
+proc do_slice(unit p,a,b, int doref=0) =
+	int amode
+
+!	if doref then
+!		gerror("slice/lvalue?")
+!	fi
+	amode:=a.mode
+
+	if b=nil then
+		genpc(k_pushint,genint(ttlower[a.mode]))
+!		setpclcat_t(ti64)
+		genpc(k_pushint,genint(ttlength[a.mode]+ttlower[a.mode]-1))
+!		setpclcat_t(ti64)
+	else
+		evalunit(b.a)
+		evalunit(b.b)
+	fi
+
+	if ttbasetype[a.mode] in [tmanarray,tslice,tref] and not doref then
+		evalunit(a)
+
+	else
+		evalref(a)
+	fi
+
+	genpc(k_slice)
+	setpclmode_u(a)
+
+	pccodex.catmode:=ttbasetype[a.mode]
+	pccodex^.mode:=a.mode
+end
+
+!proc do_keyindex(unit p,a,b, int doref=0) =
+!
+!	if not doref then
+!		evalunit(a)
+!		evalunit(b)
+!		genpc(k_keyindex)
+!
+!	else
+!		evalref(a)
+!		evalunit(b)
+!		genpc((doref|k_keyindexref|k_keyindex))
+!	fi
+!
+!	setpclcat_t(tvar)
+!end
+!
+proc do_makeslice(unit p,a,b) =
+	evalunit(a)
+	evalunit(b)
+	genpc(k_makeslice)
+!	setpclmode_u(a)
+end
+
+proc do_dotindex(unit p,a,b) =
+	int bitno
+
+	evalunit(a)
+	evalunit(b)
+	genpc(k_dotindex)
+!	if ttisvar[a.mode] then
+!		setpclmode_t(tvar)
+!	else
+		setpclmode_t(ti64)
+!	fi
+
+!	fi
+end
+
+proc do_dotslice(unit p,a,b) =
+	unit x,y
+	int bitno
+
+!	if ttisflexvar[a^.mode] then
+!		do_slice(p,a,b)
+!		return
+!	fi
+!CPL "DOTSLICE"
+
+	evalunit(a)
+
+	if b^.tag<>j_makerange then
+PRINTUNIT(B)
+		gerror("dotslice not range")
+	fi
+	x:=b^.a
+	y:=b^.b
+
+!	if x^.tag=j_const and y^.tag=j_const then
+!		bitno:=b^.value
+!		genpc(k_shrc,genint(bitno))
+!		setpclmode_t(ti64)
+!		genpc(k_iandc,genint(1))
+!		setpclmode_t(ti64)
+!	else
+		evalunit(b.a)
+		evalunit(b.b)
+		genpc(k_dotslice)
+!	fi
+end
+
+proc do_anddotindex(unit p,a,b) =
+	int bitno
+	evalunit(a)
+
+	if b^.tag=j_const then
+		bitno:=b^.value
+		genpc(k_iandc,genint(1<<bitno))
+		setpclmode_t(ti64)
+	else
+		evalunit(b)
+		genpc(k_anddotindex)
+	fi
+end
+
+proc do_anddotslice(unit p,a,b) =
+	unimpl("do_anddotslice")
+end
+
+proc do_dot(unit p, int doref) =
+	unit a,pname
+	int offset
+	a:=p^.a
+
+	if dodotchains then
+		pname:=nil
+		offset:=checkdotchain(a,pname)
+		if offset<>-1 then
+			offset+:=p.offset
+			a:=pname
+		fi
+	else
+		offset:=p^.offset
+	fi
+
+	evalref(a)
+
+dorest::
+
+	genpc((doref|k_dotref|k_dot),genint(offset))
+
+	setpclcat_u(p)
+	pccodex^.catmode2:=pccodex^.catmode
+	pccodex^.mode2:=pccodex^.mode
+	pccodex^.mode2:=p^.mode
+
+	pccodex^.catmode:=trecord
+	pccodex^.mode:=a^.mode
+end
+
+function checkdotchain(unit p, &pname)int=
+!return accumulated offset of this and nested dot-expressions,
+!or -1 when offsets cannot be combined
+	int offset
+
+	case p.tag
+	when j_dot then
+		offset:=checkdotchain(p.a,pname)
+		if offset=-1 then
+			return -1
+		else
+			return p.offset+offset
+		fi
+
+!	when j_name then				!would be last in chain; owner knows offset
+!		pname:=p
+!		return 0
+!	else
+!		return -1
+	else							!anything else, is the start expression
+		pname:=p
+		return 0
+	esac
+return 0
+end
+
+!proc do_dotattr(unit p,a,b) =
+!	unimpl("do_dotattr")
+!end
+
+proc do_atan2(unit p,a,b) =
+	evalunit(a)
+	evalunit(b)
+	genpc(k_atan2)
+	setpclcat_u(p)
+end
+
+proc do_power(unit p,a,b) =
+	if ttisreal[a^.mode] then
+		evalunit(b)			!reverse order, as will call c function
+		evalunit(a)
+	else
+		evalunit(a)
+		evalunit(b)
+	fi
+	genpc(k_power)
+	setpclmode_u(a)
+end
+
+proc do_ptr(unit p,a,b) =
+
+	if a^.tag in [j_add, j_sub] and a^.b^.tag=j_const then
+!CPL "PTR+OFFSET"
+		evalunit(a.a)
+		genpc(k_pushptr,genint((a.tag=j_add|a.b.value|-a.b.value)))
+	else
+		evalunit(a)
+		genpc(k_pushptr,genint(0))
+	fi
+
+	setpclcat_u(p)
+end
+
+proc do_addrof(unit p,a) =
+	evalref(a)
+!	unimpl("do_addrof")
+end
+
+proc do_convert(unit p,a,b) =
+	int opc
+
+if p^.popflag then
+	evalunit(a)
+	return
+fi
+
+	case p^.tag
+	when j_makelist, j_makeset then
+	else
+		case p^.opcode
+		when c_ichartostring then
+			gerror("ichar to string")
+!			genpc(k_pushretslot)
+!			setpclcat_t(tscalar)
+!
+!			genpc(k_pushint,genint((a^.tag=j_const|a^.slength|-1)))
+!			evalunit(a)
+!
+!			callflexhandler(tflexstring,"make",2)
+			return
+		esac
+
+		if p^.opcode in [c_uwiden, c_iwiden] and \
+			a^.tag in [j_index,j_dot,j_ptr] and ttsize[p^.mode]=8 then
+			evalunit(a)
+			return
+		fi
+
+		switch p^.opcode
+		when c_uwiden   then opc:=k_uwiden
+		when c_iwiden   then opc:=k_iwiden
+		when c_ufloat   then opc:=k_ufloat
+		when c_ifloat   then opc:=k_ifloat
+		when c_ufix     then opc:=k_ufix
+		when c_ifix     then opc:=k_ifix
+		when c_softtruncate then opc:=k_softtruncate
+		when c_truncate then opc:=k_truncate
+		when c_fnarrow  then opc:=k_fnarrow
+		when c_fwiden   then opc:=k_fwiden
+!		when c_vartoany	then opc:=k_unbox
+!		when c_anytovar	then
+!!CPL "ANY TO VARIANT"
+!			if a.tag=j_const and a.mode in [ti64,tc64] then
+!				genpc(k_makeint,genint(a.value))
+!				return
+!			elsif a.tag=j_const and a.mode=tr64 then
+!				genpc(k_makereal,genreal(a.xvalue))
+!				return
+!			elsif a.tag=j_const and a.mode=trefchar and a.isastring then
+!				genpc(k_makestr,genstrimm(a.svalue,a.length))
+!				return
+!			elsif a.tag=j_makerange and a.mode=trange64 then
+!!TXERROR("RANGE TO VAR")
+!				evalunit(a.a)
+!				evalunit(a.b)
+!!				deleteunit(p,a)
+!				genpc(k_makerange)
+!!				genpc(k_makestr,genstrimm(a.svalue,a.length))
+!				return
+!			else
+!				evalunit(a)
+!				genpc(k_box)
+!				pccodex^.mode:=a.mode
+!				pccodex^.mode2:=tvar
+!				return
+!			fi
+		when c_none then
+			GERROR("BLOCKPCL/C_NONE")
+		else
+			cpl convnames[p^.opcode]
+			gerror("No PCL convert op")
+		endswitch
+
+!CPL "CONV",=STRMODE(A.MODE),=STRMODE(P.MODE)
+
+		evalunit(a)
+!		genpc_opt(k_convert,p^.mode)
+		genpc(opc)
+!		setpclmode_u(p)
+		pccodex^.mode:=a.mode
+		pccodex^.mode2:=p.mode
+!		pccodex^.mode2:=ttbasetype[a^.mode]
+		return
+	esac
+	unimpl("CONVERT/MAKELIST/CONSTR")
+end
+
+!proc do_convertref(unit p,a,b) =
+!	unimpl("do_convertref")
+!end
+
+proc do_autocast(unit p,a,b) =
+	unimpl("do_autocast")
+end
+
+proc do_typepun(unit p,a,b) =
+	evalunit(a)
+	genpc(k_typepun)
+	pccodex^.mode:=a^.mode
+	pccodex^.mode2:=p^.mode
+end
+
+proc do_typeconst(unit p) =
+	genpc(k_pushint,genint(p^.value))
+!	setpclcat_t(ti64)
+end
+
+proc do_operator(unit p,a,b) =
+	unimpl("do_operator")
+end
+
+proc do_upper(unit p,a,b) =
+	unimpl("do_upper")
+end
+
+proc do_unary(unit p,a,int opc) =
+	evalunit(a)
+	genpc(opc)
+
+	case opc
+	when k_len, k_upb, k_lwb, k_lenstr,k_bounds,k_asc then
+		setpclmode_u(a)
+		return
+!	when j_lwb, j_bounds then
+!		gerror("lwb/bounds")
+	esac
+
+	setpclmode_u(p)
+end
+
+proc do_maths(unit p,a,b) =
+GERROR("NEED NEW DO_MATHS")
+	evalunit(a)
+
+!	if ttisvar[a.mode] then
+!		genpc(pclopc)
+!		setpclcat_t(tvar)
+!	else
+
+!		do_syscallproc(sysfn,1)
+!
+!		genpc(k_pushretval)			!dummy op: put d0/x0 return value onto opnd stack
+!		setpclcat_u(p)
+!		if ttisreal[p^.mode] then
+!			makefloatopnds()
+!		fi
+!		pccodex^.mode:=p^.mode
+!!	fi
+end
+
+proc do_sqr(unit p,a,b) =
+!	if gettypecode_u(a)='R' then
+!		evalunitf(a)
+!	else
+		evalunit(a)
+!	fi
+	genpc(k_sqr)
+	setpclmode_u(a)
+end
+
+proc do_sign(unit p,a,b) =
+!	if gettypecode_u(a)='R' then
+!		evalunitf(a)
+!	else
+		evalunit(a)
+!	fi
+!	genpc_op(k_sign)
+	genpc(k_sign)
+	setpclmode_u(a)
+end
+
+proc do_fmod(unit p,a,b) =
+	unimpl("do_fmod")
+end
+
+proc do_bitwidth(unit p,a) =
+	unimpl("do_bitwidth")
+end
+
+proc do_bytesize(unit p,a) =
+	unimpl("do_bytesize")
+end
+
+proc do_typeof(unit p,a,b) =
+	unimpl("do_typeof")
+end
+
+proc do_typestr(unit p,a,b) =
+	unimpl("do_typestr")
+end
+
+proc do_sliceptr(unit p,a) =
+	evalunit(a)
+	genpc(k_sliceptr)
+end
+
+proc do_minvalue(unit p,a,b) =
+	unimpl("do_minvalue")
+end
+
+proc do_maxvalue(unit p,a,b) =
+	unimpl("do_maxvalue")
+end
+
+proc do_incr(unit p,a) =
+	if a^.tag=j_name then
+		genpc((p^.tag=j_incr|k_incrtomem|k_decrtomem), genmem_u(a))
+	else
+		evalref(a)
+		genpc((p^.tag=j_incr|k_incrto|k_decrto))
+	fi
+!	setpclmode_u(a)
+	if ttbasetype[a^.mode]=tref then
+		setpclmode_u(a)
+	else
+		setpclcat_u(a)
+	fi
+end
+
+proc do_incrx(unit p,a, int opc) =
+	evalref(a)
+!	genpc_op(opc)
+	genpc(opc)
+	if ttbasetype[a^.mode]=tref then
+		setpclmode_u(a)
+	else
+		setpclcat_u(a)
+	fi
+end
+
+proc do_binto(unit p,a,b,int opc) =
+
+!	if ttisflexvar[a^.mode] then
+!		do_bintoflex(p,a,b,opc)
+!		return
+!	fi
+
+	if opc in [k_addto,k_subto, k_iandto, k_iorto, k_ixorto] and 
+		ttisinteger[a.mode] and a.tag=j_name and ttsize[a.mode]=8 then
+		evalunit(b)
+		case opc
+		when k_addto then opc:=k_addmemto
+		when k_subto then opc:=k_submemto
+		when k_iandto then opc:=k_iandmemto
+		when k_iorto then opc:=k_iormemto
+		when k_ixorto then opc:=k_ixormemto
+		esac
+
+		genpc(opc,genmem_u(a))
+	else
+		evalref(a)
+		evalunit(b)
+		genpc(opc)
+	fi
+
+	setpclmode_u(a)
+end
+
+!proc do_subto(unit p,a,b) =
+!	unimpl("do_subto")
+!end
+!
+!proc do_multo(unit p,a,b) =
+!	unimpl("do_multo")
+!end
+!
+!proc do_divto(unit p,a,b) =
+!	unimpl("do_divto")
+!end
+!
+!proc do_iandto(unit p,a,b) =
+!	unimpl("do_iandto")
+!end
+!
+!proc do_iorto(unit p,a,b) =
+!	unimpl("do_iorto")
+!end
+!
+!proc do_ixorto(unit p,a,b) =
+!	unimpl("do_ixorto")
+!end
+!
+!proc do_minto(unit p,a,b) =
+!	unimpl("do_minto")
+!end
+!
+!proc do_maxto(unit p,a,b) =
+!	unimpl("do_maxto")
+!end
+
+proc do_unaryto(unit p,a,int opc) =
+	evalref(a)
+	genpc(opc)
+	setpclmode_u(a)
+end
+
+!proc do_absto(unit p,a,b) =
+!	unimpl("do_absto")
+!end
+!
+!proc do_inotto(unit p,a,b) =
+!	unimpl("do_inotto")
+!end
+
+!proc do_isvoid(unit p,a,b) =
+!	unimpl("do_isvoid")
+!end
+!
+!proc do_isdef(unit p,a,b) =
+!	unimpl("do_isdef")
+!end
+!
+!proc do_isint(unit p,a,b) =
+!	unimpl("do_isint")
+!end
+!
+!proc do_isreal(unit p,a,b) =
+!	unimpl("do_isreal")
+!end
+!
+!proc do_isstring(unit p,a,b) =
+!	unimpl("do_isstring")
+!end
+!
+!proc do_islist(unit p,a,b) =
+!	unimpl("do_islist")
+!end
+!
+!proc do_isrecord(unit p,a,b) =
+!	unimpl("do_isrecord")
+!end
+!
+!proc do_isarray(unit p,a,b) =
+!	unimpl("do_isarray")
+!end
+!
+!proc do_isset(unit p,a,b) =
+!	unimpl("do_isset")
+!end
+!
+!proc do_ispointer(unit p,a,b) =
+!	unimpl("do_ispointer")
+!end
+!
+!proc do_ismutable(unit p,a,b) =
+!	unimpl("do_ismutable")
+!end
+
+proc do_cvlineno(unit p,a,b) =
+	genpc(k_pushint,genint(p^.lineno iand 16777215))
+!	setpclmode_t(ti64)
+end
+
+!proc do_cvstrlineno(unit p,a,b) =
+!	unimpl("do_cvstrlineno")
+!end
+!
+proc do_cvmodulename(unit p,a,b) =
+	genpc(k_pushstr,genstrimm(moduletable[p^.moduleno].name))
+!	setpclmode_t(trefchar)
+end
+
+proc do_cvfilename(unit p,a,b) =
+!	genpc(k_pushconst,genstrimm(sourcefilenames[p^.lineno>>24]))
+	genpc(k_pushstr,genstrimm(sourcefilenames[p^.lineno>>24]))
+!	genpc(k_pushimm,genstrimm("ABC"))
+!	setpclmode_t(trefchar)
+end
+
+!proc do_cvfunction(unit p,a,b) =
+!	unimpl("do_cvfunction")
+!end
+!
+!proc do_cvdate(unit p,a,b) =
+!	unimpl("do_cvdate")
+!end
+!
+!proc do_cvtime(unit p,a,b) =
+!	unimpl("do_cvtime")
+!end
+!
+!proc do_cvversion(unit p,a,b) =
+!	unimpl("do_cvversion")
+!end
+!
+!proc do_cvtypename(unit p,a,b) =
+!	unimpl("do_cvtypename")
+!end
+!
+!proc do_cvtargetbits(unit p,a,b) =
+!	unimpl("do_cvtargetbits")
+!end
+!
+!proc do_cvtargetsize(unit p,a,b) =
+!	unimpl("do_cvtargetsize")
+!end
+!
+!proc do_cvtargetcode(unit p,a,b) =
+!	unimpl("do_cvtargetcode")
+!end
+
+proc do_assignblock(unit p,a,b) =
+!fstore=1 when result is needed
+!method used is::
+! load ref to lhs
+! load ref to rhs
+! do block xfer, not using the stack
+
+!CPL "ASSIGN BLCK",STRMODE(A^.MODE),STRMODE(B^.MODE)
+
+	evalref(a)
+	evalref(b)
+
+	genpc(k_copyblock)
+	pccodex^.mode:=a^.mode
+end
+
+proc do_callff(unit p,a,b,ref strec d,int fncall)=
+!ref opndrec result,ax,callres,sx
+unit q
+int nargs,nparams,retmode,nbytes,retsize,i,n,allsimple
+int lab1,lab2,floatmap,mask
+[maxparams]ref strec paramlist
+[maxparams]unit params
+[maxparams]byte widenfloat
+![maxparams]byte isfloat
+!int isvariadic
+[256]char str
+
+retmode:=p^.mode
+
+!CPL =d^.varparams
+
+!	if fncall then
+!		genpc(k_pushretslot)
+!		setpclcat_u(p)
+!		if gettypecode_u(p)='R' then
+!			makefloatopnds()
+!		fi
+!		pccodex^.mode:=p^.mode
+!	fi
+
+	nparams:=0
+	floatmap:=0
+	mask:=1
+	while b do
+		params[++nparams]:=b
+		widenfloat[nparams]:=0
+		if ttisreal[b^.mode] then
+			floatmap ior:=mask
+
+!NEED TO ONLY EXPAND FOR VARIADIC FOR EXTRA PARAMS where ... goes
+			if ttsize[b.mode]=4 and d.varparams then
+				widenfloat[nparams]:=1
+			fi
+		fi
+		mask<<:=1
+
+		b:=b^.nextunit
+	od
+	for i:=nparams downto 1 do
+		evalunit(params[i])
+		if widenfloat[i] then
+			genpc(k_fwiden)
+			pccodex.mode2:=tr64
+			pccodex.mode:=tr32
+		fi
+	od
+	genpc(k_stackargs)
+
+	case a^.tag
+	when j_name then
+!		genpc(k_callff, genmemaddr_u(a),genint(floatmap))
+		genpc(k_callff, genint(floatmap),genmemaddr_u(a))
+	else
+		evalunit(a^.a)
+		genpc(k_callptrff,genint(floatmap))
+	esac
+	pccodex^.a.nargs:=nparams
+	pccodex^.isfunction:=fncall
+	pccodex^.isvariadic:=d^.varparams
+
+	if fncall then
+		genpc(k_pushffretval)
+		setpclcat_u(p)
+		if ttisreal[p^.mode] then
+			makefloatopnds()
+		fi
+		pccodex^.mode:=p^.mode
+	fi
+end
+
+proc do_recase(unit p,a)=
+	unit q,wt,w
+	int destlab
+
+	if casedepth=0 then
+		gerror("recase outside case stmt")
+	fi
+	q:=casestmt[casedepth]
+
+	destlab:=0
+
+	wt:=q^.b
+	while wt do
+		w:=wt^.a
+		while w do
+			if w^.tag=j_const and ttisinteger[w.mode] and w^.value=a^.value then
+				destlab:=w^.whenlabel
+				exit all
+			fi
+			w:=w^.nextunit
+		od
+		wt:=wt^.nextunit
+	od
+
+	if destlab=0 then
+		genjumpl(caseelse[casedepth])
+	else
+		genjumpl(destlab)
+	fi
+end
+
+!proc do_assignvariant(unit p,a,b, int fstore) =
+!!fstore=1 when result is needed
+!
+!	if p^.tag in [j_deepcopy, j_deepcopyx] then
+!		if ttisvar[a^.mode] then
+!			genpc(k_pushretslot)
+!			setpclcat_t(tscalar)
+!			evalunit(b)
+!			genpc(k_dupl)
+!		else
+!			gerror("::= not appropriate")
+!		fi
+!	else
+!		evalunit(b)
+!	fi
+!
+!	switch a^.tag
+!	when j_name then
+!		genpc((fstore|k_storemem|k_popmem),genmem_u(a))
+!		setpclcat_u(a)
+!		return
+!	when j_index,j_dotindex then
+!		if fstore then
+!			gerror("str[]:=x.store?")
+!		fi
+!		evalunit(a^.b)
+!		evalunit(a^.a)
+!!		genpc((a.tag=j_index|k_index)
+!
+!		callflexhandler(a^.a^.mode,(a^.tag=j_index|"indexto"|"indextoc"),3)	
+!!	when j_ptr then
+!!		evalunit(a^.a)
+!!		genpc((fstore|k_storeptr|k_popptr))
+!!	when j_if, j_longif, j_case, j_switch, j_select then
+!!		evalref(a)
+!!		genpc((fstore|k_storeptr|k_popptr))
+!!!		gerror("assign to if/select/etc")
+!!	when j_dotindex then
+!!		evalref(a^.a)
+!!		evalunit(a^.b)
+!!		if fstore then
+!!			gerror("storedotix?")
+!!		else
+!!			genpc(k_popdotindex)
+!!		fi
+!	else
+!		cpl jtagnames[a^.tag]
+!		gerror("Can't assign to flex expr")
+!	end switch
+!
+!!	setpclcat_u(a)
+!end
+
+proc do_assem(unit p,a) =
+	genpc(k_assem,genassem_u(p))
+	setpclcat_u(p)
+end
+
+proc pushrhs(unit a)=
+if a=nil then return fi
+pushrhs(a^.nextunit)
+evalunit(a)
+end
+
+proc do_multassign(unit a,b)=
+	unit p
+	int nlhs,nrhs
+	ref strec d
+
+	nlhs:=a^.length
+
+	if b^.tag=j_callfn then
+		evalunit(b)
+		if b^.a^.tag<>j_name then
+			gerror("multassign from fn: not simple fn")
+		fi
+		d:=b^.a^.def
+		nrhs:=d^.nretvalues
+
+	else
+		nrhs:=b^.length
+		pushrhs(b^.a)			!push rhs elements in right-to-left order
+
+	fi
+
+	a:=a^.a					!point to elements of makelist
+	repeat
+		switch a^.tag
+		when j_name then
+			genpc(k_popmem,genmem_u(a))
+		when j_index, j_slice,j_dot then
+			evalref(a)
+			genpc(k_popptr,genint(0))
+		when j_ptr then
+			evalunit(a^.a)
+			genpc(k_popptr,genint(0))
+		when j_if, j_longif, j_case, j_switch, j_select then
+			evalref(a)
+			genpc(k_popptr,genint(0))
+		when j_dotindex then
+			evalref(a^.a)
+			evalunit(a^.b)
+			genpc(k_popdotindex)
+		else
+			cpl jtagnames[a^.tag]
+			gerror("Bad mult assign element")
+		end switch
+
+		setpclcat_u(a)
+
+		a:=a.nextunit
+	until a=nil
+
+GERROR("MULTASSIGN")
+!	for i:=nlhs+1 to nrhs do
+!
+!		genpc(k_free)
+!		setpclcat_t(d^.modelist[i])
+!		if ttisreal[d^.modelist[i]] then
+!			makefloatopnds()
+!		fi
+!	od
+
+end
+
+function isshortconst(unit p)int=
+
+	if p^.tag=j_const and ttisinteger[p^.mode] and ttsize[p^.mode]<=8 and
+		p^.value in int32.minvalue..int32.maxvalue then
+			return 1
+	fi
+	return 0
+end
+
+function isshortmem(unit p)int=
+
+	if p^.tag=j_name and ttisnumeric[p^.mode] and ttsize[p^.def^.mode]=8 and
+		p^.def^.nameid in [frameid,paramid,staticid] then
+			return 1
+	fi
+	return 0
+end
+
+proc do_popindex(unit p,a,b,c, int opc)=
+!a[b]:=c
+	int abase
+	ref pclrec px
+	unit q
+
+	evalunit(c)
+
+	abase:=ttbasetype[a.mode]
+!	if abase in [tvar,tslice] then
+	if abase in [tmanarray,tslice] then
+		evalunit(a)
+	else
+		evalref(a)
+	fi
+	evalunit(b)
+	genpc(opc)
+
+
+	setpclcat_u(p)
+	pccodex^.catmode2:=pccodex^.catmode
+	pccodex^.mode2:=pccodex^.mode		!is void anyway?
+
+	pccodex.catmode:=abase
+	pccodex^.mode:=a.mode
+end
+
+proc do_popslice(unit p,a,b,c, int opc)=
+!a[b.a..b.b]:=c
+	int abase
+	ref pclrec px
+	unit q
+
+	evalunit(c)
+	if b=nil then
+		genpc(k_pushint,genint(ttlower[a.mode]))
+!		setpclcat_t(ti64)
+		genpc(k_pushint,genint(ttlength[a.mode]+ttlower[a.mode]-1))
+!		setpclcat_t(ti64)
+	else
+		evalunit(b.a)
+		evalunit(b.b)
+	fi
+
+	abase:=ttbasetype[a.mode]
+	if abase in [tmanarray,tslice] then
+		evalunit(a)
+	else
+		evalref(a)
+	fi
+!	evalunit(b)
+	genpc(opc)
+
+
+	setpclcat_u(p)
+	pccodex^.catmode2:=pccodex^.catmode
+	pccodex^.mode2:=pccodex^.mode		!is void anyway?
+
+	pccodex.catmode:=abase
+	pccodex^.mode:=a.mode
+end
+
+proc do_popkeyindex(unit p,a,b,c, int opc)=
+!a[b]:=c
+GERROR("POPKEYINDEX")
+!	int abase
+!	ref pclrec px
+!	unit q
+!
+!	evalunit(c)
+!
+!	evalunit(a)
+!	evalunit(b)
+!	genpc(opc)
+!
+!
+!	setpclcat_u(p)
+!!	pccodex^.catmode2:=pccodex^.catmode
+!!	pccodex^.mode2:=pccodex^.mode		!is void anyway?
+!
+!	setpclcat_t(tvar)
+end
+
+proc do_popdot(unit p,a,c, int offset,opc)=
+!a.offset:=c
+	ref pclrec px
+	unit pname
+	int newoffset
+
+	evalunit(c)
+
+	if dodotchains then
+		pname:=nil
+		newoffset:=checkdotchain(a,pname)
+		if newoffset<>-1 then
+!CPL "POPDOTSIMPLE DOT CHAIN, combined offset =",=newoffset,=offset,=pname!.def.name
+			offset+:=newoffset
+			a:=pname
+
+!			genpc(k_pushaddr,genmem_u(pname))
+!			goto dorest
+		fi
+	else
+
+	fi
+
+	evalref(a)
+
+!	case a^.tag
+!	when j_name then
+!		genpc(k_pushaddr,genmem_u(a))
+!
+!	when j_ptr then
+!		evalunit(a.a)
+!
+!	when j_dot then
+!!		do_dot(a, a.a,a^.offset,1)
+!		do_dot(a, 1)
+!
+!	when j_index then
+!		do_index(a,1)
+!
+!	else
+!		printunit(a)
+!		GERROR("Can't popdot this record")
+!	esac
+
+dorest::
+	genpc(opc,genint(offset))
+
+!set element mode
+	setpclcat_u(p)
+	pccodex^.catmode2:=pccodex^.catmode
+	pccodex^.mode2:=pccodex^.mode		!is void anyway?
+
+	pccodex^.catmode:=trecord
+	pccodex^.mode:=a^.mode
+end
 === end ===
