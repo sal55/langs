@@ -463,16 +463,9 @@ Return values can be ignored:
 This is fairly standard; inside a function (anywhere in the function actually):
 
     int a, b:=123, c
+    mut int a, b:=123, c        # 'mut' can optionally be a prefix
 
-M syntax actually required 'var' because I liked the idea of all definitions/declarations starting with a keyword:
-
-    var int a, b:=123, c
-
-but I tried this for a few months, and it was a pain. So now 'var' is optional. Note that writing this, which needs 'var' but without the type:
-
-    var A, B
-
-is not an error. Currently omitting a type makes A and B variants. I want to drop variants; in the next language version, omitting the type like this makes A and B have 'auto' type, which means it is inferred from initialisation or from the first assignment.
+I liked the idea of requiring variable definitions to start with a keyword, this used to be 'var', until I decided 'var' should mean a variant type. Then it got changed to 'mut'. But I also found it was a pain having to type this prefix, so it is now optional.
 
 At the moment, non-static variables are not automatically initialised to anything, like C.
 
