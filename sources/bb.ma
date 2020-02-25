@@ -1,22 +1,22 @@
 mafile 18
-  1 bb.m               19684      732
-  2 clibnew.m           3397    20440
-  3 mlib.m             26695    23858
-  4 msysnew.m          46919    50577
-  5 oswindows.m        12536    97522
-  6 bb_lex.m           41054   110081
-  7 bb_decls.m         10885   151160
-  8 bb_tables.m        43486   162071
-  9 bb_support.m       13695   205584
- 10 bb_lib.m           41476   219303
- 11 bb_diags.m         14660   260805
- 12 bb_mcldecls.m      13305   275494
- 13 bb_parse.m         89673   288825
- 14 bb_name.m          17855   378523
- 15 bb_type.m          65736   396403
- 16 bb_genpcl.m         9614   462166
- 17 bb_libpcl.m        24449   471807
- 18 bb_blockpcl.m      68880   496285
+  1 bb.m               19684      804   0
+  2 clibnew.m           3397    20512   0
+  3 mlib.m             26695    23930   0
+  4 msysnew.m          46919    50649   0
+  5 oswindows.m        12536    97594   0
+  6 bb_lex.m           41054   110153   0
+  7 bb_decls.m         10885   151232   0
+  8 bb_tables.m        43486   162143   0
+  9 bb_support.m       13695   205656   0
+ 10 bb_lib.m           41476   219375   0
+ 11 bb_diags.m         14660   260877   0
+ 12 bb_mcldecls.m      13305   275566   0
+ 13 bb_parse.m         89673   288897   0
+ 14 bb_name.m          17855   378595   0
+ 15 bb_type.m          65736   396475   0
+ 16 bb_genpcl.m         9614   462238   0
+ 17 bb_libpcl.m        24449   471879   0
+ 18 bb_blockpcl.m      68880   496357   0
 === bb.m 1/18 ===
 import clib
 import mlib
