@@ -395,6 +395,10 @@ This is another concept from Algol68 - any expression can be used as a statement
 
 'Statements' that can usefully yield a value are: 'if' (long and short versions), 'switch' and 'case', although they will require an 'else' part.
 
+Any sequence of statements can be easily turned into a single expression by writing as (s1; s2; s3), or sometimes a sequence can be written anyway without the brackets:
+
+    if c:=nextch(); d:=c; c<>0 then                # uses the value of the last expression
+    
 ### Functions and Procs
 M likes to make a stronger distinction between functions that return a value, and those that don't. The latter are defined with 'proc'
 
@@ -435,10 +439,10 @@ As shown above, '&' means a reference parameter, allowing a callee to modify dat
     setlength1(&length)
     setlength2(length)
 
-setlength1 uses explicit & and ^ operator, setlength2 uses implicit operators. This also means it's not possible to pass a nil pointer.
+setlength1 uses explicit & and ^ operators, setlength2 does things implicitly. This also means it's not possible to pass a nil pointer.
 
 ### Nested Functons
-Functions can be nested, but in a limited manner because a nested function can't access the stack-frame varkables of its enclosing functions. But it can still access static variable, named constants etc of those functions.
+Functions can be nested, but in a limited manner because a nested function can't access the stack-frame variables of its enclosing functions (that is difficult to implement). But it can still access static variable, named constants etc of those functions.
 
 ### Multiple Return Values
 An experimental feature limited to 3 scalar return types:
@@ -455,32 +459,31 @@ Return values can be ignored:
     a := fn3()       # discard last two
     fn3()            # discard all
 
-
 ### Define Variables
 This is fairly standard; inside a function (anywhere in the function actually):
 
     int a, b:=123, c
 
-M syntax actually required 'var':
+M syntax actually required 'var' because I liked the idea of all definitions/declarations starting with a keyword:
 
     var int a, b:=123, c
 
-but I tried this for a few months, and it was a pain. So now 'var' is optional. Note that writing this, which needs 'var':
+but I tried this for a few months, and it was a pain. So now 'var' is optional. Note that writing this, which needs 'var' but without the type:
 
     var A, B
 
 is not an error. Currently omitting a type makes A and B variants. I want to drop variants; in the next language version, omitting the type like this makes A and B have 'auto' type, which means it is inferred from initialisation or from the first assignment.
 
-At the moment, variables are not automatically initialised to anything, like C.
+At the moment, non-static variables are not automatically initialised to anything, like C.
 
 ### Readonly Variables
-I've never been a fan of C's 'const' attribute, which really complicates the type system. M never had anything like until recently, when it was possible to use 'let' instead of 'var':
+I've never been a fan of C's 'const' attribute, which really complicates the type system. M never had anything like that until recently, when it was possible to use 'let' instead of 'var':
 
-    let A:=100
+    let A := 100
 
 Here, the initialisation is mandatory, as A can't be used as an lvalue like in an assignment. This provides some weak protection, but won't do much for more complex variables, such as arrays or pointers to data structures. Let is experimental.
 
-(Also experimental are 'in', 'out' and 'inout' attributes for function parameters. 'out' vaguely corresponds to '&' used for reference parameters. I haven't played with this attributes yet, and I'm not sure whether an 'in' parameter should be equivalent to 'let'.)
+(Also experimental are 'in', 'out' and 'inout' attributes for function parameters. 'out' vaguely corresponds to '&' used for reference parameters. I haven't played with these attributes yet, and I'm not sure whether an 'in' parameter should be equivalent to 'let'.)
 
 ### Static Variables
 
@@ -493,15 +496,15 @@ Inside a function, a 'static' prefix is needed.
 
 
 ### Named Constants
-This is very simple feature, naming compile-time expressions:
+This is a very simple feature, naming compile-time expressions:
 
     const A     = B+C
     const int B = 100
     const C     = 200
 
-When no type is used, it is infered from the expression. (The example demonstrates out-of-order definitions.) Such constants can be exported using 'global const.
+When no type is used, it is infered from the expression. (The example demonstrates out-of-order definitions.) Such constants can be exported using 'global const'.
 
-Use of A, B or C in source are synonyms for the constants 300, 100 and 200.
+Use of A, B or C in source code are synonyms for the constants 300, 100 and 200.
 
 'const' is useful for numeric types, but less so for anything else.
 
@@ -517,10 +520,10 @@ Or can also part of a type:
 
 Here, the names need to be qualified: you have to write colours.green (2), or lights.green (3). However the type system isn't that sophisticated, so the actual types are merely ints, and nothing stops you using colours.green or lights.green interchangeably.
 
-Typed enums are not used much, and actually, enums themselves are rare because I normally use the **tabledata** features next:
+Typed enums are not used much, and actually, enums themselves are rare because I normally use the **tabledata** feature next:
 
 ### Tabledata
- This is an unusual feature that defined sets of enums, and parallel data arrays, at the same time:
+This is an unusual feature that defines sets of enums, and parallel data arrays, at the same time:
 
     tabledata() []ichar colournames, []word colourvalues =
         (red,       $,      0xFF'00'00),
@@ -534,26 +537,26 @@ The "$" is a device which returns the name of the last enum defined, so it saves
 
 In this form, entries can be added, deleted or moved very easily. Notice the trailing comma on the last entry to facilitate this.
 
-The arrays can be zero-based (or some other value): use [0:] on the array declarations, and start with red=0. (But don't try override the other enum values, as the array mapping can't cope with that.
+The arrays can be zero-based (or some other value): use [0:] on the array declarations, and start with red=0. (But don't try to override the other enum values, as the array mapping can't cope with that.
 
 The () in tabledata() can contain a type name to contain the enums, as suggested above, eg:
 
     tabledata(colours) ....
 
-Or the () can be omitted, then it just defines parallel arrays, no enums.
+Or the () can be omitted completely, then it just defines parallel arrays, no enums.
 
 ### Lengths and Bounds
 
 The following can be applied to arrays and slices:
 
-    .len    # length of array or slice
-    .lwb    # lower bound
-    .upb    # upper bound
+    .len       # length of array or slice
+    .lwb       # lower bound
+    .upb       # upper bound
     .bounds    # returns a range lower..upper (compile-time only)
 
 The following for any type:
 
-    .bytes    # byte-size in any type or expr
+    .bytes     # byte-size in any type or expr
 
 And this for primitive types:
 
@@ -621,7 +624,7 @@ And this for primitive types:
     ceil
     fract
     fmod
-    atan2
+    atan2                (Used as atan2(x,y))
 
 Note that many of these are functions in other languages, but are operators here. That means parenthese are not needed (but usually advised), but also they are properly overloaded.
 
@@ -643,24 +646,24 @@ For example, **abs** can be applied to ints or reals, and will give the expected
 
     9   :=                             # lowest
 
-Disregarding "\*\*" and ".." which don't exist in C, there are seven levels, compared to a dozen in C.
+Disregarding "\*\*" and ".." which don't exist in C, there are six levels, compared to a dozen in C.
 
 ### Array Indexing
 
-This is very simple. If A is an array, then you can index it as:
+If A is an array, then you can index it as:
 
     A[i]
 
 If A is a pointer to array, it must be dereferenced first:
 
-    A^[i]
+    A^[i]           # (M now makes such a deref optional)
 
-Where there are mult-dimensions of a flat array (no pointers to arrays inside), then the indexing goes like this:
+Where there are multi-dimensions of a flat array, then the indexing goes like this:
 
     A[i,j,k]
     A[i][j][k]          # C style alternative
 
-When slicing gets added, then a slice can be created using:
+With slicing, then a slice can be created using:
 
     A[i..j]
 
@@ -670,15 +673,15 @@ As a convenience, the special symbol $ used in an array index, returns the upper
 
 ### Pointer Dereferencing
 
-This is done with the "^" symbols, applying as as suffix to a term:
+This is done with the "^" symbol, applying as as suffix to a term like in Pascal:
 
     P^
     (P+i)^
 
-And can be used consistently with multiple defers:
+And can be used consistently with multiple derefs:
 
     Q^^
-    R^.S^.T
+    R^.S^.T                # (In such instances, that ^ can be omitted for cleaner code.)
 
 Each ^ can be cancelled by one &, so that &Q^^ is equal to Q, and &&Q^ equals &Q.
 
@@ -690,11 +693,11 @@ When mixing ^ with ++ and --, it needs to be used like this:
 
 ### Field Selection
 
-Little to say about this, except it used the usual "." notation:
+Little to say about this, except it uses the common "." notation:
 
     pt.x + pt.y
 
-When used with a pointer to a record P, it's like this: P^.x.
+When used with a pointer to a record P, it's like this: P^.x. (Again, M also allows P.x. Maybe I should have kept ^ mandatory to keep the docs simpler...)
 
 Note that "." is also used for selecting names from a namespace. A namespace might be a module, function or record. That use is detected and resolved at compile time:
 
@@ -725,11 +728,11 @@ Assignments can of course be used inside an expressions which is how the mixup a
 
 ### Augmented Assignments
 
-These are assigments such:
+These are assigments such as:
 
     a +:= b
  
-which means a := a+b. In M, these are only allowed as standalone statements, as their use inside expressions is confusing.
+which means a := a + b. In M, these are only allowed as standalone statements, as their use inside expressions is confusing.
 
 Such assignments are allowed for +, -, \*, /, iand, ior, ixor, min and max:
 
@@ -851,6 +854,8 @@ Sometimes, it can be difficult to get on top of which precise conversion is need
 
 'cast' will apply whatever cast is required. This is handy when the necessary type needs to be tracked down, or when it is likely to change.
 
+(There are issues at present with getting function pointer types to match properly. So here cast() is an easy way to do that.)
+
 ### Conditional Statements
 
 This is mainly the **if** statement:
@@ -889,12 +894,12 @@ When you have this pattern: if x=a then.. elsif x=b then ..., then consider usin
 Sometimes, if, case and switch can be combine to form a composite statement:
 
     if cond then
-    elsif 
+    elsif cond2
     elsecase x
     when a then
     when b,c then
     else
-    fi
+    fi              # final block delimiter needs to match opening keyword
  
 But use sparingly as it looks funny.
  
@@ -921,6 +926,19 @@ The statements where such a suffix is allowed are:
     redo
     restart
     next
+
+### Goto
+
+Not sure if 'goto' is mentioned anywhere, but is definititely part of the language. It seems to be out of favour these days. A mild variation is the experimental feature **recase**:
+
+    case x
+    when a then
+    when b then
+        s1;
+        recase a
+    esac
+
+**recase** here will jump to the branch of the case statement that deals with 'a', equivalent to reentering the case statement with x = a (but x is not actually changed).
 
 ### Loops
 
@@ -969,12 +987,19 @@ Note that such a loop will always count upwards. To count downwards, use 'downto
     
 There is an alternative syntax:
 
-    for i in a..b do          # a, b are numbers
-    for i in A do             # uses A.lwb to A.upb
-    
-(There is an experimental version called forall, which iterates over values not indices, but in the revised language, that will be changed so that both use 'for'. So avoid.)
+    for i in a..b do          # expression after .. is either a range construct ...
+    for i in A do             # ... or applies .lwb and .upb to create a range
 
-Note: loop index variables don't need to be declared. They are auto-defined as 'let', so that you can't assign to them.
+**forall** is also available to iterate over values rather than indices, and currently works fine with slices:
+
+    forall x in S do          # iterate over values in S
+    forall i,x in S do        # same but expose the index in 'i'
+
+This is of limited use for normal arrays unless the array bounds are known to the compiler. (Note that in the revised language,
+'forall' is likely to be dropped, and I will just have 'for' to do both kinds of iteration. Details to be worked out.)
+
+Note: loop index variables don't need to be declared. They are auto-defined as 'let', so that you can't assign to them. To be able
+to assign to them, declare them outside.
 
 ### Loop Controls
 
