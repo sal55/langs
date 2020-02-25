@@ -1,4 +1,4 @@
-!Example B source file
+!Example Q source file
 !Decode jpeg file as input and optionally display in window and/or
 !write a ppm file
 !Run as: pcc jpeg filename
