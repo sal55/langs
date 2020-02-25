@@ -1,40 +1,40 @@
 mafile 36
-  1 mm.m                 382     1434
-  2 mm_decls.m         13093     1841
-  3 clibnew.m           3397    14958
-  4 mm_tables.m        43992    18381
-  5 mm_mcldecls.m      13305    62401
-  6 mm_start.m         19114    75731
-  7 msysnew.m          46919    94869
-  8 mlib.m             26695   141809
-  9 oswindows.m        12536   168530
- 10 mm_support.m       14125   181094
- 11 mm_lib.m           38755   195243
- 12 mm_lex.m           36699   234022
- 13 mm_diags.m         13190   270747
- 14 mm_genwx64.m        3415   283965
- 15 mm_genpcl.m         9569   287407
- 16 mm_libpcl.m        24584   297003
- 17 mm_blockpcl.m      68475   321616
- 18 mm_genmcl.m        90594   390118
- 19 mm_libmcl.m        41310   480739
- 20 var_tables.m        3540   522077
- 21 ma_genss.m         46524   525643
- 22 ma_decls.m          1672   572193
- 23 ma_lib.m            2262   573889
- 24 ma_objdecls.m       2566   576180
- 25 ma_writeobj.m       7676   578775
- 26 ma_writeexe.m      26476   586480
- 27 ma_disasm.m        25847   612983
- 28 mm_parse.m         87992   638856
- 29 mm_name.m          17191   726873
- 30 mm_type.m          66182   744089
- 31 msysnew.m          46919   810296
- 32 mlib.m             26695   857237
- 33 clibnew.m           3397   883957
- 34 oswindows.m        12536   887381
- 35 oswindll.m          2115   899943
- 36 mm_help.txt          865   902085
+  1 mm.m                 382     1578   0
+  2 mm_decls.m         13142     1985   0
+  3 clibnew.m           3397    15151   0
+  4 mm_tables.m        43992    18574   0
+  5 mm_mcldecls.m      13305    62594   0
+  6 mm_start.m         19206    75924   0
+  7 msysnew.m          46919    95154   0
+  8 mlib.m             26695   142094   0
+  9 oswindows.m        12536   168815   0
+ 10 mm_support.m       13257   181379   0
+ 11 mm_lib.m           38755   194660   0
+ 12 mm_lex.m           36699   233439   0
+ 13 mm_diags.m         13190   270164   0
+ 14 mm_genwx64.m        3415   283382   0
+ 15 mm_genpcl.m         9569   286824   0
+ 16 mm_libpcl.m        24584   296420   0
+ 17 mm_blockpcl.m      68475   321033   0
+ 18 mm_genmcl.m        90594   389535   0
+ 19 mm_libmcl.m        41310   480156   0
+ 20 var_tables.m        3540   521494   0
+ 21 ma_genss.m         46524   525060   0
+ 22 ma_decls.m          1672   571610   0
+ 23 ma_lib.m            2262   573306   0
+ 24 ma_objdecls.m       2566   575597   0
+ 25 ma_writeobj.m       7676   578192   0
+ 26 ma_writeexe.m      26476   585897   0
+ 27 ma_disasm.m        25847   612400   0
+ 28 mm_parse.m         87992   638273   0
+ 29 mm_name.m          17191   726290   0
+ 30 mm_type.m          66182   743506   0
+ 31 msysnew.m          46919   809713   1
+ 32 mlib.m             26695   856654   1
+ 33 clibnew.m           3397   883374   1
+ 34 oswindows.m        12536   886798   1
+ 35 oswindll.m          2115   899360   1
+ 36 mm_help.txt          865   901502   1
 === mm.m 1/36 ===
 !mapmodule mm_sys => mm_sysnew
 mapmodule mm_gen => mm_genwx64
@@ -363,6 +363,7 @@ global [0..maxsourcefile]ichar sourcefilenames
 global [0..maxsourcefile]ichar sourcefilepaths
 global [0..maxsourcefile]ichar sourcefiletext
 global [0..maxsourcefile]int sourcefilesizes
+global [0..maxsourcefile]byte issupportfile
 global int nmodules
 global int nsourcefiles
 global int ninputfiles
@@ -374,7 +375,7 @@ global [0..maxsourcefile]int mafilesizes
 global [0..maxsourcefile]int mafileoffsets
 global [0..maxsourcefile]ichar mafiletext
 global [0..maxsourcefile]byte mafilefileno			!0 or index into sourcefile tables
-global [0..maxsourcefile]byte mafilemult			!1 means could be parsed multiple times
+global [0..maxsourcefile]byte mafilesupport			!1 means support file eg. for strinclude
 global int nmafiles
 global ichar mafilesource
 
@@ -2921,8 +2922,14 @@ fi
 initsearchdirs()
 
 do_loadmodules()
-
 do_parse()
+
+!FOR I TO NSOURCEFILES DO
+!	CPL I,SOURCEFILENAMES[I],=ISSUPPORTFILE[I]
+!OD
+!CPL
+!CPL
+
 
 do_writema()
 
@@ -8238,7 +8245,7 @@ global function loadbuiltin(ichar shortfile, text)int=
 	return nsourcefiles
 end
 
-global function loadbundledfile(ichar filespec)int fileno=
+global function loadbundledfile(ichar filespec,int support=0)int fileno=
 !loading bundled file
 !Name of header is in 'file'.
 	ichar file
@@ -8246,51 +8253,9 @@ global function loadbundledfile(ichar filespec)int fileno=
 
 	file:=extractfile(filespec)
 
-!FOR I TO NMAFILES DO
-!	CPL I,MAFILEFILENO[I]
-!OD
-!
-!
-!	n:=0
-!	for i to nmafiles do
-!CPL I,FILE,MAFILENAMES[I]
-!		if eqstring(file,mafilenames[i]) then		!found
-!CPL "MATCHED"
-!			fileno:=mafilefileno[i]
-!CPL "MATCHED2",FILENO
-!			if fileno then
-!				++n									!no. matches
-!CPL "MATCHED3",=LIBFILE
-!				if not libfile then exit fi			!exit on 1st match
-!CPL "MATCHED4",=N
-!
-!				if n=2 then exit fi					!exit on 2nd match
-!			fi
-!		fi
-!	od
-!
-!CPL "LBF:",FILESPEC,"MATCHES ON", FILENO
-!
-!	if not fileno then					!cannot overflow sourcefiles; same limits?
-!		fileno:=++nsourcefiles
-!		mafilefileno[i]:=fileno
-!
-!		sourcefilepaths[nsourcefiles]:=mafilenames[i]
-!		sourcefilenames[nsourcefiles]:=mafilenames[i]
-!		sourcefiletext[nsourcefiles]:=mafiletext[i]
-!		sourcefilesizes[nsourcefiles]:=mafilesizes[i]
-!
-!		if mafilemult[i] then				!might be parsed multiple times
-!			sourcefiletext[nsourcefiles]:=pcm_copyheapstring(mafiletext[i])
-!		fi
-!!	ELSE
-!!		CPL "FOUND BUNDLED FILE SUBSEQ TIME",FILE
-!
-!	fi
-!	return fileno
-!
 	for i to nmafiles do
-		if eqstring(file,mafilenames[i]) then		!found
+		if eqstring(file,mafilenames[i]) and support=mafilesupport[i] then		!found
+!		if eqstring(file,mafilenames[i]) then		!found
 			fileno:=mafilefileno[i]
 			if not fileno then					!cannot overflow sourcefiles; same limits?
 				fileno:=++nsourcefiles
@@ -8304,8 +8269,8 @@ global function loadbundledfile(ichar filespec)int fileno=
 !				if mafilemult[i] then				!might be parses multiple times
 					sourcefiletext[nsourcefiles]:=pcm_copyheapstring(mafiletext[i])
 !				fi
-!			ELSE
-!				CPL "FOUND BUNDLED FILE SUBSEQ TIME",FILE
+			ELSE
+				CPL "FOUND BUNDLED FILE SUBSEQ TIME",FILE
 
 			fi
 			return fileno
@@ -8672,15 +8637,16 @@ global function getmodulefile(ichar modulename, ownername)int =
 	if file=nil then
 		loaderror("Can't find import module: # imported in: #",modulename,ownername)
 	fi
-!CP "GETMODULEFILE:"
 	return loadsourcefile(file)
 end
 
 global function getsupportfile(ichar filename)int =
 	ichar path,file
+	int fileno
 
 	if fbundled then
-		return loadbundledfile(filename)
+		return loadbundledfile(filename,1)
+!		return loadbundledfile(filename,0)
 	fi
 
 	path:=extractpath(filename)
@@ -8702,7 +8668,9 @@ global function getsupportfile(ichar filename)int =
 !		fi
 !	od
 
-	return loadsourcefile(file)
+	fileno:=loadsourcefile(file)
+	issupportfile[fileno]:=1
+	return fileno
 end
 
 global proc writemafile(ichar leadmodule,destfile)=
@@ -8722,15 +8690,12 @@ global proc writemafile(ichar leadmodule,destfile)=
 	f:=fopen(&.filename,"wb")
 	if not f then loaderror("Can't create ma file #",&.filename) fi
 
-!CPL =NSOURCEFILES
-!
-
 	println @f,"mafile",nsourcefiles
 
 	for i to nsourcefiles do
 		print @f,i:"3",sourcefilenames[i]:"16jl",sourcefilesizes[i]:"7"
 		headeroffsets[i]:=getfilepos(f)+1
-		println @f,"         "
+		println @f,"           ",issupportfile[i]
 	od
 
 	for i to nsourcefiles do
@@ -8757,7 +8722,7 @@ global proc loadmafile=
 	filehandle f
 	[16]char kwd
 	[256]char filename
-	int index, size, offset
+	int index, size, offset, issupport
 
 	f:=fopen(mafilename,"rb")
 	if not f then
@@ -8775,12 +8740,12 @@ global proc loadmafile=
 	for i to nmafiles do
 		readln @f,index
 		readstr(&.filename,'n',filename.len)
-		read size, offset
+		read size, offset, issupport
 		mafilenames[i]:=pcm_copyheapstring(&.filename)
 		mafilesizes[i]:=size
 		mafileoffsets[i]:=offset
 		mafilefileno[i]:=0
-		mafilemult[i]:=0
+		mafilesupport[i]:=issupport
 	od
 	fclose(f)
 
