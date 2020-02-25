@@ -9,7 +9,7 @@ This is an early draft, and there will be typos and omissions, mistakes and prob
 
 ### The M Compiler
 
-This is written in M. It build to a single executable file that I usually call mm.exe, currently some 0.6MB, which includes it small set of libraries. (That is, the sources for the libraries are part of the executable.)
+This is written in M. It builds to a single executable file that I usually call mm.exe, currently some 0.6MB, which includes a small set of libraries. (That is, the sources for the libraries are part of the executable.)
 
 This gives a tidy self-contained compiler.
 
@@ -17,16 +17,20 @@ This gives a tidy self-contained compiler.
 
 There are none, when mm builds a .exe file, other than needing a Windows computer. M programs make use of the C standard library, via the MSVCRT.DLL library that comes with every Windows system.
 
-However, there is no direct support for .dll files; these require that mm generates a .obj file instead, and an external linker (eg. gcc) used to create the .dll.  **Whole Program Compiler** A 'program' in this sense is the collection of modules and file that form a single .exe or .dll file. M will always compile all modules from scratch. (Effectively, the 'compilation unit', or granularity, moves from one module, to one program.)
+However, there is no direct support for generating .dll files; these require that mm generates a .obj file instead, and an external linker (eg. gcc) used to create the .dll.
+
+### Whole Program Compiler
+
+A 'program' in this sense is the collection of modules and files that form a single .exe or .dll file. M will always compile all modules from scratch. (Effectively, the 'compilation unit', or granularity, moves from one module, to one program.)
 
 ### No Make or Project Files
-Build a project by submitting only the lead module. It will then locate all necessary modules (by following import links), to produce an executable named after the lead module.
+M builds a project by submitting only the lead module. It will then locate all necessary modules (by following import links), to produce an executable named after the lead module.
 
 ### Compilation Speed
 I've taken my eye off the ball recently, but it will still compile at hundreds of thousands of lines per second on my slowish PC with a conventional hard drive.
 
 ### Optimisation
-I don't have an optimiser right now, and the code is poor. However this doesn't affect these compiler projects too much. The M compiler can still build itself from scratch (from 40Kloc in 30+ modules) in about 0.2 seconds, even though mm.exe is built as unoptimised code. 
+I don't have an optimiser right now, and the code is poor. However this doesn't affect these compiler projects too much. The M compiler can still build itself from scratch (some 40Kloc in 30+ modules) in about 0.2 seconds, even though mm.exe is built as unoptimised code. 
 
 ### C Target
 At various times, I have supported a C target, so generating a monolithic C source file instead of .exe or .obj or .asm. This gives the advantage of being able to compile programs for Linux, and to take advantage of optimising C compilers like gcc.
@@ -42,19 +46,19 @@ The .asm output is again a single, monolithic file, which can actually be assemb
 Originally inspired by Algol-68, but has evolved its own style. Best described by looking at example programs.
 
 ### Modules and Imports
-This is another big difference from C (and C++ is only now acquiring modules). M has no header files and has not need for declarations as well as definitions.
+This is another big difference from C (and C++ is only now acquiring modules). M has no header files and has not nee for declarations as well as definitions.
 
 You define a function, variable, named constant, type, enum, macro etc in its own module. To export it, add a 'global' attribute in front, otherwise it is private to that module. 
 
 To use those exported names from module A in another module B, that is when you write 'import A' inside B.
 
 ### Circular and Mutual Imports
-Previous versions of the module system required modules to be in a strict top-down hierarchy. That was too constricting. The current scheme allows imports in any order including circular imports: A can import B, and B can import A.
+Previous versions of the module system required modules to be in a strict top-down hierarchy. That was too restrictive. The current scheme allows imports in any order including circular imports: A can import B, and B can import A.
 
 (There is a downside: the order in which default initialisation routines are called is no longer determinate.)
 
 ### Out of Order Definitions
-Unlike C, functions can be defined in any order in a module. If a function F calls G(), and G is defined later on, you don't need forward or prototype declaration for G.
+Unlike C, functions can be defined in any order in a module. If a function F calls G(), and G is defined later on, you don't need a forward or prototype declaration for G.
 
 Actually, this also applies to other named entities, so you could for example choose to define all the local variables at the end of a function!
 
@@ -64,12 +68,18 @@ Another big departure from C, is that inside a function, there is only a single 
 Since functions are best kept small, there is no real need for multiple scopes and overloading the same identifiers.
 
 ### Semicolons
-While M ostensibly requires semicolons to separate statements, in practice these are rare in M source code. This is because newlines are converted to semicolons, except when:    * A line-continuation character \ is used at the end of the line    * The line clearly continues onto the next because it ends with one of:      "(" "[" "," or a binary operator
+While M ostensibly requires semicolons to separate statements, in practice these are rare in M source code. This is because newlines are converted to semicolons, except when:
+
+    * A line-continuation character \ is used at the end of the line
+    * The line clearly continues onto the next because it ends with one of:
+       "(" "[" "," or a binary operator
 
 ### Comments
-M only has single line comments starting with "!" until end-of-line. ("!" came from the DEC Fortran and Algol I used in the late 70s).
+M only has single-line comments starting with "!" until end-of-line. ("!" came from the DEC Fortran and Algol I used in the late 70s.)
 
-It has had block comments in the past, but I believe those should be an editor function (which can use multiple "!" comments). (This also makes things simpler for highlighting editors, as it doesn't need to track context from 1000s of lines before.) 
+It has had block comments in the past, but I believe those should be an editor function (which can use multiple "!" comments). (This also makes things simpler for highlighting editors, as it doesn't need to keep track of context from 1000s of lines before.)
+
+This document will use '#' for comments in examples as it is clearer and more familiar.
 
 ### Doc Strings
 This is something I've played with, and is in my other language, but temporarily missing from M. Doc strings are line comments starting with #, just before and/or inside a function.
@@ -82,7 +92,7 @@ I haven't yet ventured into Unicode. Source code is written in ASCII, but can al
 Newlines in source files must use CR/LF or LF sequences.
       
 ### Case-Insensitive
-Another departure from most languages, especially those associated with C and/or Unix. M is case-insensitive, which means that all of these names are treated identically:
+Another departure from most languages, especially those associated with C and/or Unix. M is case-insensitive, which means that all of these names are identical to it:
 
     abc abC aBc aBC Abc AbC ABc ABC
 
@@ -105,10 +115,16 @@ main() can also be used as an entry point, but no special code is injected. (Use
 If encountered in a module, it will be called automatically by start-up code. No 'global' attribute needed. However, because of non-determinate module import order, if such a routine depends on another $init function being called first, then this must be handled manually (with flags and direct invocation etc).
 
 ### Include, Strinclude and Bininclude
-**include** is an ordinary textual include, and is only needed in M when you actually want to include code (not headers) from another file. (For example, a file generated from a program.)  **strinclude** can be used in an expression, and can include any text file as a string constant. (I use this to incorporate the sources for M libraries into the M compiler; or the C header sources into my C compiler.)
+**include** is an ordinary textual include, and is only needed in M when you actually want to include code (not headers) from another file. (For example, a file generated from a program.)
 
-Example in a program called prog.m: println strinclude "prog.m"; a program that prints itself.
+**strinclude** can be used in an expression, and can include any text file as a string constant. (I use this to incorporate the sources for M libraries into the M compiler; or the C header sources into my C compiler.)
 
+Example in a program called prog.m, this prints itself:
+
+    proc start =
+        println strinclude "prog.m"
+    end
+    
 **bininclude** is a variation used to initialise a byte-array, and can refer to any file including binaries. However it's done inefficiently at present.
 
 ### Conditional Compilation
@@ -118,7 +134,7 @@ Conditional code is handled at the module rather than line level. It can look li
 
     mapmodule pc_assem => pc_assemc when ctarget
 
-Where, when 'import pc_assem' is encountered, it will instead import 'pc_assemc' (in this case a dummy module with empty functions). 'ctarget' can be a built-in flag or one set with compiler options/
+Where, when 'import pc_assem' is encountered, it will instead import 'pc_assemc' (in this case a dummy module with empty functions). 'ctarget' can be a built-in flag or one set with compiler options.
 
 This keeps the contents of each module clean. (Look at some C system headers to see what happens with most code is a patchwork of #if/#ifdef blocks.) 
 
@@ -132,7 +148,7 @@ M is low-level so has mainly simple, fixed-size types: scalars, records (ie. str
 
 Dynamic arrays with a length known at run-time can be created with pointers and allocations, but the size remains fixed.
 
-A new type recently added are slices or views into arrays and strings, which can done more along those lines (see below) but I haven't done much with them yet.
+A new type recently added are slices or views into arrays and strings, which can do more along those lines (see below) but I haven't done much with them yet.
 
 In current development (although shelved for a while) is a version with higher level types. (M did have variant types briefly, allowing flex lists, big nums and such, but I decided they were not a good match for M in that form.)
 
@@ -168,12 +184,12 @@ Common aliases:
 (There had been also machine types intm and wordm which were 32 or 64 bits depending on target, also intp and wordp for widths matching those of a native pointer, but since I'm concentrating on 64-bit machines, and assuming 64-bit pointers, those will be dropped.)
 
 ### Type of Integer Constants
-These are defaults before any casts are applied:
+These are defaults before any casts are applied, depending on the magnitude of the constant:
 
     0 to 2** 63-1              int64
     2**63 to 2** 64-1          word64
     2**64 to 2** 127-1         int128
-    2**127 to 2**128-1        word128
+    2**127 to 2**128-1         word128
     2**128 and above          'decimal' type (not implemented in this version)
 
 (No suffixes are used, except that in the next M version -L is used to force a decimal type for integers and floats.)
@@ -188,7 +204,7 @@ M allows scale factors such as 'million', used like this:
 
     4 million           # 4000000
 
-There used to be other (like m, cm and km to scale lengths to the same units), but this part of the language will be revised to try and have user-definable scale factors.
+There used to be others (like m, cm and km to scale lengths to the same units), but this part of the language will be reviewed to try and have user-definable scale factors.
 
 Such names are in their own namespace; 'million' can still be used as an identifier.
 
@@ -211,7 +227,7 @@ Given any numeric type T or expression X, then:
     X.minvalue
     X.maxvalue
 
-will yield the smallest and largest values possible. (Next version, where a 'range' (see below) is an actual type, then I may introduce T.bounds to mean 'T.minvalue..T.maxvalue.)
+will yield the smallest and largest values possible. (Next version, where a 'range' (see below) is an actual type, then I may introduce T.bounds to mean 'T.minvalue..T.maxvalue'.)
 
 For the fixed size of a type or expression:
 
@@ -223,17 +239,17 @@ For array lengths and bounds, there is a whole set of properties that can be ext
 ### Character Constants
 M uses ASCII, so 'A' has the value 65, but it has type 'char'.
 
-Multi-character constants are possible, with the these types (which I'm going to tweak today actually so that most will have int types): 
+Multi-character constants are possible, with these types (which I'm going to tweak today actually so that most will have int types): 
 
     'A'                        c8
     up to 'ABCDEFGH'           u64
     up to 'ABCDEFGHIJKLMNOP'   u128
 
 ### Unicode String and Char Constants
-Not sure how to tackle Unicode support yet.
+Not sure how to tackle Unicode support yet, so these constants are not supported. UTF8 sequences can be used, but to work with those, any routines called need to support UTF8. A 'print' on a UTF8 string ends up calling C's printf for normal (not wide) characters, so these also depends on Windows, locale, codepages and the like.
 
 ### Type Reflection
- The expression X.type returns an internal type code, so that it can be used as 'if X.type = int.type' for example. Although types are static, the result type of an expression may not be obvious. It can also be turned into a string:
+The expression X.type returns an internal type code, so that it can be used as 'if X.type = int.type' for example. Although types are static, the result type of an expression may not be obvious. It can also be turned into a string:
 
     println X.typestr
 
@@ -257,7 +273,7 @@ These are written as, for example:
 Like C, these do not introduce a new type.
 
 ### Pointers and Arrays
-Unlike C, you can't index a pointer like an array, and you can't dereference an array like a pointer. Offsets to pointers can be done, but are written as '(P+i)^' rather than using P[i] like C, making it clear something underhand is going on.
+Unlike C, you can't index a pointer like an array, and you can't dereference an array like a pointer. Offsets to pointers can be done, but are written as '(P+i)^' rather than using P\[i\] like C, making it clear something underhand is going on.
 
 ### Auto Dereference
 M used to be a more transparent language needing explicit derefs, but that has been relaxed. Now, a dereference op (a postfix '^' like Pascal) can be omitted in many cases:
@@ -272,7 +288,6 @@ Less transparent, but cleaner code. However sometimes ^ is still needed:
     ++P^.m             otherwise it's parsed as (++P)^.m (working on this)  
 
 ### Array Bounds
-Arrays normally are indexed from 1, but any lower bound can be used:
 
     [5]int A                # Array of length 5
     []int A = (10,20,30)    # Unbounded array whose length is set by the data
@@ -297,7 +312,7 @@ For multi-dimensions, use:
     [10,20]int A
     [,20]int A              # First unbounded
 
-(There are is limited support for passing multi-dimensional arrays to functions; the dimenions must be constants, except the first can be unbounded.)
+(There are is limited support for passing multi-dimensional arrays to functions; the dimensions must be constants, except the first can be unbounded.)
 
 ### Value Arrays
 M arrays are always handled by value (C converts them always to a pointer, with a schism in the type system to ensure that). So:
@@ -308,8 +323,7 @@ M arrays are always handled by value (C converts them always to a pointer, with 
 However, there is little support for passing value arrays to functions or returning such arrays. (I used to allow that long ago, but it was never used.) Better ways to pass arrays are by pointer, by reference, or via a slice.
 
 ### Array Indexing
-M allows multi-dimensional indexing using the more fluid A[i,j,k]
-instead of the A[i][j][k] used in many languages. Although A[i][j[k] is legal too.
+M allows multi-dimensional indexing using the more fluid A\[i,j,k\] instead of the A\[i\]\[j\]\[k\] used in many languages. Although A\[i\]\[j\[k\] is legal too.
 
 ### Records
 These are structs, eg:
@@ -321,28 +335,28 @@ These are structs, eg:
 
     date d,e,f
 
-Offsets can be specified directly (eg. int x @ a for x to be at the same offset as a), but now 'union' and 'struct' are used as better way of controlling layout: 
+Offsets can be specified directly (eg. int x @ a for x to be at the same offset as a), but now 'union' and 'struct' are used as a better way of controlling layout:
 
-    record r2 =
+    record R =
         union
-           int a
-           int b
+           int32 a
+           int32 b
            struct
               byte f,g,h,i
            end
         end
     end
 
-Here, the struct occupies 8 consecutive bytes (int is 64 bits).
+Here, the struct occupies 4 consecutive bytes. There is no padding added to ensure alighnment; this must be done manually.
 
 Struct and union behave like anonymous structs and unions in C.
 
-Records in M must always be declared as named user types like the above; not anyway like in C. There is no concept of a struct tag.
+Records in M must always be declared as named user types like the above; not anywhere, or anonymously, like in C. There is no concept of a struct tag.
 
 ### Records as Classes
 Records can contain other definitions such as types, named constants, and functions, which do not form part of any instance of the record. But I've done little with this, so I'm not sure exactly what is supported by M.
 
-The concept is easy however, it can provide simple encapsulation.
+The concept is easy however: it can provide simple encapsulation.
 
 ### Pointers and Strings
 
@@ -350,18 +364,18 @@ Pointers work as they might do in C. In a type spec, 'ref' is used to means poin
 
      ref int P = nil         # Nil is the equivalent of C's NULL
 
-Low-level strings are zero-terminated sequences like C, but here there sequence of a char type which is distinct from a byte:
+Low-level strings are zero-terminated sequences like C, but here they're sequences of a char type which is distinct from a byte:
 
      ref char S
      ichar T                 # ichar is a synonym for 'ref char'
 
-Such strings are generally passed as 'ref char' (or ichar) types, rather than ref[]char which allows normal index.
+Such strings are generally passed as 'ref char' (or ichar) types, rather than ref[]char which allows normal indexing.
 
 ### Char Array Initialisation
 
     []char S = ('A','B','C')
 
-This would be a lot of work to write like this. C allows such an array to be initialised from "ABC", but "ABC" has the wrong type (a C quirk allows it). In M, special string constants exist:
+This would be a lot of work to write like this. C allows such an array to be initialised from "ABC", but "ABC" has the wrong type, char\* rather than char\[\] (a C quirk allows it). In M, special string constants exist:
 
     []char S = a"ABC"             # 3-char array, non-terminated
     []char S = z"ABC"             # 4-char array, zero-terminated
