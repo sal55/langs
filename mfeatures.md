@@ -1477,6 +1477,20 @@ They can be initialised from a construct, but only for static variables (ie. usi
 
 Outside of a function. 'static' is not needed.
 
+### Creating Amalgamated Files
+
+Apart from .exe, .obj and .asm output formats, there is one more: an 'amalgamated' file, with extension .ma.
+
+This is not a true amalgamation as the result isn't a single module, but a simple collection of files (and support files) preceded by directory info that lists all the files. This makes it easy to copy, upload, transmit a project, without needing to use a binary format.
+
+Also, M can directly compile a project in its amalgamated form. If the lead module of a project is prog.m, then:
+
+    mm -ma prog          # collects all modules and support files into prog.ma
+    
+    mm prog.ma           # compile the project from that single file, into prog.exe
+
+In this context, 'support files' are those incorporated using 'include', 'strinclude' and 'bininclude' directives.
+
 ### Bugs and Limitations
 
 There will be loads. This one problem with languages used by too few people, it does not get exercised enough. It is easy to get around limitations or bugs, or there will be ranges of features that haven't be used enough to know how well or otherwise they work.
