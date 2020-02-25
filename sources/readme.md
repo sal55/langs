@@ -1,5 +1,7 @@
 ## Amalgamated Source Code
 
+**NOTE** I've changed the format of the directory info in these .ma files. mm.ma has been updated. The others still need to be updated and may not compile in this form (it's necessary to extract the individual files).
+
 The individual source files of my projects are too numerous to upload individually. (And I don't use special github apps.)
 
 The files here are amalgamations created by my compiler. They can be compiled directly in that form, or with a simple tool can be extracted again (the directory at the start gives file size and offset within the file).
