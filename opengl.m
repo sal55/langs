@@ -348,15 +348,15 @@ importdll opengl32 =
     clang function "gluBuild1DMipmaps"                 (u32,i32,i32,u32,u32,ref void)i32
     clang function "gluBuild2DMipmaps"                 (u32,i32,i32,i32,u32,u32,ref void)i32
     record GLUnurbs =
-        var int dummy    !empty record
+        int dummy    !empty record
     end
 
     record GLUquadric =
-        var int dummy    !empty record
+        int dummy    !empty record
     end
 
     record GLUtesselator =
-        var int dummy    !empty record
+        int dummy    !empty record
     end
 
     clang function "gluNewQuadric"                     ()ref GLUquadric
