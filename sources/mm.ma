@@ -1,40 +1,40 @@
 mafile 36
   1 mm.m                 382     1578   0
-  2 mm_decls.m         13142     1985   0
-  3 clibnew.m           3397    15151   0
-  4 mm_tables.m        43992    18574   0
-  5 mm_mcldecls.m      13305    62594   0
-  6 mm_start.m         19304    75924   0
-  7 msysnew.m          46919    95252   0
-  8 mlib.m             26695   142192   0
-  9 oswindows.m        12536   168913   0
- 10 mm_support.m       13257   181477   0
- 11 mm_lib.m           38755   194758   0
- 12 mm_lex.m           36699   233537   0
- 13 mm_diags.m         13190   270262   0
- 14 mm_genwx64.m        3415   283480   0
- 15 mm_genpcl.m         9569   286922   0
- 16 mm_libpcl.m        24584   296518   0
- 17 mm_blockpcl.m      69668   321131   0
- 18 mm_genmcl.m        90709   390826   0
- 19 mm_libmcl.m        41310   481562   0
- 20 var_tables.m        3540   522900   0
- 21 ma_genss.m         46524   526466   0
- 22 ma_decls.m          1672   573016   0
- 23 ma_lib.m            2262   574712   0
- 24 ma_objdecls.m       2566   577003   0
- 25 ma_writeobj.m       7676   579598   0
- 26 ma_writeexe.m      26476   587303   0
- 27 ma_disasm.m        25847   613806   0
- 28 mm_parse.m         88074   639679   0
- 29 mm_name.m          17798   727778   0
- 30 mm_type.m          66182   745601   0
- 31 msysnew.m          46919   811808   1
- 32 mlib.m             26695   858749   1
- 33 clibnew.m           3397   885469   1
- 34 oswindows.m        12536   888893   1
- 35 oswindll.m          2115   901455   1
- 36 mm_help.txt          865   903597   1
+  2 mm_decls.m         13125     1985   0
+  3 clibnew.m           3397    15134   0
+  4 mm_tables.m        44002    18557   0
+  5 mm_mcldecls.m      13305    62587   0
+  6 mm_start.m         19303    75917   0
+  7 msysnew.m          46919    95244   0
+  8 mlib.m             26695   142184   0
+  9 oswindows.m        12536   168905   0
+ 10 mm_support.m       13257   181469   0
+ 11 mm_lib.m           38755   194750   0
+ 12 mm_lex.m           36699   233529   0
+ 13 mm_diags.m         13190   270254   0
+ 14 mm_genwx64.m        3415   283472   0
+ 15 mm_genpcl.m         9569   286914   0
+ 16 mm_libpcl.m        24584   296510   0
+ 17 mm_blockpcl.m      69668   321123   0
+ 18 mm_genmcl.m        90709   390818   0
+ 19 mm_libmcl.m        41310   481554   0
+ 20 var_tables.m        3540   522892   0
+ 21 ma_genss.m         46524   526458   0
+ 22 ma_decls.m          1674   573008   0
+ 23 ma_lib.m            2262   574706   0
+ 24 ma_objdecls.m       2566   576997   0
+ 25 ma_writeobj.m       7676   579592   0
+ 26 ma_writeexe.m      26477   587297   0
+ 27 ma_disasm.m        25847   613801   0
+ 28 mm_parse.m         88074   639674   0
+ 29 mm_name.m          17798   727773   0
+ 30 mm_type.m          66357   745596   0
+ 31 msysnew.m          46919   811978   1
+ 32 mlib.m             26695   858919   1
+ 33 clibnew.m           3397   885639   1
+ 34 oswindows.m        12536   889063   1
+ 35 oswindll.m          2115   901625   1
+ 36 mm_help.txt          866   903767   1
 === mm.m 1/36 ===
 !mapmodule mm_sys => mm_sysnew
 mapmodule mm_gen => mm_genwx64
@@ -462,8 +462,7 @@ global int islinux=0		!set to 1 when target=linux
 global int targetbits		!set to txbits[target]
 global int targetsize		!set to targetbits/8
 
-global int fverbose=0		!whether to display message for each pass
-global int fquiet=0
+global int fverbose=1		!1=normal, 0=less verbose, 2/3 = more verbose
 global byte fdebugcompiler		!1 for debug compile, 0 (default) for production compile
 
 !global int foptimise=0		!whether to generate optimised j-codes
@@ -1628,20 +1627,20 @@ global tabledata []ichar stnames, []int stsymbols, []int stsubcodes=
 	("fract",		opsym,			j_fract),
 	("fmod",		opsym,			j_fmod),
 
-	("head",		opsym,			j_head),
-	("tail",		opsym,			j_tail),
-	("init",		opsym,			j_init),
-!	("last",		opsym,			j_last),
-	("take",		opsym,			j_take),
-	("drop",		opsym,			j_drop),
+!	("head",		opsym,			j_head),
+!	("tail",		opsym,			j_tail),
+!	("init",		opsym,			j_init),
+!!	("last",		opsym,			j_last),
+!	("take",		opsym,			j_take),
+!	("drop",		opsym,			j_drop),
 !	("left",		opsym,			j_left),
 !	("right",		opsym,			j_right),
 	("insert",		opsym,			j_insert),
 	("delete",		opsym,			j_delete),
-	("ireverse",	opsym,			j_ireverse),
-	("reverse",		opsym,			j_reverse),
-	("dupl",		opsym,			j_dupl),
-	("zip",			opsym,			j_zip),
+!	("ireverse",	opsym,			j_ireverse),
+!	("reverse",		opsym,			j_reverse),
+!	("dupl",		opsym,			j_dupl),
+!	("zip",			opsym,			j_zip),
 	("prepend",		opsym,			j_prepend),
 	("append",		opsym,			j_append),
 	("concat",		opsym,			j_concat),
@@ -2854,7 +2853,7 @@ tabledata() []ichar optionnames=
 
 	(time_sw,		"time"),
 	(v_sw,			"v"),
-	(v2_sw,			"v2"),
+	(vv_sw,			"vv"),
 	(quiet_sw,		"q"),
 	(help_sw,		"h"),
 	(help2_sw,		"help"),
@@ -2920,7 +2919,7 @@ if fdebugcompiler then
 	stop
 fi
 
-if not fverbose and not fquiet then
+if fverbose>=1 then
 	println "Compiling",inputfiles[1],"to",outfile
 fi
 
@@ -2948,7 +2947,7 @@ if cc_mode=run_mode then
 	do_runprog()
 fi
 
-if fverbose then
+if fverbose>=2 then
 	println "Finished."
 fi
 
@@ -2974,7 +2973,7 @@ fshowast1:=1
 fshowast2:=passlevel>=2
 fshowast3:=passlevel>=3
 fshowst:=1
-fshowstflat:=1
+!fshowstflat:=1
 fshowtypes:=1
 
 cc_mode:=0
@@ -3017,7 +3016,7 @@ if fshowtiming then
 	showtiming()
 fi
 
-if fverbose then
+if fverbose>=2 then
 	println "Finished."
 fi
 
@@ -3199,7 +3198,7 @@ nimports:=readimportlist(&m,&importnames,&importflags,maximports)
 
 for i to nimports do
 	flag:=0
-	if fverbose=2 then
+	if fverbose>=3 then
 		println "Load import for",modulename,=importnames[i]
 	fi
 	k:=loadimport(importnames[i],flag,modulename)
@@ -3571,13 +3570,13 @@ when time_sw then
 	fshowtiming:=1
 
 when v_sw then
-	fverbose:=1
-
-when v2_sw then
 	fverbose:=2
 
+when vv_sw then
+	fverbose:=3
+
 when quiet_sw then
-	fquiet:=1
+	fverbose:=0
 
 when help_sw,help2_sw then
 	showhelp()
@@ -3621,7 +3620,7 @@ esac
 end
 
 proc showcaption=
-println "M Compiler", $date, $time
+println "Mosaic Compiler", $date, $time
 end
 
 proc addtolog(ichar filename, filehandle logdest)=
@@ -27285,8 +27284,8 @@ global [maxsearchlibs]ichar searchlibs
 global int nmodules
 global int nsearchlibs
 
-global int fverbose=0		!whether to display message for each pass
-global int fquiet=0
+!global int fverbose=0		!whether to display message for each pass
+!global int fquiet=0
 !global ichar entrypointname = "start"
 
 global int LINECOUNT=0
@@ -28065,9 +28064,9 @@ od
 
 !println =filesize, =dataptr-datastart			!these should match
 
-!if fverbose then
+if fverbose>=1 then
 	CPL "Writing file:",outfile
-!fi
+fi
 
 if writefile(outfile,datastart,dataptr-datastart)=0 then
 	println "Error writing exe file (possibly still running)"
@@ -36209,6 +36208,14 @@ if dcode and d^.nameid<>frameid then
 	if ttbasetype[m]=tarray and ttlength[m]=0 then
 		d^.mode:=dcode^.mode
 	fi
+!elsif dcode and d.nameid=frameid then
+!	tpass(dcode,m)
+!	if ttbasetype[m]=tarray and ttlength[m]=0 then
+!		d^.mode:=dcode^.mode
+!	fi
+!	d^.circflag:=0
+!	d^.txdone:=1
+
 else
 	d^.circflag:=0
 	d^.txdone:=1
@@ -43794,15 +43801,13 @@ CPL "PUSH ARGS3"
 	return a
 end
 === mm_help.txt 36/36 ===
-'MM' M Compiler Generating x64 native code - Windows Version
+'MM' Mosaic Compiler Generating x64 native code - Windows Version
 
 Whole-program compiler builds entire program from the lead module
 into a executable file.
 
     mm main              # Create main.exe from lead module main.m
-
     mm main.m            # Same (.m extension is default)
-
     mm -c main           # Create single-file main.asm intermediate ASM
 
 Options:
