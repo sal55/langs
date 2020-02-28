@@ -4,37 +4,37 @@ mafile 36
   3 clibnew.m           3397    15151   0
   4 mm_tables.m        43992    18574   0
   5 mm_mcldecls.m      13305    62594   0
-  6 mm_start.m         19206    75924   0
-  7 msysnew.m          46919    95154   0
-  8 mlib.m             26695   142094   0
-  9 oswindows.m        12536   168815   0
- 10 mm_support.m       13257   181379   0
- 11 mm_lib.m           38755   194660   0
- 12 mm_lex.m           36699   233439   0
- 13 mm_diags.m         13190   270164   0
- 14 mm_genwx64.m        3415   283382   0
- 15 mm_genpcl.m         9569   286824   0
- 16 mm_libpcl.m        24584   296420   0
- 17 mm_blockpcl.m      68475   321033   0
- 18 mm_genmcl.m        90594   389535   0
- 19 mm_libmcl.m        41310   480156   0
- 20 var_tables.m        3540   521494   0
- 21 ma_genss.m         46524   525060   0
- 22 ma_decls.m          1672   571610   0
- 23 ma_lib.m            2262   573306   0
- 24 ma_objdecls.m       2566   575597   0
- 25 ma_writeobj.m       7676   578192   0
- 26 ma_writeexe.m      26476   585897   0
- 27 ma_disasm.m        25847   612400   0
- 28 mm_parse.m         87992   638273   0
- 29 mm_name.m          17191   726290   0
- 30 mm_type.m          66182   743506   0
- 31 msysnew.m          46919   809713   1
- 32 mlib.m             26695   856654   1
- 33 clibnew.m           3397   883374   1
- 34 oswindows.m        12536   886798   1
- 35 oswindll.m          2115   899360   1
- 36 mm_help.txt          865   901502   1
+  6 mm_start.m         19304    75924   0
+  7 msysnew.m          46919    95252   0
+  8 mlib.m             26695   142192   0
+  9 oswindows.m        12536   168913   0
+ 10 mm_support.m       13257   181477   0
+ 11 mm_lib.m           38755   194758   0
+ 12 mm_lex.m           36699   233537   0
+ 13 mm_diags.m         13190   270262   0
+ 14 mm_genwx64.m        3415   283480   0
+ 15 mm_genpcl.m         9569   286922   0
+ 16 mm_libpcl.m        24584   296518   0
+ 17 mm_blockpcl.m      69668   321131   0
+ 18 mm_genmcl.m        90709   390826   0
+ 19 mm_libmcl.m        41310   481562   0
+ 20 var_tables.m        3540   522900   0
+ 21 ma_genss.m         46524   526466   0
+ 22 ma_decls.m          1672   573016   0
+ 23 ma_lib.m            2262   574712   0
+ 24 ma_objdecls.m       2566   577003   0
+ 25 ma_writeobj.m       7676   579598   0
+ 26 ma_writeexe.m      26476   587303   0
+ 27 ma_disasm.m        25847   613806   0
+ 28 mm_parse.m         88074   639679   0
+ 29 mm_name.m          17798   727778   0
+ 30 mm_type.m          66182   745601   0
+ 31 msysnew.m          46919   811808   1
+ 32 mlib.m             26695   858749   1
+ 33 clibnew.m           3397   885469   1
+ 34 oswindows.m        12536   888893   1
+ 35 oswindll.m          2115   901455   1
+ 36 mm_help.txt          865   903597   1
 === mm.m 1/36 ===
 !mapmodule mm_sys => mm_sysnew
 mapmodule mm_gen => mm_genwx64
@@ -2894,6 +2894,11 @@ int hashvalue,hv16
 
 startclock:=os_clock()
 
+!FOR I IN STNAMES DO
+!	CPL STNAMES[I]
+!OD
+!
+
 target:=itarget
 
 ctarget:=tg_ctarget[target]
@@ -2969,6 +2974,7 @@ fshowast1:=1
 fshowast2:=passlevel>=2
 fshowast3:=passlevel>=3
 fshowst:=1
+fshowstflat:=1
 fshowtypes:=1
 
 cc_mode:=0
@@ -3063,6 +3069,7 @@ proc do_parse=
 	od
 	parsemodule(1)
 
+!CPL "FIXUSERTYPES NOT CALLED"
 	fixusertypes()
 end
 
@@ -15498,8 +15505,9 @@ proc do_const(unit p) =
 !			gerror("PUSHINT128")
 		fi
 	elsif ttisreal[mode] then
-		genpc(k_pushreal,genreal(p.xvalue))
-		setpclmode_t(tr64)
+
+		genpc(k_pushreal,genreal(p.xvalue,ttsize[mode]))
+		setpclmode_t(ttbasetype[mode])
 
 	elsif ttisref[mode] then
 		if p.isastring then
@@ -17776,13 +17784,21 @@ proc do_assignblock(unit p,a,b) =
 ! load ref to rhs
 ! do block xfer, not using the stack
 
-!CPL "ASSIGN BLCK",STRMODE(A^.MODE),STRMODE(B^.MODE)
+!CPL "ASSIGN BLOCK",STRMODE(A^.MODE),STRMODE(B^.MODE), P.ISCONST
+!	CPL =JTAGNAMES[B.TAG]
+	if b.tag=j_makelist then
+		if ttbasetype[a.mode]=tarray then
+			do_assignarray(a,b)
+		else
+			do_assignrecord(a,b)
+		fi
+	else
+		evalref(a)
+		evalref(b)
 
-	evalref(a)
-	evalref(b)
-
-	genpc(k_copyblock)
-	pccodex^.mode:=a^.mode
+		genpc(k_copyblock)
+		pccodex^.mode:=a^.mode
+	fi
 end
 
 proc do_callff(unit p,a,b,ref strec d,int fncall)=
@@ -18169,6 +18185,61 @@ dorest::
 	pccodex^.catmode:=trecord
 	pccodex^.mode:=a^.mode
 end
+
+proc do_assignarray(unit a,b)=
+	unit passign, pindex, pconst,q
+	int index
+
+	pconst:=createconstunit(1,ti64)
+	pindex:=createunit2(j_index,a,pconst)
+	passign:=createunit2(j_assign,pindex, b.a)
+	passign.mode:=pindex.mode:=tttarget[a.mode]
+
+
+	index:=ttlower[a.mode]
+	q:=b.a
+
+	while q do
+		pconst.value:=index
+		passign.b:=q
+
+		evalunit(passign)
+
+		++index
+		q:=q.nextunit
+	od
+
+end
+
+proc do_assignrecord(unit a,b)=
+	unit passign, pdot, pfield,q
+	int m,fieldtype
+	ref strec d,e
+
+	pfield:=createunit0(j_name)
+	pdot:=createunit2(j_dot,a,pfield)
+	passign:=createunit2(j_assign,pdot, b.a)
+	passign.mode:=pdot.mode:=tttarget[a.mode]
+
+	m:=a.mode
+	d:=ttnamedef[m]
+	e:=d.deflist
+	q:=b.a
+	while e do
+		if e.nameid=fieldid and e.mode<>tbitfield then
+			fieldtype:=e.mode
+			pfield.def:=e
+			passign.mode:=pfield.mode:=pdot.mode:=fieldtype
+			passign.b:=q
+			pdot.offset:=e.offset
+			evalunit(passign)
+			q:=q.nextunit
+		fi
+		e:=e.nextdef
+	od
+end
+
+
 === mm_genmcl.m 18/36 ===
 import msys
 import mlib
@@ -18615,6 +18686,12 @@ proc pc_pushreal_x8(ref pclrec p) =
 !r64 to normal operand
 	newopnd_x8()
 	genmc_loadreal_x8(aa^.xvalue)
+end
+
+proc pc_pushreal_x4(ref pclrec p) =
+!r64 to normal operand
+	newopnd_x8()
+	genmc_loadreal_x4(aa^.xvalue)
 end
 
 !proc pc_pushconst_r32(ref pclrec p) =
@@ -20272,8 +20349,8 @@ proc pc_indexmem_ax(ref pclrec p) =
 		fx:=genopnd(xa)
 		genmc(m_movd,fx,genindex(ireg:regi,
 					scale:scale,offset:offset,size:4,def:d))
-!		swapopnds(1)
-!		popopnd()
+		swapopnds(1,2)
+		popopnd()
 
 	else
 		cpl strmode(p^.catmode2)
@@ -30378,7 +30455,8 @@ do
 
 	when kenumsym then
 		lex()
-		readenumtype(owner,0)
+		readenumtype(owner,0,globalflag)
+		globalflag:=0
 
 	when ktabledatasym then
 		readtabledef(globalflag)
@@ -33204,7 +33282,9 @@ while lx.symbol=namesym do
 	fi
 	pindex:=createunit2(j_add,pindex,pone)
 
+!CPL =STNAME,=ISGLOBAL
 	stname^.isglobal:=isglobal
+!	stname^.isglobal:=isglobal
 
 	if lx.symbol<>commasym then exit fi
 	lex()
@@ -35039,7 +35119,8 @@ ref strec d,e
 if m>=0 then return m fi
 m:=-m
 
-if ttxmap[m] then				!already fixed
+!if ttxmap[m] then				!already fixed
+if ttxmap[m] and ttxmap[m]>=0 then				!already fixed
 	return ttxmap[m]
 fi
 
@@ -35049,15 +35130,25 @@ fi
 
 d:=ttnamedefx[m]
 
+!CPL "FIXMODE4",D.NAME
 IF OWNER=NIL THEN
 	CPL D^.NAME
 	RXERROR("FIXMODE2 OWNER=0")
 FI
 
+!CPL "FIXMODE5"
 e:=resolvetopname(owner,d,ttxmoduleno[m],0)
+while e and e.nameid<>typeid and owner.owner do
+	owner:=owner.owner
+	e:=resolvetopname(owner,d,ttxmoduleno[m],0)
+od
+
+!CPL "FIXMODE6",=E
 
 if e then
+!CPL "FOUND E",E.NAME,NAMENAMES[E.NAMEID],=owner.name
 	ttxmap[m]:=e^.mode
+!CPL "RETURNING",E.MODE
 	return e^.mode
 
 else
@@ -35074,19 +35165,25 @@ global proc fixusertypes=
 ref userxrec p
 ref int pmode
 int m, rescan,i
+!INT OLDM
 
 for i:=1 to 2 do
+!for i:=1 to 66 do
 	p:=userxmodelist
 	rescan:=0
 
 	while p do
 		m:=p^.pmode^
+!OLDM:=M
 		if m<0 then
 			m:=fixmode2(p^.owner,m)
 			if m<0 and i=2 and ttxmap[abs m] then
 				m:=ttxmap[abs m]
 			fi
 			if m<0 then
+!IF I=2 AND FVERBOSE THEN
+!CPL "RESCAN ON",STRMODE(OLDM)
+!FI
 				rescan:=1
 			else
 				p^.pmode^:=m
@@ -35103,7 +35200,18 @@ FI
 
 od
 if rescan then
-	RXERROR("FIXUSERTYPES PHASE ERROR")
+	println "Type phase errors - check these user types:"
+	p:=userxmodelist
+
+	while p do
+		m:=p^.pmode^
+		if m<0 then
+			println "	",strmode(m)+1
+		fi
+		p:=p^.nextmode
+	od
+
+	RXERROR("Stopping due to phase error")
 fi
 
 end
