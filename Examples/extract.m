@@ -58,7 +58,3 @@ proc extractfile(ref byte s, ichar name, int size, offset)=
 		abortprogram("Error writing file")
 	fi
 end
-
-
-
-!
