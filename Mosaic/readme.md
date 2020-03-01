@@ -31,6 +31,20 @@ To extract the individual files, build this program with mm: [extract](../Exampl
 
 Some small programs are here: [Examples](../Examples)
 
+### Building Executables
+
+You will need the compiler mm.exe. Given an example program such as hello.m, build as follows:
+
+    mm hello
+
+This compiles hello.m into hello.exe. For a larger program comprising multiple modules, only the lead module (the one containing the start() entry point function) is needed; if the lead module is prog.m:
+
+    mm prog
+
+This will locate and compile *all* sources into prog.exe (mm is a pretty fast compiler). For other options use:
+
+    mm -help
+
 ### Other Applications
 
 Mosaic is starting to be used with certain C libraries, for example:
