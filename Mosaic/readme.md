@@ -13,7 +13,7 @@ This is the actual compiler, not an installer. Simplest way to download possibly
 
 This 0.6MB executable is completely self-contained with no support files required.
 
-Because it is likely to exist outside of normal application areas (C:\"Program Files" etc) some AV settings may need to be changed to allow it to run. But probably the same as already needed if you are a developer creating executables now.
+Because it is likely to exist outside of normal application areas (C:\"Program Files" etc) some AV settings may need to be adjusrted to allow it to run unimpeded. But probably the same as already needed if you are a developer creating executables now.
 
 ### Download Sources
 
