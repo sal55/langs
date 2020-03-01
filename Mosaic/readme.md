@@ -25,11 +25,11 @@ However the sources are here: [sources](../sources), in the file mm.ma, which is
 
 This needs to take care not to overwrite the existing mm.exe which will not anyway work on Windows, hence the -out option.
 
-To extract the individual files, build this program with mm: [extract](..\Examples\extract.m), which will write the separate files into ./sources
+To extract the individual files, build this program with mm: [extract](../Examples/extract.m), which will write the separate files into ./sources
 
 ### Example Programs
 
-Some small programs are here: [Examples](../examples)
+Some small programs are here: [Examples](../Examples)
 
 ### Other Applications
 
