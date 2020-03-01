@@ -41,7 +41,7 @@ This compiles hello.m into hello.exe. For a larger program comprising multiple m
 
     mm prog
 
-This will locate and compile *all* sources into prog.exe (mm is a pretty fast compiler). For other options use:
+then this will locate and compile *all* sources into prog.exe (mm is a pretty fast compiler). For other options use:
 
     mm -help
 
