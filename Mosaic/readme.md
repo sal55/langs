@@ -17,13 +17,13 @@ Because it is likely to exist outside of normal application areas (C:\"Program F
 
 ### Download Sources
 
-Since Mosaic is written in itself, you can't build from sources without first using the binary above. (At one time it was possible to create a one-file C version so that it could be built with a C compiler, but that is not currently available. Hopefully a C target can be made available at some point.
+Since Mosaic is written in itself, you can't build from sources without first using the binary above. (At one time it was possible to create a one-file C version so that it could be built with a C compiler, but that is not currently available. Hopefully a C target can be made available again at some point.)
 
 However the sources are here: [sources](../sources), in the file mm.ma, which is a single file encapsulation of all the modules. This can be build directly using, for example:
 
     mm mm.ma -out:mm2.exe
 
-This needs to take care not to overwrite the existing mm.exe which will not anyway work on Windows, hence the -out option.
+This needs to take care not to overwrite the existing mm.exe which Windows doesn't allow anyway, hence the -out option.
 
 To extract the individual files, build this program with mm: [extract](../Examples/extract.m), which will write the separate files into ./sources
 
