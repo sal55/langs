@@ -1,40 +1,40 @@
 mafile 36
   1 mm.m                 382     1578   0
-  2 mm_decls.m         13125     1985   0
-  3 clibnew.m           3397    15134   0
-  4 mm_tables.m        44002    18557   0
-  5 mm_mcldecls.m      13305    62587   0
-  6 mm_start.m         19303    75917   0
-  7 msysnew.m          46919    95244   0
-  8 mlib.m             26695   142184   0
-  9 oswindows.m        12536   168905   0
- 10 mm_support.m       13257   181469   0
- 11 mm_lib.m           38755   194750   0
- 12 mm_lex.m           36699   233529   0
- 13 mm_diags.m         13190   270254   0
- 14 mm_genwx64.m        3415   283472   0
- 15 mm_genpcl.m         9569   286914   0
- 16 mm_libpcl.m        24584   296510   0
- 17 mm_blockpcl.m      69668   321123   0
- 18 mm_genmcl.m        90709   390818   0
- 19 mm_libmcl.m        41310   481554   0
- 20 var_tables.m        3540   522892   0
- 21 ma_genss.m         46524   526458   0
- 22 ma_decls.m          1674   573008   0
- 23 ma_lib.m            2262   574706   0
- 24 ma_objdecls.m       2566   576997   0
- 25 ma_writeobj.m       7676   579592   0
- 26 ma_writeexe.m      26477   587297   0
- 27 ma_disasm.m        25847   613801   0
- 28 mm_parse.m         88074   639674   0
- 29 mm_name.m          17798   727773   0
- 30 mm_type.m          66357   745596   0
- 31 msysnew.m          46919   811978   1
- 32 mlib.m             26695   858919   1
- 33 clibnew.m           3397   885639   1
- 34 oswindows.m        12536   889063   1
- 35 oswindll.m          2115   901625   1
- 36 mm_help.txt          866   903767   1
+  2 mm_decls.m         13178     1985   0
+  3 clibnew.m           3397    15187   0
+  4 mm_tables.m        44032    18610   0
+  5 mm_mcldecls.m      13305    62670   0
+  6 mm_start.m         19602    76000   0
+  7 msysnew.m          46919    95626   0
+  8 mlib.m             26695   142566   0
+  9 oswindows.m        12536   169287   0
+ 10 mm_support.m       13257   181851   0
+ 11 mm_lib.m           38755   195132   0
+ 12 mm_lex.m           36699   233911   0
+ 13 mm_diags.m         13226   270636   0
+ 14 mm_genwx64.m        3415   283890   0
+ 15 mm_genpcl.m         9569   287332   0
+ 16 mm_libpcl.m        24908   296928   0
+ 17 mm_blockpcl.m      69689   321865   0
+ 18 mm_genmcl.m        91222   391581   0
+ 19 mm_libmcl.m        41310   482830   0
+ 20 var_tables.m        3540   524168   0
+ 21 ma_genss.m         46524   527734   0
+ 22 ma_decls.m          1674   574284   0
+ 23 ma_lib.m            2262   575982   0
+ 24 ma_objdecls.m       2566   578273   0
+ 25 ma_writeobj.m       7676   580868   0
+ 26 ma_writeexe.m      26477   588573   0
+ 27 ma_disasm.m        25847   615077   0
+ 28 mm_parse.m         88234   640950   0
+ 29 mm_name.m          17838   729209   0
+ 30 mm_type.m          67275   747072   0
+ 31 msysnew.m          46919   814372   1
+ 32 mlib.m             26695   861313   1
+ 33 clibnew.m           3397   888033   1
+ 34 oswindows.m        12536   891457   1
+ 35 oswindll.m          2115   904019   1
+ 36 mm_help.txt          866   906161   1
 === mm.m 1/36 ===
 !mapmodule mm_sys => mm_sysnew
 mapmodule mm_gen => mm_genwx64
@@ -192,6 +192,7 @@ global record strec =
 	byte islet
 	byte simplefunc
 
+	byte maxalign			!for records
 	byte reftype			!AX fields
 	byte segment
 	ref fwdrec fwdrefs	!fwd ref chain
@@ -492,6 +493,7 @@ global int fshowstflat
 global int fshowtypes
 global int ccompiler = gcc_cc
 global int foptimise
+global int fshowrecs
 !var int fwritema
 
 
@@ -1698,6 +1700,8 @@ global tabledata []ichar stnames, []int stsymbols, []int stsubcodes=
 	("endblock",	kendsym,	kblocksym),
 	("endassem",	kendsym,	kassemsym),
 
+	("$caligned",	atsym,		1),
+
 	("nil",			sysconstsym,	nil_const),
 	("con",			sysconstsym,	con_const),
 	("pi",			sysconstsym,	pi_const),
@@ -2863,6 +2867,7 @@ tabledata() []ichar optionnames=
 	(unused_sw,		"unused"),
 	(debug_sw,		"debug"),
 	(set_sw,		"set"),
+	(recs_sw,		"recs"),
 	(writelibs_sw,	"writelibs")
 end
 
@@ -2953,6 +2958,20 @@ fi
 
 if fshowtiming then
 	showtiming()
+fi
+
+if fshowrecs then
+	println "Record sizes"
+	for i:=tuser to ntypes do
+		if ttbasetype[i]=trecord then
+			if ttsize[i] in [1,2,4,8] then
+				print "S"
+			else
+				print " "
+			fi
+			println ttsize[i]:"4",typename(i)
+		fi
+	od
 fi
 
 stop 0
@@ -3611,6 +3630,9 @@ when gen4_sw then passlevel:=7
 
 when set_sw then
 	dosetoptionvar(value)
+
+when recs_sw then
+	fshowrecs:=1
 
 when ma_sw then
 	fwritema:=1
@@ -12594,7 +12616,8 @@ fi
 if dd.align then
 	gs_str(d,"@@")
 	gs_strint(d,dd.align)
-	gs_str(d," ")
+	gs_str(d," maxalign:")
+	gs_strint(d,dd.maxalign)
 fi
 if dd.optional then
 	gs_str(d,"Opt ")
@@ -14873,6 +14896,16 @@ global proc setpclcat_t(int m)=
 	pccodex^.catmode:=stdtypecat[ttbasetype[m]]
 	pccodex^.mode:=m
 
+	if pccodex.catmode = tblock then
+		case ttsize[m]
+		when 8 then
+			pccodex.catmode:=tscalar
+		when 1,2,4 then
+			pccodex.catmode:=tshort
+		esac
+	fi
+
+
 !	if ttcat[m] then				!set up for records
 !		pccodex^.catmode:=ttcat[m]		!to block/wide/scalar etc
 !	fi
@@ -14886,6 +14919,17 @@ global proc setpclmode_t(int m)=
 !set catmode to basetype
 !for records, a basic trecord will do (no matter if block or wide)
 	pccodex^.catmode:=ttbasetype[m]
+
+	if pccodex.catmode = tblock then
+		case ttsize[m]
+		when 8 then
+			pccodex.catmode:=tscalar
+		when 1,2,4 then
+			pccodex.catmode:=tshort
+		esac
+	fi
+
+
 	pccodex^.mode:=m
 end
 === mm_blockpcl.m 17/36 ===
@@ -15722,13 +15766,18 @@ proc do_assign(unit p,a,b, int fstore) =
 
 !CPL "ASSIGN1"
 	if stdtypecat[ttbasetype[a^.mode]]=tblock and fstore=0 then
-!CPL "POSSIBLE BLOCK",TTSIZE[A.MODE]
-!		if ttcat[a.mode]<>twide then
-!		if ttbasetype[a.mode]<>trecord or ttsize[a.mode] not in [16,8,4,2,1] then
-!CPL "DOBLOCK"
+		case ttsize[a.mode]
+		when 1,2,4,8 then
+!CPL "SIZE IS 1248"
+			if b.tag=j_makelist then
+				do_assignblock(p,a,b)
+				return
+			fi
+		else
+CPL "POSSIBLE BLOCK",TTSIZE[A.MODE]
 			do_assignblock(p,a,b)
 			return
-!		fi
+		esac
 	fi
 
 !	if ttisvar[a^.mode] then
@@ -18631,7 +18680,8 @@ end
 
 proc pc_pushmem_d124(ref pclrec p) =
 	newopnd_d8()
-	genmc_loadmem_d124(aa^.def,ttbasetype[p^.mode])
+!	genmc_loadmem_d124(aa^.def,ttbasetype[p^.mode])
+	genmc_loadmem_d124(aa^.def,p.mode)
 end
 
 proc pc_pushmem_d16(ref pclrec p) =
@@ -18662,6 +18712,17 @@ proc pc_pushmem_var(ref pclrec p) =
 	genmc(m_inc,changeopndsize(genopndind(xa),4))
 
 end
+
+!proc pc_pushmem_blk(ref pclrec p) =
+!	case ttsize[p.mode]
+!	when 8 then
+!		pc_pushmem_d8(p)
+!	when 1,2,4 then
+!		pc_pushmem_d124(p)
+!	else
+!		gerror("pushmem/blk unimpl [large block]")
+!	esac
+!end
 
 proc pc_pushint(ref pclrec p) =
 !CPL "PUSHINT"
@@ -18970,9 +19031,22 @@ end
 
 proc pc_popmem_popmemz_d124(ref pclrec p) =
 	getopnds(1)
-	genmc_storemem_d124(p^.a.def,ttbasetype[p^.mode])
+!	genmc_storemem_d124(p^.a.def,ttbasetype[p^.mode])
+	genmc_storemem_d124(p^.a.def,p.mode)
 	popopnd()
 end
+
+!proc pc_popmem_blk(ref pclrec p) =
+!	case ttsize[p.mode]
+!	when 8 then
+!		pc_popmem_popmemz_d8(p)
+!	when 1,2,4 then
+!		pc_popmem_popmemz_d124(p)
+!	else
+!		gerror("popmem/blk unimpl [large block]")
+!	esac
+!
+!end
 
 proc pc_popmem_storemem_var(ref pclrec p) =
 	int isstore:=p^.opcode=k_storemem
@@ -32852,7 +32926,7 @@ while lx.symbol=namesym do
 			stname^.align:=lx.value
 		when 0 then
 			stname^.align:=255
-		else
+  		else
 			serror("@@ bad align")
 		esac
 		lex()	
@@ -33054,7 +33128,7 @@ end
 global proc readclassdef(ref strec owner,int isglobal)=
 !at 'class' symbol
 !read enough of the class to be able to generate export data
-int kwd, baseclass, m, startline, closesym, mrec, normalexit,isrecord
+int kwd, baseclass, m, startline, closesym, mrec, normalexit,isrecord, align
 ref strec nameptr, sttype, newd, d,e
 
 kwd:=lx.symbol
@@ -33076,6 +33150,17 @@ fi
 checkequals()
 lex()
 
+align:=0
+if lx.symbol=atsym then
+	if lx.subcode=0 then
+		lex()
+		align:=readconstint()
+	else
+		lex()
+	fi
+	align:=1
+fi
+
 sttype:=getduplnameptr(owner,nameptr,typeid)
 adddef(owner,sttype)
 m:=createusertype(sttype)
@@ -33083,6 +33168,7 @@ m:=createusertype(sttype)
 mrec:=createrecordmode(owner, m)
 storemode(13,owner,mrec,&sttype^.mode)
 sttype^.base_class:=baseclass
+sttype.align:=align
 
 closesym:=checkbegin(1)
 
@@ -35142,9 +35228,9 @@ while e and e.nameid<>typeid and owner.owner do
 	e:=resolvetopname(owner,d,ttxmoduleno[m],0)
 od
 
-!CPL "FIXMODE6",=E
+!CPL "FIXMODE6",=E,NAMENAMES[E.NAMEID]
 
-if e then
+if e and e.nameid=typeid then
 !CPL "FOUND E",E.NAME,NAMENAMES[E.NAMEID],=owner.name
 	ttxmap[m]:=e^.mode
 !CPL "RETURNING",E.MODE
@@ -37638,7 +37724,7 @@ end
 
 proc setrecordsize(int m)=
 	[maxfields+8]ref strec fieldlist
-	int i,nfields,indent,nrfields,size,index
+	int i,nfields,indent,nrfields,size,index,maxalign
 	ref strec d,e
 	ref char flags
 	const ss='S', ee='E'
@@ -37647,6 +37733,9 @@ proc setrecordsize(int m)=
 	if ttsize[m] then return fi
 
 	d:=ttnamedef[m]
+
+!CPL "SETRECORDSIZE",D.NAME,=D.ALIGN
+
 	e:=d^.deflist
 	nfields:=0
 
@@ -37689,32 +37778,29 @@ proc setrecordsize(int m)=
 
 	countedfields:=0
 	index:=2
-	scanrecord('S',&fieldlist,index,size,0)
+	maxalign:=1
+	scanrecord('S',&fieldlist,index,size,0,d.align, maxalign)
+
+	if d.align then
+		size:=roundoffset(size,maxalign)
+		d.maxalign:=maxalign
+	else
+		d.maxalign:=1
+	fi
+
 	ttsize[m]:=size
 	ttlength[m]:=countedfields
 	ttlower[m]:=1
-
-!	case size
-!	when 1,2,4 then
-!		ttcat[m]:=tshort
-!	when 8 then
-!		ttcat[m]:=tscalar
-!	when 16 then
-!		ttcat[m]:=twide
-!	else
-!		ttcat[m]:=tblock
-!	esac
-
 end
 
-proc scanrecord(int state,ref[]ref strec fields, int &index, &isize, offset)=
+proc scanrecord(int state,ref[]ref strec fields, int &index, &isize, offset,calign, &maxalign)=
  	ref strec e,f,ea
-	int size:=0,fieldsize,bitoffset
+	int size:=0,fieldsize,bitoffset,alignment,newoffset
 
 	while f:=fields^[index++] do
 		case int(f)
 		when 'S','U' then
-			scanrecord(int(f),fields, index,fieldsize, offset)
+			scanrecord(int(f),fields, index,fieldsize, offset, calign,maxalign)
 		when 'E' then			!end of this nested block
 			if state='U' then ++countedfields fi
 			isize:=size
@@ -37743,8 +37829,17 @@ proc scanrecord(int state,ref[]ref strec fields, int &index, &isize, offset)=
 !		if ttisref[f.mode] then
 !			fieldsize:=8
 !		fi
-				f^.offset:=offset
-				f^.offset:=offset
+!CPL "SETTING OFFSET",F.NAME,=OFFSET,=FIELDSIZE,=calign
+				if calign then
+					alignment:=getalignment(f.mode)
+					if alignment>maxalign then maxalign:=alignment fi
+					newoffset:=roundoffset(offset,alignment)
+					size+:=newoffset-offset
+				else
+					newoffset:=offset
+				fi
+				f^.offset:=newoffset
+				offset:=newoffset
 			fi
 		esac
 		if state='S' then
@@ -37755,6 +37850,39 @@ proc scanrecord(int state,ref[]ref strec fields, int &index, &isize, offset)=
 		fi
 	od
 end
+
+function roundoffset(int offset, alignment)int=
+int mask
+
+if alignment=1 then return offset fi
+mask:=alignment-1
+while offset iand mask do ++offset od
+
+return offset
+end
+
+global function getalignment(int m)int=
+!return alignment needed for type m, as 1,2,4,8
+int a
+
+case ttbasetype[m]
+when tarray then
+	return getalignment(tttarget[m])
+when trecord then
+	return ttnamedef[m]^.maxalign
+esac
+
+a:=ttsize[m]
+case a
+when 1,2,4,8 then
+	return a
+esac
+cpl Strmode(m),A
+serror("GETALIGN SIZE NOT 1248")
+
+return 0
+end
+
 
 proc tx_convert(unit p,a,int hard=0)=
 if a^.tag=j_makelist then
