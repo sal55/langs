@@ -1,4 +1,4 @@
-# Q Language
+## Q Language
 
 A dynamically typed and interpreted language for Windows
 
@@ -9,7 +9,7 @@ This is the actual interpreter, not an installer. Download by right-clicking the
 
 ### Examples
 
-Basic one should be listed above.
+Basic ones should be listed above.
 
 ### Running the examples
 
