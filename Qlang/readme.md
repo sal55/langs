@@ -35,6 +35,10 @@ I have support C targets for my M language in the past, which enabled versions o
 
 Besides, in the C version, the -asm dispatcher is not supported. The -fn dispatcher will be faster because the C can be optimised, but usually not as fast as -asm even though my compiler doesn't optimise.
 
+### About the language
 
+Q has dynamic types, but most other aspects are static. No hot-loaded modules so needs to compile all modules into a single .pc file before it can run.
+
+Evolved from application scripting languages which first appeared in 1980s, and now starting to converge with the companion M language, which has the same syntax.
 
 
