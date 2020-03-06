@@ -27,7 +27,7 @@ The regular dispatcher is a simple function pointer loop; run that like this:
 
 ### Building from source
 
-Source codes can be seen here: [sources](../sources), in the file qq.ma (not up to date). This is an 'amalgamated' one file version, and needs to be built with my M (now Mosaic) compiler, described [here](..\Mosaic).
+Source codes can be seen here: [sources](../sources), in the file qq.ma (not up to date). This is an 'amalgamated' one file version, and needs to be built with my M (now Mosaic) compiler, described [here](../Mosaic).
 
 ### Version for Linux
 
