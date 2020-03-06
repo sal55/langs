@@ -31,7 +31,7 @@ Source codes can be seen here: [sources](../sources), in the file qq.ma (not up 
 
 ### Version for Linux
 
-I have supported C targets for my M language in the past, which enabled versions of my projects to be build on Linux with a C compiler. But that is not available at present (too many tricky-to-convert features of M).
+I have supported C targets for my M language in the past, which enabled versions of my projects to be built on Linux with a C compiler. But that is not available at present (too many tricky-to-convert features of M).
 
 Besides, in the C version, the -asm dispatcher is not supported. The -fn dispatcher will be faster because the C can be optimised, but usually not as fast as -asm even though my compiler doesn't optimise.
 
