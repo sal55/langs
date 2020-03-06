@@ -7,7 +7,7 @@ function fib(n)=
 end
 
 proc start=
-    for i:=1 to 20 do
+    for i:=1 to 40 do
         println i,fib(i)
     od
 end
