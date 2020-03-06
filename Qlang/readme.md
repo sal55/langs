@@ -5,7 +5,7 @@ A dynamically typed and interpreted language for Windows
 ### Download
 Binary for 64-bit Windows here: http://www.bcas.freeuk.com/qq.exe (0.5MB)
 
-This is the actual interpreter, not an installer. Download by right-clicking the click the 'Save Link As' (depends on browser) and save to your machine. Maybe need to adjust AV settings to allow it to run.
+This is the actual interpreter, not an installer. Download by right-clicking then click the 'Save Link As' (depends on browser) and save to your machine. Maybe need to adjust AV settings to allow it to run.
 
 ### Examples
 
