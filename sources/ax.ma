@@ -1,19 +1,19 @@
 mafile 15
   1 ax.m                9608      675   0
-  2 msysnew.m          46919    10307   0
-  3 clibnew.m           3397    57250   0
-  4 mlib.m             26695    60668   0
-  5 oswindows.m        12536    87389   0
-  6 ax_tables.m        12658    99951   0
-  7 ax_decls.m          5554   112634   0
-  8 ax_lex.m           13275   118211   0
-  9 ax_parse.m          8887   131511   0
- 10 ax_lib.m           16275   140422   0
- 11 ax_genss.m         41023   156723   0
- 12 ax_objdecls.m       2566   197775   0
- 13 ax_writeexe.m      24274   200370   0
- 14 ax_disasm.m        26006   224671   0
- 15 ax_writeobj.m       7418   250706   0
+  2 msysnew.m          46936    10307   0
+  3 clibnew.m           3397    57267   0
+  4 mlib.m             26724    60685   0
+  5 oswindows.m        12536    87435   0
+  6 ax_tables.m        12658    99997   0
+  7 ax_decls.m          5554   112680   0
+  8 ax_lex.m           13275   118257   0
+  9 ax_parse.m          8887   131557   0
+ 10 ax_lib.m           16275   140468   0
+ 11 ax_genss.m         40744   156769   0
+ 12 ax_objdecls.m       2566   197542   0
+ 13 ax_writeexe.m      24274   200137   0
+ 14 ax_disasm.m        26006   224438   0
+ 15 ax_writeobj.m       7418   250473   0
 === ax.m 1/15 ===
 import msys
 import clib
@@ -612,6 +612,8 @@ ref[]ichar env
 static [128]byte startupinfo			! 68 or 104 bytes
 int res
 ichar s
+
+!CPL "M$INIT"
 
 res:=__getmainargs(&nargs,cast(&args),cast(&env),0,cast(&startupinfo))
 
@@ -4072,6 +4074,8 @@ ichar item,fileext
 ichar rest
 int length
 static [300]char str
+
+!CPL "NEXTCMD",NSYSPARAMS
 
 reenter::
 value:=nil
@@ -8172,11 +8176,10 @@ when 4 then
 	if a^.labeldef then
 		genabs32(a)
 	else
-		x:=a^.value
 		if a^.valtype then		!was real
-			gendword(getr32bits(x))
+			gendword(getr32bits(a.xvalue))
 		else
-			gendword(x)
+			gendword(a.value)
 		fi
 	fi
 when 8 then
@@ -8575,123 +8578,115 @@ function genrm(ref opndrec a,int opc)int=
 !!                         0  1  2  3  4  5  6  7
 !static var scaletable=(0: 0, 0, 1, 0, 2, 0, 0, 3)
 !                       1  2  3  4  5  6  7  8
-static []int scaletable=( 0, 1, 0, 2, 0, 0, 0, 3)
-int mode, rm, scale, dispsize, needsib, sib, index, base
-int reg, regix, code
+	static []int scaletable=( 0, 1, 0, 2, 0, 0, 0, 3)
+	int mode, rm, scale, dispsize, needsib, sib, index, base
+	int reg, regix, code
 
-mode:=rm:=0				!modrm is (mode, x, rm), of (2,3,3) bits
-scale:=0				!0=modrm only; 1/2/4/8 means sib used
-dispsize:=0
-needsib:=0
-sib:=-1
+	mode:=rm:=0				!modrm is (mode, x, rm), of (2,3,3) bits
+	scale:=0				!0=modrm only; 1/2/4/8 means sib used
+	dispsize:=0
+	needsib:=0
+	sib:=-1
 
-if a^.mode=a_mem and a^.addrsize=4 then
-	addroverride:=1
-fi
-
-case a^.mode
-when a_reg then			!modrm can only ref to a single register
-	code:=getregcodeb(a^.reg)
-!	code:=regcodes[a^.reg]
-!	if code>=8 then
-!		rex ior:=bmask
-!		code iand:=7
-!	fi
-
-	return makeam(makemodrm(3,opc,code), sib, dispsize)
-when a_mem then
-
-when a_xreg then
-	code:=getregcodebx(a^.reg)
-
-!	return makeam(makemodrm(3,code,opc), sib, dispsize)		!OLD
-	return makeam(makemodrm(3,opc,code), sib, dispsize)		!NEW
-
-else
-	gerror("genrm not mem")
-esac
-
-reg:=a^.reg
-regix:=a^.regix
-
-if reg=regix=0 then						!address only
-	mode:=0
-	rm:=4
-	scale:=1
-	index:=4
-	base:=5
-	dispsize:=4
-
-elsif a^.scale<=1 and regix=0 then			!simple address mode (no sib)
-	dispsize:=getdispsize(a,0)
-	if dispsize then
-		mode:=(dispsize=1|1|2)
+	if a^.mode=a_mem and a^.addrsize=4 then
+		addroverride:=1
 	fi
 
-	rm:=regcodes[reg]
+	case a^.mode
+	when a_reg then			!modrm can only ref to a single register
+		code:=getregcodeb(a^.reg)
+		return makeam(makemodrm(3,opc,code), sib, dispsize)
 
-	if rm<>4 and rm<>12 then
-		base:=rm
-!		if reg=rframe and dispsize=0 then
-		if (rm=5 or rm=13) and dispsize=0 then
-			mode:=1; dispsize:=1
-		fi
-		index:=0
+	when a_mem then
+
+	when a_xreg then
+		code:=getregcodebx(a^.reg)
+		return makeam(makemodrm(3,opc,code), sib, dispsize)		!NEW
+
 	else
-		index:=4				!means no index
-		base:=rm
-		scale:=1				!force sib
+		gerror("genrm not mem")
+	esac
 
-	fi
-elsif regix and reg=0 then
-	dispsize:=4
-	mode:=0
-	rm:=4
-	scale:=(a^.scale|a^.scale|1)
-	base:=5
-	index:=regcodes[regix]
-	if regix=rstack then gerror("Scaled rstack?") fi
+	reg:=a^.reg
+	regix:=a^.regix
 
-else										!assume regix used; optional reg and disp
-	dispsize:=getdispsize(a,0)
-	if dispsize then
-		mode:=(dispsize=1|1|2)
-	fi
-	rm:=4
-
-	scale:=(a^.scale|a^.scale|1)
-	if reg=0 then
-		base:=5
-	else
-		if reg=rframe and dispsize=0 then
-			mode:=1; dispsize:=1
-		fi
-		base:=regcodes[reg]
-	fi
-
-	if regix=0 then
+	if reg=regix=0 then						!address only
+		mode:=0
+		rm:=4
+		scale:=1
 		index:=4
-	else
-		index:=regcodes[regix]
-	fi
-
-	if regix and not reg then
+		base:=5
 		dispsize:=4
+
+	elsif a^.scale<=1 and regix=0 then			!simple address mode (no sib)
+		dispsize:=getdispsize(a,0)
+		if dispsize then
+			mode:=(dispsize=1|1|2)
+		fi
+
+		rm:=regcodes[reg]
+
+		if rm<>4 and rm<>12 then
+			base:=rm
+			if (rm=5 or rm=13) and dispsize=0 then
+				mode:=1; dispsize:=1
+			fi
+			index:=0
+		else
+			index:=4				!means no index
+			base:=rm
+			scale:=1				!force sib
+
+		fi
+	elsif regix and reg=0 then
+		dispsize:=4
+		mode:=0
+		rm:=4
+		scale:=(a^.scale|a^.scale|1)
+		base:=5
+		index:=regcodes[regix]
+		if regix=rstack then gerror("Scaled rstack?") fi
+
+	else										!assume regix used; optional reg and disp
+		dispsize:=getdispsize(a,0)
+		if dispsize then
+			mode:=(dispsize=1|1|2)
+		fi
+		rm:=4
+
+		scale:=(a^.scale|a^.scale|1)
+		if reg=0 then
+			base:=5
+		else
+			if reg=rframe and dispsize=0 then
+				mode:=1; dispsize:=1
+			fi
+			base:=regcodes[reg]
+		fi
+
+		if regix=0 then
+			index:=4
+		else
+			index:=regcodes[regix]
+		fi
+
+		if regix and not reg then
+			dispsize:=4
+		fi
+
+		if regix=rstack and scale>1 then gerror("Can't scale rstack") fi
+
 	fi
 
-	if regix=rstack and scale>1 then gerror("Can't scale rstack") fi
+	if index>=8 then rex ior:= xmask; index iand:=7 fi
+	if base>=8  then rex ior:= bmask; base  iand:=7 fi
 
-fi
+	if scale then
+		sib:=scaletable[scale]<<6 + index<<3 + base
+	fi
+	rm iand:=7
 
-if index>=8 then rex ior:= xmask; index iand:=7 fi
-if base>=8  then rex ior:= bmask; base  iand:=7 fi
-
-if scale then
-	sib:=scaletable[scale]<<6 + index<<3 + base
-fi
-rm iand:=7
-
-return makeam(makemodrm(mode:mode,opc:opc,rm:rm), sib, dispsize)
+	return makeam(makemodrm(mode:mode,opc:opc,rm:rm), sib, dispsize)
 end
 
 proc genrmbyte(int mode,opc,rm)=
@@ -9005,46 +9000,42 @@ end
 
 proc do_movsx(ref opndrec a,b,int opc)=
 !opc=B6 for movzx, and BE for movsx
-int am, regcode
+	int am, regcode
 
-if a^.mode<>a_reg then gerror("movsx not reg") fi
-!if a^.size=1 or a^.size<=b^.size then gerror("movsx size error") fi
+	if a^.mode<>a_reg then gerror("movsx not reg") fi
 
-if a^.size=8 and b^.size=4 then
-	if opc=0xBE then
-		do_movsxd(a,b)
-	else						!movsx 4->8 bytes, do normal move 4->4
-		a:=regtable[a^.reg,4]
-		do_mov(a,b)
+	if a^.size=8 and b^.size=4 then
+		if opc=0xBE then
+			do_movsxd(a,b)
+		else						!movsx 4->8 bytes, do normal move 4->4
+			a:=regtable[a^.reg,4]
+			do_mov(a,b)
+		fi
+		return
 	fi
-	return
-fi
 
-!if (opc=0xBE and a^.size=8) or a^.size=1 or a^.size<=b^.size then gerror("movsx size error") fi
-if a^.size=1 or a^.size<=b^.size then gerror("movsx size error") fi
+	if a^.size=1 or a^.size<=b^.size then gerror("movsx size error") fi
 
-if opc=0xB6 and b^.size=4 then gerror("movsx 4=>8 bytes?") fi
+	if opc=0xB6 and b^.size=4 then gerror("movsx 4=>8 bytes?") fi
 
-case b^.mode
-when a_reg then
-when a_mem then
-	if b^.size=0 then gerror("movsx need size prefix") fi
-	if b^.size=8 then gerror("movsx size 8") fi
-else
-	gerror("movsx not reg/mem")
-esac
+	case b^.mode
+	when a_reg then
+	when a_mem then
+		if b^.size=0 then gerror("movsx need size prefix") fi
+		if b^.size=8 then gerror("movsx size 8") fi
+	else
+		gerror("movsx not reg/mem")
+	esac
 
-regcode:=getregcoder(a^.reg)
+	regcode:=getregcoder(a^.reg)
 
-am:=genrm(b,regcode)
-setopsize(a)
-!cpl "CHECKHIGH/MOVSX"
-checkhighreg(b)
-genrex()
-!CPL =REX:"H"
-genbyte(0x0F)
-genbyte((b^.size=1|opc|opc+1))
-genamode(b,am)
+	am:=genrm(b,regcode)
+	setopsize(a)
+	checkhighreg(b)
+	genrex()
+	genbyte(0x0F)
+	genbyte((b^.size=1|opc|opc+1))
+	genamode(b,am)
 end
 
 proc checkhighreg(ref opndrec a)=
@@ -9739,7 +9730,7 @@ end
 function getr32bits(real x)int=
 !when x is real, convert to real32 then return 32-bit bit pattern
 real32 sx:=x
-return int32@(x)
+return int32@(sx)
 end
 
 proc genrel8(ref opndrec a)=
