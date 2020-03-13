@@ -38,7 +38,7 @@ Standard type names:
 
     byte
 
-    bit
+    bit          (these bit types are reserved)
     bit2
     bit4
 
@@ -54,7 +54,6 @@ Standard type names:
     array           prefixes used within type specs
     ref
     slice
-    
 
     intm            (These likely to be dropped)
     wordm
@@ -94,7 +93,7 @@ Keywords
     return
     stop
     restart
-    redi
+    redo
     loop
     next
     exit
@@ -115,6 +114,7 @@ Keywords
     sfprint         manner, returning a string)
     read
     readln
+    
     yield           (This block reserved for use)
     try
     except
@@ -126,7 +126,7 @@ Keywords
     bininclude
 
     end
-    endif           (All such can be written also as 'end' or 'end if')
+    endif           (All such can be written also as 'end' or 'end if' etc)
     fi
     endcase
     esac            (end case as used in Algol68)
@@ -142,7 +142,7 @@ Keywords
     endto
     enddo
     endunless
-    endimportdll        (I need to add these two...)
+    endimportdll        (I need to add these two for consistency)
     endimportlib
     endtry
     endrecord
@@ -159,7 +159,7 @@ Keywords used as prefixes for defining/declaring things:
     class                   (= record)
     record
     union
-    var                     (currently is a type; will do same job as 'mut')
+    var                     (currently is a type; will later do same job as 'mut')
     mut
     let
     macro
@@ -187,7 +187,7 @@ Special compiler variables
 
     pi
     nil
-    $lineno             (Haven't checked all of these)
+    $lineno             (Haven't checked all of these recently)
     $strlineno
     $filename
     $modulename
@@ -195,16 +195,16 @@ Special compiler variables
     $date
     $time
     $version
-    $caligned           Odd attribute
+    $caligned           Special attribute
 
 Named operators
 
-    and
-    andb
+    and                 (short-circuit logical and)
+    andb                (non-short-circuit version; evaluates 'b'-oth operands)
     or
     orb
     xor
-    iand
+    iand                (bitwise and)
     ior
     ixor
     in
@@ -240,9 +240,9 @@ Named operators
     $
     prepend         (not impl)
     append          (not sure about these; I think they work for 'var'
-    concat          variant types, but that is withdraw. They will be used in next gen)
+    concat          variant types, but that is withdrawn. They will be used in next gen)
 
-    sliceptr        Use after ".", as in x.sliceptr
+    sliceptr        Use after ".", as in x.sliceptr, x.len
     len         
     lwb
     upb
@@ -288,6 +288,8 @@ Symbol operators and syntax
     >=
     >
     **
+
+    +:=    (etc, but are two distinct tokens; can be written + :=)
 
 Comments:
 
