@@ -58,14 +58,6 @@ Standard type names:
     intm            (These likely to be dropped)
     wordm
 
-Numeric scale factors (used as '4 million' etc)
-
-    thousand
-    million
-    billion
-
-    (kb, mb, gb   will be dropped until a new expandable scheme is devised)
-
 Keywords
 
     if
@@ -294,3 +286,17 @@ Symbol operators and syntax
 Comments:
 
 Line comments only, starting from ! or # to end of line
+
+Context sensitive tokens; these can also be user identifiers when used out of special context, so suggest highlighting as ordinary names:
+
+    thousand     (Numeric scale factors, eg. '4 million')
+    million
+    billion
+
+    (kb, mb, gb   will be dropped until a new expandable scheme is devised)
+
+    as          (Used for import module aliases, eg. 'import files as fs', then use fs.readfile() etc)
+    
+Inline Assembler:
+
+There are dozens of opcodes, register names etc not listed here. These are also context sensitive, as outside of an ASM line or ASSEM block, they can be used as normal identifiers. Suggest ignoring these.
