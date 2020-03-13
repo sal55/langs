@@ -1,0 +1,294 @@
+Standard type names:
+
+    void
+    int
+    word
+    real
+
+    int8
+    int16
+    int32
+    int64
+    int128
+
+    word8
+    word16
+    word32
+    word64
+    word128
+
+    i8
+    i16
+    i32
+    i64
+    i128
+
+    u8
+    u16
+    u32
+    u64
+    u128
+
+    real32
+    real64
+    r32
+    r64
+    float32
+    float64
+
+    byte
+
+    bit
+    bit2
+    bit4
+
+    u1
+    u2
+    u4
+
+    char
+    wchar
+    char64
+
+    auto
+    array           prefixes used within type specs
+    ref
+    slice
+    
+
+    intm            (These likely to be dropped)
+    wordm
+
+Numeric scale factors (used as '4 million' etc)
+
+    thousand
+    million
+    billion
+
+    (kb, mb, gb   will be dropped until a new expandable scheme is devised)
+
+Keywords
+
+    if
+    then
+    elsif
+    else
+    elsecase
+    elseswitch
+    unless
+    case
+    docase
+    recase
+    when
+    for
+    forall   (these may be subsumed into 'for' in next generation compiler)
+    foreach
+    to
+    downto
+    by
+    do
+    while
+    repeat
+    until
+    always
+    return
+    stop
+    restart
+    redi
+    loop
+    next
+    exit
+    goto
+    go              (this allows you to write 'go to' instead of 'goto')
+    switch
+    doswitch
+    tabledata
+    eval
+    asm
+    assem
+
+    print
+    println
+    fprint
+    fprintln
+    sprint          (These not yet implemented: print used in function-like
+    sfprint         manner, returning a string)
+    read
+    readln
+    yield           (This block reserved for use)
+    try
+    except
+    finally
+    raise
+
+    include         (Lex directives)
+    strinclude
+    bininclude
+
+    end
+    endif           (All such can be written also as 'end' or 'end if')
+    fi
+    endcase
+    esac            (end case as used in Algol68)
+    enddocase
+    endswitch
+    enddoswitch
+    endfor
+    endforall
+    od
+    endproc
+    endfunction
+    endwhile
+    endto
+    enddo
+    endunless
+    endimportdll        (I need to add these two...)
+    endimportlib
+    endtry
+    endrecord
+    endclass
+    endassem
+
+Keywords used as prefixes for defining/declaring things:
+
+    proc
+    function
+    threadedproc            (no entry/exit code)
+    threadedfunction
+    type
+    class                   (= record)
+    record
+    union
+    var                     (currently is a type; will do same job as 'mut')
+    mut
+    let
+    macro
+    const
+    enum
+
+    static                  These three are attributes
+    global
+    export
+
+    importdll               These two are the same
+    importlib
+    import
+    importpath
+    mapmodule
+
+    clang                   Used in FFI
+    mlang
+    windows
+
+    callback                Must be used for M functions called from C
+    out                     (Another way to do & reference params)
+
+Special compiler variables
+
+    pi
+    nil
+    $lineno             (Haven't checked all of these)
+    $strlineno
+    $filename
+    $modulename
+    $function
+    $date
+    $time
+    $version
+    $caligned           Odd attribute
+
+Named operators
+
+    and
+    andb
+    or
+    orb
+    xor
+    iand
+    ior
+    ixor
+    in
+    notin            (also 'not in')
+    inrev
+    rem
+    divrem          (not yet imple)
+    min
+    max
+
+    not
+    inot
+    istrue
+    abs
+    sqrt
+    sqr
+    sin
+    cos
+    tan
+    asin
+    acos
+    atan
+    atan2
+    ln
+    log
+    exo
+    round
+    floor
+    ceil
+    fract
+    fmod
+    swap
+    $
+    prepend         (not impl)
+    append          (not sure about these; I think they work for 'var'
+    concat          variant types, but that is withdraw. They will be used in next gen)
+
+    sliceptr        Use after ".", as in x.sliceptr
+    len         
+    lwb
+    upb
+    bounds          (not sure about this in the M language subset that excludes var)
+    lenstr
+    bitwidth
+    bytes
+    minvalue
+    maxvalue
+    typestr
+
+    msb
+    lsb
+    msbit
+    lsbit
+    msw
+    lsw
+    odd
+    even
+
+Symbol operators and syntax
+
+    :
+    ::
+    :=
+    =>
+    ^
+    |
+    @
+    &
+    &&
+    ..
+    ...
+    +
+    -
+    *
+    /
+    %
+    =
+    <>
+    <
+    <=
+    >=
+    >
+    **
+
+Comments:
+
+Line comments only, starting from ! or # to end of line
