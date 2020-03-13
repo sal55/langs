@@ -26,6 +26,15 @@ A 'program' in this sense is the collection of modules and files that form a sin
 ### No Make or Project Files
 M builds a project by submitting only the lead module. It will then locate all necessary modules (by following import links), to produce an executable named after the lead module.
 
+### Linking with external libraries
+
+M by default generates executables that are dynamically linked to DLLs. To statically link to such libraries, requires:
+* Getting mm to generate .asm (-c switch) (Note direct mm -obj support is not working right now)
+* Using ax (companion assembler/linker) to produce .obj files
+* Linking via the C compiler gcc with .o or .a files
+
+This requires the external library to exist in the form of gcc-compatible .o object files, or .a archive files. It further requires a .a library to contain the actual library functions, and not simply be an interface to a DLL file. 
+
 ### Compilation Speed
 I've taken my eye off the ball recently, but it will still compile at hundreds of thousands of lines per second on my slowish PC with a conventional hard drive.
 
@@ -38,15 +47,21 @@ At various times, I have supported a C target, so generating a monolithic C sour
 But it is currently dropped as it requires a considerable effort. Also some features are problematical, or are not supported. (Also, unless Tiny C is used to compile the output file, compilation hits a brick wall as soon as gcc is invoked, as that compiler is much slower.)
 
 ### ASM Target
-This was the main target before mm could directly generate .exe or .obj files directly. It was in the syntax for my own very fast assembler (some 2M to 3M lines per second). Although no longer needed, it has handy for debugging, or for perusing the output. This is enabled using the -c option (use 'mm -help').
+This was the main target before mm could directly generate .exe \[or .obj\] files directly. It was in the syntax for my own very fast assembler (some 2M to 3M lines per second). Although no longer needed, it has handy for debugging, or for perusing the output. This is enabled using the -c option (use 'mm -help').
 
 The .asm output is again a single, monolithic file, which can actually be assembled into .exe or .obj - you need the 'AX' assembler/linker project, also written in M.
+
+### Generating .obj files
+
+These are needed when it is necessary to go beyond what mm can do itself. Eg. using external linkers, static linking with external libraries or C modules. It would be done using 'mm -obj', but I've found that that built in functionality was never properly adapted from the separate **ax** assembler. It can be done like this:
+    mm -c prog            # prog.m to prog.asm
+    ax -obj prog          # prog.asm to prog.obj
 
 ### M Syntax 
 Originally inspired by Algol-68, but has evolved its own style. Best described by looking at example programs.
 
 ### Modules and Imports
-This is another big difference from C (and C++ is only now acquiring modules). M has no header files and has not nee for declarations as well as definitions.
+This is another big difference from C (and C++ is only now acquiring modules). M has no header files and has no need for declarations as well as definitions.
 
 You define a function, variable, named constant, type, enum, macro etc in its own module. To export it, add a 'global' attribute in front, otherwise it is private to that module. 
 
@@ -70,9 +85,9 @@ Since functions are best kept small, there is no real need for multiple scopes a
 ### Semicolons
 While M ostensibly requires semicolons to separate statements, in practice these are rare in M source code. This is because newlines are converted to semicolons, except when:
 
-    * A line-continuation character \ is used at the end of the line
-    * The line clearly continues onto the next because it ends with one of:
-       "(" "[" "," or a binary operator
+* A line-continuation character \ is used at the end of the line
+* The line clearly continues onto the next because it ends with one of:
+       "(" "\[" "," or a binary operator
 
 ### Comments
 M only has single-line comments starting with "!" until end-of-line. ("!" came from the DEC Fortran and Algol I used in the late 70s.)
@@ -109,7 +124,7 @@ This is usually the start() function, which is always global (ie. exported, no '
 
 M will insert a call to a start-up routine in M's runtime module, to set up command-line parameters etc as global variables (nsysparams, and sysparams, the latter being an array of strings).
 
-main() can also be used as an entry point, but no special code is injected. (Used sometimes to create a minimal program.)
+main() can also be used as an entry point, especially if generating .obj files to be linked via gcc, as gcc will not recognise 'start'. (I previously stated that using main() will not cause init code to be executed, but that's not right.)
 
 ### The $init function
 If encountered in a module, it will be called automatically by start-up code. No 'global' attribute needed. However, because of non-determinate module import order, if such a routine depends on another $init function being called first, then this must be handled manually (with flags and direct invocation etc).
@@ -134,9 +149,20 @@ Conditional code is handled at the module rather than line level. It can look li
 
     mapmodule pc_assem => pc_assemc when ctarget
 
-Where, when 'import pc_assem' is encountered, it will instead import 'pc_assemc' (in this case a dummy module with empty functions). 'ctarget' can be a built-in flag or one set with compiler options.
+Where, when 'import pc_assem' is encountered, it will instead import 'pc_assemc' when 'ctarget' has the value '1' (in this case pc_assemc is a dummy module with empty functions). 'ctarget' can be a built-in flag or one set with compiler options.
 
 This keeps the contents of each module clean. (Look at some C system headers to see what happens with most code is a patchwork of #if/#ifdef blocks.) 
+
+There are a handful of built-in options, but are currently irrelevant now that M only targets x64 on 64-bit Windows. But user-defined options can be created on the mm command line:
+
+    mm -set:flag1 ...                # flag1 has default value "1"
+    mm -set:flag2:val ...            # flag2 has value "val"
+
+Which can be used as:
+
+    mapmodule A => B when flag1               # do this when flag1 is defined and has value "1"
+    mapmodule A => B when flag2 = "val"       # do this when flag2 is defined and has value "val"
+
 
 ### Function Tables
 There is a limited amount of reflection in that all functions (names and addresses) in the program are written to the executable, and can be accessed via special functions.
@@ -186,13 +212,13 @@ Common aliases:
 ### Type of Integer Constants
 These are defaults before any casts are applied, depending on the magnitude of the constant:
 
-    0 to 2** 63-1              int64
-    2**63 to 2** 64-1          word64
-    2**64 to 2** 127-1         int128
+    0 to 2**63-1              int64
+    2**63 to 2**64-1          word64
+    2**64 to 2**127-1         int128
     2**127 to 2**128-1         word128
     2**128 and above          'decimal' type (not implemented in this version)
 
-(No suffixes are used, except that in the next M version -L is used to force a decimal type for integers and floats.)
+(No suffixes are used to force a particular type, except that in the next M version -L is used to force a decimal type for integers and floats. To force a type, just use a cast, eg. word64(0).)
 
 ### Numeric Separators
 
