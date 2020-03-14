@@ -49,13 +49,14 @@ At various times, I have supported a C target, so generating a monolithic C sour
 But it is currently dropped as it requires a considerable effort. Also some features are problematical, or are not supported. (Also, unless Tiny C is used to compile the output file, compilation hits a brick wall as soon as gcc is invoked, as that compiler is much slower.)
 
 ### ASM Target
-This was the main target before mm could directly generate .exe \[or .obj\] files directly. It was in the syntax for my own very fast assembler (some 2M to 3M lines per second). Although no longer needed, it has handy for debugging, or for perusing the output. This is enabled using the -c option (use 'mm -help').
+This was the main target before mm could directly generate .exe \[or .obj\] files directly. It was in the syntax for my own very fast assembler (some 2M to 3M lines per second). Although no longer needed, it was handy for debugging, or for perusing the output. This is enabled using the -c option (use 'mm -help').
 
 The .asm output is again a single, monolithic file, which can actually be assembled into .exe or .obj - you need the 'AX' assembler/linker project, also written in M.
 
 ### Generating .obj files
 
 These are needed when it is necessary to go beyond what mm can do itself. Eg. using external linkers, static linking with external libraries or C modules. It would be done using 'mm -obj', but I've found that that built in functionality was never properly adapted from the separate **ax** assembler. It can be done like this:
+
     mm -c prog            # prog.m to prog.asm
     ax -obj prog          # prog.asm to prog.obj
 
