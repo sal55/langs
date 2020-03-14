@@ -1,36 +1,41 @@
-mafile 31
-  1 mm.m                 382     1363   0
-  2 mm_decls.m         13197     1770   0
-  3 clibnew.m           3397    14991   0
-  4 mm_tables.m        44039    18414   0
-  5 mm_mcldecls.m      13336    62481   0
-  6 mm_start.m         19652    75842   0
-  7 msysnew.m          47147    95518   0
-  8 mlib.m             26724   142686   0
-  9 oswindows.m        12536   169436   0
- 10 mm_support.m       13445   182000   0
- 11 mm_lib.m           38755   195469   0
- 12 mm_lex.m           36699   234248   0
- 13 mm_diags.m         13226   270973   0
- 14 mm_genwx64.m        4343   284227   0
- 15 mm_genpcl.m         9569   288597   0
- 16 mm_libpcl.m        24908   298193   0
- 17 mm_blockpcl.m      69941   323130   0
- 18 mm_genmcl.m        91934   393098   0
- 19 mm_libmcl.m        41829   485059   0
- 20 var_tables.m        3540   526916   0
- 21 ma_genss.m         46359   530482   0
- 22 ma_decls.m          1674   576867   0
- 23 ma_lib.m            2262   578565   0
- 24 ma_objdecls.m       2566   580856   0
- 25 ma_writeobj.m       7676   583451   0
- 26 ma_writeexe.m      26430   591156   0
- 27 ma_disasm.m        25847   617613   0
- 28 mm_parse.m         88793   643486   0
- 29 mm_name.m          18181   732304   0
- 30 mm_type.m          64868   750510   0
- 31 mm_help.txt          866   815405   1
-=== mm.m 1/31 ===
+mafile 36
+  1 mm.m                 382     1578   0
+  2 mm_decls.m         13197     1985   0
+  3 clibnew.m           3397    15206   0
+  4 mm_tables.m        44039    18629   0
+  5 mm_mcldecls.m      13336    62696   0
+  6 mm_start.m         19652    76057   0
+  7 msysnew.m          47147    95733   0
+  8 mlib.m             26724   142901   0
+  9 oswindows.m        12536   169651   0
+ 10 mm_support.m       13440   182215   0
+ 11 mm_lib.m           38755   195679   0
+ 12 mm_lex.m           36699   234458   0
+ 13 mm_diags.m         13226   271183   0
+ 14 mm_genwx64.m        4338   284437   0
+ 15 mm_genpcl.m         9569   288802   0
+ 16 mm_libpcl.m        24908   298398   0
+ 17 mm_blockpcl.m      69941   323335   0
+ 18 mm_genmcl.m        91934   393303   0
+ 19 mm_libmcl.m        41829   485264   0
+ 20 var_tables.m        3540   527121   0
+ 21 ma_genss.m         46359   530687   0
+ 22 ma_decls.m          1674   577072   0
+ 23 ma_lib.m            2262   578770   0
+ 24 ma_objdecls.m       2566   581061   0
+ 25 ma_writeobj.m       7676   583656   0
+ 26 ma_writeexe.m      26430   591361   0
+ 27 ma_disasm.m        25847   617818   0
+ 28 mm_parse.m         88793   643691   0
+ 29 mm_name.m          18181   732509   0
+ 30 mm_type.m          64868   750715   0
+ 31 msysnew.m          47147   815608   1
+ 32 mlib.m             26724   862777   1
+ 33 clibnew.m           3397   889526   1
+ 34 oswindows.m        12536   892950   1
+ 35 oswindll.m          2115   905512   1
+ 36 mm_help.txt          866   907654   1
+=== mm.m 1/36 ===
 !mapmodule mm_sys => mm_sysnew
 mapmodule mm_gen => mm_genwx64
 mapmodule mm_oslib => mm_oswindows
@@ -49,7 +54,7 @@ proc start=
 
 	start_common(wx64_target)
 end
-=== mm_decls.m 2/31 ===
+=== mm_decls.m 2/36 ===
 import clib
 import mm_tables
 
@@ -550,7 +555,7 @@ global int ndocstrings
 !GLOBAL INT NUNITS
 GLOBAL INT NEXIT
 GLOBAL INT NNESTEDEXIT
-=== clibnew.m 3/31 ===
+=== clibnew.m 3/36 ===
 global type filehandle=ref void
 
 importlib $cstd=
@@ -649,7 +654,7 @@ global const c_eof		=-1
 global const seek_set	= 0
 global const seek_curr	= 1
 global const seek_end	= 2
-=== mm_tables.m 4/31 ===
+=== mm_tables.m 4/36 ===
 global tabledata() [0:]ichar stdtypenames, [0:]byte stdtypebits,
  				   [0:]byte stdtypecode, [0:]byte stdtypecat, [0:]byte stdtypebase =
 	(tvoid=0,		"void",		  0,	  0,	tvoid,		0),
@@ -2200,7 +2205,7 @@ global tabledata() []ichar sysfnnames =
 end
 
 !global [sysfnnames.len]int sysfnlabels
-=== mm_mcldecls.m 5/31 ===
+=== mm_mcldecls.m 5/36 ===
 import mm_decls
 !import ax_decls
 
@@ -2805,7 +2810,7 @@ global tabledata() [0:]ichar reftypenames =	!use during pass2
 	(back_ref,			$),		!has been reached
 end
 
-=== mm_start.m 6/31 ===
+=== mm_start.m 6/36 ===
 !New Q Whole Project Compiler
 
 import msys
@@ -3843,7 +3848,7 @@ proc do_writema=
 		stop
 	fi
 end
-=== msysnew.m 7/31 ===
+=== msysnew.m 7/36 ===
 import clib
 import mlib
 
@@ -6277,7 +6282,7 @@ global function m$floor(real x)real = {`floor(x)}
 global function m$ceil(real x)real = {`ceil(x)}
 global function m$fract(real x)real = {abortprogram("FRACT");0}
 global function m$round(real x)real = {abortprogram("ROUND");0}
-=== mlib.m 8/31 ===
+=== mlib.m 8/36 ===
 import msys
 import clib
 import oslib
@@ -7625,7 +7630,7 @@ packfileptr:=packexeptr+offset+int32.bytes
 
 return packfileptr
 end
-=== oswindows.m 9/31 ===
+=== oswindows.m 9/36 ===
 import clib
 import mlib
 
@@ -8223,7 +8228,7 @@ array [100]byte m
 		PeekMessageA(&m,nil,0,0,0)
 	fi
 end
-=== mm_support.m 10/31 ===
+=== mm_support.m 10/36 ===
 import clib
 import msys
 import mlib
@@ -8658,11 +8663,11 @@ fi
 end
 
 global function findstdlib(ichar name)ichar=
-!	for i:=1 to stdlibnames.len do
-!		if eqstring(name,stdlibnames[i]) then
-!			return stdlibtext[i]
-!		fi
-!	od
+	for i:=1 to stdlibnames.len do
+		if eqstring(name,stdlibnames[i]) then
+			return stdlibtext[i]
+		fi
+	od
 	return nil
 end
 
@@ -8824,7 +8829,7 @@ global proc loadmafile=
 		(mafilesource+offset+size)^:=0
 	od
 end
-=== mm_lib.m 11/31 ===
+=== mm_lib.m 11/36 ===
 import msys
 import mlib
 import clib
@@ -10675,7 +10680,7 @@ global proc puthigh128(ref int128 a,word x)=
 	(cast(a,ref word)+1)^:=x
 end
 
-=== mm_lex.m 12/31 ===
+=== mm_lex.m 12/36 ===
 import msys
 import mlib
 import clib
@@ -12450,7 +12455,7 @@ proc readrawxname=
 
 	return
 end
-=== mm_diags.m 13/31 ===
+=== mm_diags.m 13/36 ===
 import mlib
 import clib
 import oslib
@@ -13124,7 +13129,7 @@ print @&.str,currlineno:"z4",," "
 return &.str
 end
 
-=== mm_genwx64.m 14/31 ===
+=== mm_genwx64.m 14/36 ===
 !Codegen for WX64 - x64 for Windows ABI
 
 import mlib
@@ -13150,13 +13155,14 @@ import ma_writeexe
 
 import mm_mcldecls
 
-!global tabledata []ichar stdlibnames, []ichar stdlibtext =
-!	("msysnew.m",	strinclude "msysnew.m"),
-!	("mlib.m",		strinclude "mlib.m"),
-!	("clibnew.m",	strinclude "clibnew.m"),
-!	("oswindows.m",	strinclude "oswindows.m"),
-!	("oswindll.m",	strinclude "oswindll.m"),
-!end
+global tabledata []ichar stdlibnames, []ichar stdlibtext =
+	("msysnew.m",	strinclude "msysnew.m"),
+	("mlib.m",		strinclude "mlib.m"),
+	("clibnew.m",	strinclude "clibnew.m"),
+	("oswindows.m",	strinclude "oswindows.m"),
+	("oswindll.m",	strinclude "oswindll.m"),
+end
+
 int nsearchlibs
 [100]ichar searchlibs
 
@@ -13352,7 +13358,7 @@ end
 !
 !end
 
-=== mm_genpcl.m 15/31 ===
+=== mm_genpcl.m 15/36 ===
 import mlib
 import clib
 import oslib
@@ -13835,7 +13841,7 @@ fi
 
 return d^.offset+offset
 end
-=== mm_libpcl.m 16/31 ===
+=== mm_libpcl.m 16/36 ===
 import msys
 import mlib
 import clib
@@ -15013,7 +15019,7 @@ global proc setpclmode_t(int m)=
 
 	pccodex^.mode:=m
 end
-=== mm_blockpcl.m 17/31 ===
+=== mm_blockpcl.m 17/36 ===
 import mlib
 import clib
 import oslib
@@ -18379,7 +18385,7 @@ proc do_assignrecord(unit a,b)=
 end
 
 
-=== mm_genmcl.m 18/31 ===
+=== mm_genmcl.m 18/36 ===
 import msys
 import mlib
 import clib
@@ -22857,7 +22863,7 @@ gencomment_mc("labzero")
 		gendq(0)
 	fi
 end
-=== mm_libmcl.m 19/31 ===
+=== mm_libmcl.m 19/36 ===
 !M Compiler - x64 Target Code Generator 3
 
 !NOTE: LIKELY BUG IN REGISTER ALLOCATION:
@@ -24924,7 +24930,7 @@ STOP
 od
 
 END
-=== var_tables.m 20/31 ===
+=== var_tables.m 20/36 ===
 global tabledata() [0:]ichar vartypenames =
 	(vt_void=0,		$),	! means variant is unassigned
 
@@ -25085,7 +25091,7 @@ global tabledata() []ichar miscopnames =
 	(v_delete,		$),
 	(v_resize,		$),
 end
-=== ma_genss.m 21/31 ===
+=== ma_genss.m 21/36 ===
 import clib
 import mlib
 import oslib
@@ -27489,7 +27495,7 @@ end
 PROC SHOWOPND(ICHAR CAPTION,REF OPNDREC A)=
 CPL CAPTION,OPNDNAMES_MA[A.MODE],VALTYPENAMES[A.VALTYPE]
 END
-=== ma_decls.m 22/31 ===
+=== ma_decls.m 22/36 ===
 !MXA Assembler Global Decls
 import mm_decls
 
@@ -27556,7 +27562,7 @@ global int currmoduleno
 GLOBAL INT NMCLASM
 GLOBAL INT NMCLOPNDSASM
 
-=== ma_lib.m 23/31 ===
+=== ma_lib.m 23/36 ===
 import clib
 import msys
 import mlib
@@ -27682,7 +27688,7 @@ a^.pcurr64^:=x
 ++a^.pcurr64
 end
 
-=== ma_objdecls.m 24/31 ===
+=== ma_objdecls.m 24/36 ===
 
 global record imagefileheader =
 	word16	machine
@@ -27818,7 +27824,7 @@ global record auxsectionrec =
 	int16 sectionno
 	int32 dummy
 end
-=== ma_writeobj.m 25/31 ===
+=== ma_writeobj.m 25/36 ===
 !NEEDS REVISING TO MATCH UNLIMITED SS_SYMOLBOLTABLE size used for EXE
 !and also unlimited strings
 
@@ -28177,7 +28183,7 @@ writefile(outfile,datastart,dataptr-datastart)
 
 end
 
-=== ma_writeexe.m 26/31 ===
+=== ma_writeexe.m 26/36 ===
 !Create .exe file from SS-data (code, data, reloc and symbol tables)
 !Call order::
 ! initsectiontable()
@@ -29298,7 +29304,7 @@ od
 !od
 
 end
-=== ma_disasm.m 27/31 ===
+=== ma_disasm.m 27/36 ===
 import clib
 import msys
 import oslib
@@ -30529,7 +30535,7 @@ if addrmode=amreg and opsize=1 and rex and reg>=5 and reg<=8 then
 	reg+:=12				!5..8 => 17..20
 fi
 end
-=== mm_parse.m 28/31 ===
+=== mm_parse.m 28/36 ===
 import msys
 import mlib
 import clib
@@ -34896,7 +34902,7 @@ proc adddocstring(ichar s,int n)=
 	fi
 	docstrings[++ndocstrings]:=pcm_copyheapstringn(s,n)
 end
-=== mm_name.m 29/31 ===
+=== mm_name.m 29/36 ===
 import mlib
 import clib
 
@@ -35770,7 +35776,7 @@ else								!keep call and paramlist; just replace fn name
 fi
 end
 
-=== mm_type.m 30/31 ===
+=== mm_type.m 30/36 ===
 import msys
 import mlib
 import clib
@@ -39446,7 +39452,4599 @@ while abasemode=tref do
 od
 
 end
-=== mm_help.txt 31/31 ===
+=== msysnew.m 31/36 ===
+import clib
+import mlib
+
+global record procinforec=
+	word16		fnindex
+	byte		rettype
+	byte		nparams
+	[12]byte	paramlist
+end
+
+!for print/read routines
+!------------------------------------------
+record fmtrec=	! (default)
+	byte	minwidth	! n (0)   min field width (0 if not used or don't care)
+	i8		precision	! .n (0)   number of decimals/significant figures/max width
+	byte	base		! B,H or Xn (10)  2 to 16
+
+	char	quotechar	! Qc (0)   0 or '"' or c
+	char	padchar		! Pc, Z (' ')
+	char	realfmt		! E,F,G ('f') 'e' or 'f' or 'g'
+
+	char	plus		! (0)   0 or '+'
+	char	sepchar		! Sc (0)   0 or ',' or c placed every 3 (base=10) or 4 digits
+	char	lettercase	! A,a ('A') 'A' or 'a'
+	char	justify		! JL, JR, JC ('R') 'L' or 'R' or 'C'?
+	char	suffix		! Tc (0)   0 or 'B' or 'H' or c
+	char	usigned		! W (0)   0 or 'W' force unsigned o/p for ints (eg. for hex display)
+	char	charmode	! C,D (0)  0 or 'C' or 'D'	o/p int as int or single char or double/multi-char
+	char	heapmode	! M (0)  'M' for str-functions, return ptr tp heap string
+	char	param		! Use int value for <fmtparam>
+	byte	spare
+end
+
+int fmtparam			!as set with :'V'
+
+enum (std_io,file_io,str_io)
+
+const comma = ','
+
+global int needgap			= 0
+int outdev			= std_io
+filehandle outchan	= nil
+ref char fmtstr 	= nil
+
+const maxiostack=10
+[maxiostack]filehandle	outchan_stack
+[maxiostack]int			outdev_stack
+[maxiostack]ref char	fmtstr_stack
+[maxiostack]byte		needgap_stack
+
+[maxiostack]ref char	ptr_stack		!this one doesn't need pushing, as each is pointed to from outchan
+int niostack=0
+
+[0:]char digits=A"0123456789ABCDEF"
+const onesixty=360
+fmtrec defaultfmt = (0,0, 10, 0,' ','f', 0,0,0,'R',0,0, 0,0,0,0)
+
+!Read buffer vars
+const rd_buffersize = 16384	!total capacity of line buffer
+
+ref char rd_buffer		! point to start of read buffer
+int rd_length			! length of this line (as read by readln)
+ref char rd_pos			! current position it's up to (next read starts here)
+ref char rd_lastpos		! set by sread() just before reading used for reread()
+int termchar			! terminator char set by readxxx()
+int itemerror			!	set by some read functions, eg for reals
+
+!------------------------------------------
+
+const maxparam=128
+global int nsysparams
+global [maxparam]ichar sysparams
+
+const maxcallback=8
+[0..maxcallback,8]word64 callbackstack
+int ncallbacks=0
+
+word64 mask63	= 0x7FFF'FFFF'FFFF'FFFF
+real offset64	= 9223372036854775808.0		! 2**63 as r64
+real offset32	= 9223372036854775808.0		! 2**63 as r32
+
+global proc m$init=
+int32 nargs
+int nargs64
+ref[]ichar args
+ref[]ichar env
+static [128]byte startupinfo			! 68 or 104 bytes
+int res
+ichar s
+
+!CPL "M$INIT"
+
+res:=__getmainargs(&nargs,cast(&args),cast(&env),0,cast(&startupinfo))
+
+nsysparams:=nargs
+
+if nsysparams>maxparam then
+	printf("Too many params\n")
+	stop 50
+fi
+
+nargs64:=nargs			!bug when using 32-bit limit when compild with mm
+for i:=1 to nargs64 do
+	sysparams[i]:=args^[i]
+od
+end
+
+global proc m$stop(int n)=
+
+assem
+	mov d10,[n]
+	mov d0,`exit
+	call m$callff_4
+end
+
+end
+
+global threadedproc m$callff_4=
+!0..4 params have been loaded to R10..13
+!The foreign function address is in D0
+!set up the stack, keeping it aligned, and call the function, adjusting the
+!stack before returning.
+!For functions rather than procs, the return value will be in A0/D0/XMM0
+
+assem
+	test Astack,8			!should be 0 if aligned
+	jz aligned
+unaligned:
+	sub Dstack,40			!add an extra 8 bytes to align
+	call D0
+	add Dstack,40			!unstack the dummy 4 params, plus 8 more bytes
+	ret
+
+aligned:
+	sub Dstack,32
+	call D0
+	add Dstack,32
+	ret
+end
+
+end
+
+global threadedproc m$callff_5=
+!one param already pushed. 
+!
+!There might be another way to do this:
+!leave retaddr in place, move P5 this side of retaddr, but leave original P5
+!there, and use retn 8 to skip it
+
+assem
+	test Astack,8			!should be 0 if aligned
+	jz aligned
+unaligned:					!need to move param5 down
+	pop D1					!ret addr
+	pop D2					!P5
+	push D1					!ret addr on top
+	sub Dstack,8			!dummy value to align stack
+	push D2					!P5
+	sub Dstack,32
+	call D0
+	add Dstack,48			!pop all, including dummy value
+	ret
+
+aligned:					!one value and ret addr pushed, allow space for four more
+	pop D1					!ret addr
+	pop D2					!P5
+	push D1					!push ret addr back
+	push D2					!P5 now this side of ret address
+	sub Dstack,32
+	call D0
+	add Dstack,40			!pop all
+	ret
+end
+
+end
+
+global threadedproc m$callff_6=
+assem
+	test Astack,8			!should be 0 if aligned
+	jz aligned
+unaligned:					!need to move param5 down
+	pop D1					!ret addr
+
+	pop D2					!P5
+	pop D3					!P6
+
+	push D1					!ret addr on top
+	sub Dstack,8			!dummy value to align stack
+
+	push D3					!P6
+	push D2					!P5 now this side of ret address
+
+	sub Dstack,32
+	call D0
+	add Dstack,56			!pop all, including dummy value
+	ret
+
+aligned:					!one value and ret addr pushed, allow space for four more
+	pop D1					!ret addr
+
+	pop D2					!P5
+	pop D3					!P6
+
+	push D1					!push ret addr back
+
+	push D3					!P6
+	push D2					!P5 now this side of ret address
+
+	sub Dstack,32
+	call D0
+	add Dstack,48			!pop all
+	ret
+end
+
+end
+
+global threadedproc m$callff_7=
+assem
+	test Astack,8			!should be 0 if aligned
+	jz aligned
+unaligned:					!need to move param5 down
+	pop D1					!ret addr
+
+	pop D2					!P5
+	pop D3					!P6
+	pop D4					!P7
+
+	push D1					!ret addr on top
+	sub Dstack,8			!dummy value to align stack
+
+	push D4					!P7
+	push D3					!P6
+	push D2					!P5 now this side of ret address
+
+	sub Dstack,32
+	call D0
+	add Dstack,64			!pop all, including dummy value
+	ret
+
+aligned:					!one value and ret addr pushed, allow space for four more
+	pop D1					!ret addr
+
+	pop D2					!P5
+	pop D3					!P6
+	pop D4					!P7
+
+	push D1					!push ret addr back
+
+	push D4					!P7
+	push D3					!P6
+	push D2					!P5 now this side of ret address
+
+	sub Dstack,32
+	call D0
+	add Dstack,56			!pop all
+	ret
+end
+
+end
+
+global threadedproc m$callff_8=
+assem
+	test Astack,8			!should be 0 if aligned
+	jz aligned
+unaligned:					!need to move param5 down
+	pop D1					!ret addr
+
+	pop D2					!P5
+	pop D3					!P6
+	pop D4					!P7
+	pop D5					!P8
+
+	push D1					!ret addr on top
+	sub Dstack,8			!dummy value to align stack
+
+	push D5					!P8
+	push D4					!P7
+	push D3					!P6
+	push D2					!P5 now this side of ret address
+
+	sub Dstack,32
+	call D0
+	add Dstack,72			!pop all, including dummy value
+	ret
+
+aligned:					!one value and ret addr pushed, allow space for four more
+	pop D1					!ret addr
+
+	pop D2					!P5
+	pop D3					!P6
+	pop D4					!P7
+	pop D5					!P8
+
+	push D1					!push ret addr back
+
+	push D5					!P8
+	push D4					!P7
+	push D3					!P6
+	push D2					!P5 now this side of ret address
+
+	sub Dstack,32
+	call D0
+	add Dstack,64			!pop all
+	ret
+end
+
+end
+
+global threadedproc m$callff_9=
+assem
+	test Astack,8			!should be 0 if aligned
+	jz aligned
+unaligned:					!need to move param5 down
+	pop D1					!ret addr
+
+	pop D2					!P5
+	pop D3					!P6
+	pop D4					!P7
+	pop D5					!P8
+	pop D6					!P9
+
+	push D1					!ret addr on top
+	sub Dstack,8			!dummy value to align stack
+	push D6					!P9
+	push D5					!P8
+	push D4					!P7
+	push D3					!P6
+	push D2					!P5 now this side of ret address
+	sub Dstack,32
+	call D0
+	add Dstack,80			!pop all, including dummy value
+	ret
+
+aligned:					!one value and ret addr pushed, allow space for four more
+	pop D1					!ret addr
+	pop D2					!P5
+	pop D3					!P6
+	pop D4					!P7
+	pop D5					!P8
+	pop D6					!P9
+
+	push D1					!push ret addr back
+	push D6					!P9
+	push D5					!P8
+	push D4					!P7
+	push D3					!P6
+	push D2					!P5 now this side of ret address
+	sub Dstack,32
+	call D0
+	add Dstack,72			!pop all
+	ret
+end
+
+end
+
+global threadedproc m$callff_10=
+assem
+	test Astack,8			!should be 0 if aligned
+	jz aligned
+unaligned:					!need to move param5 down
+	pop D1					!ret addr
+
+	pop D2					!P5
+	pop D3					!P6
+	pop D4					!P7
+	pop D5					!P8
+	pop D6					!P9
+	pop D7					!P10
+
+	push D1					!ret addr on top
+	sub Dstack,8			!dummy value to align stack
+
+	push D7					!P10
+	push D6					!P9
+	push D5					!P8
+	push D4					!P7
+	push D3					!P6
+	push D2					!P5 now this side of ret address
+
+	sub Dstack,32
+	call D0
+	add Dstack,88			!pop all, including dummy value
+	ret
+
+aligned:					!one value and ret addr pushed, allow space for four more
+	pop D1					!ret addr
+
+	pop D2					!P5
+	pop D3					!P6
+	pop D4					!P7
+	pop D5					!P8
+	pop D6					!P9
+	pop D7					!P10
+
+	push D1					!push ret addr back
+
+	push D7					!P10
+	push D6					!P9
+	push D5					!P8
+	push D4					!P7
+	push D3					!P6
+	push D2					!P5 now this side of ret address
+
+	sub Dstack,32
+	call D0
+	add Dstack,80			!pop all
+	ret
+end
+
+end
+
+global threadedproc m$callff_11=
+assem
+	test Astack,8			!should be 0 if aligned
+	jz aligned
+unaligned:					!need to move param5 down
+	pop D1					!ret addr
+
+	pop D2					!P5
+	pop D3					!P6
+	pop D4					!P7
+	pop D5					!P8
+	pop D6					!P9
+	pop D7					!P10
+	pop D8					!P11
+
+	push D1					!ret addr on top
+	sub Dstack,8			!dummy value to align stack
+
+	push D8					!P11
+	push D7					!P10
+	push D6					!P9
+	push D5					!P8
+	push D4					!P7
+	push D3					!P6
+	push D2					!P5 now this side of ret address
+
+	sub Dstack,32
+	call D0
+	add Dstack,96			!pop all, including dummy value
+	ret
+
+aligned:					!one value and ret addr pushed, allow space for four more
+	pop D1					!ret addr
+
+	pop D2					!P5
+	pop D3					!P6
+	pop D4					!P7
+	pop D5					!P8
+	pop D6					!P9
+	pop D7					!P10
+	pop D8					!P11
+
+	push D1					!push ret addr back
+
+	push D8					!P11
+	push D7					!P10
+	push D6					!P9
+	push D5					!P8
+	push D4					!P7
+	push D3					!P6
+	push D2					!P5 now this side of ret address
+
+	sub Dstack,32
+	call D0
+	add Dstack,88			!pop all
+	ret
+end
+
+end
+
+global threadedproc m$callff_12=
+assem
+	test Astack,8			!should be 0 if aligned
+	jz aligned
+unaligned:					!need to move param5 down
+	pop D1					!ret addr
+
+	pop D2					!P5
+	pop D3					!P6
+	pop D4					!P7
+	pop D5					!P8
+	pop D6					!P9
+	pop D7					!P10
+	pop D8					!P11
+	pop D9					!P12
+
+	push D1					!ret addr on top
+	sub Dstack,8			!dummy value to align stack
+
+	push D9					!P12
+	push D8					!P11
+	push D7					!P10
+	push D6					!P9
+	push D5					!P8
+	push D4					!P7
+	push D3					!P6
+	push D2					!P5 now this side of ret address
+
+	sub Dstack,32
+	call D0
+	add Dstack,104			!pop all, including dummy value
+	ret
+
+aligned:					!one value and ret addr pushed, allow space for four more
+	pop D1					!ret addr
+
+	pop D2					!P5
+	pop D3					!P6
+	pop D4					!P7
+	pop D5					!P8
+	pop D6					!P9
+	pop D7					!P10
+	pop D8					!P11
+	pop D9					!P12
+
+	push D1					!push ret addr back
+
+	push D9					!P12
+	push D8					!P11
+	push D7					!P10
+	push D6					!P9
+	push D5					!P8
+	push D4					!P7
+	push D3					!P6
+	push D2					!P5 now this side of ret address
+
+	sub Dstack,32
+	call D0
+	add Dstack,96			!pop all
+	ret
+end
+
+end
+
+global threadedproc m$callff_14=
+static word64 p13,p14
+assem
+	test Astack,8			!should be 0 if aligned
+	jz aligned
+unaligned:					!need to move param5 down
+	pop D1					!ret addr
+
+	pop D2					!P5
+	pop D3					!P6
+	pop D4					!P7
+	pop D5					!P8
+	pop D6					!P9
+	pop D7					!P10
+	pop D8					!P11
+	pop D9					!P12
+	pop u64 [p13]			!P12
+	pop u64 [p14]			!P14
+
+	push D1					!ret addr on top
+	sub Dstack,8			!dummy value to align stack
+
+	push u64 [p14]		!P14
+	push u64 [p13]		!P13
+	push D9					!P12
+	push D8					!P11
+	push D7					!P10
+	push D6					!P9
+	push D5					!P8
+	push D4					!P7
+	push D3					!P6
+	push D2					!P5 now this side of ret address
+
+	sub Dstack,32
+	call D0
+	add Dstack,120			!pop all, including dummy value
+	ret
+
+aligned:					!one value and ret addr pushed, allow space for four more
+	pop D1					!ret addr
+
+	pop D2					!P5
+	pop D3					!P6
+	pop D4					!P7
+	pop D5					!P8
+	pop D6					!P9
+	pop D7					!P10
+	pop D8					!P11
+	pop D9					!P12
+	pop u64 [p13]			!P12
+	pop u64 [p14]			!P14
+
+	push D1					!push ret addr back
+
+	push u64 [p14]		!P14
+	push u64 [p13]		!P13
+	push D9					!P12
+	push D8					!P11
+	push D7					!P10
+	push D6					!P9
+	push D5					!P8
+	push D4					!P7
+	push D3					!P6
+	push D2					!P5 now this side of ret address
+
+	sub Dstack,32
+	call D0
+	add Dstack,112			!pop all
+	ret
+end
+
+end
+
+global proc m$pushcallback=
+!save registers rbx, rsi,rdi, r12..r15 to small stack
+!Note must take care not to overwrite any of those while saving
+
+!if ncallbacks=maxcallback then
+!	println "Callback overflow"
+!	stop 1
+!fi
+
+assem
+	inc word32 [ncallbacks]
+	mov A4,[ncallbacks]
+	shl A4,6					!8x8 bytes is size per entry
+	lea D4,[A4+callbackstack]
+
+	mov [D4],rbx
+	mov [D4+8],rsi
+	mov [D4+16],rdi
+	mov [D4+24],r12
+	mov [D4+32],r13
+	mov [D4+40],r14
+	mov [D4+48],r15
+end
+end
+
+global proc m$popcallback=
+!restore registers rbx, rsi,rdi, r12..r15 from small stack
+assem
+	mov A4,[ncallbacks]
+	shl A4,6					!8x8 bytes is size per entry
+	lea D4,[A4+callbackstack]
+	mov rbx,[D4]
+	mov rsi,[D4+8]
+	mov rdi,[D4+16]
+	mov r12,[D4+24]
+	mov r13,[D4+32]
+	mov r14,[D4+40]
+	mov r15,[D4+48]
+	dec word32 [ncallbacks]
+end
+end
+
+global function m$lenstr_stringz(ref char s)int=
+	strlen(s)
+end
+
+global function m$getdotindex(word64 a,int i)int=
+!return (a iand (1dw<<i))>>i
+return (a iand (1<<i))>>i
+end
+
+global proc m$setdotindex(ref word64 a, int i,x)=
+ref word32 a32
+
+!see comments on setdotslice
+if i>=32 then
+	a^:=(a^ iand inot (1<<i)) ior (word64(x)<<i)
+
+else
+	a32:=cast(a)
+	a32^:=(a32^ iand inot (1<<i)) ior (word(x)<<i)
+fi
+end
+
+global function m$getdotslice(word64 a,int i,j)int=
+if i>=j then
+	return (a>>j)  iand  inot(0xFFFF'FFFF'FFFF'FFFF<<(i-j+1))
+else
+	return (a>>i)  iand  inot(0xFFFF'FFFF'FFFF'FFFF<<(j-i+1))
+fi
+end
+
+global proc m$setdotslice(ref word64 a, int i,j,word64 x)=
+!a^:=(a^ iand inot (1dw<<i)) ior (word64(x)<<i)
+int w
+word64 mask64
+word mask
+ref word32 a32
+
+if i>j then println "SETDOTSLICE?"; stop 52 fi
+
+!when j>=32, assume 64 bit dest, otherwise assume 32 bits to avoid writing
+!to bytes beyond the 32-bit value
+!THIS WILL BE A PROBLEM IF writing to 8/16 bit values too
+
+if j>=32 then
+	mask64:=inot((0xFFFF'FFFF'FFFF'FFFF<<(j-i+1)))<<i			!shifted field of w 1s
+	a^:=(a^ iand inot mask64) ior x<<i
+else
+	a32:=cast(a)
+	mask:=inot((0xFFFF'FFFF'FFFF'FFFF<<(j-i+1)))<<i			!shifted field of w 1s
+	a32^:=(a32^ iand inot mask) ior x<<i
+fi
+
+end
+
+function m$get_nprocs:int=
+	assem
+		mov D0,[$nprocs]
+	end
+end
+
+function m$get_procname(int n)ichar=
+	assem
+		lea D0,[$procnames]
+		mov D1,[n]
+		mov D0,[D0+D1*8-8]
+!		mov D0,[sss]
+	end
+end
+
+function m$get_procaddr(int n)ref proc=
+	assem
+		lea D0,[$procaddrs]
+		mov D1,[n]
+		mov D0,[D0+D1*8-8]
+	end
+end
+
+global function m$get_nexports:int=
+	assem
+		mov D0,[$nexports]
+	end
+end
+
+global function m$get_procexport(int n)ref void=
+	assem
+		lea D0,[$procexports]
+		mov D1,[n]
+		shl D1,1
+		lea D0,[D0+D1*8-16]
+	end
+end
+
+proc pushio=
+	if niostack>=maxiostack then
+		printf("Too many io levels\n")
+		stop 53
+	fi
+	++niostack
+	outchan_stack[niostack]	:= outchan
+	outdev_stack[niostack]	:= outdev
+	fmtstr_stack[niostack]	:= fmtstr
+	needgap_stack[niostack]	:= needgap
+	needgap:=0
+	fmtstr:=nil
+	outchan:=nil
+end
+
+global proc m$print_startfile(ref void dev)=
+	pushio()
+	outchan:=cast(dev)
+	if dev then
+		outdev:=file_io
+	else
+		outdev:=std_io
+	fi
+end
+
+global proc m$print_startstr(ref char s)=
+	ref ref char p
+	pushio()
+
+	ptr_stack[niostack]:=s
+	p:=&ptr_stack[niostack]
+
+	outchan:=cast(p)
+	outdev:=str_io
+end
+
+global proc m$print_startptr(ref ref char p)=
+	pushio()
+
+	outchan:=cast(p)
+	outdev:=str_io
+end
+
+global proc m$print_startcon=
+	pushio()
+	outdev:=std_io
+end
+
+global proc m$print_setfmt(ref char format)=
+	fmtstr:=format
+end
+
+global proc m$print_end=
+	needgap:=0
+	nextfmtchars(1)
+	if niostack=0 then return fi
+	outchan	:= outchan_stack[niostack]
+	outdev	:= outdev_stack[niostack]
+	fmtstr	:= fmtstr_stack[niostack]
+	needgap	:= needgap_stack[niostack]
+	--niostack
+end
+
+global proc m$print_ptr(u64 a,ichar fmtstyle=nil)=
+	array[20]char s
+
+	if fmtstyle=nil then
+		fmtstyle:="z8H"
+	fi
+	m$print_u64(a,fmtstyle)
+end
+
+!global proc m$print_bool(int a,ichar fmtstyle=nil)=
+!	[20]char s
+!	nextfmtchars()
+!	printstr((a|"T"|"F"))
+!	needgap:=1
+!end
+
+global proc m$print_i64(int64 a,ichar fmtstyle=nil)=
+	array[40]char s
+	fmtrec fmt
+	int n
+
+!CPL "PRINTI64",=FMTSTYLE
+!
+
+	nextfmtchars()
+
+	if fmtstyle=nil then
+		if a>=0 then
+			n:=u64tostr(a,&.s,10,0)
+		else
+			s[1]:='-'
+			n:=u64tostr(-a,&s[2],10,0)+1
+		fi
+		printstr_n(&.s,n)
+
+	else
+		strtofmt(fmtstyle,-1,&fmt)
+		if fmt.param='V' then
+			fmtparam:=a
+!CPL "SET FMTPARAM TO",A
+			needgap:=0
+		else
+			tostr_i64(a,&fmt)
+		fi
+	fi
+	needgap:=1
+end
+
+global proc m$print_u64(word64 a,ichar fmtstyle=nil)=
+	array[40]char s
+	fmtrec fmt
+
+	nextfmtchars()
+	if fmtstyle=nil then
+		sprintf(&.s,"%llu",a)
+		printstr(&.s)
+	else
+		strtofmt(fmtstyle,-1,&fmt)
+		tostr_u64(a,&fmt)
+	fi
+	needgap:=1
+end
+
+global proc m$print_i128(int128 a,ichar fmtstyle=nil)=
+	array[40]char s
+	fmtrec fmt
+
+	nextfmtchars()
+	strtofmt(fmtstyle,-1,&fmt)
+	if a>=0 then
+		tostr_u128(a,&fmt,0)
+	else
+		tostr_u128(-a,&fmt,1)
+	fi
+
+	needgap:=1
+end
+
+global proc m$print_u128(word128 a,ichar fmtstyle=nil)=
+	array[40]char s
+	fmtrec fmt
+
+	nextfmtchars()
+	strtofmt(fmtstyle,-1,&fmt)
+	tostr_u128(a,&fmt,0)
+	needgap:=1
+end
+
+global proc m$print_r64(real x,ichar fmtstyle=nil)=
+	array[360]char s
+	fmtrec fmt
+
+	nextfmtchars()
+	if fmtstyle=nil then
+		sprintf(&.s,"%f",x)
+		printstr(&.s)
+	else
+		strtofmt(fmtstyle,-1,&fmt)
+		tostr_r64(x,&fmt)
+	fi
+
+	needgap:=1
+end
+
+global proc m$print_r32(real32 x,ichar fmtstyle=nil)=
+	m$print_r64(x,fmtstyle)
+end
+
+global proc m$print_c8(int64 a,ichar fmtstyle=nil)=
+	array[40]char s
+	fmtrec fmt
+	int n
+
+	nextfmtchars()
+
+	s[1]:=a
+	s[2]:=0
+	printstr(&.s)
+	needgap:=1
+end
+
+global proc m$print_str(ichar s, fmtstyle=nil)=
+	nextfmtchars()
+	fmtrec fmt
+	if fmtstyle=nil then
+		printstr(s)
+	else
+		strtofmt(fmtstyle,-1,&fmt)
+		tostr_str(s,&fmt)
+	fi
+	needgap:=1
+end
+
+!global proc m$print_strsl(slice[]char s, ichar fmtstyle=nil)=
+!	nextfmtchars()
+!	fmtrec fmt
+!	if fmtstyle=nil then
+!		printstr_n(cast(s.sliceptr),s.len)
+!	else
+!		abortprogram("FORMATED PRINT SLICE NOT READY")
+!!		strtofmt(fmtstyle,-1,&fmt)
+!!		tostr_str(s,&fmt)
+!	fi
+!	needgap:=1
+!end
+
+!global proc m$print_flexstr(object s, ichar fmtstyle=nil)=
+!	nextfmtchars()
+!	fmtrec fmt
+!
+!	if fmtstyle=nil then
+!		if s^.length then
+!			printstr_n(s^.strptr,s^.length)
+!		fi
+!	else
+!		strtofmt(fmtstyle,-1,&fmt)
+!		tostr_str(str_stringz(s),&fmt)
+!	fi
+!	needgap:=1
+!end
+
+global proc m$print_newline=
+	needgap:=0
+	nextfmtchars(1)
+	printstr("\w")
+end
+
+global proc m$print_nogap=
+	needgap:=0
+end
+
+global proc printstr(ichar s)=
+	int n
+	ref ref char p
+
+	case outdev
+	when std_io then
+		printf("%s",s)
+	when file_io then
+		fprintf(outchan,"%s",s)
+	when str_io then
+		p:=cast(outchan)
+		strcpy(p^,s)
+		p^+:=strlen(s)
+	esac
+end
+
+global proc printstr_n(ichar s,int n=-1)=
+	ref ref char p
+
+	case n
+	when -1 then n:=strlen(s)
+	when 0 then return
+	esac
+
+	case outdev
+	when str_io then
+		p:=cast(outchan)
+		memcpy(p^,s,n)
+		p^+:=n
+		p^^:=0
+	when file_io then
+		fprintf(outchan,"%.*s",n,s)
+	when std_io then
+		printf("%.*s",n,s)
+	esac
+end
+
+global proc printstrn_app(ichar s, int length, filehandle f=nil)=
+if length then
+!	emitc "printf(""%.*s"",(i32)length,s);"
+	if f=nil then
+		printf("%.*s",length,s)
+	else
+		fprintf(f,"%.*s",length,s)
+	fi
+fi
+end
+
+proc printchar(int ch)=
+	ref ref char p
+	case outdev
+	when std_io then
+		printf("%c",ch)
+	when file_io then
+		fprintf(outchan,"%c",ch)
+	when str_io then
+		p:=cast(outchan)
+		p^^:=ch
+		p^+:=1
+		p^^:=0
+	esac
+end
+
+global proc nextfmtchars(int lastx=0)=
+	char c
+	ref char pstart
+	int n
+
+	if not fmtstr then			!format not in use
+		if needgap then
+			printchar(' ')
+!		printstr_n(" ",1)
+		fi
+		needgap:=0
+		return
+	fi
+
+	pstart:=fmtstr
+	n:=0
+
+	while (1) do
+		c:=fmtstr^
+		switch c
+		when '#' then
+			if lastx then
+				goto skip
+			fi
+			++fmtstr
+			if n then
+				printstr_n(pstart,n)
+			fi
+			return
+		when 0 then
+			if n then
+				printstr_n(pstart,n)
+			elsif not lastx then
+				printstr_n("|",1)
+			fi
+			return
+		when '~' then
+			if n then
+				printstr_n(pstart,n)
+				n:=0
+			fi
+			++fmtstr
+			c:=fmtstr^
+			if c then
+				++fmtstr
+				printchar(c)
+			fi
+			pstart:=fmtstr
+		else
+	skip::
+			++n
+			++fmtstr
+		endswitch
+	od
+end
+
+global proc strtofmt(ref char s,int slen,ref fmtrec fmt) =		!PC_STRTOFMT
+!convert format code string in s, to fmtrec at fmt^
+!Format code is a string containing the following char codes (upper or lower when mostly)
+!n	Width
+!.n	Max width/precision
+!A	Convert to upper when
+!a	Convert to lower when
+!B	Binary
+!C	Show int as single n-bit (unicode) character
+!D	Show int as multi-bit (unicode) character
+!E,F,G	Specify format for double (corresponds to C format codes)
+!F
+!G
+!H	Hex
+!JC	Justify centre
+!JL	Justify left
+!JR	Justify right
+!M	HEAPMODE???
+!O	Octal
+!Pc	Use padding char c
+!Q	Add double quotes around string (and deal with embedded quotes)
+!'	Add single quotes around string (and deal with embedded quotes)
+!Sc	Use separator char c between every 3 or 4 digits
+!Tc	Use terminator char c (typically B or H)
+!U	Show ints as unsigned
+!V	For ints, don't display: store value as parameter for subsequent '*'
+!W	Unsigned
+!Xn	Use base n (n is hex 0 to F)
+!Z	Use "0" padding
+!+	Always have + or - in front of integers
+!~	Quote char is ~
+!*	Same as n but uses parameter set with :'V' on previous int
+
+	char c
+	byte wset
+	int n
+	array[0:100]char str
+
+	fmt^:=defaultfmt
+
+	if s=nil then return fi
+
+	if slen=-1 then slen:=strlen(s) fi
+
+	memcpy(&.str,s,slen)		!convert s/slen to zero-terminated string
+	str[slen]:=0
+	s:=&.str
+
+	wset:=0
+	while s^ do
+		c:=s^
+		++s
+		switch c
+		when 'B', 'b' then fmt^.base:=2
+		when 'H', 'h' then fmt^.base:=16
+		when 'O', 'o' then fmt^.base:=8
+		when 'X', 'x' then
+			c:=s^
+			if c then
+				switch c
+				when '0'..'9' then c:=c-'0'
+				when 'A'..'F' then c:=c-'A'+10
+				when 'a'..'f' then c:=c-'a'+10
+				else
+					c:=10
+				end
+				fmt^.base:=c
+				++s
+			fi
+		when 'Q', 'q' then fmt^.quotechar:='"'
+		when '~' then fmt^.quotechar:='~'
+		when 'J', 'j' then
+			fmt^.justify:=toupper(s^)
+			if s^ then
+				++s
+			fi
+		when 'A' then fmt^.lettercase:='A'
+		when 'a' then fmt^.lettercase:='a'
+		when 'Z', 'z' then fmt^.padchar:='0'
+		when 'S', 's' then
+			fmt^.sepchar:=s^
+			if s^ then
+				++s
+			fi
+		when 'P', 'p' then
+			fmt^.padchar:=s^
+			if s^ then
+				++s
+			fi
+		when 'T', 't' then
+			fmt^.suffix:=s^
+			if s^ then
+				++s
+			fi
+		when 'W', 'w' then fmt^.usigned:='W'
+		when 'E', 'e' then fmt^.realfmt:='e'
+		when 'F', 'f' then fmt^.realfmt:='f'
+		when 'G', 'g' then fmt^.realfmt:='g'
+! when '0','1','2','3','4','5','6','7','8','9' then
+		when '.' then
+			wset:=1
+		when comma,'_' then fmt^.sepchar:=c
+		when '+' then fmt^.plus:='+'
+		when 'D', 'd' then fmt^.charmode:='D'
+		when 'C', 'c' then fmt^.charmode:='C'
+		when 'M', 'm' then fmt^.heapmode:='M'
+		when 'V','v' then fmt.param:='V'
+		when '*' then
+			n:=fmtparam
+			goto gotwidth
+!			if wset then
+!CPL "FMT/* WSET",FMTPARAM
+!				fmt.minwidth:=fmtparam
+!			else
+!CPL "FMT/*",FMTPARAM
+!				fmt.precision:=fmtparam
+!			fi
+		else
+			if c>='0' and c<='9' then
+				n:=c-'0'
+				do
+					c:=s^
+					if s^=0 then
+						exit
+					fi
+					if c>='0' and c<='9' then
+						++s
+						n:=n*10+c-'0'
+					else
+						exit
+					fi
+				od
+gotwidth::
+				if not wset then
+					fmt^.minwidth:=n
+					wset:=1
+				else
+					fmt^.precision:=n
+				fi
+			fi
+		endswitch
+	od
+end
+
+function domultichar (ref char p,int n,ref char dest,ref fmtrec fmt)int =
+!there are n (4 or 8) chars at p.!
+!There could be 0 to 4 or 8 printable chars converted to string at dest
+	array[0:20]char str
+	ref char q
+	int i,nchars
+
+	q:=&.str
+
+	nchars:=n
+
+	to n do
+		if p^=0 then exit fi
+		q^:=p^
+		++q
+		++p
+	od
+	q^:=0
+
+	return expandstr(&.str,dest,strlen(&.str),fmt)
+end
+
+function expandstr(ref char s,ref char t,int n,ref fmtrec fmt)int =		!EXPANDSTR
+!s contains a partly stringified value.
+!widen s if necessary, according to fmt, and copy result to t
+!n is current length of s
+!note) = for non-numeric strings, fmt^.base should be set to 0, to avoid moving
+!a leading +/- when right-justifying with '0' padding.
+!t MUST be big enough for the expanded string; caller must take care of this
+!result will be zero-terminated, for use in this module
+
+	int i,w,m
+
+!check to see if result is acceptable as it is
+	w:=fmt^.minwidth
+	if w=0 or w<=n then		! allow str to be longer than minwidth
+		strncpy(t,s,n)
+		(t+n)^:=0
+		return n
+	fi
+
+	if fmt^.justify='L' then	! left-justify
+		strncpy(t,s,n)
+		t+:=n
+		for i:=1 to w-n do
+			t^:=fmt^.padchar
+			++t
+		od
+		t^:=0
+	elsif fmt^.justify='R' then
+		if fmt^.padchar='0' and fmt^.base and (s^='-' or s^='+') then ! need to move sign outside 
+			t^:=s^
+			++t
+			to w-n do
+				t^:=fmt^.padchar
+				++t
+			od
+			strncpy(t,s+1,n-1)
+			(t+n-1)^:=0
+		else
+			to w-n do
+				t^:=fmt^.padchar
+				++t
+			od
+			strncpy(t,s,n)
+			(t+n)^:=0
+		fi
+
+	else				! centre-justify?
+
+		m:=(w-n+1)/2
+		to m do
+			t^:=fmt^.padchar
+			++t
+		od
+		strncpy(t,s,n)
+		t+:=n
+		to w-n-m do
+			t^:=fmt^.padchar
+			++t
+		od
+		t^:=0
+
+	fi
+	return w
+end
+
+!function xdivrem(word64 a,b)word64,word64=
+!	assem
+!		xor rdx,rdx
+!		mov rax,[a]
+!		div u64 [b]
+!		mov D1,rdx
+!	end
+!end
+
+!function xdivrem(word64 a,b, &remainder)word64=
+!	word64 q,r
+!	assem
+!		xor rdx,rdx
+!		mov rax,[a]
+!		div u64 [b]
+!		mov [q],rax	
+!		mov [r],rdx	
+!	end
+!	remainder:=r
+!	return q
+!end
+
+function mdivrem(word64 a,b)word64,word64=
+	word64 q,r
+	assem
+		xor rdx,rdx
+		mov rax,[a]
+		div u64 [b]
+		mov [q],rax	
+		mov [r],rdx	
+	end
+	return (q,r)
+!	remainder:=r
+!	return q
+end
+
+function u64tostr(u64 aa,ref char s,word base,int sep)int =		!U64TOSTR
+!convert 64-bit int a to string in s^
+!base is number base, usually 10 but can be 2 or 16. Other bases allowed
+!result when a=minint (will give "<minint>")
+	array[0:onesixty]char t
+	u64 dd
+	int i,j,k,g
+	int cc
+	int dummy
+	ref char s0
+
+	i:=0
+	k:=0
+	g:=(base=10|3|4)
+
+	repeat
+!		aa:=xdivrem(aa,base,dd)
+		(aa,dd):=mdivrem(aa,base)
+
+		t[++i]:=digits[dd]
+
+!!		aa:=aa/base
+
+!BUG in separator logic, doesn't work when leading zeros used, eg. printing
+!out a full length binary
+!so perhaps move this out to expandstr
+		++k
+		if sep and aa<>0 and k=g then
+			t[++i]:=sep
+			k:=0
+		fi
+	until aa=0
+
+	j:=i
+	s0:=s
+	while i do
+		s^:=t[i--]
+		++s
+	od
+	s^:=0
+
+	return j
+end
+
+function u128tostr(u128 aa,ref char s,word base,int sep)int =
+!convert 128-bit int a to string in s^
+!base is number base, usually 10 but can be 2 to 16
+	array[0:160]char t
+	u64 dd
+	int i,j,k,g
+	int dummy
+	ref char s0
+
+	i:=0
+	k:=0
+	g:=(base=10|3|4)
+
+	repeat
+		aa:=xdivrem128(aa,base,dd)
+		t[++i]:=digits[dd]
+
+!		t[++i]:=digits[aa rem base]
+!		aa:=aa/base
+
+!BUG in separator logic, doesn't work when leading zeros used, eg. printing
+!out a full length binary
+!so perhaps move this out to expandstr
+		++k
+		if sep and aa<>0 and k=g then
+			t[++i]:=sep
+			k:=0
+		fi
+	until aa=0
+
+	j:=i
+	s0:=s
+	while i do
+		s^:=t[i--]
+		++s
+	od
+	s^:=0
+
+	return j
+end
+
+function xdivrem128(word128 a, word64 b, &remainder)word128=
+	word128 d,e,r
+	word rlow
+
+	d:=a/b
+	r:=a-d*b
+
+	assem
+		mov d0,[r]
+		mov [rlow],d0
+	end
+	remainder:=rlow
+	return d
+end
+
+function i64tostrfmt(i64 aa,ref char s,ref fmtrec fmt)int =
+!a is signed 64-bit int/long, fmt is a ref to a filled-in fmtrec
+!convert a to a string in s, according to fmt
+!a basic conversion is done first,: the field manipulation is done
+!signed=1 for int, 0 for u32 (fmt^.unsigned forces ints to be treated as longs)
+!returns length of s
+	array[0:onesixty]char str				! allow for binary with separators!
+	int i,j,k,n,w,usigned
+	static u64 mindint=0x8000'0000'0000'0000
+
+	usigned:=0
+	if fmt^.usigned then
+		usigned:=1
+	fi
+
+	if aa=mindint and not usigned then		! minint
+
+		str[0]:='-'
+		n:=i64mintostr(&str[1],fmt^.base,fmt^.sepchar)+1
+	else
+		if (not usigned and aa<-0) or fmt^.plus then
+			if aa<0 then
+				aa:=-aa
+				str[0]:='-'
+			else
+				str[0]:='+'
+			fi
+			n:=u64tostr(aa,&str[1],fmt^.base,fmt^.sepchar)+1
+		else
+			n:=u64tostr(aa,&.str,fmt^.base,fmt^.sepchar)
+		fi
+	fi
+
+	if fmt^.suffix then
+		str[n]:=fmt^.suffix
+		str[++n]:=0
+	fi
+
+!str uses upper cases for hex/etc see if lc needed
+	if (fmt^.base>10 or fmt^.suffix) and fmt^.lettercase='a'	then	! need lower when
+		convlcstring(&.str)
+	fi
+
+!at this point, n is the str length including signs and suffix
+	return expandstr(&.str,s,n,fmt)
+end
+
+function u64tostrfmt(i64 aa,ref char s,ref fmtrec fmt)int =		!U64TOSTRFMT
+!see i64tostrfmt
+	array[0:onesixty]char str				! allow for binary with separators!
+	int i,j,k,n,w
+
+	n:=u64tostr(aa,&.str,fmt^.base,fmt^.sepchar)
+
+	if fmt^.suffix then
+		str[n]:=fmt^.suffix
+		str[++n]:=0
+	fi
+
+!str uses upper cases for hex/etc see if lc needed
+	if fmt^.base>10 or fmt^.suffix and fmt^.lettercase='a'	then	! need lower when
+		convlcstring(&.str)
+	fi
+
+!at this point, n is the str length including signs and suffix
+	return expandstr(&.str,s,n,fmt)
+end
+
+function u128tostrfmt(i128 aa,ref char s,ref fmtrec fmt)int =		!U64TOSTRFMT
+!see i64tostrfmt
+	array[0:onesixty]char str				! allow for binary with separators!
+	int i,j,k,n,w
+
+	n:=u128tostr(aa,&.str,fmt^.base,fmt^.sepchar)
+
+	if fmt^.suffix then
+		str[n]:=fmt^.suffix
+		str[++n]:=0
+	fi
+
+!str uses upper cases for hex/etc see if lc needed
+	if fmt^.base>10 or fmt^.suffix and fmt^.lettercase='a'	then	! need lower when
+		convlcstring(&.str)
+	fi
+
+!at this point, n is the str length including signs and suffix
+	return expandstr(&.str,s,n,fmt)
+end
+
+function i64mintostr(ref char s,int base,int sep)int =		!I64MINTOSTR
+!convert minint to string in s do not include minus sign
+!return number of chars in string
+	array[0:onesixty]char t
+	int i,j,k,g,neg
+
+	switch base
+	when 10 then
+		strcpy(&t[0],"9223372036854775808")
+		j:=3
+	when 16 then
+		strcpy(&t[0],"8000000000000000")
+		j:=1
+	when 2 then
+		strcpy(&t[0],"1000000000000000000000000000000000000000000000000000000000000000")
+		j:=7
+	else
+		strcpy(&t[0],"<mindint>")
+	endswitch
+
+	i:=strlen(&t[0])
+	s+:=i
+	if sep then
+		s+:=j
+	fi
+	s^:=0
+
+	k:=0
+	g:=(base=10|3|4)
+
+	while i do
+		--s
+		s^:=t[i-- -1]
+		if sep and i and ++k=g then
+			--s
+			s^:=sep
+			k:=0
+		fi
+	od
+	return strlen(s)
+end
+
+function strtostrfmt(ref char s,ref char t,int n,ref fmtrec fmt)int =
+!s is a string process according to fmtrec fmt^, and return result in t
+!caller should check whether any changes are required to s (now it can just use s), but this
+!check is done here anyway (with a simple copy to t)
+!n is current length of s
+!return length of t
+!Three processing stages:
+!1 Basic input string s
+!2 Additions or mods: quotes, suffix, when conversion
+!3 Width adjustment
+!1 is detected here, 2 is done here, 3 is done by expandstr
+	ref char u,v
+	array[256]char str
+	int w,nheap		! whether any heap storage is used  bytes allocated
+
+	nheap:=0
+
+	if fmt^.quotechar or fmt^.lettercase then		! need local copy
+		if n<256 then
+			u:=&.str
+		else
+			nheap:=n+3					! allow for quotes+terminator
+			u:=pcm_alloc(nheap)
+		fi
+		if fmt^.quotechar then
+			v:=u
+			v^:=fmt^.quotechar
+			++v
+			if n then
+				strcpy(v,s)
+				v+:=n
+			fi
+			v^:=fmt^.quotechar
+			++v
+			v^:=0
+			n+:=2
+		else
+			memcpy(u,s,n)
+		fi
+		switch fmt^.lettercase
+		when 'a' then	! need lower when
+			convlcstring(u)
+		when 'A' then
+			convucstring(u)
+		endswitch
+		s:=u
+	fi
+
+	w:=fmt^.minwidth
+	if w>n then
+		n:=expandstr(s,t,n,fmt)
+	else
+		memcpy(t,s,n)
+	fi
+	if nheap then
+		pcm_free(u,nheap)
+	fi
+	return n
+end
+
+proc tostr_i64(int64 a, ref fmtrec fmt)=
+	array[360]char str
+	int n
+
+	case fmt^.charmode
+	when 0 then
+		n:=i64tostrfmt(a,&.str,fmt)
+	when 'D','d' then
+		n:=domultichar(ref char(&a),8,&.str,fmt)
+
+	else						!assume 'C'
+		printchar(a)			!no other formatting allowed
+		return
+	esac
+
+	printstr_n(&.str,n)
+end
+
+proc tostr_u64(word64 a, ref fmtrec fmt)=
+	array[360]char str
+	int n
+
+	case fmt^.charmode
+	when 'D','d' then
+		n:=domultichar(ref char(&a),8,&.str,fmt)
+
+	when 'C','c' then
+		printchar(a)			!no other formatting allowed
+		return
+
+	else
+		n:=u64tostrfmt(a,&.str,fmt)
+	esac
+
+	printstr_n(&.str,n)
+end
+
+proc tostr_u128(word128 a, ref fmtrec fmt,int neg)=
+	array[360]char str
+	int n
+
+	case fmt^.charmode
+	when 'D','d' then
+		n:=domultichar(ref char(&a),8,&.str,fmt)
+
+	when 'C','c' then
+		printchar(a)			!no other formatting allowed
+		return
+
+	else
+		if neg then
+			str[1]:='-'
+			n:=u128tostrfmt(a,&str[2],fmt)+1
+		else
+			n:=u128tostrfmt(a,&.str,fmt)
+		fi
+	esac
+
+	printstr_n(&.str,n)
+end
+
+proc tostr_r64(real x,ref fmtrec fmt) =
+	array[360]char str,str2
+	array[0:10]char cfmt
+	int n
+
+	cfmt[0]:='%'
+
+	if fmt^.precision then
+		cfmt[1]:='.'
+		cfmt[2]:='*'
+		cfmt[3]:=fmt^.realfmt
+		cfmt[4]:=0
+		sprintf(&.str,&.cfmt,fmt^.precision,x)
+	else
+		cfmt[1]:=fmt^.realfmt
+		cfmt[2]:=0
+		sprintf(&.str,&.cfmt,x)
+	fi
+
+!at this point, n is the str length including signs and suffix
+
+!(TRY TAKING N FROM RESULT OF SPRINTF ABOVE)
+	n:=strlen(&.str)		! current length
+
+	if n<fmt^.minwidth then
+		n:=expandstr(&.str,&.str2,n,fmt)
+		strcpy(&.str,&.str2)
+	fi
+
+	printstr_n(&.str,n)
+end
+
+proc tostr_str(ref char s, ref fmtrec fmt) =
+	int oldlen,newlen,n
+	ref char t
+
+!try and work out size of formatted string
+	oldlen:=strlen(s)
+	newlen:=oldlen
+
+	if fmt^.quotechar or fmt^.minwidth>newlen or fmt^.lettercase or fmt.precision then
+		if fmt^.quotechar then
+			newlen+:=2
+		fi
+		if fmt^.minwidth>newlen then
+			newlen:=fmt^.minwidth
+		fi
+		t:=pcm_alloc(newlen+1)
+		n:=strtostrfmt(s,t,oldlen,fmt)
+		if fmt.precision then
+			n min:=fmt.precision
+		fi
+
+		printstr_n(t,n)
+		pcm_free(t,newlen+1)
+	else
+		printstr_n(s,oldlen)
+	fi
+end
+
+global function getfmt(ichar fmtstyle)ref fmtrec=
+	static fmtrec fmt
+	if fmtstyle then
+		strtofmt(fmtstyle,-1,&fmt)
+		return &fmt
+	else
+		return &defaultfmt
+	fi
+end
+
+global function strint(int64 a, ichar fmtstyle=nil)ichar=
+	static [100]char str
+	ref fmtrec fmt
+
+	m$print_startstr(&.str)
+	tostr_i64(a,fmt:=getfmt(fmtstyle))
+	m$print_end()
+	return getstr(&.str,fmt)
+end
+
+global proc getstrint(int64 a, ichar dest)=
+	m$print_startstr(dest)
+	tostr_i64(a,getfmt(nil))
+	m$print_end()
+end
+
+global function strword(word64 a, ichar fmtstyle=nil)ichar=
+	static [100]char str
+	ref fmtrec fmt
+
+	m$print_startstr(&.str)
+	tostr_u64(a,fmt:=getfmt(fmtstyle))
+	m$print_end()
+	return getstr(&.str,fmt)
+end
+
+global function strreal(real a, ichar fmtstyle=nil)ichar=
+	static [320]char str
+	ref fmtrec fmt
+
+	m$print_startstr(&.str)
+	tostr_r64(a,fmt:=getfmt(fmtstyle))
+	m$print_end()
+	return getstr(&.str,fmt)
+end
+
+function getstr(ichar s, ref fmtrec fmt)ichar=
+	if fmt^.heapmode then
+		return pcm_copyheapstring(s)
+	else
+		return s
+	fi
+end
+
+proc initreadbuffer=
+	if rd_buffer then return fi
+	rd_buffer:=pcm_alloc(rd_buffersize)
+	rd_buffer^:=0
+	rd_pos:=rd_lastpos:=rd_buffer
+end
+
+global proc m$read_conline=
+	initreadbuffer()
+
+	readlinen(nil,rd_buffer,rd_buffersize)
+
+	rd_length:=strlen(rd_buffer)
+	rd_pos:=rd_buffer
+	rd_lastpos:=nil
+end
+
+global proc m$read_fileline(filehandle f)=
+	initreadbuffer()
+	readlinen(f,rd_buffer,rd_buffersize)
+
+	rd_length:=strlen(rd_buffer)
+	rd_pos:=rd_buffer
+	rd_lastpos:=nil
+end
+
+global proc m$read_strline(ichar s)=
+	int n
+
+	initreadbuffer()
+	n:=strlen(s)
+
+	if n<rd_buffersize then
+		strcpy(rd_buffer,s)
+	else
+		memcpy(rd_buffer,s,rd_buffersize-1)
+		(rd_buffer+rd_buffersize-1)^:=0
+	fi
+	rd_length:=n
+	rd_pos:=rd_buffer
+	rd_lastpos:=nil
+end
+
+function readitem(int &itemlength)ref char =
+!read next item from rd_buffer
+!identify a substring that can contain a name, int, real, string or filename
+!return updated position of s that points past the item and past the immediate
+!terminator 
+!information about the read item is returned in itemstr, which points to
+!the start of the item, and in itemlength. Item excludes any surrounding whitespace
+!Item can be quoted, then the item points inside the quotes
+!Any embedded quotes are removed, and the characters moved up. The item will
+!be that reduced subsequence
+!NOTE THAT THIS IS DESTRUCTIVE. On reread, the input will be different.
+!I can mitigate this by adding spaces between the end of the item, and the next item,
+!overwriting also the terminator. But this won't restore the line if one of the next
+!reads is literal, using 'L' or 'C' codes.
+	ref char p,s,itemstr
+	char quotechar, c
+
+	unless rd_buffer then 
+		initreadbuffer()
+!abortprogram("No readln")
+	end unless
+
+
+	s:=rd_pos
+
+!scan string, eliminating leading white space
+	while s^=' ' or s^=9 do
+		++s
+	od
+
+	itemstr:=s				!assume starts here
+	rd_lastpos:=rd_pos:=s
+
+	if s^=0 then			! No more chars left to read return null string
+		termchar:=0
+		itemlength:=0
+		return s
+	fi
+
+	quotechar:=0			! Allow possible enclosing single or double quotes
+	if s^='"' then
+		quotechar:='"'
+		++s
+	elsif s^='\'' then
+		quotechar:='\''
+		++s
+	fi
+
+!loop reading characters until separator or end reached
+	p:=itemstr:=s
+
+	while s^ do
+		c:=s++^
+		switch c
+		when ' ', 9, comma, '=' then		! separator
+			if quotechar or p=s then			!can be considered part of name if inside quotes, or is only char
+				goto normalchar
+			fi
+			termchar:=c
+			exit
+		else
+	normalchar::
+			if c=quotechar then
+				if s^=quotechar then	! embedded quote
+					p^:=c
+					++s
+					++p
+				else					! end of name
+					termchar:=s^
+					if termchar=',' or termchar='=' then
+						++s
+						termchar:=s^
+					fi
+					exit
+				fi
+			else
+				p^:=c
+				++p
+			fi
+		endswitch
+	od
+
+	if s^=0 then
+		termchar:=0
+	fi
+	itemlength:=p-itemstr				! actual length of token
+	rd_pos:=s
+
+	return itemstr
+end
+
+global function strtoint(ichar s,int length=-1, base=10)int64=
+!return point to next char after terminator (which can be just off length of string)
+	byte signd
+	word64 aa
+	char c,d
+
+	itemerror:=0
+
+	if length=-1 then
+		length:=strlen(s)
+	fi
+!check for sign
+	signd:=0
+	if length and s^='-' then
+		signd:=1; ++s; --length
+	elsif length and s^='+' then
+		++s; --length
+	fi
+
+	aa:=0
+	while length do
+		c:=s++^
+		--length
+		switch c
+		when 'A'..'F' then d:=c-'A'+10
+		when 'a'..'f' then d:=c-'a'+10
+		when '0'..'9' then d:=c-'0'
+		when '_', '\'' then
+			next
+		else
+			itemerror:=1
+			exit
+		endswitch
+
+		if d>=base then
+			itemerror:=1
+			exit
+		fi
+		aa:=aa*base+d
+	od
+
+	if signd then
+		return -aa
+	else
+		return aa
+	fi
+end
+
+global function m$read_i64(int fmt=0)int64=
+	ref char s
+	int length,c
+	int64 aa
+
+	case fmt
+	when 'C','c' then
+		rd_lastpos:=rd_pos
+		if rd_pos^ then
+			return rd_pos++^
+		else
+			return 0
+		fi
+	when 'T','t' then
+		return termchar
+	when 'E','e' then
+		return itemerror
+	esac
+
+	s:=readitem(length)
+
+
+	case fmt
+	when 0,'I','i' then
+		return strtoint(s,length)
+	when 'B','b' then
+		return strtoint(s,length,2)
+	when 'H','h' then
+		return strtoint(s,length,16)
+	esac
+	return 0
+end
+
+global function m$read_r64(int fmt=0)real=
+	array[512]char str
+	ref char s
+	int length
+	int32 numlength
+	real x
+
+	s:=readitem(length)
+
+	if length=0 or length>=str.len then		!assume not a real
+		return 0.0
+	fi
+	memcpy(&.str,s,length)
+	str[length+1]:=0
+
+	itemerror:=0
+
+	if sscanf(&.str,"%lf%n", &x, &numlength)=0 or numlength<>length then
+		x:=0.0
+		itemerror:=1
+	fi
+
+	return x
+end
+
+global proc m$read_strold(ref char dest, int destlen=0,fmt=0)=
+	ref char s
+	int length,numlength
+	real x
+
+	itemerror:=0
+	if fmt='L' or fmt='l' then
+		s:=rd_pos
+		length:=rd_buffer+rd_length-rd_pos
+
+	else
+		s:=readitem(length)
+
+		if fmt='N' or fmt='n' then
+			iconvlcn(s,length)
+		fi
+	fi
+
+	if destlen>0 then
+		if length>=destlen then
+			length:=destlen-1
+			itemerror:=1
+		fi
+	fi
+	memcpy(dest,s,length)
+	(dest+length)^:=0
+end
+
+global function m$read_str(int fmt=0)ichar t=
+	ref char s
+	int length,numlength
+	real x
+
+	itemerror:=0
+	if fmt='L' or fmt='l' then
+		s:=rd_pos
+		length:=rd_buffer+rd_length-rd_pos
+
+	else
+		s:=readitem(length)
+
+		if fmt='N' or fmt='n' then
+			iconvlcn(s,length)
+		fi
+	fi
+
+	t:=pcm_alloc(length+1)
+	memcpy(t,s,length)
+	(t+length)^:=0
+	return t
+end
+
+global proc readstr(ref char dest, int fmt=0,destlen=0)=
+	m$read_strold(dest,destlen,fmt)
+end
+
+global proc rereadln=
+	rd_pos:=rd_buffer
+	rd_lastpos:=rd_pos
+end
+
+global proc reread=
+	rd_pos:=rd_lastpos
+end
+
+global function valint(ichar s, int fmt=0)int64=
+ref char old_pos, old_lastpos
+int64 aa
+
+initreadbuffer()
+old_pos:=rd_pos
+old_lastpos:=rd_lastpos
+
+rd_pos:=s
+aa:=m$read_i64(fmt)
+rd_pos:=old_pos
+rd_lastpos:=old_lastpos
+return aa
+end
+
+global function valreal(ichar s)real=
+ref char old_pos, old_lastpos
+real x
+
+initreadbuffer()
+old_pos:=rd_pos
+old_lastpos:=rd_lastpos
+
+rd_pos:=s
+x:=m$read_r64()
+rd_pos:=old_pos
+rd_lastpos:=old_lastpos
+return x
+end
+
+proc iconvlcn(ref char s,int n) =		!ICONVLCN
+to n do
+	s^:=tolower(s^)
+	++s
+od
+end
+
+proc iconvucn(ref char s,int n) =		!ICONVUCN
+to n do
+	s^:=toupper(s^)
+	++s
+od
+end
+
+proc convlcstring(ref char s)=		!CONVLCSTRING
+while (s^) do
+	s^:=tolower(s^)
+	++s
+od
+end
+
+proc convucstring(ref char s)=		!CONVUCSTRING
+while (s^) do
+	s^:=toupper(s^)
+	++s
+od
+end
+
+!GLOBAL PROC M$PRINT_U32(word32 a, ref void fmt)=
+!	m$print_u64(a,nil)
+!end
+!
+!GLOBAL PROC M$PRINT_I32(int32 a, ref void fmt)=
+!	m$print_i64(a,nil)
+!end
+!
+!GLOBAL PROC M$STARTPRINT(ref void dev)=
+!	m$print_startfile(dev)
+!end
+!
+!GLOBAL PROC M$STARTPRINTCON=
+!	m$print_startcon()
+!end
+!
+!GLOBAL PROC M$ENDPRINT=
+!	m$print_end()
+!end
+
+global threadedproc m$ufloat_r64u64=
+	assem
+		cmp D10,0
+		jl fl1
+!number is positive, so can treat like i64
+		cvtsi2sd XMM15,D10
+		ret
+fl1:						!negative value
+		and D10,[mask63]		!clear top bit (subtract 2**63)
+		cvtsi2sd XMM15,D10
+		addsd XMM15,[offset64]	!(add 2**63 back to result)
+		ret
+	end
+end
+
+global threadedproc m$ufloat_r64u32=
+	assem
+		mov D10,D10				! clear top half (already done if value just moved there)
+		cvtsi2sd XMM15,D10
+		ret
+	end
+end
+
+global threadedproc m$ufloat_r32u32=
+	assem
+		mov D10,D10
+		cvtsi2ss XMM15,D10
+		ret
+	end
+end
+
+global threadedproc m$ufloat_r32u64=
+	assem
+		cmp D10,0
+		jl fl2
+!number is positive, so can treat like i64
+		cvtsi2ss XMM15,D10
+		ret
+fl2:						!negative value
+		and D10,[mask63]		!clear top bit (subtract 2**63)
+		cvtsi2ss XMM15,D10
+		addss XMM15,[offset32]	!(add 2**63 back to result)
+		ret
+	end
+end
+
+!global function m$power_i64(int64 n,a)int64=
+!if n<0 then
+!	return 0
+!elsif n=0 then
+!	return 1
+!elsif n=1 then
+!	return a
+!elsif (n iand 1)=0 then
+!!	return ipower(a*a,n/2)
+!	return m$power_i64(a*a,n/2)
+!else			!assume odd
+!	return m$power_i64(a*a,(n-1)/2)*a
+!fi
+!end
+
+global function m$power_i64(int64 n,a)int64=
+if n<0 then
+	return 0
+elsif n=0 then
+	return 1
+elsif n=1 then
+	return a
+elsif (n iand 1)=0 then
+!	return ipower(a*a,n/2)
+	return m$power_i64(n/2,sqr a)
+else			!assume odd
+	return m$power_i64((n-1)/2,sqr a)*a
+fi
+end
+
+global proc m$intoverflow=
+	abortprogram("Integer overflow detected")
+end
+
+global proc m$mul_i128(word128 bb,aa)=
+!CPL "$MUL128"
+	assem
+		mov d2,[aa]			!a1
+		mov d3,[aa+8]		!a2
+		mov d4,[bb]			!b1
+		mov d5,[bb+8]		!b2
+
+
+		mov d0,d2			!a1
+		imul2 d0,d5			!*b2	
+		mov d6,d0			!=>d6
+
+		mov d0,d3			!a2
+		imul2 d0,d4			!*b1
+		mov d7,d0			!=>d7
+
+		mov d0,d2			!a1
+		mul d4				!*b1
+		add d11,d6			! + a1*b2<<64
+		add d11,d7			! + a2*b1<<64
+		mov d1,d11
+	end
+end
+
+global proc m$idiv_i128(word128 bb,aa)=
+!does 128/64 bits only
+	assem
+		mov d2,[aa]
+		mov d3,[aa+8]
+
+		mov d4,[bb]
+		or d4,d4
+		jz divbyzero
+
+		mov d0,d3		!a2
+		xor d11,d11
+		div d4			!a2/b
+		mov d6,d0		! => c2
+		mul d4			!c2*b
+		sub d3,d0		!a2-:=c2*b
+
+		mov d0,d2
+		mov d11,d3		!a2:a1
+		div d4			!/b
+		mov d1,d6
+	end
+	return
+
+asm divbyzero:
+CPL "DIV BY ZERO"
+	stop 1
+end
+
+global proc m$dotindex(word i,a)=
+!return a.[i] in d0
+	assem
+		mov d0,[a]
+		mov cl,[i]
+		shr d0,cl
+		and d0,1
+	end	
+end
+
+global proc m$dotslice(word j,i,a)=
+!return a.[i..j] in d0; assumes j>=i
+	assem
+		mov d0,[a]
+		mov rcx,[i]
+		shr d0,cl
+		sub rcx,[j]
+		neg rcx				!j-1
+		mov d2,0xFFFF'FFFF'FFFF'FFFE
+		shl d2,cl
+		not d2
+		and d0,d2
+	end	
+end
+
+global proc m$popdotindex(word i,ref word p,word x)=
+!p^.[i]:=x
+	assem
+		mov d3,[p]
+		mov cl,[i]
+		mov d0,[d3]
+		mov d1,1
+		shl d1,cl			!000001000
+		not d1				!111110111
+		and d0,d1			!clear that bit in dest
+		mov d1,[x]
+		and d1,1
+		shl d1,cl
+		or d0,d1
+		mov [d3],d0
+	end	
+end
+
+global proc m$popdotslice(word j,i, ref word p, word x)=
+!p^.[i..j]:=x
+	assem
+!d3 = p
+!d4 = x, then shifted then masked x
+!d5 = i
+!d6 = clear mask
+
+		mov d3,[p]
+		mov d4,[x]
+		mov d5,[i]
+		mov rcx,d5			!i
+		shl d4,cl			!x<<i
+		mov rcx,[j]
+		sub rcx,d5			!j-i
+		inc rcx				!j-i+1
+		mov d2,0xFFFF'FFFF'FFFF'FFFF
+		shl d2,cl			!...111100000     (assume 5-bit slice)
+		not d2				!...000011111
+		mov rcx,d5			!i
+		shl d2,cl			!...000011111000  (assume i=3)
+		and d4,d2			!mask x (truncate extra bits)
+		mov d0,[d3]
+		not d2				!...111100000111
+		and d0,d2			!clear dest bits
+		or d0,d4			!add in new bits
+		mov [d3],d0
+	end	
+end
+
+
+global function m$sin(real x)real = {`sin(x)}
+global function m$cos(real x)real = {`cos(x)}
+global function m$tan(real x)real = {`tan(x)}
+global function m$asin(real x)real = {`asin(x)}
+global function m$acos(real x)real = {`acos(x)}
+global function m$atan(real x)real = {`atan(x)}
+global function m$ln(real x)real = {`log(x)}
+!global function m$lg(real x)real = {`lg(x)}
+global function m$log(real x)real = {`log10(x)}
+global function m$exp(real x)real = {`exp(x)}
+global function m$floor(real x)real = {`floor(x)}
+global function m$ceil(real x)real = {`ceil(x)}
+global function m$fract(real x)real = {abortprogram("FRACT");0}
+global function m$round(real x)real = {abortprogram("ROUND");0}
+=== mlib.m 32/36 ===
+import msys
+import clib
+import oslib
+
+!const mem_check=1
+const mem_check=0
+
+GLOBAL INT MDEBUG
+
+
+global [0..300]u64 allocupper
+global int alloccode				!set by heapalloc
+global int allocbytes				!set by heapalloc
+global int fdebug=0
+global int rfsize
+
+const threshold=1<<25
+const alloc_step=1<<25
+word maxmemory
+int  maxalloccode
+
+byte pcm_setup=0
+
+int show=0
+
+global int memtotal=0
+global int64 smallmemtotal=0
+global int smallmemobjs=0
+global int maxmemtotal=0
+
+!store all allocated pointers
+const int maxmemalloc=500000
+[maxmemalloc+1]ref int32 memalloctable
+[maxmemalloc+1]int32 memallocsize
+
+const pcheapsize=1048576*2
+ref byte pcheapstart
+ref byte pcheapend			!points to first address past heap
+ref byte pcheapptr
+
+const int maxblockindex = 8 		!2048
+global const int maxblocksize = 2048
+
+[0:maxblocksize+1]byte sizeindextable	!convert byte size to block index 1..maxblockindex
+
+const int size16   = 1			!the various index codes
+const int size32   = 2
+const int size64   = 3
+const int size128  = 4
+const int size256  = 5
+const int size512  = 6
+const int size1024 = 7
+const int size2048 = 8
+
+GLOBAL [0:9]ref wordp freelist
+
+global record strbuffer =
+	ichar strptr
+	int32 length
+	int32 allocated
+end
+
+global tabledata() [0:]ichar pmnames=
+	(pm_end=0,		$),
+	(pm_option,		$),
+	(pm_sourcefile,	$),
+	(pm_libfile,	$),
+	(pm_colon,		$),
+	(pm_extra,		$),
+end
+
+[2]int seed = (0x2989'8811'1111'1272',0x1673'2673'7335'8264)
+
+global function pcm_alloc(int n)ref void =		!PCM_ALLOC
+ref byte p
+!int i
+
+!IF MDEBUG THEN
+!CPL "PCMALLOC",N
+!FI
+if not pcm_setup then
+	pcm_init()
+!	abortprogram("need pcm_init")
+fi
+
+if n>maxblocksize then			!large block allocation
+	alloccode:=pcm_getac(n)
+	allocbytes:=allocupper[alloccode]
+
+	p:=allocmem(allocbytes)
+	if not p then
+		abortprogram("pcm_alloc failure")
+	fi
+
+if mem_check then addtomemalloc(ref int32(p),allocbytes) fi
+
+	return p
+fi
+
+alloccode:=sizeindextable[n]		!Size code := 0,1,2 etc for 0, 16, 32 etc
+
+if alloccode=0 then					!sizes below 16 bytes (can I adjust sizeindextable to?)
+	alloccode:=1
+fi
+allocbytes:=allocupper[alloccode]
+
+SMALLMEMTOTAL+:=ALLOCBYTES
+!IF MDEBUG THEN
+!CPL "PCMALLOC/ALLOCBYTES",ALLOCBYTES
+!FI
+
+if p:=ref byte(freelist[alloccode]) then		!Items of this block size available
+if mem_check then addtomemalloc(ref int32(p),allocbytes) fi
+	freelist[alloccode]:=ref wordp(int((freelist[alloccode])^))
+
+	return p
+fi
+
+!No items in freelists: allocate new space in this heap block
+p:=pcheapptr				!Create item at start of remaining pool in heap block
+pcheapptr+:=allocbytes			!Shrink remaining pool
+
+if pcheapptr>=pcheapend then		!Overflows?
+	p:=pcm_newblock(allocbytes)		!Create new heap block, and allocate from start of that
+	return p
+fi
+if mem_check then addtomemalloc(ref int32(p),allocbytes) fi
+
+return p
+end
+
+global proc pcm_freestr(ichar s) =
+pcm_free(s,strlen(s)+1)
+end
+
+global proc pcm_free(ref void p,int n) =		!PCM_FREE
+!n can be the actual size requested it does not need to be the allocated size
+int acode
+
+if n=0 then return fi
+
+if n>maxblocksize then		!large block
+	if mem_check then removefrommemalloc(p,n) fi
+
+	free(p)
+	return
+fi
+
+if p then
+	acode:=sizeindextable[n]		!Size code := 0,1,2 etc for 0, 16, 32 etc
+
+	smallmemtotal-:=allocupper[acode]
+
+	if mem_check then removefrommemalloc(p,allocupper[acode]) fi
+
+!	(ref wordp(p))^:=wordp(int(freelist[acode]))
+	cast(p,ref wordp)^:=wordp(int(freelist[acode]))
+	freelist[acode]:=p
+fi
+end
+
+global proc pcm_freeac(ref void p,int alloc) =		!PCM_FREEAC
+pcm_free(p,allocupper[alloc])
+end
+
+global proc pcm_copymem4(ref void p,q,int n) =	!PCM_COPYMEM4
+!copy n bytes of memory from q to p.
+!the memory spaces used are multiples of 16 bytes, but n itself could be anything
+!n can be zero, and need not be a multiple of 4 bytes
+
+memcpy(p,q,n)
+end
+
+global proc pcm_clearmem(ref void p,int n) =		!PCM_CLEARMEM
+memset(p,0,n)
+end
+
+global proc pcm_init =		!PCM_INIT
+!set up sizeindextable too
+!sizeindextable[0] = 0
+int j,k,k1,k2
+int64 size
+const limit=1<<33
+
+if pcm_setup then
+	return
+fi
+
+pcm_newblock(0)
+
+for i to maxblocksize do	!table converts eg. 78 to 4 (4th of 16,32,64,128)
+	j:=1
+	k:=16
+	while i>k do
+		k:=k<<1
+		++j
+	od
+	sizeindextable[i]:=j
+od
+
+allocupper[1]:=16
+size:=16
+
+for i:=2 to 27 do
+	size*:=2
+	allocupper[i]:=size
+	if size>=threshold then
+			k:=i
+		exit
+	fi
+od
+
+for i:=k+1 to allocupper.upb do
+	size+:=alloc_step
+!	if size>4 billion then
+!		size+:=alloc_step
+!	fi
+	if size<limit then
+		allocupper[i]:=size
+		maxmemory:=size
+	else
+		maxalloccode:=i-1
+		exit
+	fi
+		
+od
+pcm_setup:=1
+end
+
+global function pcm_getac(int size)int =		!PCM_GETAC
+! convert linear blocksize from 0..approx 2GB to 8-bit allocation code
+
+!sizeindextable scales values from 0 to 2048 to allocation code 0 to 9
+
+if size<=maxblocksize then
+	return sizeindextable[size]		!size 0 to 2KB
+fi
+
+size:=(size+255)>>8					!scale by 256
+
+!now same sizetable can be used for 2KB to 512KB (288 to 2KB)
+
+if size<=maxblocksize then
+	return sizeindextable[size]+8
+fi
+
+!sizetable now used for 512KB to 128MB (to 2KB)
+size:=(size+63)>>6					!scale by 256
+
+if size<=maxblocksize then
+	return sizeindextable[size]+14
+fi
+
+
+!size>2048, which means it had been over 128MB.
+
+size:=(size-2048+2047)/2048+22
+return size
+end
+
+global function pcm_newblock(int itemsize)ref void=
+!create new heap block (can be first)
+!also optionally allocate small item at start
+!return pointer to this item (and to the heap block)
+static int totalheapsize
+ref byte p
+
+totalheapsize+:=pcheapsize
+alloccode:=0
+p:=allocmem(pcheapsize)	!can't free this block until appl terminates
+if p=nil then
+	abortprogram("Can't alloc pc heap")
+fi
+
+pcheapptr:=p
+pcheapend:=p+pcheapsize
+
+if pcheapstart=nil then		!this is first block
+	pcheapstart:=p
+fi
+pcheapptr+:=itemsize
+return ref u32(p)
+end
+
+global function pcm_round(int n)int =		!PCM_ROUND
+!for any size n, return actual number of bytes that would be allocated
+static [0:maxblockindex+1]int32 allocbytes=(0,16,32,64,128,256,512,1024,2048)
+
+if n>maxblocksize then
+	return n
+else
+	return allocbytes[sizeindextable[n]]
+fi
+end
+
+global function pcm_array(int n)int =		!PCM_ARRAY
+!n bytes are needed for an array return the number of bytes to be actually allocated
+int m
+
+if n<=maxblocksize then	!automatic rounding up used for small heap
+	return pcm_round(n)
+! allocbytes[sizeindextable[n]]
+else				!devise some strategy probably doubling up.
+	m:=2048
+	while n>m do
+		m<<:=1
+	od
+	return m
+fi
+
+end
+
+global proc pcm_printfreelist(int size,ref wordp p) =		!PCM_PRINTFREELIST
+println "Size: ",size
+while p do
+!	printf(" %llX",u64(p))
+	print " ",,p:"h"
+	p:=ref wordp(int(p^))
+od
+puts("")
+end
+
+global proc pcm_diags(ref char caption) =		!PCM_DIAGS
+int m
+
+println "HEAP FREELISTS:",caption
+
+m:=16
+for i:=1 to 8 do
+	pcm_printfreelist(m,freelist[i])
+	m<<:=1
+od
+end
+
+global function pcm_allocz(int n)ref void =		!PCM_ALLOCZ
+ref void p
+p:=pcm_alloc(n)
+
+memset(p,0,n)
+return p
+end
+
+global function pcm_copyheapstring(ref char s)ref char =
+!allocate enough bytes for string s: copy s to the heap
+!return pointer to new string
+ref char q
+int n
+if s=nil then return nil fi
+
+n:=strlen(s)+1
+q:=pcm_alloc(n)
+memcpy(q,s,n)
+return q
+end
+
+global function pcm_copyheapstringn(ref char s,int n)ref char =
+ref char q
+if s=nil then return nil fi
+
+q:=pcm_alloc(n+1)
+memcpy(q,s,n)
+(q+n)^:=0
+return q
+end
+
+global function pcm_copyheapblock(ref char s, int length)ref char =
+!allocate enough bytes for string s: copy s to the heap
+!return pointer to new string
+	ref char q
+	if length=0 then return nil fi
+
+	q:=pcm_alloc(length)
+	memcpy(q,s,length)
+	return q
+end
+
+proc addtomemalloc(ref int32 ptr,int size)=
+!add ptr to allocated table
+
+!CPL "***************ADD TO ALLOC:",ptr,size
+
+for i to maxmemalloc do
+	if memalloctable[i]=ptr then
+		CPL "ALLOC ERROR:",ptr,"ALREADY ALLOCATED\n\n\n"
+CPL
+CPL
+		stop 2
+	fi
+
+	if memalloctable[i]=nil then		!unused entry
+		memalloctable[i]:=ptr
+		memallocsize[i]:=size
+		return
+	fi
+od
+CPL "MEMALLOCTABLE FULL\n\n\n\n"; os_getch()
+stop 3
+end
+
+proc removefrommemalloc(ref int32 ptr,int size)=
+!remove ptr to allocated table
+
+!CPL "------------------************REMOVE FROM ALLOC:",ptr,size
+
+for i to maxmemalloc do
+	if memalloctable[i]=ptr then
+
+if memallocsize[i]<>size then
+	CPL "REMOVE:FOUND",ptr,"IN MEMALLOCTABLE, FREESIZE=",size,", BUT STORED AS BLOCK SIZE:",memallocsize[i]
+!PCERROR("MEMERROR")
+CPL
+CPL
+	abortprogram("MEMSIZE")
+fi
+
+		memalloctable[i]:=nil
+		return
+	fi
+od
+CPL "CAN'T FIND",ptr,"IN MEMALLOCTABLE",size
+CPL
+CPL
+abortprogram("MEM")
+stop 4
+end
+
+global function allocmem(int n)ref void =		!ALLOCMEM
+ref void p
+
+p:=malloc(n)
+if (p) then
+	return p
+fi
+println n,memtotal
+abortprogram("Alloc mem failure")
+return nil
+end
+
+global function reallocmem(ref void p,int n)ref void =		!REALLOCMEM
+p:=realloc(p,n)
+return p when p
+println n
+abortprogram("Realloc mem failure")
+return nil
+end
+
+global proc abortprogram(ref char s) =		!ABORTPROGRAM
+println s
+print   "ABORTING: Press key..."
+os_getch()
+stop 5
+end
+
+global function getfilesize(filehandle handlex)int=		!GETFILESIZE
+	word32 p,size
+
+	p:=ftell(handlex)		!current position
+	fseek(handlex,0,2)		!get to eof
+	size:=ftell(handlex)		!size in bytes
+	fseek(handlex,p,seek_set)	!restore position
+	return size
+end
+
+global proc readrandom(filehandle handlex, ref byte mem, int offset, size) =		!READRANDOM
+	int a
+	fseek(handlex,offset,seek_set)
+	a:=fread(mem,1,size,handlex)			!assign so as to remove gcc warning
+end
+
+global function writerandom(filehandle handlex, ref byte mem, int offset,size)int =		!WRITERANDOM
+	fseek(handlex,offset,seek_set)
+	return fwrite(mem,1,size,handlex)
+end
+
+global function setfilepos(filehandle file,int offset)int=
+	return fseek(file,offset,0)
+end
+
+global function getfilepos(filehandle file)int=
+	return ftell(file)
+end
+
+global function readfile(ref char filename)ref byte =		!READFILE
+filehandle f
+int size
+ref byte m,p
+
+f:=fopen(filename,"rb")
+if f=nil then
+	return nil
+fi
+rfsize:=size:=getfilesize(f)
+
+m:=malloc(size+4)		!allow space for etx/zeof etc
+
+if m=nil then
+	return nil
+fi
+
+readrandom(f,m,0,size)
+p:=m+size			!point to following byte
+p^:=0
+(p+1)^:=26
+(p+2)^:=0			!allow use as string
+
+fclose(f)
+return m
+end
+
+global function writefile(ref char filename,ref byte data,int size)int =
+filehandle f
+int n
+
+f:=fopen(filename,"wb")
+if f=nil then
+	return 0
+fi
+
+n:=writerandom(f,data,0,size)
+fclose(f)
+return n
+end
+
+global function checkfile(ref char file)int=		!CHECKFILE
+filehandle f
+if f:=fopen(file,"rb") then
+	fclose(f)
+	return 1
+fi
+return 0
+end
+
+global proc readlinen(filehandle handlex,ref char buffer,int size) =		!READLINEN
+!size>2
+int ch
+ref char p
+int n
+array[0:100]char buff
+byte crseen
+
+if handlex=nil then
+	handlex:=filehandle(os_getstdin())
+fi
+if handlex=nil then
+	n:=0
+	p:=buffer
+	do
+		ch:=getchar()
+		if ch=13 or ch=10 or ch=-1 then
+			p^:=0
+			return
+		fi
+		p++^:=ch
+		++n
+		if n>=(size-2) then
+			p^:=0
+			return
+		fi
+	od
+fi
+
+buffer^:=0
+if fgets(buffer,size-2,handlex)=nil then
+	return
+fi
+
+n:=strlen(buffer)
+if n=0 then
+	return
+fi
+
+p:=buffer+n-1		!point to last char
+crseen:=0
+while (p>=buffer and (p^=13 or p^=10)) do
+	if p^=13 or p^=10 then crseen:=1 fi
+	p--^ :=0
+od
+
+!NOTE: this check doesn't work when a line simply doesn't end with cr-lf
+
+if not crseen and (n+4>size) then
+	cpl size,n
+	abortprogram("line too long")
+fi
+end
+
+global proc iconvlcn(ref char s,int n) =		!ICONVLCN
+to n do
+	s^:=tolower(s^)
+	++s
+od
+end
+
+global proc iconvucn(ref char s,int n) =		!ICONVUCN
+to n do
+	s^:=toupper(s^)
+	++s
+od
+end
+
+global proc convlcstring(ref char s)=		!CONVLCSTRING
+while (s^) do
+	s^:=tolower(s^)
+	++s
+od
+end
+
+global proc convucstring(ref char s)=		!CONVUCSTRING
+while (s^) do
+	s^:=toupper(s^)
+	++s
+od
+end
+
+global function changeext(ref char s,newext)ichar=		!CHANGEEXT
+!whether filespec has an extension or not, change it to newext
+!newext should start with "."
+!return new string (locally stored static string, so must be used before calling again)
+static [260]char newfile
+array[32]char newext2
+ref char sext
+int n
+
+strcpy(&newfile[1],s)
+
+case newext^
+when 0 then
+	newext2[1]:=0
+	newext2[2]:=0
+when '.' then
+	strcpy(&newext2[1],newext)
+else
+	strcpy(&newext2[1],".")
+	strcat(&newext2[1],newext)
+esac
+
+
+sext:=extractext(s,1)			!include "." when it is only extension
+
+case sext^
+when 0 then						!no extension not even "."
+	strcat(&newfile[1],&newext2[1])
+when '.' then						!no extension not even "."
+	strcat(&newfile[1],&newext2[2])
+else							!has extension
+	n:=sext-s-2			!n is number of chars before the "."
+	strcpy(&newfile[1]+n+1,&newext2[1])
+esac
+
+return &newfile[1]
+end
+
+global function extractext(ref char s,int period=0)ichar=		!EXTRACTEXT
+!if filespec s has an extension, then return pointer to it otherwise return ""
+!if s ends with ".", then returns "."
+ref char t,u
+
+t:=extractfile(s)
+
+if t^=0 then			!s contains no filename
+	return ""
+fi
+
+!t contains filename+ext
+u:=t+strlen(t)-1		!u points to last char of t
+
+while u>=t do
+	if u^='.' then		!start extension found
+		if (u+1)^=0 then		!null extension
+			return (period|"."|"")
+		fi
+		return u+1			!return last part of filename as extension exclude the dot
+	fi
+	--u
+od
+return ""			!no extension seen
+end
+
+global function extractpath(ref char s)ichar=		!EXTRACTPATH
+static [0:260]char str
+ref char t
+int n
+
+t:=s+strlen(s)-1		!t points to last char
+
+while (t>=s) do
+	switch t^
+	when '\\','/',':' then		!path separator or drive letter terminator assume no extension
+		n:=t-s+1			!n is number of chars in path, which includes rightmost / or \ or :
+		memcpy(&.str,s,n)
+		str[n]:=0
+		return &.str
+	endswitch
+	--t
+od
+return ""			!no path found
+end
+
+global function extractfile(ref char s)ichar=		!EXTRACTFILE
+ref char t
+
+t:=extractpath(s)
+
+if t^=0 then			!s contains no path
+	return s
+fi
+
+return s+strlen(t)		!point to last part of s that contains the file
+end
+
+global function extractbasefile(ref char s)ichar=		!EXTRACTBASEFILE
+static [0:100]char str
+ref char f,e
+int n,flen
+
+f:=extractfile(s)
+flen:=strlen(f)
+if flen=0 then		!s contains no path
+	return ""
+fi
+e:=extractext(f,0)
+
+if e^ then			!not null extension
+	n:=flen-strlen(e)-1
+	memcpy(&str,f,n)
+	str[n]:=0
+	return &.str
+fi
+if (f+flen-1)^='.' then
+	memcpy(&str,f,flen-1)
+	str[flen-1]:=0
+	return &.str
+fi
+return f
+end
+
+global function addext(ref char s,ref char newext)ichar=		!ADDEXT
+!when filespec has no extension of its own, add newext
+ref char sext
+
+sext:=extractext(s,1)
+
+if sext^=0 then						!no extension not even "."
+	return changeext(s,newext)
+fi
+
+return s							!has own extension; use that
+end
+
+global function alloctable(int n, size)ref void =		!ALLOCTABLE
+!Allocate table space for n elements, each of size <size>
+!Allows for 1-based indexing, so allocates (n+1) elements
+ref void p
+
+p:=malloc((n+1)*size)
+
+if not p then
+	abortprogram("Alloctable failure")
+fi
+return p
+end
+
+global function zalloctable(int n, size)ref void =		!ALLOCTABLE
+!Allocate table space for n elements, each of size <size>
+!Allows for 1-based indexing, so allocates (n+1) elements
+ref int p
+
+p:=alloctable(n,size)
+
+pcm_clearmem(p,(n+1)*size)
+return p
+end
+
+global proc checkfreelists(ichar s)=
+ref wordp p,q
+int64 aa
+
+for i:=2 to 2 do
+	p:=freelist[i]
+
+	while p do
+		aa:=int64(p)
+		if aa>0xffff'FFFF or aa<100 then
+			CPL s,"FREE LIST ERROR",i,p,q
+!			os_getch(); stop 1
+		fi
+		q:=p
+		p:=ref wordp(int(p^))
+	od
+
+od
+end
+
+global function pcm_alloc32:ref void =		!PCM_ALLOC
+ref byte p
+
+allocbytes:=32
+!smallmemtotal+:=32
+
+!if p:=ref byte(freelist[2]) then		!Items of this block size available
+!	freelist[2]:=ref wordp((freelist[2])^)
+!	if mem_check then addtomemalloc(ref int32(p),32) fi
+!	return p
+!fi
+
+!No items in freelists: allocate new space in this heap block
+
+return pcm_alloc(32)
+end
+
+global proc pcm_free32(ref void p) =
+!n can be the actual size requested it does not need to be the allocated size
+
+!CPL "PCMFREE32"
+smallmemtotal-:=32
+if mem_check then removefrommemalloc(p,32) fi
+!(ref wordp(p))^:=wordp(int(freelist[2]))
+cast(p,ref wordp)^:=wordp(int(freelist[2]))
+freelist[2]:=p
+end
+
+global proc outbyte(filehandle f,int x)=
+fwrite(&x,1,1,f)
+end
+
+global proc outword16(filehandle f,word x)=
+fwrite(&x,2,1,f)
+end
+
+global proc outword(filehandle f,word x)=
+fwrite(&x,4,1,f)
+end
+
+global proc outword64(filehandle f,word64 x)=
+fwrite(&x,8,1,f)
+end
+
+global function myeof(filehandle f)int=
+int c
+
+c:=fgetc(f)
+if c=c_eof then return 1 fi
+ungetc(c,f)
+return 0;
+end
+
+global function pcm_smallallocz(int n)ref void =
+ref byte p
+
+if (alloccode:=sizeindextable[n])=0 then
+	alloccode:=1
+fi
+allocbytes:=allocupper[alloccode]
+
+!No items in freelists: allocate new space in this heap block
+p:=pcheapptr				!Create item at start of remaining pool in heap block
+pcheapptr+:=allocbytes			!Shrink remaining pool
+
+if pcheapptr>=pcheapend then		!Overflows?
+	p:=pcm_newblock(allocbytes)		!Create new heap block, and allocate from start of that
+	memset(p,0,n)
+	return p
+fi
+
+memset(p,0,n)
+
+return p
+end
+
+!global function pcm_fastalloc(int n)ref void =
+global function pcm_smallalloc(int n)ref void =
+ref byte p
+
+if (alloccode:=sizeindextable[n])=0 then
+	alloccode:=1
+fi
+allocbytes:=allocupper[alloccode]
+
+!No items in freelists: allocate new space in this heap block
+p:=pcheapptr				!Create item at start of remaining pool in heap block
+pcheapptr+:=allocbytes			!Shrink remaining pool
+
+if pcheapptr>=pcheapend then		!Overflows?
+	p:=pcm_newblock(allocbytes)		!Create new heap block, and allocate from start of that
+	return p
+fi
+
+return p
+end
+
+global proc strbuffer_add(ref strbuffer dest, ichar s, int n=-1)=
+int newlen,oldlen
+ichar newptr
+
+IF N=0 THEN CPL "N=0" FI
+
+if n=-1 then
+	n:=strlen(s)
+fi
+
+oldlen:=dest^.length
+
+if oldlen=0 then				!first string
+	dest^.strptr:=pcm_alloc(n+1)
+	dest^.allocated:=allocbytes
+	dest^.length:=n				!length always excludes terminator
+	memcpy(dest^.strptr,s,n)
+	(dest^.strptr+n)^:=0
+	return
+fi
+
+newlen:=oldlen+n
+if newlen+1>dest^.allocated then
+!CPL "REALLOC",NEWLEN
+	newptr:=pcm_alloc(newlen+1)
+	memcpy(newptr,dest^.strptr,oldlen)
+	dest^.strptr:=newptr
+	dest^.allocated:=allocbytes
+fi
+
+memcpy(dest^.strptr+oldlen,s,n)
+(dest^.strptr+newlen)^:=0
+
+dest^.length:=newlen
+end
+
+global proc gs_init(ref strbuffer dest)=			!INITGENSTR
+pcm_clearmem(dest,strbuffer.bytes)
+end
+
+global proc gs_free(ref strbuffer dest)=
+if dest^.allocated then
+	pcm_free(dest^.strptr,dest^.allocated)
+fi
+end
+
+global proc gs_str(ref strbuffer dest,ichar s)=			!GENSTR
+strbuffer_add(dest,s)
+end
+
+global proc gs_char(ref strbuffer dest,int c)=
+array[16]char s
+
+s[1]:=c
+s[2]:=0
+
+strbuffer_add(dest,&.s,1)
+end
+
+global proc gs_strn(ref strbuffer dest,ichar s,int length)=
+strbuffer_add(dest,s,length)
+end
+
+global proc gs_strvar(ref strbuffer dest,s)=			!GENSTR
+strbuffer_add(dest,s^.strptr)
+end
+
+global proc gs_strint(ref strbuffer dest,int64 a)=
+strbuffer_add(dest,strint(a))
+end
+
+global proc gs_strln(ref strbuffer dest,ichar s)=		!GENSTRLN
+gs_str(dest,s)
+gs_line(dest)
+end
+
+global proc gs_strsp(ref strbuffer dest,ichar s)=
+gs_str(dest,s)
+gs_str(dest," ")
+end
+
+global proc gs_line(ref strbuffer dest)=
+strbuffer_add(dest,"\w")
+end
+
+global function gs_getcol(ref strbuffer dest)int=
+return dest^.length
+end
+
+global proc gs_leftstr(ref strbuffer dest, ichar s, int w, padch=' ')=
+int col,i,n,slen
+array[2560]char str
+col:=dest^.length
+strcpy(&.str,s)
+slen:=strlen(s)
+n:=w-slen
+!CPL =slen,=w,=n
+if n>0 then
+	for i:=1 to n do
+		str[slen+i]:=padch
+	od
+	str[slen+n+1]:=0
+fi
+gs_str(dest,&.str)
+end
+
+global proc gs_leftint(ref strbuffer dest, int a, int w, padch=' ')=
+gs_leftstr(dest,strint(a),w,padch)
+end
+
+global proc gs_padto(ref strbuffer dest,int col, ch=' ')=
+int n
+array[2560]char str
+
+n:=col-dest^.length
+if n<=0 then return fi
+for i:=1 to n do
+	str[i]:=ch
+od
+str[n+1]:=0
+gs_str(dest,&.str)
+end
+
+global proc gs_println(ref strbuffer dest,filehandle f)=
+(dest.strptr+dest.length)^:=0
+
+if f=nil then
+	println dest.strptr,,"\c"
+else
+	println @f,dest.strptr,,"\c"
+fi
+end
+
+global function nextcmdparam(int &paramno, ichar &name, &value, ichar defext=nil)int=
+static int infile=0
+static ichar filestart=nil
+static ichar fileptr=nil
+static byte colonseen=0
+ref char q
+ichar item,fileext
+ichar rest
+int length
+static [300]char str
+
+!CPL "NEXTCMD",NSYSPARAMS
+
+reenter::
+value:=nil
+name:=nil
+
+if infile then
+	if readnextfileitem(fileptr,item)=0 then		!eof
+		free(filestart)								!file allocated via malloc
+		infile:=0
+		goto reenter
+	fi
+else
+	if paramno>nsysparams then
+		return pm_end
+	fi
+	item:=sysparams[paramno]
+	++paramno
+
+	length:=strlen(item)
+
+	if item^='@' then		!@ file
+		filestart:=fileptr:=cast(readfile(item+1))
+		if filestart=nil then
+			println "Can't open",item
+			stop 7
+		fi
+		infile:=1
+		goto reenter
+	fi
+
+	if item^=':' then
+		colonseen:=1
+		return pm_colon
+	fi
+fi
+
+value:=nil
+if item^='-' then
+	name:=item+(colonseen|0|1)
+	q:=strchr(item,':')
+	if not q then
+		q:=strchr(item,'=')
+	fi
+	if q then
+		value:=q+1
+		q^:=0
+	fi
+	return (colonseen|pm_extra|pm_option)
+fi
+
+fileext:=extractext(item,0)
+name:=item
+
+if fileext^=0 then							!no extension
+	strcpy(&.str,name)
+	if defext and not colonseen then
+		name:=addext(&.str,defext)				!try .c
+	fi
+elsif eqstring(fileext,"dll") then
+	return (colonseen|pm_extra|pm_libfile)
+fi
+return (colonseen|pm_extra|pm_sourcefile)
+end
+
+function readnextfileitem(ichar &fileptr,&item)int=
+ref char p,pstart,pend
+int n
+static [256]char str
+
+p:=fileptr
+
+reenter::
+do
+	case p^
+	when ' ','\t',13,10 then	!skip white space
+		++p
+	when 26,0 then				!eof
+		return 0
+	else
+		exit
+	esac
+od
+
+case p^
+when '!', '#' then			!comment
+	++p
+	docase p++^
+	when 10 then
+		goto reenter
+	when 26,0 then
+		fileptr:=p-1
+		return 0
+	else
+
+	enddocase
+esac
+
+
+case p^
+when '"' then				!read until closing "
+	pstart:=++p
+	do
+		case p^
+		when 0,26 then
+			println "Unexpected EOF in @file"
+			stop 8
+		when '"' then
+			pend:=p++
+			if p^=',' then ++p fi
+			exit
+		esac
+		++p
+	od
+else
+	pstart:=p
+	do
+		case p^
+		when 0,26 then
+			pend:=p
+			exit
+		when ' ','\t',',',13,10 then
+			pend:=p++
+			exit
+		esac
+		++p
+	od
+esac
+
+n:=pend-pstart
+if n>=str.len then
+	println "@file item too long"
+	stop 9
+fi
+memcpy(&.str,pstart,n)
+str[n+1]:=0
+item:=&.str
+fileptr:=p
+
+return 1
+end
+
+global proc ipadstr(ref char s,int width,ref char padchar=" ")=
+int n
+
+n:=strlen(s)
+to width-n do
+	strcat(s,padchar)
+od
+end
+
+global function padstr(ref char s,int width,ref char padchar=" ")ichar=
+static [256]char str
+
+strcpy(&.str,s)
+ipadstr(&.str,width,padchar)
+return &.str
+end
+
+global function chr(int c)ichar=
+static [8]char str
+
+str[1]:=c
+str[2]:=0
+return &.str
+end
+
+global function cmpstring(ichar s,t)int=
+	int res
+	if (res:=strcmp(s,t))<0 then
+		return -1
+	elsif res>0 then
+		return 1
+	else
+		return 0
+	fi
+end
+
+global function cmpstringn(ichar s,t,int n)int=
+	int res
+	if (res:=strncmp(s,t,n))<0 then
+		return -1
+	elsif res>0 then
+		return 1
+	else
+		return 0
+	fi
+end
+
+global function eqstring(ichar s,t)int=
+	return strcmp(s,t)=0
+end
+
+global function cmpbytes(ref void p,q,int n)int=
+	int res
+	if (res:=memcmp(p,q,n))<0 then
+		return -1
+	elsif res>0 then
+		return 1
+	else
+		return 0
+	fi
+end
+
+global function eqbytes(ref void p,q,int n)int=
+	return memcmp(p,q,n)=0
+end
+
+
+global proc mseed(word64 a,b=0)=
+seed[1]:=a
+if b then
+	seed[2]:=b
+else
+	seed[2] ixor:=a
+fi
+end
+
+global function mrandom:word =
+!return pure 64-bit word value, 0 to 2**64-1
+!(cast result for signed value)
+	word64 x,y
+	x:=seed[1]
+	y:=seed[2]
+	seed[1]:=y
+	x ixor:=(x<<23)
+	seed[2]:= x ixor y ixor (x>>17) ixor (y>>26)
+	return seed[2]+y
+end
+
+global function mrandomp:int =
+!pure 64-bit int value, positive only, 0 to 2**63-1
+	return mrandom() iand 0x7FFF'FFFF'FFFF'FFFF
+end
+
+global function mrandomint(int n)int=
+!positive random int value from 0 to n-1
+	return mrandomp() rem n
+end
+
+global function mrandomrange(int a,b)int=
+!random int value from a to b inclusive
+!span extent must be 1 to 2**63-1
+	int span
+	span:=b-a+1
+	if span<=0 then
+		return 0
+	fi
+	return (mrandomp() rem span)+a
+end
+
+!global function mrandomreal:real =
+!!positive random real value from 0 to 0.999999999999999999891579782751449556599254719913005828857421875
+!!upper limit is (2**63-1)/(2**63)
+!	return real(mrandomp())/9223372036854775808.0
+!end
+
+global function mrandomreal:real x=
+!positive random real value from 0 to just under (but not including) 1.0
+	repeat x:=mrandomp()/9223372036854775808.0 until x<>1.0
+	return x
+end
+
+global function mrandomreal1:real=
+!positive random real value from 0 to 1.0 inclusive
+	return mrandomp()/9223372036854775807
+end
+
+global function checkpackfile:ref byte=
+!find out if this executable contains extra packed files
+!return 1 or 0
+
+int a,offset,i,size
+array[100]char name
+array[300]char exefile
+ref byte packexeptr			!for embedded pack files, contains pointer to in-memory version of this .exe file plus extras; else nil
+int packexesize				!byte size
+ref char packfilename
+int packfilesize
+ref byte packfileptr
+
+!macro getfileint(data,offset)=(ref int32(data+offset))^
+macro getfileint(data,offset)=cast(data+offset,ref int32)^
+
+strcpy(&exefile[1],os_gethostname())
+println "Attempting to open",&exefile
+packexeptr:=readfile(&exefile[1])
+
+if not packexeptr then
+	cpl "Can't open",&exefile,&packexeptr
+	stop
+fi
+
+packexesize:=rfsize
+cpl "File read OK. Size",packexesize
+!STOP
+
+a:=getfileint(packexeptr,packexesize-int32.bytes)
+if a<>'PCAK' then
+	free(packexeptr)
+	packfileptr:=nil
+	return nil
+fi
+
+offset:=getfileint(packexeptr,packexesize-int32.bytes*2)
+
+packfilename:=cast(packexeptr+offset)
+offset+:=strlen(packfilename)+1
+packfilesize:=getfileint(packexeptr,offset)
+packfileptr:=packexeptr+offset+int32.bytes
+
+return packfileptr
+end
+=== clibnew.m 33/36 ===
+global type filehandle=ref void
+
+importlib $cstd=
+!	clang function malloc	(wordm)ref void
+	clang function malloc	(word64)ref void
+	clang function realloc	(ref void, wordm)ref void
+	clang proc     free		(ref void)
+	clang proc     memset	(ref void, int32, wordm)
+	clang proc     memcpy	(ref void, ref void, wordm)
+	clang function clock	:int32
+	clang function ftell	(filehandle)int32
+	clang function fseek	(filehandle, int32, int32)int32
+	clang function fread	(ref void, wordm, wordm, filehandle)wordm
+	clang function fwrite	(ref void, wordm, wordm, filehandle)wordm
+	clang function getc		(filehandle)int32
+	clang function ungetc	(int32, filehandle)int32
+	clang function fopen	(ichar,ichar="rb")filehandle
+	clang function fclose	(filehandle)int32
+	clang function fgets	(ichar, int, filehandle)ichar
+	clang function remove	(ichar)int32
+	clang function rename	(ichar, ichar)int32
+	clang function getchar	:int32
+	clang proc     putchar	(int32)
+	clang proc     setbuf	(filehandle, ref byte)
+
+	clang function strlen	(ichar)wordm
+	clang function strcpy	(ichar, ichar)ichar
+	clang function strcmp	(ichar, ichar)int32
+	clang function strncmp	(ichar, ichar, wordm)int32
+	clang function strncpy	(ichar, ichar, wordm)wordm
+	clang function memcmp	(ref void, ref void, wordm)int32
+	clang function strcat	(ichar, ichar)ichar
+	clang function tolower	(int32)int32
+	clang function toupper	(int32)int32
+	clang function isalpha	(int32)int32
+	clang function isupper	(int32)int32
+	clang function islower	(int32)int32
+	clang function isalnum	(int32)int32
+	clang function isspace	(int32)int32
+	clang function strstr	(ichar, ichar)ichar
+	clang function atol		(ichar)intm
+	clang function atoi		(ichar)int32
+	clang function strtod	(ichar,ref ref char)real64
+
+	clang function puts		(ichar)int32
+	clang function printf	(ichar, ...)int32
+
+	clang function sprintf	(ichar, ichar, ...)int32
+!	clang function __mingw_sprintf	(ichar, ...)int32
+
+	clang function sscanf	(ichar, ichar, ...)int32
+	clang function scanf	(ichar, ...)int32
+
+	clang function rand		:int32
+	clang proc     srand	(word32)
+	clang function system	(ichar)int32
+
+	clang function fgetc	(filehandle)int32
+	clang function fputc	(int32,  filehandle)int32
+	clang function fprintf	(filehandle, ichar, ...)int32
+	clang function fputs	(ichar,  filehandle)int32
+	clang function feof		(filehandle)int32
+	clang function getch	:int32
+	clang function kbhit	:int32
+	clang function _mkdir	(ichar)int32
+	clang function mkdir	(ichar)int32
+	clang function dummy	(real)real
+	clang function strchr	(ichar,int32)ichar
+
+	clang proc     _exit	(int32)
+	clang proc     "exit"	(int32)
+!	clang proc     `exit	(int32)
+	clang function	pow		(real,real)real
+
+	clang function	`sin	(real)real
+	clang function	`cos	(real)real
+	clang function	`tan	(real)real
+	clang function	`asin	(real)real
+	clang function	`acos	(real)real
+	clang function	`atan	(real)real
+	clang function	`log	(real)real
+	clang function	`log10	(real)real
+	clang function	`exp	(real)real
+	clang function	`floor	(real)real
+	clang function	`ceil	(real)real
+
+	clang proc      qsort   (ref void, word64, word64, ref proc)
+
+end
+
+importlib $cstdextra=
+	clang function __getmainargs(ref int32, ref void, ref void, int, ref void)int32
+end
+
+global const c_eof		=-1
+global const seek_set	= 0
+global const seek_curr	= 1
+global const seek_end	= 2
+=== oswindows.m 34/36 ===
+import clib
+import mlib
+
+const wm_destroy=2
+
+type wt_word	= word16
+type wt_wordpm	= word32
+type wt_bool	= word32
+type wt_dword	= word32
+type wt_wchar	= word16
+type wt_wcharpm	= word32
+type wt_char	= byte
+type wt_ichar	= ref char
+type wt_ptr		= ref void
+type wt_wndproc	= ref proc
+type wt_handle	= ref void
+type wt_int		= int32
+type wt_uint	= word32
+type wt_long	= int32
+type wt_wparam	= wordm
+type wt_lparam	= wordm
+type wt_point	= rpoint
+
+global record rsystemtime =
+	wt_word year
+	wt_word month
+	wt_word dayofweek
+	wt_word day
+	wt_word hour
+	wt_word minute
+	wt_word second
+	wt_word milliseconds
+end
+
+importdll $windowsdlls=
+!	windows function "VirtualAlloc"(wt_ptr, dint,wt_dword,wt_dword)wt_ptr
+	windows function "GetStdHandle"(wt_dword)wt_handle
+	windows function "GetConsoleScreenBufferInfo"(wt_handle,wt_ptr)int
+	windows function "SetConsoleCtrlHandler"(wt_wndproc,int)int
+	windows function "SetConsoleMode"(wt_handle,wt_dword)int
+	windows function "CreateProcessA"(wt_ichar,wt_ichar,wt_ptr,wt_ptr, int,
+						wt_dword, wt_ptr,wt_ichar,wt_ptr,wt_ptr)int
+	windows function "GetLastError":wt_dword
+	windows function "WaitForSingleObject"(wt_handle,wt_dword)wt_dword
+	windows function "GetExitCodeProcess"(wt_handle,wt_ptr)int
+	windows function "CloseHandle"(wt_handle)int
+	windows function "GetNumberOfConsoleInputEvents"(wt_handle,wt_ptr)int
+	windows function "FlushConsoleInputBuffer"(wt_handle)int
+	windows function "LoadLibraryA"(wt_ichar)wt_handle
+!	windows function "GetProcAddress"(wt_handle,wt_ichar)wt_wndproc
+	windows function "GetProcAddress"(wt_handle,wt_ichar)ref void
+	windows function "LoadCursorA"(wt_handle,wt_ichar)wt_handle
+	windows function "RegisterClassExA"(wt_ptr)wt_wordpm
+	windows function "DefWindowProcA"(wt_handle,wt_uint,wt_wparam,wt_lparam)intm
+	windows function "ReadConsoleInputA"(wt_handle,wt_ptr,wt_dword,wt_ptr)int
+	windows proc     "Sleep"(wt_dword)
+	windows function "GetModuleFileNameA"(wt_handle,wt_ichar,wt_dword)wt_dword
+
+	windows proc     "ExitProcess"(wt_uint)
+	windows proc	 "PostQuitMessage"(wt_int)
+
+!	windows proc	 "MessageBoxA"(wt_int,wt_ichar,wt_ichar,wt_int)
+
+	windows proc	 "MessageBoxA"(wt_int x=0,wt_ichar message, caption="Caption",wt_int y=0)
+
+	windows function "QueryPerformanceCounter"(ref int64)wt_bool
+	windows function "QueryPerformanceFrequency"(ref int64)wt_bool
+
+	windows function "CreateFileA"(wt_ichar,wt_dword,wt_dword,wt_ptr,wt_dword,wt_dword,wt_handle)wt_handle
+	windows function "GetFileTime"(wt_handle,wt_ptr,wt_ptr,wt_ptr)wt_bool
+
+	windows proc     "GetSystemTime"(ref rsystemtime)
+	windows proc     "GetLocalTime"(ref rsystemtime)
+
+	windows function "GetTickCount":wt_dword
+	windows function "PeekMessageA"		(ref void, ref wt_handle, wt_uint,wt_uint,wt_uint)wt_bool
+
+end
+
+record input_record =
+	wt_word	eventtype
+	word16	padding
+		wt_bool	keydown			!key event record (was inside 'Event' union in win32)
+		wt_word	repeatcount
+		wt_word	virtualkeycode
+		wt_word	virtualscancode
+		union
+			wt_word unicodechar
+			wt_char asciichar
+		end
+		wt_dword controlkeystate
+end
+
+record rspoint=(int16 x,y)
+
+record rsrect=
+	int16 leftx,top,rightx,bottom
+end
+
+global record rpoint =
+	wt_long x,y
+end
+
+record rconsole=
+	rspoint size,pos
+	word16 attributes
+	rsrect window
+	rspoint maxwindowsize
+end
+
+record rstartupinfo =
+	wt_dword	size
+!.if $64bit
+	word32 dummy1
+!.endif
+	wt_ichar	reserved
+	wt_ichar	desktop
+	wt_ichar	title
+	wt_dword	x
+	wt_dword	y
+	wt_dword	xsize
+	wt_dword	ysize
+	wt_dword	xcountchars
+	wt_dword	ycountchars
+	wt_dword	fillattribute
+	wt_dword	flags
+	wt_word		showwindow
+	wt_word		reserved2
+!.if $64bit
+	word32 dummy2
+!.endif
+	wt_ptr		reserved4
+	wt_handle	stdinput
+	wt_handle	stdoutput
+	wt_handle	stderror
+end
+
+record rprocess_information =
+	wt_handle process
+	wt_handle thread
+	wt_dword processid
+	wt_dword threadid
+end
+
+record rwndclassex =
+	wt_uint		size
+	wt_uint		style
+	wt_wndproc	wndproc
+	wt_int		clsextra
+	wt_int		wndextra
+	wt_handle	instance
+	wt_handle	icon
+	wt_handle	cursor
+!	wt_handle	background
+	wt_handle	background
+	wt_ichar	menuname
+	wt_ichar	classname
+	wt_handle	iconsm
+end
+
+global record rmsg =
+	wt_handle	hwnd
+	wt_uint		message
+!.if $64bit
+	word32		dummy1
+!.endif
+	wt_wparam	wParam
+	wt_lparam	lParam
+	wt_dword	time
+!.if $64bit
+	word32		dummy2
+!.endif
+	wt_point	pt
+end
+
+!wt_word x
+const NORMAL_PRIORITY_CLASS=32
+const CREATE_NEW_CONSOLE=16
+const DETACHED_PROCESS=16
+
+wt_handle hconsole, hconsolein
+
+input_record lastkey, pendkey
+int keypending			!whether pendkey contains a new key event detected by flushkbd
+
+ref function(ref void)int wndproc_callbackfn=nil	!windows call-back: address of handler
+
+int init_flag=0
+
+global proc os_init=
+int i,count
+rconsole info
+
+!general initialisation
+hconsole:=GetStdHandle(u32(-11))
+hconsolein:=GetStdHandle(u32(-10))
+
+lastkey.repeatcount:=0
+keypending:=0
+
+!CPL "OSINIT"
+SetConsoleCtrlHandler(nil,1)
+
+SetConsoleMode(hconsole,1 ior 2)
+!SetConsoleMode(hconsole,1 )
+
+init_flag:=1
+
+end
+
+global function os_execwait(ichar cmdline,int newconsole=0,ichar workdir=nil)int =
+wt_dword exitcode
+int status
+int cflags:=0
+
+rstartupinfo si
+rprocess_information xpi
+
+memset(&si,0,si.bytes)
+memset(&xpi,0,xpi.bytes)
+
+switch newconsole
+when 0 then cflags := NORMAL_PRIORITY_CLASS
+when 1 then cflags := NORMAL_PRIORITY_CLASS ior CREATE_NEW_CONSOLE
+when 2 then cflags := NORMAL_PRIORITY_CLASS ior DETACHED_PROCESS
+endswitch
+
+si.size := rstartupinfo.bytes
+
+status:=CreateProcessA( nil,
+	cmdline,
+	nil,
+	nil,
+	1,
+	cflags,
+
+	nil,
+	nil,
+	&si,
+	&xpi )
+
+if status=0 then		!fails
+	status:=GetLastError()
+	println "Winexec error:",status
+	return -1
+end
+
+WaitForSingleObject(xpi.process, 0xFFFF'FFFF)
+GetExitCodeProcess(xpi.process,&exitcode)
+
+CloseHandle(xpi.process)
+CloseHandle(xpi.thread)
+
+return exitcode
+end
+
+global function os_execcmd(ichar cmdline, int newconsole=0)int =
+wt_dword exitcode
+int i,j,k
+
+rstartupinfo si
+rprocess_information xpi
+
+memset(&si,0,si.bytes)
+memset(&xpi,0,xpi.bytes)
+
+si.size := rstartupinfo.bytes
+
+CreateProcessA( nil,
+	cmdline,
+	nil,
+	nil,
+	1,
+	NORMAL_PRIORITY_CLASS ior (newconsole|CREATE_NEW_CONSOLE|0),
+	nil,
+	nil,
+	&si,
+	&xpi )
+
+CloseHandle(xpi.process)
+CloseHandle(xpi.thread)
+
+return 1
+end
+
+global function os_getch:int=
+int k
+
+k:=os_getchx() iand 255
+
+return k
+end
+
+global function os_kbhit:int=
+wt_dword count
+!os_init() unless init_flag
+
+unless init_flag then os_init() end
+!unless initflag then: os_init()
+
+GetNumberOfConsoleInputEvents(hconsolein,&count)
+return count>1
+end
+
+global proc os_flushkeys=
+FlushConsoleInputBuffer(hconsolein)
+end
+
+global function os_getconsolein:ref void=
+return ref void(hconsolein)
+end
+
+global function os_getconsoleout:ref void=
+return ref void(hconsole)
+end
+
+global function os_proginstance:ref void=
+abortprogram("PROGINST")
+return nil
+end
+
+global function os_getdllinst(ichar name)u64=
+wt_handle hinst
+
+hinst:=LoadLibraryA(name)
+return cast(hinst)
+end
+
+global function os_getdllprocaddr(intm hinst,ichar name)ref void=
+return GetProcAddress(cast(int(hinst)),name)
+end
+
+global proc os_initwindows=
+os_init()
+os_gxregisterclass("pcc001")
+end
+
+global proc os_gxregisterclass(ichar classname)=
+const idcarrow=32512
+rwndclassex r
+static byte registered
+
+if registered then
+	return
+fi
+
+!CPL "REG CLASS"
+
+memset(&r,0,r.bytes)
+r.size:=r.bytes
+r.style:=8 ior 32		!CS_DBLCLKS | CS_OWNDC
+r.wndproc:=cast(&mainwndproc)
+!r.wndproc:=&xmainwndproc
+!r.wndproc:=&cmainwndproc
+r.instance:=nil
+
+r.icon:=nil		!loadicon(proginstance,"SCW32")
+r.cursor:=LoadCursorA(nil,ref void(idcarrow))		!IDC_ARROW)
+r.background:=cast(15+1)					!COLOR_BTNFACE+1
+r.menuname:=nil
+r.classname:=classname
+r.iconsm:=nil	!loadicon(proginstance,"SCW32")
+
+if RegisterClassExA(&r)=0 then
+	println classname,GetLastError
+	abortprogram("Registerclass error")
+end
+registered:=1
+end
+
+global callback function mainwndproc (\
+		wt_handle hwnd, wt_uint message, wt_wparam wParam, wt_lparam lParam)intm=
+rmsg m
+int i,result
+intm l
+static int count=0
+
+!CPL "MAINWND/MV"
+
+m.hwnd:=hwnd
+m.message:=message
+m.wParam:=wParam
+m.lParam:=lParam
+m.pt.x:=0
+m.pt.y:=0
+
+if (wndproc_callbackfn) then
+	result:=(wndproc_callbackfn^)(&m)
+else
+	result:=0
+fi
+
+if m.message=wm_destroy then
+	return 0
+fi
+
+if not result then
+	return DefWindowProcA(hwnd,message,wParam,lParam)
+else
+	return 0
+fi
+end
+
+!callback proc timerproc(wt_handle hwnd, int msg, id, time)=
+proc timerproc(wt_handle hwnd, int msg, id, time)=
+println "TIMERPROC"
+end
+
+global proc os_setmesshandler(ref void addr)=
+wndproc_callbackfn:=addr
+end
+
+global function os_getchx:int=
+!Q! function os_getchx_c:int
+!return a 32-bit value containing:
+! 15..B0:	char code
+! 23..16	virtual keycode
+! 31..24	shift flags (.[24]=shift, .[25]=ctrl, .[26]=alt, .[27]=capslock)
+const rightaltmask	= 1
+const leftaltmask	= 2
+const leftctrlmask	= 8
+const rightctrlmask	= 4
+const shiftmask		= 16
+const capsmask		= 128
+const scrollmask	= 64
+int count
+int charcode,keyshift,keycode
+int altdown,ctrldown,shiftdown,capslock
+
+!os_init() unless init_flag
+unless init_flag then os_init() end
+
+if keypending then
+	lastkey:=pendkey
+	keypending:=0
+else
+	if lastkey.repeatcount=0 then
+		repeat
+			count:=0
+			ReadConsoleInputA(hconsolein,&lastkey,1,&count)
+		until (lastkey.eventtype=1 and lastkey.keydown=1)
+	fi
+fi
+
+!set shift flags
+
+altdown		:= ((lastkey.controlkeystate iand (leftaltmask ior rightaltmask))|1|0)
+ctrldown	:= ((lastkey.controlkeystate iand (leftctrlmask ior rightctrlmask))|1|0)
+shiftdown	:= ((lastkey.controlkeystate iand shiftmask)|1|0)
+capslock	:= ((lastkey.controlkeystate iand capsmask)|1|0)
+
+--lastkey.repeatcount		!count this key out
+
+charcode:=lastkey.asciichar
+keycode:=lastkey.virtualkeycode iand 255
+
+if charcode<0 then
+	if charcode<-128 then
+		charcode:=0
+	else
+		charcode+:=256
+	fi
+fi
+
+!CPL "CHARCODE2=%d %X\n",charcode,charcode
+!for keycodes in range 186 to 223, which are all stand-alone punctuation keys, I might
+!wish to set charcode to the appropriate printed char code (currently charcode will be
+!zero, and keyboard handlers need to detect keycodes such as vkequals)
+!....
+
+if altdown and ctrldown and charcode=166 then
+	altdown:=ctrldown:=0
+else
+	if altdown or ctrldown then
+		charcode:=0
+		if keycode>='A' and keycode<= 'Z' then
+			charcode:=keycode-'@'
+		fi
+	fi
+fi
+
+keyshift:=capslock<<3 ior altdown<<2 ior ctrldown<<1 ior shiftdown
+
+return keyshift<<24 ior keycode<<16 ior charcode
+end
+
+global function os_getos=>ichar=
+if $targetbits=32 then
+	return "W32"
+else
+	return "W64"
+fi
+end
+
+global function os_gethostsize=>int=
+return $targetbits
+end
+
+global function os_shellexec(ichar opc, file)int=
+return system(file)
+end
+
+global proc  os_sleep(int a)=
+Sleep(a)
+end
+
+global function os_getstdin:filehandle =
+return fopen("con","rb")
+end
+
+global function os_getstdout:filehandle =
+return fopen("con","wb")
+end
+
+global function os_gethostname:ichar=
+static [300]char name
+static int n
+
+GetModuleFileNameA(nil,&.name,name.bytes)
+strcat(&.name,"/")
+return &.name
+end
+
+global function os_getmpath:ichar=
+return F"C:\m\"
+end
+
+global proc os_exitprocess(int x)=
+stop x
+!ExitProcess(x)
+end
+
+global function os_clock:int64=
+return clock()
+end
+
+global function os_getclockspersec:int64=
+return 1000
+end
+
+global function os_iswindows:int=
+return 1
+end
+
+global function os_filelastwritetime(ichar filename)int64=
+wt_handle f;
+int64 ctime,atime,wtime;
+
+if filename=nil then				!used to test whether supported
+	return 1
+fi
+
+f:=CreateFileA(filename,0x80000000,1,nil, 3,3,nil);
+if int64(f)=-1 then
+	return 0
+fi
+
+GetFileTime(f,&ctime,&atime,&wtime);
+CloseHandle(f);
+
+return wtime;
+end
+
+global proc os_getsystime(ref rsystemtime tm)=
+GetLocalTime(tm)
+end
+
+global proc os_messagebox(ichar s,t)=
+messageboxa(0,s,t,0)
+end
+
+global function os_hpcounter:int64=
+int64 a
+
+queryperformancecounter(&a)
+return a
+
+end
+
+global function os_hpfrequency:int64=
+int64 a
+
+queryperformancefrequency(&a)
+return a
+
+end
+
+global proc os_peek=
+int ticks
+static int lastticks
+array [100]byte m
+	ticks:=GetTickCount()
+	if ticks-lastticks>=1000 then
+		lastticks:=ticks
+		PeekMessageA(&m,nil,0,0,0)
+	fi
+end
+=== oswindll.m 35/36 ===
+import clib
+import mlib
+
+!IMPORT OSWINDLLC
+
+global function os_calldllfunction(ref proc fnaddr,
+		int retcode, nargs, ref[]i64 args, ref[]byte argcodes)word64 =
+	word64 a
+	real64 x
+	int oddstack, nextra, pushedbytes
+
+!	return os_calldllfunctionc(fnaddr,retcode,nargs,args,argcodes)
+
+	oddstack:=nextra:=0
+
+	assem
+		test astack,8
+		jz L100
+		mov byte [oddstack],1
+L100:
+	end
+
+	if oddstack then
+		if nargs<5 then
+			nextra:=5-nargs
+		elsif nargs.even then
+			nextra:=1
+		fi
+
+	else
+		if nargs<4 then
+			nextra:=4-nargs
+		elsif nargs.odd then
+			nextra:=1
+		fi
+	fi
+
+	pushedbytes:=(nextra+nargs)*8
+
+!RETURN 0
+
+!CPL "D4"
+	to nextra do
+		assem
+			push 0
+		end
+	od
+!CPL "D5"
+
+	for i:=nargs downto 1 do
+		a:=args^[i]					!get generic 64-bit value to push
+		assem
+			push word64 [a]
+		end
+	od
+
+!CPL =NEXTRA+NARGS,=pushedbytes,=oddstack
+
+!load first 4 args to registers; this first version will blindly load 4 args
+!(even if there are less) to both integer and xmm registers. Should be int/pointer
+!types to integer regs; float types to xmm; and variadic to both
+	assem
+		mov D10,[Dstack]
+		movq XMM0,[Dstack]
+		mov D11,[Dstack+8]
+		movq XMM1,[Dstack+8]
+		mov D12,[Dstack+16]
+		movq XMM2,[Dstack+16]
+		mov D13,[Dstack+24]
+		movq XMM3,[Dstack+24]
+	end
+
+	if retcode='I' then
+		a:=((ref function:int64(fnaddr))^())
+		asm add Dstack,[pushedbytes]
+		return a
+	else
+		x:=((ref function:real64(fnaddr))^())
+		asm add Dstack,[pushedbytes]
+		return word64@(x)
+	fi
+end	
+
+global function os_pushargs(ref[]word64 args, int nargs, nextra,
+					ref proc fnaddr, int isfloat)word64=
+!	a:=os_pushargs(&wordargs, na, nextra, fnaddr, retttype=tp_r64)
+!implements central part of 'callapplproc' which needs to be in asm
+	word64 a
+	real64 x
+
+CPL "PUSH ARGS",NARGS, NEXTRA
+
+	to nextra do
+		asm	push 0
+	end
+
+CPL "PUSH ARGS2"
+	for i to nargs do
+		a:=args[i]
+		asm push word64 [a]
+	od
+CPL "PUSH ARGS3"
+
+	if isfloat then
+		x:=((ref function:real64(fnaddr))^())
+		a:=int64@(x)
+	else
+		a:=((ref function:int64(fnaddr))^())
+	fi
+
+	return a
+end
+=== mm_help.txt 36/36 ===
 'MM' Mosaic Compiler Generating x64 native code - Windows Version
 
 Whole-program compiler builds entire program from the lead module
