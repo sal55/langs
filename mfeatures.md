@@ -1178,7 +1178,7 @@ There also ways to print into a string:
 
     println @&.str, "One","Two"
 
-(Both print and read need further docs to use effectively, but these are the basics.
+(Both print and read need further docs to use effectively, but these are the basics.)
 
 ### Read and Readln
 
@@ -1286,11 +1286,10 @@ Each declaration must start with the language the function uses. Or rather the c
 
 * **clang**
 * **windows**
+* **mlang**
 
 **windows** is not a language, it is to show the Windows call convention is used
-rather then normal C.
-
-(On Win64, both Windows and C use the same call convention. M uses its own.)
+rather then normal C. (On Win64, both Windows and C use the same call convention. M uses its own.)
 
 Where a foreign function has a case-senstive name, it must be in quotes:
 
@@ -1304,6 +1303,8 @@ But then it can be used like this:
 
 This also demonstrates adding optional parameters with default values, and  using keyword parameters.
 
+Foreign function can also be written as `MessageBoxA, but then all instances must be written the same way. The advantage is that this can distinguish between names that can clash when converted to lower case, or names that clash with a reserved word.
+
 (There used to be an option to supply an alias to function, such as:
 
     function "MesssageBoxA" as "messagebox" ...
@@ -1316,12 +1317,11 @@ These are special built-in variables that can be used to determine various aspec
 
     $lineno         Current line number as an int constant
     $strlineno      Line number as a string
-    $modulename
-    $filename
+    $modulename     Name of module
+    $filename       Filename of module
     $function       Current function name
-    $date           String constants containing date or time
-    $time
-    $version
+    $date           String constants containing date or time of compilation
+    $time    
 
 ### Standard Libraries
 
@@ -1333,7 +1333,7 @@ These are special built-in variables that can be used to determine various aspec
 
 ### **nil** Pointer Constant
 
-This is designated by **nil**, which has type 'ref void'.
+This is designated by **nil**, which has type 'ref void'. It is used to set pointers to 'unused', or not pointing at anything.
 
 ### System Constants
 
@@ -1404,13 +1404,15 @@ There is a new, simple implementation of macros, example:
     macro getopnd = (pcptr+1)^
     macro dist(x,y) = sqrt(x*x+y*y)
 
-That second form can be used for inline functions. The body of a macro must always be a single, well-formed expression or term. However, a sequence of statements can be trivially be turned into an expression:
+That second form can be used for inline functions. The body of a macro must always be a single, well-formed expression or term. However, a sequence of statements can trivially be turned into an expression:
 
      (s1; s2; s3)
 
 So multi-line macro bodies are possible. What is not allowed are definitions (as macros are expanded in a later pass after the symbol table is completed).
 
 ### Bit Indexing
+
+(BIT/BITFIELD INDEXING needs to be checked.)
 
 If A is an integer, then it can be indexed like this:
 
@@ -1439,7 +1441,7 @@ If A is an integer, then an arbitrary bitfield can be extracted using:
 
 ### Address-of Operator
 
-This like it is in C, but it is a little different for arrays:
+This is like it is in C, but it is a little different for arrays:
 
     [10]int A
     &A           # type is ref[10]int
@@ -1529,17 +1531,18 @@ For more complex selections, normal switch and case statements can be used.
 
 ### Initialisation of Arrays and Records
 
-Scalars can be initialised in the same way they can be assigned to. But it is not possible to assign to arrays and records from an array/record constructor:
+For static variables, scalars, arrays and records can only be initialised with compile-time expressions, or those involving addresses of static variables (there are limits on how complex the latter can be).
 
-     [3]int A
+For non-static (ie. stack frame), they can be initialised in the same way they are assigned to.
 
-     A := (10,20,x)           # not allowed, even if x is constant
+Assigning to arrays and records is a recent feature, although there are some limitations: char arrays can't be initialised or assigned to this way.
 
-They can be initialised from a construct, but only for static variables (ie. using '=' rather than ':='), and the constructs must consist of compile-time expressions, or static addresses in the case of pointers:
+This is becomes the assignment is done an element at a time, and would be inefficient to assign a string to an char-array by loading and storing a character at a time. Otherwise it can be:
 
-     static [3]int A = (10,20,30)    # Note '=' not ':='
+    []int A := (x,y,z)      # x,y,z represent runtime expressions; A will have a length of 3
+    date D := (x,y,z)
+    D := (p,q,r)
 
-Outside of a function. 'static' is not needed.
 
 ### Creating Amalgamated Files
 
@@ -1570,6 +1573,4 @@ Lots of nice features listed, but there are plenty of issues too:
 * There is a limited amount of source code in M (currently some 100Kloc), so the tools will not have got the testing they would get if applied to a billion lines of C code. So there will be inevitable bugs, corner cases that have never been tested etc as well as language features that don't work as well as expected.
 
 * There is no optimiser.
-
-Basically, the main problem is that it is not C. Even though C is a ghastly language, it is everywhere, there are loads of tools for it, and huge numbers of people are familiar with it.
 
