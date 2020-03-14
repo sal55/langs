@@ -1,77 +1,77 @@
 mafile 73
   1 cc.m               17893     3169   0
-  2 msysnew.m          46919    21086   0
-  3 clibnew.m           3397    68029   0
-  4 mlib.m             26695    71447   0
-  5 oswindows.m        12536    98168   0
-  6 cc_decls.m         10364   110729   0
-  7 cc_tables.m        25838   121119   0
-  8 cc_support.m        6293   146984   0
-  9 cc_lex.m           72446   153300   0
- 10 cc_headers.m        4675   225774   0
- 11 cc_lib.m           35435   230473   0
- 12 cc_parse.m         81164   265934   0
- 13 cc_genmcl.m        11307   347125   0
- 14 cc_libmcl.m        34475   358459   0
- 15 cc_blockmcl.m      61618   392963   0
- 16 cc_genasm.m        28426   454608   0
- 17 cc_export.m         5903   483061   0
- 18 cc_assembler.m      6162   488994   0
- 19 ax_tables.m        12658   495183   0
- 20 ax_decls.m          5554   507867   0
- 21 ax_lex.m           13275   513445   0
- 22 ax_parse.m          8887   526746   0
- 23 ax_lib.m           16275   535657   0
- 24 ax_genss.m         41023   551958   0
- 25 ax_objdecls.m       2566   593010   0
- 26 ax_writeexe.m      24274   595605   0
- 27 ax_disasm.m        26006   619906   0
- 28 ax_writeobj.m       7418   645941   0
- 29 bcclib.asm          2765   653385   1
- 30 assert.h              67   656174   1
- 31 ctype.h              372   656264   1
- 32 errno.h             1736   656659   1
- 33 fenv.h               338   658417   1
- 34 float.h             1511   658778   1
- 35 inttypes.h          2016   660315   1
- 36 stdint.h            1227   662355   1
- 37 limits.h             660   663606   1
- 38 locale.h             707   664290   1
- 39 _ansi.h               22   665020   1
- 40 math.h              1227   665064   1
- 41 setjmp.h             364   666315   1
- 42 signal.h             455   666703   1
- 43 stdarg.h             340   667182   1
- 44 stdbool.h             91   667547   1
- 45 stddef.h             368   667662   1
- 46 stdio.h             3032   668053   1
- 47 stdlib.h            1381   671109   1
- 48 _syslist.h            25   672516   1
- 49 string.h            1513   672565   1
- 50 time.h               903   674100   1
- 51 utime.h               48   675026   1
- 52 unistd.h              23   675098   1
- 53 safelib.h             24   675146   1
- 54 wchar.h              518   675193   1
- 55 wctype.h              23   675735   1
- 56 types.h              175   675781   1
- 57 stat.h              1235   675978   1
- 58 timeb.h              284   677236   1
- 59 utime.h              128   677543   1
- 60 memory.h              21   677695   1
- 61 windows.h          92016   677741   1
- 62 fcntl.h             1106   769780   1
- 63 io.h                1216   770906   1
- 64 direct.h             735   772146   1
- 65 process.h            621   772906   1
- 66 malloc.h              99   773551   1
- 67 bcc.h                236   773671   1
- 68 conio.h              353   773930   1
- 69 winsock2.h          4255   774309   1
- 70 _mingw.h            4027   778588   1
- 71 windowsx.h           241   782641   1
- 72 help.txt            1308   782906   1
- 73 info.txt            2162   784238   1
+  2 msysnew.m          47147    21086   0
+  3 clibnew.m           3397    68257   0
+  4 mlib.m             26724    71675   0
+  5 oswindows.m        12536    98425   0
+  6 cc_decls.m         10364   110986   0
+  7 cc_tables.m        25838   121376   0
+  8 cc_support.m        6293   147241   0
+  9 cc_lex.m           72446   153557   0
+ 10 cc_headers.m        4675   226031   0
+ 11 cc_lib.m           35435   230730   0
+ 12 cc_parse.m         81164   266191   0
+ 13 cc_genmcl.m        11307   347382   0
+ 14 cc_libmcl.m        34438   358716   0
+ 15 cc_blockmcl.m      61618   393183   0
+ 16 cc_genasm.m        28545   454828   0
+ 17 cc_export.m         5903   483400   0
+ 18 cc_assembler.m      6183   489333   0
+ 19 ax_tables.m        12658   495543   0
+ 20 ax_decls.m          5554   508227   0
+ 21 ax_lex.m           13275   513805   0
+ 22 ax_parse.m          8887   527106   0
+ 23 ax_lib.m           16275   536017   0
+ 24 ax_genss.m         40744   552318   0
+ 25 ax_objdecls.m       2566   593091   0
+ 26 ax_writeexe.m      24274   595686   0
+ 27 ax_disasm.m        26006   619987   0
+ 28 ax_writeobj.m       7418   646022   0
+ 29 bcclib.asm          2765   653466   1
+ 30 assert.h              67   656255   1
+ 31 ctype.h              372   656345   1
+ 32 errno.h             1736   656740   1
+ 33 fenv.h               338   658498   1
+ 34 float.h             1511   658859   1
+ 35 inttypes.h          2016   660396   1
+ 36 stdint.h            1227   662436   1
+ 37 limits.h             660   663687   1
+ 38 locale.h             707   664371   1
+ 39 _ansi.h               22   665101   1
+ 40 math.h              1227   665145   1
+ 41 setjmp.h             364   666396   1
+ 42 signal.h             455   666784   1
+ 43 stdarg.h             340   667263   1
+ 44 stdbool.h             91   667628   1
+ 45 stddef.h             368   667743   1
+ 46 stdio.h             3032   668134   1
+ 47 stdlib.h            1381   671190   1
+ 48 _syslist.h            25   672597   1
+ 49 string.h            1513   672646   1
+ 50 time.h               903   674181   1
+ 51 utime.h               48   675107   1
+ 52 unistd.h              23   675179   1
+ 53 safelib.h             24   675227   1
+ 54 wchar.h              518   675274   1
+ 55 wctype.h              23   675816   1
+ 56 types.h              175   675862   1
+ 57 stat.h              1235   676059   1
+ 58 timeb.h              284   677317   1
+ 59 utime.h              128   677624   1
+ 60 memory.h              21   677776   1
+ 61 windows.h          92016   677822   1
+ 62 fcntl.h             1106   769861   1
+ 63 io.h                1216   770987   1
+ 64 direct.h             735   772227   1
+ 65 process.h            621   772987   1
+ 66 malloc.h              99   773632   1
+ 67 bcc.h                236   773752   1
+ 68 conio.h              353   774011   1
+ 69 winsock2.h          4255   774390   1
+ 70 _mingw.h            4027   778669   1
+ 71 windowsx.h           241   782722   1
+ 72 help.txt            1308   782987   1
+ 73 info.txt            2162   784319   1
 === cc.m 1/73 ===
 import msys
 import mlib
@@ -1140,6 +1140,8 @@ ref[]ichar env
 static [128]byte startupinfo			! 68 or 104 bytes
 int res
 ichar s
+
+!CPL "M$INIT"
 
 res:=__getmainargs(&nargs,cast(&args),cast(&env),0,cast(&startupinfo))
 
@@ -2384,7 +2386,20 @@ end
 !	end
 !end
 
-function xdivrem(word64 a,b, &remainder)word64=
+!function xdivrem(word64 a,b, &remainder)word64=
+!	word64 q,r
+!	assem
+!		xor rdx,rdx
+!		mov rax,[a]
+!		div u64 [b]
+!		mov [q],rax	
+!		mov [r],rdx	
+!	end
+!	remainder:=r
+!	return q
+!end
+
+function mdivrem(word64 a,b)word64,word64=
 	word64 q,r
 	assem
 		xor rdx,rdx
@@ -2393,8 +2408,9 @@ function xdivrem(word64 a,b, &remainder)word64=
 		mov [q],rax	
 		mov [r],rdx	
 	end
-	remainder:=r
-	return q
+	return (q,r)
+!	remainder:=r
+!	return q
 end
 
 function u64tostr(u64 aa,ref char s,word base,int sep)int =		!U64TOSTR
@@ -2413,11 +2429,12 @@ function u64tostr(u64 aa,ref char s,word base,int sep)int =		!U64TOSTR
 	g:=(base=10|3|4)
 
 	repeat
-		aa:=xdivrem(aa,base,dd)
+!		aa:=xdivrem(aa,base,dd)
+		(aa,dd):=mdivrem(aa,base)
+
 		t[++i]:=digits[dd]
 
-!		t[++i]:=digits[aa rem base]
-!		aa:=aa/base
+!!		aa:=aa/base
 
 !BUG in separator logic, doesn't work when leading zeros used, eg. printing
 !out a full length binary
@@ -4600,6 +4617,8 @@ ichar item,fileext
 ichar rest
 int length
 static [300]char str
+
+!CPL "NEXTCMD",NSYSPARAMS
 
 reenter::
 value:=nil
@@ -18107,8 +18126,9 @@ fi
 
 case a^.valtype
 when int_val,intix_val then
-!	sprintf(&.str,"%lld",value)
+!	GETSTRINT(VALUE,&.STR)
 	getstrint(value,&.str)
+!str[1]:=0
 
 when real_val,realix_val then
 !	sprintf(&.str,"%f (%s)",a^.xvalue, (a^.size=8|"double"|"float"))
@@ -18127,8 +18147,8 @@ when wstring_val,wstringix_val then
 when name_val then
 	return a^.svalue
 when label_val then
-!	sprintf(&.str,"L%d",int32(value))
 	print @&.str,"L",,value
+!	print @&.str,"L"
 else
 	str[1]:=0
 esac
@@ -18535,9 +18555,9 @@ when rnone then return "-"
 when rframe then rs:="frame"
 when rstack then rs:="stack"
 else
-!	sprintf(&.str2,"%d",int32(reg-r0))
 	getstrint(reg-r0,&.str2)
 	rs:=&.str2
+!	rs:="?"
 esac
 
 !sprintf(&.str,"%s%s",prefix[size],rs)
@@ -22975,7 +22995,8 @@ ref char p,q
 
 case a^.mode
 when a_reg then
-	asmstr(getregnamex(a^.reg,a^.size))
+!	asmstr(getregnamex(a^.reg,a^.size))
+	asmstr(getregname(a^.reg,a^.size))
 
 when a_imm then
 	strvaluex(a)
@@ -23056,8 +23077,9 @@ global function getstringname(int n)ichar=
 static [16]char str
 if n=0 then kk0used:=1 fi
 
-!sprintf(&.str,"KK%d",int32(n))
 print @&.str,"KK",,n
+!print @&.str,"KK"
+
 return &.str
 end
 
@@ -23234,8 +23256,10 @@ value:=a^.value
 
 case a^.valtype
 when int_val then
+!CPL =VALUE
 	case abs(sx)
 	when 1 then
+
 		if int32.minvalue<=value<=int32.maxvalue then
 		else
 			if sx<0 then gerror("conv/imm1") fi
@@ -23484,17 +23508,23 @@ end
 
 proc asmint(int64 a)=
 ichar s
+int n
+
+!RETURN
+
+!ASMSTR("XXX")
 
 s:=asmptr
 getstrint(a,s)
+!GETSTRINT(A,S)
 
-!if a<10 then
-!	++asmptr
-!elsif a<100 then
-!	asmptr+:=2
-!else
+!!if a<10 then
+!!	++asmptr
+!!elsif a<100 then
+!!	asmptr+:=2
+!!else
 	asmptr+:=strlen(s)
-!fi
+!!fi
 
 !n:=sprintf(asmptr,"%lld",a)
 !asmptr+:=n
@@ -23525,6 +23555,9 @@ static [1..8,0..r15]ichar regnames = (
 	(nil, nil,nil,nil,nil, nil,nil,nil,nil, nil,nil,nil,nil, nil,nil,nil,nil),
 	(nil, nil,nil,nil,nil, nil,nil,nil,nil, nil,nil,nil,nil, nil,nil,nil,nil),
 	("-","D0","D1","D2","D3","D4","D5","D6","D7","D8","D9","D10","D11","D12","D13","Dframe","Dstack"))
+
+!return "RR"
+
 
 return regnames[size,reg]
 end
@@ -24032,6 +24065,7 @@ import clib
 import mlib
 import oslib
 
+importpath "c:/ax/"
 import ax_tables
 import ax_decls
 import ax_lex
@@ -27521,11 +27555,10 @@ when 4 then
 	if a^.labeldef then
 		genabs32(a)
 	else
-		x:=a^.value
 		if a^.valtype then		!was real
-			gendword(getr32bits(x))
+			gendword(getr32bits(a.xvalue))
 		else
-			gendword(x)
+			gendword(a.value)
 		fi
 	fi
 when 8 then
@@ -27924,123 +27957,115 @@ function genrm(ref opndrec a,int opc)int=
 !!                         0  1  2  3  4  5  6  7
 !static var scaletable=(0: 0, 0, 1, 0, 2, 0, 0, 3)
 !                       1  2  3  4  5  6  7  8
-static []int scaletable=( 0, 1, 0, 2, 0, 0, 0, 3)
-int mode, rm, scale, dispsize, needsib, sib, index, base
-int reg, regix, code
+	static []int scaletable=( 0, 1, 0, 2, 0, 0, 0, 3)
+	int mode, rm, scale, dispsize, needsib, sib, index, base
+	int reg, regix, code
 
-mode:=rm:=0				!modrm is (mode, x, rm), of (2,3,3) bits
-scale:=0				!0=modrm only; 1/2/4/8 means sib used
-dispsize:=0
-needsib:=0
-sib:=-1
+	mode:=rm:=0				!modrm is (mode, x, rm), of (2,3,3) bits
+	scale:=0				!0=modrm only; 1/2/4/8 means sib used
+	dispsize:=0
+	needsib:=0
+	sib:=-1
 
-if a^.mode=a_mem and a^.addrsize=4 then
-	addroverride:=1
-fi
-
-case a^.mode
-when a_reg then			!modrm can only ref to a single register
-	code:=getregcodeb(a^.reg)
-!	code:=regcodes[a^.reg]
-!	if code>=8 then
-!		rex ior:=bmask
-!		code iand:=7
-!	fi
-
-	return makeam(makemodrm(3,opc,code), sib, dispsize)
-when a_mem then
-
-when a_xreg then
-	code:=getregcodebx(a^.reg)
-
-!	return makeam(makemodrm(3,code,opc), sib, dispsize)		!OLD
-	return makeam(makemodrm(3,opc,code), sib, dispsize)		!NEW
-
-else
-	gerror("genrm not mem")
-esac
-
-reg:=a^.reg
-regix:=a^.regix
-
-if reg=regix=0 then						!address only
-	mode:=0
-	rm:=4
-	scale:=1
-	index:=4
-	base:=5
-	dispsize:=4
-
-elsif a^.scale<=1 and regix=0 then			!simple address mode (no sib)
-	dispsize:=getdispsize(a,0)
-	if dispsize then
-		mode:=(dispsize=1|1|2)
+	if a^.mode=a_mem and a^.addrsize=4 then
+		addroverride:=1
 	fi
 
-	rm:=regcodes[reg]
+	case a^.mode
+	when a_reg then			!modrm can only ref to a single register
+		code:=getregcodeb(a^.reg)
+		return makeam(makemodrm(3,opc,code), sib, dispsize)
 
-	if rm<>4 and rm<>12 then
-		base:=rm
-!		if reg=rframe and dispsize=0 then
-		if (rm=5 or rm=13) and dispsize=0 then
-			mode:=1; dispsize:=1
-		fi
-		index:=0
+	when a_mem then
+
+	when a_xreg then
+		code:=getregcodebx(a^.reg)
+		return makeam(makemodrm(3,opc,code), sib, dispsize)		!NEW
+
 	else
-		index:=4				!means no index
-		base:=rm
-		scale:=1				!force sib
+		gerror("genrm not mem")
+	esac
 
-	fi
-elsif regix and reg=0 then
-	dispsize:=4
-	mode:=0
-	rm:=4
-	scale:=(a^.scale|a^.scale|1)
-	base:=5
-	index:=regcodes[regix]
-	if regix=rstack then gerror("Scaled rstack?") fi
+	reg:=a^.reg
+	regix:=a^.regix
 
-else										!assume regix used; optional reg and disp
-	dispsize:=getdispsize(a,0)
-	if dispsize then
-		mode:=(dispsize=1|1|2)
-	fi
-	rm:=4
-
-	scale:=(a^.scale|a^.scale|1)
-	if reg=0 then
-		base:=5
-	else
-		if reg=rframe and dispsize=0 then
-			mode:=1; dispsize:=1
-		fi
-		base:=regcodes[reg]
-	fi
-
-	if regix=0 then
+	if reg=regix=0 then						!address only
+		mode:=0
+		rm:=4
+		scale:=1
 		index:=4
-	else
-		index:=regcodes[regix]
-	fi
-
-	if regix and not reg then
+		base:=5
 		dispsize:=4
+
+	elsif a^.scale<=1 and regix=0 then			!simple address mode (no sib)
+		dispsize:=getdispsize(a,0)
+		if dispsize then
+			mode:=(dispsize=1|1|2)
+		fi
+
+		rm:=regcodes[reg]
+
+		if rm<>4 and rm<>12 then
+			base:=rm
+			if (rm=5 or rm=13) and dispsize=0 then
+				mode:=1; dispsize:=1
+			fi
+			index:=0
+		else
+			index:=4				!means no index
+			base:=rm
+			scale:=1				!force sib
+
+		fi
+	elsif regix and reg=0 then
+		dispsize:=4
+		mode:=0
+		rm:=4
+		scale:=(a^.scale|a^.scale|1)
+		base:=5
+		index:=regcodes[regix]
+		if regix=rstack then gerror("Scaled rstack?") fi
+
+	else										!assume regix used; optional reg and disp
+		dispsize:=getdispsize(a,0)
+		if dispsize then
+			mode:=(dispsize=1|1|2)
+		fi
+		rm:=4
+
+		scale:=(a^.scale|a^.scale|1)
+		if reg=0 then
+			base:=5
+		else
+			if reg=rframe and dispsize=0 then
+				mode:=1; dispsize:=1
+			fi
+			base:=regcodes[reg]
+		fi
+
+		if regix=0 then
+			index:=4
+		else
+			index:=regcodes[regix]
+		fi
+
+		if regix and not reg then
+			dispsize:=4
+		fi
+
+		if regix=rstack and scale>1 then gerror("Can't scale rstack") fi
+
 	fi
 
-	if regix=rstack and scale>1 then gerror("Can't scale rstack") fi
+	if index>=8 then rex ior:= xmask; index iand:=7 fi
+	if base>=8  then rex ior:= bmask; base  iand:=7 fi
 
-fi
+	if scale then
+		sib:=scaletable[scale]<<6 + index<<3 + base
+	fi
+	rm iand:=7
 
-if index>=8 then rex ior:= xmask; index iand:=7 fi
-if base>=8  then rex ior:= bmask; base  iand:=7 fi
-
-if scale then
-	sib:=scaletable[scale]<<6 + index<<3 + base
-fi
-rm iand:=7
-
-return makeam(makemodrm(mode:mode,opc:opc,rm:rm), sib, dispsize)
+	return makeam(makemodrm(mode:mode,opc:opc,rm:rm), sib, dispsize)
 end
 
 proc genrmbyte(int mode,opc,rm)=
@@ -28354,46 +28379,42 @@ end
 
 proc do_movsx(ref opndrec a,b,int opc)=
 !opc=B6 for movzx, and BE for movsx
-int am, regcode
+	int am, regcode
 
-if a^.mode<>a_reg then gerror("movsx not reg") fi
-!if a^.size=1 or a^.size<=b^.size then gerror("movsx size error") fi
+	if a^.mode<>a_reg then gerror("movsx not reg") fi
 
-if a^.size=8 and b^.size=4 then
-	if opc=0xBE then
-		do_movsxd(a,b)
-	else						!movsx 4->8 bytes, do normal move 4->4
-		a:=regtable[a^.reg,4]
-		do_mov(a,b)
+	if a^.size=8 and b^.size=4 then
+		if opc=0xBE then
+			do_movsxd(a,b)
+		else						!movsx 4->8 bytes, do normal move 4->4
+			a:=regtable[a^.reg,4]
+			do_mov(a,b)
+		fi
+		return
 	fi
-	return
-fi
 
-!if (opc=0xBE and a^.size=8) or a^.size=1 or a^.size<=b^.size then gerror("movsx size error") fi
-if a^.size=1 or a^.size<=b^.size then gerror("movsx size error") fi
+	if a^.size=1 or a^.size<=b^.size then gerror("movsx size error") fi
 
-if opc=0xB6 and b^.size=4 then gerror("movsx 4=>8 bytes?") fi
+	if opc=0xB6 and b^.size=4 then gerror("movsx 4=>8 bytes?") fi
 
-case b^.mode
-when a_reg then
-when a_mem then
-	if b^.size=0 then gerror("movsx need size prefix") fi
-	if b^.size=8 then gerror("movsx size 8") fi
-else
-	gerror("movsx not reg/mem")
-esac
+	case b^.mode
+	when a_reg then
+	when a_mem then
+		if b^.size=0 then gerror("movsx need size prefix") fi
+		if b^.size=8 then gerror("movsx size 8") fi
+	else
+		gerror("movsx not reg/mem")
+	esac
 
-regcode:=getregcoder(a^.reg)
+	regcode:=getregcoder(a^.reg)
 
-am:=genrm(b,regcode)
-setopsize(a)
-!cpl "CHECKHIGH/MOVSX"
-checkhighreg(b)
-genrex()
-!CPL =REX:"H"
-genbyte(0x0F)
-genbyte((b^.size=1|opc|opc+1))
-genamode(b,am)
+	am:=genrm(b,regcode)
+	setopsize(a)
+	checkhighreg(b)
+	genrex()
+	genbyte(0x0F)
+	genbyte((b^.size=1|opc|opc+1))
+	genamode(b,am)
 end
 
 proc checkhighreg(ref opndrec a)=
@@ -29088,7 +29109,7 @@ end
 function getr32bits(real x)int=
 !when x is real, convert to real32 then return 32-bit bit pattern
 real32 sx:=x
-return int32@(x)
+return int32@(sx)
 end
 
 proc genrel8(ref opndrec a)=

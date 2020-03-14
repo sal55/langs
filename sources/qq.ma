@@ -1,42 +1,42 @@
 mafile 38
   1 qq.m                3729     1664   0
-  2 msysnew.m          46919     5417   0
-  3 clibnew.m           3397    52360   0
-  4 mlib.m             26695    55778   0
-  5 oswindows.m        12536    82499   0
-  6 pci.m              19759    95055   0
-  7 pc_types.m          2773   114839   0
-  8 pc_decls.m         19679   117637   0
-  9 pq_common.m        18142   137342   0
- 10 pc_support.m       13427   155512   0
- 11 pc_misc.m           1671   168964   0
- 12 pc_pcfns.m         45642   170661   0
- 13 pc_objlib.m         7819   216330   0
- 14 pc_bignum.m         2754   224176   0
- 15 mbignum.m          30191   226955   0
- 16 pc_print.m         46284   257172   0
- 17 pc_jhandlers.m     52793   303486   0
- 18 pc_oslayer.m        5431   356307   0
- 19 oswindll.m          2115   361764   0
- 20 pc_host.m          30470   363904   0
- 21 pc_dxfns.m          7368   394400   0
- 22 pc_khandlers.m     59170   401798   0
- 23 pc_assem.m         99912   460994   0
- 24 var_decls.m        10045   560933   0
- 25 var_types.m         2791   571005   0
- 26 qc_tables.m        28264   573823   0
- 27 qci.m              20913   602108   0
- 28 qc_support.m        9259   623049   0
- 29 qc_lex.m           29129   632332   0
- 30 qc_parse.m         81923   661487   0
- 31 qc_lib.m           36052   743434   0
- 32 qc_name.m          26666   779511   0
- 33 qc_pclgen.m        71110   806204   0
- 34 qc_pcllib.m         9036   877341   0
- 35 q_libs_dummy.m        92   886407   0
- 36 ccm_fn.             2968   886522   1
- 37 ccm_host.           1215   889515   1
- 38 ccasm_fn.           4518   890755   1
+  2 msysnew.m          47147     5417   0
+  3 clibnew.m           3397    52588   0
+  4 mlib.m             26724    56006   0
+  5 oswindows.m        12536    82756   0
+  6 pci.m              19784    95312   0
+  7 pc_types.m          2773   115121   0
+  8 pc_decls.m         19679   117919   0
+  9 pq_common.m        18142   137624   0
+ 10 pc_support.m       13427   155794   0
+ 11 pc_misc.m           1671   169246   0
+ 12 pc_pcfns.m         45642   170943   0
+ 13 pc_objlib.m         7819   216612   0
+ 14 pc_bignum.m         2754   224458   0
+ 15 mbignum.m          30191   227237   0
+ 16 pc_print.m         46284   257454   0
+ 17 pc_jhandlers.m     52793   303768   0
+ 18 pc_oslayer.m        5431   356589   0
+ 19 oswindll.m          2115   362046   0
+ 20 pc_host.m          30470   364186   0
+ 21 pc_dxfns.m          7368   394682   0
+ 22 pc_khandlers.m     59170   402080   0
+ 23 pc_assem.m         99912   461276   0
+ 24 var_decls.m        10045   561215   0
+ 25 var_types.m         2791   571287   0
+ 26 qc_tables.m        28264   574105   0
+ 27 qci.m              20914   602390   0
+ 28 qc_support.m        9259   623332   0
+ 29 qc_lex.m           29131   632615   0
+ 30 qc_parse.m         81923   661772   0
+ 31 qc_lib.m           36052   743719   0
+ 32 qc_name.m          26666   779796   0
+ 33 qc_pclgen.m        71110   806489   0
+ 34 qc_pcllib.m         9036   877626   0
+ 35 q_libs_dummy.m        92   886692   0
+ 36 ccm_fn.             2968   886807   1
+ 37 ccm_host.           1215   889800   1
+ 38 ccasm_fn.           4518   891040   1
 === qq.m 1/38 ===
 mapmodule q_libs => q_libs_dummy
 
@@ -318,6 +318,8 @@ ref[]ichar env
 static [128]byte startupinfo			! 68 or 104 bytes
 int res
 ichar s
+
+!CPL "M$INIT"
 
 res:=__getmainargs(&nargs,cast(&args),cast(&env),0,cast(&startupinfo))
 
@@ -1562,7 +1564,20 @@ end
 !	end
 !end
 
-function xdivrem(word64 a,b, &remainder)word64=
+!function xdivrem(word64 a,b, &remainder)word64=
+!	word64 q,r
+!	assem
+!		xor rdx,rdx
+!		mov rax,[a]
+!		div u64 [b]
+!		mov [q],rax	
+!		mov [r],rdx	
+!	end
+!	remainder:=r
+!	return q
+!end
+
+function mdivrem(word64 a,b)word64,word64=
 	word64 q,r
 	assem
 		xor rdx,rdx
@@ -1571,8 +1586,9 @@ function xdivrem(word64 a,b, &remainder)word64=
 		mov [q],rax	
 		mov [r],rdx	
 	end
-	remainder:=r
-	return q
+	return (q,r)
+!	remainder:=r
+!	return q
 end
 
 function u64tostr(u64 aa,ref char s,word base,int sep)int =		!U64TOSTR
@@ -1591,11 +1607,12 @@ function u64tostr(u64 aa,ref char s,word base,int sep)int =		!U64TOSTR
 	g:=(base=10|3|4)
 
 	repeat
-		aa:=xdivrem(aa,base,dd)
+!		aa:=xdivrem(aa,base,dd)
+		(aa,dd):=mdivrem(aa,base)
+
 		t[++i]:=digits[dd]
 
-!		t[++i]:=digits[aa rem base]
-!		aa:=aa/base
+!!		aa:=aa/base
 
 !BUG in separator logic, doesn't work when leading zeros used, eg. printing
 !out a full length binary
@@ -3779,6 +3796,8 @@ ichar rest
 int length
 static [300]char str
 
+!CPL "NEXTCMD",NSYSPARAMS
+
 reenter::
 value:=nil
 name:=nil
@@ -4981,7 +5000,7 @@ function disploop_fn(int n)ref int =			!DISPLOOP_FN
 int64 count
 const intervalcount=1
 
-type fnptr2=ref ref function: ref intm
+type fnptr=ref ref function: ref intpc
 !type fnptr=ref function: ref intm
 !fnptr fn
 
@@ -4995,7 +5014,8 @@ count:=intervalcount
 lastticks:=os_clock()
 
 repeat
-	pcptr:=ref ref function:ref intpc(pcptr)^^()
+!	pcptr:=ref ref function:ref intpc(pcptr)^^()
+	pcptr:=fnptr(pcptr)()
 until stopped
 
 ticks:=os_clock()-lastticks
@@ -30000,7 +30020,7 @@ int nstringobjects=0
 global function qcompiler_prod(ichar locinfile,locoutfile,int intlibs, fdocs=0)int=
 ichar ext, infile, outfile
 
-println "Q Compiler [Production/Integrated Version 6]"
+!println "Q Compiler [Production/Integrated Version 6]"
 
 initdata()
 
@@ -32141,6 +32161,7 @@ fi
 basex:=base
 expon-:=fractlen
 x:=0.0
+
 for i:=1 to intlen+fractlen do		!digits already range-checked
 	c:=realstr[i]
 	if c>='0' and c<='9' then

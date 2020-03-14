@@ -1,19 +1,19 @@
 mafile 15
   1 ax.m                9608      675   0
-  2 msysnew.m          46936    10307   0
-  3 clibnew.m           3397    57267   0
-  4 mlib.m             26724    60685   0
-  5 oswindows.m        12536    87435   0
-  6 ax_tables.m        12658    99997   0
-  7 ax_decls.m          5554   112680   0
-  8 ax_lex.m           13275   118257   0
-  9 ax_parse.m          8887   131557   0
- 10 ax_lib.m           16275   140468   0
- 11 ax_genss.m         40744   156769   0
- 12 ax_objdecls.m       2566   197542   0
- 13 ax_writeexe.m      24274   200137   0
- 14 ax_disasm.m        26006   224438   0
- 15 ax_writeobj.m       7418   250473   0
+  2 msysnew.m          47147    10307   0
+  3 clibnew.m           3397    57478   0
+  4 mlib.m             26724    60896   0
+  5 oswindows.m        12536    87646   0
+  6 ax_tables.m        12658   100208   0
+  7 ax_decls.m          5554   112891   0
+  8 ax_lex.m           13275   118468   0
+  9 ax_parse.m          8887   131768   0
+ 10 ax_lib.m           16275   140679   0
+ 11 ax_genss.m         40744   156980   0
+ 12 ax_objdecls.m       2566   197753   0
+ 13 ax_writeexe.m      24274   200348   0
+ 14 ax_disasm.m        26006   224649   0
+ 15 ax_writeobj.m       7418   250684   0
 === ax.m 1/15 ===
 import msys
 import clib
@@ -1858,7 +1858,20 @@ end
 !	end
 !end
 
-function xdivrem(word64 a,b, &remainder)word64=
+!function xdivrem(word64 a,b, &remainder)word64=
+!	word64 q,r
+!	assem
+!		xor rdx,rdx
+!		mov rax,[a]
+!		div u64 [b]
+!		mov [q],rax	
+!		mov [r],rdx	
+!	end
+!	remainder:=r
+!	return q
+!end
+
+function mdivrem(word64 a,b)word64,word64=
 	word64 q,r
 	assem
 		xor rdx,rdx
@@ -1867,8 +1880,9 @@ function xdivrem(word64 a,b, &remainder)word64=
 		mov [q],rax	
 		mov [r],rdx	
 	end
-	remainder:=r
-	return q
+	return (q,r)
+!	remainder:=r
+!	return q
 end
 
 function u64tostr(u64 aa,ref char s,word base,int sep)int =		!U64TOSTR
@@ -1887,11 +1901,12 @@ function u64tostr(u64 aa,ref char s,word base,int sep)int =		!U64TOSTR
 	g:=(base=10|3|4)
 
 	repeat
-		aa:=xdivrem(aa,base,dd)
+!		aa:=xdivrem(aa,base,dd)
+		(aa,dd):=mdivrem(aa,base)
+
 		t[++i]:=digits[dd]
 
-!		t[++i]:=digits[aa rem base]
-!		aa:=aa/base
+!!		aa:=aa/base
 
 !BUG in separator logic, doesn't work when leading zeros used, eg. printing
 !out a full length binary
