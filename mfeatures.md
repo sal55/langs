@@ -516,7 +516,7 @@ I've never been a fan of C's 'const' attribute, which really complicates the typ
 
 Here, the initialisation is mandatory, as A can't be used as an lvalue like in an assignment. This provides some weak protection, but won't do much for more complex variables, such as arrays or pointers to data structures. Let is experimental.
 
-('Let <type> A:=expr' prohibits the use of &A, so it will stop elements of arrays and records from being written to as they make use &A for such operations. However that also stops &A from being passed to functions even if they do not intend to write to the object, which is a big restriction. So while providing more protection than I expected, at present it only practical for scalar types.)
+('Let \<type\> A:=expr' prohibits the use of &A, so it will stop elements of arrays and records from being written to as they make use &A for such operations. However that also stops &A from being passed to functions even if they do not intend to write to the object, which is a big restriction. So while providing more protection than I expected, at present it only practical for scalar types.)
 
 (Also experimental are 'in', 'out' and 'inout' attributes for function parameters. 'out' vaguely corresponds to '&' used for reference parameters. I haven't played with these attributes yet, and I'm not sure whether an 'in' parameter should be equivalent to 'let'.)
 
