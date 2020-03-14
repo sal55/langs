@@ -3,9 +3,11 @@
 
 M is a systems language first devised for 8-bit Z80 systems in early 1980s, since evolved and now targeting 64-bit Windows machines using x64 processor.
 
+It is also now known as 'Mosaic'.
+
 The following is not a formal reference but is a random collection of features, ideas and aims that may be useful to others. Or to help understand M source code.
 
-This is an early draft, and there will be typos and omissions, mistakes and probably duplicates. It is also disorganised, but should be enough to get an idea of the language. I can't promise everything mentioned works in the actual M compiler.
+This is an early draft, and there will be typos and omissions, mistakes and probably duplicates. It is also disorganised, but should be enough to get an idea of the lanuage. I can't promise everything mentioned works in the actual M compiler.
 
 ### The M Compiler
 
@@ -26,6 +28,15 @@ A 'program' in this sense is the collection of modules and files that form a sin
 ### No Make or Project Files
 M builds a project by submitting only the lead module. It will then locate all necessary modules (by following import links), to produce an executable named after the lead module.
 
+### Linking with external libraries
+
+M by default generates executables that are dynamically linked to DLLs. To statically link to such libraries, requires:
+* Getting mm to generate .asm (-c switch) (Note direct mm -obj support is not working right now)
+* Using ax (companion assembler/linker) to produce .obj files
+* Linking via the C compiler gcc with .o or .a files
+
+This requires the external library to exist in the form of gcc-compatible .o object files, or .a archive files. It further requires a .a library to contain the actual library functions, and not simply be an interface to a DLL file. 
+
 ### Compilation Speed
 I've taken my eye off the ball recently, but it will still compile at hundreds of thousands of lines per second on my slowish PC with a conventional hard drive.
 
@@ -38,15 +49,22 @@ At various times, I have supported a C target, so generating a monolithic C sour
 But it is currently dropped as it requires a considerable effort. Also some features are problematical, or are not supported. (Also, unless Tiny C is used to compile the output file, compilation hits a brick wall as soon as gcc is invoked, as that compiler is much slower.)
 
 ### ASM Target
-This was the main target before mm could directly generate .exe or .obj files directly. It was in the syntax for my own very fast assembler (some 2M to 3M lines per second). Although no longer needed, it has handy for debugging, or for perusing the output. This is enabled using the -c option (use 'mm -help').
+This was the main target before mm could directly generate .exe \[or .obj\] files directly. It was in the syntax for my own very fast assembler (some 2M to 3M lines per second). Although no longer needed, it was handy for debugging, or for perusing the output. This is enabled using the -c option (use 'mm -help').
 
 The .asm output is again a single, monolithic file, which can actually be assembled into .exe or .obj - you need the 'AX' assembler/linker project, also written in M.
+
+### Generating .obj files
+
+These are needed when it is necessary to go beyond what mm can do itself. Eg. using external linkers, static linking with external libraries or C modules. It would be done using 'mm -obj', but I've found that that built in functionality was never properly adapted from the separate **ax** assembler. It can be done like this:
+
+    mm -c prog            # prog.m to prog.asm
+    ax -obj prog          # prog.asm to prog.obj
 
 ### M Syntax 
 Originally inspired by Algol-68, but has evolved its own style. Best described by looking at example programs.
 
 ### Modules and Imports
-This is another big difference from C (and C++ is only now acquiring modules). M has no header files and has not nee for declarations as well as definitions.
+This is another big difference from C (and C++ is only now acquiring modules). M has no header files and has no need for declarations as well as definitions.
 
 You define a function, variable, named constant, type, enum, macro etc in its own module. To export it, add a 'global' attribute in front, otherwise it is private to that module. 
 
@@ -70,9 +88,9 @@ Since functions are best kept small, there is no real need for multiple scopes a
 ### Semicolons
 While M ostensibly requires semicolons to separate statements, in practice these are rare in M source code. This is because newlines are converted to semicolons, except when:
 
-    * A line-continuation character \ is used at the end of the line
-    * The line clearly continues onto the next because it ends with one of:
-       "(" "[" "," or a binary operator
+* A line-continuation character \ is used at the end of the line
+* The line clearly continues onto the next because it ends with one of:
+       "(" "\[" "," or a binary operator
 
 ### Comments
 M only has single-line comments starting with "!" until end-of-line. ("!" came from the DEC Fortran and Algol I used in the late 70s.)
@@ -109,7 +127,7 @@ This is usually the start() function, which is always global (ie. exported, no '
 
 M will insert a call to a start-up routine in M's runtime module, to set up command-line parameters etc as global variables (nsysparams, and sysparams, the latter being an array of strings).
 
-main() can also be used as an entry point, but no special code is injected. (Used sometimes to create a minimal program.)
+main() can also be used as an entry point, especially if generating .obj files to be linked via gcc, as gcc will not recognise 'start'. (I previously stated that using main() will not cause init code to be executed, but that's not right.)
 
 ### The $init function
 If encountered in a module, it will be called automatically by start-up code. No 'global' attribute needed. However, because of non-determinate module import order, if such a routine depends on another $init function being called first, then this must be handled manually (with flags and direct invocation etc).
@@ -134,9 +152,20 @@ Conditional code is handled at the module rather than line level. It can look li
 
     mapmodule pc_assem => pc_assemc when ctarget
 
-Where, when 'import pc_assem' is encountered, it will instead import 'pc_assemc' (in this case a dummy module with empty functions). 'ctarget' can be a built-in flag or one set with compiler options.
+Where, when 'import pc_assem' is encountered, it will instead import 'pc_assemc' when 'ctarget' has the value '1' (in this case pc_assemc is a dummy module with empty functions). 'ctarget' can be a built-in flag or one set with compiler options.
 
 This keeps the contents of each module clean. (Look at some C system headers to see what happens with most code is a patchwork of #if/#ifdef blocks.) 
+
+There are a handful of built-in options, but are currently irrelevant now that M only targets x64 on 64-bit Windows. But user-defined options can be created on the mm command line:
+
+    mm -set:flag1 ...                # flag1 has default value "1"
+    mm -set:flag2:val ...            # flag2 has value "val"
+
+Which can be used as:
+
+    mapmodule A => B when flag1               # do this when flag1 is defined and has value "1"
+    mapmodule A => B when flag2 = "val"       # do this when flag2 is defined and has value "val"
+
 
 ### Function Tables
 There is a limited amount of reflection in that all functions (names and addresses) in the program are written to the executable, and can be accessed via special functions.
@@ -186,13 +215,13 @@ Common aliases:
 ### Type of Integer Constants
 These are defaults before any casts are applied, depending on the magnitude of the constant:
 
-    0 to 2** 63-1              int64
-    2**63 to 2** 64-1          word64
-    2**64 to 2** 127-1         int128
+    0 to 2**63-1              int64
+    2**63 to 2**64-1          word64
+    2**64 to 2**127-1         int128
     2**127 to 2**128-1         word128
     2**128 and above          'decimal' type (not implemented in this version)
 
-(No suffixes are used, except that in the next M version -L is used to force a decimal type for integers and floats.)
+(No suffixes are used to force a particular type, except that in the next M version -L is used to force a decimal type for integers and floats. To force a type, just use a cast, eg. word64(0).)
 
 ### Numeric Separators
 
@@ -216,7 +245,7 @@ Number bases from 2 to 16 can be used for integers and floats, eg:
     3x121    # base 3; 16
     8x377    # octal: 255
     12xBBB   # base 12: 1727 (not sure if bases 10x to 15x work in this language)
-    0xFFF    # hex
+    0xFFF    # hex: 4095
     5x3.4    # base 5: 3.8 (3 and 4/5)
     
 ### Numeric Limits and Type Sizes
@@ -239,7 +268,7 @@ For array lengths and bounds, there is a whole set of properties that can be ext
 ### Character Constants
 M uses ASCII, so 'A' has the value 65, but it has type 'char'.
 
-Multi-character constants are possible, with these types (which I'm going to tweak today actually so that most will have int types): 
+Multi-character constants are possible, with these types: 
 
     'A'                        c8
     up to 'ABCDEFGH'           u64
@@ -262,7 +291,7 @@ This is Algol68-based, with types written left-to-right:
     [10]int B            # Array 10 of int
     ref[]ref real C      # Point to array of pointer to int
 
-Compared to C (with its convoluted inside-out type-syntax with the name of the thing being declared somewhere in the middle), it's really easy with none its quirks. See sample source files.
+Compared to C (with its convoluted inside-out type-syntax with the name of the thing being declared somewhere in the middle), it's really easy with none of its quirks. See sample source files.
 
 ### Type Aliases
 These are written as, for example:
@@ -312,7 +341,7 @@ For multi-dimensions, use:
     [10,20]int A
     [,20]int A              # First unbounded
 
-(There are is limited support for passing multi-dimensional arrays to functions; the dimensions must be constants, except the first can be unbounded.)
+(There is limited support for passing multi-dimensional arrays to functions; the dimensions must be constants, except the first can be unbounded.)
 
 ### Value Arrays
 M arrays are always handled by value (C converts them always to a pointer, with a schism in the type system to ensure that). So:
@@ -352,6 +381,17 @@ Here, the struct occupies 4 consecutive bytes. There is no padding added to ensu
 Struct and union behave like anonymous structs and unions in C.
 
 Records in M must always be declared as named user types like the above; not anywhere, or anonymously, like in C. There is no concept of a struct tag.
+
+### Matching Foreign C Structs
+
+If a record is constructed to match a struct in a C interface, then field offsets must match exactly. However C can inject padding for alignment. This is tricky to duplicate, so a special attribute can be used:
+
+    record rec = $caligned
+        byte a
+        int64 b
+    end
+
+Such a record now occupies 16 bytes instead of 9, and b starts at offset +8 instead of +1.
 
 ### Records as Classes
 Records can contain other definitions such as types, named constants, and functions, which do not form part of any instance of the record. But I've done little with this, so I'm not sure exactly what is supported by M.
@@ -416,7 +456,7 @@ Here the '&' signifies a reference parameter. Functions require a return type, a
 
 This demonstrates:
 
-   * Parameter names with the same type can share the type (unlike C)
+   * Parameter names with the same type can share the type spec (unlike C)
    * => can be optionally used denote a return type
    * {...} braces can be used around a function body, the only place they are used. ({,}  were part of a more general syntax for deferred code, such as lamdbas, but never got around to that. Function bodies are certainly deferred.)
 
@@ -445,13 +485,13 @@ setlength1 uses explicit & and ^ operators, setlength2 does things implicitly. T
 Functions can be nested, but in a limited manner because a nested function can't access the stack-frame variables of its enclosing functions (that is difficult to implement). But it can still access static variable, named constants etc of those functions.
 
 ### Multiple Return Values
-An experimental feature limited to 3 scalar return types:
+An experimental feature limited to scalar return types:
 
     function fn => int, int, int =
        return (10, 20, 30)
     end
 
-    (a,b,c) := fn3()
+    (a,b,c) := fn3()         # At present exact type match needed (will not convert to match)
 
 Return values can be ignored:
 
@@ -459,22 +499,25 @@ Return values can be ignored:
     a := fn3()       # discard last two
     fn3()            # discard all
 
+
 ### Define Variables
 This is fairly standard; inside a function (anywhere in the function actually):
 
     int a, b:=123, c
-    mut int a, b:=123, c        # 'mut' can optionally be a prefix
+    var int a, b:=123, c        # 'var' can optionally be a prefix
 
-I liked the idea of requiring variable definitions to start with a keyword, this used to be 'var', until I decided 'var' should mean a variant type. Then it got changed to 'mut'. But I also found it was a pain having to type this prefix, so it is now optional.
+I liked the idea of requiring variable definitions to start with a keyword, but I also found it was a pain having to type this prefix, so it is now optional.
 
 At the moment, non-static variables are not automatically initialised to anything, like C.
 
 ### Readonly Variables
 I've never been a fan of C's 'const' attribute, which really complicates the type system. M never had anything like that until recently, when it was possible to use 'let' instead of 'var':
 
-    let A := 100
+    let int A := 100         # (type should be optional, but that is not supported yet)
 
 Here, the initialisation is mandatory, as A can't be used as an lvalue like in an assignment. This provides some weak protection, but won't do much for more complex variables, such as arrays or pointers to data structures. Let is experimental.
+
+('Let \<type\> A:=expr' prohibits the use of &A, so it will stop elements of arrays and records from being written to as they make use of &A for such operations. However that also stops &A from being passed to functions even if they do not intend to write to the object, which is a big restriction. So while providing more protection than I expected, at present it is only practical for scalar types.)
 
 (Also experimental are 'in', 'out' and 'inout' attributes for function parameters. 'out' vaguely corresponds to '&' used for reference parameters. I haven't played with these attributes yet, and I'm not sure whether an 'in' parameter should be equivalent to 'let'.)
 
@@ -486,7 +529,6 @@ or can be initialised with an expression or construct that must be a compile-tim
     int A = 100         # "=" must be used, not the ":=" of assignment
 
 Inside a function, a 'static' prefix is needed.
-
 
 ### Named Constants
 This is a very simple feature, naming compile-time expressions:
@@ -530,13 +572,19 @@ The "$" is a device which returns the name of the last enum defined, so it saves
 
 In this form, entries can be added, deleted or moved very easily. Notice the trailing comma on the last entry to facilitate this.
 
-The arrays can be zero-based (or some other value): use [0:] on the array declarations, and start with red=0. (But don't try to override the other enum values, as the array mapping can't cope with that.
+The arrays can be zero-based (or some other value): use [0:] on the array declarations, and start with red=0. (But don't try to override the other enum values, as the array mapping can't cope with that.)
 
 The () in tabledata() can contain a type name to contain the enums, as suggested above, eg:
 
     tabledata(colours) ....
 
-Or the () can be omitted completely, then it just defines parallel arrays, no enums.
+Or the () can be omitted completely, then it just defines parallel arrays, no enums:
+
+tabledata []ichar names, []int values =
+    ("one",   100),
+    ("two",   200),
+    ("three", 300),
+end
 
 ### Lengths and Bounds
 
@@ -547,7 +595,7 @@ The following can be applied to arrays and slices:
     .upb       # upper bound
     .bounds    # returns a range lower..upper (compile-time only)
 
-The following for any type:
+The following works for any type:
 
     .bytes     # byte-size in any type or expr
 
@@ -578,6 +626,9 @@ And this for primitive types:
 
     and     7   logical and (short circuit operators used in conditional exprs)
     or      8   logical or
+    xor     8   logical xor
+    andb    7   logical and (non-short circuit versions, always evaluates both operands)
+    orb     8   logical or
     not     -   logical not
 
     =       6   equals
@@ -619,13 +670,13 @@ And this for primitive types:
     fmod
     atan2                (Used as atan2(x,y))
 
-Note that many of these are functions in other languages, but are operators here. That means parenthese are not needed (but usually advised), but also they are properly overloaded.
+Note that many of these are functions in other languages, but are operators here. That means parentheses are not needed (but usually advised), but also they are properly overloaded.
 
 For example, **abs** can be applied to ints or reals, and will give the expected answer (try using abs() in C on a float rather than int):
 
-    int a; real x
-    a := abs a
-    x := abs y
+    int a,b; real x,y
+    b := abs a
+    y := abs x
 
 ### Precedence Levels
 
@@ -633,9 +684,9 @@ For example, **abs** can be applied to ints or reals, and will give the expected
     3   * / rem << >>
     4   + - iand ior ixor
     5   ..
-    6   = <> < <= >= > not notin
-    7   and
-    8   or
+    6   = <> < <= >= > not notin xor
+    7   and andb
+    8   or orb
 
     9   :=                             # lowest
 
@@ -675,6 +726,7 @@ And can be used consistently with multiple derefs:
 
     Q^^
     R^.S^.T                # (In such instances, that ^ can be omitted for cleaner code.)
+    R.S.T                  # Provided ^ is followed by "." or "[", it can be omitted for cleaner code
 
 Each ^ can be cancelled by one &, so that &Q^^ is equal to Q, and &&Q^ equals &Q.
 
@@ -690,7 +742,7 @@ Little to say about this, except it uses the common "." notation:
 
     pt.x + pt.y
 
-When used with a pointer to a record P, it's like this: P^.x. (Again, M also allows P.x. Maybe I should have kept ^ mandatory to keep the docs simpler...)
+When used with a pointer to a record P, it's like this: P^.x or the ^ can be omitted for P.x.
 
 Note that "." is also used for selecting names from a namespace. A namespace might be a module, function or record. That use is detected and resolved at compile time:
 
@@ -797,7 +849,7 @@ This is more efficient that doing it via (a,b):=(b,a), as terms are written once
 
 ### Promotions
 
-Like C, narrow integer types are widened, but to int64 rather than int32 as is common for C.
+Like C, narrow integer types are widened, but to int64 rather than int32 as is common for C (word64 for unsigned).
 
 The same applies to the char type, widened to C64. But real32 floats are not widened to real64.
 
@@ -823,7 +875,7 @@ Simple type conversions are written like this:
 
     int(x)
 
-although it has to be a conversion that is allowed. However, an ambiguity in the current syntax means that elaborate types have to use this more general form:
+although it has to be a conversion that is allowed. However, an ambiguity in the current syntax means that elaborate types (more than one token) have to use this more general form:
 
     cast(x, int)
 
@@ -843,7 +895,7 @@ Sometimes, it can be difficult to get on top of which precise conversion is need
     ref int64 p
     ref []int q
 
-    p := cast(q)
+    p := cast(q)             # omit the target type
 
 'cast' will apply whatever cast is required. This is handy when the necessary type needs to be tracked down, or when it is likely to change.
 
@@ -864,7 +916,7 @@ This is mainly the **if** statement:
        ...
     fi
 
-With elsif and else both optional so that a simple if-statement is:
+With **elsif** and **else** both optional so that a simple if-statement is:
 
     if cond then
        stmts...
@@ -922,7 +974,15 @@ The statements where such a suffix is allowed are:
 
 ### Goto
 
-Not sure if 'goto' is mentioned anywhere, but is definititely part of the language. It seems to be out of favour these days. A mild variation is the experimental feature **recase**:
+Not sure if 'goto' is mentioned anywhere, but is definititely part of the language. It seems to be out of favour these days. If you don't like writing goto, M allows 'go to'.
+
+Note that labels need to be written with two colons:
+
+    lab::
+
+(":" is heavily used, but if ambiguities can be sorted, it will be possible to is use lab:")
+
+A mild variation is the experimental feature **recase**:
 
     case x
     when a then
@@ -933,14 +993,18 @@ Not sure if 'goto' is mentioned anywhere, but is definititely part of the langua
 
 **recase** here will jump to the branch of the case statement that deals with 'a', equivalent to reentering the case statement with x = a (but x is not actually changed).
 
+
+
 ### Loops
 
 Modern languages seem to be lacking in looping constructs even though, as mere syntax, they have little cost. M offers:
 
-    do ... od                   # endless loop
+    do ... od                  # endless loop
     to n do ... od             # repeat n times
     for i:=a to b do ... od    # iterate from a to b
-    forall x in a do ... od    # iterate over values in a
+    for i in a..b do ... od
+    for i in A do ... od      # uses A.lwb .. B.upb
+    forall x in A do ... od    # iterate over values in A
     while x do ... od
     repeat ... until x
 
@@ -972,9 +1036,9 @@ But many parts are optional, and a more typical loop is:
 
 Even shorter forms include:
 
-    for i to b do             # start from 1
-    to b do                   # this is now the repeat-n-times loop
-    do                        # and this is the endless loop
+    for i to b do ...            # start from 1
+    to b do ...                  # this is now the repeat-n-times loop
+    do ...                       # and this is the endless loop
     
 Note that such a loop will always count upwards. To count downwards, use 'downto' instead of 'to'.
     
@@ -1049,7 +1113,7 @@ When x is not an integer, or a, b are not integers or not constants, or the rang
         ....
     esac
 
-Case statements will sequentially test x against a, b and c in turn, until the first match.
+Case statements will sequentially test x against a, b and c in turn, until the first match. (Currently ranges can't be used.)
 
 One variation on case is when the test expression is omitted:
 
@@ -1099,11 +1163,13 @@ This gets very ugly and is not satisfactory, but it will do for informal printin
 
 which adds "A=", "B=" and "C=" before each value respectively.
 
-Otherwise, it is necessary to use formatted printed, which looks like this:
+Otherwise, it is necessary to use formatted print, which looks like this:
 
     fprintln "#-#.(#)",a,b,c
 
-If a is 10, b="abc" and c is a pointer with value 0x0001234, then the output will be 10-abc.(0001234).
+If a is 10, b="abc" and c is a pointer with value 0x0001234, then the output will be 10-abc.(0001234). To output an actual "#", use:
+
+    fprint "###", "#",name,"#"      # when name is "abc", will display #abc#
 
 Individual formatting is done like this:
 
@@ -1114,6 +1180,8 @@ In this example, a is shown in a field 10 chars wide, with leading zeros.
 There also ways to print into a string:
 
     println @&.str, "One","Two"
+
+(Both print and read need further docs to use effectively, but these are the basics.)
 
 ### Read and Readln
 
@@ -1134,6 +1202,8 @@ or:
 a file using readln @f). Then read statements consume inputs from that buffer.
 
 That's why they can be part of the readln, or follow later.
+
+(Reading into a string isn't ready yet; 'readstr' is used for that. See extract.m in Examples.)
 
 
 ### Range Construct
@@ -1162,6 +1232,8 @@ Examples:
 
 ### Set Construct
 
+(IGNORE THIS SECTION. I will need to double check exactly what is possible.)
+
 Like a range, a set is not a proper type (I will try and have one in the next version).
 
 Here, sets are used to construct int values of 64 or 128 bits. Such a construct can be used with the **in** operator:
@@ -1181,6 +1253,8 @@ However these will not do the range checking that **in** will do.
 
 ### Equivalence
 
+(THIS NEEDS TO BE CHECKED)
+
 This feature allows two variables to share memory:
 
     real x
@@ -1194,7 +1268,7 @@ The expressions available are simple: &x or &x+3, with the offset always in byte
 
 This is a possible feature (also implemented in C by gcc), where you can take the address of a label, store it in arrays and so on, and use that later in an indirect goto.
 
-But at the moment its't not implemented. (For some kinds of programs, it results in faster execution that using a switch.)
+But at the moment it'S not implemented. (For some kinds of programs, it results in faster execution thaN using a switch.)
 
 ### Foreign Functions
 
@@ -1215,11 +1289,10 @@ Each declaration must start with the language the function uses. Or rather the c
 
 * **clang**
 * **windows**
+* **mlang**
 
 **windows** is not a language, it is to show the Windows call convention is used
-rather then normal C.
-
-(On Win64, both Windows and C use the same call convention. M uses its own.)
+rather then normal C. (On Win64, both Windows and C use the same call convention. M uses its own.)
 
 Where a foreign function has a case-senstive name, it must be in quotes:
 
@@ -1233,6 +1306,8 @@ But then it can be used like this:
 
 This also demonstrates adding optional parameters with default values, and  using keyword parameters.
 
+Foreign function can also be written as `MessageBoxA, but then all instances must be written the same way. The advantage is that this can distinguish between names that can clash when converted to lower case, or names that clash with a reserved word.
+
 (There used to be an option to supply an alias to function, such as:
 
     function "MesssageBoxA" as "messagebox" ...
@@ -1245,12 +1320,11 @@ These are special built-in variables that can be used to determine various aspec
 
     $lineno         Current line number as an int constant
     $strlineno      Line number as a string
-    $modulename
-    $filename
+    $modulename     Name of module
+    $filename       Filename of module
     $function       Current function name
-    $date           String constants containing date or time
-    $time
-    $version
+    $date           String constants containing date or time of compilation
+    $time    
 
 ### Standard Libraries
 
@@ -1262,7 +1336,7 @@ These are special built-in variables that can be used to determine various aspec
 
 ### **nil** Pointer Constant
 
-This is designated by **nil**, which has type 'ref void'.
+This is designated by **nil**, which has type 'ref void'. It is used to set pointers to 'unused', or not pointing at anything.
 
 ### System Constants
 
@@ -1333,13 +1407,15 @@ There is a new, simple implementation of macros, example:
     macro getopnd = (pcptr+1)^
     macro dist(x,y) = sqrt(x*x+y*y)
 
-That second form can be used for inline functions. The body of a macro must always be a single, well-formed expression or term. However, a sequence of statements can be trivially be turned into an expression:
+That second form can be used for inline functions. The body of a macro must always be a single, well-formed expression or term. However, a sequence of statements can trivially be turned into an expression:
 
      (s1; s2; s3)
 
 So multi-line macro bodies are possible. What is not allowed are definitions (as macros are expanded in a later pass after the symbol table is completed).
 
 ### Bit Indexing
+
+(BIT/BITFIELD INDEXING needs to be checked.)
 
 If A is an integer, then it can be indexed like this:
 
@@ -1368,7 +1444,7 @@ If A is an integer, then an arbitrary bitfield can be extracted using:
 
 ### Address-of Operator
 
-This like it is in C, but it is a little different for arrays:
+This is like it is in C, but it is a little different for arrays:
 
     [10]int A
     &A           # type is ref[10]int
@@ -1458,17 +1534,18 @@ For more complex selections, normal switch and case statements can be used.
 
 ### Initialisation of Arrays and Records
 
-Scalars can be initialised in the same way they can be assigned to. But it is not possible to assign to arrays and records from an array/record constructor:
+For static variables, scalars, arrays and records can only be initialised with compile-time expressions, or those involving addresses of static variables (there are limits on how complex the latter can be).
 
-     [3]int A
+For non-static (ie. stack frame), they can be initialised in the same way they are assigned to.
 
-     A := (10,20,x)           # not allowed, even if x is constant
+Assigning to arrays and records is a recent feature, although there are some limitations: char arrays can't be initialised or assigned to this way.
 
-They can be initialised from a construct, but only for static variables (ie. using '=' rather than ':='), and the constructs must consist of compile-time expressions, or static addresses in the case of pointers:
+This is becomes the assignment is done an element at a time, and would be inefficient to assign a string to an char-array by loading and storing a character at a time. Otherwise it can be:
 
-     static [3]int A = (10,20,30)    # Note '=' not ':='
+    []int A := (x,y,z)      # x,y,z represent runtime expressions; A will have a length of 3
+    date D := (x,y,z)
+    D := (p,q,r)
 
-Outside of a function. 'static' is not needed.
 
 ### Creating Amalgamated Files
 
@@ -1499,6 +1576,4 @@ Lots of nice features listed, but there are plenty of issues too:
 * There is a limited amount of source code in M (currently some 100Kloc), so the tools will not have got the testing they would get if applied to a billion lines of C code. So there will be inevitable bugs, corner cases that have never been tested etc as well as language features that don't work as well as expected.
 
 * There is no optimiser.
-
-Basically, the main problem is that it is not C. Even though C is a ghastly language, it is everywhere, there are loads of tools for it, and huge numbers of people are familiar with it.
 
