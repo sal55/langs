@@ -4,6 +4,7 @@ Low level language long used as a tidier alternative to C.
 
 Current implementation is for 64-bit Windows only.
 
+Summary of featues: [features](..\mfeatures.md)
 
 ### Download Binaries
 
