@@ -4,37 +4,37 @@ mafile 36
   3 clibnew.m           3397    15206   0
   4 mm_tables.m        44039    18629   0
   5 mm_mcldecls.m      13336    62696   0
-  6 mm_start.m         19652    76057   0
-  7 msysnew.m          47147    95733   0
-  8 mlib.m             26724   142901   0
-  9 oswindows.m        12536   169651   0
- 10 mm_support.m       13440   182215   0
- 11 mm_lib.m           38755   195679   0
- 12 mm_lex.m           36699   234458   0
- 13 mm_diags.m         13226   271183   0
- 14 mm_genwx64.m        4338   284437   0
- 15 mm_genpcl.m         9569   288802   0
- 16 mm_libpcl.m        24908   298398   0
- 17 mm_blockpcl.m      69941   323335   0
- 18 mm_genmcl.m        91934   393303   0
- 19 mm_libmcl.m        41829   485264   0
- 20 var_tables.m        3540   527121   0
- 21 ma_genss.m         46359   530687   0
- 22 ma_decls.m          1674   577072   0
- 23 ma_lib.m            2262   578770   0
- 24 ma_objdecls.m       2566   581061   0
- 25 ma_writeobj.m       7676   583656   0
- 26 ma_writeexe.m      26430   591361   0
- 27 ma_disasm.m        25847   617818   0
- 28 mm_parse.m         88793   643691   0
- 29 mm_name.m          18181   732509   0
- 30 mm_type.m          64868   750715   0
- 31 msysnew.m          47147   815608   1
- 32 mlib.m             26724   862777   1
- 33 clibnew.m           3397   889526   1
- 34 oswindows.m        12536   892950   1
- 35 oswindll.m          2115   905512   1
- 36 mm_help.txt          866   907654   1
+  6 mm_start.m         19780    76057   0
+  7 msysnew.m          47151    95861   0
+  8 mlib.m             26724   143033   0
+  9 oswindows.m        12536   169783   0
+ 10 mm_support.m       13440   182347   0
+ 11 mm_lib.m           38765   195811   0
+ 12 mm_lex.m           36699   234600   0
+ 13 mm_diags.m         12949   271325   0
+ 14 mm_genwx64.m        4338   284302   0
+ 15 mm_genpcl.m         9569   288667   0
+ 16 mm_libpcl.m        24908   298263   0
+ 17 mm_blockpcl.m      69941   323200   0
+ 18 mm_genmcl.m        91934   393168   0
+ 19 mm_libmcl.m        41829   485129   0
+ 20 var_tables.m        3540   526986   0
+ 21 ma_genss.m         46359   530552   0
+ 22 ma_decls.m          1674   576937   0
+ 23 ma_lib.m            2262   578635   0
+ 24 ma_objdecls.m       2566   580926   0
+ 25 ma_writeobj.m       7676   583521   0
+ 26 ma_writeexe.m      26430   591226   0
+ 27 ma_disasm.m        25847   617683   0
+ 28 mm_parse.m         89144   643556   0
+ 29 mm_name.m          18368   732725   0
+ 30 mm_type.m          66321   751118   0
+ 31 msysnew.m          47151   817464   1
+ 32 mlib.m             26724   864637   1
+ 33 clibnew.m           3397   891386   1
+ 34 oswindows.m        12536   894810   1
+ 35 oswindll.m          2115   907372   1
+ 36 mm_help.txt          866   909514   1
 === mm.m 1/36 ===
 !mapmodule mm_sys => mm_sysnew
 mapmodule mm_gen => mm_genwx64
@@ -3106,11 +3106,17 @@ proc do_name=
 end
 
 proc do_type=
+!cpl "TXTYPETABLE"
+!do non-executable code first
 	tx_typetable()
 
 	for i:=1 to nmodules do
+!CPL "TXMODULE:",I,MODULETABLE[I].NAME
 		tx_module(i)
 	od
+
+!now do all procs
+	tx_allprocs()
 end
 
 proc do_runprog=
@@ -5371,7 +5377,7 @@ function u64tostrfmt(i64 aa,ref char s,ref fmtrec fmt)int =		!U64TOSTRFMT
 	fi
 
 !str uses upper cases for hex/etc see if lc needed
-	if fmt^.base>10 or fmt^.suffix and fmt^.lettercase='a'	then	! need lower when
+	if (fmt^.base>10 or fmt^.suffix) and fmt^.lettercase='a'	then	! need lower when
 		convlcstring(&.str)
 	fi
 
@@ -5392,7 +5398,7 @@ function u128tostrfmt(i128 aa,ref char s,ref fmtrec fmt)int =		!U64TOSTRFMT
 	fi
 
 !str uses upper cases for hex/etc see if lc needed
-	if fmt^.base>10 or fmt^.suffix and fmt^.lettercase='a'	then	! need lower when
+	if (fmt^.base>10 or fmt^.suffix) and fmt^.lettercase='a'	then	! need lower when
 		convlcstring(&.str)
 	fi
 
@@ -9758,7 +9764,7 @@ when j_neg,j_abs,j_inot,j_sqrt,j_sqr,j_cube,j_sign,j_sin,j_cos,j_tan,j_asin,
 	jeval(dest,a)
 	gs_additem(dest,")")
 
-when j_callfn,j_callproc then
+when j_callfn,j_callproc,j_callmfn then
 	jeval(dest,a)
 	gs_additem(dest,"(")
 
@@ -12843,39 +12849,21 @@ od
 end
 
 global proc printcode(filehandle f,ichar caption)=
-int i
 ref strec p
+ref procrec pp
 
-!p:=moduletable[n].stmodule^.deflist
-p:=stprogram^.deflist
+pp:=proclist
+while pp do
+	p:=pp.def
 
-println @f, caption, "PROGRAM"
-
-while p do
-	printmodulecode(f,p)
-	p:=p^.nextdef
-od
-end
-
-global proc printmodulecode(filehandle f,ref strec m)=
-int i
-ref strec p
-
-p:=m^.deflist
-currmodule:=m
-
-println @f,"MODULE:",m^.name,namenames[m^.nameid]
-
-while p do
-	case p^.nameid
-	when procid then
-		if not p^.imported then
-			println @f,p^.name,,"=",(p^.isglobal|"Global","Export"|"Local")
-			printunit(p^.code,,"1",dev:f)
-			println @f
-		fi
-	esac
-	p:=p^.nextdef
+	print @f,p^.name,,"=",(p^.isglobal|"Global","Export"|"Local")
+	if p.owner.nameid=typeid then
+		print @f," in record",p.owner.name
+	fi
+	println @f
+	printunit(p^.code,,"1",dev:f)
+	println @f
+	pp:=pp^.nextproc
 od
 end
 
@@ -30700,7 +30688,7 @@ do
 		globalflag:=0
 
 	when ktabledatasym then
-		readtabledef(globalflag)
+		readtabledef(owner,globalflag)
 		globalflag:=0
 
 	when docstringsym then
@@ -33173,7 +33161,7 @@ if nvars=0 then
 fi
 end
 
-global proc readtabledef(int isglobal=0)=
+global proc readtabledef(ref strec owner,int isglobal=0)=
 !at 'tabledata' symbol
 int i,ncols,nrows,enums,nextenumvalue,firstval,lastval,startline,closesym
 int ltype
@@ -33209,7 +33197,8 @@ ncols:=0			!number of data columns (varnames appearing)
 
 !loop reading variable names
 while lx.symbol<>opsym do
-	ltype:=readtypespec(currproc)
+!	ltype:=readtypespec(currproc)
+	ltype:=readtypespec(owner)
 	checksymbol(namesym)
 	if ++ncols>maxcols then
 		serror("tabledata/too many columns")
@@ -33259,11 +33248,14 @@ do			!loop per row
 		fi
 		enumvalues[nrows]:=nextenumvalue
 
-		stenum:=getduplnameptr(currproc,stgen,constid)
-		storemode(11,currproc,tint,&stenum^.mode)
+!		stenum:=getduplnameptr(currproc,stgen,constid)
+		stenum:=getduplnameptr(owner,stgen,constid)
+!		storemode(11,currproc,tint,&stenum^.mode)
+		storemode(11,owner,tint,&stenum^.mode)
 		stenum^.code:=createconstunit(nextenumvalue,tint)
 		stenum^.isglobal:=isglobal
-		adddef(currproc,stenum)
+!		adddef(currproc,stenum)
+		adddef(owner,stenum)
 
 		if nrows=1 then firstval:=nextenumvalue fi
 		lastval:=nextenumvalue
@@ -33317,14 +33309,17 @@ if nrows=0 then serror("No table data") fi
 
 for i:=1 to ncols do
 
-	stvar:=getduplnameptr(currproc,varnameptrs[i],staticid)
+!	stvar:=getduplnameptr(currproc,varnameptrs[i],staticid)
+	stvar:=getduplnameptr(owner,varnameptrs[i],staticid)
 	stvar^.code:=createunit1(j_makelist,plist[i])
 	stvar^.code^.length:=nrows
 
-	storemode(12,currproc,varlisttypes[i],&stvar^.mode)
+!	storemode(12,currproc,varlisttypes[i],&stvar^.mode)
+	storemode(12,owner,varlisttypes[i],&stvar^.mode)
 	stvar^.isglobal:=isglobal
 
-	adddef(currproc,stvar)
+!	adddef(currproc,stvar)
+	adddef(owner,stvar)
 	addstatic(stvar)
 od
 end
@@ -33345,6 +33340,7 @@ nameptr:=lx.symptr
 lex()
 baseclass:=0
 if lx.symbol=lbracksym then
+SERROR("BASECLASS handling needs revising")
 	lex()
 	baseclass:=readtypespec(owner)
 	checksymbol(rbracksym)
@@ -33382,13 +33378,16 @@ readclassbody(sttype,kwd)
 
 checkbeginend(closesym,kwd,startline)
 
+!CPL "CD1///",BASECLASS
 if baseclass then
 	d:=ttnamedef[baseclass]^.deflist
 	while d do
 !	forall d in baseclass.namedef.deflist do
+!CPL "CD2"
 		e:=sttype^.deflist
 		normalexit:=1
 		while e do
+!CPL "CD3"
 			if eqstring(d^.name,e^.name) then
 				normalexit:=0
 				exit
@@ -33411,7 +33410,6 @@ if baseclass then
 		d:=d^.nextdef
 	od
 fi
-
 sttype^.isglobal:=isglobal
 end
 
@@ -33435,30 +33433,28 @@ when kfunctionsym,kprocsym then
 	else
 		readprocdef(owner,0)
 	fi
-when kclasssym then
-	lex()
-	serror("CLASS CLASS")
-when krecordsym then
-	lex()
-	serror("CLASS RECORD")
+when kclasssym, krecordsym then
+	readclassdef(owner,0)
+!	lex()
+!	serror("CLASS CLASS")
 when ktypesym then
-	lex()
-	serror("CLASS TYPE")
+	readtypedef(owner)
+
 when eofsym then
 	serror("Class eof?")
 	exit
 when semisym then
 	lex()
 
-!when namesym then			!assume user type
-!	++insiderecord
-!	t:=newusertypex(lx.symptr)
-!	--insiderecord
-!	lex()
-!	if lx.symbol=dotsym then
-!		serror("Can't do a.b type inside class")
-!	fi
-!	readrecordfields(owner,t)
+when kenumsym then
+	lex()
+	readenumtype(owner,0,0)
+
+when ktabledatasym then
+	readtabledef(owner,0)
+
+when kmacrosym then
+	readmacrodef(owner,0)
 
 when kstructsym,kunionsym then
 	unionstr_append(&unionpend,(lx.symbol=kstructsym|'S'|'U'))
@@ -34707,6 +34703,9 @@ dovar::
 	when kconstsym then
 		readconstdef(currproc,0)
 
+	when ktabledatasym then
+		readtabledef(currproc,0)
+
 	when kclasssym,krecordsym then
 		readclassdef(currproc,0)
 
@@ -35086,6 +35085,8 @@ end
 global proc rx_passdef(ref strec owner,p)=
 ref strec d
 
+!CPL "PASSDEF",P.NAME,NAMENAMES[P.NAMEID]
+
 case p^.nameid
 when moduleid,dllmoduleid then
 	rx_deflist(p,p^.deflist)
@@ -35111,6 +35112,8 @@ when constid,staticid,frameid,paramid then
 		rx_unit(owner,p^.code)
 	fi
 when typeid then
+!CPL "RXPASSDEF",P.NAME,P.DEFLIST
+	rx_deflist(p,p.deflist)
 	fixmode(owner,p)
 
 else
@@ -35190,7 +35193,11 @@ while p do						!for each possibe st entry of the same name
 		fi
 
 	when typeid then
+!CPL "OWNER IS TYPEID",POWNER.
 		if powner=owner then			!immediate match
+			return p
+		fi
+		if powner=owner.owner then
 			return p
 		fi
 	when programid then					!p is a module
@@ -35808,6 +35815,17 @@ const maxfields=200
 int countedfields
 int inassem
 
+global proc tx_allprocs=
+ref procrec pp
+
+pp:=proclist
+while pp do
+	currproc:=pp.def
+    tpass(currproc.code,(currproc^.nretvalues>1|tmult|currproc^.mode))
+	pp:=pp^.nextproc
+od
+end
+
 proc tpass(unit p, int t=tany, lv=no_lv)=
 ref strec d
 unit a,b
@@ -36228,7 +36246,6 @@ tevaluate(p)
 case p^.tag
 when j_makelist, j_return then
 else
-!if p^.tag<>j_makelist and p^.tag<>jthen
 	if t<>tany and t<>tvoid and p^.mode<>t then		!does not already match
 		coerceunit(p,t)			!apply soft conversion
 	fi
@@ -36254,13 +36271,20 @@ end
 global proc tx_typetable=
 	int i,u
 
-	for i:=tuser to ntypes do
+!CPL "TYPETABLE"
 
+	for i:=tuser to ntypes do
+!CPL I,STRMODE(I)
+		if ttbasetype[i]=trecord then
+			tx_passdef(ttnamedef[i])
+		fi
 		setmodesize(i)
 	od
+!CPL "DONE TT"
 end
 
 proc setmodesize(int m)=
+!CPL "SETMODESIZE",M,STRMODE(M)
 	if ttsize[m] then return fi
 
 	mlineno:=ttlineno[m]
@@ -36421,9 +36445,7 @@ d:=p^.deflist
 while d do
 	tx_passdef(d)
 
-!	if p^.nameid in [procid,frameid] and d^.nameid=paramid then
 	if p^.nameid=procid and d^.nameid in [frameid,paramid] then
-!	if p^.nameid=procid and d^.nameid =paramid then
 		unless issimpletype(d^.mode) then
 			simplefunc:=0
 		end
@@ -36436,8 +36458,8 @@ q:=p^.code
 
 case p^.nameid
 when procid then
-	currproc:=p
-    tpass(q,(currproc^.nretvalues>1|tmult|p^.mode))
+!	currproc:=p
+!    tpass(q,(currproc^.nretvalues>1|tmult|p^.mode))
 
 !see if simple function
 	if p^.nretvalues>1 or not issimpletype(p^.mode) then
@@ -36448,7 +36470,9 @@ when procid then
 
 	currproc:=nil
 when constid,enumid then
+!CPL "TXPASSDEF NAMEDCONST",P.NAME
 	tx_namedconst(p)
+
 when staticid, frameid, paramid then
 	tx_namedef(p)
 !when TYPEID THEN
@@ -37377,6 +37401,8 @@ tpass(a)
 
 nargs:=nparams:=0
 
+retry::
+
 case a.tag
 when j_name then
 	d:=a.def
@@ -37406,6 +37432,17 @@ TXERROR("Can't do ifx/function")
 
 else
 dorefproc::
+!CPL "DOREFPROC",STRMODE(A.MODE), =jtagnames[p.tag]
+
+!	if p.tag=j_callmfn and a.mode=tvoid and a.tag=j_dot then
+	if p.tag=j_callmfn and a.tag=j_dot then
+!CPL "CALL/DOT/VOID"
+		tmethodcall(p,a,pargs)
+		a:=p.a
+		pargs:=p.b
+		goto retry
+	fi
+
 	if ttbasetype[a.mode]<>tproc then
 		txerror("Function pointer expected")
 	fi
@@ -37873,6 +37910,8 @@ proc setrecordsize(int m)=
 
 	if ttsize[m] then return fi
 
+!CPL "SCANRECORD",STRMODE(M)
+
 	d:=ttnamedef[m]
 
 	e:=d^.deflist
@@ -37881,33 +37920,36 @@ proc setrecordsize(int m)=
 	fieldlist[++nfields]:=ref strec@(ss)
 
 	while e do
-		if nfields>=maxfields then
-			gerror("srs:too many fields")
-		fi
+		if e.nameid=fieldid then
 
-		setmodesize(e^.mode)
-		flags:=cast(&e^.uflags)
-		docase flags^
-		when 'S', 'U' then
-			flag:=flags^
-			fieldlist[++nfields]:=ref strec@(flag)
-			++flags
-		else
-			exit
-		end docase
+			if nfields>=maxfields then
+				gerror("srs:too many fields")
+			fi
 
-		fieldlist[++nfields]:=e
-
-		do
-			flag:=flags++^
-			case flag
-			when '*'  then
-			when 'E' then
-				fieldlist[++nfields]:=ref strec@(ee)
+			setmodesize(e^.mode)
+			flags:=cast(&e^.uflags)
+			docase flags^
+			when 'S', 'U' then
+				flag:=flags^
+				fieldlist[++nfields]:=ref strec@(flag)
+				++flags
 			else
 				exit
-			esac
-		od
+			end docase
+
+			fieldlist[++nfields]:=e
+
+			do
+				flag:=flags++^
+				case flag
+				when '*'  then
+				when 'E' then
+					fieldlist[++nfields]:=ref strec@(ee)
+				else
+					exit
+				esac
+			od
+		fi
 
 		e:=e^.nextdef
 	od
@@ -38072,19 +38114,25 @@ proc tx_makelist(unit p,a, int t,lv)=
 		e:=ttnamedef[t]^.deflist
 		q:=a
 		while q and e do
-			while e^.mode=tbitfield do
-				e:=e^.nextdef
-				if not e then exit fi
-			od
+			if e.nameid=fieldid then 
+				while e^.mode=tbitfield do
+					e:=e^.nextdef
+					if not e then exit fi
+				od
 
-			tpass(q,e^.mode,lv)
-			unless q^.tag=j_const then isconst:=0 end
-			q:=q^.nextunit
+				tpass(q,e^.mode,lv)
+				unless q^.tag=j_const then isconst:=0 end
+				q:=q^.nextunit
+			fi
+
 			e:=e^.nextdef
 		od
-		while e and e^.mode=tbitfield do
+		while e and (e^.nameid<>fieldid or e.mode=tbitfield) do
 			e:=e^.nextdef
 		od
+!		while e and e^.mode=tbitfield do
+!			e:=e^.nextdef
+!		od
 		if q or e then
 			txerror("Can't initialise unions")
 		fi
@@ -38158,6 +38206,7 @@ fi
 d:=b^.def
 
 if d^.nameid=nullid then			!not resolved; lhs mode wasn't available
+
 	d:=b^.def:=resolvefield(d,recmode)
 fi
 
@@ -38196,12 +38245,16 @@ if ttisvar[d^.mode] then
 	removeaddrof(a)
 FI
 
+!CPL "SETTING OFFSET",=D,=D.NAME, =D.OFFSET, =STRMODE(D.MODE)
+
 p^.offset:=d^.offset
 twiden(p,lv)
 end
 
 function resolvefield(ref strec d, int m)ref strec=
 	ref strec e,t
+
+!CPL "RESOLVEFIELD",D.NAME,STRMODE(M)
 
 	case ttbasetype[m]
 	when trecord then
@@ -39451,6 +39504,44 @@ while abasemode=tref do
 	abasemode:=ttbasetype[a.mode]
 od
 
+end
+
+proc tmethodcall(unit p, pdot, pargs)=
+	int mrec
+	unit prec, pfield, pfunc
+	ref strec d,e
+
+
+!CPL "TX/METHODCALL"
+!PRINTUNIT(P)
+
+	prec:=pdot.a
+	pfield:=pdot.b
+	mrec:=prec.mode
+	d:=pfield.def
+
+!CPL "REC=",=STRMODE(MREC)
+!PRINTUNIT(PREC)
+!CPL "FIELD=",=d.name
+!PRINTUNIT(PFIELD)
+	e:=resolvefield(d,mrec)
+
+!	CPL =E
+	if e=nil then
+		txerror_s("Can't resolve method:",d.name)
+	fi
+!	CPL =E.NAME, NAMENAMES[E.NAMEID], =STRMODE(E.MODE)
+
+	pfunc:=createname(e)
+	pfunc.mode:=e.mode
+	prec.nextunit:=pargs
+
+	p.a:=pfunc
+	p.b:=prec
+!CPL "NEW CALL UNIT:"
+!PRINTUNIT(P)
+
+!TXERROR("METHOD CALL NOT READY")
 end
 === msysnew.m 31/36 ===
 import clib
@@ -40975,7 +41066,7 @@ function u64tostrfmt(i64 aa,ref char s,ref fmtrec fmt)int =		!U64TOSTRFMT
 	fi
 
 !str uses upper cases for hex/etc see if lc needed
-	if fmt^.base>10 or fmt^.suffix and fmt^.lettercase='a'	then	! need lower when
+	if (fmt^.base>10 or fmt^.suffix) and fmt^.lettercase='a'	then	! need lower when
 		convlcstring(&.str)
 	fi
 
@@ -40996,7 +41087,7 @@ function u128tostrfmt(i128 aa,ref char s,ref fmtrec fmt)int =		!U64TOSTRFMT
 	fi
 
 !str uses upper cases for hex/etc see if lc needed
-	if fmt^.base>10 or fmt^.suffix and fmt^.lettercase='a'	then	! need lower when
+	if (fmt^.base>10 or fmt^.suffix) and fmt^.lettercase='a'	then	! need lower when
 		convlcstring(&.str)
 	fi
 
