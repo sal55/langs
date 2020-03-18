@@ -4,7 +4,7 @@
 
 #### Functions
 
-There is little difference between a function call, and a funcion definition, except the latter is followed by an indented block. I don't know if that would cause ambiguity (except maybe defining a function with an empty body), but consider:
+There is little difference between a function call, and a function definition, except the latter is followed by an indented block. I don't know if that would cause ambiguity (except maybe defining a function with an empty body), but consider:
 
     fn1()
         stmt
@@ -27,7 +27,7 @@ Given that, this example is not quite as confusing as it seemed at first:
 
     ptr: Ptr<U8>
 
-However the issue I found (with lots of languages that someone is not familiar with actually) is with using example identifiers that could plausibly be keywords the language.
+However the issue I found (with lots of languages that someone is not familiar with actually) is with using example identifiers that could plausibly be keywords in the language.
 
 #### Strings
 
@@ -37,7 +37,7 @@ Their layout is not that clear. Zero-terminated strings have not been mentioned 
 
 #### Null pointer value
 
-Apparently there isn't one. So a pointer always has to point to something? This is just about workable, as you can use a special value to do its job (point to a specific global variable), but I think there is a need, otherwise lots of things you do with low-level pointers can't work (what do you put into the last node of linked list for example?).
+Apparently there isn't one. So a pointer always has to point to something? This is just about workable, as you can use a special value to do its job (point to a specific global variable), but I think there is a need, otherwise lots of things you do with low-level pointers can't work (what do you put into the last node of a linked list for example?).
 
 #### Range
 
