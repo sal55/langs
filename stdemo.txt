@@ -1,4 +1,15 @@
-AST After parsing:
+Source code:
+-------------
+int abc, def
+
+record r = (int abc, def)
+
+function foo(int abc)int =
+    abc := def
+end
+-------------
+
+AST After parsing ('nullid' means the same as 'generic' in the reddit post):
 foo= Local
 06C40100 :01 0006 E ---:void------ 1 assignx: 
 06C40080 :01 0006 E ---:void------ - 1 name: abc nullid abc Moduleno: 1
