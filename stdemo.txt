@@ -1,4 +1,4 @@
-Source code:
+Source code (file "test.m" so implicit module name is "test", for a compiled, static-typed language):
 -------------
 int abc, def
 
@@ -35,10 +35,10 @@ Hierarchical Symbol table:
         :r-------------------typeid......[Loc Modno#1](test)------------56:srec(i64 abc,i64 def)  Module# 1 Lineno:3
             :abc-------------fieldid.....[Loc Modno#1](r)---------------4:i64  Offset:0 UFLAGS:0 -0 Module# 1 Lineno:3
             :def-------------fieldid.....[Loc Modno#1](r)---------------4:i64  Offset:8 UFLAGS:0 -0 Module# 1 Lineno:3
-        :foo-----------------procid......[Loc @@1 maxalign:0 Opt Modno#1:= ](test)------------4:i64 Index:0 Nret:1 Simple:1 Module# 1 Lineno:5
+        :foo-----------------procid......[Loc Opt Modno#1:= ](test)------------4:i64 Index:0 Nret:1 Simple:1 Module# 1 Lineno:5
             :abc-------------paramid.....[Loc Modno#1U ](foo)-------------4:i64  Offset:0 UFLAGS:0 -0 Module# 1 Lineno:5
 
-'FLAT' HASH TABLE (edited version including user identifiers only):
+'FLAT' HASH TABLE (edited version shows user identifiers only):
 3534 005A6870 : r namesym nullid
 	 02A20600 r namesym typeid (From test)
 4318 005BF070 : abc namesym nullid
