@@ -11,7 +11,6 @@ foo= Local
 06C400C0 :01 0006 E ---:void------ - 2 name: def staticid test.def Moduleno: 1
 
 AST After type analysis:
-
 foo= Local
 06C40100 :01 0006 E ---:i64------- 1 assignx: 
 06C40080 :01 0006 E ---:i64------- - 1 name: abc paramid test.foo.abc Moduleno: 1
@@ -29,7 +28,6 @@ Hierarchical Symbol table:
             :abc-------------paramid.....[Loc Modno#1U ](foo)-------------4:i64  Offset:0 UFLAGS:0 -0 Module# 1 Lineno:5
 
 'FLAT' HASH TABLE (edited version including user identifiers only):
-
 3534 005A6870 : r namesym nullid
 	 02A20600 r namesym typeid (From test)
 4318 005BF070 : abc namesym nullid
