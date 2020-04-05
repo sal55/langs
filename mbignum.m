@@ -9,10 +9,6 @@ const digitbase	= 1000000000
 const digitfmt	 = "%09d"
 const mdigitfmt	 = "z9"
 
-INT NMAKE
-INT NFREE
-
-
 const digitmax	 = digitbase-1
 
 global type bignum  = ref bignumrec
@@ -155,7 +151,6 @@ function makebignum(int length)bignum=
 !these are wide digits
 	bignum a
 
-!CPL "MAKEBIGNUM",++NMAKE
 	a:=bn_alloc(bignumrec.bytes)
 	if length then
 		a^.num:=bn_alloc(length*elemsize)
@@ -254,7 +249,6 @@ end
 global proc bn_free(bignum a)=
 !free digit memory and descriptor
 	if a then
-!CPL "	FREE BIG NUM",++NFREE
 		bn_setzero(a)
 		freemem(a,bignumrec.bytes)
 	fi
@@ -302,12 +296,6 @@ global proc bn_dupl(bignum a,b)=
 		fi
 		bn_move(a,c)
 		bn_free(c)
-!   fi
-
-!   bn_setzero(a)
-!   a^:=b^
-!   if a^.length then
-!	   a^.num:=bn_alloc(a^.length*elemtype.bytes)
 !   fi
 end
 
@@ -368,10 +356,7 @@ global proc bn_setprec(bignum a,int prec)=
 
 	oldlength:=a^.length
 
-!CPL =OLDLENGTH,=NEWLENGTH
-!   if oldlength=newlength then
 	if oldlength<=newlength then
-!   if oldlength>=newlength then
 		return
 	fi
 
@@ -425,9 +410,6 @@ global function bn_makefloat(real64 x)bignum =
 	[2048]char str
 
 	sprintf(&.str,"%.30g",x)
-!   sprintf(&.str,"%.17e",x)
-
-CPL =&.STR
 
 	return bn_makestr(&.str)
 end
@@ -743,7 +725,6 @@ proc bn_mulu(bignum dest, a,b) =
 
 	c:=makesmallnum(nc2)
 	memset(c,0,precc*elemsize)
-!   c^.expon:=a^.expon+b^.expon+1
 	cx:=precc-1
 
 	for bx:=upperb downto 0 do
@@ -753,15 +734,12 @@ proc bn_mulu(bignum dest, a,b) =
 		for ax:=uppera downto 0 do
 	 	   p:=i64((a^.num^[ax]))*i64((b^.num^[bx]))+carry
 	 	   pdquot:=p/digitbase
-!	 	  x:=int(c^.num^[cx1])+p rem digitbase
 	 	   x:=int64((c+cx1)^)+p rem digitbase
 	 	   if x>digitmax then
 	 	 	  carry:=pdquot+x/digitbase
-!	 	 	 c^.num^[cx1--]:=x rem digitbase
 	 	 	  (c+cx1--)^:=x rem digitbase
 	 	   else
 	 	 	  carry:=pdquot
-!	 	 	 c^.num^[cx1--]:=x
 	 	 	  (c+cx1--)^:=x
 	 	   fi
 
@@ -926,7 +904,6 @@ global proc bn_idivu(bignum dest,a,b,rm=nil)=
 	else
 		smalltobig(dest,c,cx,nc)
 	fi
-!   freesmall(c,nc)
 
 	if rm and exponb>=nb then	 	  !has trailing zeros so natural rem doesn't work
 		bignum d
@@ -1005,7 +982,6 @@ global function bn_makestr(ichar s, int length=0)bignum=
 		else
 	 	   dpseen:=1
 		fi
-!	   trailingzeros:=0
 		++s
 	when 0 then
 		exit
@@ -1158,7 +1134,6 @@ proc bn_fdivu(bignum dest,a,b,int precision)=
 		smalltobig(dest,c,cx,nc2)
 		dest^.expon:=expona-exponb
 	fi
-!   freesmall(c,nc2)
 end
 
 function tostring_float(bignum a,int fmt)ichar=
@@ -1209,14 +1184,12 @@ function tostring_float(bignum a,int fmt)ichar=
 !	   t++^:='*'
 		n:=sprintf(t,(i>0 or prel|digitfmt|"%d"),a^.num^[i])
 		t+:=n
-!	   print a^.num^[i]
 		if expon=i and i<upper and showdot then
 	 	   t++^:='.'
 		fi
 	od
 
 	to expon-upper do
-!print "+"
 		to digitwidth do
 	 	   t++^:='0'
 		od
@@ -1297,19 +1270,15 @@ function tostring_scient(bignum a)ichar=
 		t++^:='-'
 	fi
 
-!	n:=sprintf(t,"%d.",x)
 	print @t,x,,"."
 	t+:=strlen(t)
 
 	if shift then
-!		n:=sprintf(t,"%0*d", shift, a^.num^[0]-x*scale)
 		print @t, shift:"v",,a^.num^[0]-x*scale:"z*"
 		t+:=strlen(t)
 	fi
 
 	for i to a^.length-1 do
-!		n:=sprintf(t,digitfmt, a^.num^[i])
-!		fprint @t,digitfmt, a^.num^[i]
 		print @t,a^.num^[i]:mdigitfmt
 		t+:=strlen(t)
 	od
@@ -1318,7 +1287,6 @@ function tostring_scient(bignum a)ichar=
 		--t
 	od
 
-!	n:=sprintf(t,"e%d", expon)
 	print @t,"e",,expon
 	t+:=strlen(t)
 	t^:=0
@@ -1446,7 +1414,6 @@ global function bn_div(bignum dest,a,b,int prec=0)int=
 	neg:=a^.neg<>b^.neg
 
 	bn_fdivu(dest,a,b,prec)
-!   bn_idivu(dest,a,b)
 
 	if neg then
 		bn_negto(dest)
