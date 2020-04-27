@@ -2,7 +2,7 @@ import files
 
 proc start=
 
-    s:=readstrfile("/texts/bible.txt")
+    s:=readstrfile("./bible.txt")
     to 100 do
         t:=strrepl(s,"lived","LIVEDFOREVER")
     od
