@@ -43,13 +43,13 @@ int main(int argc,char *argv[])
 	fclose(f);
 	buffer[siz]=0;
 
-    siz = strrepl(buffer,argv[2],argv[3],NULL);
-    tmp = malloc(siz+100);
+//    siz = strrepl(buffer,argv[2],argv[3],NULL);
+//    tmp = malloc(siz+100);
     for (int i=0; i<200;i++) {
         siz = strrepl(buffer,argv[2],argv[3],NULL);
-    tmp = malloc(siz+100);
+        tmp = malloc(siz+100);
         siz1 = strrepl(buffer,argv[2],argv[3],tmp);
-if (i<99) free(tmp);
+        if (i<99) free(tmp);
     }
     f = fopen(argv[4],"wb");
     fwrite(tmp,1,siz-1,f);
