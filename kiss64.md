@@ -1,3 +1,4 @@
+##### !Comment\
 [0..20631]**word** *Q*\
 **word** *carry*  = 36243678541\
 **word** *xcng*   = 12367890123456\
@@ -46,7 +47,6 @@
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*Q*[*i*] := *cng*() + *xxs*()\
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**od**\
 \
-##### !	to 10'000 do\
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**to** 10 *million* **do**\
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*x*:=*kiss*()\
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**od**\
