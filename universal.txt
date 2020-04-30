@@ -1,0 +1,94 @@
+!Universal Syntax
+
+proc start=
+    println fib(36)
+end
+
+function fib(n)var=
+    if n<2 then
+        return n
+    else 
+        return fib(n-1)+fib(n-2)
+    fi
+end
+
+-------------------------------------------------
+
+; Lisp source output
+
+(defun start ()
+  (format t "~a" (fib 36))
+  (format t "~%")
+)
+
+(defun fib (n)
+  (if (< n 2)
+      (return-from fib n)
+      (return-from fib (+ (fib (- n 1)) (fib (- n 2))))
+  )
+)
+
+(start)
+
+-------------------------------------------------
+
+# Python source output
+import sys
+import math
+import copy
+
+def start():
+  sys.stdout.write(str(fib(36)))
+  sys.stdout.write("\n")
+
+def fib(n):
+  if (n<2):
+    return n
+  else:
+    return (fib((n-1))+fib((n-2)))
+
+start()
+
+-------------------------------------------------
+
+
+-- Lua source output
+
+function start()
+  print (fib(36))
+  print("\n")
+end
+
+function fib(n)
+  if (n<2) then
+    return n
+  else
+    return (fib((n-1))+fib((n-2)))
+  end
+end
+
+start()
+
+-------------------------------------------------
+
+/* C source output */
+#include "jheader.h"
+
+/* Function Prototypes */
+void start(void);
+int fib(int n);
+
+/* Local Proc Definitions */
+void start(void) {	//START
+  printf("%d\n",fib(n));
+}
+
+int fib(int n) {	//FIB
+  if ((n<2)) {
+    return n;
+  } else {
+    return (fib((n-1))+fib((n-2)));
+  }
+}
+
+/* End of Module */
