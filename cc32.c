@@ -1,4 +1,12 @@
 /*
+Toy C compiler for Windows.
+
+This code is placed in the Public Domain.
+
+Generated C code (not original non-C sources); build with gcc or tcc.
+
+--------------------------------------
+
 'BCC' Compiler for 'C'-like language.
 
 Major C Features Not Supported:
@@ -26,7 +34,7 @@ Known problems:
 
  * There may be some bugs in supporting 'float' types
 
-Building BCC (needs 64-bit compiler; use -m64 if defaults to 32-bit):
+Building BCC using 64-bit compiler; use -m64 if defaults to 32-bit:
 
    gcc cc64.c -obcc.exe
    tcc cc64.c -obcc.exe -luser32
@@ -35,6 +43,15 @@ Building BCC (needs 64-bit compiler; use -m64 if defaults to 32-bit):
  anything else except itself:
 
    bcc cc64.c               # build to cc64.exe (can't overwrite bcc.exe)
+
+Building BCC using 32-bit compiler:
+
+   gcc cc32.c -obcc.exe
+   tcc cc32.c -obcc.exe -luser32
+
+Note that the 32-bit version will still expect a 64-bit msvcrt.dll and generates
+64-bit executables. However -e and -s options can still be used.
+
 
  Standard headers are incorporated into the executable.
 
@@ -54,7 +71,7 @@ For further instructions try one of:
 /*
   M to C  Whole Program Translator
   Input:  cc.m plus imported modules
-  Output: cc.c (this file, or renamed from that)
+  Output: cc32.c (this file, or renamed from that)
           File represents entire program
   Target: C 32-bit
   OS:     Windows
@@ -7907,7 +7924,7 @@ static void cc_showcaption(void) {
     msysnewc_m_print_startcon();
     msysnewc_m_print_str((byte*)"BCC 'C' Compiler",NULL);
     msysnewc_m_print_str((byte*)"19-May-2020",NULL);
-    msysnewc_m_print_str((byte*)"19:10:59",NULL);
+    msysnewc_m_print_str((byte*)"19:22:05",NULL);
     msysnewc_m_print_newline();
     msysnewc_m_print_end();
     ;
