@@ -71,7 +71,7 @@ For further instructions try one of:
 /*
   M to C  Whole Program Translator
   Input:  cc.m plus imported modules
-  Output: cc32.c (this file, or renamed from that)
+  Output: cc.c (this file, or renamed from that)
           File represents entire program
   Target: C 32-bit
   OS:     Windows
@@ -1024,22 +1024,22 @@ double mlib_mrandomreal(void);
 double mlib_mrandomreal1(void);
 byte * mlib_checkpackfile(void);
 extern void * __stdcall GetStdHandle(u32 _1);
-extern i64 __stdcall GetConsoleScreenBufferInfo(void * _1,void * _2);
-extern i64 __stdcall SetConsoleCtrlHandler(void (*_1)(void),i64 _2);
-extern i64 __stdcall SetConsoleMode(void * _1,u32 _2);
-extern i64 __stdcall CreateProcessA(byte * _1,byte * _2,void * _3,void * _4,i64 _5,u32 _6,void * _7,byte * _8,void * _9,void * _10);
+extern u32 __stdcall GetConsoleScreenBufferInfo(void * _1,void * _2);
+extern u32 __stdcall SetConsoleCtrlHandler(void (*_1)(void),u32 _2);
+extern u32 __stdcall SetConsoleMode(void * _1,u32 _2);
+extern u32 __stdcall CreateProcessA(byte * _1,byte * _2,void * _3,void * _4,u32 _5,u32 _6,void * _7,byte * _8,void * _9,void * _10);
 extern u32 __stdcall GetLastError(void);
 extern u32 __stdcall WaitForSingleObject(void * _1,u32 _2);
-extern i64 __stdcall GetExitCodeProcess(void * _1,void * _2);
-extern i64 __stdcall CloseHandle(void * _1);
-extern i64 __stdcall GetNumberOfConsoleInputEvents(void * _1,void * _2);
-extern i64 __stdcall FlushConsoleInputBuffer(void * _1);
+extern u32 __stdcall GetExitCodeProcess(void * _1,void * _2);
+extern u32 __stdcall CloseHandle(void * _1);
+extern u32 __stdcall GetNumberOfConsoleInputEvents(void * _1,void * _2);
+extern u32 __stdcall FlushConsoleInputBuffer(void * _1);
 extern void * __stdcall LoadLibraryA(byte * _1);
 extern void * __stdcall GetProcAddress(void * _1,byte * _2);
 extern void * __stdcall LoadCursorA(void * _1,byte * _2);
 extern u32 __stdcall RegisterClassExA(void * _1);
-extern i32 __stdcall DefWindowProcA(void * _1,u32 _2,u32 _3,u32 _4);
-extern i64 __stdcall ReadConsoleInputA(void * _1,void * _2,u32 _3,void * _4);
+extern u32 __stdcall DefWindowProcA(void * _1,u32 _2,u32 _3,u32 _4);
+extern u32 __stdcall ReadConsoleInputA(void * _1,void * _2,u32 _3,void * _4);
 extern void __stdcall Sleep(u32 _1);
 extern u32 __stdcall GetModuleFileNameA(void * _1,byte * _2,u32 _3);
 extern void __stdcall ExitProcess(u32 _1);
@@ -7923,8 +7923,8 @@ static void cc_showextrainfo(void) {
 static void cc_showcaption(void) {
     msysnewc_m_print_startcon();
     msysnewc_m_print_str((byte*)"BCC 'C' Compiler",NULL);
-    msysnewc_m_print_str((byte*)"19-May-2020",NULL);
-    msysnewc_m_print_str((byte*)"19:22:05",NULL);
+    msysnewc_m_print_str((byte*)"20-May-2020",NULL);
+    msysnewc_m_print_str((byte*)"01:31:15",NULL);
     msysnewc_m_print_newline();
     msysnewc_m_print_end();
     ;
@@ -10954,7 +10954,7 @@ void oswindows32_os_init(void) {
     oswindows32_hconsolein = GetStdHandle((u32)4294967286u);
     oswindows32_lastkey.repeatcount = (u64)((i64)0);
     oswindows32_keypending = (i64)0;
-    SetConsoleCtrlHandler((void (*)(void))(0),(i64)1);
+    SetConsoleCtrlHandler((void (*)(void))(0),(u32)1u);
     SetConsoleMode(oswindows32_hconsole,(u32)3u);
     oswindows32_init_flag = (i64)1;
 }
@@ -10986,7 +10986,7 @@ i64 oswindows32_os_execwait(byte * cmdline,i64 newconsole,byte * workdir) {
     } //SW
 ;
     si.size = (u64)((i64)68);
-    status = CreateProcessA((byte *)(0),cmdline,0,0,(i64)1,(u32)(cflags),0,(byte *)(0),(void *)(&si),(void *)(&xpi));
+    status = (i64)(CreateProcessA((byte *)(0),cmdline,0,0,(u32)1u,(u32)(cflags),0,(byte *)(0),(void *)(&si),(void *)(&xpi)));
     if ((status == (i64)0)) {
         status = (i64)(GetLastError());
         msysnewc_m_print_startcon();
@@ -11010,7 +11010,7 @@ i64 oswindows32_os_execcmd(byte * cmdline,i64 newconsole) {
     memset((void *)(&si),(i32)0,(u32)68u);
     memset((void *)(&xpi),(i32)0,(u32)16u);
     si.size = (u64)((i64)68);
-    CreateProcessA((byte *)(0),cmdline,0,0,(i64)1,(u32)(((i64)32 | (!!(newconsole)?(i64)16:(i64)0))),0,(byte *)(0),(void *)(&si),(void *)(&xpi));
+    CreateProcessA((byte *)(0),cmdline,0,0,(u32)1u,(u32)(((i64)32 | (!!(newconsole)?(i64)16:(i64)0))),0,(byte *)(0),(void *)(&si),(void *)(&xpi));
     CloseHandle(xpi.process);
     CloseHandle(xpi.thread);
     return (i64)1;
@@ -11111,7 +11111,7 @@ CALLBACK i32 oswindows32_mainwndproc(void * hwnd,u32 message,u32 wparam,u32 lpar
         return (i32)0;
     };
     if (!(!!(result))) {
-        return DefWindowProcA(hwnd,message,wparam,lparam);
+        return (i32)(DefWindowProcA(hwnd,message,wparam,lparam));
     } else {
         return (i32)0;
     };

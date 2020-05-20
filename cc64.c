@@ -3,12 +3,10 @@ Toy C compiler for Windows.
 
 This code is placed in the Public Domain.
 
-Generated C code, build with gcc or tcc.
+Generated C code (not original non-C sources); build with gcc or tcc.
 
-*/
+--------------------------------------
 
-
-/*
 'BCC' Compiler for 'C'-like language.
 
 Major C Features Not Supported:
@@ -36,12 +34,7 @@ Known problems:
 
  * There may be some bugs in supporting 'float' types
 
-Other bugs:
-
- * Loads...
-
-
-Building BCC (needs 64-bit compiler; use -m64 if defaults to 32-bit):
+Building BCC using 64-bit compiler; use -m64 if defaults to 32-bit:
 
    gcc cc64.c -obcc.exe
    tcc cc64.c -obcc.exe -luser32
@@ -50,6 +43,15 @@ Building BCC (needs 64-bit compiler; use -m64 if defaults to 32-bit):
  anything else except itself:
 
    bcc cc64.c               # build to cc64.exe (can't overwrite bcc.exe)
+
+Building BCC using 32-bit compiler:
+
+   gcc cc32.c -obcc.exe
+   tcc cc32.c -obcc.exe -luser32
+
+Note that the 32-bit version will still expect a 64-bit msvcrt.dll and generates
+64-bit executables. However -e and -s options can still be used.
+
 
  Standard headers are incorporated into the executable.
 
@@ -1029,22 +1031,22 @@ double mlib_mrandomreal(void);
 double mlib_mrandomreal1(void);
 byte * mlib_checkpackfile(void);
 extern void * GetStdHandle(u32 _1);
-extern i64 GetConsoleScreenBufferInfo(void * _1,void * _2);
-extern i64 SetConsoleCtrlHandler(void (*_1)(void),i64 _2);
-extern i64 SetConsoleMode(void * _1,u32 _2);
-extern i64 CreateProcessA(byte * _1,byte * _2,void * _3,void * _4,i64 _5,u32 _6,void * _7,byte * _8,void * _9,void * _10);
+extern u32 GetConsoleScreenBufferInfo(void * _1,void * _2);
+extern u32 SetConsoleCtrlHandler(void (*_1)(void),u32 _2);
+extern u32 SetConsoleMode(void * _1,u32 _2);
+extern u32 CreateProcessA(byte * _1,byte * _2,void * _3,void * _4,u32 _5,u32 _6,void * _7,byte * _8,void * _9,void * _10);
 extern u32 GetLastError(void);
 extern u32 WaitForSingleObject(void * _1,u32 _2);
-extern i64 GetExitCodeProcess(void * _1,void * _2);
-extern i64 CloseHandle(void * _1);
-extern i64 GetNumberOfConsoleInputEvents(void * _1,void * _2);
-extern i64 FlushConsoleInputBuffer(void * _1);
+extern u32 GetExitCodeProcess(void * _1,void * _2);
+extern u32 CloseHandle(void * _1);
+extern u32 GetNumberOfConsoleInputEvents(void * _1,void * _2);
+extern u32 FlushConsoleInputBuffer(void * _1);
 extern void * LoadLibraryA(byte * _1);
 extern void * GetProcAddress(void * _1,byte * _2);
 extern void * LoadCursorA(void * _1,byte * _2);
 extern u32 RegisterClassExA(void * _1);
-extern i64 DefWindowProcA(void * _1,u32 _2,u64 _3,u64 _4);
-extern i64 ReadConsoleInputA(void * _1,void * _2,u32 _3,void * _4);
+extern u32 DefWindowProcA(void * _1,u32 _2,u64 _3,u64 _4);
+extern u32 ReadConsoleInputA(void * _1,void * _2,u32 _3,void * _4);
 extern void Sleep(u32 _1);
 extern u32 GetModuleFileNameA(void * _1,byte * _2,u32 _3);
 extern void ExitProcess(u32 _1);
@@ -7928,8 +7930,8 @@ static void cc_showextrainfo(void) {
 static void cc_showcaption(void) {
     msysnewc_m_print_startcon();
     msysnewc_m_print_str((byte*)"BCC 'C' Compiler",NULL);
-    msysnewc_m_print_str((byte*)"19-May-2020",NULL);
-    msysnewc_m_print_str((byte*)"16:59:46",NULL);
+    msysnewc_m_print_str((byte*)"20-May-2020",NULL);
+    msysnewc_m_print_str((byte*)"01:32:08",NULL);
     msysnewc_m_print_newline();
     msysnewc_m_print_end();
     ;
@@ -10959,7 +10961,7 @@ void oswindows_os_init(void) {
     oswindows_hconsolein = GetStdHandle((u64)4294967286u);
     oswindows_lastkey.repeatcount = (u64)((i64)0);
     oswindows_keypending = (i64)0;
-    SetConsoleCtrlHandler((void (*)(void))(0),(i64)1);
+    SetConsoleCtrlHandler((void (*)(void))(0),(u64)1u);
     SetConsoleMode(oswindows_hconsole,(u64)3u);
     oswindows_init_flag = (i64)1;
 }
@@ -10991,7 +10993,7 @@ i64 oswindows_os_execwait(byte * cmdline,i64 newconsole,byte * workdir) {
     } //SW
 ;
     si.size = (u64)((i64)104);
-    status = CreateProcessA((byte *)(0),cmdline,0,0,(i64)1,(u64)((u32)(cflags)),0,(byte *)(0),(void *)(&si),(void *)(&xpi));
+    status = (i64)(CreateProcessA((byte *)(0),cmdline,0,0,(u64)1u,(u64)((u32)(cflags)),0,(byte *)(0),(void *)(&si),(void *)(&xpi)));
     if ((status == (i64)0)) {
         status = (i64)(GetLastError());
         msysnewc_m_print_startcon();
@@ -11015,7 +11017,7 @@ i64 oswindows_os_execcmd(byte * cmdline,i64 newconsole) {
     memset((void *)(&si),(i64)0,(u64)((i64)104));
     memset((void *)(&xpi),(i64)0,(u64)((i64)24));
     si.size = (u64)((i64)104);
-    CreateProcessA((byte *)(0),cmdline,0,0,(i64)1,(u64)((u32)(((i64)32 | (!!(newconsole)?(i64)16:(i64)0)))),0,(byte *)(0),(void *)(&si),(void *)(&xpi));
+    CreateProcessA((byte *)(0),cmdline,0,0,(u64)1u,(u64)((u32)(((i64)32 | (!!(newconsole)?(i64)16:(i64)0)))),0,(byte *)(0),(void *)(&si),(void *)(&xpi));
     CloseHandle(xpi.process);
     CloseHandle(xpi.thread);
     return (i64)1;
@@ -11116,7 +11118,7 @@ CALLBACK i64 oswindows_mainwndproc(void * hwnd,u32 message,u64 wparam,u64 lparam
         return (i64)0;
     };
     if (!(!!(result))) {
-        return DefWindowProcA(hwnd,(u64)(message),wparam,lparam);
+        return (i64)(DefWindowProcA(hwnd,(u64)(message),wparam,lparam));
     } else {
         return (i64)0;
     };
