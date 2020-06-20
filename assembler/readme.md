@@ -6,9 +6,9 @@ The relevant files that write COFF and PE formats are:
 
 * **ax_writeobj.m**   Write object file. Start at writess() which calls writecof()
 * **ax_writeexe.m**   Write executable file. Start at writeexe()
-* **ax_objdecls.m**   Contains some struct and enum defintions used by the above
+* **ax_objdecls.m**   Contains some struct and enum definitions used by the above
 
-These obj/exe modules take input from a set of 'ss' data objects created in the rest of the compiler, but this is not important just to get an idea of how obj/exe images are constructed (which is in a memory block, later written as a file).
+These obj/exe modules take input from a set of 'ss' data objects created in the rest of the assembler, but this is not important just to get an idea of how obj/exe images are constructed (which is in a memory block, later written as a file).
 
 (Sources should be viewed with 4-character tabs. Lines starting "!" are comments. Details on this language are elsewhere on this site, look for mfeatures.md, or just ask.)
 
