@@ -10,7 +10,7 @@ The relevant files that write COFF and PE formats are:
 
 These obj/exe modules take input from a set of 'ss' data objects created in the rest of the compiler, but this is not important just to get an idea of how obj/exe images are constructed (which is in a memory block, later written as a file).
 
-(Sources should be viewed with 4-character tabs.)
+(Sources should be viewed with 4-character tabs. Lines starting "!" are comments. Details on this language are elsewhere on this site, look for mfeatures.md, or just ask.)
 
 Some more notes about how this works:
 
