@@ -20,7 +20,7 @@ Some more notes about how this works:
 * Names such as abc\* indicate external names imported from DLL libraries
 * Labels with "::" indicate global names that are exported. (I can't remember off-hand, but I think * and :: are used with multiple-module programs to import and export between them, as well as importing DLL names)
 * **ax** will automatically look inside msvcrt.dll, user32.dll, gdi32.dll and kernel32.dll for imported symbols. Others can be specified on the command line (but it will reset the list so msvcrt etc have to be specified explicitly if needed.)
-** **ax** can't link modules in .o, .obj, .lib or .a formats created by other software. It can only dynamically link to DLL files.
+* **ax** can't link modules in .o, .obj, .lib or .a formats created by other software. It can only dynamically link to DLL files.
 * **ax** uses either 'start' or 'main' as the entry point (this is needed when writing .exe files)
 * These was another scheme for denoting imports inside the ASM source, so a name like "msvcrt.printf" will mean it is importing name "printf", and is expected to be found inside "msvcrt.dll". So this obviates the need list the DLL, and also it could more efficiently search in that one file, instead of across all DLLs. But this is not currently used.
 * **ax** supports only a subset of the vast x64 instruction set. Only enough of the SIMD/SSE and x87 instructions are supported as are needed by my compilers
