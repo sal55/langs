@@ -28,7 +28,7 @@ Some more notes about how this works:
 * PE files include any number of sections/segments, but I only use 3: CODE (.text), IDATA (.data), and ZDATA (.bss). There should be a fourth for read-only data, but I haven't done that.
 
 
-Other tools that I think are essential as ones to read and display .obj and .exe formats. I have used PEDUMP before, but no longer have a working version. I also have my own versions, but ones from other sources are useful for cross-checking. Mine includes a disassembler, as does **ax**, which itself is sometimes cross-checked with on-line disassemblers. (x64 instruction encoding is a nightmare, as is the PE file format.)
+Other tools that I think are essential are ones to read and display .obj and .exe formats. I have used PEDUMP before, but no longer have a working version. I also have my own versions, but ones from other sources are useful for cross-checking. Mine includes a disassembler, as does **ax**, which itself is sometimes cross-checked with on-line disassemblers. (x64 instruction encoding is a nightmare, as is the PE file format.)
 
 If you want to try out **ax**, there is a binary here: www.bcas.freeuk.com/ax.exe (right-click on link to download). A suitable test might be this (save to hello.asm):
 
@@ -55,7 +55,7 @@ L1:
 KK1:db "Hello, World!",10,0
 ````
 
-Assemble and run using:
+Assemble and run using this (but be warned your AV software may object, or send it off to be checked):
 
     ax hello
     hello
