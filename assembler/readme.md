@@ -60,4 +60,7 @@ Assemble and run using:
     ax hello
     hello
 
+If that works, try 'ax ax' (download ax.asm from above), although to avoid overwriting the current ax.exe while it runs, you'd have to write:
 
+    ax ax -out:ax2.exe
+    
