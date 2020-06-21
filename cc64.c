@@ -36,21 +36,21 @@ Known problems:
 
 Building BCC on Linux using 64-bit compiler; use -m64 if defaults to 32-bit:
 
-   gcc cc64.c -obcc =lm -ldl
+   gcc cc64.c -obcc -lm -ldl
 
 
 Note that this compiler is for Windows, generated code for Win64 ABI, and expects
 to link with MSVCRT.DLL and other Windows DLLs. So cannot fully work on Linux.
 Only these options will work:
 
-   bcc -s prog.c         # output is assembly (non-std format) in prog.asm
-   bcc -c prog.c         # output in prog.obj (COFF64 format)
-   bcc -e prog.c         # preprocessed output in prog.i
+   ./bcc -s prog.c         # output is assembly (non-std format) in prog.asm
+   ./bcc -c prog.c         # output in prog.obj (COFF64 format)
+   ./bcc -e prog.c         # preprocessed output in prog.i
 
 For further instructions try one of:
 
-  bcc
-  bcc -help
+  ./bcc
+  ./bcc -help
 
 */
 
