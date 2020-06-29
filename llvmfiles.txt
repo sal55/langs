@@ -17,7 +17,6 @@
 
 29/06/2020  14:42    <DIR>          .
 29/06/2020  14:42    <DIR>          ..
-29/06/2020  14:42    <DIR>          $med
 23/10/2018  01:10            21,032 api-ms-win-core-console-l1-1-0.dll
 23/10/2018  01:10            21,024 api-ms-win-core-console-l1-2-0.dll
 23/10/2018  01:10            20,512 api-ms-win-core-datetime-l1-1-0.dll
