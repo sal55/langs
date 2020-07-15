@@ -83,6 +83,8 @@ Other languages:
   Julia          13.0  189.0     T/O     ---
 
   LuaJIT          0.0    0.1     0.5     2.0
+  
+  Dip             8.0    ---     ---     --- (Estimate based on timing on HP laptop)
 
 My languages:
 

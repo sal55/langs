@@ -3,11 +3,11 @@
 
 M is a systems language first devised for 8-bit Z80 systems in early 1980s, since evolved and now targeting 64-bit Windows machines using x64 processor.
 
-It is also now known as 'Mosaic'.
+It is also now known as 'Mosaic' (named by a Reddit user).
 
 The following is not a formal reference but is a random collection of features, ideas and aims that may be useful to others. Or to help understand M source code.
 
-This is an early draft, and there will be typos and omissions, mistakes and probably duplicates. It is also disorganised, but should be enough to get an idea of the lanuage. I can't promise everything mentioned works in the actual M compiler.
+This is a draft, and there will be typos and omissions, mistakes and probably duplicates. It is also disorganised, but should be enough to get an idea of the lanuage. I can't promise everything mentioned works in the actual M compiler.
 
 ### The M Compiler
 
@@ -46,7 +46,7 @@ I don't have an optimiser right now, and the code is poor. However this doesn't 
 ### C Target
 At various times, I have supported a C target, so generating a monolithic C source file instead of .exe or .obj or .asm. This gives the advantage of being able to compile programs for Linux, and to take advantage of optimising C compilers like gcc.
 
-But it is currently dropped as it requires a considerable effort. Also some features are problematical, or are not supported. (Also, unless Tiny C is used to compile the output file, compilation hits a brick wall as soon as gcc is invoked, as that compiler is much slower.)
+But it is currently dropped as it requires a considerable effort. Also some features are problematical, or are not supported. (And, unless Tiny C is used to compile the output file, compilation hits a brick wall as soon as gcc is invoked, as that compiler is much slower.)
 
 ### ASM Target
 This was the main target before mm could directly generate .exe \[or .obj\] files directly. It was in the syntax for my own very fast assembler (some 2M to 3M lines per second). Although no longer needed, it was handy for debugging, or for perusing the output. This is enabled using the -c option (use 'mm -help').
@@ -55,7 +55,7 @@ The .asm output is again a single, monolithic file, which can actually be assemb
 
 ### Generating .obj files
 
-These are needed when it is necessary to go beyond what mm can do itself. Eg. using external linkers, static linking with external libraries or C modules. It would be done using 'mm -obj', but I've found that that built in functionality was never properly adapted from the separate **ax** assembler. It can be done like this:
+These are needed when it is necessary to go beyond what mm can do itself. Eg. using external linkers, static linking with external libraries or C modules, or generating DLLs. It would be done using 'mm -obj', but I've found that that built in functionality was never properly adapted from the separate **ax** assembler. It can be done like this:
 
     mm -c prog            # prog.m to prog.asm
     ax -obj prog          # prog.asm to prog.obj
@@ -78,7 +78,7 @@ Previous versions of the module system required modules to be in a strict top-do
 ### Out of Order Definitions
 Unlike C, functions can be defined in any order in a module. If a function F calls G(), and G is defined later on, you don't need a forward or prototype declaration for G.
 
-Actually, this also applies to other named entities, so you could for example choose to define all the local variables at the end of a function!
+Actually, this also applies to other named entities, so you could for example choose to define all the local variables at the end of a function! (Only import statements need to go at the start of a module, to avoid scanning the entire file for the preliminary pass to determine all the modules.)
 
 ### Block Scopes
 Another big departure from C, is that inside a function, there is only a single scope; there are no block scopes. Further, there is a single name space (no crazy tag namespaces and even label namespaces of C: you could write: 'L: int L; goto L;')
@@ -120,7 +120,7 @@ Identifiers in M use: A-Z a-z 0-9 _ $ and can't start with a digit.
 
     clang proc `exit(int)
 
-Here, it is necessary because 'exit' is a loop control statement in M.)
+Here, it is necessary because 'exit' is a loop control statement in M. This time, \`exit needs to be used everywhere.)
 
 ### Program Entry Point
 This is usually the start() function, which is always global (ie. exported, no 'global' needed.) start() takes no parameters.
@@ -142,7 +142,9 @@ Example in a program called prog.m, this prints itself:
     proc start =
         println strinclude "prog.m"
     end
-    
+
+The source file prog.m does not need to be present at runtime; it becomes part of the executable.
+
 **bininclude** is a variation used to initialise a byte-array, and can refer to any file including binaries. However it's done inefficiently at present.
 
 ### Conditional Compilation
@@ -166,11 +168,27 @@ Which can be used as:
     mapmodule A => B when flag1               # do this when flag1 is defined and has value "1"
     mapmodule A => B when flag2 = "val"       # do this when flag2 is defined and has value "val"
 
+Note that mapmodule can also be used unconditionally:
+
+    mapmodule mlib => mlibnew
+
+One technique used for different versions of a program, is to have a different lead module - a small stub containing just start(), which calls into the rest. This module can contain a set of 'mapmodule' definitions which control which set of a actual modules to incorporate. This was used for building these 3 versions of mm:
+
+    \m\mm mm            # regular version targetting x64
+    \m\mm mc            # version that targets C on Windows
+    \m\mm mu            # version targetting C on Linux
+
 
 ### Function Tables
 There is a limited amount of reflection in that all functions (names and addresses) in the program are written to the executable, and can be accessed via special functions.
 
-This allows finding out the name of a function from a function pointer. But what I most use it for is building, at runtime, tables of functions pointers for special handlers. For example, handlers for the commands of, say, an editor, may have functions with names such as 'ed_left', 'ed_delcharright'. By searching for a function with that name (in practice then store in a table to avoid a search), I can add functionality as needed, without needing to maintain tables of pointers.
+This allows finding out the name of a function from a function pointer. But what I most use it for is building, at runtime, tables of functions pointers for special handlers. For example, handlers for the commands of, say, an editor, may have functions with names such as 'ed_left', 'ed_delcharright':
+
+   proc ed_left(txdescr td) = ...
+   proc ed_delcharright(txdescr td) = ...
+   ...
+ 
+By searching for functions that start with "ed_", and picking up the name of the command it deals with ('left' or 'delcharright'), then a list of handlers for the commands can be created, with defaults for missing commands. This makes it easy to maintain such handlers without updating tables of such functions.
 
 ### Data Types
 M is low-level so has mainly simple, fixed-size types: scalars, records (ie. structs) and fixed-length arrays with a size known at compile-time.
@@ -210,22 +228,28 @@ Common aliases:
     real   =  real64
     byte   =  word8
 
-(There had been also machine types intm and wordm which were 32 or 64 bits depending on target, also intp and wordp for widths matching those of a native pointer, but since I'm concentrating on 64-bit machines, and assuming 64-bit pointers, those will be dropped.)
+(There had been also machine types for 32/64 bit ints, words and pointers, but since I've settled on 64 bit targets with everything 64 bits, those has been dropped.)
 
 ### Type of Integer Constants
 These are defaults before any casts are applied, depending on the magnitude of the constant:
 
-    0 to 2**63-1              int64
-    2**63 to 2**64-1          word64
-    2**64 to 2**127-1         int128
-    2**127 to 2**128-1         word128
-    2**128 and above          'decimal' type (not implemented in this version)
+    0      to 2**63-1         int64
+    2**63  to 2**64-1         word64
+    2**64  to 2**127-1        int128
+    2**127 to 2**128-1        word128
+    2**128 and above          decimal type (not implemented in this version)
 
 (No suffixes are used to force a particular type, except that in the next M version -L is used to force a decimal type for integers and floats. To force a type, just use a cast, eg. word64(0).)
 
 ### Numeric Separators
 
-Numeric constants including floating point can use ' _ or \` to separate groups of digits.
+Numeric constants including floating point can use ' _ or \` to separate groups of digits:
+
+    1'000'000
+    5`678
+    0.142_857
+
+These can all be mixed up, or duplicated: 124'878\_\_\_\_000, so should be used sensibly.
 
 ### Numeric Scaling
 
@@ -246,6 +270,7 @@ Number bases from 2 to 16 can be used for integers and floats, eg:
     8x377    # octal: 255
     12xBBB   # base 12: 1727 (not sure if bases 10x to 15x work in this language)
     0xFFF    # hex: 4095
+    16xFFF   # also hex 4095 for completeness
     5x3.4    # base 5: 3.8 (3 and 4/5)
     
 ### Numeric Limits and Type Sizes
@@ -270,9 +295,9 @@ M uses ASCII, so 'A' has the value 65, but it has type 'char'.
 
 Multi-character constants are possible, with these types: 
 
-    'A'                        c8
-    up to 'ABCDEFGH'           u64
-    up to 'ABCDEFGHIJKLMNOP'   u128
+    'A'                                    c8
+    'AB' up to 'ABCDEFGH'                  u64
+    'ABCDEFGHI' up to 'ABCDEFGHIJKLMNOP'   u128
 
 ### Unicode String and Char Constants
 Not sure how to tackle Unicode support yet, so these constants are not supported. UTF8 sequences can be used, but to work with those, any routines called need to support UTF8. A 'print' on a UTF8 string ends up calling C's printf for normal (not wide) characters, so these also depends on Windows, locale, codepages and the like.
@@ -450,6 +475,11 @@ M likes to make a stronger distinction between functions that return a value, an
         a +:= b
     end
 
+    proc abort(ichar message) =
+         println "Aborting:",message
+         stop 1
+    end
+
 Here the '&' signifies a reference parameter. Functions require a return type, and they need to return a value. Alternate syntax:
 
     function add(int a,b) => int = {a+b}
@@ -460,7 +490,7 @@ This demonstrates:
    * => can be optionally used denote a return type
    * {...} braces can be used around a function body, the only place they are used. ({,}  were part of a more general syntax for deferred code, such as lamdbas, but never got around to that. Function bodies are certainly deferred.)
 
-   * 'Return' is actually optional.
+   * 'Return' is actually optional; just the value will do
 
 ### Function Parameters
 M has default and keyword parameters:
@@ -468,6 +498,17 @@ M has default and keyword parameters:
     proc createwindow(int dimx=640, dimy=480, posx=0, posy=0, border=1) ...
 
     createwindow(dimx:1920, dimy:1080)
+
+Since functions from external libraries need to be recreated in M, it is also possible to add defaults, and use keyword arguments, to existing functions where that was not available in the original language:
+
+    windows function "MessageBoxA" (
+             ref void hwnd=nil,
+             ichar message="Hello", caption="Default Caption",
+             int flags=0)int
+             
+This can then be called as:
+
+   messageboxa(message:"My Message")
 
 ### Reference Parameters
 As shown above, '&' means a reference parameter, allowing a callee to modify data in the caller:
@@ -605,38 +646,36 @@ And this for primitive types:
 
 ### Binary Operators and Precedence Levels
 
-    :=      9   assign
+(Low precedence
 
-    +       4   (binary) add
-    -       4   (binary) subtract
-    *       3   multiply
-    /       3   divide (both integer and floating point)
-    rem     3   remainder (modulo)
-    **      2   raise to power
-    iand    4   bitwise and
-    ior     4   bitwise or
-    ixor    4   bitwise xor
-    <<      3   shift left
-    >>      3   shift right
-    in      6   (see range/set constructs)
-    notin   6   also 'not in'; opposite of 'in'
-    min     4   binary minimum
-    max     4   binary maximum
-    clamp   -   clamp(x,a,b) restricts x to being within a..b
+    :=      1   assign
 
-    and     7   logical and (short circuit operators used in conditional exprs)
-    or      8   logical or
-    xor     8   logical xor
-    andb    7   logical and (non-short circuit versions, always evaluates both operands)
-    orb     8   logical or
-    not     -   logical not
+    +       6   (binary) add
+    -       6   (binary) subtract
+    *       7   multiply
+    /       7   divide (both integer and floating point)
+    rem     7   remainder (modulo)
+    **      8   raise to power
+    iand    6   bitwise and
+    ior     6   bitwise or
+    ixor    6   bitwise xor
+    <<      7   shift left
+    >>      7   shift right
+    in      4   (see range/set constructs)
+    notin   4   also 'not in'; opposite of 'in'
+    min     6   binary minimum
+    max     6   binary maximum
+    
+    and     3   logical and (short circuit operators used in conditional exprs)
+    or      2   logical or
+    xor     2   logical xor
 
-    =       6   equals
-    <>      6   not equals
-    <       6   less than
-    >       6   greater then
-    <=      6   less than or equal
-    >=      6   greater than or equal
+    =       4   equals
+    <>      4   not equals
+    <       4   less than
+    >       4   greater then
+    <=      4   less than or equal
+    >=      4   greater than or equal
 
     ..      5   Make range
 
@@ -680,15 +719,15 @@ For example, **abs** can be applied to ints or reals, and will give the expected
 
 ### Precedence Levels
 
-    2   **                             # highest
-    3   * / rem << >>
-    4   + - iand ior ixor
+    8   **                             # highest
+    7   * / rem << >>
+    6   + - iand ior ixor
     5   ..
-    6   = <> < <= >= > not notin xor
-    7   and andb
-    8   or orb
+    4   = <> < <= >= > not notin xor
+    3   and andb
+    2   or orb
 
-    9   :=                             # lowest
+    1   :=                             # lowest
 
 Disregarding "\*\*" and ".." which don't exist in C, there are six levels, compared to a dozen in C.
 
@@ -794,17 +833,17 @@ Unusually, M allows augmented assignments for some unary operators too:
 
 This is similar to what is used in Python:
 
-    (a, b, c) = (b, c, a)
+    (a, b, c) := (b, c, a)
 
-    (a, b) = (10, 20)
+    (a, b) := (10, 20)
 
-    a, b = b, a
+    (a, b) := (b, a)
 
 The last will do the swap operation, but not as efficiently with complex terms as each is evaluated twice.
 
 This can also be used when the right-hand-size is a function returning multiple values:
 
-    a, b = fn()
+    (a, b) = fn()
 
 ### Expression List
 
@@ -886,7 +925,7 @@ There is also type punning, which is a re-interpretation of a type without chang
     println int64(x)       # display 1
     println int64@(x)      # display 4607632778762754458 (0x3FF199999999999A)
 
-The @ symbol makes it type punning (equivalent to \*(int64_t\*)&x in C).
+The @ symbol makes it type punning (equivalent to \*(int64_t\*)&x in C, unlike C, can be applied to rvalues too, that is, expressiomns: int@(x+y)).
 
 Again, for complex types, use cast@(x,int64).
 
@@ -999,12 +1038,14 @@ A mild variation is the experimental feature **recase**:
 
 Modern languages seem to be lacking in looping constructs even though, as mere syntax, they have little cost. M offers:
 
-    do ... od                  # endless loop
-    to n do ... od             # repeat n times
-    for i:=a to b do ... od    # iterate from a to b
+    do ... od                      # endless loop
+    to n do ... od                 # repeat n times
+    
+    for i:=a to b do ... od        # iterate from a to b
     for i in a..b do ... od
-    for i in A do ... od      # uses A.lwb .. B.upb
-    forall x in A do ... od    # iterate over values in A
+    
+    for i in A.bounds do ... od    # uses A.lwb .. B.upb
+
     while x do ... od
     repeat ... until x
 
@@ -1045,18 +1086,19 @@ Note that such a loop will always count upwards. To count downwards, use 'downto
 There is an alternative syntax:
 
     for i in a..b do          # expression after .. is either a range construct ...
-    for i in A do             # ... or applies .lwb and .upb to create a range
+    for i in A.bounds do      # ... or applies .lwb and .upb to create a range
 
-**forall** is also available to iterate over values rather than indices, and currently works fine with slices:
+There is also 'forall' which works best with slices, but also known length arrays:
 
     forall x in S do          # iterate over values in S
     forall i,x in S do        # same but expose the index in 'i'
 
-This is of limited use for normal arrays unless the array bounds are known to the compiler. (Note that in the revised language,
-'forall' is likely to be dropped, and I will just have 'for' to do both kinds of iteration. Details to be worked out.)
+(This syntax will change in future versions, so that 'forall' is dropped; 'for' will be used instead:
 
-Note: loop index variables don't need to be declared. They are auto-defined as 'let', so that you can't assign to them. To be able
-to assign to them, declare them outside.
+    for x in S do             # iterate over values - next version only
+    for i in S.bounds         # iterate over bounds - accepted by M too)
+
+Note: loop index variables don't need to be declared. They are auto-defined as 'let', so that you can't assign to them. To be able to assign to them, declare them outside.
 
 ### Loop Controls
 
