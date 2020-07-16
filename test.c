@@ -1,17 +1,18 @@
+ABCDEF
 /*
   M to C  Whole Program Translator
   Input:  test.m plus imported modules
   Output: test.c (this file, or renamed from that)
           File represents entire program
   Target: C 64-bit
-  OS:     Windows
+  OS:     Linux
 
   Modules:
   Module 1: test.m
   Module 2: <Built-in: mlib.m>
   Module 3: <Built-in: msysnewc.m>
   Module 4: <Built-in: clibnewc.m>
-  Module 5: <Built-in: oswindows.m>
+  Module 5: <Built-in: oslinux.m>
 
 *********** Start of C Code **********/
 
@@ -54,16 +55,8 @@ typedef void* var;
 struct mlib_strbuffer;
 struct msysnewc_procinforec;
 struct msysnewc_fmtrec;
-struct oswindows_rsystemtime;
-struct oswindows_input_record;
-struct oswindows_rspoint;
-struct oswindows_rsrect;
-struct oswindows_rpoint;
-struct oswindows_rconsole;
-struct oswindows_rstartupinfo;
-struct oswindows_rprocess_information;
-struct oswindows_rwndclassex;
-struct oswindows_rmsg;
+struct oslinux_termios;
+struct oslinux_rsystemtime;
 
 /* Struct Definitions */
 struct mlib_strbuffer {
@@ -98,110 +91,27 @@ struct msysnewc_fmtrec {
     byte spare;
 };
 
-struct oswindows_rsystemtime {
-    u16 year;
-    u16 month;
-    u16 dayofweek;
-    u16 day;
-    u16 hour;
-    u16 minute;
-    u16 second;
-    u16 milliseconds;
+struct oslinux_termios {
+    i32 c_iflag;
+    i32 c_oflag;
+    i32 c_cflag;
+    i32 c_lflag;
+    byte c_line;
+    byte c_cc[32];
+    byte filler[3];
+    i32 c_ispeed;
+    i32 c_ospeed;
 };
 
-struct oswindows_input_record {
-    u16 eventtype;
-    u16 padding;
-    u32 keydown;
-    u16 repeatcount;
-    u16 virtualkeycode;
-    u16 virtualscancode;
-    union {
-        u16 unicodechar;
-        byte asciichar;
-    };
-    u32 controlkeystate;
-};
-
-struct oswindows_rspoint {
-    i16 x;
-    i16 y;
-};
-
-struct oswindows_rsrect {
-    i16 leftx;
-    i16 top;
-    i16 rightx;
-    i16 bottom;
-};
-
-struct oswindows_rpoint {
-    i32 x;
-    i32 y;
-};
-
-struct oswindows_rconsole {
-    struct oswindows_rspoint size;
-    struct oswindows_rspoint pos;
-    u16 attributes;
-    struct oswindows_rsrect window;
-    struct oswindows_rspoint maxwindowsize;
-};
-
-struct oswindows_rstartupinfo {
-    u32 size;
-    u32 dummy1;
-    byte *  reserved;
-    byte *  desktop;
-    byte *  title;
-    u32 x;
-    u32 y;
-    u32 xsize;
-    u32 ysize;
-    u32 xcountchars;
-    u32 ycountchars;
-    u32 fillattribute;
-    u32 flags;
-    u16 showwindow;
-    u16 reserved2;
-    u32 dummy2;
-    void *  reserved4;
-    void *  stdinput;
-    void *  stdoutput;
-    void *  stderror;
-};
-
-struct oswindows_rprocess_information {
-    void *  process;
-    void *  thread;
-    u32 processid;
-    u32 threadid;
-};
-
-struct oswindows_rwndclassex {
-    u32 size;
-    u32 style;
-    void (*wndproc)(void);
-    i32 clsextra;
-    i32 wndextra;
-    void *  instance;
-    void *  icon;
-    void *  cursor;
-    void *  background;
-    byte *  menuname;
-    byte *  classname;
-    void *  iconsm;
-};
-
-struct oswindows_rmsg {
-    void *  hwnd;
-    u32 message;
-    u32 dummy1;
-    u64 wparam;
-    u64 lparam;
-    u32 time;
-    u32 dummy2;
-    struct oswindows_rpoint pt;
+struct oslinux_rsystemtime {
+    i32 year;
+    i32 month;
+    i32 dayofweek;
+    i32 day;
+    i32 hour;
+    i32 minute;
+    i32 second;
+    i64 milliseconds;
 };
 
 
@@ -372,71 +282,42 @@ void msysnewc_m_popdotslice(u64 j,u64 i,u64 * p,u64 x);
 i64 msysnewc_m_imin(i64 a,i64 b);
 i64 msysnewc_m_imax(i64 a,i64 b);
 double msysnewc_m_sign(double x);
-extern void * GetStdHandle(u32 _1);
-extern u32 GetConsoleScreenBufferInfo(void * _1,void * _2);
-extern u32 SetConsoleCtrlHandler(void (*_1)(void),u32 _2);
-extern u32 SetConsoleMode(void * _1,u32 _2);
-extern u32 CreateProcessA(byte * _1,byte * _2,void * _3,void * _4,u32 _5,u32 _6,void * _7,byte * _8,void * _9,void * _10);
-extern u32 GetLastError(void);
-extern u32 WaitForSingleObject(void * _1,u32 _2);
-extern u32 GetExitCodeProcess(void * _1,void * _2);
-extern u32 CloseHandle(void * _1);
-extern u32 GetNumberOfConsoleInputEvents(void * _1,void * _2);
-extern u32 FlushConsoleInputBuffer(void * _1);
-extern void * LoadLibraryA(byte * _1);
-extern void * GetProcAddress(void * _1,byte * _2);
-extern void * LoadCursorA(void * _1,byte * _2);
-extern u32 RegisterClassExA(void * _1);
-extern u32 DefWindowProcA(void * _1,u32 _2,u64 _3,u64 _4);
-extern u32 ReadConsoleInputA(void * _1,void * _2,u32 _3,void * _4);
-extern void Sleep(u32 _1);
-extern u32 GetModuleFileNameA(void * _1,byte * _2,u32 _3);
-extern void ExitProcess(u32 _1);
-extern void PostQuitMessage(i32 _1);
-extern void MessageBoxA(i32 x,byte * message,byte * caption,i32 y);
-extern u32 QueryPerformanceCounter(i64 * _1);
-extern u32 QueryPerformanceFrequency(i64 * _1);
-extern void * CreateFileA(byte * _1,u32 _2,u32 _3,void * _4,u32 _5,u32 _6,void * _7);
-extern u32 GetFileTime(void * _1,void * _2,void * _3,void * _4);
-extern void GetSystemTime(struct oswindows_rsystemtime * _1);
-extern void GetLocalTime(struct oswindows_rsystemtime * _1);
-extern u32 GetTickCount(void);
-extern u32 PeekMessageA(void * _1,void * * _2,u32 _3,u32 _4,u32 _5);
-void oswindows_os_init(void);
-i64 oswindows_os_execwait(byte * cmdline,i64 newconsole,byte * workdir);
-i64 oswindows_os_execcmd(byte * cmdline,i64 newconsole);
-i64 oswindows_os_getch(void);
-i64 oswindows_os_kbhit(void);
-void oswindows_os_flushkeys(void);
-void * oswindows_os_getconsolein(void);
-void * oswindows_os_getconsoleout(void);
-void * oswindows_os_proginstance(void);
-u64 oswindows_os_getdllinst(byte * name);
-void * oswindows_os_getdllprocaddr(i64 hinst,byte * name);
-void oswindows_os_initwindows(void);
-void oswindows_os_gxregisterclass(byte * classname);
-i64 oswindows_mainwndproc(void * hwnd,u32 message,u64 wparam,u64 lparam);
-static void oswindows_timerproc(void * hwnd,i64 msg,i64 id,i64 time);
-void oswindows_os_setmesshandler(void * addr);
-i64 oswindows_os_getchx(void);
-byte * oswindows_os_getos(void);
-i64 oswindows_os_gethostsize(void);
-i64 oswindows_os_shellexec(byte * opc,byte * file);
-void oswindows_os_sleep(i64 a);
-void * oswindows_os_getstdin(void);
-void * oswindows_os_getstdout(void);
-byte * oswindows_os_gethostname(void);
-byte * oswindows_os_getmpath(void);
-void oswindows_os_exitprocess(i64 x);
-i64 oswindows_os_clock(void);
-i64 oswindows_os_getclockspersec(void);
-i64 oswindows_os_iswindows(void);
-i64 oswindows_os_filelastwritetime(byte * filename);
-void oswindows_os_getsystime(struct oswindows_rsystemtime * tm);
-void oswindows_os_messagebox(byte * s,byte * t);
-i64 oswindows_os_hpcounter(void);
-i64 oswindows_os_hpfrequency(void);
-void oswindows_os_peek(void);
+extern void sleep(u32 _1);
+extern void * dlopen(byte * _1,i32 _2);
+extern void * dlsym(void * _1,byte * _2);
+extern i32 tcgetattr(i32 _1,struct oslinux_termios * _2);
+extern i32 tcsetattr(i32 _1,i32 _2,struct oslinux_termios * _3);
+void oslinux_os_init(void);
+i64 oslinux_os_execwait(byte * cmdline,i64 newconsole,byte * workdir);
+i64 oslinux_os_execcmd(byte * cmdline,i64 newconsole);
+i64 oslinux_os_getch(void);
+i64 oslinux_os_kbhit(void);
+void oslinux_os_flushkeys(void);
+void * oslinux_os_getconsolein(void);
+void * oslinux_os_getconsoleout(void);
+void * oslinux_os_proginstance(void);
+u64 oslinux_os_getdllinst(byte * name);
+void * oslinux_os_getdllprocaddr(i64 hlib,byte * name);
+void oslinux_os_initwindows(void);
+i64 oslinux_os_getchx(void);
+byte * oslinux_os_getos(void);
+i64 oslinux_os_gethostsize(void);
+i64 oslinux_os_iswindows(void);
+i64 oslinux_os_shellexec(byte * opc,byte * file);
+void oslinux_os_sleep(i64 a);
+void * oslinux_os_getstdin(void);
+void * oslinux_os_getstdout(void);
+byte * oslinux_os_gethostname(void);
+byte * oslinux_os_getmpath(void);
+void oslinux_os_exitprocess(i64 x);
+i64 oslinux_os_clock(void);
+i64 oslinux_os_getclockspersec(void);
+void oslinux_os_setmesshandler(void * addr);
+i64 oslinux_os_hpcounter(void);
+i64 oslinux_os_hpfrequency(void);
+i64 oslinux_os_filelastwritetime(byte * filename);
+void oslinux_os_getsystime(struct oslinux_rsystemtime * tm);
+void oslinux_os_peek(void);
 
 /* VARS */
 i64 mlib_mdebug;
@@ -629,41 +510,37 @@ static void *  msysnewc__fnaddresses[]= {
     &msysnewc_m_imin,
     &msysnewc_m_imax,
     &msysnewc_m_sign,
-    &oswindows_os_init,
-    &oswindows_os_execwait,
-    &oswindows_os_execcmd,
-    &oswindows_os_getch,
-    &oswindows_os_kbhit,
-    &oswindows_os_flushkeys,
-    &oswindows_os_getconsolein,
-    &oswindows_os_getconsoleout,
-    &oswindows_os_proginstance,
-    &oswindows_os_getdllinst,
-    &oswindows_os_getdllprocaddr,
-    &oswindows_os_initwindows,
-    &oswindows_os_gxregisterclass,
-    &oswindows_mainwndproc,
-    &oswindows_timerproc,
-    &oswindows_os_setmesshandler,
-    &oswindows_os_getchx,
-    &oswindows_os_getos,
-    &oswindows_os_gethostsize,
-    &oswindows_os_shellexec,
-    &oswindows_os_sleep,
-    &oswindows_os_getstdin,
-    &oswindows_os_getstdout,
-    &oswindows_os_gethostname,
-    &oswindows_os_getmpath,
-    &oswindows_os_exitprocess,
-    &oswindows_os_clock,
-    &oswindows_os_getclockspersec,
-    &oswindows_os_iswindows,
-    &oswindows_os_filelastwritetime,
-    &oswindows_os_getsystime,
-    &oswindows_os_messagebox,
-    &oswindows_os_hpcounter,
-    &oswindows_os_hpfrequency,
-    &oswindows_os_peek,
+    &oslinux_os_init,
+    &oslinux_os_execwait,
+    &oslinux_os_execcmd,
+    &oslinux_os_getch,
+    &oslinux_os_kbhit,
+    &oslinux_os_flushkeys,
+    &oslinux_os_getconsolein,
+    &oslinux_os_getconsoleout,
+    &oslinux_os_proginstance,
+    &oslinux_os_getdllinst,
+    &oslinux_os_getdllprocaddr,
+    &oslinux_os_initwindows,
+    &oslinux_os_getchx,
+    &oslinux_os_getos,
+    &oslinux_os_gethostsize,
+    &oslinux_os_iswindows,
+    &oslinux_os_shellexec,
+    &oslinux_os_sleep,
+    &oslinux_os_getstdin,
+    &oslinux_os_getstdout,
+    &oslinux_os_gethostname,
+    &oslinux_os_getmpath,
+    &oslinux_os_exitprocess,
+    &oslinux_os_clock,
+    &oslinux_os_getclockspersec,
+    &oslinux_os_setmesshandler,
+    &oslinux_os_hpcounter,
+    &oslinux_os_hpfrequency,
+    &oslinux_os_filelastwritetime,
+    &oslinux_os_getsystime,
+    &oslinux_os_peek,
 0};
 static byte *  msysnewc__fnnames[]= {
     (byte*)"start",
@@ -844,13 +721,10 @@ static byte *  msysnewc__fnnames[]= {
     (byte*)"os_getdllinst",
     (byte*)"os_getdllprocaddr",
     (byte*)"os_initwindows",
-    (byte*)"os_gxregisterclass",
-    (byte*)"mainwndproc",
-    (byte*)"timerproc",
-    (byte*)"os_setmesshandler",
     (byte*)"os_getchx",
     (byte*)"os_getos",
     (byte*)"os_gethostsize",
+    (byte*)"os_iswindows",
     (byte*)"os_shellexec",
     (byte*)"os_sleep",
     (byte*)"os_getstdin",
@@ -860,18 +734,17 @@ static byte *  msysnewc__fnnames[]= {
     (byte*)"os_exitprocess",
     (byte*)"os_clock",
     (byte*)"os_getclockspersec",
-    (byte*)"os_iswindows",
-    (byte*)"os_filelastwritetime",
-    (byte*)"os_getsystime",
-    (byte*)"os_messagebox",
+    (byte*)"os_setmesshandler",
     (byte*)"os_hpcounter",
     (byte*)"os_hpfrequency",
+    (byte*)"os_filelastwritetime",
+    (byte*)"os_getsystime",
     (byte*)"os_peek",
 (byte*)""};
 static struct msysnewc_procinforec msysnewc__fnexports[]= {
 	{0, 0,0, {0,0,0, 0,0,0, 0,0,0, 0,0,0}}}
 ;
-static i64 msysnewc__fnnprocs=201;
+static i64 msysnewc__fnnprocs=197;
 static i64 msysnewc__fnnexports=0;
 static i64 msysnewc_fmtparam;
 i64 msysnewc_needgap = (i64)0;
@@ -933,13 +806,7 @@ static i64 msysnewc_ncallbacks = (i64)0;
 static u64 msysnewc_mask63 = (u64)9223372036854775807u;
 static double msysnewc_offset64 = (double)9223372036854775800.;
 static double msysnewc_offset32 = (double)9223372036854775800.;
-static void *  oswindows_hconsole;
-static void *  oswindows_hconsolein;
-static struct oswindows_input_record oswindows_lastkey;
-static struct oswindows_input_record oswindows_pendkey;
-static i64 oswindows_keypending;
-static i64 (*oswindows_wndproc_callbackfn)(void *) = 0;
-static i64 oswindows_init_flag = (i64)0;
+static i64 oslinux_init_flag = (i64)0;
 
 /* PROCDEFS */
 // START
@@ -206557,7 +206424,7 @@ L28 :;
     msysnewc_m_print_newline();
     msysnewc_m_print_end();
     ;
-    oswindows_os_getch();
+    oslinux_os_getch();
     exit((i64)3);
 }
 
@@ -206654,7 +206521,7 @@ void mlib_abortprogram(byte * s) {
     msysnewc_m_print_str((byte*)"ABORTING: Press key...",NULL);
     msysnewc_m_print_end();
     ;
-    oswindows_os_getch();
+    oslinux_os_getch();
     exit((i64)5);
 }
 
@@ -206737,7 +206604,7 @@ void mlib_readlinen(void * handlex,byte * buffer,i64 size) {
     i64 n;
     byte crseen;
     if ((handlex == 0)) {
-        handlex = oswindows_os_getstdin();
+        handlex = oslinux_os_getstdin();
     };
     if ((handlex == 0)) {
         n = (i64)0;
@@ -207519,7 +207386,7 @@ byte * mlib_checkpackfile(void) {
     byte *  packfilename;
     i64 packfilesize;
     byte *  packfileptr;
-    strcpy((i8 *)(&exefile[((i64)1)-1]),(i8 *)(oswindows_os_gethostname()));
+    strcpy((i8 *)(&exefile[((i64)1)-1]),(i8 *)(oslinux_os_gethostname()));
     msysnewc_m_print_startcon();
     msysnewc_m_print_str((byte*)"Attempting to open",NULL);
     msysnewc_m_print_ptr(&exefile,NULL);
@@ -208987,341 +208854,161 @@ double msysnewc_m_sign(double x) {
     };
 }
 
-void oswindows_os_init(void) {
-    oswindows_hconsole = GetStdHandle((u64)4294967285u);
-    oswindows_hconsolein = GetStdHandle((u64)4294967286u);
-    oswindows_lastkey.repeatcount = (u64)((i64)0);
-    oswindows_keypending = (i64)0;
-    SetConsoleCtrlHandler((void (*)(void))(0),(u64)1u);
-    SetConsoleMode(oswindows_hconsole,(u64)3u);
-    oswindows_init_flag = (i64)1;
+void oslinux_os_init(void) {
+    oslinux_init_flag = (i64)1;
 }
 
-i64 oswindows_os_execwait(byte * cmdline,i64 newconsole,byte * workdir) {
-    u32 exitcode;
-    i64 status;
-    i64 cflags;
-    struct oswindows_rstartupinfo si;
-    struct oswindows_rprocess_information xpi;
-    cflags = (i64)0;
-    memset((void *)(&si),(i64)0,(u64)((i64)104));
-    memset((void *)(&xpi),(i64)0,(u64)((i64)24));
-    switch (newconsole) {
-    case 0:;
-    {
-        cflags = (i64)32;
-    }break;
-    case 1:;
-    {
-        cflags = (i64)48;
-    }break;
-    case 2:;
-    {
-        cflags = (i64)48;
-    }break;
-    default: {
-    }
-    } //SW
-;
-    si.size = (u64)((i64)104);
-    status = (i64)(CreateProcessA((byte *)(0),cmdline,0,0,(u64)1u,(u64)((u32)(cflags)),0,(byte *)(0),(void *)(&si),(void *)(&xpi)));
-    if ((status == (i64)0)) {
-        status = (i64)(GetLastError());
-        msysnewc_m_print_startcon();
-        msysnewc_m_print_str((byte*)"Winexec error:",NULL);
-        msysnewc_m_print_i64(status,NULL);
-        msysnewc_m_print_newline();
-        msysnewc_m_print_end();
-        ;
-        return (i64)-1;
-    };
-    WaitForSingleObject(xpi.process,(u64)4294967295u);
-    GetExitCodeProcess(xpi.process,(void *)(&exitcode));
-    CloseHandle(xpi.process);
-    CloseHandle(xpi.thread);
-    return (i64)(exitcode);
+i64 oslinux_os_execwait(byte * cmdline,i64 newconsole,byte * workdir) {
+    return (i64)(system((i8 *)(cmdline)));
 }
 
-i64 oswindows_os_execcmd(byte * cmdline,i64 newconsole) {
-    struct oswindows_rstartupinfo si;
-    struct oswindows_rprocess_information xpi;
-    memset((void *)(&si),(i64)0,(u64)((i64)104));
-    memset((void *)(&xpi),(i64)0,(u64)((i64)24));
-    si.size = (u64)((i64)104);
-    CreateProcessA((byte *)(0),cmdline,0,0,(u64)1u,(u64)((u32)(((i64)32 | (!!(newconsole)?(i64)16:(i64)0)))),0,(byte *)(0),(void *)(&si),(void *)(&xpi));
-    CloseHandle(xpi.process);
-    CloseHandle(xpi.thread);
-    return (i64)1;
+i64 oslinux_os_execcmd(byte * cmdline,i64 newconsole) {
+    return (i64)(system((i8 *)(cmdline)));
 }
 
-i64 oswindows_os_getch(void) {
-    i64 k;
-    k = (oswindows_os_getchx() & (i64)255);
-    return k;
+i64 oslinux_os_getch(void) {
+    struct oslinux_termios old;
+    struct oslinux_termios new;
+    byte ch;
+    tcgetattr((i64)0,&old);
+    new = old;
+    new.c_lflag &= (i32)-3;
+    new.c_lflag &= (i32)-9;
+    tcsetattr((i64)0,(i64)0,&new);
+    ch = (u64)(getchar());
+    tcsetattr((i64)0,(i64)0,&old);
+    return (i64)(ch);
 }
 
-i64 oswindows_os_kbhit(void) {
-    u32 count;
-    if (!(!!(oswindows_init_flag))) {
-        oswindows_os_init();
-    };
-    GetNumberOfConsoleInputEvents(oswindows_hconsolein,(void *)(&count));
-    return ((i64)((u64)(count)) > (i64)1);
+i64 oslinux_os_kbhit(void) {
+    mlib_abortprogram((byte*)"kbhit");
+    return (i64)0;
 }
 
-void oswindows_os_flushkeys(void) {
-    FlushConsoleInputBuffer(oswindows_hconsolein);
+void oslinux_os_flushkeys(void) {
+    mlib_abortprogram((byte*)"flushkeys");
 }
 
-void * oswindows_os_getconsolein(void) {
-    return oswindows_hconsolein;
+void * oslinux_os_getconsolein(void) {
+    return 0;
 }
 
-void * oswindows_os_getconsoleout(void) {
-    return oswindows_hconsole;
+void * oslinux_os_getconsoleout(void) {
+    return 0;
 }
 
-void * oswindows_os_proginstance(void) {
+void * oslinux_os_proginstance(void) {
     mlib_abortprogram((byte*)"PROGINST");
     return 0;
 }
 
-u64 oswindows_os_getdllinst(byte * name) {
-    void *  hinst;
-    hinst = LoadLibraryA(name);
-    return (u64)(hinst);
-}
-
-void * oswindows_os_getdllprocaddr(i64 hinst,byte * name) {
-    return GetProcAddress((void *)(hinst),name);
-}
-
-void oswindows_os_initwindows(void) {
-    oswindows_os_init();
-    oswindows_os_gxregisterclass((byte*)"pcc001");
-}
-
-void oswindows_os_gxregisterclass(byte * classname) {
-    struct oswindows_rwndclassex r;
-    static byte registered;
-    if (!!((u64)(registered))) {
-        return;
-    };
-    memset((void *)(&r),(i64)0,(u64)((i64)80));
-    r.size = (u64)((i64)80);
-    r.style = (u64)((i64)40);
-    r.wndproc = (void (*)(void))(&oswindows_mainwndproc);
-    r.instance = 0;
-    r.icon = 0;
-    r.cursor = LoadCursorA(0,(byte *)((void *)((i64)32512)));
-    r.background = (void *)((i64)16);
-    r.menuname = (byte *)(0);
-    r.classname = classname;
-    r.iconsm = 0;
-    if (((i64)((u64)(RegisterClassExA((void *)(&r)))) == (i64)0)) {
-        msysnewc_m_print_startcon();
-        msysnewc_m_print_str(classname,NULL);
-        msysnewc_m_print_ptr(GetLastError,NULL);
-        msysnewc_m_print_newline();
-        msysnewc_m_print_end();
-        ;
-        mlib_abortprogram((byte*)"Registerclass error");
-    };
-    registered = (u64)((i64)1);
-}
-
-CALLBACK i64 oswindows_mainwndproc(void * hwnd,u32 message,u64 wparam,u64 lparam) {
-    struct oswindows_rmsg m;
-    i64 result;
-    static i64 count = (i64)0;
-    m.hwnd = hwnd;
-    m.message = (u64)(message);
-    m.wparam = wparam;
-    m.lparam = lparam;
-    m.pt.x = (i64)0;
-    m.pt.y = (i64)0;
-    if (!!(oswindows_wndproc_callbackfn)) {
-        result = ((*oswindows_wndproc_callbackfn))((void *)(&m));
-    } else {
-        result = (i64)0;
-    };
-    if (((i64)((u64)(m.message)) == (i64)2)) {
-        return (i64)0;
-    };
-    if (!(!!(result))) {
-        return (i64)(DefWindowProcA(hwnd,(u64)(message),wparam,lparam));
-    } else {
-        return (i64)0;
-    };
-}
-
-static void oswindows_timerproc(void * hwnd,i64 msg,i64 id,i64 time) {
-    msysnewc_m_print_startcon();
-    msysnewc_m_print_str((byte*)"TIMERPROC",NULL);
-    msysnewc_m_print_newline();
-    msysnewc_m_print_end();
-    ;
-}
-
-void oswindows_os_setmesshandler(void * addr) {
-    oswindows_wndproc_callbackfn = (i64 (*)(void *))(addr);
-}
-
-i64 oswindows_os_getchx(void) {
-    i64 count;
-    i64 charcode;
-    i64 keyshift;
-    i64 keycode;
-    i64 altdown;
-    i64 ctrldown;
-    i64 shiftdown;
-    i64 capslock;
-    if (!(!!(oswindows_init_flag))) {
-        oswindows_os_init();
-    };
-    if (!!(oswindows_keypending)) {
-        oswindows_lastkey = oswindows_pendkey;
-        oswindows_keypending = (i64)0;
-    } else {
-        if (((i64)((u64)(oswindows_lastkey.repeatcount)) == (i64)0)) {
-            L148 :;
-            do {
-                count = (i64)0;
-                ReadConsoleInputA(oswindows_hconsolein,(void *)(&oswindows_lastkey),(u64)1u,(void *)(&count));
-L149 :;
-            } while (!(((i64)((u64)(oswindows_lastkey.eventtype)) == (i64)1) && ((i64)((u64)(oswindows_lastkey.keydown)) == (i64)1)));L150 :;
-            ;
+u64 oslinux_os_getdllinst(byte * name) {
+    void *  h;
+    h = dlopen(name,(i64)1);
+    if ((h == 0)) {
+        if (((i64)(strcmp((i8 *)(name),(i8 *)((byte*)"msvcrt"))) == (i64)0)) {
+            h = dlopen((byte*)"libc.so.6",(i64)1);
         };
     };
-    altdown = (!!(((i64)((u64)(oswindows_lastkey.controlkeystate)) & (i64)3))?(i64)1:(i64)0);
-    ctrldown = (!!(((i64)((u64)(oswindows_lastkey.controlkeystate)) & (i64)12))?(i64)1:(i64)0);
-    shiftdown = (!!(((i64)((u64)(oswindows_lastkey.controlkeystate)) & (i64)16))?(i64)1:(i64)0);
-    capslock = (!!(((i64)((u64)(oswindows_lastkey.controlkeystate)) & (i64)128))?(i64)1:(i64)0);
-    --oswindows_lastkey.repeatcount;
-    charcode = (i64)(oswindows_lastkey.asciichar);
-    keycode = ((i64)((u64)(oswindows_lastkey.virtualkeycode)) & (i64)255);
-    if ((charcode < (i64)0)) {
-        if ((charcode < (i64)-128)) {
-            charcode = (i64)0;
-        } else {
-            charcode += (i64)256;
-        };
-    };
-    if (((!!(altdown) && !!(ctrldown)) && (charcode == (i64)166))) {
-        altdown = (ctrldown = (i64)0);
-    } else {
-        if ((!!(altdown) || !!(ctrldown))) {
-            charcode = (i64)0;
-            if (((keycode >= (i64)65) && (keycode <= (i64)90))) {
-                charcode = (keycode - (i64)64);
-            };
-        };
-    };
-    keyshift = ((((capslock << (i64)3) | (altdown << (i64)2)) | (ctrldown << (i64)1)) | shiftdown);
-    return (((keyshift << (i64)24) | (keycode << (i64)16)) | charcode);
+    return (u64)(h);
 }
 
-byte * oswindows_os_getos(void) {
+void * oslinux_os_getdllprocaddr(i64 hlib,byte * name) {
+    void *  fnaddr;
+    if ((hlib == (i64)0)) {
+        return 0;
+    };
+    fnaddr = dlsym((void *)(hlib),name);
+    return fnaddr;
+}
+
+void oslinux_os_initwindows(void) {
+}
+
+i64 oslinux_os_getchx(void) {
+    mlib_abortprogram((byte*)"getchx");
+    return (i64)0;
+}
+
+byte * oslinux_os_getos(void) {
     if (((i64)64 == (i64)32)) {
-        return (byte*)"W32";
+        return (byte*)"L32";
     } else {
-        return (byte*)"W64";
+        return (byte*)"L64";
     };
 }
 
-i64 oswindows_os_gethostsize(void) {
+i64 oslinux_os_gethostsize(void) {
     return (i64)64;
 }
 
-i64 oswindows_os_shellexec(byte * opc,byte * file) {
-    return (i64)(system((i8 *)(file)));
+i64 oslinux_os_iswindows(void) {
+    return (i64)0;
 }
 
-void oswindows_os_sleep(i64 a) {
-    Sleep((u64)((u32)(a)));
+i64 oslinux_os_shellexec(byte * opc,byte * file) {
+    mlib_abortprogram((byte*)"SHELL EXEC");
+    return (i64)0;
 }
 
-void * oswindows_os_getstdin(void) {
-    return fopen((i8 *)((byte*)"con"),(i8 *)((byte*)"rb"));
+void oslinux_os_sleep(i64 a) {
+    sleep((u64)((u32)(a)));
 }
 
-void * oswindows_os_getstdout(void) {
-    return fopen((i8 *)((byte*)"con"),(i8 *)((byte*)"wb"));
+void * oslinux_os_getstdin(void) {
+    return 0;
 }
 
-byte * oswindows_os_gethostname(void) {
-    static byte name[300];
-    GetModuleFileNameA(0,name,(u64)300u);
-    strcat((i8 *)(name),(i8 *)((byte*)"/"));
-    return name;
+void * oslinux_os_getstdout(void) {
+    return 0;
 }
 
-byte * oswindows_os_getmpath(void) {
-    return (byte*)"C:\\m\\";
+byte * oslinux_os_gethostname(void) {
+    return (byte*)"";
 }
 
-void oswindows_os_exitprocess(i64 x) {
-    exit(x);
+byte * oslinux_os_getmpath(void) {
+    return (byte*)"";
 }
 
-i64 oswindows_os_clock(void) {
-    return (i64)(clock());
+void oslinux_os_exitprocess(i64 x) {
+    exit(0);
 }
 
-i64 oswindows_os_getclockspersec(void) {
-    return (i64)1000;
+i64 oslinux_os_clock(void) {
+    if (!!(oslinux_os_iswindows())) {
+        return (i64)(clock());
+    } else {
+        return ((i64)(clock()) / (i64)1000);
+    };
 }
 
-i64 oswindows_os_iswindows(void) {
+i64 oslinux_os_getclockspersec(void) {
+    return (!!(oslinux_os_iswindows())?(i64)1000:(i64)1000000);
+}
+
+void oslinux_os_setmesshandler(void * addr) {
+    mlib_abortprogram((byte*)"SETMESSHANDLER");
+}
+
+i64 oslinux_os_hpcounter(void) {
     return (i64)1;
 }
 
-i64 oswindows_os_filelastwritetime(byte * filename) {
-    void *  f;
-    i64 ctime;
-    i64 atime;
-    i64 wtime;
-    if ((filename == 0)) {
-        return (i64)1;
-    };
-    f = CreateFileA(filename,(u64)2147483648u,(u64)1u,0,(u64)3u,(u64)3u,0);
-    if (((i64)(f) == (i64)-1)) {
-        return (i64)0;
-    };
-    GetFileTime(f,(void *)(&ctime),(void *)(&atime),(void *)(&wtime));
-    CloseHandle(f);
-    return wtime;
+i64 oslinux_os_hpfrequency(void) {
+    return (i64)1;
 }
 
-void oswindows_os_getsystime(struct oswindows_rsystemtime * tm) {
-    GetLocalTime(tm);
+i64 oslinux_os_filelastwritetime(byte * filename) {
+    return (i64)0;
 }
 
-void oswindows_os_messagebox(byte * s,byte * t) {
-    MessageBoxA((i64)0,s,t,(i64)0);
+void oslinux_os_getsystime(struct oslinux_rsystemtime * tm) {
+    memset((void *)(tm),(i64)0,(u64)((i64)36));
+    (*tm).month = (i64)1;
 }
 
-i64 oswindows_os_hpcounter(void) {
-    i64 a;
-    QueryPerformanceCounter(&a);
-    return a;
-}
-
-i64 oswindows_os_hpfrequency(void) {
-    i64 a;
-    QueryPerformanceFrequency(&a);
-    return a;
-}
-
-void oswindows_os_peek(void) {
-    i64 ticks;
-    static i64 lastticks;
-    byte m[100];
-    ticks = (i64)(GetTickCount());
-    if (((ticks - lastticks) >= (i64)1000)) {
-        lastticks = ticks;
-        PeekMessageA((void *)(&m),(void * *)(0),(u64)0u,(u64)0u,(u64)0u);
-    };
+void oslinux_os_peek(void) {
 }
 
 
