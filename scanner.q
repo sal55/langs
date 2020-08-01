@@ -1,7 +1,8 @@
 !Simple lexer based on Java version
 !Interpreted, dynamic code
-!Start reading on start() function on line 75 or so
+!Start reading on start() function on line 80 or so
 !Reads source from file "input", accumulates tokens in list and prints them aout at the end
+!Only tested on a handful of the main tokens 
 
 import files
 
@@ -145,7 +146,7 @@ proc identifier =
         tk:=identifier_tk
     fi
 
-    addtoken(tk,text)
+    addtoken(tk,text)  # (Java version does not store the text or name of the identifer)
 end
 
 proc number =
