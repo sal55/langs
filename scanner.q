@@ -122,7 +122,6 @@ proc scantoken =
     when '"' then
         stringx()
     else
-!       error(line,"Unexpected character.")
         if isdigit(c) then
             number()
         elsif isalpha(c) then
