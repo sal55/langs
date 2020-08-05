@@ -134,9 +134,9 @@ proc scantoken =
 end
 
 proc identifier =
-        while isalphanumeric(peek()) do
-            advance()
-        od
+    while isalphanumeric(peek()) do
+        advance()
+    od
 
     text:=source.[startx..current-1]
 
