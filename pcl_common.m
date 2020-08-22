@@ -1,4 +1,4 @@
-!PCL (intermediate language) pcodes
+!PCL (intermediate language) opcodes
 !Most comments are missing
 
 !Stack operands are:
