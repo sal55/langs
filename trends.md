@@ -2,6 +2,32 @@
 
 **Case sensitivity**
 
+Feature | M Style | Popular | Notes
+--------|--------|----------- | ----------------
+Case sensitive | Case Insensitive | Case Sensitive
+Example | abc, Abc, ABC are same name | abc, Abc, ABC are distinct | etc
+Array Lower Bounds | N-based, default 1 | 0-based
+Example | Use any of 1, 0 or N | Use 0 only
+Text (code) editors | Use hard-line stops | Soft-line stops | Means Left/Right etc do not stop at line beg or end
+Compiler Strictness | Unequivocal | Depends on options | Typical C compilers are very lax unless you twist their arm
+Compiler options | <10 | Loads | (Clang has 800; gcc has 1000s)
+Need file extension | Optional | Yes
+Example: | bcc hello | gcc hello.c
+Default output file | Based on first input file | Varies | gcc generates a.out or a.exe
+Example | bcc hello => hello.exe
+
+
+
+1 | 2 |3
+4 | 5 | 6
+
+
+Markdown | Less | Pretty
+--- | --- | ---
+*Still* | `renders` | **nicely**
+1 | 2 | 3
+
+
 Never using Unix, and being used to languages like Algol, Fortran and Pascal, I've never got into the case-sensitive vibe.
 
 I always find it an almighty pain, and, since in real life it would be ludicrous that the 16 case variations of "bart" are all distinct names, it is equally so in source code. All my languages are case-insensitive.
