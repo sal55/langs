@@ -10,7 +10,7 @@ Feature | My Style | Popular | Notes
 Example | abc, Abc, ABC are same name | abc, Abc, ABC are distinct | etc
 **Array Lower Bounds** | N-based, default 1 | 0-based
 Example | Use any of 1, 0 or N | Use 0 only
-**Text (code) editors** | Use hard-line stops | Soft-line stops | Means Left/Right etc do not stop at line beg or end
+**Text (code) editors** | Use hard line-stops | Use soft line-stops | Means Left/Right, DelLeft/Right etc do not stop at line beginning or end
 **Compiler Strictness** | Unequivocal | Depends on options | Typical C compilers are very lax unless you twist their arm
 **Compiler options** | <10 | Loads | (Clang has 800; gcc has 1000s)
 **Need file extension** | Optional | Yes
