@@ -12,7 +12,7 @@ To see if a C implementation can be created that:
 
 * Can be presented as the simplest possible kind of open source project: a single file. \[A single-file C rendering is possible; example in [bcc64.c](https://raw.githubusercontent.com/sal55/langs/master/bcc64.c)\]
 
-* Can be built effortlessly from source, as simply as compiling a Hello, World program, and as fast. \[Build as, eg. 'gcc bcc64.c -obcc.exe'; with tcc build in 1/8th second, and with bcc, 1/5th second\]
+* Can be built effortlessly from source, as simply as compiling a Hello, World program, and as fast. \[Build as, eg. 'gcc bcc64.c -obcc.exe'; with tcc this builds in 1/8th second, and with bcc, 1/5th second\]
 
 * Can be downloaded, copied, run as a single, self-contained executable with no dependencies, other than what is provided by the OS. \[Entire implementation is in the file bcc.exe, including standard headers and facilities for assembling and linking\]
 
@@ -22,7 +22,7 @@ To see if a C implementation can be created that:
 
 * Can generate reasonable quality code even with no optimiser. \[Currently, on a par with Tiny C, perhaps a bit faster\]
 
-* Can result in a small implementation. \[Tiny C has an executable smaller than 0.2MB; bcc.exe is 0.6MB, however that includes bundled headers. Tiny C's headers are about 1.2MB, but are far more complete than bcc's. \]
+* Can result in a small implementation. \[Tiny C has an executable smaller than 0.2MB; bcc.exe is 0.6MB, however 1/4 of that is bundled headers. Tiny C's headers are about 1.2MB, but are far more complete than bcc's.\]
 
 ### Main Specs
 
