@@ -58,7 +58,7 @@ To see if a C implementation can be created that:
 * Second opinion when compiling C code (bcc is considerably less lax than compilers like gcc)
 * Systems programming in a language that looks like C.
 * Can be used to see how C maps to native code, and much more clearly and simply than gcc (use -s/-S option)
-* For learning more about C. (An awful lot, mostly not favourable, has already been learnt. I didn't like C before starting it, and liked it a less afterwards, but admired existing C compilers considerably more for being able to deal with 50 years' accumulation of billions of lines of some terrible C code.)
+* For learning more about C. (An awful lot, mostly not favourable, has already been learnt. I didn't like C before starting it, and liked it less afterwards, but admired existing C compilers considerably more for being able to deal with 50 years' accumulation of billions of lines of some terrible C code.)
 
 ### Future development
 
