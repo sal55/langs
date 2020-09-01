@@ -34,7 +34,7 @@ To see if a C implementation can be created that:
 
 * The bcc64.c example is an OS-neutral version, builds on Windows or Linux. On Linux, -e, -s and -c options can be used to generate .i (preprocessed), .asm and .obj files per input module. Windows is needed for .exe output.
 
-* Not written in C, but in my own systems language. Versions of that can target C, and that is how the C 'rendering' is created. True source comprise about 25 non-library modules (they are listed in bcc64.c).
+* Not written in C, but in my own systems language. Versions of that can target C, and that is how the C 'rendering' is created. True sources comprise about 25 non-library modules (they are listed in bcc64.c).
 
 ### Main Omissions
 
@@ -44,6 +44,7 @@ To see if a C implementation can be created that:
 * Many restrictions on initialisation data
 * Full treatment of Bools and bitfields 
 * Full API compliance (this means that callback functions, those called from code not compiled with bcc, need CALLBACK or #pragma $callback attribute)
+* Other restrictions exist for some type of parameter passing, mostly involving structs
 * Standard headers incomplete; only a skeleton windows.h provided
 * Some C features deliberately not implemented (eg. int/long are not distinct; only 2 char types instead of 3; {...} data initialisers need to exactly match the shape of the type; and miscellaneous quirks)
 
@@ -57,3 +58,8 @@ To see if a C implementation can be created that:
 * Second opinion when compiling C code (bcc is considerably less lax than compilers like gcc)
 * Systems programming in a language that looks like C.
 * Can be used to see how C maps to native code, and much more clearly and simply than gcc (use -s/-S option)
+* For learning more about C. (An awful lot, mostly not favourable, has already been learnt. I didn't like C before starting it, and liked it a less afterwards, but admired existing C compilers considerably more for being able to deal with 50 years' accumulation of billions of lines of some terrible C code.)
+
+### Future development
+
+I'm currently working on a new, mildly optimised code generator for my own language. This could be used as a replacement 'back-end' for bcc, with proper API compliance. However since I don't really use bcc for writing programs, and no one else uses, it will be probably just be left.
