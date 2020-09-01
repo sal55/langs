@@ -14,7 +14,7 @@ To see if a C implementation can be created that:
 
 * Can be built effortlessly from source, as simply as compiling a Hello, World program, and as fast. \[Build as, eg. 'gcc bcc64.c -obcc.exe'; with tcc this builds in 1/8th second, and with bcc, 1/5th second\]
 
-* Can be downloaded, copied, run as a single, self-contained executable with no dependencies, other than what is provided by the OS. \[Entire implementation is in the file bcc.exe, including standard headers and facilities for assembling and linking\]
+* Can be a single, self-contained executable file with no dependencies, other than what is provided by the OS. \[Entire implementation is in the file bcc.exe, including standard headers and facilities for assembling and linking\]
 
 * Can be used without any libraries of its own (uses msvcrt.dll or msvcr*.dll versions)
 
