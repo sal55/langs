@@ -34,7 +34,9 @@ To see if a C implementation can be created that:
 
 * The bcc64.c example is an OS-neutral version, builds on Windows or Linux. On Linux, -e, -s and -c options can be used to generate .i (preprocessed), .asm and .obj files per input module. Windows is needed for .exe output.
 
-### Omissions
+* Not written in C, but in my own systems language. Versions of that can target C, and that is how the C 'rendering' is created. True source comprise about 25 non-library modules (they are listed in bcc64.c).
+
+### Main Omissions
 
 * VLAs and variable types
 * Designated Initialisers
