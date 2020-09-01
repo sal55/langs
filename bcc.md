@@ -54,3 +54,4 @@ To see if a C implementation can be created that:
 * Making sense of C type declarations (diagnostics show types in readable syntax)
 * Second opinion when compiling C code (bcc is considerably less lax than compilers like gcc)
 * Systems programming in a language that looks like C.
+* Can be used to see how C maps to native code, and much more clearly and simply than gcc (use -s/-S option)
