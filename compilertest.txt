@@ -84,7 +84,9 @@ Other languages:
 
   LuaJIT          0.0    0.1     0.5     2.0
   
-  Dip             8.0    ---     ---     --- (Estimate based on timing on HP laptop)
+  Dip             8.0    ---     ---     ---  (Estimate; run another machine)
+
+  Clox (Lox)      0.0    0.1     0.3     1.0
 
 My languages:
 
