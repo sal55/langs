@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 /*
 Toy C compiler for Windows.
 
