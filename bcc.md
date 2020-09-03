@@ -36,7 +36,7 @@ To see if a C implementation can be created that:
 
 ### Downloads
 
-Not recommended for real work but curious, the bcc64.c example is an OS-neutral version, that builds on Windows or Linux. Here, -e, -s and -c options can be used to generate .i (preprocessed), .asm and .obj files per input module (\_\_DATE\_\_ etc will not work).
+Not recommended for real work but if curious, the bcc64.c example is an OS-neutral version, that builds on Windows or Linux. Here, -e, -s and -c options can be used to generate .i (preprocessed), .asm and .obj files per input module (\_\_DATE\_\_ etc will not work).
 
 For generating .exe (and working \_\_DATE\_\_) a Windows-specific version is needed (not provided). There is a binary [bcc.exe](www.bcas.freeuk.com/bcc.exe) although there are reports this link is broken)
 
