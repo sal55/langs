@@ -68,7 +68,7 @@
 
 **33** There is no simple way of determining the length of an array, without inventing some macro each time, but it will still need to be defining in terms of sizeof(A)/sizeof(A[0]).
 
-**34** The signed char type is just Wrong. Using 'unsigned char' everywhere is a pain, but also sometimes causes type clashes with standard library functions defined with signed char.
+**34** The signed char type is just Wrong. Using 'unsigned char' everywhere is a pain, but also sometimes causes type clashes with standard library functions defined with signed char. Further, char* is incompatible with both signed char* or unsigned char*, even though it necessarily has to be either signed or unsigned itself.
 
 **35** Because the char type is synonymous with a 'byte' type, C allows character codes to be added or multiplied, for example. 
 
@@ -94,7 +94,7 @@
 
 **46** There is no 'named constant' feature, which is a lightweight scheme where a name is attached to a literal value. Instead C relies on a mish-mash of #define, enum, and const, none of them doing the doing the whole job satisfactorily.
 
-**47** There are too many system header files (25 I think). (I believe there may now be a single system header than replaces the lot.)
+**47** There are too many system header files (some 30 files I think).
 
 **48** The method of sharing code and data across modules is another mess. An exported function needs to be defined in one place, and declared again in another, usually a header. Extra maintenance.
 
@@ -148,7 +148,7 @@
 
 **73** It's not possible to break or continue out of a loop more than one level deep.
 
-**74** It's not possible to break out of a loop from inside a switch statement.
+**74** It's not possible to break out of a loop from inside a switch statement
 
 **75** There are no loop controls to restart or redo a loop iteration.
 
@@ -188,7 +188,7 @@
 
 **94** There is no proper power operator (eg. \*\*), and maths functions are also just implemented as ordinary (if compiler-aware) functions.
 
-**95** There is no direct way of doing type-punning (ie. what you'd normally have to write as: \*(T\*)&X).
+**95** There is no direct way of doing type-punning (ie. what you'd normally have to write as: \*(T\*)&X, and even that is limited to l-values).
 
 **96** C allows standalone expressions that apparently do nothing, such as a+b. So an opportunity to detect likely errors (eg. a==b written instead of a=b) is lost.
 
@@ -198,7 +198,7 @@
 
 **99** With mixed sign arithmetic, C chooses to use unsigned for both. IMO this generates more problems than using signed for both.
 
-**100** So A[i] selects the (i+1)th element of A (A being an array *or* pointer. But i[A] does the same thing!
+**100** So A\[i\] selects the (i+1)th element of A (A being an array *or* pointer. But i\[A\] does the same thing!
 
 **101** In the same way, A\[i\]\[j\] can end up being written as j\[i\[A\]\] if the rules are followed. But now, a 2D indexing operation turns into two nested 1D indexing ops!
 
@@ -208,7 +208,7 @@
 
 **104** In addition, names can be declared part-way through a block, so that two versions of 'A' may be known within that block (in addition to two versions of struct A, plus of course you can have a label A).
 
-**105** 'extern' declares a name imported from elsewhere, right? Unless it's declaring a name definined later on in the same file. And sometimes you can declare something extern, but initialise it at the same time!
+**105** 'extern' declares a name imported from elsewhere, right? Unless it's declaring a name defined later on in the same file. And sometimes you can declare something extern, but initialise it at the same time!
 
 **106** Plus, 'extern' can also be used in a function - to declare a name defined outside the function.
 
