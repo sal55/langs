@@ -15,7 +15,7 @@ Annoying things about C
     puts("One");  // File c:\abc\def\
     puts("Two");
 ````
-* Non-nesting /*..*/ have further opportunities for silent bugs:
+* Non-nesting /\*..\*/ have further opportunities for silent bugs:
 ````
   puts("One"); /* ... 
   puts("Two"); /* ... */
