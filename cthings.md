@@ -1,4 +1,4 @@
-Annoying things about C
+### Annoying things about C
 
 * Braces as block delimiters (too insubstantial in my view for use across multiple lines)
 
@@ -208,3 +208,13 @@ Annoying things about C
 
 * Talking of includes: the rules for locatinf a file in an include file-specifier are more complicated than you'd think. You need to consider rel/abs paths, current dir, current stack of include files... Actually they are implementation defined
 
+* Most C compilers seem to be incredibly laid-back, oblivious to serious errors unless you twist their arm. Look at the following function; there's something missing - a return statement which returns the pointer to allocated memory. Without that, it will return garbage. Yet most compilers will say nothing or merely warn, unless you pile on the options. What is the matter with them!
+````
+void* checkedmalloc(size_t n) {
+    void *p = malloc(n);
+    if (p==NULL) {
+        puts("Malloc failure");
+        exit(1);
+    }
+}
+````
