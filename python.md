@@ -1,274 +1,113 @@
-## Q Overview
+### Annoying Things about Python
 
-### Q versus Python
+This is from the perspective of my own dynamic language 'Q', so is not entirely fair is Python is considerably more dynamic and higher level.
 
-I've called Q a dynamic, interpreted language, which it is. But compared to Python, very little is actually dynamic: only the types of variables.
+Yet, it lacks a number of fundamentals that I take for granted, and find their absence from Python a nuisance. Here I won't shy away from mentioned what I own in my Q language.
 
-And while Python offers full classes, overrides via class methods, immutable tuples and strings, integrated big integers, full dicts, exceptions, generators, iterators, executable and conditional 'def', 'class' and 'import' statements, eval/exec functions, rebinding of any names at any time, decorators, lambdas and closures, * and ** parameter handling, Numpy plus huge numbers of other libraries, arbitrary run-time attributes, 'with', 'collections' data types, rationals, decimals plus a whole raft of other advanced features, plus myriad implementations including tracing-JIT optimised versions, Q has none of that.
+#### Add-ons to fix every problem
 
-Python is huge and incredibly comprehensive. Q is tiny and fairly limited, especially in connectivity as mentioned in [Overview](Overview.md).
+For every complaint about Python, someone will point to some add-on library that gives some half-arsed solution. And an extra dependency. But this is often about things I expect to be build-in.
 
-I'm not selling Q very well so far. But if you want to use Python (or any of a dozen other such languages) like everyone else then do so.
+#### Sprawing depedendcy
 
-I know Q is still capable of plenty: I've used much cruder, more limited versions in 80s and 90s to add functionality to my CAD applications, and they were a joy to use. You don't *need* all that stuff that comes with Python. There is an advantage to working with a small language that you know all the ins and outs of.
+Any Python program will have a big, sprawling dependency: a Python installation. Yes there are sometimes add-ons that will leave you package things into one, usually unwieldly executable. (Q has one dependency, an interpeter, about 0.3MB)
 
-And Q does have plenty of small features of its own that can make working with it very comfortable.
+#### Packaging Applications
 
-### Some Q Features
+A Python application consists assorted .py modules, that can be in multiple directories. Again, there are various third party solutions. One mentioned on Reddit was to put the files into a ZIP, and run it from there. (Q precompiles any application, no matter how many modules, into ONE byte-code file; just compile the lead module. So distributing an app involves two files, the interpreter, and the bytecode program, and they can be combined into one).
 
-Here is a selection of features, mainly chosen to compare favourably with Python. Python can probably be made to do some of this stuff, but sometimes via half a dozen, incompatible, bolted-on modules none of which do the job properly, or which do so with complete overkill. Doing things way is fine; but doing it effortlessly without having to download extras is harder.
+#### Binary Distributions
 
-#### Blazing Fast Bytecode Compiler
+* Related to that last point, Q programs are intended to be distributed as binary, so the source is kept private. I's sure that are plenty of ways to do that in Python ... (see first point)
 
-Q programs need all modules known at compile-time, and all must be byte-code compiled before execution can start. This needs a very fast compiler. The one used works at between 500,000 and 1,000,000 lines per second.
+#### Indentation
 
-#### Compiled Programs are Single Bytecode Files
+Significant indendentation and missing block-end markers. Sorry, but I need something concrete to tell me I'm at the end of a block, not just the absence of a marker. (Where, if I'm at the bottom of a screen, I can't be sure there aren't more lines if I scroll down further.)
 
-Compile the lead module of any application, and the result will always be a single bytecode file representing the whole program. Distributing that involves two files: the bytecode file, and the interpreter, which is always a single file. (And there are ways to combine those two.)
+The indentation scheme is fragile (accidentally delete or insert a tab, and you've changed the program but you don't known because the syntax is still valid).
 
-Contrast the vast sprawling Python implemementations, and applications consisting of multiple assorted files, all of which requires special programs to be installed to achieve a tidy, compact distributable file.
+#### Everything is exportable
 
-Q programs are also designed to be distributed as bytecode rather than source.
+Top-level names in a module are always public (Q requires a 'global' prefix to mark a name for export.)
 
-#### Common Syntax
+#### Literals
 
-The syntax of Q, and of the implementation language M, is 95% common. Compare C and Python.
-
-#### Indents Not Significant
-
-All code blocks require a closing delimiter. This means that indentations are not crucial, it's always clear where a block ends, and some errors (such as accidentally deleting a tab) don't result in undetectable changes in logic.
-
-That different kinds of statement can use different closing delimiters is another way to detect block errors.
+Old version of Python didn't have numeric separators (I believe now available). I think they've now also fixed the problem with octal 0100 notation, but only by making 0100 invalid syntax (in Q, 0100 means 100). I don't know whether it allows binary literals. (Q allows bases from 2 to 16 for integers and floats, and can print numbers in any base).
 
 #### Named Constants
 
-A very simple feature that many languages eschew: assign a name to a numeric constant:
-```
-  const a = 100
-  const b = 200
-  const c = a+b
-```
-Such constants can help reduce expressions, be used in switch cases, or anywhere that a compile-time expression is required. It is impossible to assign to such names.
+No proper named constants; every name you assign to can be reassigned. This means not being able to reduce constant expressions, and would put paid to the possibility of a jump-table-based Switch statement. (Q has this, where 'a' has the value 300 that is impossible to change:)
+````
+     const a = b+c
+     const b = 100
+     const c = 200
+````
 
-#### Scope Control
+#### Case Sensitive
 
-Names declared in a module are local to that module, unless exported:
-```
-   var abc              # not exported
-   global var def       # exported
-```
-In Python, all such names are visible from any module that imports this one.
+An unfriendly feature IMO what is purportedly a beginner's language
 
-#### Automatic Qualifiers
-
-If module A exports function F, you don't need to access is as A.F(), but can just use F(). This is provided there is no ambiguity with any other exported F.
-
-#### Numeric Separators
-
-Numbers can be split up using any of _ ' and \`. (I understand recent Pythons now have separators.)
-
-#### Numeric Bases
-
-Constants can specify any base from 2 to 10, or 16 (The other language allows anything from 2 to 16, may need to upgrade this).
-
-This applies to both integers and floating point.
-
-#### Numeric suffixes
-
-This mean being able to write values such as '4 million'. (When used for CAD, it was possible to write 4mm + 5m + 6cm to end up with 5064.0. Now, a space is required, and those physical units have not yet been reinstated.) The suffix is a multiplier that scales the number.
-
-#### Case Insensitive
-
-This language and M are both case-insensitive, which is a more user-friendly way to do things.
 
 #### Character Constants
 
-Constants such 'A' or 'ABCDEFGH' are integer constants in Q. (In Python, they are strings. To convert to integers,
-requires typing ord('A'), a runtime operation.)
+Constants such 'A' or 'ABCDEFGH' are strings. Python needs ord('A') to get the integer code. (In Q they are integer values)
 
 #### Procs and Functions
 
-Functions that don't return a result are called Procs and need a **proc** keyword rather than **function**. This makes you think more carefully about what such a routine does, and can help catch errors.
+These are mixed up (as they are in most languages). I consider the difference significant enough to give them different names.
 
 #### Start and Main Functions
 
-Unlike most languages of this kind, declarations (of functions, types etc) are not executable statements. Executable code
-must go within inside a function (other than initialisation data for module-scope variables, which is executed at program load-time).
+You need this business of 'if __main__="main" or some thing thing, to establish that this is a main module. (In Q, just supply a main() proc, and that will be the entry point.)
 
-The executable code other than declarations that, in Python, would be scattered through the module, must be gathered into a start() or main() function, or both.
 
-start() is automatically called when the module is 'imported'. Unless this is the main program, the lead module, then main() is called if one has been provided.
+#### Static Variables inside functions
 
-This takes care of the 'if __name__="main"' or whatever is used in Python.
-
-#### Static Variables
-
-These are variables inside a function, which are declared with a 'static' attribute. They are initialised once at load-time,
-then keep whatever values they have been assigned in-between calls.
+These are local variables that keep their values across invocations. Not available AFAIK, unless through some obscure hack.
 
 #### Enumerations
 
-These are very simple affairs, one step up from 'const':
-```
-    enum (red, green, blue)        # same as const red=1, green=2, blue=3
-    enum (a=100, b, c)             # same as const a=100, b=101, c=102
-```
-They declare only named integer constants. These names are 'open' and can clash with each other. To wrap a type around them:
-```
-    type colours = (red, amber, green)
-```
-Now they have to be disambiguated with colours.red, etc. For a more advanced treatment, see Tabledata.
+There are no SIMPLE enumerations, only complicated addons. (In Q, enum (A,B,C) created named constants A,B,C with values 1,2,3.)
 
-#### Goto or Go To
 
-Yes, **goto** is in all my languages. You will appreciate it when you need to use it. (Eg. porting an algorithm that either used goto, or uses control flow that can only be expressed with goto.)
+#### No Goto
+
+This is a big deal if trying to port code using goto, porting code with control structures that need to be emulated, or considering using Python as a target language.
 
 #### Reference Parameters
 
-These allow a function to change the value of its callers data:
-```
-    proc double(&a) =
-        a  := a*2
-     end
-```
-This doubles the caller's argument. Python can only do this for limited types such as lists, and can only modify them, it can't change the list to something else by assigning to the caller's argument:
-```
-    proc exchange(&a, &b) =
-      temp := a; a := b; b := temp
-    end
-    ...
-    a := 1234
-    b := "dog"
-    exchange(a,b)
-    print a, b            # output is dog 1234
-```
+No reference parameters, so you can't write functions such as swap(A,B) or read(A,B,C)
+
 #### Optional, Default and Keyword Parameters
 
-These I believe are available in Python with some work (although I remember default parameters had some funny issues). But in Python, they are dealt with at runtime.
+These I believe are available in Python with some work (although I remember default parameters had some funny issues). But in Python, they are dealt with at runtime. (In Q, the compiler will sort out what needs to be passed, without any extra runtime overhead.)
 
-In Q, the compiler will sort out what needs to be passed, without any extra runtime overhead.
+#### Loops
 
-#### Pointers
+No breaks out of nested loops. No dedicated endless or N-times loop (easy to get around, but you have to stop and type them, and invent a pointless loop index).
 
-These are a little used, low-level feature (pointers are used internally to implemenent reference parameters and operations such as +:= and swap). Like goto, when you need them, you need them.
 
-They might be used more, if working with arrays and structs, and need a pointer to an array or struct or one of their elements for interfacing with foreign functions.
-
-#### Address-of Operator
-
-Used to set up pointers to objects or data:
-```
-     p := ^a
-     q := &a
-```
-The ^ form is to create a pointer to variant object (so a pointer to any type that a variant can hold).
-
-The & form creates a pointer to the underlying packed data, and is a pointer to a specific packed type. So here:
-```
-     s := "ABC"
-     p := ^s       # p is pointer-to-variant
-     q := &s       # q is pointer-to-byte
-     println p^    # (^ means dereference here) display "ABC"
-     println q^    # display 65
-     ++q
-     println q^    # display 66
-```
-
-#### Extra Loop Controls
-
-Q allows **exit**, **next**, **redo** and **restart*. **exit** corresponds to **break** in Python.
-
-All of them work with nested loops (unlike pretty much every other language):
-```
-    to n do
-        to m do
-            exit all when a>b
-        od
-    od
-```
-#### Conditional Statements
-
-Some simple control-flow statements - **exit** **next** **redo** **restart** **return** **goto** **stop** - can be optionally be followed by a condition:
-```
-    exit if x=7
-    return 0 when s=""
-    stop unless status=OK
-```
-This save wrapping a if-statement around them, and makes the statement more prominent.
-    
 #### Assignment and Equality Operators
 
-Q uses := for assignment, and = for equality. This allows using := inside expressions with little chance of the confusion there is in language like C.
+I think that now, assignment is allowed inside expressions, but using ":="? (Q will have had this forever.)
 
-I understand that Python can now use := inside expressions, but equality is still ==, and = is still needed for regular assigments. So it is still a bit messy.
+#### Increment and Decrement Ops
 
-#### Extra Loop Statements
+Don't try ++A or --A in Python, as it won't do what you think
 
-Q has endless loops and repeat-n-times loops, as well as repeat-until:
-```
-    do
-        stmts
-    end
-    to N do
-        stmts
-    end
-    repeat
-        stmts
-    until cond
- ```
- These are covenient to use, especially to N which otherwise requires a for-loop with a dummy variable.
-  
- #### For, Forall, Foreach Statements
- 
- **forall** in Q corresponds to **for** in Python, in looping over values, but is a simpler implementation. For example:
- ```
-     forall i,x in A do
-         ...
- ```
- The extra 'i' control varible tells it to expose the loop index. (Needs enumerate() in Python.)
- 
- **for** in Q interates over two integer values only:
- ```
-     for i to 10 do               #  1 .. 10 inclusive
-     for i:=A to B do             #  A .. B  inclusive
-     for i:=9 downto 1 by 2 do    #  iterates over 9,7,5,3,1
-     for i in A..B do             # alternate syntax
- ```
- 
-While **forall** iterates over indexable objects, multiple values where A\[i\[ is allowed, there is also **foreach** which iterates over values that are considered a single entity, such as a record, integer, or string. Ones where A.\[i\] needs to be used (see Dot Indexing).
+ing. Ones where A.\[i\] needs to be used (see Dot Indexing).
 
-#### Switch Statement
+#### No Switch Statement
 
-This is well-known:
-```
-    switch expr
-    when a, b then
-       ....
-    when c then
-       ....
-    when d..e, f then
-       ....
-    else
-       ....
-    end switch
-```
-'when' expressions must be integer constants (actual constants, named constants, or expressions reduced to a constant) known at compile-time, which makes it awkward to do in Python. This is always implemented as a jump-table.
+Self-explanatory. This is actually a big deal in an *interpreted* language, as a jump-table-based switch can be very fast.
 
-A variation is **doswitch**, which loops.
+No 'Case' statement either, which I have as a sequentially-tested variation of Switch, but still comparing one thing against lots of values.
 
-#### Case Statement
 
-If switch-like statement is needed, but the when expressions are not integers, not constants, or the range of values is too wide, then a **case** statement can be used:
-```
-    case expr
-    when a, b then
-      ....
-    end case            # or just 'esac'
-```
-However the expressions are tested one by one until the first match. "=" is applied between *expr* and each when-value, or "in" if the value is a range. The looping version is called **docase**.
+#### Records (not C Structs)
 
-#### Records
-These are simply defined like this:
+There is nothing like Q's:
+
 ```
     record date =
        var day
@@ -276,40 +115,33 @@ These are simply defined like this:
        var year
     end
 ```
-This record is always a list of 3 named elements, although they can also be indexed:
-```
-    d := new(record)         # d will be (void, void, void)
-    e := date(25,12,1999)    # d is a new date record
-    println e                # display (25,12,1999)
-    println e.month          # display 12
-    println d.[3]            # display 1999
-```
-Field names are not attributes (in Python, you can write d.monthabsxyz=0, and it will work without error).
-Using the wrong field is an error. Fields are mutable.
+Built-in. There tuples, named tuples (with mutable/non-mutable versions via endless add-ons), and ad-hoc attributes for objects.
+
+The latter have no discipline at all, you can write X.day=1, whether or not X is a date type or not, or write X.ddddddday=1.
 
 #### Integer Sets
-These are Pascal-style set of bits:
-```
-     alpha := ['A'..'Z','a'..'z']
-     digits := ['0'..'9']
-     whitespace := [' ','\t',13,10,12]
-     map := [0..16383] + [32768..65535]
-     if a in map then
-     if c in alpha+digits then ...
-```
-However, negative elements are not allowed. The set consists of an array of bits indexed from 0, up to the largest value present.
 
-#### Packed Types
-While the standard numeric types are int, word and real (all 64 bits), Q also supports 'packed types', which are fixed-size types as used in languages such as C. The following packed types are available:
-```
-    i8, i16, i32, i64, u8, u16, u32, u64, r32, r64
-    int8, int16, int32, int64, word8, word16, word32, word64, real32, real64
-    byte, c8, intm, wordm, refm      # last three depended on host machine word/pointer size
-    u1, u2, u4, bit, bit2, bit4      # for bit arrays
-```
-such types are used when constructing arrays, structs, pointers to such types, and interfacing to foreign functions.
+These are Pascal-style set of bits: alpha:=\['A'..'Z','a'..'z'\], which I've used forever, but are not present.
+
+#### Packed Types And C-Style Structs
+
+By this I mean raw basic types such as 32-but ints or 8-bit types, used for interfacing. Python needs libraries to make it all work, and some arounds for creating structs. In Q:
+````
+type date = struct
+    byte day, month
+    int16 year
+end
+
+d:=date(25,12,2020)
+print d.month
+````
+They can be used directly in Q code as well as passed to external libraries.
+
 
 #### Arrays and Bit Arrays
+
+Arrays
+
 Normal lists are variants, which are can be of any type. Arrays are lists of the same packed type:
 ```
     a := new(array, byte, 1'000'000, 0
