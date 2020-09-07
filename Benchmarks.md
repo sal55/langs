@@ -18,7 +18,7 @@ Program | Decription
 **ax** | x64 assembler
 **bcc** | C compiler
 **pc** | 'PC' bytecode interpreter
-**mm** | M compiler (M is my systems language. MM is the current compiler (special cut-down version that can be C-transpiled), BB is the new one.)
+**mm** | M compiler (M is my systems language. MM is the current compiler (special cut-down version that can be C-transpiled), BB is the new one.) All these programs are written in M.
 **(Misc)** | (Collection of very small benchmarks (fibonacci etc))
 
 ### Tasks
