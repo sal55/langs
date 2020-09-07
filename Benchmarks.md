@@ -18,7 +18,7 @@ Program | Decription
 **ax** | x64 assembler
 **bcc** | C compiler
 **pc** | 'PC' bytecode interpreter
-**mm** | M compiler (M is my systems language. MM is the current compiler (special cut-down version that can be C-transpiled), BB is the new one.) All these programs are written in M.
+**mm** | M compiler (M is my systems language. MM is the current compiler (special cut-down version that can be C-transpiled), BB is the new one.)
 **(Misc)** | (Collection of very small benchmarks (fibonacci etc))
 
 ### Tasks
@@ -43,18 +43,14 @@ they are already so fast. However the purpose of these tests is to make the
 
 ### Testing
 
-All programs are written in my M language. I use a version of my M compiler (MC)
-to translate all those to C, and compile with gcc, example:
+All programs are written in my M language. They are compiled with both BB, the new compiler, with gcc using version of the M compiler (MC)
+that translates themn to C then invokes gcc, example:
 
     C:\ax>mc -opt ax
     Compiling ax.m to ax.exe
     Invoking C compiler: gcc -m64 -O3 -oax.exe ax.c
 
-So, none of the programs are in pure C, but generated C. This could
-possibly affect the ability of gcc to optimise. However I have a version
-of the 'pi' benchmark in pure C, and that gives the same timin
-
-All gcc tests are with -O3 option.
+So, none of the programs are in pure C, but generated C. This could possibly affect the ability of gcc to optimise. However I have a version of the 'pi' benchmark in pure C, and that gives the same timing.
 
 ### Benchmark results.
 
