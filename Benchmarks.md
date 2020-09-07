@@ -71,5 +71,5 @@ Benchmark | BB | GCC | Notes
 **MM/1M**  |  5.0 |   3.5 | 
 **(MISC)** | 35.1 |  16.4  |
 
-(For the BCC tests, as it's a C compiler, that can also be compared directly with using gcc and tcc. Tcc is pretty fast, bit it's a one-pass compiler AIUI, while BCC is 2-3 passes, plus using intermediate ASM. MM has no intermediate ASM, but has more passes.)
+(For the BCC tests, as it's a C compiler, that can also be compared directly with using gcc and tcc. Tcc is pretty fast, but it's a one-pass compiler AIUI, while BCC is 2-3 passes, plus using intermediate ASM. MM has no intermediate ASM, but has more passes.)
 
