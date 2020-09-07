@@ -1,6 +1,6 @@
 ## Benchmarks
 
-This runs some a selection of programs+tasks to compare my new 'BB' compiler for my M systems language, with gcc-O3:
+These are a selection of programs and tasks to compare my new 'BB' compiler for my M systems language, with gcc-O3:
 
 Compiler | ...
 --- | ---
@@ -14,11 +14,11 @@ Program | Decription
 **jpeg** | Jpeg decoder
 **clex** | Crude basic lexer for C source
 **pi** | Calculate pi digits using my bignum library
-**mandel** | Plot Mandelbrot set
+**mandel** | Plot Mandelbrot set (added this to have some floating point tests)
 **ax** | x64 assembler
 **bcc** | C compiler
 **pc** | 'PC' bytecode interpreter
-**mm** | M compiler (M is my systems language. MM is the current compiler (special cut-down version that can be C-transpiled), BB is new one.)
+**mm** | M compiler (M is my systems language. MM is the current compiler (special cut-down version that can be C-transpiled), BB is the new one.)
 **(Misc)** | (Collection of very small benchmarks (fibonacci etc))
 
 ### Tasks
@@ -26,16 +26,16 @@ Program | Decription
 Benchmark | Tasks
 --- | ---
 **JPEG/87M** | Decode 87MPixel colour image
-**CLEX/SQL** | Scan sqlite3.c (100 times) and count chars/lines/tokens
+**CLEX/SQL** | Scan 219Kloc sqlite3.c (100 times) and count chars/lines/tokens
 **PI/2K** | Calculate 2000 digits of pi
-**MANDEL/6M** | Plot into 3072x2048 8-bit greyscale
-**AX/2M** | Assemble 2M lines of 'mov eax,[ebx+ecx*2+123456]'
+**MANDEL/6M** | Plot into 3072x2048 8-bit greyscale image
+**AX/2M** | Assemble 2M lines of 'mov eax,\[ebx+ecx\*2+123456\]'
 **BCC/SQL** | Compile sqlite3.c+shell.c (246Kloc) into sqlite3.exe
-**BCC/1M** | Compile 1M lines of a=b+c*d;
+**BCC/1M** | Compile 1M lines of 'a=b+c\*d';
 **BCC/LUA** | Compile 34 modules of Lua sources to lua.exe
 **PC/CLEX** | Scan sqlite3.c (10 times)
 **PC/JPEG/2M** | Decode 2MPixel colour image
-**MM/1M** | Compile 1M lines of 'a:=b+c*d'
+**MM/1M** | Compile 1M lines of 'a:=b+c\*d'
 
 (Benchmarking my compilers/assemblers with real programs is difficult because
 they are already so fast. However the purpose of these tests is to make the
@@ -52,7 +52,7 @@ to translate all those to C, and compile with gcc, example:
 
 So, none of the programs are in pure C, but generated C. This could
 possibly affect the ability of gcc to optimise. However I have a version
-of the 'pi' benchmark in pure C, and that gives the same timing.
+of the 'pi' benchmark in pure C, and that gives the same timin
 
 All gcc tests are with -O3 option.
 
