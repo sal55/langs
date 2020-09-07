@@ -43,7 +43,7 @@ they are already so fast. However the purpose of these tests is to make the
 
 ### Testing
 
-All programs are written in my M language. They are compiled with both BB, the new compiler, with gcc using version of the M compiler (MC)
+All programs are written in my M language. They are compiled with both BB, the new compiler, and with gcc using version of the M compiler (MC)
 that translates themn to C then invokes gcc, example:
 
     C:\ax>mc -opt ax
