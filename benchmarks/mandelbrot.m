@@ -58,8 +58,6 @@ proc start=
     const maxpixel=255
     int sum:=0
 
-    memset(&image,99,imheight*imwidth)
-
     create_fractal(-2.0, 1.0, -1.0, 1.0, maxpixel) 
     for y:=0 to imheight-1 do
         for x:=0 to imwidth-1 do
