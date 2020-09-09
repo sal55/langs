@@ -39,10 +39,8 @@ proc create_fractal(real min_x, max_x, min_y, max_y, int iters)=
 end
 
 proc writepgm(ichar file,int maxpixel=255)=
-    int x,y
-    filehandle f
-
-    f := fopen(file,"w")
+    filehandle f := fopen(file,"w")
+    
     println @f,"P2"
     println @f, imwidth, imheight
     println @f, maxpixel
