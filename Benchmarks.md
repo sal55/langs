@@ -56,20 +56,22 @@ So, none of the programs are in pure C, but generated C. This could possibly aff
 
 Results in are seconds of runtime (and, for CLEX benchmarks, in lines/second).
 
-Benchmark | BB | GCC | Notes
---- | --- | --- | ---
-**JPEG/87M** | 9.3 | 4.4| 
-**CLEX/SQL** |  4.3/5.1Mlps | 3.1/7.2Mlps | 
-**PI/2K** |   4.5 |   0.8 | 
-**MANDEL/6M** |   5.3  |  3.0 | 
-**AX.2M**  |  1.6 |   1.2 | 
-**BCC/SQL** |   0.7  |  0.5  |  (GCC takes 11-60 secs, TCC had errors)
-**BCC/1M** |  8.1 |   5.1 |   (TCC takes 1.6 secs, GCC was aborted)
-**BCC/LUA** |   0.4 |   0.3  |  (TCC also 0.3 secs, GCC 7-15 secs)
-**PC/CLEX** |   9.9/222Klps | 4.7/462Klps | 
-**PC/JPEG/2M** |  7.0 |   3.7 | 
-**MM/1M**  |  5.0 |   3.5 | 
-**(MISC)** | 35.1 |  16.4  |
+Benchmark | BB | BB-Opt | GCC | Notes
+--- | --- | --- | --- | ---
+**JPEG/87M** | 9.3 | 6.9 |4.4| 
+**CLEX/SQL** |  4.3/5.1Mlps| 4.2 | 3.1/7.2Mlps | 
+**PI/2K** |   4.5 | 4.4 | 4.2 |  0.8 | 
+**MANDEL/6M** |   5.3 | 4.4  |  3.0 | 
+**AX.2M**  |  1.6 | 1.4  |  1.2 | 
+**BCC/SQL** |   0.7 | 0.6  |  0.5  |  (GCC takes 11-60 secs, TCC had errors)
+**BCC/1M** |  8.1 |7.2 |    5.1 |   (TCC takes 1.6 secs, GCC was aborted)
+**BCC/LUA** |   0.4 | 0.5 |    0.3  |  (TCC also 0.3 secs, GCC 7-15 secs)
+**PC/CLEX** |   9.9/222Klps | 8.7 | 4.7/462Klps | 
+**PC/JPEG/2M** |  7.0 |6.4 |    3.7 | 
+**MM/1M**  |  5.0 |4.2 |    3.5 | 
+**Totals**  |  56.1|49.2  |30.3 |  
+
+**(MISC)** | 34.0 |25.2|  15.6  |
 
 (For the BCC tests, as it's a C compiler, that can also be compared directly with using gcc and tcc. Tcc is pretty fast, but it's a one-pass compiler AIUI, while BCC is 2-3 passes, plus using intermediate ASM. MM has no intermediate ASM, but has more passes.)
 
