@@ -56,20 +56,20 @@ So, none of the programs are in pure C, but generated C. This could possibly aff
 
 Results in are seconds of runtime (and, for CLEX benchmarks, in lines/second).
 
-Benchmark | BB | BB-Opt | GCC | TCC | Notes
+Benchmark | BB | BB-Opt | GCC | TCC
 --- | --- | --- | --- | ---
-**JPEG/87M** | 9.3 | 6.9 |4.4| 
-**CLEX/SQL** |  4.3/5.1Mlps| 4.1/5.4Mlps | 3.1/7.2Mlps | 
-**PI/2K** |   4.5 | 4.4 | 4.2 |  0.8 | 
-**MANDEL/6M** |   5.3 | 4.4  |  3.0 | 
-**AX.2M**  |  1.6 | 1.4  |  1.2 | 
-**BCC/SQL** |   0.7 | 0.6  |  0.5  |  (GCC takes 11-60 secs, TCC had errors)
-**BCC/1M** |  8.1 |7.2 |    5.1 |   (TCC takes 1.6 secs, GCC was aborted)
-**BCC/LUA** |   0.4 | 0.5 |    0.3  |  (TCC also 0.3 secs, GCC 7-15 secs)
-**PC/CLEX** |   9.9/222Klps | 8.7/252Klps | 4.7/462Klps | 
-**PC/JPEG/2M** |  7.0 |6.4 |    3.7 | 
-**MM/1M**  |  5.0 |4.2 |    3.5 | 
-**Totals**  |  56.1|49.2  |30.3 |  
+**JPEG/87M** | 9.3 | 6.9 |4.4| 18.0 |
+**CLEX/SQL** |  4.3/5.1Mlps| 4.1/5.4Mlps | 3.1/7.2Mlps | 6.0/3.6Mlps |
+**PI/2K** |   4.5 | 4.4 | 4.2 |  0.8 | 4.8 |
+**MANDEL/6M** |   5.3 | 4.4  |  3.0 | 5.9 |
+**AX.2M**  |  1.6 | 1.4  |  1.2 | 1.7 |
+**BCC/SQL** |   0.7 | 0.6  |  0.5  | 0.7 |
+**BCC/1M** |  8.1 |7.2 |    5.1 |  9.6 |
+**BCC/LUA** |   0.4 | 0.5 |    0.3  | 0.5 |
+**PC/CLEX** |   9.9/222Klps | 8.7/252Klps | 4.7/462Klps | 12.3/179Klps |
+**PC/JPEG/2M** |  7.0 |6.4 |    3.7 | 8.9 |
+**MM/1M**  |  5.0 |4.2 |    3.5 | 5.4 |
+**Totals**  |  56.1|49.2  |30.3 |  74.0 |
 **(MISC)** | 34.0 |25.2|  15.6  | 43.3
 
 (Timings vary by 1% or so all the time, and the figures here are rounded to one decimal. So I've tried to adjust them to be consistent, but they may not add up exactly. BB-Opt is the latest version, and at present it's 63% or so slower than gcc based going from the totals. It started at 85% slower.
