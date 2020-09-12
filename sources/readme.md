@@ -15,5 +15,3 @@ The files here are amalgamations created by my compiler. They can be compiled di
 **qq** Q compiler/interpreter
 
 **cc** C subset compiler
-
-**bb** (Compiler in development for new 'B' language intended to replace 'M')
