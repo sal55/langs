@@ -62,7 +62,7 @@ Benchmark | BB | BB-Opt | GCC | TCC
 **CLEX/SQL** |  4.3/5.1Mlps| 4.1/5.4Mlps | 3.1/7.2Mlps | 6.0/3.6Mlps |
 **PI/2K** |   4.5 | 4.2 | 0.8 | 4.8 |
 **MANDEL/6M** |   5.3 | 4.4  |  3.0 | 5.9 |
-**AX.2M**  |  1.6 | 1.4  |  1.1 | 1.7 |
+**AX/2M**  |  1.6 | 1.4  |  1.1 | 1.7 |
 **BCC/SQL** |   0.7 | 0.6  |  0.5  | 0.7 |
 **BCC/1M** |  8.1 |7.2 |    5.1 |  9.6 |
 **BCC/LUA** |   0.4 | 0.5 |    0.3  | 0.5 |
@@ -75,3 +75,32 @@ Benchmark | BB | BB-Opt | GCC | TCC
 (Timings vary by 1% or so all the time, and the figures here are rounded to one decimal. So I've tried to adjust them to be consistent, but they may not add up exactly. BB-Opt is the latest version, and at present it's 63% or so slower than gcc based going from the totals. It started at 85% slower.
 
 Individual programs will vary considerably. I will need to create more tests where gcc is much better, like the 'PI' program here.)
+
+
+### Conclusion
+
+I'm wrapping this up after 8 days or so. I've seen significant increase in speed for about 4 days. But the code is now much tidy and leaner, and no longer so embarrassing to look at. Executables are about 1/6th smaller than the ones from my current working compiler.
+
+Still lots of small stuff that can be done, mainly to do with more efficiently working with register-based variables. But I think x64 processors have already got that taken care of; they do a good job of making poor-looking code run faster than it ought.
+
+Current set of comparisons presented here relative to gcc, to allow a better weighted total since some programs only took 0.4 seconds while some took 20 times as long:
+
+Benchmark | GCC-O3 | BB
+--- | --- | ---
+**JPEG/87M** | 1.0 | 1.55
+**CLEX/SQL** | 1.0 | 1.33
+**PI/2K** | 1.0 | 5.0
+**MANDEL/6M** | 1.0 | 1.47
+**AX/2M**  |1.0 | 1.28
+**BCC/SQL** |1.0 | 1.36
+**BCC/1M** | 1.0 | 1.46
+**BCC/LUA** | 1.0 | 1.19
+**PC/CLEX** | 1.0 | 1.74
+**PC/JPEG/2M** | 1.0 | 1.63
+**MM/1M**  | 1.0 | 1.34
+
+BB is with optimisation enable, but most of it happens regardless; turning it off only makes it 10% slower.
+
+Weighted total is 1.42 slower than gcc, not including the PI/2K benchmark. That one will need looking it detail at some point; it won't be affected by the little tweaks I've been doing.
+
+Note that the PC program is normally run in accelerated mode, only available right now in my non-optimised current compiler (BB does not support inline ASM yet). In that mode, the tests perform at 0.6 and 0.5 respectively compared with gcc (maybe even better when used with BB).
