@@ -79,7 +79,7 @@ Individual programs will vary considerably. I will need to create more tests whe
 
 ### Conclusion
 
-I'm wrapping this up after 8 days or so. I've seen significant increase in speed for about 4 days. But the code is now much tidy and leaner, and no longer so embarrassing to look at. Executables are about 1/6th smaller than the ones from my current working compiler.
+I'm wrapping this up after 8 days or so. I've seen no significant increase in speed for about 4 days. But the code is now much tidy and leaner, and no longer so embarrassing to look at. Executables are about 1/6th smaller than the ones from my current working compiler.
 
 Still lots of small stuff that can be done, mainly to do with more efficiently working with register-based variables. But I think x64 processors have already got that taken care of; they do a good job of making poor-looking code run faster than it ought.
 
@@ -99,8 +99,10 @@ Benchmark | GCC-O3 | BB
 **PC/JPEG/2M** | 1.0 | 1.63
 **MM/1M**  | 1.0 | 1.34
 
-BB is with optimisation enable, but most of it happens regardless; turning it off only makes it 10% slower.
+BB is with optimisation enabled, but most of it happens regardless; turning it off only makes it 10% slower.
 
-Weighted total is 1.42 slower than gcc, not including the PI/2K benchmark. That one will need looking it detail at some point; it won't be affected by the little tweaks I've been doing.
+Weighted total is 1.42 slower than gcc, not including the PI/2K benchmark. That one will need looking at in detail at some point to see what's going on; it won't be affected by the little tweaks I've been doing.
 
-Note that the PC program is normally run in accelerated mode, only available right now in my non-optimised current compiler (BB does not support inline ASM yet). In that mode, the tests perform at 0.6 and 0.5 respectively compared with gcc (maybe even better when used with BB).
+Note that the PC program is normally run in ASM-accelerated mode, only available right now in my non-optimised current compiler (BB does not support inline ASM yet). In that mode, the tests perform at 0.6 and 0.5 respectively compared with gcc (maybe even better when used with BB).
+
+Overall, perhaps 15% faster peformance compared with my current compiler, and coincidentally about 15% smaller executables.
