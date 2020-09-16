@@ -93,21 +93,21 @@ Benchmark | GCC-O3 | BB-opt | BB original | TCC
 **MANDEL/6M** | 1.0 | 1.47 | 1.76 | 3.00
 **AX/2M**  |1.0 | 1.28 | 1.45 | 1.54
 **BCC/SQL** |1.0 | 1.36 | 1.40 | 1.40
-**BCC/1M** | 1.0 | 1.46 | 1.59 | 1.88
+**BCC/1M** | 1.0 | 1.44 | 1.59 | 1.88
 **BCC/LUA** | 1.0 | 1.19 | 1.30 | 1.67
 **PC/CLEX** | 1.0 | 1.74 | 2.10 | 2.61
-**PC/JPEG/2M** | 1.0 | 1.63 | 1.90 | 2.40
+**PC/JPEG/2M** | 1.0 | 1.61 | 1.90 | 2.40
 **MM/1M**  | 1.0 | 1.34 | 1.42 | 1.54
-**MISC**  | 1.0 | 1.61 | 2.17 | 2.77
-**Average** | 1.0 | 1.45 | 1.68 | 2.25
+**MISC**  | 1.0 | 1.58 | 2.17 | 2.77
+**Average** | 1.0 | 1.44 | 1.68 | 2.25
 
 Average excludes the PI/2K benchmark.
 
 BB-opt is with optimisation enabled, but a lot of it happens regardless; turning it off only makes it 10% slower. (-opt enables a second pass on each function when translating intermediate code to native code. The first pass gathers info to allow it to determine which parameters and locals can be kept in registers).
 
-Weighted total is 1.45 as slow than gcc, not including the PI/2K benchmark. That one will need looking at in detail at some point to see what's going on; it won't be affected by the little tweaks I've been doing. (One factor there is that gcc optimises division by a constant, which I don't deal with. But that would only improve it by an estimated 25%)
+Weighted total is 1.44 as slow than gcc, not including the PI/2K benchmark. That one will need looking at in detail at some point to see what's going on; it won't be affected by the little tweaks I've been doing. (One factor there is that gcc optimises division by a constant, which I don't deal with. But that would only improve it by an estimated 25%)
 
-Note that the PC program is normally run in ASM-accelerated mode, only available right now in my non-optimised MM current compiler (BB does not support inline ASM yet). In that mode, the tests perform at 0.6 and 0.5 respectively compared with gcc (may be even better when used with BB-opt).
+(Note that the PC program is normally run in ASM-accelerated mode, which makes it twice as fast as gcc, but that would be an unfair comparison.)
 
 Overall, perhaps 15% faster peformance compared with my current compiler, and coincidentally about 15% smaller executables.
 
@@ -116,7 +116,7 @@ Overall, perhaps 15% faster peformance compared with my current compiler, and co
 * Produce a worthwhile speed-up to my compiler, to narrow the gap between it and gcc-O3, and to widen it between it and Tiny C
 * Do so without significantly slowing down the compiler (I estimate 10% slow-down on the final compiler)
 * Do so without using any complicated, academic algorithms or dozens of passes; using only the most basic techniques
-* Do so without getting involved in the gritty details of processor intruction schedule. (However, one micro-benchmark is 30% slower with -opt than without!)
+* Do so without getting involved in the gritty details of processor intruction scheduling.
 * To reduce program size (it wasn't an original aim; but it is now)
 * To produce more respectable-looking code
 * To produce something that could be ported to my C compiler
