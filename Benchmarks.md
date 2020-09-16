@@ -86,7 +86,7 @@ Still lots of small stuff that can be done, mainly to do with more efficiently w
 Current set of comparisons presented here relative to gcc, to allow a better weighted total since some programs only took 0.4 seconds while some took 20 times as long:
 
 Benchmark | GCC-O3 | BB-opt | BB original | TCC
---- | --- | --- | ---
+--- | --- | --- | --- | ---
 **JPEG/87M** | 1.0 | 1.55 | 2.11 | 4.09
 **CLEX/SQL** | 1.0 | 1.33 | 1.38 | 1.93
 **(PI/2K)** | 1.0 | 5.0 | 5.6 | 6.00
