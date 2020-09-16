@@ -79,11 +79,11 @@ Individual programs will vary considerably. I will need to create more tests whe
 
 ### Conclusion
 
-I'm wrapping this up after 8 days or so. I've seen no significant increase in speed for about 4 days. But the code is now much tidy and leaner, and no longer so embarrassing to look at. Executables are about 1/6th smaller than the ones from my current working compiler.
+I'm wrapping this up after 8 days or so. I've seen no significant increase in speed for about 4 days. But the code is now much tidier and leaner, and no longer so embarrassing to look at. Executables are about 1/6th smaller than the ones from my current working compiler.
 
-Still lots of small stuff that can be done, mainly to do with more efficiently working with register-based variables. But I think x64 processors have already got that taken care of; they do a good job of making poor-looking code run faster than it ought.
+Still lots of small stuff that can be done, mainly to do with more efficiently working with register-based variables. But I think x64 processors have already got that taken care of; they do a good job of making poor code run faster than it ought.
 
-Current set of comparisons presented here relative to gcc, to allow a better weighted total since some programs only took 0.4 seconds while some took 20 times as long:
+Current set of comparisons presented here relative to gcc, to allow a better weighted total since some programs only took 0.4 seconds while some took 25 times as long:
 
 Benchmark | GCC-O3 | BB-opt | BB original | TCC
 --- | --- | --- | --- | ---
