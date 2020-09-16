@@ -119,3 +119,4 @@ Overall, perhaps 15% faster peformance compared with my current compiler, and co
 * Do so without getting involved in the gritty details of processor intruction schedule. (However, one micro-benchmark is 30% slower with -opt than without!)
 * To reduce program size (it wasn't an original aim; but it is now)
 * To produce more respectable-looking code
+* To produce something that could be ported to my C compiler
