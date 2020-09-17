@@ -86,7 +86,7 @@ Benchmark | GCC-O3 | BB-Opt | BB-Orig | BCC | TCC | Notes
 **Misc** | 3.1 | 4.8 | 6.8 | 7.7 | 8.8 | (Misc micro-benchmarks, 20% of actual value)
 --- | --- | --- | --- | --- | --- | 
 **Average**  | 2.9 | 4.5 | 5.4  | 5.7 | 7.1  | seconds
-**Average (excl 'pi')** | 3.1  | 4.5 | 5.5  | 5.8 | 7.4
+**Average (excl 'pi')** | 3.1  | 4.5 | 5.5  | 5.8 | 7.4 |('Pi' result is not a typical program for me; needs further investigation)
 **Rel to GCC** | 1.00  | 1.55 | 1.86 | 1.97 | 2.45 | How many times as slow as gcc-O3
 **Rel to GCC (excl 'pi')** | 1.00 | 1.45 | 1.77 | 1.87 | 2.39
 **Total EXE sizes** | 2426 | 1625 | 1793 | 1980 | 2283 | KB
