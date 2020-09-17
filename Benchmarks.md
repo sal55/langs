@@ -97,9 +97,9 @@ Benchmark | GCC-O3 | BB-Opt | BB-Orig | BCC | TCC | Notes
 
 ### Summary
 
-I spent a week and a half making the simplest kinds of optimations. I didn't want to get
+I spent a week and a half making the simplest kinds of optimisations. I didn't want to get
 into serious academic algorithms, or get involved in the details of x64 instruction scheduling,
-nor add dozens of new passes, nor significantly slow than the compiler, nor spend years on the process.
+nor add dozens of new passes, nor significantly slow down the compiler, nor spend years on the process.
 
 Just to get something a bit more respectable.
 
@@ -109,12 +109,12 @@ The general results are:
 * Reduced executable sizes by 10% from the original BB (and by 20% compared with my current M compiler)
 * Much more compact-looking code
 * No significant slowdown in compilation (10% slower estimated for final compiler).
-* Compared with GCC-O3, I've gone about 1/3 of the way to matching GCC performance, for most of the program here.
+* Compared with GCC-O3, I've gone about 1/3 of the way to matching GCC performance, for most of the programs here.
 
 I've not made much headway with the 'Pi' benchmark; I will have to come back to that another time.
 Part of it is that gcc optimises integer division by a constant (into multiplies and shifts), but I just do the division.
 
-Note that for most of the programs I'm running (eg. compilers), the difference between BB and GCC runtimes
+Note that for most of the programs I'm running (eg. compilers), the difference between typical BB and GCC runtimes
 might be 0.1 seconds or less. However gcc would take dozens of times longer to build the program.
 
 ### Future
