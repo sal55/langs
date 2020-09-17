@@ -47,7 +47,7 @@ Benchmark | Tasks
 **Mandel/6M** | Plot into 3072x2048 8-bit greyscale image
 **AX/2M** | Assemble 2M lines of 'mov eax,\[ebx+ecx\*2+123456\]'
 **BCC/SQL** | Compile sqlite3.c+shell.c (246Kloc) into sqlite3.exe (5 times)
-**BCC/1M** | Compile 500K lines of 'a=b+c\*d';
+**BCC/500K** | Compile 500K lines of 'a=b+c\*d';
 **BCC/Lua** | Compile 34 modules of Lua sources to lua.exe (10 times)
 **PC/Clex** | Scan sqlite3.c (10 times)
 **PC/Jpeg/2M** | Decode 2MPixel colour image
@@ -69,11 +69,10 @@ So, none of the programs are in pure C, but generated C. This could possibly aff
 
 ### Benchmark results.
 
-Results in are seconds of runtime, rounded to 0.1 seconds:
 
 Benchmark | GCC-O3 | BB-Opt | BB-Orig | BCC | TCC | Notes
 --- | --- | --- | --- | --- | --- | ---
-**Jpeg/87M** | 4.3 | 6.5 | 9.2 | 11.3 | 18.0 | 
+**Jpeg/87M** | 4.3 | 6.5 | 9.2 | 11.3 | 18.0 | Seconds, rounded to 0.1 seconds
 **Clex/SQL** | 3.0 | 4.1 | 4.1 | 4.7 | 6.7 | 
 **Pi/2K** | 0.84 | 4.1 | 4.6 | 4.4 | 4.8 | 
 **Mandel/6M** | 3.0 | 4.2 | 5.3 | 6.1 | 5.9 |
@@ -85,12 +84,12 @@ Benchmark | GCC-O3 | BB-Opt | BB-Orig | BCC | TCC | Notes
 **PC/Clex** | 4.8 | 8.2 | 9.9 | 9.4 | 12.6 | 
 **MM/1M**  | 3.2 | 4.3 | 4.9 | 4.9 | 5.4 | 
 **Misc** | 3.1 | 4.8 | 6.8 | 7.7 | 8.8 | (Misc micro-benchmarks, 20% of actual value)
-xxx | xxx | xxx | xxx | xxx | xxx | 
-**Average**  | 2.9 | 4.5 | 5.4  | 5.7 | 7.1  
+--- | --- | --- | --- | --- | --- | 
+**Average**  | 2.9 | 4.5 | 5.4  | 5.7 | 7.1  | seconds
 **Average (excl 'pi')** | 3.1  | 4.5 | 5.5  | 5.8 | 7.4
-**Rel to GCC** | 1.00  | 1.55 | 1.86 | 1.97 | 2.45
+**Rel to GCC** | 1.00  | 1.55 | 1.86 | 1.97 | 2.45 | How many times as slow as gcc-O3
 **Rel to GCC (excl 'pi')** | 1.00 | 1.45 | 1.77 | 1.87 | 2.39
-**Total EXE sizes** | 2426KB | 1625KB | 1793KB | 1980KB | 2283KB
+**Total EXE sizes** | 2426 | 1625 | 1793 | 1980 | 2283 | KB
 
 (All executables include the M language's runtime libraries. Those compiled with BB
 or BCC do not include any C libraries (they uses an external DLL MSVCRT.DLL).
