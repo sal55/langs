@@ -89,7 +89,7 @@ Benchmark | GCC-O3 | BB-Opt | BB-Orig | BCC | TCC | Notes
 
 **Notes**
 
-* All executables include the M language's runtime libraries. Those compiled with BB or BCC do not include any C libraries (they uses an external DLL MSVCRT.DLL. I don't know what is included in the programs compiled with GCC or TCC.) (GCC-O1 is roughly 10% slower on these programs than -O3. That means BB-opt would be just over 30% slower on that second average.)
+* All executables include the M language's runtime libraries. Those compiled with BB or BCC do not include any C libraries (they use an external DLL MSVCRT.DLL. I don't know what is included in the programs compiled with GCC or TCC.) (GCC-O1 is roughly 10% slower on these programs than -O3. That means BB-opt would be just over 30% slower on that second average.)
 
 * GCC in all cases compiles a single monolithic C file. For the larger programs, these gives it the opportunity to do whole-program optimisations not otherwise possible when split across dozes of modules. So this might give it a small advantage.
 
