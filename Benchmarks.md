@@ -92,11 +92,10 @@ Benchmark | GCC-O3 | BB-Opt | BB-Orig | BCC | TCC | Notes
 **Total EXE sizes** | 2426 | 1625 | 1793 | 1980 | 2283 | KB
 
 (All executables include the M language's runtime libraries. Those compiled with BB
-or BCC do not include any C libraries (they uses an external DLL MSVCRT.DLL).
+or BCC do not include any C libraries (they uses an external DLL MSVCRT.DLL. I don't know what is included in the programs compiled with GCC or TCC.)
 
-(GCC-O1 is roughly 10% slower on these programs than -O3. That means BB-opt would be just over 30% slower on that second average)
+(GCC-O1 is roughly 10% slower on these programs than -O3. That means BB-opt would be just over 30% slower on that second average.)
 
-I don't know what is included in the programs compiled with GCC or TCC.)
 
 ### Summary
 
