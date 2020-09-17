@@ -4,11 +4,9 @@ These are a selection of programs and tasks to compare my new 'BB' compiler for 
 
 I've spent about 10 days trying to do the simplest and most obvious optimisations, and here are the results.
 
-The primary aim was faster code: narrow the gap between BB and GCC, and widen it between BB and TCC.
+The primary aim was faster code: narrow the gap between BB and GCC, and widen it between BB and TCC. But a secondary one that also seems useful is to reduce the code code, and just make it less terrible.
 
-But a secondary one also seems useful is to reduce the code code, and just make it less terrible.
-
-Comparisons are between:
+The compilers tested are:
 
 Compiler | ...
 --- | ---
@@ -58,8 +56,7 @@ they are already so fast.)
 
 ### Testing
 
-All programs are written in my M language. They are compiled with both BB, the new compiler, and with gcc using version of the M compiler (MC)
-that translates themn to C then invokes gcc, example:
+All programs are written in my M language. They are compiled with both BB, the new compiler, and with GCC (also TCC and BCC) using a version of the M compiler (MC) that translates them to C then invokes gcc, example:
 
     C:\ax>mc -opt ax
     Compiling ax.m to ax.exe
@@ -67,8 +64,7 @@ that translates themn to C then invokes gcc, example:
 
 So, none of the programs are in pure C, but generated C. This could possibly affect the ability of gcc to optimise. However I have a version of the 'pi' benchmark in pure C, and that gives the same timing.
 
-### Benchmark results.
-
+### Benchmark Results.
 
 Benchmark | GCC-O3 | BB-Opt | BB-Orig | BCC | TCC | Notes
 --- | --- | --- | --- | --- | --- | ---
@@ -91,17 +87,19 @@ Benchmark | GCC-O3 | BB-Opt | BB-Orig | BCC | TCC | Notes
 **Rel to GCC (excl 'pi')** | 1.00 | 1.45 | 1.77 | 1.87 | 2.39
 **Total EXE sizes** | 2426 | 1625 | 1793 | 1980 | 2283 | KB
 
-(All executables include the M language's runtime libraries. Those compiled with BB
-or BCC do not include any C libraries (they uses an external DLL MSVCRT.DLL. I don't know what is included in the programs compiled with GCC or TCC.)
+**Notes**
 
-(GCC-O1 is roughly 10% slower on these programs than -O3. That means BB-opt would be just over 30% slower on that second average.)
+* All executables include the M language's runtime libraries. Those compiled with BB or BCC do not include any C libraries (they uses an external DLL MSVCRT.DLL. I don't know what is included in the programs compiled with GCC or TCC.) (GCC-O1 is roughly 10% slower on these programs than -O3. That means BB-opt would be just over 30% slower on that second average.)
 
+* GCC in all cases compiles a single monolithic C file. For the larger programs, these gives it the opportunity to do whole-program optimisations not otherwise possible when split across dozes of modules. So this might give it a small advantage.
 
 ### Summary
 
 I spent a week a half making the simplest kinds of optimations. I didn't want to get
 into serious academic algorithms, or get involved in the details of x64 instruction scheduling,
-nor add dozens of new passes, not significantly slow than the compiler.
+nor add dozens of new passes, nor significantly slow than the compiler, nor spend years on the process.
+
+Just to get something a bit more respectable.
 
 The general results are:
 
@@ -116,3 +114,9 @@ Part of it is that gcc optimises integer division by a constant (into multiplies
 
 Note that for most of the programs I'm running (eg. compilers), the difference between BB and GCC runtimes
 might be 0.1 seconds or less. However gcc would take dozens of times longer to build the program.
+
+### Future
+
+My compilers are whole-program ones so could offer some advanced optimisations including the ones GCC may have taken advantage of as mentioned above.
+
+But that is something to come back to.
