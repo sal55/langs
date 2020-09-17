@@ -1,11 +1,25 @@
 ## Benchmarks
 
-These are a selection of programs and tasks to compare my new 'BB' compiler for my M systems language, with gcc-O3:
+These are a selection of programs and tasks to compare my new 'BB' compiler for my M systems language, with gcc-O3.
+
+I've spent about 10 days trying to do the simplest and most obvious optimisations, and here are the results.
+
+The primary aim was faster code: narrow the gap between BB and GCC, and widen it between BB and TCC.
+
+But a secondary one also seems useful is to reduce the code code, and just make it less terrible.
+
+Comparisons are between:
 
 Compiler | ...
 --- | ---
-**BB** | My new M compiler, currently unoptimised
-**GCC** | Version 8.1.0 on Windows, always invoked with -O3
+**GCC-O3** | Version 8.1.0 on Windows, always invoked with -O3
+**BB-opt** | Latest version of my new M compiler
+**BB-orig** | Original from when I started the process
+**BCC** | (My current C compiler)
+**TCC** | (Tiny C compiler)
+
+The last two are included because I plan to port the new code-generator of BB to BCC, since at present,
+while TCC is faster at compiling BCC, BCC doesn't make up for it by generating significantly faster code.
 
 ### Benchmark Programs
 
@@ -23,23 +37,24 @@ Program | Decription
 
 ### Tasks
 
+These have been tweaked from the original, to give more equal weighting.
+
 Benchmark | Tasks
 --- | ---
-**JPEG/87M** | Decode 87MPixel colour image
-**CLEX/SQL** | Scan 219Kloc sqlite3.c (100 times) and count chars/lines/tokens
-**PI/2K** | Calculate 2000 digits of pi
-**MANDEL/6M** | Plot into 3072x2048 8-bit greyscale image
+**Jpeg/87M** | Decode 87MPixel colour image
+**Clex/SQL** | Scan 219Kloc sqlite3.c (100 times) and count chars/lines/tokens
+**Pi/2K** | Calculate 2000 digits of pi
+**Mandel/6M** | Plot into 3072x2048 8-bit greyscale image
 **AX/2M** | Assemble 2M lines of 'mov eax,\[ebx+ecx\*2+123456\]'
-**BCC/SQL** | Compile sqlite3.c+shell.c (246Kloc) into sqlite3.exe
-**BCC/1M** | Compile 1M lines of 'a=b+c\*d';
-**BCC/LUA** | Compile 34 modules of Lua sources to lua.exe
-**PC/CLEX** | Scan sqlite3.c (10 times)
-**PC/JPEG/2M** | Decode 2MPixel colour image
+**BCC/SQL** | Compile sqlite3.c+shell.c (246Kloc) into sqlite3.exe (5 times)
+**BCC/1M** | Compile 500K lines of 'a=b+c\*d';
+**BCC/Lua** | Compile 34 modules of Lua sources to lua.exe (10 times)
+**PC/Clex** | Scan sqlite3.c (10 times)
+**PC/Jpeg/2M** | Decode 2MPixel colour image
 **MM/1M** | Compile 1M lines of 'a:=b+c\*d'
 
 (Benchmarking my compilers/assemblers with real programs is difficult because
-they are already so fast. However the purpose of these tests is to make the
-/generated/ code faster.)
+they are already so fast.)
 
 ### Testing
 
@@ -54,69 +69,52 @@ So, none of the programs are in pure C, but generated C. This could possibly aff
 
 ### Benchmark results.
 
-Results in are seconds of runtime (and, for CLEX benchmarks, in lines/second).
+Results in are seconds of runtime, rounded to 0.1 seconds:
 
-Benchmark | BB | BB-Opt | GCC | TCC
---- | --- | --- | --- | ---
-**JPEG/87M** | 9.3 | 6.9 |4.4| 18.0 |
-**CLEX/SQL** |  4.3/5.1Mlps| 4.1/5.4Mlps | 3.1/7.2Mlps | 6.0/3.6Mlps |
-**PI/2K** |   4.5 | 4.2 | 0.8 | 4.8 |
-**MANDEL/6M** |   5.3 | 4.4  |  3.0 | 5.9 |
-**AX/2M**  |  1.6 | 1.4  |  1.1 | 1.7 |
-**BCC/SQL** |   0.7 | 0.6  |  0.5  | 0.7 |
-**BCC/1M** |  8.1 |7.2 |    5.1 |  9.6 |
-**BCC/LUA** |   0.4 | 0.5 |    0.3  | 0.5 |
-**PC/CLEX** |   9.9/222Klps | 8.7/252Klps | 4.7/462Klps | 12.3/179Klps |
-**PC/JPEG/2M** |  7.0 |6.4 |    3.7 | 8.9 |
-**MM/1M**  |  5.0 |4.2 |    3.5 | 5.4 |
-**Totals**  |  56.1|49.2  |30.3 |  74.0 |
-**(MISC)** | 34.0 |25.2|  15.6  | 43.3
+Benchmark | GCC-O3 | BB-Opt | BB-Orig | BCC | TCC | Notes
+--- | --- | --- | --- | --- | --- | ---
+**Jpeg/87M** | 4.3 | 6.5 | 9.2 | 11.3 | 18.0 | 
+**Clex/SQL** | 3.0 | 4.1 | 4.1 | 4.7 | 6.7 | 
+**Pi/2K** | 0.84 | 4.1 | 4.6 | 4.4 | 4.8 | 
+**Mandel/6M** | 3.0 | 4.2 | 5.3 | 6.1 | 5.9 |
+**AX/2M** | 1.1 | 1.4 | 1.6 | 1.6 | 1.8 | 
+**BCC/SQL** | 2.2 | 3.0 | 3.2 | 3.3 | 3.7 | 
+**BCC/500K** | 2.5 | 3.8 | 4.7 | 4.3 | 4.8 | 
+**BCC/Lua** | 3.0 | 3.6 | 3.9 | 3.9 | 4.4 | 
+**PC/Jpeg/2M** | 3.6 | 5.8 | 7.0 | 6.5 | 9.0 | 
+**PC/Clex** | 4.8 | 8.2 | 9.9 | 9.4 | 12.6 | 
+**MM/1M**  | 3.2 | 4.3 | 4.9 | 4.9 | 5.4 | 
+**Misc** | 3.1 | 4.8 | 6.8 | 7.7 | 8.8 | (Misc micro-benchmarks, 20% of actual value)
+xxx | xxx | xxx | xxx | xxx | xxx | 
+**Average**  | 2.9 | 4.5 | 5.4  | 5.7 | 7.1  
+**Average (excl 'pi')** | 3.1  | 4.5 | 5.5  | 5.8 | 7.4
+**Rel to GCC** | 1.00  | 1.55 | 1.86 | 1.97 | 2.45
+**Rel to GCC (excl 'pi')** | 1.00 | 1.45 | 1.77 | 1.87 | 2.39
+**Total EXE sizes** | 2426KB | 1625KB | 1793KB | 1980KB | 2283KB
 
-(Timings vary by 1% or so all the time, and the figures here are rounded to one decimal. So I've tried to adjust them to be consistent, but they may not add up exactly. BB-Opt is the latest version, and at present it's 63% or so slower than gcc based going from the totals. It started at 85% slower.
+(All executables include the M language's runtime libraries. Those compiled with BB
+or BCC do not include any C libraries (they uses an external DLL MSVCRT.DLL).
 
-Individual programs will vary considerably. I will need to create more tests where gcc is much better, like the 'PI' program here.)
+(GCC-O1 is roughly 10% slower on these programs than -O3. That means BB-opt would be just over 30% slower on that second average)
 
+I don't know what is included in the programs compiled with GCC or TCC.)
 
-### Conclusion
+### Summary
 
-I'm wrapping this up after 8 days or so. I've seen no significant increase in speed for about 4 days. But the code is now much tidier and leaner, and no longer so embarrassing to look at. Executables are about 1/6th smaller than the ones from my current working compiler.
+I spent a week a half making the simplest kinds of optimations. I didn't want to get
+into serious academic algorithms, or get involved in the details of x64 instruction scheduling,
+nor add dozens of new passes, not significantly slow than the compiler.
 
-Still lots of small stuff that can be done, mainly to do with more efficiently working with register-based variables. But I think x64 processors have already got that taken care of; they do a good job of making poor code run faster than it ought.
+The general results are:
 
-Current set of comparisons presented here relative to gcc, to allow a better weighted total since some programs only took 0.4 seconds while some took 25 times as long:
+* Improved runtimes by 20% on average
+* Reduced executable sizes by 10% from the original BB (and by 20% compared with my current M compiler)
+* Much more compact-looking code
+* No significant slowdown in compilation (10% slower estimated for final compiler).
+* Compared with GCC-O3, I've gone about 1/3 of the way to matching GCC performance, for most of the program here.
 
-Benchmark | GCC-O3 | BB-opt | BB original | TCC
---- | --- | --- | --- | ---
-**JPEG/87M** | 1.0 | 1.55 | 2.11 | 4.09
-**CLEX/SQL** | 1.0 | 1.33 | 1.38 | 1.93
-**(PI/2K)** | 1.0 | 5.0 | 5.6 | 6.00
-**MANDEL/6M** | 1.0 | 1.47 | 1.76 | 3.00
-**AX/2M**  |1.0 | 1.28 | 1.45 | 1.54
-**BCC/SQL** |1.0 | 1.36 | 1.40 | 1.40
-**BCC/1M** | 1.0 | 1.44 | 1.59 | 1.88
-**BCC/LUA** | 1.0 | 1.19 | 1.30 | 1.67
-**PC/CLEX** | 1.0 | 1.74 | 2.10 | 2.61
-**PC/JPEG/2M** | 1.0 | 1.61 | 1.90 | 2.40
-**MM/1M**  | 1.0 | 1.34 | 1.42 | 1.54
-**MISC**  | 1.0 | 1.58 | 2.17 | 2.77
-**Average** | 1.0 | 1.44 | 1.68 | 2.25
+I've not made much headway with the 'Pi' benchmark; I will have to come back to that another time.
+Part of it is that gcc optimises integer division by a constant (into multiplies and shifts), but I just do the division.
 
-Average excludes the PI/2K benchmark.
-
-BB-opt is with optimisation enabled, but a lot of it happens regardless; turning it off only makes it 10% slower. (-opt enables a second pass on each function when translating intermediate code to native code. The first pass gathers info to allow it to determine which parameters and locals can be kept in registers).
-
-Weighted total is 1.44 as slow than gcc, not including the PI/2K benchmark. That one will need looking at in detail at some point to see what's going on; it won't be affected by the little tweaks I've been doing. (One factor there is that gcc optimises division by a constant, which I don't deal with. But that would only improve it by an estimated 25%)
-
-(Note that the PC program is normally run in ASM-accelerated mode, which makes it twice as fast as gcc, but that would be an unfair comparison.)
-
-Overall, perhaps 15% faster peformance compared with my current compiler, and coincidentally about 15% smaller executables.
-
-### Aims
-
-* Produce a worthwhile speed-up to my compiler, to narrow the gap between it and gcc-O3, and to widen it between it and Tiny C
-* Do so without significantly slowing down the compiler (I estimate 10% slow-down on the final compiler)
-* Do so without using any complicated, academic algorithms or dozens of passes; using only the most basic techniques
-* Do so without getting involved in the gritty details of processor intruction scheduling.
-* To reduce program size (it wasn't an original aim; but it is now)
-* To produce more respectable-looking code
-* To produce something that could be ported to my C compiler
+Note that for most of the programs I'm running (eg. compilers), the difference between BB and GCC runtimes
+might be 0.1 seconds or less. However gcc would take dozens of times longer to build the program.
