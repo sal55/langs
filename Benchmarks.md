@@ -23,14 +23,14 @@ while TCC is faster at compiling than BCC, BCC doesn't make up for it by generat
 
 Program | Decription
 --- | ---
-**jpeg** | Jpeg decoder
-**clex** | Crude basic lexer for C source
-**pi** | Calculate pi digits using my bignum library
-**mandel** | Plot Mandelbrot set (added this to have some floating point tests)
-**ax** | x64 assembler
-**bcc** | C compiler
-**pc** | 'PC' bytecode interpreter
-**mm** | M compiler (M is my systems language. MM is the current compiler (special cut-down version that can be C-transpiled), BB is the new one.)
+**Jpeg** | Jpeg decoder
+**Clex** | Crude basic lexer for C source
+**Pi** | Calculate pi digits using my bignum library
+**Mandel** | Plot Mandelbrot set (added this to have some floating point tests)
+**AX** | x64 assembler
+**BCC** | C compiler
+**PC** | 'PC' bytecode interpreter
+**MM** | M compiler (M is my systems language. MM is the current compiler (special cut-down version that can be C-transpiled), BB is the new one.)
 **(Misc)** | (Collection of very small benchmarks (fibonacci etc))
 
 ### Tasks
