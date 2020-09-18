@@ -17,7 +17,7 @@ Compiler | ...
 **TCC** | (Tiny C compiler)
 
 The last two are included because I plan to port the new code-generator of BB to BCC, since at present,
-while TCC is faster at compiling BCC, BCC doesn't make up for it by generating significantly faster code.
+while TCC is faster at compiling than BCC, BCC doesn't make up for it by generating significantly faster code.
 
 ### Benchmark Programs
 
