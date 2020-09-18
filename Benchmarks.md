@@ -81,10 +81,10 @@ Benchmark | GCC-O3 | BB-Opt | BB-Orig | BCC | TCC | Notes
 **MM/1M**  | 3.2 | 4.3 | 4.9 | 4.9 | 5.4 | 
 **Misc** | 3.1 | 4.8 | 6.8 | 7.7 | 8.8 | (Misc micro-benchmarks, 20% of actual value)
 --- | --- | --- | --- | --- | --- | 
-**Average**  | 2.9 | 4.5 | 5.4  | 5.7 | 7.1  | seconds
-**Average (excl 'pi')** | 3.1  | 4.5 | 5.5  | 5.8 | 7.4 |('Pi' result is not a typical program for me; needs further investigation)
-**Rel to GCC** | 1.00  | 1.55 | 1.86 | 1.97 | 2.45 | How many times as slow as gcc-O3
-**Rel to GCC (excl 'pi')** | 1.00 | 1.45 | 1.77 | 1.87 | 2.39
+**Average**  | 2.9 | 4.4 | 5.4  | 5.7 | 7.1  | seconds
+**Average (excl 'pi')** | 3.1  | 4.4 | 5.5  | 5.8 | 7.4 |('Pi' result is not a typical program for me; needs further investigation)
+**Rel to GCC** | 1.00  | 1.52 | 1.86 | 1.97 | 2.45 | How many times as slow as gcc-O3
+**Rel to GCC (excl 'pi')** | 1.00 | 1.42 | 1.77 | 1.87 | 2.39
 **Total EXE sizes** | 2426 | 1593 | 1793 | 1980 | 2283 | KB (not KiB)
 
 **Notes**
@@ -94,6 +94,7 @@ Benchmark | GCC-O3 | BB-Opt | BB-Orig | BCC | TCC | Notes
 * (GCC-O1 is roughly 10% slower on these programs than -O3. That means BB-opt would be just over 30% slower on that second average.)
 
 * GCC in all cases compiles a single monolithic C file. For the larger programs, this gives it the opportunity to do whole-program optimisations not otherwise possible when split across dozens of modules. So this might give it a small advantage.
+* (PC program had one loop manually unrolled to take advantage of something in BB's code generator. This made an insignificant difference in gcc's timing, but a more useful one, 11%, in BB's timing for these two benchmarks.)
 
 ### Summary
 
@@ -126,3 +127,5 @@ But that is something to come back to in the future. Maybe.
 There are one or two things I want to try out sooner. For example, the PC benchmark, the interpreter, contains some unusual coding patterns: lots of time is spent in small functions that take no parameters and with few if any locals. But they do access globals.
 
 The Win64 ABI says that registers XMM6 to XMM15 are non-volatile. These are little used, so I might try keeping some key globals (pointers not floats) in those registers. Although this would likely require hints from the language, which I regard as an unfair optimisation method.
+
+
