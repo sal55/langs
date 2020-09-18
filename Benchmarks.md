@@ -85,7 +85,7 @@ Benchmark | GCC-O3 | BB-Opt | BB-Orig | BCC | TCC | Notes
 **Average (excl 'pi')** | 3.1  | 4.5 | 5.5  | 5.8 | 7.4 |('Pi' result is not a typical program for me; needs further investigation)
 **Rel to GCC** | 1.00  | 1.55 | 1.86 | 1.97 | 2.45 | How many times as slow as gcc-O3
 **Rel to GCC (excl 'pi')** | 1.00 | 1.45 | 1.77 | 1.87 | 2.39
-**Total EXE sizes** | 2426 | 1625 | 1793 | 1980 | 2283 | KB
+**Total EXE sizes** | 2426 | 1593 | 1793 | 1980 | 2283 | KB (not KiB)
 
 **Notes**
 
@@ -106,7 +106,7 @@ Just to get something a bit more respectable.
 The general results are:
 
 * Improved runtimes by 20% on average
-* Reduced executable sizes by 10% from the original BB (and by 20% compared with my current M compiler)
+* Reduced executable sizes by 12% from the original BB (and by 21% compared with my current M compiler)
 * Much more compact-looking code
 * No significant slowdown in compilation (10% slower estimated for final compiler).
 * Compared with GCC-O3, I've gone about 1/3 of the way to matching GCC performance, for most of the programs here.
