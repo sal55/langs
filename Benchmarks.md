@@ -93,7 +93,7 @@ Benchmark | GCC-O3 | BB-Opt | BB-Orig | BCC | TCC | Notes
 
 * (GCC-O1 is roughly 10% slower on these programs than -O3. That means BB-opt would be just over 30% slower on that second average.)
 
-* GCC in all cases compiles a single monolithic C file. For the larger programs, these gives it the opportunity to do whole-program optimisations not otherwise possible when split across dozes of modules. So this might give it a small advantage.
+* GCC in all cases compiles a single monolithic C file. For the larger programs, this gives it the opportunity to do whole-program optimisations not otherwise possible when split across dozens of modules. So this might give it a small advantage.
 
 ### Summary
 
