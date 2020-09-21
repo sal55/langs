@@ -124,8 +124,6 @@ My compilers are whole-program ones so could offer some advanced optimisations i
 
 But that is something to come back to in the future. Maybe.
 
-There are one or two things I want to try out sooner. For example, the PC benchmark, the interpreter, contains some unusual coding patterns: lots of time is spent in small functions that take no parameters and with few if any locals. But they do access globals.
 
-The Win64 ABI says that registers XMM6 to XMM15 are non-volatile. These are little used, so I might try keeping some key globals (pointers not floats) in those registers. Although this would likely require hints from the language, which I regard as an unfair optimisation method.
 
 
