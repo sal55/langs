@@ -96,7 +96,7 @@ Benchmark | GCC-O3 | BB-Opt | BB-Orig | BCC | TCC | Notes
 * GCC in all cases compiles a single monolithic C file. For the larger programs, this gives it the opportunity to do whole-program optimisations not otherwise possible when split across dozens of modules. So this might give it a small advantage.
 * (PC program had one loop manually unrolled to take advantage of something in BB's code generator. This made an insignificant difference in gcc's timing, but a more useful one, 11%, in BB's timing for these two benchmarks.)
 
-* The **PC** interpreter is normally used in 'accelerated' mode, which makes uses of an ASM overlay module. For the two tests here, they run about twice as fast as the gcc-compiled version, as shown above. They show that a solutions using BB can be sometimes be faster than gcc.
+* The **PC** interpreter is normally used in 'accelerated' mode, which makes uses of an ASM overlay module. For the two tests here, they run about twice as fast as the gcc-compiled version, as shown above. They show that solutions using BB can be sometimes be faster than gcc.
 
 
 ### Summary
