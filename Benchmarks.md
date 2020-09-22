@@ -76,10 +76,8 @@ Benchmark | GCC-O3 | BB-Opt | BB-Orig | BCC | TCC | Notes
 **BCC/SQL** | 2.2 | 2.9 | 3.2 | 3.3 | 3.7 | 
 **BCC/500K** | 2.5 | 3.5 | 4.7 | 4.3 | 4.8 | 
 **BCC/Lua** | 3.0 | 3.6 | 3.9 | 3.9 | 4.4 | 
-**PC/Jpeg/2M** | 3.5| 5.2 | 7.0 | 6.5 | 9.0 | 
-(**PC/Jpeg/2M**) | 3.6 | 1.9 | --- | --- | --- | Uses accelerated PC; see note
-**PC/Clex** | 4.8 | 7.6 | 9.9 | 9.4 | 12.6 | 
-(**PC/Clex**) | 4.8 | 2.3 | --- | --- | --- | Uses accelerated PC
+**PC/Jpeg/2M** | 3.5| 5.2 | 7.0 | 6.5 | 9.0 | BB-Opt is 1.9 seconds, accelerated mode (see note)
+**PC/Clex** | 4.8 | 7.6 | 9.9 | 9.4 | 12.6 | BB-Opt is 2.3 seconds, acclerated mode 
 **MM/1M**  | 3.2 | 4.2 | 4.9 | 4.9 | 5.4 | 
 **Misc** | 3.1 | 4.8 | 6.8 | 7.7 | 8.8 | (Misc micro-benchmarks, 20% of actual value)
 --- | --- | --- | --- | --- | --- | 
@@ -98,7 +96,7 @@ Benchmark | GCC-O3 | BB-Opt | BB-Orig | BCC | TCC | Notes
 * GCC in all cases compiles a single monolithic C file. For the larger programs, this gives it the opportunity to do whole-program optimisations not otherwise possible when split across dozens of modules. So this might give it a small advantage.
 * (PC program had one loop manually unrolled to take advantage of something in BB's code generator. This made an insignificant difference in gcc's timing, but a more useful one, 11%, in BB's timing for these two benchmarks.)
 
-* The **PC** interpreter is normally used in 'accelerated' mode, which makes uses of an ASM overlay module. Timings shown not included in averages. They show that a solutions using BB can be sometimes be faster than gcc.
+* The **PC** interpreter is normally used in 'accelerated' mode, which makes uses of an ASM overlay module. For the two tests here, they run about twice as fast as the gcc-compiled version, as shown above. They show that a solutions using BB can be sometimes be faster than gcc. (Accelerated mode an ASM overlay modude.)
 
 
 ### Summary
