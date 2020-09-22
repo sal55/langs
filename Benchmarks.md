@@ -76,8 +76,10 @@ Benchmark | GCC-O3 | BB-Opt | BB-Orig | BCC | TCC | Notes
 **BCC/SQL** | 2.2 | 3.0 | 3.2 | 3.3 | 3.7 | 
 **BCC/500K** | 2.5 | 3.8 | 4.7 | 4.3 | 4.8 | 
 **BCC/Lua** | 3.0 | 3.6 | 3.9 | 3.9 | 4.4 | 
-**PC/Jpeg/2M** | 3.6 | 5.8 | 7.0 | 6.5 | 9.0 | 
+**PC/Jpeg/2M** | 3.6 | 5.2 | 7.0 | 6.5 | 9.0 | 
+(**PC/Jpeg/2M**) | 3.6 | 1.9 | --- | --- | --- | Uses accelerated PC; see note
 **PC/Clex** | 4.8 | 8.2 | 9.9 | 9.4 | 12.6 | 
+(**PC/Clex**) | 4.8 | 2.3 | --- | --- | --- | Uses accelerated PC
 **MM/1M**  | 3.2 | 4.3 | 4.9 | 4.9 | 5.4 | 
 **Misc** | 3.1 | 4.8 | 6.8 | 7.7 | 8.8 | (Misc micro-benchmarks, 20% of actual value)
 --- | --- | --- | --- | --- | --- | 
