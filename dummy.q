@@ -1,3 +1,4 @@
+osboxes@osboxes:~$ cat test.q
 function setint(a,b)=
     c:=()
     forall x in a when x in b do
@@ -15,3 +16,8 @@ proc start=
     b:=[10,30..55,60]
     println a iand b
 end
+
+osboxes@osboxes:~$ ./qq test
+Compiling test.q to test.pc
+(30,60,10)
+[10,30..40,50]
