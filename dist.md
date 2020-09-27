@@ -52,11 +52,11 @@ Makefiles are totally irrelevant here.
 
 (BTW, C sources can be generated for Windows OS, Linux OS, or Neutral OS. Those files above are neutral, they will compile on either OS, but capabilities will be limited. But they will be anyway because these target Windows. Only QQ can run fully on both.)
 
-So those are ease of distribution and building. What about everyday building? That's not much different:
+So those are for ease of distribution and building. What about everyday building? That's not much different:
 ````
 C:\cx>tm mm cc
 Compiling cc.m to cc.exe
 
 TM: 0.15
 ````
-This build the C compiler by submitting the lead module (cc.m) to the M compiler (mm.exe). This is not quite as fast as tcc, but it still doesn't take long!
+This builds the C compiler by submitting the lead module (cc.m) to the M compiler (mm.exe). This is not quite as fast as tcc, but it still doesn't take long!
