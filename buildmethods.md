@@ -1,6 +1,6 @@
 ## Project Build Systems
 
-Some discussions on reddit have made it clear that way I build my programs is rather different from anyone else's. I get the impression also that people think there are only two alternatives - either use 'make', or type everything at the command line every time.
+Some discussions on reddit have made it clear that way I build my programs is rather different from anyone else's. I get the impression also that people think that the only alternative to using 'make' (disregarding major IDEs here) is to everything at the command line every time.
 
 This describes the approaches I've used over the last few decades, but split into several different requirements.
 
@@ -21,10 +21,11 @@ Mainly I used a very simple IDE which worked from a project file that listed pro
 
 Individual compilation was always very fast, even on the limited hardware. A full build might have taken a few seconds.
 
+Note that pre-mid 1990s (ie. pre-Windows), my apps were responsible for a lot of the functionality now provided by an OS, eg. screen drivers, screen graphics, image display, bitmap and vector fonts, printer and plotter drivers, input device drivers, even things like software floating point. These existed as extra modules in my app, so they tended to be 'busy'. (Many of these were 'overlays', where one of several drivers would be loaded.)
+
 #### Scripting
 
 My commercial apps had about 3/4 of the modules (say 75 out of 100) as script modules. Those didn't need to all be built together. And actually I usually worked on them (edit, compile, run) from within the application. Building the natively compiled main application wasn't needed as often.
-
 
 #### 2010s
 
@@ -139,4 +140,4 @@ qc.exe    520KB       Bytecode compiler (self-contained with library sources, ot
                       Whole project compiler (turns multiple Q source files into self-contained .pc file)
 pc.exe    220KB       Bytecode interpreter
 ````
-The set needed for building M projects (mm, ff, edit, and pc) total 1MB. They would fit on one 1.44MB floppy disk.
+The set needed for building M projects (mm, ff, edit, and pc) total 1MB. It would easily still fit on one 1.44MB floppy disk!
