@@ -71,12 +71,12 @@ My sources will comprise dozens of modules and support files. Sometimes in more 
 This does not form a standalone module, but it is still a file that can be directly built with my 'mm' compiler. The file is created like this:
 ````
     mm -ma cc
-```
+````
 This turns the dozens of source and support files into a single cc.ma file, in this case formed of 73 files and totalling 37,000 lines. It can be built like this:
 ````
     mm cc.ma
 ````
-I found this useful when experimenting with Linux where it was not possible to share folders.
+I found this useful when experimenting with Linux where it was not possible to share folders. Of course, ZIP might do something similar (and also compress the file), but to use it, it must be decompressed and the directory structure recreated.
 
 
 ### Building C Projects
