@@ -6,7 +6,7 @@ This describes the approaches I've used over the last few decades, but split int
 
 ### Tools
 
-I predominantly use my own languages (roughly, one systems language and one scripting language) and my own compilers and tools. I have sometime offloaded tasks to third party products (eg. Nasm, for the linker of C compiler), but those were unsatisfactory.
+I predominantly use my own languages (roughly, one systems language 'M', and one scripting language 'Q') and my own compilers and tools. I have sometime offloaded tasks to third party products (eg. Nasm, for the linker of C compiler), but those were unsatisfactory.
 
 Development has also been, since the mid-80s, on MSDOS then Windows.
 
@@ -128,4 +128,15 @@ There were also 32-bit C versions, but those have been dropped.
 
 And sadly I will probably drop all C target versions, as my M language is evolving and it is increasingly harder to express everything in C.
 
-
+### Current Set of Tools
+````
+ff.pc     100KB       Mini IDE (bytecode file)
+edit.pc   100KB       Editor (bytecode file)
+ax.exe    140KB       x64 assembler and linker, turns .asm files to one .exe or .obj
+cc.exe    495KB       C compiler (self-contained with embedded system headers, otherwise 370KB), turns .c files to .exe
+mm.exe    570KB       M compiler (self-contained with library sources), turns M project into .exe. Whole project compiler.
+qc.exe    520KB       Bytecode compiler (self-contained with library sources, otherwise 230KB).
+                      Whole project compiler (turns multiple Q source files into self-contained .pc file)
+pc.exe    220KB       Bytecode interpreter
+````
+The set needed for building M projects (mm, ff, edit, and pc) total 1MB. They would fit on one 1.44MB floppy disk.
