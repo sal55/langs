@@ -3,7 +3,7 @@
 
 This goes through the other points and shows how they compare to my normal language.
 
-(The comparison is not exact as it is a little higher level with features which may be harder to implement.)
+(The comparison is not exact as it is a little higher level with its own features which may be harder to implement.)
 
 ### A Large Existing Code Base
 
