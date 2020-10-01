@@ -207,9 +207,10 @@ Not relevant. Basic language features do not need dozens of tiny headers to be s
 
 ### Standard Library
 
-Not relevant.
+Not relevant, as I can define the library as I like. If I want to use C via a FFI, then I just do:
 
-I decided to just use the C library that comes with Windows, msvcrt.dll. Although not official, every Windows system will have it.
+    import clib
+
 
 ### const attribute
 
