@@ -184,7 +184,7 @@ There is one namespace inside functions. Struct tags don't exist.
 
 ### Declare Structs anywhere
 
-I've already shown how it works:
+My language is more restrictive. Every struct must be a named user-type:
 ````
 record P =
     int x,y
@@ -194,6 +194,7 @@ Instances can only be created like this:
 ````
 P a,b
 ````
+You can't mix up creating new named types, with defining instances.
 
 ### Implicit int
 
