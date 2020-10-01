@@ -14,7 +14,9 @@ A big chunk of those billions of lines were probably designed for and developed 
 
 ### The Preprocessor
 
-I'll get this out of the way early. This is a huge obstacle to get over, which you find in few other languages. It took me a month to get something passable, but there are plenty of examples it won't compile or produces different results from the main compilers. Some examples follow.
+I'll get this out of the way early. This is a huge obstacle to get over, which you find in few other languages. It took me a month to get something passable, but there are plenty of examples it won't compile or produces different results from the main compilers. It makes accurate reporting of errors much harder.
+
+Some examples follow.
 
 ### Identifiers and Keywords can be split across lines
 
@@ -247,6 +249,21 @@ Rarely used, and useless, yet some compilers support them. Maybe they can be use
 
 But it is a choice to be made. Presumably the grammar allows it, and it you follow the grammar, you might necessarily support it.
 
+### Typedef an actual function
+````
+    typedef int Fn(int a, int b);
+````
+This is not a function pointer, but a function. It creates typedef for its signature. It be used like this:
+````
+    Fn add, sub;           # function declarations
+````
+What is usually not supported, is to define functions. However my compiler (also Tiny C, two of the smallest) do allow this:
+````
+    Fn add{return a+b;}
+    Fn sub{return a-b;}
+````
+This is just an example of something that few would ever have expected typedef to do.
+
 ### () parameter lists
 This is legal C:
 
@@ -412,14 +429,39 @@ What's difficult about this? Like the above, it is about whether to support this
 
 OK, this is not really that difficult to compile, apart from having to have 17 different levels of handling (and probably duplicated inside the preprocessor, although that misses some ops such as assignment).
 
-### ?: Operator
-
 ### Standard Headers
+How much of an implementation should a compiler provide? What about standard headers? What I complained about Clang not having its own headers, or missing from a particular distribution of gcc/mingw, I was told that headers are separate from a compiler.
 
-### windows.h
+Yet all small Windows C compilers are self-contained, with their own headers. Where do the headers come from; shouldn't there be a standard set that comes with the platform, that all compilers share?
+
+Apparently not. Neither is it practical to just borrow headers belonging to other compilers, as it doesn't work. Especially the bigger ones, the headers are full of implementation-specific macros and features, many built-in to the host compiler.
+
+So in my case I had to make my own. And they are still incomplete, things get added as needed.
+
+With windows.h, that has been a complete slog getting it together, adding functions, types, macros as needed. I worked from other windows.h files (many comprise 100s of separate headers), online resources, test programs on other compilers, DLL dumps.
+
+Every application that uses either the standard library or windows.h, just HAS to seek out every obscure function there is. At the moment, my windows.h is about 2000 lines in one file. Windows.h for other compilers range from 20,000 to 200,000 unique lines, in up to 165 different headers.
+
+### Standard Library
+
+I decided to just use the C library that comes with Windows, msvcrt.dll. Although not official, every Windows system will have it.
+
+But if you do have to provide one, well this particular library provides about 1500 functions, a lot of work!
 
 ### const attribute
 
-### __GNUC__ __MSVER__ ?
+Not my favourite feature. Although there is a very easy way to deal with 'const', ie. just ignore it completely, people do expect it to provide some protection.
 
-### Typedef an actual function
+It complicates the type system, and allows conversion in some cases but not others. So, passing 'char\*' to a 'const char*' parameter is OK, but not 'char \*\*' to 'const char \*\*'.
+
+### Predefined Macros
+Specifically implementation-specific ones that you are going to come across in application code:
+````
+#if !defined(_STDINT_H_) && (!defined(HAVE_STDINT_H) || !_HAVE_STDINT_H)
+    #if defined(__GNUC__) || defined(__DMC__) || defined(__WATCOMC__)
+        #define HAVE_STDINT_H   1
+    #elif defined(_MSC_VER)
+````
+
+What if the code assume a set of compilers, where will yours fit into it?
+
