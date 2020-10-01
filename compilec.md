@@ -1,8 +1,9 @@
 ## What Makes C Hard to Compile
 
-This is my personal view of what makes it hard to compile, based on my experience of trying to do so. Of course, it can;t be that hard since there are plenty of compilers that have managed it; it's not impossible. But I'm comparing with other compilers for languages of my own.
+This is my personal view of what makes it hard to compile, based on my experience of trying to do so. Of course, it can;t be that hard since there are plenty of compilers that have managed it; it's not impossible. But I'm comparing with other compilers for languages of my own (see [compilem.md](compile.m) where I go through all these points and show how my regular languages deals with them).
 
 It's a combination of quirks, difficult features, inconsistencies, ancient baggage, things you disgree with ... but these will all be listed.
+
 
 ### A Large Existing Code Base
 
