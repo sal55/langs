@@ -71,16 +71,16 @@ All basic types are a single identifier
 
 ### How many consts do you need?
 
-No 'const' in the language, as least in the C sense. Some places use 'let', which goes on the left, and written once.
+No 'const' in the language, as least in the C sense. Some places use/will use 'let' (or 'in' for parameter lists) which goes on the left, and written once.
 
 
 ### And where does it go?
 
-Not relevant.
+See above.
 
 ### int, long and long long
 
-Not relevant. I use 'int' to mean int64. A 32-bit type needs 'int32'.
+Not relevant. I use 'int' to mean i64. The full set of signed integers is i8 to i128 with no gaps or overlaps.
 
 
 ### char, unsigned char and signed char
@@ -89,7 +89,7 @@ I have one 8-bit 'char' type which is unsigned.
 
 ### Bitfields Rule
 
-I have a different scheme for bitfields where there is no ambiguity, and with precise control.
+I have a different scheme for bitfields where there is no ambiguity, and with precise control. (And there are anyway other direct methods of working with the bits of an integer, such as A.\[8..31\] for 24-bit field. One of those more more advanced features, but highly worthwhile.)
 
 ### VLAs, Variable Length Arrays
 
@@ -107,7 +107,7 @@ Here \[\]int is always an array. To make use of a pointer to array as a paramete
      ref[]int A           # explicit
      []int &A             # implicit reference parameter
 
-In both cases, there is an actual array involved, unlike idiomatic which uses pointers to the array's element type.
+In both cases, there is an actual array involved, unlike idiomatic C which uses pointers to the array's element type.
 
 
 ### Repeated declarations
