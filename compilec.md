@@ -340,7 +340,7 @@ Well, exactly that: does 'break' means step to the end of the switch statement, 
 
 ### Switch-case
 
-Everyone knows how bizarre Switch is, and how case labels can appear anyway, at any level, within the statement that follows. As, actually can 'default:', which doesn't need to be at the end:
+Everyone knows how bizarre Switch is, and how case labels can appear anywhere, at any level, within the statement that follows. As, actually, can 'default:', which doesn't need to be at the end:
 ````
     switch (1) default: case 10: case 20: switch (2) default: case 30: case 40:;
 ````
@@ -398,7 +398,7 @@ struct {
 ````
 Apparently this does work, it creates an anonymous struct, which has two elements 'x' and 'y'.
 
-Except it doesn't work on my compiler (nor on an older compiler 'DMC', from 2004). if it's all so simple, why has it taken 3 years to establish that this is not supported. C has all these freedoms and all this flexibility, but then the onus is on implementors to ensure all the possible combinations work.
+Except it doesn't work on my compiler (nor on an older 2004 compiler 'DMC'). if it's all so simple, why has it taken 3 years to establish that this is not supported? C has all these freedoms and all this flexibility, but then the onus is on implementors to ensure all the possible combinations work.
 
 ### Implicit int
 That is declarations like these at module scope:
@@ -411,11 +411,11 @@ Or inside a function:
     G(10,20);
 where no declaration for G has been provided. The compiler assumes the types in all cases are 'int'. I think the parameters of G too, although if I mix inconsistent calls, gcc will not report that, so may it assumes 'int G()'.
 
-What's difficult about this? Like the above, it is about whether to support this side of the language, and how to go in reporting such uses.
+What's difficult about this? Like the above, it is about whether to support this side of the language, and how far to go in reporting such uses.
 
 ### 17 (or so) Precedence Levels
 
-OK, this is not really that difficult to compile, apart from having to have 17 different levels of handling (and probably duplicated inside the preprocessor, although that misses some ops such as assignment).
+OK, this is not really that difficult to compile, apart from having to have 17 different levels of handling (and probably duplicated inside the preprocessor, although that misses out some ops).
 
 ### A = &A
 Try:
@@ -423,12 +423,12 @@ Try:
     bool A;
     A = &A;
 ````
-Normally, if A is of type T, then &A is of type T*. This seems anti-tuitive. I came across this recently withn an example that was more like:
+Normally, if A is of type T, then &A is of type T*. This seems anti-intuitive. I came across this recently within an example that was more like:
 
     struct S* p;
     bool b = p;
 
-This really means 'b = p ? true : false', or perhaps 'b = !!p' will work. I think this would be a better for this language.
+This really means 'b = p ? true : false', or perhaps 'b = !!p' will work. I think this would be a better fit for this language.
 
 While this can be routine compilation, I nevertheless decided not to bother.
 
