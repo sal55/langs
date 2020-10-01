@@ -152,7 +152,7 @@ Perfectly valid. But why does C allow so many? One argument is to allow types ge
 
 ### And where does it go?
 
-In the above example, const can before or after the type (as well as both!), or inside in the case of 'int const long'.
+In the above example, const can before or after the type, or inside in the case of 'int const long', or all three!
 
 However I believe that where pointers are involved it (or they) go after the "\*", so apply to the previous \*, not any following \*.
 
@@ -416,6 +416,22 @@ What's difficult about this? Like the above, it is about whether to support this
 
 OK, this is not really that difficult to compile, apart from having to have 17 different levels of handling (and probably duplicated inside the preprocessor, although that misses some ops such as assignment).
 
+### A = &A
+Try:
+````
+    bool A;
+    A = &A;
+````
+Normally, if A is of type T, then &A is of type T*. This seems anti-tuitive. I came across this recently withn an example that was more like:
+
+    struct S* p;
+    bool b = p;
+
+This really means 'b = p ? true : false', or perhaps 'b = !!p' will work. I think this would be a better for this language.
+
+While this can be routine compilation, I nevertheless decided not to bother.
+
+
 ### Standard Headers
 How much of an implementation should a compiler provide? What about standard headers? When I complained about Clang not having its own headers, or missing from a particular distribution of gcc/mingw, I was told that headers are separate from a compiler.
 
@@ -453,4 +469,5 @@ Specifically implementation-specific ones that you are going to come across in a
 ````
 
 What if the code assume a set of compilers, where will yours fit into it?
+
 
