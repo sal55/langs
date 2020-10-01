@@ -3,7 +3,7 @@
 
 This goes through the other points and shows how they compare to my normal language.
 
-(The comparison is not exact as it is a little higher level with features are harder to implement, but this time they are worthwile.)
+(The comparison is not exact as it is a little higher level with features which may be harder to implement.)
 
 ### A Large Existing Code Base
 
@@ -27,7 +27,7 @@ Octals, Hex and Floats will always be exactly that. Octals are written 8x377 not
 
 ### The white space between a macro name and its arguments
 
-Macro expansion is done in latter pass, by AST manipulation. Parsing a macro call is just like a function call.
+Macro expansion is done in a later pass, by AST manipulation. A macro call is parsed just like a function call.
 
 ### Macros in include file names
 
@@ -36,7 +36,7 @@ That can't happen.
 ### The Algorithm for finding an include file
 
 There is an algorithm for module imports, which looks in a linear set of locations. No file paths are involved, and there is no concept of
-a 'current' include file.
+a 'current' include file, so is straightforward.
 
 ### Struct and Array Initialiser Shapes
 
@@ -54,11 +54,11 @@ Since this can tedious, I created special string constants:
     []char S = a"ABC"          # ('A', 'B', 'C')
     []char S = z"ABC"          # ('A', 'B', 'C', 0)
     
-These a"" and z"" have the correct type.
+These a"..." and z"..." strings have the correct type.
 
 ### Where does the typedef go?
 
-I have 'type' statement and the keyword always goes on the left:
+I have a 'type' statement and the keyword always goes on the left:
 
     type T = int
  
@@ -83,7 +83,7 @@ Not relevant. I use 'int' to mean int64. A 32-bit type needs 'int32'.
 
 ### char, unsigned char and signed char
 
-I have a 'byte' type, and a separate 'char'. Both are unsigned 8-bit.
+I have one 8-bit 'char' type which is unsigned.
 
 ### Bitfields Rule
 
@@ -100,7 +100,7 @@ No variable types.
 
 ### When int[] isn't an array
 
-Why []int is always an array. To make use of a pointer to array as a parameter, I'd use:
+Here \[\]int is always an array. To make use of a pointer to array as a parameter, I'd use:
 
      ref[]int A           # explicit
      []int &A             # implicit reference parameter
@@ -140,8 +140,8 @@ Not relevant.
 
 Functions have a separate syntax:
 
-function F:int = ...        # actual function
-ref function:int G          # function pointe
+    function F:int = ...        # actual function
+    ref function:int G          # function pointe
 
 ### Mixed Arithmetic
 
@@ -159,7 +159,7 @@ The table of possibilities is very regular, and can be reduced to:
 
 No block scopes.
 
-Things can be declared anywhere, but always have function-wide scope, so not competing lifetimes.
+Things can be declared anywhere, but always have function-wide scope, so no competing lifetimes with similarly names entities.
 
 
 ### double x; ++x
@@ -184,7 +184,7 @@ There is one namespace inside functions. Struct tags don't exist.
 
 I've already shown how it works:
 ````
-record S =
+record P =
     int x,y
 end
 ````
@@ -192,8 +192,6 @@ Instances can only be created like this:
 ````
 P a,b
 ````
-
-
 
 ### Implicit int
 
@@ -205,15 +203,13 @@ There are fewer precedence levels.
 
 ### Standard Headers
 
-Not relevant. Basic language features do not need dozens of tiny headers to be specified.
+Not relevant. Basic language features do not need dozens of tiny headers to be specified, or the headers to exist.
 
 ### Standard Library
 
 Not relevant.
 
 I decided to just use the C library that comes with Windows, msvcrt.dll. Although not official, every Windows system will have it.
-
-But if you do have to provide one, well this particular library provides about 1500 functions, a lot of work!
 
 ### const attribute
 
