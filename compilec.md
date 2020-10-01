@@ -31,7 +31,7 @@ b\
 c\
 ;
 ````
-This is 'int abc;'. Out of dozens of tokenisers I must have written, it has never occurred to me have have line breaks inside an identifier!
+This is 'int abc;'. Out of dozens of tokenisers I must have written, it has never occurred to me to have line breaks inside an identifier!
 
 ### Octals, Hex and Floats
 
@@ -45,7 +45,7 @@ These sound straightforward: 01234 is octal; 0x5678 is hex, 123e45 is a float. O
     NAME(123e45)            // forms the identifer 'A123e45'
     STR(0x5678)             // forms the string "0x5678"
 ````
-It means you can't just convert to an integer or float represent and discard the original text; you have the original in case it will be processed by a macro like this.
+It means you can't just convert to an integer or float representation and discard the original text; you have to keep the original in case it will be processed by a macro like this.
 
 ### The white space between a macro name and its arguments
 
@@ -113,7 +113,7 @@ The correct formatting would be:
 
     T x[] = { {{10,20,30}, {40,50,60}}, {{70,80}} };
 
-So x has one element and a bit. This aspect, I refused to support.
+So x has one element and a bit. This part of C, allowing unstructured init data, I refused to support. Besides, the algorithm the standard describes for dealing with it is complex.
 
 ### Initialising a char-array
 Consider:
@@ -142,7 +142,7 @@ int long unsigned long
 long long unsigned
 etc.
 ```
-Any combinations are valid, including those that don't have 'int'.
+Any combinations are valid, including those that don't have 'int'. In how many different ways can you specify one basic type? That's not counting 'const uint64_t', but that's usually defined on top of something like the above anyway.
 
 ### How many consts do you need?
 ````
@@ -187,6 +187,7 @@ On the face of it they sound simple (and in my language, they would be), but:
 
 * The VLA parts actually refer to the *type*, not the variable. So a VLA can be used in a typedef, and the typedef can be used for instantiating multiple variables, at different times, and with possible values of the expressions of the dimensions
 * VLAs can be declared in a loop, with different sizes each time
+* VLAs can apparently be part of a struct. The mind boggles at how that might work when the structs are allocated on the heap and formed into linked lists and arrays.
 * VLAs can be condionally declared
 * Because of block scopes, there can be multiple VLAS in effect, with nested lifetimes, and multiple possible future VLAs
 * Because of 'goto' and 'break', it is possible to enter and leave blocks containing active VLAs (entering might be restricted, but then it is your job to detect such infringements)
