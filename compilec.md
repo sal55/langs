@@ -436,11 +436,13 @@ Yet all small Windows C compilers are self-contained, with their own headers. Wh
 
 Apparently not. Neither is it practical to just borrow headers belonging to other compilers, as it doesn't work. Especially the bigger ones, the headers are full of implementation-specific macros and features, many built-in to the host compiler.
 
-So in my case I had to make my own. And they are still incomplete, things get added as needed.
+So in my case I had to make my own. And they are still incomplete, things get added as needed. Looking at other compiler's headers is soul-destroying, most of just patchworks of #if/#ifdef blocks, macros and typedefs.
+
+They seem fond of inventing gratuitous typedefs (look at 'struct stat'), and tracking what those typedefs mean, since you need to duplicate the struct, may mean trying to find which of 5 conditional possibilities is relevant. Or it may end up as some internal type.
 
 With windows.h, that has been a complete slog getting it together, adding functions, types, macros as needed. I worked from other windows.h files (many comprise 100s of separate headers), online resources, test programs on other compilers, DLL dumps.
 
-Every application that uses either the standard library or windows.h, just HAS to seek out every obscure function there is. At the moment, my windows.h is about 2000 lines in one file. Windows.h for other compilers range from 20,000 to 200,000 unique lines, in up to 165 different headers.
+Every application that uses either the standard library or windows.h, just HAS to seek out every obscure function there is. At the moment, my windows.h is about 2,000 lines in one file. Windows.h for other compilers range from 20,000 to 200,000 unique lines, in up to 165 different headers.
 
 ### Standard Library
 
