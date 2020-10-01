@@ -1,12 +1,12 @@
 ## What Makes C Hard to Compile
 
-This is my personal view of what makes it hard to compile, based on my experience of trying to do so. Of course, it can be that hard since there are plenty of compilers that have managed; it's not impossible. But I'm comparing with other compilers for languages of my own.
+This is my personal view of what makes it hard to compile, based on my experience of trying to do so. Of course, it can;t be that hard since there are plenty of compilers that have managed it; it's not impossible. But I'm comparing with other compilers for languages of my own.
 
 It's a combination of quirks, difficult features, inconsistencies, ancient baggage, things you disgree with ... but these will all be listed.
 
 ### A Large Existing Code Base
 
-With your own private language, you might only have a codebase of 10s or 100s of thousands of line of code to deal with. With C, there are billions of lines of code that it has to work with.
+With C, there are billions of lines of code that it has to be able to deal with.
 
 ### The Competition
 
@@ -14,7 +14,7 @@ A big chunk of those billions of lines were probably designed for and developed 
 
 ### The Preprocessor
 
-I'll get this out of the way early. This is a huge obstacle to get over, which you find in few other languages. It took me a month to get something passable, but there are plenty of examples it won't compile or produces different results from the main compilers. It makes accurate reporting of errors much harder.
+I'll get this out of the way early. This is a huge obstacle to get over, which you find in few other languages. It took me a month to get something passable, but there are plenty of examples it won't compile or produces different results from the main compilers. It also makes accurate reporting of errors much harder.
 
 Some examples follow.
 
@@ -50,7 +50,7 @@ It means you can't just convert to an integer or float represent and discard the
 
 If M is a function-like macro, then it can be invoked as M, with no expansion, or as M(x,y).
 
-There can be white-space between "M" and "(", but how much do you peek ahead to check that "(" follows? At the character level this lookahead can be tricky. It turns out there can an unlimited amount of white space including newlines and comments, but not macros/includes that expand to empty. I only allow 0 or 1 spaces and it generally works, but...
+There can be white-space between "M" and "(", but how much do you peek ahead to check that "(" follows? At the character level this lookahead can be tricky. It turns out there can be an unlimited amount of white space including newlines and comments, but not macros/includes that expand to empty. I only allow 0 or 1 spaces and it generally works, but...
 
 ### Macros in include file names
 
@@ -106,7 +106,6 @@ T x[] = {10,20,30, 40,50,60, 70,80};
 ````
 This is fine too! But how how many elements of x are there? You can't really tell.
 
-
 If you write the data properly structured with internal {}, then C will warn about too many initialisers or extra {} etc. But have FEWER {} than are needed, and all checking is off. The data is just a linear stream of values like you might find in 1970's BASIC or FORTRAN, that can be used to initialise any data structure involving nested arrays and structs, no matter what the layout. Only the types have to be suitable.
 
 The correct formatting would be:
@@ -132,7 +131,7 @@ The following less so:
 
     const unsigned long typedef int T;
 
-The same applies to static; it can go anywhere, but they have to before the name being declared and its modifiers.
+The same applies to static; it can go anywhere, but they have to go before the name being declared and its modifiers.
 
 ### int long unsigned long
 ```
@@ -142,7 +141,7 @@ int long unsigned long
 long long unsigned
 etc.
 ```
-Any combinations are valid, including those that don't have 'int'. (Here's where I long for my own language where specifying a simple built-in type isn't such a palaver.)
+Any combinations are valid, including those that don't have 'int'.
 
 ### How many consts do you need?
 ````
@@ -162,11 +161,11 @@ Considering currenrt 32/64-bit systems, int is generally 32 bits, and long long 
 
 While it is generally 32 bits EXCEPT for 64-bit Linux, 32-bit long is incompatible with 32-bit int.
 
-I've chose to make 'long' a synonym for 'int' for my Windows compiler where long is always 32 bits. But it means int* and long* are compatible, when they shouldn't be.
+I've chosen to make 'long' a synonym for 'int' for my Windows compiler where long is always 32 bits. But it means int* and long* are compatible, when they shouldn't be.
 
 ### char, unsigned char and signed char
 
-Despite 'char' necessarily being either signed or unsigned, these are actually 3 different types, not two. char*, signed char* and unsigned char* are all incompatible types. I didn't about this until much later, but would have made the same decision in making 'char' a synonym for one of the other two.
+Despite 'char' necessarily being either signed or unsigned, these are actually 3 different types, not two. char*, signed char* and unsigned char* are all incompatible types. I didn't know about this until much later, but would have made the same decision in making 'char' a synonym for one of the other two.
 
 Initially I chose 'unsigned char', but after coming across programs that relied on char being unsigned, I had to change it to signed char. (Where promptly a few other programs gave compiler errors!)
 
@@ -178,20 +177,20 @@ The trouble is that different compilers gives different results with certain com
 
 One major library (GTK) uses bitfields in its interfaces. Possibly it works by luck, because the combinations used don't trigger the anomaly. (Access to the bitfield values is not the issue, but it affects the overall struct sizes.
 
-Use a larger struct size, as determined by *your* compiler, compared with the internal struct size set by the compiler used for the pre-built binarie, and things can go wrong.
+Use a larger struct size, as determined by *your* compiler, compared with the internal struct size set by the compiler used for the pre-built binarie, and things can go wrong.)
 
 
 ### VLAs, Variable Length Arrays
 
 On the face of it they sound simple (and in my language, they would be), but:
 
-* The VLA parts actually refer to the *type*, not the variable. So a VLA can be used in a typeded, and typedef can be used for instantiating multiple variables, at different times, and with possible values of the expressions of the dimensions
+* The VLA parts actually refer to the *type*, not the variable. So a VLA can be used in a typedef, and the typedef can be used for instantiating multiple variables, at different times, and with possible values of the expressions of the dimensions
 * VLAs can be declared in a loop, with different sizes each time
 * VLAs can be condionally declared
 * Because of block scopes, there can be multiple VLAS in effect, with nested lifetimes, and multiple possible future VLAs
-* Because of 'goto' and 'break', it is possible to enter and leave blocks containing active VLAs (entering might be restricting, but then it is your job to detect such possibilities)
+* Because of 'goto' and 'break', it is possible to enter and leave blocks containing active VLAs (entering might be restricted, but then it is your job to detect such infringements)
 * 'sizeof' is now no longer a compile-time constant, but is worked out at runtime. (And can involve a calculatoion for multi-dimensional VLAs)
-* Multi-dimemnsional VLA access requires now multiple by variables, not constants.
+* Multi-dimemnsional VLA access requires now multiply by variables, not constants.
 
 Still think they are a simple feature? I decided not to support them.
 
@@ -231,7 +230,7 @@ The types need to match (char will not match signed char nor unsigned char), but
 
 
 ### Type declaration syntax
-This is famous for being convoluted, fortunately parsing it is easier than writing it or reading it (have I really just said that?!)
+This is famous for being convoluted, fortunately parsing it is easier than writing it or reading it (about which other languages can that be said?)
 
 Well, apart from the fiddly aspects of reading a type that might be (1) self-contained, as in a cast, or parameter with no name; (2) wrapped around a name; (3) spread out in three parts as in a normal declaration:
 ````
@@ -253,7 +252,7 @@ But it is a choice to be made. Presumably the grammar allows it, and it you foll
 ````
     typedef int Fn(int a, int b);
 ````
-This is not a function pointer, but a function. It creates typedef for its signature. It be used like this:
+This is not a function pointer, but a function. It creates a typedef for its signature. It can be used like this:
 ````
     Fn add, sub;           # function declarations
 ````
@@ -274,7 +273,7 @@ The issue here is whether to support such an unsafe feature. The problem is that
 
 So this generally allowed unless explicitly disabled. Which adds to the problem, as the practice of using () in place of (void) is perpetuated.
 
-I chose not to allow it, then had to backtrack and make it available, but via a legacy option ("-old") only. This means the compiler effectively biting its lip and saying nothing while passing obviously wrong code.
+I chose not to allow it, then had to backtrack and make it available, but via a legacy option ("-old") only. This means the compiler effectively biting its lip and saying nothing while knowingly passing obviously wrong code. But at least the default mode is the safe one.
 
 
 ### Old style parameter lists
@@ -284,7 +283,7 @@ void fn(a,b,c)
     int a,b,c;
 { ...
 ````
-Well, this is an easy one - just don't bother supporting it . Except you won't be able to compile ancient programs. And if you do support, now you have a alternative function syntax to support.
+Well, this is an easy one - just don't bother supporting it . Except you won't be able to compile ancient programs. And if you do support it, now you have a alternative function syntax to support.
 
 ### Function don't have their own syntax
 
@@ -331,7 +330,7 @@ there are two As in scope during the same block.
 
 ### double x; ++x
 
-++ and -- work on integers, or so you might have thought. In C, they work on floats too! This is not hard to deal with - once you know. But it's extra work. Hardware doesn't have special instructions for it, so it just means x+=1.0. I didn't bother with it because I disagreed with the use of ++ and -- which I believe should be for stepping between discrete values of a type (+/- 1 for integers, +/- stride for a pointer).
+++ and -- work on integers, or so you might have thought. In C, they work on floats too! This is not hard to deal with - once you know. But it's extra work. Hardware doesn't have special instructions for it, so it just means x+=1.0. I didn't bother with it because I disagreed with the use of ++ and -- which I believe should be for stepping between discrete values of a type.
 
 ### Break: Loop or Switch?
 
@@ -348,11 +347,11 @@ You just need make sure there is at most one default per switch, and make sure c
 
 ### Extra Namespaces
 
-This is another usual feature: struct tags exist in their own namespace, one shared with enum tags. And labels exist have their own namespace, how useful!
+This is another unusual feature: struct tags exist in their own namespace, one shared with enum tags. And labels exist have their own namespace, how useful!
 ````
 A: struct A;int A; goto A;
 ````
-So an identifier with a function, not only has a block number (and often part of block), now might also be in one of three namespaces: normal, tags and label.
+So an identifier within a function, not only has a block number, now might also be in one of three namespaces: normal, tags and label.
 
 This is little bit harder than my normal compilers where there can only one ONE instance of any identifier in a function, in ONE namespace. Compared with C's THREE namespaces, two of which can have UNLIMITED instances (label names have function-wide scope; at last something sensible!).
 
@@ -397,20 +396,7 @@ struct {
 ````
 Apparently this does work, it creates an anonymous struct, which has two elements 'x' and 'y'.
 
-Except it doesn't work on my compiler (nor on an older compiler 'DMC', from 2004). It's all so simple, why has it taken 3 years to establish that this is not supported. C has all these freedoms and all this flexibility, but then the onus is on implementors to ensure all the possible combinations work.
-
-For comparison, here is the same struct S/P type in my systems language. It can only be defined as a named used type:
-````
-record S =
-    int x,y
-end
-````
-Instances can only be created like this:
-````
-P a,b
-````
-It can't be used for the anonymous structs in two of the C examples. The possibilies are smaller, and compilation is similar.
-
+Except it doesn't work on my compiler (nor on an older compiler 'DMC', from 2004). if it's all so simple, why has it taken 3 years to establish that this is not supported. C has all these freedoms and all this flexibility, but then the onus is on implementors to ensure all the possible combinations work.
 
 ### Implicit int
 That is declarations like these at module scope:
@@ -425,20 +411,20 @@ where no declaration for G has been provided. The compiler assumes the types in 
 
 What's difficult about this? Like the above, it is about whether to support this side of the language, and how to go in reporting such uses.
 
-### 17 Precedence Levels
+### 17 (or so) Precedence Levels
 
 OK, this is not really that difficult to compile, apart from having to have 17 different levels of handling (and probably duplicated inside the preprocessor, although that misses some ops such as assignment).
 
 ### Standard Headers
-How much of an implementation should a compiler provide? What about standard headers? What I complained about Clang not having its own headers, or missing from a particular distribution of gcc/mingw, I was told that headers are separate from a compiler.
+How much of an implementation should a compiler provide? What about standard headers? When I complained about Clang not having its own headers, or missing from a particular distribution of gcc/mingw, I was told that headers are separate from a compiler.
 
 Yet all small Windows C compilers are self-contained, with their own headers. Where do the headers come from; shouldn't there be a standard set that comes with the platform, that all compilers share?
 
 Apparently not. Neither is it practical to just borrow headers belonging to other compilers, as it doesn't work. Especially the bigger ones, the headers are full of implementation-specific macros and features, many built-in to the host compiler.
 
-So in my case I had to make my own. And they are still incomplete, things get added as needed. Looking at other compiler's headers is soul-destroying, most of just patchworks of #if/#ifdef blocks, macros and typedefs.
+So in my case I had to make my own. And they are still incomplete, things get added as needed. Looking at other compilers' headers is soul-destroying, many are just patchworks of #if/#ifdef blocks, macros and typedefs.
 
-They seem fond of inventing gratuitous typedefs (look at 'struct stat'), and tracking what those typedefs mean, since you need to duplicate the struct, may mean trying to find which of 5 conditional possibilities is relevant. Or it may end up as some internal type.
+They seem fond of inventing gratuitous typedefs (look at 'struct stat'), and you have to track down which of multiple conditional possibilties they might be.
 
 With windows.h, that has been a complete slog getting it together, adding functions, types, macros as needed. I worked from other windows.h files (many comprise 100s of separate headers), online resources, test programs on other compilers, DLL dumps.
 
@@ -454,7 +440,7 @@ But if you do have to provide one, well this particular library provides about 1
 
 Not my favourite feature. Although there is a very easy way to deal with 'const', ie. just ignore it completely, people do expect it to provide some protection.
 
-It complicates the type system, and allows conversion in some cases but not others. So, passing 'char\*' to a 'const char*' parameter is OK, but not 'char \*\*' to 'const char \*\*'.
+It complicates the type system, and allows conversions in some cases but not others. So, passing 'char\*' to a 'const char*' parameter is OK, but not 'char \*\*' to 'const char \*\*'.
 
 ### Predefined Macros
 Specifically implementation-specific ones that you are going to come across in application code:
