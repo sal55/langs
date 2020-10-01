@@ -357,7 +357,7 @@ So an identifier within a function, not only has a block number, now might also 
 This is little bit harder than my normal compilers where there can only one ONE instance of any identifier in a function, in ONE namespace. Compared with C's THREE namespaces, two of which can have UNLIMITED instances (label names have function-wide scope; at last something sensible!).
 
 ### Declare Structs anywhere
-How to describe this messy bit of language design. These are some examples (not all be valid in the same program):
+How to describe this messy bit of language design. These are some examples (not all will be valid in the same program):
 ````
 struct S;                              # incomplete struct
 struct S x,y;                          # this one needs to be reported
