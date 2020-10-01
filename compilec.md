@@ -83,10 +83,36 @@ It means you can't just convert to an integer or float represent and discard the
 
 ### Old style parameter lists
 
+### 0x123e+2
 
+### Mixed Arithmetic
 
+### Block Scopes and Declare Anywhere
 
+### double x; ++x
 
+### Break: Loop or Switch?
 
+### Switch-case
 
+### Struct Tags
 
+### Enum Tags
+
+### Labels have their own namespace
+
+### Declare Structs anywhere
+
+### Implicit int
+
+### 17 Precedence Levels
+
+### Standard Headers
+
+### windows.h
+
+### const attribute
+
+### __GNUC__ __MSVER__ ?
+
+### Typedef an actual function
