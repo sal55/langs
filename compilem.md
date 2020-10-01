@@ -1,0 +1,224 @@
+## What Makes C Hard to Compile Part II
+
+
+This goes through the other points and shows how they compare to my normal language.
+
+(The comparison is not exact as it is a little higher level with features are harder to implement, but this time they are worthwile.)
+
+### A Large Existing Code Base
+
+The existing code base is 100-150Kloc.
+
+### The Competition
+
+There isn't any. Mine will always be the best compiler.
+
+### The Preprocessor
+
+There isn't one. There are embryonic macros, but AST-based not like the CPP.
+
+### Identifiers and Keywords can be split across lines
+
+Not possible.
+
+### Octals, Hex and Floats
+
+Octals, Hex and Floats will always be exactly that. Octals are written 8x377 not 0377.
+
+### The white space between a macro name and its arguments
+
+Macro expansion is done in latter pass, by AST manipulation. Parsing a macro call is just like a function call.
+
+### Macros in include file names
+
+That can't happen.
+
+### The Algorithm for finding an include file
+
+There is an algorithm for module imports, which looks in a linear set of locations. No file paths are involved, and there is no concept of
+a 'current' include file.
+
+### Struct and Array Initialiser Shapes
+
+These have to strictly follow the type structure. No exceptions.
+
+
+### Initialising a char-array
+
+Initialising has to be done like this:
+
+    []char S = ('A','B','C')
+
+Since this can tedious, I created special string constants:
+
+    []char S = a"ABC"          # ('A', 'B', 'C')
+    []char S = z"ABC"          # ('A', 'B', 'C', 0)
+    
+These a"" and z"" have the correct type.
+
+### Where does the typedef go?
+
+I have 'type' statement and the keyword always goes on the left:
+
+    type T = int
+ 
+ 
+### int long unsigned long
+
+All basic types are a single identifier
+
+### How many consts do you need?
+
+No 'const' in the language, as least in the C sense. Some places use 'let', which goes on the left, and written once.
+
+
+### And where does it go?
+
+Not relevant.
+
+### int, long and long long
+
+Not relevant. I use 'int' to mean int64. A 32-bit type needs 'int32'.
+
+
+### char, unsigned char and signed char
+
+I have a 'byte' type, and a separate 'char'. Both are unsigned 8-bit.
+
+### Bitfields Rule
+
+I have a different scheme for bitfields where there is no ambiguity, and with precise control.
+
+### VLAs, Variable Length Arrays
+
+No VLAs.
+
+### Variable types
+
+No variable types.
+
+
+### When int[] isn't an array
+
+Why []int is always an array. To make use of a pointer to array as a parameter, I'd use:
+
+     ref[]int A           # explicit
+     []int &A             # implicit reference parameter
+
+In both cases, there is an actual array involved, unlike idiomatic which uses pointers to the array's element type.
+
+
+### Repeated declarations
+
+Not allowed. Everything is always defined once. No separate declarations are needed.
+
+
+### Type declaration syntax
+
+Mine is very simple, written left-to-rght and self-contained.
+
+### Empty declarations
+
+Not allowed.
+
+
+### Typedef an actual function
+
+Not allowed.
+
+### () parameter lists
+
+Not allowed.
+
+
+### Old style parameter lists
+
+Not relevant.
+
+
+### Function don't have their own syntax
+
+Functions have a separate syntax:
+
+function F:int = ...        # actual function
+ref function:int G          # function pointe
+
+### Mixed Arithmetic
+
+Mixed arithmetic uses signed unless both are unsigned.
+
+The table of possibilities is very regular, and can be reduced to:
+````
+         Uxx   Ixx
+  Uxx    U     S
+  Ixx    S     S
+````
+
+
+### Block Scopes and Declare Anywhere
+
+No block scopes.
+
+Things can be declared anywhere, but always have function-wide scope, so not competing lifetimes.
+
+
+### double x; ++x
+
+Not allowed. ++ is defined on integers/pointers only.
+
+### Break: Loop or Switch?
+
+Not relevant. Switch doesn't need 'break'.
+
+### Switch-case
+
+My Switch syntax is well-formed. My 'default:' is written as 'else', and forms the last branch, just like statements such as 'if'.
+
+
+### Extra Namespaces
+
+There is one namespace inside functions. Struct tags don't exist.
+
+
+### Declare Structs anywhere
+
+I've already shown how it works:
+````
+record S =
+    int x,y
+end
+````
+Instances can only be created like this:
+````
+P a,b
+````
+
+
+
+### Implicit int
+
+Not relevant.
+
+### 17 Precedence Levels
+
+There are fewer precedence levels.
+
+### Standard Headers
+
+Not relevant. Basic language features do not need dozens of tiny headers to be specified.
+
+### Standard Library
+
+Not relevant.
+
+I decided to just use the C library that comes with Windows, msvcrt.dll. Although not official, every Windows system will have it.
+
+But if you do have to provide one, well this particular library provides about 1500 functions, a lot of work!
+
+### const attribute
+
+No 'const'.
+
+### Predefined Macros
+
+Not relevant.
