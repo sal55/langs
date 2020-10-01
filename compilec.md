@@ -201,7 +201,6 @@ This is associated with VLAs. I'm refering to code like this:
 ````
 A is a flat 2D array, but with variable dimensions linked to earlier parameter names. (Here, the type of A is int(\*)\[\], or possible int(\*)\[n\], and possible only the last dimension needs to be linked as it affects indexing calculations.
 
-What the hell happened to the nice, simple little language supposedly so easy to compile?
 
 ### When int[] isn't an array
 ````
@@ -249,32 +248,171 @@ Rarely used, and useless, yet some compilers support them. Maybe they can be use
 But it is a choice to be made. Presumably the grammar allows it, and it you follow the grammar, you might necessarily support it.
 
 ### () parameter lists
+This is legal C:
+
+    void fn():
+It means a function that takes an unspecified number of arguments of unspecified type. The compiler will not check. Further most compilers allow fn() to be called in inconsistent ways.
+
+The issue here is whether to support such an unsafe feature. The problem is that so many programs wrongly use this form when they mean no parameters, rather than (void) (in C++ () does mean (void)). If not supported, many programs will not compile.
+
+So this generally allowed unless explicitly disabled. Which adds to the problem, as the practice of using () in place of (void) is perpetuated.
+
+I chose not to allow it, then had to backtrack and make it available, but via a legacy option ("-old") only. This means the compiler effectively biting its lip and saying nothing while passing obviously wrong code.
+
 
 ### Old style parameter lists
+Example:
+````
+void fn(a,b,c)
+    int a,b,c;
+{ ...
+````
+Well, this is an easy one - just don't bother supporting it . Except you won't be able to compile ancient programs. And if you do support, now you have a alternative function syntax to support.
 
-### 0x123e+2
+### Function don't have their own syntax
+
+A function definition uses the same syntax as type declarations. This is odd if you're used to languages where functions are not variables. So:
+````
+    int F(void);                  # declaration an actual function (defined later, or externally)
+    int (*G)void;                 # define a function pointer, ie. a varible
+````
+Not much of a difference. How about:
+
+    void A(void), B(int), *C(char*);             # declare 3 functions, all sharing the same base type
+    void A(void){}, B(int x){}, *C(char* s){};   # Not allowed
+
+You have to specifically disallow defined several functions in a comma-separated list.
+
 
 ### Mixed Arithmetic
 
+The general rule is, if you mixed signed and unsigned in a binary operation, then it will be done as unsigned. But when you look into the actual rules, it is not that simple. The combinations for all 8 integer types are are as follows (S = gives signed result; U = unsigned result):
+````
+      u8 u16 u32 u64  i8 i16 i32 i64
+
+  u8   S   S   U   U   S   S   S   S
+  u16  S   S   U   U   S   S   S   S
+  u32  U   U   U   U   U   U   U   S
+  u64  U   U   U   U   U   U   U   U
+
+  i8   S   S   U   U   S   S   S   S
+  i16  S   S   U   U   S   S   S   S
+  i32  S   S   U   U   S   S   S   S
+  i64  S   S   S   U   S   S   S   S 
+````
+I recently tested my compiler against this; is was close, but not enough. Although it is rare that actually makes a different, sometimes it will.
+
 ### Block Scopes and Declare Anywhere
+
+Many languages have block scopes, but none of mine don't, so something else that makes it harder. I like all declared names to be identified by a fully qualified name. That's not possible with block scopes because they are anonymous; how do you disambiguate the 28 entities in one function call called 'A'? So this required a special approach (and a block number attribute per variable).
+
+As for declare anywhere, that means that here:
+
+    int A; {int X = A+1; float A; ....}
+
+there are two As in scope during the same block.
 
 ### double x; ++x
 
+++ and -- work on integers, or so you might have thought. In C, they work on floats too! This is not hard to deal with - once you know. But it's extra work. Hardware doesn't have special instructions for it, so it just means x+=1.0. I didn't bother with it because I disagreed with the use of ++ and -- which I believe should be for stepping between discrete values of a type (+/- 1 for integers, +/- stride for a pointer).
+
 ### Break: Loop or Switch?
+
+Well, exactly that: does 'break' means step to the end of the switch statement, or the end of the loop body?
 
 ### Switch-case
 
-### Struct Tags
+Everyone knows how bizarre Switch is, and how case labels can appear anyway, at any level, within the statement that follows. As, actually can 'default:', which doesn't need to be at the end:
+````
+    switch (1) default: case 10: case 20: switch (2) default: case 30: case 40:;
+````
+You just need make sure there is at most one default per switch, and make sure case labels are associated with the right switch.
 
-### Enum Tags
 
-### Labels have their own namespace
+### Extra Namespaces
+
+This is another usual feature: struct tags exist in their own namespace, one shared with enum tags. And labels exist have their own namespace, how useful!
+````
+A: struct A;int A; goto A;
+````
+So an identifier with a function, not only has a block number (and often part of block), now might also be in one of three namespaces: normal, tags and label.
+
+This is little bit harder than my normal compilers where there can only one ONE instance of any identifier in a function, in ONE namespace. Compared with C's THREE namespaces, two of which can have UNLIMITED instances (label names have function-wide scope; at last something sensible!).
 
 ### Declare Structs anywhere
+How to describe this messy bit of language design. These are some examples (not all be valid in the same program):
+````
+struct S;                              # incomplete struct
+struct S x,y;                          # this one needs to be reported
+struct {int x,y;};                     # anonymous struct, with no instances (compilers expected to report this)
+struct S {int x,y;};                   # define a tagged struct, no instances
+struct {int x,y;} p,q;                 # define anonymous strict with instances
+struct S {int x,y;} p,q;               # same but tagged
+typedef struct S {int x,y;} P;         # same struct now defines a typedef
+
+struct {
+    int a,b;
+    struct {int x,y;};                 # doubly anonymous struct
+} p,q;
+
+struct {
+    int a,b;
+    struct {int x,y;} c,d;             # locally defined anonymous struct
+} p,q;
+
+struct {
+    int a,b;
+    struct S c;                        # use either struct S, or P, for same type
+    P d;
+} p,q;
+````
+You might say, so what? Well you have these combinations:
+* There may or may not have a struct tag
+* There may or may not any members (the bit inside {...}. If so, then it defines a new struct, otherwise it's either a forward declaration, or using a struct already define.
+* There may or may be be instances defined. If not, this may be an anonymous struct inside another struct.
+* It may be defining a typedef.
+
+Suppose 'struct S' has been defined, should the following work, and if so, what does it do:
+````
+struct {
+  struct S;
+} p = {10,20};
+````
+Apparently this does work, it creates an anonymous struct, which has two elements 'x' and 'y'.
+
+Except it doesn't work on my compiler (nor on an older compiler 'DMC', from 2004). It's all so simple, why has it taken 3 years to establish that this is not supported. C has all these freedoms and all this flexibility, but then the onus is on implementors to ensure all the possible combinations work.
+
+For comparison, here is the same struct S/P type in my systems language. It can only be defined as a named used type:
+````
+record S =
+    int x,y
+end
+````
+Instances can only be created like this:
+````
+P a,b
+````
+It can't be used for the anonymous structs in two of the C examples. The possibilies are smaller, and compilation is similar.
+
 
 ### Implicit int
+That is declarations like these at module scope:
+```
+    a,b,c;
+    fn(void);           # most likely it will fn(), so a free-for-all
+```
+Or inside a function:
+    
+    G(10,20);
+where no declaration for G has been provided. The compiler assumes the types in all cases are 'int'. I think the parameters of G too, although if I mix inconsistent calls, gcc will not report that, so may it assumes 'int G()'.
+
+What's difficult about this? Like the above, it is about whether to support this side of the language, and how to go in reporting such uses.
 
 ### 17 Precedence Levels
+
+OK, this is not really that difficult to compile, apart from having to have 17 different levels of handling (and probably duplicated inside the preprocessor, although that misses some ops such as assignment).
+
+### ?: Operator
 
 ### Standard Headers
 
