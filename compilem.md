@@ -38,6 +38,8 @@ That can't happen.
 There is an algorithm for module imports, which looks in a linear set of locations. No file paths are involved, and there is no concept of
 a 'current' include file, so is straightforward.
 
+In the case of a rarer textual include which does uses paths, the path does not form a new source file context, so the scope for searches does not change.
+
 ### Struct and Array Initialiser Shapes
 
 These have to strictly follow the type structure. No exceptions.
