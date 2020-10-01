@@ -190,7 +190,7 @@ On the face of it they sound simple (and in my language, they would be), but:
 * VLAs can be condionally declared
 * Because of block scopes, there can be multiple VLAS in effect, with nested lifetimes, and multiple possible future VLAs
 * Because of 'goto' and 'break', it is possible to enter and leave blocks containing active VLAs (entering might be restricted, but then it is your job to detect such infringements)
-* 'sizeof' is now no longer a compile-time constant, but is worked out at runtime. (And can involve a calculatoion for multi-dimensional VLAs)
+* 'sizeof' is now no longer a compile-time constant, but is worked out at runtime. (And can involve a calculation for multi-dimensional VLAs)
 * Multi-dimemnsional VLA access requires now multiply by variables, not constants.
 
 Still think they are a simple feature? I decided not to support them.
