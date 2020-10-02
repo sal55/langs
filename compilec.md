@@ -200,7 +200,7 @@ Still think they are a simple feature? I decided not to support them.
 
 This is associated with VLAs. I'm refering to code like this:
 ````
-    void fn(int m, int m, int A[m][n]);
+    void fn(int m, int n, int A[m][n]);
 ````
 A is a flat 2D array, but with variable dimensions linked to earlier parameter names. (Here, the type of A is int(\*)\[\], or possible int(\*)\[n\], and possible only the last dimension needs to be linked as it affects indexing calculations.
 
