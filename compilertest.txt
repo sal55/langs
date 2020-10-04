@@ -87,6 +87,8 @@ Other languages:
   Dip             8.0    ---     ---     ---  (Estimate; run another machine)
 
   Clox (Lox)      0.0    0.1     0.3     1.0
+  
+  V (Vlang)       5.2   20.0     ---     ----
 
 My languages:
 
