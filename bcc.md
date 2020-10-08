@@ -67,3 +67,8 @@ For generating .exe (and working \_\_DATE\_\_) a Windows-specific version is nee
 ### Future development
 
 I'm currently working on a new, mildly optimised code generator for my own language. This could be used as a replacement 'back-end' for bcc, with proper API compliance. However since I don't really use bcc for writing programs, and no one else uses, it will be probably just be left.
+
+**Update October 2020**: I've decided not to main BCC any more, regarding fixing omissions, or making it faster. I don't have a real need for it, except for getting a kick out of using my own C compiler. For compiling code on Windows fast, I can use Tiny C. Anywhere else, bcc won't work.
+
+Efforts will be concentrated instead on my own language.
+
