@@ -6,13 +6,13 @@
 #include <stdlib.h>
 #include <math.h>
 
-double eval(char* expr);
-double evalexpr(void);
-double evaladd(void);
-double evalmul(void);
-double evalterm(void);
-void nexttk(void);
-void error(char* mess);
+static double eval(char* expr);
+static double evalexpr(void);
+static double evaladd(void);
+static double evalmul(void);
+static double evalterm(void);
+static void nexttk(void);
+static void error(char* mess);
 
 int token;
 char* lxptr;
@@ -22,7 +22,7 @@ enum {add_tk, sub_tk, mul_tk, div_tk,lbrack_tk, rbrack_tk,
 
 double variables[26];
 
-double eval(char* expr) {
+static double eval(char* expr) {
     double x;
     lxptr=expr;
 
@@ -32,11 +32,11 @@ double eval(char* expr) {
     return x;
 }
 
-double evalexpr(void) {
+static double evalexpr(void) {
     return evaladd();
 }
 
-double evaladd(void) {
+static double evaladd(void) {
     double x,y;
     int opc;
 
@@ -56,7 +56,7 @@ double evaladd(void) {
     return x;
 }
 
-double evalmul(void) {
+static double evalmul(void) {
     double x,y;
     int opc;
 
@@ -76,7 +76,7 @@ double evalmul(void) {
     return x;
 }
 
-double evalterm(void) {
+static double evalterm(void) {
     double x;
 
     switch (token) {
@@ -102,7 +102,7 @@ double evalterm(void) {
     return 0.0;
 }
 
-void nexttk(void) {
+static void nexttk(void) {
     int c;
     char* pstart, pend;
 
@@ -150,11 +150,10 @@ void nexttk(void) {
     }
 }
 
-void error(char* mess) {
+static void error(char* mess) {
     printf("Error: %s\n",mess);
     exit(1);
 }
-
 
 int main(void) {
     char* expr;
