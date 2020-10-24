@@ -241,8 +241,8 @@ proc start=
         showsectiondata()
     fi
 
-    writestrfile("kkk1",ttdeststr)
-    execwait(f"\m\med.bat kkk1",1)
+    writestrfile("temp",ttdeststr)
+    execwait(f"\m\med.bat temp",1)
 end
 
 proc showsections=
