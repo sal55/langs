@@ -34,7 +34,7 @@ STACK LAYOUT WHEN NPARAMS>4 (always needs stack frame)
 NEEDSHADOW48=0, NEEDSHADOW40=0
 
 
-STACK LAYOUT WHEN NPARAMS<=0 AND STACK FRAME NEEDED
+STACK LAYOUT WHEN NPARAMS<=4 AND STACK FRAME NEEDED
 ---------------------------------------------------
 
     --- SHADOW SLOT PARAM 4
@@ -54,7 +54,7 @@ STACK LAYOUT WHEN NPARAMS<=0 AND STACK FRAME NEEDED
     --- SHADOW32 32 bytes when non-leaf, part of stack frame
 
 
-STACK LAYOUT WHEN NPARAMS<=0 AND NO STACK FRAME NEEDED
+STACK LAYOUT WHEN NPARAMS<=4 AND NO STACK FRAME NEEDED
 ------------------------------------------------------
 
 (When no params need spilling, no locals, and no XSAVE regs to save)
