@@ -1599,7 +1599,7 @@ Also, M can directly compile a project in its amalgamated form. If the lead modu
 
 In this context, 'support files' are those incorporated using 'include', 'strinclude' and 'bininclude' directives.
 
-#### Companion Dynamic Language
+### Companion Dynamic Language
 
 There is a companion language called Q, which is dynamically typed and interpreted. It shared largely the same syntax.
 
