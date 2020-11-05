@@ -1,3 +1,3 @@
 proc start=
-	println "Hello2"
+	println "Hello, World!"
 end
