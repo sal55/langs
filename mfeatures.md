@@ -999,7 +999,7 @@ This can be written as:
     go to label
     label
 ````
-The last is handy if you don't like the head of using 'goto', as it makes it less obvious.
+The last is handy if you don't like the idea of using 'goto', as it makes it less obvious.
 
 
 Labels need to be written with two colons:
