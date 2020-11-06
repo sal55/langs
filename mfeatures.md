@@ -25,8 +25,11 @@ A 'program' in this sense is the collection of modules and files that form a sin
 Output files will always be a single file that will be one of:
 
 **.exe**    (Default output)
+
 **.dll** -dll option (also generates an .exp file, an interface file that can be directly imported within a M module)
+
 **.asm** -asm or -c option (in the syntax used by my own **ax** assembler/linker)
+
 **.ma** -ma option (combines all source and support files into a single .ma text file, which mm can directly compile)
 
 (There is no direct .obj file output. This can be done by generating an .asm file then using 'ax -obj'. OBJ files will an external linker to process further.)
