@@ -3,7 +3,9 @@
 
 # Languages covered are M and Q (mine), plus:
 #  Algol68 C D Go Julia Lua Nim Python Rust Ruby
-# These last are original code based by me on the M version, except for Lua
+
+# These last, except for Lua, are original code written by me on the M version, which itself I believe was
+# based on the Lua which was taken from the Shootout site.
 
 # ***********************************************************************************************
 # M Language giving the reference algorithm. (Other versions will mostly use this same algorithm, not the
