@@ -1,6 +1,6 @@
 ## Compiler Tests
 
-My old set of tests: [compilertests.txt](compilertests.txt) from the start of 2020 were a bit of laugh, but it was still interesting to see how compilers coped.
+My old set of tests: [compiletests.txt](compiletests.txt) from the start of 2020 were a bit of laugh, but it was still interesting to see how compilers coped.
 
 That test was 20K to 2M lines of 'a=b+c*d' in a single function, which is far from realistic.
 
