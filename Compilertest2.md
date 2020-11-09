@@ -6,7 +6,7 @@ That test was 20K to 2M lines of 'a=b+c*d' in a single function, which is far fr
 
 This is one is slightly more realistic; it takes a benchmark function, 50-100 lines long, and repeats it 100, 1000 or 10000 times in one module. Naturally, each one is named differently. The test is how long it takes an implementation to build each module.
 
-The benchmark is called 'fannkuch-redux' and described [here](https://benchmarksgame-team.pages.debian.net/benchmarksgame/performance/fannkuchredux.html). Versions I've written in 10 languages (plus two of mine) are listed [here](fannkuch.txt].
+The benchmark is called 'fannkuch-redux' and described [here](https://benchmarksgame-team.pages.debian.net/benchmarksgame/performance/fannkuchredux.html). Versions I've written in 10 languages (plus two of mine) are listed [here](fannkuch.txt).
 
 Implem | Language | x 100 | x 1000 | x 10000 | Bytes/func | Runtime | Klps | Notes
 --- | --- | --- | --- | --- | --- | --- | --- | ---
