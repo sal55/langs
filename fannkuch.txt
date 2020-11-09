@@ -553,4 +553,94 @@ end
 println(fannkuch(11))
 
 # ***********************************************************************************************
+# Rust version
+# ***********************************************************************************************
+fn fannkuch(n:i32)->(i32,i32) {
+    let mut sign:i32=1;
+    let mut maxflips:i32=0;
+    let mut sum:i32=0;
+    let mut i:i32;
+    let mut j:i32;
+    let mut q1:i32;
+    let mut qq:i32;
+    let mut t:i32;
+    let mut sx:i32;
+    let mut flips:i32;
+    let mut p:[i32;20]=[0;20];
+    let mut q:[i32;20]=[0;20];
+    let mut s:[i32;20]=[0;20];
+
+    for i in 1..=n {
+        p[i as usize] = i;
+        q[i as usize] = i;
+        s[i as usize] = i;
+    }
+    
+    loop {
+        
+        q1=p[1];
+        if q1!=1 {
+            for i in 2..=n { q[i as usize] = p[i as usize]; }
+            flips=1;
+            loop {
+                qq=q[q1 as usize];
+                if qq==1 {
+                    sum=sum+sign*flips;
+                    if flips>maxflips {
+                        maxflips=flips;
+                    }
+                    break;
+                }
+                q[q1 as usize]=q1;
+                if q1>=4 {
+                    i=2; j=q1-1;
+                    loop {
+                        t=q[i as usize];
+                        q[i as usize]=q[j as usize];
+                        q[j as usize]=t;
+                        i=i+1;
+                        j=j-1;
+                        if i>=j {break;}
+                    }
+                }
+                q1=qq;
+                flips=flips+1;
+            }
+        }
+        
+        
+        if sign==1 {
+            t=p[2]; p[2]=p[1]; p[1]=t;
+            sign=-1;
+        } else {
+            t=p[2]; p[2]=p[3]; p[3]=t;
+            sign=1;
+            for i in 3..=n {
+                sx=s[i as usize];
+                if sx!=1 {s[i as usize]=sx-1; break; }
+                if i==n {
+                    return (sum, maxflips);
+                }
+                s[i as usize]=i;
+                t=p[1];
+                for j in 1..=i {
+                    p[j as usize] = p[(j+1) as usize];
+                }
+                p[(i+1) as usize]=t;
+            }
+        }
+    }
+    
+}
+
+fn main() {
+    let n:i32 = 11;
+    
+    let (res,res2)=fannkuch(n);
+    
+    println!("Fannkuch({}) ={} {}", n,res, res2);
+}
+# ***********************************************************************************************
+
+# ***********************************************************************************************
 
