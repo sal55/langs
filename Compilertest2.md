@@ -54,7 +54,7 @@ Implem | Language | x 100 | x 1000 | x 10000 | Bytes/func | Runtime | Klps | Not
 
 ### Observations
 
-Generally, implementations performed much better than on the a=b+c*d test. (Except for mine, see below.) It's good to see Rust working at practical speeds.
+Generally, implementations performed much better than on the a=b+c\*d test. (Except for mine, see below.) It's good to see Rust working at practical speeds.
 
 But there is still about 100:1 between them.
 
@@ -64,4 +64,4 @@ The other two are a C compiler, and bytecode interpreter, not shown as the resul
 
 (All my programs are built with BB which has a limited optimiser. Otherwise they could be up to 30% faster.)
 
-As a mini-bonus, the file I linked to acts as a mini-Rosetta-Code for those 10 languages.
+As a mini-bonus, the [file](fannkuch.txt) I linked to acts as a mini-Rosetta-Code for those 10 languages.
