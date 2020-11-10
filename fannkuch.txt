@@ -4,8 +4,8 @@
 # Languages covered are M and Q (mine), plus:
 #  Algol68 C D Go Julia Lua Nim Python Rust Ruby
 
-# These last, except for Lua, are original code written by me based on the M version, which itself I believe was
-# based on the Lua which was taken from the Shootout site.
+# Lua and probably Ruby versions are original Shootout code. The M version seems to derived from the Lua,
+# the rest are ported from the M code so as to use the same syntax
 
 # ***********************************************************************************************
 # M Language giving the reference algorithm. (Other versions will mostly use this same algorithm, not the
@@ -869,92 +869,6 @@ void main()
 }
 
 #***********************************************************************************************
-# Algol 68 version (using A68G stropping)
-#***********************************************************************************************
-
-INT res2;
-
-PROC fannkuch=(INT n)INT: BEGIN
-    [100]INT p,q,s;
-    INT sign, maxflips, sum, q1, flips, qq, t, sx, i,j;
-
-    sign:=1;
-    maxflips:=0;
-    sum:=0;
-
-    FOR i TO n+1 DO
-        p[i]:=i;
-        q[i]:=i;
-        s[i]:=i
-    OD;
-
-    DO
-        q1:=p[1];
-        IF q1/=1 THEN
-            FOR i FROM 2 TO n DO q[i]:=p[i] OD;
-            flips:=1;
-            DO
-                qq:=q[q1];
-                IF qq=1 THEN
-                    sum+:=sign*flips;
-                    IF flips>maxflips THEN
-                            maxflips:=flips
-                    FI;
-                    exit1
-                FI;
-
-                q[q1]:=q1;
-                IF q1>=4 THEN
-                    i:=2; j:=q1-1;
-                    WHILE
-                        t:=q[i]; q[i]:=q[j]; q[j]:=t;
-                        i+:=1;
-                        j-:=1;
-                        i<j
-                    DO SKIP OD
-                FI;
-                q1:=qq;
-                flips+:=1
-            OD;
-exit1: SKIP
-        FI;
-
-        IF sign=1 THEN
-            t:=p[2]; p[2]:=p[1]; p[1]:=t;
-            sign:=-1
-        ELSE
-            t:=p[2]; p[2]:=p[3]; p[3]:=t;
-            sign:=1;
-            FOR i FROM 3 TO n DO
-                sx:=s[i];
-                IF sx/=1 THEN s[i]:=sx-1; exit2 FI;
-                IF i=n THEN
-                    res2:=maxflips;
-                    return
-                FI;
-                s[i]:=i;
-                t:=p[1];
-
-                FOR j TO i DO
-                    p[j]:=p[j+1]
-                OD;
-
-                p[i+1]:=t
-            OD;
-exit2: SKIP
-        FI
-    OD;
-return:
-    sum
-END;
-
-INT n=11;
-INT res;
-res:=fannkuch(n);
-
-print(("Fannkuch(",n,") = ",res," ", res2,newline))
-
-#***********************************************************************************************
 # Nim version
 #***********************************************************************************************
 
@@ -1056,4 +970,90 @@ let (a,b)=fann1(n)
 
 echo ""
 echo "fannkuch(",n,") = ",a," ",b
+
+#***********************************************************************************************
+# Algol 68 version (using A68G stropping)
+#***********************************************************************************************
+
+INT res2;
+
+PROC fannkuch=(INT n)INT: BEGIN
+    [n]INT p,q,s;
+    INT sign, maxflips, sum, q1, flips, qq, t, sx, i,j;
+
+    sign:=1;
+    maxflips:=0;
+    sum:=0;
+
+    FOR i TO n+1 DO
+        p[i]:=i;
+        q[i]:=i;
+        s[i]:=i
+    OD;
+
+    DO
+        q1:=p[1];
+        IF q1/=1 THEN
+            FOR i FROM 2 TO n DO q[i]:=p[i] OD;
+            flips:=1;
+            DO
+                qq:=q[q1];
+                IF qq=1 THEN
+                    sum+:=sign*flips;
+                    IF flips>maxflips THEN
+                            maxflips:=flips
+                    FI;
+                    exit1
+                FI;
+
+                q[q1]:=q1;
+                IF q1>=4 THEN
+                    i:=2; j:=q1-1;
+                    WHILE
+                        t:=q[i]; q[i]:=q[j]; q[j]:=t;
+                        i+:=1;
+                        j-:=1;
+                        i<j
+                    DO SKIP OD
+                FI;
+                q1:=qq;
+                flips+:=1
+            OD;
+exit1: SKIP
+        FI;
+
+        IF sign=1 THEN
+            t:=p[2]; p[2]:=p[1]; p[1]:=t;
+            sign:=-1
+        ELSE
+            t:=p[2]; p[2]:=p[3]; p[3]:=t;
+            sign:=1;
+            FOR i FROM 3 TO n DO
+                sx:=s[i];
+                IF sx/=1 THEN s[i]:=sx-1; exit2 FI;
+                IF i=n THEN
+                    res2:=maxflips;
+                    return
+                FI;
+                s[i]:=i;
+                t:=p[1];
+
+                FOR j TO i DO
+                    p[j]:=p[j+1]
+                OD;
+
+                p[i+1]:=t
+            OD;
+exit2: SKIP
+        FI
+    OD;
+return:
+    sum
+END;
+
+INT n=11;
+INT res;
+res:=fannkuch(n);
+
+print(("Fannkuch(",n,") = ",res," ", res2,newline))
 
