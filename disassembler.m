@@ -65,8 +65,8 @@ ref byte codeptr
 
 global function decodeinstr(ref byte &cptr,baseaddr=nil)ichar=
 !decode next instruction at codeptr
-!return pointer to a string containing the disassemble intruction
-!unless at end of code (no or 0x90) then returns nil
+!return pointer to a string containing the disassembled intruction
+!unless at end of code (nop or 0x90) then it returns nil
 !cptr is stepped to the start of the next instruction in the caller
     int n,w
     int opc,reg,op,xxx,oldopsize,dispsize
