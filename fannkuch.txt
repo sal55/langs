@@ -985,7 +985,7 @@ PROC fannkuch=(INT n)INT: BEGIN
     maxflips:=0;
     sum:=0;
 
-    FOR i TO n+1 DO
+    FOR i TO n DO
         p[i]:=i;
         q[i]:=i;
         s[i]:=i
