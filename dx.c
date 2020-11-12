@@ -12,6 +12,7 @@
 
    Caller needs to decide when end-of-code has been reached.
 
+   C code has been transpiled from another language.
 
    Example driver program: */
 
