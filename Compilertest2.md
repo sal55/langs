@@ -10,29 +10,31 @@ The benchmark is called 'fannkuch-redux' and described [here](https://benchmarks
 
 Implem | Language | x 100 | x 1000 | x 10000 | Bytes/func | Runtime | Klps | Notes
 --- | --- | --- | --- | --- | --- | --- | --- | ---
-**Tiny C** | C			| 0.1 sec | 0.2 sec | 1.1 sec | 1000 bytes | 10.6 sec | 900 Klps
+**Rustc** | Rust        | 2.4 | 13.6 | 136 | ---  | ---- | 5.5
+**Julia** | Julia		| 1.7 | 13.9 | 137 | na | 3.7/19.6 | 6.3
+**DMD-opt** | D     | 2.2 | 14.0| 145 |  30/1800 | 4.0 | 6.7  | All but one function discard)
+**A68G** | Algol68		| 0.7 | 8.0 | OOM | na    | 1070 | 9.3
 **gcc** | C             | 0.9 | 6.1 | 63  | 970  | 8.7  | 15.5
+**Go** | Go				| 1.4 | 4.6 | 36.5 | 920b | 2.80 | 25 
+**PyPy** | Python       | 0.3 | 1.8 | 17.4 | na  | 11.5 | 35
+**Nim-opt** | Nim	| 1.0 | 2.7 | 22.8 | 15 | 4.4  | 41
+**Nim** | Nim		| 1.0 | 2.5 | 21.6 | 1300 | 15.5  | 43
+**DMD** | D         | 0.8 | 1.7 | 29.2 | 30/1800 | 9.5 | 57/33 | (1.8KB in obj file, 30 bytes in exe.
+**CPython** |Python | 0.2 | 1.0 | 8.5 | na | 517 | 73
 **gcc-opt** | C			| 0.4 | 0.7 | 5.3 | 6 | 3.3   | 185 | All functions discarded from exe except one
 **DMC** | C				| 0.2 | 0.4 | OOM | 730 | 2.6-8.0 | 245 
-**DMD** | D         | 0.8 | 1.7 | 29.2 | 30/1800 | 9.5 | 57/33 | (1.8KB in obj file, 30 bytes in exe.
-**DMD-opt** | D     | 2.2 | 14.0| 145 |  30/1800 | 4.0 | 6.7  | All but one function discard)
-**Nim** | Nim		| 1.0 | 2.5 | 21.6 | 1300 | 15.5  | 43
-**Nim-opt** | Nim	| 1.0 | 2.7 | 22.8 | 15 | 4.4  | 41
+**gcc/as** | ASM(S) | --- | 0.6 | 8.3 | na | na | 300
+**BB-opt** | M      | 0.1 | 0.3 | 2.4 | 690  | 3.1 | 310
+**BB** | M          | 0.1 | 0.3 | 2.1 | 880  | 6.9 | 350
 **Lua** | Lua       | 0.1 | 0.2 | 0.8  | na      | 170 |  520
 **LuaJIT** |Lua     | 0.1 | 0.1 | 0.6 | na       | 9.6 | 700
-**CPython** |Python | 0.2 | 1.0 | 8.5 | na | 517 | 73
-**PyPy** | Python       | 0.3 | 1.8 | 17.4 | na  | 11.5 | 35
-**Go** | Go				| 1.4 | 4.6 | 36.5 | 920b | 2.80 | 25 
-**Julia** | Julia		| 1.7 | 13.9 | 137 | na | 3.7/19.6 | 6.3
-**Rustc** | Rust        | 2.4 | 13.6 | 136 | ---  | ---- | 5.5
-**A68G** | Algol68		| 0.7 | 8.0 | OOM | na    | 1070 | 9.3
+**Tiny C** | C			| 0.1 sec | 0.2 sec | 1.1 sec | 1000 bytes | 10.6 sec | 900 Klps
 ... | ... | ... | ...| ... | ... | ... | ... | ...
-**BB** | M          | 0.1 | 0.3 | 2.1 | 880  | 6.9 | 350
-**BB-opt** | M      | 0.1 | 0.3 | 2.4 | 690  | 3.1 | 310
 **MS** | MS         | 0.1 | 0.1 | 0.5  | na  | --- | 1300  | (Incomplete project)
 ... | ... | ... | ...| ... | ... | ... | ... | ...
 **ax**  | ASM       | 0.1 | 0.2 | 1.5 | na | na |  1500
-**gcc/as** | ASM(S) | --- | 0.6 | 8.3 | na | na | 300
+
+
 
 ### Notes
 
