@@ -11,7 +11,7 @@ The benchmark is called 'fannkuch-redux' and described [here](https://benchmarks
 Implem | Language | x 100 | x 1000 | x 10000 | Bytes/func | Runtime | Klps | Notes
 --- | --- | --- | --- | --- | --- | --- | --- | ---
 **Rustc** | Rust        | 2.4 secs | 13.6 secs | 136 secs | ---  | ---- secs | 5.5 Klps | Can't link or run Rust on my PC
-**Julia** | Julia		| 1.7 | 13.9 | 137 | na | 3.7/19.6 | 6.3 | Runtime is opt/unopt; compile times about the nsame
+**Julia** | Julia		| 1.7 | 13.9 | 137 | na | 3.7/19.6 | 6.3 | Runtime is opt/unopt; compile times about the same
 **DMD-opt** | D     | 2.2 | 14.0| 145 |  30/1800 | 4.0 | 6.7  | All but one function discarded)
 **A68G** | Algol68		| 0.7 | 8.0 | OOM | na    | 1070 | 9.3 | Interpreter
 **gcc** | C             | 0.9 | 6.1 | 63  | 970  | 8.7  | 15.5
