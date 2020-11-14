@@ -28,8 +28,8 @@ Implem | Language | x 100 | x 1000 | x 10000 | Bytes/func | Runtime | Klps | Not
 **BB** | M          | 0.1 | 0.3 | 2.1 | 880  | 6.9 | 350
 **Lua** | Lua       | 0.1 | 0.2 | 0.8  | na      | 170 |  520
 **LuaJIT** |Lua     | 0.1 | 0.1 | 0.6 | na       | 9.6 | 700
-**Tiny C** | C			| 0.1 sec | 0.2 sec | 1.1 sec | 1000 bytes | 10.6 sec | 900 Klps
-**MS** | MS         | 0.1 | 0.1 | 0.5  | na  | --- | 1300  | (Incomplete project)
+**Tiny C** | C			| 0.1 | 0.2 | 1.1 | 1000 | 10.6 | 900
+**MS** | MS         | 0.1 | 0.1 | 0.5  | na  | --- | 1300  | (Unfinished project)
 **ax**  | ASM       | 0.1 | 0.2 | 1.5 | na | na |  1500
 
 
