@@ -12,8 +12,8 @@
 
 enum {digitwidth      = 9};
 
-//enum {digitbase       = 1000000000};
-extern int digitbase;
+enum {digitbase       = 1000000000};
+//extern int digitbase;
 
 static char* digitfmt = "%09d";
 
