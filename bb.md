@@ -56,7 +56,7 @@ Then the DLL can be easily used within another M program by writing:
 
 This imports bignum.exp, and automatically adds bignum.dll to the list of external libraries. If 'import bignum' was used instead, it would just build the library implementation bignum.m as part of the application.
 
-he new option -docs would produce a text file (eg. bignum.txt) containing all the exported functions plus their doc-strings. So a function like:
+The new option -docs would produce a text file (eg. bignum.txt) containing all the exported functions plus their doc-strings. So a function like:
 ````
 # One
 function func(int a,b,c)int =
@@ -65,7 +65,7 @@ function func(int a,b,c)int =
 ....
 end
 ````
-Shows the 3 lines of comments next to the function signature. (Not complete; only the function name is shown, not the signature.)
+Shows the 3 lines of special #-comments next to the function signature. (Not complete; only the function name is shown, not the signature.)
 
 
 
