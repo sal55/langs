@@ -12,9 +12,9 @@ Main differences:
 
 * The FFI for C libraries can directly deal with passing and returning structs by value; no need to inject explicit pointers or references. However no need to update libraries already modified; they will still work
 
-* Block types (such as the value structs, plus value arrays), can be passed to functions, but via an implicit pointer. But no copying it done so take care.
+* Block types (such as the value structs, plus value arrays), can be passed to M functions, but via an implicit pointer. But no copying is done so take care, as caller data can be modified.
 
-* Block types can be returned from M functions but, unlike the FFI C version, uses a pointer into the callee function, not the provided by the caller, so the value needs to be consumed immediately.
+* Block types can be returned from M functions but, unlike the FFI C version, use a pointer into the callee function, not provided by the caller, so the value needs to be consumed immediately.
 
 Probably a few other things that I forget off-hand.
 
