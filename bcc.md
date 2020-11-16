@@ -10,9 +10,9 @@ It was started before the existing Tiny C compiler was upgraded with a more comp
 
 To see if a C implementation can be created that:
 
-* Can be presented as the simplest possible kind of open source project: a single file. \[A single-file C rendering is possible; example in [bcc64.c](https://raw.githubusercontent.com/sal55/langs/master/bcc64.c) (Link may be out-of-date)\]
+* Can be presented as the simplest possible kind of open source project: a single file. \[A single-file C rendering is possible; example in [bcc.c](https://raw.githubusercontent.com/sal55/langs/master/bcc.c) (Link may be out-of-date)\]
 
-* Can be built effortlessly from source, as simply as compiling a Hello, World program, and as fast. \[Build as, eg. 'gcc bcc64.c -obcc.exe'; with tcc this builds in 1/8th second, and with bcc, 1/5th second\]
+* Can be built effortlessly from source, as simply as compiling a Hello, World program, and as fast. \[Build as, eg. 'gcc bcc.c -obcc.exe'; with tcc this builds in 1/8th second, and with bcc, 1/5th second\]
 
 * Can be a single, self-contained executable file with no dependencies, other than what is provided by the OS. \[Entire implementation is in the file bcc.exe, including standard headers and facilities for assembling and linking\]
 
@@ -32,13 +32,13 @@ To see if a C implementation can be created that:
 
 * Supports large subset of C; main omissions listed below
 
-* Not written in C, but in my own systems language. Versions of that can target C, and that is how the C 'rendering' is created. True sources comprise about 25 non-library modules (they are listed in bcc64.c).
+* Not written in C, but in my own systems language. Versions of that can target C, and that is how the C 'rendering' is created. True sources comprise about 25 non-library modules (they are listed in bcc.c).
 
 ### Downloads
 
-Not recommended for real work but if curious, the bcc64.c example is an OS-neutral version, that builds on Windows or Linux. Here, -e, -s and -c options can be used to generate .i (preprocessed), .asm and .obj files per input module (\_\_DATE\_\_ etc will not work).
+Not recommended for real work but if curious, the bcc.c example is an OS-neutral version, that builds on Windows or Linux. Here, -e, -s and -c options can be used to generate .i (preprocessed), .asm and .obj files per input module (\_\_DATE\_\_ etc will not work).
 
-For generating .exe (and working \_\_DATE\_\_) a Windows-specific version is needed (not provided). There is a binary [bcc.exe](http://www.bcas.freeuk.com/bcc.exe) although there are reports this link is broken)
+For generating .exe, a Windows-specific version is needed (not provided). There is a binary [bcc.exe](http://www.bcas.freeuk.com/bcc.exe) although there are reports this link is broken)
 
 ### Main Omissions
 
@@ -68,7 +68,7 @@ For generating .exe (and working \_\_DATE\_\_) a Windows-specific version is nee
 
 I'm currently working on a new, mildly optimised code generator for my own language. This could be used as a replacement 'back-end' for bcc, with proper API compliance. However since I don't really use bcc for writing programs, and no one else uses, it will be probably just be left.
 
-**Update October 2020**: I've decided not to main BCC any more, regarding fixing omissions, or making it faster. I don't have a real need for it, except for getting a kick out of using my own C compiler. For compiling code on Windows fast, I can use Tiny C. Anywhere else, bcc won't work.
+**Update October 2020**: I've decided not to maintain BCC any more, regarding fixing omissions, or making it faster. I don't have a real need for it, except for getting a kick out of using my own C compiler. For compiling code on Windows fast, I can use Tiny C. Anywhere else, bcc won't work.
 
 Efforts will be concentrated instead on my own language.
 
