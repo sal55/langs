@@ -22,7 +22,7 @@ To see if a C implementation can be created that:
 
 * Can generate reasonable quality code even with no optimiser. \[Currently, on a par with Tiny C, perhaps a bit faster\]
 
-* Can result in a small implementation. \[Tiny C has an executable smaller than 0.2MB; bcc.exe is 0.6MB, however 1/4 of that is bundled headers. Tiny C's headers are about 1.2MB, but are far more complete than bcc's.\]
+* Can result in a small implementation. \[Tiny C has an executable smaller than 0.2MB; bcc.exe is 0.5MB, however 1/4 of that is bundled headers. Tiny C's headers are about 1.2MB, but are far more complete than bcc's.\]
 
 ### Main Specs
 
