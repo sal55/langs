@@ -10,7 +10,7 @@ It was started before the existing Tiny C compiler was upgraded with a more comp
 
 To see if a C implementation can be created that:
 
-* Can be presented as the simplest possible kind of open source project: a single file. \[A single-file C rendering is possible; example in [bcc64.c](https://raw.githubusercontent.com/sal55/langs/master/bcc64.c) (Link may be out-of-data)\]
+* Can be presented as the simplest possible kind of open source project: a single file. \[A single-file C rendering is possible; example in [bcc64.c](https://raw.githubusercontent.com/sal55/langs/master/bcc64.c) (Link may be out-of-date)\]
 
 * Can be built effortlessly from source, as simply as compiling a Hello, World program, and as fast. \[Build as, eg. 'gcc bcc64.c -obcc.exe'; with tcc this builds in 1/8th second, and with bcc, 1/5th second\]
 
