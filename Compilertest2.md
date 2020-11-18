@@ -12,25 +12,25 @@ Implem | Language | x 100 | x 1000 | x 10000 | Bytes/func | Runtime | Klps | Not
 --- | --- | --- | --- | --- | --- | --- | --- | ---
 **Rustc** | Rust        | 2.4 secs | 13.6 secs | 136 secs | ---  | ---- secs | 5.5 Klps | Can't link or run Rust on my PC
 **Julia** | Julia		| 1.7 | 13.9 | 137 | na | 3.7/19.6 | 6.3 | Runtime is opt/unopt; compile times about the same
-**DMD-opt** | D     | 2.2 | 14.0| 145 |  30/1800 | 4.0 | 6.7  | All but one function discarded)
+**DMD-opt** | D     | 2.2 | 14.0| 145 |  30/1800 | 4.0 | 6.7  | (30 bytes in exe; 1800 in obj)
 **A68G** | Algol68		| 0.7 | 8.0 | OOM | na    | 1070 | 9.3 | Interpreter
 **gcc** | C             | 0.9 | 6.1 | 63  | 970  | 8.7  | 15.5
 **Go** | Go				| 1.4 | 4.6 | 36.5 | 920 | 2.80 | 25 
 **PyPy** | Python       | 0.3 | 1.8 | 17.4 | na  | 11.5 | 35
 **Nim-opt** | Nim	| 1.0 | 2.7 | 22.8 | 15 | 4.4  | 41
 **Nim** | Nim		| 1.0 | 2.5 | 21.6 | 1300 | 15.5  | 43
-**DMD** | D         | 0.8 | 1.7 | 29.2 | 30/1800 | 9.5 | 57/33 | (1.8KB in obj file, 30 bytes in exe.)
+**DMD** | D         | 0.8 | 1.7 | 29.2 | 30/1800 | 9.5 | 57/33 | (30 bytes in exe; 1800 in obj)
 **CPython** |Python | 0.2 | 1.0 | 8.5 | na | 517 | 73
 **gcc-opt** | C			| 0.4 | 0.7 | 5.3 | 6 | 3.3   | 185 | All functions discarded from exe except one
 **DMC** | C				| 0.2 | 0.4 | OOM | 730 | 2.6-8.0 | 245 | Runtime is opt/unop; compile times about the same
-**gcc/as** | ASM(S) | --- | 0.6 | 8.3 | na | na | 300
-**BB-opt** | M      | 0.1 | 0.3 | 2.4 | 690  | 3.1 | 310
+**gcc/as** | ASM(S) | --- | 0.6 | 8.3 | na | na | 300 | (ASM is output of gcc -S on C versions)
+**BB-opt** | M      | 0.1 | 0.3 | 2.4 | 690  | 3.1 | 310 | (M is my language)
 **BB** | M          | 0.1 | 0.3 | 2.1 | 880  | 6.9 | 350
 **Lua** | Lua       | 0.1 | 0.2 | 0.8  | na      | 170 |  520
 **LuaJIT** |Lua     | 0.1 | 0.1 | 0.6 | na       | 9.6 | 700
 **Tiny C** | C			| 0.1 | 0.2 | 1.1 | 1000 | 10.6 | 900
-**MS** | MS         | 0.1 | 0.1 | 0.5  | na  | --- | 1300  | (Unfinished project)
-**ax**  | ASM       | 0.1 | 0.2 | 1.5 | na | na |  1500
+**MS** | MS         | 0.1 | 0.1 | 0.5  | na  | --- | 1300  | (Interpeter/Unfinished project)
+**ax**  | ASM       | 0.1 | 0.2 | 1.5 | na | na |  1500 | (ASM is output of bcc -asm on M versions)
 
 
 ### Notes
@@ -39,7 +39,7 @@ Implem | Language | x 100 | x 1000 | x 10000 | Bytes/func | Runtime | Klps | Not
 
 **Bytes/func** The size of the EXE divided by 100-10000 gives approx code bytes for the function. Some optimising compilers discard all but the one function that is called, hence the 6 bytes/function of gcc-opt, and the surprisingly fast compilation. No value shown for interpreters.
 
-**Runtime** This is testing compiler performance, not of the generate code, but this can be useful to see how effective different trade-offs can be. The time is for one call of fannkuch(11), which should give a result of (556355, 51).
+**Runtime** This is testing compiler performance, not of the generated code, but this can be useful to see how effective different trade-offs can be. The time is for one call of fannkuch(11), which should give a result of (556355, 51).
 
 **Klps** Thousands of lines/second compilation speed. Best shown (two values shown for DMD). Note that source file sizes vary (see below) so can only be roughly compared.
 
@@ -49,11 +49,11 @@ Implem | Language | x 100 | x 1000 | x 10000 | Bytes/func | Runtime | Klps | Not
 
 **ASM** I've added a couple of assemblers (input is generated from BB and gcc). I would have liked to have included Nasm, which is a slow one, but not practical.
 
-**Line-counts** For x10000, the source file was 500K to 1000Kloc. (Most versions, except mine, have one declaration per line, increasing line count, and making the Klps figures a little better than they actually are. The Lua code is very dense so true Klps probably higher than shown.) ASM versions were just over 2Mloc.
+**Line-counts** For x10000, the source file was 500K to 1000Kloc. (Many versions have one declaration per line, increasing line count, and making the Klps figures a little better than they actually are. The Lua code is very dense so true Klps probably higher than shown.) ASM versions were just over 2Mloc.
 
 ### Observations
 
-Generally, implementations performed much better than on the a=b+c\*d test. (Except for mine, see below.) It's good to see Rust working at practical speeds.
+Generally, implementations performed much better than on the a=b+c\*d test. (Except for mine, see below.) It's good to see Rust working at practical speeds, although it's still at the bottom end of the range.
 
 But there is still about 100:1 between them.
 
@@ -61,6 +61,6 @@ Such stress tests can be good at picking up problems that can go unnoticed in no
 
 The other two are a C compiler, and bytecode interpreter, not shown as the results are too embarrassing. (The problem there is up to 10,000 duplicates of the same local variables. The symbol tables stored all instances of the same identifier in one linked list; it's not supposed to search the whole thing! But the BB program does the same, and that one is OK. So may need to be fixed.)
 
-(All my programs are built with BB which has a limited optimiser. Otherwise they could be up to 30% faster.)
+(All my programs - BB, ax, MS - are built with BB which has a limited optimiser. Otherwise they could be up to 30% faster.)
 
 As a small bonus, the [file](fannkuch.txt) I linked to acts as a mini-Rosetta-Code for those 10 languages.
