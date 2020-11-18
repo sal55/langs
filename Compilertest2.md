@@ -29,8 +29,8 @@ Implem | Language | x 100 | x 1000 | x 10000 | Bytes/func | Runtime | Klps | Not
 **Lua** | Lua       | 0.1 | 0.2 | 0.8  | na      | 170 |  520
 **LuaJIT** |Lua     | 0.1 | 0.1 | 0.6 | na       | 9.6 | 700
 **Tiny C** | C			| 0.1 | 0.2 | 1.1 | 1000 | 10.6 | 900
-**MS** | MS         | 0.1 | 0.1 | 0.5  | na  | --- | 1300  | (Interpeter/Unfinished project)
-**ax**  | ASM       | 0.1 | 0.2 | 1.5 | na | na |  1500 | (ASM is output of bcc -asm on M versions)
+**MS** | MS         | 0.1 | 0.1 | 0.5  | na  | --- | 1300  | (Intrerpeter/Unfinished project)
+**ax**  | ASM       | 0.1 | 0.2 | 1.5 | na | na |  1500 | (ASM is output of BB -asm on M versions)
 
 
 ### Notes
