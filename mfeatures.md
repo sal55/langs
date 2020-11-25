@@ -65,7 +65,7 @@ I might add it again, but it will be as an extra target of M's intermediate lang
 to benefit from optimising C compilers.
 
 ### M Syntax 
-Originally inspired by Algol-68, but has evolved its own style. Best described by looking at example programs.
+Originally inspired by Algol-68, but has evolved its own style. Best described by looking at [example programs](Examples).
 
 ### Modules and Imports
 This is another big difference from C (and C++ is only now acquiring modules). M has no header files and has no need for declarations as well as definitions.
