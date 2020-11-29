@@ -432,7 +432,7 @@ tabledata() []ichar colournames, []word colourvalues =
     (blue,      "Blue", 0x00'00'FF),
 end
 
-(See Table Data in [mdocs.md](mdocs.md) which expands on this.)
+(See Table Data in [mfeatures.md](mfeature.md) which expands on this.)
 
 #### Print Statements
 Q retains print and println as actual statements, meaning no parentheses needed.
@@ -493,7 +493,7 @@ The implementation of big integers is not fast either. However, they do also dea
 experimental), and are now called Bignums rather than Bigints. And their implementation uses decimal rather than binary (Python has a whole add-on type called Decimal to achieve the same.)
 
 #### Unsigned integers
-As mentioned, the default integer type (unless a number is too big) is int64. But an unsigned word64 type (ie. uint64) also exists. This helps with some algorithms ported from C. And allows numbers between 2**63 and 2**64-1 without needing a Bignum.
+As mentioned, the default integer type (unless a number is too big) is int64. But an unsigned word64 type (ie. uint64) also exists. This helps with some algorithms ported from C. And allows numbers between 2\*\*63 and 2\*\*64-1 without needing a Bignum.
 
 #### Operator and Type Constants
 Writing (+) forms a special kind of operator constant. It can be used like this:
