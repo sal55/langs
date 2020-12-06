@@ -43,7 +43,7 @@ end
 function skipquote(q,s)=
     if s.len>=2 then
         if s[1]="\\" then
-            return s[1..2]+skipquote(q,tail(s))
+            return s[1]+skipquote(q,tail(s))
         fi
     fi
     if s.len>1 then
