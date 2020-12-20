@@ -4,41 +4,41 @@ mafile 40
   3 bb_tables.m        49963    17219   0
   4 bb_pclcommon.m     36848    67211   0
   5 bb_lib.m           45044   104082   0
-  6 msyslib.m          36921   149150   0
-  7 mclib.m             3432   186093   0
-  8 mlibnew.m          27239   189549   0
-  9 mwindows.m         12690   216813   0
- 10 bb_support.m       14575   229531   0
- 11 bb_libsources.m      467   244137   0
- 12 msyslib.m          36921   244629   1
- 13 mlibnew.m          27239   281575   1
- 14 mclib.m             3432   308837   1
- 15 mwindows.m         12690   312295   1
- 16 mwindll.m           2115   325010   1
- 17 bb_lex.m           40760   327149   0
- 18 bb_diags.m         15604   367935   0
- 19 bb_start.m         23898   383565   0
- 20 bb_help.txt         1089   407490   1
- 21 bb_x64.m            2573   408603   0
- 22 bb_genpcl.m        17023   411203   0
- 23 bb_libpcl.m        11090   428253   0
- 24 bb_blockpcl.m      51761   439372   0
- 25 bb_genmcl.m        75072   491160   0
- 26 bb_libmcl.m        45423   566259   0
- 27 bb_mcldecls.m      13780   611711   0
- 28 bb_stackmcl.m      27454   625520   0
- 29 bb_optim.m          5769   653000   0
- 30 ma_genss.m         47768   658795   0
- 31 ma_decls.m          1699   706589   0
- 32 ma_lib.m            2329   708312   0
- 33 ma_objdecls.m       4345   710670   0
- 34 ma_writeexe.m      27239   715044   0
- 35 ma_writess.m        5187   742311   0
- 36 ma_disasm.m        26507   747525   0
- 37 bb_parse.m         93032   774058   0
- 38 bb_name.m          20489   867115   0
- 39 bb_type.m          77301   887629   0
- 40 bb_export.m         3842   964957   0
+  6 msyslib.m          36919   149150   0
+  7 mclib.m             3432   186091   0
+  8 mlibnew.m          27240   189547   0
+  9 mwindows.m         12690   216812   0
+ 10 bb_support.m       14700   229530   0
+ 11 bb_libsources.m      467   244261   0
+ 12 msyslib.m          36919   244753   1
+ 13 mlibnew.m          27240   281697   1
+ 14 mclib.m             3432   308960   1
+ 15 mwindows.m         12690   312418   1
+ 16 mwindll.m           2115   325133   1
+ 17 bb_lex.m           40760   327272   0
+ 18 bb_diags.m         15604   368058   0
+ 19 bb_start.m         23898   383688   0
+ 20 bb_help.txt         1089   407613   1
+ 21 bb_x64.m            2573   408726   0
+ 22 bb_genpcl.m        17023   411326   0
+ 23 bb_libpcl.m        11090   428376   0
+ 24 bb_blockpcl.m      51796   439495   0
+ 25 bb_genmcl.m        75072   491318   0
+ 26 bb_libmcl.m        45423   566417   0
+ 27 bb_mcldecls.m      13780   611869   0
+ 28 bb_stackmcl.m      27454   625678   0
+ 29 bb_optim.m          5769   653158   0
+ 30 ma_genss.m         47768   658953   0
+ 31 ma_decls.m          1699   706747   0
+ 32 ma_lib.m            2329   708470   0
+ 33 ma_objdecls.m       4345   710828   0
+ 34 ma_writeexe.m      27239   715202   0
+ 35 ma_writess.m        5187   742469   0
+ 36 ma_disasm.m        26507   747683   0
+ 37 bb_parse.m         93032   774216   0
+ 38 bb_name.m          20489   867273   0
+ 39 bb_type.m          77301   887787   0
+ 40 bb_export.m         3842   965115   0
 === bb.m 1/40 ===
 !mapmodule mm_oslib => mm_oswindows
 mapmodule mm_gen => mm_genwx64
@@ -7129,7 +7129,6 @@ global function m$read_i64(int fmt=0)int64=
 
 	s:=readitem(length)
 
-
 	case fmt
 	when 0,'I','i' then
 		return strtoint(s,length)
@@ -7725,7 +7724,7 @@ if n>maxblocksize then			!large block allocation
 
 !MAXMEMTOTAL+:=ALLOCBYTES
 
-if mem_check then addtomemalloc(ref int32(p),allocbytes) fi
+	if mem_check then addtomemalloc(ref int32(p),allocbytes) fi
 
 	return p
 fi
@@ -9695,7 +9694,10 @@ global function loadbundledfile(ichar filespec,int support=0)int fileno=
 
 	file:=extractfile(filespec)
 
+!CPL "FIND BUNDLED",FILE,=SUPPORT,=NMAFILES
+
 	for i to nmafiles do
+!CPL I,MAFILENAMES[I],MAFILESUPPORT[I],=FILE
 		if eqstring(file,mafilenames[i]) and support=mafilesupport[i] then		!found
 !		if eqstring(file,mafilenames[i]) then		!found
 			fileno:=mafilefileno[i]
@@ -10197,6 +10199,7 @@ global proc loadmafile=
 	[256]char filename
 	int index, size, offset, issupport
 
+!CPL "LOADMAFILE"
 	f:=fopen(mafilename,"rb")
 	if not f then
 		loaderror("Can't open ##",mafilename)
@@ -10208,6 +10211,8 @@ global proc loadmafile=
 	if not eqstring(&.kwd,"mafile") then
 		loaderror("Bad sig in ma file: # '#'",mafilename,&.kwd)
 	fi
+!CPL =KWD
+
 	read nmafiles
 
 	for i to nmafiles do
@@ -11773,7 +11778,6 @@ global function m$read_i64(int fmt=0)int64=
 
 	s:=readitem(length)
 
-
 	case fmt
 	when 0,'I','i' then
 		return strtoint(s,length)
@@ -12269,7 +12273,7 @@ if n>maxblocksize then			!large block allocation
 
 !MAXMEMTOTAL+:=ALLOCBYTES
 
-if mem_check then addtomemalloc(ref int32(p),allocbytes) fi
+	if mem_check then addtomemalloc(ref int32(p),allocbytes) fi
 
 	return p
 fi
@@ -22224,6 +22228,10 @@ proc do_read(unit p,a) =
 	int m
 
 	m:=p.mode
+
+	if a=nil then
+		a:=pzero
+	fi
 
 	if ttisinteger[m] then
 		genpc_sysfn(sysfn_read_i64,a)
