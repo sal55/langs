@@ -3,7 +3,6 @@ import gxlib
 import smlib
 
 var grid
-var wgrid
 var cols=4,rows=4
 var buttons
 
@@ -13,14 +12,13 @@ proc start=
     sminit()
 
     A:=smdefblock(dim:(70,70),cells:(4,4),gap:0,dir:"V")
-    wpopup:=smcreate("15 Puzzle",smmenusize())
+    smcreate("15 Puzzle",smmenusize())
 
     smblock(a)
     for y to 4 do for x to 4 do
         buttons[y,x]:=smcmd("X",200+y*10+x)
     od od
 
-    showgrid()
     showgrid()
 
     do
