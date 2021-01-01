@@ -213,13 +213,20 @@ Common aliases:
 ### Type of Integer Constants
 These are defaults before any casts are applied, depending on the magnitude of the constant:
 
-    0      to 2**63-1         int64
+    0      to 2**63-1         int64 (see note)
     2**63  to 2**64-1         word64
     2**64  to 2**127-1        int128
     2**127 to 2**128-1        word128
     2**128 and above          decimal type (not implemented in this version)
 
 (No suffixes are used to force a particular type, except that in the next M version -L is used to force a decimal type for integers and floats. To force a type, just use a cast, eg. word64(0).)
+
+**Note:** in some contexts, when an int64 constant is combined with a word64 operand, then the constant is considered to be word64 too. The ensures the whole operation is unsigned. Otherwise, because int64 is domninant, in an operation like this:
+
+    word64 a = 0xFFFF'FFFF'FFFF'FFFF
+    if a > 5 then ...
+
+The comparison is perfored using int64, which means comparing -1 with 5, giving the wrong result.
 
 ### Numeric Separators
 
@@ -1625,7 +1632,7 @@ But this is being replace by a new scripting language that will be better integr
 
 * Most external libraries that might be compatible, will have C APIs. That requires interfaces for any library to be written as an **importdll** block in M. That is a lot of work. (Sometimes, you can create a smaller, tidier set of interface functions in C, then the interface in M to those functions will be smaller. But then you have an extra C dependency.)
 
-* There is a limited amount of source code in M (currently some 100Kloc), so the tools will not have got the testing they would get if applied to a billion lines of C code. So there will be inevitable bugs, corner cases that have never been tested etc as well as language features that don't work as well as expected.
+* There is a limited amount of source code in M (currently some 150Kloc), so the tools will not have got the testing they would get if applied to a billion lines of C code. So there will be inevitable bugs, corner cases that have never been tested etc as well as language features that don't work as well as expected.
 
 * There is a limited optimiser. The performance of generated code is midway between optimised gcc and Tiny C. (See Benchmarks article elsewhere on this site.)
 
