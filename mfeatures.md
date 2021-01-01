@@ -1052,7 +1052,7 @@ The full syntax for iterating over an integer range is:
 
 This iterates the loop variable of over a to b inclusive, stepping by c. 'when d' can be used to conditionally execute any particular iteration. The 'else' part executes on normal termination.
 
-The loop index does not need defining; it will be auto-declared using the equivalent of 'let', so that you can change it inside the loop. (To that, declare it outside.)
+The loop index does not need defining; it will be auto-declared using the equivalent of 'let', so that you can't change it inside the loop. (To do that, declare it outside.)
 
 But many parts are optional, and a more typical loop is:
 
