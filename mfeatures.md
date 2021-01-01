@@ -3,7 +3,7 @@
 
 M is a systems language first devised for 8-bit Z80 systems in early 1980s, since evolved and now targeting 64-bit Windows machines using x64 processor.
 
-It is also now known as 'Mosaic' (named by a Reddit user).
+It is also now known as '[Mosaic](./Mosaic)' (named by a Reddit user).
 
 The following is not a formal reference but is a random collection of topics.
 
