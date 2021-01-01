@@ -13,7 +13,7 @@ This is written in M. It builds to a single executable file that I usually call 
 
 ### Dependencies
 
-There are none to build M sources to a binary executables, other than:
+There are none required to build M sources to a binary executable, other than:
 
 * A Windows OS
 * msvcrt.dll (part of Windows OS)
@@ -32,21 +32,23 @@ Output files will always be a single file that will be one of:
 
 **.ma** -ma option (combines all source and support files into a single .ma text file, which mm can directly compile)
 
-(There is no direct .obj file output. This can be done by generating an .asm file then using 'ax -obj'. OBJ files will an external linker to process further.)
+(There is no direct .obj file output. This can be done by generating an .asm file then using 'ax -obj'. OBJ files will require an external linker to process further.)
 
 
 ### No Make or Project Files
 
 M builds a project by submitting only the lead module to the compiler. It will then locate all necessary modules (by following import links), to produce an executable named after the lead module.
 
+However, most projects do use an optional project file during development, to provide a list of modules and support files for browsing and editing.
+
 ### Linking with external libraries
 
-M by default generates executables that are dynamically linked to DLLs. To statically link to such libraries, requires:
-* Getting mm to generate .asm (direct .obj output not supported)
-* Using ax (companion assembler/linker) to produce .obj files
-* Linking via the C compiler gcc with .o or .a files
+M by default generates executables that are dynamically linked to DLLs.
 
-This requires the external library to exist in the form of gcc-compatible .o object files, or .a archive files. It further requires a .a library to contain the actual library functions, and not simply be an interface to a DLL file. 
+To statically link to such libraries, requires:
+
+* Getting mm to generate .obj files via ASM.
+* Linking via the C compiler gcc with .o or .a files which must contain the implementation of the library, not just an interface to DLL
 
 ### Compilation Speed
 I've taken my eye off the ball recently, but it will still compile at hundreds of thousands of lines per second on my slowish PC with a conventional hard drive.
@@ -59,10 +61,9 @@ Even unoptimised, the M compiler can build itself from scratch (some 40Kloc in 3
 
 ### C Target
 
-Some version have supported a C target. The current compiler doesn't do so, and would not anywaty support all features in the language.
+Some versions have supported a C target. The current compiler doesn't do so, and would not anyway support all features in the language.
 
-I might add it again, but it will be as an extra target of M's intermediate language. A C target allows M programs to run on Linux, or
-to benefit from optimising C compilers.
+I might add it again, but it will be as an extra target of M's intermediate language. A C target allows M programs to run on Linux, or to benefit from optimising C compilers.
 
 ### M Syntax 
 Originally inspired by Algol-68, but has evolved its own style. Best described by looking at [example programs](Examples).
@@ -114,7 +115,7 @@ A compiler option causes such documented functions to be written to a text file,
 I haven't yet ventured into Unicode. Source code is written in ASCII, but can also be UTF8. UTF8 sequences can be part of comments or strings.
 
 Newlines in source files must use CR/LF or LF sequences.
-      
+
 ### Case-Insensitive
 Another departure from most languages, especially those associated with C and/or Unix. M is case-insensitive, which means that all of these names are identical to it:
 
@@ -724,7 +725,7 @@ If A is a pointer to array, it must be dereferenced first:
 Where there are multi-dimensions of a flat array, then the indexing goes like this:
 
     A[i,j,k]
-    A[i][j][k]          # C style alternative
+    A[i][j][k]          # C style alternative will also work
 
 With slicing, then a slice can be created using:
 
@@ -889,8 +890,6 @@ There are no exceptions, and they do not depend on the width of the types.
 
 ### Type Conversion and Punning
 
-Type conversions are written like this:
-
 Simple type conversions are written like this:
 
     int(x)
@@ -906,7 +905,7 @@ There is also type punning, which is a re-interpretation of a type without chang
     println int64(x)       # display 1
     println int64@(x)      # display 4607632778762754458 (0x3FF199999999999A)
 
-The @ symbol makes it type punning (equivalent to \*(int64_t\*)&x in C, unlike C, can be applied to rvalues too, that is, expressiomns: int@(x+y)).
+The @ symbol makes it type punning (equivalent to \*(int64_t\*)&x in C, but unlike C, can be applied to rvalues too, that is, expressiomns: int@(x+y)).
 
 Again, for complex types, use cast@(x,int64).
 
@@ -1001,12 +1000,11 @@ This can be written as:
 ````
 The last is handy if you don't like the idea of using 'goto', as it makes it less obvious.
 
-
 Labels need to be written with two colons:
 
     lab::
 
-(":" is heavily used, but if ambiguities can be sorted, it will be possible to is use lab:")
+(":" is heavily used, but if ambiguities can be sorted, it will be possible to is use "lab:" with one colon)
 
 A mild variation is the experimental feature **recase**:
 
@@ -1028,7 +1026,7 @@ Modern languages seem to be lacking in looping constructs even though, as mere s
     to n do ... od                 # repeat n times
     
     for i:=a to b do ... od        # iterate from a to b (see below)
-    for i in A do ... od
+    for i in A do ... od           # iterate over values in A
 
     while x do ... od
     repeat ... until x
@@ -1037,10 +1035,10 @@ There are also looping versions of **switch** and **case** statements.
 
 There is no equivalent of C's open 'for' loop which encourages all sorts of weird  and wonderful constructions, usually all on the same line.
 
-Loop controls include **restart**, **redo**, **next** and **exit**, and can be used to any level of nested loop.
+Loop controls are **redo**, **next** and **exit**, and can be used to any level of nested loop.
 
 
-### For Loops
+### For Loops: Iterate over a Range
 
 The full syntax for iterating over an integer range is:
 
@@ -1060,28 +1058,43 @@ But many parts are optional, and a more typical loop is:
         ....
     end
 
-Even shorter forms include:
+The start value can be omitted when it starts from 1:
 
-    for i to b do ...            # start from 1
-    to b do ...                  # this is now the repeat-n-times loop
-    do ...                       # and this is the endless loop
-    
-Note that such a loop will always count upwards. To count downwards, use 'downto' instead of 'to' (or 'inrev' instead of 'in')
+    for i to b do ...
 
-Alternative syntax is:
+To count downwards, use **downto** instead of **to**. The **by** step value must always be positive in either case.
 
-    for i in a..b do ...
-    for i in A.bounds do ...     # equivalent to for in in A.lwb..A.upb do
+Simple iteration can also be written using:
 
-For iterating over values, use:
+    for i in a..b do
 
-    for x in A do ...            # A must be indexable: array, slice or string
+A special case of the following:
 
-The loop index is auto-declared to be a suitable type for the elements of A. To get the index, use:
+### For Loops: Iterate over Values
 
-    for i,x in A do ...          # i is the index (.lwb to .upb) x is the value
+This is:
 
-x is an rvalue, so you can't change an element of A. This needs to be done as A\[i\] := ...
+    for x in A do
+
+A should be an indexable type, such as an array, slice or string, but it must be type where the bounds are known.
+
+x takes on each value in turn (if not already declared, will be auto-declared). A slice can be specified:
+
+    for x in A[i..j] do
+
+x will be an lvalue; it's not possible to write to an element via x. That will be a future development; for now use:
+
+    for i,x in A do
+
+x is as above; i will be the current index. Now elements can be modified by writing to A\[i\].
+
+Iterating over a range is a little special:
+
+    for x in A.bounds do          # same as for x:=A.lwb to A.upb do
+    for x in a..b do              # same as for x:=a to b do
+
+Iterating in reverse would use **inrev** not **in**, but not yet ready.
+
 
 ### Loop Controls
 
@@ -1178,35 +1191,31 @@ To print to a file open as handle f, use:
 
     println @f, a,b,c
 
-The values are written with spaces in between. To suppress the space, use a double comma:
+The values are written with spaces in between. There are ways to suppress the space, for example using $ in the item list to override the space.
 
-    print a,,b,c
-
-This gets very ugly and is not satisfactory, but it will do for informal printing. For that purpose, there is also the "=" prefix:
+For quick debugging prints, "=" can be used to show labels:
 
     println =a,=b,=c
 
 which adds "A=", "B=" and "C=" before each value respectively.
 
-Otherwise, it is necessary to use formatted print, which looks like this:
+### Fprint and Fprintln
 
-    fprintln "#-#.(#)",a,b,c
+This is formatted printing, example:
 
-If a is 10, b="abc" and c is a pointer with value 0x0001234, then the output will be 10-abc.(0001234). To output an actual "#", use:
+    fprintln "A=# B=# C=#", a, b, c
 
-    fprint "###", "#",name,"#"      # when name is "abc", will display #abc#
+which is equivalent to the *print =a, =b, =c* example above.
 
 Individual formatting is done like this:
 
-    fprintln "#-#.(#)",a:"z10",b,c
+    fprintln "#",a:"z10",b,c
 
 In this example, a is shown in a field 10 chars wide, with leading zeros.
 
-There also ways to print into a string:
+### Printing into String
 
-    println @&.str, "One","Two"
-
-(Both print and read need further docs to use effectively, but these are the basics.)
+    println @str, "One","Two",3        # str set to 'One Two 3'
 
 ### Read and Readln
 
@@ -1367,7 +1376,7 @@ These are special built-in variables that can be used to determine various aspec
 * **mlib**    Small runtime library
 * **clib**    Interface to some C library functions
 * **oslib**   Selection of functions implemented by the OS
-* **osdll**   DLL function handling when names/params not known until runtime
+* **osdll**   DLL function handling when names/params not known until runtime (does the equivalent of the LIBFF library)
 
 ### **nil** Pointer Constant
 
