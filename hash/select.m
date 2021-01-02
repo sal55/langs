@@ -25,7 +25,7 @@ global proc sel(int length, ichar charset) =
     
 end
 
-callback function callbackfn(ref void unused, int n, ref[]ichar args, colnames)int =
+function callbackfn(ref void unused, int n, ref[]ichar args, colnames)int =
     ichar s
     
     ++counter
