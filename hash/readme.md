@@ -4,3 +4,11 @@ This is a port into my language of a small C program: https://github.com/Michael
 
 Files should be listed above.
 
+Build method using my 'bb' compiler:
+
+    bb hash
+    
+Dependencies needed to run:
+
+    sqlite3.dll
+    hashes  (from original github project)
