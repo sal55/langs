@@ -57,9 +57,6 @@ proc banner =
 end
 
 proc list_ =
-    int c
-    filehandle file
-
     println "\nHoundsniff supports:\n"
     println strinclude "list.txt"
 end
