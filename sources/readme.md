@@ -6,7 +6,7 @@ The files here are amalgamations created by my compiler. They can be compiled di
 
 Notes:
 
-* The .ma extension apparently means something to github, so the text is highlighted in a funny way. All sources assume 4-character tabs)
+* The .ma extension apparently means something to github, so the text is highlighted in a funny way. All sources assume 4-character tabs.
 * The uploads done on 4-Jan-2021 have had most line comments elided (to tidy up the source), so cannot be compiled nor extract (because the offsets in headers will be wrong)
 
 
