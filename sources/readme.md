@@ -7,8 +7,6 @@ The files here are amalgamations created by my compiler. They can be compiled di
 Notes:
 
 * The .ma extension apparently means something to github, so the text is highlighted in a funny way. All sources need 4-space tabs but github using 8 spaces.
-* The uploads done on 4-Jan-2021 have had most line comments elided (to tidy up the source), so cannot be compiled nor extracted (because the offsets in headers will be wrong)
-
 
 #### Guide to Projects
 
