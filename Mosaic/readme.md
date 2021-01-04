@@ -8,7 +8,7 @@ Summary of [features](../mfeatures.md)
 
 ### Download Binaries
 
-Available from www.bcas.freeuk.com/mm.exe (2020 compiler in www.bcas.freeuk.com/exe)
+Available from www.bcas.freeuk.com/mm.exe (2020 compiler in www.bcas.freeuk.com/bb.exe)
 
 This is the actual compiler, not an installer. Simplest way to download possibly to right-click on the link, and select 'Save Link As' (depends on browser), and specify a location to put it in.
 
