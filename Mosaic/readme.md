@@ -8,7 +8,7 @@ Summary of [features](../mfeatures.md)
 
 ### Download Binaries
 
-Available from www.bcas.freeuk.com/mm.exe (2020 compiler in www.bcas.freeuk.com/bb.exe)
+Available from www.bcas.freeuk.com/bb.exe
 
 This is the actual compiler, not an installer. Simplest way to download possibly to right-click on the link, and select 'Save Link As' (depends on browser), and specify a location to put it in.
 
@@ -20,13 +20,15 @@ Because it is likely to exist outside of normal application areas (C:\"Program F
 
 Since Mosaic is written in itself, you can't build from sources without first using the binary above. (At one time it was possible to create a one-file C version so that it could be built with a C compiler, but that is not currently available. Hopefully a C target can be made available again at some point.)
 
-However the sources are here: [sources](../sources), in the file mm.ma, which is a single file encapsulation of all the modules. This can be build directly using, for example:
+However the sources are here: [sources](../sources), in the file bb.ma, which is a single file encapsulation of all the modules. This can be build directly using, for example:
 
-    mm mm.ma -out:mm2.exe
+    bb bb.ma -out:bb2.exe
 
-This needs to take care not to overwrite the existing mm.exe which Windows doesn't allow anyway, hence the -out option.
+This needs to take care not to overwrite the existing bb.exe which Windows doesn't allow anyway, hence the -out option.
 
-To extract the individual files, build this program with mm: [extract](../Examples/extract.m), which will write the separate files into ./sources
+To extract the individual files, build this program with bb: [extract](../Examples/extract.m), which will write the separate files into ./sources
+
+(Note: current amalgamations have stripped comments so are for viewing only.)
 
 ### Example Programs
 
@@ -36,15 +38,15 @@ Some small programs are here: [Examples](../Examples)
 
 You will need the compiler mm.exe. Given an example program such as hello.m, build as follows:
 
-    mm hello
+    bb hello
 
 This compiles hello.m into hello.exe. For a larger program comprising multiple modules, only the lead module (the one containing the start() entry point function) is needed; if the lead module is prog.m:
 
-    mm prog
+    bb prog
 
-then this will locate and compile *all* sources into prog.exe (mm is a pretty fast compiler). For other options use:
+then this will locate and compile *all* sources into prog.exe (bb is a pretty fast compiler). For other options use:
 
-    mm -help
+    bb -help
 
 ### Other Applications
 
