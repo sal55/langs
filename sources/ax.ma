@@ -17,6 +17,8 @@ mafile 17
  16 ax_writeobj.m       6997   242817   0
  17 ax_writess.m        5167   249842   0
 === ax.m 1/17 ===
+                                         
+                                   
 
 import msys
 import clib
@@ -29,6 +31,7 @@ import ax_parse
 import ax_lib
 import ax_genss
 import ax_writeexe
+                   
 import ax_writeobj
 import ax_writess
 
@@ -74,6 +77,16 @@ proc start=
 ref strbuffer ss
 int ntokens,t,i,U,j
 
+                    
+                 
+                                            
+                                   
+                            
+                               
+    
+         
+   
+     
 
 
 T:=CLOCK()
@@ -111,7 +124,10 @@ CPL "LOADING"
 CPL "PARSING"
 	parsemodules()
 
+            
+          
 	genss()
+          
 	case axlevel
 	when obj_sw then
 		if fshowss or fshowsx then
@@ -122,19 +138,44 @@ CPL "PARSING"
 
 		writess(outputfile)
 	when exe_sw, dll_sw then
+                   
 		initsectiontable()
 		if fshowss then
 			ss:=writessdata(0)
 			gs_println(ss,logdev)
 		fi
 
+          
 		genexe(nil,outputfile, axlevel=dll_sw)
+          
 		if fshowsx then
 			ss:=writessdata(1)
 			gs_println(ss,logdev)
 		fi
+          
 
 		writeexe(outputfile, axlevel=dll_sw)
+          
+                  
+          
+                         
+          
+                  
+                      
+                         
+     
+          
+ 
+              
+          
+                  
+                      
+                         
+     
+          
+ 
+                       
+          
 	esac
 
 	if fshowmcl then
@@ -183,6 +224,7 @@ proc parsemodules=
 
 		scanglobals()			!fixup any globals and imports
 		if fshowsx then
+                              
 		fi
 if i<>nmodules then
 		resethashtable()
@@ -190,8 +232,12 @@ fi
 	od
 
 if fshowsx then
+                            
+                        
 fi
 
+                                                                       
+                           
 ref mclrec m
 
 m:=mccode
@@ -245,16 +291,26 @@ initlib()
 end
 
 proc lextest(ichar file)=
+                                    
 
 
 	loadsourcefiles()
 	initsourcefile(moduletable[1].source)
 
 	lxsymbol:=eolsym
+              
+             
 	while lxsymbol<>eofsym do
+           
+                 
+ 
 		lex()
 	od
 
+              
+                                     
+                                
+    
 end
 
 proc getinputoptions=
@@ -299,11 +355,22 @@ if fshowss or fshowsx or fshowmcl then
 fi
 
 
+                      
+                         
+                        
+                         
+                           
+                 
+   
 addsearchlib("msvcrt")
 addsearchlib("gdi32")
 addsearchlib("user32")
 addsearchlib("kernel32")
 
+ 
+                        
+                     
+   
 
 
 if nmodules=0 then
@@ -338,6 +405,7 @@ when out_sw then
 	outputfile:=pcm_copyheapstring(value)
 when main_sw then
 when start_sw then
+                         
 esac
 
 end
@@ -409,6 +477,10 @@ proc showmodules=
 end
 
 function getemptyst(ref strec d)ref strec=
+                       
+                                                                  
+                                                    
+                          
 ref strec dnew
 
 if d^.ksymbol then					!need a replacement strec
@@ -424,6 +496,7 @@ return nil
 end
 
 function findduplname(ref strec d)ref strec=
+                                          
 
 ref strec e
 if d^.basedef then
@@ -443,12 +516,22 @@ return nil
 end
 
 proc adddupl(ref strec d)=
+                                            
+                                                                      
+                                                                           
+                 
 
 d^.nextdupl:=dupltable[d^.htfirstindex]
 dupltable[d^.htfirstindex]:=d
 end
 
 proc scanglobals=
+                                    
+                                   
+                                
+                                                        
+                                                                       
+                                                                             
 
 ref strec d,e
 
@@ -493,6 +576,12 @@ od
 end
 
 proc resethashtable=
+                                    
+                                   
+                                
+                                                        
+                                                                       
+                                                                             
 
 ref strec d,e
 
@@ -540,6 +629,8 @@ global record procinforec=
 	[12]byte	paramlist
 end
 
+                        
+                                           
 record fmtrec=	! (default)
 	byte	minwidth	! n (0)   min field width (0 if not used or don't care)
 	i8		precision	! .n (0)   number of decimals/significant figures/max width
@@ -585,6 +676,7 @@ int niostack=0
 const onesixty=360
 fmtrec defaultfmt = (0,0, 10, 0,' ','f', 0,0,0,'R',0,0, 0,0,0,0)
 
+                 
 const rd_buffersize = 16384	!total capacity of line buffer
 
 ref char rd_buffer		! point to start of read buffer
@@ -594,6 +686,7 @@ ref char rd_lastpos		! set by sread() just before reading used for reread()
 int termchar			! terminator char set by readxxx()
 int itemerror			!	set by some read functions, eg for reals
 
+                                           
 
 const maxparam=128
 global int nsysparams
@@ -616,6 +709,7 @@ static [128]byte startupinfo			! 68 or 104 bytes
 int res
 ichar s
 
+               
 
 res:=__getmainargs(&nargs,cast(&args),cast(&env),0,cast(&startupinfo))
 
@@ -631,19 +725,116 @@ for i:=1 to nargs64 do
 	sysparams[i]:=args^[i]
 od
 
+               
 m$print_startcon()		!allow most print stmts without startcon/end
 
 end
 
 global proc m$stop(int n)=
 	`exit(n)
+       
+              
+               
+                  
+     
 end
 
 global function m$lenstr_stringz(ref char s)int=
 	strlen(s)
 end
 
+                                                  
+                             
+                          
+    
+ 
+                                                  
+               
+ 
+                             
+              
+                                              
+ 
+     
+              
+                                                
+   
+    
+ 
+                                                    
+             
+                                                           
+     
+                                                           
+   
+    
+ 
+                                                           
+                                                
+      
+              
+          
+               
+ 
+                                               
+ 
+                                                                           
+                                  
+                                                          
+ 
+              
+                                                                            
+                                    
+     
+              
+                                                                          
+                                      
+   
+ 
+    
 
+                           
+   
+        
+                    
+      
+    
+ 
+                                     
+    
+        
+                       
+              
+                      
+                 
+      
+    
+ 
+                                        
+    
+        
+                       
+              
+                      
+      
+    
+ 
+                                    
+    
+        
+                      
+      
+    
+ 
+                                                 
+    
+        
+                         
+              
+            
+                       
+      
+    
 
 proc pushio=
 	if niostack>=maxiostack then
@@ -856,6 +1047,8 @@ global proc m$print_strsl(slice[]char s, ichar fmtstyle=nil)=
 		printstr_n(cast(s.sliceptr),s.len)
 	else
 		abortprogram("FORMATED PRINT SLICE NOT READY")
+                             
+                    
 	fi
 	needgap:=1
 end
@@ -910,6 +1103,7 @@ end
 
 global proc printstrn_app(ichar s, int length, filehandle f=nil)=
 if length then
+                                         
 	if f=nil then
 		printf("%.*s",length,s)
 	else
@@ -988,6 +1182,37 @@ global proc nextfmtchars(int lastx=0)=
 end
 
 global proc strtofmt(ref char s,int slen,ref fmtrec fmt) =		!PC_STRTOFMT
+                                                   
+                                                                                         
+        
+                       
+                        
+                        
+         
+                                               
+                                            
+                                                                
+  
+  
+      
+                  
+                
+                 
+              
+        
+                      
+                                                                  
+                                                                  
+                                                    
+                                            
+                        
+                                                                       
+           
+                                
+                  
+                                          
+                  
+                                                             
 
 	int c
 	byte wset
@@ -1054,6 +1279,7 @@ global proc strtofmt(ref char s,int slen,ref fmtrec fmt) =		!PC_STRTOFMT
 		when 'E', 'e' then fmt^.realfmt:='e'
 		when 'F', 'f' then fmt^.realfmt:='f'
 		when 'G', 'g' then fmt^.realfmt:='g'
+                                                   
 		when '.' then
 			wset:=1
 		when comma,'_' then fmt^.sepchar:=c
@@ -1093,6 +1319,8 @@ gotwidth::
 end
 
 function domultichar (ref char p,int n,ref char dest,ref fmtrec fmt)int =
+                                  
+                                                                       
 	[0:20]char str
 	ref char q
 	int i,nchars
@@ -1113,9 +1341,17 @@ function domultichar (ref char p,int n,ref char dest,ref fmtrec fmt)int =
 end
 
 function expandstr(ref char s,ref char t,int n,ref fmtrec fmt)int =		!EXPANDSTR
+                                       
+                                                             
+                         
+                                                                               
+                                                      
+                                                                            
+                                                       
 
 	int i,w,m
 
+                                              
 	w:=fmt^.minwidth
 	if w=0 or w<=n then		! allow str to be longer than minwidth
 		strncpy(t,s,n)
@@ -1169,8 +1405,22 @@ function expandstr(ref char s,ref char t,int n,ref fmtrec fmt)int =		!EXPANDSTR
 	return w
 end
 
+                                           
+            
+       
+              
+              
+              
+               
+               
+     
+              
+    
 
 function u64tostr(u64 aa,ref char s,word base,int sep)int =		!U64TOSTR
+                                     
+                                                                        
+                                            
 	[0:onesixty]char t
 	u64 dd
 	int i,j,k,g
@@ -1188,6 +1438,9 @@ function u64tostr(u64 aa,ref char s,word base,int sep)int =		!U64TOSTR
 
 		t[++i]:=digits[dd]
 
+                                                                           
+                         
+                                      
 		++k
 		if sep and aa<>0 and k=g then
 			t[++i]:=sep
@@ -1207,6 +1460,8 @@ function u64tostr(u64 aa,ref char s,word base,int sep)int =		!U64TOSTR
 end
 
 function u128tostr(u128 aa,ref char s,word base,int sep)int =
+                                      
+                                                   
 	[0:160]char t
 	u64 dd
 	int i,j,k,g
@@ -1221,7 +1476,12 @@ function u128tostr(u128 aa,ref char s,word base,int sep)int =
 		aa:=xdivrem128(aa,base,dd)
 		t[++i]:=digits[dd]
 
+                              
+              
 
+                                                                           
+                         
+                                      
 		++k
 		if sep and aa<>0 and k=g then
 			t[++i]:=sep
@@ -1256,8 +1516,14 @@ function xdivrem128(word128 a, word64 b, &remainder)word128=
 end
 
 function i64tostrfmt(i64 aa,ref char s,ref fmtrec fmt)int =
+                                                                
+                                             
+                                                                  
+                                                                               
+                    
 	[0:onesixty]char str				! allow for binary with separators!
 	int i,j,k,n,w,usigned
+                                          
 	const i64 mindint=0x8000'0000'0000'0000
 
 	usigned:=0
@@ -1288,14 +1554,17 @@ function i64tostrfmt(i64 aa,ref char s,ref fmtrec fmt)int =
 		str[++n]:=0
 	fi
 
+                                                  
 	if (fmt^.base>10 or fmt^.suffix) and fmt^.lettercase='a'	then	! need lower when
 		convlcstring(&.str)
 	fi
 
+                                                              
 	return expandstr(&.str,s,n,fmt)
 end
 
 function u64tostrfmt(i64 aa,ref char s,ref fmtrec fmt)int =		!U64TOSTRFMT
+                
 	[0:onesixty]char str				! allow for binary with separators!
 	int i,j,k,n,w
 
@@ -1306,13 +1575,17 @@ function u64tostrfmt(i64 aa,ref char s,ref fmtrec fmt)int =		!U64TOSTRFMT
 		str[++n]:=0
 	fi
 
+                                                  
 	if fmt^.base>10 or fmt^.suffix and fmt^.lettercase='a'	then	! need lower when
+                      
 	fi
 
+                                                              
 	return expandstr(&.str,s,n,fmt)
 end
 
 function u128tostrfmt(i128 aa,ref char s,ref fmtrec fmt)int =		!U64TOSTRFMT
+                
 	[0:onesixty]char str				! allow for binary with separators!
 	int i,j,k,n,w
 
@@ -1323,14 +1596,18 @@ function u128tostrfmt(i128 aa,ref char s,ref fmtrec fmt)int =		!U64TOSTRFMT
 		str[++n]:=0
 	fi
 
+                                                  
 	if fmt^.base>10 or fmt^.suffix and fmt^.lettercase='a'	then	! need lower when
 		convlcstring(&.str)
 	fi
 
+                                                              
 	return expandstr(&.str,s,n,fmt)
 end
 
 function i64mintostr(ref char s,int base,int sep)int =		!I64MINTOSTR
+                                                        
+                                 
 	[0:onesixty]char t
 	int i,j,k,g,neg
 
@@ -1371,6 +1648,16 @@ function i64mintostr(ref char s,int base,int sep)int =		!I64MINTOSTR
 end
 
 function strtostrfmt(ref char s,ref char t,int n,ref fmtrec fmt)int =
+                                                                       
+                                                                                            
+                                                    
+                         
+                   
+                         
+                       
+                                                     
+                   
+                                                           
 	ref char u,v
 	[256]char str
 	int w,nheap		! whether any heap storage is used  bytes allocated
@@ -1500,7 +1787,9 @@ proc tostr_r64(real x,ref fmtrec fmt) =
 		sprintf(&.str,&.cfmt,x)
 	fi
 
+                                                              
 
+                                            
 	n:=strlen(&.str)		! current length
 
 	if n<fmt^.minwidth then
@@ -1515,6 +1804,7 @@ proc tostr_str(ref char s, ref fmtrec fmt) =
 	int oldlen,newlen,n
 	ref char t
 
+                                          
 	oldlen:=strlen(s)
 	newlen:=oldlen
 
@@ -1636,16 +1926,31 @@ global proc m$read_strline(ichar s)=
 end
 
 function readitem(int &itemlength)ref char =
+                              
+                                                                            
+                                                                              
+            
+                                                                        
+                                                                                   
+                                                           
+                                                                            
+                            
+                                                                       
+                                                                                     
+                                                                                    
+                                          
 	ref char p,s,itemstr
 	char quotechar, c
 
 	unless rd_buffer then 
 		initreadbuffer()
+                          
 	end unless
 
 
 	s:=rd_pos
 
+                                             
 	while s^=' ' or s^=9 do
 		++s
 	od
@@ -1668,6 +1973,7 @@ function readitem(int &itemlength)ref char =
 		++s
 	fi
 
+                                                       
 	p:=itemstr:=s
 
 	while s^ do
@@ -1711,6 +2017,7 @@ function readitem(int &itemlength)ref char =
 end
 
 global function strtoint(ichar s,int length=-1, word base=10)int64=
+                                                                                    
 	byte signd
 	word64 aa
 	word c,d
@@ -1720,6 +2027,7 @@ global function strtoint(ichar s,int length=-1, word base=10)int64=
 	if length=-1 then
 		length:=strlen(s)
 	fi
+               
 	signd:=0
 	if length and s^='-' then
 		signd:=1; ++s; --length
@@ -1916,6 +2224,7 @@ global proc m$float_u64_r64(word a)=
 	assem
 		cmp D10,0
 		jl fl1
+                                          
 		cvtsi2sd XMM0,D10
 		jmp flx
 fl1:						!negative value
@@ -1940,6 +2249,9 @@ global function m$power_i64(int64 a,n)int64=
 	fi
 end
 
+                           
+                                           
+    
 
 global proc m$mul_i128(word128 aa,bb)=
 	assem
@@ -1972,6 +2284,7 @@ global proc m$mul_i128(word128 aa,bb)=
 end
 
 global proc m$idiv_i128(word128 aa,bb)=
+                      
 charlie::
 	assem
 		push d3
@@ -2010,18 +2323,93 @@ CPL "DIV BY ZERO"
 end
 
 global proc m$dotindex(word i,a)=
+                   
+       
+             
+             
+            
+           
+      
 end
 
 global proc m$dotslice(word j,i,a)=
+                                     
+       
+             
+              
+            
+              
+                  
+                               
+            
+         
+            
+      
 end
 
 global proc m$popdotindex(word i,ref word p,word x)=
+           
+       
+             
+             
+              
+           
+                         
+                       
+                                      
+             
+           
+            
+           
+              
+      
 end
 
 global proc m$popdotslice(word j,i, ref word p, word x)=
+             
+       
+        
+                                    
+        
+                 
+ 
+             
+             
+             
+                  
+                    
+              
+                    
+                    
+                               
+                                                     
+                          
+                  
+                                             
+                                            
+              
+                             
+                               
+                              
+              
+      
 end
 
 
+                                              
+                                              
+                                              
+                                                
+                                                
+                                                
+                                             
+                                             
+                                                
+                                              
+                                                  
+                                                
+                                                                
+                                                                
 
 global proc mclunimpl(ichar mess)=
 	printf("MCL-UNIMPL: %s\n",mess)
@@ -2031,6 +2419,7 @@ end
 global type filehandle=ref void
 
 importlib $cstd=
+                                       
 	clang function malloc	(word64)ref void
 	clang function realloc	(ref void, wordm)ref void
 	clang proc     free		(ref void)
@@ -2076,6 +2465,7 @@ importlib $cstd=
 	clang function printf	(ichar, ...)int32
 
 	clang function sprintf	(ichar, ichar, ...)int32
+                                                  
 
 	clang function sscanf	(ichar, ichar, ...)int32
 	clang function scanf	(ichar, ...)int32
@@ -2098,6 +2488,7 @@ importlib $cstd=
 
 	clang proc     _exit	(int32)
 	clang proc     "exit"	(int32)
+                              
 	clang function	pow		(real,real)real
 
 	clang function	`sin	(real)real
@@ -2129,6 +2520,7 @@ import msys
 import clib
 import oslib
 
+                  
 const mem_check=0
 
 GLOBAL INT MDEBUG
@@ -2155,6 +2547,7 @@ global int64 smallmemtotal=0
 global int smallmemobjs=0
 global int maxmemtotal=0
 
+                             
 const int maxmemalloc=(mem_check|500000|2)
 [maxmemalloc+1]ref int32 memalloctable
 [maxmemalloc+1]int32 memallocsize
@@ -2230,6 +2623,7 @@ if mem_check then addtomemalloc(ref int32(p),allocbytes) fi
 	return p
 fi
 
+                                                             
 p:=pcheapptr				!Create item at start of remaining pool in heap block
 pcheapptr+:=allocbytes			!Shrink remaining pool
 
@@ -2243,6 +2637,7 @@ return p
 end
 
 global proc pcm_free(ref void p,int n) =		!PCM_FREE
+                                                                             
 int acode
 
 if n=0 then return fi
@@ -2271,6 +2666,9 @@ pcm_free(p,allocupper[alloc])
 end
 
 global proc pcm_copymem4(ref void p,q,int n) =	!PCM_COPYMEM4
+                                    
+                                                                                 
+                                                     
 
 memcpy(p,q,n)
 end
@@ -2280,6 +2678,7 @@ memset(p,0,n)
 end
 
 global proc pcm_init =		!PCM_INIT
+                          
 int j,k,k1,k2
 int64 size
 const limit=1<<33
@@ -2327,7 +2726,9 @@ pcm_setup:=1
 end
 
 global function pcm_getac(int size)int =		!PCM_GETAC
+                                                                      
 
+                                                                      
 
 if size<=maxblocksize then
 	return sizeindextable[size]		!size 0 to 2KB
@@ -2335,11 +2736,13 @@ fi
 
 size:=(size+255)>>8					!scale by 256
 
+                                                             
 
 if size<=maxblocksize then
 	return sizeindextable[size]+8
 fi
 
+                                               
 size:=(size+63)>>6					!scale by 256
 
 if size<=maxblocksize then
@@ -2347,12 +2750,16 @@ if size<=maxblocksize then
 fi
 
 
+                                               
 
 size:=(size-2048+2047)/2048+22
 return size
 end
 
 global function pcm_newblock(int itemsize)ref void=
+                                     
+                                             
+                                                    
 static int totalheapsize
 ref byte p
 
@@ -2374,6 +2781,7 @@ return ref u32(p)
 end
 
 global function pcm_round(int n)int =		!PCM_ROUND
+                                                                      
 static [0:maxblockindex+1]int32 allocbytes=(0,16,32,64,128,256,512,1024,2048)
 
 if n>maxblocksize then
@@ -2384,6 +2792,7 @@ fi
 end
 
 global function pcm_array(int n)int =		!PCM_ARRAY
+                                                                                    
 int m
 
 if n<=maxblocksize then	!automatic rounding up used for small heap
@@ -2428,6 +2837,8 @@ return p
 end
 
 global function pcm_copyheapstring(ref char s)ref char =
+                                                       
+                             
 ref char q
 int n
 if s=nil then return nil fi
@@ -2449,6 +2860,8 @@ return q
 end
 
 global function pcm_copyheapblock(ref char s, int length)ref char =
+                                                       
+                             
 	ref char q
 	if length=0 then return nil fi
 
@@ -2458,7 +2871,9 @@ global function pcm_copyheapblock(ref char s, int length)ref char =
 end
 
 proc addtomemalloc(ref int32 ptr,int size)=
+                           
 
+                                            
 
 for i to maxmemalloc do
 	if memalloctable[i]=ptr then
@@ -2479,13 +2894,16 @@ stop 3
 end
 
 proc removefrommemalloc(ref int32 ptr,int size)=
+                              
 
+                                                                
 
 for i to maxmemalloc do
 	if memalloctable[i]=ptr then
 
 if memallocsize[i]<>size then
 	CPL "REMOVE:FOUND",ptr,"IN MEMALLOCTABLE, FREESIZE=",size,", BUT STORED AS BLOCK SIZE:",memallocsize[i]
+                    
 CPL
 CPL
 	abortprogram("MEMSIZE")
@@ -2609,6 +3027,7 @@ return 0
 end
 
 global proc readlinen(filehandle handlex,ref char buffer,int size) =		!READLINEN
+       
 int ch
 ref char p
 int n
@@ -2653,6 +3072,7 @@ while (p>=buffer and (p^=13 or p^=10)) do
 	p--^ :=0
 od
 
+                                                                        
 
 if not crseen and (n+4>size) then
 	cpl size,n
@@ -2689,6 +3109,9 @@ od
 end
 
 global function changeext(ref char s,newext)ichar=		!CHANGEEXT
+                                                              
+                             
+                                                                                       
 static [260]char newfile
 [32]char newext2
 ref char sext
@@ -2724,6 +3147,8 @@ return &newfile[1]
 end
 
 global function extractext(ref char s,int period=0)ichar=		!EXTRACTEXT
+                                                                              
+                                     
 ref char t,u
 
 t:=extractfile(s)
@@ -2732,6 +3157,7 @@ if t^=0 then			!s contains no filename
 	return ""
 fi
 
+                        
 u:=t+strlen(t)-1		!u points to last char of t
 
 while u>=t do
@@ -2805,6 +3231,7 @@ return f
 end
 
 global function addext(ref char s,ref char newext)ichar=		!ADDEXT
+                                                      
 ref char sext
 
 sext:=extractext(s,1)
@@ -2817,6 +3244,8 @@ return s							!has own extension; use that
 end
 
 global function alloctable(int n, size)ref void =		!ALLOCTABLE
+                                                         
+                                                         
 ref void p
 
 p:=malloc((n+1)*size)
@@ -2828,6 +3257,8 @@ return p
 end
 
 global function zalloctable(int n, size)ref void =		!ALLOCTABLE
+                                                         
+                                                         
 ref int p
 
 p:=alloctable(n,size)
@@ -2847,6 +3278,7 @@ for i:=2 to 2 do
 		aa:=int64(p)
 		if aa>0xffff'FFFF or aa<100 then
 			CPL s,"FREE LIST ERROR",i,p,q
+                      
 		fi
 		q:=p
 		p:=ref wordp(int(p^))
@@ -2861,11 +3293,13 @@ ref byte p
 
 allocbytes:=32
 
+                                                             
 
 return pcm_alloc(32)
 end
 
 global proc pcm_free32(ref void p) =
+                                                                             
 
 smallmemtotal-:=32
 if mem_check then removefrommemalloc(p,32) fi
@@ -2904,6 +3338,7 @@ ref byte p
 
 allocbytes:=allocupper[alloccode:=sizeindextable[n]]
 
+                                                             
 p:=pcheapptr				!Create item at start of remaining pool in heap block
 pcheapptr+:=allocbytes			!Shrink remaining pool
 
@@ -2923,6 +3358,7 @@ ref byte p
 
 allocbytes:=allocupper[alloccode:=sizeindextable[n]]
 
+                                                             
 p:=pcheapptr				!Create item at start of remaining pool in heap block
 pcheapptr+:=allocbytes			!Shrink remaining pool
 
@@ -3292,6 +3728,8 @@ fi
 end
 
 global function mrandom:word =
+                                            
+                               
 	word64 x,y
 	x:=seed[1]
 	y:=seed[2]
@@ -3302,14 +3740,18 @@ global function mrandom:word =
 end
 
 global function mrandomp:int =
+                                                   
 	return mrandom() iand 0x7FFF'FFFF'FFFF'FFFF
 end
 
 global function mrandomint(int n)int=
+                                        
 	return mrandomp() rem n
 end
 
 global function mrandomrange(int a,b)int=
+                                       
+                                 
 	int span
 	span:=b-a+1
 	if span<=0 then
@@ -3319,15 +3761,19 @@ global function mrandomrange(int a,b)int=
 end
 
 global function mrandomreal:real x=
+                                                                        
 	repeat x:=mrandomp()/9223372036854775808.0 until x<>1.0
 	return x
 end
 
 global function mrandomreal1:real=
+                                                   
 	return mrandomp()/9223372036854775807
 end
 
 global function checkpackfile:ref byte=
+                                                        
+              
 
 int a,offset,i,size
 [100]char name
@@ -3338,6 +3784,7 @@ ref char packfilename
 int packfilesize
 ref byte packfileptr
 
+                                                        
 macro getfileint(data,offset)=cast(data+offset,ref int32)^
 
 strcpy(&exefile[1],os_gethostname())
@@ -3380,6 +3827,7 @@ if p:=ref word(freelist[2]) then		!Items of this block size available
 
 else
 
+                                                             
 	p:=cast(pcheapptr)				!Create item at start of remaining pool in heap block
 	pcheapptr+:=32			!Shrink remaining pool
 
@@ -3432,6 +3880,7 @@ global record rsystemtime =
 end
 
 importdll $windowsdlls=
+                                                                       
 	windows function "GetStdHandle"(wt_dword)wt_handle
 	windows function "GetConsoleScreenBufferInfo"(wt_handle,wt_ptr)int
 	windows function "SetConsoleCtrlHandler"(wt_wndproc,int)int
@@ -3445,6 +3894,7 @@ importdll $windowsdlls=
 	windows function "GetNumberOfConsoleInputEvents"(wt_handle,wt_ptr)int
 	windows function "FlushConsoleInputBuffer"(wt_handle)int
 	windows function "LoadLibraryA"(wt_ichar)wt_handle
+                                                                 
 	windows function "GetProcAddress"(wt_handle,wt_ichar)ref void
 	windows function "LoadCursorA"(wt_handle,wt_ichar)wt_handle
 	windows function "RegisterClassExA"(wt_ptr)wt_wordpm
@@ -3456,6 +3906,7 @@ importdll $windowsdlls=
 	windows proc     "ExitProcess"(wt_uint)
 	windows proc	 "PostQuitMessage"(wt_int)
 
+                                                              
 
 	windows proc	 "MessageBoxA"(wt_int x=0,wt_ichar message, caption="Caption",wt_int y=0)
 
@@ -3506,7 +3957,9 @@ end
 
 record rstartupinfo =
 	wt_dword	size
+           
 	word32 dummy1
+       
 	wt_ichar	reserved
 	wt_ichar	desktop
 	wt_ichar	title
@@ -3520,7 +3973,9 @@ record rstartupinfo =
 	wt_dword	flags
 	wt_word		showwindow
 	wt_word		reserved2
+           
 	word32 dummy2
+       
 	wt_ptr		reserved4
 	wt_handle	stdinput
 	wt_handle	stdoutput
@@ -3543,6 +3998,7 @@ record rwndclassex =
 	wt_handle	instance
 	wt_handle	icon
 	wt_handle	cursor
+                      
 	wt_handle	background
 	wt_ichar	menuname
 	wt_ichar	classname
@@ -3552,14 +4008,19 @@ end
 global record rmsg =
 	wt_handle	hwnd
 	wt_uint		message
+           
 	word32		dummy1
+       
 	wt_wparam	wParam
 	wt_lparam	lParam
 	wt_dword	time
+           
 	word32		dummy2
+       
 	wt_point	pt
 end
 
+          
 const NORMAL_PRIORITY_CLASS=32
 const CREATE_NEW_CONSOLE=16
 const DETACHED_PROCESS=16
@@ -3577,15 +4038,18 @@ global proc os_init=
 int i,count
 rconsole info
 
+                       
 hconsole:=GetStdHandle(u32(-11))
 hconsolein:=GetStdHandle(u32(-10))
 
 lastkey.repeatcount:=0
 keypending:=0
 
+             
 SetConsoleCtrlHandler(nil,1)
 
 SetConsoleMode(hconsole,1 ior 2)
+                            
 
 init_flag:=1
 
@@ -3610,6 +4074,7 @@ endswitch
 
 si.size := rstartupinfo.bytes
 
+                          
 status:=CreateProcessA(
 	nil,
 	cmdline,
@@ -3678,8 +4143,10 @@ end
 
 global function os_kbhit:int=
 wt_dword count
+                           
 
 unless init_flag then os_init() end
+                                
 
 GetNumberOfConsoleInputEvents(hconsolein,&count)
 return count>1
@@ -3706,12 +4173,20 @@ global function os_getdllinst(ichar name)u64=
 wt_handle hinst
 
 hinst:=LoadLibraryA(name)
+           
 return cast(hinst)
 end
 
 global function os_getdllprocaddr(int hinst,ichar name)ref void=
+                              
 
 return GetProcAddress(cast(int(hinst)),name)
+           
+ 
+                                         
+       
+                    
+         
 end
 
 global proc os_initwindows=
@@ -3728,11 +4203,14 @@ if registered then
 	return
 fi
 
+                
 
 memset(&r,0,r.bytes)
 r.size:=r.bytes
 r.style:=8 ior 32		!CS_DBLCLKS | CS_OWNDC
 r.wndproc:=cast(&mainwndproc)
+                         
+                         
 r.instance:=nil
 
 r.icon:=nil		!loadicon(proginstance,"SCW32")
@@ -3756,6 +4234,7 @@ int i,result
 intm l
 static int count=0
 
+                         
 
 m.hwnd:=hwnd
 m.message:=message
@@ -3764,12 +4243,14 @@ m.lParam:=lParam
 m.pt.x:=0
 m.pt.y:=0
 
+                                                           
 if (wndproc_callbackfn) then
 	result:=(wndproc_callbackfn^)(&m)
 else
 	result:=0
 fi
 
+                                                          
 if m.message=wm_destroy then
 	return 0
 fi
@@ -3781,6 +4262,7 @@ else
 fi
 end
 
+                                                            
 proc timerproc(wt_handle hwnd, int msg, id, time)=
 println "TIMERPROC"
 end
@@ -3790,6 +4272,11 @@ wndproc_callbackfn:=addr
 end
 
 global function os_getchx:int=
+                            
+                                  
+                   
+                        
+                                                                         
 const rightaltmask	= 1
 const leftaltmask	= 2
 const leftctrlmask	= 8
@@ -3801,6 +4288,7 @@ int count
 int charcode,keyshift,keycode
 int altdown,ctrldown,shiftdown,capslock
 
+                           
 unless init_flag then os_init() end
 
 if keypending then
@@ -3815,6 +4303,7 @@ else
 	fi
 fi
 
+                
 
 altdown		:= ((lastkey.controlkeystate iand (leftaltmask ior rightaltmask))|1|0)
 ctrldown	:= ((lastkey.controlkeystate iand (leftctrlmask ior rightctrlmask))|1|0)
@@ -3834,6 +4323,11 @@ if charcode<0 then
 	fi
 fi
 
+                                          
+                                                                                      
+                                                                                      
+                                                                      
+     
 
 if altdown and ctrldown and charcode=166 then
 	altdown:=ctrldown:=0
@@ -3894,6 +4388,7 @@ end
 
 global proc os_exitprocess(int x)=
 stop x
+               
 end
 
 global function os_clock:int64=
@@ -3962,6 +4457,7 @@ static int lastticks
 	fi
 end
 === ax_tables.m 7/17 ===
+                 
 
 global tabledata() []ichar symbolnames=
 	(errorsym,			$),		! Lex error
@@ -4220,7 +4716,13 @@ global const rframe = r14
 global const rstack = r15
 
 
+                                                                   
+                                                         
+                                                                         
+                   
 
+                                                                    
+                                                                
 
 global tabledata []ichar dregnames, []byte regsizes, []byte regindices =
 	("d0",		8,	r0),		!rax	d0..d9 are for general use
@@ -4532,11 +5034,27 @@ global tabledata() []ichar segmentnames =
 	(impdata_seg,	$),
 end
 === ax_decls.m 8/17 ===
+                           
 
 global const compilerversion="2018.1.22"
 
+              
 
+        
+                             
+                                             
+                                                                             
 
+                                
+                                               
+                                                          
+                                            
+                                           
+                                            
+                                               
+                                                 
+                                                  
+                                                     
 
 global record fwdrec =
 	ref fwdrec nextfwd
@@ -4566,10 +5084,15 @@ end
 global record strec =
 	ichar name			!name of symbol (named token/keyword or identifier)
 	ref fwdrec fwdrefs	!fwd ref chain
+       
+                                                                 
 		ref opndrec expr	!named constants: valuerec([label],[value])
+         
 			int32 offset		!label (pass 2): offset of label when encountered
 			int32 stindex		!label pass 2: 0, or 1-based index within coff symboltable
 			int32 importindex	!genexe: index into import table
+      
+     
 
 	byte symbol			!type of token, eg. namesym
 	byte ksymbol		!type of keyword, eg. opcodesym
@@ -4586,6 +5109,8 @@ global record strec =
 	ref strec nextdupl		!when part of in global import list
 
 	int32 moduleno
+                                         
+                                                                       
 	word32 htindex				!index into hashtable
 	word32 htfirstindex			!initial index before stepping to avoid clashes
 	[48]BYTE SPARE
@@ -4598,6 +5123,8 @@ global record relocrec =			!informal version
 	int stindex
 end
 
+                                                                              
+                                                                       
 global record dbuffer =
 	ref byte pstart
 	union
@@ -4633,6 +5160,10 @@ global [maxsearchlibs]ichar searchlibs
 global int nmodules
 global int nsearchlibs
 
+                           
+                             
+                             
+                               
 global const hstsize=1048576*8
 
 global const hstmask=hstsize-1
@@ -4671,6 +5202,7 @@ global int currmoduleno
 GLOBAL INT NMCLASM
 GLOBAL INT NMCLOPNDSASM
 === ax_lex.m 9/17 ===
+                 
 import clib
 import mlib
 import oslib
@@ -4683,6 +5215,7 @@ const etx = 26
 const cr  = 13
 const lf  = 10
 
+                                                    
 
 global int lxsymbol		!* main symbol kind
 global int lxsubcode	!* for some symbols, which specific keyword
@@ -4702,6 +5235,8 @@ global ref strec lxsymptr		!set by lookuplex()
 [0..255]char commentmap
 
 global proc lex=
+                                                                                          
+                                                                       
 int i, c, d, hsum, length
 ref byte pstart
 
@@ -4781,6 +5316,7 @@ when '!',';','#' then			!comment to eol
 	while commentmap[lxsptr++^] do od
 
 	if (lxsptr-1)^=0 then --lxsptr fi
+ 
 	++lxlineno
 
 	lxsymbol:=eolsym
@@ -4903,10 +5439,16 @@ commentmap[lf]:=0
 
 inithashtable()
 
+                      
 
 end
 
 proc readreal(ref[]char s,int slen, intlen,exponseen)=
+                                                                         
+                                                         
+                                  
+                                                             
+                                       
 int i,fractlen,expon,exponsign,c,digs
 int64 x
 
@@ -4966,6 +5508,11 @@ lxsymbol:=realconstsym
 end
 
 proc readnumber(int c)=
+                                                         
+     
+       
+       
+                 
 [256]char str
 int i,d,intlen,slen
 
@@ -4987,6 +5534,7 @@ when 'x','X' then			!other base
 	esac
 esac
 
+               
 str[1]:=c
 slen:=1
 intlen:=0
@@ -5023,6 +5571,7 @@ od
 end
 
 proc readbinary=
+                                                    
 int ndigs
 
 ndigs:=0
@@ -5051,6 +5600,7 @@ lxsymbol:=intconstsym
 end
 
 proc readhex=
+                                                 
 int ndigs,c
 
 ndigs:=0
@@ -5089,6 +5639,7 @@ global proc printsymbol(filehandle dev=nil)=
 
 strcpy(&.str,symbolnames[lxsymbol])
 str[strlen(&.str)-2]:=0
+                   
 
 print @dev,&.str
 to 14-strlen(&.str) do print @dev," " od
@@ -5118,13 +5669,20 @@ println @dev
 end
 
 proc clearhashtable=
+                                                    
+                             
+                       
+   
 end
 
 proc inithashtable=
+                                   
 [32]char str
 int i
 
 if hstsize>65536 then
+                                                                 
+                                              
 fi
 
 clearhashtable()
@@ -5200,6 +5758,7 @@ println @devx,caption,":"
 count:=0
 for i:=0 to lexhashtable.upb do
 	r:=lexhashtable[i]
+                    
 	if R AND r^.name then
 		count+:=1
 
@@ -5209,10 +5768,16 @@ println @devx,count," items in table",hstsize
 end
 
 function lookuplex(ichar name,int length=0)int=
+                                                                   
+                                                                              
+                              
+                                                                        
+                                                     
 ref strec e
 
 int j,wrapped,insource,firstj
 
+           
 
 insource:=length
 if length=0 then
@@ -5232,6 +5797,7 @@ do
 	if lxsymptr^.namelen=length and memcmp(lxsymptr^.name,name,length)=0 then			!match
 		return 1
 	fi
+           
 
 	if ++j>hstsize then		!wraparound
 		if wrapped then
@@ -5243,6 +5809,7 @@ do
 	fi
 od
 
+               
 if insource then
 	name:=makestring(name,length)
 fi
@@ -5252,6 +5819,7 @@ if lxsymptr=nil then
 	lexhashtable[j]:=lxsymptr
 fi
 
+         
 
 lxsymptr^.name:=name
 lxsymptr^.namelen:=length
@@ -5269,6 +5837,8 @@ lxlineno:=1
 end
 
 global function addnamestr(ichar name)ref strec=
+                                   
+                                                
 lxhashvalue:=gethashvalue(name)
 lookuplex(pcm_copyheapstring(name),0)
 return lxsymptr
@@ -5281,8 +5851,22 @@ fprintln "\w\w Lexical Error\n*** # *** on line #",m,lxlineno
 stop 1
 end
 
+                                      
+                  
+ 
+       
+ 
+                 
+          
+                           
+   
+                         
+    
 
 global function gethashvalue(ichar s)int=
+                                                               
+                                 
+                                                
 int c,hsum
 
 if s^=0 then return 0 fi
@@ -5298,12 +5882,16 @@ return hsum<<5-hsum
 end
 
 global proc skiptoeol=
+                                         
+                             
+                                                       
 repeat
 	lex()
 until lxsymbol=eolsym or lxsymbol=eofsym
 END
 
 function makestring(ichar p,int length)ref char=
+                                                                                 
 ref char s
 
 s:=pcm_alloc(length+1)
@@ -5339,6 +5927,7 @@ while lxsymbol=eolsym do
 
 	switch lxsymbol
 	when kopcodesym then
+             
 		readinstr()
 
 	when namesym then
@@ -5348,6 +5937,7 @@ while lxsymbol=eolsym do
 		case sym
 		when eqsym then
 			lex()
+               
 			case lxsymbol
 			when kregsym then
 				createregalias(symptr,lxsymptr.subcode, lxsymptr.regsize)
@@ -5405,6 +5995,7 @@ while lxsymbol=eolsym do
 
 	when eolsym then			!blank or comment line
 	when eofsym then
+                
 		return
 	else
 		println "Unknown symbol:",symbolnames[lxsymbol]
@@ -5438,11 +6029,13 @@ fi
 end
 
 proc readinstr=
+                        
 int opcode
 ref opndrec a,b,c
 
 	opcode:=lxsubcode
 
+                
 
 	lex()
 
@@ -5466,6 +6059,7 @@ ref opndrec a,b,c
 	when m_segment then
 		checksymbol(ksegnamesym)
 		genmc(m_segment,genint(lxsubcode))
+                                                            
 		lex()
 
 	when m_isegment then
@@ -5494,6 +6088,8 @@ ref opndrec a,b,c
 		lex()
 		c:=readoperand()
 		if c.mode<>a_imm then serror("pcmpistr/not int") fi
+                      
+                        
 		genmc(opcode,a,b)
 		mccodex.c:=c.value
 
@@ -5502,17 +6098,29 @@ ref opndrec a,b,c
 			lex()
 		until lxsymbol=eolsym
 
+                  
+                   
+                       
+                   
+       
+                    
+     
 	else
+           
 		a:=b:=nil
 		if lxsymbol<>eolsym then
 			a:=readoperand()
+                       
+          
 			if lxsymbol=commasym then
+                   
 				lex()
 				b:=readoperand()
 			fi
 		fi 
 
 		genmc(opcode,a,b)
+                  
 	end
 
 end
@@ -5535,13 +6143,17 @@ genmc(opc,a,b)
 end
 
 function readoperand:ref opndrec=
+                             
+                                                               
 ref opndrec p
 int size
 
 	switch lxsymbol
 	when kregsym then
+                                                                                            
 		p:=regtable[lxsubcode, lxsymptr^.regsize]
 		lex()
+              
 		return p
 	when lsqsym then
 		lex()
@@ -5600,6 +6212,7 @@ int typex
 end
 
 proc readterm=
+                                      
 ref strec symptr
 real x
 	exprlabeldef:=nil
@@ -5627,6 +6240,7 @@ real x
 		exprvalue:=lxsymptr^.expr^.value
 		exprtype:=lxsymptr^.expr^.valtype
 
+                     
 		lex()
 	when namesym then
 		symptr:=lxsymptr
@@ -5670,6 +6284,9 @@ real x
 end
 
 proc readreg(int &reg,&regsize,&scale)=
+                         
+                               
+                                                    
 
 reg:=lxsubcode
 regsize:=lxsymptr^.regsize
@@ -5690,6 +6307,10 @@ fi
 end
 
 function readaddrmode(int size)ref opndrec=
+                                        
+                                                                                   
+                                                              
+                                                   
 int reg,regsize,scale,regix, addrsize, regixsize, scaleix
 ref opndrec x
 ref opndrec p
@@ -5701,6 +6322,7 @@ x:=nil
 
 if lxsymbol=kregsym then
 	readreg(reg,regsize,scale)	
+      
 	case lxsymbol
 	when addsym then
 		lex()
@@ -5723,6 +6345,7 @@ else
 fi
 
 if scale and scaleix then serror("Two *N scales") fi
+                                                                
 checksymbol(rsqsym)
 lex()
 
@@ -5750,6 +6373,7 @@ import ax_lex
 const ptrsize=8
 
 fwdrec dummy1
+                
 
 global tabledata() [0:]ichar opndnames =
 	(a_none=0,	$),
@@ -5761,6 +6385,23 @@ global tabledata() [0:]ichar opndnames =
 	(a_string,	$),		!immediate string (for comments)
 end
 
+                                         
+                                                       
+       
+                                                                       
+                                      
+                  
+     
+                                                  
+                                           
+                                
+                                   
+ 
+                                           
+                                                        
+                                              
+             
+    
 
 global record mclrec =		!64 bytes
 	ref mclrec nextmcl
@@ -5770,6 +6411,19 @@ global record mclrec =		!64 bytes
 	int lineno
 end
 
+                                                                               
+                                                                        
+                             
+                 
+       
+                 
+                     
+                     
+                     
+     
+               
+           
+    
 
 global int currsegment=0		!
 
@@ -5813,11 +6467,14 @@ global proc genmc(int opcode,ref opndrec a=nil,b=nil)=	!GENMC
 ref mclrec m
 int nopnds
 
+                             
+                             
 	m:=pcm_alloc(mclrec.bytes)
 ++NMCLASM
 
 	m^.nextmcl:=nil
 
+                                                         
 	if lxsymbol=eolsym then
 		m^.lineno:=lxlineno-1
 	else
@@ -5847,6 +6504,7 @@ int nopnds
 end
 
 global proc genmcstr(int opcode,ichar s)=	!GENMCSTR
+                                                    
 
 genmc(opcode,genstrimm(s))
 end
@@ -5856,6 +6514,7 @@ ref opndrec a
 
 ++NMCLOPNDSASM
 
+                             
 a:=pcm_allocz(opndrec.bytes)
 a^.mode:=mode
 return a
@@ -5871,9 +6530,11 @@ return a
 end
 
 global function genindex(int areg=0,ireg=0,scale=1,ref opndrec x=nil,int size=0,addrsize=8)ref opndrec=		!GENINDEX
+                             
 ref opndrec a
 
 if x then							!existing operand filled in with value
+                                                   
 	a:=x
 	x^.mode:=a_mem
 else
@@ -5930,6 +6591,7 @@ when 4 then return "w"
 when 8 then return "d"
 esac
 GERROR("GETSIZETAG?")
+                   
 return nil
 end
 
@@ -5948,6 +6610,7 @@ else
 	semi:=" "
 esac
 
+                                                    
 print @&.str,semi:"z3",index:"z4",," "!, mcl^.lineno
 
 gs_str(dest,&.str)
@@ -5967,10 +6630,19 @@ when m_assem then
 when m_blank then
 	return ""
 when m_comment then
+                       
 		strcpy(&.str,";")
 		strcat(&.str,mcl^.a^.svalue)
 		return &.str
+    
+                    
+                  
+                            
 
+                      
+                            
+                  
+             
 
 when m_label then
 	strcpy(&.str,mcl^.a^.labeldef^.name)
@@ -5998,6 +6670,7 @@ esac
 
 ipadstr(&.str,12)
 
+                                
 
 if mcl^.a and mcl^.b then		!2 operands
 	sizepref:=needsizeprefix(mcl^.opcode,mcl^.a,mcl^.b)
@@ -6012,6 +6685,8 @@ elsif mcl^.a then								!1 operand
 	else
 		strcat(&.str,stropnd(mcl^.a,1))
 	fi
+     
+           
 fi
 
 case opcode
@@ -6020,6 +6695,7 @@ when m_pcmpistri,m_pcmpistrm then
 	strcat(&.str,&.str2)
 esac
 
+          
 
 return &.str
 end
@@ -6034,6 +6710,7 @@ case a^.mode
 when a_reg then
 	return getregname(a^.reg,a^.size)
 when a_imm then
+                                       
 	d:=a^.labeldef
 	value:=a^.value
 	if d then
@@ -6041,6 +6718,7 @@ when a_imm then
 			return inttostr(d^.expr^.value)
 		fi
 
+             
 		s:=GETFULLNAME(d)
 
 		if value then
@@ -6056,6 +6734,7 @@ when a_imm then
 		else
 			strcpy(&.str,s)
 			return &.str
+            
 		fi
 	fi
 	if a^.valtype=0 then
@@ -6101,8 +6780,10 @@ when a_mem then
 	strcat(&.str,"]")
 when a_string then
 	if strlen(a^.svalue)>=str.len then
+                                          
 		print @&.str,"""<Long string>"""
 	else
+                                    
 		print @&.str,"""",,a.svalue,,""""
 	fi
 
@@ -6127,6 +6808,7 @@ return getfullname(def)
 end
 
 global proc setsegment(int seg)=		!SETSEGMENT
+                                                       
 if seg=currsegment then
 	return
 fi
@@ -6137,6 +6819,7 @@ when 'C' then genmcstr(m_segment,".text")
 when 'R' then genmcstr(m_segment,".rodata")
 esac
 currsegment:=seg
+                                  
 end
 
 function getsizeprefix(int size,enable=0)ichar=		!GETSIZEPREFIX
@@ -6146,6 +6829,7 @@ when 1 then return "byte "
 when 2 then return "word "
 when 4 then return "dword "
 when 8 then return "qword "
+                                
 when 0 then return ""
 esac
 return "N:"
@@ -6167,6 +6851,8 @@ return 1
 end
 
 global function genimm_expr(ref strec d, int64 value, int t, size=4)ref opndrec=
+                           
+                                                                     
 ref opndrec a
 
 a:=newopnd(a_imm)
@@ -6180,8 +6866,11 @@ return a
 end
 
 global function genint(int64 x,int size=4)ref opndrec=
+                           
+                                                                     
 ref opndrec a
 
+                        
 
 a:=newopnd(a_imm)
 a^.size:=size
@@ -6191,6 +6880,8 @@ return a
 end
 
 global function genlab(ref strec d,int size=4)ref opndrec=
+                           
+                                                                     
 ref opndrec a
 
 a:=newopnd(a_imm)
@@ -6201,6 +6892,7 @@ return a
 end
 
 global function genmem(ref strec d,int size=4)ref opndrec=
+                                        
 ref opndrec a
 
 a:=genlab(d,size)
@@ -6226,6 +6918,10 @@ if d^.basedef then
 	ms:=d^.basedef^.name
 fi
 
+                                                
+                        
+                                                          
+     
 
 fprint @&.str,"<# : ## &:# SYM:## M:#>",
 	d^.name,"#",d^.moduleno,d:"8",
@@ -6243,6 +6939,8 @@ case reg
 when rnone then return "-"
 when rframe then rs:="frame"
 when rstack then rs:="stack"
+                   
+                                         
 
 else
 	rs:=inttostr(reg-r0)
@@ -6263,6 +6961,7 @@ end
 global function xgetregname(int reg)ichar=
 static [16]char str
 
+                              
 print @&.str,"xmm",,reg-r0
 
 return &.str
@@ -6314,6 +7013,7 @@ globalimportlist:=p
 end
 
 global proc createlabel(ref strec symptr,int symbol)=
+                             
 symptr^.symbol:=symbol
 symptr^.stindex:=0
 symptr^.moduleno:=currmoduleno
@@ -6364,12 +7064,14 @@ end
 function inttostr(int64 a)ichar=
 static [64]char str
 
+                        
 getstrint(a,&.str)
 return &.str
 end
 
 function realtostr(real a)ichar=
 static [64]char str
+                      
 strcpy(&.str,strreal(a))
 return &.str
 end
@@ -6405,6 +7107,7 @@ a^.alloc:=newalloc
 a^.pend:=p+newalloc
 end
 
+                                                   
 global proc buffercheck(ref dbuffer a,int n=1024)=
 while a^.pend-a^.pcurr<n do
 	bufferexpand(a)
@@ -6416,6 +7119,9 @@ return a^.pcurr-a^.pstart
 end
 
 global function bufferelemptr(ref dbuffer a, int offset)ref void=
+                                
+                                  
+   
 
 return a^.pstart+offset
 end
@@ -6451,7 +7157,10 @@ ref strec d,e
 	while d do
 		print @f,"   ",,padstr(d^.name,14),padstr(symbolnames[d^.symbol],12)
 
+                                                               
 
+                                                                    
+                 
 
 		fprint @f,"|| # # #",d.htfirstindex:"6",d^.htindex:"6",d:"8H"
 
@@ -6499,6 +7208,9 @@ for i:=0 to dupltable.upb when dupltable[i] do
 
 	print @f,"	",d^.htfirstindex,,":"
 	while d do
+                                                         
+                                     
+                 
 
 		fprint @&.str,"(# # (#) #) ",d.htindex:"6",d.name,
 				moduletable[d.moduleno].name,d:"8H"
@@ -6586,6 +7298,7 @@ buffercheck(currdata)
 
 rex:=sizeoverride:=addroverride:=f2override:=f3override:=0
 
+                                                          
 
 a:=m^.a
 b:=m^.b
@@ -6684,6 +7397,7 @@ when m_pop then
 	do_pop(a)
 
 when m_inc, m_dec then
+              
 	do_inc(a,mclcodes[m^.opcode])
 
 when m_neg, m_not, m_mul, m_imul, m_div, m_idiv then
@@ -6713,6 +7427,8 @@ when m_xchg then
 when m_imul2 then
 	do_imul2(a,b)
 
+                  
+                       
 
 when m_resb, m_resw, m_resd, m_resq then
 	if a^.mode=a_imm then
@@ -6733,6 +7449,7 @@ when m_resb, m_resw, m_resd, m_resq then
 when m_align then
 	if a^.mode=a_imm then
 		x:=a^.value
+                                                
 		if x<1 or x>16384 then gerror("align2") fi
 		if currseg<>zdata_seg then
 			while bufferlength(currdata) rem x do genbyte((currseg=code_seg|0x90|0)) od
@@ -6891,6 +7608,9 @@ addqword(currdata,x)
 end
 
 proc genopnd(ref opndrec a,int size=0)=
+                                                      
+               
+                                                  
 ref char s
 int64 x
 int length
@@ -6966,9 +7686,12 @@ currrelocs:=r
 end
 
 function getstindex(ref strec d)int=
+                                                  
 if d^.stindex=0 then
 	if ss_nsymbols>=ss_symboltablesize then
 		extendsymboltable()
+                  
+                                    
 	fi
 	d^.stindex:=++ss_nsymbols
 	ss_symboltable^[d^.stindex]:=d
@@ -6977,6 +7700,7 @@ return d^.stindex
 end
 
 proc genrel32(ref opndrec a)=
+                              
 ref strec d
 
 d:=a^.labeldef
@@ -7002,10 +7726,12 @@ esac
 end
 
 proc genabs32(ref opndrec a)=
+                        
 ref strec d
 
 d:=a^.labeldef
 
+                                              
 
 case d^.reftype
 when back_ref then
@@ -7024,10 +7750,13 @@ esac
 end
 
 proc genabs64(ref opndrec a)=
+                        
 ref strec d
 
 d:=a^.labeldef
 
+                                  
+                                 
 
 case d^.reftype
 when back_ref then
@@ -7046,6 +7775,7 @@ esac
 end
 
 function getrel32(ref strec d,int offset)int=
+                                                               
 
 if d^.reftype=back_ref then					!defined earlier in this segment
 	if d^.segment<>currseg then
@@ -7058,6 +7788,10 @@ fi
 end
 
 proc dofwdrefs(ref strec d)=
+                             
+                    
+                                                                                
+                                                 
 ref fwdrec f
 int offset, seg
 ref byte p8
@@ -7194,6 +7928,7 @@ int code, am
 end
 
 proc do_inc(ref opndrec a,int code)=
+        
 int opc, am
 
 	opc:=(a^.size=1|0xFE|0xFF)
@@ -7213,6 +7948,7 @@ int opc, am
 end
 
 proc do_neg(ref opndrec a,int code)=
+                          
 int opc, am
 
 	opc:=(a^.size=1|0xF6|0xF7)
@@ -7283,6 +8019,9 @@ fi
 end
 
 function getdispsize(ref opndrec a,int mand=1)int=
+                                                  
+                                                                      
+                                 
 
 if a^.labeldef then return 4 fi
 if a^.value or mand then
@@ -7293,6 +8032,15 @@ fi
 end
 
 function genrm(ref opndrec a,int opc)int=
+                                                                  
+                                                             
+                                
+                            
+                                                   
+                                 
+                                                 
+                                                  
+                                              
 	static []int scaletable=( 0, 1, 0, 2, 0, 0, 0, 3)
 	int mode, rm, scale, dispsize, needsib, sib, index, base
 	int reg, regix, code
@@ -7310,6 +8058,8 @@ function genrm(ref opndrec a,int opc)int=
 	case a^.mode
 	when a_reg then			!modrm can only ref to a single register
 		code:=getregcodeb(a^.reg)
+                                                          
+                                               
 		return makeam(makemodrm(3,opc,code), sib, dispsize)
 
 	when a_mem then
@@ -7363,6 +8113,7 @@ function genrm(ref opndrec a,int opc)int=
 		if regix=rstack then gerror("Scaled rstack?") fi
 
 	else									!assume regix used; optional reg and disp
+                                                       
 		dispsize:=getdispsize(a,0)
 		if dispsize then
 			mode:=(dispsize=1|1|2)
@@ -7373,7 +8124,10 @@ function genrm(ref opndrec a,int opc)int=
 		if reg=0 then
 			base:=5
 		else
+                         
+                                     
 			if reg in [rframe,r7] and dispsize=0 then
+                        
 				mode:=1; dispsize:=1
 			fi
 			base:=regcodes[reg]
@@ -7409,10 +8163,16 @@ proc genrmbyte(int mode,opc,rm)=
 end
 
 function makeam(int m,s,d)int=
+                                                
+                                     
+                    
+                                                      
 return s<<16+m<<8+d
 end
 
 proc do_arith(ref opndrec a,b,int code)=
+                                                                                   
+                  
 int am, regcode, opc, dispsize
 int64 x
 
@@ -7424,6 +8184,7 @@ when a_reg then
 		am:=genrm(b,regcode)
 		checkhighreg(a)
 		checkhighreg(b)
+           
 		setopsize(a)
 		opc:=code<<3 ior (a^.size=1|0x02|0x03)
 		genrex()
@@ -7433,6 +8194,7 @@ when a_reg then
 	when a_imm then
 doregimm::
 		if b^.labeldef then
+                                                               
 			if code<0 or code>7 then gerror("non-add arith/label") fi
 			if a^.size<4 then gerror("add imm/size") fi
 			am:=genrm(a,code)
@@ -7525,6 +8287,7 @@ when a_reg then
 		when 1 then
 			checkhighreg(a)
 			case a^.reg
+                           
 			when r5,r3,r14,r15 then
 				rex ior:=0x40
 			esac
@@ -7534,6 +8297,7 @@ when a_reg then
 			genbyte(value)
 
 		when 2 then
+                                                                          
 			unless -32768<=value<=65535 then gerror("exceeding word16 value") end
 			genbyte(0x66)
 			genrex()
@@ -7545,6 +8309,7 @@ when a_reg then
 				genbyte(0xB8+regcode)
 				genopnd(b,4)
 			else
+                                                  
 				unless -0x8000'0000<=value<=u32(0xFFFF'FFFF) then
 CPL value,ref void(value)
 					gerror("1:exceeding word32 value")
@@ -7565,6 +8330,8 @@ doreg32::
 				if value>=0 and value<=0xFFFF'FFFF then
 					goto doreg32			!load 32-bit value which is zero-extended to 64
 				fi
+                                                                                      
+                        
 				rex ior:=wmask
 				genrex()
 				genbyte(0xB8+regcode)
@@ -7617,12 +8384,14 @@ when a_mem then
 		when 4,8 then
 			if not b^.labeldef then
 				unless -0x8000'0000<=value<=0xFFFF'FFFF then gerror("2:exceeding word32 value") end
+                                                                                        
 			fi
 			setopsize(a)
 			genrex()
 			genbyte(0xC7)
 			genamode(a,am)
 			genopnd(b,4)
+                   
 		esac
 
 	else
@@ -7656,6 +8425,7 @@ return regcode
 end
 
 function getregcodebx(int reg)int=
+                                                           
 
 int regcode
 
@@ -7668,6 +8438,7 @@ return regcode
 end
 
 function getregcoderx(int reg)int=
+                                                           
 int regcode
 
 regcode:=reg-1
@@ -7698,6 +8469,7 @@ genamode(b,am)
 end
 
 proc do_movsx(ref opndrec a,b,int opc)=
+                                   
 	int am, regcode
 
 	if a^.mode<>a_reg then gerror("movsx not reg") fi
@@ -7739,6 +8511,7 @@ end
 proc checkhighreg(ref opndrec a)=
 if a^.mode=a_reg then
 	case a^.reg
+                         
 	when r5,r3,r14,r15 then
 		rex ior:=0x40
 	esac
@@ -7789,6 +8562,7 @@ if b^.mode=a_mem and b^.size=0 then b^.size:=4 fi
 
 if a^.size<>8 or b^.size>4 then gerror("movsxd size") fi
 
+                                                       
 if a^.mode<>a_reg or (b^.mode<>a_reg and b^.mode<>a_mem) then
 	gerror("movsxd opnds")
 fi
@@ -7964,6 +8738,7 @@ doregmem::
 	am:=genrm(b,regcode)
 	checkhighreg(a)
 	checkhighreg(b)
+          
 	setopsize(a)
 	genrex()
 	genbyte((a^.size=1|0x84|0x85))
@@ -8010,12 +8785,17 @@ fi
 end
 
 proc do_setcc(ref opndrec a,b)=
+          
+                  
 int am
 
 if (b^.mode<>a_reg and b^.reg<>a_mem) or b^.size>1 then gerror("setcc opnd/size") fi
 
 am:=genrm(b,0)
 checkhighreg(b)
+                              
+         
+             
 genrex()
 genbyte(0x0F)
 genbyte(0x90+a^.value)
@@ -8023,6 +8803,7 @@ genamode(b,am)
 end
 
 proc do_movxmm(ref opndrec a,b,int size)=
+                                            
 int am, regcode, regcode1, regcode2
 
 case a^.mode
@@ -8115,6 +8896,7 @@ end
 proc do_arithxmm(ref opndrec a,b,int prefix,opc)=
 int am, regcode
 
+                                                          
 if a^.mode<>a_xreg or (b^.mode<>a_xreg and b^.mode<>a_mem) then
 	gerror("arithxmm opnds")
 fi
@@ -8168,6 +8950,7 @@ fi
 end
 
 proc do_convertfloat(ref opndrec a,b,int prefix)=
+                      
 int am, regcode
 
 if a^.mode<>a_xreg or (b^.mode<>a_xreg and b^.mode<>a_mem) then
@@ -8219,6 +9002,7 @@ genamode(b,am)
 end
 
 proc do_float(ref opndrec a,b,int prefix)=
+                      
 int am, regcode
 
 if a^.mode<>a_xreg or (b^.mode<>a_reg and b^.mode<>a_mem) then
@@ -8275,6 +9059,7 @@ int am, regcode, offset, shortjmp
 		else
 			shortjmp:=0
 			if offset>0 then				!fwd jump
+                                                                               
 				shortjmp:=checkshortjump(m,a^.labeldef)
 			fi
 
@@ -8303,6 +9088,7 @@ int am, regcode, offset, shortjmp
 end
 
 function getcurrdatalen(int id)int=
+                                                
 
 if currseg=zdata_seg then
 	return ss_zdatalen
@@ -8327,6 +9113,9 @@ int am, regcode
 end
 
 proc do_fmem(ref opndrec a, int freal, code)=
+                                
+                                    
+                                                                
 int am, regcode, mf
 
 if a^.mode<>a_mem then
@@ -8370,14 +9159,17 @@ am:=genrm(a,code)
 genrex()
 genbyte(0xD9+mf<<1)
 genamode(a,am)
+                
 end
 
 function getr32bits(real x)int=
+                                                                 
 real32 sx:=x
 return int32@(sx)
 end
 
 proc genrel8(ref opndrec a)=
+                                                           
 ref strec d
 
 d:=a^.labeldef
@@ -8391,8 +9183,13 @@ fi
 end
 
 function checkshortjump(ref mclrec m,ref strec d)int=
+                                                              
+                                  
+                                                                         
+         
 int n
 
+         
 
 n:=0
 m:=m^.nextmcl
@@ -8504,6 +9301,7 @@ fi
 
 genbyte(0xF3)
 
+                              
 regcode:=getregcodebx(a^.reg)
 am:=genrm(b,regcode)
 setopsize(a)
@@ -8521,6 +9319,7 @@ if b^.mode=a_mem then
 fi
 if a.size<>b.size then gerror("bsf size") fi
 
+                              
 regcode:=getregcodebx(a^.reg)
 am:=genrm(b,regcode)
 setopsize(a)
@@ -8608,6 +9407,7 @@ global record optionalheader =			!exe/dll only
 	word32 zdatasize
 	word32 entrypoint
 	word32 codebase
+                                         
 	word64	imagebase
 	word32 sectionalignment
 	word32 filealignment
@@ -8771,6 +9571,11 @@ global record exportdirrec =
 end
 
 === ax_writeexe.m 14/17 ===
+                                                                    
+             
+                    
+          
+                    
 
 import clib
 import mlib
@@ -8810,7 +9615,9 @@ int basetablesize
 const filealign = 512
 const sectionalign = 4096
 const exe_imagebase = 0x40'0000
+                                  
 const dll_imagebase = 0x6624'0000
+                     
 global word imagebase
 
 int imagesize
@@ -8878,6 +9685,7 @@ global proc writeexe(ichar outfile, int dodll)=
 		writesectiondata(&sectiontable[i])
 	od
 
+                                                            
 
 	if fverbose then
 		CPL "Writing file:",outfile
@@ -8890,6 +9698,7 @@ global proc writeexe(ichar outfile, int dodll)=
 end
 
 global proc genexe(ichar entrypoint, outfile, int dodll)=
+                                                                        
 
 	dllfilename:=outfile
 	isdll:=dodll
@@ -8906,6 +9715,7 @@ global proc genexe(ichar entrypoint, outfile, int dodll)=
 end
 
 proc loadlibs=
+                       
 	int i
 	int64 hinst
 	ichar file
@@ -8926,6 +9736,7 @@ proc loadlibs=
 end
 
 global proc initsectiontable=
+                         
 
 	sectiontable[csect].name:=".text"
 	sectiontable[csect].segtype:=code_seg
@@ -8953,6 +9764,7 @@ global proc initsectiontable=
 	sectiontable[zsect].segtype:=zdata_seg
 	sectiontable[zsect].virtsize:=ss_zdatalen
 
+                                                                    
 	sectiontable[csect].rawsize:=roundtoblock(sectiontable[csect].virtsize,filealign)
 	sectiontable[csect].nrelocs:=ss_ncoderelocs
 	sectiontable[csect].relocs:=ss_coderelocs
@@ -8966,12 +9778,16 @@ global proc initsectiontable=
 end
 
 function roundtoblock(int n,align)int=
+                                                                         
+                                                          
 	if n iand (align-1)=0 then return n fi
 
 	return n+(align-(n iand (align-1)))
 end
 
 function extractlibname(ichar name, int &libno,moduleno)ichar=
+                                                                                       
+                               
 	ref char s,name2
 	[256]char str
 	[256]char str2
@@ -9002,11 +9818,13 @@ function extractlibname(ichar name, int &libno,moduleno)ichar=
 			dlltable[libno].name:=pcm_copyheapstring(&.str)
 			dlltable[libno].nprocs:=1
 			return (name2|name2|s+1)
+             
 		fi
 
 		++s
 	od
 
+                   
 	int n
 
 	for i:=1 to nsearchlibs do
@@ -9019,11 +9837,13 @@ function extractlibname(ichar name, int &libno,moduleno)ichar=
 		gerror("Can't find external function")
 	od
 
+                      
 	if libno:=libnotable[n] then			!already added this library
 		++dlltable[libno].nprocs
 		return name
 	fi
 
+                      
 	strcpy(&.str,searchlibs[n])
 	strcat(&.str,".dll")
 	if ndlls>=maxlibs then gerror("2:Too many libs") fi
@@ -9037,6 +9857,10 @@ function extractlibname(ichar name, int &libno,moduleno)ichar=
 end
 
 proc scanst=
+                                                 
+                                                                   
+                                                                        
+                                    
 
 	int i,libno
 	ref strec d
@@ -9176,6 +10000,7 @@ proc writerecordx(ref void r, int length)=
 end
 
 proc writedosstub=
+                                   
 	static []byte stubdata = (
 		0x4D, 0x5A, 0x90, 0x00, 0x03, 0x00, 0x00, 0x00, 
 		0x04, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0x00, 0x00, 
@@ -9205,6 +10030,7 @@ proc writepesig=
 end
 
 proc writepadding(int offset)=
+                                              
 	dataptr:=datastart+offset			!data will have been cleared
 end
 
@@ -9316,6 +10142,7 @@ proc writesectionheader(ref sectionrec s)=
 	when code_seg then
 		sheader.characteristics:=0x6050'0020
 	when impdata_seg then
+                                       
 		sheader.characteristics:=0x4030'0040
 	esac
 	writerecordx(&sheader,sheader.bytes)
@@ -9331,12 +10158,14 @@ proc writesectiondata(ref sectionrec s)=
 		fi
 
 	when zdata_seg then					!nothing goes to disk
+                       
 	else
 		writerecordx(bufferelemptr(s^.data,0),s^.rawsize)
 	esac
 end
 
 proc getoffsets=
+                                         
 	int fileoffset, imageoffset,i,diroffset,impdirno,hinttableoffset,j,n
 	int codesize,length,thunkoffset,offset,dirstartoffset
 
@@ -9346,6 +10175,7 @@ proc getoffsets=
 	fileoffset:=roundtoblock(fileoffset,filealign)
 	imageoffset:=4096
 
+                                                                     
 	ref byte pcode
 	codesize:=sectiontable[csect].virtsize
 	pcode:=bufferelemptr(ss_code,codesize)
@@ -9356,6 +10186,7 @@ proc getoffsets=
 	sectiontable[csect].virtsize:=codesize
 	sectiontable[csect].rawsize:=roundtoblock(codesize,filealign)
 
+                                           
 	buffercheck(ss_code, codesize-thunkoffset+16)		!just ensure it's there for now
 
 	for i:=1 to nsections do
@@ -9380,9 +10211,14 @@ proc getoffsets=
 		getbaserelocs(&sectiontable[dsect])
 	fi
 
+                                         
+                                    
+                                                                   
 
 	diroffset+:=(ndlls+1)*importdirrec.bytes			!need blank entry as terminator
 
+                                          
+                                                                                    
 
 	for i to ndlls do
 		dlltable[i].nametableoffset:=diroffset				!data will be filled in later
@@ -9395,6 +10231,9 @@ proc getoffsets=
 	od
 	fileiatsize:=diroffset-fileiatoffset
 
+                                                                     
+                                                                             
+                                                                                   
 	hinttableoffset:=diroffset
 	for i to nimports do
 		length:=strlen(importtable[i].name)+3
@@ -9403,7 +10242,9 @@ proc getoffsets=
 		diroffset+:=length
 	od
 
+                                          
 
+                                             
 	diroffset:=roundtoblock(diroffset,4)
 
 	for i to ndlls do
@@ -9433,7 +10274,11 @@ proc getoffsets=
 	fi
 
 	offset:=diroffset-dirstartoffset
+                
+                                                             
+                                                    
 
+                                                                     
 	sectiontable[impdirno].virtsize:=offset
 	sectiontable[impdirno].rawsize:=roundtoblock(offset,filealign)
 	filesize:=roundtoblock(fileoffset+offset,filealign)
@@ -9444,11 +10289,13 @@ proc getoffsets=
 
 	pimpdir:=sectiontable[impdirno].bytedata:=pcm_allocz(offset)
 
+                                           
 	ref importdirrec pdir
 	ref int64 paddr,pname
 	int iatoffset
 	pdir:=cast(pimpdir)
 
+                                                          
 	for i:=1 to ndlls do
 		pdir^.implookuprva:=dlltable[i].nametableoffset
 		pdir^.impaddressrva:=dlltable[i].addrtableoffset
@@ -9467,6 +10314,7 @@ proc getoffsets=
 		od
 	od
 
+                            
 	ref byte phint
 	ref word32 pextra
 
@@ -9475,6 +10323,7 @@ proc getoffsets=
 		phint+:=2					!leave hint as 0
 		strcpy(cast(phint),importtable[i].name)
 	od
+                                                           
 	int xxx
 	xxx:=dirstartoffset
 	for i to ndlls do
@@ -9488,12 +10337,14 @@ proc getoffsets=
 		strcpy(cast(phint),dlltable[i].name)
 	od
 
+                 
 
 	if isdll then
 		writeexporttable(ref byte(pimpdir)+exportdiroffset)
 		writebasereloctable(ref byte(pimpdir)+blockdiroffset)
 	fi
 
+                      
 	ref byte thunkptr,codebase
 	int thunkaddr
 	thunkptr:=bufferelemptr(ss_code,thunkoffset)
@@ -9522,6 +10373,7 @@ function getsectionno(int segment)int=
 end
 
 proc writeexporttable(ref byte pstart)=
+                       
 	[maxexports]int sortindex
 	ref exportdirrec phdr := cast(pstart)
 	ref word32 paddrtable
@@ -9538,26 +10390,32 @@ proc writeexporttable(ref byte pstart)=
 	int sectionno
 	ref strec d
 
+                           
+       
 	phdr.timedatestamp:=0x5f89f4f8
 
 	phdr.ordinalbase:=1
 	phdr.naddrtable:=nexports
 	phdr.nnamepointers:=nexports
 
+                                                                                      
 	addrtableoffset:=exportdirrec.bytes
 	nametableoffset:=addrtableoffset+nexports*4
 	ordtableoffset:=nametableoffset+nexports*4
 	dllnameoffset:=ordtableoffset+nexports*2
 	namesoffset:=dllnameoffset+strlen(dllfilename)+1
 
+                                                                                       
 	virtoffset:=sectiontable[isect].virtoffset+exportdiroffset
 
+                                                  
 	paddrtable:=cast(pstart+addrtableoffset)
 	pnametable:=cast(pstart+nametableoffset)
 	pordtable:=cast(pstart+ordtableoffset)
 	pdllname:=cast(pstart+dllnameoffset)
 	pnames:=cast(pstart+namesoffset)
 
+                           
 	phdr.namerva:=dllnameoffset+virtoffset
 	phdr.expaddressrva:=addrtableoffset+virtoffset
 	phdr.namepointerrva:=nametableoffset+virtoffset
@@ -9565,6 +10423,7 @@ proc writeexporttable(ref byte pstart)=
 
 	strcpy(pdllname,dllfilename)
 
+              
 	if nexports>maxexports then
 		gerror("Too many exports - can't sort")
 	fi
@@ -9572,6 +10431,7 @@ proc writeexporttable(ref byte pstart)=
 	sortexports(sortindex)
 
 	for i to nexports do
+                        
 		d:=exporttable[sortindex[i]].def
 		sectionno:=getsectionno(d.segment)
 
@@ -9588,9 +10448,14 @@ proc writeexporttable(ref byte pstart)=
 	od
 
 
+                     
+                     
+ 
+                      
 end
 
 function getexporttablesize:int=
+                               
 	int size
 
 	size:=exportdirrec.bytes
@@ -9622,6 +10487,8 @@ proc newbasereloc(int addr, reltype)=
 end
 
 proc scanbaserelocs=
+                                                                                
+                                
 	int baseaddr,addr,nextblock
 	ref basereloc p
 
@@ -9640,6 +10507,7 @@ proc scanbaserelocs=
 		while p do
 			addr:=p.address
 			if addr>=baseaddr and addr<nextblock then
+                                                                    
 				++blockcounts[nbaseblocks]
 			fi
 
@@ -9650,6 +10518,7 @@ proc scanbaserelocs=
 	until baseaddr>maxrelocaddr
 
 	for i to nbaseblocks when blockcounts[i] do
+                             
 		if blockcounts[i] iand 1 then
 			++blockcounts[i]
 			++blockpadding[i]
@@ -9685,6 +10554,7 @@ proc writebasereloctable(ref byte pstart)=
 				p16^:=addr-baseaddr+(q.reloctype=addr32_rel|3|10)<<12
 				++p16
 			fi
+ 
 			q:=q.nextitem
 		od
 		if blockpadding[i] then p16++^:=0 fi
@@ -9695,11 +10565,15 @@ proc writebasereloctable(ref byte pstart)=
 end
 
 proc sortexports([]int &sortindex)=
+                                                                                
+          
 	ref strec d,e
+                                        
 	for i to nexports do
 		sortindex[i]:=i
 	od
 
+                       
 	int swapped
 
 	repeat
@@ -9722,6 +10596,7 @@ import clib
 import msys
 import oslib
 
+                  
 const showmregs=0
 
 const halt=0xF4
@@ -9780,6 +10655,9 @@ ichar destptr
 ref byte codeptr
 
 global function decodeinstr(ref byte &cptr,baseaddr=nil)ichar=
+                                   
+                                                                       
+                                             
 	int n,w
 	int opc,reg,op,xxx,oldopsize,dispsize
 	ref byte pstart
@@ -9840,6 +10718,7 @@ global function decodeinstr(ref byte &cptr,baseaddr=nil)ichar=
 
 	when 0x40 .. 0x4F then
 		rex:=opc
+                                      
 
 		goto retry
 
@@ -10105,6 +10984,7 @@ global function decodeinstr(ref byte &cptr,baseaddr=nil)ichar=
 		fi
 
 	when 0xF4 then
+                               
 		return nil
 
 	when 0xF6,0xF7 then
@@ -10152,6 +11032,8 @@ global function decodeinstr(ref byte &cptr,baseaddr=nil)ichar=
     genhex(opc)
 	endswitch
 
+                                                        
+                                  
 
 	if baseaddr then
 		print @&.str,baseaddr:"z6h",,": "
@@ -10176,6 +11058,7 @@ global function decodeinstr(ref byte &cptr,baseaddr=nil)ichar=
 end
 
 proc decodetwobyteinstr=
+                    
 	int opc,rhssize,third,imm
 	ichar opcstr
 
@@ -10439,6 +11322,7 @@ proc decodetwobyteinstr=
 
 	when 0xB6, 0xB7, 0xBE, 0xBF then
 		decodeaddr(1)
+           
 		genstr((opc<0xBE|"movzx "|"movsx "))
 		genstr(strreg(rmreg,opsize))
 		genstr(", ")
@@ -10492,6 +11376,15 @@ proc decodetwobyteinstr=
 end
 
 proc decodeaddr(int w=0)=
+                                                                      
+                           
+                        
+                          
+          
+                                     
+                                         
+                   
+                                                               
 	int modrm,xxx,mode,sib,rm
 
 	basereg:=indexreg:=0
@@ -10666,6 +11559,7 @@ static []ichar mregnames64=("D0","D10","D11","D4","Dstack","Dframe","D5","D3",
 end
 
 function strfreg(int freg)ichar=
+                
 	static []ichar fregnames=("st0","st1","st2","st3","st4","st5","st6","st7")
 	return fregnames[freg]
 end
@@ -10718,6 +11612,7 @@ proc printaddrmode(int xmm=0)=
 	fi
 
 	if offset or (basereg=0 and indexreg=0) then
+                                              
 		if basereg=0 and indexreg=0 then
 			genhex(offset)
 		else
@@ -10742,6 +11637,7 @@ proc genhex(int64 a)=
 end
 
 function readimm:int=
+                                       
 
 	case opsize
 	when 1 then return readsbyte()
@@ -10752,6 +11648,7 @@ function readimm:int=
 end
 
 function readimm8:int64=
+                                 
 	if opsize<8 then return readimm() fi
 	return readint64()
 end
@@ -10778,6 +11675,7 @@ proc decode8087(int ttt)=
 	longopc:=ttt<<8+bb		!bottom 11 bits of 2-bytes opcode
 	freg:=(bb iand 7)+1		!where bb specifies a register in bottom 3 bits
 
+                                                                     
 
 	case longopc
 	when 2x'110'1101'1001 then genstr("fcompp")
@@ -10906,6 +11804,7 @@ proc do87arith(ichar opcstr, int ttt,freg)=
 end
 
 proc do87mem(ichar opcstr,int mf=-1)=
+                                                                        
 	genstr("f")
 
 	case mf
@@ -10923,17 +11822,21 @@ proc do87mem(ichar opcstr,int mf=-1)=
 end
 
 proc getsil(int &reg)=
+                                                                               
 	if opsize=1 and not rex and reg>=5 and reg<=8 then
 		reg+:=12				!5..8 => 17..20
 	fi
 end
 
 proc getsilx(int &reg)=
+                                                               
 	if addrmode=amreg and opsize=1 and rex=0 and reg>=5 and reg<=8 then
 		reg+:=12				!5..8 => 17..20
 	fi
 end
 === ax_writeobj.m 16/17 ===
+                                                                   
+                           
 
 import clib
 import mlib
@@ -11017,6 +11920,7 @@ proc writesymboltable=
 end
 
 proc writestringtable=
+                                      
 	ref int32 p
 	int i,n
 
@@ -11061,6 +11965,7 @@ proc addsymbol(ref imagesymbol r)=
 end
 
 proc initsymboltable(ichar filename)=
+                                                  
 	nsymbols:=0
 
 	addsymbol(makesymbol(".file",storage:103, sectionno:-2,naux:1))
@@ -11077,6 +11982,7 @@ proc initsymboltable(ichar filename)=
 end
 
 function strtoaux(ref char s)ref imagesymbol=
+                                              
 	static imagesymbol r
 	ref byte p:=cast(&r)
 	int n
@@ -11093,6 +11999,7 @@ function strtoaux(ref char s)ref imagesymbol=
 end
 
 function sectiontoaux(ref dbuffer data, int nrelocs)ref auxsectionrec=
+                                                                
 	static auxsectionrec r
 
 	memset(&r,0,r.bytes)
@@ -11108,6 +12015,9 @@ function sectiontoaux(ref dbuffer data, int nrelocs)ref auxsectionrec=
 end
 
 function addstringentry(ichar s, int length)int=
+                                
+                                                                                         
+                                                  
 	int offset
 
 	offset:=nextstringoffset
@@ -11123,6 +12033,7 @@ function addstringentry(ichar s, int length)int=
 end
 
 proc convertsymboltable=
+                                                              
 	ref strec s
 	ichar name
 	int i,sect, scope
@@ -11217,6 +12128,7 @@ proc writecoff(ichar outfile)=
 	csection.rawdata_offset:=offset
 	offset+:=csection.rawdata_size
 
+                                     
 
 	header.symtaboffset:=offset
 	offset+:=nsymbols*imagesymbol.bytes
@@ -11224,6 +12136,7 @@ proc writecoff(ichar outfile)=
 
 	offset+:=nextstringoffset
 
+                                             
 	datastart:=dataptr:=malloc(offset)
 
 	writerecord(&header,header.bytes)
