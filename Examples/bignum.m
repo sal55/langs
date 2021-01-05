@@ -11,11 +11,11 @@ const mdigitfmt  = "z9"
 
 const digitmax   = digitbase-1
 
-global type bignum  = ref bignumrec
+export type bignum  = ref bignumrec
 type elemtype = int32
 const elemsize = elemtype.bytes
 
-record bignumrec =
+export record bignumrec =
     ref[0:]elemtype num
     int length
     int expon
@@ -93,7 +93,7 @@ function readexpon(ichar s)int=
     return (neg|-expon|expon)
 end
 
-global proc bn_print(bignum a,int format=0)=
+export proc bn_print(bignum a,int format=0)=
     ichar s
 
     s:=bn_tostring(a,format)
@@ -101,7 +101,7 @@ global proc bn_print(bignum a,int format=0)=
 !   free(s)
 end
 
-global proc bn_println(bignum a, int format=0)=
+export proc bn_println(bignum a, int format=0)=
     bn_print(a,format)
     println
 end
@@ -224,7 +224,7 @@ proc freesmall(ref elemtype p, int length)=
     freemem(p,length*elemsize)
 end
 
-global function bn_alloc(int size)ref void=
+export function bn_alloc(int size)ref void=
     ref void p
 
     p:=pcm_alloc(size)
@@ -235,7 +235,7 @@ global function bn_alloc(int size)ref void=
     return p
 end
 
-global function checkedmalloc(int size)ref void=
+export function checkedmalloc(int size)ref void=
     ref void p
 
     p:=malloc(size)
@@ -246,7 +246,7 @@ global function checkedmalloc(int size)ref void=
     return p
 end
 
-global proc bn_free(bignum a)=
+export proc bn_free(bignum a)=
 !free digit memory and descriptor
     if a then
         bn_setzero(a)
@@ -255,12 +255,11 @@ global proc bn_free(bignum a)=
 end
 
 proc freemem(ref void p, int size)=
-!(my own deallocator needs the size; C's free() doesn't)
-!   free(p)
+#(my own deallocator needs the size; C's free() doesn't)
     pcm_free(p,size)
 end
 
-global proc bn_setzero(bignum a)=
+export proc bn_setzero(bignum a)=
 !clear digit memory only; clear descriptor to a zero number
     if a then
         if a^.num then
@@ -274,16 +273,16 @@ global proc bn_setzero(bignum a)=
     fi
 end
 
-global proc bn_move(bignum a,b)=
-!move contents of b to a. Original value of a is cleared; b becomes zero
+export proc bn_move(bignum a,b)=
+#move contents of b to a. Original value of a is cleared; b becomes zero
 
 bn_setzero(a)
 a^:=b^
 memset(b,0,bignumrec.bytes)
 end
 
-global proc bn_dupl(bignum a,b)=
-!copy contents of b to a. Each copy is independent
+export proc bn_dupl(bignum a,b)=
+#copy contents of b to a. Each copy is independent
     bignum c
     int size
 
@@ -305,12 +304,12 @@ global proc bn_dupl(bignum a,b)=
 !   fi
 end
 
-global proc bn_setinf(bignum dest) =
+export proc bn_setinf(bignum dest) =
     bn_setzero(dest)
     dest^.numtype:=inf_type
 end
 
-global proc bn_setnan(bignum dest) =
+export proc bn_setnan(bignum dest) =
     bn_setzero(dest)
     dest^.numtype:=nan_type
 end
@@ -320,29 +319,29 @@ proc bn_error(ichar mess) =
     abortprogram(mess)
 end
 
-global function bn_iszero(bignum a)int=
+export function bn_iszero(bignum a)int=
     return a^.numtype=zero_type
 end
 
-global proc bn_negto(bignum a)=
+export proc bn_negto(bignum a)=
     if not bn_iszero(a) then
         a^.neg:=not a^.neg
     fi
 end
 
-global proc bn_absto(bignum a)=
+export proc bn_absto(bignum a)=
     a^.neg:=0
 end
 
-global function bn_isint(bignum a)int =
+export function bn_isint(bignum a)int =
     return a^.length<=a^.expon+1
 end
 
-global function bn_getprec(bignum a)int=
+export function bn_getprec(bignum a)int=
     return a^.length*digitwidth
 end
 
-global proc bn_setprec(bignum a,int prec)=
+export proc bn_setprec(bignum a,int prec)=
     int oldlength,newlength
     bignum c
 
@@ -382,15 +381,15 @@ global proc bn_setprec(bignum a,int prec)=
     bn_free(c)
 end
 
-global function bn_getglobalprec:int=
+export function bn_getglobalprec:int=
     return currprec*digitwidth
 end
 
-global proc bn_setglobalprec(int prec)=
+export proc bn_setglobalprec(int prec)=
     currprec:=((prec-1)/digitwidth+1)
 end
 
-global function bn_makeint(int x)bignum =
+export function bn_makeint(int x)bignum =
     bignum a
     [256]char str
 
@@ -404,27 +403,24 @@ global function bn_makeint(int x)bignum =
         a^.num^[0]:=-x
         a^.neg:=1
     else
-        sprintf(&.str,"%lld",x)
+        print @str,x
         a:=bn_makestr(&.str)
     fi
 
     return a
 end
 
-global function bn_makefloat(real64 x)bignum =
+export function bn_makefloat(real64 x)bignum =
     bignum a
     [2048]char str
 
     sprintf(&.str,"%.30g",x)
-!   sprintf(&.str,"%.17e",x)
-
-CPL =&.STR
 
     return bn_makestr(&.str)
 end
 
-global proc bn_ipower(bignum d, a,int64 n)=
-!return a**b for bigints
+export proc bn_ipower(bignum d, a,int64 n)=
+#return a**b for bigints
     bignum e,f
 
     if n<0 then
@@ -545,10 +541,10 @@ function smallmulto(ref elemtype p,q, int plen, m)int=
     return plen
 end
 
-global function bn_equal(bignum a,b)int=
-    if a^.length<>b^.length or \
-       a^.numtype<>b^.numtype or \
-       a^.neg<>b^.neg or \
+export function bn_equal(bignum a,b)int=
+    if a^.length<>b^.length or 
+       a^.numtype<>b^.numtype or 
+       a^.neg<>b^.neg or 
        a^.expon<>b^.expon then
         return 0
     fi
@@ -558,7 +554,7 @@ global function bn_equal(bignum a,b)int=
     return eqbytes(a^.num,b^.num,a^.length*elemsize)
 end
 
-global proc bn_addu(bignum dest,a,b)=
+export proc bn_addu(bignum dest,a,b)=
     int preca, precb, precc
     int uppera,upperb,upperc, offset, carry,expona,exponb
     int dc
@@ -766,7 +762,7 @@ proc bn_mulu(bignum dest, a,b) =
 
 end
 
-function smalldiv(ref elemtype x, b, int &xlen, nb)elemtype =
+function smalldiv(ref elemtype x, b, int &xlen, nb)int =
 !x,b are smallnums: arrays of elements, of the exact lengths given
 !x is same length as b, or at most one element longer
 !(x can also be smaller, but then result is just 0)
@@ -824,9 +820,9 @@ function smalldiv(ref elemtype x, b, int &xlen, nb)elemtype =
     return k
 end
 
-global proc bn_idivu(bignum dest,a,b,rm=nil)=
-!neither a nor b are zero; both are positive
-!integer divide
+export proc bn_idivu(bignum dest,a,b,rm=nil)=
+#neither a nor b are zero; both are positive
+#integer divide
 
     ref elemtype c,x,e
     int expona, exponb, badjust, exponc
@@ -943,7 +939,7 @@ function strvaln(ref char s,int n)int=    !STRVALN
     return a
 end
 
-global function bn_makestr(ichar s, int length=0)bignum=
+export function bn_makestr(ichar s, int length=0)bignum=
     ichar t,u
     int neg,dpindex,expon,nonzeros,talloc,dpseen
     int leadingzeros, trailingzeros,zerosafterdp
@@ -1197,10 +1193,8 @@ function tostring_float(bignum a,int fmt)ichar=
     fi
 
     for i:=0 to upper do
-!      t++^:='*'
         n:=sprintf(t,(i>0 or prel|digitfmt|"%d"),a^.num^[i])
         t+:=n
-!      print a^.num^[i]
         if expon=i and i<upper and showdot then
            t++^:='.'
         fi
@@ -1221,7 +1215,7 @@ function tostring_float(bignum a,int fmt)ichar=
     return s
 end
 
-global function bn_tostring(bignum a,int fmt=0)ichar=
+export function bn_tostring(bignum a,int fmt=0)ichar=
     int expon,upper
     ichar s,t
 
@@ -1288,19 +1282,15 @@ function tostring_scient(bignum a)ichar=
         t++^:='-'
     fi
 
-!   n:=sprintf(t,"%d.",x)
     print @t,x,,"."
     t+:=strlen(t)
 
     if shift then
-!       n:=sprintf(t,"%0*d", shift, a^.num^[0]-x*scale)
         print @t, shift:"v",,a^.num^[0]-x*scale:"z*"
         t+:=strlen(t)
     fi
 
     for i to a^.length-1 do
-!       n:=sprintf(t,digitfmt, a^.num^[i])
-!       fprint @t,digitfmt, a^.num^[i]
         print @t,a^.num^[i]:mdigitfmt
         t+:=strlen(t)
     od
@@ -1309,7 +1299,6 @@ function tostring_scient(bignum a)ichar=
         --t
     od
 
-!   n:=sprintf(t,"e%d", expon)
     print @t,"e",,expon
     t+:=strlen(t)
     t^:=0
@@ -1317,7 +1306,7 @@ function tostring_scient(bignum a)ichar=
     return s
 end
 
-global function bn_add(bignum dest,a,b)int=
+export function bn_add(bignum dest,a,b)int=
     int nega,negb
 
     switch getbintype(a,b)
@@ -1353,7 +1342,7 @@ global function bn_add(bignum dest,a,b)int=
     return 1
 end
 
-global function bn_sub(bignum dest,a,b)int=
+export function bn_sub(bignum dest,a,b)int=
     int nega,negb
 
     switch getbintype(a,b)
@@ -1389,7 +1378,7 @@ global function bn_sub(bignum dest,a,b)int=
     return 1
 end
 
-global function bn_mul(bignum dest,a,b)int=
+export function bn_mul(bignum dest,a,b)int=
     int neg
 
     switch getbintype(a,b)
@@ -1410,7 +1399,7 @@ global function bn_mul(bignum dest,a,b)int=
     return 1
 end
 
-global function bn_mulp(bignum dest,a,b, int prec)int=
+export function bn_mulp(bignum dest,a,b, int prec)int=
     int res:=bn_mul(dest,a,b)
     if res then
         bn_setprec(dest,(prec=0|currprec|prec))
@@ -1418,7 +1407,7 @@ global function bn_mulp(bignum dest,a,b, int prec)int=
     return res
 end
 
-global function bn_div(bignum dest,a,b,int prec=0)int=
+export function bn_div(bignum dest,a,b,int prec=0)int=
     int neg
 
     switch getbintype(a,b)
@@ -1437,7 +1426,6 @@ global function bn_div(bignum dest,a,b,int prec=0)int=
     neg:=a^.neg<>b^.neg
 
     bn_fdivu(dest,a,b,prec)
-!   bn_idivu(dest,a,b)
 
     if neg then
         bn_negto(dest)
@@ -1445,7 +1433,7 @@ global function bn_div(bignum dest,a,b,int prec=0)int=
     return 1
 end
 
-global function bn_idiv(bignum dest,a,b)int=
+export function bn_idiv(bignum dest,a,b)int=
     int neg
     switch getbintype(a,b)
     when nn_types then
@@ -1468,7 +1456,7 @@ global function bn_idiv(bignum dest,a,b)int=
     return 1
 end
 
-global function bn_idivrem(bignum dest,rm,a,b)int=
+export function bn_idivrem(bignum dest,rm,a,b)int=
     int nega,negb
 
     switch getbintype(a,b)
@@ -1496,7 +1484,7 @@ global function bn_idivrem(bignum dest,rm,a,b)int=
     return 1
 end
 
-global function bn_irem(bignum dest,a,b)int=
+export function bn_irem(bignum dest,a,b)int=
     bignum rm,d
     int nega
 
@@ -1522,7 +1510,7 @@ global function bn_irem(bignum dest,a,b)int=
     return 1
 end
 
-global function bn_cmp(bignum a,b)int=
+export function bn_cmp(bignum a,b)int=
     bignum d
     int neg
 
@@ -1537,7 +1525,7 @@ global function bn_cmp(bignum a,b)int=
     return (neg|-1|1)
 end
 
-global function bn_const(int value)bignum =
+export function bn_const(int value)bignum =
     ref constrec p
     bignum c
 
@@ -1559,7 +1547,7 @@ global function bn_const(int value)bignum =
     return p^.bnvalue
 end
 
-global function bn_sign(bignum a)int=
+export function bn_sign(bignum a)int=
     if bn_iszero(a) then
         return 0
     elsif a^.neg then
@@ -1576,7 +1564,7 @@ function badnumber:bignum=
     return c
 end
 
-global function bn_digits(bignum a)int=
+export function bn_digits(bignum a)int=
 !return number of digits in integer a
     int n
     [32]char str
@@ -1592,7 +1580,7 @@ global function bn_digits(bignum a)int=
     return n+a^.expon*digitwidth
 end
 
-global function bn_toint(bignum a)int64=
+export function bn_toint(bignum a)int64=
     int64 x
     if not bn_isint(a) then
         return 0
@@ -1613,7 +1601,7 @@ global function bn_toint(bignum a)int64=
     fi
 end
 
-global function bn_tofloat(bignum a)real64=
+export function bn_tofloat(bignum a)real64=
     real64 x
     ichar s
 
@@ -1627,7 +1615,7 @@ global function bn_tofloat(bignum a)real64=
     return x
 end
 
-global proc bn_fix(bignum c, a) =
+export proc bn_fix(bignum c, a) =
     if bn_iszero(a) or a^.expon<0 then
         bn_setzero(c)
         return
