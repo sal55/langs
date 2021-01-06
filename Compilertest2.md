@@ -8,7 +8,7 @@ This is one is slightly more realistic; it takes a benchmark function, 50-100 li
 
 The benchmark is called 'fannkuch-redux' and described [here](https://benchmarksgame-team.pages.debian.net/benchmarksgame/performance/fannkuchredux.html). Versions I've written in 10 languages (plus two of mine) are listed [here](fannkuch.txt).
 
-Implem | Language | Time | Funcs/sec
+Implem | Language | Time (secs) | Funcs/sec
 --- | --- | --- | ----
 **Rustc** | Rust  | 222 | 45
 **DMD-opt**       | D | 155 | 64
