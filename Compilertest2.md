@@ -53,6 +53,8 @@ in a program containin just the one function.
 
 * In the case of my MS, which is unfinished, 15.7 is actual time of unaccelerated code. Projections taken from the previous product suggest: 10 seconds when optimised via gcc-03; and 4.1 seconds when accelerated (not using JIT; it still executes bytecode).)
 
+**Note** Don't read into much into the figures of one, small, tight benchmark, which some optimisers and especially tracing-JITs can optimise agressively.
+
 ### My Compilers
 
 These are BB (M language) and MS (MS language). The latter is a new embedded scripting language
