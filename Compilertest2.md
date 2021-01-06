@@ -25,7 +25,7 @@ Implem | Language | Time (secs) | Funcs/sec | Runtime (secs)
 **Tiny C**        | C | 1.1 | 9100 | 0.79
 **Lua**         | Lua | 0.9 | 11000 | 11.5
 **LuaJIT**      | Lua | 0.6 | 16600 | 0.75
-**MS**          | MS | 0.55 | 18000 | 15.7 (4.1 acc, 10.0 opt)
+**MS**          | MS | 0.55 | 18000 | 15.7 (10.0 opt, 4.1 acc)
 
 ### Notes
 
@@ -49,7 +49,9 @@ This column has been added, so that some trade-offs can be compared. Runtime is 
     
 in a program containin just the one function.
 
-(In the case of MS, which is unfinished, 15.7 is actual time, but others are from the older product and are projections for MS: 10 seconds when optimised via gcc-03; and 4.1 seconds when accelerated (not using JIT; it still executes bytecode).)
+* Rust doesn't link on my machine so couldn't be run
+
+* In the case of my MS, which is unfinished, 15.7 is actual time of unaccelerated code. Projections taken from the previous product suggest: 10 seconds when optimised via gcc-03; and 4.1 seconds when accelerated (not using JIT; it still executes bytecode).)
 
 ### My Compilers
 
