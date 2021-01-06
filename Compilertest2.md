@@ -10,23 +10,22 @@ The benchmark is called 'fannkuch-redux' and described [here](https://benchmarks
 
 Some compilers here produce bytecode rather than executables.
 
-Implem | Language | Time (secs) | Funcs/sec
---- | --- | --- | ----
-**Rustc** | Rust  | 222 | 45
-**DMD-opt**       | D | 155 | 64
-**Julia**    | Julia  | 136 | 73
-**gcc** | C            | 61 | 160
-**Go**            | Go | 38 | 263
-**DMD**            | D | 29 | 340
-**PyPy**      | Python | 16 | 625
-**CPython**  | Python | 8.2 | 1200
-**BB-opt** | M        | 2.5 | 4000
-**BB**            | M | 2.1 | 4700
-**Tiny C**        | C | 1.1 | 9100
-**Lua**         | Lua | 0.9 | 11000
-**LuaJIT**      | Lua | 0.6 | 16600
-**MS**          | MS | 0.55 | 18000
-
+Implem | Language | Time (secs) | Funcs/sec | Runtime (secs)
+--- | --- | --- | --- | ---
+**Rustc** | Rust  | 222 | 45 | ---
+**DMD-opt**       | D | 155 | 64 | 0.32
+**Julia**    | Julia  | 136 | 73 | 0.88
+**gcc** | C            | 61 | 160 | 0.71 (0.30 opt)
+**Go**            | Go | 38 | 263 | 0.27
+**DMD**            | D | 29 | 340 | 0.75
+**PyPy**      | Python | 16 | 625 | 1.2
+**CPython**  | Python | 8.2 | 1200 | 37
+**BB-opt** | M        | 2.5 | 4000 | 0.28
+**BB**            | M | 2.1 | 4700 | 0.56
+**Tiny C**        | C | 1.1 | 9100 | 0.79
+**Lua**         | Lua | 0.9 | 11000 | 11.5
+**LuaJIT**      | Lua | 0.6 | 16600 | 0.75
+**MS**          | MS | 0.55 | 18000 | 15.7 (4.1 acc, 10.0 opt)
 
 ### Notes
 
@@ -41,6 +40,16 @@ Implem | Language | Time (secs) | Funcs/sec
 **Optimisation** Optimisation was usually off except where it made an appreciable difference, and was felt it actually did something. gcc-O3 took the same time as gcc-O0, suggesting it hadn't bothered.
 
 **Host** All tests were done on an old Windows 7 PC, 64 bits, with spinning hard drive. Number of cores available was 2 (doubt any used more than one). Not the most up-to-date hardware, but all compilers ran on the same machine.
+
+### Runtimes
+
+This column has been added, so that some trade-offs can be compared. Runtime is how long it took to execute:
+
+    fann(10)
+    
+in a program containin just the one function.
+
+(In the case of MS, which is unfinished, 15.7 is actual time, but others are from the older product and are projections for MS: 10 seconds when optimised via gcc-03; and 4.1 seconds when accelerated (not using JIT; it still executes bytecode).)
 
 ### My Compilers
 
