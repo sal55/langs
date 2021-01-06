@@ -38,7 +38,7 @@ Implem | Language | Time (secs) | Funcs/sec
 
 **Files Sizes** Roughly 500K to 1000K lines. More than is typical for a single module, but timings for only 1000 functions (50-100K lines) were usually proportionately less. (Any smaller, and the faster products would be hard to measure.)
 
-**Optimisation** Optimisation was usually off except where it made an appreciable difference, and was felt it actually did something. gcc-O3 took the same time as gcc-O3, suggesting it hadn't bothered.
+**Optimisation** Optimisation was usually off except where it made an appreciable difference, and was felt it actually did something. gcc-O3 took the same time as gcc-O0, suggesting it hadn't bothered.
 
 **Host** All tests were done on an old Windows 7 PC, 64 bits, with spinning hard drive. Number of cores available was 2 (doubt any used more than one). Not the most up-to-date hardware, but all compilers ran on the same machine.
 
