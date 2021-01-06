@@ -36,6 +36,8 @@ Implem | Language | Time (secs) | Funcs/sec
 
 **Optimisation** Optimisation is usually off except in where it made an appreciable difference, and was felt it actually did something. gcc-O3 took the same time as gcc-O3, suggesting it hadn't bothered.
 
+**Host** All tests were done on an old Windows 7 PC, 64 bits, with spinning hard drive. Number of cores available was 2 (doubt it any used than one). Not the must up-to-date hardware, but all compilers ran on the same machine.
+
 ### My Compilers
 
 These are BB (M language) and MS (MS language). The latter is a new embedded scripting language.
