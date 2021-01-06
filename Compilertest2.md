@@ -8,6 +8,8 @@ This is one is slightly more realistic; it takes a benchmark function, 50-100 li
 
 The benchmark is called 'fannkuch-redux' and described [here](https://benchmarksgame-team.pages.debian.net/benchmarksgame/performance/fannkuchredux.html). Versions I've written in 10 languages (plus two of mine) are listed [here](fannkuch.txt).
 
+Some compilers here produce bytecode rather than executables.
+
 Implem | Language | Time (secs) | Funcs/sec
 --- | --- | --- | ----
 **Rustc** | Rust  | 222 | 45
@@ -30,17 +32,19 @@ Implem | Language | Time (secs) | Funcs/sec
 
 **Time** How many seconds it took to compile
 
-**Func/sec** Because some took more lines than others, the table is sorted in terms of functions/second throughput
+**Func/sec** Because some took more lines than others, the table is sorted in terms of functions/second throughput.
 
-**Files Sizes** Roughly 500K to 1000K lines. More than is typical for a single module, but timings for 1000 functions (50-100K lines) were usually proportionately less. (Any smaller, and the faster products would be hard to measure.)
+**Lines/second** Fastest speed in LPS was something above 1.2Mlps (my MS bytecode compiler), and slowest around 3.4Klps (Rust, which excluded linking because that part didn't work)
 
-**Optimisation** Optimisation is usually off except in where it made an appreciable difference, and was felt it actually did something. gcc-O3 took the same time as gcc-O3, suggesting it hadn't bothered.
+**Files Sizes** Roughly 500K to 1000K lines. More than is typical for a single module, but timings for only 1000 functions (50-100K lines) were usually proportionately less. (Any smaller, and the faster products would be hard to measure.)
 
-**Host** All tests were done on an old Windows 7 PC, 64 bits, with spinning hard drive. Number of cores available was 2 (doubt it any used than one). Not the must up-to-date hardware, but all compilers ran on the same machine.
+**Optimisation** Optimisation was usually off except where it made an appreciable difference, and was felt it actually did something. gcc-O3 took the same time as gcc-O3, suggesting it hadn't bothered.
+
+**Host** All tests were done on an old Windows 7 PC, 64 bits, with spinning hard drive. Number of cores available was 2 (doubt any used more than one). Not the most up-to-date hardware, but all compilers ran on the same machine.
 
 ### My Compilers
 
-These are BB (M language) and MS (MS language). The latter is a new embedded scripting language.
+These are BB (M language) and MS (MS language). The latter is a new embedded scripting language
 
-BB had a poor optimiser, but nevertheless was used to build the BB and MS compilers. With full optimisation such as with gcc-O3, they would have been faster.
+BB currently has a simpler, rather limited optimiser, but nevertheless was used to build the BB and MS compilers. With full optimisation such as with gcc-O3, they would have been a bit faster.
 
