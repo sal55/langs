@@ -20,7 +20,7 @@ Implem | Language | Time (secs) | Funcs/sec | Runtime (secs)
 **DMD**            | D | 29 | 340 | 0.75
 **PyPy**      | Python | 16 | 625 | 1.2
 **CPython**  | Python | 8.2 | 1200 | 37.4
-**Vox**         | Vox | 5.5 | 1800 | 0.53 [Source](https://gist.github.com/MrSmith33/ac14e66a83b9d047793adede464ca1ef#file-fannkuch-vx)
+**Vox**         | [Vox](https://github.com/MrSmith33/vox) | 5.5 | 1800 | 0.53 [Source](https://gist.github.com/MrSmith33/ac14e66a83b9d047793adede464ca1ef#file-fannkuch-vx)
 **BB-opt** | M        | 2.5 | 4000 | 0.28
 **BB**            | M | 2.1 | 4700 | 0.56
 **Tiny C**        | C | 1.1 | 9100 | 0.79
