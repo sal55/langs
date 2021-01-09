@@ -18,7 +18,7 @@ Because it is likely to exist outside of normal application areas (C:\"Program F
 
 ### Download Sources
 
-Since Mosaic is written in itself, you can't build from sources without first using the binary above. (At one time it was possible to create a one-file C version so that it could be built with a C compiler, but that is not currently available. Hopefully a C target can be made available again at some point.)
+Since Mosaic is written in itself, you can't build from sources without first using the binary above.
 
 However the sources are here: [sources](../sources), in the file bb.ma, which is a single file encapsulation of all the modules. This can be build directly using, for example:
 
