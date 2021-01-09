@@ -55,15 +55,7 @@ I've taken my eye off the ball recently, but it will still compile at hundreds o
 
 ### Optimisation
 
-A recent compiler update provides a modest optimiser.
-
-Even unoptimised, the M compiler can build itself from scratch (some 40Kloc in 30+ modules) in about 0.2 seconds.
-
-### C Target
-
-Some versions have supported a C target. The current compiler doesn't do so, and would not anyway support all features in the language.
-
-I might add it again, but it will be as an extra target of M's intermediate language. A C target allows M programs to run on Linux, or to benefit from optimising C compilers.
+A recent compiler update provides a modest optimiser. But even unoptimised, the M compiler can build itself from scratch (some 40Kloc in 30+ modules) in about 0.2 seconds.
 
 ### M Syntax 
 Originally inspired by Algol-68, but has evolved its own style. Best described by looking at [example programs](Examples).
