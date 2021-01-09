@@ -1,0 +1,21 @@
+Houndsniff - Hash Identification Program - Version 1.5
+By Michael Constantine Dimopoulos Sep 2020
+
+Houndsniff is  a hash recognition  program
+It works  by  extracting some  info  about
+the  hash  and comparing it to  info about
+other  hashes in an SQLite  database. Then,
+it prints the matches sorted by popularity.
+Their  popularity  is  determined  by  web
+search  result  numbers  in  comparison to
+to other  hashes  with  the  same features
+
+If your hash includes a dollar sign ($), make
+sure you place it in between quotes.
+
+Send missing hashes at houndsniff@protonmail.com
+
+-h to display this panel and exit
+-l to list supported hashing algorithms
+
+Usage: hound [HASH]

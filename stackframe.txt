@@ -1,0 +1,71 @@
+VARIABLES USED IN PROC ENTRY AND RETURN
+---------------------------------------
+
+
+NDSAVEREGS/DSAVEREGS            Non-vols saved to stackframe (when not pushed)
+NXSAVEREGS/XSAVEREGS            Non-vols saved to stackframe
+NDSAVEPUSH                      Non-vols pushed to stack when not in stackframe
+NEEDSTACKFRAME/FRAMEBYTES       Whether stack frame exists, and size
+                                FRAMEBYTES can be zero, if only shadow area/param
+                                access needed
+NEEDSHADOW48                    Duplicate caller shadow space when NDSAVEPUSH
+NEEDSHADOW32                    Local proc-wide shadow space when no stackframe
+                                (32 or 40 bytes to keep alignment?)
+
+
+STACK LAYOUT WHEN NPARAMS>4 (always needs stack frame)
+------------------------------------------------------
+
+    <Alignment slot>
+    PARAM 7
+    PARAM 6
+    PARAM 5
+    --- SHADOW SLOT PARAM 4
+    --- SHADOW SLOT PARAM 3
+    --- SHADOW SLOT PARAM 2
+    --- SHADOW SLOT PARAM 1     Aligned at this point
+    RETADDR                     At entry to func; non-aligned
+    FRAMEPTR                    Aligned
+    --- LOCAL VARS
+    --- SAVE AREA FOR NDSAVE/NXSAVE SLOTS
+    --- Alignment bytes (keep to 16 byte alignment)
+    --- SHADOW32 32 bytes when non-leaf, part of stack frame
+
+NEEDSHADOW48=0, NEEDSHADOW40=0
+
+
+STACK LAYOUT WHEN NPARAMS<=4 AND STACK FRAME NEEDED
+---------------------------------------------------
+
+    --- SHADOW SLOT PARAM 4
+    --- SHADOW SLOT PARAM 3
+    --- SHADOW SLOT PARAM 2
+    --- SHADOW SLOT PARAM 1     Aligned at this point
+    RETADDR                     At entry to func; non-aligned
+    PUSH D9                     Save non-vols (DSAVE only)
+    PUSH D8
+    ....                        Any alignment here
+    ----SHADOW48 48 bytes, duplicate caller's shadow area, when some params
+                    still need spilling
+    FRAMEPTR                    Aligned
+    --- LOCAL VARS
+    --- SAVE AREA FOR NXSAVE SLOTS DSAVE ones are pushed
+    --- Alignment bytes (keep to 16 byte alignment; take account of NPUSH)
+    --- SHADOW32 32 bytes when non-leaf, part of stack frame
+
+
+STACK LAYOUT WHEN NPARAMS<=4 AND NO STACK FRAME NEEDED
+------------------------------------------------------
+
+(When no params need spilling, no locals, and no XSAVE regs to save)
+
+    --- SHADOW SLOT PARAM 4
+    --- SHADOW SLOT PARAM 3
+    --- SHADOW SLOT PARAM 2
+    --- SHADOW SLOT PARAM 1     Aligned at this point
+    RETADDR                     At entry to func; non-aligned
+    PUSH D9                     Save non-vols (DSAVE only)
+    PUSH D8
+    ....                        Can be any alignment
+    --- SHADOW32 32/40 bytes when non-leaf (40 to keep alignment)
+

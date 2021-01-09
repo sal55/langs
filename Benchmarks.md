@@ -4,7 +4,7 @@ These are a selection of programs and tasks to compare my new 'BB' compiler for 
 
 I've spent about 10 days trying to do the simplest and most obvious optimisations, and here are the results.
 
-The primary aim was faster code: narrow the gap between BB and GCC, and widen it between BB and TCC. But a secondary one that also seems useful is to reduce the code code, and just make it less terrible.
+The primary aim was faster code: narrow the gap between BB and GCC, and widen it between BB and TCC. But a secondary one that also seems useful is to reduce the code size, and just make it less terrible.
 
 The compilers tested are:
 

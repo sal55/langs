@@ -3,65 +3,70 @@
 
 M is a systems language first devised for 8-bit Z80 systems in early 1980s, since evolved and now targeting 64-bit Windows machines using x64 processor.
 
-It is also now known as 'Mosaic' (named by a Reddit user).
+It is also now known as '[Mosaic](./Mosaic)' (named by a Reddit user).
 
-The following is not a formal reference but is a random collection of features, ideas and aims that may be useful to others. Or to help understand M source code.
-
-This is a draft, and there will be typos and omissions, mistakes and probably duplicates. It is also disorganised, but should be enough to get an idea of the lanuage. I can't promise everything mentioned works in the actual M compiler.
+The following is not a formal reference but is a random collection of topics.
 
 ### The M Compiler
 
-This is written in M. It builds to a single executable file that I usually call mm.exe, currently some 0.6MB, which includes a small set of libraries. (That is, the sources for the libraries are part of the executable.)
-
-This gives a tidy self-contained compiler.
+This is written in M. It builds to a single executable file that I usually call mm.exe, currently some 0.6MB, which includes a small set of libraries. (That is, the sources for the libraries are part of the executable.) This gives a tidy self-contained compiler.
 
 ### Dependencies
 
-There are none, when mm builds a .exe file, other than needing a Windows computer. M programs make use of the C standard library, via the MSVCRT.DLL library that comes with every Windows system.
+There are none required to build M sources to a binary executable, other than:
 
-However, there is no direct support for generating .dll files; these require that mm generates a .obj file instead, and an external linker (eg. gcc) used to create the .dll.
+* A Windows OS
+* msvcrt.dll (part of Windows OS)
 
-### Whole Program Compiler
+### Whole Program Compiler and Output Files
 
 A 'program' in this sense is the collection of modules and files that form a single .exe or .dll file. M will always compile all modules from scratch. (Effectively, the 'compilation unit', or granularity, moves from one module, to one program.)
 
+Output files will always be a single file that will be one of:
+
+**.exe**    (Default output)
+
+**.dll** -dll option (also generates an .exp file, an interface file that can be directly imported within a M module)
+
+**.asm** -asm or -c option (in the syntax used by my own **ax** assembler/linker)
+
+**.ma** -ma option (combines all source and support files into a single .ma text file, which mm can directly compile)
+
+(There is no direct .obj file output. This can be done by generating an .asm file then using 'ax -obj'. OBJ files will require an external linker to process further.)
+
+
 ### No Make or Project Files
-M builds a project by submitting only the lead module. It will then locate all necessary modules (by following import links), to produce an executable named after the lead module.
+
+M builds a project by submitting only the lead module to the compiler. It will then locate all necessary modules (by following import links), to produce an executable named after the lead module.
+
+However, most projects do use an optional project file during development, to provide a list of modules and support files for browsing and editing.
 
 ### Linking with external libraries
 
-M by default generates executables that are dynamically linked to DLLs. To statically link to such libraries, requires:
-* Getting mm to generate .asm (-c switch) (Note direct mm -obj support is not working right now)
-* Using ax (companion assembler/linker) to produce .obj files
-* Linking via the C compiler gcc with .o or .a files
+M by default generates executables that are dynamically linked to DLLs.
 
-This requires the external library to exist in the form of gcc-compatible .o object files, or .a archive files. It further requires a .a library to contain the actual library functions, and not simply be an interface to a DLL file. 
+To statically link to such libraries, requires:
+
+* Getting mm to generate .obj files via ASM.
+* Linking via the C compiler gcc with .o or .a files which must contain the implementation of the library, not just an interface to DLL
 
 ### Compilation Speed
 I've taken my eye off the ball recently, but it will still compile at hundreds of thousands of lines per second on my slowish PC with a conventional hard drive.
 
 ### Optimisation
-I don't have an optimiser right now, and the code is poor. However this doesn't affect these compiler projects too much. The M compiler can still build itself from scratch (some 40Kloc in 30+ modules) in about 0.2 seconds, even though mm.exe is built as unoptimised code. 
+
+A recent compiler update provides a modest optimiser.
+
+Even unoptimised, the M compiler can build itself from scratch (some 40Kloc in 30+ modules) in about 0.2 seconds.
 
 ### C Target
-At various times, I have supported a C target, so generating a monolithic C source file instead of .exe or .obj or .asm. This gives the advantage of being able to compile programs for Linux, and to take advantage of optimising C compilers like gcc.
 
-But it is currently dropped as it requires a considerable effort. Also some features are problematical, or are not supported. (And, unless Tiny C is used to compile the output file, compilation hits a brick wall as soon as gcc is invoked, as that compiler is much slower.)
+Some versions have supported a C target. The current compiler doesn't do so, and would not anyway support all features in the language.
 
-### ASM Target
-This was the main target before mm could directly generate .exe \[or .obj\] files directly. It was in the syntax for my own very fast assembler (some 2M to 3M lines per second). Although no longer needed, it was handy for debugging, or for perusing the output. This is enabled using the -c option (use 'mm -help').
-
-The .asm output is again a single, monolithic file, which can actually be assembled into .exe or .obj - you need the 'AX' assembler/linker project, also written in M.
-
-### Generating .obj files
-
-These are needed when it is necessary to go beyond what mm can do itself. Eg. using external linkers, static linking with external libraries or C modules, or generating DLLs. It would be done using 'mm -obj', but I've found that that built in functionality was never properly adapted from the separate **ax** assembler. It can be done like this:
-
-    mm -c prog            # prog.m to prog.asm
-    ax -obj prog          # prog.asm to prog.obj
+I might add it again, but it will be as an extra target of M's intermediate language. A C target allows M programs to run on Linux, or to benefit from optimising C compilers.
 
 ### M Syntax 
-Originally inspired by Algol-68, but has evolved its own style. Best described by looking at example programs.
+Originally inspired by Algol-68, but has evolved its own style. Best described by looking at [example programs](Examples).
 
 ### Modules and Imports
 This is another big difference from C (and C++ is only now acquiring modules). M has no header files and has no need for declarations as well as definitions.
@@ -69,6 +74,8 @@ This is another big difference from C (and C++ is only now acquiring modules). M
 You define a function, variable, named constant, type, enum, macro etc in its own module. To export it, add a 'global' attribute in front, otherwise it is private to that module. 
 
 To use those exported names from module A in another module B, that is when you write 'import A' inside B.
+
+Names exported across modules are not also exported from the program. When made into a DLL, only names defined as 'export' rather than 'global' are exported from the DLL.
 
 ### Circular and Mutual Imports
 Previous versions of the module system required modules to be in a strict top-down hierarchy. That was too restrictive. The current scheme allows imports in any order including circular imports: A can import B, and B can import A.
@@ -81,7 +88,7 @@ Unlike C, functions can be defined in any order in a module. If a function F cal
 Actually, this also applies to other named entities, so you could for example choose to define all the local variables at the end of a function! (Only import statements need to go at the start of a module, to avoid scanning the entire file for the preliminary pass to determine all the modules.)
 
 ### Block Scopes
-Another big departure from C, is that inside a function, there is only a single scope; there are no block scopes. Further, there is a single name space (no crazy tag namespaces and even label namespaces of C: you could write: 'L: int L; goto L;')
+Another big departure from C, is that inside a function, there is only a single scope; there are no block scopes. Further, there is a single name space (no crazy tag namespaces and even label namespaces of C)
 
 Since functions are best kept small, there is no real need for multiple scopes and overloading the same identifiers.
 
@@ -100,15 +107,15 @@ It has had block comments in the past, but I believe those should be an editor f
 This document will use '#' for comments in examples as it is clearer and more familiar.
 
 ### Doc Strings
-This is something I've played with, and is in my other language, but temporarily missing from M. Doc strings are line comments starting with #, just before and/or inside a function.
+Doc strings are line comments starting with #, just before and/or inside a function.
 
-A compiler option causes such documented functions to be written to a text file, with function signature shown plus the comments for each.
+A compiler option causes such documented functions to be written to a text file, with function signature shown plus the comments for each. (Feature not complete.)
 
 ### Character Set
 I haven't yet ventured into Unicode. Source code is written in ASCII, but can also be UTF8. UTF8 sequences can be part of comments or strings.
 
 Newlines in source files must use CR/LF or LF sequences.
-      
+
 ### Case-Insensitive
 Another departure from most languages, especially those associated with C and/or Unix. M is case-insensitive, which means that all of these names are identical to it:
 
@@ -127,7 +134,7 @@ This is usually the start() function, which is always global (ie. exported, no '
 
 M will insert a call to a start-up routine in M's runtime module, to set up command-line parameters etc as global variables (nsysparams, and sysparams, the latter being an array of strings).
 
-main() can also be used as an entry point, especially if generating .obj files to be linked via gcc, as gcc will not recognise 'start'. (I previously stated that using main() will not cause init code to be executed, but that's not right.)
+main() can also be used as an entry point, especially if generating .obj files to be linked via gcc, as gcc will not recognise 'start'.
 
 ### The $init function
 If encountered in a module, it will be called automatically by start-up code. No 'global' attribute needed. However, because of non-determinate module import order, if such a routine depends on another $init function being called first, then this must be handled manually (with flags and direct invocation etc).
@@ -150,33 +157,8 @@ The source file prog.m does not need to be present at runtime; it becomes part o
 ### Conditional Compilation
 M has no preprocessor and no conditional directives for code (there used to be, but I didn't like them).
 
-Conditional code is handled at the module rather than line level. It can look like this:
+Conditional code is handled at the module rather than line level, via module mapping.
 
-    mapmodule pc_assem => pc_assemc when ctarget
-
-Where, when 'import pc_assem' is encountered, it will instead import 'pc_assemc' when 'ctarget' has the value '1' (in this case pc_assemc is a dummy module with empty functions). 'ctarget' can be a built-in flag or one set with compiler options.
-
-This keeps the contents of each module clean. (Look at some C system headers to see what happens with most code is a patchwork of #if/#ifdef blocks.) 
-
-There are a handful of built-in options, but are currently irrelevant now that M only targets x64 on 64-bit Windows. But user-defined options can be created on the mm command line:
-
-    mm -set:flag1 ...                # flag1 has default value "1"
-    mm -set:flag2:val ...            # flag2 has value "val"
-
-Which can be used as:
-
-    mapmodule A => B when flag1               # do this when flag1 is defined and has value "1"
-    mapmodule A => B when flag2 = "val"       # do this when flag2 is defined and has value "val"
-
-Note that mapmodule can also be used unconditionally:
-
-    mapmodule mlib => mlibnew
-
-One technique used for different versions of a program, is to have a different lead module - a small stub containing just start(), which calls into the rest. This module can contain a set of 'mapmodule' definitions which control which set of a actual modules to incorporate. This was used for building these 3 versions of mm:
-
-    \m\mm mm            # regular version targetting x64
-    \m\mm mc            # version that targets C on Windows
-    \m\mm mu            # version targetting C on Linux
 
 
 ### Function Tables
@@ -184,11 +166,11 @@ There is a limited amount of reflection in that all functions (names and address
 
 This allows finding out the name of a function from a function pointer. But what I most use it for is building, at runtime, tables of functions pointers for special handlers. For example, handlers for the commands of, say, an editor, may have functions with names such as 'ed_left', 'ed_delcharright':
 
-   proc ed_left(txdescr td) = ...
-   proc ed_delcharright(txdescr td) = ...
-   ...
+    proc ed_left(txdescr td) = ...
+    proc ed_delcharright(txdescr td) = ...
+    ...
  
-By searching for functions that start with "ed_", and picking up the name of the command it deals with ('left' or 'delcharright'), then a list of handlers for the commands can be created, with defaults for missing commands. This makes it easy to maintain such handlers without updating tables of such functions.
+By searching for functions that start with "ed_", and picking up the name of the command it deals with ('left' or 'delcharright'), then a list of handlers for the commands can be created, with defaults for missing commands. This makes it easy to maintain such handlers without manually updating tables of such functions.
 
 ### Data Types
 M is low-level so has mainly simple, fixed-size types: scalars, records (ie. structs) and fixed-length arrays with a size known at compile-time.
@@ -196,8 +178,6 @@ M is low-level so has mainly simple, fixed-size types: scalars, records (ie. str
 Dynamic arrays with a length known at run-time can be created with pointers and allocations, but the size remains fixed.
 
 A new type recently added are slices or views into arrays and strings, which can do more along those lines (see below) but I haven't done much with them yet.
-
-In current development (although shelved for a while) is a version with higher level types. (M did have variant types briefly, allowing flex lists, big nums and such, but I decided they were not a good match for M in that form.)
 
 ### Numeric Types
 
@@ -233,13 +213,20 @@ Common aliases:
 ### Type of Integer Constants
 These are defaults before any casts are applied, depending on the magnitude of the constant:
 
-    0      to 2**63-1         int64
+    0      to 2**63-1         int64 (see note)
     2**63  to 2**64-1         word64
     2**64  to 2**127-1        int128
     2**127 to 2**128-1        word128
     2**128 and above          decimal type (not implemented in this version)
 
 (No suffixes are used to force a particular type, except that in the next M version -L is used to force a decimal type for integers and floats. To force a type, just use a cast, eg. word64(0).)
+
+**Note:** in some contexts, when an int64 constant is combined with a word64 operand, then the constant is considered to be word64 too. The ensures the whole operation is unsigned. Otherwise, because int64 is domninant, in an operation like this:
+
+    word64 a = 0xFFFF'FFFF'FFFF'FFFF
+    if a > 5 then ...
+
+The comparison is perfored using int64, which means comparing -1 with 5, giving the wrong result.
 
 ### Numeric Separators
 
@@ -266,6 +253,7 @@ Such names are in their own namespace; 'million' can still be used as an identif
 Number bases from 2 to 16 can be used for integers and floats, eg:
 
     2x100    # base 2; 4
+    100B     # Alternative way to write binary
     3x121    # base 3; 16
     8x377    # octal: 255
     12xBBB   # base 12: 1727 (not sure if bases 10x to 15x work in this language)
@@ -558,7 +546,6 @@ I've never been a fan of C's 'const' attribute, which really complicates the typ
 
 Here, the initialisation is mandatory, as A can't be used as an lvalue like in an assignment. This provides some weak protection, but won't do much for more complex variables, such as arrays or pointers to data structures. Let is experimental.
 
-('Let \<type\> A:=expr' prohibits the use of &A, so it will stop elements of arrays and records from being written to as they make use of &A for such operations. However that also stops &A from being passed to functions even if they do not intend to write to the object, which is a big restriction. So while providing more protection than I expected, at present it is only practical for scalar types.)
 
 (Also experimental are 'in', 'out' and 'inout' attributes for function parameters. 'out' vaguely corresponds to '&' used for reference parameters. I haven't played with these attributes yet, and I'm not sure whether an 'in' parameter should be equivalent to 'let'.)
 
@@ -613,7 +600,7 @@ The "$" is a device which returns the name of the last enum defined, so it saves
 
 In this form, entries can be added, deleted or moved very easily. Notice the trailing comma on the last entry to facilitate this.
 
-The arrays can be zero-based (or some other value): use [0:] on the array declarations, and start with red=0. (But don't try to override the other enum values, as the array mapping can't cope with that.)
+The arrays can be zero-based (or some other value): use \[0:\] on the array declarations, and start with red=0. (But don't try to override the other enum values, as the array mapping can't cope with that.)
 
 The () in tabledata() can contain a type name to contain the enums, as suggested above, eg:
 
@@ -720,16 +707,17 @@ For example, **abs** can be applied to ints or reals, and will give the expected
 ### Precedence Levels
 
     8   **                             # highest
+    
     7   * / rem << >>
     6   + - iand ior ixor
     5   ..
     4   = <> < <= >= > not notin xor
-    3   and andb
-    2   or orb
+    3   and
+    2   or
 
     1   :=                             # lowest
 
-Disregarding "\*\*" and ".." which don't exist in C, there are six levels, compared to a dozen in C.
+Disregarding "\*\*" and ".." which don't exist in C, there are six levels, compared to a 11 in C.
 
 ### Array Indexing
 
@@ -744,7 +732,7 @@ If A is a pointer to array, it must be dereferenced first:
 Where there are multi-dimensions of a flat array, then the indexing goes like this:
 
     A[i,j,k]
-    A[i][j][k]          # C style alternative
+    A[i][j][k]          # C style alternative will also work
 
 With slicing, then a slice can be created using:
 
@@ -876,7 +864,8 @@ If you need to use the 1/0 return value of a=b, then break it up using parenthes
 
     if (a = b) = (c = d)
 
-(Note: middle terms are evaluated twice. This will be fixed eventually, but most uses have simple terms.)
+(Middle terms such as in a==b==c are evaluated once only.)
+
 
 ### Swap
 
@@ -908,8 +897,6 @@ There are no exceptions, and they do not depend on the width of the types.
 
 ### Type Conversion and Punning
 
-Type conversions are written like this:
-
 Simple type conversions are written like this:
 
     int(x)
@@ -925,7 +912,7 @@ There is also type punning, which is a re-interpretation of a type without chang
     println int64(x)       # display 1
     println int64@(x)      # display 4607632778762754458 (0x3FF199999999999A)
 
-The @ symbol makes it type punning (equivalent to \*(int64_t\*)&x in C, unlike C, can be applied to rvalues too, that is, expressiomns: int@(x+y)).
+The @ symbol makes it type punning (equivalent to \*(int64_t\*)&x in C, but unlike C, can be applied to rvalues too, that is, expressiomns: int@(x+y)).
 
 Again, for complex types, use cast@(x,int64).
 
@@ -961,7 +948,7 @@ With **elsif** and **else** both optional so that a simple if-statement is:
        stmts...
     fi
 
-(Don't worry, you can use **end**, **end if** or **endif** in place of **fi**)
+(You can use **end**, **end if** or **endif** in place of **fi**)
 
 There is also:
 
@@ -985,8 +972,7 @@ Sometimes, if, case and switch can be combine to form a composite statement:
     else
     fi              # final block delimiter needs to match opening keyword
  
-But use sparingly as it looks funny.
- 
+
 ### Conditional Suffixes
 
 Some control-flow statements can have a conditional suffix. For example:
@@ -1013,13 +999,19 @@ The statements where such a suffix is allowed are:
 
 ### Goto
 
-Not sure if 'goto' is mentioned anywhere, but is definititely part of the language. It seems to be out of favour these days. If you don't like writing goto, M allows 'go to'.
+This can be written as:
+````
+    goto label
+    go to label
+    label
+````
+The last is handy if you don't like the idea of using 'goto', as it makes it less obvious.
 
-Note that labels need to be written with two colons:
+Labels need to be written with two colons:
 
     lab::
 
-(":" is heavily used, but if ambiguities can be sorted, it will be possible to is use lab:")
+(":" is heavily used, but if ambiguities can be sorted, it will be possible to is use "lab:" with one colon)
 
 A mild variation is the experimental feature **recase**:
 
@@ -1033,7 +1025,6 @@ A mild variation is the experimental feature **recase**:
 **recase** here will jump to the branch of the case statement that deals with 'a', equivalent to reentering the case statement with x = a (but x is not actually changed).
 
 
-
 ### Loops
 
 Modern languages seem to be lacking in looping constructs even though, as mere syntax, they have little cost. M offers:
@@ -1041,25 +1032,22 @@ Modern languages seem to be lacking in looping constructs even though, as mere s
     do ... od                      # endless loop
     to n do ... od                 # repeat n times
     
-    for i:=a to b do ... od        # iterate from a to b
-    for i in a..b do ... od
-    
-    for i in A.bounds do ... od    # uses A.lwb .. B.upb
+    for i:=a to b do ... od        # iterate from a to b (see below)
+    for i in A do ... od           # iterate over values in A
 
     while x do ... od
     repeat ... until x
 
 There are also looping versions of **switch** and **case** statements.
 
-There is no equivalent of C's open 'for' loop which encourages all sorts of weird  and wonderful constructions, usually all on the same line. (There was something similar based on 'while', but it was never used.)
+There is no equivalent of C's open 'for' loop which encourages all sorts of weird  and wonderful constructions, usually all on the same line.
 
-Loop controls include **restart**, **redo**, **next** and **exit**, and can be used to any level of nested loop.
+Loop controls are **redo**, **next** and **exit**, and can be used to any level of nested loop.
 
-Some loops (for) can have an **else** part, which is executed on normal exit (abnormal ones include **goto**, **exit**, **return** and **stop**).
 
-### For Loops
+### For Loops: Iterate over a Range
 
-The full syntax is:
+The full syntax for iterating over an integer range is:
 
     for i := a to b by c when d do
       ....
@@ -1069,36 +1057,51 @@ The full syntax is:
 
 This iterates the loop variable of over a to b inclusive, stepping by c. 'when d' can be used to conditionally execute any particular iteration. The 'else' part executes on normal termination.
 
+The loop index does not need defining; it will be auto-declared using the equivalent of 'let', so that you can't change it inside the loop. (To do that, declare it outside.)
+
 But many parts are optional, and a more typical loop is:
 
     for i := a to b do
         ....
     end
 
-Even shorter forms include:
+The start value can be omitted when it starts from 1:
 
-    for i to b do ...            # start from 1
-    to b do ...                  # this is now the repeat-n-times loop
-    do ...                       # and this is the endless loop
-    
-Note that such a loop will always count upwards. To count downwards, use 'downto' instead of 'to'.
-    
-There is an alternative syntax:
+    for i to b do ...
 
-    for i in a..b do          # expression after .. is either a range construct ...
-    for i in A.bounds do      # ... or applies .lwb and .upb to create a range
+To count downwards, use **downto** instead of **to**. The **by** step value must always be positive in either case.
 
-There is also 'forall' which works best with slices, but also known length arrays:
+Simple iteration can also be written using:
 
-    forall x in S do          # iterate over values in S
-    forall i,x in S do        # same but expose the index in 'i'
+    for i in a..b do
 
-(This syntax will change in future versions, so that 'forall' is dropped; 'for' will be used instead:
+A special case of the following:
 
-    for x in S do             # iterate over values - next version only
-    for i in S.bounds         # iterate over bounds - accepted by M too)
+### For Loops: Iterate over Values
 
-Note: loop index variables don't need to be declared. They are auto-defined as 'let', so that you can't assign to them. To be able to assign to them, declare them outside.
+This is:
+
+    for x in A do
+
+A should be an indexable type, such as an array, slice or string, but it must be type where the bounds are known.
+
+x takes on each value in turn (if not already declared, will be auto-declared). A slice can be specified:
+
+    for x in A[i..j] do
+
+x will be an lvalue; it's not possible to write to an element via x. That will be a future development; for now use:
+
+    for i,x in A do
+
+x is as above; i will be the current index. Now elements can be modified by writing to A\[i\].
+
+Iterating over a range is a little special:
+
+    for x in A.bounds do          # same as for x:=A.lwb to A.upb do
+    for x in a..b do              # same as for x:=a to b do
+
+Iterating in reverse would use **inrev** not **in**, but not yet ready.
+
 
 ### Loop Controls
 
@@ -1195,35 +1198,31 @@ To print to a file open as handle f, use:
 
     println @f, a,b,c
 
-The values are written with spaces in between. To suppress the space, use a double comma:
+The values are written with spaces in between. There are ways to suppress the space, for example using $ in the item list to override the space.
 
-    print a,,b,c
-
-This gets very ugly and is not satisfactory, but it will do for informal printing. For that purpose, there is also the "=" prefix:
+For quick debugging prints, "=" can be used to show labels:
 
     println =a,=b,=c
 
 which adds "A=", "B=" and "C=" before each value respectively.
 
-Otherwise, it is necessary to use formatted print, which looks like this:
+### Fprint and Fprintln
 
-    fprintln "#-#.(#)",a,b,c
+This is formatted printing, example:
 
-If a is 10, b="abc" and c is a pointer with value 0x0001234, then the output will be 10-abc.(0001234). To output an actual "#", use:
+    fprintln "A=# B=# C=#", a, b, c
 
-    fprint "###", "#",name,"#"      # when name is "abc", will display #abc#
+which is equivalent to the *print =a, =b, =c* example above.
 
 Individual formatting is done like this:
 
-    fprintln "#-#.(#)",a:"z10",b,c
+    fprintln "#",a:"z10",b,c
 
 In this example, a is shown in a field 10 chars wide, with leading zeros.
 
-There also ways to print into a string:
+### Printing into String
 
-    println @&.str, "One","Two"
-
-(Both print and read need further docs to use effectively, but these are the basics.)
+    println @str, "One","Two",3        # str set to 'One Two 3'
 
 ### Read and Readln
 
@@ -1252,7 +1251,7 @@ That's why they can be part of the readln, or follow later.
 
 A range is a pair of ints defining a sequence, such as 1..10, which means to 1 to 10 inclusive, and always stepping by 1.
 
-It's not a type in itself (it will be in the next version), but it can be used as a construct:
+It's not a type in itself, but it can be used as a construct:
 
 * For array bounds
 * In switch-when expressions
@@ -1274,43 +1273,27 @@ Examples:
 
 ### Set Construct
 
-(IGNORE THIS SECTION. I will need to double check exactly what is possible.)
+Like a range, a set is not a proper type (both rangea and sets are full types in the companion script language)/
 
-Like a range, a set is not a proper type (I will try and have one in the next version).
+A limited versions of sets allow the syntax to be used in conditionals like this:
 
-Here, sets are used to construct int values of 64 or 128 bits. Such a construct can be used with the **in** operator:
+    if x in [a, b, c]
 
-    if c in ['A'..'Z', 'a'..z']
-    if a in [1,2,4,8,16]
+It doesn't yet allow ranges as in "\['A'..'Z','0'..'9'\]". It it still handy for quickly comparing an expression (evaluated once) with a handful of values.
 
-Since they are just integers, logical operations can be done between then.
-
-Also, set inclusion can also be done with dot indexing:
-
-    ['A'..'Z','a'..'z'].[c]
-    const alpha = ['A'..'Z','a'..'z'].[c]
-    alpha.[c]
-    
-However these will not do the range checking that **in** will do.
 
 ### Equivalence
 
-(THIS NEEDS TO BE CHECKED)
 
 This feature allows two variables to share memory:
 
     real x
-    int a @ &x
+    int a @ x
 
 Here, a shares the same memory as x. Note that a should not be smaller than x (unless that is the intention, or perhaps x is itself equivalenced to a larger variable).
 
-The expressions available are simple: &x or &x+3, with the offset always in bytes. Possibly, indexing can be added to allow:
+Currently the expression after @ must be simple. (Previous versions allows indexing and other expressions, but I am considering whether to replace this old feature completely. It was originally taken from Fortran.)
 
-### Label Pointers
-
-This is a possible feature (also implemented in C by gcc), where you can take the address of a label, store it in arrays and so on, and use that later in an indirect goto.
-
-But at the moment it'S not implemented. (For some kinds of programs, it results in faster execution thaN using a switch.)
 
 ### Foreign Functions
 
@@ -1333,8 +1316,11 @@ Each declaration must start with the language the function uses. Or rather the c
 * **windows**
 * **mlang**
 
-**windows** is not a language, it is to show the Windows call convention is used
-rather then normal C. (On Win64, both Windows and C use the same call convention. M uses its own.)
+**windows** is not a language, it is to show the Windows call convention is used rather then normal C.
+
+(Since M mainly works on Win64, and since it now complies with the Win64 ABI, then all languages ought to use the same call convention.
+
+So "clang" and "windows" are equivalent. 'mlang' would be too, except M deviates from the ABI for certain types.)
 
 Where a foreign function has a case-senstive name, it must be in quotes:
 
@@ -1348,13 +1334,36 @@ But then it can be used like this:
 
 This also demonstrates adding optional parameters with default values, and  using keyword parameters.
 
-Foreign function can also be written as `MessageBoxA, but then all instances must be written the same way. The advantage is that this can distinguish between names that can clash when converted to lower case, or names that clash with a reserved word.
+Foreign function can also be written as \`MessageBoxA, but then all instances must be written the same way. The advantage is that this can distinguish between names that can clash when converted to lower case, or names that clash with a reserved word.
 
 (There used to be an option to supply an alias to function, such as:
 
     function "MesssageBoxA" as "messagebox" ...
 
-but it's missing at the moment. You can try using macros.)
+but it's missing at the moment. You can try using macros:)
+
+    macro messagebox = messageboxa
+
+### Creating DLL Files
+
+The ability to directly generate DLL files is a recent development:
+
+* Use the -dll option to generate DLL rather than EXE.
+
+* Use **export** rather then **global** to mark names that will be exported from the DLL.
+
+* **export** can also be used on variables, but currently M doesn't have the right mechanisms (within generted EXE) to do the correct fixups for imported DLL variables. (But they will be available to other languages.)
+
+* **export** can also be used on types, macros, named constants. These aren't physically part of the DLL, but they end up in the exports file
+
+* As well as lib.dll, a lib.exp file is also generated. This is an M module (needs .exp to avoid ovewriting a possible lib.m module), that contains a fully fillled in importdll block.
+
+* Use the library from another M module by writing 'importx lib' (when the DLL is lib.dll and the export file is lib.exp)
+
+* (Shortly M will also generate a .ms file to allow the library to be directly used from its companion scripting language.)
+
+* If docstrings have been provided, then an extra -docs option will generate lib.txt containing descriptions of exported functions. (Not complete; function signatures not yet generated, only names.)
+
 
 ### Compiler Variables
 
@@ -1370,11 +1379,11 @@ These are special built-in variables that can be used to determine various aspec
 
 ### Standard Libraries
 
-* **msys**    Support library implicitly imported in every module
+* **msys**    Support library implicitly imported in every module (to omit for minimal programs, use -nosys, and an entry point other than start or main)
 * **mlib**    Small runtime library
 * **clib**    Interface to some C library functions
 * **oslib**   Selection of functions implemented by the OS
-* **osdll**   DLL function handling when names/params not known until runtime
+* **osdll**   DLL function handling when names/params not known until runtime (does the equivalent of the LIBFF library)
 
 ### **nil** Pointer Constant
 
@@ -1396,6 +1405,9 @@ The M language has always had inline assembler available in a straightforward ma
     asm inc dword [b]       # one instruction at a time
 
 Since M's register usage is unsophisticated, interaction with M is simple.
+
+(That is not quit the case when optimisation is used. But in that case, optimisation is disabled for functions using inline ASM.)
+
 
 ### Using the M Compiler
 
@@ -1457,8 +1469,6 @@ So multi-line macro bodies are possible. What is not allowed are definitions (as
 
 ### Bit Indexing
 
-(BIT/BITFIELD INDEXING needs to be checked.)
-
 If A is an integer, then it can be indexed like this:
 
     print A.[i]                # 1 or 0
@@ -1472,6 +1482,8 @@ If A is an integer, then an arbitrary bitfield can be extracted using:
 
     A.[i..j]               # i/j can be either order, eg. 0..7 or 7..0
     A.[i..j] := x          # insert x into that bitfield
+
+(Both bit/bitfield indexing are incomplete. 128-bit operands not currently support, and some non-constant expressions for i/j may not be supported.)
 
 ### Standard Bit/Bitfield Codes
 
@@ -1497,6 +1509,9 @@ When you need a pointer to the first array element, then having to know the firs
     &.A
 
 (This is a rare instance where C is more convenient. But this is a stop-gap until the correct address-of op is done automatically.)
+
+& will prograte inside expressions such as &(c|a|b), so it is equivalent to (c|&a|&b).
+
 
 ### Stop Statement
 
@@ -1591,7 +1606,7 @@ This is becomes the assignment is done an element at a time, and would be ineffi
 
 ### Creating Amalgamated Files
 
-Apart from .exe, .obj and .asm output formats, there is one more: an 'amalgamated' file, with extension .ma.
+Apart from .exe, .dll and .asm output formats, there is one more: an 'amalgamated' file, with extension .ma.
 
 This is not a true amalgamation as the result isn't a single module, but a simple collection of files (and support files) preceded by directory info that lists all the files. This makes it easy to copy, upload, transmit a project, without needing to use a binary format.
 
@@ -1603,19 +1618,21 @@ Also, M can directly compile a project in its amalgamated form. If the lead modu
 
 In this context, 'support files' are those incorporated using 'include', 'strinclude' and 'bininclude' directives.
 
-### Bugs and Limitations
+### Companion Dynamic Language
 
-There will be loads. This one problem with languages used by too few people, it does not get exercised enough. It is easy to get around limitations or bugs, or there will be ranges of features that haven't be used enough to know how well or otherwise they work.
+There is a companion language called Q, which is dynamically typed and interpreted. It shared largely the same syntax.
+
+But this is being replace by a new scripting language that will be better integrated, more dynamic, and more easily embeddable.
+
 
 ### Shortcomings
 
-Lots of nice features listed, but there are plenty of issues too:
 
 * Not known to external tools so syntax highlighting either can't be applied, or will be wrong
 
 * Most external libraries that might be compatible, will have C APIs. That requires interfaces for any library to be written as an **importdll** block in M. That is a lot of work. (Sometimes, you can create a smaller, tidier set of interface functions in C, then the interface in M to those functions will be smaller. But then you have an extra C dependency.)
 
-* There is a limited amount of source code in M (currently some 100Kloc), so the tools will not have got the testing they would get if applied to a billion lines of C code. So there will be inevitable bugs, corner cases that have never been tested etc as well as language features that don't work as well as expected.
+* There is a limited amount of source code in M (currently some 150Kloc), so the tools will not have got the testing they would get if applied to a billion lines of C code. So there will be inevitable bugs, corner cases that have never been tested etc as well as language features that don't work as well as expected.
 
-* There is no optimiser.
+* There is a limited optimiser. The performance of generated code is midway between optimised gcc and Tiny C. (See Benchmarks article elsewhere on this site.)
 

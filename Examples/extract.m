@@ -37,7 +37,7 @@ proc start=
 	fclose(f) 
 
 	s:=readfile(infile)
-	if s=nil then abortprogram("Error reading while file") fi
+	if s=nil then abortprogram("Error reading whole file") fi
 
 	for i to nfiles do
 		extractfile(s,&.names[i],sizes[i],offsets[i])

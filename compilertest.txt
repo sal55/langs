@@ -87,13 +87,16 @@ Other languages:
   Dip             8.0    ---     ---     ---  (Estimate; run another machine)
 
   Clox (Lox)      0.0    0.1     0.3     1.0
+  
+  V (Vlang)       5.2   20.0     ---     ----
 
 My languages:
 
-  MM ('M')        0.2    0.4     1.6     6.3  (5-pass, to .exe)
+  MM ('M')        0.2    0.4     1.6     6.3  (5-pass, to .exe; self-hosted, but built via C target and gcc-03)
+  BB ('M')        0.1    0.4     1.8     7.2  (5-pass, to .exe; self-hosted, built with itself)
 
   QQ ('Q')        0.1    0.2     0.9     3.8  (3-pass Dynamic language, to external byte-code)
-  QS ('QS')       0.0    0.1     0.5     2.0  (2-pass Dynamic language, to internal byte-code)
+  MS ('MS')       0.0    0.1     0.4     1.6  (1.5-pass Dynamic language, to internal byte-code; built with BB)
 
 ------------------------------
 
