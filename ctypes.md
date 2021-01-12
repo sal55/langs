@@ -32,3 +32,5 @@ int signed long
 int long signed
 ````
 Note that int64_t might be implemented on top of 'long long' (etc...), or on top of 'long'. So there is the additional problem that an int64_t* type may not be compatible with long long int*; you can't print int64_t using "%lld", and you can't create int64_t constants using 0LL.
+
+When it comes to const i64, then there are an unlimited number of ways of denoting that, since not only can 'const' appear in any position (at start, at end, or in-between), but any number of 'const' can appear.
