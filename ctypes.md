@@ -19,8 +19,8 @@ signed int long long
 int long signed long
 int long signed long
 int long long signed
-int64_t
-long             (When long is 64 bits, eg. Linux 64)
+int64_t               (Needs inttype.h or stdint.h)
+long                  (When long is 64 bits, eg. Linux 64)
 long int
 signed long
 signed long int
@@ -31,3 +31,4 @@ signed long int
 int signed long
 int long signed
 ````
+Note that int64_t might be implemented on top of 'long long' (etc...), or on top of 'long'. So there is the additional problem that an int64_t* type may not be compatible with long long int*; you can't print int64_t using "%lld", and you can't create int64_t constants using 0LL.
