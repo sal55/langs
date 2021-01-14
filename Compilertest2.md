@@ -65,5 +65,5 @@ These are BB (M language) and MS (MS language). The latter is a new embedded scr
 
 BB currently has a simpler, rather limited optimiser, but nevertheless was used to build the BB and MS compilers. With full optimisation such as with gcc-O3, they would have been a bit faster.
 
-I've now added 'bcc', which is my C compiler. This had had problems with its ST organisation (each set of 10,000 duplicate local names was stored in one list, and sometimes it would scan all of it). This program is still hampered by having an intermediate stage that is ASM source code, which slows down otherwise it would be faster than BB. Note that the timing is of a version build with gcc 5.1.0 -O3, otherwise it would be 40% slower.
+I've now added 'bcc', which is my C compiler. This had had problems with its ST organisation (each set of 10,000 duplicate local names was stored in one list, and sometimes it would scan all of it). This program is still hampered by having an intermediate stage that is ASM source code, which slows down otherwise it would be faster than BB. Note that the timing is of a version built with gcc 5.1.0 -O3, otherwise it would be 40% slower.
 
