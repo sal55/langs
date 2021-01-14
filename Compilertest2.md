@@ -21,6 +21,7 @@ Implem | Language | Time (secs) | Funcs/sec | Runtime (secs)
 **PyPy**      | Python | 16 | 625 | 1.2
 **CPython**  | Python | 8.2 | 1200 | 37.4
 **Vox**         | [Vox](https://github.com/MrSmith33/vox) | 5.5 | 1800 | 0.53 [Source](https://gist.github.com/MrSmith33/ac14e66a83b9d047793adede464ca1ef#file-fannkuch-vx)
+**bcc** | C        | 3.0 | 3300 | 0.75
 **BB-opt** | M        | 2.5 | 4000 | 0.28
 **BB**            | M | 2.1 | 4700 | 0.56
 **Tiny C**        | C | 1.1 | 9100 | 0.79
@@ -60,7 +61,9 @@ in a program containin just the one function.
 
 ### My Compilers
 
-These are BB (M language) and MS (MS language). The latter is a new embedded scripting language
+These are BB (M language) and MS (MS language). The latter is a new embedded scripting language.
 
 BB currently has a simpler, rather limited optimiser, but nevertheless was used to build the BB and MS compilers. With full optimisation such as with gcc-O3, they would have been a bit faster.
+
+I've now added 'bcc', which is my C compiler. This had had problems with its ST organisation (each set of 10,000 duplicate local names was stored in one list, and sometimes it would scan all of it). This program is still hampered by having an intermediate stage that is ASM source code, which slows down otherwise it would be faster than BB. Note that the timing is of a version build with gcc 5.1.0 -O3, otherwise it would be 40% slower.
 
