@@ -306,17 +306,17 @@ You have to specifically disallow defined several functions in a comma-separated
 
 The general rule is, if you mixed signed and unsigned in a binary operation, then it will be done as unsigned. But when you look into the actual rules, it is not that simple. The combinations for all 8 integer types are are as follows (S = gives signed result; U = unsigned result):
 ````
-      u8 u16 u32 u64  i8 i16 i32 i64
+       u8  u16 u32 u64  i8  i16 i32 i64
 
-  u8   S   S   U   U   S   S   S   S
-  u16  S   S   U   U   S   S   S   S
-  u32  U   U   U   U   U   U   U   S
-  u64  U   U   U   U   U   U   U   U
+   u8   S   S   U   U    S   S   S   S
+  u16   S   S   U   U    S   S   S   S
+  u32   U   U   U   U    U   U   U   S
+  u64   U   U   U   U    U   U   U   U
 
-  i8   S   S   U   U   S   S   S   S
-  i16  S   S   U   U   S   S   S   S
-  i32  S   S   U   U   S   S   S   S
-  i64  S   S   S   U   S   S   S   S 
+   i8   S   S   U   U    S   S   S   S
+  i16   S   S   U   U    S   S   S   S
+  i32   S   S   U   U    S   S   S   S
+  i64   S   S   S   U    S   S   S   S
 ````
 I recently tested my compiler against this; is was close, but not enough. Although it is rare that actually makes a different, sometimes it will.
 
