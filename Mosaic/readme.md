@@ -62,9 +62,9 @@ This builds a set of bindings around existing libraries that use a C API.
 
 ### Special Developer Options
 ````
--showast1        Display AST after parsing (in AST1 and collected bx.log)
--showast2        AST after name resolution (in AST2 and bx.log)
--showast3        AST after type analysis (in AST3...)
+-ast1            Display AST after parsing (in AST1 and collected in bx.log)
+-ast2            AST after name resolution (in AST2 and bx.log)
+-ast3            AST after type analysis (in AST3...)
 -showpcl         Intermediate PCL (in PCL...)
 -showmcl         MCL code (in bx.log, this basically -dasm)
 -asm or -c       Compile to .asm anyway (production version)
@@ -72,7 +72,7 @@ This builds a set of bindings around existing libraries that use a C API.
 -st              Show hierarchical symbol table (in bx.log)
 -pst             PCL symbol table
 -types           Type tables
--ss              SS tables
+-ss              SS tables (try -ss -dexe)
 ````
 Mostly, the main support library is included (import msys is implicit), but this generates code for its 2000 lines). The options for suppressing it yet ensuring there are no build errors get fiddly, but try some of these in addition to those above:
 ````
