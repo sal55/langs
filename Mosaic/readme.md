@@ -24,7 +24,7 @@ Because it is likely to exist outside of normal application areas (C:\"Program F
 
 Since Mosaic is written in itself, you can't build from sources without first using the binary above.
 
-However the sources are here: [sources](../sources), in the file bb.ma, which is a single file encapsulation of all the modules. This can be build directly using, for example:
+However the sources are here: [sources](../sources), in the file bb.ma, which is a single file encapsulation of all the modules. This can be built directly using, for example:
 
     bb bb.ma -out:bb2.exe
 
@@ -40,7 +40,7 @@ Some small programs are here: [Examples](../Examples)
 
 ### Building Executables
 
-You will need the compiler mm.exe. Given an example program such as hello.m, build as follows:
+You will need the compiler bb.exe. Given an example program such as hello.m, build as follows:
 
     bb hello
 
@@ -54,7 +54,7 @@ then this will locate and compile *all* sources into prog.exe (bb is a pretty fa
 
 ### Other Applications
 
-Mosaic is starting to be used with certain C libraries, for example:
+Mosaic has been used with certain C libraries, for example:
 
 https://github.com/pluckyporcupine/raylib-mosaic
 
