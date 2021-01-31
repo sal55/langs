@@ -21,13 +21,14 @@ Implem | Language | Time (secs) | Funcs/sec | Runtime (secs)
 **PyPy**      | Python | 16 | 625 | 1.2
 **CPython**  | Python | 8.2 | 1200 | 37.4
 **Vox**         | [Vox](https://github.com/MrSmith33/vox) | 5.5 | 1800 | 0.53 [Source](https://gist.github.com/MrSmith33/ac14e66a83b9d047793adede464ca1ef#file-fannkuch-vx)
-**bcc** | C        | 3.0 | 3300 | 0.75
-**BB-opt** | M        | 2.5 | 4000 | 0.28
-**BB**            | M | 2.1 | 4700 | 0.56
+**bcc** (gcc) | C        | 3.0 | 3300 | 0.75
+**BB-opt** (bb) | M        | 2.5 | 4000 | 0.28
+**BB** (bb)            | M | 2.1 | 4700 | 0.56
+**MM**            | M | 1.7 | 5800 | 0.6
 **Tiny C**        | C | 1.1 | 9100 | 0.79
 **Lua**         | Lua | 0.9 | 11000 | 11.5
 **LuaJIT**      | Lua | 0.6 | 16600 | 0.75
-**MS**          | MS | 0.55 | 18000 | 15.7 (10.0 opt, 4.1 acc)
+**MS** (bb)         | MS | 0.55 | 18000 | 15.7 (10.0 opt, 4.1 acc)
 
 ### Notes
 
