@@ -24,7 +24,7 @@ Implem | Language | Time (secs) | Funcs/sec | Runtime (secs)
 **bcc** (gcc) | C        | 3.0 | 3300 | 0.75
 **BB-opt** (bb) | M        | 2.5 | 4000 | 0.28
 **BB** (bb)            | M | 2.1 | 4700 | 0.56
-**MM**            | M | 1.7 | 5800 | 0.6
+**MM** (gcc)          | M | 1.7 | 5800 | 0.6
 **Tiny C**        | C | 1.1 | 9100 | 0.79
 **Lua**         | Lua | 0.9 | 11000 | 11.5
 **LuaJIT**      | Lua | 0.6 | 16600 | 0.75
@@ -62,9 +62,10 @@ in a program containin just the one function.
 
 ### My Compilers
 
-These are BB (M language) and MS (MS language). The latter is a new embedded scripting language.
-
-BB currently has a simpler, rather limited optimiser, but nevertheless was used to build the BB and MS compilers. With full optimisation such as with gcc-O3, they would have been a bit faster.
+The current ones are BB (M language) and MS (MS language). The latter is a new embedded scripting language.
 
 I've now added 'bcc', which is my C compiler. This had had problems with its ST organisation (each set of 10,000 duplicate local names was stored in one list, and sometimes it would scan all of it). This program is still hampered by having an intermediate stage that is ASM source code, which slows down otherwise it would be faster than BB. Note that the timing is of a version built with gcc 5.1.0 -O3, otherwise it would be 40% slower.
 
+I've also addede 'MM', which is an older version of BB. This had the advantage of being able to be transpiled to C, allowing a proper optimising compiler to be used.
+
+The (bb) against my implentations means compiled with 'bb -opt'. (gcc) means transpiled to C and compiled with 'gcc -O3'.
