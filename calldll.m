@@ -1,3 +1,6 @@
+!FFI interface file, designed for transplilation to C
+!intm was the machine-sized int, or just int64 now.
+
 import clib
 import mlib
 
