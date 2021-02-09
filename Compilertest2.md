@@ -17,6 +17,7 @@ Implem | Language | Time (secs) | Funcs/sec | Runtime (secs)
 **Julia**    | Julia  | 136 | 73 | 0.88
 **gcc** | C            | 61 | 160 | 0.71 (0.30 opt)
 **Go**            | Go | 38 | 263 | 0.27
+**Dart**          | Dart | 30 | 330 | 0.60   
 **DMD**            | D | 29 | 340 | 0.75
 **PyPy**      | Python | 16 | 625 | 1.2
 **CPython**  | Python | 8.2 | 1200 | 37.4
@@ -29,6 +30,17 @@ Implem | Language | Time (secs) | Funcs/sec | Runtime (secs)
 **Lua**         | Lua | 0.9 | 11000 | 11.5
 **LuaJIT**      | Lua | 0.6 | 16600 | 0.75
 **MS** (bb)         | MS | 0.55 | 18000 | 15.7 (10.0 opt, 4.1 acc)
+
+I have since discovered that compile-times can sometimes vary considerably, depending on whether those 10,000 are called or not. So a variation has been done for some, where the main program calls each of the 10,000 functions (with parameter 5, although that only affects interpreters necessarily has to execute the code). BB is added here as a control because that is not affected:
+
+
+Implem | Language | Time (secs) | Funcs/sec | Runtime (secs)
+--- | --- | --- | --- | ---
+
+**Dart**          | Dart | 235| 42| --
+**BB**             | M | 2.2 | 4500 | --
+
+
 
 ### Notes
 
