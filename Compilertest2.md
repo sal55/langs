@@ -34,11 +34,10 @@ Implem | Language | Time (secs) | Funcs/sec | Runtime (secs)
 I have since discovered that compile-times can sometimes vary considerably, depending on whether those 10,000 are called or not. So a variation has been done for some, where the main program calls each of the 10,000 functions (with parameter 5, although that only affects interpreters necessarily has to execute the code). BB is added here as a control because that is not affected:
 
 
-Implem | Language | Time (secs) | Funcs/sec | Runtime (secs)
+Implem | Language | Time (secs) | Funcs/sec
 --- | --- | --- | --- | ---
-
-**Dart**          | Dart | 235| 42| --
-**BB**             | M | 2.2 | 4500 | --
+**Dart**          | Dart | 235| 42
+**BB**             | M | 2.2 | 4500
 
 
 
