@@ -35,7 +35,7 @@ I have since discovered that compile-times can sometimes vary considerably, depe
 
 
 Implem | Language | Time (secs) | Funcs/sec
---- | --- | --- | --- | ---
+--- | --- | --- | ---
 **Dart**          | Dart | 235| 42
 **BB**             | M | 2.2 | 4500
 
