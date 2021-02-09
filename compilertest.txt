@@ -88,7 +88,9 @@ Other languages:
 
   Clox (Lox)      0.0    0.1     0.3     1.0
   
-  V (Vlang)       5.2   20.0     ---     ----
+  V (Vlang)       5.2   20.0     ---     ---
+  
+  Dart            8.5   19.5    74.5     --- (Compiling just hello.dart takes 6.5 seconds)
 
 My languages:
 
