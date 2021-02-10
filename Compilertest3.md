@@ -10,9 +10,9 @@ The benchmark function is repeated 10,000 times with random names, and each call
 
 I've added also information on the generated binary size, and an idea of the installation size.
 
-Implem | Language | Time (secs) | Funcs/sec | Runtime (secs) | Exe Size | Installation Files, MB
+Implem | Language | Time (secs) | Funcs/sec | Runtime | Exe Size | Installation Files, MB
 --- | --- | --- | --- | --- | --- | ---
-**Rustc -O** | Rust  | 22 **HOURS** \*\* | 1/8th | 0.30| 10MB \*\* | 12 Files, 100MB + 14600 Files, 2800MB
+**Rustc -O** | Rust  | 22 **HOURS** \*\* | 1/8th | 0.30 secs| 10MB \*\* | 12 Files, 100MB + 14600 Files, 2800MB
 **Rustc** | Rust  | 330 secs | 30 | 3.1 | 40MB | 12 Files, 100MB + 14600 Files, 2800MB
 **Dart**          | Dart | 235| 42 | 0.6 | 27MB | 500 Files, 490MB
 **DMD -O**       | D | 156 | 64 | 0.32 | 15MB | 4000 Files, 300MB 
