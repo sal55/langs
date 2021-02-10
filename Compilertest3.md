@@ -60,6 +60,9 @@ The Rust installation is rather mysterious; I found 12 exe files, of identical s
 
 **Host** All tests were done on an old Windows 7 PC, 64 bits, with spinning hard drive. Number of cores available was 2 (doubt any used more than one). Not the most up-to-date hardware, but all compilers ran on the same machine.
 
+**Dart** This compiler took 6 seconds just to compile a Hello, World program (which generated a 5MB executable, which probably explains it!). This suggest another possible measure - overheads that apply even to a minimal program. But I haven't really seen it in others, except I think Zig, which is not part of my test (too much effort to try and get the benchmark written). There may anyway be options to control that which I don't know about, so I won't try that yet.
+
+
 ### My Compilers
 
 These are BB and the older MM, both for my M systems language. Also BCC for C.
