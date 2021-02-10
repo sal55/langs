@@ -21,7 +21,7 @@ Implem | Language | Time (secs) | Funcs/sec | Runtime (secs) | Exe Size | Instal
 **gcc**           | C            | 67 | 150 | 0.71 | 10MB | 4800 Files, 550MB
 **Go**            | Go | 40 | 250 | 0.27 | 10MB | 9200 Files, 350MB
 **DMD**           | D | 32 | 310 | 0.75 | 16MB | 4000 Files, 300MB
-**Vox**           | [Vox](https://github.com/MrSmith33/vox) | 15 | 670 | 0.53 [Source](https://gist.github.com/MrSmith33/ac14e66a83b9d047793adede464ca1ef#file-fannkuch-vx) | 10MB | 1 Files, 2.4MB
+**Vox**           | [Vox](https://github.com/MrSmith33/vox) | 15 | 670 | [0.53](https://gist.github.com/MrSmith33/ac14e66a83b9d047793adede464ca1ef#file-fannkuch-vx) | 10MB | 1 Files, 2.4MB
 **MSVC**          | C | 12  |830 | 0.78 | 9.2MB | 14600 Files, 2800MB
 **bcc** (gcc)     | C        | 3.0 | 3300 | 0.75 | 8.0MB | 1 File, 0.7MB
 **BB -opt** (bb)   | M        | 2.5 | 4000 | 0.28 | 6.6MB | 1 File, 0.6MB
