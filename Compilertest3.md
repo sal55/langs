@@ -1,32 +1,29 @@
 ## Compiler Tests III
 
-This is a revised version of [these tests](Compilertest2.md), as I found that if
-the 10,000 files were not called, some compilers didn't do as much work. The new test will call
-each of the functions once.
+This is a revised version of [these tests](Compilertest2.md), as I found that if the 10,000 files were not called, some compilers didn't do as much work. The new test will call each of the functions once.
 
-I've also concentrated on compilers generating native code, as ones which are interpreted, or
-do not generate a discrete binary, deserve their own benchmarks with different criteria.
+I've also concentrated on compilers generating native code, as ones which are interpreted, or do not generate a discrete binary, deserve their own benchmarks with different criteria.
 
-Again, this is the 'fannkuch-redux' benchmark described [here](https://benchmarksgame-team.pages.debian.net/benchmarksgame/performance/fannkuchredux.html). Versions I've written in 10 languages (plus two of mine) are listed [here](fannkuch.txt).
+Again, this is the 'fannkuch-redux' benchmark described [here](https://benchmarksgame-team.pages.debian.net/benchmarksgame/performance/fannkuchredux.html). Versions I've written in 10 languages (plus two of mine) are listed [here](fannkuch.txt); any missing ones can be found at the former link.
 
-The benchmark function is repeated 10,000 times with random names.
+The benchmark function is repeated 10,000 times with random names, and each called once inside the main program. (With parameter 5, but that is only of significance for interpreted code which needs to execute the whole thing.)
 
-I've added also information on the generated binary size
+I've added also information on the generated binary size, and an idea of the installation size.
 
 Implem | Language | Time (secs) | Funcs/sec | Runtime | Exe Size | Installation Files/MB
 --- | --- | --- | --- | --- | --- | ---
 **Rustc** | Rust  | 396 | 25 | ---| size | ---
 **Dart**          | Dart | 235| 42 | 0.6 | 27MB | 500/490MB
+**gcc-O3**           | C            | 85 | 118 | 0.30 | 1MB | 4800/550MB
 **DMD -O**       | D | 156 | 64 | 0.32 | 15MB | 4000 files/300MB 
 **gcc-O0**           | C            | 67 | 150 | 0.71 | 10MB | 4800/550MB
-**gcc-O3**           | C            | 85 | 118 | 0.71 | 1MB | 4800/550MB
 **Go**            | Go | 40 | 250 | 0.27 | 10MB | 9200/350MB
 **DMD**           | D | 32 | 310 | 0.75 | 16MB | 4000/300MB
-**Vox**           | [Vox](https://github.com/MrSmith33/vox) | 5.5 | 1800 | 0.53 [Source](https://gist.github.com/MrSmith33/ac14e66a83b9d047793adede464ca1ef#file-fannkuch-vx) | 10MB | 1/2.4MB
+**Vox**           | [Vox](https://github.com/MrSmith33/vox) | 670 | 1800 | 0.53 [Source](https://gist.github.com/MrSmith33/ac14e66a83b9d047793adede464ca1ef#file-fannkuch-vx) | 10MB | 1/2.4MB
 **bcc** (gcc)     | C        | 3.0 | 3300 | 0.75 | 8MB | 1/0.7MB
 **BB-opt** (bb)   | M        | 2.5 | 4000 | 0.28 | 7MB | 1/0.6MB
 **BB** (bb)       | M        | 2.2 | 4500 | 0.56 | 8MB | 1.0/6MB
-**MM** (gcc)      | M        | 1.75 | 5700 | 0.6 | 10MB | 1/0.8MB
+**MM** (gcc)      | M        | 1.75 | 5700 | 0.60 | 10MB | 1/0.8MB
 **Tiny C**        | C        | 1.1 | 9100 | 0.79 | 10MB | 120/1.8MB
 
 
