@@ -75,7 +75,7 @@ The figures for this are also extrapolated from a 1000-function version. Using -
 
 ### Notes
 
-**Lines/second** Fastest speed in LPS was something like 0.9Mlps (tcc), and slowest around 2.4Klps (unoptimised Rust; I don't include the 10lps of optimised Rust). Code density varies, but I think tcc still comes out on top.
+**Lines/second** Fastest speed in LPS was something like 900Klps (tcc), and slowest around 1.2Klps (optimised Clang; I don't include the 0.01Klps of optimised Rust). Code density varies, but I think tcc still comes out on top.
 
 **Optimisation** Optimised versions tried where the option existed and I knew how to to turn it on.
 
