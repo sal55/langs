@@ -31,16 +31,6 @@ Implem | Language | Time (secs) | Funcs/sec | Runtime (secs)
 **LuaJIT**      | Lua | 0.6 | 16600 | 0.75
 **MS** (bb)         | MS | 0.55 | 18000 | 15.7 (10.0 opt, 4.1 acc)
 
-**I have since discovered** that compile-times can sometimes vary considerably, depending on whether those 10,000 functions are called or not. So a variation has been done for some, where the main program calls each of the 10,000 functions (with parameter 5, although that only affects interpreters as they necessarily have to execute the code). BB is added here as a control because that is not affected other than having to compile 10,000 extra lines:
-
-
-Implem | Language | Time (secs) | Funcs/sec
---- | --- | --- | ---
-**Dart**          | Dart | 235| 42
-**BB**             | M | 2.2 | 4500
-
-This will be populated further as more are tested.
-
 ### Notes
 
 **Time** How many seconds it took to compile
