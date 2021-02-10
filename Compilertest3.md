@@ -12,7 +12,7 @@ I've added also information on the generated binary size, and an idea of the ins
 
 Implem | Language | Time (secs) | Funcs/sec | Runtime | Exe Size | Installation Files/MB
 --- | --- | --- | --- | --- | --- | ---
-**Rustc** | Rust  | 396 | 25 | ---| size | ---
+**Rustc** | Rust  | 396 | 25 | ---| --- | 12/68MB?
 **Dart**          | Dart | 235| 42 | 0.6 | 27MB | 500/490MB
 **gcc-O3**           | C            | 85 | 118 | 0.30 | 1MB | 4800/550MB
 **DMD -O**       | D | 156 | 64 | 0.32 | 15MB | 4000 files/300MB 
@@ -27,42 +27,45 @@ Implem | Language | Time (secs) | Funcs/sec | Runtime | Exe Size | Installation 
 **Tiny C**        | C        | 1.1 | 9100 | 0.79 | 10MB | 120/1.8MB
 
 
-### Notes
+### Time
 
-**Time** How many seconds it took to compile
+How many seconds it took to compile
 
-**Func/sec** Because some took more lines than others, the table is sorted in terms of functions/second throughput.
+### Funcs/sec
 
-**Lines/second** Fastest speed in LPS was something above 1.2Mlps (my MS bytecode compiler), and slowest around 3.4Klps (Rust, which excluded linking because that part didn't work)
-
-**Files Sizes** Roughly 500K to 1000K lines. More than is typical for a single module, but timings for only 1000 functions (50-100K lines) were usually proportionately less. (Any smaller, and the faster products would be hard to measure.)
-
-**Optimisation** Optimisation was usually off except where it made an appreciable difference, and was felt it actually did something. gcc-O3 took the same time as gcc-O0, suggesting it hadn't bothered.
-
-**Host** All tests were done on an old Windows 7 PC, 64 bits, with spinning hard drive. Number of cores available was 2 (doubt any used more than one). Not the most up-to-date hardware, but all compilers ran on the same machine.
+Because some took more lines than others, the table is sorted in terms of functions/second throughput.
 
 ### Runtimes
 
-This column has been added, so that some trade-offs can be compared. Runtime is how long it took to execute:
+This column has been added so that some trade-offs can be compared. Runtime is how long it took to execute:
 
     fann(10)
     
-in a program containin just the one function.
+in a program containing just the one function.
 
-**Notes:**
+### Exe Size
 
-* Rust doesn't link on my machine so couldn't be run
+The size of the binary executable. The smallest is gcc-O3 with the unfeasibly low 1MB (100 bytes per function), probably the result of some culling. Otherwise they range from 6.6MB to 27MB.
 
-* In the case of my MS, which is unfinished, 15.7 is actual time of unaccelerated code. Projections taken from the previous product suggest: 10 seconds when optimised via gcc-03; and 4.1 seconds when accelerated (not using JIT; it still executes bytecode).)
+### Installation Files/MB
 
-* Don't read into much into the figures of one, small, tight benchmark, which some optimisers and especially tracing-JITs can optimise agressively.
+This gives an idea of the magnitude of the installation. The very large ones will come with lots of libraries, headers etc, but it is not practical to isolate what is needed to run this test.
+
+The Rust installation is rather mysterious; I found 12 exe files, of identical sizes, but there may be more. It is incomplete anyway as it relies on MS Build Tools, which exist but it can't manage to link up to (so I couldn't link to create executables, or to run the results).
+
+### Notes
+
+**Lines/second** Fastest speed in LPS was something like 0.9Mlps (tcc), and slowest around 2Klps (Rust, which excluded linking because that part didn't work). Code density varies, but I think tcc still comes out on top.
+
+**Optimisation** Optimised versions tried where the option existed and I knew how to to turn it on.
+
+**Host** All tests were done on an old Windows 7 PC, 64 bits, with spinning hard drive. Number of cores available was 2 (doubt any used more than one). Not the most up-to-date hardware, but all compilers ran on the same machine.
 
 ### My Compilers
 
-The current ones are BB (M language) and MS (MS language). The latter is a new embedded scripting language.
+These are BB and the older MM, both for my M systems language. Also BCC for C.
 
-I've now added 'bcc', which is my C compiler. This had had problems with its ST organisation (each set of 10,000 duplicate local names was stored in one list, and sometimes it would scan all of it). This program is still hampered by having an intermediate stage that is ASM source code, which slows down otherwise it would be faster than BB. Note that the timing is of a version built with gcc 5.1.0 -O3, otherwise it would be 40% slower.
+(gcc) means it was transpiled to C and compiled with gcc-O3, which gives a faster time than otherwise (but a bigger compiler executable).
 
-I've also addede 'MM', which is an older version of BB. This had the advantage of being able to be transpiled to C, allowing a proper optimising compiler to be used.
+(bb) means it was compiled with BB; so not quite as fast, but a smaller executable.
 
-The (bb) against my implentations means compiled with 'bb -opt'. (gcc) means transpiled to C and compiled with 'gcc -O3'.
