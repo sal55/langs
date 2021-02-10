@@ -15,17 +15,16 @@ Implem | Language | Time (secs) | Funcs/sec | Runtime | Exe Size | Installation 
 **Rustc** | Rust  | 396 | 25 | ---| --- | 12/68MB?
 **Dart**          | Dart | 235| 42 | 0.6 | 27MB | 500/490MB
 **DMD -O**       | D | 156 | 64 | 0.32 | 15MB | 4000 files/300MB 
-**gcc-O3**           | C            | 85 | 118 | 0.30 | 1MB | 4800/550MB
+**gcc-O3**           | C            | 85 | 118 | 0.30 | 0.93MB | 4800/550MB
 **gcc-O0**           | C            | 67 | 150 | 0.71 | 10MB | 4800/550MB
 **Go**            | Go | 40 | 250 | 0.27 | 10MB | 9200/350MB
 **DMD**           | D | 32 | 310 | 0.75 | 16MB | 4000/300MB
 **Vox**           | [Vox](https://github.com/MrSmith33/vox) | 15 | 670 | 0.53 [Source](https://gist.github.com/MrSmith33/ac14e66a83b9d047793adede464ca1ef#file-fannkuch-vx) | 10MB | 1/2.4MB
-**bcc** (gcc)     | C        | 3.0 | 3300 | 0.75 | 8MB | 1/0.7MB
-**BB-opt** (bb)   | M        | 2.5 | 4000 | 0.28 | 7MB | 1/0.6MB
-**BB** (bb)       | M        | 2.2 | 4500 | 0.56 | 8MB | 1.0/6MB
+**bcc** (gcc)     | C        | 3.0 | 3300 | 0.75 | 8.0MB | 1/0.68MB
+**BB-opt** (bb)   | M        | 2.5 | 4000 | 0.28 | 6.6MB | 1/0.56MB
+**BB** (bb)       | M        | 2.2 | 4500 | 0.56 | 7.8MB | 1/0.56MB
 **MM** (gcc)      | M        | 1.75 | 5700 | 0.60 | 10MB | 1/0.8MB
 **Tiny C**        | C        | 1.1 | 9100 | 0.79 | 10MB | 120/1.8MB
-
 
 ### Time
 
@@ -45,7 +44,7 @@ in a program containing just the one function.
 
 ### Exe Size
 
-The size of the binary executable. The smallest is gcc-O3 with the unfeasibly low 1MB (100 bytes per function), probably the result of some culling. Otherwise they range from 6.6MB to 27MB.
+The size of the binary executable. The smallest is gcc-O3 with the unfeasibly low 0.93MB (max 93 bytes per function ignoring libs and exe overheads), probably the result of some culling. Otherwise they range from 6.6MB to 27MB.
 
 ### Installation Files/MB
 
