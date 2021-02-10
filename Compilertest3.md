@@ -10,7 +10,7 @@ The benchmark function is repeated 10,000 times with random names, and each call
 
 I've added also information on the generated binary size, and an idea of the installation size.
 
-Implem | Language | Time (secs) | Funcs/sec | Runtime | Exe Size | Installation Files/MB
+Implem | Language | Time (secs) | Funcs/sec | Runtime (secs) | Exe Size | Installation Files/MB
 --- | --- | --- | --- | --- | --- | ---
 **Rustc** | Rust  | 396 | 25 | ---| --- | 12/68MB?
 **Dart**          | Dart | 235| 42 | 0.6 | 27MB | 500/490MB
