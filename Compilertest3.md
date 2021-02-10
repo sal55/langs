@@ -13,7 +13,7 @@ I've added also information on the generated binary size, and an idea of the ins
 Implem | Language | Time (secs) | Funcs/sec | Runtime (secs) | Exe Size | Installation Files/MB
 --- | --- | --- | --- | --- | --- | ---
 **Rustc -O** | Rust  | 22 **HOURS** \*\* | 1/8th | 0.30| 10MB \*\* | 12/100MB + 14600/2800MB
-**Rustc** | Rust  | 330 | 30 | 3.1 | 40MB | 12/100MB + 14600/2800MB
+**Rustc** | Rust  | 330 secs | 30 | 3.1 | 40MB | 12/100MB + 14600/2800MB
 **Dart**          | Dart | 235| 42 | 0.6 | 27MB | 500/490MB
 **DMD -O**       | D | 156 | 64 | 0.32 | 15MB | 4000/300MB 
 **gcc -O3**           | C            | 85 | 118 | 0.30 | 0.93MB | 4800/550MB
