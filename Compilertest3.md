@@ -16,11 +16,13 @@ Implem | Language | Time (secs) | Funcs/sec | Runtime (secs) | Exe Size | Instal
 **Rustc** | Rust  | 330 secs | 30 | 3.1 | 40MB | 12/100MB + 14600/2800MB
 **Dart**          | Dart | 235| 42 | 0.6 | 27MB | 500/490MB
 **DMD -O**       | D | 156 | 64 | 0.32 | 15MB | 4000/300MB 
+**MSVC /O2**          | C | 155 |64 | 0.25 | 0.2MB | 14600/2800MB
 **gcc -O3**           | C            | 85 | 118 | 0.30 | 0.93MB | 4800/550MB
 **gcc**           | C            | 67 | 150 | 0.71 | 10MB | 4800/550MB
 **Go**            | Go | 40 | 250 | 0.27 | 10MB | 9200/350MB
 **DMD**           | D | 32 | 310 | 0.75 | 16MB | 4000/300MB
 **Vox**           | [Vox](https://github.com/MrSmith33/vox) | 15 | 670 | 0.53 [Source](https://gist.github.com/MrSmith33/ac14e66a83b9d047793adede464ca1ef#file-fannkuch-vx) | 10MB | 1/2.4MB
+**MSVC**          | C | 12  |830 | 0.78 | 9.2MB | 14600/2800MB
 **bcc** (gcc)     | C        | 3.0 | 3300 | 0.75 | 8.0MB | 1/0.7MB
 **BB -opt** (bb)   | M        | 2.5 | 4000 | 0.28 | 6.6MB | 1/0.6MB
 **BB** (bb)       | M        | 2.2 | 4500 | 0.56 | 7.8MB | 1/0.6MB
@@ -45,7 +47,7 @@ in a program containing just the one function.
 
 ### Exe Size
 
-The size of the binary executable. The smallest is gcc-O3 with the unfeasibly low 0.93MB (max 93 bytes per function ignoring libs and exe overheads), probably the result of some culling. Otherwise they range from 6.6MB to 27MB.
+The size of the binary executable. They range from 6.6MB to 40MB. There are some smaller ones: 0.9MB from gcc-O3, and 0.2MB from MSVC/O2, but they have most likely culled a lot of code.
 
 ### Installation Files/MB
 
