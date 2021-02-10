@@ -1,6 +1,6 @@
 ## Compiler Tests III
 
-This is a revised version of [these tests](Compilertest2.md), as I found that if the 10,000 files were not called, some compilers didn't do as much work. The new test will call each of the functions once.
+This is a revised version of [these tests](Compilertest2.md), as I found that if the 10,000 functions were not called, some compilers didn't do as much work. The new test will call each of the functions once.
 
 I've also concentrated on compilers generating native code, as ones which are interpreted, or do not generate a discrete binary, deserve their own benchmarks with different criteria.
 
