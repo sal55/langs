@@ -12,7 +12,7 @@ I've added also information on the generated binary size, and an idea of the ins
 
 Implem | Language | Time (secs) | Funcs/sec | Runtime (secs) | Exe Size | Installation Files/MB
 --- | --- | --- | --- | --- | --- | ---
-**Rustc -O** | Rust  | 22 **hours** est | 1/8th | 0.30| 10MB est | 12/100MB + 14600/2800MB
+**Rustc -O** | Rust  | 22 **HOURS** \*\* | 1/8th | 0.30| 10MB \*\* | 12/100MB + 14600/2800MB
 **Rustc** | Rust  | 330 | 30 | 3.1 | 40MB | 12/100MB + 14600/2800MB
 **Dart**          | Dart | 235| 42 | 0.6 | 27MB | 500/490MB
 **DMD -O**       | D | 156 | 64 | 0.32 | 15MB | 4000/300MB 
@@ -51,11 +51,23 @@ The size of the binary executable. The smallest is gcc-O3 with the unfeasibly lo
 
 This gives an idea of the magnitude of the installation. The very large ones will come with lots of libraries, headers etc, but it is not practical to isolate what is needed to run this test.
 
-The Rust installation is rather mysterious; I found 12 exe files, of identical sizes, but there may be more. It is incomplete anyway as it relies on MS Build Tools, which exist but it can't manage to link up to (so I couldn't link to create executables, or to run the results).
+### \*\*Rust
+
+I've managed to make this work, and the good news is that, with a new update, it's a bit faster: 330 seconds unoptimised. And I finally have timings, but:
+
+* Rust needs MS VC++ build tools to work; so the installation size includes those tools
+
+* The runtime for unoptimised Rust poor: 10 times as slow as optimised code; I don't know why
+
+* The optimised compile was aborted after 20 minutes. 100 functions took 18 seconds; 1000 seconds took 1200 seconds. From this I extrapolated a figure of 79200 or 22 hours for a full optimised compile of 10,000 functions.
+
+* The optimised executable size was extrapolated from that of the 1000-function version
+
+So Rust has some problems in my opinion. Even that 18 seconds for an optimised build of 100-functions or 8000 lines is only 0.4K lines per second - microcomputer territory.
 
 ### Notes
 
-**Lines/second** Fastest speed in LPS was something like 0.9Mlps (tcc), and slowest around 2Klps (Rust, which excluded linking because that part didn't work). Code density varies, but I think tcc still comes out on top.
+**Lines/second** Fastest speed in LPS was something like 0.9Mlps (tcc), and slowest around 2.4Klps (unoptimised Rust; I don't include the 10lps of optimised Rust). Code density varies, but I think tcc still comes out on top.
 
 **Optimisation** Optimised versions tried where the option existed and I knew how to to turn it on.
 
