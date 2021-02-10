@@ -57,7 +57,7 @@ I've managed to make this work, and the good news is that, with a new update, it
 
 * Rust needs MS VC++ build tools to work; so the installation size includes those tools
 
-* The runtime for unoptimised Rust poor: 10 times as slow as optimised code; I don't know why
+* The runtime for unoptimised Rust is poor: 10 times as slow as optimised code; I don't know why
 
 * The optimised compile was aborted after 20 minutes. 100 functions took 18 seconds; 1000 seconds took 1200 seconds. From this I extrapolated a figure of 79200 or 22 hours for a full optimised compile of 10,000 functions.
 
