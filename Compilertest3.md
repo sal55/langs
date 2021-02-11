@@ -92,5 +92,5 @@ These are BB and the older MM, both for my M systems language. Also BCC for C.
 
 (bb) means it was compiled with BB; so not quite as fast, but a smaller executable.
 
-I don't know why some of these are so slow. But my 'bcc' C compiler is slowed down by having to generate a 50MB ASM intermediate file, which then has to be assembled. It would otherwise be faster than BB/MM where that step has been eliminated. (Actually, in order to give better results for comparisons like this, as for most real apps, compilation was not an issue.)
+I don't know why some of the compilers in the list are so slow. But my 'bcc' C compiler is slowed down by having to generate a 50MB ASM intermediate file, which then has to be assembled. It would otherwise be faster than BB/MM where that step has been eliminated. (Actually, that was done in order to give better results for comparisons like this, as for most real apps, compilation was not an issue. It just felt the proper approach.)
 
