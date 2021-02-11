@@ -14,7 +14,7 @@ Implem | Language | Time (secs) | Funcs/sec | Runtime | Exe Size | Inst Files | 
 --- | --- | --- | --- | --- | --- | --- | ---
 **Rustc -O** | Rust  | 79000 \*\* | 1/8th | 0.30 secs| 10MB \*\* | 12+14600 | 100MB + 2800MB
 **Clang -O3**        | C | 800 \*\* | 12.5 | 0.23 | 17MB | 350 | 1600MB
-**Rustc** | Rust  | 330 secs | 30 | 3.1 | 40MB | 12+14600 | 100MB+2800MB
+**Rustc** | Rust  | 330 | 30 | 3.1 | 40MB | 12+14600 | 100MB+2800MB
 **Dart**          | Dart | 235| 42 | 0.6 | 27MB | 500 | 490MB
 **DMD -O**       | D | 156 | 64 | 0.32 | 15MB | 4000 | 300MB 
 **MSVC /O2**          | C | 155 |64 | 0.25 | 0.2MB | 14600 | 2800MB
