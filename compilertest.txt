@@ -62,7 +62,8 @@ Other languages:
 
   Perl            0.2    1.0     4.8    19.6
 
-  Rust            T/O    ---     ---     ---
+  Rustc (Rust)   30.7    T/O     ---     ---
+  Rustc -O        5.2    T/O     ---     ---
 
   Nim+CC         16.0    OOM     ---     ---
   Nim to C        2.0   25.0     T/O     ---
@@ -113,15 +114,6 @@ T/O means it timed out and was aborted (over 2 mins or so)
 Some compilers are much faster when optimised, however virtually
 no output is done (all code is eliminated), so take those results
 with a pinch of salt.
-
-RUST appeared to have some problems, taking 20 seconds for 1000 lines,
-and near 80 seconds for 2000 lines, so 20K lines would take an estimated
-2 hours. It can't be that slow, so there must be something about
-this code that it doesn't like.
-
-(Tested again August 2019, it didn't like 'a=b+c*d' as the value of a
-wasn't used after each line. To void vast numbers of warnings, the test was changed to 'a=a+c*d'.
-This version needed 27 seconds for 1000 lines.)
 
 A68G didn't manage 20K lines but did do 10K lines in about 1.5 seconds.
 
