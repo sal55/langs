@@ -12,24 +12,24 @@ I've added also information on the generated binary size, and an idea of the ins
 
 Implem | Language | Time (secs) | Funcs/sec | Runtime | Exe Size | Inst Files | Inst MB
 --- | --- | --- | --- | --- | --- | --- | ---
-**Rustc -O** | Rust  | 79000 \*\* | 0.13 | 0.30 secs| 10MB \*\* | 12+14600 | 100MB + 2800MB
-**Clang -O3**        | C | 800 \*\* | 12.5 | 0.23 | 17MB \*\* | 350 | 1600MB
-**Rustc** | Rust  | 330 | 30 | 3.1 | 40MB | 12+14600 | 100MB+2800MB
-**Dart**          | Dart | 235| 42 | 0.6 | 27MB | 500 | 490MB
-**DMD -O**       | D | 156 | 64 | 0.32 | 15MB | 4000 | 300MB 
-**MSVC /O2**          | C | 155 |64 | 0.25 | 0.2MB | 14600 | 2800MB
-**gcc -O3**           | C            | 85 | 118 | 0.30 | 0.93MB | 4800 | 550MB
-**gcc**           | C            | 67 | 150 | 0.71 | 10MB | 4800 | 550MB
-**Go**            | Go | 40 | 250 | 0.27 | 10MB | 9200 | 350MB
-**DMD**           | D | 32 | 310 | 0.75 | 16MB | 4000 | 300MB
-**Clang**         | C | 30 | 330 | 0.81 | 12MB | 350 | 1600MB
-**Vox**           | [Vox](https://github.com/MrSmith33/vox) | 15 | 670 | [0.53](https://gist.github.com/MrSmith33/ac14e66a83b9d047793adede464ca1ef#file-fannkuch-vx) | 10MB | 1 | 2.4MB
-**MSVC**          | C | 12  |830 | 0.78 | 9.2MB | 14600 | 2800MB
-**bcc** (gcc)     | C        | 3.0 | 3300 | 0.75 | 8.0MB | 1 | 0.7MB
-**BB -opt** (bb)   | M        | 2.5 | 4000 | 0.28 | 6.6MB | 1 | 0.6MB
-**BB** (bb)       | M        | 2.2 | 4500 | 0.56 | 7.8MB | 1 | 0.6MB
-**MM** (gcc)      | M        | 1.75 | 5700 | 0.60 | 10MB | 1 | 0.8MB
-**Tiny C**        | C        | 1.1 | 9100 | 0.79 | 10MB | 120 | 1.8MB
+**Rustc -O** | Rust  | 79000 \*\* | 0.13 | 3.2 secs| 10MB \*\* | 12+14600 | 100MB + 2800MB
+**Clang -O3**        | C | 800 \*\* | 12.5 | 2.45 | 17MB \*\* | 350 | 1600MB
+**Rustc** | Rust  | 330 | 30 | 37.8 | 40MB | 12+14600 | 100MB+2800MB
+**Dart**          | Dart | 235| 42 | 6.2 | 27MB | 500 | 490MB
+**DMD -O**       | D | 156 | 64 | 4.1 | 15MB | 4000 | 300MB 
+**MSVC /O2**          | C | 155 |64 | 2.6 | 0.2MB | 14600 | 2800MB
+**gcc -O3**           | C            | 85 | 118 | 3.3 | 0.93MB | 4800 | 550MB
+**gcc**           | C            | 67 | 150 | 8.7 | 10MB | 4800 | 550MB
+**Go**            | Go | 40 | 250 | 2.9 | 10MB | 9200 | 350MB
+**DMD**           | D | 32 | 310 | 9.7 | 16MB | 4000 | 300MB
+**Clang**         | C | 30 | 330 | 10.2 | 12MB | 350 | 1600MB
+**Vox**           | [Vox](https://github.com/MrSmith33/vox) | 15 | 670 | [6.3](https://gist.github.com/MrSmith33/ac14e66a83b9d047793adede464ca1ef#file-fannkuch-vx) | 10MB | 1 | 2.4MB
+**MSVC**          | C | 12  |830 | 9.6 | 9.2MB | 14600 | 2800MB
+**bcc** (gcc)     | C        | 3.0 | 3300 | 9.0 | 8.0MB | 1 | 0.7MB
+**BB -opt** (bb)   | M        | 2.5 | 4000 | 3.1 | 6.6MB | 1 | 0.6MB
+**BB** (bb)       | M        | 2.2 | 4500 | 6.8 | 7.8MB | 1 | 0.6MB
+**MM** (gcc)      | M        | 1.75 | 5700 | 7.0 | 10MB | 1 | 0.8MB
+**Tiny C**        | C        | 1.1 | 9100 | 10.1 | 10MB | 120 | 1.8MB
 
 ### Time
 
@@ -43,9 +43,9 @@ Because some took more lines than others, the table is sorted in terms of functi
 
 This column has been added so that some trade-offs can be compared. Runtime is how long it took to execute:
 
-    fann(10)
+    fann(11)
     
-in a program containing just the one function.
+in a program containing just the one function. (This has been changed from fann(10) is timings were getting too small. That was chosen originally because I'd had interpreted languages too, and fann(11) was too challenging for some.)
 
 ### Exe Size
 
