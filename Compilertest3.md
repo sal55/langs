@@ -45,7 +45,7 @@ This column has been added so that some trade-offs can be compared. Runtime is h
 
     fann(11)
     
-in a program containing just the one function. (This has been changed from fann(10) is timings were getting too small. That was chosen originally because I'd had interpreted languages too, and fann(11) was too challenging for some.)
+in a program containing just the one function. (This has been changed from fann(10) as timings were getting too small. That was chosen originally because I'd had interpreted languages too, and fann(11) was too challenging for some.)
 
 ### Exe Size
 
