@@ -118,3 +118,6 @@ Implem | Language | Runtime
 **Tiny C**        | C   | 10.1
 **Clang**         | C   | 10.2
 **Rustc**         | Rust| 37.8
+
+One of my compilers (bcc-opt) does surprisingly well. It's probably just a fluke, however that is the genuine timing for this test.
+
