@@ -94,7 +94,7 @@ I don't know why some of the compilers in the list are so slow. But my 'bcc' C c
 
 ### Sorted by Runtime
 
-Rememeber this is just for that one small benchmark (and only one copy of the function):
+Rememeber this is just for that one small benchmark (a single call to fannkuch(11) in a program with just that one function):
 
 Implem | Language | Runtime
 --- | --- | ----
