@@ -13,10 +13,10 @@ I've added also information on the generated binary size, and an idea of the ins
 Implem | Language | Time (secs) | Funcs/sec | Runtime | Exe Size | Inst Files | Inst MB
 --- | --- | --- | --- | --- | --- | --- | ---
 **Rustc -O** | Rust  | 79000 \*\* | 0.13 | 3.2 secs| 10MB \*\* | 12+14600 | 100MB + 2800MB
-**Clang -O3**        | C | 800 \*\* | 12.5 | 2.45 | 17MB \*\* | 350 | 1600MB
-**Clang -O2**        | C | 650 \*\* | 15 | 2.5 | --- | 350 | 1600MB
+**Clang -O3**        | C | 800 | 12.5 | 2.45 | 17MB | 350 | 1600MB
+**Clang -O2**        | C | 650 | 15 | 2.5 | --- | 350 | 1600MB
 **Rustc** | Rust  | 330 | 30 | 37.8 | 40MB | 12+14600 | 100MB+2800MB
-**Clang -O1**        | C | 310 \*\* | 15 | 2.6 | --- | 350 | 1600MB
+**Clang -O1**        | C | 310 | 15 | 2.6 | --- | 350 | 1600MB
 **Dart**          | Dart | 235| 42 | 6.2 | 27MB | 500 | 490MB
 **DMD -O**       | D | 156 | 64 | 4.1 | 15MB | 4000 | 300MB 
 **MSVC /O2**          | C | 155 |64 | 2.6 | 0.2MB | 14600 | 2800MB
@@ -70,10 +70,6 @@ I've managed to make this work, and the good news is that, with a new update, it
 * The optimised executable size was extrapolated from that of the 1000-function version
 
 So Rust has some problems in my opinion. Even that 18 seconds for an optimised build of 100-functions or 8000 lines is only 0.4K lines per second - microcomputer territory.
-
-### \*\*Clang (using LLVM)
-
-The figures for this are also extrapolated from a 1000-function version. Using -O2 insted of -O3 makes it 25% faster to build (but still slow), and runtime increases to 0.25 seconds (but the 0.23 figure is the best of all the compilers).
 
 ### Notes
 
