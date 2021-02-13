@@ -105,7 +105,7 @@ Implem | Language | Runtime
 **Go**            | Go | 2.9
 **BB -opt** (bb)   | M | 3.1
 **Rustc -O** | Rust | 3.2
-**gcc -O3**           | C    |       | 3.3
+**gcc -O3**           | C  | 3.3
 **DMD -O**       | D | 4.1
 **Dart**          | Dart | 6.2
 **Vox**           | Vox | 6.3
@@ -117,4 +117,4 @@ Implem | Language | Runtime
 **DMD**           | D   | 9.7
 **Tiny C**        | C   | 10.1
 **Clang**         | C   | 10.2
-**Rustc**         | Rust| 7.8
+**Rustc**         | Rust| 37.8
