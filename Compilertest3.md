@@ -92,3 +92,29 @@ These are BB and the older MM, both for my M systems language. Also BCC for C.
 
 I don't know why some of the compilers in the list are so slow. But my 'bcc' C compiler is slowed down by having to generate a 50MB ASM intermediate file, which then has to be assembled. It would otherwise be faster than BB/MM where that step has been eliminated. (Actually, that was done in order to give better results for comparisons like this, as for most real apps, compilation was not an issue. It just felt the proper approach.)
 
+### Sorted by Runtime
+
+Rememeber this is just for that one small benchmark (and only one copy of the function):
+
+Implem | Language | Runtime
+--- | --- | ----
+**Clang -O3**        | C | 2.45 secs
+**Clang -O2**        | C | 2.5
+**MSVC /O2**          | C | 2.6
+**Clang -O1**        | C | 2.6
+**Go**            | Go | 2.9
+**BB -opt** (bb)   | M | 3.1
+**Rustc -O** | Rust | 3.2
+**gcc -O3**           | C    |       | 3.3
+**DMD -O**       | D | 4.1
+**Dart**          | Dart | 6.2
+**Vox**           | Vox | 6.3
+**BB** (bb)       | M   | 6.8
+**MM** (gcc)      | M   | 7.0
+**gcc**           | C   | 8.7
+**bcc** (gcc)     | C   | 9.0
+**MSVC**          | C   | 9.6
+**DMD**           | D   | 9.7
+**Tiny C**        | C   | 10.1
+**Clang**         | C   | 10.2
+**Rustc**         | Rust| 7.8
