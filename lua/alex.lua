@@ -98,7 +98,7 @@ function readnumber(base)
         if c>=string.byte('0') and c<=string.byte('9') then
             d=c-string.byte('0')
         elseif c>=string.byte('A') and c<=string.byte('F') then
-            d=c-string.byte('a')+10
+            d=c-string.byte('F')+10
         elseif c>=string.byte('a') and c<=string.byte('f') then
             d=c-string.byte('a')+10
         else
