@@ -1,3 +1,6 @@
+!(Simple lexer written in my M systems language. This was a direct port of mlex.q,
+! and only took 10-15 minutes to modify as the languages share syntax and other features.)
+
 import clib
 import mlib
 
