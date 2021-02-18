@@ -94,6 +94,8 @@ Other languages:
   Dart            8.5   19.5    74.5     --- (Compiling just hello.dart takes 6.5 seconds)
   
   Vox             1.3    1.5    2.3      5.4
+  
+  Wren            0.1    0.2    0.6      2.2 (Compile only; code is inside a function)
 
 My languages:
 
