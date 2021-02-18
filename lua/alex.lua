@@ -62,11 +62,7 @@ symbolnames = {"errorsym","dotsym","commasym","semisym","colonsym","assignsym",
     "barsym","questionsym","atsym","eolsym","eofsym","hashsym","incrsym",
     "decrsym","namesym","intconstsym","charconstsym","stringconstsym"}
 
-function sx(s,i)
-    return string.byte(string.sub(s,i,i))
-end
-
-function printsymbol()
+local function printsymbol()
     io.write(lxlineno)
     io.write(" ")
 
@@ -81,24 +77,25 @@ function printsymbol()
     io.write("\n")
 end
 
-function lxerror(mess)
+local function lxerror(mess)
     print("Error on line " .. lxlineno..": "..mess)
     os.exit()
 end
 
-function readnumber(base)
+local function readnumber(base)
     lxvalue=0
 
     while 1 do
         repeat
-            c=sx(lxsource,lxindex)
+            c=lxsource:byte(lxindex)
             lxindex=lxindex+1
         until c~=string.byte('_') and c~=string.byte("'")
 
         if c>=string.byte('0') and c<=string.byte('9') then
+--      if c>='0':byte and c<=string.byte('9') then
             d=c-string.byte('0')
         elseif c>=string.byte('A') and c<=string.byte('F') then
-            d=c-string.byte('F')+10
+            d=c-string.byte('A')+10
         elseif c>=string.byte('a') and c<=string.byte('f') then
             d=c-string.byte('a')+10
         else
@@ -118,7 +115,7 @@ function readnumber(base)
     lxsymbol=intconstsym
 end
 
-function readstring(termchar)
+local function readstring(termchar)
     if termchar==string.byte('"') then
         lxsymbol=stringconstsym
     else
@@ -127,11 +124,11 @@ function readstring(termchar)
     lxvalue=""
 
     while 1 do
-        c=sx(lxsource, lxindex)
+        c=lxsource:byte(lxindex)
         lxindex=lxindex+1
 
         if c==string.byte("\\") then
-            c=sx(lxsource, lxindex)
+            c=lxsource:byte(lxindex)
             if c>=string.byte('A') and c<=string.byte('Z') then
                 c=c+32
             end
@@ -159,7 +156,7 @@ function readstring(termchar)
                 c=string.byte('?')
             end
         elseif c==termchar then
-            if sx(lxsource,lxindex)==c then
+            if lxsource:byte(lxindex)==c then
                 lxindex=lxindex+1
             else
                 break
@@ -172,12 +169,12 @@ function readstring(termchar)
     end
 end
 
-function readrawstring()
+local function readrawstring()
     lxsymbol=stringconstsym
     lxvalue=""
 
     while 1 do
-        c=sx(lxsource, lxindex)
+        c=lxsource:byte(lxindex)
         lxindex=lxindex+1
 
         if c==string.byte('"') then
@@ -189,11 +186,11 @@ function readrawstring()
     end
 end
 
-function readtoken()
+local function readtoken()
     lxvalue=""
 
     while 1 do
-        c=sx(lxsource,lxindex)
+        c=lxsource:byte(lxindex)
 
         if c>=string.byte('A') and c<=string.byte('Z') or
                 c>=string.byte('a') and c<=string.byte('z') or
@@ -208,7 +205,7 @@ function readtoken()
 
             while 1 do
                 lxindex = lxindex+1
-                c=sx(lxsource,lxindex)
+                c=lxsource:byte(lxindex)
                 if c>=string.byte('A') and c<=string.byte('Z') then
                     lxvalue = lxvalue..string.char(c+32)
 --                  lxhash = lxhash*15+c
@@ -235,7 +232,7 @@ function readtoken()
 
         elseif c>=string.byte('0') and c<=string.byte('9') then
             lxindex=lxindex+1
-            d=sx(lxsource,lxindex)
+            d=lxsource:byte(lxindex)
 
             if d==string.byte('x') or d==string.byte('X') then
                 lxindex=lxindex+1
@@ -263,7 +260,7 @@ function readtoken()
 
             while 1 do
                 lxindex=lxindex+1
-                c=sx(lxsource,lxindex)
+                c=lxsource:byte(lxindex)
                 if c==cr then
                 elseif c==lf then
                     lxlineno=lxlineno+1
@@ -319,7 +316,7 @@ function readtoken()
             return
         elseif c==string.byte(':') then
             lxindex=lxindex+1
-            if sx(lxsource,lxindex)==string.byte('=') then
+            if lxsource:byte(lxindex)==string.byte('=') then
                 lxindex=lxindex+1
                 lxsymbol=assignsym
             else
@@ -360,10 +357,10 @@ function readtoken()
 
         elseif c==string.byte('.') then
             lxindex=lxindex+1
-            c=sx(lxsource,lxindex)
+            c=lxsource:byte(lxindex)
             if c==string.byte('.') then
                 lxindex=lxindex+1
-                if sx(lxsource,lxindex)==string.byte('.') then
+                if lxsource:byte(lxindex)==string.byte('.') then
                     lxindex=lxindex+1
                     lxsymbol=ellipsissym
                 else
@@ -376,7 +373,7 @@ function readtoken()
 
         elseif c==string.byte('+') then
             lxindex=lxindex+1
-            if sx(lxsource,lxindex)==string.byte('+') then
+            if lxsource:byte(lxindex)==string.byte('+') then
                 lxindex=lxindex+1
                 lxsymbol=incrsym
             else
@@ -386,7 +383,7 @@ function readtoken()
 
         elseif c==string.byte('-') then
             lxindex=lxindex+1
-            if sx(lxsource,lxindex)==string.byte('-') then
+            if lxsource:byte(lxindex)==string.byte('-') then
                 lxindex=lxindex+1
                 lxsymbol=decrsym
             else
@@ -396,7 +393,7 @@ function readtoken()
 
         elseif c==string.byte('*') then
             lxindex=lxindex+1
-            if sx(lxsource,lxindex)==string.byte('*') then
+            if lxsource:byte(lxindex)==string.byte('*') then
                 lxindex=lxindex+1
                 lxsymbol=powersym
             else
@@ -406,7 +403,7 @@ function readtoken()
 
         elseif c==string.byte('<') then
             lxindex=lxindex+1
-            c=sx(lxsource,lxindex)
+            c=lxsource:byte(lxindex)
             if c==string.byte('=') then
                 lxindex=lxindex+1
                 lxsymbol=lesym
@@ -423,7 +420,7 @@ function readtoken()
 
         elseif c==string.byte('>') then
             lxindex=lxindex+1
-            c=sx(lxsource,lxindex)
+            c=lxsource:byte(lxindex)
             if c==string.byte('=') then
                 lxindex=lxindex+1
                 lxsymbol=gesym
@@ -453,7 +450,7 @@ function readtoken()
     end
 end
 
-function read_file(path)
+local function read_file(path)
     local file = io.open(path, "rb")
     if not file then return nil end
     local content = file:read "*a"
@@ -461,7 +458,7 @@ function read_file(path)
     return content
 end
 
-function readsource(file)
+local function readsource(file)
     lxsource=read_file(file)
     if lxsource==nil then
         lxerror("Can't open file:"..file)
@@ -471,7 +468,7 @@ function readsource(file)
     lxsource = lxsource..etxstr
 end
 
-function start()
+local function start()
     if arg[1]==nil then
         infile="input"
     else
@@ -501,8 +498,8 @@ function start()
     print("Chars:",nchars)
     print("")
     print(lxlineno/t,"Lines per second")
-    print(ntokens/t,"Tokens per second")
-    print(nchars/t,"Chars per second")
+--  print(ntokens/t,"Tokens per second")
+--  print(nchars/t,"Chars per second")
 
     print("")
 
