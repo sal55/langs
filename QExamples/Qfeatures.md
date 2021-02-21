@@ -152,6 +152,70 @@ So, again, for talking to M, no messy declarations need to be written. Usually p
 
 Variants can be passed and returned too, allowing more flexibility in Q code, but then the M implementation code becomes harder to write.
 
+### Summary of Basic Features
 
+This is a list of what I consider basic features, that are often lacking in other scripting languages, or need add-on modules to implement:
 
+* Pack types (often called C-types), mentioned above
+* Named constants
+* Static identifiers (that is, having proper variables, functions as mentioned)
+* Case-insensitive source code - this is friendlier than case-sensitive
+* Algol/Pascal-style syntax (this is used also by Lua etc but many use brace style, or Python-style)
+* Number bases from 2 to 16 (apart from base 10, others have mixed support for 2, 8 and 16) ...
+* ... plus the means to print in those bases
+* Separators in numeric literals
+* Some numeric suffixes, eg '10 million'
+* *Simple* Enumerations
+* Tabledata - used to define enumerations with corresponding parallel data
+* Direct FFI for C-based APIs
+* Bit-sets as used in Pascal, with logical bit operations
+* Bit-arrays
+* Bit and Bitfield operations (A.\[i\] and A.\[i..\j]
+* Built-in records and structs, with constructors: d:=date(31,12,1999)
+* As well as a standard int64 type, it has the less common word64 (u64) type
+* Arbitrary precision integer *and* float type, using decimal.
+* Print/Println as built-in *statements*
+* Read/Readln as built-in *statements*
+* Operators such as min, max, which can be used in augmented assignments: x min:= y
+* Static variables inside functions
+* Well-behaved default values on function parameters
+* Character constants: 'A' is 65. In Python and Lua, 'A' is a string; you need ord('A') or string.byte('A') to convert
+* Multi-character constants: 'ABCDEFGH' is an int value
+* Separate Proc and Function keywords
+* Start() and Main() functions: start() will be automatically executed is present in a module. main() will be automatically executed (ahead of start()) is this is the main module
+* Goto
+* Loop Break, Continue (called exit and next) and Redo from nested loops
+* Swap operator
+* Reference parameters
+* Pointers and address-of operator
+* Dedicated loop statements for end-less and repeat-N-times loops
+* Switch statement (working with int index and constant case-expressions (here, when-expressions)
+* Case statement for any type and variable expressions, but sequentially tested not instant.
+* 2-way and N-way selectors
+* View-based slicing of strings, lists, arrays
+* Strinclude directive incorporates any text or binary file as a string literal
+* Stop or Stop N as a quick way to stop execution
+* Type conversion and type-punning
+* Basic maths functions are built-in operators (just say sin(x), not math.sin(x))
+* Built-in constants such as *pi*
+* Augmented assignment like a+:=b (not present in Lua) and increment ++a (not present in Python)
+* Assigments and increment inside expressions
+* The whole syntax makes statements and expressions interchangeable (perhaps the only FP-like feature).
+* Scope control: at module level, use 'global' attribute to export a function, variable, type etc.
+
+### Summary of Missing Features
+
+This is a list of popular language features which Q is never going to have. Mainly because I don't understand them, don't see the point, or think they are bad for a language. Many I also consider hard to implement:
+
+To save some research, let's just say this is all the advanced features of Python plus a raft of buzzwords such as lambdas (and its calculus!), currying, pretty much anything to do with functional programming, anything involving elaborate type systems, and going over the top with concepts such as enumerations)
+
+Also missing are extensive libraries. There is one small support library, otherwise there of libraries I found personally useful.
+
+### Some Non-Implemented Features
+
+Things which I don't have a strong objection to, but which aren't currently implemented. Some have existed in the past:
+
+* List-comprehensions (was not used enough)
+* Exception handling for user-code events (I had a simple version at one time, but required a different approach to error-handling than I was comfortable with)
+* Exception handling for internal errors (I couldn't get this to work reliably; I will try again)
 
