@@ -203,19 +203,34 @@ This is a list of what I consider basic features, that are often lacking in othe
 * The whole syntax makes statements and expressions interchangeable (perhaps the only FP-like feature).
 * Scope control: at module level, use 'global' attribute to export a function, variable, type etc.
 
-### Summary of Missing Features
+### Some Missing Features
 
-This is a list of popular language features which Q is never going to have. Mainly because I don't understand them, don't see the point, or think they are bad for a language. Many I also consider hard to implement:
+Things it's never going to have:
 
-To save some research, let's just say this is all the advanced features of Python plus a raft of buzzwords such as lambdas (and its calculus!), currying, pretty much anything to do with functional programming, anything involving elaborate type systems, and going over the top with concepts such as enumerations)
+* Lambdas and lambda calculus
+* Decorators
+* Meta-classes
+* Currying
+* Closures and continuations
+* Over the top enumerations
+* Monads
+* Iterators
+* Elaborate type systems
+* Etc. Fill in the FP and other buzzwords for features that I'd have to look up on Wikipedia then forget five minutes later
 
-Also missing are extensive libraries. There is one small support library, otherwise there of libraries I found personally useful.
+The language is unapologetically 1980s-style and deliberately non-elitist. It's designed to do a job of work. It did after all start off as a scripting language for my applications for use by people who, while engineers, were not programmers.
+
+Another big omission is significant libraries. Mainly because the language is a largely a private tool and small libraries are only created for my own needs.
 
 ### Some Non-Implemented Features
 
-Things which I don't have a strong objection to, but which aren't currently implemented. Some have existed in the past:
+Things which I don't have a strong objection to, but which aren't implemented. Some have existed in the past:
 
 * List-comprehensions (was not used enough)
 * Exception handling for user-code events (I had a simple version at one time, but required a different approach to error-handling than I was comfortable with)
 * Exception handling for internal errors (I couldn't get this to work reliably; I will try again)
-
+* OOP, by which I means classes and methods. There are some primitive features along those lines, but I don't use them a great deal so are little developed.
+* Sum types
+* Generators
+* Container types (other than List and Dict)
+* Pattern matching
