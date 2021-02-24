@@ -94,9 +94,7 @@ These are BB and the older MM, both for my M systems language. Also BCC for C.
 
 (bb) means it was compiled with BB; so not quite as fast, but a smaller executable. I've removed the (gcc) timings where the source was transpiled to C and passed through gcc-O3.
 
-This handicaps my compilers a little, as it is assumed most others will use fully optimising compilers, but I also want to show what is possible with a modest home-made compiler that doesn't rely on heavy-duty tools. My compilers still dominate the fast end of the table, except for Tiny C.
-
-My own 'bcc' C compiler is slowed down by having to generate a 50MB ASM intermediate file, which then has to be assembled. It would otherwise be faster than BB/MM where that step has been eliminated, but still won't be as fast as Tiny C because there would still be multiple passes.)
+This handicaps my compilers a little, as it is assumed most others will use fully optimising compilers (but see below), but I also want to show what is possible with a modest home-made compiler that doesn't rely on heavy-duty tools. My compilers still dominate the fast end of the table, except for Tiny C.
 
 ### Tiny C
 
