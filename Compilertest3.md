@@ -34,7 +34,7 @@ Implem | Language | Time (secs) | Funcs/sec | Runtime | Exe Size | Inst Files | 
 **Tiny C** (tcc)  | C        | 1.9 | 5100 | 10.1 | 10MB | 120 | 1.8MB
 **Tiny C** (bcc)  | C        | 1.5 | 6700 | 10.1 | 10MB | 120 | 1.8MB
 **Tiny C**        | C        | 1.1 | 9100 | 10.1 | 10MB | 120 | 1.8MB
-**Tiny C**  (gcc) | C        | 0.9 | 10100 | 10.1 | 10MB | 120 | 1.8MB
+**Tiny C**  (gcc) | C        | 0.9 | 11100 | 10.1 | 10MB | 120 | 1.8MB
 
 ### Time
 
