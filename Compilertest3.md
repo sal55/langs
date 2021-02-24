@@ -25,12 +25,12 @@ Implem | Language | Time (secs) | Funcs/sec | Runtime | Exe Size | Inst Files | 
 **Go**            | Go | 40 | 250 | 2.9 | 10MB | 9200 | 350MB
 **DMD**           | D | 32 | 310 | 9.7 | 16MB | 4000 | 300MB
 **Clang**         | C | 30 | 330 | 10.2 | 12MB | 350 | 1600MB
-**Vox**           | [Vox](https://github.com/MrSmith33/vox) | 15 | 670 | [6.3](https://gist.github.com/MrSmith33/ac14e66a83b9d047793adede464ca1ef#file-fannkuch-vx) | 10MB | 1 | 2.4MB (0.75MB UPX)
+**Vox**           | [Vox](https://github.com/MrSmith33/vox) | 15 | 670 | [6.3](https://gist.github.com/MrSmith33/ac14e66a83b9d047793adede464ca1ef#file-fannkuch-vx) | 10MB | 1 | 2.4MB (0.75MB upx)
 **MSVC**          | C | 12  |830 | 9.6 | 9.2MB | 14600 | 2800MB
-**bcc** (bb)     | C        | 4.2 | 2400 | 9.0 | 8.0MB | 1 | 1.0MB (0.32MB UPX)
-**BB -opt** (bb)   | M        | 2.5 | 4000 | 3.1 | 6.6MB | 1 | 0.6MB (0.17MB UPX)
-**MM** (bb)      | M        | 2.3 | 4300 | 7.0 | 10MB | 1 | 0.8MB 0.16MB UPX)
-**BB** (bb)       | M        | 2.2 | 4500 | 6.8 | 7.8MB | 1 | 0.6MB (0.17MB UPX)
+**bcc** (bb)     | C        | 4.2 | 2400 | 9.0 | 8.0MB | 1 | 1.0MB (0.32MB upx)
+**BB -opt** (bb)   | M        | 2.5 | 4000 | 3.1 | 6.6MB | 1 | 0.6MB (0.17MB upx)
+**MM** (bb)      | M        | 2.3 | 4300 | 7.0 | 10MB | 1 | 0.8MB (0.16MB upx)
+**BB** (bb)       | M        | 2.2 | 4500 | 6.8 | 7.8MB | 1 | 0.6MB (0.17MB upx)
 **Tiny C**        | C        | 1.1 | 9100 | 10.1 | 10MB | 120 | 1.8MB
 
 ### Time
