@@ -57,7 +57,7 @@ The size of the binary executable. They range from 6.6MB to 40MB. There are some
 
 This gives an idea of the magnitude of the installation. The very large ones will come with lots of libraries, headers etc, but it is not practical to isolate what is needed to run this test.
 
-Where the entire installation is one self-contained executable, then figures using UPX compression are shown. (UPX is a utility that reduces the size of a .exe file, but it still runs as normal, but with about 0.1 seconds extra overhead.) By this measure, a Rust installation needs 17,000 times more space than my bb.exe.
+Where the entire installation is one self-contained executable, then figures using UPX compression are shown. (UPX is a utility that reduces the size of a .exe file, but it still runs as normal, although with about 0.1 seconds extra overhead.) By this measure, a Rust installation needs 17,000 times more space than my bb.exe.
 
 
 ### \*\*Rust
