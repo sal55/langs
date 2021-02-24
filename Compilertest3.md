@@ -93,7 +93,7 @@ These are BB and the older MM, both for my M systems language. Also BCC for C.
 
 This handicaps my compilers a little, as it is assumed most others will use fully optimising compilers, but I also want to show what is possible with a modest home-made compiler that doesn't rely on heavy-duty tools. My compilers still dominate the fast end of the table, except for Tiny C.
 
-(**Note:** I did experiment with a version of Tiny C built with itself (rather than, presumably, gcc); it was still fast! About 1.95 seconds runtime, and 5100 funcs/sec throughput, so still ahead of any of mine. Tiny C however is a one-pass compiler, mine is multi-pass, and compiles a language, C, which in this test (no large includes and no CPP use) which lends itself to one-pass.
+(**Note:** I did experiment with a version of Tiny C built with itself (rather than, presumably, gcc); it was still fast! About 1.95 seconds compile-time, and 5100 funcs/sec throughput, so still ahead of any of mine. Tiny C however is a one-pass compiler, mine is multi-pass, and compiles a language, C, which in this test (with no large includes and no CPP use) lends itself to one-pass.
 
 My own 'bcc' C compiler is slowed down by having to generate a 50MB ASM intermediate file, which then has to be assembled. It would otherwise be faster than BB/MM where that step has been eliminated, but still won't be as fast as Tiny C because there would still be multiple passes.)
 
