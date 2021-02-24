@@ -101,7 +101,9 @@ This handicaps my compilers a little, as it is assumed most others will use full
 This has several entries, which it deserves being the faster compiler in the list; even the slowest is faster than mine.
 
 (tcc) means it was compiled with itself.
+
 (bcc) compiled with my bcc
+
 (gcc) compiled with gcc-O3
 
 The remaining entry was tcc was as it was downloaded and as prebuilt binary.
