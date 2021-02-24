@@ -31,7 +31,10 @@ Implem | Language | Time (secs) | Funcs/sec | Runtime | Exe Size | Inst Files | 
 **BB -opt** (bb)   | M        | 2.5 | 4000 | 3.1 | 6.6MB | 1 | 0.6MB (0.17MB upx)
 **MM** (bb)      | M        | 2.3 | 4300 | 7.0 | 10MB | 1 | 0.8MB (0.16MB upx)
 **BB** (bb)       | M        | 2.2 | 4500 | 6.8 | 7.8MB | 1 | 0.6MB (0.17MB upx)
+**Tiny C** (tcc)  | C        | 1.9 | 5100 | 10.1 | 10MB | 120 | 1.8MB
+**Tiny C** (bcc)  | C        | 1.5 | 6700 | 10.1 | 10MB | 120 | 1.8MB
 **Tiny C**        | C        | 1.1 | 9100 | 10.1 | 10MB | 120 | 1.8MB
+**Tiny C**  (gcc) | C        | 0.9 | 10100 | 10.1 | 10MB | 120 | 1.8MB
 
 ### Time
 
@@ -93,13 +96,30 @@ These are BB and the older MM, both for my M systems language. Also BCC for C.
 
 This handicaps my compilers a little, as it is assumed most others will use fully optimising compilers, but I also want to show what is possible with a modest home-made compiler that doesn't rely on heavy-duty tools. My compilers still dominate the fast end of the table, except for Tiny C.
 
-(**Note:** I did experiment with a version of Tiny C built with itself (rather than, presumably, gcc); it was still fast! About 1.95 seconds compile-time, and 5100 funcs/sec throughput, so still ahead of any of mine. Tiny C however is a one-pass compiler, mine is multi-pass, and compiles a language, C, which in this test (with no large includes and no CPP use) lends itself to one-pass.
-
 My own 'bcc' C compiler is slowed down by having to generate a 50MB ASM intermediate file, which then has to be assembled. It would otherwise be faster than BB/MM where that step has been eliminated, but still won't be as fast as Tiny C because there would still be multiple passes.)
+
+### Tiny C
+
+This has several entries, which it deserves being the faster compiler in the list; even the slowest is faster than mine.
+
+(tcc) means it was compiled with itself.
+(bcc) compiled with my bcc
+(gcc) compiled with gcc-O3
+
+The remaining entry was tcc was as it was downloaded and as prebuilt binary.
+
+Tiny C is fast for several reasons:
+
+* It is a one-pass compiler (AIUI)
+* It compiles C which lends itself to one-pass compilation (this test further doesn't use large headers or any use of the CPP)
+* It beats my M compilers, because M has out-of-order definitions which are not suitable for one pass, and M compilers are multi-pass anyway
+* It badly beats my own BCC C compiler, because that also uses multi-passes, but here also generates a 50MB intermediate ASM file, which then has to be assembled.
+
+However, my compilers produce somewhat faster code.
 
 ### Sorted by Runtime
 
-Rememeber this is just for that one small benchmark (a single call to fannkuch(11) in a program with just that one function):
+Remember this is just for that one small benchmark (a single call to fannkuch(11) in a program with just that one function):
 
 Implem | Language | Runtime
 --- | --- | ----
