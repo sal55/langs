@@ -27,10 +27,10 @@ Implem | Language | Time (secs) | Funcs/sec | Runtime | Exe Size | Inst Files | 
 **Clang**         | C | 30 | 330 | 10.2 | 12MB | 350 | 1600MB
 **Vox**           | [Vox](https://github.com/MrSmith33/vox) | 15 | 670 | [6.3](https://gist.github.com/MrSmith33/ac14e66a83b9d047793adede464ca1ef#file-fannkuch-vx) | 10MB | 1 | 2.4MB
 **MSVC**          | C | 12  |830 | 9.6 | 9.2MB | 14600 | 2800MB
-**bcc** (gcc)     | C        | 3.0 | 3300 | 9.0 | 8.0MB | 1 | 0.7MB
+**bcc** (bb)     | C        | 4.2 | 2400 | 9.0 | 8.0MB | 1 | 0.7MB
 **BB -opt** (bb)   | M        | 2.5 | 4000 | 3.1 | 6.6MB | 1 | 0.6MB
+**MM** (bb)      | M        | 2.3 | 4300 | 7.0 | 10MB | 1 | 0.8MB
 **BB** (bb)       | M        | 2.2 | 4500 | 6.8 | 7.8MB | 1 | 0.6MB
-**MM** (gcc)      | M        | 1.75 | 5700 | 7.0 | 10MB | 1 | 0.8MB
 **Tiny C**        | C        | 1.1 | 9100 | 10.1 | 10MB | 120 | 1.8MB
 
 ### Time
@@ -86,11 +86,11 @@ So Rust has some problems in my opinion. Even that 18 seconds for an optimised b
 
 These are BB and the older MM, both for my M systems language. Also BCC for C.
 
-(gcc) means it was transpiled to C and compiled with gcc-O3, which gives a faster time than otherwise (but a bigger compiler executable).
+(bb) means it was compiled with BB; so not quite as fast, but a smaller executable. I've removed the (gcc) timings where the source was transpiled to C and passed through gcc-O3.
 
-(bb) means it was compiled with BB; so not quite as fast, but a smaller executable.
+This handicaps my compilers a little, as it is assumed most others will use fully optimising compilers, but I also want to show what is possible with a modest home-made compiler that doesn't rely on heavy-duty tools. My compilers still dominate the fast end of the table, except for Tiny C.
 
-I don't know why some of the compilers in the list are so slow. But my 'bcc' C compiler is slowed down by having to generate a 50MB ASM intermediate file, which then has to be assembled. It would otherwise be faster than BB/MM where that step has been eliminated. (Actually, that was done in order to give better results for comparisons like this, as for most real apps, compilation was not an issue. It just felt the proper approach.)
+I don't know why some of the compilers in the list are so slow. But my 'bcc' C compiler is slowed down by having to generate a 50MB ASM intermediate file, which then has to be assembled. It would otherwise be faster than BB/MM where that step has been eliminated.
 
 ### Sorted by Runtime
 
@@ -119,5 +119,5 @@ Implem | Language | Runtime
 **Clang**         | C   | 10.2
 **Rustc**         | Rust| 37.8
 
-One of my compilers (bcc-opt) does surprisingly well. It's probably just a fluke, however that is the genuine timing for this test.
+One of my compilers (bcc-opt) does surprisingly well. It's just a fluke (it's typically 50% slower than gcc-O3, not faster!), however that is the genuine timing for this test.
 
