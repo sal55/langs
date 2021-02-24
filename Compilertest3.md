@@ -106,7 +106,7 @@ This has several entries, which it deserves being the faster compiler in the lis
 
 (gcc) compiled with gcc-O3
 
-The remaining entry was tcc was as it was downloaded and as prebuilt binary.
+The remaining entry is as it was downloaded, as a prebuilt binary.
 
 Tiny C is fast for several reasons:
 
