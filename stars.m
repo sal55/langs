@@ -27,27 +27,27 @@ const maxpos=10000
 
 const maxwarp=200
 
-global word32 doublebuffer
-global int32 windw = 1800
-global int32 windh = 1000
-global word32 flag = normal
-global int32 starcount = maxstars/2
-global real32 speed = 2.000000
-global int32 nitro = 0
-global [0:maxstars]starrec stars
-global [0:maxangles]real32 sintable
+word32 doublebuffer
+int32 windw = 1800
+int32 windh = 1000
+word32 flag = normal
+int32 starcount = maxstars/2
+real32 speed = 2.000000
+int32 nitro = 0
+[0:maxstars]starrec stars
+[0:maxangles]real32 sintable
 
 proc stopfn= stop end
 
-global function sinx(real32 angle)real32 =
+function sinx(real32 angle)real32 =
    return sintable[real(angle)]
 end
 
-global function cosx(real64 angle)real32 =
+function cosx(real64 angle)real32 =
     return sintable[(int(angle)+(maxangles/4)) rem maxangles]
 end
 
-global proc newstar(int32 n, d) =
+proc newstar(int32 n, d) =
     if rand() rem 4=0 then
         stars[n].typex := circle
     else
@@ -70,7 +70,7 @@ global proc newstar(int32 n, d) =
     fi
 end
 
-global proc rotatepoint(ref real32 x, y, real32 rotation) =
+proc rotatepoint(ref real32 x, y, real32 rotation) =
     real32 tmpx
     real32 tmpy
 
@@ -80,7 +80,7 @@ global proc rotatepoint(ref real32 x, y, real32 rotation) =
     y^ := tmpy
 end
 
-global proc movestars() =
+proc movestars() =
     real32 offset
     int32 n
 
@@ -102,7 +102,7 @@ global proc movestars() =
     od
 end
 
-global function starpoint(int32 n)word =
+function starpoint(int32 n)word =
     real32 x0
     real32 y0
 
@@ -118,7 +118,7 @@ global function starpoint(int32 n)word =
     fi
 end
 
-global proc showstar(int32 n) =
+proc showstar(int32 n) =
     real32 x0
     real32 y0
     real32 x1
@@ -170,7 +170,7 @@ global proc showstar(int32 n) =
     fi
 end
 
-global proc updatestars() =
+proc updatestars() =
     int32 n
 
     glclear(gl_color_buffer_bit)
@@ -187,7 +187,7 @@ global proc updatestars() =
     od
 end
 
-global proc showstars() =
+proc showstars() =
     int32 n
 
     glclear(gl_color_buffer_bit)
@@ -221,7 +221,7 @@ proc initx =
     gldisable(gl_dither)
 end
 
-global proc reshape(int32 width, height) =
+proc reshape(int32 width, height) =
     windw := width
     windh := height
     glviewport(0,0,windw,windh)
@@ -242,7 +242,7 @@ proc key(byte key, int32 x, y) =
     end switch
 end
 
-global proc idle() =
+proc idle() =
     movestars()
     updatestars()
     if nitro>0 then
@@ -265,7 +265,7 @@ global proc idle() =
     glutpostredisplay()
 end
 
-global proc display() =
+proc display() =
     showstars()
     if doublebuffer then
         glutswapbuffers()
@@ -274,7 +274,7 @@ global proc display() =
     fi
 end
 
-global proc visible(int32 state) =
+proc visible(int32 state) =
     if state=glut_visible then
         glutidlefunc(cast(idle))
     else
