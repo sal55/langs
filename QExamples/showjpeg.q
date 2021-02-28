@@ -1,3 +1,5 @@
+!USES 4-CHARACTER TABS
+
 !Example Q source file
 !Decode jpeg file as input and optionally display in window and/or
 !write a ppm file
