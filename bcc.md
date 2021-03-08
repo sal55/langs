@@ -72,3 +72,7 @@ I'm currently working on a new, mildly optimised code generator for my own langu
 
 Efforts will be concentrated instead on my own language.
 
+**Update March 2021** I found it too tempting to try out various open source projects then I'd waste time trying to get bcc to work with it. So the sources have been removed (there are various copies around and one or two binaries) and the project is officially dead.
+
+A lot of other C-related aspects have been dropped too, such as tools to convert C APIs to my language, or versions of my language targeting C.
+
