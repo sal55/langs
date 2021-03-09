@@ -147,7 +147,7 @@ C allows ANY pointer, whether it's to an array or not, to be index). However the
 * You can't do "case 'A'..'F'" (except when extensions exist). You can't do 'case 10, 20, 30:'
 
 * The code for each case: block automatically falls through to the next case. Very handy, except that 99% of the time you don't want that,
-and have to explicitly write 'break'. (How switch-case works in C makes it harder to fix, as you want both cases here: case 10: case 11: <code> to share he same code, but that means fallthrough after case 10:.)
+and have to explicitly write 'break'. (How switch-case works in C makes it harder to fix, as you want both cases here: case 10: case 11: \<code\> to share he same code, but that means fallthrough after case 10:)
 
 * Switch only works with an integer index, and constant case values.
 
@@ -264,11 +264,11 @@ void* checkedmalloc(size_t n) {
 
 * Initialise an object such as an array of a 3-element struct like this:
 
-  T x[] = {{1,2,3}, {4,5,6}, {7}};         // 3 array elements, the last partial
+    T x[] = {{1,2,3}, {4,5,6}, {7}};         // 3 array elements, the last partial
 
 But then try taking out some of the braces:
 
-  T x[] = {1,2,3,4,5,6,7};
+    T x[] = {1,2,3,4,5,6,7};
 
 It still works. Which bit of data is initialising which part of the object? How many elements in the array?
 
