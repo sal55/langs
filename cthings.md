@@ -146,6 +146,9 @@ C allows ANY pointer, whether it's to an array or not, to be index). However the
 
 * You can't do "case 'A'..'F'" (except when extensions exist). You can't do 'case 10, 20, 30:'
 
+* The code for each case: block automatically falls through to the next case. Very handy, except that 99% of the time you don't want that,
+and have to explicitly write 'break'. (How switch-case works in C makes it harder to fix, as you want both cases here: case 10: case 11: <code> to share he same code, but that means fallthrough after case 10:.)
+
 * Switch only works with an integer index, and constant case values.
 
 * Declare a function, and it's exported by default; you have to add 'static' to make it local (few people do this). Same with variables.
@@ -200,7 +203,7 @@ C allows ANY pointer, whether it's to an array or not, to be index). However the
 
 * You can't break out of a loop more than one deep.
 
-* You can't break out of a loop more anyway if the break statement is inside a switch statement.
+* You can't break out of a loop more anyway if the break statement is inside a switch statement (because, incredibly, C decided to overload the 'break' statement to do two different things)
 
 * No way to redo a loop iteration, and no Python-style 'else' part
 
