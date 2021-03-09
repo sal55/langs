@@ -263,13 +263,13 @@ void* checkedmalloc(size_t n) {
 ````
 
 * Initialise an object such as an array of a 3-element struct like this:
-
+````
     T x[] = {{1,2,3}, {4,5,6}, {7}};         // 3 array elements, the last partial
-
+````
 But then try taking out some of the braces:
-
+````
     T x[] = {1,2,3,4,5,6,7};
-
+````
 It still works. Which bit of data is initialising which part of the object? How many elements in the array?
 
 C doesn't care with too few braces, it just sees a linear sequence of values. It only cares if there are too many.
