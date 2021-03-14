@@ -62,30 +62,3 @@ https://github.com/pluckyporcupine/raylib-mosaic
 
 This builds a set of bindings around existing libraries that use a C API.
 
-### Special Developer Options
-````
--ast1            Display AST after parsing (in AST1 and collected in bx.log)
--ast2            AST after name resolution (in AST2 and bx.log)
--ast3            AST after type analysis (in AST3...)
--showpcl         Intermediate PCL (in PCL...)
--showmcl         MCL code (in bx.log, this basically -dasm)
--asm or -c       Compile to .asm anyway (production version)
--dasm            Compile to .asm (debug version with more readable var info)
--st              Show hierarchical symbol table (in bx.log)
--pst             PCL symbol table
--types           Type tables
--ss              SS tables (try -ss -dexe)
-````
-Mostly, the main support library is included (import msys is implicit), but this generates code for its 2000 lines). The options for suppressing it yet ensuring there are no build errors get fiddly, but try some of these in addition to those above:
-````
--dmcl            Compile all passes to mcl, but in debug mode which leaves out msys unless explicitly imported anyway
--dpcl            Up to PCL only (there are more of these, but these should do)
-````
-Multiple options (eg. -dpcl -showpcl) can be put into an @ file, eg. 'options', then run as:
-````
-bb @options file.m
-````
-
--
-
-
