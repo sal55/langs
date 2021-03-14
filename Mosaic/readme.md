@@ -30,7 +30,7 @@ However the sources are here: [sources](../sources), in the file bb.ma, which is
 
 This will generate bb.exe (so not overwriting mm.exe).
 
-To extract the individual files, build this program with bb: [extract](../Examples/extract.m), which will write the separate files into ./sources
+To extract the individual files, build this program with mm: [extract](../Examples/extract.m), which will write the separate files into ./sources
 
 
 ### Example Programs
