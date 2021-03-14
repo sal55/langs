@@ -14,7 +14,7 @@ Summary of [features](../mfeatures.md)
 
 Available from www.bcas.freeuk.com/bb.exe
 
-(Problems have been reported downloading this via Opera (not a valid executable. Possibly 'bb' has some special meaning to Opera. If so try via www.bcas.freeuk.com/compilers.zip.)
+(Problems have been reported downloading this via Opera (not a valid executable). Possibly 'bb' has some special meaning to Opera. If so try via www.bcas.freeuk.com/compilers.zip.)
 
 This is the actual compiler, not an installer. Simplest way to download possibly to right-click on the link, and select 'Save Link As' (depends on browser), and specify a location to put it in.
 
