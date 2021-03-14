@@ -11,6 +11,8 @@ The following is not a formal reference but is a random collection of topics.
 
 This is written in M. It builds to a single executable file that I usually call mm.exe, currently some 0.6MB, which includes a small set of libraries. (That is, the sources for the libraries are part of the executable.) This gives a tidy self-contained compiler.
 
+(Update: mm.exe is an older compiler; the newer one is called bb.exe, but I haven't changed the references below.)
+
 ### Dependencies
 
 There are none required to build M sources to a binary executable, other than:
