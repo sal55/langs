@@ -12,9 +12,7 @@ Summary of [features](../mfeatures.md)
 
 ### Download Binaries
 
-Available from www.bcas.freeuk.com/bb.exe
-
-(Problems have been reported downloading this via Opera (not a valid executable). Possibly 'bb' has some special meaning to Opera. If so try via www.bcas.freeuk.com/compilers.zip.)
+Available from www.bcas.freeuk.com/mm.exe
 
 This is the actual compiler, not an installer. Simplest way to download possibly to right-click on the link, and select 'Save Link As' (depends on browser), and specify a location to put it in.
 
@@ -28,13 +26,12 @@ Since Mosaic is written in itself, you can't build from sources without first us
 
 However the sources are here: [sources](../sources), in the file bb.ma, which is a single file encapsulation of all the modules. This can be built directly using, for example:
 
-    bb bb.ma -out:bb2.exe
+    mm bb.ma
 
-This needs to take care not to overwrite the existing bb.exe which Windows doesn't allow anyway, hence the -out option.
+This will generate bb.exe (so not overwriting mm.exe).
 
 To extract the individual files, build this program with bb: [extract](../Examples/extract.m), which will write the separate files into ./sources
 
-(Note: current amalgamations have stripped comments so are for viewing only.)
 
 ### Example Programs
 
@@ -42,17 +39,17 @@ Some small programs are here: [Examples](../Examples)
 
 ### Building Executables
 
-You will need the compiler bb.exe. Given an example program such as hello.m, build as follows:
+You will need the compiler mm.exe. Given an example program such as hello.m, build as follows:
 
-    bb hello
+    mm hello
 
 This compiles hello.m into hello.exe. For a larger program comprising multiple modules, only the lead module (the one containing the start() entry point function) is needed; if the lead module is prog.m:
 
-    bb prog
+    mm prog
 
-then this will locate and compile *all* sources into prog.exe (bb is a pretty fast compiler). For other options use:
+then this will locate and compile *all* sources into prog.exe (mm is a pretty fast compiler). For other options use:
 
-    bb -help
+    mm -help
 
 ### Other Applications
 
