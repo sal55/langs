@@ -1,6 +1,7 @@
 !(Extract: extension to my C compiler to enable auto-%? formats
 ! Missing: full width and other modifiers that need to be passed through, eg. %08? => %08d, %08lld etc
-! Missing: overcome hardcoded limit of 512-char format strings)
+! Missing: overcome hardcoded limit of 512-char format strings
+! Missing: make it work on fprintf and sprintf too, which have an extra first argument)
 
 if d and eqstring(d.name,"printf") and q and q.tag=j_const and
         q.slength<str.len/2 then
