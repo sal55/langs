@@ -100,6 +100,7 @@ proc compile(sourcelines)=
     od
 
     bytecode[++pc]:=kendprogram
+    bytecode[++pc]:=0           !dummy value as possible opnd of kendprogram
 
 end
 
@@ -170,7 +171,12 @@ end
 
 function popcall=
     if callstackptr<1 then pcerror("Call stack underflow") fi
-    return callstack[--callstackptr]
+    return callstack[callstackptr--]
+end
+
+function peekcall=
+    if callstackptr<1 then pcerror("Call Stack underflow") fi
+    return callstack[callstackptr]
 end
 
 proc run=
@@ -182,57 +188,86 @@ proc run=
     stackptr:=callstackptr:=0
 
     println "Starting interpreter..."
-    doswitch (opc:=bytecode[pc++]; x:=bytecode[pc]; opc)
-    when kpush then
-        push(x)
-        ++pc
-    when kpop then
-        pop()
-    when kadd then
-        push(pop()+pop())
-!   when ksub then
-    when kincr then
-        push(pop()+1)
-    when kdecr then
-        push(pop()-1)
-!   when kmul then
-!   when kdiv then
-!   when kjump then
-!   when kje then
-!   when kjne then
-!   when kjgt then
-!   when kjlt then
-!   when kjge then
-    when kjle then
-        ++pc
-        if peek()<=0 then pc:=x fi
-!   when kget then
-!   when kset then
-    when kgetarg then
-        ++pc
-        push(stack[$-x])            ! $ means last index
-!   when ksetarg then
-!   when knoop then
-!   when kprint then
-    when kprintc then
-        print pop():"c"
+!   doswitch (opc:=bytecode[pc++]; x:=bytecode[pc]; opc)
+    do
+        opc:=bytecode[pc++]
+        x:=bytecode[pc]                 !either operand, or next opc
+!println =OPCNAMES[OPC],=X,=STACKPTR,=CALLSTACKPTR,=LEFT(STACK,STACKPTR)
+!IF WAITKEY()=27 THEN STOP FI
+        switch opc
+        when kpush then
+            push(x)
+            ++pc
+        when kpop then
+            pop()
+        when kadd then
+            push(pop()+pop())
+        when ksub then
+            b:=pop()
+            a:=pop()
+            push(a-b)
+        when kincr then
+            push(pop()+1)
+        when kdecr then
+            push(pop()-1)
+!       when kmul then
+!       when kdiv then
+!       when kjump then
+        when kje then
+            ++pc
+            if peek()=0 then pop(); pc:=x fi
+        when kjne then
+            ++pc
+            if peek()<>0 then pop(); pc:=x fi
+!       when kjgt then
+!       when kjlt then
+!       when kjge then
+        when kjle then
+            ++pc
+            if peek()<=0 then pop(); pc:=x fi
+!       when kget then
+!       when kset then
+        when kgetarg then
+            ++pc
+            argstackptr:=peekcall()
+            push(stack[argstackptr-x])
+        when ksetarg then
+            ++pc
+            argstackptr:=peekcall()
+            stack[argstackptr-x]:=peek()
 
-!   when kprintstack then
-    when kcall then
-        fnaddr:=bytecode[pc++]
-        pushcall(stackptr)
-        pushcall(pc)
-        pc:=fnaddr
+!       when knoop then
+        when kprint then
+            print peek()
+        when kprintc then
+            print chr(peek())
 
-    when kret then
-        pc:=popcall()
-        stackptr:=popcall()
+!       when kprintstack then
+        when kcall then
+            ++pc
+            pushcall(pc)
+            pushcall(stackptr)
+            pc:=x
 
-!   when kcollapseret then
-!   when kendprogram then
-    elsif opc<=opcnames.len then
-        pcerror("Unimplemented opc:"+opcnames[opc])
-    else
-        pcerror("Unknown opc:"+tostr(opc))
-    end doswitch
+        when kret then
+            popcall()
+            pc:=popcall()
+
+        when kcollapseret then
+            a:=pop()
+            pop()
+            push(a)
+            popcall()
+            pc:=popcall()
+            
+        when kendprogram then
+            exit
+        elsif opc<=opcnames.len then
+            pcerror("Unimplemented opc:"+opcnames[opc])
+        else
+            pcerror("Unknown opc:"+tostr(opc))
+        end switch
+    od
+
+    println "Stopped"
 end
