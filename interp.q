@@ -2,8 +2,8 @@ import sys
 import files
 
 tabledata() opcnames, operands =
-    (kpush,         $,  'N'),
-    (kpop,          $,  0),
+    (kpush,         $,  'N'),  ! define a set of enums and corresponding lists of data, opcnames[] and operands[]
+    (kpop,          $,  0),    ! $ is the name of the last enum as a string ("kpush" etc)
     (kadd,          $,  0),
     (ksub,          $,  0),
     (kincr,         $,  0),
@@ -30,7 +30,7 @@ tabledata() opcnames, operands =
     (kcollapseret,  $,  'N'),
     (kendprogram,   $,  0),
 !--
-    (kproc,         $,  'A'),
+    (kproc,         $,  'A'),  ! pseudo-ops (not executed)
     (klabel,        $,  'A'),
     (kend,          $,  0),
 end
