@@ -28,7 +28,7 @@ Implem | Language | Time (secs) | Funcs/sec | Runtime (secs)
 **MM** (gcc)          | M | 1.7 | 5800 | 0.6
 **Tiny C**        | C | 1.1 | 9100 | 0.79
 **Lua**         | Lua | 0.9 | 11000 | 11.5
-**QQ**          | Q  | 0.75 | 13300 | (in development; 4.5 projected)
+**QQ** (bb)     | Q  | 0.75 | 13300 | (in development; 4.5 projected)
 **LuaJIT**      | Lua | 0.6 | 16600 | 0.75
 **MS** (bb)         | MS | 0.55 | 18000 | 15.7 (10.0 opt, 4.1 acc)
 
