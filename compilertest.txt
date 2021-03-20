@@ -99,6 +99,8 @@ Other languages:
   
   Wasm            0.2    0.6    2.7     Fail (File too big; not line counts as 6x as high for Wasm; each a=b+c*d take 6 lines)
 
+  Javac (Java)   Fail    ---    ---      --- (Code too large)
+
 My languages:
 
   MM ('M')        0.2    0.4     1.6     6.3  (5-pass, to .exe; self-hosted, but built via C target and gcc-03)
@@ -122,6 +124,8 @@ no output is done (all code is eliminated), so take those results
 with a pinch of salt.
 
 A68G didn't manage 20K lines but did do 10K lines in about 1.5 seconds.
+
+Javac managed 5000 lines in 3.2 seconds (but hello world takes 2.0 seconds).
 
 This particular test input probably represents somewhat higher code density
 that is typical, but all compilers are given the same input. But it means
