@@ -2,8 +2,8 @@ import sys
 import files
 
 tabledata() opcnames, operands =
-    (kpush,         $,  'N'),  ! define a set of enums and corresponding lists of data, opcnames[] and operands[]
-    (kpop,          $,  0),    ! $ is the name of the last enum as a string ("kpush" etc)
+    (kpush,         $,  'N'),
+    (kpop,          $,  0),
     (kadd,          $,  0),
     (ksub,          $,  0),
     (kincr,         $,  0),
@@ -30,7 +30,7 @@ tabledata() opcnames, operands =
     (kcollapseret,  $,  'N'),
     (kendprogram,   $,  0),
 !--
-    (kproc,         $,  'A'),  ! pseudo-ops (not executed)
+    (kproc,         $,  'A'),
     (klabel,        $,  'A'),
     (kend,          $,  0),
 end
@@ -188,12 +188,10 @@ proc run=
     stackptr:=callstackptr:=0
 
     println "Starting interpreter..."
-!   doswitch (opc:=bytecode[pc++]; x:=bytecode[pc]; opc)
+    seq:=0
     do
         opc:=bytecode[pc++]
         x:=bytecode[pc]                 !either operand, or next opc
-!println =OPCNAMES[OPC],=X,=STACKPTR,=CALLSTACKPTR,=LEFT(STACK,STACKPTR)
-!IF WAITKEY()=27 THEN STOP FI
         switch opc
         when kpush then
             push(x)
@@ -225,7 +223,9 @@ proc run=
         when kjle then
             ++pc
             if peek()<=0 then pop(); pc:=x fi
-!       when kget then
+        when kget then
+            ++pc
+            push(stack[stackptr-x])
 !       when kset then
         when kgetarg then
             ++pc
@@ -256,6 +256,7 @@ proc run=
         when kcollapseret then
             a:=pop()
             pop()
+!           to x-1 do pop() od
             push(a)
             popcall()
             pc:=popcall()
