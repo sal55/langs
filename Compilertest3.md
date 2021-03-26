@@ -78,6 +78,10 @@ I've managed to make this work, and the good news is that, with a new update, it
 
 So Rust has some problems in my opinion. Even that 18 seconds for an optimised build of 100-functions or 8000 lines is only 0.4K lines per second - microcomputer territory.
 
+### Java
+
+The executable (or rather the .class file) produced is suspiciously small at 120KB, or about 12 bytes per function. If I tried to get it to retain all the functions (using res+=fxxxx(5) on each call), then it aborted with 'Code too large', also at about 25 seconds. However, compiling 100 functions took 4 seconds (but maybe most of those are eliminated too) and Hello, World took 2 seconds. So maybe it's 50 functions/second. Output of Java is probably JVM code not native.
+
 ### Notes
 
 **Lines/second** Fastest speed in LPS was something like 900Klps (tcc), and slowest around 1.2Klps (optimised Clang; I don't include the 0.01Klps of optimised Rust). Code density varies, but I think tcc still comes out on top.
