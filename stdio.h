@@ -36,7 +36,7 @@ typedef struct {
 	int   _charbuf;
 	int   _bufsiz;
 	char *_tmpfname;
-	} FILE;
+} FILE;
 
 extern char* __iob_func(void);
 
