@@ -1,32 +1,32 @@
 
 
-Differences between C and M
+## Differences between C and M
 
 
 M is my own private systems programming language. It's not that much higher level than
 C, but can be used for the same tasks, and many of the unsafe features of
 C are unsafe here too.
 
-Yet it offers a considerable number of enhancements over C. Mostly minor ones like fixing
-pet annoyances, but some big features too.
+Yet it offers what I see as many enhancements over C, listed below.
 
-Not everyone will like it (especially in a C forum!), but I'm not asking anyone to (as I sai
+See it as what an alternate to C could look like, without turning into Rust or Zig. Note that M was created completely independently from C.
 
-See it simply as what a lower-level language along similar lines to C
-could look like, without turning into Rust or Zig, and without the influence of Unix.
+Links:
+* [M Language](Mosaic.md)
+* [Examples](Examples)
+* [Compiler speed tests](Compilertest.md)
+* [Features](mfeatures.md)
 
-Note that M started life at least 10 years before I first encountered C, so it was developed
-separately. That probably helped.
 
 
 **1** M is case-insensitive (put that in early so some people can stop reading now). I find that
-for a coding style that is easier on the eye, and give some useful advantages that have been
+makes for a coding style that is easier on the eye, and gives some useful advantages that have been discussed
 at length elsewhere.
 
-**2** It doesn't use brace syntax for block delimiting; it uses Algol-68 style syntax. (See link
+**2** It doesn't use brace syntax for block delimiting; it uses Algol-68 style syntax. (See Examples link)
 
-**3** It doesn't have this thing where one statement needs no braces, but add two or more need b
-or remove statements and you have to remove braces when it gets to one
+**3** It doesn't have this thing where one statement needs no braces, but havetwo or more and you need to add them,
+or remove statements and you have to remove braces when it gets down to one
 
 **4** Because it doesn't have optional braces, it's not subject to same errors of C, but you can
  an extra indented statement, but forget the braces; or missing/extra braces cancel out for
@@ -53,8 +53,8 @@ of a declaration. M allows them pretty much everywhere.
 M's line comments start with "!", and have no such issues.
 
 **9** M no longer has block comments (they are relegated to the editor). C's /*...*/ block
-comments had their own problems: non-nested by missing out one */, they could unintentionallu
-comment out a whole block of code. And made things harder for a text editor as it would need
+comments had their own problems: non-nested, by missing out one \*/, they could unintentionally
+comment out a whole block of code. And they make things harder for a text editor as it would need
 to keep track block comments from 1000s of lines earlier in a file.
 
 **10** M has binary literals written as 2x1011 (alternatively as 1011B). While mosy C compilers
@@ -66,13 +66,13 @@ has the value 64. In M, it has the value 100. Octal numbers are written as 8x100
 **12** M actually allows numbers in any base from 2 to 16 using the same scheme: 4x100 is in base 4 (16)
 12x100 is in base 12 (144). Hex can be written as 0x100 like C, or as 16x100.
 
-**13** M allows numeric separators ' and _, for example 1'000'000 or 2x1011_1110_0001.
+**13** M allows numeric separators ' and \_, for example 1'000'000 or 2x1011\_1110\_0001.
 
 **14** M uses scale factors such as 3 million, or 4 billion.
 
-**15** M has raw string literals written F"abc\def\ghi", where "\" is not used as an escape code.
+**15** M has raw string literals written F"abc\\def\\ghi", where "\\" is not used as an escape code.
 
-**16** C doesn't properly define multi-character literals like 'ABCD'. They are implemente-defined.
+**16** C doesn't properly define multi-character literals like 'ABCD'. They are implementation-defined.
 In M they are well defined (and on little-endian sytems, laid out so that in memory, 'ABCD' is the
 same as the string "ABCD").
 
@@ -80,7 +80,7 @@ same as the string "ABCD").
 M has 64-bit types so they can go up to 'ABCDEFGH', or additionally up to 'ABCDEFGHIJKLMNOP' for 128-bit int.
 
 **18** C uses suffixes such as -U, -L and -LL to control the types of integer literals (but see below
-about long/long long). M's literals have i64 type unless their magnitude makes u64, i128 or u128.
+about long/long long). M's literals have i64 type unless their magnitude makes them u64, i128 or u128.
 There are no suffixes; to force a particular type, a cast is used.
 
 **19** Those -LL suffixes will anyway not work with types like int64_t; special macros are needed. M has no such needs.
@@ -89,7 +89,7 @@ There are no suffixes; to force a particular type, a cast is used.
 current systems. Yet there are FIVE basic types: char, short, int, long, long long. Usually long
 is the same width as int or long long, but is compatible with neither.
 
-**21** C doesn't even solidly define what the basic types mean, except that long long >= long >= int >=1 with certain minimums.
+**21** C doesn't even solidly define what the basic types mean, except that long long >= long >= int >= short >= char with certain minimums.
 
 **22** C99 defines int32_t, uint64_t etc, but usually on top of int/long etc. Yet the test of C still used
 "%lld" formats (long long); or -LL suffixes.
@@ -103,12 +103,12 @@ in any order, with parts missing: long unsigned long.
 
 **26** So here are the M enhancements: M has a very simple and logical type system with these integer types
 ````
-   i8 i16 i32 i64 i128 signed (also written as int8 int16 etc)
-   u8 u16 u32 u64 u128 unsigned (also word8, word32 etc)
-   byte  (alias for u8)
-   int (alias for i64)
-   word (alias for u64)
-   char  (loose wrapping of 'byte' used for strings)
+   i8 i16 i32 i64 i128        signed (also written as int8 int16 etc)
+   u8 u16 u32 u64 u128        unsigned (also word8, word32 etc)
+   byte                       (alias for u8)
+   int                        (alias for i64)
+   word                       (alias for u64)
+   char                       (loose wrapping of 'byte' used for strings)
 
 ````
 Each is written as one token only. Each is exactly defined. char is effectively unsigned.
@@ -118,7 +118,7 @@ written as __int128 or some such name.
 
 **28** M has 128-bit literals and can print 128-bit values (not present in C even with __int128 support)
 
-**29** C's printf: where do you even start? If A is int, B is long long int, C is a char*, D is a pointer, E is a uint64_t, then
+**29** C's printf: where do you even start? If A is int, B is long long int, C is a char\*, D is a pointer, E is a uint64_t, then
 you might print those using:
 ````
     printf("%d %lld %s %p %ull", a,b,c,d,e);
@@ -136,7 +136,7 @@ it could be different. In M, nothing changes: there are no format codes that tel
 what it already knows: the type of an expression.
 
 **31** C uses 'sizeof' for the byte-size of a type or expression. For the latter, suppose you define
-a pointer 'T* sizeOf', then the size what it points to is sizeof*sizeOf. Which looks a little like
+a pointer 'T\* sizeOf', then the size what it points to is sizeof\*sizeOf. Which looks a little like
 it is multiplying two variables! In M it is sizeoOf^.bytes or sizeof^.bytes (case-insensitive).
 
 **32** sizeof(T) needs parentheses around a type but not around an expression: sizeof X. But an
@@ -149,9 +149,9 @@ you can write it as sizeof(A)/sizeof(A)[0] - I think. In M it is A.len, with no 
 or inttypes.h, and it's -- I don't know, some macro you have to go and look up. In M it's just int.max or in general T.min and T.max for
 any integer type.
 
-**35** The maximum value of the type of an expressio X? In C you can't do it. In M it is X.max or X.min for the minimum.
+**35** The maximum value of the type of an expression X? In C you can't do it. In M it is X.max or X.min for the minimum.
 
-**39** How many bits in a type? C used CHAR_BIT for bits in a char, so bits in T would be sizeof(T)*CHAR_BIT. In M: T.bitwidth.
+**39** How many bits in a type? C uses CHAR_BIT for bits in a char, so bits in T would be sizeof(T)\*CHAR_BIT. In M: T.bitwidth.
 
 **37** M also has min/max operators built-in that work on ints and floats: min(x,y), max(x,y) (can also be written as infix)
 
@@ -159,7 +159,7 @@ any integer type.
 
 **39** M has 'swap' to exchange any two values: swap(A[i], A[i+1)
 
-**40** Perform an operation between two integer types, and the will be a wildering set of rules that will determine whether the operation is done as
+**40** Perform an operation between two integer types, and there will be a wildering set of rules that will determine whether the operation is done as
 signed or unsigned, and what signedness the result will be:
 ````
        u8  u16 u32 u64  i8  i16 i32 i64
@@ -182,63 +182,63 @@ Unsigned   U         S
   Signed   S         S 
 ````
 
-**41** C multiple array indexing is the horrible-to-type A[i][j[k]. In M it's the more fluid A[i,j,k]. Although C-style will still work.
+**41** C multiple array indexing is the horrible-to-type A\[i\]\[j\[k\]. In M it's the more fluid A\[i,j,k\]. Although C-style will still work.
 
-**42** BTW C's comma operator a,b,c is the reason you can't use A[i,j,k], as it would just mean i; j; A[k]. The comman operator is also responsible for
+**42** BTW C's comma operator a,b,c is the reason you can't use A\[i,j,k\], as it would just mean i; j; A\[k\]. The comman operator is also responsible for
 a lot of bad C code, like trying to avoid braces in examples like if (c) a=i, b=j;
 
 In M the nearest equivalent to C's a, b, c is (a; b; c), with mandatory parentheses. a, b, c can all be statements too.
 
-**43** In C, the array access A[i]; can also be written as i[A]. More astonishingly, A[i][j] becomes j[i[A]] (A 2D index becomes two nested 1D indices!).
+**43** In C, the array access A\[i\]; can also be written as i\[A\]. More astonishingly, A\[i\]\[j\] becomes j\[i\[A\]\] (A 2D index becomes two nested 1D indices!).
 M doen't have this 'feature'.
 
-**44** A consequence of #43 is that you can write i[A][A][A][A][A]... It works because each i[A][A] so far yields an int (when A is an int array), used as
+**44** A consequence of #43 is that you can write i\[A\]\[A\]\[A\]\[A\]\[A]... It works because each i\[A\]\[A\] so far yields an int (when A is an int array), used as
 index to the next A. I don't have this feature either.
 
-**45** C arrays always start at 0. M arrays usually start from 1, but can start from anything including 0: ['A'..'Z]int counts
+**45** C arrays always start at 0. M arrays usually start from 1, but can start from anything including 0: \['A'..'Z'\]int counts
 
 **46** M includes A.lwb and A.upb for array bounds, as well as A.len for their length. Most of the time A.lwb is 1, and A.upb=A.len.
 
-**47** C can't manipulate arrays by value; given int A[10], B[10]; then A=B is not allowed. M allows A:=B.
+**47** C can't manipulate arrays by value; given int A\[10\], B\[10\]; then A=B is not allowed. M allows A:=B.
 
 **48** Further, M can pass arrays to functions and return them (although restricted by ABIs), and can compare them (here some ops are not implemented, but the
 language itself allows value arrays anywhere)
 
-**49** In C, if A is an array, then you can treat it like a pointer: *A. In M that is now allowed.
+**49** In C, if A is an array, then you can treat it like a pointer: \*A. In M that is not allowed.
 
-**50** In C, if P is a pointer, you can treat it like array: P[i]. In M that is not allowed (you have to use pointer ops like (P+i)^)
+**50** In C, if P is a pointer, you can treat it like array: P\[i\]. In M that is not allowed (you have to use pointer ops like (P+i)^)
 
-**51** Given, in C, a pointer to array of array (eg. T (*A)[10][20]), you'd access an element like this:
+**51** Given, in C, a pointer to array of array (eg. T (\*A)\[10\]\[20\]), you'd access an element like this:
 ````
     (*A)[i][j]         // dereference the pointer, index, index
 ````
 However C allows ANY COMBINATION of array/pointer operations even though most will be wrong:
 ````
-	*(A[i][i])        // index, index, then deref
+    *(A[i][i])        // index, index, then deref
     (*(A[i]))[j]      // index, deref, index
 ````
-It is completely crazy, but it is a consequence of #49 and #50. In M, such a type can only be accessed as A^[i,j]; deref then double index. (The current
-language relaxes the need for the deref operator ^ in A^[i], P^.m, F^(), but the deref is still performed; it does not completely disregard the type system)
+It is completely crazy, but it is a consequence of #49 and #50. In M, such a type can only be accessed as A^\[i,j\]; deref then double index. (The current
+language relaxes the need for the deref operator ^ in A^\[i\], P^.m, F^(), but the deref is still performed; it does not completely disregard the type system)
 
 **52** * Despite proper pointer-to-array syntax being available in C (see #51), such arrays are very rarely used in C. The normal idiom when you have
-an array of T to pass to a function, or to allocate dynamically, is to use a T* type (pointer to its first element), rather than T(*)[] (pointer to array).
+an array of T to pass to a function, or to allocate dynamically, is to use a T* type (pointer to its first element), rather than T(\*)\[\] (pointer to array).
 
-This means you can't distinguish a T* parameter that represents an array, from one that represents a single value. One reason might be because the
-syntax to access an element is so unwieldly: (*A)[i]. M can pass arrays anyway, but often passes pointers to arrays, as the
+This means you can't distinguish a T\* parameter that represents an array, from one that represents a single value. One reason might be because the
+syntax to access an element is so unwieldly: (\*A)\[i\]. M can pass arrays anyway, but often passes pointers to arrays, as the
 syntax is simpler: A^[i], or A[i] as the ^ can be dropped. But it also has reference params (see below).
 
-**53** C allows this: int i; &i[123456]. Or you can pass &i to a function expecting an array via a int* parameter.
+**53** C allows this: int i; &i\[123456\]. Or you can pass &i to a function expecting an array via a int\* parameter.
 
 **54** Time to get on to the elephant in the room: C's type declaration syntax. One of the worst language design mistakes ever. C's declarations can be so complex,
 you need to employ third party tools (eg. cdecl.org) to disentangle them! A special algorithm is needed to understand C declarations.
 
-M doesn't need anything like that. It's declaration are written left-to-right, and styled after Algol 68.
+M doesn't need anything like that. Its declarations are written left-to-right, and styled after Algol 68.
 
-**55** While most languages with static type declarations have types before a name, or after a name, only C wraps the type around the name: int *A[10]. M has the type
-to the left (for this example, array of pointer to int
+**55** While most languages with static type declarations have types before a name, or after a name, only C wraps the type around the name: int \*A\[10\]. M has the type
+to the left (for this example, array of pointer to int)
 
-**56** With the declaration of D like long long int A, B, C, (*(*D))[N], its type is split into 3 parts: at the extreme left, before the name, and after the
-name! With M, this type (pointer to pointer to array N of int) is written in one place as ref ref[N] int.
+**56** With the declaration of D like long long int A, B, C, (\*(\*D))\[N\], its type is split into 3 parts: at the extreme left, before the name, and after the
+name! With M, this type (pointer to pointer to array N of int) is written in one place as ref ref\[N\] int.
 
 **57** The example in #56 also demonstrates declaring mixed types in one declaration, unique to C. For example this:
 ````
@@ -250,11 +250,11 @@ that D would be a function declaration. Who would put a function prototype in su
 Coding guidelines frown on declaring several names *of the same type* on one line, let alone mixed types of variables, let alone function declarations!
 M is traditional and can only declare things of the same type in such a declaration.
 
-**58** C rules mean that int* p,q,r declare one pointer and two ints, but it looks like you're declaring three pointers. M uses ref int p,q,r for three pointers.
+**58** C rules mean that int\* p,q,r declare one pointer and two ints, but it looks like you're declaring three pointers. M uses ref int p,q,r for three pointers.
 
-**59** To declare 3 arrays of the same size in C mean duplicating the array dimension: int A[10], B[10], C[10].
+**59** To declare 3 arrays of the same size in C mean duplicating the array dimension: int A\[10\], B\[10\], C\[10\].
 
-In M, it is [10]int A, B, C. Less maintenance, and it also obvious A, B, C are the same size (the dimensions can be a more elaborate expression).
+In M, it is \[10\]int A, B, C. Less maintenance, and it also obvious A, B, C are the same size (the dimensions can be a more elaborate expression).
 
 **60** When declaring several named parameters of the same type, in C you have to repeat them: (double a, double b, double c).
 In M you just write (real a,b,c).
@@ -263,10 +263,10 @@ In M you just write (real a,b,c).
 M uses a 'function' keyword, as is common now, to make it easy to spot them.
 
 **62** M likes to distinguish between functions that return a value, from those that don't:
-
+````
  function F(int a,b )int = ...
  proc G(int a,b)
-
+````
 C vaguely uses a 'void' return type, such as in #63
 
 **63** The simplest kind of function pointer in C can look like this:
@@ -336,13 +336,13 @@ This does NOT mean the same as F(void), as so many think, ie. taking no argument
 and you are free to call F with whatever arguments you like, even mixing it up on different calls. M does not allow that.
 
 **73** C's standard library, as well as many basic functions, are spread across 29 small system headers. This means every program having to keep adding
-includes, and removing, as a program evolves.
+includes, and removing them, as a program evolves.
 
 M doesn't need headers (or 'imports') for features that are built-in a language such as types (C might need stdind/inttypes); min/max values (limits); 
 print (stdio); operators (math, stdlib etc); and so on. There are 3 main imports: clib (for the C runtime); mlib (for named standard library functions);
 and oslib (for functions that wrap some OS-specific features).
 
-**74** With C's #include, comes a complex implementation-define algorithm for locating headers with the following inputs:
+**74** With C's #include, comes a complex implementation-defined algorithm for locating headers with the following inputs:
 (1) whether the header is in "..." or <...>; (2) whether the header is a relative or absolute path; (3) the list of search locations
 given to the compiler; (4) the location of the current include or source file (and stack of include locations prior to this one)
 
@@ -350,7 +350,7 @@ M doesn't have any of this. C's use of headers is replace by a module system. Wh
 name following simpler rules.
 
 **75** As well as 'include' that M rarely still uses (eg. to incorporate generated code), M has **strinclude**. 
-This incorporates any text files into a program, as though it was a string constant. This is used, for example, to bundle library sources into
+This incorporates any text file into a program, as though it was a string constant. This is used, for example, to bundle library sources into
 my compilers. If this program is called test.m, then this prints itself:
 ````
 proc start=
@@ -360,7 +360,7 @@ end
 
 **76** There is also **binclude** to incorporate small binary files; the result is suitable for initialising a byte array:
 ````
-    []byte data = binclude "zip.exe"
+[]byte data = binclude "zip.exe"
 ````
 
 **77** M has a full module import system. Imported modules can be imported in any order, and circular and mutual imports are allowed.
@@ -389,8 +389,8 @@ In M this cannot happen since there is only one definition of 'abc'. (Shared wit
 libraries, when the bindings for an external library or written manually. But when the libraries are also in M, then the necessary bindings
 are genarated by the M compiler).
 
-**84** How does C know which module 'owns' a variable? Even with matching types, if modules A, B, C all declares 'abc', but none initialise, which
-module exports it? This is usually up to a linker. Normally at most one module can initialise a symbol.
+**84** How does C know which module 'owns' a variable? Even with matching types, if modules A, B, C all declare 'abc', but none initialise, which
+module exports it? This is usually up to a linker. Normally, at most one module can initialise a symbol.
 
 **85** In C you are supposed to use 'extern' for names that are imported, but few bother; programs still (somehow) work, but it's all very sloppy.
 
@@ -409,21 +409,21 @@ most of them) will get exported from the DLL, and visible to other programs and 
 With M, only names with the 'export' attribute will be exported from the program. ('global' shares between modules, 'export' additionally
 between programs)
 
-**89** In C, only functions and variables and officially exported (as symbols and objects) between modules. Types, structs, enums have to be
-shared by making sure each module sees the definitions, usually by a shared header files. With M, 'global' works also with types, records,
+**89** In C, only functions and variables are officially exported (as symbols and objects) between modules. Types, structs, enums have to be
+shared by making sure each module sees the definitions, usually by a shared header file. With M, 'global' works also with types, records,
 enums, named constants and macros.
 
 **90** C has a crude textual macro system. M has never had anything on the scale C. More recently, a simple macro system for expression terms only
 has been introduced. Macro names follow proper scope rules, and can be imported and exported.
 
-**91** C is funny with namespaces, of which there are three sets (nothing to do with the namespaces to do with encapsulation). First there is the
+**91** C is funny with namespaces, of which there are three sets (nothing to do with the namespaces that come from encapsulation). First there is the
 regular namespace for most identifiers. Then there is a separate namespace for struct and enum tags. Finally, labels have their own namespace.
 So you can have:
 ````
 A:; struct A A; goto A;
 ````
-A is used as a label; as a struct tag; and as variable name. M has just these one namespace for these. (In all cases these are top-level names that do not
-appear after a ".", such as struct member names).
+A is used as a label; as a struct tag; and as a variable name. M has just these one namespace for these. (In all cases these are top-level names that do not
+appear after a ".", such as struct member names.)
 
 **92** With lexical scopes, each module (translation unit) really has one scope at file-level. But inside a function, each {...} block introduces
 a new scope; an unlimited number of them. This allows the same identifier, such as 'A', to be exist as multiple instances across different
@@ -454,7 +454,7 @@ typedef struct {int d,m,y;} date;
 ````
 typedef struct {int d,m,y; date* nextdate;} date;
 ````
-because 'date' doesn't exist. And you can't have a forward declaration of a typedef, only a struct tag. In M it's easy:
+because the 'date' in 'date\*' is not yet define. And you can't have a forward declaration of a typedef, only a struct tag. In M it's easy:
 ````
 record date=
 	int d,m,y
@@ -483,8 +483,8 @@ type C = [4]int
 ````
     type int F(int a, int b);
 ````
-However, compilers limit what can be done with does; some allow it to be used to declare multiple functions sharing the same signature, just
-different names; one or two allow function definitions too. It's all too confusing for M, which allows conventional functions only.
+However, compilers limit what can be done with these; some allow it to be used to declare multiple functions sharing the same signature, just
+different names; one or two allow function definitions too. It's all too confusing for M, which only has conventional functions.
 
 **99** On the subject of typedefs, probably few know you can do this too:
 ````
@@ -494,7 +494,7 @@ In M, 'type' is strictly on the left! Unless you want 'global type' that is.
 
 **100** About forward references. It is annoying in C that when you call a function F(x), then F needs either to have been defined earlier on,
 or a prototype needs to have appeared first. (As mentioned, compilers are not that fussy and just make incorrect assumptions if F has not been
-encountered. 
+encountered.)
 
 It means writing functions in a certain order, or interrupting work to create a forward declaration, which needs to exactly match a definition,
 or generally making it harder to just move functions around.
@@ -512,10 +512,10 @@ exact compare op, and exactly how to increment the loop variable (really?!). In 
 for i:=A to B do ... end
 for i in A..B do ... end
 ````
-The long-winded C version is needed even though 98% of such loops are for basic iterations ... or would be if people weren't encourage to cram
+The long-winded C version is needed even though 98% of such loops are for basic iterations ... or would be if people weren't encouraged to cram
 as much stuff into a one-line for-loop header as possible. (Which means analysing such loops to see what behaviour the author intended.)
 
-**102** For a repeat N-times loop, there no special contruct; most people use for, with a dummy loop counter. M uses:
+**102** For a repeat N-times loop, there is no special contruct; most people use 'for', with a dummy loop counter. M uses:
 ````
 to N do ... end
 ````
@@ -526,11 +526,11 @@ do ... end
 **104** M's for-loop have an 'else' portion like Python. It is executed on normal termination (eg. when search fails) and not on a break:
 
 **105** C uses break and continue for an early exit from or (I assume) to proceed to the next iteration. M uses 'exit' and 'next' for those.
-However, it is not possible to break out of a loop, if currently inside switch statement inside the loop.
+However, in C it is not possible to break out of a loop, if currently inside switch statement inside the loop.
 
 **106** M additionally has a 'redo' loop control, to rerun the current iteration
 
-**107** All of M's loop controls work with nested loops. You need to specify the loop number, 1 (or missing) being the current level. Most of the
+**107** All of M's loop controls work with nested loops. You need to specify the loop number, 1 (or omitted) being the current level. Most of the
 time however, they will use, for example, 'exit' for the innermost loop, or 'exit all' (same as 'exit 0') for the outermost.
 
 **108** M's for-loop index is automatically declared as needed
@@ -540,10 +540,10 @@ time however, they will use, for example, 'exit' for the innermost loop, or 'exi
 for i in A.bounds when A[i] do ... end   # execute body when A[i] is not zero
 ````
 
-**110** As shown in #109, A.bounds can be used to extract a range to iterate over (see #101). A needs to an object that carries its length,
+**110** As shown in #109, A.bounds can be used to extract a range to iterate over (see #101). A needs to be an object that carries its length,
 either a fixed-length array, or a slice (covered below)
 
-**111** C's while(c){} and do {} while(c) loops in M would be while c do ... end and repeat ... until c (latter with reverse logic)
+**111** C's 'while(c){}' and 'do {} while(c)' loops in M would be 'while c do ... end' and 'repeat ... until c' (latter with reverse logic)
 
 **112** For-loops can also iterate over values in an object (a new feature I haven't used much yet):
 ````
@@ -560,7 +560,7 @@ when a, b then ...
 when c then ...
 else ...
 end
-
+````
 **114** C's Switch has an optional 'default:' label, but again this can appear anywhere, including mixed up with case labels. M's version is just
 'else' like other statements, and goes near the end. One issue with default: is that misspell it as 'defualt:' for example, and the error is
 not detected; it's just a regular label.
