@@ -13,7 +13,7 @@
 * [M Language](Mosaic/readme.md)
 * [Examples](Examples)
 * [Features](mfeatures.md) Many features set out at greater length
-* [Compiler speed tests](Compilertest.md)
+* [Compiler speed tests](Compilertest3.md)
 
 ### A Selection of Differences from C
 
