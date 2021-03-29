@@ -832,7 +832,7 @@ A := cast(B)
 ````
 Here you don't need to go and hunt down the required type; whatever is demanded here, is applied to B. Provided it is allowed.
 
-**158** Type-punning doesn't properly exist in C. You usually do things like \*(T)&X, but this only works when X is an Lvalue. In M:
+**158** Type-punning doesn't properly exist in C. You usually do things like \*(T*)&X, but this only works when X is an Lvalue. In M:
 ````
 cast@(X,T)
 T@(X)
@@ -847,7 +847,7 @@ The 'const' here I believe applied to the pointer target, not the pointer. M doe
 ````
 for i := A to B do ... end
 ````
-then if 'i' is auto-declared, it will be using 'let', which stops you changing it inside the loop. (There are also in, out and inout attributes for function parameters, but I don't do much with those either. The fact is the programs still without all this stuff!)
+then if 'i' is auto-declared, it will be using 'let', which stops you changing it inside the loop. (There are also in, out and inout attributes for function parameters, but I don't do much with those either. The fact is the programs still work without all this stuff!)
 
 **160** This one is a very old feature which I'm always thinking of getting rid of, but it's still hanging in there:
 ````
@@ -911,7 +911,7 @@ clear A
 assem
     mov D0,[A]
     add D0,[B]
-    add mov [C],D0
+    mov [C],D0
 end
 ````
 No problems with stepping on the compiler's toes regarding register usage, as optimisation (such as it is) is turned off for functions that use inline assembly. (Usually, the whole body of a function will be assembly anyway.)
