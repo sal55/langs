@@ -886,40 +886,37 @@ char* T  = "ABC";
 S and T are different types, yet the RHS is the same type; how is that possible? Well, M is stricter and it is not possible. "ABC" has type char* (ref char)
 not char[] or []char. S needs to be initialised in M as follows:
 ````
-[]CHAR S = a"ABC"        # equivalent to ('A','B','C')
-[]CHAR S = z"ABC"        # equivalent to ('A','B','C',0)
-
+[]char S = a"ABC"        # equivalent to ('A','B','C')
+[]char S = z"ABC"        # equivalent to ('A','B','C',0)
+````
 
 **166** C has some very quirky behaviour initialising complex data of nested structs and arrays. Normally you'd write the data
-organised with {...} into nested lists that match the type of the data. If you have too many {,}, it will complain. But if you have too few,
-it doesn't! Actually no matter how complex, how deeply tested T is here, this initialisation will always work:
+organised with {...} into nested lists that match the type of the data. If you have too many {,}, it will complain. But if you have too few, it doesn't! Actually no matter how complex, how deeply tested T is here, this initialisation will always work:
 ````
 T A = {10,20,30,40,50,60,70,...};
-```
-C will somehow organise that linear sequence into the right structure, but do you it is getting into the right places. This is very sloppy.
+````
+C will somehow organise that linear sequence into the right structure, but how do you know it is getting into the right places? This is very sloppy.
 
-M requires that such data also exactly matches the structure of T.
+M requires that such data exactly matches the structure of T.
 
-**167** Another thing that C does, is allow fewer entries than are necessary, and the rest are zeros. This is actually not too bad a feature,
-but M's strictness doesn't allow that at present. What is does have however is a built-in way to clear objects:
+**167** Another thing that C does, is allow fewer entries than are necessary, and the rest are zeros. This is actually not too bad a feature, but M's strictness doesn't allow that at present. What is does have however is a built-in way to clear objects:
 ````
 T A = empty   # these all do the same (new feature so allowing alternate possibilities)
 A := empty
 clear A
+````
 
-**168** My systems language have always had inline assembly; M is no exception. Some C compilers have it, but they tend to use the gcc approach,
-which is very complicated and very ugly (I think you need to enter the assembly code as strings or something. In M it's more like:
+**168** My systems languages have always had inline assembly; M is no exception. Some C compilers have it, but they tend to use the gcc approach, which is very complicated and very ugly (I think you also need to enter the assembly code as strings or something). In M it's more like:
 ````
 assem
     mov D0,[A]
-	add D0,[B]
-	mov [C],D0
+    add D0,[B]
+    add mov [C],D0
 end
 ````
-No problems with stepping on the compiler's toes regarding register usage, as optimisation (such as it is) is turned off for functions that use
-inline assembly. (Usually, the whole body of a function will be assembly anyway.)
+No problems with stepping on the compiler's toes regarding register usage, as optimisation (such as it is) is turned off for functions that use inline assembly. (Usually, the whole body of a function will be assembly anyway.)
 
-**169** M can do extract the types of variables, print them out, compare them etc. Example:
+**169** M can extract the types of variables, print them out, compare them etc. Example:
 ````
     real x
 
@@ -931,40 +928,32 @@ inline assembly. (Usually, the whole body of a function will be assembly anyway.
     println x.type = i64.type  Shows 0
 ````
 
-**170** Since #171 uses {,}, I need to explain what M uses braces for. They were reserved to enclose deferred code, code which is executed later rather
-than when encountered. For example, lambda functions, but I never got round to that. However, a function body is also deferred code (not executed 
-until called), so {...} is sometimes used in one-line functions.
+**170** Since #171 uses {,}, I need to explain what M uses braces for. They were reserved to enclose deferred code, code which is executed later rather than when encountered. For example, lambda functions, but I never got round to that. However, a function body is also deferred code (not executed until called), so {...} is sometimes used in one-line functions.
 
-**171** M has an extra attribute called 'exportq'. This also exports functions from a program, but here it is to the companion scripting language,
-which I rewriting to make it easily embeddable within any M application. If I wrote a function in M like this (a real one would be something that would
-benefit from native code):
+**171** M has an extra attribute called 'exportq'. This also exports functions from a program, but here it is to the companion scripting language. If I wrote a function in M like this (a real one would be something that would benefit from native code):
 ````
 exportq function add(int x,y) = {x+y} 
 ````
-In dynamic, interpreted code code, I can call this native code function as one of:
+The in dynamic, interpreted code, I can call this native code function as one of:
 ````
 c := host.add(a,b)
 # or:
 add := host.add
 c := add(a,b)
 ````
-The compiler will generate all the param info needed for the interpreter to pick up and do all the checks and conversions needed.
+The compiler will generate all the type and interface info needed for the interpreter to pick up and do all the checks and conversions needed.
 
-Nothing much to do with C, except that with *my* language, I can do this stuff, with C, I can't.
+Nothing much to do with C, except that with *my* language, I can do this stuff; with C, I can't.
 
 **172** M has an incredibly useful feature that I call Tabledata. Normally used to define a set of enums, and parallel arrays of data
 at the same time. Or sometimes just parallel arrays. The nearest C might have is the very ugly x-macros.
 
-A good example is the Examples/ax_tables.m (find the Examples folder somewhere). The "$" you see there is a device that picks up the last
+A good example is the [ax_tables.m](Examples/ax_tables.m). The "$" you see there is a device that picks up the last
 enum name as a string literal.
 
+**173** C is designed for separate compilation: compile all the modules, then use a linker. And actually, most projects use a makefile, or Cmake, or any of a set of increasingly bigger and more complex tools.
 
-**173** C is designed for separate compilation: compile all the modules, then use a linker. And actually, most projects used a makefile,
-or Cmake, or any of an increasingly bigger and more complex tools.
-
-M is very different: the only tool is the compiler, and the only input it needs is one file: the name of the lead module. No build system needed.
-
-This is how the current M compiler (bb.exe) builds itself:
+M is very different: the only tool is the compiler, and the only input it needs is one file: the name of the lead module. No build system needed. This is how the current M compiler (bb.exe) builds itself:
 ````
 C:\bx>\m\bb bb
 Compiling bb.m---------- to bb.exe
@@ -986,7 +975,7 @@ C:\bx>\m\bb -dll bignum
 Compiling bignum.m------ to bignum.dll
 Writing exports file to bignum.exp
 ````
-This also writes an exports file, which is an M modules specifying bindings, that I'd have to write manually for other languages.
+This also writes an exports file, which is an M module specifying bindings, that I'd have to write manually for other languages.
 To use this library in a project, I write:
 ````
 importx bignum
@@ -994,22 +983,18 @@ importx bignum
 This picks up bignum.exp (otherwise 'import bignum' would simply import bignum.m, incorporating the implementation directly instead
 of using it as an external library).
 
-**176** M has a form of Doc-strings, but it needs finishing off. Doc-strings are special comments that start with "#" rather than "!", just before
-and within any function. With the -docs option, all functions with doc-strings are output to a text file. This lists all the function
-signatures and all the doc-string comments.
+**176** M has a form of Doc-strings, but it needs finishing off. Doc-strings are special comments that start with "#" rather than "!", just before and within any function. With the -docs option, all functions with doc-strings are output to a text file. This lists all the function signatures and all the doc-string comments.
 
-**177** M has a form of dynamic library interface (what C programs might use the complex LIBFF for). I had intended to create special language
-features for it, but at the moment it exists as standard library 'osdll', and implemented with inline ASM.
+**177** M has a form of runtime, dynamic library interface (what C programs might use the complex LIBFF for). I had intended to create special language features for it, but at the moment it exists as standard library 'osdll', and implemented with inline ASM.
 
-**178** Here a few things I should have covered above (and the numbering means I can't go back).
-First, C's dereference operator is the "*" which is written in prefix format, a bad choice has many uses end up
-as (*P)[i] or (*P).m or (*F)(x). But you rarely snever see these in code for various reasons (see #179).
+**178** Here are a few things I should have covered above (and the numbering means I can't go back).
+First, C's dereference operator is the "\*" which is written in prefix format, a bad choice has many uses end up
+as (\*P)[i] or (\*P).m or (\*F)(x). But you rarely snever see these in code for various reasons (eg. see #179).
 
-In M, the operator is "^" written after the pointer (taken from Pascal). Those examples become the cleaner P^[i], P^.m and F^(x).
+In M, the operator is "^" written after the pointer (taken from Pascal). Those examples become the cleaner P^\[i\], P^.m and F^(x).
 (However, the current M compiler allows those inbetween uses of "^" to be dropped; it will insert the derefs internally.)
 
-**179** C has the odd "->" operator, which is used in place of (*P).m, so it becomes P->m. Why it was introduced, I don't know; maybe (*P).m was too ugly.
-But it only covers one level of indirection; here the left column shows how many "*" pointer levels the type of P has:
+**179** C has the odd "->" operator, which is used in place of (\*P).m, so it becomes P->m. Why it was introduced, I don't know; maybe (\*P).m was too ugly. But it only covers one level of indirection; here the left column shows how many "\*" pointer levels the type of P has:
 ````
 *  Normal       With ->      M         M (optional ^)
 
@@ -1018,19 +1003,13 @@ But it only covers one level of indirection; here the left column shows how many
 2  (**P).m      (*P)->m      P^^.m     P.m
 3  (***P).m     (**P)->m     P^^^.m    P.m
 ````
-The -> helps with level 1, but looks ungainly with higher levels. M consistently looks cleaner; it never needs parenthese, and being able
-to omit ^ makes it even better.
+The -> helps with level 1, but looks ungainly with higher levels. M consistently looks cleaner; it never needs parentheses, and being able to omit ^ makes it even better.
 
+**180** Struct members in C are always laid out according to alighnment needs. This makes it harder to construct an exact layout because of padding bytes being silently inserted. You need to use 'pack(1)' to turn that off.
 
-**180** Struct members in C are always laid out according to alighnment needs. This makes it harder to construct an exact layout because
-of padding bytes being silently inserted. You need to use 'pack(1)' to turn that off.
+M always works with 'pack(1)'. But to get a struct compatible with a C struct in an API can b difficult, so there a $Caligned flag is used to turn on C-style alignment of members. (I could only do that because I've written a C compiler and have the algorithm needed!)
 
-M always works with 'pack(1)'. But to get a struct compatible with a C struct in an API can b difficult, so there $Caligned flag is used
-to turn on C-style alignment of members. (I could only do that because I've written a C compiler and have the algorithm needed!)
-
-**181** C has bitfields in structs, as independent members. But the way that work is implementation dependent. If you intend a bunch of
-bit fields to amount to 32 bits, say, and occupy one exact int, but you make a mistake and there are 33 bits, it it might use two ints or 8 bytes,
-or maybe 5 bytes. It will not tell you.
+**181** C has bitfields in structs, as independent members. But the way they work is implementation dependent. If you intend a bunch of bit fields to amount to 32 bits, say, and occupy one exact int, but you make a mistake and there are 33 bits, it it might use two ints or 8 bytes, or maybe 5 bytes. It will not tell you.
 
 M doesn't have C-style bitfield members, but another scheme where you declare a normal member to contain the bitfields:
 ````
@@ -1039,8 +1018,7 @@ record dummy =
 end
 dummy A
 ````
-Here, you can access those bitfields as though theye were normal members: A.scope:=2, print A.id, but they are contained with A.flags.
-You can access them all at once:  A.flags:=0. If there bitfields overflow the container type, it will tell you.
+Here, you can access those bitfields as though theye were normal members: A.scope:=2, print A.id, but they are contained within A.flags. You can access them all at once via the container member:  A.flags:=0. If the bitfields overflow the container type, it will tell you.
 
 **182** Most all C implementations still have 32-bit ints. M has moved on with 64-bit everything:
 ````
@@ -1056,8 +1034,8 @@ So everything is conveniently the same size.
 **183** C has a preprocessor that allows conditional compilation of code. M has no conditional code except at the module
 level; there is a scheme to map one module to another depending on certain flags.
 
-Mapping is used anyway, so with 'import oslib', 'oslib' is mapped to either mwindows.m or mlinux.m depending on target.
-(At the moment I'm concentrating on Windows.) But this is available to use programs.
+Mapping is used internally anyway, so with 'import oslib', 'oslib' is mapped to either mwindows.m or mlinux.m depending on target.
+(At the moment I'm concentrating on Windows.) But this is available to user programs too via a directive.
 
 This means a freedom from sourcecode plastered with #if and #ifdef blocks.
 
@@ -1076,7 +1054,15 @@ for them to work closely together (eg. 'exportq' mentioned earlier)
 Usually such pairings of languages are very different: C and Lua; C and Python, with interfacing between them more awkward.
 Partly because C has no knowledge of their needs.
 
+**186** M uses the "$" symbol for odd jobs; currently it has about 3 meanings depending on context. Not a very elegant feature, I'd prefer to keep quiet about it, but...
+````
+$ used in tabledata blocks will turn the last defined enum name into a string literal
+$ inside an array index expression like A\[$\] is equivalent A\[A.upb\]; it's the index of the last element.
+$ inside list of print items (most usefully at one end) emits a space (using " " would interact with the logic that
+automatically spaces items out)
+````
+I guess it's a little like 'static' in C.
 
 ### Other Differences
 
-There are some other features that I decided not to have in the language: many were to be imported from the scripting language), or are experimental, or I'd been thinking of adding, but I think this is enough to be getting on with...
+There are some other features that I decided not to have in the language: many were to be imported from the scripting language, or are experimental, or I'd been thinking of adding, but I think this is enough to be getting on with...
