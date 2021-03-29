@@ -10,7 +10,7 @@
 * See it as what one alternative to C could look like, without turning into Rust or Zig
 
 ### Links:
-* [M Language](Mosaic.md)
+* [M Language](Mosaic/readme.md)
 * [Examples](Examples)
 * [Features](mfeatures.md) Many features set out at greater length
 * [Compiler speed tests](Compilertest.md)
@@ -1062,6 +1062,19 @@ $ inside list of print items (most usefully at one end) emits a space (using " "
 automatically spaces items out)
 ````
 I guess it's a little like 'static' in C.
+
+**187** One more thing about $ is that M allows it in identifiers. It is a far better choices for reserved or internal identifiers as it is more visible than _ or __ favoured by C. Many C compilers accept $, but some don't (tcc) or only in certain parts of an identifier (lccwin).
+
+**188** C programs use a main() entry point; M normally uses start() or also main(), which never take parameters:
+````
+proc start =
+    println "Hello, World!"
+end
+````
+Command line parameters are accessed via globals 'nsysparams' and 'sysparams'. (main() was useful when the compiler generated C source, then C compilers didn't understand 'start').
+
+**189** If an M module includes a function with the name $init, then it is automatically called from the program start-up code. (However, module order is often indeterminate, so you don't know which is called first.)
+
 
 ### Other Differences
 
