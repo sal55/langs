@@ -356,9 +356,9 @@ proc start=
 end
 ````
 
-**76** There is also **binclude** to incorporate small binary files; the result is suitable for initialising a byte array:
+**76** There is also **bininclude** to incorporate small binary files; the result is suitable for initialising a byte array:
 ````
-[]byte data = binclude "zip.exe"
+[]byte data = bininclude "zip.exe"
 ````
 
 **77** M has a full module import system. Imported modules can be imported in any order, and circular and mutual imports are allowed.
