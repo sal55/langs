@@ -1,23 +1,21 @@
 
 
-## Differences between C and M
+## Comparing C with 'M'
 
 
-M is my own private systems programming language. It's not that much higher level than
-C, but can be used for the same tasks, and many of the unsafe features of
-C are unsafe here too.
+* 'M' is my own private systems programming language
+* Originally developed in the 1980s, with no knowledge of C (which I only encountered in the 90s)
+* It is still proudly old-fashioned, with few of the new-fangled features you see now, except when genuinely useful like modules
+* I still class it as small language, despite a million little features, with a small (0.5MB) and fast (300Klps) compiler
+* See it as what one alternative to C could look like, without turning into Rust or Zig
 
-Yet it offers what I see as many enhancements over C, listed below.
-
-See it as what an alternate to C could look like, without turning into Rust or Zig. Note that M was created completely independently from C.
-
-Links:
+### Links:
 * [M Language](Mosaic.md)
 * [Examples](Examples)
+* [Features](mfeatures.md) Many features set out at greater length
 * [Compiler speed tests](Compilertest.md)
-* [Features](mfeatures.md)
 
-
+### A Selection of Differences from C
 
 **1** M is case-insensitive (put that in early so some people can stop reading now). I find that
 makes for a coding style that is easier on the eye, and gives some useful advantages that have been discussed
@@ -663,12 +661,12 @@ Another tweak is that labels need to be written as L:: not L: (at present ":" is
 ````
 if A in B..C then          # true when A>=B and A<=C
 if A in X.bounds then      # (version not yet implemented; .bounds to be rolled out more)
-```
+````
 
 **128** One more:
 ````
 if C in [13,10,9] then     # white-space
-```
+````
 The expression 'x in [a,b,...]' is true when x matches at least one value in the list.
 
 (Both a..b and [a,b,c] are constructors from my dynamic language which has actual range and bitset types. That also allowed [a,b,c,d..e].
@@ -981,11 +979,7 @@ Compiling bb.m---------- to bb.exe
 ````
 Even on my slow PC, this takes 0.2 seconds (or 0.22 seconds if I want it optimised). This is for 35 modules, 42Kloc, generating a 500KB executable.
 
-**174** The M compiler also has an option to combine all sources of a project, and any support files, into a single .ma source file. This format
-is handy to upload to Github for example, as backup. And unlike ZIP, it is not binary, and bb.exe can build it directly in that format:
-````
-\m\bb -ma bb
-\m\bb  bb.ma
+**174** The M compiler also has an option to combine all sources of a project, and any support files, into a single .ma source file. This format is handy to upload to Github for example, as backup. Unlike ZIP, it is not binary, and bb.exe can build it directly in that format:
 ````
 C:\bx>\m\bb -ma bb
 Compiling bb.m---------- to bb.ma         # create the 1-file version
@@ -1083,5 +1077,14 @@ They only work within expressions. The body of a macro is one expression, but si
 can write (s1; s2; s3), they can be as big as needed. But macro bodies cannot define new symbols. (They are mostly used with the
 inline assembler)
 
-**185** There are other features that I decided not to have in the language (many live in the scripting language), or are experimental,
-or I'd been thinking of adding, but I think this is enough to be getting on with...
+**185** M has a companion scripting language called 'Q'. It is dynamically typed and interpreted. Its syntax is pretty much
+the same as M's syntax. It is currently being reimplemented to be better suited for embedding. Both have special features
+for them to work closely together (eg. 'exportq' mentioned earlier)
+
+Usually such pairings of languages are very different: C and Lua; C and Python, with interfacing between them more awkward.
+Partly because C has no knowledge of their needs.
+
+
+### Other Differences
+
+There are some other features that I decided not to have in the language: many were to be imported from the scripting language), or are experimental, or I'd been thinking of adding, but I think this is enough to be getting on with...
