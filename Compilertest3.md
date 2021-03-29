@@ -26,7 +26,7 @@ Implem | Language | Time (secs) | Funcs/sec | Runtime | Exe Size | Inst Files | 
 **DMD**           | D | 32 | 310 | 9.7 | 16MB | 4000 | 300MB
 **Clang**         | C | 30 | 330 | 10.2 | 12MB | 350 | 1600MB
 **Javac**      | Java | 25 | 400 | 4.0  |0.12MB | 400 | 330MB
-**Vox**           | [Vox](https://github.com/MrSmith33/vox) | 15 | 670 | [6.3](https://gist.github.com/MrSmith33/ac14e66a83b9d047793adede464ca1ef#file-fannkuch-vx) | 10MB | 1 | 2.4MB (0.75MB upx)
+**Vox**           | [Vox](https://github.com/MrSmith33/vox) | 10 | 1000 | [6.3](https://gist.github.com/MrSmith33/ac14e66a83b9d047793adede464ca1ef#file-fannkuch-vx) | 10MB | 1 | 2.4MB (0.75MB upx)
 **MSVC**          | C | 12  |830 | 9.6 | 9.2MB | 14600 | 2800MB
 **bcc** (bb)     | C        | 4.2 | 2400 | 9.0 | 8.0MB | 1 | 1.0MB (0.32MB upx)
 **BB -opt** (bb)   | M        | 2.5 | 4000 | 3.1 | 6.6MB | 1 | 0.6MB (0.17MB upx)
