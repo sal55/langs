@@ -5,7 +5,7 @@
 
 * 'M' is my own private systems programming language
 * Originally developed in the 1980s, with no knowledge of C (which I only encountered in the 90s)
-* It is still proudly old-fashioned, with few of the new-fangled features you see now, except when genuinely useful like modules
+* It is still proudly old-fashioned, with few of the new trendy features you see now, except when genuinely useful like modules
 * I still class it as small language, despite a million little features, with a small (0.5MB) and fast (300Klps) compiler
 * See it as what one alternative to C could look like, without turning into Rust or Zig
 
