@@ -550,8 +550,7 @@ for i,x in A do ... end           # here, i is the index used (iterates over A.l
 ````
 A needs to be an array or slice
 
-**113** C has Switch, a rather peculiar construction, which can contain case labels scattered higgledly-piggledy anywhere within the following statement.
-M's Switch is properly structured:
+**113** C has Switch, a rather peculiar construction, which can contain case labels scattered higgledly-piggledy anywhere within the following statement. M's Switch is properly structured:
 ````
 switch x
 when a, b then ...
@@ -559,17 +558,26 @@ when c then ...
 else ...
 end
 ````
-**114** C's Switch has an optional 'default:' label, but again this can appear anywhere, including mixed up with case labels. M's version is just
-'else' like other statements, and goes near the end. One issue with default: is that misspell it as 'defualt:' for example, and the error is
-not detected; it's just a regular label.
+**114** C's Switch has an optional 'default:' label, but again this can appear anywhere, including mixed up with case labels. M's version is just 'else' like other statements, and goes near the end. One issue with default: is that misspell it as 'defualt:' for example, and the error is not detected; it's just a regular label.
 
-**115** C requires you to write case A: case B: case C:; in M it is when A, B, C then. (Some C extensions may allow a list)
+**115** C requires you to write:
+````
+case A: case B: case C:
+````
+In M it is:
+````
+when A, B, C then     # (Some C extensions may allow a list)
+````
+**116** C requires you to write:
+````
+case 10: case 11: case 12: case 13:
+````
+In M it is
+````
+when 10..13 then    # Some C extensions may allow case 10...13, like gnuC I think)
+````
 
-**116** C requires you to write case 10: case 11: case 12: case 13; in M it is when 10..13 then. (Some C extensions may allow case 10...13, like
-gnuC I think)
-
-**117** C Switch requires a 'break' statement after the code following each set of case labels, unless you specifically want to fallthrough.
-So C switch statements are usually littered with 'break', and you don't get a warning if you forget one.
+**117** C Switch requires a 'break' statement after the code following each set of case labels, unless you specifically want to fallthrough. So C switch statements are usually littered with 'break', and you don't get a warning if you forget one.
 M's switch doesn't need breaks. (It doesn't have fallthrough; it does have 'recase', but that's an experimental feature I won't cover here.)
 
 **118** If you're inside a switch branch in C, you can't use 'break' if your are also inside a loop. (Not an issue with M)
@@ -597,8 +605,7 @@ elsif c4 then
 else
 end
 ````
-Should be familiar to C users as the C preprocessor has a similar construct; it has more advanced features than C! This statement is inherently linear
-rather compared to a nested if-else-if-else chain.
+Should be familiar to C users as the C preprocessor has a similar construct; it has more advanced syntax than C itself! This statement is inherently linear rather compared to a nested if-else-if-else chain.
 
 **122** One alternative to #121 which I have a syntax for, but not sure if yet implemented, is this form of Case:
 ````
@@ -624,7 +631,7 @@ when d, e then
 else
 end
 ````
-The alternative is a nested statement with extra indents.
+The alternative is increasingly nested statement with extra indents.
 
 **123** M has these 'short' control flow statements: goto, return, exit, redo, next, stop. Each of these can have an optional conditional suffix:
 ````
@@ -665,13 +672,11 @@ if A in X.bounds then      # (version not yet implemented; .bounds to be rolled 
 
 **128** One more:
 ````
-if C in [13,10,9] then     # white-space
+if c in [13,10,9] then     # (so c is a white-space character)
 ````
-The expression 'x in [a,b,...]' is true when x matches at least one value in the list.
+The expression 'x in \[a,b,...\]' is true when x matches at least one value in the list.
 
-(Both a..b and [a,b,c] are constructors from my dynamic language which has actual range and bitset types. That also allowed [a,b,c,d..e].
-The original intention here was that [a,b,c] can construct a short bitset of of type u64 or u128, enabling fast bit tests. But for now, a..b
-and [a,b,c] (no mixed ranges) are just constructs, not types. And the test for [a,b,c] is sequential.)
+(Both a..b and [a,b,c] are constructs from my dynamic language which has actual range and bitset types. Here they are just syntax.)
 
 **129** C allows you to write A==B<=C, but the result is not meaningful (eg. A=B yields 0 or 1, and that is compared with C). M has proper chained
 comparisons:
@@ -703,22 +708,22 @@ fn(10,20)              # discard both
 ````
 
 **133** Probably you will have noticed by now that M uses "=" for equality, and ":=" for assignment. This makes them less
-susceptible being mixed up as they often are in C, especially in conditional expressions.
+susceptible to being mixed up as they often are in C, especially in conditional expressions.
  
 
 **134** For its binary operators, C has 10 precedence levels for 18 operators. Many have famously unintuitive precedences.
-M has only 5 levels for the same operators:
-
-Mul
-Add
-Comparisons
-And
-Or
-
+M has only 5 levels for the same operators, grouped into these categories
+````
+1 Mul etc
+2 Add etc
+3 Comparisons, = etc
+4 And
+5 Or
+````
 **135** Shift operators scale a number in the same way as multiple and divide, so in M they have the same precendence.
-a<<b+c and a*b+c are both parsed as (a<<b)+c and (a*b)+c
+a<<b+c and a\*b+c are both parsed as (a<<b)+c and (a\*b)+c
 
-**136** M has a power operator **, which is one higher level than multiply/divide. This is also properly overloaded for integers and floats.
+**136** M has a power operator \*\*, which is one higher level than multiply/divide. This is also properly overloaded for integers and floats.
 
 **137** M also has a proper, overloaded 'abs' operator. In C, you need abs, labs, llabs, fabs ... plus the appropriate headers.
 
@@ -732,12 +737,11 @@ but they look better with them. They include sqrt and sin, cos, tan. Some are ov
 **141** Another special constant is 'nil', which has type 'ref void', used to initialise pointers. Unlike C, pointers cannot be initialised
 with zero.
 
-**142** A big feature of M is named constants. C either used #define (very crude; no scoping; need to reevaluate each instance); or enums
-(limited to int32 types); or 'const int' (don't count as compile-time expressions). In M:
+**142** A big feature of M is named constants. C either used #define (very crude; no scoping; need to reevaluate each instance); or enums (limited to int32 types); or 'const int' (don't count as compile-time expressions). In M:
 ````
-const a = 100          # type is infered
+const a     = 100          # type is infered
 const int b = 200
-const c = a+b
+const c     = a+b
 ````
 
 **143** Like C, M has augmented assignments (+= or +:=). But unlike C, they do not return a value, so cannot be used in expressions.
@@ -748,7 +752,7 @@ a +:= b -:=c *:= d
 might mean when a, b, c, d are mixed types.
 
 **144,** M also has augmented assignments for unary operators:
-```
+````
 -:=a          # a:=-a
 abs:=a        # a:=abs a etc
 inot:=a
@@ -757,7 +761,7 @@ inot:=a
 **145** C's 2-way select operator is a ? b : c. Apart from being ugly, it does not require parentheses. Although they can be added, people tend
 to leave them out, making it hard to understand an expression because of complex precedence rules.
 
-M writes it as (a | b | c); parentheses are mandatory. (Note this is just another way of writing 'if a then b else c fi'; see below0
+M writes it as (a | b | c); parentheses are mandatory. (Note this is just another way of writing 'if a then b else c fi'; see below)
 
 **146** M extends this to an N-way select construct:
 ````
@@ -771,7 +775,7 @@ N is a 1-based index; it will evaluate the nth expression in the list if in rang
 (a | b | c) := 0       # set either b or c to zero
 ````
 
-**148** One big difference from C is that in M, expressions and statements are equivalent (one more thing taken from Algol 68).
+**148** A big difference from C is that in M, expressions and statements are equivalent (one more thing taken from Algol 68).
 
 All statements return some value, even if it is 'void'. 'Return X' can be written as 'X', unless this is an early return, as the body of
 a function will have a value. In the case of a block (sequence of statements/expressions), the value of the last in the block is used.
@@ -783,14 +787,12 @@ if-elsif-else-end
 case-when-else-end
 switch-when-else-end
 ````
-For this purpose, each needs an 'else' part, otherwise there is a type error. Each of these can also be an lvalue (used on the LHS of
+For this purpose, each needs an 'else' part, otherwise there is a type error. Each of these can also be an Lvalue (used on the LHS of
 an assignment).
 
-**150** if a then b else c fi has compact form which looks like this: (a|b|c). Yes, this is the 2-way select op from 145; it's not a separate feature,
-just a different way of writing 'if'. Note that #146 does not have a corresponding long form.
+**150** 'if a then b else c fi' has compact form which looks like this: (a|b|c). Yes, this is the 2-way select op from 145; it's not a separate feature, just a different way of writing 'if'. Note that #146 does not have a corresponding long form.
 
-(Note that my own code uses block delimiters such as 'fi' (as in if-then-else-fi), 'od' and 'esac', but I've spared everyone that and use only 'end'
-here, not even 'end if' etc. M accepts alternatives.)
+(Note that my own code uses block delimiters such as 'fi' (as in if-then-else-fi), 'od' and 'esac', but I've spared everyone that and use only 'end' here, not even 'end if' etc. M accepts alternatives.)
 
 
 **151** I've already said that C's {...} braces are not used for M blocks (or for record defs etc). But C uses them also around initialisation data.
@@ -802,18 +804,16 @@ M just uses regular (...) parentheses for that:
 **152** C uses semicolons to terminate statements. M uses them to separate statements. But you will very rarely see semicolons in M code, for
 these reasons:
 
-* End-of-line is interpreted as a semicolon (unless the last symbol was ( [ , or a binary operator).
+* End-of-line is interpreted as a semicolon (unless the last symbol was ( \[ , or a binary operator).
 * Extraneous semicolons are ignored
 
-
-**153** M has bit indexing, written as A.[i], which extracts the i'th bit of integer A as 0 or 1. The equivalent in C involves shifting and masking.
-Bits can also be assigned to: A.[i] := x; this sets the i'th bit of A to x (0 or 1). Bits are numbered from 0 (lsb) to 63 (msb).
+**153** M has bit indexing, written as A.\[i\], which extracts the i'th bit of integer A as 0 or 1. The equivalent in C involves shifting and masking. Bits can also be assigned to: A.\[i\] := x; this sets the i'th bit of A to x (0 or 1). Bits are numbered from 0 (lsb) to 63 (msb).
 
 **154** There is also bitfield extraction:
 ````
 x := A.[i..j]      # extract bitfield of bits i to j inclusive into x
 A.[i..j] := x      # insert a bitfield
-
+````
 **155** There are a number of built-in bit/bitfield operations, such as:
 ````
 A.odd         # Same as A.[0]  (these two are read-only)
@@ -825,46 +825,38 @@ A.lsb         # Same as A.[0..7]
 ````
 cast(X, T)         # general syntax
 T(X)               # compact syntax when T is simple (there is a grammar ambiguity with a complex T)
-
+````
 **157** There is also a neat automatic cast:
 ````
 A := cast(B)
 ````
 Here you don't need to go and hunt down the required type; whatever is demanded here, is applied to B. Provided it is allowed.
 
-**158** Type-punning doesn't properly exist in C. You usually do things like *(T)&X, but this only works when X is an lvalue. In M:
+**158** Type-punning doesn't properly exist in C. You usually do things like \*(T)&X, but this only works when X is an Lvalue. In M:
 ````
 cast@(X,T)
 T@(X)
 ````
 Both of these work with Rvalues, example print int@(f(x)+1.0), which interprets the floating point result as an int.
 
-
-**159** C programs extensively make use of 'const', but to me it adds too much clutter, and gives a false sense of security. It can be easy
-to get wrong too:
+**159** C programs extensively make use of 'const', but to me it adds too much clutter, and gives a false sense of security. It can be easy to get wrong too:
 ````
 int const * P
-```
-The 'const' here I believe applied to the pointer target, not the pointer. M doesn't have any equivalent. But it is introducing 'LET' as 
-prefix when declaring variables, which tries to stop you updating then. Not used much at the minute, but if you write a loop like this:
+````
+The 'const' here I believe applied to the pointer target, not the pointer. M doesn't have any equivalent. But it is introducing 'let' as prefix when declaring variables, which tries to stop you updating then. Not used much at the minute, but if you write a loop like this:
 ````
 for i := A to B do ... end
 ````
-then if 'i' is auto-declared, it will be using 'let', which stops you changing it inside the loop. (There are also in, out and inout attributes
-for function parameters, but I don't do much with those either. The fact is the programs still without all this stuff!)
-
+then if 'i' is auto-declared, it will be using 'let', which stops you changing it inside the loop. (There are also in, out and inout attributes for function parameters, but I don't do much with those either. The fact is the programs still without all this stuff!)
 
 **160** This one is a very old feature which I'm always thinking of getting rid of, but it's still hanging in there:
 ````
 real X
 int A @ X
-```
+````
 What this says is that A should share the same location in memory as X.
 
-**161** M has recently introduced Slices, which are a kind of view into an array or string. A slice consists of a (pointer, length) pair.
-If a function takes a slice, you can pass it an normal array, and it will construct a slice; or pass it a slice of the array such
-as A[i..j]. It's too big a subject for here. (Also it's buggy at the minute)
-
+**161** M has recently introduced Slices, which are a kind of view into an array or string. A slice consists of a (pointer, length) pair. If a function takes a slice, you can pass it an normal array, and it will construct a slice; or pass it a slice of the array such as A\[i..j\]. It's too big a subject for here. (Also it's buggy at the minute)
 
 **162** M has some limited reflection in that compiled executables contain a table of all the functions in a program, with names and addresses.
 This is used mainly to identify sets of handlers and build function tables are runtime, instead of having to maintain them manually.
