@@ -2,7 +2,7 @@
 #  https://benchmarksgame-team.pages.debian.net/benchmarksgame/description/fannkuchredux.html#fannkuchredux
 
 # Languages covered are M and Q (mine), plus:
-#  Algol68 C D Go Julia Lua Nim Python Rust Ruby
+#  Algol68 C D Go Julia Lua Nim Python Rust Ruby Odin
 
 # Lua and probably Ruby versions are original Shootout code. The M version seems to derived from the Lua,
 # the rest are ported from the M code so as to use the same syntax
@@ -1056,4 +1056,97 @@ INT res;
 res:=fannkuch(n);
 
 print(("Fannkuch(",n,") = ",res," ", res2,newline))
+
+#***********************************************************************************************
+# Odin version
+#***********************************************************************************************
+
+package main
+
+import "core:fmt"
+
+fann:: proc(n: int) -> (res, res2: int) {
+    p:=[20]int {0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0};
+    q:=[20]int {0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0};
+    s:=[20]int {0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0};
+    i,j,k:int;
+    sign, maxflips, sum: int;
+    q1, flips, qq, t, sx, tt:int;
+
+    sign=1;
+    maxflips=0;
+    sum=0;
+
+    for i:=1; i<=n; i+=1 {
+        p[i]=i;
+        q[i]=i;
+        s[i]=i;
+    }
+
+    for 1==1 {
+        q1=p[1];
+        if q1!=1 {
+            for i:=2; i<=n; i+=1 { q[i]=p[i] }
+            flips=1;
+            for 1==1 {
+                qq=q[q1];
+                if qq==1 {
+                    sum += sign*flips;
+                    if flips>maxflips {
+                        maxflips=flips;
+                    }
+                    break;
+                }
+                q[q1]=q1;
+                if q1>=4 {
+                    i=2; j=q1-1;
+                    for 1==1 {
+                        tt=q[i]; q[i]=q[j]; q[j]=tt;
+                        i+=1;
+                        j-=1;
+                        if i>=j { break}
+                    }
+                }
+                q1=qq;
+                flips+=1;
+            }
+        }
+
+        if (sign==1) {
+            tt=p[1]; p[1]=p[2]; p[2]=tt;
+            sign= -1;
+        } else {
+            tt=p[2]; p[2]=p[3]; p[3]=tt;
+            sign=1;
+            for i:=3; i<=n; i+=1 {
+                sx=s[i];
+                if sx!=1 {s[i]=sx-1; break }
+                if i==n {
+                    return sum, maxflips;
+                }
+                s[i]=i;
+                tt=p[1];
+                for j:=1; j<=i; j+=1 {
+                    p[j]=p[j+1];
+                }
+                p[i+1]=tt;
+            }
+        }
+    }
+
+    return 0,0;
+}
+
+
+main :: proc() {
+    n:=11;
+    a:=1;
+    b:=2;
+
+    a, b = fann(n);
+    a, b = fann(n);
+    a, b = fann(n);
+
+    fmt.println("Fann(",n,") = ",a,b);
+}
 
