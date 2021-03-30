@@ -1075,6 +1075,18 @@ Command line parameters are accessed via globals 'nsysparams' and 'sysparams'. (
 
 **189** If an M module includes a function with the name $init, then it is automatically called from the program start-up code. (However, module order is often indeterminate, so you don't know which is called first.)
 
+**190** M has primitive OO features in form of encapsulation: records can contain, not just members, but also named constants, types and functions:
+````
+record date =
+    int d,m,y
+    proc printd(date &d, ichar sep="/")=
+        fprintln "#####",d.d, sep, d.m, sep, d.y
+    end
+end
+...
+date d:=(30,3,2021)
+date.printd(d)          # or:
+d.printd("-")
 
 ### Other Differences
 
