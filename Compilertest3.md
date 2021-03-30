@@ -20,14 +20,16 @@ Implem | Language | Time (secs) | Funcs/sec | Runtime | Exe Size | Inst Files | 
 **Dart**          | Dart | 235| 42 | 6.2 | 27MB | 500 | 490MB
 **DMD -O**       | D | 156 | 64 | 4.1 | 15MB | 4000 | 300MB 
 **MSVC /O2**          | C | 155 |64 | 2.6 | 0.2MB | 14600 | 2800MB
+**Odin -opt**        | Odin | 104 ++ | 96 | 2.7 | --- | 200 | 140MB
 **gcc -O3**           | C            | 85 | 118 | 3.3 | 0.93MB | 4800 | 550MB
 **gcc**           | C            | 67 | 150 | 8.7 | 10MB | 4800 | 550MB
 **Go**            | Go | 40 | 250 | 2.9 | 10MB | 9200 | 350MB
 **DMD**           | D | 32 | 310 | 9.7 | 16MB | 4000 | 300MB
 **Clang**         | C | 30 | 330 | 10.2 | 12MB | 350 | 1600MB
 **Javac**      | Java | 25 | 400 | 4.0  |0.12MB | 400 | 330MB
-**Vox**           | [Vox](https://github.com/MrSmith33/vox) | 10 | 1000 | [6.3](https://gist.github.com/MrSmith33/ac14e66a83b9d047793adede464ca1ef#file-fannkuch-vx) | 10MB | 1 | 2.4MB (0.75MB upx)
 **MSVC**          | C | 12  |830 | 9.6 | 9.2MB | 14600 | 2800MB
+**Odin**        | Odin | 14 | 720 | 27.3 | --- | 200 | 140MB
+**Vox**           | [Vox](https://github.com/MrSmith33/vox) | 5.7 | 1750 | [6.4](https://gist.github.com/MrSmith33/ac14e66a83b9d047793adede464ca1ef#file-fannkuch-vx) | 10MB | 1 | 2.4MB (0.75MB upx)
 **bcc** (bb)     | C        | 4.2 | 2400 | 9.0 | 8.0MB | 1 | 1.0MB (0.32MB upx)
 **BB -opt** (bb)   | M        | 2.5 | 4000 | 3.1 | 6.6MB | 1 | 0.6MB (0.17MB upx)
 **MM** (bb)      | M        | 2.3 | 4300 | 7.0 | 10MB | 1 | 0.8MB (0.16MB upx)
@@ -77,6 +79,10 @@ I've managed to make this work, and the good news is that, with a new update, it
 * The optimised executable size was extrapolated from that of the 1000-function version
 
 So Rust has some problems in my opinion. Even that 18 seconds for an optimised build of 100-functions or 8000 lines is only 0.4K lines per second - microcomputer territory.
+
+### ++Odin
+
+This failed my 10,000-function tests. It crashes on larger inputs. The figures shown are based on the 1000-function test
 
 ### Java
 
