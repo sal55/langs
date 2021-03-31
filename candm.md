@@ -1123,7 +1123,7 @@ eval a+b
 eval a=b
 ````
 
-**196** Both languages allows hex floating constants (M also in binary and other bases). But C does it in peculiar way:
+**196** Both languages allows hex floating constants (M also in binary and other bases). But C does it in a peculiar way:
 ````
 0x100p10       In C, this is the value 262144.0
 0x100p10       In M, this has the value 4722366482869645200000.0
@@ -1153,7 +1153,7 @@ cclib opengl32,glu32,glut32
 ````
 mm file
 ````
-Notice there is not extension used: I write 'file' not 'file.m". This is a compile for the M language and its primary input will be a source file with a .m extension;
+Notice there is no extension used: I write 'file' not 'file.m". This is a compiler for the M language and its primary input will be a source file with a .m extension;
 why it is necessary to specify it? Same argument can be applied to many other languages including C. (My bcc C compiler also only needs 'bcc hello', every other ones NEEDS 'xcc hello.c'.)
 
 **200** Just one more to end up with a round 200. C has functions strcmp and memcmp which returns a 3-way value. So to compare the equality of two strings may need:
