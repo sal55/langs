@@ -667,12 +667,14 @@ Another tweak is that labels need to be written as L:: not L: (at present ":" is
 **127** M has some new features for use in conditionals:
 ````
 if A in B..C then          # true when A>=B and A<=C
+if A not in B..C then
 if A in X.bounds then      # (version not yet implemented; .bounds to be rolled out more)
 ````
 
 **128** One more:
 ````
-if c in [13,10,9] then     # (so c is a white-space character)
+if c in [13,10,9] then       # (so c is a white-space character)
+if c not in [13,10,9] then   # (so c isn't a white-space character)
 ````
 The expression 'x in \[a,b,...\]' is true when x matches at least one value in the list.
 
@@ -732,7 +734,7 @@ but they look better with them. They include sqrt and sin, cos, tan. Some are ov
 
 **139** M's 'sqr' operator simply squares its operand (either int or float): sqr(x)+sqr(y).
 
-**140** M uses a very small number of built-in constants, one of them is 'pi' (3.14159 etc)
+**140** M uses a very small number of built-in constants, one of them is 'pi' (3.14159 etc). Another two are 'true' (1) and 'false' (0).
 
 **141** Another special constant is 'nil', which has type 'ref void', used to initialise pointers. Unlike C, pointers cannot be initialised
 with zero.
@@ -1090,6 +1092,39 @@ d.printd("-")
 ````
 **191** M has a form of nested functions (limited in that they can't access stack-allocated variables of enclosing functions, but they can access static variables,
 types, named constants etc). (Nested functions are a gcc extension in C.)
+
+**192** There is a special **istrue** operator, where istrue X is equivalent to !!X in C.
+
+**193** There is a 'sign' operator, applied to numeric expressions, which returns -1, 0, or 1. Sometimes called the spaceship operator in other languages. Here it is written as sign(x), and its type matches x (either int or float).
+
+**194** Enums in M are usually 'open' names as in C. So that the two 'green' enums for example in:
+````
+enum {red, green, blue};
+enum {red, amber, green};
+````
+will clash. In M, enums can be defined under an umbrella type:
+````
+type rgb = enum(red, green, blue)
+type lights = enum (red, amber, green)
+````
+But now, you need to write rgb.green or lights.green to disambiguate (the type system really is not so sophisticated as it can work this out from context).
+
+**194** There is a 'clamp' operator, used as clamp(x, a,b) which returns x but adjusted to be within the range a..b inclusive.
+
+**195* In C, you can legally write like this:
+````
+a+b;
+a==b;
+````
+A compiler may or may not warn. M doen't allow this. In order to evaluate such an expression (for the purpose of checking an expression, or to get it loaded into
+a register, or any other purpose) you have to write them as:
+````
+eval a+b
+eval a=b
+````
+
+
+
 
 ### Other Differences
 
