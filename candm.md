@@ -1095,7 +1095,7 @@ types, named constants etc). (Nested functions are a gcc extension in C.)
 
 **192** There is a special **istrue** operator, where istrue X is equivalent to !!X in C.
 
-**193** There is a 'sign' operator, applied to numeric expressions, which returns -1, 0, or 1. Sometimes called the spaceship operator in other languages. Here it is written as sign(x), and its type matches x (either int or float).
+**193** There is a 'sign' operator, applied to numeric expressions, which returns -1, 0, or 1. Sometimes called the spaceship operator in other languages. Here it is written as sign(x), and its type matches x (either int or float). (Correction, the 'spaceship' operator appears to take two operands, as in: a <=> b. In M the equivalent would be sign(a-b).)
 
 **194** Enums in M are usually 'open' names as in C. So that the two 'green' enums for example in:
 ````
