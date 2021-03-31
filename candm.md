@@ -1123,7 +1123,22 @@ eval a+b
 eval a=b
 ````
 
+**196** Both languages allows hex floating constants (M also in binary and other bases). But C does it in peculiar way:
+````
+0x100p10       In C, this is the value 262144.0
+0x100p10       In M, this has the value 4722366482869645200000.0
+````
+Why the difference? In M, this means 0x100\*(16\*\*0x10), or 256\*\(16\*\*16) as you might expect, since 100e10 is 100\*(10\*\*10).
 
+But in C, it means 0x100\*(2\*\*10), or 256\*1024. So although it supposedly in hex, the exponent is decimal, and represents a power of two!
+
+**197** C has reserved words like most languages, and like M, which cannot be used as identifiers. But M has a special escape for such names:
+````
+int `int, `for, `if;
+`int := `for + `if
+````
+(The ` prefix wil also preserve case, allowing abc, `Abc and `ABC to be distinct identifiers just like C. This is sometimes used for external interfaces. It is
+also used for automatic translators from C into M.)
 
 
 ### Other Differences
