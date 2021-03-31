@@ -1087,6 +1087,9 @@ end
 date d:=(30,3,2021)
 date.printd(d)          # or:
 d.printd("-")
+````
+**191** M has a form of nested functions (limited in that they can't access stack-allocated variables of enclosing functions, but they can access static variables,
+types, named constants etc). (Nested functions are a gcc extension in C.)
 
 ### Other Differences
 
