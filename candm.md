@@ -1111,7 +1111,7 @@ But now, you need to write rgb.green or lights.green to disambiguate (the type s
 
 **194** There is a 'clamp' operator, used as clamp(x, a,b) which returns x but adjusted to be within the range a..b inclusive.
 
-**195* In C, you can legally write like this:
+**195** In C, you can legally write like this:
 ````
 a+b;
 a==b;
@@ -1147,7 +1147,7 @@ But in a more complex situation, the name used in 'importdll' can be a dummy one
 ````
 cclib opengl32,glu32,glut32
 ````
-(Or, failing all that, DLLs can simply be listed on the compiler command line. Nearly always however, building a program is 'mm file'.
+(Or, failing all that, DLLs can simply be listed on the compiler command line. Nearly always however, building a program is 'mm file'.)
 
 **199** This one may seem rather trivial, but I find it incredibly handy and miss it with other languages. In #198 I used the example:
 ````
@@ -1165,7 +1165,7 @@ This is not so intuitive; it's easy to forget the ==0. M uses these two function
 if eqstring(s,t)
 if eqbytes(a,b)
 ````
-which just return true or false. Very easy. Sure you can trivially emulate these in C; but here they are built-in. Here's an example from 750Kloc C file called gcc.c:
+which just return true or false. Very easy. Sure you can trivially emulate these in C; but here they are built-in. Here's an example from a 750Kloc C file called gcc.c:
 ````
 # define STREQ(s1, s2) ((strcmp (s1, s2) == 0))
 ````
