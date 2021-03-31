@@ -1137,8 +1137,39 @@ But in C, it means 0x100\*(2\*\*10), or 256\*1024. So although it supposedly in 
 int `int, `for, `if;
 `int := `for + `if
 ````
-(The ` prefix wil also preserve case, allowing abc, `Abc and `ABC to be distinct identifiers just like C. This is sometimes used for external interfaces. It is
+(The \` prefix wil also preserve case, allowing abc, \`Abc and \`ABC to be distinct identifiers just like C. This is sometimes used for external interfaces. It is
 also used for automatic translators from C into M.)
+
+**198** #173 stated that the M only needs one input file to build, which is only most true. In the case of external libraries (it can only dynamically link to DLLs) it
+needs the names of the DLL files. If those names directly appear as in a 'importdll raylib' block that declares the imported functions, then raylib.dll, as it is here, will be used.
+
+But in a more complex situation, the name used in 'importdll' can be a dummy one, and any DLLs are specified elsewhere. This can be with this special declaration:
+````
+cclib opengl32,glu32,glut32
+````
+(Or, failing all that, DLLs can simply be listed on the compiler command line. Nearly always however, building a program is 'mm file'.
+
+**199** This one may seem rather trivial, but I find it incredibly handy and miss it with other languages. In #198 I used the example:
+````
+mm file
+````
+Notice there is not extension used: I write 'file' not 'file.m". This is a compile for the M language and its primary input will be a source file with a .m extension;
+why it is necessary to specify it? Same argument can be applied to many other languages including C. (My bcc C compiler also only needs 'bcc hello', every other ones NEEDS 'xcc hello.c'.)
+
+**200** Just one more to end up with a round 200. C has functions strcmp and memcmp which returns a 3-way value. So to compare the equality of two strings may need:
+````
+if (strcmp(s,t)==0)
+````
+This is not so intuitive; it's easy to forget the ==0. M uses these two functions:
+````
+if eqstring(s,t)
+if eqbytes(a,b)
+````
+which just return true or false. Very easy. Sure you can trivially emulate these in C; but here they are built-in. Here's an example from 750Kloc C file called gcc.c:
+````
+# define STREQ(s1, s2) ((strcmp (s1, s2) == 0))
+````
+Seems to me that someone else thinks this is a good idea!
 
 
 ### Other Differences
