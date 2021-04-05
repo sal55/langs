@@ -11,7 +11,7 @@ Summary of [features](../mfeatures.md)
 (While anyone is welcome to play with it, borrow features etc, at the moment it's more of a private project since I'm not in a position do any support. Health reasons etc.)
 
 * Download mm.exe from the link below. This is for Windows 64, but someone reported it as worked under Wine on Linux
-* Or try compiling [mu.c](mu.c), which is a one-file C rendering of an old version, targeting Linux. It works by generating C code, then invoking a C compiler. Type ./mu for options.
+* Or try compiling [mu.c](../mu.c), which is a one-file C rendering of an old version, targeting Linux. It works by generating C code, then invoking a C compiler. Type ./mu for options.
 
 ### Download Binaries
 
