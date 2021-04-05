@@ -4,18 +4,16 @@ Project: 'MU': M Compiler with C Target for Linux
 
 Typical Build Instructions (needs 64-bit compiler):
 
-  gcc -O3 mu64.c -omu -lm -ldl
-  tcc mu64.c -omu -lm -ldl
+  gcc -O3 mu.c -omu -lm -ldl
+  tcc mu.c -omu -lm -ldl
 
-This program compiles an entire M project from its lead module.
+This program compiles an entire M project from its lead module. It generates a single C file then invoes a C compiler. See below.
 
-Output is a single executable .obj or .c file depending on options. Default
-output is executable file
 
 Dependencies:
 
 Requires a 64-bit C compiler to bootstrap the compiler, and also
-to compile the output of MU. Tested on gcc (and tcc but not on RPi)
+to compile the output of MU. Tested [some time ago] on gcc (and tcc but not on RPi)
 
 Run as follows (assumes gcc present to build intermediate C)
 
@@ -30,7 +28,7 @@ Other options:
 
     -c                    # Generate only intermediate C output file
     -exe                  # Generate executable via C compiler (default)
-    -obj                  # Generate single object file
+    -obj                  # Generate single object file via C compiler
  
     -gcc                  # Use gcc (default)
     -tcc                  # Use tcc
