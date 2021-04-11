@@ -63,13 +63,12 @@ in a program containin just the one function.
 
 ### My Compilers
 
-The current ones are BB (M language) and MS (MS language). The latter is a new embedded scripting language.
+The current ones are BB (M language) and QQ (Q scripting language). QQ'is a new product but which can't yet run code. Time is for compiling to internal bytecode. Internal timing is 0.6 seconds, or 16700 functions/second, or 1.15Mlps.
 
-I've now added 'bcc', which is my C compiler. This had had problems with its ST organisation (each set of 10,000 duplicate local names was stored in one list, and sometimes it would scan all of it). This program is still hampered by having an intermediate stage that is ASM source code, which slows down otherwise it would be faster than BB. Note that the timing is of a version built with gcc 5.1.0 -O3, otherwise it would be 40% slower.
+I've now added 'bcc', which is my C compiler, that had had problems with this benchmark. It is still hampered by having an intermediate stage that is ASM source code, which slows down otherwise it would be faster than BB. Note that the timing is of a version built with gcc 5.1.0 -O3, otherwise it would be 40% slower.
 
 I've also addede 'MM', which is an older version of BB. This had the advantage of being able to be transpiled to C, allowing a proper optimising compiler to be used.
 
 The (bb) against my implentations means compiled with 'bb -opt'. (gcc) means transpiled to C and compiled with 'gcc -O3'.
 
-(Note: An earlier project 'MS' has been abandoned. 'QQ' is a new product but which can't yet run code. Time is for compiling to internal bytecode. Internal timing is 0.6 seconds, or 16700 functions/second, or 1.15Mlps)
 
