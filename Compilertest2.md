@@ -28,9 +28,8 @@ Implem | Language | Time (secs) | Funcs/sec | Runtime (secs)
 **MM** (gcc)          | M | 1.7 | 5800 | 0.6
 **Tiny C**        | C | 1.1 | 9100 | 0.79
 **Lua**         | Lua | 0.9 | 11000 | 11.5
-**QQ** (bb)     | Q  | 0.75 | 13300 | (in development; 4.5 projected)
+**QQ** (bb)     | Q  | 0.7 | 14000 | (in development; 4.5 projected)
 **LuaJIT**      | Lua | 0.6 | 16600 | 0.75
-**MS** (bb)         | MS | 0.55 | 18000 | 15.7 (10.0 opt, 4.1 acc)
 
 ### Notes
 
@@ -72,4 +71,5 @@ I've also addede 'MM', which is an older version of BB. This had the advantage o
 
 The (bb) against my implentations means compiled with 'bb -opt'. (gcc) means transpiled to C and compiled with 'gcc -O3'.
 
-(Note: MS has been abandoned. QQ is a new product but which can't yet run code. Time is for compiling to internal bytecode, but excludes fixups necessary to run the code.)
+(Note: An earlier project 'MS' has been abandoned. 'QQ' is a new product but which can't yet run code. Time is for compiling to internal bytecode. Internal timing is 0.6 seconds, or 16700 functions/second, or 1.15Mlps)
+
