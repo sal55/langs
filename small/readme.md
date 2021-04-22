@@ -5,8 +5,8 @@ This toy language consists of a series of two statement types:
  let name = expr
  print expr
 ````
-There are no loops, conditional statements or jumps; it's a basically a
-calculator. It's to make it as simple as possible, yet still have something useful.
+There are no loops, conditional statements jumps or means to do input; it's a basically a
+calculator. It's to make it as simple as possible, yet still have something that can perform a task.
 
 ### Informal Grammar
 
@@ -14,7 +14,7 @@ I will implement it using my normal approach, which does not need a formal
 grammar. But I will give an informal one (in an informal, half made-up version
 of BNF) to give a better idea of what the syntax is.
 
-#### Grammar
+**Grammar**
 ````
 program    = {statement Newline}* Eof
 
@@ -35,7 +35,7 @@ term       = Number
            = Lbrack expr Rbrack
 ````
 
-#### Lexical Tokens (capitalised terms)
+**Lexical Tokens (capitalised terms)**
 ````
 Let        'let'
 Print      'print'
