@@ -40,6 +40,7 @@ end
 global var token, tokenvalue
 
 proc start=
+!(Set up a 500Kloc test)
     lines:="let a=b+c*d\n"*500'000
     source:="let b=2\nlet c=3\nlet d=4\n" + lines + "print a"
 
