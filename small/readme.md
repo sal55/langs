@@ -1,10 +1,10 @@
 ## Small Language for Parsing Demo
 
 This toy language consists of a series of two statement types:
-
+````
  let name = expr
  print expr
-
+````
 There are no loops, conditional statements or jumps; it's a basically a
 calculator. It's to make it as simple as possible, yet still have something useful.
 
