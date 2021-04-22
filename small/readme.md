@@ -5,8 +5,7 @@ This toy language consists of a series of two statement types:
  let name = expr
  print expr
 ````
-There are no loops, conditional statements jumps or means to do input; it's a basically a
-calculator. It's to make it as simple as possible, yet still have something that can perform a task.
+There are no loops, conditional statements jumps or means to do input; it's to make it as simple as possible, yet still have something that can perform a task, and which has a syntax.
 
 ### Informal Grammar
 
