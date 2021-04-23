@@ -7,6 +7,10 @@ This toy language consists of a series of two statement types:
 ````
 There are no loops, conditional statements jumps or means to do input; it's to make it as simple as possible, yet still have something that can perform a task, and which has a syntax.
 
+### Update
+
+The syntax used in the source codes has been updated, but that has not yet been reflected below. This may be one disadvantage of not having an official grammar description that drivers the source code.
+
 ### Informal Grammar
 
 I will implement it using my normal approach, which does not need a formal
