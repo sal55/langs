@@ -1,17 +1,22 @@
+import clib
+import sys
+import files
 import lex
 import run
 
 global tabledata() tokennames, asttags =
-    (tk_let,        $,      0),    !$ are the enum names as strings
+    (tk_let,        $,      0),
     (tk_print,      $,      0),
     (tk_equals,     $,      0),
+    (tk_comma,      $,      0),
     (tk_plus,       $,      jadd),
     (tk_minus,      $,      jsub),
     (tk_times,      $,      jmul),
     (tk_divide,     $,      jdiv),
+    (tk_power,      $,      jpower),
     (tk_lbrack,     $,      0),
     (tk_rbrack,     $,      0),
-    (tk_number,     $,      jconst),
+    (tk_const,      $,      jconst),
     (tk_name,       $,      jname),
     (tk_newline,    $,      0),
     (tk_eof,        $,      0),
@@ -27,6 +32,7 @@ global tabledata() asttagnames =
     (jsub,          $),
     (jmul,          $),
     (jdiv,          $),
+    (jpower,        $),
     (jneg,          $),
     (jstop,         $),
     (jblock,        $),
@@ -36,17 +42,21 @@ global record astnode =
     var tag, lhs, rhs
 end
 
+global const langerror=10
+
 global var token, tokenvalue
 
 proc start=
-
-!   (Set up a 500Kloc test)
-
-    lines:="let a=b+c*d\n"*500'000
-    source:="let b=2\nlet c=3\nlet d=4\n" + lines + "print a"
-
-    ast:=readprogram(source)
-    runast(ast)
+    do
+        print "> "
+        readln s:"l"
+        if s="" then exit fi
+        try
+            ast:=readprogram(s)
+            runast(ast)
+        except langerror then
+        end
+    od
 end
 
 function readprogram(source)=
@@ -61,6 +71,7 @@ function readprogram(source)=
         exit when token=tk_eof
         checktoken(tk_newline)
         lex()
+        while token=tk_newline do lex() end
     end
 
     return makeast(jblock, stmts)
@@ -68,14 +79,16 @@ end
 
 function readstatement=
 
-    case token
+    docase token
     when tk_let then
         return readlet()
     when tk_print then
         return readprint()
+    when tk_newline then
+        lex()
     else
-        serror("Unknown statement")
-    esac
+        serror("Unknown statement:"+tokennames[token])
+    end docase
     return nil
 end
 
@@ -93,24 +106,44 @@ end
 
 function readprint=
     lex()
-    return makeast(jprint,readexpression())
+    exprs:=()
+    do
+        exprs append:=readexpression()
+        exit when token<>tk_comma
+        lex()
+    od
+
+    return makeast(jprint,exprs)
+
+!   return makeast(jprint,readexpression())
 end
 
 function readexpression=
-    p:=readfactor()
+    p:=readaddterm()
 
     while token in [tk_plus, tk_minus] do
         tag:=asttags[token]
         lex()
-        p:=makeast(tag, p, readfactor())
+        p:=makeast(tag, p, readaddterm())
     od
     return p
 end
 
-function readfactor=
-    p:=readterm()
+function readaddterm=
+    p:=readmulterm()
 
     while token in [tk_times, tk_divide] do
+        tag:=asttags[token]
+        lex()
+        p:=makeast(tag, p, readmulterm())
+    od
+    return p
+end
+
+function readmulterm=
+    p:=readterm()
+
+    while token=tk_power do
         tag:=asttags[token]
         lex()
         p:=makeast(tag, p, readterm())
@@ -120,7 +153,7 @@ end
 
 function readterm=
     case token
-    when tk_number then
+    when tk_const then
         p:=makeast(jconst, tokenvalue)
         lex()
     when tk_name then
@@ -146,9 +179,9 @@ proc checktoken(expectedtoken)=
     fi
 end 
 
-proc serror(message)=
+global proc serror(message)=
     println "Syntax error:",message
-    stop 1
+    raise langerror
 end
 
 function makeast(tag, lhs=0, rhs=0)=

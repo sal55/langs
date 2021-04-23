@@ -1,6 +1,6 @@
 import parser
 
-var variables=[:]           ! empty dict
+var variables=[:]
 
 global proc runast(ast)=
     case ast.tag
@@ -9,7 +9,10 @@ global proc runast(ast)=
             runast(a)
         od
     when jprint then
-        println evaluate(ast.lhs)
+        forall x in ast.lhs do
+            print evaluate(x),," "
+        od
+        println
     when jassign then
         variables{ast.lhs}:=evaluate(ast.rhs)
     else
@@ -35,6 +38,8 @@ function evaluate(ast)=
         return evaluate(ast.lhs)*evaluate(ast.rhs)
     when jdiv then
         return evaluate(ast.lhs)/evaluate(ast.rhs)
+    when jpower then
+        return evaluate(ast.lhs)**evaluate(ast.rhs)
     when jneg then
         return -evaluate(ast.lhs)
     else
@@ -45,5 +50,5 @@ end
 
 proc runerror(message)=
     println "Run error:",message
-    stop 1
+    raise langerror
 end

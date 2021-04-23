@@ -14,7 +14,6 @@ global proc lexinit(source)=
 end
 
 global proc lex=
-
     do
         case c:=lsptr++^
         when ' ', '\t' then
@@ -46,15 +45,21 @@ global proc lex=
                 exit
             end docase
 
-            tokenvalue:=strtoval(s)
-            token:=tk_number
+            tokenvalue:=longint(s)
+            token:=tk_const
 
+        elseswitch c
         when '+' then
             token:=tk_plus
         when '-' then
             token:=tk_minus
         when '*' then
-            token:=tk_times
+            if lsptr^='*' then
+                ++lsptr
+                token:=tk_power
+            else
+                token:=tk_times
+            fi
         when '/' then
             token:=tk_divide
         when '=' then
@@ -71,10 +76,39 @@ global proc lex=
             token:=tk_newline
         when 10 then
             token:=tk_newline
+        when '"' then
+            tokenvalue:=""
+            docase c:=lsptr^
+            when '"' then
+                ++lsptr
+                if lsptr^='"' then
+                    tokenvalue+:='"'
+                    ++lsptr
+                else
+                    exit
+                fi
+            when 13,10, etx then
+                serror("String not terminated")
+            else
+                tokenvalue+:=c
+                ++lsptr
+            end docase
+            token:=tk_const
+        when '#' then
+            docase c:=lsptr^
+            when 13,10 then
+                next all
+            when etx then
+                token:=tk_eof
+                exit
+            else
+                ++lsptr
+            end docase
+        when ',' then
+            token:=tk_comma
         else
             token:=tk_error
-        esac
-
+        end
         return
     od
 end
