@@ -36,7 +36,7 @@ addterm    = multerm||{Plus/Minus}
 
 multerm    = powerterm||{Times/Divide}
 
-powerterm  = term||powerterm               # (precedence is right to left)
+powerterm  = term {Power powerterm}*       # (precedence is right to left)
 
 term       = Constant
            = Name
