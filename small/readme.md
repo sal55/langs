@@ -92,11 +92,24 @@ let a = b+c*d
 
 print a
 ````
+### My Implementation
 
+Dynamic scripting language:
+````
+parser.q      Parser and driver function (see start())
+lex.q         Tokeniser
+run.q         Interpreter (makes use of features of the host language)
+````
+Static systems language port:
+````
+parser.m      Parser and driver function (see start())
+lex.m         Tokeniser
+run.m         Interpreter
+````
+The scripting version works with Bignums, Bigfloats and String values. It can read from a file or use a REPL.
 
-### The Lexer or Tokeniser
+The static version uses only 64-bit integers as values. I think it's set up to read from a hard-coded filename.
 
-Here I will assume the existence of a tokeniser that delivers the tokens listed
-above (I've no idea how it works with parser generators).
+The main part of this project is comparing the parser code. The driver function and lex module is just to provide suitable input (a stream of tokens).
+The run module is to verify it works.
 
-Some token types (Constant and Name here) will have a value attached.
