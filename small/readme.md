@@ -106,7 +106,7 @@ parser.m      Parser and driver function (see start())
 lex.m         Tokeniser
 run.m         Interpreter
 ````
-The scripting version works with Bignums, Bigfloats and String values. It can read from a file or use a REPL.
+The scripting version works with Bignums, Bigfloats and String values. It's set up to use a REPL (switching to read from a file is trivial).
 
 The static version uses only 64-bit integers as values. I think it's set up to read from a hard-coded filename.
 
