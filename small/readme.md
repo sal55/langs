@@ -80,7 +80,7 @@ Comment    (Not visible to parser) '#' marks start of a line-comment
 * A+ means one or more instances of A
 
 * {...} group terms
-* \[A\] means A is optional
+* \[A\] means A is optional (0 or 1 instance of A)
 
 ### Example Program
 ````
