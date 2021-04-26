@@ -9,8 +9,6 @@ enum {N = rows*cols};
 
 byte codedata[N];
 
-char secretmessage[100];
-
 void error(char* message) {
     puts(message);
     exit(1);
