@@ -9,11 +9,6 @@ enum {N = rows*cols};
 
 byte codedata[N];
 
-void error(char* message) {
-    puts(message);
-    exit(1);
-}
-
 void decodetext(char* dest){
     char* s=dest;
     byte c;
