@@ -139,22 +139,22 @@ These are more or less the same as Q's Packed types, but which can be combined i
 
 Type | Description
 --- | ---
-**i8** |		Signed integers (also **int8** etc)
-**i16**  |
-**i32** |
-**i64** |
-**i128** |
+**i8  int8** |		Signed integers
+**i16 int16**  |
+**i32 int32** |
+**i64 int64 int** |
+**i128 int128** |
 --- | 
-**u8** |		Unsigned integers (also **byte**, **word8** etc)
-**u16** |
-**u32** |
-**u64** |
-**u128** |
+**u8 word8 byte** |		Unsigned integers
+**u16 word16** |
+**u32 word32** |
+**u64 word64 word** |
+**u128 word128** |
 --- | 
-**r32** |		Floating point (also **real32** etc)
-**r64** |
+**r32 real32** |		Floating point
+**r64 real64 real** |
 --- | 
-**char** |  8-bit character type
+**c8 char** |  8-bit character type
 (**c64**) |  Internal type that arise due to widening to 64 bits
 --- | 
 **Array** |	Fixed-length or unbounded array of any other types except void
@@ -166,7 +166,7 @@ Type | Description
 --- |
 (**Range**) | Used internally for a..b constructs
 (**Type**) | Used internally
-(**Bitfield**) Used internally
+(**Bitfield**) | Used internally
 (**Enum**) | Used internally
 (**Proc**) |Only as target of pointer
 (**Tuple**) | Used internally for multiple function return values
