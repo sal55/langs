@@ -1,4 +1,9 @@
+## Q Dynamic Language
+
+Q is a dynamic, interpreted language. It is closely coupled with the M static language whose type system is summarised below.
+
 ### Q Variant Types
+
 
 The interpreter for this dynamic language uses tagged variables and objects. The tag
 will always indicate one of these types:
@@ -122,3 +127,48 @@ The rules I think are a little different for records, partly to do with minimisi
 **Sum Types** I mean the alternatives sometimes denoted as T | U | V, even without the fancy stuff you see in Haskell. With dynamic types, you get a lot of flexibility and there are lots of workarounds. To make sure X only has types T, U or V, I can write **if X.type in \[T,U, V\]**.
 
 **Generics** This is a big deal in static languages, but since this one is dynamic, you get most of the benefits for free.
+
+## M Static Systems Language
+
+This has deliberately been kept lower level, since it is intended that applications will be mainly written in Q.
+
+### M Static Types
+
+These are more or less the same as Q's Packed types, but which can be combined in unlimited ways and without needing to create so many intermediate user types.
+
+
+Type | Description
+--- | ---
+**i8** |		Signed integers (also **int8** etc)
+**i16**  |
+**i32** |
+**i64** |
+**i128** |
+--- | 
+**u8** |		Unsigned integers (also **byte**, **word8** etc)
+**u16** |
+**u32** |
+**u64** |
+**u128** |
+--- | 
+**r32** |		Floating point (also **real32** etc)
+**r64** |
+--- | 
+**char** |  8-bit character type
+(**c64**) |  Internal type that arise due to widening to 64 bits
+--- | 
+**Array** |	Fixed-length or unbounded array of any other types except void
+**Record** |	Record or mixed types
+--- | 
+**ref** |    Pointer to any type
+**ichar** | Synonym for 'ref char', normally pointing to a zero-terminated string
+**Slice** |  Slices of strings and arrays, a (pointer, length) pair
+--- |
+(**Range**) | Used internally for a..b constructs
+(**Type**) | Used internally
+(**Bitfield**) Used internally
+(**Enum**) | Used internally
+(**Proc**) |Only as target of pointer
+(**Tuple**) | Used internally for multiple function return values
+(**Auto**)  | Used for minor type inferencing
+(**Label**) | Used internally
