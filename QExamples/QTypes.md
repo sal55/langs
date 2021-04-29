@@ -137,9 +137,9 @@ This has deliberately been kept lower level, since it is intended that applicati
 These are more or less the same as Q's Packed types, but which can be combined in unlimited ways and without needing to create so many intermediate user types.
 
 
-Type | Description
+Type | Aliases | aa | Description
 --- | ---
-**i8  int8** |		Signed integers
+**i8 | int8 | ** |		Signed integers
 **i16 int16**  |
 **i32 int32** |
 **i64 int64 int** |
