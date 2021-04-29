@@ -10,7 +10,7 @@ Type | Description
 --- |
 **Int**	|		64-bit signed integer
 **Word**	|	64-bit unsigned integer
-**Real**	|	64-bit float point number
+**Real**	|	64-bit floating point number
 **Decimal**	|	Arbitrary-precision decimal-based integer/float number
 **Range**	|	Pair of integers (limited to 2x32-bit)
 --- |
