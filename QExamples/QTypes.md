@@ -67,7 +67,7 @@ Type | Description
 **ref** |		Packed pointer to packed target
 **cstring** |	Pointer to 8-bit zero-terminated string
 
-###Bit Types
+### Bit Types
 
 Type | Description
 --- | ---
@@ -77,7 +77,7 @@ Type | Description
 
 The above are used in Arrays, or as the target of Refbit (and are also the basic
 Set element). There are also arbitrary bitfields up to 64 bits, which can be the target of Refbit, but
-they are not classed as a type. (Longer bitfields exist as slices of bit-arrays.)
+they are not classed as a type. (Longer bitfields exist as slices of bit-arrays. Most work with bits or bitfields is via operations rather than types.)
 
 ### Slicing
 
