@@ -109,7 +109,7 @@ Types which exist on the heap (String, List etc) are reference-counted and norma
 B := A        # B is a shallow copy of A; A's reference count is stepped
 C ::= A       # C is an independent, deep copy of A
 ````
-The rules I think are a little different for records, partly to do with minimising circular references, but I try to delve too deeply into that part it.)
+The rules I think are a little different for records, partly to do with minimising circular references, but I try to delve too deeply into that part of it.
 
 ### Excluded Types
 
