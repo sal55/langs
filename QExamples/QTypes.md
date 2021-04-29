@@ -105,10 +105,10 @@ Neither does it make everything a reference, equivalent to manipulating only Obj
 ### Assignment, Sharing and Copying
 
 Types which exist on the heap (String, List etc) are reference-counted and normally shared:
-
+````
 B := A        # B is a shallow copy of A; A's reference count is stepped
 C ::= A       # C is an independent, deep copy of A
-
+````
 The rules I think are a little different for records, partly to do with minimising circular references, but I try to delve too deeply into that part it.)
 
 ### Excluded Types
