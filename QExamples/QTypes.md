@@ -38,10 +38,7 @@ Type | Description
 
 ### Packed Types
 
-Fixed size primitive types. Packed arrays and structs will be fixed length
-and always flat. Used with Variand and Packed Struct, Array and Refpack types, and for working with FFIs.
-
-When accessed from the dynamic interpreter, they are converted as needed to
+Fixed size primitive types, packed structs and packed fixed length arrays. Structs and arrays are always flat. Used with Variant/Packed Struct, Array and Refpack types, and for working with FFIs. When accessed from the dynamic interpreter, they are converted as needed to
 or from a suitable Variant type:
 
 Type | Description
@@ -79,9 +76,7 @@ Type | Description
 **u4**	|		4 bits
 
 The above are used in Arrays, or as the target of Refbit (and are also the basic
-Set element).
-
-There are also arbitrary bitfields up to 64 bits, which can be the target of Refbit too, but
+Set element). There are also arbitrary bitfields up to 64 bits, which can be the target of Refbit, but
 they are not classed as a type. (Longer bitfields exist as slices of bit-arrays.)
 
 ### Slicing
@@ -106,3 +101,12 @@ variant type.
 (This interpreter does not use the popular approach of encoding floats, integers and pointers/reference into a single 64-bit value. Since it is targeted at 64-bit machines only, the variant type only occupies two machine words instead of one. That is not onerous, and is not a big overhead compared to all the others involved in interpretation.
 
 Neither does it make everything a reference, equivalent to manipulating only Object values instead of (Tag, Object) or (Tag, Value). This would require that simple types such as ints and floats are shared, reference-counted objects too.)
+
+### Assignment, Sharing and Copying
+
+Types which exist on the heap (String, List etc) are reference-counted and normally shared:
+
+B := A        # B is a shallow copy of A; A's reference count is stepped
+C ::= A       # C is an independent, deep copy of A
+
+The rules I think are a little different for records.
