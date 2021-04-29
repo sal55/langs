@@ -98,7 +98,7 @@ A Variant is a 16-byte or 128-bit structure which basically is one of:
 The interpreter manipulates only variants, and the stack is an array of variants. Any packed types or bit fields that are encountered, are converted to a suitable
 variant type.
 
-(This interpreter does not use the popular approach of encoding floats, integers and pointers/reference into a single 64-bit value. Since it is targeted at 64-bit machines only, the variant type only occupies two machine words instead of one. That is not onerous, and is not a big overhead compared to all the others involved in interpretation.
+(This interpreter does not use the popular approach of encoding floats, integers and pointers/references into a single 64-bit value. Since it is targeted at 64-bit machines only, the variant type only occupies two machine words instead of one. That is not onerous, and is not a big overhead compared to all the others involved in interpretation.
 
 Neither does it make everything a reference, equivalent to manipulating only Object values instead of (Tag, Object) or (Tag, Value). This would require that simple types such as ints and floats are shared, reference-counted objects too.)
 
