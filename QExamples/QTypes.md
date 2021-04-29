@@ -110,3 +110,15 @@ B := A        # B is a shallow copy of A; A's reference count is stepped
 C ::= A       # C is an independent, deep copy of A
 
 The rules I think are a little different for records, partly to do with minimising circular references, but I try to delve too deeply into that part it.)
+
+### Excluded Types
+
+**Boolean** This has sometimes been used internally, but has never been exposed as a user type. Apart from **true** and **false** constants, I have never felt the need.
+
+**Enumerations** These are mainly named constants, with very little support in the type system. (I'm hoping to be able to directly print an enum value by name rather than its ordinal value, but that's about it.) Better support would be nice, but it rapidly gets complicated and, in interpreted code, less efficient.
+
+**Tagged Unions** I'd planned this for my static language last year, but lost interest. My requirements of tagged unions are more diverse and slightly more chaotic than would suit a inflexible language feature.
+
+**Sum Types** I mean the alternatives sometimes denoted as T | U | V, even without the fancy stuff you see in Haskell. With dynamic types, you get a lot of flexibility and there are lots of workarounds. To make sure X only has types T, U or V, I can write **if X.type in \[T,U, V\]**.
+
+**Generics** This is a big deal in static languages, but since this one is dynamic, you get most of the benefits for free.
