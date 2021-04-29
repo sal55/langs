@@ -157,10 +157,10 @@ Type | Aliases | | Description
 (**c64**)| | |  Internal type that arise due to widening to 64 bits
 --- | 
 **Array** |**[]T**||	Fixed-length or unbounded array of any other types except void
-**Record** |||	Record or mixed types
+**Record** |||	Record of mixed types
 --- | 
 **Pointer** |**ref T**||    Pointer to any type
-**ichar** ||| Synonym for 'ref char', normally pointing to a zero-terminated string
+**ichar** |**ref char**|| Synonym for 'ref char', normally pointing to a zero-terminated string
 **Slice** |**slice[]T**||  Slices of strings and arrays, a (pointer, length) pair
 --- |
 (**Range**)|| | Used internally for a..b constructs
