@@ -136,39 +136,38 @@ This has deliberately been kept lower level, since it is intended that applicati
 
 These are more or less the same as Q's Packed types, but which can be combined in unlimited ways and without needing to create so many intermediate user types.
 
-
-Type | Aliases | aa | Description
---- | ---
-**i8 | int8 | ** |		Signed integers
-**i16 int16**  |
-**i32 int32** |
-**i64 int64 int** |
-**i128 int128** |
+Type | Aliases | | Description
+--- | --- | --- | ---
+**i8**  |  **int8** |  |	Signed integers
+**i16**  | **int16** |   |
+**i32** | **int32** | |
+**i64** | **int64** | **int** |
+**i128**| **int128** |
 --- | 
-**u8 word8 byte** |		Unsigned integers
-**u16 word16** |
-**u32 word32** |
-**u64 word64 word** |
-**u128 word128** |
+**u8** | **word8** | **byte** |		Unsigned integers
+**u16** | **word16** | |
+**u32** | **word32** | |
+**u64** | **word64** | **word** |
+**u128** | **word128** | |
 --- | 
-**r32 real32** |		Floating point
-**r64 real64 real** |
+**r32** | **real32** | |		Floating point
+**r64** | **real64** | **real** |
 --- | 
-**c8 char** |  8-bit character type
-(**c64**) |  Internal type that arise due to widening to 64 bits
+**c8** | **char**| |  8-bit character type
+(**c64**)| | |  Internal type that arise due to widening to 64 bits
 --- | 
-**Array** |	Fixed-length or unbounded array of any other types except void
-**Record** |	Record or mixed types
+**Array** |**[]T**||	Fixed-length or unbounded array of any other types except void
+**Record** |||	Record or mixed types
 --- | 
-**ref** |    Pointer to any type
-**ichar** | Synonym for 'ref char', normally pointing to a zero-terminated string
-**Slice** |  Slices of strings and arrays, a (pointer, length) pair
+**Pointer** |**ref T**||    Pointer to any type
+**ichar** ||| Synonym for 'ref char', normally pointing to a zero-terminated string
+**Slice** |**slice[]T**||  Slices of strings and arrays, a (pointer, length) pair
 --- |
-(**Range**) | Used internally for a..b constructs
-(**Type**) | Used internally
-(**Bitfield**) | Used internally
-(**Enum**) | Used internally
-(**Proc**) |Only as target of pointer
-(**Tuple**) | Used internally for multiple function return values
-(**Auto**)  | Used for minor type inferencing
-(**Label**) | Used internally
+(**Range**)|| | Used internally for a..b constructs
+(**Type**) ||| Used internally
+(**Bitfield**) ||| Used internally
+(**Enum**) ||| Used internally
+(**Proc**) |||Only as target of pointer
+(**Tuple**) ||| Used internally for multiple function return values
+(**Auto**)  ||| Used for minor type inferencing
+(**Label**) ||| Used internally
