@@ -7,30 +7,30 @@ will always indicate one of these types:
 Type | Description
 --- | ---
 **Void**	|	Means unassigned
---- | ---
+--- |
 **Int**	|		64-bit signed integer
 **Word**	|	64-bit unsigned integer
 **Real**	|	64-bit float point number
 **Decimal**	|	Arbitrary-precision decimal-based integer/float number
 **Range**	|	Pair of integers (limited to 2x32-bit)
---- | ---
+--- |
 **String**	|	Flex string of 8-bit bytes (ASCII/UTF8)
 **List** 	|	Flex array of Variants
 **Record**	|	Of Variant fields (always user-defined)
 **Dict**	|	Flex dictionary of Variant key:value pairs
 **Set**	|		Flex, Pascal-style bit-set
 **Pointer**	|	To Variant
---- | ---
+--- |
 **Array**	|	Flex array of Packed or Bit elements (can be user-defined)
 **Struct**	|	Of Packed fields (always user-defined)
 **Refpack**	|	Pointer to packed value
 **Refbit**	|	Pointer to Bit (1/2/4 bits) or Bitfield (1-64 bits)
---- | ---
+--- | 
 **Type**	|	Contains a value representing a type
 **Operator**	| Represents an operator
---- | ---
+--- |
 **Symbol**	|	Symbol table entry (used also for function pointers)
---- | ---
+--- |
 (**Return**)	|	Internal type; return-address descriptor
 (**Exception**) |	Internal type; exception handling
 
@@ -51,22 +51,22 @@ Type | Description
 **i32** |
 **i64** |
 **i128** |
---- | ---
+--- | 
 **u8** |		Unsigned integers (also **byte**, **word8** etc)
 **u16** |
 **u32** |
 **u64** |
 **u128** |
---- | ---
+--- | 
 **r32** |		Floating point (also **real32** etc)
 **r64** |
---- | ---
+--- | 
 **stringc\*N** |Fixed-width counted string field (max length N chars)
 **stringz\*N** |Fixed-width zero-terminated string field (max N-1 chars)
---- | ---
+--- | 
 **array** |	Fixed-length packed array of packed elements
 **struct** |	Packed struct of packed fields
---- | ---
+--- | 
 **ref** |		Packed pointer to packed target
 **cstring** |	Pointer to 8-bit zero-terminated string
 
