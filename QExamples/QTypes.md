@@ -1,6 +1,6 @@
 ### Q Variant Types
 
-The interpreter for this dynamic language uses a tagged variables and objects. The tag
+The interpreter for this dynamic language uses tagged variables and objects. The tag
 will always indicate one of these types:
 
 
