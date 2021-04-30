@@ -26,7 +26,7 @@ Implem | Language | Time (secs) | Funcs/sec | Runtime | Exe Size | Inst Files | 
 **Go**            | Go | 40 | 250 | 2.9 | 10MB | 9200 | 350MB
 **DMD**           | D | 32 | 310 | 9.7 | 16MB | 4000 | 300MB
 **Clang**         | C | 30 | 330 | 10.2 | 12MB | 350 | 1600MB
-**s7c**           | Seed7 | 27^^ | 370 | 13 | --- | 1400 | 550MB
+**s7c -O2**       | Seed7 | 27^^ | 370 | 13 | --- | 1400 | 550MB
 **Javac**      | Java | 25 | 400 | 4.0  |0.12MB | 400 | 330MB
 **MSVC**          | C | 12  |830 | 9.6 | 9.2MB | 14600 | 2800MB
 **Odin**        | Odin | 14 | 720 | 27.3 | --- | 200 | 140MB
@@ -161,6 +161,7 @@ Implem | Language | Runtime
 **DMD**           | D   | 9.7
 **Tiny C**        | C   | 10.1
 **Clang**         | C   | 10.2
+**Seed7 -O2**     | Seed7 | 13.0
 **Rustc**         | Rust| 37.8
 
 One of my compilers (bcc-opt) does surprisingly well. It's just a fluke (it's typically 50% slower than gcc-O3, not faster!), however that is the genuine timing for this test.
