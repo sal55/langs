@@ -91,6 +91,8 @@ The compile time here is how long it took s7c to turn the .sd7 source file into 
 
 I guess this is not something you'd do that often with Seed7, as programs can also be interpreted, and that process is much faster (2.2 seconds for this test) even if the runtime is slower. The runtime shown is for building a file one one function, and using s7c -O2.
 
+The installation size I think includes source files (installation on Windows involved building from source(?), but fortunately it take care of it itself.)
+
 ### Java
 
 The executable (or rather the .class file) produced is suspiciously small at 120KB, or about 12 bytes per function. If I tried to get it to retain all the functions (using res+=fxxxx(5) on each call), then it aborted with 'Code too large', also at about 25 seconds. However, compiling 100 functions took 4 seconds (but maybe most of those are eliminated too) and Hello, World took 2 seconds. So maybe it's 50 functions/second. Output of Java is probably JVM code not native.
