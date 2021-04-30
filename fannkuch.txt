@@ -8,8 +8,8 @@
 # the rest are ported from the M code so as to use the same syntax
 
 # ***********************************************************************************************
-# M Language giving the reference algorithm. (Other versions will mostly use this same algorithm, not the
-# ones on the Shootout site.)
+# M Language giving the reference algorithm. (Which I now realise was derived from the Lua version
+# on the shootout side. Other versions apart from Lua will be based on this one.)
 # ***********************************************************************************************
 
 function fannkuch(int n)int,int=
