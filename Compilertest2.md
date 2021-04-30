@@ -24,6 +24,7 @@ Implem | Language | Time (secs) | Funcs/sec | Runtime (secs)
 **Vox**         | [Vox](https://github.com/MrSmith33/vox) | 5.5 | 1800 | 0.53 [Source](https://gist.github.com/MrSmith33/ac14e66a83b9d047793adede464ca1ef#file-fannkuch-vx)
 **bcc** (gcc) | C        | 3.0 | 3300 | 0.75
 **BB-opt** (bb) | M        | 2.5 | 4000 | 0.28
+**s7**          | Seed7     |2.2 | 4500 | 64 (Seed7 interpreter)
 **BB** (bb)            | M | 2.1 | 4700 | 0.56
 **MM** (gcc)          | M | 1.7 | 5800 | 0.6
 **Tiny C**        | C | 1.1 | 9100 | 0.79
