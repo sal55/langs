@@ -26,6 +26,7 @@ Implem | Language | Time (secs) | Funcs/sec | Runtime | Exe Size | Inst Files | 
 **Go**            | Go | 40 | 250 | 2.9 | 10MB | 9200 | 350MB
 **DMD**           | D | 32 | 310 | 9.7 | 16MB | 4000 | 300MB
 **Clang**         | C | 30 | 330 | 10.2 | 12MB | 350 | 1600MB
+**s7c**           | Seed7 | 27^^ | 370 | 13 | --- | 1400 | 550MB
 **Javac**      | Java | 25 | 400 | 4.0  |0.12MB | 400 | 330MB
 **MSVC**          | C | 12  |830 | 9.6 | 9.2MB | 14600 | 2800MB
 **Odin**        | Odin | 14 | 720 | 27.3 | --- | 200 | 140MB
@@ -83,6 +84,12 @@ So Rust has some problems in my opinion. Even that 18 seconds for an optimised b
 ### ++Odin
 
 This failed my 10,000-function tests. It crashes on larger inputs. The figures shown are based on the 1000-function test
+
+### ^^Seed7
+
+The compile time here is how long it took s7c to turn the .sd7 source file into a C intermediate file. Fully building involves running a C compiler on the result, but the intermediate C contains 3.3M lines compared to 0.87M of the Seed7 source code. Even Tiny took over 20 seconds to compile it (but I couldn't link it). I didn't try gcc which is the normally invoked C compiler.
+
+I guess this is not something you'd do that often with Seed7, as programs can also be interpreted, and that process is much faster (2.2 seconds for this test) even if the runtime is slower. The runtime shown is for building a file one one function, and using s7c -O2.
 
 ### Java
 
