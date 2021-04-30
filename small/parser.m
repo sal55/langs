@@ -51,9 +51,6 @@ global record astnode =
     node nextnode
 end
 
-
-global const langerror=10
-
 global int token
 global int tokenvalue
 global ichar tokensvalue
@@ -210,7 +207,7 @@ end
 proc checktoken(int expectedtoken)=
     [256]char str
     if token<>expectedtoken then
-        fprintln @str,"# expected not", tokennames[expectedtoken],tokennames[token]
+        fprintln @str,"# expected not #", tokennames[expectedtoken],tokennames[token]
         serror(str)
     fi
 end 
