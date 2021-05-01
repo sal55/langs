@@ -1,4 +1,4 @@
-### Annoying things about C
+### Things I find annoying about C
 
 * Braces as block delimiters (too insubstantial in my view for use across multiple lines)
 
@@ -95,9 +95,9 @@
 
 * Pointers can be indexed just like arrays: 'int \*P; P\[i\]; int A; &A\[12345\]'
 
-* Despite pointer-arrays being available within the language, eg. type T(*)[] for pointer to array of T, standard C idiom is to almost exclusively use T*,
+* Despite pointer-arrays being available within the language, eg. type T(*\)\[\] for pointer to array of T, standard C idiom is to almost exclusively use T\*,
  ie pointer to T, for dynamically allocated arrays or for parameter parsing. This can give rise to lots of confusion and a range of undetectable errors (eg.
-C allows ANY pointer, whether it's to an array or not, to be index). However the syntax for pointer-to-array is ugly: (*A)[i], which is the likely reason.
+C allows ANY pointer, whether it's to an array or not, to be index). However the syntax for pointer-to-array is ugly: (\*A)\[i\], which is the likely reason.
 
 * Functions are not marked with a keyword; you have to disentangle type declarations, and/or take cues from indentation, to find out where a function even starts
 
@@ -105,7 +105,7 @@ C allows ANY pointer, whether it's to an array or not, to be index). However the
 
 * Function params with same type have to repeat the type: (int a, int b, int c) instead of (int a, b, c)
 
-* Array syntax int A[10], which normally defines a sequence of 10 ints, inside a parameter list as (int A[10]) now becomes a pointer to int! But only the first level
+* Array syntax int A\[10\], which normally defines a sequence of 10 ints, inside a parameter list as (int A\[10\]) now becomes a pointer to int! But only the first level
 
 * Mix signed/unsigned integers, the result will be usually unsigned, but the rules are complex, depending on the sizes of the operands among other things. (Good luck with that format code to print such a result.)
 
