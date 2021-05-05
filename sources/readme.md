@@ -14,7 +14,10 @@ Notes:
 
 **bb** M compiler (used to compile all .m source files, and .ma amalgamated/application files)
 
-**qq** Q compiler/interpreter (this product is being replaced by smaller, tighter version, but that is still being developed)
+**qq** Q compiler/interpreter (this product is being replaced by a smaller, tighter version, shown as rr here, but that is still being developed)
 
 **cc** C subset compiler
 
+**rr** New Q compiler/interpreter
+
+**rr2** Experimental fork
