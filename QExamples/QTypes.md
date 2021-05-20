@@ -40,7 +40,7 @@ Type | Description
 (**Return**)	|	Internal type; return-address descriptor
 (**Exception**) |	Internal type; exception handling
 
-'Flex' means dynamically allocated and growable. Most types are mutable.
+'Flex' means dynamically allocated and growable. Most types are mutable. However used-defined arrays, which will have specific bounds, cannot be made bigger.
 
 ### Packed Types
 
