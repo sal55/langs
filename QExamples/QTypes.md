@@ -25,7 +25,7 @@ Type | Description
 **Set**	|		Flex, Pascal-style bit-set
 **Array**	|	Flex array of Packed elements
 **Bits**	|	Flex array of Bit elements (not user-definable yet; that is of limited use)
-
+--- |
 **Pointer**	|	To Variant
 **Refpack**	|	Pointer to packed value
 **Refbit**	|	Pointer to Bit (1/2/4 bits) or Bitfield (1-64 bits)
@@ -40,7 +40,6 @@ Type | Description
 --- |
 **Return**	|	Internal type: return-address descriptor
 **Exception** |	Internal type: exception handling
-
 
 
 'Flex' means dynamically allocated and growable. Most types are mutable. However used-defined arrays, which will have specific bounds, cannot be made bigger.
