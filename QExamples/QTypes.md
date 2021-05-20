@@ -26,7 +26,8 @@ Type | Description
 **Set**	|		Flex, Pascal-style bit-set
 **Pointer**	|	To Variant
 --- |
-**Array**	|	Flex array of Packed or Bit elements (can be user-defined)
+**Array**	|	Flex array of Packed elements (can be user-defined)
+**Bits**	|	Flex array of Bit elements (not user-definable yet; that is of limited use)
 **Struct**	|	Of Packed fields (always user-defined)
 **Refpack**	|	Pointer to packed value
 **Refbit**	|	Pointer to Bit (1/2/4 bits) or Bitfield (1-64 bits)
@@ -80,7 +81,7 @@ Type | Description
 **u2**	|		2 bits
 **u4**	|		4 bits
 
-The above are used in Arrays, or as the target of Refbit (and are also the basic
+The above are used in Bits (bit arrays), or as the target of Refbit (and are also the basic
 Set element). There are also arbitrary bitfields up to 64 bits, which can be the target of Refbit, but
 they are not classed as a type. (Longer bitfields exist as slices of bit-arrays. Most work with bits or bitfields is via operations rather than types.)
 
