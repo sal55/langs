@@ -21,24 +21,27 @@ Type | Description
 --- |
 **String**	|	Flex string of 8-bit bytes (ASCII/UTF8)
 **List** 	|	Flex array of Variants
-**Record**	|	Of Variant fields (always user-defined)
 **Dict**	|	Flex dictionary of Variant key:value pairs
 **Set**	|		Flex, Pascal-style bit-set
-**Pointer**	|	To Variant
---- |
-**Array**	|	Flex array of Packed elements (can be user-defined)
+**Array**	|	Flex array of Packed elements
 **Bits**	|	Flex array of Bit elements (not user-definable yet; that is of limited use)
-**Struct**	|	Of Packed fields (always user-defined)
+
+**Pointer**	|	To Variant
 **Refpack**	|	Pointer to packed value
 **Refbit**	|	Pointer to Bit (1/2/4 bits) or Bitfield (1-64 bits)
+--- |
+**Record**	|	User-defined record of Variant fields
+**Struct**	|	User-defined record of Packed fields
+**Carray**	|	User-defined fixed array of Packed fields
 --- | 
 **Type**	|	Contains a value representing a type
 **Operator**	| Represents an operator
---- |
 **Symbol**	|	Symbol table entry (used also for function pointers)
 --- |
-(**Return**)	|	Internal type; return-address descriptor
-(**Exception**) |	Internal type; exception handling
+**Return**	|	Internal type: return-address descriptor
+**Exception** |	Internal type: exception handling
+
+
 
 'Flex' means dynamically allocated and growable. Most types are mutable. However used-defined arrays, which will have specific bounds, cannot be made bigger.
 
