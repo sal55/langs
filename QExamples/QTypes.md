@@ -53,13 +53,11 @@ Type | Description
 **i16**  |
 **i32** |
 **i64** |
-**i128** |
 --- | 
 **u8** |		Unsigned integers (also **byte**, **word8** etc)
 **u16** |
 **u32** |
 **u64** |
-**u128** |
 --- | 
 **r32** |		Floating point (also **real32** etc)
 **r64** |
@@ -112,10 +110,11 @@ Neither does it make everything a reference, equivalent to manipulating only Obj
 
 Types which exist on the heap (String, List etc) are reference-counted and normally shared:
 ````
-B := A        # B is a shallow copy of A; A's reference count is stepped
+B := A        # B is a shared copy of A; A's reference count is stepped
 C ::= A       # C is an independent, deep copy of A
 ````
-The rules I think are a little different for records, partly to do with minimising circular references, but I try to delve too deeply into that part of it.
+The rules are a little different for records, where even when using "::=" makes a shallow copy, not a deep one.
+
 
 ### Excluded Types
 
@@ -123,7 +122,7 @@ The rules I think are a little different for records, partly to do with minimisi
 
 **Enumerations** These are mainly named constants, with very little support in the type system. (I'm hoping to be able to directly print an enum value by name rather than its ordinal value, but that's about it.) Better support would be nice, but it rapidly gets complicated and, in interpreted code, less efficient.
 
-**Tagged Unions** I'd planned this for my static language last year, but lost interest. My requirements of tagged unions are more diverse and slightly more chaotic than would suit a inflexible language feature.
+**Tagged Unions** I'd planned this for my static language last year, but lost interest. My requirements of tagged unions are more diverse and slightly more chaotic than would suit an inflexible language feature.
 
 **Sum Types** I mean the alternatives sometimes denoted as T | U | V, even without the fancy stuff you see in Haskell. With dynamic types, you get a lot of flexibility and there are lots of workarounds. To make sure X only has types T, U or V, I can write **if X.type in \[T,U, V\]**.
 
