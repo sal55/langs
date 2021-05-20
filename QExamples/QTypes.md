@@ -26,8 +26,8 @@ Type | Description
 **Array**	|	Flex array of Packed elements
 **Bits**	|	Flex array of Bit elements (not user-definable yet; that is of limited use)
 --- |
-**Pointer**	|	To Variant
-**Refpack**	|	Pointer to packed value
+**Refvar**	|	Pointer to Variant
+**Refpack**	|	Pointer to Packed type
 **Refbit**	|	Pointer to Bit (1/2/4 bits) or Bitfield (1-64 bits)
 --- |
 **Record**	|	User-defined record of Variant fields
@@ -42,7 +42,7 @@ Type | Description
 **Exception** |	Internal type: exception handling
 
 
-'Flex' means dynamically allocated and growable. Most types are mutable. However used-defined arrays, which will have specific bounds, cannot be made bigger.
+'Flex' means dynamically allocated and growable. Most types are mutable. However used-defined arrays cannot be made bigger.
 
 ### Packed Types
 
