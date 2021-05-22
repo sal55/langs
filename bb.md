@@ -24,14 +24,6 @@ Probably a few other things that I forget off-hand.
 
 **Forall** loops such as **forall x in A** should be rewritten as "for x in A"
 
-**Previously**, within the context of one print statement such as **print a,b,,c**, separation logic was maintained added a space between a and b, and suppressed using ",,". No gaps are added between a and b in **print a; print b**.
-
-Now, for print statements not using "@", that context is program-wide. **print a; print b** includes a space between a and b. For extra control, the "$" symbol replaces the ",," (although that still works in between items):
-
-    print $,a             # Suppresses any space that is pending from last print
-    print a,$             # Suppresses any following space on next print
-    print a,$,b           # Suppresses space between a and b
-
 A few features of MM may not work on BB (let me know of any; I know that (a,b):=(c,d) is not working right now).
 
 ### Generating DLL Files
