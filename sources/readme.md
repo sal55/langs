@@ -30,6 +30,8 @@ Q | My dynamic, interpreted, embeddable scripting language
 ASM | In this context, the source format of my x64-subset assembly language
 C  | Here, it means the large subset of C that my bcc product compiles
 
-### rr.ma
+#### Notes
 
-A new Q implementation is being worked on, and the amalgamation for that is rr.ma to void a clash with qq.ma. (It will need renaming to qq.ma to build in this form, and mm would otherwise expect a lead module of rr.m.)
+* **'Product'** is the name of the executable. For these programs, it is always a single, self-contained file
+* **'Project'** is the name of the project folder on my machine
+* **rr.ma** The Q language is being reimplemented, using a temporary project name of 'rx', and here a file name of rr.ma to void a clash with qq.ma. 
