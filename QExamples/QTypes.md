@@ -21,25 +21,28 @@ Type | Description
 --- |
 **String**	|	Flex string of 8-bit bytes (ASCII/UTF8)
 **List** 	|	Flex array of Variants
-**Record**	|	Of Variant fields (always user-defined)
 **Dict**	|	Flex dictionary of Variant key:value pairs
 **Set**	|		Flex, Pascal-style bit-set
-**Pointer**	|	To Variant
+**Array**	|	Flex array of Packed elements
+**Bits**	|	Flex array of Bit elements (not user-definable yet; that is of limited use)
 --- |
-**Array**	|	Flex array of Packed or Bit elements (can be user-defined)
-**Struct**	|	Of Packed fields (always user-defined)
-**Refpack**	|	Pointer to packed value
+**Refvar**	|	Pointer to Variant
+**Refpack**	|	Pointer to Packed type
 **Refbit**	|	Pointer to Bit (1/2/4 bits) or Bitfield (1-64 bits)
+--- |
+**Record**	|	User-defined record of Variant fields
+**Struct**	|	User-defined record of Packed fields
+**Carray**	|	User-defined fixed array of Packed fields
 --- | 
 **Type**	|	Contains a value representing a type
 **Operator**	| Represents an operator
---- |
 **Symbol**	|	Symbol table entry (used also for function pointers)
 --- |
-(**Return**)	|	Internal type; return-address descriptor
-(**Exception**) |	Internal type; exception handling
+**Return**	|	Internal type: return-address descriptor
+**Exception** |	Internal type: exception handling
 
-'Flex' means dynamically allocated and growable. Most types are mutable.
+
+'Flex' means dynamically allocated and growable. Most types are mutable. However used-defined arrays cannot be made bigger.
 
 ### Packed Types
 
@@ -52,13 +55,11 @@ Type | Description
 **i16**  |
 **i32** |
 **i64** |
-**i128** |
 --- | 
 **u8** |		Unsigned integers (also **byte**, **word8** etc)
 **u16** |
 **u32** |
 **u64** |
-**u128** |
 --- | 
 **r32** |		Floating point (also **real32** etc)
 **r64** |
@@ -80,7 +81,7 @@ Type | Description
 **u2**	|		2 bits
 **u4**	|		4 bits
 
-The above are used in Arrays, or as the target of Refbit (and are also the basic
+The above are used in Bits (bit arrays), or as the target of Refbit (and are also the basic
 Set element). There are also arbitrary bitfields up to 64 bits, which can be the target of Refbit, but
 they are not classed as a type. (Longer bitfields exist as slices of bit-arrays. Most work with bits or bitfields is via operations rather than types.)
 
@@ -111,10 +112,11 @@ Neither does it make everything a reference, equivalent to manipulating only Obj
 
 Types which exist on the heap (String, List etc) are reference-counted and normally shared:
 ````
-B := A        # B is a shallow copy of A; A's reference count is stepped
+B := A        # B is a shared copy of A; A's reference count is stepped
 C ::= A       # C is an independent, deep copy of A
 ````
-The rules I think are a little different for records, partly to do with minimising circular references, but I try to delve too deeply into that part of it.
+The rules are a little different for records, where even when using "::=" makes a shallow copy, not a deep one.
+
 
 ### Excluded Types
 
@@ -122,7 +124,7 @@ The rules I think are a little different for records, partly to do with minimisi
 
 **Enumerations** These are mainly named constants, with very little support in the type system. (I'm hoping to be able to directly print an enum value by name rather than its ordinal value, but that's about it.) Better support would be nice, but it rapidly gets complicated and, in interpreted code, less efficient.
 
-**Tagged Unions** I'd planned this for my static language last year, but lost interest. My requirements of tagged unions are more diverse and slightly more chaotic than would suit a inflexible language feature.
+**Tagged Unions** I'd planned this for my static language last year, but lost interest. My requirements of tagged unions are more diverse and slightly more chaotic than would suit an inflexible language feature.
 
 **Sum Types** I mean the alternatives sometimes denoted as T | U | V, even without the fancy stuff you see in Haskell. With dynamic types, you get a lot of flexibility and there are lots of workarounds. To make sure X only has types T, U or V, I can write **if X.type in \[T,U, V\]**.
 
