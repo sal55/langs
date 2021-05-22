@@ -1,23 +1,21 @@
 ## Amalgamated Source Code
 
-The individual source files of my projects are too numerous to upload individually. (And I don't use special github apps.)
+The individual source files of my projects are too numerous to upload individually.
 
 The files here are amalgamations created by my compiler. They can be compiled directly in that form, or with a simple tool can be extracted again (the directory at the start gives file size and offset within the file).
 
 Notes:
 
-* The .ma extension apparently means something to github, so the text is highlighted in a funny way. All sources need 4-space tabs but github using 8 spaces.
+* The .ma extension apparently means something to github, so the text is highlighted in a funny way. All sources need 4-space tabs but github uses 8 spaces.
 
 #### Guide to Projects
 
-**ax** x64 Assembler (designed for generated asm source code, and supported only a subset of x64)
+**aa** x64 Assembler (designed for generated asm source code, and supported only a subset of x64)
 
 **bb** M compiler (used to compile all .m source files, and .ma amalgamated/application files)
 
 **qq** Q compiler/interpreter (this product is being replaced by a smaller, tighter version, shown as rr here, but that is still being developed)
 
-**cc** C subset compiler
-
 **rr** New Q compiler/interpreter
 
-**rr2** Experimental fork
+**cc** C subset compiler
