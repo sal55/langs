@@ -8,12 +8,28 @@ The files here are amalgamations created by my compiler. They can be compiled di
 
 #### Guide to Projects
 
-**aa** x64 Assembler/Linker (designed for generated asm source code from my mm and cc compilers, and supporting only a subset of x64)
+Language | Product  | Project | Written In | Lead Module | Amalgamation
+--- | --- | --- | --- | --- | ---
+M |  mm.exe | mx |  M  | mm.m | mm.ma 
+Q |  qq.exe | qx |  M  | qq.m | qq.ma
+ASM |  aa.exe |  ax  | M |  aa.m | aa.ma
+C |  bcc.exe | cx |  M  | cc.m | cc.ma
 
-**mm** M compiler (used to compile all .m source files, and .ma amalgamated/application files)
 
-**qq** Q compiler/interpreter (this product is being replaced by a smaller, tighter version, shown as rr here, but that is still being developed)
+Product | Description
+--- | ---
+aa | x64-subset Assembly/Linker
+bcc | Experimental C-subset compiler 
+mm | M compiler
+qq | Q compiler/interpeter
 
-**rr** New Q compiler/interpreter
+Language | Description
+--- | ---
+M | My systems programming language
+Q | My dynamic, interpreted, embeddable scripting language
+ASM | In this context, the source format of my x64-subset assembly language
+C  | Here, it means the large subset of C that my bcc product compiles
 
-**cc** C subset compiler
+#### rr.ma
+
+A new Q implementation is being worked on, and the amalgamation for that is rr.ma to void a clash with qq.ma. (It will need renaming to qq.ma to build in this form, and mm would otherwise expect a lead module of rr.m.)
