@@ -15,7 +15,7 @@ I've added also information on the generated binary size, and an idea of the ins
 Implem | Language | Time (secs) | Funcs/sec | Runtime | Exe Size | Inst Files | Inst MB
 --- | --- | --- | --- | --- | --- | --- | ---
 **Rustc -O** | Rust  | 79000 \*\* | 0.13 | 3.2 secs| 10MB \*\* | 56800+14600 | 2000MB + 2800MB
-**Julia**    | Julia  | 1320 $$ |  760  | 4.0  | --- | 1700 | 480MB
+**Julia**    | Julia  | 1320 $$ |  7.60  | 4.0  | --- | 1700 | 480MB
 **Clang -O3**        | C | 780 | 13 | 2.45 | 16MB | 350 | 1600MB
 **Clang -O2**        | C | 650 | 15 | 2.5 | --- | 350 | 1600MB
 **Rustc** | Rust  | 330 | 30 | 37.8 | 40MB | 56800+14600 | 2000MB+2800MB
