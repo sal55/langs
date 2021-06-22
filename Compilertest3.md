@@ -1,8 +1,10 @@
 ## Compiler Tests III
 
+### Testing compilation speed on large source files.
+
 This is a revised version of [these tests](Compilertest2.md), as I found that if the 10,000 functions were not called, some compilers didn't do as much work. The new test will call each of the functions once.
 
-I've also concentrated on compilers generating native code, as ones which are interpreted, or do not generate a discrete binary, deserve their own benchmarks with different criteria.
+I've also concentrated on compilers generating native code, as ones which are interpreted, or do not generate a discrete binary, deserve their own benchmarks with different criteria. (However, Julia has since been added.)
 
 Again, this is the 'fannkuch-redux' benchmark described [here](https://benchmarksgame-team.pages.debian.net/benchmarksgame/performance/fannkuchredux.html). Versions I've written in 10 languages (plus two of mine) are listed [here](fannkuch.txt); any missing ones can be found at the former link.
 
@@ -13,6 +15,7 @@ I've added also information on the generated binary size, and an idea of the ins
 Implem | Language | Time (secs) | Funcs/sec | Runtime | Exe Size | Inst Files | Inst MB
 --- | --- | --- | --- | --- | --- | --- | ---
 **Rustc -O** | Rust  | 79000 \*\* | 0.13 | 3.2 secs| 10MB \*\* | 56800+14600 | 2000MB + 2800MB
+**Julia**    | Julia  | 1320 $$ |  760  | 4.0  | --- | 1700 | 480MB
 **Clang -O3**        | C | 780 | 13 | 2.45 | 16MB | 350 | 1600MB
 **Clang -O2**        | C | 650 | 15 | 2.5 | --- | 350 | 1600MB
 **Rustc** | Rust  | 330 | 30 | 37.8 | 40MB | 56800+14600 | 2000MB+2800MB
@@ -31,10 +34,9 @@ Implem | Language | Time (secs) | Funcs/sec | Runtime | Exe Size | Inst Files | 
 **MSVC**          | C | 12  |830 | 9.6 | 9.2MB | 14600 | 2800MB
 **Odin**        | Odin | 14 | 720 | 27.3 | --- | 200 | 140MB
 **Vox**           | [Vox](https://github.com/MrSmith33/vox) | 5.7 | 1750 | [6.4](https://gist.github.com/MrSmith33/ac14e66a83b9d047793adede464ca1ef#file-fannkuch-vx) | 10MB | 1 | 2.4MB (0.75MB upx)
-**bcc** (bb)     | C        | 4.2 | 2400 | 9.0 | 8.0MB | 1 | 1.0MB (0.32MB upx)
-**BB -opt** (bb)   | M        | 2.5 | 4000 | 3.1 | 6.6MB | 1 | 0.6MB (0.17MB upx)
-**MM** (bb)      | M        | 2.3 | 4300 | 7.0 | 10MB | 1 | 0.8MB (0.16MB upx)
-**BB** (bb)       | M        | 2.2 | 4500 | 6.8 | 7.8MB | 1 | 0.6MB (0.17MB upx)
+**bcc** (mm)     | C        | 4.2 | 2400 | 9.0 | 8.0MB | 1 | 1.0MB (0.32MB upx)
+**MM -opt** (mm)   | M        | 2.5 | 4000 | 3.1 | 6.6MB | 1 | 0.6MB (0.17MB upx)
+**MM** (mm)       | M        | 2.2 | 4500 | 6.8 | 7.8MB | 1 | 0.6MB (0.17MB upx)
 **Tiny C** (tcc)  | C        | 1.9 | 5100 | 10.1 | 10MB | 120 | 1.8MB
 **Tiny C** (bcc)  | C        | 1.5 | 6700 | 10.1 | 10MB | 120 | 1.8MB
 **Tiny C**        | C        | 1.1 | 9100 | 10.1 | 10MB | 120 | 1.8MB
@@ -93,6 +95,10 @@ I guess this is not something you'd do that often with Seed7, as programs can al
 
 The installation size I think includes source files (installation on Windows involved building from source(?), but fortunately it take care of it itself.)
 
+### $$ Julia
+
+The figures have been extrapolated from 1000 functions, as the compile time seems to increase linearly. The 4.0 runtime is with -O3 optimising, which surprisingly does not seem to affect compile times.
+
 ### Java
 
 The executable (or rather the .class file) produced is suspiciously small at 120KB, or about 12 bytes per function. If I tried to get it to retain all the functions (using res+=fxxxx(5) on each call), then it aborted with 'Code too large', also at about 25 seconds. However, compiling 100 functions took 4 seconds (but maybe most of those are eliminated too) and Hello, World took 2 seconds. So maybe it's 50 functions/second. Output of Java is probably JVM code not native.
@@ -110,11 +116,9 @@ The executable (or rather the .class file) produced is suspiciously small at 120
 
 ### My Compilers
 
-These are BB and the older MM, both for my M systems language. Also BCC for C.
+This is MM for my M systems language. Also BCC for C.
 
-(bb) means it was compiled with BB; so not quite as fast, but a smaller executable. I've removed the (gcc) timings where the source was transpiled to C and passed through gcc-O3.
-
-This handicaps my compilers a little, as it is assumed most others will use fully optimising compilers (but see below), but I also want to show what is possible with a modest home-made compiler that doesn't rely on heavy-duty tools. My compilers still dominate the fast end of the table, except for Tiny C.
+(mm) against my compilers means it was compiled with my mm (mm-opt in fact) which only has a modest optimiser. (gcc) means it was compiled with gcc-O3.
 
 ### Tiny C
 
@@ -148,15 +152,15 @@ Implem | Language | Runtime
 **MSVC /O2**          | C | 2.6
 **Clang -O1**        | C | 2.6
 **Go**            | Go | 2.9
-**BB -opt** (bb)   | M | 3.1
+**MM -opt** (mm)   | M | 3.1
 **Rustc -O** | Rust | 3.2
 **gcc -O3**           | C  | 3.3
+**Julia -O3**         | Julia | 4.0
 **Javac**      |Java | 4.0
 **DMD -O**       | D | 4.1
 **Dart**          | Dart | 6.2
 **Vox**           | Vox | 6.3
-**BB** (bb)       | M   | 6.8
-**MM** (gcc)      | M   | 7.0
+**MM** (mm)       | M   | 6.8
 **gcc**           | C   | 8.7
 **bcc** (gcc)     | C   | 9.0
 **MSVC**          | C   | 9.6
@@ -166,5 +170,5 @@ Implem | Language | Runtime
 **Seed7 -O2**     | Seed7 | 13.0
 **Rustc**         | Rust| 37.8
 
-One of my compilers (bcc-opt) does surprisingly well. It's just a fluke (it's typically 50% slower than gcc-O3, not faster!), however that is the genuine timing for this test.
+One of my compilers (MM-opt) does surprisingly well. It's just a fluke (it's typically 50% slower than gcc-O3, not faster!), however that is the genuine timing for this test.
 
