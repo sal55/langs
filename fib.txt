@@ -1,0 +1,76 @@
+# Original Source
+
+function fib(int n)int=
+    if n<3 then
+        return 1
+    else 
+        return fib(n-1)+fib(n-2)
+    fi
+end
+
+# Intermediate Representation (Display of internal format; this is not a text format)
+
+1   --Proc fib:
+1   --    param                     n                       (i64)
+1   --    procentry                                         
+
+2   --    startmult                                         
+2   --    pushmem.d64               n                       (i64)
+2   --    pushint                   3                       (i64)
+2   --    jumpcc.ge_i64             L3                      (i64)
+3   --    pushint                   1                       (i64)
+3   --    resetmult                                         
+3   --    jump                      L4                      
+3   --L3: 
+5   --    setalign                                          Nargs:1 Nvar:0
+5   --    pushmem.d64               n                       (i64)
+5   --    pushint                   1                       (i64)
+5   --    bin.sub_i64                                       (i64)
+5   --    callfn                    &fib                    (i64) Nargs:1
+5   --    setalign                                          Nargs:1
+5   --    pushmem.d64               n                       (i64)
+5   --    pushint                   2                       (i64)
+5   --    bin.sub_i64                                       (i64)
+5   --    callfn                    &fib                    (i64) Nargs:1
+5   --    bin.add_i64                                       (i64)
+5   --    endmult                                           
+5   --L4: 
+5   --    setret                                            (i64)
+5   --L2: 
+5   --    retfn                                             
+5   --End
+
+
+# Native Code (Display of internal format, which is the same as that
+# written as ASM code when that is requested):
+
+;Proc fib
+t.fib:
+          R.t.fib.n = D9
+          push      D9
+          sub       Dstack, 32
+          mov       D9, D10
+;-------------------------------------------------
+          cmp       R.t.fib.n,  3
+          jge       L3
+          mov       D0, 1
+          jmp       L4
+L3:
+          lea       D10,    [D9-1]
+          call      t.fib
+          push      D0
+          sub       Dstack, 8
+          lea       D10,    [D9-2]
+          sub       Dstack, 32
+          call      t.fib
+          add       Dstack, 40
+          pop       D1
+          add       D1, D0
+          mov       D0, D1
+L4:
+;-------------------------------------------------
+L2:
+          add       Dstack, 32
+          pop       D9
+          ret       
+;End 
