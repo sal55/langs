@@ -2,44 +2,42 @@
 
 ### Testing compilation speed on large source files.
 
-This is a revised version of [these tests](Compilertest2.md), as I found that if the 10,000 functions were not called, some compilers didn't do as much work. The new test will call each of the functions once.
+This test is the 'fannkuch-redux' benchmark described [here](https://benchmarksgame-team.pages.debian.net/benchmarksgame/performance/fannkuchredux.html). Versions I've written in 10 languages (plus two of mine) are listed [here](fannkuch.txt); any missing ones can be found at the former link.
 
-I've also concentrated on compilers generating native code, as ones which are interpreted, or do not generate a discrete binary, deserve their own benchmarks with different criteria. (However, Julia has since been added.)
+The benchmark is 50-100 lines, but is repeated 10,000 times for a single source file file of 500K-1000K lines approx. In addition, each of the 10,000 copies of the function, which have random names, are called. Not calling them would be some compilers cutting corners.
 
-Again, this is the 'fannkuch-redux' benchmark described [here](https://benchmarksgame-team.pages.debian.net/benchmarksgame/performance/fannkuchredux.html). Versions I've written in 10 languages (plus two of mine) are listed [here](fannkuch.txt); any missing ones can be found at the former link.
+I've concentrated on compilers generating native code, as interpreted languages need different criterea, but I've included also Seed7 and Julia since those can generate programs that run at native code speed.
 
-The benchmark function is repeated 10,000 times with random names, and each called once inside the main program. (With parameter 5, but that is only of significance for interpreted code which needs to execute the whole thing.)
-
-I've added also information on the generated binary size, and an idea of the installation size.
+There is also information on the generated binary size, and an idea of the installation size.
 
 Implem | Language | Time (secs) | Funcs/sec | Runtime | Exe Size | Inst Files | Inst MB
 --- | --- | --- | --- | --- | --- | --- | ---
-**Rustc -O** | Rust  | 79000 \*\* | 0.13 | 3.2 secs| 10MB \*\* | 56800+14600 | 2000MB + 2800MB
-**Julia**    | Julia  | 1320 $$ |  7.60  | 4.0  | --- | 1700 | 480MB
+**Rustc -O** | Rust  | 79000 (1) | 0.13 | 3.2 secs| 10MB \*\* | 56800+14600 | 2000MB + 2800MB
+**Julia**    | Julia  | 1320 (2) |  7.60  | 4.0  | --- | 1700 | 480MB
 **Clang -O3**        | C | 780 | 13 | 2.45 | 16MB | 350 | 1600MB
 **Clang -O2**        | C | 650 | 15 | 2.5 | --- | 350 | 1600MB
 **Rustc** | Rust  | 330 | 30 | 37.8 | 40MB | 56800+14600 | 2000MB+2800MB
 **Clang -O1**        | C | 310 | 15 | 2.6 | --- | 350 | 1600MB
-**Dart**          | Dart | 235| 42 | 6.2 | 27MB | 500 | 490MB
+**Dart**          | Dart (8) | 235| 42 | 6.2 | 27MB | 500 | 490MB
 **DMD -O**       | D | 156 | 64 | 4.1 | 15MB | 4000 | 300MB 
 **MSVC /O2**          | C | 155 |64 | 2.6 | 0.2MB | 14600 | 2800MB
-**Odin -opt**        | Odin | 104 ++ | 96 | 2.7 | --- | 200 | 140MB
+**Odin -opt**        | Odin | 104 (3) | 96 | 2.7 | --- | 200 | 140MB
 **gcc -O3**           | C            | 85 | 118 | 3.3 | 0.93MB | 4800 | 550MB
 **gcc**           | C            | 67 | 150 | 8.7 | 10MB | 4800 | 550MB
 **Go**            | Go | 40 | 250 | 2.9 | 10MB | 9200 | 350MB
 **DMD**           | D | 32 | 310 | 9.7 | 16MB | 4000 | 300MB
 **Clang**         | C | 30 | 330 | 10.2 | 12MB | 350 | 1600MB
-**s7c -O2**       | Seed7 | 27^^ | 370 | 13 | --- | 1400 | 550MB
-**Javac**      | Java | 25 | 400 | 4.0  |0.12MB | 400 | 330MB
+**s7c -O2**       | Seed7 | 27 (4) | 370 | 13 | --- | 1400 | 550MB
+**Javac**      | Java (5) | 25 | 400 | 4.0  |0.12MB | 400 | 330MB
 **MSVC**          | C | 12  |830 | 9.6 | 9.2MB | 14600 | 2800MB
 **Odin**        | Odin | 14 | 720 | 27.3 | --- | 200 | 140MB
 **Vox**           | [Vox](https://github.com/MrSmith33/vox) | 5.7 | 1750 | [6.4](https://gist.github.com/MrSmith33/ac14e66a83b9d047793adede464ca1ef#file-fannkuch-vx) | 10MB | 1 | 2.4MB (0.75MB upx)
-**bcc** (mm)     | C        | 4.2 | 2400 | 9.0 | 8.0MB | 1 | 1.0MB (0.32MB upx)
-**MM -opt** (mm)   | M        | 2.5 | 4000 | 3.1 | 6.6MB | 1 | 0.6MB (0.17MB upx)
+**bcc** (mm)     | C (6)     | 4.2 | 2400 | 9.0 | 8.0MB | 1 | 1.0MB (0.32MB upx)
+**MM -opt** (mm)   | M (6)  | 2.5 | 4000 | 3.1 | 6.6MB | 1 | 0.6MB (0.17MB upx)
 **MM** (mm)       | M        | 2.2 | 4500 | 6.8 | 7.8MB | 1 | 0.6MB (0.17MB upx)
-**Tiny C** (tcc)  | C        | 1.9 | 5100 | 10.1 | 10MB | 120 | 1.8MB
+**Tiny C** (tcc)  | C (7)    | 1.9 | 5100 | 10.1 | 10MB | 120 | 1.8MB
 **Tiny C** (bcc)  | C        | 1.5 | 6700 | 10.1 | 10MB | 120 | 1.8MB
-**Tiny C**        | C        | 1.1 | 9100 | 10.1 | 10MB | 120 | 1.8MB
+**Tiny C**        | C        | 1.1 | 9100 | 10.1 | 10MB | 120 | 1.8MB (download version)
 **Tiny C**  (gcc) | C        | 0.9 | 11100 | 10.1 | 10MB | 120 | 1.8MB
 
 ### Time
@@ -56,7 +54,7 @@ This column has been added so that some trade-offs can be compared. Runtime is h
 
     fann(11)
     
-in a program containing just the one function. (This has been changed from fann(10) as timings were getting too small. That was chosen originally because I'd had interpreted languages too, and fann(11) was too challenging for some.)
+in a program containing just the one function.
 
 ### Exe Size
 
@@ -66,14 +64,13 @@ The size of the binary executable. They range from 6.6MB to 40MB. There are some
 
 This gives an idea of the magnitude of the installation. The very large ones will come with lots of libraries, headers etc, but it is not practical to isolate what is needed to run this test.
 
-Where the entire installation is one self-contained executable, then figures using UPX compression are shown. (UPX is a utility that reduces the size of a .exe file, but it still runs as normal, although with about 0.1 seconds extra overhead.) By this measure, a Rust installation needs 17,000 times more space than my bb.exe.
+Where the entire installation is one self-contained executable, then figures using UPX compression are shown.
 
+### (1) Rust
 
-### \*\*Rust
+Difficult to believe, but Rustc used to be a lot slower.
 
-I've managed to make this work, and the good news is that, with a new update, it's a bit faster: 330 seconds unoptimised. And I finally have timings, but:
-
-* Rust needs MS VC++ build tools to work; so the installation size includes those tools
+* Rust needs (or did when I tried it) MS VC++ build tools to work; so the installation size includes those tools
 
 * The runtime for unoptimised Rust is poor: 10 times as slow as optimised code; I don't know why
 
@@ -81,48 +78,31 @@ I've managed to make this work, and the good news is that, with a new update, it
 
 * The optimised executable size was extrapolated from that of the 1000-function version
 
-So Rust has some problems in my opinion. Even that 18 seconds for an optimised build of 100-functions or 8000 lines is only 0.4K lines per second - microcomputer territory.
-
-### ++Odin
-
-This failed my 10,000-function tests. It crashes on larger inputs. The figures shown are based on the 1000-function test
-
-### ^^Seed7
-
-The compile time here is how long it took s7c to turn the .sd7 source file into a C intermediate file. Fully building involves running a C compiler on the result, but the intermediate C contains 3.3M lines compared to 0.87M of the Seed7 source code. Even Tiny took over 20 seconds to compile it (but I couldn't link it). I didn't try gcc which is the normally invoked C compiler.
-
-I guess this is not something you'd do that often with Seed7, as programs can also be interpreted, and that process is much faster (2.2 seconds for this test) even if the runtime is slower. The runtime shown is for building a file one one function, and using s7c -O2.
-
-The installation size I think includes source files (installation on Windows involved building from source(?), but fortunately it take care of it itself.)
-
-### $$ Julia
+### (2) Julia
 
 The figures have been extrapolated from 1000 functions, as the compile time seems to increase linearly. The 4.0 runtime is with -O3 optimising, which surprisingly does not seem to affect compile times.
 
-### Java
+### (3) Odin
+
+This failed my 10,000-function tests. It crashes on larger inputs. The figures shown are based on the 1000-function test
+
+### (4) Seed7
+
+The compile time here is how long it took s7c to turn the .sd7 source file into a C intermediate file. Fully building involves running a C compiler on the result, but the intermediate C contains 3.3M lines compared to 0.87M of the Seed7 source code. Even Tiny took over 20 seconds to compile it (but I couldn't link it). I didn't try gcc which is the normally invoked C compiler.
+
+### (5) Java
 
 The executable (or rather the .class file) produced is suspiciously small at 120KB, or about 12 bytes per function. If I tried to get it to retain all the functions (using res+=fxxxx(5) on each call), then it aborted with 'Code too large', also at about 25 seconds. However, compiling 100 functions took 4 seconds (but maybe most of those are eliminated too) and Hello, World took 2 seconds. So maybe it's 50 functions/second. Output of Java is probably JVM code not native.
 
-### Notes
+### (6) 'M'
 
-**Lines/second** Fastest speed in LPS was something like 900Klps (tcc), and slowest around 1.2Klps (optimised Clang; I don't include the 0.01Klps of optimised Rust). Code density varies, but I think tcc still comes out on top.
+This is My own systems language. BCC is my own C compiler.
 
-**Optimisation** Optimised versions tried where the option existed and I knew how to to turn it on.
+(mm) against my compilers means it was compiled with my mm which only has a modest optimiser. MM compiled with gcc-O3, if it was expressed as C (no longer possible) would probably make it 30% faster.
 
-**Host** All tests were done on an old Windows 7 PC, 64 bits, with spinning hard drive. Number of cores available was 2 (doubt any used more than one). Not the most up-to-date hardware, but all compilers ran on the same machine.
+### (7) Tiny C
 
-**Dart** This compiler took 6 seconds just to compile a Hello, World program (which generated a 5MB executable, which probably explains it!). This suggest another possible measure - overheads that apply even to a minimal program. But I haven't really seen it in others, except I think Zig, which is not part of my test (too much effort to try and get the benchmark written). There may anyway be options to control that which I don't know about, so I won't try that yet.
-
-
-### My Compilers
-
-This is MM for my M systems language. Also BCC for C.
-
-(mm) against my compilers means it was compiled with my mm (mm-opt in fact) which only has a modest optimiser. (gcc) means it was compiled with gcc-O3.
-
-### Tiny C
-
-This has several entries, which it deserves being the faster compiler in the list; even the slowest is faster than mine.
+This has several entries, which it deserves being the fastest compiler in the list; even the slowest is faster than mine.
 
 (tcc) means it was compiled with itself.
 
@@ -132,14 +112,20 @@ This has several entries, which it deserves being the faster compiler in the lis
 
 The remaining entry is as it was downloaded, as a prebuilt binary.
 
-Tiny C is fast for several reasons:
+Tcc beats my bcc compiler (even unoptimised!) probably because it is single pass and goes direct to native. My bcc is handicapped by multiple passes, and an discrete ASM intermediate form, which here means a 50MB ASM file to process. However, my compilers produce somewhat faster code.
 
-* It is a one-pass compiler (AIUI)
-* It compiles C which lends itself to one-pass compilation (this test further doesn't use large headers or any use of the CPP)
-* It beats my M compilers, because M has out-of-order definitions which are not suitable for one pass, and M compilers are multi-pass anyway
-* It badly beats my own BCC C compiler, because that also uses multi-passes, but here also generates a 50MB intermediate ASM file, which then has to be assembled.
+### (8) Dart
 
-However, my compilers produce somewhat faster code.
+This compiler took 6 seconds just to compile a Hello, World program (which generated a 5MB executable, which probably explains it!).
+
+
+### Notes
+
+**Lines/second** Fastest speed in LPS was something like 900Klps (tcc), and slowest around 1.2Klps (optimised Clang; I don't include the 0.01Klps of optimised Rust). Code density varies, but I think tcc still comes out on top.
+
+**Optimisation** Optimised versions tried where the option existed and I knew how to to turn it on.
+
+**Host** All tests were done on an old Windows 7 PC, 64 bits, with spinning hard drive. Number of cores available was 2 (doubt any used more than one). Not the most up-to-date hardware, but all compilers ran on the same machine.
 
 ### Sorted by Runtime
 
