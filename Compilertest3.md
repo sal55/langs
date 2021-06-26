@@ -46,7 +46,11 @@ How many seconds it took to compile
 
 ### Funcs/sec
 
-Because some took more lines than others, the table is sorted in terms of functions/second throughput.
+Because some took more lines than others, the table is sorted in terms of functions/second throughput. Fastest speed in Lines/second was something like 900Klps (tcc), and slowest around 1.2Klps (optimised Clang; I don't include the 0.01Klps of optimised Rust). Code density varies, but I think tcc still comes out on top.
+
+### Optimisation
+
+Optimised versions tried where the option existed and I knew how to to turn it on.
 
 ### Runtimes
 
@@ -112,14 +116,9 @@ Tcc beats my bcc compiler (even unoptimised!) probably because it is single pass
 
 This compiler took 6 seconds just to compile a Hello, World program (which generated a 5MB executable, which probably explains it!).
 
+### Host
 
-### Notes
-
-**Lines/second** Fastest speed in LPS was something like 900Klps (tcc), and slowest around 1.2Klps (optimised Clang; I don't include the 0.01Klps of optimised Rust). Code density varies, but I think tcc still comes out on top.
-
-**Optimisation** Optimised versions tried where the option existed and I knew how to to turn it on.
-
-**Host** All tests were done on an old Windows 7 PC, 64 bits, with spinning hard drive. Number of cores available was 2 (doubt any used more than one). Not the most up-to-date hardware, but all compilers ran on the same machine.
+All tests were done on an old Windows 7 PC, 64 bits, with spinning hard drive. Number of cores available was 2 (doubt any used more than one). Not the most up-to-date hardware, but all compilers ran on the same machine.
 
 ### Sorted by Runtime
 
