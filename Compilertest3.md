@@ -18,7 +18,7 @@ Implem | Language | Time (Note) | Funcs/sec | Runtime | Exe Size | Inst Files | 
 **Clang -O2**        | C | 650 | 15 | 2.5 | --- | 350 | 1600MB
 **Rustc** | Rust  | 330 | 30 | 37.8 | 40MB | 56800+14600 | 2000MB+2800MB
 **Clang -O1**        | C | 310 | 15 | 2.6 | --- | 350 | 1600MB
-**Dart**          | Dart (8) | 235| 42 | 6.2 | 27MB | 500 | 490MB
+**Dart**          | Dart | 235 (8)| 42 | 6.2 | 27MB | 500 | 490MB
 **DMD -O**       | D | 156 | 64 | 4.1 | 15MB | 4000 | 300MB 
 **MSVC /O2**          | C | 155 |64 | 2.6 | 0.2MB | 14600 | 2800MB
 **Odin -opt**        | Odin | 104 (3) | 96 | 2.7 | --- | 200 | 140MB
@@ -28,14 +28,14 @@ Implem | Language | Time (Note) | Funcs/sec | Runtime | Exe Size | Inst Files | 
 **DMD**           | D | 32 | 310 | 9.7 | 16MB | 4000 | 300MB
 **Clang**         | C | 30 | 330 | 10.2 | 12MB | 350 | 1600MB
 **s7c -O2**       | Seed7 | 27 (4) | 370 | 13 | --- | 1400 | 550MB
-**Javac**      | Java (5) | 25 | 400 | 4.0  |0.12MB | 400 | 330MB
+**Javac**      | Java | 25 (5) | 400 | 4.0  |0.12MB | 400 | 330MB
 **MSVC**          | C | 12  |830 | 9.6 | 9.2MB | 14600 | 2800MB
 **Odin**        | Odin | 14 | 720 | 27.3 | --- | 200 | 140MB
 **Vox**           | [Vox](https://github.com/MrSmith33/vox) | 5.7 | 1750 | [6.4](https://gist.github.com/MrSmith33/ac14e66a83b9d047793adede464ca1ef#file-fannkuch-vx) | 10MB | 1 | 2.4MB (0.75MB upx)
-**bcc** (mm)     | C (6)     | 4.2 | 2400 | 9.0 | 8.0MB | 1 | 1.0MB (0.32MB upx)
-**MM -opt** (mm)   | M (6)  | 2.5 | 4000 | 3.1 | 6.6MB | 1 | 0.6MB (0.17MB upx)
+**bcc** (mm)     | C     | 4.2 (6) | 2400 | 9.0 | 8.0MB | 1 | 1.0MB (0.32MB upx)
+**MM -opt** (mm)   | M  | 2.5 (6)| 4000 | 3.1 | 6.6MB | 1 | 0.6MB (0.17MB upx)
 **MM** (mm)       | M        | 2.2 | 4500 | 6.8 | 7.8MB | 1 | 0.6MB (0.17MB upx)
-**Tiny C** (tcc)  | C (7)    | 1.9 | 5100 | 10.1 | 10MB | 120 | 1.8MB
+**Tiny C** (tcc)  | C    | 1.9 (7) | 5100 | 10.1 | 10MB | 120 | 1.8MB
 **Tiny C** (bcc)  | C        | 1.5 | 6700 | 10.1 | 10MB | 120 | 1.8MB
 **Tiny C**        | C        | 1.1 | 9100 | 10.1 | 10MB | 120 | 1.8MB (download version)
 **Tiny C**  (gcc) | C        | 0.9 | 11100 | 10.1 | 10MB | 120 | 1.8MB
