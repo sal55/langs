@@ -12,7 +12,7 @@ There is also information on the generated binary size, and an idea of the insta
 
 Implem | Language | Time (Note) | Funcs/sec | Runtime | Exe Size | Inst Files | Inst MB
 --- | --- | --- | --- | --- | --- | --- | ---
-**Rustc -O** | Rust  | 79000 secs (1) | 0.13 | 3.2 secs| 10MB \*\* | 56800+14600 | 2000MB + 2800MB
+**Rustc -O** | Rust  | 79000 secs (1) | 0.13 | 3.2 secs| 10MB | 56800+14600 | 2000MB + 2800MB
 **Julia**    | Julia  | 1320 (2) |  7.60  | 4.0  | --- | 1700 | 480MB
 **Clang -O3**        | C | 780 | 13 | 2.45 | 16MB | 350 | 1600MB
 **Clang -O2**        | C | 650 | 15 | 2.5 | --- | 350 | 1600MB
@@ -96,7 +96,7 @@ The executable (or rather the .class file) produced is suspiciously small at 120
 
 ### (6) 'M'
 
-This is My own systems language. BCC is my own C compiler.
+MM is the compiler for my own systems language. BCC is my own C compiler.
 
 (mm) against my compilers means it was compiled with my mm which only has a modest optimiser. MM compiled with gcc-O3, if it was expressed as C (no longer possible) would probably make it 30% faster.
 
@@ -104,15 +104,9 @@ This is My own systems language. BCC is my own C compiler.
 
 This has several entries, which it deserves being the fastest compiler in the list; even the slowest is faster than mine.
 
-(tcc) means it was compiled with itself.
+(tcc) means it was compiled with itself; (bcc) compiled with my bcc; and (gcc) compiled with gcc-O3. The remaining entry is as it was downloaded, as a prebuilt binary.
 
-(bcc) compiled with my bcc
-
-(gcc) compiled with gcc-O3
-
-The remaining entry is as it was downloaded, as a prebuilt binary.
-
-Tcc beats my bcc compiler (even unoptimised!) probably because it is single pass and goes direct to native. My bcc is handicapped by multiple passes, and an discrete ASM intermediate form, which here means a 50MB ASM file to process. However, my compilers produce somewhat faster code.
+Tcc beats my bcc compiler (even unoptimised!) probably because it is single pass and goes direct to native. My bcc is handicapped by multiple passes, and a discrete ASM intermediate form, which here means a 50MB ASM file to process. However, my compilers produce somewhat faster code.
 
 ### (8) Dart
 
