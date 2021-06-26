@@ -10,9 +10,9 @@ I've concentrated on compilers generating native code, as interpreted languages 
 
 There is also information on the generated binary size, and an idea of the installation size.
 
-Implem | Language | Time (secs) | Funcs/sec | Runtime | Exe Size | Inst Files | Inst MB
+Implem | Language | Time (Note) | Funcs/sec | Runtime | Exe Size | Inst Files | Inst MB
 --- | --- | --- | --- | --- | --- | --- | ---
-**Rustc -O** | Rust  | 79000 (1) | 0.13 | 3.2 secs| 10MB \*\* | 56800+14600 | 2000MB + 2800MB
+**Rustc -O** | Rust  | 79000 secs (1) | 0.13 | 3.2 secs| 10MB \*\* | 56800+14600 | 2000MB + 2800MB
 **Julia**    | Julia  | 1320 (2) |  7.60  | 4.0  | --- | 1700 | 480MB
 **Clang -O3**        | C | 780 | 13 | 2.45 | 16MB | 350 | 1600MB
 **Clang -O2**        | C | 650 | 15 | 2.5 | --- | 350 | 1600MB
