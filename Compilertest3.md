@@ -68,7 +68,7 @@ The size of the binary executable. They range from 6.6MB to 40MB. There are some
 
 This gives an idea of the magnitude of the installation. The very large ones will come with lots of libraries, headers etc, but it is not practical to isolate what is needed to run this test.
 
-Where the entire installation is one self-contained executable, then figures using UPX compression are shown.
+Where the entire installation is one self-contained executable, then figures using UPX compression are shown as well.
 
 ### (1) Rust
 
