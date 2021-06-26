@@ -4,9 +4,9 @@
 
 This test is the 'fannkuch-redux' benchmark described [here](https://benchmarksgame-team.pages.debian.net/benchmarksgame/performance/fannkuchredux.html). Versions I've written in 10 languages (plus two of mine) are listed [here](fannkuch.txt); any missing ones can be found at the former link.
 
-The benchmark is 50-100 lines, but is repeated 10,000 times for a single source file file of 500K-1000K lines approx. In addition, each of the 10,000 copies of the function, which have random names, are called. Not calling them would be some compilers cutting corners.
+The benchmark is 50-100 lines, but is repeated 10,000 times for a single source file of 500K-1000K lines approx. In addition, each of the 10,000 copies of the function, which have random names, are called. Not calling them would mean some compilers cutting corners.
 
-I've concentrated on compilers generating native code, as interpreted languages need different criterea, but I've included also Seed7 and Julia since those can generate programs that run at native code speed.
+I've concentrated on compilers generating native code, as interpreted languages need different criterea, but I've included also Seed7 and Julia since those can generate programs that can run at native code speed.
 
 There is also information on the generated binary size, and an idea of the installation size.
 
