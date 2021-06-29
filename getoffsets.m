@@ -71,7 +71,7 @@ proc getoffsets=
     hinttableoffset:=diroffset
     for i to nimports do
         length:=strlen(importtable[i].name)+3
-        if length iand 1 then ++length fi       !keep even
+        if length.odd then ++length fi       !keep even
         importtable[i].hintnameoffset:=diroffset
         diroffset+:=length
     od
@@ -83,7 +83,6 @@ proc getoffsets=
 
     for i to ndlls do
         length:=strlen(dlltable[i].name)+1
-!       if length iand 1 then ++length fi       !keep even
         if length.odd then ++length fi      !keep even
         dlltable[i].dllextraoffset:=diroffset
         diroffset+:=dlltable[i].nprocs*4        !space for back-links to dir entry
