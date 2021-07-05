@@ -229,14 +229,14 @@ function buildhufftree(ref[]int codelength,symbols)ref huffnode=
 
     tot:=0
     for i:=1 to 16 do
-        tot+:=codelength^[i]
+        tot+:=codelength[i]
     od
 
     nodes:=jallocz(huffnode.bytes*(tot*2-1))
 
     codes:=buildcanonical(codelength)
 
-    buildtreerec(cast(nodes),cast(&codes^[1]),cast(&symbols^[1]),tot,0)
+    buildtreerec(cast(nodes),cast(&codes[1]),cast(&symbols[1]),tot,0)
     return cast(nodes)
 end
 
@@ -248,14 +248,14 @@ proc buildtreerec(ref[]huffnode nodes,ref[]ref[]char code,ref[]int symbol, int n
         return
     fi
 
-    first:=&nodes^[1]
+    first:=&nodes[1]
 
     if n=1 then
         first.child0:=nil
         first.child1:=nil
-        first.symbol:=symbol^[1]
+        first.symbol:=symbol[1]
         first.suppbits:=0
-        k:=strlen(cast(code^[1]))-bitx
+        k:=strlen(cast(code[1]))-bitx
         if k>0 then
             first.suppbits:=k
             bitx+:=k
@@ -264,19 +264,19 @@ proc buildtreerec(ref[]huffnode nodes,ref[]ref[]char code,ref[]int symbol, int n
     fi
 
     for i2:=1 to n do
-        if code^[i2]^[bitx+1]='1' then
+        if code[i2][bitx+1]='1' then
             i:=i2
             exit
         fi
         i:=i2
     od
-    first.child0:=&nodes^[2]
-    first.child1:=&nodes^[2*i-1]
+    first.child0:=&nodes[2]
+    first.child1:=&nodes[2*i-1]
     first.symbol:=-1
     first.suppbits:=0
 
-    buildtreerec(cast(&nodes^[2]),code,symbol,i-1,bitx+1, level+1)
-    buildtreerec(cast(&nodes^[2*i-1]),cast(&code^[i]),cast(&symbol^[i]),n-i+1,bitx+1,level+1)
+    buildtreerec(cast(&nodes[2]),code,symbol,i-1,bitx+1, level+1)
+    buildtreerec(cast(&nodes[2*i-1]),cast(&code[i]),cast(&symbol[i]),n-i+1,bitx+1,level+1)
 end
 
 function buildcanonical(ref[]int codelengths)ref[]ichar=
@@ -285,7 +285,7 @@ function buildcanonical(ref[]int codelengths)ref[]ichar=
 
     n:=0
     for i:=1 to 16 do
-        n+:=codelengths^[i]
+        n+:=codelengths[i]
     od
 
     a:=jallocz(n*ichar.bytes)
@@ -294,8 +294,8 @@ function buildcanonical(ref[]int codelengths)ref[]ichar=
     code:=0
     length:=1
     for i:=1 to 16 do
-        to codelengths^[i] do
-            a^[j]:=pcm_copyheapstring(tostrbin(code,length))
+        to codelengths[i] do
+            a[j]:=pcm_copyheapstring(tostrbin(code,length))
             ++j
             code++
         od
@@ -559,7 +559,7 @@ proc unzigzag(ref[64]int block)=
     temp:=block^
 
     for i:=1 to 64 do
-        block^[i]:=temp[zigzag[i]]
+        block[i]:=temp[zigzag[i]]
     od
 end
 
@@ -568,30 +568,30 @@ proc idct8x8(ref[]int block)=
     for i:=0 to 7 do
         j:=i*8+1
         fastidct8(
-            block^[j],
-            block^[j+1],
-            block^[j+2],
-            block^[j+3],
-            block^[j+4],
-            block^[j+5],
-            block^[j+6],
-            block^[j+7])
+            block[j],
+            block[j+1],
+            block[j+2],
+            block[j+3],
+            block[j+4],
+            block[j+5],
+            block[j+6],
+            block[j+7])
     od
 
     for i:=1 to 64 do
-        block^[i] >>:= 3
+        block[i] >>:= 3
     od
 
     for i:=1 to 8 do
         fastidct8(
-            block^[i],
-            block^[i+8],
-            block^[i+16],
-            block^[i+24],
-            block^[i+32],
-            block^[i+40],
-            block^[i+48],
-            block^[i+56])
+            block[i],
+            block[i+8],
+            block[i+16],
+            block[i+24],
+            block[i+32],
+            block[i+40],
+            block[i+48],
+            block[i+56])
     od
 end
 
@@ -659,7 +659,7 @@ proc getblock(ref stream fs,ref huffnode dctree,actree,ref[]int block)=
     ++nread
     memset(block,0,64*int.bytes)
 
-    block^[nread] := getsymbol(fs, nbits)
+    block[nread] := getsymbol(fs, nbits)
 
     repeat
         bb := tree_getsymbol(fs,actree)
@@ -680,7 +680,7 @@ proc getblock(ref stream fs,ref huffnode dctree,actree,ref[]int block)=
             fi
             nread+:=zeroes
             ++nread
-            block^[nread] := getsymbol(fs, nbits)
+            block[nread] := getsymbol(fs, nbits)
             if (nread = 64) then
                 return
             fi
@@ -693,13 +693,13 @@ proc readblock(ref stream fs,ref[]int block, ref huffnode dctable,actable,
     int u
 
     getblock(fs,dctable, actable,block)
-    block^[1]:=block^[1]+dc^
+    block[1]:=block[1]+dc^
 
-    dc^:=block^[1]
+    dc^:=block[1]
     u:=hdr.useq[2]
 
     for k:=1 to 64 do
-        block^[k]*:=qtable^[k]
+        block[k]*:=qtable[k]
     od
 
     unzigzag(block)
@@ -794,21 +794,21 @@ proc reconsblockcolour(ref[]int lum1,lum2,lum3,lum4,cr,cb, ref byte data,int x,y
             if x+j>=width then next fi
             if i<8 then
                 if j<8 then
-                    luminance := lum1^[i*8+j+1]/64+128
+                    luminance := lum1[i*8+j+1]/64+128
                 else
-                    luminance := lum2^[i*8+j-8+1]/64+128
+                    luminance := lum2[i*8+j-8+1]/64+128
                 fi
             else
                 if j<8 then
-                    luminance := lum3^[(i-8)*8+j+1]/64+128
+                    luminance := lum3[(i-8)*8+j+1]/64+128
                 else
-                    luminance := lum4^[(i-8)*8+j-8+1]/64+128
+                    luminance := lum4[(i-8)*8+j-8+1]/64+128
                 fi
             fi
 
             ix:=i/vert*8+j>>1+1
-            rr := cr^[ix]
-            bb := cb^[ix]
+            rr := cr[ix]
+            bb := cb[ix]
 
             p^ := clamp((bb*57/2048)+luminance, 0,255)              !blue
             ++p
