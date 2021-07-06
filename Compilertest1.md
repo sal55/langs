@@ -15,12 +15,12 @@ This is a very simple test where a compiler is given repeated lines of:
 Implementation | Language | Max LoC | Compile time | Lines/second | Notes
 --- | --- | --- | --- | --- | ---
 Clox | Lox | 2000K | 1.0 | 2000 Klps | 
-LuaJIT | Lua | 2000K | 2.0 | 1000 Klps | 
+LuaJIT | Lua | 2000K | 1.6 | 1250 Klps |  *
 Wren | Wren | 2000K | 2.20 | 909 Klps | 
 QQ | Q | 2000K | 2.40 | 833 Klps | 
+Lua | Lua | 2000K | 2.8 | 714 Klps | *
 TinyC | C | 2000K | 3.30 | 606 Klps | 
 Vox | Vox | 2000K | 5.40 | 370 Klps | 
-Lua | Lua | 2000K | 6.30 | 317 Klps | 
 MM | M | 2000K | 7.20 | 277 Klps | 
 Ruby192 | Ruby | 2000K | 17.70 | 113 Klps | 
 Perl | Perl | 2000K | 19.60 | 102 Klps | 
@@ -35,14 +35,15 @@ lccwin-opt | C | 2000K | 67 |  30 Klps
 Clang | C | 500K | 22.50 | 22 Klps |  Machine OOM at 2000K
 PyPy | Python | 100K | 5.0 | 20 Klps |  Reported out of memory at 500K
 V | Vlang | 100K | 5.20 | 19.2 Klps | (500K+ not attempted)
+MSVC | C | 100K | 6.2 | 16 Klps |*  Timed out at 500K
+MSVC-opt | C | 100K | 6.2 | 16 Klps |*  Timed out at 500K
 PellesC | C | 500K | 35.0 | 14 Klps |  Reported OOM at 2000K
-MSVC | C | 100K | 11.60 | 8.6 Klps |  Timed out at 500K
-MSVC-opt | C | 100K | 11.6 | 8.6 Klps |  Timed out at 500K
 Clang-opt | C | 500K | 73.0 | 6.8 Klps | 
 A68G | Algol68 | 10K | 1.50 | 6.7 Klps |  (OOM on 20K)
 Dart | Dart | 500K | 74.50 | 6.7 Klps | (2000K not attempted)
 g++8.1.0 | C | 100K | 19.3 | 5.2 Klps |  (Not tested above 100K)
 Nim-CC | Nim | 100K |  25.0 | 4 Klps | Timed out (Nim to C only)
+Julia | Julia | 500K | 132.0 | 3.8 Klps |  (2000K not attempted)
 Rustc-O | Rust | 20K | 5.20 | 3.8 Klps |  Timed out at 100
 gcc-8.1.0 | C | 500K | 137.0 | 3.6 Klps |   Machine OOM at 2000K
 Zig | Zig | 100K | 40.0 | 2.5 Klps |  Machine OOM on 500K
@@ -52,7 +53,6 @@ Nim+CC | Nim | 20K | 16.0 | 1.2 Klps |  Out of memory (Nim to C + C compilation)
 PellesC-opt | C | 20K | 25.0 | 0.8 Klps |  Timed out at 100K
 DMD | D | 20K | 28.70 | 0.7 Klps |  Timed out on 100K
 Rustc | Rust | 20K | 30.70 | 0.65 Klps | Timed out at 100K
-Julia | Julia | 100K | 189.0 | 0.5 Klps |  Timed out 500K
 DMC | C | Fail | 0.0 | 0 |  Crash on 20K, timed out on 100K
 Pico-C | C | Fail | 0.0 | 0 |  Reported OOM at 20K
 FPC | Pascal | Fail | 0.0 | 0 |  (Proc too complex)
@@ -74,3 +74,16 @@ These haven't been included. It is assumed that 'a=b+c\*d' can be written on one
 ### Optimised Compilers
 
 Some get much better results when optimised, but probably there are discarding a lot of the code so get an unfair advantage. Real code is not redundant like this is.
+
+### Date of Test
+
+Not recorded, but tests have been done over past months. Newer versions may be faster.
+
+"\*" Notes column indicates tests done July 2021.
+
+### General
+
+Some implementations such as Rustc and Julia have improved significantly, especially Rust. Maybe there is a point to such apparently pointless benchmarks, as they can highlight issues not apparent with smaller and more sensible inputs.
+
+This benchmark is a form of stress test. While not real code, monolithic blocks of code inside one function like this, can be created with machine translation.
+
