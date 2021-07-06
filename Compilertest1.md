@@ -22,7 +22,6 @@ TinyC | C | 2000K | 3.30 | 606 Klps |
 Vox | Vox | 2000K | 5.40 | 370 Klps | 
 Lua | Lua | 2000K | 6.30 | 317 Klps | 
 MM | M | 2000K | 7.20 | 277 Klps | 
-Wasm | Wasm | 500K | 2.70 | 185 Klps | File too big on 2000K (Note 500K=3000K lines of Wasm)
 Ruby192 | Ruby | 2000K | 17.70 | 113 Klps | 
 Perl | Perl | 2000K | 19.60 | 102 Klps | 
 eui | Euphoria | 2000K | 21.0 | 95 Klps | 
@@ -57,3 +56,21 @@ Julia | Julia | 100K | 189.0 | 0.5 Klps |  Timed out 500K
 DMC | C | Fail | 0.0 | 0 |  Crash on 20K, timed out on 100K
 Pico-C | C | Fail | 0.0 | 0 |  Reported OOM at 20K
 FPC | Pascal | Fail | 0.0 | 0 |  (Proc too complex)
+
+### Lines per Second
+
+The code in this benchmark probably represents a higher code density than is typical. So true lines/second figures are likely to be higher.
+
+But it is anyway just to give an idea of how an implementation copes.
+
+### Test Machine
+
+All run on a 2010 Windows PC with an AMD processor and spinning hard drive. Not high end, but all were tested on the same hardware. Tests are repeated to benefit from file caching.
+
+### Assemblers
+
+These haven't been included. It is assumed that 'a=b+c\*d' can be written on one line with all these HLLs, but in an assembler can take multiple lines, depending on how well a HLL compiler can generate code. Assemblers need their own benchmarks.
+
+### Optimised Compilers
+
+Some get much better results when optimised, but probably there are discarding a lot of the code so get an unfair advantage. Real code is not redundant like this is.
