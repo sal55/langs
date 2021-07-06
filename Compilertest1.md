@@ -1,4 +1,18 @@
-Implementation | Language | Max Input | Compile time | Lines/second | Notes
+## Compiler Tests 1
+
+This is a re-presentation of my initial compiler tests at [compiletest.txt](compilertest.txt).
+
+This is a very simple test where a compiler is given repeated lines of:
+
+    a = b + c * d
+ 
+ or equivalent, as either 20K, 100K, 500K or 2000K lines of code, and seeing what happens. The code will either be the whole program, or be in one function. When declared, a, b, c, d will be integers, and initialised to 1, 2, 3, 4.
+ 
+ **Note** Most timings have been taken over the last 18 months. Some may be out of date, in that newer versions may perform better (or worse).
+ 
+ Table has been sorted in lines/second order.
+
+Implementation | Language | Max LoC | Compile time | Lines/second | Notes
 --- | --- | --- | --- | --- | ---
 PellesC | C | 500K | 35.0 | 0 |  reported OOM at 2000K
 PellesC-opt | C | 20K | 25.0 | 0 |  Timed out at 100K
