@@ -67,7 +67,7 @@ All test were run on a 2010 Windows PC with an AMD processor and spinning hard d
 
 ### Assemblers
 
-These haven't been included. It is assumed that 'a=b+c\*d' can be written on one line with all these HLLs, but in an assembler can take multiple lines, depending on how well a HLL compiler can generate code. Assemblers need their own benchmarks. (If I were to include my own assembler, it would be top-rated. However many are surprisingly slow despite their job being far simpler.)
+These haven't been included. It is assumed that 'a=b+c\*d' can be written on one line with all these HLLs, but in an assembler can take multiple lines, depending on how well a HLL compiler can generate code. Assemblers need their own benchmarks.
 
 ### Optimised Compilers
 
