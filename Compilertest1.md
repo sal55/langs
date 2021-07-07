@@ -85,7 +85,7 @@ These are my own languages (M compiles to native code, Q is an interpreter), bot
 
 ### Lox/Clox
 
-Clox does extremely well here (Lox interpreter in C). I believe [Lox](https://craftinginterpreters.com/the-lox-language.html) is a simple, limited language designed for education, so it's possible that that has helped here. Or it may just be a very fast interpreter! It makes for something to aim for anyway.
+Clox does extremely well here (Lox interpreter in C). I believe [Lox](https://craftinginterpreters.com/the-lox-language.html) is a simple, limited language designed for education, so it's possible that that has helped here. Or it may just be a very fast interpreter! It makes for something to aim for anyway, and shows how effortless this stuff can be compared with some implementations that appear to struggle.
 
 ### General
 
