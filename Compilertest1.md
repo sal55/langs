@@ -81,7 +81,7 @@ Not recorded, but tests have been done over past 18 months. Newer versions may b
 
 ### 'M' and 'Q' Languages
 
-These are my own languages, both compilers are built with MM. This has a poor optimiser which puts them at a little disadvantage. (Transpiling to C and using an optimising compiler is a possibility - I assume most others are the best available production compilers too, but is less satisfactory.)
+These are my own languages (M compiles to native code, Q is an interpreter), both compilers are built with MM. This has a poor optimiser which puts them at a little disadvantage. (Transpiling to C and using an optimising compiler is a possibility - I assume most others are the best available production compilers too, but is less satisfactory.)
 
 ### General
 
