@@ -56,6 +56,14 @@ DMC | C | 5K | 20.0 | 0.25 Klps | * Crashed on bigger inputs
 Pico-C | C | Fail | - | 0 | * Various errors
 FPC | Pascal | Fail | - | 0 |  (Proc too complex)
 
+### Max LoC
+
+The size of the biggest input it managed from 20K, 100K, 500K or 2000K lines of code. Some products that failed 20K were tested with smaller inputs.
+
+#### Compile Time
+
+How long it took to took to compile its input. Because these values were not directly comparable, as not all managed the 2000K test. It is not possible either to extrapolate the times to how long it *would* have taken to compile 2M lines of input, since compile times sometimes increases exponentially.
+
 ### Lines per Second
 
 The code in this benchmark probably represents a higher code density than is typical. So true lines/second figures are likely to be higher.
