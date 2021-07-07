@@ -83,6 +83,10 @@ Not recorded, but tests have been done over past 18 months. Newer versions may b
 
 These are my own languages (M compiles to native code, Q is an interpreter), both compilers are built with MM. This has a poor optimiser which puts them at a little disadvantage. (Transpiling to C and using an optimising compiler is a possibility - I assume most others are the best available production compilers too, but is less satisfactory.)
 
+### Lox/Clox
+
+Clox does extremely well here (Lox interpreter in C). I believe [Lox](https://craftinginterpreters.com/the-lox-language.html) is a simple, limited language designed for education, so it's possible that that has helped here. Or it may just be a very fast interpreter! It makes for something to aim for anyway.
+
 ### General
 
 Some implementations such as Rustc and Julia have improved significantly, especially Rust (which used to take 20 seconds for only 1K lines when I first tried it). Maybe there is a purpose to such apparently pointless benchmarks, as they can highlight issues not apparent with smaller and more sensible inputs.
