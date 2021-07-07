@@ -71,7 +71,7 @@ These haven't been included. It is assumed that 'a=b+c\*d' can be written on one
 
 ### Optimised Compilers
 
-Some get much better results when optimised, but probably there are discarding a lot of the code so get an unfair advantage. Real code is not redundant like this is.
+Some get much better results when optimised, but probably they are discarding a lot of the code so get an unfair advantage. Real code is not redundant like this is.
 
 ### Date of Test
 
