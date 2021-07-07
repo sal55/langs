@@ -45,15 +45,16 @@ Julia | Julia | 500K | 132.0 | 3.8 Klps |  (2000K not attempted)
 Rustc-O | Rust | 20K | 5.20 | 3.8 Klps |  Timed out at 100
 gcc-8.1.0 | C | 500K | 137.0 | 3.6 Klps |   Machine OOM at 2000K
 Zig | Zig | 100K | 40.0 | 2.5 Klps |  Machine OOM on 500K
+DMC | C | 10K | 4.5 | 2.2 Klps | * Crashed on 20K
 FBC | Basic | 20K | 9.0 | 2.2 Klps |  Timed out at 100K
 Javac | Java | 5K | 3.20 | 1.5 Klps |  'Code too large' on 20K
 Nim+CC | Nim | 20K | 16.0 | 1.2 Klps |  Out of memory (Nim to C + C compilation)
 PellesC-opt | C | 20K | 25.0 | 0.8 Klps |  Timed out at 100K
 DMD | D | 20K | 28.70 | 0.7 Klps |  Timed out on 100K
 Rustc | Rust | 20K | 30.70 | 0.65 Klps | Timed out at 100K
-DMC | C | Fail | 0.0 | 0 |  Crash on 20K, timed out on 100K
-Pico-C | C | Fail | 0.0 | 0 |  Reported OOM at 20K
-FPC | Pascal | Fail | 0.0 | 0 |  (Proc too complex)
+DMC | C | 5K | 20.0 0.25 Klps | * Crashed on bigger inputs 
+Pico-C | C | Fail | - | 0 | * Various errors
+FPC | Pascal | Fail | - | 0 |  (Proc too complex)
 
 ### Lines per Second
 
