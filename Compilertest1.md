@@ -52,7 +52,7 @@ Nim+CC | Nim | 20K | 16.0 | 1.2 Klps |  Out of memory (Nim to C + C compilation)
 PellesC-opt | C | 20K | 25.0 | 0.8 Klps |  Timed out at 100K
 DMD | D | 20K | 28.70 | 0.7 Klps |  Timed out on 100K
 Rustc | Rust | 20K | 30.70 | 0.65 Klps | Timed out at 100K
-DMC | C | 5K | 20.0 0.25 Klps | * Crashed on bigger inputs 
+DMC | C | 5K | 20.0 | 0.25 Klps | * Crashed on bigger inputs 
 Pico-C | C | Fail | - | 0 | * Various errors
 FPC | Pascal | Fail | - | 0 |  (Proc too complex)
 
