@@ -62,7 +62,9 @@ The size of the biggest input it managed from 20K, 100K, 500K or 2000K lines of 
 
 #### Compile Time
 
-How long it took to took to compile its input. Because these values were not directly comparable, as not all managed the 2000K test. It is not possible either to extrapolate the times to how long it *would* have taken to compile 2M lines of input, since compile times sometimes increases exponentially.
+How long it took to took to compile its input. These values were not directly comparable, as not all managed the full 2000K lines (or it would have taken too long).
+
+It is not possible either to extrapolate the times to how long it *would* have taken to compile 2M lines of input, since compile time sometimes increases exponentially.
 
 ### Lines per Second
 
