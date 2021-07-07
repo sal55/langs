@@ -6,11 +6,9 @@ This is a very simple test where a compiler is given repeated lines of:
 
     a = b + c * d
  
- or equivalent, as either 20K, 100K, 500K or 2000K lines of code, and seeing what happens. The code will either be the whole program, or be in one function. When declared, a, b, c, d will be integers, and initialised to 1, 2, 3, 4.
- 
- **Note** Most timings have been taken over the last 18 months. Some may be out of date, in that newer versions may perform better (or worse).
- 
- Table has been sorted in lines/second order.
+or equivalent, as either 20K, 100K, 500K or 2000K lines of code, and seeing what happens. The code will either be the whole program, or be in one function. When declared, a, b, c, d will be integers, and initialised to 1, 2, 3, 4. 
+
+Table has been sorted in lines/second order.
 
 Implementation | Language | Max LoC | Compile time | Lines/second | Notes
 --- | --- | --- | --- | --- | ---
@@ -65,11 +63,11 @@ But it is anyway just to give an idea of how an implementation copes.
 
 ### Test Machine
 
-All run on a 2010 Windows PC with an AMD processor and spinning hard drive. Not high end, but all were tested on the same hardware. Tests are repeated to benefit from file caching.
+All test were run on a 2010 Windows PC with an AMD processor and spinning hard drive. Not high end, but all were tested on the same hardware. Tests are repeated to benefit from file caching.
 
 ### Assemblers
 
-These haven't been included. It is assumed that 'a=b+c\*d' can be written on one line with all these HLLs, but in an assembler can take multiple lines, depending on how well a HLL compiler can generate code. Assemblers need their own benchmarks.
+These haven't been included. It is assumed that 'a=b+c\*d' can be written on one line with all these HLLs, but in an assembler can take multiple lines, depending on how well a HLL compiler can generate code. Assemblers need their own benchmarks. (If I were to include my own assembler, it would be top-rated. However many are surprisingly slow despite their job being far simpler.)
 
 ### Optimised Compilers
 
@@ -77,13 +75,17 @@ Some get much better results when optimised, but probably there are discarding a
 
 ### Date of Test
 
-Not recorded, but tests have been done over past months. Newer versions may be faster or may cope with bigger inputs.
+Not recorded, but tests have been done over past 18 months. Newer versions may be faster or may cope with bigger inputs.
 
 "\*" in Notes column indicates tests done July 2021.
 
+### 'M' and 'Q' Languages
+
+These are my own languages, both compilers are built with MM. This has a poor optimiser which puts them at a little disadvantage. (Transpiling to C and using an optimising compiler is a possibility - I assume most others are the best available production compilers too, but is less satisfactory.)
+
 ### General
 
-Some implementations such as Rustc and Julia have improved significantly, especially Rust. Maybe there is a point to such apparently pointless benchmarks, as they can highlight issues not apparent with smaller and more sensible inputs.
+Some implementations such as Rustc and Julia have improved significantly, especially Rust (which used to take 20 seconds for only 1K lines when I first tried it). Maybe there is a purpose to such apparently pointless benchmarks, as they can highlight issues not apparent with smaller and more sensible inputs.
 
 This benchmark is a form of stress test. While not real code, monolithic blocks of code inside one function like this, can be created with machine translation.
 
