@@ -83,6 +83,10 @@ Not recorded, but tests have been done over past 18 months. Newer versions may b
 
 These are my own languages (M compiles to native code, Q is an interpreter), both compilers are built with MM. This has a poor optimiser which puts them at a little disadvantage. (Transpiling to C and using an optimising compiler is a possibility - I assume most others are the best available production compilers too, but is less satisfactory.)
 
+### Interpreters
+
+Some are interpreters. Here the timings usually include running the program, but this part is usually neglible.
+
 ### Lox/Clox
 
 Clox does extremely well here (Lox interpreter in C). I believe [Lox](https://craftinginterpreters.com/the-lox-language.html) is a simple, limited language designed for education, so it's possible that that has helped here. Or it may just be a very fast interpreter! It makes for something to aim for anyway, and shows how effortless this stuff can be compared with some implementations that appear to struggle.
