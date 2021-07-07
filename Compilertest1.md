@@ -60,7 +60,7 @@ FPC | Pascal | Fail | - | 0 |  (Proc too complex)
 
 The size of the biggest input it managed from 20K, 100K, 500K or 2000K lines of code. Some products that failed 20K were tested with smaller inputs.
 
-#### Compile Time
+### Compile Time
 
 How long it took to compile its input. These values were not directly comparable, as not all managed the full 2000K lines (or it would have taken too long).
 
