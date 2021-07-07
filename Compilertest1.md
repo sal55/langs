@@ -19,7 +19,7 @@ QQ | Q | 2000K | 2.4 | 833 Klps | \*
 Lua | Lua | 2000K | 2.8 | 714 Klps | \*
 TinyC | C | 2000K | 3.3 | 606 Klps | \*
 Vox | Vox | 2000K | 5.4 | 370 Klps | 
-MM | M | 2000K | 7.20 | 277 Klps | \* 
+MM | M | 2000K | 7.2 | 277 Klps | \* 
 Ruby192 | Ruby | 2000K | 17.7 | 113 Klps | 
 Perl | Perl | 2000K | 19.6 | 102 Klps | 
 eui | Euphoria | 2000K | 21.0 | 95 Klps | 
@@ -27,10 +27,10 @@ CLISP | Lisp | 2000K | 22.0 | 91 Klps |
 Python3.8.1 | Python | 500K | 6.6 | 76 Klps | \* Timed out at 2000K
 Go | Go | 2000K | 31.0 | 64 Klps | 
 lccwin | C | 500K | 8.7 | 57 Klps |  Machine OOM at 2000K
-gcc-opt | C | 500K | 12 |  42 Klps | Timed out at 2000K
+gcc-opt | C | 500K | 12.0 |  42 Klps | Timed out at 2000K
 g++8.1.0-opt | C | 100K | 2.7 | 37 Klps |  (Not tested above 100K)
 PyPy | Python | 500K | 15.3 | 33 Klps | * Timed out/became unstable at 2000K
-lccwin-opt | C | 2000K | 67 |  30 Klps
+lccwin-opt | C | 2000K | 67.0 |  30 Klps
 Clang | C | 500K | 22.5 | 22 Klps |  Machine OOM at 2000K
 V | Vlang | 100K | 5.2 | 19.2 Klps | (500K+ not attempted)
 MSVC | C | 100K | 6.2 | 16 Klps |\*  Timed out at 500K
