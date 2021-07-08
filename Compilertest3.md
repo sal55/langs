@@ -33,7 +33,7 @@ Implem | Language | Time (Note) | Funcs/sec | Runtime | Exe Size | Inst Files | 
 **Odin**        | Odin | 14 | 720 | 27.3 | --- | 200 | 140MB
 **Vox**           | [Vox](https://github.com/MrSmith33/vox) | 5.7 | 1750 | [6.4](https://gist.github.com/MrSmith33/ac14e66a83b9d047793adede464ca1ef#file-fannkuch-vx) | 10MB | 1 | 2.4MB (0.75MB upx)
 **bcc** (mm)     | C     | 4.2 (6) | 2400 | 9.0 | 8.0MB | 1 | 1.0MB (0.32MB upx)
-**MM -opt** (mm)   | M  | 2.5 (6)| 4000 | 3.1 | 6.6MB | 1 | 0.6MB (0.17MB upx)
+**MM -opt** (mm)   | M  | 2.5 (6)| 4000 | 2.8 | 6.6MB | 1 | 0.6MB (0.17MB upx)
 **MM** (mm)       | M        | 2.2 | 4500 | 6.8 | 7.8MB | 1 | 0.6MB (0.17MB upx)
 **Tiny C** (tcc)  | C    | 1.9 (7) | 5100 | 10.1 | 10MB | 120 | 1.8MB
 **Tiny C** (bcc)  | C        | 1.5 | 6700 | 10.1 | 10MB | 120 | 1.8MB
@@ -130,8 +130,8 @@ Implem | Language | Runtime
 **Clang -O2**        | C | 2.5
 **MSVC /O2**          | C | 2.6
 **Clang -O1**        | C | 2.6
+**MM -opt** (mm)   | M | 2.8
 **Go**            | Go | 2.9
-**MM -opt** (mm)   | M | 3.1
 **Rustc -O** | Rust | 3.2
 **gcc -O3**           | C  | 3.3
 **Julia -O3**         | Julia | 4.0
