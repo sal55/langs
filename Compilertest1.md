@@ -32,7 +32,6 @@ g++8.1.0-opt | C | 100K | 2.7 | 37 Klps |  (Not tested above 100K)
 PyPy | Python | 500K | 15.3 | 33 Klps | * Timed out/became unstable at 2000K
 lccwin-opt | C | 2000K | 67.0 |  30 Klps
 Clang | C | 500K | 22.5 | 22 Klps |  Machine OOM at 2000K
-V | Vlang | 100K | 5.2 | 19.2 Klps | (500K+ not attempted)
 MSVC | C | 100K | 6.2 | 16 Klps |\*  Timed out at 500K
 MSVC-opt | C | 100K | 6.2 | 16 Klps |\*  Timed out at 500K
 PellesC | C | 500K | 35.0 | 14 Klps |  Reported OOM at 2000K
@@ -40,6 +39,7 @@ Clang-opt | C | 500K | 73.0 | 6.8 Klps |
 A68G | Algol68 | 10K | 1.5 | 6.7 Klps |  (OOM on 20K)
 Dart | Dart | 500K | 74.5 | 6.7 Klps | (2000K not attempted)
 g++8.1.0 | C | 100K | 19.3 | 5.2 Klps |  (Not tested above 100K)
+V | Vlang | 100K | 20.0 | 5 Klps | (500K+ not attempted)
 Nim-CC | Nim | 100K |  25.0 | 4 Klps | Timed out (Nim to C only)
 Julia | Julia | 500K | 132.0 | 3.8 Klps |  (2000K not attempted)
 Rustc-O | Rust | 20K | 5.20 | 3.8 Klps |  Timed out at 100
