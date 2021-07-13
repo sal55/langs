@@ -13,9 +13,11 @@ There is also information on the generated binary size, and an idea of the insta
 Implem | Language | Time (Note) | Funcs/sec | Runtime | Exe Size | Inst Files | Inst MB
 --- | --- | --- | --- | --- | --- | --- | ---
 **Rustc -O** | Rust  | 79000 secs (1) | 0.13 | 3.2 secs| 10MB | 56800+14600 | 2000MB + 2800MB
+**Zig -O ReleaseFast** | Zig | 11000 (9) | 0.9 | 2.2 | 20MB | 12000 | 330MB
 **Julia**    | Julia  | 1320 (2) |  7.60  | 4.0  | --- | 1700 | 480MB
 **Clang -O3**        | C | 780 | 13 | 2.45 | 16MB | 350 | 1600MB
 **Clang -O2**        | C | 650 | 15 | 2.5 | --- | 350 | 1600MB
+**Zig** | Zig | 440 |22.7 | 17.6 | 20MB |12000 | 330MB
 **Rustc** | Rust  | 330 | 30 | 37.8 | 40MB | 56800+14600 | 2000MB+2800MB
 **Clang -O1**        | C | 310 | 15 | 2.6 | --- | 350 | 1600MB
 **Dart**          | Dart | 235 (8)| 42 | 6.2 | 27MB | 500 | 490MB
@@ -116,6 +118,10 @@ Tcc beats my bcc compiler (even unoptimised!) probably because it is single pass
 
 This compiler took 6 seconds just to compile a Hello, World program (which generated a 5MB executable, which probably explains it!).
 
+### (9) Zig
+
+I think this ran out memory on the optimised build, but it eventually completed and that timing is shown. The time for optimised estimated based on it taking 25 times as long on 1000 functions compared with unoptimised. This compiler is rather sneaky because if you compile again, it will make use of the previous results, even if the resulting executable is deleted.
+
 ### Host
 
 All tests were done on an old Windows 7 PC, 64 bits, with spinning hard drive. Number of cores available was 2 (doubt any used more than one). Not the most up-to-date hardware, but all compilers ran on the same machine.
@@ -126,6 +132,7 @@ Remember this is just for that one small benchmark (a single call to fannkuch(11
 
 Implem | Language | Runtime
 --- | --- | ----
+**Zig Opt** | Zig | 2.2 secs
 **Clang -O3**        | C | 2.45 secs
 **Clang -O2**        | C | 2.5
 **MSVC /O2**          | C | 2.6
@@ -147,6 +154,7 @@ Implem | Language | Runtime
 **Tiny C**        | C   | 10.1
 **Clang**         | C   | 10.2
 **Seed7 -O2**     | Seed7 | 13.0
+**Zig** | Zig | 17.6
 **Rustc**         | Rust| 37.8
 
 One of my compilers (MM-opt) does surprisingly well. It's just a fluke (it's typically 50% slower than gcc-O3, not faster!), however that is the genuine timing for this test.
