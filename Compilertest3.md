@@ -122,6 +122,8 @@ This compiler took 6 seconds just to compile a Hello, World program (which gener
 
 I think this ran out memory on the optimised build, but it eventually completed and that timing is shown. The time for optimised estimated based on it taking 25 times as long on 1000 functions compared with unoptimised. This compiler is rather sneaky because if you compile again, it will make use of the previous results, even if the resulting executable is deleted.
 
+The exe sizes are extrapolated from the 1000-function version.
+
 ### Host
 
 All tests were done on an old Windows 7 PC, 64 bits, with spinning hard drive. Number of cores available was 2 (doubt any used more than one). Not the most up-to-date hardware, but all compilers ran on the same machine.
