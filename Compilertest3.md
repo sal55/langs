@@ -120,9 +120,9 @@ This compiler took 6 seconds just to compile a Hello, World program (which gener
 
 ### (9) Zig
 
-I think this ran out memory on the optimised build, but it eventually completed and that timing is shown. The time for optimised estimated based on it taking 25 times as long on 1000 functions compared with unoptimised. This compiler is rather sneaky because if you compile again, it will make use of the previous results, even if the resulting executable is deleted.
+I think this ran out of memory on the unoptimised build, but it eventually completed and that timing is shown. The time for optimised is estimated based on it taking 25 times as long on 1000 functions compared with unoptimised. This compiler is rather sneaky because if you compile again, it will make use of the previous results, even if the resulting executable is deleted; you have to make a minor mod to the source code to force a proper recompile!
 
-The exe sizes are extrapolated from the 1000-function version.
+The exe sizes are extrapolated from the 1000-function version (partly because I'd deleted the 10K function ones before recording the sizes).
 
 ### Host
 
