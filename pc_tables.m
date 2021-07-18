@@ -24,6 +24,7 @@ global tabledata()  [0:]ichar pstdnames,
 
     (tpblock,     "block",   0,   block_cat),
 
+    (tplast,      "$last",   0,   void_cat),
 end
 
 global tabledata() [0:]ichar typecatnames =
@@ -55,13 +56,14 @@ end
 !   Xb, Ya          1st/2nd of 2
 !   Xc, Yb, Za      1st/2nd/3rd of 3
 !   Xd, Yc, Zb, Wa  1st/2nd/3rd/4th of 4
-! X is always the 'left-most' operand, but will be at offset 0 1 2 3 from top of stack
+! X is always the 'left-most' operand, but will be at offset 0, 1 2 from top of stack
 ! a (as in Xa, Ya, Za, Wa) is always the top of stack
 
 !Immediate operand:
 !   A           (various)
 !Extra info:
 !   op          opindex
+!   fn          fnindex
 !   cc          cond code
 !   t[:size]    type (:size for block types)
 !   u           secondary type for some ops (convert etc)
@@ -81,6 +83,7 @@ global tabledata() []ichar pclnames,
             []byte pclhasopnd,          !1+ has operand; 2=name defines a name; 3=defines local/param
             []byte pclhastype,
             []byte pclextra =
+
 !                          Op T X
     (knop,              $,  0,0,0), ! (0 0)
     (kstop,             $,  0,0,0), ! (1 0) Stop Xa
@@ -92,24 +95,24 @@ global tabledata() []ichar pclnames,
     (kistatic,          $,  2,1,0), ! (0 0) (A,t) Define idata label (must be followed by correct kdata ops)
     (kzstatic,          $,  2,1,0), ! (0 0) (A,t) Define zdata labe and reserve sufficient space
 
-    (kprocdef,          $,  2,1,0), ! (0 0) (A,t) Define proc A, of given return type; g=1 if exported
+    (kprocdef,          $,  2,1,0), ! (0 0) (A,t) Define proc A, of given return type
     (kprocentry,        $,  0,0,0), ! (0 0)
     (kend,              $,  0,0,0), ! (0 0)
 
     (klocal,            $,  3,1,0), ! (0 0) (A,t) Define local A of type t
     (kparam,            $,  3,1,0), ! (0 0) (A,t) Define param A of type t
-    (klabel,            $,  1,0,0), ! (0 0) (L,g) Define name L as a local; g=1 if exported (uses "::" in pcs)
-    (klabelname,        $,  2,0,0), ! (0 0) (A)
+    (klabel,            $,  1,0,0), ! (0 0) (L) Define numbered label L
+    (klabelname,        $,  2,0,0), ! (0 0) (A) Define named label
 
     (kpush,             $,  1,1,0), ! (0 1) (X,t)   Push operand X of type t; X is anything pushable
     (kpop,              $,  1,1,0), ! (1 0) (L,t)   pop to label X
     (kstore,            $,  1,1,0), ! (1 1) (L,t)   store to label X but stays on the stack
 
-    (kopnd,             $,  1,1,0), ! (0 0) (X,t) Define auxialiary operand X (not sure about extra stuff yet)
+    (kopnd,             $,  1,1,0), ! (0 0) (X,t) Define auxiliary operand X (not sure about extra stuff yet)
 
-    (kpushptroff,       $,  0,1,2), ! (2 1) Xa:=(Xb+Ya*scale+offset)^ using given type
-    (kpopptroff,        $,  0,1,2), ! (3 0) (Yb*scale+Za+offset)^:=Xc
-    (kstoreptroff,      $,  0,1,2), ! (3 1) (Yb*scale+Za+offset)^:=Xc, Xc stays as Xa
+    (kpushptroff,       $,  0,1,2), ! (2 1) (scale offset) Xa:=(Xb+Ya*scale+offset)^ using given type
+    (kpopptroff,        $,  0,1,2), ! (3 0) (scale offset) (Yb*scale+Za+offset)^:=Xc
+    (kstoreptroff,      $,  0,1,2), ! (3 1) (scale offset) (Yb*scale+Za+offset)^:=Xc, Xc stays as Xa
 !   (kindex,            $,  0,0,0), ! (0 0)
 !   (kpopindex,         $,  0,0,0), ! (0 0)
 !   (kstoreindex,       $,  0,0,0), ! (0 0)
@@ -118,7 +121,7 @@ global tabledata() []ichar pclnames,
     (kpopptr,           $,  0,1,0), ! (2 0) Ya^:=Xb
     (kstoreptr,         $,  0,1,0), ! (2 1) Ya^:=Xb, keep Xb on stack as Xa
 
-    (kdotindex,         $,  0,1,0), ! (2 1) Xa:=Xb.[Ya] Assume ti64
+    (kdotindex,         $,  0,1,0), ! (2 1) Xa:=Xb.[Ya]
     (kpopdotindex,      $,  0,1,0), ! (3 0) Yb^.[Za]:=Xc
     (kstoredotindex,    $,  0,1,0), ! (3 1) Yb^.[Za]:=Xc, keep Xc as Xa
 
@@ -169,7 +172,7 @@ global tabledata() []ichar pclnames,
     (kforup,            $,  1,0,1), ! (0 0) (L,n)(B,t)(C,t) B+:=n; goto L when B<=C
     (kfordown,          $,  1,0,1), ! (0 0) (L,n)(B,t)(C,t) B-:=n; goto L when B>=C
 
-    (kswap,             $,  0,1,1), ! (1 0) (t) swap(Xb^,Yb^)
+    (kswap,             $,  0,1,1), ! (2 0) (t) swap(Xb^,Yb^)
 
     (kmakeslice,        $,  0,1,0), ! (2 1) (t) Xa:=slice(Xb, Ya)
 
