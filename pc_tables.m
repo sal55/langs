@@ -24,7 +24,6 @@ global tabledata()  [0:]ichar pstdnames,
 
     (tpblock,     "block",   0,   block_cat),
 
-    (tplast,      "$last",   0,   void_cat),
 end
 
 global tabledata() [0:]ichar typecatnames =
@@ -165,7 +164,7 @@ global tabledata() []ichar pclnames,
     (kselectcc,         $,  0,1,1), ! (4 1) (t,cc) Xa:=(Zb op Wa|Xd|Yc)
     (kselecttrue,       $,  0,2,0), ! (3 1) (t) Xa:=(Za|Xc|Yb)
 
-    (kto,               $,  1,0,0), ! (0 0) (L)(B,t) --B (aux); goto L when A<>0 
+    (kto,               $,  1,0,0), ! (0 0) (L)(B,t) --B (aux); goto L when B<>0 
 
     (kforup,            $,  1,0,1), ! (0 0) (L,n)(B,t)(C,t) B+:=n; goto L when B<=C
     (kfordown,          $,  1,0,1), ! (0 0) (L,n)(B,t)(C,t) B-:=n; goto L when B>=C
