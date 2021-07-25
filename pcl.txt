@@ -1,0 +1,117 @@
+##############################
+Input source: Fibonacci function
+Note that 'int' here is 64 bits
+##############################
+
+function fib(int n)int=
+    if n<3 then
+        return 1
+    else 
+        return fib(n-1)+fib(n-2)
+    fi
+end
+
+
+##############################
+Current stack-based linear IR as source code.
+Opcodes startmult, resetmult, endmult, setalign and setret are
+hints which had been needed for the x64 backend, which I'm trying to eliminate.
+They are largely not needed for a C target (that is, IR -> C)
+##############################
+
+Proc fib.fib: i64
+    param          fib.fib.n  i64 
+    procentry                 
+
+    startmult                 
+    push           fib.fib.n  i64 
+    push           3          i64 
+    jumpge         #2         i64 
+    push           1          i64 
+    resetmult                 
+    jump           #3         
+#2: 
+    setalign                  1
+    push           fib.fib.n  i64 
+    push           1          i64 
+    sub                       i64 
+    callfn         &fib.fib   1
+    setalign                  1
+    push           fib.fib.n  i64 
+    push           2          i64 
+    sub                       i64 
+    callfn         &fib.fib   1
+    add                       i64 
+    endmult                   
+#3: 
+    setret                    i64 
+    jump           #1            #(this will be optimised out)
+#1: 
+    retfn                     
+End
+
+
+##############################
+This is what the current IR (of the existing compiler with a built-in IR
+backend) can generate as x64 native code. This is about as optimised as it gets.
+The same code generator will be used, normally generating exe/dll directly
+##############################
+
+fib.fib:
+          R.n = D9
+          push      R.n
+          sub       Dstack,  32
+          mov       R.n,  D10
+
+          cmp       R.n,  3
+          jge       L3
+          mov       D0,  1
+          jmp       L4
+L3:
+          lea       D10,  [R.n-1]
+          call      fib.fib
+          push      D0
+          sub       Dstack,  8
+          lea       D10,  [R.n-2]
+          sub       Dstack,  32
+          call      fib.fib
+          add       Dstack,  40
+          pop       D1
+          add       D1,  D0
+          mov       D0,  D1
+L4:
+L2:
+          add       Dstack,  32
+          pop       R.n
+          ret       
+;End 
+
+
+##############################
+I'm currently experimenting with converting IR to C, as that would be highly useful.
+C code lets me use an optimising C compiler, which can cut through the redundant assigments,
+and allows me to generate code for Linux.
+##############################
+
+static u64 fib_fib(u64 fib_fib_n) {
+    u64 S1, S2, S3, S4, S5, S6;
+    S1 = fib_fib_n;
+    S2 = 3;
+    if (S1 >= S2) goto L3;
+    S1 = 1;
+    goto L4;
+L3:
+    S1 = fib_fib_n;
+    S2 = 1;
+    S1 -= S2;
+    S1 = fib_fib(S1);
+    S2 = fib_fib_n;
+    S3 = 2;
+    S2 -= S3;
+    S2 = fib_fib(S2);
+    S1 += S2;
+L4:
+    goto L5;
+L5:
+    return S1;
+}
