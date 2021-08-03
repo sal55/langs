@@ -1,7 +1,7 @@
 #include "pcc_hdr.h"
 #include "pcc_loadbc.cl"
 
-#define zeof    255     !EOF marker
+#define zeof    255
 
 global function int load_bc_file(uchar* filename) =
     int s,t,tt;
