@@ -2,14 +2,14 @@
 #  https://benchmarksgame-team.pages.debian.net/benchmarksgame/description/fannkuchredux.html#fannkuchredux
 
 # Languages covered are M and Q (mine), plus:
-#  Algol68 C D Go Julia Lua Nim Python Rust Ruby Odin Zig
+# Go, Lua, Python, Ruby, C, Julia, Rust, D, Nim, Algol68, Odin, Zig
 
 # Lua and probably Ruby versions are original Shootout code. The M version seems to derived from the Lua,
-# the rest are ported from the M code so as to use the same syntax
+# the rest are ported from the M code so as to use the same algorithm
 
 # ***********************************************************************************************
 # M Language giving the reference algorithm. (Which I now realise was derived from the Lua version
-# on the shootout side. Other versions apart from Lua will be based on this one.)
+# on the Shootout site. Most other versions will be based on this one.)
 # ***********************************************************************************************
 
 function fannkuch(int n)int,int=
@@ -94,7 +94,7 @@ proc start=
 end
 
 # ***********************************************************************************************
-# Q/MS version (my scripting languages)
+# Q version (my scripting language)
 # ***********************************************************************************************
 
 function fannkuch(n) =
