@@ -11,16 +11,16 @@ In C, as bare types (as used in unnamed parameter or cast):
 void (*)(void);
 void (*(*)(void))(void);
 void (*[10])(void);
-int  *[10];
-int  (*)[10];
+int *[10];
+int (*)[10];
 ````
 In C with an associated name:
 ````
 void (*A)(void);
 void (*(*B)(void))(void);
 void (*C[10])(void);
-int  *D[10];
-int  (*E)[10];
+int *D[10];
+int (*E)[10];
 ````
 In a typical left-to-right syntax (this is mine, inspired by Algol68),
 first with no names:
@@ -40,7 +40,7 @@ ref function=>ref proc B
 [10]ref int D
 ref[10]int E
 ````
-Finally, defining two variables of the same type of E, first in C:
+Finally, defining two variables of the same type as E, first in C:
 ````
 int (*E1)[10], (*E2)[10];
 ````
