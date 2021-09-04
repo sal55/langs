@@ -40,7 +40,7 @@ Clang-opt   | C     | Y | Y | Y | - | 73.0  | 6.8 Klps  |
 A68G        | Algol68   | - | - | - | - | 1.5   | 6.7 Klps  | For 10K (OOM on 20K)
 Dart        | Dart  | Y | Y | Y | - | 74.5  | 6.7 Klps  | (2000K not attempted)
 g++8.1.0    | C     | Y | Y | Y | - | 19.3  | 5.2 Klps  |  (Not tested above 100K)
-V           | Vlang     |  Y | Y | - | - |  | 20.0  | 5 Klps    | (500K+ not attempted)
+V           | Vlang     |  Y | Y | - | - | 20.0  | 5 Klps    | (500K+ not attempted)
 Nim-CC      | Nim   | Y | Y | - | - |  25.0     | 4 Klps    | Timed out (Nim to C only)
 Julia       | Julia     | Y | Y | Y | - | 132.0     | 3.8 Klps  |  (2000K not attempted)
 Rustc-O     | Rust  | Y | - | - | - | 5.20  | 3.8 Klps  |  Timed out at 100
