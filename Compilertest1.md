@@ -29,7 +29,7 @@ Go          | Go    | Y | Y | Y | Y | 31.0  | 64 Klps   |
 lccwin      | C     | Y | Y | Y | - | 8.7   | 57 Klps   |  Machine OOM at 2000K
 gcc-opt     | C     | Y | Y | Y | - | 12.0  |  42 Klps  | Timed out at 2000K
 g++8.1-opt  | C     | Y | Y | - | - | 2.7   | 37 Klps   |  (Not tested above 100K)
-PyPy        | Python    | Y | Y | - | -     | 15.3  | 33 Klps   | * Timed out/became unstable at 2000K
+PyPy        | Python    | Y | Y | Y | -     | 15.3  | 33 Klps   | * Timed out/became unstable at 2000K
 lccwin-opt  | C     | Y | Y | Y | Y | 67.0  |  30 Klps
 Clang       | C     | Y | Y | Y | - | 22.5  | 22 Klps   |  Machine OOM at 2000K
 MSVC        | C     | Y |  Y | - | -    | 6.2   | 16 Klps   |\*  Timed out at 500K
