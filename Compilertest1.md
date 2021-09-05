@@ -83,7 +83,7 @@ All test were run on a 2010 Windows PC with an AMD processor and spinning hard d
 
 These haven't been included. It is assumed that 'a=b+c\*d' can be written on one line with all these HLLs, but in an assembler can take multiple lines, depending on how well a HLL compiler can generate code. Assemblers need their own benchmarks.
 
-### Optimised Compilers
+### Optimising Compilers
 
 Some get much better results when optimised, but probably they are discarding a lot of the code so get an unfair advantage. Real code is not redundant like this is.
 
