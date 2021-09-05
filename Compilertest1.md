@@ -25,7 +25,7 @@ Perl        | Perl  | Y | Y | Y | Y | 19.6  | 102 Klps  |
 eui         | Euphoria  |  Y | Y | Y | Y    | 21.0  | 95 Klps   | 
 CLISP       | Lisp  | Y | Y | Y | Y | 22.0  | 91 Klps   | 
 Python3.8.1 | Python | Y | Y | Y |  Y | 6.6     | 76 Klps   | \* Timed out at 2000K
-Go          | Go    | Y | Y | Y | - | 31.0  | 64 Klps   | 
+Go          | Go    | Y | Y | Y | Y | 31.0  | 64 Klps   | 
 lccwin      | C     | Y | Y | Y | - | 8.7   | 57 Klps   |  Machine OOM at 2000K
 gcc-opt     | C     | Y | Y | Y | - | 12.0  |  42 Klps  | Timed out at 2000K
 g++8.1-opt  | C     | Y | Y | - | - | 2.7   | 37 Klps   |  (Not tested above 100K)
