@@ -6,6 +6,8 @@ Current implementation is for 64-bit Windows only.
 
 Summary of [features](../mfeatures.md)
 
+**Other links below may not work**
+
 ### Status
 
 (While anyone is welcome to play with it, borrow features etc, at the moment it's more of a private project since I'm not in a position do any support. Health reasons etc.)
