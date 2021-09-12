@@ -12,7 +12,7 @@ To see if a C implementation can be created that:
 
 * Can be presented as the simplest possible kind of open source project: a single file. \[A single-file C rendering had been possible, and was used for sharing the project. A single-file amalgamation is still possible, but in the original language.\]
 
-* Can be built effortlessly from source, as simply as compiling a Hello, World program, and as fast. \[Build C rendering as, eg. 'gcc bcc.c -obcc.exe'; with tcc this builds in 1/8th second, and with bcc, 1/5th second; In the original language and original modules, it's built as 'mm cc', in also 0.2 seconds.\]
+* Can be built effortlessly from source, as simply as compiling a Hello, World program, and as fast. \[Build C rendering as, eg. 'tcc bcc.c'; with tcc this builds in 1/8th second, and with bcc, 1/5th second; In the original language and original modules, it's built as 'mm cc', in also 0.2 seconds.\]
 
 * Can be a single, self-contained executable file with no dependencies, other than what is provided by the OS. \[Entire implementation is in the file bcc.exe, including standard headers and facilities for assembling and linking\]
 
