@@ -22,7 +22,7 @@ To see if a C implementation can be created that:
 
 * Can generate reasonable quality code even with no optimiser. \[Currently, somewhat faster Tiny C's code, but not by much.\]
 
-* Can result in a small implementation. \[Tiny C has an executable smaller than 0.2MB; bcc.exe is under 0.4MB, but includes std headers within bcc.exe which adds 0.6MB. Tiny C's headers are discrete files of about 1.2MB, but are far more complete than bcc's.\]
+* Can result in a small implementation. \[Tiny C has an executable smaller than 0.2MB; bcc.exe would be about 0.4MB, but includes std headers within bcc.exe which adds 0.6MB. Tiny C's headers are discrete files of about 1.2MB, but are far more complete than bcc's.\]
 
 ### Main Specs
 
@@ -32,7 +32,7 @@ To see if a C implementation can be created that:
 
 * Supports large subset of C; main omissions listed below
 
-* Not written in C, but in my own systems language. Versions of that could target C, and that is how the one-file C 'rendering' was created. True sources comprise about 25 non-library modules (they are listed in bcc.c).
+* Not written in C, but in my own systems language. Versions of that could target C, and that is how the one-file C 'rendering' was created. True sources comprise about 25 non-library modules.
 
 ### Downloads
 
