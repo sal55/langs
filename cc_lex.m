@@ -129,7 +129,6 @@ end
 
 global proc lexreadtoken=
 !read next token into nextlx
-!   int c,csum,hsum,dodir
     word c,csum,hsum,dodir
     ref char p,ss
     ichar searchstr
@@ -167,7 +166,7 @@ doname::
         (ss+nextlx.length)^:=0
         lxsvalue:=ss
 
-        lookup()                        !clash, so do normal lookup to set lxsymptr
+        lookup()
         return
 
     when '1'..'9' then                  !can only be decimal
@@ -699,7 +698,7 @@ global proc printsymbol(ref tokenrec lp)=
 
     case l.symbol
     when namesym then
-        printstrn(l.symptr^.name,l.symptr^.namelen)
+        printstrn(l.symptr.name,l.symptr.namelen)
 
     when intconstsym then
         print l.value,," "
@@ -809,15 +808,15 @@ function lookup:int=
     wrapped:=0
 
     do
-        nextlx.symptr:=hashtable^[j]
-        length:=nextlx.symptr^.namelen
+        nextlx.symptr:=hashtable[j]
+        length:=nextlx.symptr.namelen
 
         if not length then
             exit
         fi
 
         if length=nextlx.length then    !match on length
-            if memcmp(nextlx.symptr^.name,lxsvalue,length)=0 then   !match
+            if memcmp(nextlx.symptr.name,lxsvalue,length)=0 then   !match
                 return 1
             fi
         fi
@@ -842,9 +841,9 @@ function lookup:int=
         goto retry
     fi
 
-    nextlx.symptr^.name:=lxsvalue
-    nextlx.symptr^.namelen:=nextlx.length
-    nextlx.symptr^.symbol:=namesym
+    nextlx.symptr.name:=lxsvalue
+    nextlx.symptr.namelen:=nextlx.length
+    nextlx.symptr.symbol:=namesym
 
     ++nhstsymbols
 
@@ -874,7 +873,7 @@ proc inithashtable=
     hstmask:=hstsize-1
 
     for i:=0 to hstmask do
-        hashtable^[i]:=pcm_allocz(strec.bytes)
+        hashtable[i]:=pcm_allocz(strec.bytes)
     od
 
     nhstsymbols:=0
@@ -905,8 +904,8 @@ proc fillhashtable=
             abortprogram("Duplicate symbol table entry")
         fi
 
-        nextlx.symptr^.symbol:=stsymbols[i]
-        nextlx.symptr^.subcode:=stsubcodes[i]
+        nextlx.symptr.symbol:=stsymbols[i]
+        nextlx.symptr.subcode:=stsubcodes[i]
     od
 
 end
@@ -1001,14 +1000,14 @@ function dolexdirective:int=
             lxerror("undef: name expected")
         fi
         d:=nextlx.symptr
-        if d^.nameid<>macroid then
+        if d.nameid<>macroid then
 !           println getstname(nextlx.symptr)
 !           lxerror("#undef: can't find macro")
         else
-            d^.nameid:=nullid
-            d^.symbol:=nextlx.symptr^.oldsymbol
-            d^.mparamlist:=nil
-            d^.attribs.ax_flmacro:=0
+            d.nameid:=nullid
+            d.symbol:=nextlx.symptr.oldsymbol
+            d.mparamlist:=nil
+            d.attribs.ax_flmacro:=0
         fi
 
     when ifdefdir then
@@ -1103,8 +1102,8 @@ function dolexdirective:int=
             d:=nextlx.symptr
             print nextlx.lineno, sourcefilenames[getfileno()],":"
             PRINT "SHOW MACRO",getstname(d),":"
-            if d^.nameid=macroid then
-                showtokens("tokens:",d^.tokenlist)
+            if d.nameid=macroid then
+                showtokens("tokens:",d.tokenlist)
                 println
             else
                 PRINTLN "not a macro"
@@ -1143,9 +1142,9 @@ function getlexdirective:int=
         return 0
     esac
 
-    case nextlx.symptr^.symbol
+    case nextlx.symptr.symbol
     when ksourcedirsym then
-        return nextlx.symptr^.subcode
+        return nextlx.symptr.subcode
     when kifsym then
         return ifdir
     when kelsesym then
@@ -1155,9 +1154,9 @@ function getlexdirective:int=
     esac
 
     d:=nextlx.symptr
-    if d^.nameid=macroid then           !could have redefined 'define' etc
-        if d^.oldsymbol=ksourcedirsym then
-            return d^.subcode
+    if d.nameid=macroid then           !could have redefined 'define' etc
+        if d.oldsymbol=ksourcedirsym then
+            return d.subcode
         fi
     fi
 
@@ -1214,7 +1213,7 @@ global function gethashtablesize:int=
 
     n:=0
     for i:=0 to hstmask do
-        if hashtable^[i]^.name then
+        if hashtable[i].name then
             ++n
         fi
     od
@@ -1672,16 +1671,16 @@ global proc lex=
     lexm()          !read new token for next time around
 
     if lx.symbol=namesym and lx_stackindex=0 then
-        (lx.symptr^.name+lx.length)^:=0
+        (lx.symptr.name+lx.length)^:=0
     fi
 
     docase nextlx.symbol
     when namesym then
-        nextlx.symbol:=nextlx.symptr^.symbol            !convert to reserved word, type, op etc
+        nextlx.symbol:=nextlx.symptr.symbol            !convert to reserved word, type, op etc
         if nextlx.symbol=ksourcedirsym then
             nextlx.symbol:=namesym
         fi
-        nextlx.subcode:=nextlx.symptr^.subcode
+        nextlx.subcode:=nextlx.symptr.subcode
 
         return
 
@@ -1699,9 +1698,9 @@ proc shownumberstr(ref tokenrec l,filehandle f=nil)=
     if getfilenox(l) then
         s:=sourcefiletext[getfilenox(l)]+getnumberoffsetx(l)
     else
-        s:=pastedtokenlist[l^.pasteno]
+        s:=pastedtokenlist[l.pasteno]
     fi
-    printstrn(s,l^.length,f)
+    printstrn(s,l.length,f)
 
 end
 
@@ -1862,13 +1861,13 @@ proc lxreadstring(int termchar,int fwide)=
 end
 
 proc addlisttoken(ref ref tokenrec ulist,ulistx,ref tokenrec p)=
-!add strec p to end of linked list headed by ulist^. ulistx^ is current end of list
+!add strec p to end of linked list headed by ulist. ulistx^ is current end of list
     if ulist^=nil then      !first
         ulist^:=ulistx^:=p
     else
-        ulistx^^.nexttoken:=p
+        ulistx^.nexttoken:=p
     fi
-    p^.nexttoken:=nil
+    p.nexttoken:=nil
 
     ulistx^:=p          !update end-of-list pointer
 end
@@ -1876,20 +1875,20 @@ end
 proc addlisttoken_copy(ref ref tokenrec ulist,ulistx,ref tokenrec q)=
 !like addlisttoken but add copy of nextlx
 !(as will likely be in nextlx)
-!add strec p to end of linked list headed by ulist^. ulistx^ is current end of list
+!add strec p to end of linked list headed by ulist. ulistx^ is current end of list
     ref tokenrec p
 
     p:=alloctoken()
 
     p^:=q^
-    p^.nexttoken:=nil
+    p.nexttoken:=nil
 
     if ulist^=nil then      !first
         ulist^:=ulistx^:=p
     else
-        ulistx^^.nexttoken:=p
+        ulistx^.nexttoken:=p
     fi
-    p^.nexttoken:=nil
+    p.nexttoken:=nil
 
     ulistx^:=p          !update end-of-list pointer
 end
@@ -1900,14 +1899,14 @@ proc addlist_nextlx(ref ref tokenrec ulist,ulistx)=
     ref tokenrec p
     p:=alloctoken()
     p^:=nextlx
-    p^.nexttoken:=nil
+    p.nexttoken:=nil
 
     if ulist^=nil then      !first
         ulist^:=ulistx^:=p
     else
-        ulistx^^.nexttoken:=p
+        ulistx^.nexttoken:=p
     fi
-    p^.nexttoken:=nil
+    p.nexttoken:=nil
 
     ulistx^:=p          !update end-of-list pointer
 end
@@ -1922,12 +1921,12 @@ proc addlisttoken_seq(ref ref tokenrec ulist,ulistx,ref tokenrec seq)=
         if ulist^=nil then      !first
             ulist^:=ulistx^:=tk
         else
-            ulistx^^.nexttoken:=tk
+            ulistx^.nexttoken:=tk
         fi
-        tk^.nexttoken:=nil
+        tk.nexttoken:=nil
         ulistx^:=tk
 
-        seq:=seq^.nexttoken
+        seq:=seq.nexttoken
     od
 end
 
@@ -1935,7 +1934,7 @@ proc addlistmparam(ref ref mparamrec ulist,ulistx,ref mparamrec p)=
     if ulist^=nil then      !first
         ulist^:=ulistx^:=p
     else
-        ulistx^^.nextmparam:=p
+        ulistx^.nextmparam:=p
     fi
     ulistx^:=p          !update end-of-list pointer
 end
@@ -1953,18 +1952,18 @@ proc dodefine=
         lxerror("define: name expected")
     fi
     stname:=nextlx.symptr
-    stname^.lineno:=nextlx.lineno+int(getfileno())<<24
+    stname.lineno:=nextlx.lineno+int(getfileno())<<24
 
-    stname^.oldsymbol:=stname^.symbol
+    stname.oldsymbol:=stname.symbol
 
-    stname^.symbol:=namesym
-    stname^.nameid:=macroid
+    stname.symbol:=namesym
+    stname.nameid:=macroid
     nparams:=0
 
     if lxsptr^='(' then
         ++lxsptr
         stlist:=stlistx:=nil
-        stname^.attribs.ax_flmacro:=1
+        stname.attribs.ax_flmacro:=1
 
         lexreadtoken()
         do
@@ -1973,18 +1972,18 @@ proc dodefine=
                 d:=nextlx.symptr
                 p:=stlist
                 while p do
-                    if p^.def=d then
+                    if p.def=d then
                         lxerror("Dupl macro param")
                     fi
-                    p:=p^.nextmparam
+                    p:=p.nextmparam
                 od
                 q:=pcm_alloc(mparamrec.bytes)
-                q^.def:=d
-                q^.nextmparam:=nil
+                q.def:=d
+                q.nextmparam:=nil
                 addlistmparam(&stlist,&stlistx,q)
                 ++nparams
                 lexreadtoken()
-!           (d^.name+d^.namelen)^:=0            !zero-term param name; it might be an identifier
+!           (d.name+d.namelen)^:=0            !zero-term param name; it might be an identifier
                 if nextlx.symbol=commasym then
                     lexreadtoken()
                 fi
@@ -1992,15 +1991,15 @@ proc dodefine=
                 exit
             when ellipsissym then                   !I need to create a special symbol name
                 d:=addnamestr("__VA_ARGS__")
-                stname^.attribs.ax_varparams:=1     !flag macro as having a va/args as last param
+                stname.attribs.ax_varparams:=1     !flag macro as having a va/args as last param
                 lexreadtoken()
                 if nextlx.symbol<>rbracksym then
                     lxerror("')' expected")
                 fi
 
                 q:=pcm_alloc(mparamrec.bytes)
-                q^.def:=d
-                q^.nextmparam:=nil
+                q.def:=d
+                q.nextmparam:=nil
                 addlistmparam(&stlist,&stlistx,q)
                 ++nparams
                 exit
@@ -2008,7 +2007,7 @@ proc dodefine=
                 lxerror("macro params?")
             esac
         od
-        stname^.mparamlist:=stlist
+        stname.mparamlist:=stlist
     fi
 
 !Now, loop reading tokens until eol
@@ -2022,15 +2021,15 @@ proc dodefine=
         when eolsym,eofsym then
             exit
         when namesym then
-            p:=stname^.mparamlist
+            p:=stname.mparamlist
             paramno:=1
             while p do
-                if p^.def=nextlx.symptr then
+                if p.def=nextlx.symptr then
                     nextlx.flags ior:=tk_parammask
                     nextlx.paramno:=paramno
                     exit
                 fi
-                p:=p^.nextmparam
+                p:=p.nextmparam
                 ++paramno
             od
             if nextlx.symptr=stname then
@@ -2044,8 +2043,8 @@ proc dodefine=
         addlisttoken(&tklist,&tklistx,tk)
     od
 
-    stname^.tokenlist:=tklist
-    stname^.attribs.ax_nparams:=nparams
+    stname.tokenlist:=tklist
+    stname.attribs.ax_nparams:=nparams
 end
 
 proc readalphanumeric(ref char pstart)=
@@ -2064,8 +2063,8 @@ function inmacrostack(ref strec d, ref tokenrec macrostack)int=
 !of tokens although it is not really a list of tokens
 
     while macrostack do
-        if macrostack^.symptr=d then return 1 fi
-        macrostack:=macrostack^.nexttoken
+        if macrostack.symptr=d then return 1 fi
+        macrostack:=macrostack.nexttoken
     od
     return 0
 end
@@ -2074,7 +2073,7 @@ proc showtokens(ichar caption,ref tokenrec tk)=
     print caption,,"<"
     while tk do
         showtoken(tk)
-        tk:=tk^.nexttoken
+        tk:=tk.nexttoken
     od
     println ">"
 end
@@ -2089,7 +2088,7 @@ proc lexa(ref tokenrec &tk)=
         return
     fi
     nextlx:=tk^
-    tk:=tk^.nexttoken
+    tk:=tk.nexttoken
 end
 
 proc lexm=
@@ -2101,10 +2100,10 @@ proc lexm=
     do
         if tkptr then
             nextlx:=tkptr^
-            tkptr:=tkptr^.nexttoken
+            tkptr:=tkptr.nexttoken
             if tkptr=nil then
 
-                if nextlx.symbol=namesym and nextlx.symptr^.nameid=macroid and peeklb() then
+                if nextlx.symbol=namesym and nextlx.symptr.nameid=macroid and peeklb() then
 !fix pp bug: macro expansion ending with fn-macro name, with (...) following
 !but at normal lexical level. Pick that up here
                     setfileno(sfileno)
@@ -2142,16 +2141,16 @@ proc lexm=
             next
         when namesym then
             d:=nextlx.symptr
-            case d^.symbol
+            case d.symbol
             when predefmacrosym then
 
                 sfileno:=getfileno()
                 slineno:=nextlx.lineno
-                expandpredefmacro(d^.subcode,&nextlx,slineno)
+                expandpredefmacro(d.subcode,&nextlx,slineno)
                 doreset:=1                  !can screw up line/file numbers
                 return
             else
-                if d^.nameid<>macroid or noexpand then
+                if d.nameid<>macroid or noexpand then
                     return
                 fi
             esac
@@ -2161,7 +2160,7 @@ proc lexm=
 !have a macro. Now see whether this should be expanded
         sfileno:=getfileno()
         slineno:=nextlx.lineno
-        if d^.attribs.ax_flmacro then       !function-like macro; need to peek for "("
+        if d.attribs.ax_flmacro then       !function-like macro; need to peek for "("
             if not peeklb() then
                 return
             fi
@@ -2192,11 +2191,11 @@ end
 function peektk(ref tokenrec tk)int=
 !version of peeklb that works on a token list rather than chars
 !tk is the current token
-    tk:=tk^.nexttoken
+    tk:=tk.nexttoken
     if tk=nil then          !nothing follows
         return 0
     fi
-    if tk^.symbol=lbracksym then
+    if tk.symbol=lbracksym then
         return 1
     fi
     return 0
@@ -2209,22 +2208,22 @@ function expandobjmacro(ref strec m,ref tokenrec macrostack, &tksource,
     int iscomplex,useshh,expanded
     ref strec d
 
-    p:=tk:=m^.tokenlist
+    p:=tk:=m.tokenlist
 
     iscomplex:=useshh:=0
     while p do
-        if p^.symbol=namesym then
-            d:=p^.symptr
-            if d^.nameid=macroid or d^.symbol=predefmacrosym then
+        if p.symbol=namesym then
+            d:=p.symptr
+            if d.nameid=macroid or d.symbol=predefmacrosym then
                 iscomplex:=1
                 exit
             fi
-        elsif p^.symbol=hashhashsym then
+        elsif p.symbol=hashhashsym then
             iscomplex:=useshh:=1
             exit
         fi
 
-        p:=p^.nexttoken
+        p:=p.nexttoken
     od
 
     if not iscomplex then
@@ -2237,7 +2236,7 @@ function expandobjmacro(ref strec m,ref tokenrec macrostack, &tksource,
     if useshh then
         repl:=substituteargs(m,nil,nil,0,nil)
     else
-        repl:=m^.tokenlist
+        repl:=m.tokenlist
     fi
 
     tk:=scantokenseq(repl,&newmacro,expanded)
@@ -2306,16 +2305,16 @@ function scantokenseq(ref tokenrec tk, macrostack,int &expanded)ref tokenrec=
     oldtk:=tk
 
     while tk do
-        case tk^.symbol
+        case tk.symbol
         when namesym then
-            if tk^.symptr^.nameid=macroid or tk^.symptr^.symbol=predefmacrosym then
+            if tk.symptr.nameid=macroid or tk.symptr.symbol=predefmacrosym then
                 simple:=0
                 exit
             fi
         esac
 
         if tk=nil then exit fi
-        tk:=tk^.nexttoken
+        tk:=tk.nexttoken
     od
 
     if simple then
@@ -2324,23 +2323,23 @@ function scantokenseq(ref tokenrec tk, macrostack,int &expanded)ref tokenrec=
 
     tk:=oldtk
     while tk do
-        case tk^.symbol
+        case tk.symbol
         when namesym then
-            m:=tk^.symptr
-            if m^.nameid=macroid and not noexpandflag then
+            m:=tk.symptr
+            if m.nameid=macroid and not noexpandflag then
 !macro detected; check if candidate for expansion
-                if tk^.flags iand tk_macrolit or noexpand then
+                if tk.flags iand tk_macrolit or noexpand then
                     goto simpletoken
                 fi
 
                 if inmacrostack(m,macrostack) then      !is an active macro name
                     addlisttoken_copy(&newtk,&newtkx,tk)
-                    newtkx^.flags ior:= tk_macrolit
+                    newtkx.flags ior:= tk_macrolit
                     goto skip
 
                 fi
     simple:=0
-                if m^.attribs.ax_flmacro then
+                if m.attribs.ax_flmacro then
                     if not peektk(tk) then goto simpletoken fi
                     lexa(tk)
                     expandtk:=expandfnmacro(m,macrostack,tk,1,dummy)
@@ -2352,14 +2351,14 @@ function scantokenseq(ref tokenrec tk, macrostack,int &expanded)ref tokenrec=
                     expanded:=1
                     addlisttoken_seq(&newtk,&newtkx,expandtk)
                 fi
-            elsif m^.symbol=kdefinedsym then
+            elsif m.symbol=kdefinedsym then
                 noexpandflag:=1
                 goto simpletoken
-            elsif m^.symbol=predefmacrosym then
+            elsif m.symbol=predefmacrosym then
                 expandtk:=alloctokenz()
 !CPL "EXPAND PDM 2"
-!               expandpredefmacro(m^.subcode,expandtk,nextlx.lineno)
-                expandpredefmacro(m^.subcode,expandtk,slineno)
+!               expandpredefmacro(m.subcode,expandtk,nextlx.lineno)
+                expandpredefmacro(m.subcode,expandtk,slineno)
                 addlisttoken_copy(&newtk,&newtkx,expandtk)
                 goto skip2
             else
@@ -2374,7 +2373,7 @@ function scantokenseq(ref tokenrec tk, macrostack,int &expanded)ref tokenrec=
     skip::
         if tk=nil then exit fi
     skip2::
-        tk:=tk^.nexttoken
+        tk:=tk.nexttoken
     od
 
     if expanded then
@@ -2389,7 +2388,7 @@ function readmacrocall(ref strec d, ref[]ref tokenrec args, ref tokenrec &tksour
 !positioned just before "(" of a macro call
 !read arguments for the macro, and store into args
 !return total number of arguments
-!each args^[i] entry is a list of tokenrecs
+!each args[i] entry is a list of tokenrecs
 !Caller has already checked that "(" is next token, and this will be a function macro
 !tksource will point to an input stream of tokens, but can also be nil, meaning
 !read via lexm from actual source. (tksource can't be nil because it's at the
@@ -2403,7 +2402,7 @@ function readmacrocall(ref strec d, ref[]ref tokenrec args, ref tokenrec &tksour
 
     if nextlx.symbol<>lbracksym then lxerror("rmc: no '('") fi
 
-    nparams:=d^.attribs.ax_nparams
+    nparams:=d.attribs.ax_nparams
     nargs:=0
     if nparams=0 then               !) must follow
         lexa(tksource)
@@ -2414,7 +2413,7 @@ function readmacrocall(ref strec d, ref[]ref tokenrec args, ref tokenrec &tksour
     paramno:=1
     lbcount:=1
     tklist:=tklistx:=nil
-    usesvargs:=d^.attribs.ax_varparams          !whether macro contains ... va/args
+    usesvargs:=d.attribs.ax_varparams          !whether macro contains ... va/args
     varg:=0                                     !whether encountered ... yet in arguments
 
     do
@@ -2427,9 +2426,9 @@ function readmacrocall(ref strec d, ref[]ref tokenrec args, ref tokenrec &tksour
                 if tklist=nil then                  !empty list: create place-holder token
                     tklist:=alloctokenz()
                     setfilenox(tklist,getfileno())
-                    tklist^.symbol:=placeholdersym
+                    tklist.symbol:=placeholdersym
                 fi
-                args^[paramno]:=tklist              !store this list
+                args[paramno]:=tklist              !store this list
                 tklist:=tklistx:=nil
                 ++paramno
             else
@@ -2449,9 +2448,9 @@ function readmacrocall(ref strec d, ref[]ref tokenrec args, ref tokenrec &tksour
                 if tklist=nil then
                     tklist:=alloctokenz()
                     setfilenox(tklist,getfileno())
-                    tklist^.symbol:=placeholdersym
+                    tklist.symbol:=placeholdersym
                 fi
-                args^[paramno]:=tklist              !store this list
+                args[paramno]:=tklist              !store this list
                 exit
             fi
         else
@@ -2462,7 +2461,7 @@ function readmacrocall(ref strec d, ref[]ref tokenrec args, ref tokenrec &tksour
 
     if paramno<>nparams then
         if paramno+1=nparams and usesvargs then     !no args for ... part, needs dummy arg
-            args^[nparams]:=nil
+            args[nparams]:=nil
         else
             lxerror("Wrong # macro params")
         fi
@@ -2486,45 +2485,45 @@ ref tokenrec macrostack)ref tokenrec=
     [maxhashhash]ref tokenrec hhpoints
     int nhashhash
 
-    params:=m^.mparamlist
-    seq:=seqstart:=m^.tokenlist     !input token sequence
+    params:=m.mparamlist
+    seq:=seqstart:=m.tokenlist     !input token sequence
 
     newtk:=newtkx:=nil              !output token sequence
     nhashhash:=0
     lasttoken:=nil
 
     while seq do
-        case seq^.symbol
+        case seq.symbol
         when hashsym then
             if nargs then
-                seq:=seq^.nexttoken
+                seq:=seq.nexttoken
                 if seq=nil then lxerror("# at end") fi
-                unless seq^.flags iand tk_parammask then
+                unless seq.flags iand tk_parammask then
                     lxerror("# not followed by param")
                 end unless
-                n:=seq^.paramno
+                n:=seq.paramno
 
-                stringify(args^[n],&tk)
+                stringify(args[n],&tk)
 
                 addlisttoken_copy(&newtk,&newtkx,&tk)
             else
                 addlisttoken(&newtk,&newtkx,seq)
-                newtkx^.symbol:=lithashsym              !change to #'
+                newtkx.symbol:=lithashsym              !change to #'
             fi
         when hashhashsym then
             if seq=seqstart then lxerror("## at start") fi
             if nhashhash>=maxhashhash then lxerror("Too many ##") fi
             hhpoints[++nhashhash]:=newtkx
 
-        elsif seq^.symbol=namesym and seq^.flags iand tk_parammask and nargs then       !args can be () if no "(...)" followed
-            n:=seq^.paramno
-            if seq^.nexttoken and seq^.nexttoken^.symbol=hashhashsym or
-               lasttoken and lasttoken^.symbol=hashhashsym then
-                addlisttoken_seq(&newtk,&newtkx,args^[n])
+        elsif seq.symbol=namesym and seq.flags iand tk_parammask and nargs then       !args can be () if no "(...)" followed
+            n:=seq.paramno
+            if seq.nexttoken and seq.nexttoken.symbol=hashhashsym or
+               lasttoken and lasttoken.symbol=hashhashsym then
+                addlisttoken_seq(&newtk,&newtkx,args[n])
             else
-                tkexp:=expargs^[n]
+                tkexp:=expargs[n]
                 if tkexp=nil then
-                    tkexp:=expargs^[n]:=scantokenseq(args^[n],macrostack,expanded)
+                    tkexp:=expargs[n]:=scantokenseq(args[n],macrostack,expanded)
                 fi
                 addlisttoken_seq(&newtk,&newtkx,tkexp)
             fi
@@ -2535,7 +2534,7 @@ ref tokenrec macrostack)ref tokenrec=
         esac
 
         lasttoken:=seq
-        seq:=seq^.nexttoken
+        seq:=seq.nexttoken
     od
 
     if nhashhash then
@@ -2563,8 +2562,8 @@ function strtoken(ref tokenrec lp,int &length)ichar=
     case l.symbol
     when namesym then
     doname::
-        length:=l.symptr^.namelen
-        return l.symptr^.name
+        length:=l.symptr.namelen
+        return l.symptr.name
 
     when intconstsym,realconstsym then
         length:=l.length
@@ -2649,20 +2648,20 @@ global proc emittoken(ref tokenrec lp,ref strbuffer dest,int forcespace=0)=
     int length
     ichar s
 
-    if lp^.symbol=eolsym and lasttoken=eolsym then
+    if lp.symbol=eolsym and lasttoken=eolsym then
         return
     fi
 
     s:=strtoken(lp,length)
 
-    if forcespace or needspace(lasttoken,lp^.symbol) then
+    if forcespace or needspace(lasttoken,lp.symbol) then
         gs_char(dest,' ')
     fi
 
     gs_strn(dest,s,length)
 
 
-    lasttoken:=lp^.symbol
+    lasttoken:=lp.symbol
 end
 
 global proc showtoken(ref tokenrec lp)=
@@ -2673,7 +2672,7 @@ global proc showtoken(ref tokenrec lp)=
     
     emittoken(lp,dest)
     
-print dest^.length:"v",,dest^.strptr:".*"
+print dest.length:"v",,dest.strptr:".*"
 end
 
 proc stringify(ref tokenrec seq,dest)=
@@ -2684,13 +2683,13 @@ proc stringify(ref tokenrec seq,dest)=
     static strbuffer buffer
     static ref strbuffer deststr=&buffer
 
-    dest^.symbol:=stringconstsym
-    dest^.nexttoken:=nil
+    dest.symbol:=stringconstsym
+    dest.nexttoken:=nil
 
-    if seq^.nexttoken=nil then      !single
+    if seq.nexttoken=nil then      !single
         s:=strtoken(seq,length)
-        dest^.length:=length
-        dest^.svalue:=s
+        dest.length:=length
+        dest.svalue:=s
         return 
     fi
 
@@ -2701,20 +2700,20 @@ proc stringify(ref tokenrec seq,dest)=
     while seq do
         emittoken(seq,deststr,forcespace:addspace)
         addspace:=1
-        seq:=seq^.nexttoken
+        seq:=seq.nexttoken
     od
 
-    dest^.length:=length
-    dest^.svalue:=deststr^.strptr
-    dest^.length:=deststr^.length
+    dest.length:=length
+    dest.svalue:=deststr.strptr
+    dest.length:=deststr.length
 end
 
 proc pastetokens(ref tokenrec tk, &tknext)=
 !tk points into a token sequence
-!paste the token at tk with the one at tk^.nexttoken, and replace
-!tk with the new composite token; tk^.nexttoken is removed
+!paste the token at tk with the one at tk.nexttoken, and replace
+!tk with the new composite token; tk.nexttoken is removed
 !tknext is either nil, or refers to the next pair of tokens to be pasted together;
-!there is a problem when tk^.nexttoken and tknext coincide, so something needs to
+!there is a problem when tk.nexttoken and tknext coincide, so something needs to
 !be done in that case (set tknext to point to tk)
 
     ref tokenrec tk2
@@ -2724,16 +2723,16 @@ proc pastetokens(ref tokenrec tk, &tknext)=
     ref char oldlxsptr
     int oldlx_stackindex
 
-    tk2:=tk^.nexttoken
+    tk2:=tk.nexttoken
     if tk2=tknext then tknext:=tk fi
-    tk^.nexttoken:=tk2^.nexttoken               !lose second token
+    tk.nexttoken:=tk2.nexttoken               !lose second token
 
-    if tk^.symbol=placeholdersym then
-        if tk2^.symbol=placeholdersym then          !two placeholders; leave only first
+    if tk.symbol=placeholdersym then
+        if tk2.symbol=placeholdersym then          !two placeholders; leave only first
         else                                        !ph/token; use second
             tk^:=tk2^                               !also unlinks the tk2 token
         fi
-    elsif tk2^.symbol=placeholdersym then           !token/ph; leave only first
+    elsif tk2.symbol=placeholdersym then           !token/ph; leave only first
     else                        !two normal tokens
 
         s:=strtoken(tk,length1)
@@ -2770,7 +2769,7 @@ proc pastetokens(ref tokenrec tk, &tknext)=
         lxsptr:=oldlxsptr
         lx_stackindex:=oldlx_stackindex
 
-        token.nexttoken:=tk^.nexttoken
+        token.nexttoken:=tk.nexttoken
         setfilenox(&token,0)
         token.pasteno:=npastedtokens
 
@@ -3015,7 +3014,7 @@ function evalterm(int &sx)i64=
     sx:=1
     case nextlx.symbol
     when namesym then
-        case nextlx.symptr^.symbol
+        case nextlx.symptr.symbol
         when kdefinedsym then
             noexpand:=1
             lb:=0
@@ -3025,7 +3024,7 @@ function evalterm(int &sx)i64=
                 lexm()
             fi
             if nextlx.symbol<>namesym then lxerror("defined?") fi
-            res:=nextlx.symptr^.nameid=macroid
+            res:=nextlx.symptr.nameid=macroid
             lexm()
             if lb then
                 if nextlx.symbol<>rbracksym then lxerror("')' expected") fi
@@ -3037,9 +3036,9 @@ function evalterm(int &sx)i64=
             if nextlx.symbol<>lbracksym then lxerror("'(' expected") fi
             lexm()
             if nextlx.symbol<>namesym then lxerror("name expected") fi
-            case nextlx.symptr^.symbol
+            case nextlx.symptr.symbol
             when ktypespecsym then
-                res:=typespecsizes[nextlx.symptr^.subcode]
+                res:=typespecsizes[nextlx.symptr.subcode]
             else
                 lxerror("sizeof2")
             esac
@@ -3090,9 +3089,9 @@ function getifdef:int=
     if nextlx.symbol<>namesym then lxerror("Name expected") fi
     d:=nextlx.symptr
     res:=0
-    if d^.nameid=macroid then
+    if d.nameid=macroid then
         res:=1
-    elsif d^.symbol=predefmacrosym then
+    elsif d.symbol=predefmacrosym then
         res:=1
     fi
 
@@ -3140,7 +3139,7 @@ proc freetokens(ref tokenrec tk)=
     ref tokenrec nexttk
 
     while tk do
-        nexttk:=tk^.nexttoken
+        nexttk:=tk.nexttoken
         tk:=nexttk
     od
 end
@@ -3223,7 +3222,7 @@ end
 function alloctokenz:ref tokenrec=
     ref tokenrec tk
     tk:=pcm_alloc(tokenrec.bytes)
-    tk^.nexttoken:=nil
+    tk.nexttoken:=nil
     return tk
 end
 
@@ -3244,68 +3243,68 @@ proc expandpredefmacro(int pdmcode,ref tokenrec tk,int lineno)=
 
         fprint @&.str, "#-#-#",tm.day,monthnames[tm.month],tm.year:"4"
 
-        tk^.symbol:=stringconstsym
-        tk^.svalue:=pcm_copyheapstring(&.str)
+        tk.symbol:=stringconstsym
+        tk.svalue:=pcm_copyheapstring(&.str)
 
     when pdm_time then
         os_getsystime(&tm)
 
         fprint @&.str,"#:#:#",tm.hour:"2",tm.minute:"z2",tm.second:"z2"
 
-        tk^.symbol:=stringconstsym
-        tk^.svalue:=pcm_copyheapstring(&.str)
+        tk.symbol:=stringconstsym
+        tk.svalue:=pcm_copyheapstring(&.str)
     when pdm_file then
-        tk^.symbol:=stringconstsym
+        tk.symbol:=stringconstsym
         fileno:=getfilenox(tk)
         if fileno=0 then fileno:=sfileno fi
         if sfileno then
-            tk^.svalue:=sourcefilenames[sfileno]
+            tk.svalue:=sourcefilenames[sfileno]
         else
-            tk^.svalue:="(File not available)"
+            tk.svalue:="(File not available)"
         fi
     when pdm_func then
-        tk^.symbol:=stringconstsym
+        tk.symbol:=stringconstsym
         if currproc then
-            tk^.svalue:=currproc^.name
+            tk.svalue:=currproc.name
         else
-            tk^.svalue:="???"
+            tk.svalue:="???"
         fi
     when pdm_line then
-        tk^.symbol:=intconstsym
-        tk^.value:=lineno
+        tk.symbol:=intconstsym
+        tk.value:=lineno
     when pdm_stdc then
-        tk^.symbol:=intconstsym
-        tk^.value:=1
+        tk.symbol:=intconstsym
+        tk.value:=1
     when pdm_bcc then
-        tk^.symbol:=intconstsym
-        tk^.value:=1
+        tk.symbol:=intconstsym
+        tk.value:=1
     else
         println pdmcode
         lxerror("PDM")
     esac
 
-    if tk^.symbol=stringconstsym then
-        tk^.length:=strlen(tk^.svalue)
-        tk^.subcode:=trefchar
+    if tk.symbol=stringconstsym then
+        tk.length:=strlen(tk.svalue)
+        tk.subcode:=trefchar
     else
-        tk^.subcode:=tsint
+        tk.subcode:=tsint
         s:=pcm_alloc(16)
-!   sprintf(s,"%lld",tk^.value)
+!   sprintf(s,"%lld",tk.value)
         getstrint(tk.value,s)
-        tk^.length:=strlen(s)
+        tk.length:=strlen(s)
         if npastedtokens>=maxpastedtokens then
             lxerror("2:Too many pasted tokens")
         fi
         pastedtokenlist[++npastedtokens]:=s
         setfilenox(tk,0)
-        tk^.pasteno:=npastedtokens
+        tk.pasteno:=npastedtokens
     fi
 end
 
 proc dopragmadir=
     lexm()
     if nextlx.symbol=namesym then
-        if memcmp(nextlx.symptr^.name,"pack",4)=0 then
+        if memcmp(nextlx.symptr.name,"pack",4)=0 then
             lexm()
             if nextlx.symbol<>lbracksym then lxerror("'(' expected") fi
             lexm()
@@ -3321,7 +3320,7 @@ proc dopragmadir=
             elsif nextlx.symbol=rbracksym then
                 structpadding:=1
             fi
-        elsif memcmp(nextlx.symptr^.name,"$callback",9)=0 then
+        elsif memcmp(nextlx.symptr.name,"$callback",9)=0 then
             callbackflag:=1
         fi
     fi
@@ -3404,8 +3403,8 @@ end
 
 proc setfilenox(ref tokenrec tk,int fileno)=
 
-    tk^.fileno:=fileno iand 255
-    tk^.numberoffset := (tk^.numberoffset iand 0xFFFFFF) ior (fileno iand 0xFF00)<<16
+    tk.fileno:=fileno iand 255
+    tk.numberoffset := (tk.numberoffset iand 0xFFFFFF) ior (fileno iand 0xFF00)<<16
 end
 
 function getfileno:int=
@@ -3413,11 +3412,11 @@ function getfileno:int=
 end
 
 function getfilenox(ref tokenrec tk)int=
-    return (tk^.numberoffset>>24)<<8 ior tk^.fileno
+    return (tk.numberoffset>>24)<<8 ior tk.fileno
 end
 
 function getnumberoffsetx(ref tokenrec tk)int=
-    return tk^.numberoffset iand 0xFFFFFF
+    return tk.numberoffset iand 0xFFFFFF
 end
 
 global proc freehashtable=
@@ -3426,21 +3425,21 @@ global proc freehashtable=
     ref strec d,e,f
 
     for i:=0 to hstmask do
-        d:=hashtable^[i]
-        if d^.name and d^.symbol=namesym then
-            if d^.nameid=macroid then
-                freetokens(d^.tokenlist)
+        d:=hashtable[i]
+        if d.name and d.symbol=namesym then
+            if d.nameid=macroid then
+                freetokens(d.tokenlist)
             fi
-            f:=d^.nextdupl
+            f:=d.nextdupl
             while f do
                 freestentry(f)
-                e:=f^.nextdupl
+                e:=f.nextdupl
                 pcm_free(f,strec.bytes)
                 f:=e
             od
-            pcm_clearmem(hashtable^[i],strec.bytes)
-        elsif d^.name then
-            d^.nextdupl:=nil
+            pcm_clearmem(hashtable[i],strec.bytes)
+        elsif d.name then
+            d.nextdupl:=nil
         fi
     od
 end
@@ -3452,22 +3451,22 @@ proc regenlookup(ref strec d)=
     int j, wrapped,length
     ref strec e
 
-    j:=gethashvalue(d^.name,d^.namelen) iand hstmask
+    j:=gethashvalue(d.name,d.namelen) iand hstmask
     wrapped:=0
 
     do
-        e:=hashtable^[j]
-        length:=e^.namelen
+        e:=hashtable[j]
+        length:=e.namelen
 
         if not length then
-PCM_FREE(HASHTABLE^[J],STREC.BYTes)
-            hashtable^[j]:=d
+PCM_FREE(HASHTABLE[J],STREC.BYTes)
+            hashtable[j]:=d
             ++nhstsymbols
             return
         fi
 
-        if length=d^.namelen then   !match on length
-            if memcmp(e^.name,d^.name,length)=0 then    !match
+        if length=d.namelen then   !match on length
+            if memcmp(e.name,d.name,length)=0 then    !match
                 lxerror("regenhst dupl?")
             fi
         fi
@@ -3487,9 +3486,9 @@ proc printhashtable(ichar caption)=
 
     println caption,,":"
     for i:=0 to  hstsize-1 do
-        d:=hashtable^[i]
-        if d^.name then
-            println i,":",d^.name
+        d:=hashtable[i]
+        if d.name then
+            println i,":",d.name
         else
             println i,": ----"
         fi
@@ -3514,13 +3513,13 @@ proc newhashtable=
     hashtable:=pcm_alloc(hstsize*(ref void.bytes))
 
     for i:=0 to hstmask do
-        hashtable^[i]:=pcm_allocz(strec.bytes)
+        hashtable[i]:=pcm_allocz(strec.bytes)
     od
 
 !now, rehash all existing hashentries
     for i:=0 to oldhstsize-1 do
-        d:=oldhashtable^[i]
-        if d^.name then
+        d:=oldhashtable[i]
+        if d.name then
             regenlookup(d)
         fi
     od
