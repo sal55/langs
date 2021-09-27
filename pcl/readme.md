@@ -38,3 +38,17 @@ No other targets are in the pipeline (next could be x64 on Linux, and possibly A
 * Run in-memory. Fixing up native code to run immediately instead of creating an EXE file. However, writing an EXE then invoking the executable is two lines of code, so little benefit.
 * OBJ format, sometimes of use to combine my code with other languages'. This can actually be added, but it would need my AA assembler. 
 
+### Demo Program
+
+See pcdemo.m. I had hoped to write this in C, but that part is not ready. So it's in my language. It writes a basic Hello program (using C's printf to minimise runtime support).
+
+The program generates the instructions in memory, then various optional lines can generate:
+
+* PCL source; see test.pcl.
+* ASM source; see test.asm
+* C source; see test.c (needs pclhdr.h to build)
+* EXE binary, which can be run from the demo
+
+There *is* a C demo; see cdemo.c. This just writes the PCL code as text. The output of this program is the rather flat:
+
+
