@@ -14,6 +14,7 @@ The quality is not good enough for others to use (and the support is not practic
 * 128-bit support is sparse
 * Designed for whole program compilers, so the entire program is generated as PCL then converted
 * Multiple PCL inputs (needed for languages such as C with independent compilation) is a possibility, but all files would need submitted at once
+* Designed for 64-bit targets
 * Rich set of instructions targeted at my own system language
 
 ### Inputs
@@ -67,15 +68,15 @@ Compiling hello.m------- to hello.exe     # via in-memory PCL this time, no disc
 
 C:\mxp>hello                              # Test that it works
 Hello, World! 21:59:54
-
+````
 
 ### Demo Program
 
-See pcdemo.m. I had hoped to write this in C, but that part is not ready. So it's in my language. It writes a basic Hello program (using C's printf to minimise runtime support).
+See pcdemo.m. I had hoped to write this in C, but that part is not ready. So it's in my language. It writes a basic Hello program (using C's printf to minimise runtime support and keep the code size to 20 lines instead of 2000).
 
 The program generates the instructions in memory, then various optional lines can generate:
 
-* PCL source; see test.pcl.
+* PCL source; see test.pcl
 * ASM source; see test.asm
 * C source; see test.c (needs pclhdr.h to build)
 * EXE binary, which can be run from the demo
