@@ -1,8 +1,8 @@
 ## 'PCL' Intermediate Language
 
-This is my attempt at creating a standalone, intermediate language for a compiler backend. It's a sort of tiny version of LLVM. There are a few other similar products around, but for various reasons they are not practical for me. (Also, I like to create 100% of my tools.)
+This is my attempt at creating a standalone, intermediate language for a compiler backend. It's a sort of tiny version of LLVM. There are a few other similar products around, but for various reasons they are not practical for me. (Also, I like to create 100% of my tools and in my language.)
 
-The quality is not good enough for others to use (and the support is not practical). So it's just being presented here as another example of what such a product can look like.
+The quality is not good enough for others to use (and the support needed is not practical). So it's just being presented here as another example of what such a product can look like. People are welcome to take away anything that sounds useful.
 
 In the description here, PC.EXE is the self-contained program that turns PCL source files into EXE files depending on option; and MM.EXE is the compiler for my system language incorporates most of what's in PC.EXE. AA.exe is a standalone assembler/linker that can process any ASM outputs (not normally needed).
 
@@ -111,6 +111,7 @@ It would probably work (the current backend generates terrible code), but PCL wo
 
 * C mostly still uses a 32-bit int, so most ops are 32-bits. Currently most PCL ops (add, etc) are 64 bits, so special support is needed to provide 32 bit ones.
 * Some support for doing setjmp/longjmp is needed in PCL
+* I thought I need special handling for Switch, as that feature is so chaotic in C, but it might be OK  
 * C compiles a module at a time, so extra support is needed for multiple modules, which have to be submitted all at the same time. (Probably, there are devious ways to get around this, by pretending each module is a whole program with imports and exports, generating multiple ASM files from multiple PCL, and using my AA assembler linker. But clearly that's a lot of work)
 
 ### Improvement in my M Systems Compiler
@@ -160,4 +161,25 @@ Absolutely loads. However, enough of the various combinations of opcodes and typ
 * There are various tweaks to with block-handling. (PCL nominally deals with block by value, but the ABI specifies they are handled by reference.)
 
 Another thing is that the new compiler is 5% slower than the current one; I would like to find out why.
+
+### Some Special Features of PCL
+
+At least I assume they are; I don't know enough about other products (LLVM's 2000MB installation must do something good.)
+
+* Multiple function return values
+* 128-bit integers (not extensive, but the basics should work)
+* Bit-indexing and Bitfield slices integers, to both read and write (eg DOTINDEX)
+* Label addresses
+* Direct support for Switch (SWITCH opcode)
+* Special support for conditionals like A in B..C and A in \[B, C, D\] (eg JUMPINRANGE)
+* Special support for case-when statement
+* Support for indirect jumps (jump to a label pointer)
+* Direct support for N-times-loops and iterative for-loops
+* Some support for slices
+* Clear opcode to to clear (set to zero) memory blocks
+* By-value manipulation of structs and arrays (via blocks)
+* Direct Support for swap()
+* Min/max operators, also min:=/max:=
+* Common Math(s) operators built-in, also sqr (square) and power
+* Directly handles tables of all of a program's functions, and special ops for access
 
