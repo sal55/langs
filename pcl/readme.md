@@ -4,6 +4,8 @@ This is my attempt at creating a standalone, intermediate language for a compile
 
 The quality is not good enough for others to use (and the support is not practical). So it's just being presented here as another example of what such a product can look like.
 
+In the description here, PC.EXE is the self-contained program that turns PCL source files into EXE files depending on option; and MM.EXE is the compiler for my system language incorporates most of what's in PC.EXE. AA.exe is a standalone assembler/linker that can process any ASM outputs (not normally needed).
+
 ### Characteristics
 
 * Stack-based VM
@@ -37,7 +39,7 @@ Here it is easy to get carried away, but the outputs that either work, or have b
 No other targets are in the pipeline (next could be x64 on Linux, and possibly ARM64 at some future point). Outputs which were briefly considered:
 
 * Binary PCL files
-* PCL interpreter (every such project seems to have one of these). I look to do these properly and with performance in mind, but it would take too much effort. Maybe, if was done in-hand with a debugger.
+* PCL interpreter (every such project seems to have one of these). I like to do these properly and with performance in mind, but it would take too much effort. Maybe, if was done in-hand with a debugger.
 * Run in-memory. Fixing up native code to run immediately instead of creating an EXE file. However, writing an EXE then invoking the executable is two lines of code, so little benefit.
 * OBJ format, sometimes of use to combine my code with other languages'. This can actually be added, but it would need my AA assembler. 
 
@@ -45,7 +47,7 @@ No other targets are in the pipeline (next could be x64 on Linux, and possibly A
 
 I wanted this project to be a small, single, self-contained executable. And so far it is. The current size is about 216KB, which can generate all the files in the examples, and might end up as 250KB. (Doing the C output requires a 30KB addition, but a C backend is unlikely to exist in the same program.)
 
-Not separate assemblers or linkers are needed; PC.EXE does it all. (OBJ output will need my AA assembler, a 150KB program.)
+No separate assemblers or linkers are needed; PC.EXE does it all. (OBJ output will need my AA assembler, a 150KB program.)
 
 The processing speed of PCL source code was about 1.2 million lines per second, for PCL -> EXE, but bear in mind the line count might be twice as high as the original source code. Generating PCL text is also time-consuming. Using a binary PCL file format is more efficient, but the intention is that programs mainly use the API to generate in-memory PCL, then straight to binary.
 
@@ -55,19 +57,17 @@ This was based on the bytecode I've long used for my dynamic intepreters. It is 
 
 Perhaps it looks also like ASM code, but for a far more capable and orthoginal processor.
 
-For examples, see test.pcl and fib.pcl. For a bigger example, see mm.pcl, which is my new compiler that incorporates the PCL backend, compiling itself to PCL (140K lines, 4MB). This is that compiler in action:
+For examples, see test.pcl and fib.pcl. For a bigger example, see pc.pcl (50Kloc), and mm.pcl, my new compiler that incorporates the PCL backend. This is the MM and PC productts in action:
+
 ````
-C:\mxp>mm -pcl mm                         # create separate PCL file
-Compiling mm.m---------- to mm.pcl
+C:\mxp>mm -pcl pc                       # Generate PCL file for PC project
+Compiling pc.m---------- to pc.pcl
 
-C:\mxp>pc -exe mm                         # Use PC to turn that into an executable
-Processing mm.pcl to mm.exe
+C:\mxp>pc -exe pc -out:pc2.exe          # Invoke PC backend on PC.PCL to get 2nd generation PC2.EXE
+Processing pc.pcl to pc2.exe
 
-C:\mxp>mm hello                           # Use that new compiler to turn hello.m into hello.exe,                                          
-Compiling hello.m------- to hello.exe     # via in-memory PCL this time, no discrete PCL file
-
-C:\mxp>hello                              # Test that it works
-Hello, World! 21:59:54
+C:\mxp>mm pc                            # In practice, it's done in one go using in-memory PCL code,
+Compiling pc.m---------- to pc.exe      # no discrete PCL file
 ````
 
 ### Demo Program
