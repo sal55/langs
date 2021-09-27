@@ -3,7 +3,7 @@ Extproc printf i32
     extvariadics              
 Endext
 
-Proc h.start::
+Proc test.start::
     procentry                 
     setargs                   1 0
     push           "Hello, World! [pcl2]\n" u64 
