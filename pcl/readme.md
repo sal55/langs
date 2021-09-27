@@ -10,12 +10,12 @@ In the description here, PC.EXE is the self-contained program that turns PCL sou
 
 * Stack-based VM
 * Byte-code-like instruction set, but with types
-* Supports lower-level languages perhaps up to a couple of steps beyond C
-* Datatypes supported are u8 u16 u32 u64 u128 i8 i16 i32 i64 i128 f32 f64 and Block.
-* Block types implement fixed size arrays and structs
+* Supports lower-level languages perhaps up to a couple of steps beyond C (anything must be implemented on top)
+* Datatypes supported are u8 u16 u32 u64 u128, i8 i16 i32 i64 i128, f32 f64 and Block.
 * 128-bit support is sparse
+* Block types implement fixed size arrays and structs
 * Designed for whole program compilers, so the entire program is generated as PCL then converted
-* Multiple PCL inputs (needed for languages such as C with independent compilation) is a possibility, but all files would need submitted at once
+* Multiple PCL inputs (needed for languages such as C with independent compilation) is a possibility, but all files would need submitting at once
 * Designed for 64-bit targets
 * Rich set of instructions targeted at my own system language
 
@@ -23,7 +23,7 @@ In the description here, PC.EXE is the self-contained program that turns PCL sou
 
 * PCL code can be generated as textual source code, then submitted to the standalone PC program
 * There is also an API that can be used (via a DLL and some C headers) to generate code programmatically. However that is not ready
-* Mostly I use it vias the API with elements of PC compiled as part of my main compiler. (Via a DLL is possible here too, but that is not ready either.)
+* Mostly I use it via the API with necessary elements of PC compiled as part of my main compiler. (Via a DLL is possible here too, but that is not ready either.)
 * Part of the original spec was to have a binary version of PCL code (called PCB files) which can be processed more quickly, but that is unlikely to be done. The recommended way to generate code is via the API
 
 ### Outputs
@@ -36,11 +36,11 @@ Here it is easy to get carried away, but the outputs that either work, or have b
 * DLL binary, another variation
 * C source code. This is highly experimental, and has been tried on smallish programs just to show that it can work. (Also, to give extra input to the PCL design which has been tweaked)
 
-No other targets are in the pipeline (next could be x64 on Linux, and possibly ARM64 at some future point). Outputs which were briefly considered:
+No other targets are in the pipeline (possibilities would have been x64 on Linux, and maybe ARM64 at some future point). Outputs which were briefly considered:
 
 * Binary PCL files
-* PCL interpreter (every such project seems to have one of these). I like to do these properly and with performance in mind, but it would take too much effort. Maybe, if was done in-hand with a debugger.
-* Run in-memory. Fixing up native code to run immediately instead of creating an EXE file. However, writing an EXE then invoking the executable is two lines of code, so little benefit.
+* PCL interpreter (every such project seems to have one of these). I like to do these properly and with performance in mind, but it would take too much effort.
+* Run in-memory: fixing up native code to run immediately instead of creating an EXE file. However, writing an EXE then invoking the executable is two lines of code, so of little benefit.
 * OBJ format, sometimes of use to combine my code with other languages'. This can actually be added, but it would need my AA assembler. 
 
 ### Size of the PC.EXE
@@ -49,13 +49,15 @@ I wanted this project to be a small, single, self-contained executable. And so f
 
 No separate assemblers or linkers are needed; PC.EXE does it all. (OBJ output will need my AA assembler, a 150KB program.)
 
-The processing speed of PCL source code was about 1.2 million lines per second, for PCL -> EXE, but bear in mind the line count might be twice as high as the original source code. Generating PCL text is also time-consuming. Using a binary PCL file format is more efficient, but the intention is that programs mainly use the API to generate in-memory PCL, then straight to binary.
+The processing speed of PCL source code on my slow PC is about 1.2 million lines per second, for PCL -> EXE, but bear in mind the line count might be twice as high as the original source code. Generating the PCL text probably is slower. Using a binary PCL file format would be more efficient, but the intention is that programs mainly use the API to generate in-memory PCL, then straight to binary.
 
 ### PCL Syntax
 
 This was based on the bytecode I've long used for my dynamic intepreters. It is very easy generate, but not so easy to write in.
 
 Perhaps it looks also like ASM code, but for a far more capable and orthoginal processor.
+
+Effectively this is a new, low-level language, and PC can be used as a compiler or assembler for it.
 
 For examples, see test.pcl and fib.pcl. For a bigger example, see pc.pcl (50Kloc), and mm.pcl, my new compiler that incorporates the PCL backend. This is the MM and PC productts in action:
 
@@ -100,4 +102,62 @@ endprogram
 By invoking PC on this input and telling it to write a new PCL file, it will look more like test.pcl above.
 
 However, the original contains everything needed to generate ASM or EXE. The ASM produced is again similar to test.asm above.
+
+### Used as C Compiler Backend
+
+I started modifying my C compiler to generate PCL, however I stopped because at the moment it's not worthwhile. (It needs a new front-end first!)
+
+It would probably work (the current backend generates terrible code), but PCL would need some tweaks:
+
+* C mostly still uses a 32-bit int, so most ops are 32-bits. Currently most PCL ops (add, etc) are 64 bits, so special support is needed to provide 32 bit ones.
+* Some support for doing setjmp/longjmp is needed in PCL
+* C compiles a module at a time, so extra support is needed for multiple modules, which have to be submitted all at the same time. (Probably, there are devious ways to get around this, by pretending each module is a whole program with imports and exports, generating multiple ASM files from multiple PCL, and using my AA assembler linker. But clearly that's a lot of work)
+
+### Improvement in my M Systems Compiler
+
+A version of PCL was already part of my recent compilers, but tightly integrated. Working on this separate version showed how much of a mess it was, and it is now considerably tidied up.
+
+The discipline of deciding what belongs this side of PCL or the other side was useful too.
+
+However, because I really need the PCL components to be part of the compiler for efficiency, it has put considerable pressure on M's module system. So my next project is to overhaul that.
+
+### The Runtime Library
+
+For M, this is split into functions called explicitly, and those support functions called implicitly. But where do they belong? How do they fit in with PCL?
+
+Most such functions are compiled as normal, with the rest of an application, into PCL. Some functionality however, was moved to PCL, examples:
+
+* 128-bit arithmetic
+* Integer ** (power) operators
+* Function reflection
+
+These become the headache of PCL (they are variously implemented as special RTS functions, or as x64 code; depends on target).
+
+Actually that is one big advantage is that the compiler can off-load a lot of these problems onto PCL
+
+### Purity of PCL
+
+PCL is intended to be oblivious to both source language (eg. M and C), and target. But that is not quite the case.
+
+So a few opcodes remain used as hints to help out. In particular, SETARGS is used at the start of call-sequence, due to the special needs of the Win64 ABI.
+
+### Types and Opcodes in Detail
+
+See the file pc_tables. There are no separate docs at present.
+
+### The API
+
+See the file api.m. This is extracted from an exports file used for DLL; these are functions in the PC project marked as exported for use via a DLL.
+
+The pcdemo.m gives an idea of how a PCL program is synthesised.
+
+### What's Missing
+
+Absolutely loads. However, enough of the various combinations of opcodes and types are populated to enable me to use it for all my main language projects. However it can't take over from my current compiler until:
+
+* I transfer over the optimiser, such as it is, for the x64 code (that won't take long)
+* I figure out how to do the inline ASM of my M language. I thought of allowing PCL to deal with ASM, but decided not to. Inline ASM (which is initially parsed into the AST of the compiler), will only be possible when PC is used as an integrated part of the compiler. Then there will need to be some to-ing and fro-ing between the front end and the x64 backend. PCL will only see an opaque 'ASM' opcode.
+* There are various tweaks to with block-handling. (PCL nominally deals with block by value, but the ABI specifies they are handled by reference.)
+
+Another thing is that the new compiler is 5% slower than the current one; I would like to find out why.
 
