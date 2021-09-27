@@ -1,0 +1,15 @@
+Extproc printf i32
+    extparam                  u64 
+    extvariadics              
+Endext
+
+Proc h.start::
+    procentry                 
+    setargs                   1 0
+    push           "Hello, World! [pcl2]\n" u64 
+    callproc       &printf    
+    push           0          
+    stop                      
+End
+
+Endprogram
