@@ -41,7 +41,22 @@ I will use 'PC' to refer to the software (be it in pc.exe, pc.dll or incorporate
 
 ### Comparisons With Other Products
 
-This will be tricky as I'm not overlay familiar with them! 
+This will be tricky as I'm not overly familiar with them. But in the case of MIR, a direct comparison is possible with the Sieve example here: https://github.com/vnmakarov/mir/tree/v_0_1.
+
+sieve.m shows the version of that C program in my language, and sieve.pcl is the generated PCL code.
+
+PCL doesn't have so many things happening on one line, so has a higher line count (100 vs 38). (While intended to be readable, it's also meant to be machine generated. That is easier to do without worrying about whether to output "," or ";".)
+
+However, PCL source is also bigger overall. Mostly to do with the output being tabulated to line things up, but also because every name has to be fully qualified, eg: sievemir.sieve.n instead of just 'n'.
+
+PCL does compare better with the LLVM code produced via Clang: sieve.ll. This is 360 lines of which which just sieve() is over 100 lines.
+
+Generally:
+
+* PCL code is linear, has simpler instructions with fewer operands (0 or 1) and is written more vertically than horizontally
+* PCL has no local scopes so each name must be fully qualified
+* A PCL file is a complete, 100% representation of an entire program.
+* PCL is smaller in scope with regard to possible targets (mainly just Windows64 right now)
 
 ### Targets
 
