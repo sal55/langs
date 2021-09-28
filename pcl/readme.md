@@ -39,6 +39,10 @@ I will use 'PC' to refer to the software (be it in pc.exe, pc.dll or incorporate
 * Designed for 64-bit targets
 * Rich set of instructions targeted at my own system language
 
+### Comparisons With Other Products
+
+This will be tricky as I'm not overlay familiar with them! 
+
 ### Targets
 
 I only support x64 native code running on Windows. There is an experimental backend that can generate attrocious C code. That one could be useful to create programs for Linux and/or ARM processors, but it needs a lot more work. Obviously, there would be a C compiler dependency.
