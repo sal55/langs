@@ -1,0 +1,106 @@
+Extproc printf i32
+    extparam                  u64 
+    extvariadics              
+Endext
+
+
+Proc sievemir.sieve: i64
+    param          sievemir.sieve.n i64 
+    local          sievemir.sieve.i i64 
+    local          sievemir.sieve.k i64 
+    local          sievemir.sieve.prime i64 
+    local          sievemir.sieve.count i64 
+    local          sievemir.sieve.flags block:819000 
+    local          sievemir.sieve.av_1 i64 
+    procentry                 
+#21: 
+    push           sievemir.sieve.n i64 
+    pop            sievemir.sieve.av_1 i64 
+    push           sievemir.sieve.av_1 i64 
+    push           0          i64 
+    jumple         #22        i64 
+#23: 
+    push           0          i64 
+    pop            sievemir.sieve.count i64 
+#24: 
+    push           1          i64 
+    pop            sievemir.sieve.i i64 
+#25: 
+    push           1          i64 
+    push           &sievemir.sieve.flags 
+    push           sievemir.sieve.i i64 
+    popptroff                 u8 1 -1
+#26: 
+    forup          #25        i64 1
+    opnd           sievemir.sieve.i 
+    opnd           819000     
+#27: 
+#28: 
+    push           1          i64 
+    pop            sievemir.sieve.i i64 
+#29: 
+    push           &sievemir.sieve.flags 
+    push           sievemir.sieve.i i64 
+    pushptroff                u8 1 -1
+    jumpfalse      #30        i64 
+    push           sievemir.sieve.i i64 
+    push           sievemir.sieve.i i64 
+    add                       i64 
+    push           3          i64 
+    add                       i64 
+    pop            sievemir.sieve.prime i64 
+    push           sievemir.sieve.i i64 
+    push           sievemir.sieve.prime i64 
+    add                       i64 
+    pop            sievemir.sieve.k i64 
+    jump           #31        
+#32: 
+    push           0          i64 
+    push           &sievemir.sieve.flags 
+    push           sievemir.sieve.k i64 
+    popptroff                 u8 1 -1
+#33: 
+    push           &sievemir.sieve.k 
+    push           sievemir.sieve.prime i64 
+    addto                     i64 
+#31: 
+    push           sievemir.sieve.k i64 
+    push           819000     i64 
+    jumple         #32        i64 
+#34: 
+    push           &sievemir.sieve.count 
+    incr                      i64 1
+#30: 
+#35: 
+    forup          #29        i64 1
+    opnd           sievemir.sieve.i 
+    opnd           819000     
+#36: 
+#37: 
+    to             #23        
+    opnd           sievemir.sieve.av_1 
+#22: 
+    push           sievemir.sieve.count i64 
+    setret                    i64 
+    jump           #38        
+#38: 
+    retfn                     i64 
+End
+
+
+Proc sievemir.start::
+    procentry                 
+    setargs                   2 2
+    setargs                   1 0
+    push           100        i64 
+    callfn         &sievemir.sieve i64 
+    push           "Sieve (100) = %lld\n" u64 
+    callproc       &printf    
+#40: 
+    push           0          
+    stop                      
+    retproc                   
+End
+
+
+Endprogram
