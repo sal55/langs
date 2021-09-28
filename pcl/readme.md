@@ -54,6 +54,7 @@ PCL does compare better with the LLVM code produced via Clang: sieve.ll. This is
 Generally:
 
 * PCL code is linear, has simpler instructions with fewer operands (0 or 1) and is written more vertically than horizontally
+* Is stack-based rather than use registers or temporaries
 * PCL has no local scopes so each name must be fully qualified
 * A PCL file is a complete, 100% representation of an entire program.
 * PCL is smaller in scope with regard to possible targets (mainly just Windows64 right now)
