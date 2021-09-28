@@ -6,25 +6,27 @@ It's a sort of tiny version of LLVM. There are a few other similar products arou
 
 The quality is not good enough for others to use (and the support needed is not practical). So it's just being presented here as another example of what such a product can look like. People are welcome to take away anything that sounds useful.
 
+This one is primarily aimed at x64 machines running Windows.
+
 ### Components
 
 The programs I've been working on are:
 
 * **pc.exe** A program that can take PCL source code and turn it into ASM/EXE/DLL (or even C). No separate assemblers or linkers are needed for EXE or DLL targets.
 
-* **pc.dll** A library version which is what would most likely be used from other languages. While this can also read PCL source, probably the API will be used to generate in-memory PCL more efficiently. (Not ready.)
+* **pc.dll** A library version which is what would most likely be used from other languages. This can process PCL source but it also has an API.
 
-I wanted this project to be a small, single, self-contained executable. And so far it is (when using pc.exe or pc.dll). The current size is something over 0.2MB, which can generate all the files in the examples, and might end up as 0.25MB. (Doing the C output requires a 30KB addition, but a C backend is unlikely to co-exist in the same program.)
+I wanted this project to be a small, single, self-contained executable. The current size of pc.exe is something over 0.2MB, which can generate all the files in the examples, and might end up as 0.25MB. (Except test.c which used a different backend component.)
 
-While PC.EXE can process PCL source into EXE at some 1.2M lines/second and 4MB of code per second even on my slow PC, generating PCL source is likely tp be a bottleneck. The recommended way is to use the API. However generating a source file is the simplest way to use the produce (see cdemo.c).
+While PC.EXE can process PCL source into EXE at some 1.2MLoC/4MB of code per second even on my slow PC, the recommended way is to use the API to generate in-memory PCL. However generating a source file is the simplest way to use the product (see cdemo.c).
 
 Associated programs are:
 
-* **mm.exe** The compiler for my systems language that has been adapted to generate PCL. However the necessary parts of PC have been compiled into the executable (DLL interface not ready) and it uses the API. Possible outputs are ASM/EXE/DLL/PCL Source.
+* **mm.exe** The compiler for my systems language that has been adapted to generate PCL. This incorporates the necessary parts of PC (I like it to be self-contained) and it uses the API. Possible outputs are ASM/EXE/DLL/PCL Source.
 
 * **aa.exe** My assembler/linker, necessary to turn ASM source into EXE/DLL/OBJ.
 
-I will use 'PC' to refer to the software (be it in pc.exe, pc.dll or incorporated) to process PCL code)
+I will use 'PC' to refer to the software (be it in pc.exe, pc.dll or incorporated) to process PCL code.
 
 ### Characteristics
 
@@ -45,9 +47,9 @@ This will be tricky as I'm not overly familiar with them. But in the case of MIR
 
 sieve.m shows the version of that C program in my language, and sieve.pcl is the generated PCL code.
 
-PCL doesn't have so many things happening on one line, so has a higher line count (100 vs 38). (While intended to be readable, it's also meant to be machine generated. That is easier to do without worrying about whether to output "," or ";".)
+PCL doesn't have so many things happening on one line, so has a higher line count (100 vs 38). (This makes it easy to generate programmatically as the syntax is less fussy.)
 
-However, PCL source is also bigger overall. Mostly to do with the output being tabulated to line things up, but also because every name has to be fully qualified, eg: sievemir.sieve.n instead of just 'n'.
+However, PCL source is also bigger overall. Partly to do with the output being tabulated to line things up, but also because every name has to be fully qualified, eg: sievemir.sieve.n instead of just 'n'.
 
 PCL does compare better with the LLVM code produced via Clang: sieve.ll. This is 360 lines of which which just sieve() is over 100 lines.
 
@@ -56,12 +58,15 @@ Generally:
 * PCL code is linear, has simpler instructions with fewer operands (0 or 1) and is written more vertically than horizontally
 * Is stack-based rather than use registers or temporaries
 * PCL has no local scopes so each name must be fully qualified
-* A PCL file is a complete, 100% representation of an entire program.
-* PCL is smaller in scope with regard to possible targets (mainly just Windows64 right now)
+* A PCL file is a complete, 100% representation of an entire program
+* PCL is more limited in scope with only one real target (Win64)
 * PCL has no real optimiser
 * PCL has no interest in JIT
 
-On the latter point, it's designed to do ahead-of-time compilation only, and to do it quickly. (On my machine, pc.exe builds from source in about 0.11 seconds, for some 20K lines of code in 20 modules. My biggest project has 40-50Kloc in 30+ modules, and it takes 0.17 seconds.)
+On the latter point, it's designed to do ahead-of-time compilation only, and to do it quickly.
+
+(On my machine, pc.exe \[for fixed Win64 asm/exe/dll target\] builds from source in about 0.11 seconds, for some 20K lines of code in 20 modules. I think I once estimated that building LLVM from source would take 6-12 hours, based on a figure of 26 minutes using 14 cores on some higher-end Intel machine. My PC was the cheapest in the shop in 2010.)
+
 
 ### Targets
 
@@ -102,19 +107,7 @@ It resembles also ASM code, but for a far more capable and orthoginal processor.
 
 Effectively this is a new, low-level language, and PC can be used as a compiler or assembler for it.
 
-For examples, see test.pcl and fib.pcl. For a bigger example, see pc.pcl (50Kloc), and mm.pcl (115Kloc), my new compiler that incorporates the PCL backend. These are the MM and PC products in action on themselves:
-
-````
-C:\mxp>mm -pcl pc                       # Generate PCL file for PC project
-Compiling pc.m---------- to pc.pcl
-
-C:\mxp>pc pc -out:pc2.exe               # Invoke PC backend on PC.PCL to get 2nd generation PC2.EXE
-Processing pc.pcl to pc2.exe
-
-C:\mxp>mm pc                            # In practice, it's done in one go using in-memory PCL code,
-Compiling pc.m---------- to pc.exe      # no discrete PCL file
-````
-
+For examples, see test.pcl and fib.pcl. For a bigger example, see pc.pcl (50Kloc), and mm.pcl (115Kloc), my new compiler that incorporates the PCL backend.
 ### Files
 
 **test.pcl** As generated by pcdemo.m
@@ -158,6 +151,21 @@ The program generates the instructions in memory, then various optional lines ca
 * C source; see test.c (needs pclhdr.h to build)
 * EXE binary, which can be run from the demo
 
+These are the MM and PC products in action on some real programs, themselves:
+````
+C:\mxp>mm -pcl pc                       # Generate PCL file for PC project
+Compiling pc.m---------- to pc.pcl
+
+C:\mxp>pc pc -out:pc2.exe               # Invoke PC backend on PC.PCL to get 2nd generation PC2.EXE
+Processing pc.pcl to pc2.exe
+
+C:\mxp>mm pc                            # In practice, it's done in one go using in-memory PCL code,
+Compiling pc.m---------- to pc.exe      # no discrete PCL file
+````
+If you can run the pc.exe program here, try it on itself:
+````
+pc -asm pc                              # produces pc.asm from pc.pcl
+````
 ### Demo Program (C)
 
 I mocked up the necessary declarations to make this work (as I don't have an automatic way yet to generate the 100s of necessary declarations).
