@@ -203,34 +203,32 @@ However, the original contains everything needed to generate ASM or EXE. The ASM
 
 ### Used as C Compiler Backend
 
-I started modifying my C compiler to generate PCL, however I stopped because at the moment it's not worthwhile. (It needs a new front-end first!)
+I started modifying my C compiler to generate PCL, however I stopped because at the moment it's not so useful and needs other work anyway.
 
-It would probably work (the current backend generates terrible code), but PCL would need some tweaks:
+But PCL would need some tweaks:
 
 * C mostly still uses a 32-bit int, so most ops are 32-bits. Currently most PCL ops (add, etc) are 64 bits, so special support is needed to provide 32 bit ones.
 * Some support for doing setjmp/longjmp is needed in PCL
 * I thought I'd need special handling for Switch, as that feature is so chaotic in C, but it might be OK
-* C compiles a module at a time, so extra support is needed for multiple modules, which have to be submitted all at the same time. (Probably, there are devious ways to get around this, by pretending each module is a whole program with imports and exports, generating multiple ASM files from multiple PCL, and using my AA assembler linker. But clearly that's a lot of work)
+* C compiles a module at a time, so extra support is needed for multiple modules, which also have to be submitted all at the same time. (Probably, there are devious ways to get around this, but it's something to get back to.)
 
 ### Improvement in my M Systems Compiler
 
-A version of PCL was already part of my recent compilers, but tightly integrated. Working on this separate version showed how much of a mess it was, and it is now considerably tidied up.
-
-The discipline of deciding what belongs this side of PCL or the other side was useful too.
+A version of PCL was already part of my recent compilers, but tightly integrated. Working on this separate version showed how much of a mess it was, and it is now considerably tidied up. The discipline of deciding what belongs this side of PCL or the other side was useful too.
 
 However, because I really need the PCL components to be part of the compiler for efficiency, it has put considerable pressure on M's module system. So my next project is to overhaul that.
 
 ### The Runtime Library
 
-For M, this is split into functions called explicitly, and those support functions called implicitly. But where do they belong? How do they fit in with PCL?
+This is M's runtime which is a few thousand lines, with many providing language support and called behind the scenes. The question with some of those was, do they stay this side of PCL, or move to the other side? That is, get implemented as special PCL instructions.
 
-Most such functions are compiled as normal, with the rest of an application, into PCL. Some functionality however, was moved to PCL, examples:
+Some more moved to PCL, for example:
 
 * 128-bit arithmetic
 * Integer ** (power) operators
 * Function reflection
 
-These become the headache of PCL (they are variously implemented as special RTS functions, or as x64 code; depends on target).
+These then become the headache of PCL. (Where they are variously implemented as inline x64 code, or generated x64 functions, or special RTS functions which are added to the main user program by PC. But it depends on target too.)
 
 ### Purity of PCL
 
@@ -244,9 +242,9 @@ See the file pc_tables. There are no separate docs at present.
 
 ### The API
 
-See the file api.m. This is extracted from an exports file used for DLL; these are functions in the PC project marked as exported for use via a DLL.
+See the file api.m. This is extracted from an exports file written when PC.DLL is created.
 
-The pcdemo.m gives an idea of how a PCL program is synthesised. As an example actual PCL-generating code from my MM compiler, this function deals with most binary operators:
+The pcdemo.m gives an idea of how a PCL program is synthesised. As an example of actual PCL-generating code from my MM compiler, this function deals with most binary operators:
 ````
 proc do_bin(unit p, a, b) =
     evalunit(a)
@@ -264,7 +262,7 @@ Absolutely loads. Enough of the various combinations of opcodes and types are po
 
 * I transfer over the optimiser, such as it is, for the x64 code (that won't take long)
 * I figure out how to deal with the inline ASM of my M language.
-* There are various tweaks to with block-handling. (PCL nominally deals with block by value, but the ABI specifies they are handled by reference.)
+* Do various other tweaks.
 
 ### Some Special Features of PCL
 
@@ -306,13 +304,13 @@ PCL source file -->---|   in-memory   |-->--- PCL source file
                       |---------------|
                       |   C backend   |-->--- C source file (-> Linux)
                       |---------------|
-                      |          | SS |-->--- EXE binary (all Win64)
-                      |     MCL  |    |
+                      |          |    |-->--- EXE binary (all Win64)
+                      |     MCL  | SS |
                       |          |    |-->--- DLL binary
                       |          |____|
                       |               |
                       |    backend    |-->--- ASM source -> EXE/DLL/OBJ
-                      |_______________|
+                      |---------------|
                       |               |
                       | [Interpreter] |
                       |_______________|
