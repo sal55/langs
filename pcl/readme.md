@@ -10,9 +10,9 @@ The quality is not good enough for others to use (and the support needed is not 
 
 The programs I've been working on are:
 
-**pc.exe** A program that can take PCL source code and turn it into ASM/EXE/DLL (or even C). No separate assemblers or linkers are needed for EXE or DLL targets.
+* **pc.exe** A program that can take PCL source code and turn it into ASM/EXE/DLL (or even C). No separate assemblers or linkers are needed for EXE or DLL targets.
 
-**pc.dll** A library version which is what would most likely be used from other languages. While this can also read PCL source, probably the API will be used to generate in-memory PCL more efficiently. (Not ready.)
+* **pc.dll** A library version which is what would most likely be used from other languages. While this can also read PCL source, probably the API will be used to generate in-memory PCL more efficiently. (Not ready.)
 
 I wanted this project to be a small, single, self-contained executable. And so far it is (when using pc.exe or pc.dll). The current size is something over 0.2MB, which can generate all the files in the examples, and might end up as 0.25MB. (Doing the C output requires a 30KB addition, but a C backend is unlikely to co-exist in the same program.)
 
@@ -20,9 +20,9 @@ While PC.EXE can process PCL source into EXE at some 1.2M lines/second and 4MB o
 
 Associated programs are:
 
-**mm.exe** The compiler for my systems language that has been adapted to generate PCL. However the necessary parts of PC have been compiled into the executable (DLL interface not ready) and it uses the API. Possible outputs are ASM/EXE/DLL/PCL Source.
+* **mm.exe** The compiler for my systems language that has been adapted to generate PCL. However the necessary parts of PC have been compiled into the executable (DLL interface not ready) and it uses the API. Possible outputs are ASM/EXE/DLL/PCL Source.
 
-**aa.exe** My assembler/linker, necessary to turn ASM source into EXE/DLL/OBJ.
+* **aa.exe** My assembler/linker, necessary to turn ASM source into EXE/DLL/OBJ.
 
 I will use 'PC' to refer to the software (be it in pc.exe, pc.dll or incorporated) to process PCL code)
 
