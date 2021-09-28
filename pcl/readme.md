@@ -111,9 +111,9 @@ C:\mxp>mm pc                            # In practice, it's done in one go using
 Compiling pc.m---------- to pc.exe      # no discrete PCL file
 ````
 
-### Demo Program
+### Demo Program (M)
 
-See pcdemo.m. I had hoped to write this in C, but that part (needing DLL and headers) is not ready. So it's in my language. It writes a basic Hello program (using C's printf to minimise runtime support and keep the code size to 20 lines instead of 2000).
+See pcdemo.m. I had hoped to write this primarily in C, but that headers part is not yet ready (a version in C is shown below). So it's in my language. It writes a basic Hello program (using C's printf to minimise runtime support and keep the code size to 20 lines instead of 2000).
 
 The program generates the instructions in memory, then various optional lines can generate:
 
@@ -122,7 +122,22 @@ The program generates the instructions in memory, then various optional lines ca
 * C source; see test.c (needs pclhdr.h to build)
 * EXE binary, which can be run from the demo
 
-There *is* a simple C demo; see cdemo.c. This just writes the PCL code as text. The output of this program is the rather flat:
+### Demo Program (C)
+
+I mocked up the necessary declarations to make this work (as I don't have an automatic way yet to generate the 100s of necessary declarations).
+
+See pcdemoc.c. This is like pcdemo.m, but not quite as sweet as C lacks default arguments. It does the same thing, but uses pc.dll. It's built and run like this:
+````
+C:\c>bcc pcdemoc pc.dll
+Compiling pcdemoc.c to pcdemoc.exe
+
+C:\c>pcdemoc                       # Create PCL file, use PC API to create test.exe, and run it
+Hello, World! [C/demo]
+````
+(bcc is my C compiler I mention elsewhere.) pcdemoc.exe is about 3.5KB, pc.dll is 230KB. 
+
+A simpler demo that generates only text is in cdemo.c. This just writes the PCL code as text, and then invokes pc.exe via system().
+The output of this program is the rather flat:
 ````
 extproc printf i32
 extparam u64
