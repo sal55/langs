@@ -58,6 +58,10 @@ Generally:
 * PCL has no local scopes so each name must be fully qualified
 * A PCL file is a complete, 100% representation of an entire program.
 * PCL is smaller in scope with regard to possible targets (mainly just Windows64 right now)
+* PCL has no real optimiser
+* PCL has no interest in JIT
+
+On the latter point, it's designed to do ahead-of-time compilation only, and to do it quickly. (On my machine, pc.exe builds from source in about 0.11 seconds, for some 20K lines of code in 20 modules. My biggest project has 40-50Kloc in 30+ modules, and it takes 0.17 seconds.)
 
 ### Targets
 
