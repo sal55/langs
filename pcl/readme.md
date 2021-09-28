@@ -61,7 +61,7 @@ Here it is easy to get carried away, but the outputs that either work, or have b
 * ASM source output. This is for x64 targets on Windows. It's in my own syntax, requiring my AA assembler to turn into EXE/DLL/OBJ, but it can just be used to examine the quality of the code (not high)
 * EXE runnable binary, again for x64 on Windows
 * DLL binary, another variation
-* C source code. This is highly experimental, and has been tried on smallish programs just to show that it can work. (Also, to give extra input to the PCL design which has been tweaked)
+* C source code. This is highly experimental, and has been tried on smallish programs just to show that it can work. (Also, to give a different perspective to help refine the PCL design.)
 
 Outputs which were briefly considered:
 
@@ -208,3 +208,43 @@ Special support exists for:
 * Min/max operators, also min:=/max:=
 * Common math(s) operators which are built-in, also sqr (square) and power
 * Setting up and allowing access to a program's function tables
+
+### The Diagram
+
+Here's the obligatory diagram which I've seen also on other products:
+
+````
+                            PC
+                       _______________
+                      |               |
+                      |               |
+API -------------->---|     PCL       |
+                      |               |
+PCL source file -->---|   in-memory   |-->--- PCL source file
+                      |               |
+                      |    format     |
+                      |               |
+                      |---------------|
+                      |   C backend   |-->--- C source file (-> Linux)
+                      |---------------|
+                      |          | SS |-->--- EXE binary (all Win64)
+                      |     MCL  |    |
+                      |          |    |-->--- DLL binary
+                      |          |____|
+                      |               |
+                      |    backend    |-->--- ASM source -> EXE/DLL/OBJ
+                      |_______________|
+                      |               |
+                      | [Interpreter] |
+                      |_______________|
+````
+
+MCL = in-memory representation of x64 native code.
+
+SS = tables of data, machine code and symbols suitable
+for conversion to PE EXE, DLL and OBJ formats, although OBJ
+generation is not working inside PC.
+
+All file inputs and outputs are single files.
+
+The interpreter part is just a proposal.
