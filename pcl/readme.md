@@ -207,8 +207,8 @@ I started modifying my C compiler to generate PCL, however I stopped because at 
 
 But PCL would need some tweaks:
 
-* C mostly still uses a 32-bit int, so most ops are 32-bits. Currently most PCL ops (add, etc) are 64 bits, so special support is needed to provide 32 bit ones.
-* Some support for doing setjmp/longjmp is needed in PCL
+* C mostly still uses a 32-bit int, so most ops are 32-bits. Currently most PCL ops (add, etc) are 64 bits, so more 32-bit ops must be supported
+* * Some support for doing setjmp/longjmp is needed in PCL
 * I thought I'd need special handling for Switch, as that feature is so chaotic in C, but it might be OK
 * C compiles a module at a time, so extra support is needed for multiple modules, which also have to be submitted all at the same time. (Probably, there are devious ways to get around this, but it's something to get back to.)
 
@@ -220,9 +220,9 @@ However, because I really need the PCL components to be part of the compiler for
 
 ### The Runtime Library
 
-This is M's runtime which is a few thousand lines, with many providing language support and called behind the scenes. The question with some of those was, do they stay this side of PCL, or move to the other side? That is, get implemented as special PCL instructions.
+This is M's runtime which is a few thousand lines, with many functions providing language support and called behind the scenes. The question with some of those was, do they stay this side of PCL, or move to the other side? That is, get implemented as special PCL instructions.
 
-Some more moved to PCL, for example:
+Some were moved to PCL, for example:
 
 * 128-bit arithmetic
 * Integer ** (power) operators
