@@ -12,7 +12,7 @@ The programs I've been working on are:
 
 **pc.exe** A program that can take PCL source code and turn it into ASM/EXE/DLL (or even C). No separate assemblers or linkers are needed for EXE or DLL targets.
 
-**pc.dll** A library version which is what would most likely be used from othe languages. While this can also read PCL source, probably the API will be most likely be used to generate in-memory PCL more efficiently. (Not ready.)
+**pc.dll** A library version which is what would most likely be used from other languages. While this can also read PCL source, probably the API will be used to generate in-memory PCL more efficiently. (Not ready.)
 
 I wanted this project to be a small, single, self-contained executable. And so far it is (when using pc.exe or pc.dll). The current size is something over 0.2MB, which can generate all the files in the examples, and might end up as 0.25MB. (Doing the C output requires a 30KB addition, but a C backend is unlikely to co-exist in the same program.)
 
