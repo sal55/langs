@@ -325,3 +325,103 @@ generation is not working inside PC.
 All file inputs and outputs are single files.
 
 The interpreter part is just a proposal.
+
+### How PCL is Used in my Compilers
+
+That diagram was fun so here are similar ones, showing PCL is used or could be used with my language projects:
+````
+(Finished)             MM.EXE (Compile M apps to Win64 binaries)
+                       _______________
+                      |     CLI       |
+                      |---------------|
+M source code:  -->---| M Compiler(m) |
+                      |---------------|
+                      |     PCL(p)    |-->--- PCL source file
+                      |---------------|
+                      |     MCL(p)    |-->--- EXE/DLL binary
+                      |_______________|
+
+
+(Proposed)             MC.EXE (Compiler M apps to C64 sources)
+                       _______________
+                      |     CLI       |
+                      |---------------|
+M source code:  -->---| M Compiler(m) |
+                      |---------------|
+                      |     PCL(p)    |-->--- PCL source file
+                      |---------------|
+                      |    Clang(p)   |-->--- C source file
+                      |_______________|
+
+
+(Finished)             PC.EXE (Compile PCL source to Win64 binaries)
+                       _______________
+                      |     CLI       |
+                      |---------------|
+PCL source file -->---|     PCL(p)    |-->--- PCL source file
+                      |---------------|
+                      |               |-->--- ASM source file
+                      |     MCL(p)    |-->--- EXE/DLL binary
+                      |_______________|
+
+
+(Existing)             AA.EXE (Assemble ASM source to Win64 binaries)
+                       _______________
+                      |     CLI       |
+                      |---------------|
+ASM source file -->---| Assembler(a)  |
+                      |---------------|
+                      |     MCL(a)    |-->--- EXE/DLL/OBJ binary
+                      |_______________|
+
+
+(Finished)             PC.DLL (PCL/API Library)
+                       _______________
+API -------------->---|     PCL(p)    |-->--- PCL source file
+                      |---------------|
+                      |               |-->--- ASM source file
+                      |     MCL(p)    |-->--- EXE/DLL binary
+                      |_______________|
+
+
+(Existing)             BCC.EXE (C subset compiler)
+                       _______________
+                      |     CLI       |
+                      |---------------|
+C source code:  -->---|  C Compiler   |
+                      |---------------|
+                      | Assembler(a)  |
+                      |---------------|
+                      |               |-->--- ASM source file
+                      |     MCL(a)    |-->--- EXE/DLL binary
+                      |_______________|
+
+
+(Proposed)             BCC.EXE (C subset compiler)
+                       _______________
+                      |     CLI       |
+                      |---------------|
+C source code:  -->---|  C Compiler   |
+                      |---------------|
+                      |     PCL(p)    |-->--- PCL source file
+                      |---------------|
+                      |               |-->--- ASM source file
+                      |     MCL(p)    |-->--- EXE/DLL binary
+                      |_______________|
+````
+(m) indicates component of M compiler
+(p) indicates components of PCL project
+(a) indicates modules belonging to the assembler (which does its own thing)
+
+While all projects can directly generate binary code, they can also generate intermediate PCL and intermediate ASM:
+````
+    Source code -> PCL source -> ASM source -> Binary
+````    
+But, usually, the intermediates are kept as internal binary, and also written as source code for debugging, testing, curiosity, or when any special requirement comes up.
+
+Everything shown in a box contains those components in a single EXE or DLL file. When I revamp my module system, hopefully those components can be included in a project as simply as:
+````
+    import pcl
+    import mcl
+````
+However, at the moment, it's very messy.
