@@ -328,7 +328,7 @@ The interpreter part is just a proposal.
 
 ### How PCL is Used in my Compilers
 
-That diagram was fun so here are similar ones, showing PCL is used or could be used with my language projects:
+That diagram was fun so here are similar ones, showing how PCL is used or could be used with my language projects:
 ````
 (Finished)             MM.EXE (Compile M apps to Win64 binaries)
                        _______________
@@ -377,9 +377,9 @@ ASM source file -->---| Assembler(a)  |
 
 (Finished)             PC.DLL (PCL/API Library)
                        _______________
-API -------------->---|     PCL(p)    |-->--- PCL source file
+API -----------<-->---|     PCL(p)    |-->--- PCL source file or string
                       |---------------|
-                      |               |-->--- ASM source file
+                      |               |-->--- ASM source file or string
                       |     MCL(p)    |-->--- EXE/DLL binary
                       |_______________|
 
@@ -409,9 +409,13 @@ C source code:  -->---|  C Compiler   |
                       |     MCL(p)    |-->--- EXE/DLL binary
                       |_______________|
 ````
-(m) indicates component of M compiler
-(p) indicates components of PCL project
-(a) indicates modules belonging to the assembler (which does its own thing)
+**(m)** indicates component of M compiler
+
+**(p)** indicates components of PCL project
+
+**(a)** indicates modules belonging to the assembler (which does its own thing)
+
+**CLI** is present on all EXE projects, and is the user-interface (that is, command line parameters and options)
 
 While all projects can directly generate binary code, they can also generate intermediate PCL and intermediate ASM:
 ````
