@@ -338,6 +338,7 @@ M source code:  -->---| M Compiler(m) |
                       |---------------|
                       |     PCL(p)    |-->--- PCL source file
                       |---------------|
+                      |               |-->--- ASM source file
                       |     MCL(p)    |-->--- EXE/DLL binary
                       |_______________|
 
