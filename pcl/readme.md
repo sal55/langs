@@ -421,7 +421,7 @@ While all projects can directly generate binary code, they can also generate int
 ````
     Source code -> PCL source -> ASM source -> Binary
 ````    
-But, usually, the intermediates are kept as internal binary, and also written as source code for debugging, testing, curiosity, or when any special requirement comes up.
+But, usually, the intermediates are kept as internal binary, and only written as source code for development, debugging, testing, curiosity, or when any special requirement comes up. (Other diagnostic outputs, AST/ST data etc, not shown)
 
 Everything shown in a box contains those components in a single EXE or DLL file. When I revamp my module system, hopefully those components can be included in a project as simply as:
 ````
