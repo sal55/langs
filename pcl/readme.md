@@ -430,3 +430,16 @@ Everything shown in a box contains those components in a single EXE or DLL file.
     import mcl
 ````
 However, at the moment, it's very messy.
+
+### Incorporating PCL into other Languages
+
+The only mechanism I have is to provide a binary PC.DLL library. (It can built from my M source using mm.exe.)
+
+That needs a C header file that lists the API functions and the various enumerations used. Since my C is always plain, that can also serve as docs for building bindings for
+other languages.
+
+I could create that by hand, but there is no mechanism to keep it synched with the original sources. So I would rather create a option in my MM compiler automatically generate C-style headers when creating DLLs.
+
+Generating a .obj file is another possibly; this can allow the project to be statically linked.
+
+At the moment, providing a C version is not on the cards. The 'Clang' backend of PCL, if completed and applied to itself, would generate very poor, unstructured and largely type-free C code. It might just suffice for compiling into an executable or DLL. But it would still need the properly generated C headers.
