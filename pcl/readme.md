@@ -258,11 +258,10 @@ end
 
 ### What's Missing
 
-Absolutely loads. Enough of the various combinations of opcodes and types are populated to enable me to use it for all my main language projects. However it can't take over from my current compiler until:
+Absolutely loads. Enough of the various combinations of opcodes and types are populated to enable me to use it for all my main language projects.
 
-* I transfer over the optimiser, such as it is, for the x64 code (that won't take long)
-* I figure out how to deal with the inline ASM of my M language.
-* Do various other tweaks.
+At the current time, it can do everything my current compiler can do.
+
 
 ### Some Special Features of PCL
 
