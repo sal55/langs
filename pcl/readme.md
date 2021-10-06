@@ -30,7 +30,7 @@ I will use 'PC' to refer to the software (be it in pc.exe, pc.dll or incorporate
 * Byte-code-like instruction set, but with types
 * Supports lower-level languages perhaps up to a couple of steps beyond C (anything else must be implemented on top)
 * Datatypes supported are u8 u16 u32 u64 u128, i8 i16 i32 i64 i128, f32 f64 and Block.
-* Designed for whole program compilers, so the entire program is generated as PCL then converted.
+* Designed for whole program compilers, so the entire program is generated as PCL then converted to the target code
 * Designed for 64-bit targets
 * Rich set of instructions targeted at my own system language
 
@@ -40,11 +40,7 @@ In the case of MIR, a direct comparison is possible with the Sieve example here:
 
 sieve.m shows the version of that C program in my language, and sieve.pcl is the generated PCL code.
 
-PCL doesn't have so many things happening on one line, so has a higher line count (100 vs 38). (This makes it easy to generate programmatically as the syntax is less fussy.)
-
-However, PCL source is also bigger overall. Partly to do with the output being tabulated to line things up, but also because every name has to be fully qualified, eg: sievemir.sieve.n instead of just 'n'.
-
-PCL does compare better with the LLVM code produced via Clang: sieve.ll. This is 360 lines of which which just sieve() is over 100 lines.
+PCL has a higher line count and is generally bigger because of things like fully qualified names. But it compares better with the LLVM code produced via Clang: sieve.ll.
 
 Generally:
 
