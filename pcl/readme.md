@@ -14,17 +14,13 @@ The programs I've been working on are:
 
 * **pc.exe** A program that can take PCL source code and turn it into ASM/EXE/DLL (or even C). No separate assemblers or linkers are needed for EXE or DLL targets.
 
-* **pc.dll** A library version which is what would most likely be used from other languages. This can process PCL source but it also has an API.
+* **pc.dll** A library version which is what would most likely be used from other languages. This can process PCL source but it also has an API to build PCL code via function calls.
 
-I wanted this project to be a small, single, self-contained executable. The current size of pc.exe is something over 0.2MB, which can generate all the files in the examples, and might end up as 0.25MB. (Except test.c which used a different backend component.)
+I wanted this project to be a small, single, self-contained executable. The current size of either pc.exe or pc.dll is something under 0.25MB, which can generate all the files in the examples. (Except test.c which used a different backend component.)
 
-While PC.EXE can process PCL source into EXE at some 1.2MLoC/4MB of code per second even on my slow PC, the recommended way is to use the API to generate in-memory PCL. However generating a source file is the simplest way to use the product (see cdemo.c).
+While PC.EXE can process PCL source into EXE at several MB of binary code per second even on my slow PC, the recommended way is to use the API to generate in-memory PCL. However generating a source file is the simplest way to use the product (see cdemo.c).
 
-Associated programs are:
-
-* **mm.exe** The compiler for my systems language that has been adapted to generate PCL. This incorporates the necessary parts of PC (I like it to be self-contained) and it uses the API. Possible outputs are ASM/EXE/DLL/PCL Source.
-
-* **aa.exe** My assembler/linker, necessary to turn ASM source into EXE/DLL/OBJ.
+Associated programs are: **mm.exe**, the compiler for my systems language that has been adapted to generate PCL. This incorporates the necessary parts of PC (I like it to be self-contained) and it uses the API. **aa.exe** yy assembler/linker, necessary to turn ASM source into EXE/DLL/OBJ.
 
 I will use 'PC' to refer to the software (be it in pc.exe, pc.dll or incorporated) to process PCL code.
 
@@ -34,16 +30,13 @@ I will use 'PC' to refer to the software (be it in pc.exe, pc.dll or incorporate
 * Byte-code-like instruction set, but with types
 * Supports lower-level languages perhaps up to a couple of steps beyond C (anything else must be implemented on top)
 * Datatypes supported are u8 u16 u32 u64 u128, i8 i16 i32 i64 i128, f32 f64 and Block.
-* 128-bit support is sparse
-* Block types implement fixed size arrays and structs
-* Designed for whole program compilers, so the entire program is generated as PCL then converted
-* Multiple PCL inputs (needed for languages such as C with independent compilation) is a possibility, but all files would need submitting at once
+* Designed for whole program compilers, so the entire program is generated as PCL then converted.
 * Designed for 64-bit targets
 * Rich set of instructions targeted at my own system language
 
 ### Comparisons With Other Products
 
-This will be tricky as I'm not overly familiar with them. But in the case of MIR, a direct comparison is possible with the Sieve example here: https://github.com/vnmakarov/mir/tree/v_0_1.
+In the case of MIR, a direct comparison is possible with the Sieve example here: https://github.com/vnmakarov/mir/tree/v_0_1.
 
 sieve.m shows the version of that C program in my language, and sieve.pcl is the generated PCL code.
 
@@ -65,8 +58,7 @@ Generally:
 
 On the latter point, it's designed to do ahead-of-time compilation only, and to do it quickly.
 
-(On my machine, pc.exe \[for fixed Win64 asm/exe/dll target\] builds from source in about 0.11 seconds, for some 20K lines of code in 20 modules. I think I once estimated that building LLVM from source would take 6-12 hours, based on a figure of 26 minutes using 14 cores on some higher-end Intel machine. My PC was the cheapest in the shop in 2010.)
-
+(On my machine, pc.exe \[for fixed Win64 asm/exe/dll target\] builds from source in around 0.1 seconds, for some 18KLoC. I think I once estimated that building LLVM from source would take 6-12 hours on the same machine.)
 
 ### Targets
 
@@ -76,28 +68,30 @@ No other targets are in the pipeline (possibilities would have been direct x64 o
 
 ### Inputs
 
-* PCL code can be generated as textual source code, then submitted to PC
+* PCL code can be generated as textual source code, then submitted to PC.
 * The API can be used generate code programmatically.
-* Part of the original spec was to have a binary version of PCL code (called PCB files) which can be generated and processed more quickly, but that is unlikely to be done. The recommended way to generate code is via the API.
 
-The API would be used by external languages via DLL when that is ready. In my language I just compile in the various components of PC using import statements. (I could use DLL too but I like my products to be self-contained)
+There is no binary PCL file format. If PCL source is too slow, the API is recommended.
+
+The API would be used by external languages via DLL when that is ready. In my language I just compile in the various components of PC using import statements.
 
 ### Outputs
 
-Here it is easy to get carried away, but the outputs that either work, or have been tested experimentally, are:
+The outputs that either work, or have been tested experimentally, are:
 
-* PCL source output. Intended for when code is generated via the API, to examine the output. (Also possible to have PCL source input and PCL source output, taking care to use different names, to tidy up source code)
-* ASM source output. This is for x64 targets on Windows. It's in my own syntax, requiring my AA assembler to turn into EXE/DLL/OBJ, but it can just be used to examine the quality of the code (not high)
+* PCL source output. Intended for when code is generated via the API, to examine the output. (Can also be used to tidy up or normalise PCL source input.)
+* ASM source output. This is for x64 targets on Windows. It's in my own syntax.
 * EXE runnable binary, again for x64 on Windows
 * DLL binary, another variation
 * C source code. This is highly experimental, and has been tried on smallish programs just to show that it can work. (Also, to give a different perspective to help refine the PCL design.)
 
+OBJ binary, which can be useful for interacting with other languages, is possible via ASM. It needs aa.exe, and an external linker.
+
 Outputs which were briefly considered:
 
 * Binary PCL files
-* PCL interpreter (every such project seems to have one of these). I like to do these properly and with performance in mind, but it would take too much effort. However, if this was implemented in a language like C, it could mean being able to run PCL programs on virtually any (64-bit) machine.
-* Run in-memory: fixing up native code to run immediately instead of creating an EXE file. However, writing an EXE then invoking the executable is two lines of code, so of little benefit.
-* OBJ format, sometimes of use to combine my code with other languages'. This can actually be added, but it would need my AA assembler. 
+* PCL interpreter
+* Run in-memory (it was easier to generate EXE than just run that)
 
 ### PCL Syntax
 
@@ -105,7 +99,7 @@ This was based on the bytecode I've long used for my dynamic intepreters. It is 
 
 It resembles also ASM code, but for a far more capable and orthoginal processor.
 
-Effectively this is a new, low-level language, and PC can be used as a compiler or assembler for it.
+PCL is a complete, low-level, portable language.
 
 For examples, see test.pcl and fib.pcl. For a bigger example, see pc.pcl (50Kloc), and mm.pcl (115Kloc), my new compiler that incorporates the PCL backend.
 ### Files
@@ -142,7 +136,7 @@ For examples, see test.pcl and fib.pcl. For a bigger example, see pc.pcl (50Kloc
 
 ### Demo Program (M)
 
-See pcdemo.m. I had hoped to write this primarily in C, but that headers part is not yet ready (a version in C is shown below). So it's in my language. It writes a basic Hello program (using C's printf to minimise runtime support and keep the code size to 20 lines instead of 2000).
+See pcdemo.m (a C version is below), which is my language. It writes a basic Hello program (using C's printf to minimise runtime support and keep the code size to 20 lines instead of 2000).
 
 The program generates the instructions in memory, then various optional lines can generate:
 
