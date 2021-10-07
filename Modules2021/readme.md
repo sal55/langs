@@ -141,3 +141,82 @@ That used a more primitive language and compiler. Modules were independently com
   itself needs compiling, and linked in to the program
 
 * Names in the composite header formed a separate scope
+
+### Diagram
+Outline of a simple with one main program module; plus a one-module library; plus a 5-module library with language support.
+````
+This demo program consists of 3 subprograms and 7 modules in all:
+
+pidemo.m                Subprogram #1, one module
+
+bignum.m                Subprogram #2, one module
+
+mlib.m                  Subprogram #3, five modules
+
+
+pidemo.m:               Main Subprogram/Program 'pidemo'; one module
+ _____________________
+|                     |      Header follows...
+|    module pidemo    |      Optional to declare the first module
+|    import mlib      |      Import these two subprograms
+|    import bignum    |
+|-------------------- |      ... End of header
+|    proc start =     |      Entry point
+|    ....             |
+|    end              |
+|_____________________|
+
+
+bignum.m:               Subprogram 'bignum'; one module
+ _____________________
+|                     |      Header follows...
+|    module bignum    |      (Optional)
+|    import mlib      |      Import M library
+|---------------------|      ... End of header
+|    ....             |
+|                     |
+|_____________________|
+
+
+mlib.m:                 Subprogram 'mlib'; five modules
+ _____________________
+|                     |      Header follows...
+|    module mlib      |      (Optional)
+|    module msys      |
+|    module clib      |
+|    module oslib     |      (Mapped to mwindows)
+|    module osdll     |      (Mapped to mwindll)
+|-------------------- |      ... End of header
+|    ....             |
+|                     |
+|_____________________|
+
+Other modules don't need to declare or import anything; they are just code:
+
+msys.m:
+ _____________________
+|                     |
+|    ....             |
+|_____________________|
+
+clib.m:
+_____________________
+|                     |
+|    ....             |
+|_____________________|
+
+mwindows.m:
+ _____________________
+|                     |
+|    ....             |
+|_____________________|
+
+mwindll.m:
+ _____________________
+|                     |
+|    ....             |
+|_____________________|
+````
+
+
+
