@@ -81,6 +81,8 @@ The last module scheme had some facilities for user-defined and conditional, to 
 
 A Program can be known by the name of its main (or only) Subprogram. And a Subprogram can be known by the name of its header module, which can also be the only one.
 
+It is that module that is submitted to a compiler or tool.
+
 ### Parsing by External Tools
 
 I want header information to have as simple a syntax as possible, so that it doesn't need a compiler-class lexer and parser to process. So in most cases, it will look like this:
