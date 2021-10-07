@@ -10,28 +10,58 @@ This new one like scheme III are intended for whole-program compilers.
 
 ### Terms
 
-**Program**
+**Program** A set of one or more Subprograms, which when built forms an single executable file like a .EXE.
 
+**Subprogram** A set of one or more Modules. One module is designated the Header Module.
 
-**Subprogram**
+**Module** A single source file forms one module. 
 
-**Module**
+**Header** This is an information block at the start of a Header Module. It lists the modules in this Subprogram, and any Subprograms in imports. It also lists the names that are exported from Subprogram.
 
-**Header**
+**Header Module** The main or only Module of a Subprogram, the one expected to contain any Header.
 
-**Header Module**
+**Stub** A Header Module that only contains a Header, so not functions, variables or other code, is also called a Stub.
 
-**Stub**
-
-**Library**
+**Library** This is a Program that is built into a shared library, such as a .DLL file. For this purpose, the main Subprogram needs to export function names to allow access from other programs.
 
 ### A Header Block
 
+This goes at the beginning of a Header Module, or in a Stub. (I haven't whether header blocks inside another module should be an error, or just ignored.)
+
+It contains Module, Import and Export declarations, and can optionally be wrapped in Header ... End block. (Optional because that would be too heavy for small programs.)
+
 **Module**
+````
+    module A
+    module B as Z
+````
+'Module' is used to specify the modules comprising the Subprogram. This header module is always included, but can be listed anyway.
 
-**Import**
+**Import** Import specifies any Subprograms that are used by this one:
+````
+    import mlib
+````    
+ 
 
-**Export**
+**Export** Export lists names exported from this Subprogram, to other Subprograms (or other Programs, if forming a DLL):
+````
+    export pcl_start
+    export pcl_end
+````
+
+### Namespaces, Attributes and Scope
+
+The **Global** attribute can be used with functions, variables, named constants, types, enums and macros, in order to share them with other modules.
+
+All modules in a Subprogram automatically import each other; no explicit **import** is needed. Every Global name is visible. But Globals are not automaticaly exported to other subprograms; that needs explicit Export: either use **Export** instead of **Global**, and/or add the name to the exports listed in the header.
+
+Within a Subprogram, each module name create a namespace, with can be used to qualify names imported from other modules. Usually such names don't need qualifying, unless there is a clash (two modules use the same Global name); or to override a more locally scoped name.
+
+The name of the Header Module also forms a separate namespace, when imported into another Subprogram. That allows that Subprogram access to this one's exports. Again, qualifying the name is not necessary unless there's a clash.
+
+Example: this Subprogram comprises the modules S, T, U, with S as the header module. T has a global function F which is also an export. F can be accessed anywhere within the subprogram as F, or T.F to be explicit.
+
+But from outside, it will be F, or S.F to be explicit. Modules T and U are unknown outside.
 
 ### Entry Point
 
