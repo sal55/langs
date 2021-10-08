@@ -46,6 +46,21 @@ This lists the modules comprising the Subprogram. The header module is always in
     export pcl_start
     export pcl_end
 ````
+Export additional can export:
+
+* A whole module; every global name in that module is exported
+* A subprogram: if this subprogram is S, which imports T, when *export T* is equivalant importing both S and T when any subprogram imports S.
+* A DLL block: imports from DLLs are defined inside an **importdll** block, which are automatically global - visible from other modules. This will export then names from that block. (Possibly, this can be handled by being able to export the whole module. It means I can't have multiple importdll blocks in the same module, and selectively exporting some.)
+
+**Importlib** This specifies the names of DLLs:
+````
+    importlib opengl           # .dll is optional
+    importlib opengl.dll
+    importlib "5lib"           # when the DLL name is not a legal identifier
+````
+All DLL from all subprograms (duplicates are merged) are collected together program-wide. The compile ensures the DLLs are imported into the final executable.
+
+**Note:** **Export** and **Importlib** will clash with uses outside of a header, will need alternatives. Insisting on putting them inside a Header..End block is unsatisfactory.
 
 ### Namespaces, Attributes and Scope
 
@@ -119,6 +134,32 @@ Then I will probably need to create of a duplicate, and compile it as a differen
 These might be extra directives inside the header. I use them in the previous scheme, for example to help locate modules residing in separate directives.
 
 I haven't yet worked this out. I get the feeling that explicit names don't belong in source code, or should be limited to a specific program stub module.
+
+### Importing a DLL Library
+This is done with an importdll block:
+````
+    importdll libname =
+        clang proc puts(ichar)int
+    end
+````
+Names in the block are automatically global, so visible outside this module. They can be qualified, but that uses the name of the module, not of the library. (So effectively repackaged into one library, if several DLLs are imported.)
+
+The DLL name is added to the list of library imports put in the header, so need not be added that, but a duplicate is harmless.
+
+The real DLL name need not be used, for example if the names actually exist in several libraries, or the actual DLL name is variable (for example varies by version number) so sorted out either in the header, or elsewhere. In this case a dummy name, anything starting with $, can be used instead.
+
+For DLLs written in other languages (usually C), the importdll block is either written by hand, or all or most of the work is done with tools that process C headers for example.
+
+For DLLs written in my language M, it is expected that, when the DLL is compiled, it automatically produces:
+* An exports file with .exp extension (.m would risk overwriting the M source)
+* Possibly, and optionally, a C header file, allowing it to be used from either C, or a language that can work with C header files
+* Both can have doc-strings including (when doc-strings have been provided in the source)
+
+To use the .exp from from M, at the moment it is necessary to list the module as:
+````
+    module bignum.exp
+````
+Alternatively just rename the .exp file to a separate .m file.
 
 ### Scheme I
 
