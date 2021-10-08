@@ -259,5 +259,11 @@ mwindll.m:
 |_____________________|
 ````
 
+### Emulating Module System III
 
+This would be handy for initally adapting existing programs.
 
+* The existing program needs to multiple import statements per module. (Some projects, I got fed up with this, and dumped the same list of imports of all modules into one module, and all the othes used import* on that; they can be changed back.
+* Make each module a Subprogram; that will be the case when a module is imported anywhere else
+* Global names must be exported: add the line *export M* in each module, where M is the name of the module. (This makes it incompatible with the old compiler, unless it is tweaked to ignore such statements)
+* It requires that circular imports of subprograms work
