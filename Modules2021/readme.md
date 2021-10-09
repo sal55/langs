@@ -267,3 +267,36 @@ This would be handy for initally adapting existing programs.
 * Make each module a Subprogram; that will be the case when a module is imported anywhere else
 * Global names must be exported: add the line *export M* in each module, where M is the name of the module. (This makes it incompatible with the old compiler, unless it is tweaked to ignore such statements)
 * It requires that circular imports of subprograms work
+
+### Using Modules IV
+Basic program of a single module, using only standard functions:
+````
+proc start =
+    println "Hello World!"
+    os_messagebox(message:"Hello")
+end
+````
+Every program (or subprogram) will do 'import mlib', so that is never needed. (To inhibit that, compiler with -nosys; then that allows alternatives too.)
+
+This program, say the module is called demo1.m, is build as 'mm demo1', to produce demo1.exe. A program of one main module, plus one library (demo2.m):
+````
+import bignum
+
+proc start =
+    ....
+end
+````
+This is built as 'mm demo2'. A program of one module demo3.m, and two others, moda.m and modb.m, and using that same library, is:
+````
+import bignum
+module moda
+module modb
+
+proc start =
+    ....
+end
+````
+Again, build as 'mm demo3'. Here, it doesn't care what modules bignum comprises, or how many; it only needs to know about 'bignum', which is also used to qualify ambiguous names.
+
+moda.m and modb.m contain only normal code; nothing about modules. But if it turns out moda.m needs a library liba.m, then 'import liba' must go in the main module demo3.m.
+
