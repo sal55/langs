@@ -1,3 +1,12 @@
+! Build example:
+! C:\mapps>pc hello
+! Processing hello.pcl to hello.exe
+!
+! C:\mapps>hello
+! Hello, World!
+!
+!pc automatically includes msvcrt.dll as an import to generated .exe file.
+
 Extproc puts i32
     extparam                  u64 
 Endext
