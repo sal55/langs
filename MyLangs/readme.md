@@ -42,11 +42,11 @@ C:\mylangs>dir
 10/10/2021  15:30           220,672 pc.exe
 07/10/2021  17:58           654,336 qq.exe
 ```
-5 products - 5 self-contained executables. Each is just one file. The largest ones are include source files which bloats their size:
+5 products - 5 self-contained executables. Each is just one file. The largest ones include source files which bloats their size:
 
 * bcc.exe includes the C standard headers, plus windows.h (the latter accounts for half the size)
-* mm.exe includes sources for its standard library, as it is usually compiled in
-* qq.exe includes sources for *its* standard library (including a graphics library for Win32)
+* mm.exe includes sources for its standard library, as it is usually compiled into the application
+* qq.exe includes sources for *its* standard library (including a small graphics library for Win32)
 
 This makes it easy to copy an implementation, transfer it via USB drive, email it, run it (from anywhere, it doesn't really need installing etc), or even just check that you have everything you need, or maintain different versions since there are no dependencies.
 
@@ -54,7 +54,7 @@ This makes it easy to copy an implementation, transfer it via USB drive, email i
 
 ### Building My Compilers
 
-I'll give a demo of how it looks. First, I will use a special feature of mm.exe to create a single-file amalgamation of a project's source files, which turn multiple .m and support files into one .ma files. If I put those .ma files into one place, they look like this:
+I'll give a demo of how it looks. First, I will use a special feature of mm.exe to create a single-file amalgamation of a project's source files, which turns multiple .m and support files into one .ma file. If I put those .ma files into one place, they look like this:
 ```
 C:\demo>dir *.ma 
 10/10/2021  15:44           247,276 aa.ma
@@ -66,7 +66,7 @@ C:\demo>dir *.ma
 ```
 (These sources also included the embedded source files that form part of the executables.)
 
-Now I'll build with a simple script:
+This is a simple script to build them, as I want to time it:
 ```
 C:\demo>type build.bat
 mm cc.ma
@@ -75,7 +75,7 @@ mm pc.ma
 mm qq.ma
 mm mm.ma
 ```
-Now I run it (tm is a timing tool):
+Now I can run it (tm is a timing tool):
 ```
 C:\demo>tm build
 C:\demo>mm cc.ma
@@ -93,32 +93,31 @@ TM: 0.62
 So building **all** my compilers, assemblers etc, from source code, takes 0.6 seconds, on my very ordinary PC. (Timings take advantage of any file-cacheing.)
 
 
-
 ### So, What's Special about these Languages?
 
-If you've followed the last two sections, you will get an idea of what I value in a language implementation, and which I consider as important as what's inside a language: being small, simple, self-contained, effortless to use, and very fast.
+The last two sections should illustrate what I value in a language implementation, and which I consider as important as what's inside a language: being small, simple, self-contained, effortless to use, and very fast.
 
 I don't like large, sprawling implementations that take forever to build a program.
 
-However, below I will highlight some of the features I do have inside some of these. But first...
+Below I will highlight some of the features I do have inside some of these. But first...
 
 ### Features I don't Support
 
 This is not to imply a criticism of such features, I just don't have them.
 
-(This is avoid downvotes on Reddit as many of these are very popular there. Another reason why probably no one would use my languages anyway.)
+I was going to do a list, but just assume dozens of advanced features regularly touted as must-haves in Reddits r/PL forum; and think of most things bundled into languages such as C++, Rust, and every FP language around.
 
+Most, I simply don't understand and can't get my head around. Others are too hard to implement or not worthwile for me, as I likely won't use them. Some I just don't like, like over-elaborate type systems.
 
 ### A Selection of Characteristics
 
-A few characteristics and some features from M and Q that might be unique, uncommon or unpopular:
+Some characteristics and a few features from M and Q that might be unique to me, uncommon or unpopular:
 
 * Case-insensitive source code
 * Line-oriented source code, so semicolons etc are rarely needed. (Most language are line-oriented, but many don't take advantage)
 * 1-based arrays as well as 0-based and even N-based
 * Use of whole-program compilers (always compile all sources from scratch; it's OK, these are fast compilers)
 * No build system needed - just submit the lead module to the compiler; output is an EXE or DLL file
-* Numeric literals can have scale factors such as '5 million'
 * Out-of-order definitions throughout (no separate declarations needed of anything that is defined in the program)
 * Circular and mutual module imports
 * **strinclude** to import any text file (any binary file with Q) as a string literal
@@ -126,6 +125,7 @@ A few characteristics and some features from M and Q that might be unique, uncom
 * No block scopes, only one function-wide scope
 * Uses := for assignment, and = for equality
 * Bit and bitfield indexing: A.\[i\] or A.\[i..j\], used as rvalues or lvalues
+* Numeric literals can have scale factors such as '5 million'
 * 128-bit integer support (M only); not extensive, but better than gcc's.
 * N-way selection: (n|a, b, c| z); this evaluates one expression only
 * Interchangeable statements and expressions. Use any statement/expression as an lvalue, where meaningful
@@ -141,29 +141,23 @@ A few characteristics and some features from M and Q that might be unique, uncom
 
 ### Features of M
 
-M is probably best described as an alternative to C, although it was created independently. Here's a smaller summary of differences or extras:
+M is probably best described as an alternative to C, although it was created independently. Here's a smaller summary of differences or extras, that are not already listed above:
 
 * M has Algol68-inspired syntax
 * Sane, left-to-right type declarations
 * No C-style macro system
 * Out-of-order declarations; no forward declarations ever needed
 * Module system and build system: just compile the main module
-* Case-insensitive
-* Primarily 1-based; optionally 0-based
 * Slices
 * Fewer, saner operator precedences
 * Smaller, tidier, more consistent and logical set of primitive types
-* Built-in Print
-* Strinclude and Tabledata features (see list of characteristics for these and other unusual feature)
 * Better language choices overall (eg. non-global (static) by default)
 
 Basically, M can do everything C can, but using an alternative, more comfortable syntax
 
 ### Features of Q
 
-I will here compare Q to Python, as I'm most familiar with that, Python is a monstrously large and complex language by comparison, with a million add-ons available.
-
-Q is lower level and more static, yet has many useful features not present or not native in Python:
+Q is lower level than typical scripting languages, and more static. But since I'm most familiar with Pythin, here I will list many useful features (in addition to any above) that are not present or not native in Python:
 
 * Q needs ahead-of-time compilation of all modules to bytecode before execution starts (fortunately it has a very fast compiler)
 * Most things are actually static; in Python, nearly everything is dynamic
@@ -171,7 +165,7 @@ Q is lower level and more static, yet has many useful features not present or no
 * Identifiers are classified, at compile-time, as functions, variables, labels, types/classes, enums, named constants, macros, and cannpt change. In Python, every identifier is a variable
 * Named constants that cannot be changed, and that allow reduction of constant expressions
 * Switch statement
-* Properly defined mutable records (structs)
+* Proper support for user-defined mutable records with named fields
 * References to objects, including pass-by-reference
 * Most objects are mutable
 * Goto
@@ -184,12 +178,9 @@ Q is lower level and more static, yet has many useful features not present or no
 * There is no longer a single, monolithic bytecode file as output, simplifying distribution of applications. But there is a single-file .qa file (generated with 'qq -qa'), that can be run directly
 * Self-contained installation comprising a single .exe file, including standard libraries.
 * Static variables inside functions
-* Built-in maths operators, and constants like 'pi'. (Python lets you change 'math.pi)
-* ++ and -- ops
 * Character constants (''A') and multi-character ones like 'ABCDEFGHI', which form integer literals.
-* start() and main() functions that are run automartically (no messing with things like '__main__')
+* start() and main() functions that are run automatically (no messing with things like '\_\_main\_\_')
 * Built-in *simple* enumerations
-* Built-in read and print (see above characteristics list for more features)
 * Oh, and Q usually runs much more briskly than CPython. (Sometimes, faster than PyPy.)
 
 ### Some Features of PCL
@@ -234,6 +225,15 @@ The ordering is also different, so since the official ones are all over the plac
     D15       (Also Dstack) Stack pointer
 ```
 My AA assembler is designed to process the generated code of my compilers, so supports only a subset of x64 instructions, which otherwise go on for ever (with SSE2, AVX etc).
+
+### Examples
+
+[**M Examples**](../Examples)
+[**Q Examples**](../QExamples)
+[**PCL Examples**](../pcl)
+[**ASM Examples**](../pcl)
+
+
 
 
 
