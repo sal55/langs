@@ -1,3 +1,12 @@
+; Build example:
+; C:\mapps>aa hello
+; Assembling hello.asm to hello.exe
+
+; C:\mapps>hello
+; Hello, World!
+;
+; aa automatically uses DLL library msvcrt.dll, for access to C's puts function
+
           csegment  
 hello.start:
 start::
