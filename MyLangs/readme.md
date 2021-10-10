@@ -228,8 +228,11 @@ My AA assembler is designed to process the generated code of my compilers, so su
 ### Examples
 
 [**M Examples**](../Examples)
+
 [**Q Examples**](../QExamples)
+
 [**PCL Examples**](../pcl)
+
 [**ASM Examples**](../pcl)
 
 ### Targets
@@ -255,7 +258,9 @@ I want to wind this down, so there is only one big thing I want to do:
 
 There were some big ideas, including, for Q, allowing multiple programs to work under the same runtime environment.
 
-(The version from 25 years was more dynamic. Modules were compiled independently to bytecode, and hot-loaded into a running application. But I'll have to see how it works out.)
+(The version from 25 years ago, used as a scripting language for my commercial GUI apps, was more dynamic. Modules were compiled independently to bytecode, and hot-loaded into a running application. There they the the environment and global state of that application.
+
+But I'll have to see how it works out with my rather more staid version.)
 
 
 
