@@ -196,9 +196,9 @@ Most of the syntax of this x64 assembler is fairly standard. To summarise:
 * Uses :: for labels to export them (so no GLOBAL directive needed)
 * Uses a * suffix for identifiers to import them (so no EXTERN directive needed)
 * Can assemble multiple ASM files into a single EXE or DLL file, so can do the job of linker with no .obj intermediates
-* Can also generate a *single* OBJ, useful for combinining with other software (needs third party linker)
+* Can also generate a *single* OBJ, useful for combining with other software (needs third party linker)
 * Very fast assembler, some 2M lines per second or more
-* Lacks some common features like macros, or complex expressions, as it is not meant for writing in directly. (The inline version within M produces a better ASM experience.)
+* Lacks some common features like macros, or complex expressions, as it is not meant for writing in directly. (The inline version within M provides a better ASM experience.)
 * Supports standard register names, but they are so inconsistently and messily named, that I use my own naming scheme:
 ```
     D0 to D15         64-bit registers
