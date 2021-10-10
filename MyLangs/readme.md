@@ -91,6 +91,8 @@ TM: 0.62
 ```
 So building **all** my compilers, assemblers etc, from source code, takes 0.6 seconds, on my very ordinary PC. (Timings take advantage of any file-cacheing.)
 
+
+
 ### So, What's Special about these Languages?
 
 If you've followed the last two sections, you will get an idea of what I value in a language implementation, and which I consider as important as what's inside a language: being small, simple, self-contained, effortless to use, and very fast.
@@ -131,12 +133,58 @@ A few characteristics and some features from M and Q that might be unique, uncom
 * Function reflection: lists of all functions and references available to user code
 * The systems language M, and its scripting language Q, *use the same syntax*
 * Type punning using T@(X) compared with T(X) for normal casts
-
+* Read/Print facilities built-in as statements, not library functions
+* Ability to combine all source and support files into a single, directly compilable source file (.ma or .qa file)
+* Basic maths function are built-in as *operators*
+* 'stop' statement
 
 ### Features of M
 
-This is probably best described as an alternative to C. I've listed elsewhere some 200 small differences/enhancements compared with C (I won't linked, as I've learned people don't care about the small stuff). Here's a smaller summary:
+M is probably best described as an alternative to C, although it was created independently. Here's a smaller summary of differences or extras:
 
 * M has Algol68-inspired syntax
-* Left-to-right type declarations
-* 
+* Sane, left-to-right type declarations
+* No C-style macro system
+* Out-of-order declarations; no forward declarations ever needed
+* Module system and build system: just compile the main module
+* Case-insensitive
+* Primarily 1-based; optionally 0-based
+* Slices
+* Fewer, saner operator precedences
+* Smaller, tidier, more consistent and logical set of primitive types
+* Built-in Print
+* Strinclude and Tabledata features (see list of characteristics for these and other unusual feature)
+* Better language choices overall (eg. non-global (static) by default)
+
+Basically, M can do everything C can, but using an alternative, more comfortable syntax
+
+### Features of Q
+
+I will here compare Q to Python, as I'm most familiar with that, Python is a monstrously large and complex language by comparison, with a million add-ons available
+
+* Q needs ahead-of-time compilation of all modules to bytecode before execution starts (fortunately it has a very fast compiler)
+* Most things are actually static; in Python, nearly everything is dynamic
+* Only variables have dynamic types
+* Identifiers are classified, at compile-time, as functions, variables, labels, types/classes, enums, named constants, macros, and cannpt change. In Python, every identifier is a variable
+* Named constants that cannot be changed, and that allow reduction of constant expressions
+* Switch statement
+* Properly defined mutable records (structs)
+* References to objects, including pass-by-reference
+* Most objects are mutable
+* Goto
+* More loop statements and support for nested breaks
+* Built-in support for packed primitive types
+* Built-in C-style structs
+* Built-in homegeneous arrays of the same primitives types or structs
+* Built-in bit-arrays
+* Built-in FFI for libraries with C-style APIs
+* There is no longer a single, monolithic bytecode file as output, simplifying distribution of applications. But there is a single-file .qa file (generated with 'qq -qa'), that can be run directly
+* Self-contained installation comprising a single .exe file, including standard libraries.
+* Static variables inside functions
+* Built-in maths operators, and constants like 'pi'. (Python lets you change 'math.pi)
+* ++ and -- ops
+* Character constants (''A') and multi-character ones like 'ABCDEFGHI', which form integer literals.
+* start() and main() functions that are run automartically (no messing with things like '__main__')
+* Built-in *simple* enumerations
+* Built-in read and print (see above characteristics list for more features)
+* Oh, and Q usually runs much more briskly than CPython. (Sometimes, faster than PyPy.)
