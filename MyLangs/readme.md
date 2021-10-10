@@ -144,15 +144,14 @@ Some characteristics and a few features from M and Q that are either unique to m
 
 ### Features of M
 
-M is probably best described as an alternative to C, although it was created independently. Here's a smaller summary of differences or extras, that are not already listed above:
+M is probably best described as an alternative to C, although it was created independently. Here's a smal summary of differences or extras, that are not already listed above:
 
 * M has Algol68-inspired syntax
 * Sane, left-to-right type declarations
 * No C-style macro system
-* Out-of-order declarations; no forward declarations ever needed
 * Module system and build system: just compile the main module
 * Slices
-* Fewer, saner operator precedences
+* Fewer, more sensible operator precedences
 * Smaller, tidier, more consistent and logical set of primitive types
 * Better language choices overall (eg. non-global (static) by default)
 
@@ -160,15 +159,15 @@ Basically, M can do everything C can, but using an alternative, more comfortable
 
 ### Features of Q
 
-Q is lower level than typical scripting languages, and more static. But since I'm most familiar with Pythin, here I will list many useful features (in addition to any above) that are not present or not native in Python:
+Q is lower level than typical scripting languages, and more static. But since I'm most familiar with Pythin, here I will list many useful features (in addition to any above) that are not present or not native in Python, and some characteristics:
 
 * Q needs ahead-of-time compilation of all modules to bytecode before execution starts (fortunately it has a very fast compiler)
 * Most things are actually static; in Python, nearly everything is dynamic
 * Only variables have dynamic types
 * Identifiers are one of module, function, variable, label, type/classe, enum, named constant or macro, and cannot change. In Python, every identifier is a variable
-* Named constants define quantities that cannot be changed; allow reduction when used in expressions; and make practical switch statements:
+* Named constants define quantities that cannot be changed; they allow reduction when used in expressions; and make practical switch statements:
 * Switch statement
-* Built-in support for user-defined mutable records with named fields (why do so few script languages support something so practical, yet they all do closures, whatever they are?)
+* Built-in support for user-defined mutable records with named fields (why do so few script languages support something so practical, yet they all do closures, whatever those are?)
 * References to objects, including pass-by-reference
 * Most objects are mutable
 * Goto
@@ -199,6 +198,7 @@ Most of the syntax of this x64 assembler is fairly standard. To summarise:
 * Can assemble multiple ASM files into a single EXE or DLL file, so can do the job of linker with no .obj intermediates
 * Can also generate a *single* OBJ, useful for combinining with other software (needs third party linker)
 * Very fast assembler, some 2M lines per second or more
+* Lacks some common features like macros, or complex expressions, as it is not meant for writing in directly. (The inline version within M produces a better ASM experience.)
 * Supports standard register names, but they are so inconsistently and messily named, that I use my own naming scheme:
 ```
     D0 to D15         64-bit registers
