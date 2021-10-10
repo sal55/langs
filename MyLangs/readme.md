@@ -111,7 +111,7 @@ Most, I simply don't understand and can't get my head around. Others are too har
 
 ### A Selection of Characteristics
 
-Some characteristics and a few features from M and Q that might be unique to me, uncommon or unpopular:
+Some characteristics and a few features from M and Q that are either unique to me, uncommon or unpopular:
 
 * Case-insensitive source code
 * Line-oriented source code, so semicolons etc are rarely needed. (Most language are line-oriented, but many don't take advantage)
@@ -120,6 +120,7 @@ Some characteristics and a few features from M and Q that might be unique to me,
 * No build system needed - just submit the lead module to the compiler; output is an EXE or DLL file
 * Out-of-order definitions throughout (no separate declarations needed of anything that is defined in the program)
 * Circular and mutual module imports
+* Most products are implemented as one self-contained executable
 * **strinclude** to import any text file (any binary file with Q) as a string literal
 * **tabledata** to define parallel sets of enums and array data, or just parallel arrays
 * No block scopes, only one function-wide scope
@@ -162,23 +163,21 @@ Q is lower level than typical scripting languages, and more static. But since I'
 * Q needs ahead-of-time compilation of all modules to bytecode before execution starts (fortunately it has a very fast compiler)
 * Most things are actually static; in Python, nearly everything is dynamic
 * Only variables have dynamic types
-* Identifiers are classified, at compile-time, as functions, variables, labels, types/classes, enums, named constants, macros, and cannpt change. In Python, every identifier is a variable
-* Named constants that cannot be changed, and that allow reduction of constant expressions
+* Identifiers are one of module, function, variable, label, type/classe, enum, named constant or macro, and cannot change. In Python, every identifier is a variable
+* Named constants define quantities that cannot be changed; allow reduction when used in expressions; and make practical switch statements:
 * Switch statement
-* Proper support for user-defined mutable records with named fields
+* Built-in support for user-defined mutable records with named fields (why do so few script languages support something so practical, yet they all do closures, whatever they are?)
 * References to objects, including pass-by-reference
 * Most objects are mutable
 * Goto
 * More loop statements and support for nested breaks
-* Built-in support for packed primitive types
-* Built-in C-style structs
-* Built-in homegeneous arrays of the same primitives types or structs
+* Built-in support for packed primitive types and C-style structs
+* Built-in arrays of the same primitives types or structs
 * Built-in bit-arrays
 * Built-in FFI for libraries with C-style APIs
-* There is no longer a single, monolithic bytecode file as output, simplifying distribution of applications. But there is a single-file .qa file (generated with 'qq -qa'), that can be run directly
-* Self-contained installation comprising a single .exe file, including standard libraries.
+* Applications typically distributed as a tidy, single .qa file (generated with 'qq -qa'), that can be run directly. (I no longer generate bytecode files.)
 * Static variables inside functions
-* Character constants (''A') and multi-character ones like 'ABCDEFGHI', which form integer literals.
+* Character constants like 'A' and multi-character ones like 'ABCDEFGHI', which form integer literals.
 * start() and main() functions that are run automatically (no messing with things like '\_\_main\_\_')
 * Built-in *simple* enumerations
 * Oh, and Q usually runs much more briskly than CPython. (Sometimes, faster than PyPy.)
@@ -189,23 +188,23 @@ This intermediate code is described in more depth [here](../pcl)
 
 ### Some Features of ASM
 
-Most of the syntax of this x64 assembler is fairly standard. Among notable features:
+Most of the syntax of this x64 assembler is fairly standard. To summarise:
 
 * Intel-style instruction formats
-* Case-insensitive
-* Uses :: for labels to export them
-* Uses a * suffix for identifiers to import them
-* Can assemble multiple ASM files into a single EXE or DLL file, so can do the job of linker
-* Can also generate a *single* OBJ, usefule for working with other software
-* Very fast assembly, some 2M lines per second or more
-* Supports standard register names, but they are such a mess and so inconsistently named, that I use my own naming scheme:
+* Case-insensitive (uses ` prefix for a case-sensitive name or to use a reserved word)
+* Uses :: for labels to export them (so no GLOBAL directive needed)
+* Uses a * suffix for identifiers to import them (so no EXTERN directive needed)
+* Can assemble multiple ASM files into a single EXE or DLL file, so can do the job of linker with no .obj intermediates
+* Can also generate a *single* OBJ, useful for combinining with other software (needs third party linker)
+* Very fast assembler, some 2M lines per second or more
+* Supports standard register names, but they are so inconsistently and messily named, that I use my own naming scheme:
 ```
     D0 to D15         64-bit registers
     A0 to A15         32-bit registers
     W0 to W15         16-bit registers
     B0 to B19         8-bit registers (the extra four are for AH BC CH DH)
 ```
-The ordering is also different, so since the official ones are all over the place. Here, the ordering is optimised for the Win64 ABI (A, W and B registers are narrower versions):
+The ordering is also different, since the official ones are all over the place. Here, the ordering is optimised for the Win64 ABI:
 ```
     D0        D0-D2 are volatile registers (can be trashed by a function call)
     D1
@@ -217,7 +216,7 @@ The ordering is also different, so since the official ones are all over the plac
     D7
     D8
     D9
-    D10       D10-D13 are for parameter-passing
+    D10       D10-D13 are for parameter-passing, also non-volatile
     D11
     D12
     D13
@@ -232,6 +231,32 @@ My AA assembler is designed to process the generated code of my compilers, so su
 [**Q Examples**](../QExamples)
 [**PCL Examples**](../pcl)
 [**ASM Examples**](../pcl)
+
+### Targets
+
+The primary target now is Win64 using the x64 processor. (When I started developing M, the target was 8-bit Z80.)
+
+I have had Q and M running on Linux, but they used a version of mm.exe that could target C source code. I no longer have that, but probably I will have to add it again.
+
+A C target lets me benefit from the better optimising of C compiler, and allows code to run on Linux, and on ARM devices.
+
+I had planned to have C as a target of my PCL, but the generated code is absolutely appalling, and *needs* an optimising compiler to get decent performance.
+
+But, I don't consider that acceptable quality, even if it can work. So at some point I will add a proper C translator working from my AST rather than PCL. The generated C code will be readable; smaller; and it will compile faster, with acceptable results even with Tiny C. However, I will only support a 64-bit target.
+
+### Further Development
+
+I want to wind this down, so there is only one big thing I want to do:
+
+* Revise the module system of M to be sub-program-based rather than module-based. I started seeing problems in combining assemblies of modules used across different projects
+* That change might be rolled out to the Q language which used the same scheme as M
+* Continue with on-going work implementing missing features and fixing bigs, and doing minor refinements
+* Possibly (gasp) doing some documentation...
+
+There were some big ideas, including, for Q, allowing multiple programs to work under the same runtime environment.
+
+(The version from 25 years was more dynamic. Modules were compiled independently to bytecode, and hot-loaded into a running application. But I'll have to see how it works out.)
+
 
 
 
