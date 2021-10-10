@@ -90,7 +90,7 @@ C:\demo>mm mm.ma
 Compiling mm.m---------- to mm.exe
 TM: 0.62
 ```
-So building **all** my compilers, assemblers etc, from source code, takes 0.6 seconds, on my very ordinary PC. (Timings take advantage of any file-cacheing.)
+So building **all** my compilers, assemblers etc, from source code, takes 0.6 seconds, on my very ordinary PC. (In total, 175,000 lines, and just over 200 modules and files. Timings take advantage of any file-cacheing.)
 
 
 ### So, What's Special about these Languages?
