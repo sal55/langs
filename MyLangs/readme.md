@@ -194,7 +194,7 @@ Q is lower level and more static, yet has many useful features not present or no
 
 ### Some Features of PCL
 
-This intermediate code is described in more depth [here](./pcl)
+This intermediate code is described in more depth [here](../pcl)
 
 ### Some Features of ASM
 
