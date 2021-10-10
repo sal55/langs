@@ -25,6 +25,7 @@ I've included the line about C, which is clearly not my language, since it round
 I class these as private languages, although anyone can try out the .exe files whenever I upload them, because:
 * I can't do the support that would be needed for general use
 * There are no proper docs
+* The error reporting is poor
 * They haven't been tested enough with lots of people applying them to diverse applications, to iron out bugs, highlight shortcomings, and fill in missing features
 * The languages have also been volatile as I'm always tweaking
 
@@ -160,7 +161,9 @@ Basically, M can do everything C can, but using an alternative, more comfortable
 
 ### Features of Q
 
-I will here compare Q to Python, as I'm most familiar with that, Python is a monstrously large and complex language by comparison, with a million add-ons available
+I will here compare Q to Python, as I'm most familiar with that, Python is a monstrously large and complex language by comparison, with a million add-ons available.
+
+Q is lower level and more static, yet has many useful features not present or not native in Python:
 
 * Q needs ahead-of-time compilation of all modules to bytecode before execution starts (fortunately it has a very fast compiler)
 * Most things are actually static; in Python, nearly everything is dynamic
@@ -188,3 +191,49 @@ I will here compare Q to Python, as I'm most familiar with that, Python is a mon
 * Built-in *simple* enumerations
 * Built-in read and print (see above characteristics list for more features)
 * Oh, and Q usually runs much more briskly than CPython. (Sometimes, faster than PyPy.)
+
+### Some Features of PCL
+
+This intermediate code is described in more depth [here](./pcl)
+
+### Some Features of ASM
+
+Most of the syntax of this x64 assembler is fairly standard. Among notable features:
+
+* Intel-style instruction formats
+* Case-insensitive
+* Uses :: for labels to export them
+* Uses a * suffix for identifiers to import them
+* Can assemble multiple ASM files into a single EXE or DLL file, so can do the job of linker
+* Can also generate a *single* OBJ, usefule for working with other software
+* Very fast assembly, some 2M lines per second or more
+* Supports standard register names, but they are such a mess and so inconsistently named, that I use my own naming scheme:
+```
+    D0 to D15         64-bit registers
+    A0 to A15         32-bit registers
+    W0 to W15         16-bit registers
+    B0 to B19         8-bit registers (the extra four are for AH BC CH DH)
+```
+The ordering is also different, so since the official ones are all over the place. Here, the ordering is optimised for the Win64 ABI (A, W and B registers are narrower versions):
+```
+    D0        D0-D2 are volatile registers (can be trashed by a function call)
+    D1
+    D2
+    D3        D3-D9 are non-volatile (must be preserved by a function call
+    D4
+    D5
+    D6
+    D7
+    D8
+    D9
+    D10       D10-D13 are for parameter-passing
+    D11
+    D12
+    D13
+    D14       (Also Dframe) Frame pointer
+    D15       (Also Dstack) Stack pointer
+```
+My AA assembler is designed to process the generated code of my compilers, so supports only a subset of x64 instructions, which otherwise go on for ever (with SSE2, AVX etc).
+
+
+
