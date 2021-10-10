@@ -107,7 +107,9 @@ This is not to imply a criticism of such features, I just don't have them.
 
 I was going to do a list, but just assume dozens of advanced features regularly touted as must-haves in Reddits r/PL forum; and think of most things bundled into languages such as C++, Rust, and every FP language around.
 
-Most, I simply don't understand and can't get my head around. Others are too hard to implement or not worthwile for me, as I likely won't use them. Some I just don't like, like over-elaborate type systems.
+Most, I simply don't understand and can't get my head around. Others are too hard to implement or not worthwile for me, as I likely won't use them. Some I just don't like, like over-elaborate type systems, or language-building features (eg. templates and advanced macros).
+
+I get by with with two-level language solution; some things don't exist in M, but I can use them in Q.
 
 ### A Selection of Characteristics
 
