@@ -20,7 +20,7 @@ The first two languages are designed for writing programs in. The next two, whil
 
 I've included the line about C, which is clearly not my language, since it rounds off the set of language tools. bcc.exe has a number of uses, including helping to turn C headers into my M syntax, but an important one is for testing: by building bcc.exe with a new version of mm.exe, I can test it on a wide range of C source files.
 
-### Availabilty
+### Availability
 
 I class these as private languages, although anyone can try out the .exe files whenever I upload them, because:
 * I can't do the support that would be needed for general use
