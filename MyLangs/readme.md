@@ -244,6 +244,14 @@ The primary target now is Win64 using the x64 processor. (When I started develop
 
 I have had Q and M running on Linux, but they used a version of mm.exe that could target C source code. I no longer have that, but probably I will have to add it again.
 
+(I have found some C renderings of old versions of M and Q projects which work on Linux. See the files mu.c and qq.c. Build instructions are at the top, but basically just do:
+````
+    gcc qq.c -oqq -lm
+````
+Etc. A bit like compiling hello.c, which was the intention. These files are OS-neutral; they will build on Windows and Linux, with some restrictions. The -ldl option is not needed. This Q version requires that the main program is inside a proc start = ... end function.
+
+The M version targets Linux, which it does by generating C and invoking a C compiler.)
+
 A C target lets me benefit from the better optimising of C compiler, and allows code to run on Linux, and on ARM devices.
 
 I had planned to have C as a target of my PCL, but the generated code is absolutely appalling, and *needs* an optimising compiler to get decent performance.
