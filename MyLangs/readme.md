@@ -109,7 +109,7 @@ I was going to do a list, but just assume dozens of advanced features regularly 
 
 Most, I simply don't understand and can't get my head around. Others are too hard to implement or not worthwile for me, as I likely won't use them. Some I just don't like, like over-elaborate type systems, or language-building features (eg. templates and advanced macros).
 
-I get by with with two-level language solution; some things don't exist in M, but I can use them in Q.
+I get by with A two-level language solution; some things don't exist in M, but I can use them in Q.
 
 ### A Selection of Characteristics
 
@@ -204,7 +204,7 @@ Most of the syntax of this x64 assembler is fairly standard. To summarise:
     D0 to D15         64-bit registers
     A0 to A15         32-bit registers
     W0 to W15         16-bit registers
-    B0 to B19         8-bit registers (the extra four are for AH BC CH DH)
+    B0 to B19         8-bit registers (the extra four are for AH BH CH DH)
 ```
 The ordering is also different, since the official ones are all over the place. Here, the ordering is optimised for the Win64 ABI:
 ```
