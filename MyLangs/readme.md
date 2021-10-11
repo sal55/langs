@@ -18,7 +18,7 @@ ASM | aa.exe | AX | M | Assembly language for x64 using my syntax
 
 The first two languages are designed for writing programs in. The next two, while they could be used for writing whole applications in, are intended as code-generation targets. (And mainly for testing, as usually textual intermediate forms are by-passed.)
 
-I've included the line about C, which is clearly not my language, since it rounds off the set of language tools. bcc.exe has a number of uses, but an important one is for testing: by building bcc.exe with a new version of mm.exe, I can test it on a wide range of C source files.
+I've included the line about C, which is clearly not my language, since it rounds off the set of language tools. bcc.exe has a number of uses, including helping to turn C headers into my M syntax, but an important one is for testing: by building bcc.exe with a new version of mm.exe, I can test it on a wide range of C source files.
 
 ### Availabilty
 
