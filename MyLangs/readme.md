@@ -11,7 +11,7 @@ Development is done on Windows, and implementations are mainly for Windows
 Language  | Program | Project name | Written In | Description
 --- | --- | --- | --- | ---
 Q  | qq.exe | QX  | M | My dynamic, interpreted scripting language
-M | mm.exe | MX | M | My systems programmming language
+M | mm.exe | MX | M | My systems programming language
 PCL | pc.exe | MX | M | Portable intermediate language, used as target by mm.exe
 ASM | aa.exe | AX | M | Assembly language for x64 using my syntax
 (C  | bcc.exe | CX | M | C subset)
