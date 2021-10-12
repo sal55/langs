@@ -4,7 +4,7 @@ Benchmark | GCC-O3 | BB-Opt | BB-Orig | BCC | TCC | Notes
 --- | --- | --- | --- | --- | --- | ---
 **Jpeg/87M** | 4.3 | 6.5 | 9.2 | 11.3 | 18.0 | Seconds, rounded to 0.1 seconds
 **Clex/SQL** | 3.0 | 4.0 | 4.1 | 4.7 | 6.7 | 
-**Pi/2K** | 0.84 | 4.1 | 4.6 | 4.4 | 4.8 | 
+**Pi/2K** | 0.84 | 4.1 | 4.6 | 4.4 | 4.8 | (Current BB timings are 2.4/2.6)
 **Mandel/6M** | 3.0 | 4.2 | 5.3 | 6.1 | 5.9 |
 **AX/2M** | 1.1 | 1.4 | 1.6 | 1.6 | 1.8 | 
 **BCC/SQL** | 2.2 | 2.9 | 3.2 | 3.3 | 3.7 | 
