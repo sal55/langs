@@ -1,0 +1,31 @@
+M Compiler Generating x64 native code - Windows Version
+
+Whole-program compiler builds entire program from the lead module
+into a executable file.
+
+    mm main              # Create main.exe from lead module main.m
+    mm main.m            # Same (.m extension is default)
+    mm -c main           # Create single-file main.asm intermediate ASM
+
+Options:
+
+    -exe                 # Generate .exe executable file (default)
+    -dll                 # Generate .dll library and .exp file
+    -pcl                 # Generate intermediate PCL file only
+    -asm                 # Generate intermediate ASM file only
+
+    -opt                 # Apply simple optimiser
+
+    -out:file            # Name of output file 
+
+    -ma                  # Create .ma file combining source/support files
+    -docs                # Create .txt with docstrings of exported files (not finished)
+    -run                 # For -exe mode only: run resulting executable
+
+    @file                # Read options from file
+
+Example:
+
+     mm -run prog : abc def
+
+Any parameters for the new program must follow " : " (spaces needed).

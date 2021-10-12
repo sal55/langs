@@ -1,0 +1,64 @@
+!
+Procrts rts.$power_i64: i64
+    param          rts.$power_i64.a i64 
+    param          rts.$power_i64.n i64 
+    procentry                 
+!-------------------------------------------------
+    startmult                 
+    push           rts.$power_i64.n i64 
+    push           0          i64 
+    jumpge         #8         i64 
+    push           0          i64 
+    resetmult                 
+    jump           #9         
+#8: 
+    push           rts.$power_i64.n i64 
+    push           0          i64 
+    jumpne         #10        i64 
+    push           1          i64 
+    resetmult                 
+    jump           #9         
+#10: 
+    push           rts.$power_i64.n i64 
+    push           1          i64 
+    jumpne         #11        i64 
+    push           rts.$power_i64.a i64 
+    resetmult                 
+    jump           #9         
+#11: 
+    push           rts.$power_i64.n i64 
+    push           0          i64 
+    dotindex                  i64 
+    jumptrue       #12        i64 
+    setargs                   2 0
+    push           rts.$power_i64.n i64 
+    push           2          i64 
+    idiv                      i64 
+    push           rts.$power_i64.a i64 
+    sqr                       i64 
+    callfn         &rts.$power_i64 i64 
+    resetmult                 
+    jump           #9         
+#12: 
+    setargs                   2 0
+    push           rts.$power_i64.n i64 
+    push           1          i64 
+    sub                       i64 
+    push           2          i64 
+    idiv                      i64 
+    push           rts.$power_i64.a i64 
+    sqr                       i64 
+    callfn         &rts.$power_i64 i64 
+    push           rts.$power_i64.a i64 
+    mul                       i64 
+    endmult                   
+#9: 
+    setret                    i64 
+    jump           #13        
+!-------------------------------------------------
+#13: 
+    retfn                     i64 
+End
+
+!
+    endprogram                
