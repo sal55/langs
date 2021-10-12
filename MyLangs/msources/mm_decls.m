@@ -1,6 +1,5 @@
 import mm_decls
 import mm_tables
-!import mm_pclcommon
 import* mm_pcl
 
 global const maxmodule=200
@@ -137,7 +136,6 @@ global record strec =
 			byte asmused			!1 when proc contains asmcode
 			byte dllindex			!for dllproc: which dll in dlltable
 			byte extmodno			!for proc call chains: module no of proc owner
-!			byte simplefunc
 			byte fflang				!0 windowsff. etc.
 			byte nretvalues			!function: number of return values (0 for proc)
 			byte varparams			!0 or 1; variadic params in B and FF
@@ -150,7 +148,6 @@ global record strec =
 			int32 baseclass
 			byte bitfieldwidth		!width of bitfield in record
 			byte align				!0, 2, 4, 8, 16 or 255 (auto-align)
-!			byte at					!0, or 1 for @ fields, 2 for @ frame/static
 			byte bitoffset		!0..31 for bitfields in records
 		end
 
@@ -180,7 +177,6 @@ global record strec =
 		[24]byte dummy
 	end
 
-!	int32 size
 	int16 nrefs
 !	int16 pmode
 
@@ -274,7 +270,6 @@ global record unitrec =
 
 		struct
 			union
-!!				int16 opindex		!op_add_i64 etc
 				int16 bitopindex	!
 				int16 opcindex		!operator nodes
 				int16 fnindex		!sysfn_add_var etc
@@ -381,15 +376,10 @@ global [0..maxtype]int32	ttkeytype 		!for dict
 global [0..maxtype]byte	ttusercat
 global [0..maxtype]int32	ttlineno
 
-!global [0..maxtype]byte	ttpcltype
-!global [0..maxtype]byte	ttcat
-!global [0..maxtype]byte	ttcat2
-
 global [0..maxtype]byte	ttisint			!is i8 i16 i32 i64 i128
 global [0..maxtype]byte	ttisword			!is u8 u16 u32 u64 u128
 global [0..maxtype]byte	ttisreal			!is r32 r64
 global [0..maxtype]byte	ttisinteger		!is i8..i64/u8..u64/c8..c64
-!global [0..maxtype]byte	ttisnumeric		!is int/word/char/real
 global [0..maxtype]byte	ttisallnum		!all numeric types including short/decimal
 global [0..maxtype]byte	ttismainnum		!all numerics excl short
 global [0..maxtype]byte	ttisshort		!is i8/i16/i32/u8/u16/u32/c8/c16
@@ -412,11 +402,8 @@ global int debug=0
 global int assemmode=0
 
 global ref procrec proclist,proclistx			!linked list of all procs
-!global int nproclist
 global ref procrec staticlist,staticlistx		!linked list of all static
-!global int nstaticlist
 global ref procrec constlist,constlistx		!linked list of all export consts
-!global int nconstlist
 
 global const maxmodulemap=25
 global [maxmodulemap]ichar genericmodules
@@ -461,7 +448,6 @@ global byte fshowast1
 global byte fshowast2
 global byte fshowast3
 global byte fshowst
-!global byte fshowpst
 global byte fshowstflat
 global byte fshowtypes
 global byte fshowoverloads
@@ -473,7 +459,6 @@ global byte fx64
 global byte fssonly
 global byte fnofile
 global byte fdorts=1
-!global byte fshortnames
 
 global byte dointlibs=1
 
@@ -520,21 +505,4 @@ global int ncclibs
 
 global ichar infotext					!mainprog.txt for c target; nil if not used
 
-!GLOBAL INT NINDEX
-!GLOBAL INT NFOR
-!GLOBAL INT NTO
-!GLOBAL INT NWHILE
-!GLOBAL INT NDO
-!GLOBAL INT NREPEAT
-!GLOBAL INT NDOSWITCH
-!GLOBAL INT NDOCASE
-!GLOBAL INT NFUNCTIONS
-!GLOBAL INT NPROCs
-!GLOBAL INT NGOTO
-!GLOBAL INT NEXIT
-!GLOBAL INT NLONGEST
-!GLOBAL [256]char LONGESTNAME
-!GLOBAL INT NGENERIC
-GLOBAL INT NUNITS
-!
-
+global int nunits

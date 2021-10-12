@@ -1,58 +1,74 @@
 mafile 45
-  1 mm.m                 554     1965   0
-  2 mm_decls.m         13030     2544   0
-  3 mm_tables.m        35120    15600   0
-  4 mm_pcl.m              71    50743   0
-  5 pc_decls.m          2630    50839   0
-  6 pci_core.m            50    53494   0
-  7 pc_libpcl.m        16956    53570   0
-  8 mclib.m             3430    70548   0
-  9 mlibp.m            26041    74000   0
- 10 msysp.m            27309   100064   0
- 11 mwindowsp.m        11810   127400   0
- 12 pc_lex.m           12775   139234   0
- 13 pci_read.m            30   152035   0
- 14 pc_parse.m          5120   152091   0
- 15 pc_tables.m        14698   157238   0
- 16 mm_start.m         23266   171962   0
- 17 mm_lex.m           30497   195252   0
- 18 mm_support.m       11215   225777   0
- 19 mm_lib.m           31308   237016   0
- 20 mm_diags.m         11628   268350   0
- 21 pci_mcl.m          22284   280003   0
- 22 pc_genmcl.m        67617   302314   0
- 23 pc_libmcl.m        30613   369958   0
- 24 pc_stackmcl.m      21041   400600   0
- 25 pc_genss.m         41373   421667   0
- 26 pc_objdecls.m       4008   463069   0
- 27 pc_optim.m          5568   467103   0
- 28 mm_genpcl.m        10654   472698   0
- 29 mm_blockpcl.m      39362   483381   0
- 30 pc_win64.m          2203   522769   0
- 31 pc_writeexe.m      25092   525001   0
- 32 pc_writess.m        4863   550121   0
- 33 pc_disasm.m        25550   555011   0
- 34 mm_libsources.m      446   580592   0
- 35 mm_parse.m         84547   581064   0
- 36 mm_name.m          15523   665636   0
- 37 mm_type.m          58322   681184   0
- 38 mm_export.m         3567   739533   0
- 39 rts.pcl             2050   743123   1
- 40 mm_help.txt         1108   745200   1
- 41 msysp.m            27309   746331   1
- 42 mlibp.m            26041   773663   1
- 43 mclib.m             3430   799727   1
- 44 mwindowsp.m        11810   803184   1
- 45 mwindllp.m          1714   815020   1
+  1 mm.m                 804     1965   0
+  2 mm_start.m         23266     2794   0
+  3 msysp.m            27309    26082   0
+  4 mclib.m             3430    53413   0
+  5 mlibp.m            26041    56865   0
+  6 mwindowsp.m        11810    82932   0
+  7 mm_lex.m           30497    94765   0
+  8 mm_decls.m         12301   125287   0
+  9 mm_tables.m        35120   137614   0
+ 10 mm_pcl.m              71   172758   0
+ 11 pc_decls.m          2630   172855   0
+ 12 pci_core.m            50   175511   0
+ 13 pc_libpcl.m        16956   175588   0
+ 14 pc_lex.m           12775   192568   0
+ 15 pci_read.m            30   205369   0
+ 16 pc_parse.m          5120   205425   0
+ 17 pc_tables.m        14698   210572   0
+ 18 mm_support.m       11215   225298   0
+ 19 mm_lib.m           31319   236537   0
+ 20 mm_diags.m         11628   267882   0
+ 21 pci_mcl.m          22284   279535   0
+ 22 pc_genmcl.m        67617   301846   0
+ 23 pc_libmcl.m        30613   369490   0
+ 24 pc_stackmcl.m      21041   400132   0
+ 25 pc_genss.m         41373   421199   0
+ 26 pc_objdecls.m       4008   462601   0
+ 27 pc_optim.m          5568   466635   0
+ 28 mm_genpcl.m        10654   472230   0
+ 29 mm_blockpcl.m      39362   482913   0
+ 30 pc_win64.m          2203   522301   0
+ 31 pc_writeexe.m      25092   524533   0
+ 32 pc_writess.m        4863   549653   0
+ 33 pc_disasm.m        25550   554543   0
+ 34 mm_libsources.m      446   580124   0
+ 35 mm_parse.m         84547   580596   0
+ 36 mm_name.m          15523   665168   0
+ 37 mm_type.m          58322   680716   0
+ 38 mm_export.m         3567   739065   0
+ 39 mm_help.txt         1108   742659   1
+ 40 rts.pcl             2050   743790   1
+ 41 msysp.m            27309   745863   1
+ 42 mlibp.m            26041   773195   1
+ 43 mclib.m             3430   799259   1
+ 44 mwindowsp.m        11810   802716   1
+ 45 mwindllp.m          1714   814552   1
 === mm.m 1/45 ===
 !mapmodule mm_libsources => mm_libsources_dummy
 !mapmodule mm_diags => mm_diags_dummy
-mapmodule ma_writess => ma_writess_dummy
 
-
-
-import mm_decls
+!import msys
+!import mlib
+!import oslib
+!import clib
+!
+!import mm
+!import mm_blockpcl
+!import mm_decls
+!import mm_diags
+!import mm_export
+!import mm_genpcl
+!import mm_lex
+!import mm_lib
+!import mm_libsources
+!import mm_name
+!import mm_parse
+!import mm_pcl
 import mm_start
+!import mm_support
+!import mm_tables
+!import mm_type
 
 proc start=
 
@@ -72,4187 +88,1117 @@ proc start=
 
 	start_common('W','X64')
 end
-=== mm_decls.m 2/45 ===
-import mm_decls
-import mm_tables
-!import mm_pclcommon
-import* mm_pcl
-
-global const maxmodule=200
-global const maxlibfile=50
-global const maxsourcefile=1000
-
-global type unit   = ref unitrec
-global type symbol = ref strec
-
-global macro pr(a,b)	= (a<<16 ior b)
-
-global record tokenrec =		!should be 16-byte record
-	byte symbol
-	byte subcode
-	word16 spare
-	word32 pos: (lineno:24, fileno:8)
-
-	union
-		ref strec symptr		!pointer to symbol table entry for name
-		int64 value				!64-bit int
-		real xvalue				!64-bit float
-		word64 uvalue			!64-bit word
-		ichar svalue			!pointer to string or charconst (not terminated)
-!		ref qint qvalue			!128-bit int/word
-		ref int128 pvalue128	!128-bit int/word
-	end
-end
-
-global record overloadrec =
-	int32 amode
-	int32 bmode
-	int32 rmode
-	int16 moduleno
-	int16 flags
-	unit fncode
-	ref overloadrec nextoverload
-end
-
-global record dllprocrec =
-	ichar name
-	ref proc address
-	int dllindex
-end
-
-global record procrec =
-	symbol def
-	ref procrec nextproc
-end
-
-global record fwdrec =
-	ref fwdrec nextfwd
-	int32 offset
-	int16 reltype
-	int16 seg
-end
-
-global record typenamerec=
-	symbol owner			!owner of scope where typename was encountered
-							!moduleno required by resolvetypename can be derived from owner
-!A/B used as follows
-!  nil B			Simple typename B
-!  A   B			Dotted pair A.B
-!  A   nil          I think represents a typeof(x) where x is a name
-	symbol defa
-	union
-		symbol defb
-		symbol def
-	end
-	ref int32 pmode
-end
-
-global record posrec=
-	word32 pos: (lineno:24, fileno:8)
-end
-
-global record uflagsrec =
-	[7]byte	codes
-	byte	ulength
-end
-
-global record strec =
-	ichar name
-	ref strec owner
-	ref strec deflist
-	union
-		ref strec deflistx
-!		ref pstrec pdef
-		ref fwdrec fwdrefs	!fwd ref chain
-	end
-	ref strec nextdef
-	ref strec nextdupl
-	ref strec firstdupl			!point to generic version
-	psymbol pstdef
-
-	unit code			!var idata/proc body/taggedunion tag value/etc
-
-	int32 mode
-	byte namelen
-	byte symbol
-	byte nameid
-	byte subcode
-
-	union
-		int32 index					!needs to hold pcindex (also indices for all symbols or .bc files)
-		int32 labelno				!for mcl anonymous labels; and for proc labels?
-	end
-	int32 offset
-
-	word32 pos: (lineno:24, fileno:8)
-	word16 flags: (
-		isglobal:2,
-		isstatic:1,
-		used:1,
-		txdone:1,
-		circflag:1,
-		islet:1,
-
-		iscallback:1,
-		addrof:1,
-		noreg:1,
-		equals:1,
-		isequivtarget:1,
-		atfield:1,
-		atvar:1,
-		isimport:1)
-	byte moduleno
-	byte reg
-
-	union
-		struct				!when a proc
-			ichar truename			!for imported name only
-			ref strec paramlist
-
-			byte asmused			!1 when proc contains asmcode
-			byte dllindex			!for dllproc: which dll in dlltable
-			byte extmodno			!for proc call chains: module no of proc owner
-!			byte simplefunc
-			byte fflang				!0 windowsff. etc.
-			byte nretvalues			!function: number of return values (0 for proc)
-			byte varparams			!0 or 1; variadic params in B and FF
-			byte isthreaded			!0 or 1; variadic params in B and FF
-		end
-
-		struct				!when a record or record field
-			ref strec equivfield
-			uflagsrec uflags
-			int32 baseclass
-			byte bitfieldwidth		!width of bitfield in record
-			byte align				!0, 2, 4, 8, 16 or 255 (auto-align)
-!			byte at					!0, or 1 for @ fields, 2 for @ frame/static
-			byte bitoffset		!0..31 for bitfields in records
-		end
-
-		struct				!when a param name
-			ref strec nextparam
-			byte parammode			!0=var_param, in_param, out_param
-			byte optional			!0 or 1	
-			byte variadic			!variadic parameter for B code
-		end
-
-		struct				!when a static or frame name
-			unit equivvar
-!			symbol equivvar
-!			byte equals				!0 or 1 if @ used (static/frame vars only)
-		end
-
-		struct						!macro param
-			ref void macro_dummy	!needs nextparam
-			ref strec nulldef		!generic st entry
-		end
-
-		struct						!when a tagged union
-			int32 enumtagmode
-		end
-
-
-		[24]byte dummy
-	end
-
-!	int32 size
-	int16 nrefs
-!	int16 pmode
-
-	union
-		int16 stindex		!label pass 2: 0, or 1-based index within coff symboltable
-		int16 maxalign		!for record types (doesn't fit above)
-		int16 regsize
-	end
-	byte reftype			!AX fields
-	byte segment
-	int16 importindex
-!	[2]BYTE PADDING
-
-end
-
-global record unitrec =
-	byte tag				!kcode tag number
-	byte hasa, hasb, hasc	!whether .a, .b or .c points to a unit/unitlist
-!	int32 lineno			!source lineno associated with item; fileno is in top byte
-	word32 pos: (lineno:24, fileno:8)
-
-	unit nextunit
-
-	union
-		struct
-			union
-				unit			a
-				symbol		def
-				symbol		labeldef
-				int64			value
-				word64			uvalue
-				real64			xvalue
-				ichar			svalue
-				int64			range_lower
-			end
-
-			union
-				unit			b
-				int64			range_upper
-			end
-		end
-		int128					value128
-		word128					uvalue128
-		struct
-			word64				low128
-			word64				high128
-		end
-	end
-
-	union
-		unit			c
-		[4]int16		cmppclmode
-	end
-
-	union						!misc stuff depends on tag
-		struct					!const string
-			word32 slength
-			byte isastring
-		end
-
-		struct					!name
-			byte dottedname		!for j_name: 1=resolved from fully qualified dotted seq
-			byte avcode			!j_name for/autovars: 'I','T','S' = index/to/step autovars
-		end
-
-		union					!asssemreg/xreg/mem
-			struct
-				byte reg
-				byte regix
-				byte scale
-				byte prefixmode
-
-				byte regsize
-				byte cond
-				byte spare2,spare3
-			end
-			word64 reginfo
-		end
-
-		union					!for makelist
-			word32 length		!number of elements
-			byte makearray		!1 for makelist to create array-var not list-var
-		end
-		byte addroffirst	!1 for j_nameaddr when derived from &.name
-
-		word32 offset			!for j_dot
-		byte ifretflag		!1 when 'if' in return value path (force "if" in C target)
-		int32 whenlabel		!label no associated with when expr; for recase
-
-		int32 trylevel
-
-		struct
-			union
-!!				int16 opindex		!op_add_i64 etc
-				int16 bitopindex	!
-				int16 opcindex		!operator nodes
-				int16 fnindex		!sysfn_add_var etc
-				int16 condcode		!pcl_eq etc; for j_eq etc
-				int16 asmopcode		!for j_assem
-				int16 bfcode
-			end
-		end
-		int32 index
-		[4]byte cmpgenop			!cmpchain: up to 8 genops
-	end
-
-	int32 mode
-	union
-		int32 convmode	!convert/typepun: target mode (will be widened to give unit mode)
-		int32 memmode	!name/ptr/index/dot: void=LVALUE; non-void=RVALUE
-	end
-	byte moduleno
-	byte initlet		!1 for an assignment that initialises a let
-	byte isconst		!1 for j_const, and j_makerange with const range
-	byte resultflag		!1 when the result of this unit is needed; 0=void or discarded
-	byte pclop			!generic operator for j_bin, incr etc
-	byte pclmode		!eg kadd:i64
-
-	byte istrueconst	!1 for actual "123" etc, not result of reduction
-	byte spare
-end
-
-
-global record modulerec =
-	ichar name
-	symbol stmodule
-	int fileno
-	union
-		ichar asmstr
-		ichar clangstr
-	end
-	int strlength
-	[maxmodule]byte importmap
-	[maxmodule]byte importstar
-	symbol stinitproc
-	ref tokenrec tklist
-!	int16 moduleno
-end
-
-global const maxsearchdirs=10
-global [maxsearchdirs]ichar searchdirs
-global int nsearchdirs=0
-
-global symbol stprogram		!root into the symbol table
-global symbol stmodule		!main module
-global symbol stsysmodule	!optional sys module (needed for name resolving)
-global symbol alldeflist		!link together all (user) symbols
-
-global tokenrec lx				!provides access to current token data
-global tokenrec nextlx			!provides access to next token
-
-global [0..maxmodule]modulerec moduletable
-global [0..maxmodule]ichar inputfiles
-global [0..maxlibfile]ichar libfiles
-global [0..maxsourcefile]ichar sourcefilenames
-global [0..maxsourcefile]ichar sourcefilepaths
-global [0..maxsourcefile]ichar sourcefiletext
-global [0..maxsourcefile]int sourcefilesizes
-global [0..maxsourcefile]byte issupportfile
-global int nmodules
-global int nsourcefiles
-global int ninputfiles
-global int nlibfiles
-
-!.ma file directory
-global [0..maxsourcefile]ichar mafilenames
-global [0..maxsourcefile]int mafilesizes
-global [0..maxsourcefile]int mafileoffsets
-global [0..maxsourcefile]ichar mafiletext
-global [0..maxsourcefile]byte mafilefileno			!0 or index into sourcefile tables
-global [0..maxsourcefile]byte mafilesupport			!1 means support file eg. for strinclude
-global int nmafiles
-global ichar mafilesource
-
-global symbol currmodule
-global int currmoduleno				!used when compiling modules
-
-global const int maxtype=6'000
-
-global int ntypes
-
-global [0..maxtype]symbol ttnamedef
-global [0..maxtype]symbol	ttowner		!for	ttlowerexpr/rtlengthexpr
-
-global [0..maxtype]int32	ttbasetype		!basetype
-global [0..maxtype]ichar	ttname
-
-global [0..maxtype]int32	ttsize
-global [0..maxtype]byte	ttsizeset
-global [0..maxtype]int32	ttlower 		!.lbound (default 1)
-global [0..maxtype]int32	ttlength 		!elements in array/record/tuple
-global [0..maxtype]ref[]int32	ttmult 	!ttlength elements in tuple
-
-global [0..maxtype]unit	ttdimexpr		!length, lower:length, or lower..upper
-
-global [0..maxtype]int32	tttarget 		!for array/ref types
-global [0..maxtype]int32	ttkeytype 		!for dict
-global [0..maxtype]byte	ttusercat
-global [0..maxtype]int32	ttlineno
-
-!global [0..maxtype]byte	ttpcltype
-!global [0..maxtype]byte	ttcat
-!global [0..maxtype]byte	ttcat2
-
-global [0..maxtype]byte	ttisint			!is i8 i16 i32 i64 i128
-global [0..maxtype]byte	ttisword			!is u8 u16 u32 u64 u128
-global [0..maxtype]byte	ttisreal			!is r32 r64
-global [0..maxtype]byte	ttisinteger		!is i8..i64/u8..u64/c8..c64
-!global [0..maxtype]byte	ttisnumeric		!is int/word/char/real
-global [0..maxtype]byte	ttisallnum		!all numeric types including short/decimal
-global [0..maxtype]byte	ttismainnum		!all numerics excl short
-global [0..maxtype]byte	ttisshort		!is i8/i16/i32/u8/u16/u32/c8/c16
-global [0..maxtype]byte	ttisref			!is a pointer
-
-!global const int maxtypename=4'000
-!global const int maxtypename=8'000
-global const int maxtypename=12'000
-global [0..maxtypename]typenamerec typenames
-global [0..maxtypename]posrec typenamepos
-global int ntypenames
-
-global [0..maxtype]byte typestarterset
-
-global symbol currproc
-
-global int alineno=0
-
-global int debug=0
-global int assemmode=0
-
-global ref procrec proclist,proclistx			!linked list of all procs
-!global int nproclist
-global ref procrec staticlist,staticlistx		!linked list of all static
-!global int nstaticlist
-global ref procrec constlist,constlistx		!linked list of all export consts
-!global int nconstlist
-
-global const maxmodulemap=25
-global [maxmodulemap]ichar genericmodules
-global [maxmodulemap]ichar actualmodules
-global int nmodulemap
-
-global unit nullunit
-
-global int targetbits=64
-global int targetsize=8
-
-global [20]ichar docstrings
-global int ndocstrings
-
-global const maxdlllib=50
-global const maxdllproc=500
-
-global int ndllnametable
-global int ndllproctable
-global [maxdlllib]ichar dllnametable
-global [maxdlllib]word64 dllinsttable
-global [maxdllproc]dllprocrec dllproctable
-
-global int fverbose=1		!1=normal, 0=less verbose, 2/3 = more verbose
-
-global int msyslevel=2		!0/1/2 = none/min/normal
-global byte fvarnames=0		!display of names in asm/mcl
-
-global byte fbundled=0		!1 when .ma file is being compiler
-global byte fwritema
-global byte fwriteexports
-global byte fwritedocs
-
-global byte fexe
-global byte fobj
-global byte fwritelibs
-global byte fshowtiming
-global byte fshowss
-global byte fshowpcl
-global byte fshowasm
-global byte fshowast1
-global byte fshowast2
-global byte fshowast3
-global byte fshowst
-!global byte fshowpst
-global byte fshowstflat
-global byte fshowtypes
-global byte fshowoverloads
-global byte foptim
-global byte fcheckunusedlocals=0
-global byte fwindows
-global byte flinux
-global byte fx64
-global byte fssonly
-global byte fnofile
-global byte fdorts=1
-!global byte fshortnames
-
-global byte dointlibs=1
-
-!pcl/mcl-pass are relevant only for x64 target, and not allowed for 
-global tabledata() []ichar passnames =
-	(load_pass,		$),
-	(parse_pass,	$),
-	(fixup_pass,	$),
-	(name_pass,		$),
-	(type_pass,		$),
-	(pcl_pass,		$),
-	(mcl_pass,		$),		!all-inclusive up to this point (includes all prev passes)
-	(asm_pass,		$),		!only one of these 3 will be done
-	(obj_pass,		$),		!
-	(exe_pass,		$),		!
-	(dll_pass,		$),		!
-	(run_pass,		$),		!will do up to .exe then run the .exe
-	(clang_pass,	$),
-end
-
-!passlevel used for compiler debug only
-global int passlevel=0
-global int prodmode=0
-global int debugmode=0
-
-global ichar outfile					!one of the following two
-global ichar destfilename				!nil, or sets outfile
-global ichar destfilepath				!nil, or sets path (can't be mixed with destfilename)
-global ichar asmfilename				!set from outfile
-global ichar pclfilename				!
-global ichar exefilename				!
-global ichar dllfilename				!
-global ichar objfilename				!
-global ichar mafilename					!
-global ichar expfilename				!
-
-global symbol extendtypelist
-
-global [0:jtagnames.len]ref overloadrec overloadtable
-
-global const maxcclibs=10				!libs passed to gcc/tcc
-global [maxcclibs]ichar cclibtable
-global int ncclibs
-
-global ichar infotext					!mainprog.txt for c target; nil if not used
-
-!GLOBAL INT NINDEX
-!GLOBAL INT NFOR
-!GLOBAL INT NTO
-!GLOBAL INT NWHILE
-!GLOBAL INT NDO
-!GLOBAL INT NREPEAT
-!GLOBAL INT NDOSWITCH
-!GLOBAL INT NDOCASE
-!GLOBAL INT NFUNCTIONS
-!GLOBAL INT NPROCs
-!GLOBAL INT NGOTO
-!GLOBAL INT NEXIT
-!GLOBAL INT NLONGEST
-!GLOBAL [256]char LONGESTNAME
-!GLOBAL INT NGENERIC
-GLOBAL INT NUNITS
-!
-
-=== mm_tables.m 3/45 ===
-import* mm_pcl
-
-!import mm_decls
-!import* mm_pcl
-
-global tabledata() 	[0:]ichar stdnames,
-		[0:]byte stdbits,
-		[0:]byte stdcodes,
-		[0:]byte stdtopcl =
-!    type        name    bits   code   tabtype     tabtype2    pcltype     cat         cat2
-    (tvoid=0,    "void",    0,    0,	tpvoid),
-
-    (tc64,       "c64",    64,   'C',	tpu64),
-    (tu64,       "u64",    64,   'U',	tpu64),
-    (tu128,      "u128",  128,   'U',	tpu128),
-    (ti64,       "i64",    64,   'I',	tpi64),
-    (ti128,      "i128",  128,   'I',	tpi128),
-    (tr32,       "r32",    32,   'R',	tpr32),
-    (tr64,       "r64",    64,   'R',	tpr64),
-
-    (trange,     "range", 128,   'G',	tpu128),  
-    (tref,       "ref",    64,   'P',	tpu64),  
-    (trefchar,   "ichar",  64,   'P',	tpu64),  
-    (tarray,     "array",   0,   'A',	tpblock),  
-    (tslice,     "slice", 128,     0,	tpu128),  
-    (trecord,    "rec",     0,     0,	tpblock),  
-
-    (tblock,     "block",   0,     0,	tpblock),  
-    (tshort,     "short",   0,     0,	tpvoid),  
-
-    (tc8,        "c8",      8,   'C',	tpu8),  
-    (tc16,       "c16",    16,   'C',	tpu16),  
-    (ti8,        "i8",      8,   'I',	tpi8),  
-    (ti16,       "i16",    16,   'I',	tpi16),  
-    (ti32,       "i32",    32,   'I',	tpi32),  
-    (tu8,        "u8",      8,   'U',	tpu8),
-    (tu16,       "u16",    16,   'U',	tpu16),
-    (tu32,       "u32",    32,   'U',	tpu32),  
-
-    (tenum,      "enum",   64,     0,	tpu64),  
-
-    (tauto,      "auto",    0,     0,	tpvoid),  
-    (tany,       "any",     0,     0,	tpvoid),  
-    (tproc,      "proc",    0,     0,	tpvoid),  
-    (tlabel,     "label",   0,     0,	tpvoid),  
-    (ttype,      "type",   64,     0,	tpvoid),  
-    (tbitfield,  "bitfl",   8,     0,	tpvoid),  
-    (ttuple,     "tuple",   0,     0,	tpvoid),  
-    (tpending,   "pend",    0,     0,	tpvoid),  
-
-    (tlast,      "last ",   0,     0,	tpvoid),  
-end
-
-global const tuser	= tlast
-
-global const tint	= ti64
-global const tword	= tu64
-global const treal	= tr64
-global const tfirstnum	= tc64
-global const tlastnum	= tr64
-
-global const tfirsttabletype	= tc64			!bounds used in optables
-global const tlasttabletype		= tenum
-
-global const maxtuplesize = 4
-
-global int trefproc
-global int treflabel
-
-global []int typerank=(
-	1,	!tc64
-	2,	!tu64
-	4,	!tu128
-	3,	!ti64
-	5,	!ti128
-	6,	!tr32
-	7)	!tr64
-
-global tabledata() []ichar sysfnnames, []byte sysfnparams, []byte sysfnres =
-	(sysfn_init,				$,	0,	0),
-	(sysfn_print_startfile,		$,	0,	0),
-	(sysfn_print_startstr,		$,	0,	0),
-	(sysfn_print_startptr,		$,	0,	0),
-	(sysfn_print_startcon,		$,	0,	0),
-	(sysfn_print_setfmt,		$,	0,	0),
-	(sysfn_print_nogap,			$,	0,	0),
-	(sysfn_print_space,			$,	0,	0),
-	(sysfn_print_i64,			$,	0,	0),
-	(sysfn_print_i64_nf,		$,	0,	0),
-	(sysfn_print_u64,			$,	0,	0),
-	(sysfn_print_r64,			$,	0,	0),
-	(sysfn_print_r32,			$,	0,	0),
-	(sysfn_print_i128,			$,	0,	0),
-	(sysfn_print_u128,			$,	0,	0),
-	(sysfn_print_str,			$,	0,	0),
-	(sysfn_print_str_nf,		$,	0,	0),
-	(sysfn_print_strsl,			$,	0,	0),
-	(sysfn_print_ptr,			$,	0,	0),
-	(sysfn_print_ptr_nf,		$,	0,	0),
-	(sysfn_print_c8,			$,	0,	0),
-	(sysfn_print_newline,		$,	0,	0),
-	(sysfn_print_end,			$,	0,	0),
-	(sysfn_read_i64,			$,	0,	0),
-	(sysfn_read_r64,			$,	0,	0),
-	(sysfn_read_str,			$,	0,	0),
-	(sysfn_read_fileline,		$,	0,	0),
-	(sysfn_read_strline,		$,	0,	0),
-	(sysfn_read_conline,		$,	0,	0),
-
-	(sysfn_getnprocs,			$,	0,	1),		!access functions
-!	(sysfn_getnexports,			$,	0,	1),
-	(sysfn_getprocname,			$,	0,	1),
-	(sysfn_getprocaddr,			$,	0,	1),
-!	(sysfn_getprocexport,		$,	0,	1),
-end
-!
-global [sysfnnames.len]psymbol sysfnhandlers
-
-!global [sysfnnames.len]int sysfnproclabels
-
-global int mlineno
-global byte fshowpst
-
-
-!!---
-global tabledata() [0:]ichar jtagnames, [0:]byte jisexpr =
-!Basic units; these don't follow normal rules of params needing to be units or lists
-!jisexpr=1/2 when unit returns a value; 1 means unary, 2 binary op,
-! 3 means returns a value, but is not a unary or binary op 
-
-!a,b,c are unitrec refs, which can be a single unit, or a linked-list chain
-!(usually in forward order)
-!	L means .a/b/c pointing to a unitlist; L can be nil for an empty list
-!	u means .a/b/c pointing to a single unit
-!	u/nil means can be nil
-
-
-![a=u] means a is a unit/list, or is nil
-
-	(j_none=0,		$,		0), ! For tagname lookups when tag is zero
-	(j_const,		$,		3), ! value/etc=value, typeno=type code
-	(j_null,		$,		3), ! Place holder unit: means 'param no present' when used where a param is expected
-	(j_name,		$,		3), ! def=nameptr
-	(j_namelv,		$,		3), ! def=nameptr
-	(j_block,		$,		0), ! a=L
-	(j_stmtblock,	$,		0), ! a=L
-	(j_decimal,		$,		3), ! svalue=str, slength
-	(j_assem,		$,		0), ! svalue=str, slength
-	(j_assemmacro,	$,		0), !
-	(j_assemreg,	$,		0), !
-	(j_assemxreg,	$,		0), !
-	(j_assemmem,	$,		0), !
-	(j_strinclude,	$,		0), !
-
-!Logical Operators
-
-	(j_andl,		$,		2), ! a b	This group are for conditional expressions (no result)
-	(j_orl,			$,		2), ! a b
-	(j_xorl,		$,		2), ! a b
-	(j_notl,		$,		1), ! a
-	(j_istruel,		$,		1), ! a
-
-!Expressions and Operators
-
-	(j_makelist,	$,		3), ! a=L, b=[u], length=N; element list/lower bound expr
-	(j_makerange,	$,		3), ! a b
-	(j_makeset,		$,		3), ! a=L, length=N
-	(j_makedict,	$,		3), !
-	(j_makeslice,	$,		3), !
-	(j_exprlist,	$,		3), ! a=u...	List of expressions, as (a;b;c,	0), rather than (a,b,c)
-	(j_multexpr,	$,		3), !
-	(j_returnmult,	$,		3), !
-
-	(j_keyword,		$,		3), ! def=st entry
-	(j_keyvalue,	$,		3), ! a b
-	(j_assign,		$,		3), ! a b
-	(j_deepcopy,	$,		3), ! a b
-	(j_callfn,		$,		3), ! a b
-!	(j_applyop,		$,		0), ! opcode b c
-!	(j_applyopx,	$,		1), ! opcode b c
-	(j_new,			$,		3), ! newmode=T, a=L, length=N
-	(j_destroy,		$,		0), ! a=L, length=N
-!	(j_clear,		$,		0), !
-
-!	(j_setcc,		$,		2), ! a b
-	(j_cmp,			$,		2), ! a b
-	(j_cmpchain,	$,		1), ! a b
-	(j_bin,			$,		2), ! a b
-	(j_unary,		$,		1), ! a b
-	(j_binto,		$,		2), ! a b
-	(j_unaryto,		$,		1), ! a b
-	(j_incr,		$,		3), ! a	++a
-
-	(j_inrev,		$,		2), ! a b
-	(j_inrange,		$,		2), ! a b
-	(j_inset,		$,		2), ! a b
-	(j_clamp,		$,		2), ! a b
-
-	(j_flexptr,		$,		3), ! a b
-	(j_stringz,		$,		3), ! a b
-	(j_sliceptr,	$,		3), ! a b
-
-	(j_index,		$,		3), ! a b		a[b]
-	(j_indexlv,		$,		3), ! a b		a[b]
-	(j_slice,		$,		3), ! a b		a[b]
-	(j_dot,			$,		3), ! a b opcode	a.b; opcode=0/1/2 used for signalling in rx pass
-	(j_dotlv,		$,		3), ! a b opcode	a.b; opcode=0/1/2 used for signalling in rx pass
-	(j_dotindex,	$,		3), ! a b		a[b]
-	(j_dotslice,	$,		3), ! a b		a[b]
-	(j_anddotslice,	$,		3), ! a b		a[b]
-	(j_anddotindex,	$,		3), ! a b		a[b]
-
-	(j_ptr,			$,		3), ! a		a^
-	(j_ptrlv,		$,		3), ! a		a^
-	(j_addrof,		$,		3), ! a		&a
-	(j_addroffirst,	$,		3), ! a		&a
-	(j_convert,		$,		3), ! typeno=T a		T(a)			T
-	(j_shorten,		$,		3), !
-	(j_autocast,	$,		3), ! typeno=T a		T(a)			T
-	(j_typepun,		$,		3), ! typeno=T a		T@(a)			T
-	(j_typeconst,	$,		3), ! typeno=T			typeconst(T)
-	(j_operator,	$,		3), ! opcode=opc
-	(j_upper,		$,		3), ! a		$					T
-
-	(j_bitwidth,	$,		1), ! a
-	(j_bytesize,	$,		1), ! a
-	(j_typeof,		$,		3), ! a
-	(j_typestr,		$,		1), ! a
-!	(j_sliceptr,	$,		1), ! a
-	(j_bitfield,	$,		3), ! a
-
-	(j_minvalue,	$,		3), ! a
-	(j_maxvalue,	$,		3), ! a
-
-!Translator Variables
-
-	(j_cvlineno,	$,		3), ! 
-	(j_cvstrlineno,	$,		3), ! 
-	(j_cvmodulename,$,		3), ! 
-	(j_cvfilename,	$,		3), ! 
-	(j_cvfunction,	$,		3), ! 
-	(j_cvdate,		$,		3), ! 
-	(j_cvtime,		$,		3), ! 
-	(j_cvversion,	$,		3), ! 
-	(j_cvtypename,	$,		3), ! 
-	(j_cvtargetbits,$,		3), ! 
-	(j_cvtargetsize,$,		3), ! 
-	(j_cvtargetcode,$,		3), ! 
-	(j_cvnil,		$,		3), ! 
-	(j_cvpi,		$,		3), ! 
-	(j_cvtrue,		$,		3), ! 
-	(j_cvfalse,		$,		3), ! 
-
-	(j_whenthen,	$,		0), ! a=L b=u
-	(j_elsif,		$,		0), ! opcode=condcode, a
-	(j_fmtitem,		$,		3), ! a b  x/fmtstr
-	(j_nogap,		$,		3), ! 
-	(j_space,		$,		3), ! 
-
-!Statements
-
-	(j_callproc,	$,		0), ! a=fn b=L, length
-	(j_return,		$,		0), ! a=x/nil
-	(j_syscall,		$,		0), ! a=x or nil
-
-!	(j_assign,		$,		3), ! a b
-	(j_to,			$,		0), ! a=N, b=body, c=tempvar/nil, def=name
-	(j_if,			$,		3), ! condcode a=then b=else
-	(j_longif,		$,		3), ! a=(elsif ...) b=else		L is series of kelsif pairs
-	(j_forup,		$,		0), ! 
-	(j_fordown,		$,		0), !
-	(j_forall,		$,		0), !
-	(j_forallrev,	$,		0), !
-	(j_while,		$,		0), ! a=x b=u
-	(j_repeat,		$,		0), ! a=u b=x
-	(j_goto,		$,		0), ! a=x
-	(j_labeldef,	$,		0), ! def=nameptr
-	(j_restart,		$,		0), ! [a=x]
-	(j_redo,		$,		0), ! [a=x]
-	(j_next,		$,		0), ! [a=x]
-	(j_exit,		$,		0), ! [a=x]
-	(j_do,			$,		0), ! [a=u
-	(j_case,		$,		3), ! a=x b=L [c=else]		L is series of whenthen pairs
-	(j_docase,		$,		0), ! a=x b=L [c=else]
-	(j_switch,		$,		3), ! a=x b=L [c=else]
-	(j_doswitch,	$,		0), ! a=x b=L [c=else]
-	(j_swap,		$,		0), ! a b
-	(j_select,		$,		3), ! Not implemented
-	(j_recase,		$,		0), ! Not implemented
-!	(j_recaseelse,	$,		0), ! Not implemented
-
-	(j_print,		$,		0), ! [a=dev] b=L
-	(j_println,		$,		0), ! [a=dev] b=L
-	(j_fprint,		$,		0), ! [a=dev] b=fmtstr c=L
-	(j_fprintln,	$,		0), ! [a=dev] b=fmtstr c=L
-	(j_cprint,		$,		0), ! [a=dev] b=fmtstr c=L
-	(j_cprintln,	$,		0), ! [a=dev] b=fmtstr c=L
-	(j_sprint,		$,		0), !         b=L 
-	(j_sfprint,		$,		0), !         b=L
-	(j_read,		$,		0), ! [a=dev] b=L
-	(j_readln,		$,		0), ! [a=dev] b=L
-	(j_sread,		$,		0), ! [a=dev] b=L
-	(j_sreadln,		$,		0), ! [a=dev] b=L
-	(j_stop,		$,		0), ! [a=x]
-	(j_try,			$,		0), ! a=try block; b=except list
-	(j_except,		$,		0), ! a=except block; b=exception code list (constants)
-	(j_yield,		$,		0), ! "
-	(j_raise,		$,		0), ! "
-!	(j_callhostproc,$,		0), ! "
-	(j_eval,		$,		3), ! "
-	(j_stack,		$,		0), ! "
-	(j_unstack,		$,		0), ! "
-	(j_empty,		$,		1), ! "
-
-	(j_dummy,		$,		3)
-end
-
-global tabledata() []ichar bitfieldnames=
-	(bf_msb,		$),
-	(bf_lsb,		$),
-	(bf_msbit,		$),
-	(bf_lsbit,		$),
-	(bf_msw,		$),
-	(bf_lsw,		$),
-	(bf_odd,		$),
-	(bf_even,		$),
-end
-
-global tabledata() [0:]ichar optypenames =
-	(no_op=0,		$),
-	(bin_op,		$),
-	(mon_op,		$),
-	(prop_op,		$),
-end
-
-!!---
-global tabledata() []ichar symbolnames,
-					[]byte symboloptypes,
-					[]byte symbolgenops,
-					[]byte symbolgentoops,
-					[]byte symbolopprios,
-					[]byte exprstarter =
-!First half are basic tokens returned by lexreadtoken()
-	(errorsym,			$,			0,	0,	0,	0,	0),		! Lex error
-	(dotsym,			".",		0,	0,	0,	0,	0),		! "."
-	(lexdotsym,			$,			0,	0,	0,	0,	0),		! ".", used at bol to prefix lexical 
-	(anddotsym,			"&.",		0,	0,	0,	0,	1),		! "&."
-	(commasym,			",",		0,	0,	0,	0,	0),		! ","
-	(semisym,			";",		0,	0,	0,	0,	0),		! ";"
-	(colonsym,			":",		0,	0,	0,	0,	0),		! ":"
-	(dcolonsym,			"::",		0,	0,	0,	0,	0),		! "::"
-	(assignsym,			":=",		bin_op,	0,	0,	1,	0),		! :=
-	(deepcopysym,		"::=",		0,	0,	0,	1,	0),		! ::=
-	(sendtosym,			"=>",		0,	0,	0,	0,	0),		! =>
-	(lbracksym,			"(",		0,	0,	0,	0,	1),		! (
-	(rbracksym,			")",		0,	0,	0,	0,	0),		! )
-	(lsqsym,			"[",		0,	0,	0,	0,	1),		! [
-	(rsqsym,			"]",		0,	0,	0,	0,	0),		! ]
-	(lcurlysym,			"{",		0,	0,	0,	0,	0),		! {
-	(rcurlysym,			"}",		0,	0,	0,	0,	0),		! }
-	(ptrsym,			"^",		0,	0,	0,	0,	0),		! ^
-	(barsym,			"|",		0,	0,	0,	0,	0),		! |
-	(dbarsym,			"||",		0,	0,	0,	0,	0),		! ||
-	(atsym,				"@",		0,	0,	0,	0,	0),		! @
-	(datsym,			"@@",		0,	0,	0,	0,	0),		! @@
-	(questionsym,		"?",		0,	0,	0,	0,	0),		! ?
-	(addrsym,			"&",		0,	0,	0,	0,	1),		! &
-	(daddrsym,			"&&",		0,	0,	0,	0,	0),		! &&
-	(curlsym,			"~",		0,	0,	0,	0,	0),		! ~
-	(rangesym,			"..",		bin_op,	0,	0,	5,	0),		! ..
-	(ellipsissym,		"...",		0,	0,	0,	0,	0),		! ...
-	(hashsym,			"#",		0,	0,	0,	0,	0),		! #
-
-!	(opsym,				$,		0,	0,	0,	0,	0),		! Any operator or property tag (use sets to distinguish)
-
-	(addsym,			"+",		bin_op,		kadd,		kaddto,		4,	1),
-	(subsym,			"-",		bin_op,		ksub,		ksubto,		4,	1),
-	(mulsym,			"*",		bin_op,		kmul,		kmulto,		3,	0),
-	(divsym,			"/",		bin_op,		kdiv,		kdivto,		3,	0),
-	(idivsym,			"%",		bin_op,		kidiv,		kidivto,	3,	0),
-	(iremsym,			"rem",		bin_op,		kirem,		kiremto,	3,	0),
-	(iandsym,			"iand",		bin_op,		kiand,		kiandto,	4,	0),
-	(iorsym,			"ior",		bin_op,		kior,		kiorto,		4,	0),
-	(ixorsym,			"ixor",		bin_op,		kixor,		kixorto,	4,	0),
-	(shlsym,			"<<",		bin_op,		kshl,		kshlto,		3,	0),
-	(shrsym,			">>",		bin_op,		kshr,		kshrto,		3,	0),
-	(minsym,			"min",		bin_op,		kmin,		kminto,		4,	1),
-	(maxsym,			"max",		bin_op,		kmax,		kmaxto,		4,	1),
-	(andlsym,			"and",		bin_op,		kandl,		kandlto,	7,	0),
-	(orlsym,			"or",		bin_op,		korl,		korlto,		8,	0),
-	(xorlsym,			"xor",		bin_op,		0,			0,			8,	0),
-
-	(eqsym,				"=",		bin_op,		keq,		0,			6,	1),
-	(cmpsym,			"cmp",		bin_op,		0,			0,			6,	1),
-!	(appendsym,			"append",	bin_op,		kappend,	kappendto,	4,	0),
-!	(concatsym,			"concat",	bin_op,		kconcat,	kconcatto,	4,	0),
-	(powersym,			"**",		bin_op,		kpower,		0,			2,	0),
-	(samesym,			"==",		bin_op,		ksame,		0,			6,	0),
-	(insym,				"in",		bin_op,		kin,		0,			6,	0),
-	(notinsym,			"notin",	bin_op,		knotin,		0,			6,	0),
-	(inrevsym,			"inrev",	0,			0,			0,			0,	0),
-
-	(negsym,			"$neg",		mon_op,		kneg,		0,			0,	1),
-	(notlsym,			"not",		mon_op,		knotl,		knotlto,	0,	1),
-	(istruelsym,		"istrue",	mon_op,		kistruel,	kistruelto,	0,	1),
-	(inotsym,			"inot",		mon_op,		kinot,		kinotto,	0,	1),
-	(abssym,			"abs",		mon_op,		kabs,		kabsto,		0,	1),
-	(signsym,			"sign",		mon_op,		ksign,		0,			0,	1),
-	(sqrtsym,			"sqrt",		mon_op,		ksqrt,		0,			0,	1),
-	(sqrsym,			"sqr",		mon_op,		ksqr,		0,			0,	1),
-
-	(propsym,				$,		prop_op,	0,			0,			0,	0),
-	(mathsopsym,		$,		0,	0,	0,	0,	1),		! sin etc
-	(maths2opsym,		$,		0,	0,	0,	0,	1),		! atan2 etc
-
-	(bitfieldsym,		$,		0,	0,	0,	0,	0),		! Special bit selections
-	(eolsym,			$,		0,	0,	0,	0,	0),		! End of line
-	(eofsym,			$,		0,	0,	0,	0,	0),		! Eof seen
-	(rawxnamesym,		$,		0,	0,	0,	0,	0),		! unassigned name, case-sensitive, that is never a reserved word
-	(docstringsym,		$,		0,	0,	0,	0,	0),		! ! #comment used as documentation string
-	(incrsym,			$,		0,	0,	0,	0,	1),		! 1/2 = ++/--; later may add +2 for x++/x--
-	(intconstsym,		$,		0,	0,	0,	0,	1),		! 123 32 bits signed
-	(decimalconstsym,	$,		0,	0,	0,	0,	1),		! 123 or 123.4 decimal
-	(realconstsym,		$,		0,	0,	0,	0,	1),		! 123.4 64 bits
-	(charconstsym,		$,		0,	0,	0,	0,	1),		! 'A' or 'ABCD'
-	(wcharconstsym,		$,		0,	0,	0,	0,	1),		! 'A'W or 'ABCD'W (but don't have a syntax yet)
-	(stringconstsym,	$,		0,	0,	0,	0,	1),		! "ABC"
-	(astringconstsym,	$,		0,	0,	0,	0,	1),		! A"ABC"
-	(wstringconstsym,	$,		0,	0,	0,	0,	1),		! "ABC"W
-
-!Second half are tokens that can be yielded after a name lookup::
-	(unitnamesym,		$,		0,	0,	0,	0,	0),		! 
-	(namesym,			$,		0,	0,	0,	0,	1),		! identifier symbol
-	(ksourcedirsym,		$,		0,	0,	0,	0,	0),		! 
-	(kstrincludesym,	$,		0,	0,	0,	0,	1),		! 
-!	(lexmacronamesym,	$,		0,	0,	0,	0,	0),		! 
-	(regsym,			$,		0,	0,	0,	0,	0),		! x64 registers
-	(xregsym,			$,		0,	0,	0,	0,	0),		! XMM registers
-	(fregsym,			$,		0,	0,	0,	0,	0),		! ST registers
-	(mregsym,			$,		0,	0,	0,	0,	0),		! MMX registers
-	(jmpccsym,			$,		0,	0,	0,	0,	0),		! 
-	(setccsym,			$,		0,	0,	0,	0,	0),		! 
-	(movccsym,			$,		0,	0,	0,	0,	0),		! 
-	(segnamesym,		$,		0,	0,	0,	0,	0),		! 
-	(asmopcodesym,		$,		0,	0,	0,	0,	0),		! MOV etc
-
-	(stdtypesym,		$,		0,	0,	0,	0,	1),		! INT, CHAR etc
-	(machinetypesym,	$,		0,	0,	0,	0,	1),		! INTM etc
-!	(packtypesym,		$,		0,	0,	0,	0,	0),		! Byte etc
-	(ktypeofsym,		$,		0,	0,	0,	0,	0),		! TYPEOF
-	(ksubrangesym,		$,		0,	0,	0,	0,	0),		! SUBRANGE
-	(koutsym,			$,		0,	0,	0,	0,	0),		! OUT
-	(kicharsym,			$,		0,	0,	0,	0,	1),		! ICHAR
-	(kifsym,			$,		0,	0,	0,	0,	1),		! 
-	(kthensym,			$,		0,	0,	0,	0,	0),		! 
-	(kelsifsym,			$,		0,	0,	0,	0,	0),		! 
-	(kelsesym,			$,		0,	0,	0,	0,	0),		! 
-	(kelsecasesym,		$,		0,	0,	0,	0,	0),		! 
-	(kelseswitchsym,	$,		0,	0,	0,	0,	0),		! 
-	(kelseselectsym,	$,		0,	0,	0,	0,	0),		! 
-	(kendsym,			$,		0,	0,	0,	0,	0),		! 
-	(kunlesssym,		$,		0,	0,	0,	0,	0),		! 
-	(kcasesym,			$,		0,	0,	0,	0,	1),		! CASE
-	(kdocasesym,		$,		0,	0,	0,	0,	0),		! DOCASE
-	(krecasesym,		$,		0,	0,	0,	0,	0),		! RECASE
-	(kwhensym,			$,		0,	0,	0,	0,	0),		! 
-	(kforsym,			$,		0,	0,	0,	0,	0),		! FOR
-	(ktosym,			$,		0,	0,	0,	0,	0),		! TO/DOWNTO
-	(kbysym,			$,		0,	0,	0,	0,	0),		! 
-	(kdosym,			$,		0,	0,	0,	0,	0),		! 
-	(kwhilesym,			$,		0,	0,	0,	0,	0),		! 
-	(krepeatsym,		$,		0,	0,	0,	0,	0),		! 
-	(kuntilsym,			$,		0,	0,	0,	0,	0),		! 
-	(kreturnsym,		$,		0,	0,	0,	0,	0),		! 
-	(kstopsym,			$,		0,	0,	0,	0,	0),		! 
-	(kloopsym,			$,		0,	0,	0,	0,	0),		! EXIT/NEXT/LOOP/REDO/RESTART
-	(kstepsym,			$,		0,	0,	0,	0,	0),		! STEP
-	(kgotosym,			$,		0,	0,	0,	0,	0),		! GO/GOTO
-	(kswitchsym,		$,		0,	0,	0,	0,	0),		! SWITCH
-	(kdoswitchsym,		$,		0,	0,	0,	0,	0),		! DOSWITCH
-	(kprintsym,			$,		0,	0,	0,	0,	0),		! PRINT/PRINTLN/FPRINT/FPRINTLN
-	(ksprintsym,		$,		0,	0,	0,	0,	0),		! SPRINT/SFPRINT
-	(kreadsym,			$,		0,	0,	0,	0,	0),		! READ/READLN
-	(ksreadsym,			$,		0,	0,	0,	0,	0),		! SREAD
-	(ksreadlnsym,		$,		0,	0,	0,	0,	0),		! SREADLN
-	(kprocsym,			$,		0,	0,	0,	0,	0),		! PROC
-	(kfunctionsym,		$,		0,	0,	0,	0,	0),		! FUNCTION
-!	(kmethodsym,		$,		0,	0,	0,	0,	0),		! METHOD
-	(klabelsym,			$,		0,	0,	0,	0,	0),		! LABEL
-	(krecordsym,		$,		0,	0,	0,	0,	0),		! RECORD
-	(kstructsym,		$,		0,	0,	0,	0,	0),		! STRUCT
-	(kunionsym,			$,		0,	0,	0,	0,	0),		! UNION
-	(kimportsym,		$,		0,	0,	0,	0,	0),		! IMPORT
-	(kimportmodulesym,	$,		0,	0,	0,	0,	0),		! IMPORTDLL/IMPORTMODULE
-	(kimportpathsym,	$,		0,	0,	0,	0,	0),		! IMPORTPATH
-	(kmapmodulesym,		$,		0,	0,	0,	0,	0),		! MAPMODULE
-	(ktypesym,			$,		0,	0,	0,	0,	0),		! TYPE
-	(ktypealiassym,		$,		0,	0,	0,	0,	0),		! TYPEALIAS
-	(kextendtypesym,	$,		0,	0,	0,	0,	0),		! EXTENDTYPE
-	(krefsym,			$,		0,	0,	0,	0,	1),		! REF
-	(kmutsym,			$,		0,	0,	0,	0,	0),		! MUT
-	(kletsym,			$,		0,	0,	0,	0,	0),		! LET
-	(kslicesym,			$,		0,	0,	0,	0,	0),		! SLICE/SLICE2D
-	(karraysym,			$,		0,	0,	0,	0,	0),		! ARRAY
-	(kdictsym,			$,		0,	0,	0,	0,	0),		! DICT
-!	(kflexsym,			$,		0,	0,	0,	0,	0),		! FLEX
-	(kmacrosym,			$,		0,	0,	0,	0,	0),		! MACRO
-	(kexpandsym,		$,		0,	0,	0,	0,	0),		! EXPAND
-	(koperatorsym,		$,		0,	0,	0,	0,	0),		! OPERATOR
-	(kconstsym,			$,		0,	0,	0,	0,	0),		! 
-	(kenumsym,			$,		0,	0,	0,	0,	0),		! 
-	(knewsym,			$,		0,	0,	0,	0,	0),		! NEW
-	(kdestroysym,		$,		0,	0,	0,	0,	0),		! DESTROY
-	(kclearsym,			$,		0,	0,	0,	0,	0),		! CLEAR
-	(kclasssym,			$,		0,	0,	0,	0,	0),		! CLASS
-!	(kdirectivesym,		$,		0,	0,	0,	0,	0),		! TARGET/MODULE
-	(kfflangsym,		$,		0,	0,	0,	0,	0),		! JLANG CLANG WINDOWS HOST
-	(kglobalsym,		$,		0,	0,	0,	0,	0),		! global
-	(kstaticsym,		$,		0,	0,	0,	0,	0),		! STATIC
-
-	(ktrysym,			$,		0,	0,	0,	0,	0),		! 
-	(kexceptsym,		$,		0,	0,	0,	0,	0),		! 
-	(kfinallysym,		$,		0,	0,	0,	0,	0),		! 
-	(kraisesym,			$,		0,	0,	0,	0,	0),		! 
-	(kyieldsym,			$,		0,	0,	0,	0,	0),		! 
-	(kcastsym,			$,		0,	0,	0,	0,	1),		! CAST
-	(ktypeconstsym,		$,		0,	0,	0,	0,	0),		! TYPECONST
-	(compilervarsym,	$,		0,	0,	0,	0,	1),		! $lineno etc
-	(dollarsym,			$,		0,	0,	0,	0,	1),		! to be used for current array upperbound; also tabledata names
-	(kevalsym,			$,		0,	0,	0,	0,	0),		! EVAL
-	(ktabledatasym,		$,		0,	0,	0,	0,	0),		! tabledata
-	(kstacksym,			$,		0,	0,	0,	0,	0),		! STACK/UNSTACK
-	(kclampsym,			$,		0,	0,	0,	0,	1),			! CLAMP
-	(kswapsym,			$,		0,	0,	0,	0,	0),		! SWAP
-	(kerrorsym,			$,		0,	0,	0,	0,	0),		! PC_ERROR etc
-!	(sysconstsym,		$,		0,	0,	0,	0,	0),		! nil, etc
-	(kassemsym,			$,		0,	0,	0,	0,	0),		! ASM/ASSEM
-	(ksyscallsym,		$,		0,	0,	0,	0,	1),		! $get_procname etc
-!	(kemitcsym,			$,		0,	0,	0,	0,	0),		! EMITC
-	(kemptysym,			$,		0,	0,	0,	0,	0),		! EMPTY
-
-	(kdummysym,			$,		0,	0,	0,	0,	0),		!
-end
-
-global tabledata() []ichar sourcedirnames =
-	(includedir,	$),
-	(strincludedir,	$),
-	(binincludedir,	$),
-	(textincludedir,$),
-	(defineunitdir,	$),
-!	(emitcdir,		$),
-	(cclibdir,		$),
-end
-
-!global tabledata() =
-!	(nil_const),
-!	(pi_const),
-!	(tab_const),
-!	(con_const)
-!end
-
-global tabledata() [0:]ichar fflangnames=
-	(noff=0,		$), ! 
-	(windowsff,		$), ! 
-	(clangff,		$), ! 
-	(mlangff,		$), ! 
-	(callbackff,	$), ! 
-end
-
-global tabledata() [0:]ichar scopenames=
-	(local_scope=0,		$), ! 
-	(program_scope,		$), ! 
-	(export_scope,		$), ! 
-	(exportq_scope,		$), ! 
-end
-
-global tabledata() =
-	(thousand_unit),
-	(million_unit),
-	(billion_unit),
-	(kilo_unit),
-	(mega_unit),
-	(giga_unit)
-end
-
-global tabledata() [0:]ichar parammodenames=
-	(var_param=0,		"Var "),
-	(in_param,			"In "),
-	(out_param,			"Out "),
-	(optional_param,	"Opt "),
-end
-
-!global tabledata() [0:]ichar namecatnames, [0:]byte qualifiedname =
-!	(normal_cat=0,	 	"-",		0),
-!	(proc_cat, 			"proc",		1),
-!	(globalproc_cat,	"gproc",	1),
-!	(dllproc_cat,		"dllproc",	0),
-!	(dllmodule_cat,		"dllmodule",0),
-!	(dllvar_cat,		"dllvar",	0),
-!	(static_cat,		"static",	1),
-!	(frame_cat,			"frame",	1),
-!end
-
-global tabledata() [0:]ichar namenames
-	(nullid=0,		$),		!Not assigned (sometimes converted to genfieldid)
-	(programid,		$),		!Main root
-	(moduleid,		$),		!Current or imported module
-	(dllmoduleid,	$),		!
-	(typeid,		$),		!Type name in type, proc or module
-	(procid,		$),		!Proc/method/function/op name
-	(dllprocid,		$),		!Dll Proc/function name
-	(dllvarid,		$),		!Dll variable name
-	(genprocid,		$),		!generic proc name
-	(generatorid,	$),		!generator proc name
-	(constid,		$),		!Named constant in type, proc or module
-	(staticid,		$),		!Static in type or proc or module
-	(frameid,		$),		!Local var
-	(paramid,		$),		!Local param
-	(fieldid,		$),		!Field of Record or Class
-	(genfieldid,	$),		!Generic Field of Record or Class
-	(enumid,		$),		!Enum name, part of enum type only
-	(labelid,		$),		!Label name in proc only
-	(blockid,		$),		!Codeblock label name in proc only
-	(aliasid,		$),		!Alias to another name
-	(macroid,		$),		!Name of macro
-	(macroparamid,	$),		!Macro formal parameter name
-	(linkid,		$),		!Name in class defined in a base class
-	(functionopid,	$),		!Function-operator
-end
-
-!global tabledata() [0:]ichar pstnames =
-!	(no_name = 0,		$),
-!	(proc_name,			$),
-!	(dllproc_name,		$),
-!	(istatic_name,		$),
-!	(zstatic_name,		$),
-!	(param_name,		$),
-!	(frame_name,		$),
-!end
-
-!!---
-global tabledata []ichar stnames, []int stsymbols, []int stsubcodes=
-
-	("if",			kifsym,			j_if),
-	("then",		kthensym,		0),
-	("elsif",		kelsifsym,		j_if),
-	("else",		kelsesym,		0),
-	("elsecase",	kelsecasesym,	j_case),
-	("elseswitch",	kelseswitchsym,	j_switch),
-	("case",		kcasesym,		j_case),
-	("docase",		kdocasesym,		j_docase),
-	("recase",		krecasesym,		j_recase),
-	("when",		kwhensym,		0),
-	("for",			kforsym,		0),
-	("forall",		kforsym,		0),
-	("to",			ktosym,			0),
-	("downto",		ktosym,			1),
-	("by",			kbysym,			0),
-	("do",			kdosym,			0),
-	("end",			kendsym,		0),
-	("while",		kwhilesym,		0),
-	("repeat",		krepeatsym,		0),
-	("until",		kuntilsym,		0),
-	("always",		kuntilsym,		1),
-	("return",		kreturnsym,		0),
-	("yield",		kyieldsym,		0),
-	("stop",		kstopsym,		0),
-	("restart",		kloopsym,		j_restart),
-	("redo",		kloopsym,		j_redo),
-	("loop",		kloopsym,		j_redo),
-	("next",		kloopsym,		j_next),
-	("exit",		kloopsym,		j_exit),
-	("$step",		kstepsym,		0),
-	("goto",		kgotosym,		0),
-	("go",			kgotosym,		1),
-	("switch",		kswitchsym,		j_switch),
-	("doswitch",	kdoswitchsym,	j_doswitch),
-	("tabledata",	ktabledatasym,	0),
-	("clamp",		kclampsym,		0),
-	("eval",		kevalsym,		0),
-!	("extendtype",	kextendtypesym,	0),
-!	("$windows",	kcondcompsym,	windowsff),
-!	("$linux",		kcondcompsym,	linuxff),
-
-	("print",		kprintsym,		j_print),
-	("println",		kprintsym,		j_println),
-	("fprint",		kprintsym,		j_fprint),
-	("fprintln",	kprintsym,		j_fprintln),
-	("cprint",		kprintsym,		j_cprint),
-	("cprintln",	kprintsym,		j_cprintln),
-	("sprint",		ksprintsym,		j_sprint),
-	("sfprint",		ksprintsym,		j_sfprint),
-
-!	("stack",		kstacksym,		j_stack),
-!	("unstack",		kstacksym,		j_unstack),
-
-	("cp",			kprintsym,		j_print),
-	("cpl",			kprintsym,		j_println),
-
-	("read",		kreadsym,		j_read),
-	("readln",		kreadsym,		j_readln),
-	("cast",		kcastsym,		j_convert),
-
-	("proc",		kprocsym,		0),
-	("function",	kfunctionsym,	0),
-	("threadedproc",		kprocsym,		1),
-!	("threadedfunction",	kfunctionsym,	1),
-!	("method",		kmethodsym,		0),
-
-	("type",		ktypesym,		0),
-	("class",		kclasssym,		0),
-	("record",		krecordsym,		0),
-	("struct",		kstructsym,		0),
-	("union",		kunionsym,		0),
-	("ref",			krefsym,		0),
-	("pointer",		krefsym,		0),
-	("returning",	sendtosym,		0),
-	("var",			kmutsym,		0),
-	("mut",			kmutsym,		0),
-	("let",			kletsym,		0),
-
-	("include",		ksourcedirsym,	includedir),
-!	("strinclude",	ksourcedirsym,	strincludedir),
-	("strinclude",	kstrincludesym,	0),
-	("bininclude",	ksourcedirsym,	binincludedir),
-!	("textinclude",	ksourcedirsym,	textincludedir),
-!	("defineunit",	ksourcedirsym,	defineunitdir),
-	("macro",		kmacrosym,		0),
-!	("expand",		kexpandsym,		0),
-!	("operator",	koperatorsym,	0),
-!	("emitc",		ksourcedirsym,	emitcdir),
-	("cclib",		ksourcedirsym,	cclibdir),
-
-	("assem",		kassemsym,		1),
-	("asm",			kassemsym,		0),
-
-	("static",		kstaticsym,		0),
-	
-	("const",		kconstsym,		0),
-!	("table",		kconstsym,		1),
-	("enum",		kenumsym,		0),
-
-	("$get_nprocs",		ksyscallsym,		sysfn_getnprocs),
-	("$getnprocs",		ksyscallsym,		sysfn_getnprocs),
-
-	("$get_procname",	ksyscallsym,		sysfn_getprocname),
-	("$getprocname",	ksyscallsym,		sysfn_getprocname),
-
-	("$get_procaddr",	ksyscallsym,		sysfn_getprocaddr),
-	("$getprocaddr",	ksyscallsym,		sysfn_getprocaddr),
-
-!	("$get_nexports",	ksyscallsym,		sysfn_get_nexports),
-!	("$get_procexport",	ksyscallsym,		sysfn_get_procexport),
-
-!	("$nprocs",			ksyscallsym,		sysfn_nprocs),
-!	("$nexports",		ksyscallsym,		sysfn_nexports),
-!	("$procnames",		ksyscallsym,		sysfn_procnames),
-!	("$procaddrs",		ksyscallsym,		sysfn_procaddrs),
-!	("$procexports",	ksyscallsym,		sysfn_procexports),
-
-	("importdll",	kimportmodulesym,	0),
-	("importlib",	kimportmodulesym,	0),
-	("import",		kimportsym,			0),
-	("importx",		kimportsym,			'X'),
-	("importd",		kimportsym,			'D'),
-	("importpath",	kimportpathsym,		0),
-	("mapmodule",	kmapmodulesym,		0),
-	("unless",		kunlesssym,			0),
-
-	("try",			ktrysym,		0),
-	("except",		kexceptsym,		0),
-	("finally",		kfinallysym,	0),
-	("raise",		kraisesym,		0),
-	("out",			koutsym,		0),
-
-	("new",			knewsym,		j_new),
-	("destroy",		kdestroysym,	j_destroy),
-!	("clear",		kclearsym,		j_clear),
-
-	("global",		kglobalsym,		program_scope),
-	("exportq",		kglobalsym,		exportq_scope),
-	("export",		kglobalsym,		export_scope),
-
-	("clang",		kfflangsym,		clangff),
-	("mlang",		kfflangsym,		mlangff),
-	("windows",		kfflangsym,		windowsff),
-	("callback",	kfflangsym,		callbackff),
-
-	("swap",		kswapsym,		0),
-
-	("void",		stdtypesym,		tvoid),
-
-	("int",			stdtypesym,		tint),
-
-	("word",		stdtypesym,		tword),
-
-	("real",		stdtypesym,		treal),
-
-	("ichar",		kicharsym,		0),
-
-	("int8",		stdtypesym,		ti8),
-	("int16",		stdtypesym,		ti16),
-	("int32",		stdtypesym,		ti32),
-	("int64",		stdtypesym,		ti64),
-	("int128",		stdtypesym,		ti128),
-
-	("i8",			stdtypesym,		ti8),
-	("i16",			stdtypesym,		ti16),
-	("i32",			stdtypesym,		ti32),
-	("i64",			stdtypesym,		ti64),
-	("i128",		stdtypesym,		ti128),
-
-	("real32",		stdtypesym,		tr32),
-	("real64",		stdtypesym,		tr64),
-	("r32",			stdtypesym,		tr32),
-	("r64",			stdtypesym,		tr64),
-
-	("float32",		stdtypesym,		tr32),
-	("float64",		stdtypesym,		tr64),
-
-	("byte",		stdtypesym,		tu8),
-!	("u1",			stdtypesym,		tu1),
-!	("u2",			stdtypesym,		tu2),
-!	("u4",			stdtypesym,		tu4),
-	("u8",			stdtypesym,		tu8),
-	("u16",			stdtypesym,		tu16),
-	("u32",			stdtypesym,		tu32),
-	("u64",			stdtypesym,		tu64),
-	("u128",		stdtypesym,		tu128),
-
-	("word8",		stdtypesym,		tu8),
-	("word16",		stdtypesym,		tu16),
-	("word32",		stdtypesym,		tu32),
-	("word64",		stdtypesym,		tu64),
-	("word128",		stdtypesym,		tu128),
-
-!	("bit",			stdtypesym,		tu1),
-!	("bit2",		stdtypesym,		tu2),
-!	("bit4",		stdtypesym,		tu4),
-
-	("char",		stdtypesym,		tc8),
-	("wchar",		stdtypesym,		tc16),
-	("char64",		stdtypesym,		tc64),
-
-!	("range",		stdtypesym,		trange),
-	("auto",		stdtypesym,		tauto),
-!	("label",		stdtypesym,		tlabel),
-
-!	("flex",		stdtypesym,		tvar),
-
-	("intm",		machinetypesym,	'I'),
-	("intp",		machinetypesym,	'i'),
-	("wordm",		machinetypesym,	'W'),
-	("wordp",		machinetypesym,	'w'),
-	("slice",		kslicesym,		tslice),
-!	("slice2d",		kslicesym,		tslice2d),
-!!	("flex",		kslicesym,		tflex),
-	("typeof",		ktypeofsym,			0),
-
-	("million",		unitnamesym,	million_unit),
-	("billion",		unitnamesym,	billion_unit),
-	("thousand",	unitnamesym,	thousand_unit),
-	("kb",			unitnamesym,	kilo_unit),
-	("mb",			unitnamesym,	mega_unit),
-	("gb",			unitnamesym,	giga_unit),
-
-	("$lineno",		compilervarsym,	j_cvlineno),
-	("$strlineno",	compilervarsym,	j_cvstrlineno),
-	("$filename",	compilervarsym,	j_cvfilename),
-	("$modulename",	compilervarsym,	j_cvmodulename),
-	("$function",	compilervarsym,	j_cvfunction),
-	("$date",		compilervarsym,	j_cvdate),
-	("$time",		compilervarsym,	j_cvtime),
-	("$version",	compilervarsym,	j_cvversion),
-	("$typename",	compilervarsym,	j_cvtypename),
-	("$targetbits",	compilervarsym,	j_cvtargetbits),
-	("$targetsize",	compilervarsym,	j_cvtargetsize),
-!	("$targetname",	compilervarsym,	j_cvtargetname),
-	("$targetcode",	compilervarsym,	j_cvtargetcode),
-	("nil",			compilervarsym,	j_cvnil),
-	("pi",			compilervarsym,	j_cvpi),
-	("true",		compilervarsym,	j_cvtrue),
-	("false",		compilervarsym,	j_cvfalse),
-	("$",			dollarsym,		0),
-
-	("and",			andlsym,		0),
-	("or",			orlsym,			0),
-	("xor",			xorlsym,		0),
-	("iand",		iandsym,		0),
-	("ior",			iorsym,			0),
-	("ixor",		ixorsym,		0),
-	("in",			insym,			kin),
-	("notin",		notinsym,		knotin),
-	("inrev",		inrevsym,		0),
-	("rem",			iremsym,		0),
-!	("divrem",		idivremsym,		0),
-	("min",			minsym,			0),
-	("max",			maxsym,			0),
-
-	("not",			notlsym,		0),
-	("inot",		inotsym,		0),
-	("istrue",		istruelsym,		0),
-	("abs",			abssym,			kabs),
-	("$neg",		negsym,			0),
-
-!	("asc",			opsym,			j_asc),
-!	("tochr",		opsym,			j_chr),
-	("sqr",			sqrsym,			0),
-	("sqrt",		sqrtsym,		0),
-	("sign",		signsym,		0),
-
-	("sin",			mathsopsym,		ksin),
-	("cos",			mathsopsym,		kcos),
-	("tan",			mathsopsym,		ktan),
-	("asin",		mathsopsym,		kasin),
-	("acos",		mathsopsym,		kacos),
-	("atan",		mathsopsym,		katan),
-!	("sign",		mathsopsym,		ksign),
-	("ln",			mathsopsym,		kln),
-	("log",			mathsopsym,		klog),
-!	("lg",			mathsopsym,		klg),
-	("exp",			mathsopsym,		kexp),
-	("round",		mathsopsym,		kround),
-	("floor",		mathsopsym,		kfloor),
-	("ceil",		mathsopsym,		kceil),
-	("fract",		mathsopsym,		kfract),
-
-	("atan2",		maths2opsym,	katan2),
-	("fmod",		maths2opsym,	kfmod),
-
-!	("append",		appendsym,		0),
-!	("concat",		concatsym,		0),
-!	("flexptr",		flexptrsym,		0),
-!	("sliceptr",	propsym,		ksliceptr),
-!	("stringz",		stringzsym,		0),
-
-	("len",			propsym,	klen),
-	("lwb",			propsym,	klwb),
-	("upb",			propsym,	kupb),
-	("bounds",		propsym,	kbounds),
-	("lenstr",		propsym,	klenstr),
-	("bitwidth",	propsym,	kbitwidth),
-	("bytes",		propsym,	kbytesize),
-	("minvalue",	propsym,	kminvalue),
-	("maxvalue",	propsym,	kmaxvalue),
-	("typestr",		propsym,	ktypestr),
-
-!	("len",			propsym,	0),
-!	("lwb",			propsym,	0),
-!	("upb",			propsym,	0),
-!	("bounds",		propsym,	0),
-!	("lenstr",		propsym,	0),
-!	("bitwidth",	propsym,	0),
-!	("bytes",		propsym,	0),
-!	("minvalue",	propsym,	0),
-!	("maxvalue",	propsym,	0),
-!	("typestr",		propsym,	ktypestr),
-
-	("msb",			bitfieldsym,	bf_msb),
-	("lsb",			bitfieldsym,	bf_lsb),
-	("msbit",		bitfieldsym,	bf_msbit),
-	("lsbit",		bitfieldsym,	bf_lsbit),
-	("msw",			bitfieldsym,	bf_msw),
-	("lsw",			bitfieldsym,	bf_lsw),
-	("odd",			bitfieldsym,	bf_odd),
-	("even",		bitfieldsym,	bf_even),
-
-	("endif",		kendsym,	kifsym),
-	("fi",			kendsym,	kifsym),
-	("endcase",		kendsym,	kcasesym),
-	("esac",		kendsym,	kcasesym),
-	("enddocase",	kendsym,	kdocasesym),
-	("endswitch",	kendsym,	kswitchsym),
-	("enddoswitch",	kendsym,	kdoswitchsym),
-	("endfor",		kendsym,	kforsym),
-	("od",			kendsym,	kdosym),
-	("endproc",		kendsym,	kprocsym),
-	("endfunction",	kendsym,	kfunctionsym),
-	("endwhile",	kendsym,	kwhilesym),
-	("endto",		kendsym,	ktosym),
-	("enddo",		kendsym,	kdosym),
-	("endunless",	kendsym,	kunlesssym),
-	("endimportmodule",	kendsym,kimportmodulesym),
-	("endtry",		kendsym,	ktrysym),
-	("endrecord",	kendsym,	krecordsym),
-	("endassem",	kendsym,	kassemsym),
-
-	("$caligned",	atsym,			1),
-	("empty",		kemptysym,		0),
-	("clear",		kemptysym,		0),
-
-!	("nil",			knilsym,		0),
-!	("con",			sysconstsym,	con_const),
-!	("pi",			sysconstsym,	pi_const),
-
-	("$$dummy",		0,				0)
-end
-
-global []int D_typestarterset= (stdtypesym,lsqsym,krefsym,kenumsym,krecordsym,
-		kicharsym, ktypeofsym, kslicesym, kdictsym)
-
-!list of genops that have an int result, used to populate intresult[]
-[]byte intresultlist = (
-	kin, knotin, klwb, kupb, klen, klenstr, kbitwidth,
-	kbytesize, keq, kne, klt, kle, kge, kgt,
-	kandl, korl, knotl, kistruel)
-
-!!---
-!Table of soft conversions between numeric types. In this form, easy to
-!maintain that using a 2d table directly
-global [,3]int16 softconvmappings =(
-	(tc64,	tc64,	ksoftconv),
-	(tc64,	tu64,	ksoftconv),
-	(tc64,	tu128,	kwidenw),
-	(tc64,	ti64,	ksoftconv),
-	(tc64,	ti128,	kwidenw),
-	(tc64,	tr32,	kfloat),
-	(tc64,	tr64,	kfloat),
-
-	(tu64,	tc64,	ksoftconv),
-	(tu64,	tu64,	ksoftconv),
-	(tu64,	tu128,	kwidenw),
-	(tu64,	ti64,	ksoftconv),
-	(tu64,	ti128,	kwidenw),
-	(tu64,	tr32,	kfloat),
-	(tu64,	tr64,	kfloat),
-
-	(tu128,	tc64,	ksofttruncw),
-	(tu128,	tu64,	ksofttruncw),
-	(tu128,	tu128,	ksoftconv),
-	(tu128,	ti64,	ksofttruncw),
-	(tu128,	ti128,	ksoftconv),
-	(tu128,	tr32,	kerror),
-	(tu128,	tr64,	kerror),
-
-	(ti64,	tc64,	ksoftconv),
-	(ti64,	tu64,	ksoftconv),
-	(ti64,	tu128,	kwidenw),
-	(ti64,	ti64,	ksoftconv),
-	(ti64,	ti128,	kwidenw),
-	(ti64,	tr32,	kfloat),
-	(ti64,	tr64,	kfloat),
-
-	(ti128,	tc64,	ksofttruncw),
-	(ti128,	tu64,	ksofttruncw),
-	(ti128,	tu128,	ksoftconv),
-	(ti128,	ti64,	ksofttruncw),
-	(ti128,	ti128,	ksoftconv),
-	(ti128,	tr32,	kerror),
-	(ti128,	tr64,	kerror),
-
-	(tr32,	tc64,	kfix),
-	(tr32,	tu64,	kfix),
-	(tr32,	tu128,	kerror),
-	(tr32,	ti64,	kfix),
-	(tr32,	ti128,	kerror),
-	(tr32,	tr32,	ksoftconv),
-	(tr32,	tr64,	kfwiden),
-
-	(tr64,	tc64,	kfix),
-	(tr64,	tu64,	kfix),
-	(tr64,	tu128,	kerror),
-	(tr64,	ti64,	kfix),
-	(tr64,	ti128,	kerror),
-	(tr64,	tr32,	kfnarrow),
-	(tr64,	tr64,	ksoftconv))
-
-
-!this 2d array maps [genop, basetype] to a spec-op
-!It is filled in at runtime from genspecmappings
-
-!global [firstgenop..lastgenop, tfirsttabletype..tlasttabletype]int16 optypetable
-
-global [pclnames.lwb..pclnames.upb]byte intresult
-
-global [tfirstnum..tlastnum, tfirstnum..tlastnum]int64 softconvtable
-
-!global [specopnames.lwb..specopnames.upb]byte specoptogen
-!global [specopnames.lwb..specopnames.upb]byte specoptotype
-
-global proc inittypetables=
-	int genop, s,t, a, specop
-
-!populate the table with given combinations
-!	for i in genspecmappings.bounds do
-!		genop:=genspecmappings[i,1]
-!		t:=genspecmappings[i,2]
-!		specop:=genspecmappings[i,3]
-!
-!		optypetable[genop,t] := specop
-!
-!!build cross-reference tables
-!		specoptogen[specop]:=genop
-!		specoptotype[specop]:=t
-!	od
-!
-!!now scan trying to fix some empty slots
-!	for genop in firstgenop..lastgenop do
-!		for t in tfirsttabletype..tlasttabletype do
-!			if optypetable[genop,t]=0 then
-!!CPL "OPTYPE0",STDNAMES[T];!STRMODE(T)
-!				case t
-!				when tc64 then
-!					if a:=optypetable[genop,tu64] then optypetable[genop,tc64]:=a
-!					elsif a:=optypetable[genop,ti64] then optypetable[genop,tc64]:=a
-!					fi
-!				when tu64 then
-!					if a:=optypetable[genop,ti64] then optypetable[genop,tu64]:=a fi
-!				when tu128 then
-!					if a:=optypetable[genop,ti128] then optypetable[genop,tu128]:=a fi
-!				esac
-!			fi
-!		od
-!	od
-!
-!populate intresultlist
-	for i in intresultlist.bounds do
-		intresult[intresultlist[i]]:=1
-	od
-
-!do softconversions
-	for i in softconvmappings.bounds do
-		s:=softconvmappings[i,1]
-		t:=softconvmappings[i,2]
-!		specop:=softconvmappings[i,3]
-
-		softconvtable[s,t]:=softconvmappings[i,3]
-	od
-end
-
-=== mm_pcl.m 4/45 ===
-!importpath "/px/"
-
-import pc_decls
-import pc_libpcl
-import pc_tables
-
-=== pc_decls.m 5/45 ===
-import* pci_core
-
-global type psymbol = ref pstrec
-global type pcl = ref pclrec
-
-global record fwdrec =
-	ref fwdrec nextfwd
-	int32 offset
-	int16 reltype
-	int16 seg
-end
-
-global record pstrec =
-	ichar name			!name of symbol (named token/keyword or identifier)
-	ref fwdrec fwdrefs	!fwd ref chain
-	pcl pcldef			!points to pcl instruction that defines this name
-
-	byte symbol			!type of token, eg. namesym
-	byte ksymbol		!type of keyword, eg. opcodesym
-	union
-		byte subcode		!when used as keyword
-		byte rtsindex	!proc names: rts index if it's an rts function
-	end
-	byte pclop			!pcl op used to define this: klocal etc
-
-	byte scope			!label pass 1: fwd/extern/local/global
-	byte reftype		!label pass 2: extern/back/fwd
-	byte segment		!label pass 2: code_seg etc or 0
-	byte namelen
-
-	int32 offset		!label (pass 2): offset of label when encountered
-	int32 stindex		!label pass 2: 0, or 1-based index within coff symboltable
-	int32 labelno		!assigned global label when a proc/static
-	int16 importindex	!genexe: index into import table
-
-	word16 flags:(isdefined:1, isimported:1, addrof:1,
-				isexported:1, isfloat:1, noreg:1, atvar:1,
-				isthreaded:1, istruename:1, isrts:1)
-
-	int16 nrefs
-	byte reg
-	[13]byte spare
-end
-
-global record pclrec =
-	byte opndtype
-	byte opcode
-	byte flags:(isexported:1, isimported:1)
-	byte mode				!t in tables
-
-	int32 size
-
-	union
-		struct
-			union
-				int64 value
-				real64 xvalue
-				real32 xvalue32
-				ichar svalue
-				int tempno
-				int labelno
-				psymbol def
-				ref void asmcode
-			end
-			union						!two 32-bit params used according to opcode
-				struct
-					int32 x				!common access to these 1/2 extra attribs
-					int32 y
-				end
-
-				struct					! (x,y) pointer ops
-					int32 scale			! scale factor for offset
-					int32 extra			! extra constant byte offset, already scaled
-				end
-				struct					! (x,y) call/etc
-					int32 nargs			! number of args
-					int32 nvariadics	! 0, or arg # that is first variadic
-				end
-				struct					! (x,y) switch
-					int32 minlab
-					int32 maxlab
-				end
-
-				int32 oldmode			! (x) u in tables
-				int32 stepx				! (x) always +ve fixed step size for forup/fordown; also INCR
-				int32 truncmode			! (x) convert/truncate: truncated mode
-				int32 align
-				int32 extvariadics		! (x) for an extproc; 0 or start param of variadics
-				int32 nret				! (x) setretmult: no. of return values
-
-			end
-		end
-		int128 value128
-	end
-	u32 seqno
-	u32 spare
-end
-
-global int optimflag
-
-global [rtsnames.len]psymbol rtsproctable		!nil, or an rts proc has been defined in pcl code
-
-global const maxpdlllib=50
-global int npdllnametable
-global [maxpdlllib]ichar pdllnametable
-=== pci_core.m 6/45 ===
-import pc_decls
-import pc_libpcl
-import pc_tables
-=== pc_libpcl.m 7/45 ===
+=== mm_start.m 2/45 ===
+import msys
 import clib
 import mlib
-import msys
+import oslib
 
-import pc_lex
-import* pci_core
+import mm_lex
+import mm_decls
+import mm_support
+import mm_tables
+import mm_parse
+import mm_lib
+import mm_diags
+import mm_name
 
-global pcl pcstart			!start of pcl block
-global pcl pccurr			!point to current pcl op
-global pcl pcend			!point to last allocated pclrec
-global int pcalloc			!number of pclrecs allocated
-byte pcfixed				!whether code is fixed up
-int pcseqno
-int pcneedfntable			!whether kgetnprocs etc are used
+import mm_type
 
-!const fshowsymbols=1
-const fshowsymbols=0
+import mm_genpcl
 
-int initpcalloc=65536
-!int initpcalloc=65536*4
-!int initpcalloc=4*1048576
-!int initpcalloc=16*1048576
+import mm_export
 
-const pcelemsize = pclrec.bytes
+import* mm_pcl
+import* pc_win64
+import pci_mcl as md
+import pc_libmcl
 
-strbuffer sbuffer
-ref strbuffer dest=&sbuffer
-int destlinestart
+tabledata() []ichar optionnames=
 
-!global const maxlabels=10000			!in one file
-global const maxlabels=100000			!in one file
-!global const maxlabels=800000			!in one file
-global [maxlabels]int32 labelmap				!map user labels to global labels
-global int labelno						!current highest global labelno
-global int maxuserlabel					!set by lex: highest #label
-global int labelnooffset				!normally 0; set to offset (maxlabelno) when processing rts
-GLOBAL INT NPCL
+	(load_sw,		"load"),
+	(fixup_sw,		"fixup"),
+	(parse_sw,		"parse"),
+	(name_sw,		"name"),
+	(type_sw,		"type"),
 
-!const maxgloballabels=50000				!in all files
-const maxgloballabels=100000				!in all files
-!const maxgloballabels=800000				!in all files
-[maxgloballabels]pcl labeloffset		!pcl addr of label
+	(pcl_sw,		"pcl"),
+	(asm_sw,		"asm"),
+	(asm2_sw,		"c"),
+	(obj_sw,		"obj"),
+	(dll_sw,		"dll"),
+	(exe_sw,		"exe"),
+	(run_sw,		"run"),
 
-global ichar longstring					!used in stropnd
-global int longstringlen
-global ichar errormess
+	(pclexe_sw,		"pclexe"),
+	(asmexe_sw,		"asmexe"),
 
-global int mcldone
+	(sys_sw,		"sys"),
+	(minsys_sw,		"minsys"),
+	(nosys_sw,		"nosys"),
+	(nofile_sw,		"nofile"),
+	(rts_sw,		"rts"),
+	(norts_sw,		"norts"),
 
-export proc pcl_start(int nunits=0)=
-!returns a descriptor to the global tables
-!at the moment little is done with the descriptor, except to have something
-!tangible to pass back to the caller of the API. There is no mechanism
-!to allow multiple, active sets of pcltables
+	(debug_sw,		"debug"),
 
-	pcalloc:=initpcalloc
+	(ma_sw,			"ma"),
+	(docs_sw,		"docs"),
+	(export_sw,		"exp"),
 
-	if nunits then				!use approx alloc of 10% more
-		nunits:=nunits*9/8		!approx expected number of pcl ops
-		while pcalloc<nunits do
-			pcalloc*:=2
-		od
+	(opt_sw,		"opt"),
+	(opt1_sw,		"opt1"),
+	(opt2_sw,		"opt2"),
+
+	(ast1_sw,		"ast1"),
+	(ast2_sw,		"ast2"),
+	(ast3_sw,		"ast3"),
+	(showpcl_sw,	"showpcl"),
+	(showasm_sw,	"showasm"),
+	(st_sw,			"st"),
+	(pst_sw,		"pst"),
+	(stflat_sw,		"stflat"),
+	(types_sw,		"types"),
+	(overloads_sw,	"overloads"),
+	(ss_sw,			"ss"),
+
+	(time_sw,		"time"),
+	(v_sw,			"v"),
+	(vv_sw,			"vv"),
+	(quiet_sw,		"q"),
+	(help_sw,		"h"),
+	(help2_sw,		"help"),
+	(ext_sw,		"ext"),
+	(out_sw,		"out"),
+	(outpath_sw,	"outpath"),
+	(unused_sw,		"unused"),
+	(set_sw,		"set"),
+end
+
+byte fpclexe
+byte fasmexe
+
+const logfile="mx.log"
+
+[sysparams.len]ichar extraparams	!after ":"
+[sysparams.len]ichar extravalues
+int nextraparams=0
+
+ichar outext=""				!for reporting of primary o/p file
+
+const maxoptionvar=25
+[maxoptionvar]ichar optionvars
+[maxoptionvar]ichar optionvalues
+int noptionvars
+
+int startclock,endclock
+
+global proc start_common(int os, target)=
+	unit p,q,r
+	int m,fileno,ntokens,t
+
+	startclock:=os_clock()
+
+	initdata(os,target)
+
+	getinputoptions()
+
+!	println "Passlevel:",passnames[passlevel],(prodmode|"P"|"D")
+!	println =inputfiles[1]
+!	println =outfile
+
+!	if debugmode and passlevel<parse_pass then return fi
+	if passlevel<parse_pass then return fi
+
+	if fverbose>=1 then
+		fprint "Compiling # to #",inputfiles[1]:"14jlp-",changeext(outfile,outext),$
+!		print (msyslevel+1|" [No sys]"," [Min sys]" | " [Full sys]")
+
+		println
+
 	fi
 
-!CPL =PCALLOC,=NUNITS
+	initsearchdirs()
+	remove(logfile)
 
-	pcstart:=pcm_allocz(pcalloc*pcelemsize)
-	pcend:=pcstart+pcalloc-8
+	do_loadmodules()
 
-	pccurr:=pcstart-1
-	pcfixed:=0
-	pcseqno:=0
-	pcneedfntable:=0
+	do_parse()
 
-	labelno:=maxuserlabel:=labelnooffset:=0
-	mcldone:=0
+	do_name()
+	do_type()
 
-	clear rtsproctable
+	do_writema()
 
-!CLEAR USED PORTIONS OF LABELMAP/LABELOFFSET FOR NEXT FILE
-!...
-end
+	do_writeexports(outfile)
 
-export proc pcl_end(int fixup=0)=
+	FIXSTLIST(STPROGRAM.DEFLIST)
 
-	if pccurr>=pccurr and pccurr.opcode<>kendprogram then
-		pcl_gen(kendprogram)
-	fi	
+	do_genpcl()
 
-	if fixup then
-		fixuppcl()
+	if passlevel=run_pass then
+		do_runprog()
 	fi
-	
-!destroy assets associated with pcldescr, which should be the values
-!currently in pcstart etc
-!note that the values in pcldescr will likely be out of date
+
+	if fverbose>=2 then
+		println "Finished."
+	fi
+
+	showlogfile()
+
+	if fshowtiming then
+		endclock:=os_clock()
+		println "Time",endclock-startclock,"ms"
+	fi
 end
 
-export proc pcl_free(int fixup)=
-!destroy resources used for pcl data
-
-	pcstart:=pccurr:=pcend:=nil
-	pcfixed:=0
+proc do_loadmodules=
+	if fbundled then
+		loadmafile()
+	fi
+	loadmainmodule(inputfiles[1])
 end
 
-global proc fixuppcl=
-	psymbol d
-	pcl p, pextproc
-	int labno, insideproc, extparams,isthreaded
+proc do_parse=
+!	if debugmode and passlevel<parse_pass then return fi
+	if passlevel<parse_pass then return fi
 
-	return when pcfixed
+	if fwritedocs then
+		docfile:=fopen(changeext(outfile,"txt"),"w")
+	fi
 
-!CPL "FIXUPPCL"
-
-	p:=pcstart
-	insideproc:=0
-	pextproc:=nil
-
-	while p<=pcend, ++p do
-		switch p.opcode
-		when klocal, kparam then
-			if insideproc<>1 then perror("Not allowed") fi
-			d:=p.def
-			d.pclop:=p.opcode
-			d.pcldef:=p
-			if d.isdefined then perror_s("Redefining local/param/ext:",d.name) fi
-			d.isdefined:=1
-
-		when kprocdef then
-			isthreaded:=0
-doprocdef::
-			if insideproc then perror("Nested proc") fi
-			insideproc:=1
-			d:=p.def
-			d.pclop:=p.opcode
-			d.pcldef:=p
-			if d.isdefined then perror_s("Redefining proc:",d.name) fi
-			d.isdefined:=1
-			d.isthreaded:=isthreaded
-			assignlabeltoname(d)
-		when kistatic, kzstatic then
-			d:=p.def
-			d.pclop:=p.opcode
-			d.pcldef:=p
-			if d.isdefined then perror_s("Redefining proc/static/label:",d.name) fi
-			d.isdefined:=1
-			assignlabeltoname(d)
-
-		when kendproc then
-			if insideproc<>1 then perror("End without proc") fi
-			insideproc:=0
-
-		when kendextproc then
-			if insideproc<>2 then perror("End without extproc") fi
-			insideproc:=0
-
-		when kextproc then
-			pextproc:=p
-			extparams:=0
-			if insideproc then perror("Nested proc") fi
-			insideproc:=2
-			d:=p.def
-			if not d.isdefined then
-				d.pclop:=p.opcode
-				d.pcldef:=p
-				if d.isdefined then perror_s("Redefining extproc:",d.name) fi
-				d.isdefined:=1
-				d.isimported:=1
-			fi
-
-		when kextparam then
-			if insideproc<>2 then perror("Not allowed") fi
-			++extparams
-
-		when kextvariadics then
-			if insideproc<>2 then perror("Not allowed") fi
-			p.extvariadics:=extparams
-
-		when kthreadedproc then
-			isthreaded:=1
-			doprocdef
-
-		when klabelname then
-			labno:=p.labelno
-			if labno not in 1..maxlabels then
-				perror_s("3:Label out of range",strint(labno))
-			fi
-			p.labelno:=fixlabel(labno)
-			p.opndtype:=label_opnd
-
-		when kdb then p.opcode:=kdata; p.mode:=tpu8;  p.size:=1
-		when kdw then p.opcode:=kdata; p.mode:=tpu16; p.size:=2
-		when kdd then p.opcode:=kdata; p.mode:=tpu32; p.size:=4
-		when kdq then p.opcode:=kdata; p.mode:=tpu64; p.size:=8
-		when kdata then if p.size=0 then p.size:=psize[p.mode] fi
-
-		elsecase p.opndtype
-		when real_opnd then
-			if p.mode=tpr32 or p.size=4 then
-				p.opndtype:=real32_opnd
-				p.xvalue32:=p.xvalue
-			fi
-		when label_opnd then
-			p.labelno:=fixlabel(p.labelno)
-		when kgetnprocs, kgetprocname, kgetprocaddr then
-			pcneedfntable:=1
-
-		end
+	for i:=2 to nmodules do
+		parsemodule(i)
 	od
+	parsemodule(1)
 
-	if insideproc then perror("End missing") fi
 
-	pcfixed:=1
+	dostarimports()
 
-end
-
-proc extendpclblock=
-	var int newpcalloc, lengthused
-	var pcl newpcstart
-
-	newpcalloc:=pcalloc*2
-	lengthused:=pccurr-pcstart+1
-
-	newpcstart:=pcm_alloc(pcelemsize*newpcalloc)
-
-CPL "EXTEND PCL",NEWPCALLOC
-
-	memcpy(newpcstart,pcstart, lengthused*pcelemsize)
-	pcm_clearmem(newpcstart+lengthused,(newpcalloc-lengthused)*pcelemsize)
-
-	pccurr:=newpcstart+(pccurr-pcstart)
-	pcend:=newpcstart+newpcalloc-8
-
-	pcm_free(pcstart,pcalloc*pcelemsize)
-
-	pcstart:=newpcstart
-	pcalloc:=newpcalloc
-end
-
-global function newpcl:pcl =
-	if pccurr>=pcend then
-		extendpclblock()
+	if docfile then
+		fclose(docfile)
 	fi
 
-++NPCL
-
-
-	++pccurr
-	pccurr.seqno:=++pcseqno
-	return pccurr
-end
-
-export proc pcl_gen(int opcode, pcl p=nil) =
-	psymbol d
-
-	if p=nil then
-		p:=newpcl()
+	if not debugmode or passlevel>=fixup_pass then
+		fixusertypes()
 	fi
 
-!	case opcode
-!	when KLABELNAME THEN PERROR("PCLGEN/LABELNAME")
-!	esac
-
-	p.opcode:=opcode
+	if debugmode and fshowast1 then showast("AST1") fi
 end
 
-export proc pcl_gent(int opcode, t, pcl p=nil) =
+proc do_name=
+	if passlevel<name_pass then return fi
 
-	if p=nil then
-		p:=newpcl()
-	fi
+	rx_typetable()
+	for i:=2 to nmodules do
+		rx_module(i)
+	od
+	rx_module(1)
 
-	p.opcode:=opcode
-	if t<0 then
-		p.mode:=tpblock
-		p.size:=-t
-	else
-		p.mode:=t
-	fi
+	if debugmode and fshowast2 then showast("AST2") fi
 end
 
-export proc pcl_genx(int opcode, int x, pcl p=nil) =
+proc do_type=
+	if passlevel<type_pass then return fi
 
-	if p=nil then
-		p:=newpcl()
-	fi
+	tx_typetable()
+		fixblockparams()
 
-	p.opcode:=opcode
-	p.x:=x
+	for i:=1 to nmodules do
+		tx_module(i)
+	od
+	tx_allprocs()
+
+	if debugmode and fshowast3 then showast("AST3") fi
 end
 
-export proc pcl_genxy(int opcode, int x,y, pcl p=nil) =
-
-	if p=nil then
-		p:=newpcl()
-	fi
-
-	p.opcode:=opcode
-	p.x:=x
-	p.y:=y
-end
-
-export function pcl_genint(int a,mode=tpi64)pcl p=
-	p:=newpcl()
-	p.value:=a
-	p.opndtype:=int_opnd
-!	p.mode:=mode
-	return p
-end
-
-export function pcl_genint128(int128 a,int mode=tpi128)pcl p=
-	p:=newpcl()
-	p.value128:=a
-	p.opndtype:=int128_opnd
-	return p
-end
-
-export function pcl_genreal(real x)pcl p=
-	p:=newpcl()
-	p.xvalue:=x
-	p.opndtype:=real_opnd
-	return p
-end
-
-export function pcl_genreal32(real x)pcl p=
-	p:=newpcl()
-	p.xvalue32:=x
-	p.opndtype:=real32_opnd
-	return p
-end
-
-export function pcl_genstring(ichar s)pcl p=
-	p:=newpcl()
-	p.svalue:=pcm_copyheapstring(s)
-	p.opndtype:=string_opnd
-	return p
-end
-
-export function pcl_genlabel(int a)pcl p=
-	p:=newpcl()
-	p.labelno:=a
-	p.opndtype:=label_opnd
-	return p
-end
-
-export function pcl_genmem(psymbol d)pcl p=
-	p:=newpcl()
-	p.def:=d
-	p.opndtype:=mem_opnd
-	return p
-end
-
-export function pcl_genmemaddr(psymbol d)pcl p=
-	p:=newpcl()
-	p.def:=d
-	p.opndtype:=memaddr_opnd
-	return p
-end
-
-export proc pcl_gencomment(ichar s)=
-	pcl_gen(kcomment,pcl_genstring(s))
-end
-
-export function pcl_genname(ichar s)pcl=
-	return pcl_genmem(pcl_makesymbol(s))
-end
-
-export function pcl_gennameaddr(ichar s)pcl=
-	return pcl_genmemaddr(pcl_makesymbol(s))
-end
-
-export function pcl_genassem(ref void code)pcl p=
-	p:=newpcl()
-	p.asmcode:=code
-	p.opndtype:=assem_opnd
-	return p
-end
-
-export function pcl_makesymbol(ichar s)psymbol d =
-	d:=addnamestr(s)
-	return d
-end
-
-global proc strpcl(pcl p)=
-	[256]char pmodestr
+proc showlogfile=
 	[256]char str
-	int opcode,defused
+	filehandle logdev
+	int size
 
-	const showformatted=1
+	if not debugmode then return fi
 
-	opcode:=p.opcode
+	logdev:=fopen(logfile,"w")
 
-	case opcode
-	when klabel then
-		strlabel(p.labelno,1)
-		return
-	when kcomment then
-		if p.svalue^ then
-			psstr("!")
-			psstr(p.svalue)
-		fi
-		return
-	when kprocdef, kthreadedproc then
-		if p.def.isrts then
-			psstr("Procrts")
-		elsif opcode=kthreadedproc then
-			psstr("Threadedproc")
+	if fshowasm and passlevel>=mcl_pass then
+		println @logdev,"PROC ASSEMBLY"
+		addtolog(asmfilename,logdev)
+	fi
+	if fshowpcl and passlevel>=pcl_pass then
+		println @logdev,"PROC PCL"
+		addtolog(pclfilename,logdev)
+	fi
+	if fshowast3 and passlevel>=type_pass then	addtolog("AST3",logdev) fi
+	if fshowast2 and passlevel>=name_pass then	addtolog("AST2",logdev) fi
+	if fshowast1 and passlevel>=parse_pass then	addtolog("AST1",logdev) fi
+	if fshowst then								showsttree("SYMBOL TABLE",logdev) fi
+	if fshowstflat then							showstflat("FLAT SYMBOL TABLE",logdev) fi
+
+	if fshowtypes then							printmodelist(logdev) fi
+
+	if fshowoverloads then						printoverloads(logdev) fi
+
+	size:=getfilesize(logdev)
+	fclose(logdev)
+
+	if size then
+		print @&.str,"\\m\\olded.bat -w ",logfile
+
+		if checkfile("mm.m") then
+			os_execwait(&.str,1,nil)
 		else
-			psstr("Proc")
-		fi
-		psstr(" ")
-		psname(p.def)
-		psstr((p.isexported|"::"|":"))
-		if p.mode then
-			psstr(" ")
-			psstr(strpmode(p.mode,p.size))
-		fi
-		return
-
-	when kendproc then
-		psstr("End")
-		psline()
-		return
-
-	when kendextproc then
-		psstr("Endext")
-		psline()
-		return
-
-	when kextproc then
-		psstr("Extproc")
-		psstr(" ")
-		psname(p.def)
-		if p.mode then
-			psstr(" ")
-			psstr(strpmode(p.mode,p.size))
-		fi
-		return
-
-
-	when klabelname then
-		psname(p.def)
-		psstr((p.def.isexported|"::"|":"))
-		return
-
-	when kendprogram then
-		psstr("Endprogram")
-		return
-
-	esac
-
-	psstr("    ")
-	strcpy(str,pclnames[opcode]+1)
-	gs_leftstr(dest,str,15)
-
-	if p.opndtype<>no_opnd then
-		psstr(stropnd(p))
-		psstr(" ")
-!	else
-!		pstabto(
-	fi
-	pstabto(30)
-
-	if p.mode<>tpvoid then
-		psstr(strpmode(p.mode, p.size))
-		psstr(" ")
-	fi
-
-	if pclhastype[opcode]=2 then
-		if p.mode=tpvoid then
-			psstr("void")
-		fi
-		psstr(strpmode(p.oldmode,p.size))
-		psstr(" ")
-	fi
-
-	if pclextra[opcode] then
-		psint(p.x)
-		if pclextra[opcode]=2 then
-			psstr(" ")
-			psint(p.y)
+			println "Diagnostic outputs written to",logfile
 		fi
 	fi
 
-!	if p.isglobal then psstr(" Isglobal") fi
-!	if p.isvariadic then psstr(" Isvariadic") fi
+	stop 0
 end
 
-global function stropnd(pcl p)ichar=
-	static[512]char str
-	int length
-	psymbol d
+proc initdata(int os, target)=
+	pcm_init()
+	lexsetup()
+	initassemsymbols()
+	init_tt_tables()
+	initbblib()
 
-	if p=nil then
-		return ""
+	if os='W' then
+		fwindows:=1
+	else
+		flinux:=1
 	fi
 
-	case p.opndtype
-	when int_opnd then
-		return strint(p.value)
-	when real_opnd then
-		print @str,p.xvalue:"e16.16"
+	case target
+	when 'X64' then
+		fx64:=1
+		if flinux then loaderror("Linux/x64") fi
+!	when 'C64' then
+!		fc64:=1
+!		ctarget:=1
+!	when 'C32' then
+!		fc32:=1
+!		ctarget:=1
+	else
+		loaderror("Bad os/target")
+	esac
 
-	when real32_opnd then
-		print @str,p.xvalue32:"e16.16"
+	addoptionvar("mm","1")
+end
 
-	when string_opnd then
-		if (length:=strlen(p.svalue))<str.len/2 then
-			strcpy(str,"""")
-			convertstring(p.svalue,&.str+1)
-			strcat(str,"""")
-		else
-			if longstring then
-				pcm_free(longstring,longstringlen)
+function loadmainmodule(ichar filespec)int=
+!Used for main module. Will always be first module loaded, module list
+!will be empty.
+!Load file as string
+!extract modulename
+!call compilemodile(modulename, filename, source)
+	[100]char modulename
+	[300]char path
+	ref byte source
+	int status
+	modulerec m
+	int i,fileno
+
+!set up special module to represent the whole program
+	pcm_clearmem(&moduletable[0],modulerec.bytes)
+
+	sourcefilenames[0]:="<dummy file>"
+	sourcefilepaths[0]:="<dummy path>"
+	sourcefiletext[0]:="<sourcefile0>"
+	sourcefilesizes[0]:=strlen(sourcefiletext[0])
+
+	moduletable[0].name:="PROGRAM"
+	moduletable[0].fileno:=0
+
+	stprogram:=createdupldef(nil,addnamestr("$prog"),programid)
+	moduletable[0].stmodule:=stprogram
+
+	fileno:=getmainfile(filespec)
+
+	infotext:=nil
+
+	strcpy(&.modulename,extractbasefile(filespec))
+	strcpy(&.path,extractpath(filespec))
+	if path[1] then
+		addsearchdir(&.path)
+	fi
+
+	addmodule(&.modulename,fileno)
+	addspecialtypes()
+
+return 1
+end
+
+function addmodule(ichar modulename,int fileno)int=
+!Add new module with given name
+!Source for module is already loaded in <source>, of given length
+!return module no just added
+
+!return new module number, or 0
+!The module entry is NOT linked to the module list until imports have been loaded.
+
+	modulerec m
+	const maximports=maxmodule
+	[maximports]ichar importnames
+
+	[0..maximports]byte importflags, importxd
+
+	[maximports]int importmoduleno
+	int nimports,i,status,k,flag,j,newmodno
+	ref modulerec pmodule
+
+	convlcstring(modulename)
+
+	pcm_clearmem(&m,m.bytes)
+
+	m.name:=pcm_copyheapstring(modulename)
+	m.fileno:=fileno
+
+	stmodule:=createnewmoduledef(stprogram,addnamestr(m.name))
+	m.stmodule:=stmodule
+
+	if nmodules>=maxmodule then
+		loaderror("Too many modules",modulename)
+	fi
+
+	pmodule:=&moduletable[newmodno:=++nmodules]
+
+	pmodule^:=m
+	pmodule^.importmap[newmodno]:=1
+	m.stmodule^.moduleno:=newmodno
+
+	clear importflags
+
+	nimports:=readimportlist(newmodno,&importnames,&importflags,&importxd,maximports)
+
+	for i to nimports do
+		flag:=0
+		if fverbose=3 then
+			println "Load import for",modulename,=importnames[i]
+		fi
+		k:=loadimport(importnames[i],importxd[i],modulename)
+		pmodule.importmap[k]:=1
+		pmodule.importstar[k]:=importflags[i]
+		importmoduleno[i]:=k
+	od
+	return newmodno
+end
+
+function readimportlist(int m, ref[]ichar importnames,
+	ref[0:]byte importflags, importxd, int maximports)int=
+	int n,flag,xdflag
+	ichar s
+	[100]char name,libname
+	ichar iname
+
+	startlex("RIL",m)
+	n:=0
+
+	do
+		lex()
+		case lx.symbol
+		when eofsym then
+			exit
+		when semisym,eolsym then
+
+		when kimportsym then
+			xdflag:=lx.subcode
+			flag:=0
+			lex()
+			if lx.symbol=mulsym then
+				flag:=1
+				lex()
 			fi
-			longstringlen:=length*2
-			longstring:=pcm_alloc(longstringlen)
-			longstring^:='"'
-			length:=convertstring(p.svalue, longstring+1)
-			(longstring+length+1)^:='"'
-			(longstring+length+2)^:=0
-			return longstring
-		fi
 
-	when mem_opnd then
-		d:=p.def
-		print @str,(d.istruename|"`"|""),,d.name
-		if p.opcode in [kistatic, kzstatic] then
-			strcat(str,":")
-		fi
+			if lx.symbol<>namesym then
+				abortprogram("import: modulename expected")
+			fi
+			if ++n>=maximports then			!allow for extra msys module
+				abortprogram("too many imports")
+			fi
 
-	when memaddr_opnd then
-		d:=p.def
-		fprint @str,"&##",(d.istruename|"`"|""),d.name
+			iname:=mapimport(lx.symptr.name)
+			importnames[n]:=pcm_copyheapstring(iname)
+			importflags[n]:=flag
+			importxd[n]:=xdflag
 
-	when label_opnd then
-		fprint @str,"## ","#",p.labelno
+			repeat lex() until lx.symbol<>namesym
 
-	when no_opnd then
-		return ""
-	when int128_opnd then
-		print @str,p.value128
+		when kimportpathsym then
+			lex()
+			if lx.symbol=stringconstsym then
+				addsearchdir(lx.svalue)
+				lex()
+			else
+				abortprogram("string path expected")
+			fi
 
-	when assem_opnd then
-		return strint(int(p.asmcode))
+		when kmapmodulesym then
+			domapmodule()
 
-	else
-		println OPNDNAMES[P.OPNDTYPE]
-		return "<PCLOPND?>"
-	esac
-
-	return str
-end
-
-proc psstr(ichar s)=
-	gs_str(dest,s)
-end
-
-proc psline=
-	gs_line(dest)
-end
-
-proc psint(int a)=
-	gs_str(dest,strint(a))
-end
-
-proc psname(psymbol d)=
-	if d.istruename then
-		gs_str(dest,"`")
-	fi
-	gs_str(dest,d.name)
-end
-
-proc pstabto(int n)=
-	int col:=dest.length-destlinestart
-	while n>col do psstr(" "); ++col od
-end
-
-global function convertstring(ichar s, t)int=
-!convert string s, that can contain control characters, into escaped form
-!return new string in t, so that ABC"DEF is returned as ABC\"DEF
-!returns length of t
-	int c
-	ichar t0:=t
-
-	while c:=s++^ do
-		switch c
-		when '"' then
-			t++^:='\\'
-			t++^:='"'
-		when 10 then
-			t++^:='\\'
-			t++^:='n'
-		when 13 then
-			t++^:='\\'
-			t++^:='c'
-		when 9 then
-			t++^:='\\'
-			t++^:='t'
-		when '\\' then
-			t++^:='\\'
-			t++^:='\\'
-		when 7,8,26,27 then
-			t++^:='<'
-			t++^:=c/10+'0'
-			t++^:=(c rem 10)+'0'
-			t++^:='>'
 		else
-			t++^:=c
-		endswitch
-	od
-	t^:=0
-
-	return t-t0
-end
-
-proc strlabel(int labelno,colon=0)=
-	psstr("#")
-	psint(labelno)
-	if colon then
-		psstr(":")
-	fi
-	psstr(" ")
-end
-
-proc psopnd(pcl p)=
-	psstr(stropnd(p))
-end
-
-global function strpmode(int m, size)ichar=
-	static [64]char str
-	if m<>tpblock then
-		strcpy(str, pstdnames[m])
-	else
-		fprint @str,"#:#", pstdnames[m],size
-	fi
-	return str
-end
-
-global proc writepcl(pcl p)=
-	strpcl(p)
-	gs_line(dest)
-end
-
-global function writeallpcl:ichar,int=
-!write all pcl code in system by scanning all procs
-!pcl code is only stored per-proc
-	pcl p
-	psymbol d,e
-
-	gs_init(dest)
-	destlinestart:=dest.length
-
-	p:=pcstart
-
-	while p<=pccurr do
-		writepcl(p)
-
-		destlinestart:=dest.length
-		++p
-	od
-
-	if fshowsymbols then
-		writesymbols()
-	fi
-
-	if longstring then
-		pcm_free(longstring,longstringlen)
-	fi
-	return (dest.strptr,dest.length)
-end
-
-global function nextlabel:int=
-	if labelno>=maxgloballabels then
-		pclerror("Too many global labels")
-	fi
-	++labelno
-end
-
-global function fixlabel(int userlab)int=
-	if userlab not in 1..maxlabels then
-		perror_s("Label no out of range:",strint(userlab))
-	fi
-	if labelmap[userlab]=0 then
-		labelmap[userlab]:=nextlabel()
-		return labelno
-	else
-		return labelmap[userlab]
-	fi
-end
-
-global proc pdefinelabel(int label,seqno=0)=
-!define new global label to point just after pccurr
-!label must be in range
-	if labeloffset[label] then
-		pclerror("Redefining label:",strint(label))
-	fi
-	pcl_gen(klabel, pcl_genlabel(label))
-	pccurr.seqno:=seqno
-
-	labeloffset[label]:=pccurr
-end
-
-global proc assignlabeltoname(psymbol d)=
-!isdef=1 means can't already be assigned
-	if d.labelno then
-!		if isdef then
-!			pclerror("Duplicate name def:",d.name,lineno)
-!		fi
-		return
-	fi
-	d.labelno:=nextlabel()
-end
-
-global proc pclerror(ichar mess,param=nil,int lineno=0)=
-	print "PCC error:",mess
-	if param then
-		print param
-	fi
-	if lineno then
-		print " on line:",lineno
-	fi
-	println
-	stop 1
-end
-
-global function getpclstr(pcl p)ichar=
-	gs_init(dest)
-	destlinestart:=dest.length
-
-	strpcl(p)
-	(dest.strptr+dest.length)^:=0
-	return dest.strptr
-end
-
-export function pcl_getopcode:int=
-	return pccurr.opcode
-end
-
-export proc pcl_setopcode(int opc)=
-	pccurr.opcode:=opc
-end
-
-export proc pcl_settype(int t,size=0)=
-	pccurr.mode:=t
-	pccurr.size:=size
-	if t<0 then
-		pccurr.mode:=tpblock
-		pccurr.size:=-t
-	fi
-end
-
-export proc pcl_setxy(int x,y)=
-	pccurr.x:=x
-	pccurr.y:=y
-end
-
-export proc pcl_setscale(int scale)=
-	pccurr.scale:=scale
-end
-
-export proc pcl_setoffset(int offset)=
-	pccurr.extra:=offset
-end
-
-export proc pcl_addoffset(int offset)=
-	pccurr.extra+:=offset
-end
-
-export proc pcl_setincr(int n)=
-	pccurr.stepx:=n
-end
-
-export proc pcl_setnargs(int n)=
-	pccurr.nargs:=n
-end
-
-export proc pcl_setnmult(int n)=
-	abortprogram("SETNMULT")
-end
-
-export proc pcl_setrettypes(ref[]int types, int n)=
-	abortprogram("SETRETTYPES")
-end
-
-export proc pcl_setexported(int x)=
-	pccurr.isexported:=x
-	if pccurr.def then
-		pccurr.def.isexported:=x
-	fi
-end
-
-export proc pcl_isthreaded(int x)=
-!	pccurr.isthreasexported:=1
-	if pccurr.def then
-		pccurr.def.isthreaded:=x
-	fi
-end
-
-export proc pcl_setnvariadics(int n)=
-	pccurr.nvariadics:=n
-end
-
-export proc pcl_setalign(int n)=
-	pccurr.align:=n
-end
-
-export proc pcl_setrtsproc=
-	if pccurr.def and pccurr.opcode=kprocdef then
-		definertsproc(pccurr.def)
-	fi
-end
-
-export proc pcl_setoldtype(int t)=
-	pccurr.oldmode:=t
-end
-
-export proc pcl_setpos(int pos)=
-	abortprogram("SETPOS")
-end
-
-export function pcl_lasterror:ichar=
-	return errormess
-end
-
-export function pcl_writepclfile(ichar filename)int=
-	ichar source
-	int length
-
-	fixuppcl()
-
-	(source,length):=writeallpcl()
-
-	return writefile(filename,source,length)
-end
-
-global proc perror(ichar mess)=
-	perror_s(mess, nil)
-end
-
-global proc perror_s(ichar mess, param=nil)=
-	print "PCL error:",mess
-	if param then
-		print ":",param
-	fi
-
-	stop 1
-end
-
-global proc writesymbols=
-!write all pcl code in system by scanning all procs
-!pcl code is only stored per-proc
-	pcl p
-	psymbol d,e
-
-	p:=pcstart
-
-	psline()
-	psstr("PROC PCL DEF OPS")
-	psline()
-
-	while p<=pccurr, ++p do
-		case p.opcode
-		when kprocdef, kistatic, kzstatic, kextproc, klabelname,
-			klocal, kparam then
-
-			d:=p.def
-PSINT(INT(p))
-PSSTR(" ")
-PSINT(INT(d))
-PSSTR(" ")
-
-			psstr(d.name)
-			psstr(": ")
-			psint(p.seqno)
-			psline()
-
-			psstr("	Opcode:"); psstr(pclnames[p.opcode]); psline()
-			psstr("	PCLdef:"); psstr((d.pcldef|pclnames[d.pcldef.opcode]|"---")); psline()
-			psstr("	Isdefined:"); psint(d.isdefined); psline()
-			psstr("	Isexported:"); psint(d.isexported); psline()
-			psstr("	Isimported:"); psint(d.isimported); psline()
-			psstr("	Extvariadics:"); psint(p.extvariadics); psline()
-			psstr("	Isaddrof:"); psint(d.addrof); psline()
-			psstr("	Label#:"); psint(d.labelno); psline()
-
+			exit
 		esac
 	od
 
-	p:=pcstart
-
-	psline()
-	psstr("PROC PCL UNDEFINED MEM REFS")
-	psline()
-
-!CPL =PCLCODE, =PCLCURR
-
-	while p<=pccurr, ++p do
-		if p.opndtype in [mem_opnd, memaddr_opnd] and not p.def.isdefined then
-			d:=p.def
-PSINT(INT(p))
-PSSTR(" ")
-PSINT(INT(d))
-PSSTR(" ")
-			psstr("Not defined: ")
-			psstr(d.name)
-			psstr(" ")
-			psint(p.seqno)
-			psline()
-			d.isdefined:=1
-		fi
-	od
-end
-
-global function getbasename(ichar s)ichar t=
-	t:=s+strlen(s)-1
-	while t>s and (t-1)^<>'.' do
-		--t
-	od
-
-	return t
-end
-
-global proc definertsproc(psymbol d)=
-!request made that d is an RTS proc
-	ichar s:=d.name
-	int c
-
-!look for rts name following $; just scan LTR for first $
-	while (c:=s++^)<>'$' do od
-
-	for i to rtsnames.len do
-		if eqstring(rtsnames[i]+4, s) then
-			d.isrts:=1
-			d.rtsindex:=i
-			rtsproctable[i]:=d
-			return
-		fi
-	else
-	od
-end
-=== mclib.m 8/45 ===
-global type filehandle=ref void
-
-importlib $cstd=
-!	clang function malloc	(wordm)ref void
-	clang function malloc	(word64)ref void
-	clang function realloc	(ref void, wordm)ref void
-	clang proc     free		(ref void)
-	clang proc     memset	(ref void, int32, wordm)
-	clang proc     memcpy	(ref void, ref void, wordm)
-	clang function clock	:int32
-	clang function ftell	(filehandle)int32
-	clang function fseek	(filehandle, int32, int32)int32
-	clang function fread	(ref void, wordm, wordm, filehandle)wordm
-	clang function fwrite	(ref void, wordm, wordm, filehandle)wordm
-	clang function getc		(filehandle)int32
-	clang function ungetc	(int32, filehandle)int32
-	clang function fopen	(ichar,ichar="rb")filehandle
-	clang function fclose	(filehandle)int32
-	clang function fgets	(ichar, int, filehandle)ichar
-	clang function remove	(ichar)int32
-	clang function rename	(ichar, ichar)int32
-	clang function getchar	:int32
-	clang proc     putchar	(int32)
-	clang proc     setbuf	(filehandle, ref byte)
-
-	clang function strlen	(ichar)int
-	clang function strcpy	(ichar, ichar)ichar
-	clang function strcmp	(ichar, ichar)int32
-	clang function strncmp	(ichar, ichar, wordm)int32
-	clang function strncpy	(ichar, ichar, wordm)wordm
-	clang function memcmp	(ref void, ref void, wordm)int32
-	clang function strcat	(ichar, ichar)ichar
-	clang function tolower	(int32)int32
-	clang function toupper	(int32)int32
-	clang function isalpha	(int32)int32
-	clang function isupper	(int32)int32
-	clang function islower	(int32)int32
-	clang function isalnum	(int32)int32
-	clang function isspace	(int32)int32
-	clang function strstr	(ichar, ichar)ichar
-	clang function atol		(ichar)intm
-	clang function atoi		(ichar)int32
-	clang function strtod	(ichar,ref ref char)real64
-	clang function _strdup  (ichar)ichar
-
-	clang function puts		(ichar)int32
-	clang function puts99	(ichar)int32
-	clang function printf	(ichar, ...)int32
-
-	clang function sprintf	(ichar, ichar, ...)int32
-!	clang function __mingw_sprintf	(ichar, ...)int32
-
-	clang function sscanf	(ichar, ichar, ...)int32
-	clang function scanf	(ichar, ...)int32
-
-	clang function rand		:int32
-	clang proc     srand	(word32)
-	clang function system	(ichar)int32
-
-	clang function fgetc	(filehandle)int32
-	clang function fputc	(int32,  filehandle)int32
-	clang function fprintf	(filehandle, ichar, ...)int32
-	clang function fputs	(ichar,  filehandle)int32
-	clang function feof		(filehandle)int32
-	clang function getch	:int32
-	clang function _getch	:int32
-	clang function kbhit	:int32
-	clang function _mkdir	(ichar)int32
-	clang function mkdir	(ichar)int32
-	clang function dummy	(real)real
-	clang function strchr	(ichar,int32)ichar
-
-	clang proc     _exit	(int32)
-	clang proc     "exit"	(int32)
-!	clang proc     `exit	(int32)
-	clang function	pow		(real,real)real
-
-	clang function	`sin	(real)real
-	clang function	`cos	(real)real
-	clang function	`tan	(real)real
-	clang function	`asin	(real)real
-	clang function	`acos	(real)real
-	clang function	`atan	(real)real
-	clang function	`log	(real)real
-	clang function	`log10	(real)real
-	clang function	`exp	(real)real
-	clang function	`floor	(real)real
-	clang function	`ceil	(real)real
-
-	clang proc      qsort   (ref void, word64, word64, ref proc)
-
-end
-
-global macro strdup=_strdup
-
-importlib $cstdextra=
-	clang function __getmainargs(ref int32, ref void, ref void, int, ref void)int32
-end
-
-global const c_eof		=-1
-global const seek_set	= 0
-global const seek_curr	= 1
-global const seek_end	= 2
-=== mlibp.m 9/45 ===
-import msys
-import clib
-import oslib
-
-!const mem_check=1
-const mem_check=0
-
-global [0..300]u64 allocupper
-global int alloccode				!set by heapalloc
-global int allocbytes				!set by heapalloc
-global int fdebug=0
-global int rfsize
-
-const threshold=1<<25
-const alloc_step=1<<25
-word maxmemory
-int  maxalloccode
-
-GLOBAL REF VOID ALLOCBASE
-
-byte pcm_setup=0
-
-int show=0
-
-global int memtotal=0
-global int64 smallmemtotal=0
-global int smallmemobjs=0
-global int maxmemtotal=0
-
-!store all allocated pointers
-const int maxmemalloc=(mem_check|500000|2)
-[maxmemalloc+1]ref int32 memalloctable
-[maxmemalloc+1]int32 memallocsize
-
-const pcheapsize=1048576*2
-ref byte pcheapstart
-ref byte pcheapend			!points to first address past heap
-ref byte pcheapptr
-
-const int maxblockindex = 8 		!2048
-global const int maxblocksize = 2048
-
-[0:maxblocksize+1]byte sizeindextable	!convert byte size to block index 1..maxblockindex
-
-const int size16   = 1			!the various index codes
-const int size32   = 2
-const int size64   = 3
-const int size128  = 4
-const int size256  = 5
-const int size512  = 6
-const int size1024 = 7
-const int size2048 = 8
-
-GLOBAL [0:9]ref wordp freelist
-
-global record strbuffer =
-	ichar strptr
-	int32 length
-	int32 allocated
-end
-
-global tabledata() [0:]ichar pmnames=
-	(pm_end=0,		$),
-	(pm_option,		$),
-	(pm_sourcefile,	$),
-	(pm_libfile,	$),
-	(pm_colon,		$),
-	(pm_extra,		$),
-end
-
-![2]word seed = (0x2989'8811'1111'1272',0x1673'2673'7335'8264)
-[2]int seed = (0x2989'8811'1111'1272',0x1673'2673'7335'8264)
-
-global function pcm_alloc(int n)ref void =		!PCM_ALLOC
-	ref byte p
-
-	if not pcm_setup then
-		pcm_init()
-	fi
-
-	if n>maxblocksize then			!large block allocation
-
-		alloccode:=pcm_getac(n)
-		allocbytes:=allocupper[alloccode]
-
-		p:=allocmem(allocbytes)
-		if not p then
-			abortprogram("pcm_alloc failure")
-		fi
-
-		if mem_check then addtomemalloc(ref int32(p),allocbytes) fi
-
-		return p
-	fi
-
-	alloccode:=sizeindextable[n]		!Size code := 0,1,2 etc for 0, 16, 32 etc
-	allocbytes:=allocupper[alloccode]
-	smallmemtotal+:=allocbytes
-
-	if p:=ref byte(freelist[alloccode]) then		!Items of this block size available
-	if mem_check then addtomemalloc(ref int32(p),allocbytes) fi
-		freelist[alloccode]:=ref wordp(int((freelist[alloccode])^))
-
-		return p
-	fi
-
-!No items in freelists: allocate new space in this heap block
-	p:=pcheapptr				!Create item at start of remaining pool in heap block
-	pcheapptr+:=allocbytes			!Shrink remaining pool
-
-	if pcheapptr>=pcheapend then		!Overflows?
-		p:=pcm_newblock(allocbytes)		!Create new heap block, and allocate from start of that
-		return p
-	fi
-	if mem_check then addtomemalloc(ref int32(p),allocbytes) fi
-
-	return p
-end
-
-global proc pcm_free(ref void p,int n) =		!PCM_FREE
-!n can be the actual size requested it does not need to be the allocated size
-	int acode
-
-	if n=0 then return fi
-
-	if n>maxblocksize then		!large block
-		if mem_check then removefrommemalloc(p,n) fi
-
-		free(p)
-		return
-	fi
-
-	if p then
-		acode:=sizeindextable[n]		!Size code := 0,1,2 etc for 0, 16, 32 etc
-
-		smallmemtotal-:=allocupper[acode]
-
-		if mem_check then removefrommemalloc(p,allocupper[acode]) fi
-
-		cast(p,ref wordp)^:=wordp(int(freelist[acode]))
-		freelist[acode]:=p
-	fi
-end
-
-global proc pcm_freeac(ref void p,int alloc) =		!PCM_FREEAC
-	pcm_free(p,allocupper[alloc])
-end
-
-global proc pcm_copymem4(ref void p,q,int n) =	!PCM_COPYMEM4
-!copy n bytes of memory from q to p.
-!the memory spaces used are multiples of 16 bytes, but n itself could be anything
-!n can be zero, and need not be a multiple of 4 bytes
-
-	memcpy(p,q,n)
-end
-
-global proc pcm_clearmem(ref void p,int n) =		!PCM_CLEARMEM
-	memset(p,0,n)
-end
-
-global proc pcm_init =		!PCM_INIT
-!set up sizeindextable too
-	int j,k,k1,k2
-	int64 size
-	const limit=1<<33
-
-	alloccode:=0
-	if pcm_setup then
-		return
-	fi
-
-	pcm_newblock(0)
-
-!	ALLOCBASE:=PCHEAPPTR
-
-	for i to maxblocksize do	!table converts eg. 78 to 4 (4th of 16,32,64,128)
-		j:=1
-		k:=16
-		while i>k do
-			k:=k<<1
-			++j
-		od
-		sizeindextable[i]:=j
-	od
-
-	allocupper[1]:=16
-	size:=16
-
-	for i:=2 to 27 do
-		size*:=2
-		allocupper[i]:=size
-		if size>=threshold then
-				k:=i
-			exit
-		fi
-	od
-
-	for i:=k+1 to allocupper.upb do
-		size+:=alloc_step
-		if size<limit then
-			allocupper[i]:=size
-			maxmemory:=size
+!make sure bsys is included on first module
+	int needbsys,needclib
+	ichar bsysname
+
+	case msyslevel
+	when 1 then
+		bsysname:="msystemp"
+	when 0,2 then
+		bsysname:="msysp"
+	esac
+
+	if nmodules=1 then
+		if msyslevel then
+			needbsys:=1
+
+			for i to n do
+				if eqstring(importnames^[i],bsysname) then
+						needbsys:=0
+						exit
+				fi
+			od
 		else
-			maxalloccode:=i-1
-			exit
-		fi
-		
-	od
-	pcm_setup:=1
-end
-
-global function pcm_getac(int size)int =		!PCM_GETAC
-! convert linear blocksize from 0..approx 2GB to 8-bit allocation code
-
-!sizeindextable scales values from 0 to 2048 to allocation code 0 to 9
-
-	if size<=maxblocksize then
-		return sizeindextable[size]		!size 0 to 2KB
-	fi
-
-	size:=(size+255)>>8					!scale by 256
-
-!now same sizetable can be used for 2KB to 512KB (288 to 2KB)
-
-	if size<=maxblocksize then
-		return sizeindextable[size]+8
-	fi
-
-!sizetable now used for 512KB to 128MB (to 2KB)
-	size:=(size+63)>>6					!scale by 256
-
-	if size<=maxblocksize then
-		return sizeindextable[size]+14
-	fi
-
-!size>2048, which means it had been over 128MB.
-	size:=(size-2048+2047)/2048+22
-	return size
-end
-
-global function pcm_newblock(int itemsize)ref void=
-!create new heap block (can be first)
-!also optionally allocate small item at start
-!return pointer to this item (and to the heap block)
-	static int totalheapsize
-	ref byte p
-
-	totalheapsize+:=pcheapsize
-	alloccode:=0
-	p:=allocmem(pcheapsize)	!can't free this block until appl terminates
-	if p=nil then
-		abortprogram("Can't alloc pc heap")
-	fi
-
-	pcheapptr:=p
-	pcheapend:=p+pcheapsize
-
-	if pcheapstart=nil then		!this is first block
-		pcheapstart:=p
-	fi
-	pcheapptr+:=itemsize
-	return ref u32(p)
-end
-
-global function pcm_round(int n)int =		!PCM_ROUND
-!for any size n, return actual number of bytes that would be allocated
-	static [0:maxblockindex+1]int32 allocbytes=(0,16,32,64,128,256,512,1024,2048)
-
-	if n>maxblocksize then
-		return n
-	else
-		return allocbytes[sizeindextable[n]]
-	fi
-end
-
-global function pcm_array(int n)int =		!PCM_ARRAY
-!n bytes are needed for an array return the number of bytes to be actually allocated
-	int m
-
-	if n<=maxblocksize then	!automatic rounding up used for small heap
-		return pcm_round(n)
-	else				!devise some strategy probably doubling up.
-		m:=2048
-		while n>m do
-			m<<:=1
-		od
-		return m
-	fi
-
-end
-
-global proc pcm_printfreelist(int size,ref wordp p) =		!PCM_PRINTFREELIST
-	println "Size: ",size
-	while p do
-		print " ",,p:"h"
-		p:=ref wordp(int(p^))
-	od
-	puts("")
-end
-
-global proc pcm_diags(ref char caption) =		!PCM_DIAGS
-	int m
-
-	println "HEAP FREELISTS:",caption
-
-	m:=16
-	for i:=1 to 8 do
-		pcm_printfreelist(m,freelist[i])
-		m<<:=1
-	od
-end
-
-global function pcm_allocz(int n)ref void =		!PCM_ALLOCZ
-	ref void p
-	p:=pcm_alloc(n)
-
-	memset(p,0,n)
-	return p
-end
-
-global function pcm_copyheapstring(ref char s)ref char =
-!allocate enough bytes for string s: copy s to the heap
-!return pointer to new string
-	ref char q
-	int n
-	if s=nil then return nil fi
-
-	n:=strlen(s)+1
-	q:=pcm_alloc(n)
-	memcpy(q,s,n)
-	return q
-end
-
-global function pcm_copyheapstringn(ref char s,int n)ref char =
-	ref char q
-	if s=nil then return nil fi
-
-	q:=pcm_alloc(n+1)
-	memcpy(q,s,n)
-	(q+n)^:=0
-	return q
-end
-
-global function pcm_copyheapblock(ref char s, int length)ref char =
-!allocate enough bytes for string s: copy s to the heap
-!return pointer to new string
-	ref char q
-	if length=0 then return nil fi
-
-	q:=pcm_alloc(length)
-	memcpy(q,s,length)
-	return q
-end
-
-proc addtomemalloc(ref int32 ptr,int size)=
-!add ptr to allocated table
-
-!CPL "***************ADD TO ALLOC:",ptr,size
-	for i to maxmemalloc do
-		if memalloctable[i]=ptr then
-			CPL "ALLOC ERROR:",ptr,"ALREADY ALLOCATED\n\n\n"
-			stop 2
+			needbsys:=0
 		fi
 
-		if memalloctable[i]=nil then		!unused entry
-			memalloctable[i]:=ptr
-			memallocsize[i]:=size
-			return
+		if needbsys then
+			++n
+			importnames^[n]:=pcm_copyheapstring(bsysname)
+			importflags^[n]:=0
+			importxd[n]:=0
 		fi
-	od
-	CPL "MEMALLOCTABLE FULL\n\n\n\n"; os_getch()
-	stop 3
-end
-
-proc removefrommemalloc(ref int32 ptr,int size)=
-!remove ptr to allocated table
-
-!CPL "------------------************REMOVE FROM ALLOC:",ptr,size
-
-	for i to maxmemalloc do
-		if memalloctable[i]=ptr then
-			if memallocsize[i]<>size then
-				CPL "REMOVE:FOUND",ptr,"IN MEMALLOCTABLE, FREESIZE=",size,", BUT STORED AS BLOCK SIZE:",memallocsize[i]
-				abortprogram("MEMSIZE")
-			fi
-			memalloctable[i]:=nil
-			return
-		fi
-	od
-	CPL "CAN'T FIND",ptr,"IN MEMALLOCTABLE",size
-	abortprogram("MEM")
-	stop 4
-end
-
-global function allocmem(int n)ref void =		!ALLOCMEM
-	ref void p
-
-	p:=malloc(n)
-	if p then
-		return p
 	fi
-	println n,memtotal
-	abortprogram("Alloc mem failure")
-	return nil
-end
-
-global function reallocmem(ref void p,int n)ref void =		!REALLOCMEM
-	p:=realloc(p,n)
-	return p when p
-	println n
-	abortprogram("Realloc mem failure")
-	return nil
-end
-
-global proc abortprogram(ref char s) =		!ABORTPROGRAM
-	println s
-	print   "ABORTING: Press key..."
-!os_getch()
-	stop 5
-end
-
-global function getfilesize(filehandle handlex)int=		!GETFILESIZE
-	word32 p,size
-
-	p:=ftell(handlex)		!current position
-	fseek(handlex,0,2)		!get to eof
-	size:=ftell(handlex)		!size in bytes
-	fseek(handlex,p,seek_set)	!restore position
-	return size
-end
-
-global proc readrandom(filehandle handlex, ref byte mem, int offset, size) =		!READRANDOM
-	int a
-	fseek(handlex,offset,seek_set)
-	a:=fread(mem,1,size,handlex)			!assign so as to remove gcc warning
-end
-
-global function writerandom(filehandle handlex, ref byte mem, int offset,size)int =		!WRITERANDOM
-	fseek(handlex,offset,seek_set)
-	return fwrite(mem,1,size,handlex)
-end
-
-global function setfilepos(filehandle file,int offset)int=
-	return fseek(file,offset,0)
-end
-
-global function getfilepos(filehandle file)int=
-	return ftell(file)
-end
-
-global function readfile(ref char filename)ref byte =		!READFILE
-	filehandle f
-	int size
-	ref byte m,p
-
-	f:=fopen(filename,"rb")
-	if f=nil then
-		return nil
-	fi
-	rfsize:=size:=getfilesize(f)
-
-	m:=malloc(size+4)		!allow space for etx/zeof etc
-
-	if m=nil then
-		return nil
-	fi
-
-	readrandom(f,m,0,size)
-	p:=m+size			!point to following byte
-	p^:=0
-	(p+1)^:=26
-	(p+2)^:=0			!allow use as string
-
-	fclose(f)
-	return m
-end
-
-global function writefile(ref char filename,ref byte data,int size)int =
-	filehandle f
-	int n
-
-	f:=fopen(filename,"wb")
-	if f=nil then
-		return 0
-	fi
-
-	n:=writerandom(f,data,0,size)
-	fclose(f)
 	return n
 end
 
-global function checkfile(ref char file)int=		!CHECKFILE
-	filehandle f
-	if f:=fopen(file,"rb") then
-		fclose(f)
-		return 1
+function loadimport(ichar modulename,int xdflag,ichar ownername)int=
+!Look at request for adding module, which might already be loaded
+!Checks also that modules are added in the right order
+!Calls loadmodule to process the module and deal with /its/ imports
+!return modulen no of the existing or newly added module
+
+	int i,fileno
+	ichar ifilespec
+	[300]char filespec
+	ref char source
+	ichar newname
+
+	newname:=modulename
+
+	for i:=1 to nmodules do
+		if eqstring(moduletable[i].name,newname) then		!already loaded
+			return i
+		fi
+	od
+
+	fileno:=getmodulefile(modulename,ownername,xdflag)
+
+	if xdflag then
+		addcclib(modulename)
 	fi
+
+	return addmodule(newname,fileno)
+end
+
+proc initsearchdirs=
+	[300]char str1,str2
+	int i
+
+	nsearchdirs:=0
+	addsearchdir("c:/mx/")
+	addsearchdir(os_getmpath())
+	addsearchdir(os_gethostname())
+	addsearchdir("./")
+end
+
+proc addsearchdir(ichar path)=
+	for i to nsearchdirs do
+		if eqstring(searchdirs[i],path) then return fi
+	od
+	if nsearchdirs>maxsearchdirs then
+		loaderror("Too many search paths")
+	fi
+	searchdirs[++nsearchdirs]:=pcm_copyheapstring(path)
+end
+
+proc getinputoptions=
+	const slash='-'
+	int i,j,k
+	int paramno,pmtype,sw,ncolons,passfixed
+	ichar name,value,filename,ext
+	[300]char filespec
+
+	prodmode:=1
+	paramno:=2
+	ncolons:=0
+
+	while pmtype:=nextcmdparam(paramno,name,value,"m") do
+
+		case pmtype
+		when pm_option then
+
+			convlcstring(name)
+			for sw to optionnames.len do
+				if eqstring(name,optionnames[sw]) then
+					do_option(sw,value)
+					exit
+				fi
+			else
+				println "Unknown option:",name
+				stop 99
+			od
+		when pm_sourcefile then
+			if ninputfiles>=maxmodule then
+				loaderror("Too many input files")
+			fi
+			convlcstring(name)
+			inputfiles[++ninputfiles]:=pcm_copyheapstring(name)
+		when pm_libfile then
+			if nlibfiles>=maxlibfile then
+				loaderror("Too many lib files")
+			fi
+			libfiles[++nlibfiles]:=pcm_copyheapstring(name)
+		when pm_colon then
+			if ++ncolons>1 then
+				name:=":"
+				value:=nil
+				goto doextra
+			fi
+		when pm_extra then
+	doextra::
+			extraparams[++nextraparams]:=pcm_copyheapstring(name)
+			extravalues[nextraparams]:=pcm_copyheapstring(value)
+		esac
+
+	od
+
+	if prodmode=debugmode=0 then
+		passlevel:=exe_pass
+		outext:="exe"
+		prodmode:=1
+	elsif prodmode and passlevel=0 then
+		passlevel:=exe_pass
+		outext:="exe"
+	elsif debugmode and passlevel=0 then
+		passlevel:=mcl_pass
+		outext:="asm"
+	fi
+
+	if msyslevel=-1 then
+		msyslevel:=(prodmode|2|0)
+		msyslevel:=(prodmode|2|0)
+	fi
+
+	if ninputfiles=0 then
+		showcaption()
+		println "Usage:"
+		println "	",,sysparams[1],"filename[.m]     # Compile project to executable"
+		println "	",,sysparams[1],"-help            # Other options"
+		stop
+
+	elsif ninputfiles=1 then
+		filename:=inputfiles[1]				!primary file name
+
+		ext:=extractext(filename)
+		if eqstring(ext,"ma") then
+			fbundled:=1
+			mafilename:=pcm_copyheapstring(filename)
+			inputfiles[1]:=pcm_copyheapstring(changeext(filename,"m"))
+		fi
+
+!default output
+		outfile:=pcm_copyheapstring(filename)
+
+		if destfilename then
+			outfile:=destfilename
+		elsif destfilepath then
+			strcpy(&.filespec,destfilepath)
+			strcat(extractfile(&.filespec), outfile)
+			outfile:=pcm_copyheapstring(&.filespec)	
+		fi
+	else
+		loaderror("Specify one lead module only")
+	fi
+
+	case msyslevel
+	when 1 then
+		addmodulemapping("msys","msystemp")
+	when 0,2 then	
+		addmodulemapping("msys","msysp")
+	esac
+
+	asmfilename:=getoutfilename(outfile,"asm")
+	pclfilename:=getoutfilename(outfile,"pcl")
+	exefilename:=getoutfilename(outfile,"exe")
+	dllfilename:=getoutfilename(outfile,"dll")
+	objfilename:=getoutfilename(outfile,"obj")
+	mafilename:=getoutfilename(outfile,"ma")
+	expfilename:=getoutfilename(outfile,"exp")
+
+end
+
+proc do_option(int sw, ichar value)=
+	static byte outused, outpathused
+
+	switch sw
+	when load_sw then passlevel:=load_pass
+	when parse_sw then passlevel:=parse_pass
+	when fixup_sw then passlevel:=fixup_pass
+	when name_sw then passlevel:=name_pass
+	when type_sw then passlevel:=type_pass
+	when pcl_sw then passlevel:=pcl_pass; outext:="pcl"
+	when asm_sw then passlevel:=asm_pass; outext:="asm"
+	when obj_sw then passlevel:=obj_pass; outext:="obj"
+	when exe_sw then passlevel:=exe_pass; outext:="exe"
+	when dll_sw then passlevel:=dll_pass; outext:="dll"
+	when run_sw then passlevel:=run_pass; outext:="exe"
+	when pclexe_sw then passlevel:=pcl_pass; outext:="pcl"; fpclexe:=1
+	when asmexe_sw then passlevel:=asm_pass; outext:="asm"; fasmexe:=1
+
+	when ma_sw then fwritema:=1; outext:="ma"
+	when export_sw then fwriteexports:=1
+	when docs_sw then fwritedocs:=1
+
+	when sys_sw then msyslevel:=2
+	when minsys_sw then msyslevel:=1
+	when nosys_sw then msyslevel:=0
+	when nofile_sw then fnofile:=1
+!	when rts_sw then fdorts:=1
+	when norts_sw then fdorts:=0
+
+	when opt_sw then foptim:=2
+	when opt1_sw then foptim:=1
+	when opt2_sw then foptim:=2
+
+	when debug_sw then debugmode:=1; prodmode:=0
+
+	when time_sw then fshowtiming:=1
+
+	when v_sw then fverbose:=2
+
+	when vv_sw then fverbose:=3
+
+	when quiet_sw then fverbose:=0
+
+	when help_sw,help2_sw then showhelp(); stop
+
+	when ext_sw then dointlibs:=0
+
+	when out_sw then
+		if outpathused then loaderror("mixed out/path") fi
+		destfilename:=pcm_copyheapstring(value)
+		outused:=1
+
+	when outpath_sw then
+		if outused then loaderror("mixed out/path") fi
+		if (value+strlen(value)-1)^ not in ['\\','/'] then
+			loaderror("Path needs to end with \\ or /")
+		fi
+		destfilepath:=pcm_copyheapstring(value)
+		outpathused:=1
+
+	when unused_sw then fcheckunusedlocals:=1
+
+	when ast1_sw then fshowast1:=1
+	when ast2_sw then fshowast2:=1
+	when ast3_sw then fshowast3:=1
+	when showpcl_sw then fshowpcl:=1
+	when showasm_sw then fshowasm:=1
+	when st_sw then fshowst:=1
+	when pst_sw then fshowpst:=1
+	when stflat_sw then fshowstflat:=1
+	when types_sw then fshowtypes:=1
+	when overloads_sw then fshowoverloads:=1
+	when ss_sw then fshowss:=1
+
+!	when windows_sw then fwindows:=1
+!	when linux_sw then flinux:=1
+!	when x64_sw then fx64:=1
+!	when c64_sw then fc64:=1
+!	when c32_sw then fc32:=1
+
+	endswitch
+
+end
+
+proc showcaption=
+	println "M Compiler [PCL]", $date, $time
+end
+
+proc showstflat(ichar caption,filehandle f)=
+	println @f,"PROC",caption
+	printstflat(f)
+	println @f
+end
+
+proc showsttree(ichar caption,filehandle f)=
+	println @f,"PROC",caption
+	printst(f,stprogram)
+	println @f
+end
+
+global proc showhelp=
+	static ichar helptext=strinclude("mm_help.txt")
+	println helptext
+end
+
+proc showast(ichar filename)=
+	filehandle f
+
+	f:=fopen(filename,"w")
+	return unless f
+
+	println @f,"PROC",filename
+	printcode(f,"")
+	println @f
+	fclose(f)
+end
+
+proc domapmodule=
+!working in prescan using lx; have just seen "mapmodule"
+	[256]char genname, actualname,optionname,valuename
+	int cond,option
+
+	getpsname(&.genname)
+
+	if lx.symbol<>sendtosym then abortprogram("=> expected") fi
+
+	getpsname(&.actualname)
+
+	cond:=0
+
+	if lx.symbol=kwhensym then
+		getpsname(&.optionname)
+		if lx.symbol=eqsym then
+			getpsname(&.valuename)
+		else
+			strcpy(&.valuename,"1")
+		fi
+		cond:=1
+	fi
+
+	while lx.symbol not in [semisym,eofsym] do lex() od
+
+	if cond then
+		addmodulemapping(&.genname, &.actualname, &.optionname, &.valuename)
+	else
+		addmodulemapping(&.genname, &.actualname, nil,nil)
+	fi
+end
+
+global function mapimport(ichar name)ichar=
+	for i to nmodulemap do
+		if eqstring(name,genericmodules[i]) then
+			return actualmodules[i]
+		fi
+	od
+	return name
+end
+
+proc getpsname(ichar dest)=
+!read raw name or string from prescan code from next symbol
+!store string into dest, and move to next symbol
+!	[64]char str
+
+	lex()	
+	case lx.symbol
+	when namesym then
+		strcpy(dest,lx.symptr.name)
+	when stringconstsym then
+		strcpy(dest,lx.svalue)
+	when intconstsym then
+		lx.svalue:=strint(int(lx.value))
+
+	else
+		abortprogram("map1")
+	esac
+	lex()
+end
+
+global proc addmodulemapping(ichar old, newx, optionname=nil, valuename=nil)=
+	int option
+
+	if optionname then					!conditional
+		option:=findoptionvar(optionname)
+		if option then
+
+			if eqstring(optionname,optionvars[option]) then
+				if not eqstring(optionvalues[option],valuename) then
+					return
+				fi
+			fi
+		else
+			return						!just assume false when not found
+		fi
+	fi
+
+	if nmodulemap>=maxmodulemap then
+		abortprogram("Too many module mappings")
+	fi
+	for i to nmodulemap do
+		if eqstring(old,genericmodules[i]) then
+			println old
+			abortprogram("Dupl module mapping")
+		fi
+	od
+	genericmodules[++nmodulemap]:=pcm_copyheapstring(old)
+	actualmodules[nmodulemap]:=pcm_copyheapstring(newx)
+end
+
+proc addoptionvar(ichar name, value)=
+	if noptionvars>=maxoptionvar then
+		abortprogram("Too many option vars")
+	fi
+	for i to noptionvars do
+		if eqstring(name,optionvars[i]) then
+			println name
+			abortprogram("Dupl optionvar")
+		fi
+	od
+
+	optionvars[++noptionvars]:=pcm_copyheapstring(name)
+	if value=nil then
+		optionvalues[noptionvars]:="1"
+	else
+		optionvalues[noptionvars]:=pcm_copyheapstring(value)
+	fi
+end
+
+function findoptionvar(ichar name)int=
+	for i to noptionvars do
+		if eqstring(name, optionvars[i]) then
+			return i
+		fi
+	od
 	return 0
 end
 
-global proc readlinen(filehandle handlex,ref char buffer,int size) =		!READLINEN
-!size>2
-	int ch
-	ref char p
-	int n
-	[0:100]char buff
-	byte crseen
+global proc initassemsymbols=
+!initialise hash table from kwddata
+	[32]char str
+	int i
 
-	if handlex=nil then
-		handlex:=filehandle(os_getstdin())
-	fi
-	if handlex=nil then
-		n:=0
-		p:=buffer
-		do
-			ch:=getchar()
-			if ch=13 or ch=10 or ch=-1 then
-				p^:=0
-				return
-			fi
-			p++^:=ch
-			++n
-			if n>=(size-2) then
-				p^:=0
-				return
-			fi
+	for i to md.mclnames.len do
+		addreservedword(md.mclnames[i]+2,asmopcodesym,i)
+	od
+
+	for i to md.dregnames.len do
+		addreservedword(md.dregnames[i],regsym,md.regindices[i],md.regsizes[i])
+	od
+
+
+	for i to md.xmmregnames.len do
+		addreservedword(md.xmmregnames[i],xregsym,i)
+	od
+
+	for i to md.fregnames.len do
+		addreservedword(md.fregnames[i],fregsym,i)
+	od
+
+	for i to md.mregnames.len do
+		addreservedword(md.mregnames[i],mregsym,i)
+	od
+
+	for i to md.jmpccnames.len do
+		addreservedword(md.jmpccnames[i],jmpccsym,md.jmpcccodes[i])
+	od
+
+	for i to md.setccnames.len do
+		addreservedword(md.setccnames[i],setccsym,md.setcccodes[i])
+	od
+
+	for i to md.cmovccnames.len do
+		addreservedword(md.cmovccnames[i],movccsym,md.cmovcccodes[i])
+	od
+
+!for i to segmentnames.len do
+	for i to md.segmentnames.upb do
+		strcpy(&.str,md.segmentnames[i])
+		str[strlen(&.str)-3]:=0
+		addreservedword(pcm_copyheapstring(&.str),segnamesym,i)
+	od
+
+	addreservedword("aframe",regsym,md.r14,4)
+	addreservedword("dframe",regsym,md.r14,8)
+	addreservedword("astack",regsym,md.r15,4)
+	addreservedword("dstack",regsym,md.r15,8)
+	addreservedword("dprog",regsym,md.r8,8)
+	addreservedword("dsptr",regsym,md.r9,8)
+end
+
+proc showmodules=
+
+	println "Modules:",nmodules
+	for i to nmodules do
+!	print moduletable[i].name, sourcefilepaths[moduletable[i].fileno],$
+		println moduletable[i].name, sourcefilepaths[moduletable[i].fileno],$
+
+		print "                 "
+		for k:=1 to nmodules do
+			fprint "# ",moduletable[i].importmap[k]
 		od
-	fi
+		println
 
-	buffer^:=0
-	if fgets(buffer,size-2,handlex)=nil then
-		return
-	fi
-
-	n:=strlen(buffer)
-	if n=0 then
-		return
-	fi
-
-	p:=buffer+n-1		!point to last char
-	crseen:=0
-	while (p>=buffer and (p^=13 or p^=10)) do
-		if p^=13 or p^=10 then crseen:=1 fi
-		p--^ :=0
-	od
-
-!NOTE: this check doesn't work when a line simply doesn't end with cr-lf
-
-	if not crseen and (n+4>size) then
-		cpl size,n
-		abortprogram("line too long")
-	fi
-end
-
-global proc iconvlcn(ref char s,int n) =		!ICONVLCN
-	to n do
-		s^:=tolower(s^)
-		++s
-	od
-end
-
-global proc iconvucn(ref char s,int n) =		!ICONVUCN
-	to n do
-		s^:=toupper(s^)
-		++s
-	od
-end
-
-global function convlcstring(ref char s)ichar s0=
-	s0:=s
-	while (s^) do
-		s^:=tolower(s^)
-		++s
-	od
-	s0
-end
-
-global function convucstring(ref char s)ichar s0=
-	s0:=s
-	while (s^) do
-		s^:=toupper(s^)
-		++s
-	od
-	s0
-end
-
-global function changeext(ref char s,newext)ichar=		!CHANGEEXT
-!whether filespec has an extension or not, change it to newext
-!newext should start with "."
-!return new string (locally stored static string, so must be used before calling again)
-	static [260]char newfile
-	[32]char newext2
-	ref char sext
-	int n
-
-	strcpy(&newfile[1],s)
-
-	case newext^
-	when 0 then
-		newext2[1]:=0
-		newext2[2]:=0
-	when '.' then
-		strcpy(&newext2[1],newext)
-	else
-		strcpy(&newext2[1],".")
-		strcat(&newext2[1],newext)
-	esac
-
-
-	sext:=extractext(s,1)			!include "." when it is only extension
-
-	case sext^
-	when 0 then						!no extension not even "."
-		strcat(&newfile[1],&newext2[1])
-	when '.' then						!no extension not even "."
-		strcat(&newfile[1],&newext2[2])
-	else							!has extension
-		n:=sext-s-2			!n is number of chars before the "."
-		strcpy(&newfile[1]+n+1,&newext2[1])
-	esac
-
-	return &newfile[1]
-end
-
-global function extractext(ref char s,int period=0)ichar=		!EXTRACTEXT
-!if filespec s has an extension, then return pointer to it otherwise return ""
-!if s ends with ".", then returns "."
-	ref char t,u
-
-	t:=extractfile(s)
-
-	if t^=0 then			!s contains no filename
-		return ""
-	fi
-
-!t contains filename+ext
-	u:=t+strlen(t)-1		!u points to last char of t
-
-	while u>=t do
-		if u^='.' then		!start extension found
-			if (u+1)^=0 then		!null extension
-				return (period|"."|"")
-			fi
-			return u+1			!return last part of filename as extension exclude the dot
-		fi
-		--u
-	od
-	return ""			!no extension seen
-end
-
-global function extractpath(ref char s)ichar=		!EXTRACTPATH
-	static [0:260]char str
-	ref char t
-	int n
-
-	t:=s+strlen(s)-1		!t points to last char
-
-	while (t>=s) do
-		switch t^
-		when '\\','/',':' then		!path separator or drive letter terminator assume no extension
-			n:=t-s+1			!n is number of chars in path, which includes rightmost / or \ or :
-			memcpy(&.str,s,n)
-			str[n]:=0
-			return &.str
-		endswitch
-		--t
-	od
-	return ""			!no path found
-end
-
-global function extractfile(ref char s)ichar=		!EXTRACTFILE
-	ref char t
-
-	t:=extractpath(s)
-
-	if t^=0 then			!s contains no path
-		return s
-	fi
-
-	return s+strlen(t)		!point to last part of s that contains the file
-	end
-
-	global function extractbasefile(ref char s)ichar=		!EXTRACTBASEFILE
-	static [0:100]char str
-	ref char f,e
-	int n,flen
-
-	f:=extractfile(s)
-	flen:=strlen(f)
-	if flen=0 then		!s contains no path
-		return ""
-	fi
-	e:=extractext(f,0)
-
-	if e^ then			!not null extension
-		n:=flen-strlen(e)-1
-		memcpy(&str,f,n)
-		str[n]:=0
-		return &.str
-	fi
-	if (f+flen-1)^='.' then
-		memcpy(&str,f,flen-1)
-		str[flen-1]:=0
-		return &.str
-	fi
-	return f
-end
-
-global function addext(ref char s,ref char newext)ichar=		!ADDEXT
-!when filespec has no extension of its own, add newext
-	ref char sext
-
-	sext:=extractext(s,1)
-
-	if sext^=0 then						!no extension not even "."
-		return changeext(s,newext)
-	fi
-
-	return s							!has own extension; use that
-end
-
-global function alloctable(int n, size)ref void =		!ALLOCTABLE
-!Allocate table space for n elements, each of size <size>
-!Allows for 1-based indexing, so allocates (n+1) elements
-	ref void p
-
-	p:=malloc((n+1)*size)
-
-	if not p then
-		abortprogram("Alloctable failure")
-	fi
-	return p
-end
-
-global function zalloctable(int n, size)ref void =		!ALLOCTABLE
-!Allocate table space for n elements, each of size <size>
-!Allows for 1-based indexing, so allocates (n+1) elements
-	ref int p
-
-	p:=alloctable(n,size)
-
-	pcm_clearmem(p,(n+1)*size)
-	return p
-	end
-
-global proc checkfreelists(ichar s)=
-	ref wordp p,q
-	int64 aa
-
-	for i:=2 to 2 do
-		p:=freelist[i]
-
-		while p do
-			aa:=int64(p)
-			if aa>0xffff'FFFF or aa<100 then
-				CPL s,"FREE LIST ERROR",i,p,q
-!			os_getch(); stop 1
-			fi
-			q:=p
-			p:=ref wordp(int(p^))
+		for k:=1 to nmodules when moduletable[i].importmap[k] do
+			println "		",moduletable[k].name
 		od
 
+		println
 	od
 end
 
-global function pcm_alloc32:ref void =		!PCM_ALLOC
-	ref byte p
-	allocbytes:=32
-	smallmemtotal+:=32
-
-	if p:=ref byte(freelist[2]) then		!Items of this block size available
-		freelist[2]:=ref wordp(int((freelist[2])^))
-		return p
-	fi
-
-!No items in freelists: allocate new space in this heap block
-	return pcm_alloc(32)
-end
-
-global proc pcm_free32(ref void p) =
-!n can be the actual size requested it does not need to be the allocated size
-
-	smallmemtotal-:=32
-	if mem_check then removefrommemalloc(p,32) fi
-
-	cast(p,ref wordp)^:=wordp(int(freelist[2]))
-	freelist[2]:=p
-end
-
-global proc outbyte(filehandle f,int x)=
-	fwrite(&x,1,1,f)
-end
-
-global proc outword16(filehandle f,word x)=
-	fwrite(&x,2,1,f)
-end
-
-global proc outword(filehandle f,word x)=
-	fwrite(&x,4,1,f)
-end
-
-global proc outword64(filehandle f,word64 x)=
-	fwrite(&x,8,1,f)
-end
-
-global function myeof(filehandle f)int=
-	int c
-
-	c:=fgetc(f)
-	if c=c_eof then return 1 fi
-	ungetc(c,f)
-	return 0;
-end
-
-global function pcm_smallallocz(int n)ref void =
-	ref byte p
-
-	allocbytes:=allocupper[alloccode:=sizeindextable[n]]
-
-!No items in freelists: allocate new space in this heap block
-	p:=pcheapptr				!Create item at start of remaining pool in heap block
-	pcheapptr+:=allocbytes			!Shrink remaining pool
-
-	if pcheapptr>=pcheapend then		!Overflows?
-		p:=pcm_newblock(allocbytes)		!Create new heap block, and allocate from start of that
-		memset(p,0,n)
-		return p
-	fi
-
-	memset(p,0,n)
-
-	return p
-end
-
-global function pcm_smallalloc(int n)ref void =
-	ref byte p
-
-	allocbytes:=allocupper[alloccode:=sizeindextable[n]]
-
-!No items in freelists: allocate new space in this heap block
-	p:=pcheapptr				!Create item at start of remaining pool in heap block
-	pcheapptr+:=allocbytes			!Shrink remaining pool
-
-	if pcheapptr>=pcheapend then		!Overflows?
-		p:=pcm_newblock(allocbytes)		!Create new heap block, and allocate from start of that
-		return p
-	fi
-
-	return p
-end
-
-global proc strbuffer_add(ref strbuffer dest, ichar s, int n=-1)=
-	int newlen,oldlen
-	ichar newptr
-
-	IF N=0 THEN CPL "N=0" FI
-
-	if n=-1 then
-		n:=strlen(s)
-	fi
-
-	oldlen:=dest^.length
-
-	if oldlen=0 then				!first string
-		dest^.strptr:=pcm_alloc(n+1)
-		dest^.allocated:=allocbytes
-		dest^.length:=n				!length always excludes terminator
-		memcpy(dest^.strptr,s,n)
-		(dest^.strptr+n)^:=0
-		return
-	fi
-
-	newlen:=oldlen+n
-	if newlen+1>dest^.allocated then
-		newptr:=pcm_alloc(newlen+1)
-		memcpy(newptr,dest^.strptr,oldlen)
-		dest^.strptr:=newptr
-		dest^.allocated:=allocbytes
-	fi
-
-	memcpy(dest^.strptr+oldlen,s,n)
-	(dest^.strptr+newlen)^:=0
-
-	dest^.length:=newlen
-end
-
-global proc gs_init(ref strbuffer dest)=			!INITGENSTR
-	pcm_clearmem(dest,strbuffer.bytes)
-end
-
-global proc gs_free(ref strbuffer dest)=
-	if dest^.allocated then
-		pcm_free(dest^.strptr,dest^.allocated)
-	fi
-end
-
-global proc gs_str(ref strbuffer dest,ichar s)=			!GENSTR
-	strbuffer_add(dest,s)
-end
-
-global proc gs_char(ref strbuffer dest,int c)=
-	[16]char s
-
-	s[1]:=c
-	s[2]:=0
-
-	strbuffer_add(dest,&.s,1)
-end
-
-global proc gs_strn(ref strbuffer dest,ichar s,int length)=
-	strbuffer_add(dest,s,length)
-end
-
-global proc gs_strvar(ref strbuffer dest,s)=			!GENSTR
-	strbuffer_add(dest,s^.strptr)
-end
-
-global proc gs_strint(ref strbuffer dest,int64 a)=
-	strbuffer_add(dest,strint(a))
-end
-
-global proc gs_strln(ref strbuffer dest,ichar s)=		!GENSTRLN
-	gs_str(dest,s)
-	gs_line(dest)
-end
-
-global proc gs_strsp(ref strbuffer dest,ichar s)=
-	gs_str(dest,s)
-	gs_str(dest," ")
-end
-
-global proc gs_line(ref strbuffer dest)=
-	strbuffer_add(dest,"\w")
-end
-
-global function gs_getcol(ref strbuffer dest)int=
-	return dest^.length
-end
-
-global proc gs_leftstr(ref strbuffer dest, ichar s, int w, padch=' ')=
-	int col,i,n,slen
-	[2560]char str
-	col:=dest^.length
-	strcpy(&.str,s)
-	slen:=strlen(s)
-	n:=w-slen
-	if n>0 then
-		for i:=1 to n do
-			str[slen+i]:=padch
-		od
-		str[slen+n+1]:=0
-	fi
-	gs_str(dest,&.str)
-end
-
-global proc gs_leftint(ref strbuffer dest, int a, int w, padch=' ')=
-	gs_leftstr(dest,strint(a),w,padch)
-end
-
-global proc gs_padto(ref strbuffer dest,int col, ch=' ')=
-	int n
-	[2560]char str
-
-	n:=col-dest^.length
-	if n<=0 then return fi
-	for i:=1 to n do
-		str[i]:=ch
-	od
-	str[n+1]:=0
-	gs_str(dest,&.str)
-end
-
-global proc gs_println(ref strbuffer dest,filehandle f=nil)=
-	(dest.strptr+dest.length)^:=0
-
-	if f=nil then
-		println dest.strptr,,"\c"
-	else
-		println @f,dest.strptr,,"\c"
-	fi
-end
-
-global function nextcmdparam(int &paramno, ichar &name, &value, ichar defext=nil)int=
-	static int infile=0
-	static ichar filestart=nil
-	static ichar fileptr=nil
-	static byte colonseen=0
-	ref char q
-	ichar item,fileext
-	ichar rest
-	int length
-	static [300]char str
-
-	reenter::
-	value:=nil
-	name:=nil
-
-	if infile then
-		if readnextfileitem(fileptr,item)=0 then		!eof
-			free(filestart)								!file allocated via malloc
-			infile:=0
-			goto reenter
+proc do_writema=
+	if fwritema then
+		if fbundled then
+			loaderror("-ma used with .ma input")
 		fi
-	else
-		if paramno>nsysparams then
-			return pm_end
-		fi
-		item:=sysparams[paramno]
-		++paramno
-
-		length:=strlen(item)
-
-		if item^='@' then		!@ file
-			filestart:=fileptr:=cast(readfile(item+1))
-			if filestart=nil then
-				println "Can't open",item
-				stop 7
-			fi
-			infile:=1
-			goto reenter
-		fi
-
-		if item^=':' then
-			colonseen:=1
-			return pm_colon
-		fi
-	fi
-
-	value:=nil
-	if item^='-' then
-		name:=item+(colonseen|0|1)
-		q:=strchr(item,':')
-		if not q then
-			q:=strchr(item,'=')
-		fi
-		if q then
-			value:=q+1
-			q^:=0
-		fi
-		return (colonseen|pm_extra|pm_option)
-	fi
-
-	fileext:=extractext(item,0)
-	name:=item
-
-	if fileext^=0 then							!no extension
-		strcpy(&.str,name)
-		if defext and not colonseen then
-			name:=addext(&.str,defext)				!try .c
-		fi
-	elsif eqstring(fileext,"dll") then
-		return (colonseen|pm_extra|pm_libfile)
-	fi
-	return (colonseen|pm_extra|pm_sourcefile)
-end
-
-function readnextfileitem(ichar &fileptr,&item)int=
-	ref char p,pstart,pend
-	int n
-	static [256]char str
-
-	p:=fileptr
-
-	reenter::
-	do
-		case p^
-		when ' ','\t',13,10 then	!skip white space
-			++p
-		when 26,0 then				!eof
-			return 0
-		else
-			exit
-		esac
-	od
-
-	case p^
-	when '!', '#' then			!comment
-		++p
-		docase p++^
-		when 10 then
-			goto reenter
-		when 26,0 then
-			fileptr:=p-1
-			return 0
-		else
-
-		enddocase
-	esac
-
-
-	case p^
-	when '"' then				!read until closing "
-		pstart:=++p
-		do
-			case p^
-			when 0,26 then
-				println "Unexpected EOF in @file"
-				stop 8
-			when '"' then
-				pend:=p++
-				if p^=',' then ++p fi
-				exit
-			esac
-			++p
-		od
-	else
-		pstart:=p
-		do
-			case p^
-			when 0,26 then
-				pend:=p
-				exit
-			when ' ','\t',',',13,10 then
-				pend:=p++
-				exit
-			esac
-			++p
-		od
-	esac
-
-	n:=pend-pstart
-	if n>=str.len then
-		println "@file item too long"
-		stop 9
-	fi
-	memcpy(&.str,pstart,n)
-	str[n+1]:=0
-	item:=&.str
-	fileptr:=p
-
-	return 1
-end
-
-global proc ipadstr(ref char s,int width,ref char padchar=" ")=
-	int n
-
-	n:=strlen(s)
-	to width-n do
-		strcat(s,padchar)
-	od
-end
-
-global function padstr(ref char s,int width,ref char padchar=" ")ichar=
-	static [256]char str
-
-	strcpy(&.str,s)
-	ipadstr(&.str,width,padchar)
-	return &.str
-end
-
-global function chr(int c)ichar=
-	static [8]char str
-
-	str[1]:=c
-	str[2]:=0
-	return &.str
-end
-
-global function cmpstring(ichar s,t)int=
-	int res
-	if (res:=strcmp(s,t))<0 then
-		return -1
-	elsif res>0 then
-		return 1
-	else
-		return 0
-	fi
-end
-
-global function cmpstringn(ichar s,t,int n)int=
-	int res
-	if (res:=strncmp(s,t,n))<0 then
-		return -1
-	elsif res>0 then
-		return 1
-	else
-		return 0
-	fi
-end
-
-global function eqstring(ichar s,t)int=
-	return strcmp(s,t)=0
-end
-
-global function cmpbytes(ref void p,q,int n)int=
-	int res
-	if (res:=memcmp(p,q,n))<0 then
-		return -1
-	elsif res>0 then
-		return 1
-	else
-		return 0
-	fi
-end
-
-global function eqbytes(ref void p,q,int n)int=
-	return memcmp(p,q,n)=0
-end
-
-global proc mseed(word64 a,b=0)=
-	seed[1]:=a
-	if b then
-		seed[2]:=b
-	else
-		seed[2] ixor:=a
-	fi
-end
-
-global function mrandom:word =
-!return pure 64-bit word value, 0 to 2**64-1
-!(cast result for signed value)
-!	word64 x,y
-	int x,y
-	x:=seed[1]
-	y:=seed[2]
-	seed[1]:=y
-	x ixor:=(x<<23)
-	seed[2]:= x ixor y ixor (x>>17) ixor (y>>26)
-	return seed[2]+y
-end
-
-global function mrandomp:int =
-!pure 64-bit int value, positive only, 0 to 2**63-1
-	return mrandom() iand 0x7FFF'FFFF'FFFF'FFFF
-end
-
-global function mrandomint(int n)int=
-!positive random int value from 0 to n-1
-	return mrandomp() rem n
-end
-
-global function mrandomrange(int a,b)int=
-!random int value from a to b inclusive
-!span extent must be 1 to 2**63-1
-	int span
-	span:=b-a+1
-	if span<=0 then
-		return 0
-	fi
-	return (mrandomp() rem span)+a
-end
-
-global function mrandomreal:real x=
-!positive random real value from 0 to just under (but not including) 1.0
-	repeat x:=mrandomp()/9223372036854775808.0 until x<>1.0
-	return x
-end
-
-global function mrandomreal1:real=
-!positive random real value from 0 to 1.0 inclusive
-	return mrandomp()/9223372036854775807
-end
-
-global function checkpackfile:ref byte=
-!find out if this executable contains extra packed files
-!return 1 or 0
-
-	int a,offset,i,size
-	[100]char name
-	[300]char exefile
-	ref byte packexeptr			!for embedded pack files, contains pointer to in-memory version of this .exe file plus extras; else nil
-	int packexesize				!byte size
-	ref char packfilename
-	int packfilesize
-	ref byte packfileptr
-
-!macro getfileint(data,offset)=(ref int32(data+offset))^
-	macro getfileint(data,offset)=cast(data+offset,ref int32)^
-
-	strcpy(&exefile[1],os_gethostname())
-	println "Attempting to open",&exefile
-	packexeptr:=readfile(&exefile[1])
-
-	if not packexeptr then
-		cpl "Can't open",&exefile,&packexeptr
+		writemafile(inputfiles[1],mafilename)
 		stop
 	fi
-
-	packexesize:=rfsize
-	cpl "File read OK. Size",packexesize
-
-	a:=getfileint(packexeptr,packexesize-int32.bytes)
-	if a<>'PCAK' then
-		free(packexeptr)
-		packfileptr:=nil
-		return nil
-	fi
-
-	offset:=getfileint(packexeptr,packexesize-int32.bytes*2)
-
-	packfilename:=cast(packexeptr+offset)
-	offset+:=strlen(packfilename)+1
-	packfilesize:=getfileint(packexeptr,offset)
-	packfileptr:=packexeptr+offset+int32.bytes
-
-	return packfileptr
 end
 
-global function pcm_allocx:ref void =
-	const n=32
-	ref word p
+proc do_writeexports(ichar expfile)=
+	[300]char str
 
-	allocbytes:=32
+	if not fwriteexports and passlevel<>dll_pass then
+		return
+	fi
 
-	if p:=ref word(freelist[2]) then		!Items of this block size available
-		freelist[2]:=ref wordp(int((freelist[2])^))
-
-	else
-
-!No items in freelists: allocate new space in this heap block
-		p:=cast(pcheapptr)				!Create item at start of remaining pool in heap block
-		pcheapptr+:=32			!Shrink remaining pool
-
-		if pcheapptr>=pcheapend then		!Overflows?
-			p:=pcm_newblock(32)		!Create new heap block, and allocate from start of that
-		fi
-
-		p^:=0
-		(p+1)^:=0
-		(p+2)^:=0
-		(p+3)^:=0
-
-		return p
+	writeexports(expfilename,moduletable[1].name)
+	if fwriteexports then
+		stop
 	fi
 end
 
-global function readline:ichar=
-	readln
-	return rd_buffer
-end
+proc do_runprog=
+	[300]char str
+	int i
 
-global function stralloc(ref void p)ichar=
-	return strint(int(ref byte(p)-allocbase))
-end
+	strcpy(&.str,outfile)
 
-global function findfunction(ichar name)ref void=
-	for i to $getnprocs() do
-		if eqstring($getprocname(i),name) then
-			return $getprocaddr(i)
+	for i to nextraparams do
+		strcat(&.str," ")
+		strcat(&.str,extraparams[i])
+		if extravalues[i] then
+			strcat(&.str,":")
+			strcat(&.str,extravalues[i])
 		fi
 	od
-	return nil
+
+	os_execwait(&.str)
 end
 
-=== msysp.m 10/45 ===
+proc dostarimports=
+!fixup up import*
+	ref modulerec pm
+	int m, star
+
+	for i to nmodules do
+		for k to nmodules when moduletable[i].importmap[k] and moduletable[i].importstar[k] do
+			pm:=&moduletable[k]
+			for j to nmodules when pm.importmap[j] do
+				moduletable[i].importmap[j]:=1
+			od
+			m:=moduletable[i].importmap[k]
+			star:=moduletable[i].importstar[k]
+		od
+	od
+
+end
+
+proc fixstlist(symbol d)=
+
+	while d, d:=d.nextdef do
+		fixst(d)
+	od
+
+end
+
+proc fixst(symbol d)=
+	unit p
+
+	d.fwdrefs:=nil					!shares with deflistx, no longer needed
+!
+	d.iscallback:=d.fflang=callbackff
+	if d.atvar then
+		p:=d.equivvar
+		if p.tag=j_addrof then p:=p.a fi
+		if p.tag<>j_name then serror("FIXST@") fi
+		p.def.isequivtarget:=1
+	fi
+
+	if ttbasetype[d.mode] in [tarray,trecord] or d.isequivtarget or d.atvar then
+		d.noreg:=1
+	fi
+
+	fixstlist(d.deflist)
+
+end
+
+function getoutfilename(ichar file,ext)ichar=
+	return pcm_copyheapstring(changeext(file,ext))
+end
+
+proc do_genpcl=
+	[256]char str
+
+	if passlevel<pcl_pass then return fi
+
+	if passlevel=pcl_pass then
+		codegen_pcl(rts:0)
+	ELSIF FDORTS=0 THEN
+		PRINTLN "----NO RTS"
+		codegen_pcl(rts:0)
+	else
+		codegen_pcl(rts:1)
+	fi
+
+	if (passlevel=pcl_pass and not fnofile) or (debugmode and fshowpcl) then
+		pcl_writepclfile(pclfilename)
+	fi
+
+	case passlevel
+	when clang_pass then 
+		loaderror("-Clang not ready")
+	when pcl_pass then
+
+		if fpclexe then			!invoke PC on resulting .pcl
+			fprint @str,f"\mxp\pc -exe -rts #",pclfilename
+			println "Running:",str
+			stop system(str)
+		fi
+		return
+	esac
+
+!assume x64 target here
+	pcl_setasmhandler(domcl_assem)
+
+	pcl_genmcl(foptim)
+	if (passlevel=asm_pass and not fnofile) or (debugmode and fshowasm) then
+		pcl_writeasmfile(asmfilename)
+	fi
+
+	case passlevel
+	when asm_pass then
+		if fasmexe then			!invoke PC on resulting .pcl
+			fprint @str,f"aa -exe #",asmfilename
+			println "Running:",str
+			stop system(str)
+		fi
+	when exe_pass then
+		pcl_writeexefile(exefilename,foptim)
+	when dll_pass then
+		pcl_writedllfile(dllfilename,foptim)
+	when run_pass then
+		loaderror("CAN'T DO RUNEXE")
+	esac
+end
+
+=== msysp.m 3/45 ===
 import clib
 import mlib
 
@@ -5721,7 +2667,1456 @@ global proc mclunimpl(ichar mess)=
 	printf("MCL-UNIMPL: %s\n",mess)
 	stop 1
 end
-=== mwindowsp.m 11/45 ===
+=== mclib.m 4/45 ===
+global type filehandle=ref void
+
+importlib $cstd=
+!	clang function malloc	(wordm)ref void
+	clang function malloc	(word64)ref void
+	clang function realloc	(ref void, wordm)ref void
+	clang proc     free		(ref void)
+	clang proc     memset	(ref void, int32, wordm)
+	clang proc     memcpy	(ref void, ref void, wordm)
+	clang function clock	:int32
+	clang function ftell	(filehandle)int32
+	clang function fseek	(filehandle, int32, int32)int32
+	clang function fread	(ref void, wordm, wordm, filehandle)wordm
+	clang function fwrite	(ref void, wordm, wordm, filehandle)wordm
+	clang function getc		(filehandle)int32
+	clang function ungetc	(int32, filehandle)int32
+	clang function fopen	(ichar,ichar="rb")filehandle
+	clang function fclose	(filehandle)int32
+	clang function fgets	(ichar, int, filehandle)ichar
+	clang function remove	(ichar)int32
+	clang function rename	(ichar, ichar)int32
+	clang function getchar	:int32
+	clang proc     putchar	(int32)
+	clang proc     setbuf	(filehandle, ref byte)
+
+	clang function strlen	(ichar)int
+	clang function strcpy	(ichar, ichar)ichar
+	clang function strcmp	(ichar, ichar)int32
+	clang function strncmp	(ichar, ichar, wordm)int32
+	clang function strncpy	(ichar, ichar, wordm)wordm
+	clang function memcmp	(ref void, ref void, wordm)int32
+	clang function strcat	(ichar, ichar)ichar
+	clang function tolower	(int32)int32
+	clang function toupper	(int32)int32
+	clang function isalpha	(int32)int32
+	clang function isupper	(int32)int32
+	clang function islower	(int32)int32
+	clang function isalnum	(int32)int32
+	clang function isspace	(int32)int32
+	clang function strstr	(ichar, ichar)ichar
+	clang function atol		(ichar)intm
+	clang function atoi		(ichar)int32
+	clang function strtod	(ichar,ref ref char)real64
+	clang function _strdup  (ichar)ichar
+
+	clang function puts		(ichar)int32
+	clang function puts99	(ichar)int32
+	clang function printf	(ichar, ...)int32
+
+	clang function sprintf	(ichar, ichar, ...)int32
+!	clang function __mingw_sprintf	(ichar, ...)int32
+
+	clang function sscanf	(ichar, ichar, ...)int32
+	clang function scanf	(ichar, ...)int32
+
+	clang function rand		:int32
+	clang proc     srand	(word32)
+	clang function system	(ichar)int32
+
+	clang function fgetc	(filehandle)int32
+	clang function fputc	(int32,  filehandle)int32
+	clang function fprintf	(filehandle, ichar, ...)int32
+	clang function fputs	(ichar,  filehandle)int32
+	clang function feof		(filehandle)int32
+	clang function getch	:int32
+	clang function _getch	:int32
+	clang function kbhit	:int32
+	clang function _mkdir	(ichar)int32
+	clang function mkdir	(ichar)int32
+	clang function dummy	(real)real
+	clang function strchr	(ichar,int32)ichar
+
+	clang proc     _exit	(int32)
+	clang proc     "exit"	(int32)
+!	clang proc     `exit	(int32)
+	clang function	pow		(real,real)real
+
+	clang function	`sin	(real)real
+	clang function	`cos	(real)real
+	clang function	`tan	(real)real
+	clang function	`asin	(real)real
+	clang function	`acos	(real)real
+	clang function	`atan	(real)real
+	clang function	`log	(real)real
+	clang function	`log10	(real)real
+	clang function	`exp	(real)real
+	clang function	`floor	(real)real
+	clang function	`ceil	(real)real
+
+	clang proc      qsort   (ref void, word64, word64, ref proc)
+
+end
+
+global macro strdup=_strdup
+
+importlib $cstdextra=
+	clang function __getmainargs(ref int32, ref void, ref void, int, ref void)int32
+end
+
+global const c_eof		=-1
+global const seek_set	= 0
+global const seek_curr	= 1
+global const seek_end	= 2
+=== mlibp.m 5/45 ===
+import msys
+import clib
+import oslib
+
+!const mem_check=1
+const mem_check=0
+
+global [0..300]u64 allocupper
+global int alloccode				!set by heapalloc
+global int allocbytes				!set by heapalloc
+global int fdebug=0
+global int rfsize
+
+const threshold=1<<25
+const alloc_step=1<<25
+word maxmemory
+int  maxalloccode
+
+GLOBAL REF VOID ALLOCBASE
+
+byte pcm_setup=0
+
+int show=0
+
+global int memtotal=0
+global int64 smallmemtotal=0
+global int smallmemobjs=0
+global int maxmemtotal=0
+
+!store all allocated pointers
+const int maxmemalloc=(mem_check|500000|2)
+[maxmemalloc+1]ref int32 memalloctable
+[maxmemalloc+1]int32 memallocsize
+
+const pcheapsize=1048576*2
+ref byte pcheapstart
+ref byte pcheapend			!points to first address past heap
+ref byte pcheapptr
+
+const int maxblockindex = 8 		!2048
+global const int maxblocksize = 2048
+
+[0:maxblocksize+1]byte sizeindextable	!convert byte size to block index 1..maxblockindex
+
+const int size16   = 1			!the various index codes
+const int size32   = 2
+const int size64   = 3
+const int size128  = 4
+const int size256  = 5
+const int size512  = 6
+const int size1024 = 7
+const int size2048 = 8
+
+GLOBAL [0:9]ref wordp freelist
+
+global record strbuffer =
+	ichar strptr
+	int32 length
+	int32 allocated
+end
+
+global tabledata() [0:]ichar pmnames=
+	(pm_end=0,		$),
+	(pm_option,		$),
+	(pm_sourcefile,	$),
+	(pm_libfile,	$),
+	(pm_colon,		$),
+	(pm_extra,		$),
+end
+
+![2]word seed = (0x2989'8811'1111'1272',0x1673'2673'7335'8264)
+[2]int seed = (0x2989'8811'1111'1272',0x1673'2673'7335'8264)
+
+global function pcm_alloc(int n)ref void =		!PCM_ALLOC
+	ref byte p
+
+	if not pcm_setup then
+		pcm_init()
+	fi
+
+	if n>maxblocksize then			!large block allocation
+
+		alloccode:=pcm_getac(n)
+		allocbytes:=allocupper[alloccode]
+
+		p:=allocmem(allocbytes)
+		if not p then
+			abortprogram("pcm_alloc failure")
+		fi
+
+		if mem_check then addtomemalloc(ref int32(p),allocbytes) fi
+
+		return p
+	fi
+
+	alloccode:=sizeindextable[n]		!Size code := 0,1,2 etc for 0, 16, 32 etc
+	allocbytes:=allocupper[alloccode]
+	smallmemtotal+:=allocbytes
+
+	if p:=ref byte(freelist[alloccode]) then		!Items of this block size available
+	if mem_check then addtomemalloc(ref int32(p),allocbytes) fi
+		freelist[alloccode]:=ref wordp(int((freelist[alloccode])^))
+
+		return p
+	fi
+
+!No items in freelists: allocate new space in this heap block
+	p:=pcheapptr				!Create item at start of remaining pool in heap block
+	pcheapptr+:=allocbytes			!Shrink remaining pool
+
+	if pcheapptr>=pcheapend then		!Overflows?
+		p:=pcm_newblock(allocbytes)		!Create new heap block, and allocate from start of that
+		return p
+	fi
+	if mem_check then addtomemalloc(ref int32(p),allocbytes) fi
+
+	return p
+end
+
+global proc pcm_free(ref void p,int n) =		!PCM_FREE
+!n can be the actual size requested it does not need to be the allocated size
+	int acode
+
+	if n=0 then return fi
+
+	if n>maxblocksize then		!large block
+		if mem_check then removefrommemalloc(p,n) fi
+
+		free(p)
+		return
+	fi
+
+	if p then
+		acode:=sizeindextable[n]		!Size code := 0,1,2 etc for 0, 16, 32 etc
+
+		smallmemtotal-:=allocupper[acode]
+
+		if mem_check then removefrommemalloc(p,allocupper[acode]) fi
+
+		cast(p,ref wordp)^:=wordp(int(freelist[acode]))
+		freelist[acode]:=p
+	fi
+end
+
+global proc pcm_freeac(ref void p,int alloc) =		!PCM_FREEAC
+	pcm_free(p,allocupper[alloc])
+end
+
+global proc pcm_copymem4(ref void p,q,int n) =	!PCM_COPYMEM4
+!copy n bytes of memory from q to p.
+!the memory spaces used are multiples of 16 bytes, but n itself could be anything
+!n can be zero, and need not be a multiple of 4 bytes
+
+	memcpy(p,q,n)
+end
+
+global proc pcm_clearmem(ref void p,int n) =		!PCM_CLEARMEM
+	memset(p,0,n)
+end
+
+global proc pcm_init =		!PCM_INIT
+!set up sizeindextable too
+	int j,k,k1,k2
+	int64 size
+	const limit=1<<33
+
+	alloccode:=0
+	if pcm_setup then
+		return
+	fi
+
+	pcm_newblock(0)
+
+!	ALLOCBASE:=PCHEAPPTR
+
+	for i to maxblocksize do	!table converts eg. 78 to 4 (4th of 16,32,64,128)
+		j:=1
+		k:=16
+		while i>k do
+			k:=k<<1
+			++j
+		od
+		sizeindextable[i]:=j
+	od
+
+	allocupper[1]:=16
+	size:=16
+
+	for i:=2 to 27 do
+		size*:=2
+		allocupper[i]:=size
+		if size>=threshold then
+				k:=i
+			exit
+		fi
+	od
+
+	for i:=k+1 to allocupper.upb do
+		size+:=alloc_step
+		if size<limit then
+			allocupper[i]:=size
+			maxmemory:=size
+		else
+			maxalloccode:=i-1
+			exit
+		fi
+		
+	od
+	pcm_setup:=1
+end
+
+global function pcm_getac(int size)int =		!PCM_GETAC
+! convert linear blocksize from 0..approx 2GB to 8-bit allocation code
+
+!sizeindextable scales values from 0 to 2048 to allocation code 0 to 9
+
+	if size<=maxblocksize then
+		return sizeindextable[size]		!size 0 to 2KB
+	fi
+
+	size:=(size+255)>>8					!scale by 256
+
+!now same sizetable can be used for 2KB to 512KB (288 to 2KB)
+
+	if size<=maxblocksize then
+		return sizeindextable[size]+8
+	fi
+
+!sizetable now used for 512KB to 128MB (to 2KB)
+	size:=(size+63)>>6					!scale by 256
+
+	if size<=maxblocksize then
+		return sizeindextable[size]+14
+	fi
+
+!size>2048, which means it had been over 128MB.
+	size:=(size-2048+2047)/2048+22
+	return size
+end
+
+global function pcm_newblock(int itemsize)ref void=
+!create new heap block (can be first)
+!also optionally allocate small item at start
+!return pointer to this item (and to the heap block)
+	static int totalheapsize
+	ref byte p
+
+	totalheapsize+:=pcheapsize
+	alloccode:=0
+	p:=allocmem(pcheapsize)	!can't free this block until appl terminates
+	if p=nil then
+		abortprogram("Can't alloc pc heap")
+	fi
+
+	pcheapptr:=p
+	pcheapend:=p+pcheapsize
+
+	if pcheapstart=nil then		!this is first block
+		pcheapstart:=p
+	fi
+	pcheapptr+:=itemsize
+	return ref u32(p)
+end
+
+global function pcm_round(int n)int =		!PCM_ROUND
+!for any size n, return actual number of bytes that would be allocated
+	static [0:maxblockindex+1]int32 allocbytes=(0,16,32,64,128,256,512,1024,2048)
+
+	if n>maxblocksize then
+		return n
+	else
+		return allocbytes[sizeindextable[n]]
+	fi
+end
+
+global function pcm_array(int n)int =		!PCM_ARRAY
+!n bytes are needed for an array return the number of bytes to be actually allocated
+	int m
+
+	if n<=maxblocksize then	!automatic rounding up used for small heap
+		return pcm_round(n)
+	else				!devise some strategy probably doubling up.
+		m:=2048
+		while n>m do
+			m<<:=1
+		od
+		return m
+	fi
+
+end
+
+global proc pcm_printfreelist(int size,ref wordp p) =		!PCM_PRINTFREELIST
+	println "Size: ",size
+	while p do
+		print " ",,p:"h"
+		p:=ref wordp(int(p^))
+	od
+	puts("")
+end
+
+global proc pcm_diags(ref char caption) =		!PCM_DIAGS
+	int m
+
+	println "HEAP FREELISTS:",caption
+
+	m:=16
+	for i:=1 to 8 do
+		pcm_printfreelist(m,freelist[i])
+		m<<:=1
+	od
+end
+
+global function pcm_allocz(int n)ref void =		!PCM_ALLOCZ
+	ref void p
+	p:=pcm_alloc(n)
+
+	memset(p,0,n)
+	return p
+end
+
+global function pcm_copyheapstring(ref char s)ref char =
+!allocate enough bytes for string s: copy s to the heap
+!return pointer to new string
+	ref char q
+	int n
+	if s=nil then return nil fi
+
+	n:=strlen(s)+1
+	q:=pcm_alloc(n)
+	memcpy(q,s,n)
+	return q
+end
+
+global function pcm_copyheapstringn(ref char s,int n)ref char =
+	ref char q
+	if s=nil then return nil fi
+
+	q:=pcm_alloc(n+1)
+	memcpy(q,s,n)
+	(q+n)^:=0
+	return q
+end
+
+global function pcm_copyheapblock(ref char s, int length)ref char =
+!allocate enough bytes for string s: copy s to the heap
+!return pointer to new string
+	ref char q
+	if length=0 then return nil fi
+
+	q:=pcm_alloc(length)
+	memcpy(q,s,length)
+	return q
+end
+
+proc addtomemalloc(ref int32 ptr,int size)=
+!add ptr to allocated table
+
+!CPL "***************ADD TO ALLOC:",ptr,size
+	for i to maxmemalloc do
+		if memalloctable[i]=ptr then
+			CPL "ALLOC ERROR:",ptr,"ALREADY ALLOCATED\n\n\n"
+			stop 2
+		fi
+
+		if memalloctable[i]=nil then		!unused entry
+			memalloctable[i]:=ptr
+			memallocsize[i]:=size
+			return
+		fi
+	od
+	CPL "MEMALLOCTABLE FULL\n\n\n\n"; os_getch()
+	stop 3
+end
+
+proc removefrommemalloc(ref int32 ptr,int size)=
+!remove ptr to allocated table
+
+!CPL "------------------************REMOVE FROM ALLOC:",ptr,size
+
+	for i to maxmemalloc do
+		if memalloctable[i]=ptr then
+			if memallocsize[i]<>size then
+				CPL "REMOVE:FOUND",ptr,"IN MEMALLOCTABLE, FREESIZE=",size,", BUT STORED AS BLOCK SIZE:",memallocsize[i]
+				abortprogram("MEMSIZE")
+			fi
+			memalloctable[i]:=nil
+			return
+		fi
+	od
+	CPL "CAN'T FIND",ptr,"IN MEMALLOCTABLE",size
+	abortprogram("MEM")
+	stop 4
+end
+
+global function allocmem(int n)ref void =		!ALLOCMEM
+	ref void p
+
+	p:=malloc(n)
+	if p then
+		return p
+	fi
+	println n,memtotal
+	abortprogram("Alloc mem failure")
+	return nil
+end
+
+global function reallocmem(ref void p,int n)ref void =		!REALLOCMEM
+	p:=realloc(p,n)
+	return p when p
+	println n
+	abortprogram("Realloc mem failure")
+	return nil
+end
+
+global proc abortprogram(ref char s) =		!ABORTPROGRAM
+	println s
+	print   "ABORTING: Press key..."
+!os_getch()
+	stop 5
+end
+
+global function getfilesize(filehandle handlex)int=		!GETFILESIZE
+	word32 p,size
+
+	p:=ftell(handlex)		!current position
+	fseek(handlex,0,2)		!get to eof
+	size:=ftell(handlex)		!size in bytes
+	fseek(handlex,p,seek_set)	!restore position
+	return size
+end
+
+global proc readrandom(filehandle handlex, ref byte mem, int offset, size) =		!READRANDOM
+	int a
+	fseek(handlex,offset,seek_set)
+	a:=fread(mem,1,size,handlex)			!assign so as to remove gcc warning
+end
+
+global function writerandom(filehandle handlex, ref byte mem, int offset,size)int =		!WRITERANDOM
+	fseek(handlex,offset,seek_set)
+	return fwrite(mem,1,size,handlex)
+end
+
+global function setfilepos(filehandle file,int offset)int=
+	return fseek(file,offset,0)
+end
+
+global function getfilepos(filehandle file)int=
+	return ftell(file)
+end
+
+global function readfile(ref char filename)ref byte =		!READFILE
+	filehandle f
+	int size
+	ref byte m,p
+
+	f:=fopen(filename,"rb")
+	if f=nil then
+		return nil
+	fi
+	rfsize:=size:=getfilesize(f)
+
+	m:=malloc(size+4)		!allow space for etx/zeof etc
+
+	if m=nil then
+		return nil
+	fi
+
+	readrandom(f,m,0,size)
+	p:=m+size			!point to following byte
+	p^:=0
+	(p+1)^:=26
+	(p+2)^:=0			!allow use as string
+
+	fclose(f)
+	return m
+end
+
+global function writefile(ref char filename,ref byte data,int size)int =
+	filehandle f
+	int n
+
+	f:=fopen(filename,"wb")
+	if f=nil then
+		return 0
+	fi
+
+	n:=writerandom(f,data,0,size)
+	fclose(f)
+	return n
+end
+
+global function checkfile(ref char file)int=		!CHECKFILE
+	filehandle f
+	if f:=fopen(file,"rb") then
+		fclose(f)
+		return 1
+	fi
+	return 0
+end
+
+global proc readlinen(filehandle handlex,ref char buffer,int size) =		!READLINEN
+!size>2
+	int ch
+	ref char p
+	int n
+	[0:100]char buff
+	byte crseen
+
+	if handlex=nil then
+		handlex:=filehandle(os_getstdin())
+	fi
+	if handlex=nil then
+		n:=0
+		p:=buffer
+		do
+			ch:=getchar()
+			if ch=13 or ch=10 or ch=-1 then
+				p^:=0
+				return
+			fi
+			p++^:=ch
+			++n
+			if n>=(size-2) then
+				p^:=0
+				return
+			fi
+		od
+	fi
+
+	buffer^:=0
+	if fgets(buffer,size-2,handlex)=nil then
+		return
+	fi
+
+	n:=strlen(buffer)
+	if n=0 then
+		return
+	fi
+
+	p:=buffer+n-1		!point to last char
+	crseen:=0
+	while (p>=buffer and (p^=13 or p^=10)) do
+		if p^=13 or p^=10 then crseen:=1 fi
+		p--^ :=0
+	od
+
+!NOTE: this check doesn't work when a line simply doesn't end with cr-lf
+
+	if not crseen and (n+4>size) then
+		cpl size,n
+		abortprogram("line too long")
+	fi
+end
+
+global proc iconvlcn(ref char s,int n) =		!ICONVLCN
+	to n do
+		s^:=tolower(s^)
+		++s
+	od
+end
+
+global proc iconvucn(ref char s,int n) =		!ICONVUCN
+	to n do
+		s^:=toupper(s^)
+		++s
+	od
+end
+
+global function convlcstring(ref char s)ichar s0=
+	s0:=s
+	while (s^) do
+		s^:=tolower(s^)
+		++s
+	od
+	s0
+end
+
+global function convucstring(ref char s)ichar s0=
+	s0:=s
+	while (s^) do
+		s^:=toupper(s^)
+		++s
+	od
+	s0
+end
+
+global function changeext(ref char s,newext)ichar=		!CHANGEEXT
+!whether filespec has an extension or not, change it to newext
+!newext should start with "."
+!return new string (locally stored static string, so must be used before calling again)
+	static [260]char newfile
+	[32]char newext2
+	ref char sext
+	int n
+
+	strcpy(&newfile[1],s)
+
+	case newext^
+	when 0 then
+		newext2[1]:=0
+		newext2[2]:=0
+	when '.' then
+		strcpy(&newext2[1],newext)
+	else
+		strcpy(&newext2[1],".")
+		strcat(&newext2[1],newext)
+	esac
+
+
+	sext:=extractext(s,1)			!include "." when it is only extension
+
+	case sext^
+	when 0 then						!no extension not even "."
+		strcat(&newfile[1],&newext2[1])
+	when '.' then						!no extension not even "."
+		strcat(&newfile[1],&newext2[2])
+	else							!has extension
+		n:=sext-s-2			!n is number of chars before the "."
+		strcpy(&newfile[1]+n+1,&newext2[1])
+	esac
+
+	return &newfile[1]
+end
+
+global function extractext(ref char s,int period=0)ichar=		!EXTRACTEXT
+!if filespec s has an extension, then return pointer to it otherwise return ""
+!if s ends with ".", then returns "."
+	ref char t,u
+
+	t:=extractfile(s)
+
+	if t^=0 then			!s contains no filename
+		return ""
+	fi
+
+!t contains filename+ext
+	u:=t+strlen(t)-1		!u points to last char of t
+
+	while u>=t do
+		if u^='.' then		!start extension found
+			if (u+1)^=0 then		!null extension
+				return (period|"."|"")
+			fi
+			return u+1			!return last part of filename as extension exclude the dot
+		fi
+		--u
+	od
+	return ""			!no extension seen
+end
+
+global function extractpath(ref char s)ichar=		!EXTRACTPATH
+	static [0:260]char str
+	ref char t
+	int n
+
+	t:=s+strlen(s)-1		!t points to last char
+
+	while (t>=s) do
+		switch t^
+		when '\\','/',':' then		!path separator or drive letter terminator assume no extension
+			n:=t-s+1			!n is number of chars in path, which includes rightmost / or \ or :
+			memcpy(&.str,s,n)
+			str[n]:=0
+			return &.str
+		endswitch
+		--t
+	od
+	return ""			!no path found
+end
+
+global function extractfile(ref char s)ichar=		!EXTRACTFILE
+	ref char t
+
+	t:=extractpath(s)
+
+	if t^=0 then			!s contains no path
+		return s
+	fi
+
+	return s+strlen(t)		!point to last part of s that contains the file
+	end
+
+	global function extractbasefile(ref char s)ichar=		!EXTRACTBASEFILE
+	static [0:100]char str
+	ref char f,e
+	int n,flen
+
+	f:=extractfile(s)
+	flen:=strlen(f)
+	if flen=0 then		!s contains no path
+		return ""
+	fi
+	e:=extractext(f,0)
+
+	if e^ then			!not null extension
+		n:=flen-strlen(e)-1
+		memcpy(&str,f,n)
+		str[n]:=0
+		return &.str
+	fi
+	if (f+flen-1)^='.' then
+		memcpy(&str,f,flen-1)
+		str[flen-1]:=0
+		return &.str
+	fi
+	return f
+end
+
+global function addext(ref char s,ref char newext)ichar=		!ADDEXT
+!when filespec has no extension of its own, add newext
+	ref char sext
+
+	sext:=extractext(s,1)
+
+	if sext^=0 then						!no extension not even "."
+		return changeext(s,newext)
+	fi
+
+	return s							!has own extension; use that
+end
+
+global function alloctable(int n, size)ref void =		!ALLOCTABLE
+!Allocate table space for n elements, each of size <size>
+!Allows for 1-based indexing, so allocates (n+1) elements
+	ref void p
+
+	p:=malloc((n+1)*size)
+
+	if not p then
+		abortprogram("Alloctable failure")
+	fi
+	return p
+end
+
+global function zalloctable(int n, size)ref void =		!ALLOCTABLE
+!Allocate table space for n elements, each of size <size>
+!Allows for 1-based indexing, so allocates (n+1) elements
+	ref int p
+
+	p:=alloctable(n,size)
+
+	pcm_clearmem(p,(n+1)*size)
+	return p
+	end
+
+global proc checkfreelists(ichar s)=
+	ref wordp p,q
+	int64 aa
+
+	for i:=2 to 2 do
+		p:=freelist[i]
+
+		while p do
+			aa:=int64(p)
+			if aa>0xffff'FFFF or aa<100 then
+				CPL s,"FREE LIST ERROR",i,p,q
+!			os_getch(); stop 1
+			fi
+			q:=p
+			p:=ref wordp(int(p^))
+		od
+
+	od
+end
+
+global function pcm_alloc32:ref void =		!PCM_ALLOC
+	ref byte p
+	allocbytes:=32
+	smallmemtotal+:=32
+
+	if p:=ref byte(freelist[2]) then		!Items of this block size available
+		freelist[2]:=ref wordp(int((freelist[2])^))
+		return p
+	fi
+
+!No items in freelists: allocate new space in this heap block
+	return pcm_alloc(32)
+end
+
+global proc pcm_free32(ref void p) =
+!n can be the actual size requested it does not need to be the allocated size
+
+	smallmemtotal-:=32
+	if mem_check then removefrommemalloc(p,32) fi
+
+	cast(p,ref wordp)^:=wordp(int(freelist[2]))
+	freelist[2]:=p
+end
+
+global proc outbyte(filehandle f,int x)=
+	fwrite(&x,1,1,f)
+end
+
+global proc outword16(filehandle f,word x)=
+	fwrite(&x,2,1,f)
+end
+
+global proc outword(filehandle f,word x)=
+	fwrite(&x,4,1,f)
+end
+
+global proc outword64(filehandle f,word64 x)=
+	fwrite(&x,8,1,f)
+end
+
+global function myeof(filehandle f)int=
+	int c
+
+	c:=fgetc(f)
+	if c=c_eof then return 1 fi
+	ungetc(c,f)
+	return 0;
+end
+
+global function pcm_smallallocz(int n)ref void =
+	ref byte p
+
+	allocbytes:=allocupper[alloccode:=sizeindextable[n]]
+
+!No items in freelists: allocate new space in this heap block
+	p:=pcheapptr				!Create item at start of remaining pool in heap block
+	pcheapptr+:=allocbytes			!Shrink remaining pool
+
+	if pcheapptr>=pcheapend then		!Overflows?
+		p:=pcm_newblock(allocbytes)		!Create new heap block, and allocate from start of that
+		memset(p,0,n)
+		return p
+	fi
+
+	memset(p,0,n)
+
+	return p
+end
+
+global function pcm_smallalloc(int n)ref void =
+	ref byte p
+
+	allocbytes:=allocupper[alloccode:=sizeindextable[n]]
+
+!No items in freelists: allocate new space in this heap block
+	p:=pcheapptr				!Create item at start of remaining pool in heap block
+	pcheapptr+:=allocbytes			!Shrink remaining pool
+
+	if pcheapptr>=pcheapend then		!Overflows?
+		p:=pcm_newblock(allocbytes)		!Create new heap block, and allocate from start of that
+		return p
+	fi
+
+	return p
+end
+
+global proc strbuffer_add(ref strbuffer dest, ichar s, int n=-1)=
+	int newlen,oldlen
+	ichar newptr
+
+	IF N=0 THEN CPL "N=0" FI
+
+	if n=-1 then
+		n:=strlen(s)
+	fi
+
+	oldlen:=dest^.length
+
+	if oldlen=0 then				!first string
+		dest^.strptr:=pcm_alloc(n+1)
+		dest^.allocated:=allocbytes
+		dest^.length:=n				!length always excludes terminator
+		memcpy(dest^.strptr,s,n)
+		(dest^.strptr+n)^:=0
+		return
+	fi
+
+	newlen:=oldlen+n
+	if newlen+1>dest^.allocated then
+		newptr:=pcm_alloc(newlen+1)
+		memcpy(newptr,dest^.strptr,oldlen)
+		dest^.strptr:=newptr
+		dest^.allocated:=allocbytes
+	fi
+
+	memcpy(dest^.strptr+oldlen,s,n)
+	(dest^.strptr+newlen)^:=0
+
+	dest^.length:=newlen
+end
+
+global proc gs_init(ref strbuffer dest)=			!INITGENSTR
+	pcm_clearmem(dest,strbuffer.bytes)
+end
+
+global proc gs_free(ref strbuffer dest)=
+	if dest^.allocated then
+		pcm_free(dest^.strptr,dest^.allocated)
+	fi
+end
+
+global proc gs_str(ref strbuffer dest,ichar s)=			!GENSTR
+	strbuffer_add(dest,s)
+end
+
+global proc gs_char(ref strbuffer dest,int c)=
+	[16]char s
+
+	s[1]:=c
+	s[2]:=0
+
+	strbuffer_add(dest,&.s,1)
+end
+
+global proc gs_strn(ref strbuffer dest,ichar s,int length)=
+	strbuffer_add(dest,s,length)
+end
+
+global proc gs_strvar(ref strbuffer dest,s)=			!GENSTR
+	strbuffer_add(dest,s^.strptr)
+end
+
+global proc gs_strint(ref strbuffer dest,int64 a)=
+	strbuffer_add(dest,strint(a))
+end
+
+global proc gs_strln(ref strbuffer dest,ichar s)=		!GENSTRLN
+	gs_str(dest,s)
+	gs_line(dest)
+end
+
+global proc gs_strsp(ref strbuffer dest,ichar s)=
+	gs_str(dest,s)
+	gs_str(dest," ")
+end
+
+global proc gs_line(ref strbuffer dest)=
+	strbuffer_add(dest,"\w")
+end
+
+global function gs_getcol(ref strbuffer dest)int=
+	return dest^.length
+end
+
+global proc gs_leftstr(ref strbuffer dest, ichar s, int w, padch=' ')=
+	int col,i,n,slen
+	[2560]char str
+	col:=dest^.length
+	strcpy(&.str,s)
+	slen:=strlen(s)
+	n:=w-slen
+	if n>0 then
+		for i:=1 to n do
+			str[slen+i]:=padch
+		od
+		str[slen+n+1]:=0
+	fi
+	gs_str(dest,&.str)
+end
+
+global proc gs_leftint(ref strbuffer dest, int a, int w, padch=' ')=
+	gs_leftstr(dest,strint(a),w,padch)
+end
+
+global proc gs_padto(ref strbuffer dest,int col, ch=' ')=
+	int n
+	[2560]char str
+
+	n:=col-dest^.length
+	if n<=0 then return fi
+	for i:=1 to n do
+		str[i]:=ch
+	od
+	str[n+1]:=0
+	gs_str(dest,&.str)
+end
+
+global proc gs_println(ref strbuffer dest,filehandle f=nil)=
+	(dest.strptr+dest.length)^:=0
+
+	if f=nil then
+		println dest.strptr,,"\c"
+	else
+		println @f,dest.strptr,,"\c"
+	fi
+end
+
+global function nextcmdparam(int &paramno, ichar &name, &value, ichar defext=nil)int=
+	static int infile=0
+	static ichar filestart=nil
+	static ichar fileptr=nil
+	static byte colonseen=0
+	ref char q
+	ichar item,fileext
+	ichar rest
+	int length
+	static [300]char str
+
+	reenter::
+	value:=nil
+	name:=nil
+
+	if infile then
+		if readnextfileitem(fileptr,item)=0 then		!eof
+			free(filestart)								!file allocated via malloc
+			infile:=0
+			goto reenter
+		fi
+	else
+		if paramno>nsysparams then
+			return pm_end
+		fi
+		item:=sysparams[paramno]
+		++paramno
+
+		length:=strlen(item)
+
+		if item^='@' then		!@ file
+			filestart:=fileptr:=cast(readfile(item+1))
+			if filestart=nil then
+				println "Can't open",item
+				stop 7
+			fi
+			infile:=1
+			goto reenter
+		fi
+
+		if item^=':' then
+			colonseen:=1
+			return pm_colon
+		fi
+	fi
+
+	value:=nil
+	if item^='-' then
+		name:=item+(colonseen|0|1)
+		q:=strchr(item,':')
+		if not q then
+			q:=strchr(item,'=')
+		fi
+		if q then
+			value:=q+1
+			q^:=0
+		fi
+		return (colonseen|pm_extra|pm_option)
+	fi
+
+	fileext:=extractext(item,0)
+	name:=item
+
+	if fileext^=0 then							!no extension
+		strcpy(&.str,name)
+		if defext and not colonseen then
+			name:=addext(&.str,defext)				!try .c
+		fi
+	elsif eqstring(fileext,"dll") then
+		return (colonseen|pm_extra|pm_libfile)
+	fi
+	return (colonseen|pm_extra|pm_sourcefile)
+end
+
+function readnextfileitem(ichar &fileptr,&item)int=
+	ref char p,pstart,pend
+	int n
+	static [256]char str
+
+	p:=fileptr
+
+	reenter::
+	do
+		case p^
+		when ' ','\t',13,10 then	!skip white space
+			++p
+		when 26,0 then				!eof
+			return 0
+		else
+			exit
+		esac
+	od
+
+	case p^
+	when '!', '#' then			!comment
+		++p
+		docase p++^
+		when 10 then
+			goto reenter
+		when 26,0 then
+			fileptr:=p-1
+			return 0
+		else
+
+		enddocase
+	esac
+
+
+	case p^
+	when '"' then				!read until closing "
+		pstart:=++p
+		do
+			case p^
+			when 0,26 then
+				println "Unexpected EOF in @file"
+				stop 8
+			when '"' then
+				pend:=p++
+				if p^=',' then ++p fi
+				exit
+			esac
+			++p
+		od
+	else
+		pstart:=p
+		do
+			case p^
+			when 0,26 then
+				pend:=p
+				exit
+			when ' ','\t',',',13,10 then
+				pend:=p++
+				exit
+			esac
+			++p
+		od
+	esac
+
+	n:=pend-pstart
+	if n>=str.len then
+		println "@file item too long"
+		stop 9
+	fi
+	memcpy(&.str,pstart,n)
+	str[n+1]:=0
+	item:=&.str
+	fileptr:=p
+
+	return 1
+end
+
+global proc ipadstr(ref char s,int width,ref char padchar=" ")=
+	int n
+
+	n:=strlen(s)
+	to width-n do
+		strcat(s,padchar)
+	od
+end
+
+global function padstr(ref char s,int width,ref char padchar=" ")ichar=
+	static [256]char str
+
+	strcpy(&.str,s)
+	ipadstr(&.str,width,padchar)
+	return &.str
+end
+
+global function chr(int c)ichar=
+	static [8]char str
+
+	str[1]:=c
+	str[2]:=0
+	return &.str
+end
+
+global function cmpstring(ichar s,t)int=
+	int res
+	if (res:=strcmp(s,t))<0 then
+		return -1
+	elsif res>0 then
+		return 1
+	else
+		return 0
+	fi
+end
+
+global function cmpstringn(ichar s,t,int n)int=
+	int res
+	if (res:=strncmp(s,t,n))<0 then
+		return -1
+	elsif res>0 then
+		return 1
+	else
+		return 0
+	fi
+end
+
+global function eqstring(ichar s,t)int=
+	return strcmp(s,t)=0
+end
+
+global function cmpbytes(ref void p,q,int n)int=
+	int res
+	if (res:=memcmp(p,q,n))<0 then
+		return -1
+	elsif res>0 then
+		return 1
+	else
+		return 0
+	fi
+end
+
+global function eqbytes(ref void p,q,int n)int=
+	return memcmp(p,q,n)=0
+end
+
+global proc mseed(word64 a,b=0)=
+	seed[1]:=a
+	if b then
+		seed[2]:=b
+	else
+		seed[2] ixor:=a
+	fi
+end
+
+global function mrandom:word =
+!return pure 64-bit word value, 0 to 2**64-1
+!(cast result for signed value)
+!	word64 x,y
+	int x,y
+	x:=seed[1]
+	y:=seed[2]
+	seed[1]:=y
+	x ixor:=(x<<23)
+	seed[2]:= x ixor y ixor (x>>17) ixor (y>>26)
+	return seed[2]+y
+end
+
+global function mrandomp:int =
+!pure 64-bit int value, positive only, 0 to 2**63-1
+	return mrandom() iand 0x7FFF'FFFF'FFFF'FFFF
+end
+
+global function mrandomint(int n)int=
+!positive random int value from 0 to n-1
+	return mrandomp() rem n
+end
+
+global function mrandomrange(int a,b)int=
+!random int value from a to b inclusive
+!span extent must be 1 to 2**63-1
+	int span
+	span:=b-a+1
+	if span<=0 then
+		return 0
+	fi
+	return (mrandomp() rem span)+a
+end
+
+global function mrandomreal:real x=
+!positive random real value from 0 to just under (but not including) 1.0
+	repeat x:=mrandomp()/9223372036854775808.0 until x<>1.0
+	return x
+end
+
+global function mrandomreal1:real=
+!positive random real value from 0 to 1.0 inclusive
+	return mrandomp()/9223372036854775807
+end
+
+global function checkpackfile:ref byte=
+!find out if this executable contains extra packed files
+!return 1 or 0
+
+	int a,offset,i,size
+	[100]char name
+	[300]char exefile
+	ref byte packexeptr			!for embedded pack files, contains pointer to in-memory version of this .exe file plus extras; else nil
+	int packexesize				!byte size
+	ref char packfilename
+	int packfilesize
+	ref byte packfileptr
+
+!macro getfileint(data,offset)=(ref int32(data+offset))^
+	macro getfileint(data,offset)=cast(data+offset,ref int32)^
+
+	strcpy(&exefile[1],os_gethostname())
+	println "Attempting to open",&exefile
+	packexeptr:=readfile(&exefile[1])
+
+	if not packexeptr then
+		cpl "Can't open",&exefile,&packexeptr
+		stop
+	fi
+
+	packexesize:=rfsize
+	cpl "File read OK. Size",packexesize
+
+	a:=getfileint(packexeptr,packexesize-int32.bytes)
+	if a<>'PCAK' then
+		free(packexeptr)
+		packfileptr:=nil
+		return nil
+	fi
+
+	offset:=getfileint(packexeptr,packexesize-int32.bytes*2)
+
+	packfilename:=cast(packexeptr+offset)
+	offset+:=strlen(packfilename)+1
+	packfilesize:=getfileint(packexeptr,offset)
+	packfileptr:=packexeptr+offset+int32.bytes
+
+	return packfileptr
+end
+
+global function pcm_allocx:ref void =
+	const n=32
+	ref word p
+
+	allocbytes:=32
+
+	if p:=ref word(freelist[2]) then		!Items of this block size available
+		freelist[2]:=ref wordp(int((freelist[2])^))
+
+	else
+
+!No items in freelists: allocate new space in this heap block
+		p:=cast(pcheapptr)				!Create item at start of remaining pool in heap block
+		pcheapptr+:=32			!Shrink remaining pool
+
+		if pcheapptr>=pcheapend then		!Overflows?
+			p:=pcm_newblock(32)		!Create new heap block, and allocate from start of that
+		fi
+
+		p^:=0
+		(p+1)^:=0
+		(p+2)^:=0
+		(p+3)^:=0
+
+		return p
+	fi
+end
+
+global function readline:ichar=
+	readln
+	return rd_buffer
+end
+
+global function stralloc(ref void p)ichar=
+	return strint(int(ref byte(p)-allocbase))
+end
+
+global function findfunction(ichar name)ref void=
+	for i to $getnprocs() do
+		if eqstring($getprocname(i),name) then
+			return $getprocaddr(i)
+		fi
+	od
+	return nil
+end
+
+=== mwindowsp.m 6/45 ===
 import clib
 import mlib
 
@@ -6309,2493 +4704,7 @@ global proc os_peek=
 		PeekMessageA(&m,nil,0,0,0)
 	fi
 end
-=== pc_lex.m 12/45 ===
-!Tokeniser Module
-
-import clib
-import mlib
-
-import* pci_core
-import* pci_read
-
-global tabledata() []ichar symbolnames=
-	(errorsym,			$),		! Lex error
-	(commasym,			$),		! ","
-	(colonsym,			$),		! ":"
-	(dcolonsym,			$),		! "::"
-	(lsqsym,			$),		! [
-	(rsqsym,			$),		! ]
-
-	(addsym,			$),		! +
-	(subsym,			$),		! -
-	(mulsym,			$),		! *
-	(addrsym,			$),		! &
-
-	(eqsym,				$),		! =
-
-	(eolsym,			$),		! End of line
-	(eofsym,			$),		! Eof seen
-
-!	(hashsym,			$),		! #
-	(labelsym,			$),		! #123
-
-	(intconstsym,		$),		! 123 64 bits signed
-	(realconstsym,		$),		! 123.4 64 bits
-	(stringconstsym,	$),		! "ABC"
-	(int128constsym,	$),		! 123 128 bits unsigned
-
-	(namesym,			$),		! raw name
-
-	(kopcodesym,		$),		! push etc
-	(typesym,			$),		! i32 etc
-
-	(kdummysym,			$)		!
-end
-
-macro testmode=0
-
-const etx = 26
-const cr  = 13
-const lf  = 10
-
-global const hstsize=65536*4
-global const hstmask=hstsize-1
-
-global [0:hstsize]psymbol lexhashtable
-int nsymbols
-
-!the following returned by updated by lexreadtoken()
-
-global int lxfileno=0	!*@ current source file number
-global int lxlineno=0	!*@ current source line number
-
-global int nsourcefiles=0	!no. of linear file names
-
-global int lxsymbol		!* main symbol kind
-global int lxsubcode	!* for some symbols, which specific keyword
-
-global int64 lxvalue
-global word128 lxuvalue128
-global real64 lxxvalue
-global ichar lxsvalue
-global int lxlength
-global byte lxtruename
-int lxhashvalue
-
-global ref byte lxsptr		!@ points to next char in source
-ref byte lxstart			!@ start of source code for this file
-global psymbol lxsymptr	!set by lookuplex()
-
-![0..255]char alphamap
-![0..255]char digitmap
-[0..255]char commentmap
-
-global proc lex=
-!lowest level lex() function, reads names, numbers etc but does no lookups or translations
-!returns results in lx-vars. Current source pointer should be in lxsptr
-int i, c, d, hsum, length
-ref byte pstart
-
-	lxsubcode:=0
-
-	doswitch c:=lxsptr++^
-	when 'a'..'z','$','_','.' then
-		pstart:=lxsptr-1		!point to start of name in source buffer
-	doname::
-		hsum:=pstart^
-
-		doswitch c:=lxsptr++^
-		when 'a'..'z','0'..'9','_','$','.' then
-			hsum:=hsum<<4-hsum+c
-		when 'A'..'Z' then
-			(lxsptr-1)^:=c+32
-			hsum:=hsum<<4-hsum+c+' '
-		else
-			--lxsptr
-			exit
-		end
-
-		lxlength:=lxsptr-pstart
-		lxhashvalue:=hsum<<5 -hsum
-		lxtruename:=0
-
-		if lookuplex(cast(pstart),lxlength) then
-			if lxsymptr.ksymbol then			!keywords take priority here
-				lxsymbol:=lxsymptr.ksymbol
-				lxsubcode:=lxsymptr.subcode
-			else
-				lxsymbol:=lxsymptr.symbol
-			fi
-		else
-			lxsymbol:=namesym
-		fi
-
-		return
-
-	when 'A'..'Z' then
-		pstart:=lxsptr-1
-		c:=pstart^:=pstart^+32
-		goto doname
-
-	when '0'..'9' then
-		readnumber(c)
-		return
-
-	when '`' then
-		pstart:=lxsptr		!point to start of name in source buffer
-		hsum:=0
-
-		doswitch c:=lxsptr^
-		when 'A'..'Z','a'..'z','0'..'9','_','$','.' then
-			++lxsptr
-			hsum:=hsum<<4-hsum+c
-		else
-			exit
-		end
-
-		lxsymbol:=namesym
-		lxtruename:=1
-		if pstart=lxsptr then
-			lxerror("NULL ` name")
-		fi
-		lxlength:=lxsptr-pstart
-		lxhashvalue:=hsum<<5-hsum
-
-		if lookuplex(cast(pstart),lxlength) then
-			lxsymbol:=lxsymptr.symbol			!can't be a keyword
-			if lxsymbol=0 then					!assume was a keyword; use as name
-				lxsymbol:=lxsymptr.symbol:=namesym
-			fi
-		fi
-		return
-
-	when '!',';' then			!comment to eol
-
-		while commentmap[lxsptr++^] do od
-
-		if (lxsptr-1)^=0 then --lxsptr fi
-!
-		++lxlineno
-
-		lxsymbol:=eolsym
-		return
-
-	when '#' then				!label
-		lxvalue:=0
-		doswitch c:=lxsptr++^
-		when '0'..'9' then
-			lxvalue:=lxvalue*10+c-'0'
-		else
-			--lxsptr
-			exit
-		end
-	
-		if lxvalue=0 then lxerror("Bad label") fi
-		if labelnooffset=0 then
-			maxuserlabel max:=lxvalue
-		else
-			lxvalue+:=labelnooffset
-		fi
-		lxsymbol:=labelsym
-		return
-
-	when ',' then
-		lxsymbol:=commasym
-		return
-
-	when ':' then
-		if lxsptr^=':' then
-			lxsymbol:=dcolonsym
-			++lxsptr
-		else
-			lxsymbol:=colonsym
-		fi
-		return
-
-	when '-' then
-		c:=lxsptr++^
-		if c not in '0'..'9' then lxerror("Bad no") fi
-		readnumber(c,-1)
-		return
-
-	when '*' then
-		lxsymbol:=mulsym
-		return
-
-	when '&' then
-		lxsymbol:=addrsym
-		return
-
-	when '"' then
-		readstring()
-		return
-
-	when ' ',9 then
-
-	when cr then			!lf expected to follow
-	when lf then
-		++lxlineno
-		lxsymbol:=eolsym
-		return
-
-	when 0,etx then
-		lxsymbol:=eofsym
-		--lxsptr
-		return
-	else
-		lxsymbol:=errorsym
-		lxvalue:=c
-		return
-
-	end doswitch
-end
-
-global proc initlex=
-	static byte done=0
-
-	return when done
-
-	lxsubcode:=0
-	lxsymbol:=errorsym
-
-	lxlineno:=0
-
-	for i:=0 to 255 do
-!		switch i
-!		when 'A'..'Z','a'..'z','$','_','0'..'9' then
-!			alphamap[i]:=1
-!		end
-!		switch i
-!		when '0'..'9' then
-!			digitmap[i]:=1
-!		end
-		commentmap[i]:=1
-	od
-
-	commentmap[0]:=0
-	commentmap[lf]:=0
-
-	inithashtable()
-
-	done:=1
-end
-
-proc readreal(ichar s,int slen)=
-	int c
-
-	c:=lxsptr^
-	lxsptr^:=0
-	lxxvalue:=strtod(s,nil)
-	lxsptr^:=c
-
-	lxsymbol:=realconstsym
-end
-
-proc readnumber(int c, signx=1)=
-!A digit c 0..9 has just been read. Numeric formats are::
-!1234
-!0x1234
-!2x1101
-!Nx....		possible
-	[256]char str
-	int i,d,intlen,slen,isfloat,sepseen
-	ichar s
-
-	d:=lxsptr^
-	case d
-	when 'x','X' then			!other base
-		case c
-		when '0' then			!hex
-			++lxsptr
-			readhex()
-			lxvalue*:=signx
-			return
-		else
-			cpl c
-			lxerror("Base not supported")
-		esac
-	esac
-
-!assume decimal
-	str[1]:=c
-	s:=lxsptr-1				!start of number in source
-	slen:=1
-	isfloat:=sepseen:=0
-
-	doswitch c:=lxsptr++^
-	when '0'..'9' then
-		str[++slen]:=c
-	when '_','\'' then
-		sepseen:=1
-	when '.' then
-		if isfloat then lxerror("float?") fi
-		isfloat:=1
-		intlen:=slen
-	when 'e','E' then
-		if isfloat=2 then lxerror("float?") fi
-		isfloat:=2
-	when '-','+' then
-		if isfloat<>2 then lxerror("float?") fi
-		isfloat:=3
-	else
-		--lxsptr
-		exit
-	end
-
-	if isfloat then
-		if sepseen then lxerror("seps in float?") fi
-		readreal(s,lxsptr-s)
-		lxxvalue*:=signx
-		return
-	fi
-
-	if slen>20 or slen=20 and cmpstring(&.str,"18446744073709551615")>0 then
-		if slen>39 or 
-				(slen=39 and strncmp(s,"340282366920938463463374607431768211455",39)>0) then
-			lxerror("Overflows 128 bits")
-		fi
-		stringtonumber128(str,slen,10)
-		return
-	fi
-
-	lxsymbol:=intconstsym
-
-	lxvalue:=0
-	for i:=1 to slen do
-		lxvalue:=lxvalue*10+str[i]-'0'
-	od
-	lxvalue*:=signx
-end
-
-proc readhex=
-!positioned at start of hex seq; 0 chars read yet
-	int ndigs,c
-
-	ndigs:=0
-	lxvalue:=0
-	doswitch c:=lxsptr++^
-	when '0'..'9' then
-		lxvalue:=lxvalue*16+c-'0'
-		++ndigs
-	when 'A'..'F' then
-		lxvalue:=lxvalue*16+(c-'A'+10)
-		++ndigs
-	when 'a'..'f' then
-		lxvalue:=lxvalue*16+(c-'a'+10)
-		++ndigs
-	when '_','\'','`' then
-	else
-		--lxsptr
-		exit
-	end
-
-	if ndigs=0 then
-		lxerror("No hex digits")
-	elsif ndigs>32 then
-		lxerror("Overflow in hex number")
-	elsif ndigs>16 then
-		lxerror("hex/128 bits not ready")
-!		stringtonumber128(str,slen,16)
-		return
-	fi
-	lxsymbol:=intconstsym
-end
-
-global proc ps(ichar caption)=
-	PRINT CAPTION,LXSPTR,":"
-	PRINTSYMBOL()
-end
-
-global proc printsymbol(filehandle dev=nil)=
-	[256]char str
-
-	strcpy(&.str,symbolnames[lxsymbol])
-	str[strlen(&.str)-2]:=0
-
-	print @dev,&.str
-	to 14-strlen(&.str) do print @dev," " od
-
-	case lxsymbol
-	when namesym then
-		print @dev,lxsymptr.name
-
-	when intconstsym then
-		print @dev, lxvalue
-	when realconstsym then
-		print @dev, lxxvalue
-	when stringconstsym then
-		print @dev,"""",,lxsvalue,,""""!,,"end"
-	when errorsym then
-		print @dev,lxvalue
-	when kopcodesym then
-		print @dev,pclnames[lxsubcode]+1
-
-	when typesym then
-		print @dev,pstdnames[lxsubcode]
-
-	else
-		print @dev,symbolnames[lxsymbol]
-		if lxsubcode then
-			print " ",,lxsubcode
-		fi
-
-	end
-
-	println @dev,$,lxlineno
-end
-
-proc inithashtable=
-!initialise hash table from kwddata
-	for i in pclnames.bounds do
-		addreservedword(pclnames[i]+1,kopcodesym,i)
-	od
-
-	for i in pstdnames.bounds do
-		addreservedword(pstdnames[i],typesym,i)
-	od
-
-	addreservedword("proc",kopcodesym,kprocdef)
-	addreservedword("function",kopcodesym,kprocdef)
-	addreservedword("end",kopcodesym,kendproc)
-	addreservedword("endext",kopcodesym,kendextproc)
-
-end
-
-proc addreservedword(ichar name,int symbol,subcode)=
-	lxhashvalue:=gethashvalue(name)
-	if lookuplex(name,0) then
-		cpl =name
-		lxerror("DUPL NAME")
-	fi
-
-	lxsymptr.symbol:=0
-	lxsymptr.ksymbol:=symbol
-	lxsymptr.subcode:=subcode
-end
-
-global proc printhashtable(filehandle devx,ichar caption)=
-	psymbol r
-	int count,i
-
-	println @devx,caption,":"
-	count:=0
-	for i:=0 to lexhashtable.upb do
-		r:=lexhashtable[i]
-		if R AND r.name then
-			count+:=1
-		fi
-	od
-	println @devx,count," items in table",hstsize
-end
-
-function lookuplex(ichar name,int length=0)int=
-!name is either in an existing table (for reserved words; length=0)
-!or is in the source code (so is not zero-terminated; length is actual length)
-!look for name in lexhashtable
-!sets lxsymptr to entry in table, either of existing entry, or a new one
-!returns 1/0 if found/not found (ie. old or new name)
-	psymbol e
-	int j,wrapped,insource,firstj
-
-	insource:=length
-	if length=0 then
-		length:=strlen(name)
-	fi
-
-	firstj:=j:=(lxhashvalue iand hstmask)		!j=initial hash index
-
-	wrapped:=0
-
-	do
-		lxsymptr:=lexhashtable[j]
-		if lxsymptr=nil then				!unused entry, not found
-			exit
-		fi
-
-		if lxsymptr.namelen=length and memcmp(lxsymptr.name,name,length)=0 then			!match
-			return 1
-		fi
-
-		if ++j>=hstsize then		!wraparound
-			if wrapped then
-				println "???????HASHTABLE FULL",hstsize,lxlineno
-				stop 1
-			fi
-			wrapped:=1
-			j:=1
-		fi
-	od
-
-!name not found
-	if insource then
-		name:=pcm_copyheapstringn(name,length)
-	fi
-
-	if ++nsymbols>((hstsize*7)/8) then
-		lxerror("Hashtable getting full")
-	fi
-
-	if lxsymptr=nil then
-		lxsymptr:=pcm_allocz(pstrec.bytes)
-		lexhashtable[j]:=lxsymptr
-	fi
-
-	lxsymptr.name:=name
-	lxsymptr.namelen:=length
-	lxsymptr.symbol:=namesym
-	lxsymptr.ksymbol:=0
-	return 0
-end
-
-global proc startlex(ichar source)=
-	initlex()
-	lxstart:=lxsptr:=cast(source)
-	lxlineno:=1
-	lxsymbol:=errorsym
-end
-
-global function addnamestr(ichar name)psymbol=
-!add a new name to the symbol table
-!return symptr to new (or existing) generic name
-	lxhashvalue:=gethashvalue(name)
-	lookuplex(pcm_copyheapstring(name),0)
-	return lxsymptr
-end
-
-global proc lxerror(ichar m)=			!LXERROR
-
-	fprintln "\w\w Lexical Error\n*** # *** on line #",m,lxlineno
-	stop 1
-end
-
-global function gethashvalue(ichar s)int=
-!get identical hash function to that calculated by lexreadtoken
-!but for a zero-terminated string
-!assumes S is lower-case, as conversion not done
-	int c,hsum
-
-	if s^=0 then return 0 fi
-
-	hsum:=s++^
-
-	do
-		c:=s++^
-		exit when c=0
-		hsum:=hsum<<4-hsum+c
-	od
-	return hsum<<5-hsum
-end
-
-proc readstring=
-!read string inplace: new string, with expanded control characters,
-!is stored on top of original string in the source
-!new string is same length or shorter
-
-	var ichar dest
-	var int c,d
-	var [8]char str
-
-	lxsymbol:=stringconstsym
-
-	lxsvalue:=lxsptr
-
-	dest:=lxsptr				!form string into same buffer
-
-	do
-		switch c:=lxsptr++^
-		when '\\' then			!escape char
-			c:=lxsptr^
-			if c>='A'  and c<='Z' then c+:=' ' fi
-			++lxsptr
-			switch c
-			when 'a' then			!bell ('alert')
-				c:=7
-			when 'b' then			!backspace
-				c:=8
-			when 'c','r' then		!carriage return
-					c:=cr
-			when 'e' then			!end-of-text
-				c:=26
-			when 'f' then			!formfeed
-				c:=12
-			when 'l','n' then		!linefeed, or linux/c-style newline
-				c:=lf
-			when 's' then			!eScape
-				c:=27
-			when 't' then			!tab
-				c:=9
-!			when 'u' then			!reserved for unicode, like \x but with 4 hex digits
-			when 'v' then			!vertical tab
-				c:=11
-			when 'w' then			!windows-style cr-lf
-				dest++^:=cr
-				c:=lf
-			when 'x' then	!2-digit hex code follows
-				c:=0
-				to 2 do
-					case d:=lxsptr++^
-					when 'A','B','C','D','E','F' then
-						c:=c*16+d-'A'+10
-					when 'a','b','c','d','e','f' then
-						c:=c*16+d-'a'+10
-					when '0','1','2','3','4','5','6','7','8','9' then
-						c:=c*16+d-'0'
-					else
-						lxerror("Bad \\x code")
-					esac
-				od
-			when 'y' then			!CCI/SM backwards tab
-				c:=16
-			when 'z','0' then		!null (not fully supported in code)
-				c:=0
-			when '"','Q' then		!embedded double quote
-				c:='"'
-			when '\\' then
-				c:='\\'
-			when '\'' then			!embedded single quote
-				c:='\''
-			else
-				println "<",,char(c),,">"
-				lxerror("Unknown string escape")
-			end
-		when '"' then		!possible terminators
-			if lxsptr^=c then		!repeated, assume embedded term char
-				++lxsptr
-			else			!was end of string
-				exit
-			fi
-		when cr,lf,0 then
-			lxerror("String not terminated")
-		endswitch
-
-		dest++^:=c
-	od
-	lxlength:=dest-lxsvalue
-	(lxsvalue+lxlength)^:=0		!overwrites final " or earlier
-end
-
-proc stringtonumber128(ichar s, int length,base)=
-	word128 aa
-	int c,d
-	aa:=0
-	to length do
-		aa:=aa*base
-		c:=(s++)^
-
-		if c>='a' then
-			d:=c-'a'+10
-		elsif c>='A' then
-			d:=c-'A'+10
-		else
-			d:=c-'0'
-		fi
-
-		aa:=aa+d
-	od
-
-	lxuvalue128:=aa
-	lxsymbol:=int128constsym
-end
-
-=== pci_read.m 13/45 ===
-import pc_lex
-import pc_parse
-=== pc_parse.m 14/45 ===
-import msys
-import mlib
-
-import* pci_core
-import* pci_read
-
-int insideproc
-
-global function parse(ichar source)int=
-	psymbol d
-
-	startlex(source)
-	int labno
-
-!	repeat
-!		lex()
-!		printsymbol()
-!	until lxsymbol=eofsym
-!	STOP
-
-	lxsymbol:=errorsym
-
-	do
-		lex()
-
-		case lxsymbol
-		when kopcodesym, typesym then
-			if lxsubcode=kendprogram then exit fi
-
-			readinstr()
-
-		when labelsym then
-			dolabel()
-
-		when namesym then
-			SERROR("""NAME:"" NOT SUPPORTED")
-!			d:=lxsymptr
-!			lex()
-!			case lxsymbol
-!			when colonsym then
-!			when dcolonsym then
-!				d.isexported:=1
-!			else
-!				serror(": expected")
-!			esac
-!			assignlabeltoname(d)
-!			pcl_gen(klabelname,pcl_genmemaddr(d))
-!			pccurr.seqno:=lxlineno
-!!			pcl_gen(klabel,genlabel(d.labelno))
-!			lex()
-
-		when intconstsym then
-			next
-
-		when eolsym then
-			next
-		when eofsym then
-			exit
-		else
-			println =symbolnames[lxsymbol]
-			serror("Bad input")
-		esac
-		checksymbol(eolsym)
-	od
-
-	if insideproc then serror("End missing") fi
-
-	return 1
-end
-
-proc checksymbol(int symbol)=
-	if lxsymbol<>symbol then
-		println symbolnames[symbol],"expected, not",symbolnames[lxsymbol],,", on line:",lxlineno
-		stop 1
-	fi
-end
-
-proc dolabel=
-	if lxvalue not in 1..maxlabels then
-		serror_s("1:Label out of range:",strint(lxvalue))
-	fi
-
-	pdefinelabel(lxvalue,lxlineno)
-	lex()
-	checksymbol(colonsym)
-	lex()
-end
-
-proc readmode(pcl p)=
-	if p.mode<>tpvoid then
-		p.oldmode:=lxsubcode
-		lex()
-		return
-	fi
-
-	p.mode:=lxsubcode
-	p.size:=psize[lxsubcode]
-	lex()
-	if p.mode=tpblock then
-		checksymbol(colonsym)
-		lex()
-		checksymbol(intconstsym)
-		p.size:=lxvalue
-		lex()
-	fi
-end
-
-proc readinstr=
-!I have a bare opcode; see if any other operands follow. Syntax is:
-! push[:type[:size]] [operand [:type[:size]] [,A[,B]]]
-	int opcode,mode,size
-	pcl p
-
-	p:=newpcl()				!all zeros
-	p.seqno:=lxlineno
-	mode:=tpvoid			!possible override
-	size:=0
-
-	if lxsymbol=typesym then
-		readmode(p)
-		checksymbol(kopcodesym)
-	fi
-
-	p.opcode:=opcode:=lxsubcode
-
-	lex()
-
-	if lxsymbol=typesym then
-		readmode(p)
-	fi
-
-	case pclhasopnd[opcode]
-	when 1 then
-		case lxsymbol
-		when intconstsym then
-			p.value:=lxvalue
-			p.opndtype:=int_opnd
-			mode:=tpi64
-			lex()
-		when realconstsym then
-			p.xvalue:=lxxvalue
-			p.opndtype:=real_opnd
-			mode:=tpu64
-			lex()
-		when stringconstsym then
-			p.svalue:=pcm_copyheapstring(lxsvalue)
-			p.opndtype:=string_opnd
-			mode:=tpu64
-			lex()
-		when labelsym then
-			if lxvalue not in 1..maxlabels then
-				serror_s("2:Label out of range:",strint(lxvalue))
-			fi
-			p.labelno:=lxvalue
-			p.opndtype:=label_opnd
-			lex()
-		when namesym then
-			p.def:=lxsymptr
-			p.opndtype:=mem_opnd
-			p.def.istruename:=lxtruename
-
-			lex()
-
-		when int128constsym then
-			p.value128:=lxuvalue128
-			p.opndtype:=int128_opnd
-			mode:=tpi128
-			lex()
-
-		when addrsym then
-			lex()
-			checksymbol(namesym)
-			p.def:=lxsymptr
-			p.def.istruename:=lxtruename
-			p.opndtype:=memaddr_opnd
-			lex()
-			if lxsymbol=mulsym then
-				p.def.isimported:=1
-				lex()
-			fi
-		else
-			serror("Missing or Bad Operand")
-		esac
-
-	when 2 then			!must be name that defines a proc or static or named label
-		checksymbol(namesym)
-		p.def:=lxsymptr
-		if opcode=kprocrts then
-			p.opcode:=kprocdef
-			definertsproc(p.def)
-		fi
-		p.opndtype:=mem_opnd
-		lex()
-		case lxsymbol
-		when colonsym then
-		when dcolonsym then
-			p.def.isexported:=1
-			p.isexported:=1
-		else
-			serror("Colon expected")
-		esac
-		lex()
-
-	when 3 then			!must be name that defines a local or param
-		checksymbol(namesym)
-		p.def:=lxsymptr
-		p.opndtype:=mem_opnd
-		lex()
-		if lxsymbol=colonsym then serror(": not used for locals") fi
-	when 4 then			!must be name that defines a proc or static or named label
-		checksymbol(namesym)
-		p.def:=lxsymptr
-		p.opndtype:=mem_opnd
-		lex()
-
-	esac
-
-	if lxsymbol=typesym then
-		readmode(p)
-	fi
-
-!if no type used, but available from operand, then use that
-
-	if p.mode=tpvoid then
-		if mode<>tpvoid then
-			p.mode:=mode
-			p.size:=size
-		fi
-	fi
-
-	if pclextra[opcode] then
-		checksymbol(intconstsym)
-		p.x:=lxvalue
-		lex()
-		if pclextra[opcode]=2 then
-			checksymbol(intconstsym)
-			p.y:=lxvalue
-			lex()
-		fi
-	fi
-end
-
-global proc serror(ichar mess)=
-	serror_s(mess, nil)
-end
-
-global proc serror_s(ichar mess, param=nil)=
-	print "Syntax error:",mess
-	if param then
-		print ":",param
-	fi
-
-	println " on line:",lxlineno
-	stop 1
-end
-
-export function pcl_readpclfile(ichar filename, rtsfile=nil)int=
-!note: currently only works one-time
-	ichar source
-
-	pcl_start()
-
-	if not parse_readsource(filename) then return 0 fi
-	
-	if rtsfile then
-		labelnooffset:=maxuserlabel
-		if not parse_readrts() then
-			println "No RTS found"
-			return 0
-		fi
-	fi
-
-	pcl_gen(kendprogram)
-	pcl_end()
-
-	return 1
-end
-
-global function parse_readsource(ichar filename)int=
-	ichar source
-
-	source:=readfile(filename)
-	if source=nil then
-		errormess:="Can't load file"
-		return 0
-	fi	
-
-	if not parse(source) then
-		errormess:="Couldn't parse"
-		return 0
-	fi
-	return 1
-end
-
-global function parse_readrts:int=
-	static ichar source = strinclude("rts.pcl")
-
-	if not parse(source) then
-		errormess:="Couldn't parse RTS"
-		return 0
-	fi
-	return 1
-end
-=== pc_tables.m 15/45 ===
-import* pci_core
-
-!type system
-
-export tabledata() 	[0:]ichar pstdnames,
-		[0:]byte psize, [0:]byte psigned, [0:]byte pfloat, [0:]byte pcat =
-!    type         name    bits SZ   S F Cat
-	(tpvoid=0,    "void",    	0,	0,0, voidcat),
-
-	(tpu8,        "u8",      	1,	0,0, shortcat),
-	(tpu16,       "u16",    	2,	0,0, shortcat),
-	(tpu32,       "u32",    	4,	0,0, shortcat),
-	(tpu64,       "u64",    	8,	0,0, d64cat),
-	(tpu128,      "u128",  		16, 0,0, widecat),
-
-	(tpi8,        "i8",      	1,	1,0, shortcat),
-	(tpi16,       "i16",    	2,	1,0, shortcat),
-	(tpi32,       "i32",    	4,	1,0, shortcat),
-	(tpi64,       "i64",    	8,	1,0, d64cat),
-	(tpi128,      "i128", 	 	16,	1,0, widecat),
-
-	(tpr32,       "r32",    	4,	0,1, x32cat),
-	(tpr64,       "r64",    	8,	0,1, x64cat),
-
-	(tpblock,     "block",   	0,	0,0, blockcat),
-
-	(tplast,      "$last",   	0,	0,0, voidcat),
-end
-
-global tabledata() [0:]ichar catnames =
-	(voidcat=0,		$),
-	(d64cat,		$),
-	(x32cat,		$),
-	(x64cat,		$),
-	(shortcat,		$),
-	(widecat,		$),
-	(blockcat,		$),
-end
-
-global tabledata() [0:]ichar opndnames =
-	(no_opnd=0,			$),
-	(mem_opnd,			$),
-	(memaddr_opnd,		$),
-	(label_opnd,		$),
-	(int_opnd,			$),
-	(real_opnd,			$),
-	(int128_opnd,		$),
-	(real32_opnd,		$),
-	(string_opnd,		$),
-	(assem_opnd,		$),
-end
-
-!Stack operands are:
-!	Xa				1st of 1
-!   Xb, Ya			1st/2nd of 2
-!   Xc, Yb, Za		1st/2nd/3rd of 3
-!   Xd, Yc, Zb, Wa	1st/2nd/3rd/4th of 4
-! X is always the 'left-most' operand, but will be at offset 0, 1 2 from top of stack
-! a (as in Xa, Ya, Za, Wa) is always the top of stack
-
-!Immediate operand:
-!   A			(various)
-!Extra info:
-!   op			opindex
-!   fn			fnindex
-!   cc			cond code
-!   t[:size]    type (:size for block types)
-!   u           secondary type for some ops (convert etc)
-!   n			nargs for calls
-!   s x			scale and offset for ptr/offset ops
-!   x y			min/max lab index for switch
-!	B			Secondary operand in a following kopnd instruction
-!	C			Tertiary operand in a following kopnd instruction
-
-!Stack usage is represented by (a b):
-! a is the number of stack elements that will be popped
-! b is the number of new stack elements that will be pushed
-! Something like (1 1) can mean the same element stays in place
-
-
-export tabledata() [0:]ichar pclnames,
-			[0:]byte pclhasopnd,			!1+ has operand; 2=name defines a name; 3=defines local/param; 4=imported func
-			[0:]byte pclhastype,
-			[0:]byte pclextra =
-
-!                          Op T X
-	(kzero=0,			$,	0,0,0),	! (0 0)
-	(knop,				$,	0,0,0),	! (0 0)
-	(kstop,				$,	0,0,0),	! (1 0)	Stop Xa
-	(kcomment,			$,	1,0,0),	! (0 0)	Comment A (a string)
-
-	(kimportdll,		$,	1,0,0),	! (0 0) A Use external dll A
-!	(kimport,			$,	1,0,0),	! (0 0) A Import symbol A
-!	(kexport,			$,	1,0,0),	! (0 0) A Export symbol A (or declare using ::)
-	(kistatic,			$,  2,1,0),	! (0 0) (A,t) Define idata label (must be followed by correct kdata ops)
-	(kzstatic,			$,	2,1,0),	! (0 0) (A,t) Define zdata labe and reserve sufficient space
-	(kequiv,			$,	2,0,0),	! (0 0) (A) Define equivalence to this var?
-
-!	(kprocdef,			$,	2,1,1),	! (0 0) (A,t, isrts) Define proc A, of given return type
-	(kprocdef,			$,	2,1,0),	! (0 0) (A,t) Define proc A, of given return type
-	(kprocentry,		$,	0,0,0),	! (0 0)
-	(kendproc,			$,	0,0,0),	! (0 0)
-	(kendprogram,		$,	0,0,0),	! (0 0)
-	(kextproc,			$,	4,1,0),	! (0 0) (t)
-	(kextparam,			$,	0,1,0),	! (0 0) (t) Anonymous params
-	(kextvariadics,		$,	0,1,0),	! (0 0) (t) ... parameter
-	(kendextproc,		$,	0,0,0),	! (0 0)
-	(kthreadedproc,		$,	2,1,0),	! (0 0) (A,t) Define proc A, of given return type
-	(kprocrts,			$,	2,1,0),	! (0 0) (A,t) Alternate to procdef but for rts functions
-
-	(klocal,			$,	3,1,0),	! (0 0) (A,t) Define local A of type t
-	(kparam,			$,	3,1,0),	! (0 0) (A,t) Define param A of type t
-	(klabel,			$,	1,0,0),	! (0 0) (L) Define numbered label L
-	(klabelname,		$,	2,0,0),	! (0 0) (A) Define named label
-
-	(kpush,				$,	1,1,0),	! (0 1) (X,t)	Push operand X of type t; X is anything pushable
-	(kpop,				$,	1,1,0),	! (1 0) (L,t)	pop to label X
-	(kstore,			$,	1,1,0),	! (1 1) (L,t)	store to label X but stays on the stack
-	(kpushnc,			$,	1,1,0),	! (0 1) (X,t)	Push optimised for blocks (no copying)
-	(kpushlabel,		$,	1,0,0),	! (0 1) (L)		Push address of label L
-
-	(kopnd,				$,	1,0,0),	! (0 0) (X) Define auxiliary operand X (not sure about extra stuff yet)
-	(ktype,				$,	0,1,0),	! (0 0) (t) Define auxiliary type t
-	(kduplstack,		$,	0,1,0),	! (1 2) (t) Ya':=Xa; X stays on stack
-	(kswapstack,		$,	0,1,1),	! (1 1) (t,N) Swap Xa with element +N away
-
-	(kpushptroff,		$,	0,1,2),	! (2 1) (t,scale,offset) Xa:=(Xb+Ya*scale+offset)^ using given type
-	(kpopptroff,		$,	0,1,2),	! (3 0) (t,scale,offset) (Yb+Za*scale+offset)^:=Xc
-	(kstoreptroff,		$,	0,1,2),	! (3 1) (t,scale,offset) (Yb+Za*scale+offset)^:=Xc, Xc stays as Xa
-!	(kindex,			$,	0,0,0),	! (0 0)
-!	(kpopindex,			$,	0,0,0),	! (0 0)
-!	(kstoreindex,		$,	0,0,0),	! (0 0)
-
-	(kpushptr,			$,	0,1,0),	! (1 1) Xa:=Xa^
-	(kpopptr,			$,	0,1,0),	! (2 0) Ya^:=Xb
-	(kstoreptr,			$,	0,1,0),	! (2 1) Ya^:=Xb, keep Xb on stack as Xa
-
-	(kdotindex,			$,	0,1,0),	! (2 1)	Xa:=Xb.[Ya]
-	(kpopdotindex,		$,	0,1,0),	! (3 0) Yb^.[Za]:=Xc
-	(kstoredotindex,	$,	0,1,0),	! (3 1) Yb^.[Za]:=Xc, keep Xc as Xa
-
-	(kdotslice,			$,	0,1,0),	! (3 1) Xa:=Xc.[Yb..Za]
-	(kpopdotslice,		$,	0,1,0),	! (4 0) Yc^.[Zb..Wa]:=Xd
-	(kstoredotslice,	$,	0,1,0),	! (4 1) Yc^.[Zb..Wa]:=Xd, keep
-
-!	(kfree,				$,	0,1,0),	! (1 0)	Pop Xa
-	(kpopstack,			$,	0,1,0),	! (1 0)	Pop Xa
-	(keval,				$,	0,1,0),	! (1 0) Evaluate Xa [load to an actual register], then pop
-
-	(kcallproc,			$,	1,0,0),	! (n 0) (A) Call &A with nargs, then pop args
-	(kcallprocptr,		$,	0,0,0),	! (n+1 0) Call Xa with nargs, then pop args
-	(kretproc,			$,	0,0,0),	! (0 0) Return from proc
-
-	(kcallfn,			$,	1,1,0),	! (n 1) (A, t), Call &A, then pop args, leave retval
-	(kcallfnptr,		$,	0,1,0),	! (n+1 1) (t) Call Xa, then pops args, leave retval
-	(kretfn,			$,	0,1,0),	! (0 0) (t) Return from function with Xa=retval
-
-	(kjump,				$,	1,0,0),	! (0 0) (L) goto L
-	(kjumpptr,			$,	0,0,0),	! (1 0) goto Xa
-
-	(kjumpeq,			$,	1,1,0),	! (2 0) (L,t) goto L when Xb = Ya
-	(kjumpne,			$,	1,1,0),	! (2 0) (L,t) goto L when <>
-	(kjumplt,			$,	1,1,0),	! (2 0) (L,t) goto L when Xb < Ya
-	(kjumple,			$,	1,1,0),	! (2 0) (L,t) goto L when <=
-	(kjumpge,			$,	1,1,0),	! (2 0) (L,t) goto L when >=
-	(kjumpgt,			$,	1,1,0),	! (2 0) (L) goto L when >
-
-	(kjumptrue,			$,	1,1,0),	! (1 0) (L,t) goto L when Xa is true
-	(kjumpfalse,		$,	1,1,0),	! (1 0) (L,t) goto L when Xa is false
-
-	(kjumpinrange,		$,	1,1,0),	! (3 0) (L,t) goto L when Xc in Yb..Za
-	(kjumpnotinrange,	$,	1,1,0),	! (3 0) (L,t) goto L when Xc not in Yb..Za
-
-	(ksetjumpeq,		$,	1,1,0),	! (2 1) (L,t) goto L when Xb=Ya; pop Y, leave Xa
-	(ksetjumpeqx,		$,	1,1,0),	! (0 0) (L,t) goto L when Xb=Ya; pop both
-	(ksetjumpne,		$,	1,1,0),	! (0 0) (L,t) goto L when Xb<>Ya; pop both
-
-!	(ksetcc,			$,	0,1,1),	! (2 1) (t,cc) Xa:=Xb cc Ya
-	(kseteq,			$,	0,1,0),	! (2 1) (t) Xa:=Xb = Ya
-	(ksetne,			$,	0,1,0),	! (2 1) (t) Xa:=Xb <> Ya
-	(ksetlt,			$,	0,1,0),	! (2 1) (t) Xa:=Xb < Ya
-	(ksetle,			$,	0,1,0),	! (2 1) (t) Xa:=Xb <= Ya
-	(ksetge,			$,	0,1,0),	! (2 1) (t) Xa:=Xb >= Ya
-	(ksetgt,			$,	0,1,0),	! (2 1) (t) Xa:=Xb > Ya
-
-	(kcasejumpeq,		$,	1,1,1),	! (2 1) (L,t) goto L when Xb=Ya; pop Ya, leave Xa
-
-!	(kselectcc,			$,	0,1,1),	! (4 1) (t,cc) Xa:=(Zb op Wa|Xd|Yc)
-	(kselecteq,			$,	0,1,0),	! (4 1) (t) Xa:=(Zb = Wa|Xd|Yc)
-	(kselectne,			$,	0,1,0),	! (4 1) (t) Xa:=(Zb <> Wa|Xd|Yc)
-	(kselectlt,			$,	0,1,0),	! (4 1) (t) Xa:=(Zb < Wa|Xd|Yc)
-	(kselectle,			$,	0,1,0),	! (4 1) (t) Xa:=(Zb <= Wa|Xd|Yc)
-	(kselectge,			$,	0,1,0),	! (4 1) (t) Xa:=(Zb >= Wa|Xd|Yc)
-	(kselectgt,			$,	0,1,0),	! (4 1) (t) Xa:=(Zb > Wa|Xd|Yc)
-
-	(kselecttrue,		$,	0,1,0),	! (3 1) (t) Xa:=(Za|Xc|Yb)
-
-	(kto,				$,	1,0,0),	! (0 0) (L)(B,t) --B (aux); goto L when B<>0 
-
-	(kforup,			$,	1,1,1),	! (0 0) (L,t,n)(B,t)(C,t) B+:=n; goto L when B<=C
-	(kfordown,			$,	1,1,1),	! (0 0) (L,t,n)(B,t)(C,t) B-:=n; goto L when B>=C
-
-	(kswap,				$,	0,1,0),	! (2 0) (t) swap(Xb^,Yb^)
-
-	(kmakeslice,		$,	0,1,0),	! (2 1) (t) Xa:=slice(Xb, Ya)
-
-	(kswitch,			$,	1,0,2),	! (1 0) (L,x,y)(B) L=jumptab; B=elselab; x/y=min/max values
-	(kswitchlabel,		$,	1,0,0),	! (0 0) (L) jumptable entry
-	(kendswitch,		$,	0,0,0),	! (0 0)	Mark end of switch jumptable
-
-	(kclear,			$,	0,1,0),	! (1 0) (t) Clear Xa^
-
-	(kcsegment,			$,	0,0,0),	! (0 0) Switch to that segment (usually automatic, so these override)
-	(kisegment,			$,	0,0,0),	! (0 0) ..
-	(kzsegment,			$,	0,0,0),	! (0 0) ..
-	(krosegment,		$,	0,0,0),	! (0 0) ..
-
-	(kdata,				$,	1,1,0),	! (0 0) (X,t) Define inline data of various kinds
-
-	(kdb,				$,	1,0,0),	! (0 0) (X) Define a u8 data value
-	(kdw,				$,	1,0,0),	! (0 0) (X) u16 value: ...
-	(kdd,				$,	1,0,0),	! (0 0) (X) u32 value: u32/i32/r32, depends on operand
-	(kdq,				$,	1,0,0),	! (0 0) (X) u64 value: u64/i64/r64/string/addr/label, depends on operan
-	(kdstring,			$,	1,0,0),	! (0 0) (S) u8 sequence from string literal (no terminator)
-	(kdstringz,			$,	1,0,0),	! (0 0) (S) u8 sequence from string literal, nul added
-
-	(kreserve,			$,	0,1,0),	! (0 0) (t) Reserve space big enough for t
-	(kassem,			$,	1,0,0),	! (0 0) to be worked out....
-
-	(kadd,				$,	0,1,0),	! (2 1) (t) Xa := Xb + Ya
-	(ksub,				$,	0,1,0),	! (2 1) (t)
-	(kmul,				$,	0,1,0),	! (2 1) (t)
-	(kdiv,				$,	0,1,0),	! (2 1) (t)
-	(kidiv,				$,	0,1,0),	! (2 1) (t)
-	(kirem,				$,	0,1,0),	! (2 1) (t)
-	(kiand,				$,	0,1,0),	! (2 1) (t)
-	(kior,				$,	0,1,0),	! (2 1) (t)
-	(kixor,				$,	0,1,0),	! (2 1) (t)
-	(kshl,				$,	0,1,0),	! (2 1) (t)
-	(kshr,				$,	0,1,0),	! (2 1) (t)
-	(kin,				$,	0,1,0),	! (2 1) (t)
-	(knotin,			$,	0,1,0),	! (2 1) (t)
-	(kmin,				$,	0,1,0),	! (2 1) (t)
-	(kmax,				$,	0,1,0),	! (2 1) (t)
-	(keq,				$,	0,1,0),	! (2 1) (t)
-	(kne,				$,	0,1,0),	! (2 1) (t)
-	(klt,				$,	0,1,0),	! (2 1) (t)
-	(kle,				$,	0,1,0),	! (2 1) (t)
-	(kge,				$,	0,1,0),	! (2 1) (t)
-	(kgt,				$,	0,1,0),	! (2 1) (t)
-	(ksame,				$,	0,1,0),	! (2 1) (t)
-	(kandl,				$,	0,1,0),	! (2 1) (t)
-	(korl,				$,	0,1,0),	! (2 1) (t)
-	(kaddrefoff,		$,	0,1,2),	! (2 1) (t,scale,offset) Xa := Xb + Ya*scale + offset
-	(ksubrefoff,		$,	0,1,2),	! (2 1) (t,scale,offset) Xa := Xb - Ya*scale + offset
-	(ksubref,			$,	0,1,1),	! (2 1) (t,scale) Xa := (Xb - Ya)/scale
-
-	(kneg,				$,	0,1,0),	! (1 1) (t) Xa:=-Xa
-	(kabs,				$,	0,1,0),	! (1 1) (t)
-	(kinot,				$,	0,1,0),	! (1 1) (t)
-	(knotl,				$,	0,1,0),	! (1 1) (t)
-	(kistruel,			$,	0,1,0),	! (1 1) (t)
-	(ksqr,				$,	0,1,0),	! (1 1) (t)
-
-	(ksqrt,				$,	0,1,0),	! (1 1) (t) Xa:=sqrt(Xa)
-	(ksin,				$,	0,1,0),	! (1 1) (t)
-	(kcos,				$,	0,1,0),	! (1 1) (t)
-	(ktan,				$,	0,1,0),	! (1 1) (t)
-	(kasin,				$,	0,1,0),	! (1 1) (t)
-	(kacos,				$,	0,1,0),	! (1 1) (t)
-	(katan,				$,	0,1,0),	! (1 1) (t)
-	(kln,				$,	0,1,0),	! (1 1) (t)
-	(klog,				$,	0,1,0),	! (1 1) (t)
-	(kexp,				$,	0,1,0),	! (1 1) (t)
-	(kround,			$,	0,1,0),	! (1 1) (t)
-	(kfloor,			$,	0,1,0),	! (1 1) (t)
-	(kceil,				$,	0,1,0),	! (1 1) (t)
-	(kfract,			$,	0,1,0),	! (1 1) (t)
-	(ksign,				$,	0,1,0),	! (1 1) (t)
-	(katan2,			$,	0,1,0),	! (1 1) (t)
-	(kpower,			$,	0,1,0),	! (1 1) (t)
-	(kfmod,				$,	0,1,0),	! (1 1) (t)
-
-	(kincr,				$,	0,1,1),	! (1 0) (t,step) Xa^+:=step
-	(kdecr,				$,	0,1,1),	! (1 0) (t,step) Xa^-:=step
-	(kincrload,			$,	0,1,1),	! (1 1) (t,step) Xa:=(Xa+:=step)^
-	(kdecrload,			$,	0,1,1),	! (1 1) (t,step) Xa:=(Xa-:=step)^
-	(kloadincr,			$,	0,1,1),	! (1 1) (t,step) Xa:=Xa++^ (difficult to express step)
-	(kloaddecr,			$,	0,1,1),	! (1 1) (t,step) Xa:=Xa--^
-
-	(kaddto,			$,	0,1,0),	! (2 0) (t) Xa^ +:= Ya
-	(ksubto,			$,	0,1,0),	! (2 0) (t)
-	(kmulto,			$,	0,1,0),	! (2 0) (t)
-	(kdivto,			$,	0,1,0),	! (2 0) (t)
-	(kidivto,			$,	0,1,0),	! (2 0) (t)
-	(kiremto,			$,	0,1,0),	! (2 0) (t)
-	(kiandto,			$,	0,1,0),	! (2 0) (t)
-	(kiorto,			$,	0,1,0),	! (2 0) (t)
-	(kixorto,			$,	0,1,0),	! (2 0) (t)
-	(kshlto,			$,	0,1,0),	! (2 0) (t)
-	(kshrto,			$,	0,1,0),	! (2 0) (t)
-	(kminto,			$,	0,1,0),	! (2 0) (t)
-	(kmaxto,			$,	0,1,0),	! (2 0) (t)
-	(kandlto,			$,	0,1,0),	! (2 0) (t)
-	(korlto,			$,	0,1,0),	! (2 0) (t)
-	(kaddrefoffto,		$,	0,1,2),	! (2 0) (t,scale,offset) Xa^ +:= Ya
-	(ksubrefoffto,		$,	0,1,2),	! (2 0) (t,scale,offset) Xa^ -:= Ya
-
-	(knegto,			$,	0,1,0),	! (1 0) (t) -:=Xa^
-	(kabsto,			$,	0,1,0),	! (1 0) (t)
-	(kinotto,			$,	0,1,0),	! (1 0) (t)
-	(knotlto,			$,	0,1,0),	! (1 0) (t)
-	(kistruelto,		$,	0,1,0),	! (1 0) (t)
-
-!for conversions, t is always the current operand type
-!u is the new type. However, for conversions involving widening, the result
-!must end up at at least 64 bit. So i64->u8 masks to 8 bits, the sign-extends to u64
-
-!	(kconvert,			$,	0,2,1),	! (1 1) (t,u)
-	(ktypepun,			$,	0,2,1),	! (1 1) (t,u)
-
-	(ksoftconv,			$,	0,2,0),	! (1 1) (t,u) Xa:=cast(Xa,u) ??
-
-	(kwiden,			$,	0,2,0),	! (1 1) (t,u) Xa:=cast(Xa,u) Widen int type, from t to wider int u
-	(knarrow,			$,	0,2,0),	! (1 1) (t,u) Xa:=cast(Xa,u) I think reduces i128/u128 t to i64/u64 u
-	(kfloat,			$,	0,2,0),	! (1 1) (t,u) Xa:=cast(Xa,t) Int u to real t
-	(kfix,				$,	0,2,0),	! (1 1) (t,u) Xa:=cast(Xa,t) Real u to int t
-	(ktruncate,			$,	0,2,0),	! (1 1) (t,u) Xa:=cast(Xa,u) Mask to width of u, but type is widend to i64/u64
-	(kfwiden,			$,	0,2,0),	! (1 1) (t,u) Xa:=cast(Xa,u) r32 to r64
-	(kfnarrow,			$,	0,2,0),	! (1 1) (t,u) Xa:=cast(Xa,u) r64 to r32
-	(ksofttruncw,		$,	0,2,0),	! (1 1) (t,u) Xa:=cast(Xa,u) 128 bits to 64
-	(kwidenw,			$,	0,2,0),	! (1 1) (t,u) Xa:=cast(Xa,u) 64 bits to 128
-
-!These ones are currently still needed by or all PCL targets
-
-	(kstartmult,		$,	0,0,0),
-	(kresetmult,		$,	0,0,0),
-	(kendmult,			$,	0,0,0),
-	(ksetret,			$,	0,1,0),	! (0 0) (t) Set Xa as return value of type t
-!	(ksetretmult,		$,	0,1,2),
-	(ksetretmult,		$,	0,0,1), ! (0 0) (n) Set N return values
-	(ksetargs,			$,	0,0,2), ! (nargs, nvars)
-
-!these are special ones used reflection
-
-	(kgetnprocs,		$,	0,0,0), ! (0 1) Get number of functions in function table
-	(kgetprocname,		$,	0,0,0), ! (1 1) Xa:=Getprocname(Xa) Name of nth function (1-based)
-	(kgetprocaddr,		$,	0,0,0), ! (1 1) Xa:=Getprocaddr(Xa) Addr of nth function (1-based)
-
-!ops used internally by M compiler until they can be replaced
-!(usually they will be turned into something else, constants etc)
-	(klen,				$,	0,0,0),
-	(klwb,				$,	0,0,0),
-	(kupb,				$,	0,0,0),
-	(kbounds,			$,	0,0,0),
-	(klenstr,			$,	0,0,0),
-	(kbitwidth,			$,	0,0,0),
-	(kbytesize,			$,	0,0,0),
-	(kbytes,			$,	0,0,0),
-	(kminvalue,			$,	0,0,0),
-	(kmaxvalue,			$,	0,0,0),
-	(ktypestr,			$,	0,0,0),
-	(kerror,			$,	0,0,0),
-	(karraytoslice,		$,	0,0,0),
-	(kichartoslice,		$,	0,0,0),
-	(ksofttruncshort,	$,	0,0,0),
-	(kcharaxtoichar,	$,	0,0,0),
-	(ksliceptr,			$,	0,0,0),
-
-	(klast,				$,	0,0,0),	! (0 0)
-end
-
-global tabledata() []ichar rtsnames =
-	(rts_rts_unimpl,		$),
-	(rts_power_i64,			$),
-	(rts_float_u64r64,		$),
-	(rts_mul_i128,			$),
-	(rts_div_i128,			$),
-	(rts_div_u128,			$),
-end
-=== mm_start.m 16/45 ===
-import msys
-import clib
-import mlib
-import oslib
-
-import mm_lex
-import mm_decls
-import mm_support
-import mm_tables
-import mm_parse
-import mm_lib
-import mm_diags
-import mm_name
-
-import mm_type
-
-import mm_genpcl
-
-import mm_export
-
-import* mm_pcl
-import* pc_win64
-import pci_mcl as md
-import pc_libmcl
-
-tabledata() []ichar optionnames=
-
-	(load_sw,		"load"),
-	(fixup_sw,		"fixup"),
-	(parse_sw,		"parse"),
-	(name_sw,		"name"),
-	(type_sw,		"type"),
-
-	(pcl_sw,		"pcl"),
-	(asm_sw,		"asm"),
-	(asm2_sw,		"c"),
-	(obj_sw,		"obj"),
-	(dll_sw,		"dll"),
-	(exe_sw,		"exe"),
-	(run_sw,		"run"),
-
-	(pclexe_sw,		"pclexe"),
-	(asmexe_sw,		"asmexe"),
-
-	(sys_sw,		"sys"),
-	(minsys_sw,		"minsys"),
-	(nosys_sw,		"nosys"),
-	(nofile_sw,		"nofile"),
-	(rts_sw,		"rts"),
-	(norts_sw,		"norts"),
-
-	(debug_sw,		"debug"),
-
-	(ma_sw,			"ma"),
-	(docs_sw,		"docs"),
-	(export_sw,		"exp"),
-
-	(opt_sw,		"opt"),
-	(opt1_sw,		"opt1"),
-	(opt2_sw,		"opt2"),
-
-	(ast1_sw,		"ast1"),
-	(ast2_sw,		"ast2"),
-	(ast3_sw,		"ast3"),
-	(showpcl_sw,	"showpcl"),
-	(showasm_sw,	"showasm"),
-	(st_sw,			"st"),
-	(pst_sw,		"pst"),
-	(stflat_sw,		"stflat"),
-	(types_sw,		"types"),
-	(overloads_sw,	"overloads"),
-	(ss_sw,			"ss"),
-
-	(time_sw,		"time"),
-	(v_sw,			"v"),
-	(vv_sw,			"vv"),
-	(quiet_sw,		"q"),
-	(help_sw,		"h"),
-	(help2_sw,		"help"),
-	(ext_sw,		"ext"),
-	(out_sw,		"out"),
-	(outpath_sw,	"outpath"),
-	(unused_sw,		"unused"),
-	(set_sw,		"set"),
-end
-
-byte fpclexe
-byte fasmexe
-
-const logfile="mx.log"
-
-[sysparams.len]ichar extraparams	!after ":"
-[sysparams.len]ichar extravalues
-int nextraparams=0
-
-ichar outext=""				!for reporting of primary o/p file
-
-const maxoptionvar=25
-[maxoptionvar]ichar optionvars
-[maxoptionvar]ichar optionvalues
-int noptionvars
-
-int startclock,endclock
-
-global proc start_common(int os, target)=
-	unit p,q,r
-	int m,fileno,ntokens,t
-
-	startclock:=os_clock()
-
-	initdata(os,target)
-
-	getinputoptions()
-
-!	println "Passlevel:",passnames[passlevel],(prodmode|"P"|"D")
-!	println =inputfiles[1]
-!	println =outfile
-
-!	if debugmode and passlevel<parse_pass then return fi
-	if passlevel<parse_pass then return fi
-
-	if fverbose>=1 then
-		fprint "Compiling # to #",inputfiles[1]:"14jlp-",changeext(outfile,outext),$
-!		print (msyslevel+1|" [No sys]"," [Min sys]" | " [Full sys]")
-
-		println
-
-	fi
-
-	initsearchdirs()
-	remove(logfile)
-
-	do_loadmodules()
-
-	do_parse()
-
-	do_name()
-	do_type()
-
-	do_writema()
-
-	do_writeexports(outfile)
-
-	FIXSTLIST(STPROGRAM.DEFLIST)
-
-	do_genpcl()
-
-	if passlevel=run_pass then
-		do_runprog()
-	fi
-
-	if fverbose>=2 then
-		println "Finished."
-	fi
-
-	showlogfile()
-
-	if fshowtiming then
-		endclock:=os_clock()
-		println "Time",endclock-startclock,"ms"
-	fi
-end
-
-proc do_loadmodules=
-	if fbundled then
-		loadmafile()
-	fi
-	loadmainmodule(inputfiles[1])
-end
-
-proc do_parse=
-!	if debugmode and passlevel<parse_pass then return fi
-	if passlevel<parse_pass then return fi
-
-	if fwritedocs then
-		docfile:=fopen(changeext(outfile,"txt"),"w")
-	fi
-
-	for i:=2 to nmodules do
-		parsemodule(i)
-	od
-	parsemodule(1)
-
-
-	dostarimports()
-
-	if docfile then
-		fclose(docfile)
-	fi
-
-	if not debugmode or passlevel>=fixup_pass then
-		fixusertypes()
-	fi
-
-	if debugmode and fshowast1 then showast("AST1") fi
-end
-
-proc do_name=
-	if passlevel<name_pass then return fi
-
-	rx_typetable()
-	for i:=2 to nmodules do
-		rx_module(i)
-	od
-	rx_module(1)
-
-	if debugmode and fshowast2 then showast("AST2") fi
-end
-
-proc do_type=
-	if passlevel<type_pass then return fi
-
-	tx_typetable()
-		fixblockparams()
-
-	for i:=1 to nmodules do
-		tx_module(i)
-	od
-	tx_allprocs()
-
-	if debugmode and fshowast3 then showast("AST3") fi
-end
-
-proc showlogfile=
-	[256]char str
-	filehandle logdev
-	int size
-
-	if not debugmode then return fi
-
-	logdev:=fopen(logfile,"w")
-
-	if fshowasm and passlevel>=mcl_pass then
-		println @logdev,"PROC ASSEMBLY"
-		addtolog(asmfilename,logdev)
-	fi
-	if fshowpcl and passlevel>=pcl_pass then
-		println @logdev,"PROC PCL"
-		addtolog(pclfilename,logdev)
-	fi
-	if fshowast3 and passlevel>=type_pass then	addtolog("AST3",logdev) fi
-	if fshowast2 and passlevel>=name_pass then	addtolog("AST2",logdev) fi
-	if fshowast1 and passlevel>=parse_pass then	addtolog("AST1",logdev) fi
-	if fshowst then								showsttree("SYMBOL TABLE",logdev) fi
-	if fshowstflat then							showstflat("FLAT SYMBOL TABLE",logdev) fi
-
-	if fshowtypes then							printmodelist(logdev) fi
-
-	if fshowoverloads then						printoverloads(logdev) fi
-
-	size:=getfilesize(logdev)
-	fclose(logdev)
-
-	if size then
-		print @&.str,"\\m\\olded.bat -w ",logfile
-
-		if checkfile("mm.m") then
-			os_execwait(&.str,1,nil)
-		else
-			println "Diagnostic outputs written to",logfile
-		fi
-	fi
-
-	stop 0
-end
-
-proc initdata(int os, target)=
-	pcm_init()
-	lexsetup()
-	initassemsymbols()
-	init_tt_tables()
-	initbblib()
-
-	if os='W' then
-		fwindows:=1
-	else
-		flinux:=1
-	fi
-
-	case target
-	when 'X64' then
-		fx64:=1
-		if flinux then loaderror("Linux/x64") fi
-!	when 'C64' then
-!		fc64:=1
-!		ctarget:=1
-!	when 'C32' then
-!		fc32:=1
-!		ctarget:=1
-	else
-		loaderror("Bad os/target")
-	esac
-
-	addoptionvar("mm","1")
-end
-
-function loadmainmodule(ichar filespec)int=
-!Used for main module. Will always be first module loaded, module list
-!will be empty.
-!Load file as string
-!extract modulename
-!call compilemodile(modulename, filename, source)
-	[100]char modulename
-	[300]char path
-	ref byte source
-	int status
-	modulerec m
-	int i,fileno
-
-!set up special module to represent the whole program
-	pcm_clearmem(&moduletable[0],modulerec.bytes)
-
-	sourcefilenames[0]:="<dummy file>"
-	sourcefilepaths[0]:="<dummy path>"
-	sourcefiletext[0]:="<sourcefile0>"
-	sourcefilesizes[0]:=strlen(sourcefiletext[0])
-
-	moduletable[0].name:="PROGRAM"
-	moduletable[0].fileno:=0
-
-	stprogram:=createdupldef(nil,addnamestr("$prog"),programid)
-	moduletable[0].stmodule:=stprogram
-
-	fileno:=getmainfile(filespec)
-
-	infotext:=nil
-
-	strcpy(&.modulename,extractbasefile(filespec))
-	strcpy(&.path,extractpath(filespec))
-	if path[1] then
-		addsearchdir(&.path)
-	fi
-
-	addmodule(&.modulename,fileno)
-	addspecialtypes()
-
-return 1
-end
-
-function addmodule(ichar modulename,int fileno)int=
-!Add new module with given name
-!Source for module is already loaded in <source>, of given length
-!return module no just added
-
-!return new module number, or 0
-!The module entry is NOT linked to the module list until imports have been loaded.
-
-	modulerec m
-	const maximports=maxmodule
-	[maximports]ichar importnames
-
-	[0..maximports]byte importflags, importxd
-
-	[maximports]int importmoduleno
-	int nimports,i,status,k,flag,j,newmodno
-	ref modulerec pmodule
-
-	convlcstring(modulename)
-
-	pcm_clearmem(&m,m.bytes)
-
-	m.name:=pcm_copyheapstring(modulename)
-	m.fileno:=fileno
-
-	stmodule:=createnewmoduledef(stprogram,addnamestr(m.name))
-	m.stmodule:=stmodule
-
-	if nmodules>=maxmodule then
-		loaderror("Too many modules",modulename)
-	fi
-
-	pmodule:=&moduletable[newmodno:=++nmodules]
-
-	pmodule^:=m
-	pmodule^.importmap[newmodno]:=1
-	m.stmodule^.moduleno:=newmodno
-
-	clear importflags
-
-	nimports:=readimportlist(newmodno,&importnames,&importflags,&importxd,maximports)
-
-	for i to nimports do
-		flag:=0
-		if fverbose=3 then
-			println "Load import for",modulename,=importnames[i]
-		fi
-		k:=loadimport(importnames[i],importxd[i],modulename)
-		pmodule.importmap[k]:=1
-		pmodule.importstar[k]:=importflags[i]
-		importmoduleno[i]:=k
-	od
-	return newmodno
-end
-
-function readimportlist(int m, ref[]ichar importnames,
-	ref[0:]byte importflags, importxd, int maximports)int=
-	int n,flag,xdflag
-	ichar s
-	[100]char name,libname
-	ichar iname
-
-	startlex("RIL",m)
-	n:=0
-
-	do
-		lex()
-		case lx.symbol
-		when eofsym then
-			exit
-		when semisym,eolsym then
-
-		when kimportsym then
-			xdflag:=lx.subcode
-			flag:=0
-			lex()
-			if lx.symbol=mulsym then
-				flag:=1
-				lex()
-			fi
-
-			if lx.symbol<>namesym then
-				abortprogram("import: modulename expected")
-			fi
-			if ++n>=maximports then			!allow for extra msys module
-				abortprogram("too many imports")
-			fi
-
-			iname:=mapimport(lx.symptr.name)
-			importnames[n]:=pcm_copyheapstring(iname)
-			importflags[n]:=flag
-			importxd[n]:=xdflag
-
-			repeat lex() until lx.symbol<>namesym
-
-		when kimportpathsym then
-			lex()
-			if lx.symbol=stringconstsym then
-				addsearchdir(lx.svalue)
-				lex()
-			else
-				abortprogram("string path expected")
-			fi
-
-		when kmapmodulesym then
-			domapmodule()
-
-		else
-			exit
-		esac
-	od
-
-!make sure bsys is included on first module
-	int needbsys,needclib
-	ichar bsysname
-
-	case msyslevel
-	when 1 then
-		bsysname:="msystemp"
-	when 0,2 then
-		bsysname:="msysp"
-	esac
-
-	if nmodules=1 then
-		if msyslevel then
-			needbsys:=1
-
-			for i to n do
-				if eqstring(importnames^[i],bsysname) then
-						needbsys:=0
-						exit
-				fi
-			od
-		else
-			needbsys:=0
-		fi
-
-		if needbsys then
-			++n
-			importnames^[n]:=pcm_copyheapstring(bsysname)
-			importflags^[n]:=0
-			importxd[n]:=0
-		fi
-	fi
-	return n
-end
-
-function loadimport(ichar modulename,int xdflag,ichar ownername)int=
-!Look at request for adding module, which might already be loaded
-!Checks also that modules are added in the right order
-!Calls loadmodule to process the module and deal with /its/ imports
-!return modulen no of the existing or newly added module
-
-	int i,fileno
-	ichar ifilespec
-	[300]char filespec
-	ref char source
-	ichar newname
-
-	newname:=modulename
-
-	for i:=1 to nmodules do
-		if eqstring(moduletable[i].name,newname) then		!already loaded
-			return i
-		fi
-	od
-
-	fileno:=getmodulefile(modulename,ownername,xdflag)
-
-	if xdflag then
-		addcclib(modulename)
-	fi
-
-	return addmodule(newname,fileno)
-end
-
-proc initsearchdirs=
-	[300]char str1,str2
-	int i
-
-	nsearchdirs:=0
-	addsearchdir("c:/mx/")
-	addsearchdir(os_getmpath())
-	addsearchdir(os_gethostname())
-	addsearchdir("./")
-end
-
-proc addsearchdir(ichar path)=
-	for i to nsearchdirs do
-		if eqstring(searchdirs[i],path) then return fi
-	od
-	if nsearchdirs>maxsearchdirs then
-		loaderror("Too many search paths")
-	fi
-	searchdirs[++nsearchdirs]:=pcm_copyheapstring(path)
-end
-
-proc getinputoptions=
-	const slash='-'
-	int i,j,k
-	int paramno,pmtype,sw,ncolons,passfixed
-	ichar name,value,filename,ext
-	[300]char filespec
-
-	prodmode:=1
-	paramno:=2
-	ncolons:=0
-
-	while pmtype:=nextcmdparam(paramno,name,value,"m") do
-
-		case pmtype
-		when pm_option then
-
-			convlcstring(name)
-			for sw to optionnames.len do
-				if eqstring(name,optionnames[sw]) then
-					do_option(sw,value)
-					exit
-				fi
-			else
-				println "Unknown option:",name
-				stop 99
-			od
-		when pm_sourcefile then
-			if ninputfiles>=maxmodule then
-				loaderror("Too many input files")
-			fi
-			convlcstring(name)
-			inputfiles[++ninputfiles]:=pcm_copyheapstring(name)
-		when pm_libfile then
-			if nlibfiles>=maxlibfile then
-				loaderror("Too many lib files")
-			fi
-			libfiles[++nlibfiles]:=pcm_copyheapstring(name)
-		when pm_colon then
-			if ++ncolons>1 then
-				name:=":"
-				value:=nil
-				goto doextra
-			fi
-		when pm_extra then
-	doextra::
-			extraparams[++nextraparams]:=pcm_copyheapstring(name)
-			extravalues[nextraparams]:=pcm_copyheapstring(value)
-		esac
-
-	od
-
-	if prodmode=debugmode=0 then
-		passlevel:=exe_pass
-		outext:="exe"
-		prodmode:=1
-	elsif prodmode and passlevel=0 then
-		passlevel:=exe_pass
-		outext:="exe"
-	elsif debugmode and passlevel=0 then
-		passlevel:=mcl_pass
-		outext:="asm"
-	fi
-
-	if msyslevel=-1 then
-		msyslevel:=(prodmode|2|0)
-		msyslevel:=(prodmode|2|0)
-	fi
-
-	if ninputfiles=0 then
-		showcaption()
-		println "Usage:"
-		println "	",,sysparams[1],"filename[.m]     # Compile project to executable"
-		println "	",,sysparams[1],"-help            # Other options"
-		stop
-
-	elsif ninputfiles=1 then
-		filename:=inputfiles[1]				!primary file name
-
-		ext:=extractext(filename)
-		if eqstring(ext,"ma") then
-			fbundled:=1
-			mafilename:=pcm_copyheapstring(filename)
-			inputfiles[1]:=pcm_copyheapstring(changeext(filename,"m"))
-		fi
-
-!default output
-		outfile:=pcm_copyheapstring(filename)
-
-		if destfilename then
-			outfile:=destfilename
-		elsif destfilepath then
-			strcpy(&.filespec,destfilepath)
-			strcat(extractfile(&.filespec), outfile)
-			outfile:=pcm_copyheapstring(&.filespec)	
-		fi
-	else
-		loaderror("Specify one lead module only")
-	fi
-
-	case msyslevel
-	when 1 then
-		addmodulemapping("msys","msystemp")
-	when 0,2 then	
-		addmodulemapping("msys","msysp")
-	esac
-
-	asmfilename:=getoutfilename(outfile,"asm")
-	pclfilename:=getoutfilename(outfile,"pcl")
-	exefilename:=getoutfilename(outfile,"exe")
-	dllfilename:=getoutfilename(outfile,"dll")
-	objfilename:=getoutfilename(outfile,"obj")
-	mafilename:=getoutfilename(outfile,"ma")
-	expfilename:=getoutfilename(outfile,"exp")
-
-end
-
-proc do_option(int sw, ichar value)=
-	static byte outused, outpathused
-
-	switch sw
-	when load_sw then passlevel:=load_pass
-	when parse_sw then passlevel:=parse_pass
-	when fixup_sw then passlevel:=fixup_pass
-	when name_sw then passlevel:=name_pass
-	when type_sw then passlevel:=type_pass
-	when pcl_sw then passlevel:=pcl_pass; outext:="pcl"
-	when asm_sw then passlevel:=asm_pass; outext:="asm"
-	when obj_sw then passlevel:=obj_pass; outext:="obj"
-	when exe_sw then passlevel:=exe_pass; outext:="exe"
-	when dll_sw then passlevel:=dll_pass; outext:="dll"
-	when run_sw then passlevel:=run_pass; outext:="exe"
-	when pclexe_sw then passlevel:=pcl_pass; outext:="pcl"; fpclexe:=1
-	when asmexe_sw then passlevel:=asm_pass; outext:="asm"; fasmexe:=1
-
-	when ma_sw then fwritema:=1; outext:="ma"
-	when export_sw then fwriteexports:=1
-	when docs_sw then fwritedocs:=1
-
-	when sys_sw then msyslevel:=2
-	when minsys_sw then msyslevel:=1
-	when nosys_sw then msyslevel:=0
-	when nofile_sw then fnofile:=1
-!	when rts_sw then fdorts:=1
-	when norts_sw then fdorts:=0
-
-	when opt_sw then foptim:=2
-	when opt1_sw then foptim:=1
-	when opt2_sw then foptim:=2
-
-	when debug_sw then debugmode:=1; prodmode:=0
-
-	when time_sw then fshowtiming:=1
-
-	when v_sw then fverbose:=2
-
-	when vv_sw then fverbose:=3
-
-	when quiet_sw then fverbose:=0
-
-	when help_sw,help2_sw then showhelp(); stop
-
-	when ext_sw then dointlibs:=0
-
-	when out_sw then
-		if outpathused then loaderror("mixed out/path") fi
-		destfilename:=pcm_copyheapstring(value)
-		outused:=1
-
-	when outpath_sw then
-		if outused then loaderror("mixed out/path") fi
-		if (value+strlen(value)-1)^ not in ['\\','/'] then
-			loaderror("Path needs to end with \\ or /")
-		fi
-		destfilepath:=pcm_copyheapstring(value)
-		outpathused:=1
-
-	when unused_sw then fcheckunusedlocals:=1
-
-	when ast1_sw then fshowast1:=1
-	when ast2_sw then fshowast2:=1
-	when ast3_sw then fshowast3:=1
-	when showpcl_sw then fshowpcl:=1
-	when showasm_sw then fshowasm:=1
-	when st_sw then fshowst:=1
-	when pst_sw then fshowpst:=1
-	when stflat_sw then fshowstflat:=1
-	when types_sw then fshowtypes:=1
-	when overloads_sw then fshowoverloads:=1
-	when ss_sw then fshowss:=1
-
-!	when windows_sw then fwindows:=1
-!	when linux_sw then flinux:=1
-!	when x64_sw then fx64:=1
-!	when c64_sw then fc64:=1
-!	when c32_sw then fc32:=1
-
-	endswitch
-
-end
-
-proc showcaption=
-	println "M Compiler [PCL]", $date, $time
-end
-
-proc showstflat(ichar caption,filehandle f)=
-	println @f,"PROC",caption
-	printstflat(f)
-	println @f
-end
-
-proc showsttree(ichar caption,filehandle f)=
-	println @f,"PROC",caption
-	printst(f,stprogram)
-	println @f
-end
-
-global proc showhelp=
-	static ichar helptext=strinclude("mm_help.txt")
-	println helptext
-end
-
-proc showast(ichar filename)=
-	filehandle f
-
-	f:=fopen(filename,"w")
-	return unless f
-
-	println @f,"PROC",filename
-	printcode(f,"")
-	println @f
-	fclose(f)
-end
-
-proc domapmodule=
-!working in prescan using lx; have just seen "mapmodule"
-	[256]char genname, actualname,optionname,valuename
-	int cond,option
-
-	getpsname(&.genname)
-
-	if lx.symbol<>sendtosym then abortprogram("=> expected") fi
-
-	getpsname(&.actualname)
-
-	cond:=0
-
-	if lx.symbol=kwhensym then
-		getpsname(&.optionname)
-		if lx.symbol=eqsym then
-			getpsname(&.valuename)
-		else
-			strcpy(&.valuename,"1")
-		fi
-		cond:=1
-	fi
-
-	while lx.symbol not in [semisym,eofsym] do lex() od
-
-	if cond then
-		addmodulemapping(&.genname, &.actualname, &.optionname, &.valuename)
-	else
-		addmodulemapping(&.genname, &.actualname, nil,nil)
-	fi
-end
-
-global function mapimport(ichar name)ichar=
-	for i to nmodulemap do
-		if eqstring(name,genericmodules[i]) then
-			return actualmodules[i]
-		fi
-	od
-	return name
-end
-
-proc getpsname(ichar dest)=
-!read raw name or string from prescan code from next symbol
-!store string into dest, and move to next symbol
-!	[64]char str
-
-	lex()	
-	case lx.symbol
-	when namesym then
-		strcpy(dest,lx.symptr.name)
-	when stringconstsym then
-		strcpy(dest,lx.svalue)
-	when intconstsym then
-		lx.svalue:=strint(int(lx.value))
-
-	else
-		abortprogram("map1")
-	esac
-	lex()
-end
-
-global proc addmodulemapping(ichar old, newx, optionname=nil, valuename=nil)=
-	int option
-
-	if optionname then					!conditional
-		option:=findoptionvar(optionname)
-		if option then
-
-			if eqstring(optionname,optionvars[option]) then
-				if not eqstring(optionvalues[option],valuename) then
-					return
-				fi
-			fi
-		else
-			return						!just assume false when not found
-		fi
-	fi
-
-	if nmodulemap>=maxmodulemap then
-		abortprogram("Too many module mappings")
-	fi
-	for i to nmodulemap do
-		if eqstring(old,genericmodules[i]) then
-			println old
-			abortprogram("Dupl module mapping")
-		fi
-	od
-	genericmodules[++nmodulemap]:=pcm_copyheapstring(old)
-	actualmodules[nmodulemap]:=pcm_copyheapstring(newx)
-end
-
-proc addoptionvar(ichar name, value)=
-	if noptionvars>=maxoptionvar then
-		abortprogram("Too many option vars")
-	fi
-	for i to noptionvars do
-		if eqstring(name,optionvars[i]) then
-			println name
-			abortprogram("Dupl optionvar")
-		fi
-	od
-
-	optionvars[++noptionvars]:=pcm_copyheapstring(name)
-	if value=nil then
-		optionvalues[noptionvars]:="1"
-	else
-		optionvalues[noptionvars]:=pcm_copyheapstring(value)
-	fi
-end
-
-function findoptionvar(ichar name)int=
-	for i to noptionvars do
-		if eqstring(name, optionvars[i]) then
-			return i
-		fi
-	od
-	return 0
-end
-
-global proc initassemsymbols=
-!initialise hash table from kwddata
-	[32]char str
-	int i
-
-	for i to md.mclnames.len do
-		addreservedword(md.mclnames[i]+2,asmopcodesym,i)
-	od
-
-	for i to md.dregnames.len do
-		addreservedword(md.dregnames[i],regsym,md.regindices[i],md.regsizes[i])
-	od
-
-
-	for i to md.xmmregnames.len do
-		addreservedword(md.xmmregnames[i],xregsym,i)
-	od
-
-	for i to md.fregnames.len do
-		addreservedword(md.fregnames[i],fregsym,i)
-	od
-
-	for i to md.mregnames.len do
-		addreservedword(md.mregnames[i],mregsym,i)
-	od
-
-	for i to md.jmpccnames.len do
-		addreservedword(md.jmpccnames[i],jmpccsym,md.jmpcccodes[i])
-	od
-
-	for i to md.setccnames.len do
-		addreservedword(md.setccnames[i],setccsym,md.setcccodes[i])
-	od
-
-	for i to md.cmovccnames.len do
-		addreservedword(md.cmovccnames[i],movccsym,md.cmovcccodes[i])
-	od
-
-!for i to segmentnames.len do
-	for i to md.segmentnames.upb do
-		strcpy(&.str,md.segmentnames[i])
-		str[strlen(&.str)-3]:=0
-		addreservedword(pcm_copyheapstring(&.str),segnamesym,i)
-	od
-
-	addreservedword("aframe",regsym,md.r14,4)
-	addreservedword("dframe",regsym,md.r14,8)
-	addreservedword("astack",regsym,md.r15,4)
-	addreservedword("dstack",regsym,md.r15,8)
-	addreservedword("dprog",regsym,md.r8,8)
-	addreservedword("dsptr",regsym,md.r9,8)
-end
-
-proc showmodules=
-
-	println "Modules:",nmodules
-	for i to nmodules do
-!	print moduletable[i].name, sourcefilepaths[moduletable[i].fileno],$
-		println moduletable[i].name, sourcefilepaths[moduletable[i].fileno],$
-
-		print "                 "
-		for k:=1 to nmodules do
-			fprint "# ",moduletable[i].importmap[k]
-		od
-		println
-
-		for k:=1 to nmodules when moduletable[i].importmap[k] do
-			println "		",moduletable[k].name
-		od
-
-		println
-	od
-end
-
-proc do_writema=
-	if fwritema then
-		if fbundled then
-			loaderror("-ma used with .ma input")
-		fi
-		writemafile(inputfiles[1],mafilename)
-		stop
-	fi
-end
-
-proc do_writeexports(ichar expfile)=
-	[300]char str
-
-	if not fwriteexports and passlevel<>dll_pass then
-		return
-	fi
-
-	writeexports(expfilename,moduletable[1].name)
-	if fwriteexports then
-		stop
-	fi
-end
-
-proc do_runprog=
-	[300]char str
-	int i
-
-	strcpy(&.str,outfile)
-
-	for i to nextraparams do
-		strcat(&.str," ")
-		strcat(&.str,extraparams[i])
-		if extravalues[i] then
-			strcat(&.str,":")
-			strcat(&.str,extravalues[i])
-		fi
-	od
-
-	os_execwait(&.str)
-end
-
-proc dostarimports=
-!fixup up import*
-	ref modulerec pm
-	int m, star
-
-	for i to nmodules do
-		for k to nmodules when moduletable[i].importmap[k] and moduletable[i].importstar[k] do
-			pm:=&moduletable[k]
-			for j to nmodules when pm.importmap[j] do
-				moduletable[i].importmap[j]:=1
-			od
-			m:=moduletable[i].importmap[k]
-			star:=moduletable[i].importstar[k]
-		od
-	od
-
-end
-
-proc fixstlist(symbol d)=
-
-	while d, d:=d.nextdef do
-		fixst(d)
-	od
-
-end
-
-proc fixst(symbol d)=
-	unit p
-
-	d.fwdrefs:=nil					!shares with deflistx, no longer needed
-!
-	d.iscallback:=d.fflang=callbackff
-	if d.atvar then
-		p:=d.equivvar
-		if p.tag=j_addrof then p:=p.a fi
-		if p.tag<>j_name then serror("FIXST@") fi
-		p.def.isequivtarget:=1
-	fi
-
-	if ttbasetype[d.mode] in [tarray,trecord] or d.isequivtarget or d.atvar then
-		d.noreg:=1
-	fi
-
-	fixstlist(d.deflist)
-
-end
-
-function getoutfilename(ichar file,ext)ichar=
-	return pcm_copyheapstring(changeext(file,ext))
-end
-
-proc do_genpcl=
-	[256]char str
-
-	if passlevel<pcl_pass then return fi
-
-	if passlevel=pcl_pass then
-		codegen_pcl(rts:0)
-	ELSIF FDORTS=0 THEN
-		PRINTLN "----NO RTS"
-		codegen_pcl(rts:0)
-	else
-		codegen_pcl(rts:1)
-	fi
-
-	if (passlevel=pcl_pass and not fnofile) or (debugmode and fshowpcl) then
-		pcl_writepclfile(pclfilename)
-	fi
-
-	case passlevel
-	when clang_pass then 
-		loaderror("-Clang not ready")
-	when pcl_pass then
-
-		if fpclexe then			!invoke PC on resulting .pcl
-			fprint @str,f"\mxp\pc -exe -rts #",pclfilename
-			println "Running:",str
-			stop system(str)
-		fi
-		return
-	esac
-
-!assume x64 target here
-	pcl_setasmhandler(domcl_assem)
-
-	pcl_genmcl(foptim)
-	if (passlevel=asm_pass and not fnofile) or (debugmode and fshowasm) then
-		pcl_writeasmfile(asmfilename)
-	fi
-
-	case passlevel
-	when asm_pass then
-		if fasmexe then			!invoke PC on resulting .pcl
-			fprint @str,f"aa -exe #",asmfilename
-			println "Running:",str
-			stop system(str)
-		fi
-	when exe_pass then
-		pcl_writeexefile(exefilename,foptim)
-	when dll_pass then
-		pcl_writedllfile(dllfilename,foptim)
-	when run_pass then
-		loaderror("CAN'T DO RUNEXE")
-	esac
-end
-
-=== mm_lex.m 17/45 ===
+=== mm_lex.m 7/45 ===
 import msys
 import mlib
 import clib
@@ -10340,6 +6249,4081 @@ proc lxreadstring(int termchar)=
 	od
 
 	t^:=0
+end
+=== mm_decls.m 8/45 ===
+import mm_decls
+import mm_tables
+import* mm_pcl
+
+global const maxmodule=200
+global const maxlibfile=50
+global const maxsourcefile=1000
+
+global type unit   = ref unitrec
+global type symbol = ref strec
+
+global macro pr(a,b)	= (a<<16 ior b)
+
+global record tokenrec =		!should be 16-byte record
+	byte symbol
+	byte subcode
+	word16 spare
+	word32 pos: (lineno:24, fileno:8)
+
+	union
+		ref strec symptr		!pointer to symbol table entry for name
+		int64 value				!64-bit int
+		real xvalue				!64-bit float
+		word64 uvalue			!64-bit word
+		ichar svalue			!pointer to string or charconst (not terminated)
+!		ref qint qvalue			!128-bit int/word
+		ref int128 pvalue128	!128-bit int/word
+	end
+end
+
+global record overloadrec =
+	int32 amode
+	int32 bmode
+	int32 rmode
+	int16 moduleno
+	int16 flags
+	unit fncode
+	ref overloadrec nextoverload
+end
+
+global record dllprocrec =
+	ichar name
+	ref proc address
+	int dllindex
+end
+
+global record procrec =
+	symbol def
+	ref procrec nextproc
+end
+
+global record fwdrec =
+	ref fwdrec nextfwd
+	int32 offset
+	int16 reltype
+	int16 seg
+end
+
+global record typenamerec=
+	symbol owner			!owner of scope where typename was encountered
+							!moduleno required by resolvetypename can be derived from owner
+!A/B used as follows
+!  nil B			Simple typename B
+!  A   B			Dotted pair A.B
+!  A   nil          I think represents a typeof(x) where x is a name
+	symbol defa
+	union
+		symbol defb
+		symbol def
+	end
+	ref int32 pmode
+end
+
+global record posrec=
+	word32 pos: (lineno:24, fileno:8)
+end
+
+global record uflagsrec =
+	[7]byte	codes
+	byte	ulength
+end
+
+global record strec =
+	ichar name
+	ref strec owner
+	ref strec deflist
+	union
+		ref strec deflistx
+!		ref pstrec pdef
+		ref fwdrec fwdrefs	!fwd ref chain
+	end
+	ref strec nextdef
+	ref strec nextdupl
+	ref strec firstdupl			!point to generic version
+	psymbol pstdef
+
+	unit code			!var idata/proc body/taggedunion tag value/etc
+
+	int32 mode
+	byte namelen
+	byte symbol
+	byte nameid
+	byte subcode
+
+	union
+		int32 index					!needs to hold pcindex (also indices for all symbols or .bc files)
+		int32 labelno				!for mcl anonymous labels; and for proc labels?
+	end
+	int32 offset
+
+	word32 pos: (lineno:24, fileno:8)
+	word16 flags: (
+		isglobal:2,
+		isstatic:1,
+		used:1,
+		txdone:1,
+		circflag:1,
+		islet:1,
+
+		iscallback:1,
+		addrof:1,
+		noreg:1,
+		equals:1,
+		isequivtarget:1,
+		atfield:1,
+		atvar:1,
+		isimport:1)
+	byte moduleno
+	byte reg
+
+	union
+		struct				!when a proc
+			ichar truename			!for imported name only
+			ref strec paramlist
+
+			byte asmused			!1 when proc contains asmcode
+			byte dllindex			!for dllproc: which dll in dlltable
+			byte extmodno			!for proc call chains: module no of proc owner
+			byte fflang				!0 windowsff. etc.
+			byte nretvalues			!function: number of return values (0 for proc)
+			byte varparams			!0 or 1; variadic params in B and FF
+			byte isthreaded			!0 or 1; variadic params in B and FF
+		end
+
+		struct				!when a record or record field
+			ref strec equivfield
+			uflagsrec uflags
+			int32 baseclass
+			byte bitfieldwidth		!width of bitfield in record
+			byte align				!0, 2, 4, 8, 16 or 255 (auto-align)
+			byte bitoffset		!0..31 for bitfields in records
+		end
+
+		struct				!when a param name
+			ref strec nextparam
+			byte parammode			!0=var_param, in_param, out_param
+			byte optional			!0 or 1	
+			byte variadic			!variadic parameter for B code
+		end
+
+		struct				!when a static or frame name
+			unit equivvar
+!			symbol equivvar
+!			byte equals				!0 or 1 if @ used (static/frame vars only)
+		end
+
+		struct						!macro param
+			ref void macro_dummy	!needs nextparam
+			ref strec nulldef		!generic st entry
+		end
+
+		struct						!when a tagged union
+			int32 enumtagmode
+		end
+
+
+		[24]byte dummy
+	end
+
+	int16 nrefs
+!	int16 pmode
+
+	union
+		int16 stindex		!label pass 2: 0, or 1-based index within coff symboltable
+		int16 maxalign		!for record types (doesn't fit above)
+		int16 regsize
+	end
+	byte reftype			!AX fields
+	byte segment
+	int16 importindex
+!	[2]BYTE PADDING
+
+end
+
+global record unitrec =
+	byte tag				!kcode tag number
+	byte hasa, hasb, hasc	!whether .a, .b or .c points to a unit/unitlist
+!	int32 lineno			!source lineno associated with item; fileno is in top byte
+	word32 pos: (lineno:24, fileno:8)
+
+	unit nextunit
+
+	union
+		struct
+			union
+				unit			a
+				symbol		def
+				symbol		labeldef
+				int64			value
+				word64			uvalue
+				real64			xvalue
+				ichar			svalue
+				int64			range_lower
+			end
+
+			union
+				unit			b
+				int64			range_upper
+			end
+		end
+		int128					value128
+		word128					uvalue128
+		struct
+			word64				low128
+			word64				high128
+		end
+	end
+
+	union
+		unit			c
+		[4]int16		cmppclmode
+	end
+
+	union						!misc stuff depends on tag
+		struct					!const string
+			word32 slength
+			byte isastring
+		end
+
+		struct					!name
+			byte dottedname		!for j_name: 1=resolved from fully qualified dotted seq
+			byte avcode			!j_name for/autovars: 'I','T','S' = index/to/step autovars
+		end
+
+		union					!asssemreg/xreg/mem
+			struct
+				byte reg
+				byte regix
+				byte scale
+				byte prefixmode
+
+				byte regsize
+				byte cond
+				byte spare2,spare3
+			end
+			word64 reginfo
+		end
+
+		union					!for makelist
+			word32 length		!number of elements
+			byte makearray		!1 for makelist to create array-var not list-var
+		end
+		byte addroffirst	!1 for j_nameaddr when derived from &.name
+
+		word32 offset			!for j_dot
+		byte ifretflag		!1 when 'if' in return value path (force "if" in C target)
+		int32 whenlabel		!label no associated with when expr; for recase
+
+		int32 trylevel
+
+		struct
+			union
+				int16 bitopindex	!
+				int16 opcindex		!operator nodes
+				int16 fnindex		!sysfn_add_var etc
+				int16 condcode		!pcl_eq etc; for j_eq etc
+				int16 asmopcode		!for j_assem
+				int16 bfcode
+			end
+		end
+		int32 index
+		[4]byte cmpgenop			!cmpchain: up to 8 genops
+	end
+
+	int32 mode
+	union
+		int32 convmode	!convert/typepun: target mode (will be widened to give unit mode)
+		int32 memmode	!name/ptr/index/dot: void=LVALUE; non-void=RVALUE
+	end
+	byte moduleno
+	byte initlet		!1 for an assignment that initialises a let
+	byte isconst		!1 for j_const, and j_makerange with const range
+	byte resultflag		!1 when the result of this unit is needed; 0=void or discarded
+	byte pclop			!generic operator for j_bin, incr etc
+	byte pclmode		!eg kadd:i64
+
+	byte istrueconst	!1 for actual "123" etc, not result of reduction
+	byte spare
+end
+
+
+global record modulerec =
+	ichar name
+	symbol stmodule
+	int fileno
+	union
+		ichar asmstr
+		ichar clangstr
+	end
+	int strlength
+	[maxmodule]byte importmap
+	[maxmodule]byte importstar
+	symbol stinitproc
+	ref tokenrec tklist
+!	int16 moduleno
+end
+
+global const maxsearchdirs=10
+global [maxsearchdirs]ichar searchdirs
+global int nsearchdirs=0
+
+global symbol stprogram		!root into the symbol table
+global symbol stmodule		!main module
+global symbol stsysmodule	!optional sys module (needed for name resolving)
+global symbol alldeflist		!link together all (user) symbols
+
+global tokenrec lx				!provides access to current token data
+global tokenrec nextlx			!provides access to next token
+
+global [0..maxmodule]modulerec moduletable
+global [0..maxmodule]ichar inputfiles
+global [0..maxlibfile]ichar libfiles
+global [0..maxsourcefile]ichar sourcefilenames
+global [0..maxsourcefile]ichar sourcefilepaths
+global [0..maxsourcefile]ichar sourcefiletext
+global [0..maxsourcefile]int sourcefilesizes
+global [0..maxsourcefile]byte issupportfile
+global int nmodules
+global int nsourcefiles
+global int ninputfiles
+global int nlibfiles
+
+!.ma file directory
+global [0..maxsourcefile]ichar mafilenames
+global [0..maxsourcefile]int mafilesizes
+global [0..maxsourcefile]int mafileoffsets
+global [0..maxsourcefile]ichar mafiletext
+global [0..maxsourcefile]byte mafilefileno			!0 or index into sourcefile tables
+global [0..maxsourcefile]byte mafilesupport			!1 means support file eg. for strinclude
+global int nmafiles
+global ichar mafilesource
+
+global symbol currmodule
+global int currmoduleno				!used when compiling modules
+
+global const int maxtype=6'000
+
+global int ntypes
+
+global [0..maxtype]symbol ttnamedef
+global [0..maxtype]symbol	ttowner		!for	ttlowerexpr/rtlengthexpr
+
+global [0..maxtype]int32	ttbasetype		!basetype
+global [0..maxtype]ichar	ttname
+
+global [0..maxtype]int32	ttsize
+global [0..maxtype]byte	ttsizeset
+global [0..maxtype]int32	ttlower 		!.lbound (default 1)
+global [0..maxtype]int32	ttlength 		!elements in array/record/tuple
+global [0..maxtype]ref[]int32	ttmult 	!ttlength elements in tuple
+
+global [0..maxtype]unit	ttdimexpr		!length, lower:length, or lower..upper
+
+global [0..maxtype]int32	tttarget 		!for array/ref types
+global [0..maxtype]int32	ttkeytype 		!for dict
+global [0..maxtype]byte	ttusercat
+global [0..maxtype]int32	ttlineno
+
+global [0..maxtype]byte	ttisint			!is i8 i16 i32 i64 i128
+global [0..maxtype]byte	ttisword			!is u8 u16 u32 u64 u128
+global [0..maxtype]byte	ttisreal			!is r32 r64
+global [0..maxtype]byte	ttisinteger		!is i8..i64/u8..u64/c8..c64
+global [0..maxtype]byte	ttisallnum		!all numeric types including short/decimal
+global [0..maxtype]byte	ttismainnum		!all numerics excl short
+global [0..maxtype]byte	ttisshort		!is i8/i16/i32/u8/u16/u32/c8/c16
+global [0..maxtype]byte	ttisref			!is a pointer
+
+!global const int maxtypename=4'000
+!global const int maxtypename=8'000
+global const int maxtypename=12'000
+global [0..maxtypename]typenamerec typenames
+global [0..maxtypename]posrec typenamepos
+global int ntypenames
+
+global [0..maxtype]byte typestarterset
+
+global symbol currproc
+
+global int alineno=0
+
+global int debug=0
+global int assemmode=0
+
+global ref procrec proclist,proclistx			!linked list of all procs
+global ref procrec staticlist,staticlistx		!linked list of all static
+global ref procrec constlist,constlistx		!linked list of all export consts
+
+global const maxmodulemap=25
+global [maxmodulemap]ichar genericmodules
+global [maxmodulemap]ichar actualmodules
+global int nmodulemap
+
+global unit nullunit
+
+global int targetbits=64
+global int targetsize=8
+
+global [20]ichar docstrings
+global int ndocstrings
+
+global const maxdlllib=50
+global const maxdllproc=500
+
+global int ndllnametable
+global int ndllproctable
+global [maxdlllib]ichar dllnametable
+global [maxdlllib]word64 dllinsttable
+global [maxdllproc]dllprocrec dllproctable
+
+global int fverbose=1		!1=normal, 0=less verbose, 2/3 = more verbose
+
+global int msyslevel=2		!0/1/2 = none/min/normal
+global byte fvarnames=0		!display of names in asm/mcl
+
+global byte fbundled=0		!1 when .ma file is being compiler
+global byte fwritema
+global byte fwriteexports
+global byte fwritedocs
+
+global byte fexe
+global byte fobj
+global byte fwritelibs
+global byte fshowtiming
+global byte fshowss
+global byte fshowpcl
+global byte fshowasm
+global byte fshowast1
+global byte fshowast2
+global byte fshowast3
+global byte fshowst
+global byte fshowstflat
+global byte fshowtypes
+global byte fshowoverloads
+global byte foptim
+global byte fcheckunusedlocals=0
+global byte fwindows
+global byte flinux
+global byte fx64
+global byte fssonly
+global byte fnofile
+global byte fdorts=1
+
+global byte dointlibs=1
+
+!pcl/mcl-pass are relevant only for x64 target, and not allowed for 
+global tabledata() []ichar passnames =
+	(load_pass,		$),
+	(parse_pass,	$),
+	(fixup_pass,	$),
+	(name_pass,		$),
+	(type_pass,		$),
+	(pcl_pass,		$),
+	(mcl_pass,		$),		!all-inclusive up to this point (includes all prev passes)
+	(asm_pass,		$),		!only one of these 3 will be done
+	(obj_pass,		$),		!
+	(exe_pass,		$),		!
+	(dll_pass,		$),		!
+	(run_pass,		$),		!will do up to .exe then run the .exe
+	(clang_pass,	$),
+end
+
+!passlevel used for compiler debug only
+global int passlevel=0
+global int prodmode=0
+global int debugmode=0
+
+global ichar outfile					!one of the following two
+global ichar destfilename				!nil, or sets outfile
+global ichar destfilepath				!nil, or sets path (can't be mixed with destfilename)
+global ichar asmfilename				!set from outfile
+global ichar pclfilename				!
+global ichar exefilename				!
+global ichar dllfilename				!
+global ichar objfilename				!
+global ichar mafilename					!
+global ichar expfilename				!
+
+global symbol extendtypelist
+
+global [0:jtagnames.len]ref overloadrec overloadtable
+
+global const maxcclibs=10				!libs passed to gcc/tcc
+global [maxcclibs]ichar cclibtable
+global int ncclibs
+
+global ichar infotext					!mainprog.txt for c target; nil if not used
+
+global int nunits
+=== mm_tables.m 9/45 ===
+import* mm_pcl
+
+!import mm_decls
+!import* mm_pcl
+
+global tabledata() 	[0:]ichar stdnames,
+		[0:]byte stdbits,
+		[0:]byte stdcodes,
+		[0:]byte stdtopcl =
+!    type        name    bits   code   tabtype     tabtype2    pcltype     cat         cat2
+    (tvoid=0,    "void",    0,    0,	tpvoid),
+
+    (tc64,       "c64",    64,   'C',	tpu64),
+    (tu64,       "u64",    64,   'U',	tpu64),
+    (tu128,      "u128",  128,   'U',	tpu128),
+    (ti64,       "i64",    64,   'I',	tpi64),
+    (ti128,      "i128",  128,   'I',	tpi128),
+    (tr32,       "r32",    32,   'R',	tpr32),
+    (tr64,       "r64",    64,   'R',	tpr64),
+
+    (trange,     "range", 128,   'G',	tpu128),  
+    (tref,       "ref",    64,   'P',	tpu64),  
+    (trefchar,   "ichar",  64,   'P',	tpu64),  
+    (tarray,     "array",   0,   'A',	tpblock),  
+    (tslice,     "slice", 128,     0,	tpu128),  
+    (trecord,    "rec",     0,     0,	tpblock),  
+
+    (tblock,     "block",   0,     0,	tpblock),  
+    (tshort,     "short",   0,     0,	tpvoid),  
+
+    (tc8,        "c8",      8,   'C',	tpu8),  
+    (tc16,       "c16",    16,   'C',	tpu16),  
+    (ti8,        "i8",      8,   'I',	tpi8),  
+    (ti16,       "i16",    16,   'I',	tpi16),  
+    (ti32,       "i32",    32,   'I',	tpi32),  
+    (tu8,        "u8",      8,   'U',	tpu8),
+    (tu16,       "u16",    16,   'U',	tpu16),
+    (tu32,       "u32",    32,   'U',	tpu32),  
+
+    (tenum,      "enum",   64,     0,	tpu64),  
+
+    (tauto,      "auto",    0,     0,	tpvoid),  
+    (tany,       "any",     0,     0,	tpvoid),  
+    (tproc,      "proc",    0,     0,	tpvoid),  
+    (tlabel,     "label",   0,     0,	tpvoid),  
+    (ttype,      "type",   64,     0,	tpvoid),  
+    (tbitfield,  "bitfl",   8,     0,	tpvoid),  
+    (ttuple,     "tuple",   0,     0,	tpvoid),  
+    (tpending,   "pend",    0,     0,	tpvoid),  
+
+    (tlast,      "last ",   0,     0,	tpvoid),  
+end
+
+global const tuser	= tlast
+
+global const tint	= ti64
+global const tword	= tu64
+global const treal	= tr64
+global const tfirstnum	= tc64
+global const tlastnum	= tr64
+
+global const tfirsttabletype	= tc64			!bounds used in optables
+global const tlasttabletype		= tenum
+
+global const maxtuplesize = 4
+
+global int trefproc
+global int treflabel
+
+global []int typerank=(
+	1,	!tc64
+	2,	!tu64
+	4,	!tu128
+	3,	!ti64
+	5,	!ti128
+	6,	!tr32
+	7)	!tr64
+
+global tabledata() []ichar sysfnnames, []byte sysfnparams, []byte sysfnres =
+	(sysfn_init,				$,	0,	0),
+	(sysfn_print_startfile,		$,	0,	0),
+	(sysfn_print_startstr,		$,	0,	0),
+	(sysfn_print_startptr,		$,	0,	0),
+	(sysfn_print_startcon,		$,	0,	0),
+	(sysfn_print_setfmt,		$,	0,	0),
+	(sysfn_print_nogap,			$,	0,	0),
+	(sysfn_print_space,			$,	0,	0),
+	(sysfn_print_i64,			$,	0,	0),
+	(sysfn_print_i64_nf,		$,	0,	0),
+	(sysfn_print_u64,			$,	0,	0),
+	(sysfn_print_r64,			$,	0,	0),
+	(sysfn_print_r32,			$,	0,	0),
+	(sysfn_print_i128,			$,	0,	0),
+	(sysfn_print_u128,			$,	0,	0),
+	(sysfn_print_str,			$,	0,	0),
+	(sysfn_print_str_nf,		$,	0,	0),
+	(sysfn_print_strsl,			$,	0,	0),
+	(sysfn_print_ptr,			$,	0,	0),
+	(sysfn_print_ptr_nf,		$,	0,	0),
+	(sysfn_print_c8,			$,	0,	0),
+	(sysfn_print_newline,		$,	0,	0),
+	(sysfn_print_end,			$,	0,	0),
+	(sysfn_read_i64,			$,	0,	0),
+	(sysfn_read_r64,			$,	0,	0),
+	(sysfn_read_str,			$,	0,	0),
+	(sysfn_read_fileline,		$,	0,	0),
+	(sysfn_read_strline,		$,	0,	0),
+	(sysfn_read_conline,		$,	0,	0),
+
+	(sysfn_getnprocs,			$,	0,	1),		!access functions
+!	(sysfn_getnexports,			$,	0,	1),
+	(sysfn_getprocname,			$,	0,	1),
+	(sysfn_getprocaddr,			$,	0,	1),
+!	(sysfn_getprocexport,		$,	0,	1),
+end
+!
+global [sysfnnames.len]psymbol sysfnhandlers
+
+!global [sysfnnames.len]int sysfnproclabels
+
+global int mlineno
+global byte fshowpst
+
+
+!!---
+global tabledata() [0:]ichar jtagnames, [0:]byte jisexpr =
+!Basic units; these don't follow normal rules of params needing to be units or lists
+!jisexpr=1/2 when unit returns a value; 1 means unary, 2 binary op,
+! 3 means returns a value, but is not a unary or binary op 
+
+!a,b,c are unitrec refs, which can be a single unit, or a linked-list chain
+!(usually in forward order)
+!	L means .a/b/c pointing to a unitlist; L can be nil for an empty list
+!	u means .a/b/c pointing to a single unit
+!	u/nil means can be nil
+
+
+![a=u] means a is a unit/list, or is nil
+
+	(j_none=0,		$,		0), ! For tagname lookups when tag is zero
+	(j_const,		$,		3), ! value/etc=value, typeno=type code
+	(j_null,		$,		3), ! Place holder unit: means 'param no present' when used where a param is expected
+	(j_name,		$,		3), ! def=nameptr
+	(j_namelv,		$,		3), ! def=nameptr
+	(j_block,		$,		0), ! a=L
+	(j_stmtblock,	$,		0), ! a=L
+	(j_decimal,		$,		3), ! svalue=str, slength
+	(j_assem,		$,		0), ! svalue=str, slength
+	(j_assemmacro,	$,		0), !
+	(j_assemreg,	$,		0), !
+	(j_assemxreg,	$,		0), !
+	(j_assemmem,	$,		0), !
+	(j_strinclude,	$,		0), !
+
+!Logical Operators
+
+	(j_andl,		$,		2), ! a b	This group are for conditional expressions (no result)
+	(j_orl,			$,		2), ! a b
+	(j_xorl,		$,		2), ! a b
+	(j_notl,		$,		1), ! a
+	(j_istruel,		$,		1), ! a
+
+!Expressions and Operators
+
+	(j_makelist,	$,		3), ! a=L, b=[u], length=N; element list/lower bound expr
+	(j_makerange,	$,		3), ! a b
+	(j_makeset,		$,		3), ! a=L, length=N
+	(j_makedict,	$,		3), !
+	(j_makeslice,	$,		3), !
+	(j_exprlist,	$,		3), ! a=u...	List of expressions, as (a;b;c,	0), rather than (a,b,c)
+	(j_multexpr,	$,		3), !
+	(j_returnmult,	$,		3), !
+
+	(j_keyword,		$,		3), ! def=st entry
+	(j_keyvalue,	$,		3), ! a b
+	(j_assign,		$,		3), ! a b
+	(j_deepcopy,	$,		3), ! a b
+	(j_callfn,		$,		3), ! a b
+!	(j_applyop,		$,		0), ! opcode b c
+!	(j_applyopx,	$,		1), ! opcode b c
+	(j_new,			$,		3), ! newmode=T, a=L, length=N
+	(j_destroy,		$,		0), ! a=L, length=N
+!	(j_clear,		$,		0), !
+
+!	(j_setcc,		$,		2), ! a b
+	(j_cmp,			$,		2), ! a b
+	(j_cmpchain,	$,		1), ! a b
+	(j_bin,			$,		2), ! a b
+	(j_unary,		$,		1), ! a b
+	(j_binto,		$,		2), ! a b
+	(j_unaryto,		$,		1), ! a b
+	(j_incr,		$,		3), ! a	++a
+
+	(j_inrev,		$,		2), ! a b
+	(j_inrange,		$,		2), ! a b
+	(j_inset,		$,		2), ! a b
+	(j_clamp,		$,		2), ! a b
+
+	(j_flexptr,		$,		3), ! a b
+	(j_stringz,		$,		3), ! a b
+	(j_sliceptr,	$,		3), ! a b
+
+	(j_index,		$,		3), ! a b		a[b]
+	(j_indexlv,		$,		3), ! a b		a[b]
+	(j_slice,		$,		3), ! a b		a[b]
+	(j_dot,			$,		3), ! a b opcode	a.b; opcode=0/1/2 used for signalling in rx pass
+	(j_dotlv,		$,		3), ! a b opcode	a.b; opcode=0/1/2 used for signalling in rx pass
+	(j_dotindex,	$,		3), ! a b		a[b]
+	(j_dotslice,	$,		3), ! a b		a[b]
+	(j_anddotslice,	$,		3), ! a b		a[b]
+	(j_anddotindex,	$,		3), ! a b		a[b]
+
+	(j_ptr,			$,		3), ! a		a^
+	(j_ptrlv,		$,		3), ! a		a^
+	(j_addrof,		$,		3), ! a		&a
+	(j_addroffirst,	$,		3), ! a		&a
+	(j_convert,		$,		3), ! typeno=T a		T(a)			T
+	(j_shorten,		$,		3), !
+	(j_autocast,	$,		3), ! typeno=T a		T(a)			T
+	(j_typepun,		$,		3), ! typeno=T a		T@(a)			T
+	(j_typeconst,	$,		3), ! typeno=T			typeconst(T)
+	(j_operator,	$,		3), ! opcode=opc
+	(j_upper,		$,		3), ! a		$					T
+
+	(j_bitwidth,	$,		1), ! a
+	(j_bytesize,	$,		1), ! a
+	(j_typeof,		$,		3), ! a
+	(j_typestr,		$,		1), ! a
+!	(j_sliceptr,	$,		1), ! a
+	(j_bitfield,	$,		3), ! a
+
+	(j_minvalue,	$,		3), ! a
+	(j_maxvalue,	$,		3), ! a
+
+!Translator Variables
+
+	(j_cvlineno,	$,		3), ! 
+	(j_cvstrlineno,	$,		3), ! 
+	(j_cvmodulename,$,		3), ! 
+	(j_cvfilename,	$,		3), ! 
+	(j_cvfunction,	$,		3), ! 
+	(j_cvdate,		$,		3), ! 
+	(j_cvtime,		$,		3), ! 
+	(j_cvversion,	$,		3), ! 
+	(j_cvtypename,	$,		3), ! 
+	(j_cvtargetbits,$,		3), ! 
+	(j_cvtargetsize,$,		3), ! 
+	(j_cvtargetcode,$,		3), ! 
+	(j_cvnil,		$,		3), ! 
+	(j_cvpi,		$,		3), ! 
+	(j_cvtrue,		$,		3), ! 
+	(j_cvfalse,		$,		3), ! 
+
+	(j_whenthen,	$,		0), ! a=L b=u
+	(j_elsif,		$,		0), ! opcode=condcode, a
+	(j_fmtitem,		$,		3), ! a b  x/fmtstr
+	(j_nogap,		$,		3), ! 
+	(j_space,		$,		3), ! 
+
+!Statements
+
+	(j_callproc,	$,		0), ! a=fn b=L, length
+	(j_return,		$,		0), ! a=x/nil
+	(j_syscall,		$,		0), ! a=x or nil
+
+!	(j_assign,		$,		3), ! a b
+	(j_to,			$,		0), ! a=N, b=body, c=tempvar/nil, def=name
+	(j_if,			$,		3), ! condcode a=then b=else
+	(j_longif,		$,		3), ! a=(elsif ...) b=else		L is series of kelsif pairs
+	(j_forup,		$,		0), ! 
+	(j_fordown,		$,		0), !
+	(j_forall,		$,		0), !
+	(j_forallrev,	$,		0), !
+	(j_while,		$,		0), ! a=x b=u
+	(j_repeat,		$,		0), ! a=u b=x
+	(j_goto,		$,		0), ! a=x
+	(j_labeldef,	$,		0), ! def=nameptr
+	(j_restart,		$,		0), ! [a=x]
+	(j_redo,		$,		0), ! [a=x]
+	(j_next,		$,		0), ! [a=x]
+	(j_exit,		$,		0), ! [a=x]
+	(j_do,			$,		0), ! [a=u
+	(j_case,		$,		3), ! a=x b=L [c=else]		L is series of whenthen pairs
+	(j_docase,		$,		0), ! a=x b=L [c=else]
+	(j_switch,		$,		3), ! a=x b=L [c=else]
+	(j_doswitch,	$,		0), ! a=x b=L [c=else]
+	(j_swap,		$,		0), ! a b
+	(j_select,		$,		3), ! Not implemented
+	(j_recase,		$,		0), ! Not implemented
+!	(j_recaseelse,	$,		0), ! Not implemented
+
+	(j_print,		$,		0), ! [a=dev] b=L
+	(j_println,		$,		0), ! [a=dev] b=L
+	(j_fprint,		$,		0), ! [a=dev] b=fmtstr c=L
+	(j_fprintln,	$,		0), ! [a=dev] b=fmtstr c=L
+	(j_cprint,		$,		0), ! [a=dev] b=fmtstr c=L
+	(j_cprintln,	$,		0), ! [a=dev] b=fmtstr c=L
+	(j_sprint,		$,		0), !         b=L 
+	(j_sfprint,		$,		0), !         b=L
+	(j_read,		$,		0), ! [a=dev] b=L
+	(j_readln,		$,		0), ! [a=dev] b=L
+	(j_sread,		$,		0), ! [a=dev] b=L
+	(j_sreadln,		$,		0), ! [a=dev] b=L
+	(j_stop,		$,		0), ! [a=x]
+	(j_try,			$,		0), ! a=try block; b=except list
+	(j_except,		$,		0), ! a=except block; b=exception code list (constants)
+	(j_yield,		$,		0), ! "
+	(j_raise,		$,		0), ! "
+!	(j_callhostproc,$,		0), ! "
+	(j_eval,		$,		3), ! "
+	(j_stack,		$,		0), ! "
+	(j_unstack,		$,		0), ! "
+	(j_empty,		$,		1), ! "
+
+	(j_dummy,		$,		3)
+end
+
+global tabledata() []ichar bitfieldnames=
+	(bf_msb,		$),
+	(bf_lsb,		$),
+	(bf_msbit,		$),
+	(bf_lsbit,		$),
+	(bf_msw,		$),
+	(bf_lsw,		$),
+	(bf_odd,		$),
+	(bf_even,		$),
+end
+
+global tabledata() [0:]ichar optypenames =
+	(no_op=0,		$),
+	(bin_op,		$),
+	(mon_op,		$),
+	(prop_op,		$),
+end
+
+!!---
+global tabledata() []ichar symbolnames,
+					[]byte symboloptypes,
+					[]byte symbolgenops,
+					[]byte symbolgentoops,
+					[]byte symbolopprios,
+					[]byte exprstarter =
+!First half are basic tokens returned by lexreadtoken()
+	(errorsym,			$,			0,	0,	0,	0,	0),		! Lex error
+	(dotsym,			".",		0,	0,	0,	0,	0),		! "."
+	(lexdotsym,			$,			0,	0,	0,	0,	0),		! ".", used at bol to prefix lexical 
+	(anddotsym,			"&.",		0,	0,	0,	0,	1),		! "&."
+	(commasym,			",",		0,	0,	0,	0,	0),		! ","
+	(semisym,			";",		0,	0,	0,	0,	0),		! ";"
+	(colonsym,			":",		0,	0,	0,	0,	0),		! ":"
+	(dcolonsym,			"::",		0,	0,	0,	0,	0),		! "::"
+	(assignsym,			":=",		bin_op,	0,	0,	1,	0),		! :=
+	(deepcopysym,		"::=",		0,	0,	0,	1,	0),		! ::=
+	(sendtosym,			"=>",		0,	0,	0,	0,	0),		! =>
+	(lbracksym,			"(",		0,	0,	0,	0,	1),		! (
+	(rbracksym,			")",		0,	0,	0,	0,	0),		! )
+	(lsqsym,			"[",		0,	0,	0,	0,	1),		! [
+	(rsqsym,			"]",		0,	0,	0,	0,	0),		! ]
+	(lcurlysym,			"{",		0,	0,	0,	0,	0),		! {
+	(rcurlysym,			"}",		0,	0,	0,	0,	0),		! }
+	(ptrsym,			"^",		0,	0,	0,	0,	0),		! ^
+	(barsym,			"|",		0,	0,	0,	0,	0),		! |
+	(dbarsym,			"||",		0,	0,	0,	0,	0),		! ||
+	(atsym,				"@",		0,	0,	0,	0,	0),		! @
+	(datsym,			"@@",		0,	0,	0,	0,	0),		! @@
+	(questionsym,		"?",		0,	0,	0,	0,	0),		! ?
+	(addrsym,			"&",		0,	0,	0,	0,	1),		! &
+	(daddrsym,			"&&",		0,	0,	0,	0,	0),		! &&
+	(curlsym,			"~",		0,	0,	0,	0,	0),		! ~
+	(rangesym,			"..",		bin_op,	0,	0,	5,	0),		! ..
+	(ellipsissym,		"...",		0,	0,	0,	0,	0),		! ...
+	(hashsym,			"#",		0,	0,	0,	0,	0),		! #
+
+!	(opsym,				$,		0,	0,	0,	0,	0),		! Any operator or property tag (use sets to distinguish)
+
+	(addsym,			"+",		bin_op,		kadd,		kaddto,		4,	1),
+	(subsym,			"-",		bin_op,		ksub,		ksubto,		4,	1),
+	(mulsym,			"*",		bin_op,		kmul,		kmulto,		3,	0),
+	(divsym,			"/",		bin_op,		kdiv,		kdivto,		3,	0),
+	(idivsym,			"%",		bin_op,		kidiv,		kidivto,	3,	0),
+	(iremsym,			"rem",		bin_op,		kirem,		kiremto,	3,	0),
+	(iandsym,			"iand",		bin_op,		kiand,		kiandto,	4,	0),
+	(iorsym,			"ior",		bin_op,		kior,		kiorto,		4,	0),
+	(ixorsym,			"ixor",		bin_op,		kixor,		kixorto,	4,	0),
+	(shlsym,			"<<",		bin_op,		kshl,		kshlto,		3,	0),
+	(shrsym,			">>",		bin_op,		kshr,		kshrto,		3,	0),
+	(minsym,			"min",		bin_op,		kmin,		kminto,		4,	1),
+	(maxsym,			"max",		bin_op,		kmax,		kmaxto,		4,	1),
+	(andlsym,			"and",		bin_op,		kandl,		kandlto,	7,	0),
+	(orlsym,			"or",		bin_op,		korl,		korlto,		8,	0),
+	(xorlsym,			"xor",		bin_op,		0,			0,			8,	0),
+
+	(eqsym,				"=",		bin_op,		keq,		0,			6,	1),
+	(cmpsym,			"cmp",		bin_op,		0,			0,			6,	1),
+!	(appendsym,			"append",	bin_op,		kappend,	kappendto,	4,	0),
+!	(concatsym,			"concat",	bin_op,		kconcat,	kconcatto,	4,	0),
+	(powersym,			"**",		bin_op,		kpower,		0,			2,	0),
+	(samesym,			"==",		bin_op,		ksame,		0,			6,	0),
+	(insym,				"in",		bin_op,		kin,		0,			6,	0),
+	(notinsym,			"notin",	bin_op,		knotin,		0,			6,	0),
+	(inrevsym,			"inrev",	0,			0,			0,			0,	0),
+
+	(negsym,			"$neg",		mon_op,		kneg,		0,			0,	1),
+	(notlsym,			"not",		mon_op,		knotl,		knotlto,	0,	1),
+	(istruelsym,		"istrue",	mon_op,		kistruel,	kistruelto,	0,	1),
+	(inotsym,			"inot",		mon_op,		kinot,		kinotto,	0,	1),
+	(abssym,			"abs",		mon_op,		kabs,		kabsto,		0,	1),
+	(signsym,			"sign",		mon_op,		ksign,		0,			0,	1),
+	(sqrtsym,			"sqrt",		mon_op,		ksqrt,		0,			0,	1),
+	(sqrsym,			"sqr",		mon_op,		ksqr,		0,			0,	1),
+
+	(propsym,				$,		prop_op,	0,			0,			0,	0),
+	(mathsopsym,		$,		0,	0,	0,	0,	1),		! sin etc
+	(maths2opsym,		$,		0,	0,	0,	0,	1),		! atan2 etc
+
+	(bitfieldsym,		$,		0,	0,	0,	0,	0),		! Special bit selections
+	(eolsym,			$,		0,	0,	0,	0,	0),		! End of line
+	(eofsym,			$,		0,	0,	0,	0,	0),		! Eof seen
+	(rawxnamesym,		$,		0,	0,	0,	0,	0),		! unassigned name, case-sensitive, that is never a reserved word
+	(docstringsym,		$,		0,	0,	0,	0,	0),		! ! #comment used as documentation string
+	(incrsym,			$,		0,	0,	0,	0,	1),		! 1/2 = ++/--; later may add +2 for x++/x--
+	(intconstsym,		$,		0,	0,	0,	0,	1),		! 123 32 bits signed
+	(decimalconstsym,	$,		0,	0,	0,	0,	1),		! 123 or 123.4 decimal
+	(realconstsym,		$,		0,	0,	0,	0,	1),		! 123.4 64 bits
+	(charconstsym,		$,		0,	0,	0,	0,	1),		! 'A' or 'ABCD'
+	(wcharconstsym,		$,		0,	0,	0,	0,	1),		! 'A'W or 'ABCD'W (but don't have a syntax yet)
+	(stringconstsym,	$,		0,	0,	0,	0,	1),		! "ABC"
+	(astringconstsym,	$,		0,	0,	0,	0,	1),		! A"ABC"
+	(wstringconstsym,	$,		0,	0,	0,	0,	1),		! "ABC"W
+
+!Second half are tokens that can be yielded after a name lookup::
+	(unitnamesym,		$,		0,	0,	0,	0,	0),		! 
+	(namesym,			$,		0,	0,	0,	0,	1),		! identifier symbol
+	(ksourcedirsym,		$,		0,	0,	0,	0,	0),		! 
+	(kstrincludesym,	$,		0,	0,	0,	0,	1),		! 
+!	(lexmacronamesym,	$,		0,	0,	0,	0,	0),		! 
+	(regsym,			$,		0,	0,	0,	0,	0),		! x64 registers
+	(xregsym,			$,		0,	0,	0,	0,	0),		! XMM registers
+	(fregsym,			$,		0,	0,	0,	0,	0),		! ST registers
+	(mregsym,			$,		0,	0,	0,	0,	0),		! MMX registers
+	(jmpccsym,			$,		0,	0,	0,	0,	0),		! 
+	(setccsym,			$,		0,	0,	0,	0,	0),		! 
+	(movccsym,			$,		0,	0,	0,	0,	0),		! 
+	(segnamesym,		$,		0,	0,	0,	0,	0),		! 
+	(asmopcodesym,		$,		0,	0,	0,	0,	0),		! MOV etc
+
+	(stdtypesym,		$,		0,	0,	0,	0,	1),		! INT, CHAR etc
+	(machinetypesym,	$,		0,	0,	0,	0,	1),		! INTM etc
+!	(packtypesym,		$,		0,	0,	0,	0,	0),		! Byte etc
+	(ktypeofsym,		$,		0,	0,	0,	0,	0),		! TYPEOF
+	(ksubrangesym,		$,		0,	0,	0,	0,	0),		! SUBRANGE
+	(koutsym,			$,		0,	0,	0,	0,	0),		! OUT
+	(kicharsym,			$,		0,	0,	0,	0,	1),		! ICHAR
+	(kifsym,			$,		0,	0,	0,	0,	1),		! 
+	(kthensym,			$,		0,	0,	0,	0,	0),		! 
+	(kelsifsym,			$,		0,	0,	0,	0,	0),		! 
+	(kelsesym,			$,		0,	0,	0,	0,	0),		! 
+	(kelsecasesym,		$,		0,	0,	0,	0,	0),		! 
+	(kelseswitchsym,	$,		0,	0,	0,	0,	0),		! 
+	(kelseselectsym,	$,		0,	0,	0,	0,	0),		! 
+	(kendsym,			$,		0,	0,	0,	0,	0),		! 
+	(kunlesssym,		$,		0,	0,	0,	0,	0),		! 
+	(kcasesym,			$,		0,	0,	0,	0,	1),		! CASE
+	(kdocasesym,		$,		0,	0,	0,	0,	0),		! DOCASE
+	(krecasesym,		$,		0,	0,	0,	0,	0),		! RECASE
+	(kwhensym,			$,		0,	0,	0,	0,	0),		! 
+	(kforsym,			$,		0,	0,	0,	0,	0),		! FOR
+	(ktosym,			$,		0,	0,	0,	0,	0),		! TO/DOWNTO
+	(kbysym,			$,		0,	0,	0,	0,	0),		! 
+	(kdosym,			$,		0,	0,	0,	0,	0),		! 
+	(kwhilesym,			$,		0,	0,	0,	0,	0),		! 
+	(krepeatsym,		$,		0,	0,	0,	0,	0),		! 
+	(kuntilsym,			$,		0,	0,	0,	0,	0),		! 
+	(kreturnsym,		$,		0,	0,	0,	0,	0),		! 
+	(kstopsym,			$,		0,	0,	0,	0,	0),		! 
+	(kloopsym,			$,		0,	0,	0,	0,	0),		! EXIT/NEXT/LOOP/REDO/RESTART
+	(kstepsym,			$,		0,	0,	0,	0,	0),		! STEP
+	(kgotosym,			$,		0,	0,	0,	0,	0),		! GO/GOTO
+	(kswitchsym,		$,		0,	0,	0,	0,	0),		! SWITCH
+	(kdoswitchsym,		$,		0,	0,	0,	0,	0),		! DOSWITCH
+	(kprintsym,			$,		0,	0,	0,	0,	0),		! PRINT/PRINTLN/FPRINT/FPRINTLN
+	(ksprintsym,		$,		0,	0,	0,	0,	0),		! SPRINT/SFPRINT
+	(kreadsym,			$,		0,	0,	0,	0,	0),		! READ/READLN
+	(ksreadsym,			$,		0,	0,	0,	0,	0),		! SREAD
+	(ksreadlnsym,		$,		0,	0,	0,	0,	0),		! SREADLN
+	(kprocsym,			$,		0,	0,	0,	0,	0),		! PROC
+	(kfunctionsym,		$,		0,	0,	0,	0,	0),		! FUNCTION
+!	(kmethodsym,		$,		0,	0,	0,	0,	0),		! METHOD
+	(klabelsym,			$,		0,	0,	0,	0,	0),		! LABEL
+	(krecordsym,		$,		0,	0,	0,	0,	0),		! RECORD
+	(kstructsym,		$,		0,	0,	0,	0,	0),		! STRUCT
+	(kunionsym,			$,		0,	0,	0,	0,	0),		! UNION
+	(kimportsym,		$,		0,	0,	0,	0,	0),		! IMPORT
+	(kimportmodulesym,	$,		0,	0,	0,	0,	0),		! IMPORTDLL/IMPORTMODULE
+	(kimportpathsym,	$,		0,	0,	0,	0,	0),		! IMPORTPATH
+	(kmapmodulesym,		$,		0,	0,	0,	0,	0),		! MAPMODULE
+	(ktypesym,			$,		0,	0,	0,	0,	0),		! TYPE
+	(ktypealiassym,		$,		0,	0,	0,	0,	0),		! TYPEALIAS
+	(kextendtypesym,	$,		0,	0,	0,	0,	0),		! EXTENDTYPE
+	(krefsym,			$,		0,	0,	0,	0,	1),		! REF
+	(kmutsym,			$,		0,	0,	0,	0,	0),		! MUT
+	(kletsym,			$,		0,	0,	0,	0,	0),		! LET
+	(kslicesym,			$,		0,	0,	0,	0,	0),		! SLICE/SLICE2D
+	(karraysym,			$,		0,	0,	0,	0,	0),		! ARRAY
+	(kdictsym,			$,		0,	0,	0,	0,	0),		! DICT
+!	(kflexsym,			$,		0,	0,	0,	0,	0),		! FLEX
+	(kmacrosym,			$,		0,	0,	0,	0,	0),		! MACRO
+	(kexpandsym,		$,		0,	0,	0,	0,	0),		! EXPAND
+	(koperatorsym,		$,		0,	0,	0,	0,	0),		! OPERATOR
+	(kconstsym,			$,		0,	0,	0,	0,	0),		! 
+	(kenumsym,			$,		0,	0,	0,	0,	0),		! 
+	(knewsym,			$,		0,	0,	0,	0,	0),		! NEW
+	(kdestroysym,		$,		0,	0,	0,	0,	0),		! DESTROY
+	(kclearsym,			$,		0,	0,	0,	0,	0),		! CLEAR
+	(kclasssym,			$,		0,	0,	0,	0,	0),		! CLASS
+!	(kdirectivesym,		$,		0,	0,	0,	0,	0),		! TARGET/MODULE
+	(kfflangsym,		$,		0,	0,	0,	0,	0),		! JLANG CLANG WINDOWS HOST
+	(kglobalsym,		$,		0,	0,	0,	0,	0),		! global
+	(kstaticsym,		$,		0,	0,	0,	0,	0),		! STATIC
+
+	(ktrysym,			$,		0,	0,	0,	0,	0),		! 
+	(kexceptsym,		$,		0,	0,	0,	0,	0),		! 
+	(kfinallysym,		$,		0,	0,	0,	0,	0),		! 
+	(kraisesym,			$,		0,	0,	0,	0,	0),		! 
+	(kyieldsym,			$,		0,	0,	0,	0,	0),		! 
+	(kcastsym,			$,		0,	0,	0,	0,	1),		! CAST
+	(ktypeconstsym,		$,		0,	0,	0,	0,	0),		! TYPECONST
+	(compilervarsym,	$,		0,	0,	0,	0,	1),		! $lineno etc
+	(dollarsym,			$,		0,	0,	0,	0,	1),		! to be used for current array upperbound; also tabledata names
+	(kevalsym,			$,		0,	0,	0,	0,	0),		! EVAL
+	(ktabledatasym,		$,		0,	0,	0,	0,	0),		! tabledata
+	(kstacksym,			$,		0,	0,	0,	0,	0),		! STACK/UNSTACK
+	(kclampsym,			$,		0,	0,	0,	0,	1),			! CLAMP
+	(kswapsym,			$,		0,	0,	0,	0,	0),		! SWAP
+	(kerrorsym,			$,		0,	0,	0,	0,	0),		! PC_ERROR etc
+!	(sysconstsym,		$,		0,	0,	0,	0,	0),		! nil, etc
+	(kassemsym,			$,		0,	0,	0,	0,	0),		! ASM/ASSEM
+	(ksyscallsym,		$,		0,	0,	0,	0,	1),		! $get_procname etc
+!	(kemitcsym,			$,		0,	0,	0,	0,	0),		! EMITC
+	(kemptysym,			$,		0,	0,	0,	0,	0),		! EMPTY
+
+	(kdummysym,			$,		0,	0,	0,	0,	0),		!
+end
+
+global tabledata() []ichar sourcedirnames =
+	(includedir,	$),
+	(strincludedir,	$),
+	(binincludedir,	$),
+	(textincludedir,$),
+	(defineunitdir,	$),
+!	(emitcdir,		$),
+	(cclibdir,		$),
+end
+
+!global tabledata() =
+!	(nil_const),
+!	(pi_const),
+!	(tab_const),
+!	(con_const)
+!end
+
+global tabledata() [0:]ichar fflangnames=
+	(noff=0,		$), ! 
+	(windowsff,		$), ! 
+	(clangff,		$), ! 
+	(mlangff,		$), ! 
+	(callbackff,	$), ! 
+end
+
+global tabledata() [0:]ichar scopenames=
+	(local_scope=0,		$), ! 
+	(program_scope,		$), ! 
+	(export_scope,		$), ! 
+	(exportq_scope,		$), ! 
+end
+
+global tabledata() =
+	(thousand_unit),
+	(million_unit),
+	(billion_unit),
+	(kilo_unit),
+	(mega_unit),
+	(giga_unit)
+end
+
+global tabledata() [0:]ichar parammodenames=
+	(var_param=0,		"Var "),
+	(in_param,			"In "),
+	(out_param,			"Out "),
+	(optional_param,	"Opt "),
+end
+
+!global tabledata() [0:]ichar namecatnames, [0:]byte qualifiedname =
+!	(normal_cat=0,	 	"-",		0),
+!	(proc_cat, 			"proc",		1),
+!	(globalproc_cat,	"gproc",	1),
+!	(dllproc_cat,		"dllproc",	0),
+!	(dllmodule_cat,		"dllmodule",0),
+!	(dllvar_cat,		"dllvar",	0),
+!	(static_cat,		"static",	1),
+!	(frame_cat,			"frame",	1),
+!end
+
+global tabledata() [0:]ichar namenames
+	(nullid=0,		$),		!Not assigned (sometimes converted to genfieldid)
+	(programid,		$),		!Main root
+	(moduleid,		$),		!Current or imported module
+	(dllmoduleid,	$),		!
+	(typeid,		$),		!Type name in type, proc or module
+	(procid,		$),		!Proc/method/function/op name
+	(dllprocid,		$),		!Dll Proc/function name
+	(dllvarid,		$),		!Dll variable name
+	(genprocid,		$),		!generic proc name
+	(generatorid,	$),		!generator proc name
+	(constid,		$),		!Named constant in type, proc or module
+	(staticid,		$),		!Static in type or proc or module
+	(frameid,		$),		!Local var
+	(paramid,		$),		!Local param
+	(fieldid,		$),		!Field of Record or Class
+	(genfieldid,	$),		!Generic Field of Record or Class
+	(enumid,		$),		!Enum name, part of enum type only
+	(labelid,		$),		!Label name in proc only
+	(blockid,		$),		!Codeblock label name in proc only
+	(aliasid,		$),		!Alias to another name
+	(macroid,		$),		!Name of macro
+	(macroparamid,	$),		!Macro formal parameter name
+	(linkid,		$),		!Name in class defined in a base class
+	(functionopid,	$),		!Function-operator
+end
+
+!global tabledata() [0:]ichar pstnames =
+!	(no_name = 0,		$),
+!	(proc_name,			$),
+!	(dllproc_name,		$),
+!	(istatic_name,		$),
+!	(zstatic_name,		$),
+!	(param_name,		$),
+!	(frame_name,		$),
+!end
+
+!!---
+global tabledata []ichar stnames, []int stsymbols, []int stsubcodes=
+
+	("if",			kifsym,			j_if),
+	("then",		kthensym,		0),
+	("elsif",		kelsifsym,		j_if),
+	("else",		kelsesym,		0),
+	("elsecase",	kelsecasesym,	j_case),
+	("elseswitch",	kelseswitchsym,	j_switch),
+	("case",		kcasesym,		j_case),
+	("docase",		kdocasesym,		j_docase),
+	("recase",		krecasesym,		j_recase),
+	("when",		kwhensym,		0),
+	("for",			kforsym,		0),
+	("forall",		kforsym,		0),
+	("to",			ktosym,			0),
+	("downto",		ktosym,			1),
+	("by",			kbysym,			0),
+	("do",			kdosym,			0),
+	("end",			kendsym,		0),
+	("while",		kwhilesym,		0),
+	("repeat",		krepeatsym,		0),
+	("until",		kuntilsym,		0),
+	("always",		kuntilsym,		1),
+	("return",		kreturnsym,		0),
+	("yield",		kyieldsym,		0),
+	("stop",		kstopsym,		0),
+	("restart",		kloopsym,		j_restart),
+	("redo",		kloopsym,		j_redo),
+	("loop",		kloopsym,		j_redo),
+	("next",		kloopsym,		j_next),
+	("exit",		kloopsym,		j_exit),
+	("$step",		kstepsym,		0),
+	("goto",		kgotosym,		0),
+	("go",			kgotosym,		1),
+	("switch",		kswitchsym,		j_switch),
+	("doswitch",	kdoswitchsym,	j_doswitch),
+	("tabledata",	ktabledatasym,	0),
+	("clamp",		kclampsym,		0),
+	("eval",		kevalsym,		0),
+!	("extendtype",	kextendtypesym,	0),
+!	("$windows",	kcondcompsym,	windowsff),
+!	("$linux",		kcondcompsym,	linuxff),
+
+	("print",		kprintsym,		j_print),
+	("println",		kprintsym,		j_println),
+	("fprint",		kprintsym,		j_fprint),
+	("fprintln",	kprintsym,		j_fprintln),
+	("cprint",		kprintsym,		j_cprint),
+	("cprintln",	kprintsym,		j_cprintln),
+	("sprint",		ksprintsym,		j_sprint),
+	("sfprint",		ksprintsym,		j_sfprint),
+
+!	("stack",		kstacksym,		j_stack),
+!	("unstack",		kstacksym,		j_unstack),
+
+	("cp",			kprintsym,		j_print),
+	("cpl",			kprintsym,		j_println),
+
+	("read",		kreadsym,		j_read),
+	("readln",		kreadsym,		j_readln),
+	("cast",		kcastsym,		j_convert),
+
+	("proc",		kprocsym,		0),
+	("function",	kfunctionsym,	0),
+	("threadedproc",		kprocsym,		1),
+!	("threadedfunction",	kfunctionsym,	1),
+!	("method",		kmethodsym,		0),
+
+	("type",		ktypesym,		0),
+	("class",		kclasssym,		0),
+	("record",		krecordsym,		0),
+	("struct",		kstructsym,		0),
+	("union",		kunionsym,		0),
+	("ref",			krefsym,		0),
+	("pointer",		krefsym,		0),
+	("returning",	sendtosym,		0),
+	("var",			kmutsym,		0),
+	("mut",			kmutsym,		0),
+	("let",			kletsym,		0),
+
+	("include",		ksourcedirsym,	includedir),
+!	("strinclude",	ksourcedirsym,	strincludedir),
+	("strinclude",	kstrincludesym,	0),
+	("bininclude",	ksourcedirsym,	binincludedir),
+!	("textinclude",	ksourcedirsym,	textincludedir),
+!	("defineunit",	ksourcedirsym,	defineunitdir),
+	("macro",		kmacrosym,		0),
+!	("expand",		kexpandsym,		0),
+!	("operator",	koperatorsym,	0),
+!	("emitc",		ksourcedirsym,	emitcdir),
+	("cclib",		ksourcedirsym,	cclibdir),
+
+	("assem",		kassemsym,		1),
+	("asm",			kassemsym,		0),
+
+	("static",		kstaticsym,		0),
+	
+	("const",		kconstsym,		0),
+!	("table",		kconstsym,		1),
+	("enum",		kenumsym,		0),
+
+	("$get_nprocs",		ksyscallsym,		sysfn_getnprocs),
+	("$getnprocs",		ksyscallsym,		sysfn_getnprocs),
+
+	("$get_procname",	ksyscallsym,		sysfn_getprocname),
+	("$getprocname",	ksyscallsym,		sysfn_getprocname),
+
+	("$get_procaddr",	ksyscallsym,		sysfn_getprocaddr),
+	("$getprocaddr",	ksyscallsym,		sysfn_getprocaddr),
+
+!	("$get_nexports",	ksyscallsym,		sysfn_get_nexports),
+!	("$get_procexport",	ksyscallsym,		sysfn_get_procexport),
+
+!	("$nprocs",			ksyscallsym,		sysfn_nprocs),
+!	("$nexports",		ksyscallsym,		sysfn_nexports),
+!	("$procnames",		ksyscallsym,		sysfn_procnames),
+!	("$procaddrs",		ksyscallsym,		sysfn_procaddrs),
+!	("$procexports",	ksyscallsym,		sysfn_procexports),
+
+	("importdll",	kimportmodulesym,	0),
+	("importlib",	kimportmodulesym,	0),
+	("import",		kimportsym,			0),
+	("importx",		kimportsym,			'X'),
+	("importd",		kimportsym,			'D'),
+	("importpath",	kimportpathsym,		0),
+	("mapmodule",	kmapmodulesym,		0),
+	("unless",		kunlesssym,			0),
+
+	("try",			ktrysym,		0),
+	("except",		kexceptsym,		0),
+	("finally",		kfinallysym,	0),
+	("raise",		kraisesym,		0),
+	("out",			koutsym,		0),
+
+	("new",			knewsym,		j_new),
+	("destroy",		kdestroysym,	j_destroy),
+!	("clear",		kclearsym,		j_clear),
+
+	("global",		kglobalsym,		program_scope),
+	("exportq",		kglobalsym,		exportq_scope),
+	("export",		kglobalsym,		export_scope),
+
+	("clang",		kfflangsym,		clangff),
+	("mlang",		kfflangsym,		mlangff),
+	("windows",		kfflangsym,		windowsff),
+	("callback",	kfflangsym,		callbackff),
+
+	("swap",		kswapsym,		0),
+
+	("void",		stdtypesym,		tvoid),
+
+	("int",			stdtypesym,		tint),
+
+	("word",		stdtypesym,		tword),
+
+	("real",		stdtypesym,		treal),
+
+	("ichar",		kicharsym,		0),
+
+	("int8",		stdtypesym,		ti8),
+	("int16",		stdtypesym,		ti16),
+	("int32",		stdtypesym,		ti32),
+	("int64",		stdtypesym,		ti64),
+	("int128",		stdtypesym,		ti128),
+
+	("i8",			stdtypesym,		ti8),
+	("i16",			stdtypesym,		ti16),
+	("i32",			stdtypesym,		ti32),
+	("i64",			stdtypesym,		ti64),
+	("i128",		stdtypesym,		ti128),
+
+	("real32",		stdtypesym,		tr32),
+	("real64",		stdtypesym,		tr64),
+	("r32",			stdtypesym,		tr32),
+	("r64",			stdtypesym,		tr64),
+
+	("float32",		stdtypesym,		tr32),
+	("float64",		stdtypesym,		tr64),
+
+	("byte",		stdtypesym,		tu8),
+!	("u1",			stdtypesym,		tu1),
+!	("u2",			stdtypesym,		tu2),
+!	("u4",			stdtypesym,		tu4),
+	("u8",			stdtypesym,		tu8),
+	("u16",			stdtypesym,		tu16),
+	("u32",			stdtypesym,		tu32),
+	("u64",			stdtypesym,		tu64),
+	("u128",		stdtypesym,		tu128),
+
+	("word8",		stdtypesym,		tu8),
+	("word16",		stdtypesym,		tu16),
+	("word32",		stdtypesym,		tu32),
+	("word64",		stdtypesym,		tu64),
+	("word128",		stdtypesym,		tu128),
+
+!	("bit",			stdtypesym,		tu1),
+!	("bit2",		stdtypesym,		tu2),
+!	("bit4",		stdtypesym,		tu4),
+
+	("char",		stdtypesym,		tc8),
+	("wchar",		stdtypesym,		tc16),
+	("char64",		stdtypesym,		tc64),
+
+!	("range",		stdtypesym,		trange),
+	("auto",		stdtypesym,		tauto),
+!	("label",		stdtypesym,		tlabel),
+
+!	("flex",		stdtypesym,		tvar),
+
+	("intm",		machinetypesym,	'I'),
+	("intp",		machinetypesym,	'i'),
+	("wordm",		machinetypesym,	'W'),
+	("wordp",		machinetypesym,	'w'),
+	("slice",		kslicesym,		tslice),
+!	("slice2d",		kslicesym,		tslice2d),
+!!	("flex",		kslicesym,		tflex),
+	("typeof",		ktypeofsym,			0),
+
+	("million",		unitnamesym,	million_unit),
+	("billion",		unitnamesym,	billion_unit),
+	("thousand",	unitnamesym,	thousand_unit),
+	("kb",			unitnamesym,	kilo_unit),
+	("mb",			unitnamesym,	mega_unit),
+	("gb",			unitnamesym,	giga_unit),
+
+	("$lineno",		compilervarsym,	j_cvlineno),
+	("$strlineno",	compilervarsym,	j_cvstrlineno),
+	("$filename",	compilervarsym,	j_cvfilename),
+	("$modulename",	compilervarsym,	j_cvmodulename),
+	("$function",	compilervarsym,	j_cvfunction),
+	("$date",		compilervarsym,	j_cvdate),
+	("$time",		compilervarsym,	j_cvtime),
+	("$version",	compilervarsym,	j_cvversion),
+	("$typename",	compilervarsym,	j_cvtypename),
+	("$targetbits",	compilervarsym,	j_cvtargetbits),
+	("$targetsize",	compilervarsym,	j_cvtargetsize),
+!	("$targetname",	compilervarsym,	j_cvtargetname),
+	("$targetcode",	compilervarsym,	j_cvtargetcode),
+	("nil",			compilervarsym,	j_cvnil),
+	("pi",			compilervarsym,	j_cvpi),
+	("true",		compilervarsym,	j_cvtrue),
+	("false",		compilervarsym,	j_cvfalse),
+	("$",			dollarsym,		0),
+
+	("and",			andlsym,		0),
+	("or",			orlsym,			0),
+	("xor",			xorlsym,		0),
+	("iand",		iandsym,		0),
+	("ior",			iorsym,			0),
+	("ixor",		ixorsym,		0),
+	("in",			insym,			kin),
+	("notin",		notinsym,		knotin),
+	("inrev",		inrevsym,		0),
+	("rem",			iremsym,		0),
+!	("divrem",		idivremsym,		0),
+	("min",			minsym,			0),
+	("max",			maxsym,			0),
+
+	("not",			notlsym,		0),
+	("inot",		inotsym,		0),
+	("istrue",		istruelsym,		0),
+	("abs",			abssym,			kabs),
+	("$neg",		negsym,			0),
+
+!	("asc",			opsym,			j_asc),
+!	("tochr",		opsym,			j_chr),
+	("sqr",			sqrsym,			0),
+	("sqrt",		sqrtsym,		0),
+	("sign",		signsym,		0),
+
+	("sin",			mathsopsym,		ksin),
+	("cos",			mathsopsym,		kcos),
+	("tan",			mathsopsym,		ktan),
+	("asin",		mathsopsym,		kasin),
+	("acos",		mathsopsym,		kacos),
+	("atan",		mathsopsym,		katan),
+!	("sign",		mathsopsym,		ksign),
+	("ln",			mathsopsym,		kln),
+	("log",			mathsopsym,		klog),
+!	("lg",			mathsopsym,		klg),
+	("exp",			mathsopsym,		kexp),
+	("round",		mathsopsym,		kround),
+	("floor",		mathsopsym,		kfloor),
+	("ceil",		mathsopsym,		kceil),
+	("fract",		mathsopsym,		kfract),
+
+	("atan2",		maths2opsym,	katan2),
+	("fmod",		maths2opsym,	kfmod),
+
+!	("append",		appendsym,		0),
+!	("concat",		concatsym,		0),
+!	("flexptr",		flexptrsym,		0),
+!	("sliceptr",	propsym,		ksliceptr),
+!	("stringz",		stringzsym,		0),
+
+	("len",			propsym,	klen),
+	("lwb",			propsym,	klwb),
+	("upb",			propsym,	kupb),
+	("bounds",		propsym,	kbounds),
+	("lenstr",		propsym,	klenstr),
+	("bitwidth",	propsym,	kbitwidth),
+	("bytes",		propsym,	kbytesize),
+	("minvalue",	propsym,	kminvalue),
+	("maxvalue",	propsym,	kmaxvalue),
+	("typestr",		propsym,	ktypestr),
+
+!	("len",			propsym,	0),
+!	("lwb",			propsym,	0),
+!	("upb",			propsym,	0),
+!	("bounds",		propsym,	0),
+!	("lenstr",		propsym,	0),
+!	("bitwidth",	propsym,	0),
+!	("bytes",		propsym,	0),
+!	("minvalue",	propsym,	0),
+!	("maxvalue",	propsym,	0),
+!	("typestr",		propsym,	ktypestr),
+
+	("msb",			bitfieldsym,	bf_msb),
+	("lsb",			bitfieldsym,	bf_lsb),
+	("msbit",		bitfieldsym,	bf_msbit),
+	("lsbit",		bitfieldsym,	bf_lsbit),
+	("msw",			bitfieldsym,	bf_msw),
+	("lsw",			bitfieldsym,	bf_lsw),
+	("odd",			bitfieldsym,	bf_odd),
+	("even",		bitfieldsym,	bf_even),
+
+	("endif",		kendsym,	kifsym),
+	("fi",			kendsym,	kifsym),
+	("endcase",		kendsym,	kcasesym),
+	("esac",		kendsym,	kcasesym),
+	("enddocase",	kendsym,	kdocasesym),
+	("endswitch",	kendsym,	kswitchsym),
+	("enddoswitch",	kendsym,	kdoswitchsym),
+	("endfor",		kendsym,	kforsym),
+	("od",			kendsym,	kdosym),
+	("endproc",		kendsym,	kprocsym),
+	("endfunction",	kendsym,	kfunctionsym),
+	("endwhile",	kendsym,	kwhilesym),
+	("endto",		kendsym,	ktosym),
+	("enddo",		kendsym,	kdosym),
+	("endunless",	kendsym,	kunlesssym),
+	("endimportmodule",	kendsym,kimportmodulesym),
+	("endtry",		kendsym,	ktrysym),
+	("endrecord",	kendsym,	krecordsym),
+	("endassem",	kendsym,	kassemsym),
+
+	("$caligned",	atsym,			1),
+	("empty",		kemptysym,		0),
+	("clear",		kemptysym,		0),
+
+!	("nil",			knilsym,		0),
+!	("con",			sysconstsym,	con_const),
+!	("pi",			sysconstsym,	pi_const),
+
+	("$$dummy",		0,				0)
+end
+
+global []int D_typestarterset= (stdtypesym,lsqsym,krefsym,kenumsym,krecordsym,
+		kicharsym, ktypeofsym, kslicesym, kdictsym)
+
+!list of genops that have an int result, used to populate intresult[]
+[]byte intresultlist = (
+	kin, knotin, klwb, kupb, klen, klenstr, kbitwidth,
+	kbytesize, keq, kne, klt, kle, kge, kgt,
+	kandl, korl, knotl, kistruel)
+
+!!---
+!Table of soft conversions between numeric types. In this form, easy to
+!maintain that using a 2d table directly
+global [,3]int16 softconvmappings =(
+	(tc64,	tc64,	ksoftconv),
+	(tc64,	tu64,	ksoftconv),
+	(tc64,	tu128,	kwidenw),
+	(tc64,	ti64,	ksoftconv),
+	(tc64,	ti128,	kwidenw),
+	(tc64,	tr32,	kfloat),
+	(tc64,	tr64,	kfloat),
+
+	(tu64,	tc64,	ksoftconv),
+	(tu64,	tu64,	ksoftconv),
+	(tu64,	tu128,	kwidenw),
+	(tu64,	ti64,	ksoftconv),
+	(tu64,	ti128,	kwidenw),
+	(tu64,	tr32,	kfloat),
+	(tu64,	tr64,	kfloat),
+
+	(tu128,	tc64,	ksofttruncw),
+	(tu128,	tu64,	ksofttruncw),
+	(tu128,	tu128,	ksoftconv),
+	(tu128,	ti64,	ksofttruncw),
+	(tu128,	ti128,	ksoftconv),
+	(tu128,	tr32,	kerror),
+	(tu128,	tr64,	kerror),
+
+	(ti64,	tc64,	ksoftconv),
+	(ti64,	tu64,	ksoftconv),
+	(ti64,	tu128,	kwidenw),
+	(ti64,	ti64,	ksoftconv),
+	(ti64,	ti128,	kwidenw),
+	(ti64,	tr32,	kfloat),
+	(ti64,	tr64,	kfloat),
+
+	(ti128,	tc64,	ksofttruncw),
+	(ti128,	tu64,	ksofttruncw),
+	(ti128,	tu128,	ksoftconv),
+	(ti128,	ti64,	ksofttruncw),
+	(ti128,	ti128,	ksoftconv),
+	(ti128,	tr32,	kerror),
+	(ti128,	tr64,	kerror),
+
+	(tr32,	tc64,	kfix),
+	(tr32,	tu64,	kfix),
+	(tr32,	tu128,	kerror),
+	(tr32,	ti64,	kfix),
+	(tr32,	ti128,	kerror),
+	(tr32,	tr32,	ksoftconv),
+	(tr32,	tr64,	kfwiden),
+
+	(tr64,	tc64,	kfix),
+	(tr64,	tu64,	kfix),
+	(tr64,	tu128,	kerror),
+	(tr64,	ti64,	kfix),
+	(tr64,	ti128,	kerror),
+	(tr64,	tr32,	kfnarrow),
+	(tr64,	tr64,	ksoftconv))
+
+
+!this 2d array maps [genop, basetype] to a spec-op
+!It is filled in at runtime from genspecmappings
+
+!global [firstgenop..lastgenop, tfirsttabletype..tlasttabletype]int16 optypetable
+
+global [pclnames.lwb..pclnames.upb]byte intresult
+
+global [tfirstnum..tlastnum, tfirstnum..tlastnum]int64 softconvtable
+
+!global [specopnames.lwb..specopnames.upb]byte specoptogen
+!global [specopnames.lwb..specopnames.upb]byte specoptotype
+
+global proc inittypetables=
+	int genop, s,t, a, specop
+
+!populate the table with given combinations
+!	for i in genspecmappings.bounds do
+!		genop:=genspecmappings[i,1]
+!		t:=genspecmappings[i,2]
+!		specop:=genspecmappings[i,3]
+!
+!		optypetable[genop,t] := specop
+!
+!!build cross-reference tables
+!		specoptogen[specop]:=genop
+!		specoptotype[specop]:=t
+!	od
+!
+!!now scan trying to fix some empty slots
+!	for genop in firstgenop..lastgenop do
+!		for t in tfirsttabletype..tlasttabletype do
+!			if optypetable[genop,t]=0 then
+!!CPL "OPTYPE0",STDNAMES[T];!STRMODE(T)
+!				case t
+!				when tc64 then
+!					if a:=optypetable[genop,tu64] then optypetable[genop,tc64]:=a
+!					elsif a:=optypetable[genop,ti64] then optypetable[genop,tc64]:=a
+!					fi
+!				when tu64 then
+!					if a:=optypetable[genop,ti64] then optypetable[genop,tu64]:=a fi
+!				when tu128 then
+!					if a:=optypetable[genop,ti128] then optypetable[genop,tu128]:=a fi
+!				esac
+!			fi
+!		od
+!	od
+!
+!populate intresultlist
+	for i in intresultlist.bounds do
+		intresult[intresultlist[i]]:=1
+	od
+
+!do softconversions
+	for i in softconvmappings.bounds do
+		s:=softconvmappings[i,1]
+		t:=softconvmappings[i,2]
+!		specop:=softconvmappings[i,3]
+
+		softconvtable[s,t]:=softconvmappings[i,3]
+	od
+end
+
+=== mm_pcl.m 10/45 ===
+!importpath "/px/"
+
+import pc_decls
+import pc_libpcl
+import pc_tables
+
+=== pc_decls.m 11/45 ===
+import* pci_core
+
+global type psymbol = ref pstrec
+global type pcl = ref pclrec
+
+global record fwdrec =
+	ref fwdrec nextfwd
+	int32 offset
+	int16 reltype
+	int16 seg
+end
+
+global record pstrec =
+	ichar name			!name of symbol (named token/keyword or identifier)
+	ref fwdrec fwdrefs	!fwd ref chain
+	pcl pcldef			!points to pcl instruction that defines this name
+
+	byte symbol			!type of token, eg. namesym
+	byte ksymbol		!type of keyword, eg. opcodesym
+	union
+		byte subcode		!when used as keyword
+		byte rtsindex	!proc names: rts index if it's an rts function
+	end
+	byte pclop			!pcl op used to define this: klocal etc
+
+	byte scope			!label pass 1: fwd/extern/local/global
+	byte reftype		!label pass 2: extern/back/fwd
+	byte segment		!label pass 2: code_seg etc or 0
+	byte namelen
+
+	int32 offset		!label (pass 2): offset of label when encountered
+	int32 stindex		!label pass 2: 0, or 1-based index within coff symboltable
+	int32 labelno		!assigned global label when a proc/static
+	int16 importindex	!genexe: index into import table
+
+	word16 flags:(isdefined:1, isimported:1, addrof:1,
+				isexported:1, isfloat:1, noreg:1, atvar:1,
+				isthreaded:1, istruename:1, isrts:1)
+
+	int16 nrefs
+	byte reg
+	[13]byte spare
+end
+
+global record pclrec =
+	byte opndtype
+	byte opcode
+	byte flags:(isexported:1, isimported:1)
+	byte mode				!t in tables
+
+	int32 size
+
+	union
+		struct
+			union
+				int64 value
+				real64 xvalue
+				real32 xvalue32
+				ichar svalue
+				int tempno
+				int labelno
+				psymbol def
+				ref void asmcode
+			end
+			union						!two 32-bit params used according to opcode
+				struct
+					int32 x				!common access to these 1/2 extra attribs
+					int32 y
+				end
+
+				struct					! (x,y) pointer ops
+					int32 scale			! scale factor for offset
+					int32 extra			! extra constant byte offset, already scaled
+				end
+				struct					! (x,y) call/etc
+					int32 nargs			! number of args
+					int32 nvariadics	! 0, or arg # that is first variadic
+				end
+				struct					! (x,y) switch
+					int32 minlab
+					int32 maxlab
+				end
+
+				int32 oldmode			! (x) u in tables
+				int32 stepx				! (x) always +ve fixed step size for forup/fordown; also INCR
+				int32 truncmode			! (x) convert/truncate: truncated mode
+				int32 align
+				int32 extvariadics		! (x) for an extproc; 0 or start param of variadics
+				int32 nret				! (x) setretmult: no. of return values
+
+			end
+		end
+		int128 value128
+	end
+	u32 seqno
+	u32 spare
+end
+
+global int optimflag
+
+global [rtsnames.len]psymbol rtsproctable		!nil, or an rts proc has been defined in pcl code
+
+global const maxpdlllib=50
+global int npdllnametable
+global [maxpdlllib]ichar pdllnametable
+=== pci_core.m 12/45 ===
+import pc_decls
+import pc_libpcl
+import pc_tables
+=== pc_libpcl.m 13/45 ===
+import clib
+import mlib
+import msys
+
+import pc_lex
+import* pci_core
+
+global pcl pcstart			!start of pcl block
+global pcl pccurr			!point to current pcl op
+global pcl pcend			!point to last allocated pclrec
+global int pcalloc			!number of pclrecs allocated
+byte pcfixed				!whether code is fixed up
+int pcseqno
+int pcneedfntable			!whether kgetnprocs etc are used
+
+!const fshowsymbols=1
+const fshowsymbols=0
+
+int initpcalloc=65536
+!int initpcalloc=65536*4
+!int initpcalloc=4*1048576
+!int initpcalloc=16*1048576
+
+const pcelemsize = pclrec.bytes
+
+strbuffer sbuffer
+ref strbuffer dest=&sbuffer
+int destlinestart
+
+!global const maxlabels=10000			!in one file
+global const maxlabels=100000			!in one file
+!global const maxlabels=800000			!in one file
+global [maxlabels]int32 labelmap				!map user labels to global labels
+global int labelno						!current highest global labelno
+global int maxuserlabel					!set by lex: highest #label
+global int labelnooffset				!normally 0; set to offset (maxlabelno) when processing rts
+GLOBAL INT NPCL
+
+!const maxgloballabels=50000				!in all files
+const maxgloballabels=100000				!in all files
+!const maxgloballabels=800000				!in all files
+[maxgloballabels]pcl labeloffset		!pcl addr of label
+
+global ichar longstring					!used in stropnd
+global int longstringlen
+global ichar errormess
+
+global int mcldone
+
+export proc pcl_start(int nunits=0)=
+!returns a descriptor to the global tables
+!at the moment little is done with the descriptor, except to have something
+!tangible to pass back to the caller of the API. There is no mechanism
+!to allow multiple, active sets of pcltables
+
+	pcalloc:=initpcalloc
+
+	if nunits then				!use approx alloc of 10% more
+		nunits:=nunits*9/8		!approx expected number of pcl ops
+		while pcalloc<nunits do
+			pcalloc*:=2
+		od
+	fi
+
+!CPL =PCALLOC,=NUNITS
+
+	pcstart:=pcm_allocz(pcalloc*pcelemsize)
+	pcend:=pcstart+pcalloc-8
+
+	pccurr:=pcstart-1
+	pcfixed:=0
+	pcseqno:=0
+	pcneedfntable:=0
+
+	labelno:=maxuserlabel:=labelnooffset:=0
+	mcldone:=0
+
+	clear rtsproctable
+
+!CLEAR USED PORTIONS OF LABELMAP/LABELOFFSET FOR NEXT FILE
+!...
+end
+
+export proc pcl_end(int fixup=0)=
+
+	if pccurr>=pccurr and pccurr.opcode<>kendprogram then
+		pcl_gen(kendprogram)
+	fi	
+
+	if fixup then
+		fixuppcl()
+	fi
+	
+!destroy assets associated with pcldescr, which should be the values
+!currently in pcstart etc
+!note that the values in pcldescr will likely be out of date
+end
+
+export proc pcl_free(int fixup)=
+!destroy resources used for pcl data
+
+	pcstart:=pccurr:=pcend:=nil
+	pcfixed:=0
+end
+
+global proc fixuppcl=
+	psymbol d
+	pcl p, pextproc
+	int labno, insideproc, extparams,isthreaded
+
+	return when pcfixed
+
+!CPL "FIXUPPCL"
+
+	p:=pcstart
+	insideproc:=0
+	pextproc:=nil
+
+	while p<=pcend, ++p do
+		switch p.opcode
+		when klocal, kparam then
+			if insideproc<>1 then perror("Not allowed") fi
+			d:=p.def
+			d.pclop:=p.opcode
+			d.pcldef:=p
+			if d.isdefined then perror_s("Redefining local/param/ext:",d.name) fi
+			d.isdefined:=1
+
+		when kprocdef then
+			isthreaded:=0
+doprocdef::
+			if insideproc then perror("Nested proc") fi
+			insideproc:=1
+			d:=p.def
+			d.pclop:=p.opcode
+			d.pcldef:=p
+			if d.isdefined then perror_s("Redefining proc:",d.name) fi
+			d.isdefined:=1
+			d.isthreaded:=isthreaded
+			assignlabeltoname(d)
+		when kistatic, kzstatic then
+			d:=p.def
+			d.pclop:=p.opcode
+			d.pcldef:=p
+			if d.isdefined then perror_s("Redefining proc/static/label:",d.name) fi
+			d.isdefined:=1
+			assignlabeltoname(d)
+
+		when kendproc then
+			if insideproc<>1 then perror("End without proc") fi
+			insideproc:=0
+
+		when kendextproc then
+			if insideproc<>2 then perror("End without extproc") fi
+			insideproc:=0
+
+		when kextproc then
+			pextproc:=p
+			extparams:=0
+			if insideproc then perror("Nested proc") fi
+			insideproc:=2
+			d:=p.def
+			if not d.isdefined then
+				d.pclop:=p.opcode
+				d.pcldef:=p
+				if d.isdefined then perror_s("Redefining extproc:",d.name) fi
+				d.isdefined:=1
+				d.isimported:=1
+			fi
+
+		when kextparam then
+			if insideproc<>2 then perror("Not allowed") fi
+			++extparams
+
+		when kextvariadics then
+			if insideproc<>2 then perror("Not allowed") fi
+			p.extvariadics:=extparams
+
+		when kthreadedproc then
+			isthreaded:=1
+			doprocdef
+
+		when klabelname then
+			labno:=p.labelno
+			if labno not in 1..maxlabels then
+				perror_s("3:Label out of range",strint(labno))
+			fi
+			p.labelno:=fixlabel(labno)
+			p.opndtype:=label_opnd
+
+		when kdb then p.opcode:=kdata; p.mode:=tpu8;  p.size:=1
+		when kdw then p.opcode:=kdata; p.mode:=tpu16; p.size:=2
+		when kdd then p.opcode:=kdata; p.mode:=tpu32; p.size:=4
+		when kdq then p.opcode:=kdata; p.mode:=tpu64; p.size:=8
+		when kdata then if p.size=0 then p.size:=psize[p.mode] fi
+
+		elsecase p.opndtype
+		when real_opnd then
+			if p.mode=tpr32 or p.size=4 then
+				p.opndtype:=real32_opnd
+				p.xvalue32:=p.xvalue
+			fi
+		when label_opnd then
+			p.labelno:=fixlabel(p.labelno)
+		when kgetnprocs, kgetprocname, kgetprocaddr then
+			pcneedfntable:=1
+
+		end
+	od
+
+	if insideproc then perror("End missing") fi
+
+	pcfixed:=1
+
+end
+
+proc extendpclblock=
+	var int newpcalloc, lengthused
+	var pcl newpcstart
+
+	newpcalloc:=pcalloc*2
+	lengthused:=pccurr-pcstart+1
+
+	newpcstart:=pcm_alloc(pcelemsize*newpcalloc)
+
+CPL "EXTEND PCL",NEWPCALLOC
+
+	memcpy(newpcstart,pcstart, lengthused*pcelemsize)
+	pcm_clearmem(newpcstart+lengthused,(newpcalloc-lengthused)*pcelemsize)
+
+	pccurr:=newpcstart+(pccurr-pcstart)
+	pcend:=newpcstart+newpcalloc-8
+
+	pcm_free(pcstart,pcalloc*pcelemsize)
+
+	pcstart:=newpcstart
+	pcalloc:=newpcalloc
+end
+
+global function newpcl:pcl =
+	if pccurr>=pcend then
+		extendpclblock()
+	fi
+
+++NPCL
+
+
+	++pccurr
+	pccurr.seqno:=++pcseqno
+	return pccurr
+end
+
+export proc pcl_gen(int opcode, pcl p=nil) =
+	psymbol d
+
+	if p=nil then
+		p:=newpcl()
+	fi
+
+!	case opcode
+!	when KLABELNAME THEN PERROR("PCLGEN/LABELNAME")
+!	esac
+
+	p.opcode:=opcode
+end
+
+export proc pcl_gent(int opcode, t, pcl p=nil) =
+
+	if p=nil then
+		p:=newpcl()
+	fi
+
+	p.opcode:=opcode
+	if t<0 then
+		p.mode:=tpblock
+		p.size:=-t
+	else
+		p.mode:=t
+	fi
+end
+
+export proc pcl_genx(int opcode, int x, pcl p=nil) =
+
+	if p=nil then
+		p:=newpcl()
+	fi
+
+	p.opcode:=opcode
+	p.x:=x
+end
+
+export proc pcl_genxy(int opcode, int x,y, pcl p=nil) =
+
+	if p=nil then
+		p:=newpcl()
+	fi
+
+	p.opcode:=opcode
+	p.x:=x
+	p.y:=y
+end
+
+export function pcl_genint(int a,mode=tpi64)pcl p=
+	p:=newpcl()
+	p.value:=a
+	p.opndtype:=int_opnd
+!	p.mode:=mode
+	return p
+end
+
+export function pcl_genint128(int128 a,int mode=tpi128)pcl p=
+	p:=newpcl()
+	p.value128:=a
+	p.opndtype:=int128_opnd
+	return p
+end
+
+export function pcl_genreal(real x)pcl p=
+	p:=newpcl()
+	p.xvalue:=x
+	p.opndtype:=real_opnd
+	return p
+end
+
+export function pcl_genreal32(real x)pcl p=
+	p:=newpcl()
+	p.xvalue32:=x
+	p.opndtype:=real32_opnd
+	return p
+end
+
+export function pcl_genstring(ichar s)pcl p=
+	p:=newpcl()
+	p.svalue:=pcm_copyheapstring(s)
+	p.opndtype:=string_opnd
+	return p
+end
+
+export function pcl_genlabel(int a)pcl p=
+	p:=newpcl()
+	p.labelno:=a
+	p.opndtype:=label_opnd
+	return p
+end
+
+export function pcl_genmem(psymbol d)pcl p=
+	p:=newpcl()
+	p.def:=d
+	p.opndtype:=mem_opnd
+	return p
+end
+
+export function pcl_genmemaddr(psymbol d)pcl p=
+	p:=newpcl()
+	p.def:=d
+	p.opndtype:=memaddr_opnd
+	return p
+end
+
+export proc pcl_gencomment(ichar s)=
+	pcl_gen(kcomment,pcl_genstring(s))
+end
+
+export function pcl_genname(ichar s)pcl=
+	return pcl_genmem(pcl_makesymbol(s))
+end
+
+export function pcl_gennameaddr(ichar s)pcl=
+	return pcl_genmemaddr(pcl_makesymbol(s))
+end
+
+export function pcl_genassem(ref void code)pcl p=
+	p:=newpcl()
+	p.asmcode:=code
+	p.opndtype:=assem_opnd
+	return p
+end
+
+export function pcl_makesymbol(ichar s)psymbol d =
+	d:=addnamestr(s)
+	return d
+end
+
+global proc strpcl(pcl p)=
+	[256]char pmodestr
+	[256]char str
+	int opcode,defused
+
+	const showformatted=1
+
+	opcode:=p.opcode
+
+	case opcode
+	when klabel then
+		strlabel(p.labelno,1)
+		return
+	when kcomment then
+		if p.svalue^ then
+			psstr("!")
+			psstr(p.svalue)
+		fi
+		return
+	when kprocdef, kthreadedproc then
+		if p.def.isrts then
+			psstr("Procrts")
+		elsif opcode=kthreadedproc then
+			psstr("Threadedproc")
+		else
+			psstr("Proc")
+		fi
+		psstr(" ")
+		psname(p.def)
+		psstr((p.isexported|"::"|":"))
+		if p.mode then
+			psstr(" ")
+			psstr(strpmode(p.mode,p.size))
+		fi
+		return
+
+	when kendproc then
+		psstr("End")
+		psline()
+		return
+
+	when kendextproc then
+		psstr("Endext")
+		psline()
+		return
+
+	when kextproc then
+		psstr("Extproc")
+		psstr(" ")
+		psname(p.def)
+		if p.mode then
+			psstr(" ")
+			psstr(strpmode(p.mode,p.size))
+		fi
+		return
+
+
+	when klabelname then
+		psname(p.def)
+		psstr((p.def.isexported|"::"|":"))
+		return
+
+	when kendprogram then
+		psstr("Endprogram")
+		return
+
+	esac
+
+	psstr("    ")
+	strcpy(str,pclnames[opcode]+1)
+	gs_leftstr(dest,str,15)
+
+	if p.opndtype<>no_opnd then
+		psstr(stropnd(p))
+		psstr(" ")
+!	else
+!		pstabto(
+	fi
+	pstabto(30)
+
+	if p.mode<>tpvoid then
+		psstr(strpmode(p.mode, p.size))
+		psstr(" ")
+	fi
+
+	if pclhastype[opcode]=2 then
+		if p.mode=tpvoid then
+			psstr("void")
+		fi
+		psstr(strpmode(p.oldmode,p.size))
+		psstr(" ")
+	fi
+
+	if pclextra[opcode] then
+		psint(p.x)
+		if pclextra[opcode]=2 then
+			psstr(" ")
+			psint(p.y)
+		fi
+	fi
+
+!	if p.isglobal then psstr(" Isglobal") fi
+!	if p.isvariadic then psstr(" Isvariadic") fi
+end
+
+global function stropnd(pcl p)ichar=
+	static[512]char str
+	int length
+	psymbol d
+
+	if p=nil then
+		return ""
+	fi
+
+	case p.opndtype
+	when int_opnd then
+		return strint(p.value)
+	when real_opnd then
+		print @str,p.xvalue:"e16.16"
+
+	when real32_opnd then
+		print @str,p.xvalue32:"e16.16"
+
+	when string_opnd then
+		if (length:=strlen(p.svalue))<str.len/2 then
+			strcpy(str,"""")
+			convertstring(p.svalue,&.str+1)
+			strcat(str,"""")
+		else
+			if longstring then
+				pcm_free(longstring,longstringlen)
+			fi
+			longstringlen:=length*2
+			longstring:=pcm_alloc(longstringlen)
+			longstring^:='"'
+			length:=convertstring(p.svalue, longstring+1)
+			(longstring+length+1)^:='"'
+			(longstring+length+2)^:=0
+			return longstring
+		fi
+
+	when mem_opnd then
+		d:=p.def
+		print @str,(d.istruename|"`"|""),,d.name
+		if p.opcode in [kistatic, kzstatic] then
+			strcat(str,":")
+		fi
+
+	when memaddr_opnd then
+		d:=p.def
+		fprint @str,"&##",(d.istruename|"`"|""),d.name
+
+	when label_opnd then
+		fprint @str,"## ","#",p.labelno
+
+	when no_opnd then
+		return ""
+	when int128_opnd then
+		print @str,p.value128
+
+	when assem_opnd then
+		return strint(int(p.asmcode))
+
+	else
+		println OPNDNAMES[P.OPNDTYPE]
+		return "<PCLOPND?>"
+	esac
+
+	return str
+end
+
+proc psstr(ichar s)=
+	gs_str(dest,s)
+end
+
+proc psline=
+	gs_line(dest)
+end
+
+proc psint(int a)=
+	gs_str(dest,strint(a))
+end
+
+proc psname(psymbol d)=
+	if d.istruename then
+		gs_str(dest,"`")
+	fi
+	gs_str(dest,d.name)
+end
+
+proc pstabto(int n)=
+	int col:=dest.length-destlinestart
+	while n>col do psstr(" "); ++col od
+end
+
+global function convertstring(ichar s, t)int=
+!convert string s, that can contain control characters, into escaped form
+!return new string in t, so that ABC"DEF is returned as ABC\"DEF
+!returns length of t
+	int c
+	ichar t0:=t
+
+	while c:=s++^ do
+		switch c
+		when '"' then
+			t++^:='\\'
+			t++^:='"'
+		when 10 then
+			t++^:='\\'
+			t++^:='n'
+		when 13 then
+			t++^:='\\'
+			t++^:='c'
+		when 9 then
+			t++^:='\\'
+			t++^:='t'
+		when '\\' then
+			t++^:='\\'
+			t++^:='\\'
+		when 7,8,26,27 then
+			t++^:='<'
+			t++^:=c/10+'0'
+			t++^:=(c rem 10)+'0'
+			t++^:='>'
+		else
+			t++^:=c
+		endswitch
+	od
+	t^:=0
+
+	return t-t0
+end
+
+proc strlabel(int labelno,colon=0)=
+	psstr("#")
+	psint(labelno)
+	if colon then
+		psstr(":")
+	fi
+	psstr(" ")
+end
+
+proc psopnd(pcl p)=
+	psstr(stropnd(p))
+end
+
+global function strpmode(int m, size)ichar=
+	static [64]char str
+	if m<>tpblock then
+		strcpy(str, pstdnames[m])
+	else
+		fprint @str,"#:#", pstdnames[m],size
+	fi
+	return str
+end
+
+global proc writepcl(pcl p)=
+	strpcl(p)
+	gs_line(dest)
+end
+
+global function writeallpcl:ichar,int=
+!write all pcl code in system by scanning all procs
+!pcl code is only stored per-proc
+	pcl p
+	psymbol d,e
+
+	gs_init(dest)
+	destlinestart:=dest.length
+
+	p:=pcstart
+
+	while p<=pccurr do
+		writepcl(p)
+
+		destlinestart:=dest.length
+		++p
+	od
+
+	if fshowsymbols then
+		writesymbols()
+	fi
+
+	if longstring then
+		pcm_free(longstring,longstringlen)
+	fi
+	return (dest.strptr,dest.length)
+end
+
+global function nextlabel:int=
+	if labelno>=maxgloballabels then
+		pclerror("Too many global labels")
+	fi
+	++labelno
+end
+
+global function fixlabel(int userlab)int=
+	if userlab not in 1..maxlabels then
+		perror_s("Label no out of range:",strint(userlab))
+	fi
+	if labelmap[userlab]=0 then
+		labelmap[userlab]:=nextlabel()
+		return labelno
+	else
+		return labelmap[userlab]
+	fi
+end
+
+global proc pdefinelabel(int label,seqno=0)=
+!define new global label to point just after pccurr
+!label must be in range
+	if labeloffset[label] then
+		pclerror("Redefining label:",strint(label))
+	fi
+	pcl_gen(klabel, pcl_genlabel(label))
+	pccurr.seqno:=seqno
+
+	labeloffset[label]:=pccurr
+end
+
+global proc assignlabeltoname(psymbol d)=
+!isdef=1 means can't already be assigned
+	if d.labelno then
+!		if isdef then
+!			pclerror("Duplicate name def:",d.name,lineno)
+!		fi
+		return
+	fi
+	d.labelno:=nextlabel()
+end
+
+global proc pclerror(ichar mess,param=nil,int lineno=0)=
+	print "PCC error:",mess
+	if param then
+		print param
+	fi
+	if lineno then
+		print " on line:",lineno
+	fi
+	println
+	stop 1
+end
+
+global function getpclstr(pcl p)ichar=
+	gs_init(dest)
+	destlinestart:=dest.length
+
+	strpcl(p)
+	(dest.strptr+dest.length)^:=0
+	return dest.strptr
+end
+
+export function pcl_getopcode:int=
+	return pccurr.opcode
+end
+
+export proc pcl_setopcode(int opc)=
+	pccurr.opcode:=opc
+end
+
+export proc pcl_settype(int t,size=0)=
+	pccurr.mode:=t
+	pccurr.size:=size
+	if t<0 then
+		pccurr.mode:=tpblock
+		pccurr.size:=-t
+	fi
+end
+
+export proc pcl_setxy(int x,y)=
+	pccurr.x:=x
+	pccurr.y:=y
+end
+
+export proc pcl_setscale(int scale)=
+	pccurr.scale:=scale
+end
+
+export proc pcl_setoffset(int offset)=
+	pccurr.extra:=offset
+end
+
+export proc pcl_addoffset(int offset)=
+	pccurr.extra+:=offset
+end
+
+export proc pcl_setincr(int n)=
+	pccurr.stepx:=n
+end
+
+export proc pcl_setnargs(int n)=
+	pccurr.nargs:=n
+end
+
+export proc pcl_setnmult(int n)=
+	abortprogram("SETNMULT")
+end
+
+export proc pcl_setrettypes(ref[]int types, int n)=
+	abortprogram("SETRETTYPES")
+end
+
+export proc pcl_setexported(int x)=
+	pccurr.isexported:=x
+	if pccurr.def then
+		pccurr.def.isexported:=x
+	fi
+end
+
+export proc pcl_isthreaded(int x)=
+!	pccurr.isthreasexported:=1
+	if pccurr.def then
+		pccurr.def.isthreaded:=x
+	fi
+end
+
+export proc pcl_setnvariadics(int n)=
+	pccurr.nvariadics:=n
+end
+
+export proc pcl_setalign(int n)=
+	pccurr.align:=n
+end
+
+export proc pcl_setrtsproc=
+	if pccurr.def and pccurr.opcode=kprocdef then
+		definertsproc(pccurr.def)
+	fi
+end
+
+export proc pcl_setoldtype(int t)=
+	pccurr.oldmode:=t
+end
+
+export proc pcl_setpos(int pos)=
+	abortprogram("SETPOS")
+end
+
+export function pcl_lasterror:ichar=
+	return errormess
+end
+
+export function pcl_writepclfile(ichar filename)int=
+	ichar source
+	int length
+
+	fixuppcl()
+
+	(source,length):=writeallpcl()
+
+	return writefile(filename,source,length)
+end
+
+global proc perror(ichar mess)=
+	perror_s(mess, nil)
+end
+
+global proc perror_s(ichar mess, param=nil)=
+	print "PCL error:",mess
+	if param then
+		print ":",param
+	fi
+
+	stop 1
+end
+
+global proc writesymbols=
+!write all pcl code in system by scanning all procs
+!pcl code is only stored per-proc
+	pcl p
+	psymbol d,e
+
+	p:=pcstart
+
+	psline()
+	psstr("PROC PCL DEF OPS")
+	psline()
+
+	while p<=pccurr, ++p do
+		case p.opcode
+		when kprocdef, kistatic, kzstatic, kextproc, klabelname,
+			klocal, kparam then
+
+			d:=p.def
+PSINT(INT(p))
+PSSTR(" ")
+PSINT(INT(d))
+PSSTR(" ")
+
+			psstr(d.name)
+			psstr(": ")
+			psint(p.seqno)
+			psline()
+
+			psstr("	Opcode:"); psstr(pclnames[p.opcode]); psline()
+			psstr("	PCLdef:"); psstr((d.pcldef|pclnames[d.pcldef.opcode]|"---")); psline()
+			psstr("	Isdefined:"); psint(d.isdefined); psline()
+			psstr("	Isexported:"); psint(d.isexported); psline()
+			psstr("	Isimported:"); psint(d.isimported); psline()
+			psstr("	Extvariadics:"); psint(p.extvariadics); psline()
+			psstr("	Isaddrof:"); psint(d.addrof); psline()
+			psstr("	Label#:"); psint(d.labelno); psline()
+
+		esac
+	od
+
+	p:=pcstart
+
+	psline()
+	psstr("PROC PCL UNDEFINED MEM REFS")
+	psline()
+
+!CPL =PCLCODE, =PCLCURR
+
+	while p<=pccurr, ++p do
+		if p.opndtype in [mem_opnd, memaddr_opnd] and not p.def.isdefined then
+			d:=p.def
+PSINT(INT(p))
+PSSTR(" ")
+PSINT(INT(d))
+PSSTR(" ")
+			psstr("Not defined: ")
+			psstr(d.name)
+			psstr(" ")
+			psint(p.seqno)
+			psline()
+			d.isdefined:=1
+		fi
+	od
+end
+
+global function getbasename(ichar s)ichar t=
+	t:=s+strlen(s)-1
+	while t>s and (t-1)^<>'.' do
+		--t
+	od
+
+	return t
+end
+
+global proc definertsproc(psymbol d)=
+!request made that d is an RTS proc
+	ichar s:=d.name
+	int c
+
+!look for rts name following $; just scan LTR for first $
+	while (c:=s++^)<>'$' do od
+
+	for i to rtsnames.len do
+		if eqstring(rtsnames[i]+4, s) then
+			d.isrts:=1
+			d.rtsindex:=i
+			rtsproctable[i]:=d
+			return
+		fi
+	else
+	od
+end
+=== pc_lex.m 14/45 ===
+!Tokeniser Module
+
+import clib
+import mlib
+
+import* pci_core
+import* pci_read
+
+global tabledata() []ichar symbolnames=
+	(errorsym,			$),		! Lex error
+	(commasym,			$),		! ","
+	(colonsym,			$),		! ":"
+	(dcolonsym,			$),		! "::"
+	(lsqsym,			$),		! [
+	(rsqsym,			$),		! ]
+
+	(addsym,			$),		! +
+	(subsym,			$),		! -
+	(mulsym,			$),		! *
+	(addrsym,			$),		! &
+
+	(eqsym,				$),		! =
+
+	(eolsym,			$),		! End of line
+	(eofsym,			$),		! Eof seen
+
+!	(hashsym,			$),		! #
+	(labelsym,			$),		! #123
+
+	(intconstsym,		$),		! 123 64 bits signed
+	(realconstsym,		$),		! 123.4 64 bits
+	(stringconstsym,	$),		! "ABC"
+	(int128constsym,	$),		! 123 128 bits unsigned
+
+	(namesym,			$),		! raw name
+
+	(kopcodesym,		$),		! push etc
+	(typesym,			$),		! i32 etc
+
+	(kdummysym,			$)		!
+end
+
+macro testmode=0
+
+const etx = 26
+const cr  = 13
+const lf  = 10
+
+global const hstsize=65536*4
+global const hstmask=hstsize-1
+
+global [0:hstsize]psymbol lexhashtable
+int nsymbols
+
+!the following returned by updated by lexreadtoken()
+
+global int lxfileno=0	!*@ current source file number
+global int lxlineno=0	!*@ current source line number
+
+global int nsourcefiles=0	!no. of linear file names
+
+global int lxsymbol		!* main symbol kind
+global int lxsubcode	!* for some symbols, which specific keyword
+
+global int64 lxvalue
+global word128 lxuvalue128
+global real64 lxxvalue
+global ichar lxsvalue
+global int lxlength
+global byte lxtruename
+int lxhashvalue
+
+global ref byte lxsptr		!@ points to next char in source
+ref byte lxstart			!@ start of source code for this file
+global psymbol lxsymptr	!set by lookuplex()
+
+![0..255]char alphamap
+![0..255]char digitmap
+[0..255]char commentmap
+
+global proc lex=
+!lowest level lex() function, reads names, numbers etc but does no lookups or translations
+!returns results in lx-vars. Current source pointer should be in lxsptr
+int i, c, d, hsum, length
+ref byte pstart
+
+	lxsubcode:=0
+
+	doswitch c:=lxsptr++^
+	when 'a'..'z','$','_','.' then
+		pstart:=lxsptr-1		!point to start of name in source buffer
+	doname::
+		hsum:=pstart^
+
+		doswitch c:=lxsptr++^
+		when 'a'..'z','0'..'9','_','$','.' then
+			hsum:=hsum<<4-hsum+c
+		when 'A'..'Z' then
+			(lxsptr-1)^:=c+32
+			hsum:=hsum<<4-hsum+c+' '
+		else
+			--lxsptr
+			exit
+		end
+
+		lxlength:=lxsptr-pstart
+		lxhashvalue:=hsum<<5 -hsum
+		lxtruename:=0
+
+		if lookuplex(cast(pstart),lxlength) then
+			if lxsymptr.ksymbol then			!keywords take priority here
+				lxsymbol:=lxsymptr.ksymbol
+				lxsubcode:=lxsymptr.subcode
+			else
+				lxsymbol:=lxsymptr.symbol
+			fi
+		else
+			lxsymbol:=namesym
+		fi
+
+		return
+
+	when 'A'..'Z' then
+		pstart:=lxsptr-1
+		c:=pstart^:=pstart^+32
+		goto doname
+
+	when '0'..'9' then
+		readnumber(c)
+		return
+
+	when '`' then
+		pstart:=lxsptr		!point to start of name in source buffer
+		hsum:=0
+
+		doswitch c:=lxsptr^
+		when 'A'..'Z','a'..'z','0'..'9','_','$','.' then
+			++lxsptr
+			hsum:=hsum<<4-hsum+c
+		else
+			exit
+		end
+
+		lxsymbol:=namesym
+		lxtruename:=1
+		if pstart=lxsptr then
+			lxerror("NULL ` name")
+		fi
+		lxlength:=lxsptr-pstart
+		lxhashvalue:=hsum<<5-hsum
+
+		if lookuplex(cast(pstart),lxlength) then
+			lxsymbol:=lxsymptr.symbol			!can't be a keyword
+			if lxsymbol=0 then					!assume was a keyword; use as name
+				lxsymbol:=lxsymptr.symbol:=namesym
+			fi
+		fi
+		return
+
+	when '!',';' then			!comment to eol
+
+		while commentmap[lxsptr++^] do od
+
+		if (lxsptr-1)^=0 then --lxsptr fi
+!
+		++lxlineno
+
+		lxsymbol:=eolsym
+		return
+
+	when '#' then				!label
+		lxvalue:=0
+		doswitch c:=lxsptr++^
+		when '0'..'9' then
+			lxvalue:=lxvalue*10+c-'0'
+		else
+			--lxsptr
+			exit
+		end
+	
+		if lxvalue=0 then lxerror("Bad label") fi
+		if labelnooffset=0 then
+			maxuserlabel max:=lxvalue
+		else
+			lxvalue+:=labelnooffset
+		fi
+		lxsymbol:=labelsym
+		return
+
+	when ',' then
+		lxsymbol:=commasym
+		return
+
+	when ':' then
+		if lxsptr^=':' then
+			lxsymbol:=dcolonsym
+			++lxsptr
+		else
+			lxsymbol:=colonsym
+		fi
+		return
+
+	when '-' then
+		c:=lxsptr++^
+		if c not in '0'..'9' then lxerror("Bad no") fi
+		readnumber(c,-1)
+		return
+
+	when '*' then
+		lxsymbol:=mulsym
+		return
+
+	when '&' then
+		lxsymbol:=addrsym
+		return
+
+	when '"' then
+		readstring()
+		return
+
+	when ' ',9 then
+
+	when cr then			!lf expected to follow
+	when lf then
+		++lxlineno
+		lxsymbol:=eolsym
+		return
+
+	when 0,etx then
+		lxsymbol:=eofsym
+		--lxsptr
+		return
+	else
+		lxsymbol:=errorsym
+		lxvalue:=c
+		return
+
+	end doswitch
+end
+
+global proc initlex=
+	static byte done=0
+
+	return when done
+
+	lxsubcode:=0
+	lxsymbol:=errorsym
+
+	lxlineno:=0
+
+	for i:=0 to 255 do
+!		switch i
+!		when 'A'..'Z','a'..'z','$','_','0'..'9' then
+!			alphamap[i]:=1
+!		end
+!		switch i
+!		when '0'..'9' then
+!			digitmap[i]:=1
+!		end
+		commentmap[i]:=1
+	od
+
+	commentmap[0]:=0
+	commentmap[lf]:=0
+
+	inithashtable()
+
+	done:=1
+end
+
+proc readreal(ichar s,int slen)=
+	int c
+
+	c:=lxsptr^
+	lxsptr^:=0
+	lxxvalue:=strtod(s,nil)
+	lxsptr^:=c
+
+	lxsymbol:=realconstsym
+end
+
+proc readnumber(int c, signx=1)=
+!A digit c 0..9 has just been read. Numeric formats are::
+!1234
+!0x1234
+!2x1101
+!Nx....		possible
+	[256]char str
+	int i,d,intlen,slen,isfloat,sepseen
+	ichar s
+
+	d:=lxsptr^
+	case d
+	when 'x','X' then			!other base
+		case c
+		when '0' then			!hex
+			++lxsptr
+			readhex()
+			lxvalue*:=signx
+			return
+		else
+			cpl c
+			lxerror("Base not supported")
+		esac
+	esac
+
+!assume decimal
+	str[1]:=c
+	s:=lxsptr-1				!start of number in source
+	slen:=1
+	isfloat:=sepseen:=0
+
+	doswitch c:=lxsptr++^
+	when '0'..'9' then
+		str[++slen]:=c
+	when '_','\'' then
+		sepseen:=1
+	when '.' then
+		if isfloat then lxerror("float?") fi
+		isfloat:=1
+		intlen:=slen
+	when 'e','E' then
+		if isfloat=2 then lxerror("float?") fi
+		isfloat:=2
+	when '-','+' then
+		if isfloat<>2 then lxerror("float?") fi
+		isfloat:=3
+	else
+		--lxsptr
+		exit
+	end
+
+	if isfloat then
+		if sepseen then lxerror("seps in float?") fi
+		readreal(s,lxsptr-s)
+		lxxvalue*:=signx
+		return
+	fi
+
+	if slen>20 or slen=20 and cmpstring(&.str,"18446744073709551615")>0 then
+		if slen>39 or 
+				(slen=39 and strncmp(s,"340282366920938463463374607431768211455",39)>0) then
+			lxerror("Overflows 128 bits")
+		fi
+		stringtonumber128(str,slen,10)
+		return
+	fi
+
+	lxsymbol:=intconstsym
+
+	lxvalue:=0
+	for i:=1 to slen do
+		lxvalue:=lxvalue*10+str[i]-'0'
+	od
+	lxvalue*:=signx
+end
+
+proc readhex=
+!positioned at start of hex seq; 0 chars read yet
+	int ndigs,c
+
+	ndigs:=0
+	lxvalue:=0
+	doswitch c:=lxsptr++^
+	when '0'..'9' then
+		lxvalue:=lxvalue*16+c-'0'
+		++ndigs
+	when 'A'..'F' then
+		lxvalue:=lxvalue*16+(c-'A'+10)
+		++ndigs
+	when 'a'..'f' then
+		lxvalue:=lxvalue*16+(c-'a'+10)
+		++ndigs
+	when '_','\'','`' then
+	else
+		--lxsptr
+		exit
+	end
+
+	if ndigs=0 then
+		lxerror("No hex digits")
+	elsif ndigs>32 then
+		lxerror("Overflow in hex number")
+	elsif ndigs>16 then
+		lxerror("hex/128 bits not ready")
+!		stringtonumber128(str,slen,16)
+		return
+	fi
+	lxsymbol:=intconstsym
+end
+
+global proc ps(ichar caption)=
+	PRINT CAPTION,LXSPTR,":"
+	PRINTSYMBOL()
+end
+
+global proc printsymbol(filehandle dev=nil)=
+	[256]char str
+
+	strcpy(&.str,symbolnames[lxsymbol])
+	str[strlen(&.str)-2]:=0
+
+	print @dev,&.str
+	to 14-strlen(&.str) do print @dev," " od
+
+	case lxsymbol
+	when namesym then
+		print @dev,lxsymptr.name
+
+	when intconstsym then
+		print @dev, lxvalue
+	when realconstsym then
+		print @dev, lxxvalue
+	when stringconstsym then
+		print @dev,"""",,lxsvalue,,""""!,,"end"
+	when errorsym then
+		print @dev,lxvalue
+	when kopcodesym then
+		print @dev,pclnames[lxsubcode]+1
+
+	when typesym then
+		print @dev,pstdnames[lxsubcode]
+
+	else
+		print @dev,symbolnames[lxsymbol]
+		if lxsubcode then
+			print " ",,lxsubcode
+		fi
+
+	end
+
+	println @dev,$,lxlineno
+end
+
+proc inithashtable=
+!initialise hash table from kwddata
+	for i in pclnames.bounds do
+		addreservedword(pclnames[i]+1,kopcodesym,i)
+	od
+
+	for i in pstdnames.bounds do
+		addreservedword(pstdnames[i],typesym,i)
+	od
+
+	addreservedword("proc",kopcodesym,kprocdef)
+	addreservedword("function",kopcodesym,kprocdef)
+	addreservedword("end",kopcodesym,kendproc)
+	addreservedword("endext",kopcodesym,kendextproc)
+
+end
+
+proc addreservedword(ichar name,int symbol,subcode)=
+	lxhashvalue:=gethashvalue(name)
+	if lookuplex(name,0) then
+		cpl =name
+		lxerror("DUPL NAME")
+	fi
+
+	lxsymptr.symbol:=0
+	lxsymptr.ksymbol:=symbol
+	lxsymptr.subcode:=subcode
+end
+
+global proc printhashtable(filehandle devx,ichar caption)=
+	psymbol r
+	int count,i
+
+	println @devx,caption,":"
+	count:=0
+	for i:=0 to lexhashtable.upb do
+		r:=lexhashtable[i]
+		if R AND r.name then
+			count+:=1
+		fi
+	od
+	println @devx,count," items in table",hstsize
+end
+
+function lookuplex(ichar name,int length=0)int=
+!name is either in an existing table (for reserved words; length=0)
+!or is in the source code (so is not zero-terminated; length is actual length)
+!look for name in lexhashtable
+!sets lxsymptr to entry in table, either of existing entry, or a new one
+!returns 1/0 if found/not found (ie. old or new name)
+	psymbol e
+	int j,wrapped,insource,firstj
+
+	insource:=length
+	if length=0 then
+		length:=strlen(name)
+	fi
+
+	firstj:=j:=(lxhashvalue iand hstmask)		!j=initial hash index
+
+	wrapped:=0
+
+	do
+		lxsymptr:=lexhashtable[j]
+		if lxsymptr=nil then				!unused entry, not found
+			exit
+		fi
+
+		if lxsymptr.namelen=length and memcmp(lxsymptr.name,name,length)=0 then			!match
+			return 1
+		fi
+
+		if ++j>=hstsize then		!wraparound
+			if wrapped then
+				println "???????HASHTABLE FULL",hstsize,lxlineno
+				stop 1
+			fi
+			wrapped:=1
+			j:=1
+		fi
+	od
+
+!name not found
+	if insource then
+		name:=pcm_copyheapstringn(name,length)
+	fi
+
+	if ++nsymbols>((hstsize*7)/8) then
+		lxerror("Hashtable getting full")
+	fi
+
+	if lxsymptr=nil then
+		lxsymptr:=pcm_allocz(pstrec.bytes)
+		lexhashtable[j]:=lxsymptr
+	fi
+
+	lxsymptr.name:=name
+	lxsymptr.namelen:=length
+	lxsymptr.symbol:=namesym
+	lxsymptr.ksymbol:=0
+	return 0
+end
+
+global proc startlex(ichar source)=
+	initlex()
+	lxstart:=lxsptr:=cast(source)
+	lxlineno:=1
+	lxsymbol:=errorsym
+end
+
+global function addnamestr(ichar name)psymbol=
+!add a new name to the symbol table
+!return symptr to new (or existing) generic name
+	lxhashvalue:=gethashvalue(name)
+	lookuplex(pcm_copyheapstring(name),0)
+	return lxsymptr
+end
+
+global proc lxerror(ichar m)=			!LXERROR
+
+	fprintln "\w\w Lexical Error\n*** # *** on line #",m,lxlineno
+	stop 1
+end
+
+global function gethashvalue(ichar s)int=
+!get identical hash function to that calculated by lexreadtoken
+!but for a zero-terminated string
+!assumes S is lower-case, as conversion not done
+	int c,hsum
+
+	if s^=0 then return 0 fi
+
+	hsum:=s++^
+
+	do
+		c:=s++^
+		exit when c=0
+		hsum:=hsum<<4-hsum+c
+	od
+	return hsum<<5-hsum
+end
+
+proc readstring=
+!read string inplace: new string, with expanded control characters,
+!is stored on top of original string in the source
+!new string is same length or shorter
+
+	var ichar dest
+	var int c,d
+	var [8]char str
+
+	lxsymbol:=stringconstsym
+
+	lxsvalue:=lxsptr
+
+	dest:=lxsptr				!form string into same buffer
+
+	do
+		switch c:=lxsptr++^
+		when '\\' then			!escape char
+			c:=lxsptr^
+			if c>='A'  and c<='Z' then c+:=' ' fi
+			++lxsptr
+			switch c
+			when 'a' then			!bell ('alert')
+				c:=7
+			when 'b' then			!backspace
+				c:=8
+			when 'c','r' then		!carriage return
+					c:=cr
+			when 'e' then			!end-of-text
+				c:=26
+			when 'f' then			!formfeed
+				c:=12
+			when 'l','n' then		!linefeed, or linux/c-style newline
+				c:=lf
+			when 's' then			!eScape
+				c:=27
+			when 't' then			!tab
+				c:=9
+!			when 'u' then			!reserved for unicode, like \x but with 4 hex digits
+			when 'v' then			!vertical tab
+				c:=11
+			when 'w' then			!windows-style cr-lf
+				dest++^:=cr
+				c:=lf
+			when 'x' then	!2-digit hex code follows
+				c:=0
+				to 2 do
+					case d:=lxsptr++^
+					when 'A','B','C','D','E','F' then
+						c:=c*16+d-'A'+10
+					when 'a','b','c','d','e','f' then
+						c:=c*16+d-'a'+10
+					when '0','1','2','3','4','5','6','7','8','9' then
+						c:=c*16+d-'0'
+					else
+						lxerror("Bad \\x code")
+					esac
+				od
+			when 'y' then			!CCI/SM backwards tab
+				c:=16
+			when 'z','0' then		!null (not fully supported in code)
+				c:=0
+			when '"','Q' then		!embedded double quote
+				c:='"'
+			when '\\' then
+				c:='\\'
+			when '\'' then			!embedded single quote
+				c:='\''
+			else
+				println "<",,char(c),,">"
+				lxerror("Unknown string escape")
+			end
+		when '"' then		!possible terminators
+			if lxsptr^=c then		!repeated, assume embedded term char
+				++lxsptr
+			else			!was end of string
+				exit
+			fi
+		when cr,lf,0 then
+			lxerror("String not terminated")
+		endswitch
+
+		dest++^:=c
+	od
+	lxlength:=dest-lxsvalue
+	(lxsvalue+lxlength)^:=0		!overwrites final " or earlier
+end
+
+proc stringtonumber128(ichar s, int length,base)=
+	word128 aa
+	int c,d
+	aa:=0
+	to length do
+		aa:=aa*base
+		c:=(s++)^
+
+		if c>='a' then
+			d:=c-'a'+10
+		elsif c>='A' then
+			d:=c-'A'+10
+		else
+			d:=c-'0'
+		fi
+
+		aa:=aa+d
+	od
+
+	lxuvalue128:=aa
+	lxsymbol:=int128constsym
+end
+
+=== pci_read.m 15/45 ===
+import pc_lex
+import pc_parse
+=== pc_parse.m 16/45 ===
+import msys
+import mlib
+
+import* pci_core
+import* pci_read
+
+int insideproc
+
+global function parse(ichar source)int=
+	psymbol d
+
+	startlex(source)
+	int labno
+
+!	repeat
+!		lex()
+!		printsymbol()
+!	until lxsymbol=eofsym
+!	STOP
+
+	lxsymbol:=errorsym
+
+	do
+		lex()
+
+		case lxsymbol
+		when kopcodesym, typesym then
+			if lxsubcode=kendprogram then exit fi
+
+			readinstr()
+
+		when labelsym then
+			dolabel()
+
+		when namesym then
+			SERROR("""NAME:"" NOT SUPPORTED")
+!			d:=lxsymptr
+!			lex()
+!			case lxsymbol
+!			when colonsym then
+!			when dcolonsym then
+!				d.isexported:=1
+!			else
+!				serror(": expected")
+!			esac
+!			assignlabeltoname(d)
+!			pcl_gen(klabelname,pcl_genmemaddr(d))
+!			pccurr.seqno:=lxlineno
+!!			pcl_gen(klabel,genlabel(d.labelno))
+!			lex()
+
+		when intconstsym then
+			next
+
+		when eolsym then
+			next
+		when eofsym then
+			exit
+		else
+			println =symbolnames[lxsymbol]
+			serror("Bad input")
+		esac
+		checksymbol(eolsym)
+	od
+
+	if insideproc then serror("End missing") fi
+
+	return 1
+end
+
+proc checksymbol(int symbol)=
+	if lxsymbol<>symbol then
+		println symbolnames[symbol],"expected, not",symbolnames[lxsymbol],,", on line:",lxlineno
+		stop 1
+	fi
+end
+
+proc dolabel=
+	if lxvalue not in 1..maxlabels then
+		serror_s("1:Label out of range:",strint(lxvalue))
+	fi
+
+	pdefinelabel(lxvalue,lxlineno)
+	lex()
+	checksymbol(colonsym)
+	lex()
+end
+
+proc readmode(pcl p)=
+	if p.mode<>tpvoid then
+		p.oldmode:=lxsubcode
+		lex()
+		return
+	fi
+
+	p.mode:=lxsubcode
+	p.size:=psize[lxsubcode]
+	lex()
+	if p.mode=tpblock then
+		checksymbol(colonsym)
+		lex()
+		checksymbol(intconstsym)
+		p.size:=lxvalue
+		lex()
+	fi
+end
+
+proc readinstr=
+!I have a bare opcode; see if any other operands follow. Syntax is:
+! push[:type[:size]] [operand [:type[:size]] [,A[,B]]]
+	int opcode,mode,size
+	pcl p
+
+	p:=newpcl()				!all zeros
+	p.seqno:=lxlineno
+	mode:=tpvoid			!possible override
+	size:=0
+
+	if lxsymbol=typesym then
+		readmode(p)
+		checksymbol(kopcodesym)
+	fi
+
+	p.opcode:=opcode:=lxsubcode
+
+	lex()
+
+	if lxsymbol=typesym then
+		readmode(p)
+	fi
+
+	case pclhasopnd[opcode]
+	when 1 then
+		case lxsymbol
+		when intconstsym then
+			p.value:=lxvalue
+			p.opndtype:=int_opnd
+			mode:=tpi64
+			lex()
+		when realconstsym then
+			p.xvalue:=lxxvalue
+			p.opndtype:=real_opnd
+			mode:=tpu64
+			lex()
+		when stringconstsym then
+			p.svalue:=pcm_copyheapstring(lxsvalue)
+			p.opndtype:=string_opnd
+			mode:=tpu64
+			lex()
+		when labelsym then
+			if lxvalue not in 1..maxlabels then
+				serror_s("2:Label out of range:",strint(lxvalue))
+			fi
+			p.labelno:=lxvalue
+			p.opndtype:=label_opnd
+			lex()
+		when namesym then
+			p.def:=lxsymptr
+			p.opndtype:=mem_opnd
+			p.def.istruename:=lxtruename
+
+			lex()
+
+		when int128constsym then
+			p.value128:=lxuvalue128
+			p.opndtype:=int128_opnd
+			mode:=tpi128
+			lex()
+
+		when addrsym then
+			lex()
+			checksymbol(namesym)
+			p.def:=lxsymptr
+			p.def.istruename:=lxtruename
+			p.opndtype:=memaddr_opnd
+			lex()
+			if lxsymbol=mulsym then
+				p.def.isimported:=1
+				lex()
+			fi
+		else
+			serror("Missing or Bad Operand")
+		esac
+
+	when 2 then			!must be name that defines a proc or static or named label
+		checksymbol(namesym)
+		p.def:=lxsymptr
+		if opcode=kprocrts then
+			p.opcode:=kprocdef
+			definertsproc(p.def)
+		fi
+		p.opndtype:=mem_opnd
+		lex()
+		case lxsymbol
+		when colonsym then
+		when dcolonsym then
+			p.def.isexported:=1
+			p.isexported:=1
+		else
+			serror("Colon expected")
+		esac
+		lex()
+
+	when 3 then			!must be name that defines a local or param
+		checksymbol(namesym)
+		p.def:=lxsymptr
+		p.opndtype:=mem_opnd
+		lex()
+		if lxsymbol=colonsym then serror(": not used for locals") fi
+	when 4 then			!must be name that defines a proc or static or named label
+		checksymbol(namesym)
+		p.def:=lxsymptr
+		p.opndtype:=mem_opnd
+		lex()
+
+	esac
+
+	if lxsymbol=typesym then
+		readmode(p)
+	fi
+
+!if no type used, but available from operand, then use that
+
+	if p.mode=tpvoid then
+		if mode<>tpvoid then
+			p.mode:=mode
+			p.size:=size
+		fi
+	fi
+
+	if pclextra[opcode] then
+		checksymbol(intconstsym)
+		p.x:=lxvalue
+		lex()
+		if pclextra[opcode]=2 then
+			checksymbol(intconstsym)
+			p.y:=lxvalue
+			lex()
+		fi
+	fi
+end
+
+global proc serror(ichar mess)=
+	serror_s(mess, nil)
+end
+
+global proc serror_s(ichar mess, param=nil)=
+	print "Syntax error:",mess
+	if param then
+		print ":",param
+	fi
+
+	println " on line:",lxlineno
+	stop 1
+end
+
+export function pcl_readpclfile(ichar filename, rtsfile=nil)int=
+!note: currently only works one-time
+	ichar source
+
+	pcl_start()
+
+	if not parse_readsource(filename) then return 0 fi
+	
+	if rtsfile then
+		labelnooffset:=maxuserlabel
+		if not parse_readrts() then
+			println "No RTS found"
+			return 0
+		fi
+	fi
+
+	pcl_gen(kendprogram)
+	pcl_end()
+
+	return 1
+end
+
+global function parse_readsource(ichar filename)int=
+	ichar source
+
+	source:=readfile(filename)
+	if source=nil then
+		errormess:="Can't load file"
+		return 0
+	fi	
+
+	if not parse(source) then
+		errormess:="Couldn't parse"
+		return 0
+	fi
+	return 1
+end
+
+global function parse_readrts:int=
+	static ichar source = strinclude("rts.pcl")
+
+	if not parse(source) then
+		errormess:="Couldn't parse RTS"
+		return 0
+	fi
+	return 1
+end
+=== pc_tables.m 17/45 ===
+import* pci_core
+
+!type system
+
+export tabledata() 	[0:]ichar pstdnames,
+		[0:]byte psize, [0:]byte psigned, [0:]byte pfloat, [0:]byte pcat =
+!    type         name    bits SZ   S F Cat
+	(tpvoid=0,    "void",    	0,	0,0, voidcat),
+
+	(tpu8,        "u8",      	1,	0,0, shortcat),
+	(tpu16,       "u16",    	2,	0,0, shortcat),
+	(tpu32,       "u32",    	4,	0,0, shortcat),
+	(tpu64,       "u64",    	8,	0,0, d64cat),
+	(tpu128,      "u128",  		16, 0,0, widecat),
+
+	(tpi8,        "i8",      	1,	1,0, shortcat),
+	(tpi16,       "i16",    	2,	1,0, shortcat),
+	(tpi32,       "i32",    	4,	1,0, shortcat),
+	(tpi64,       "i64",    	8,	1,0, d64cat),
+	(tpi128,      "i128", 	 	16,	1,0, widecat),
+
+	(tpr32,       "r32",    	4,	0,1, x32cat),
+	(tpr64,       "r64",    	8,	0,1, x64cat),
+
+	(tpblock,     "block",   	0,	0,0, blockcat),
+
+	(tplast,      "$last",   	0,	0,0, voidcat),
+end
+
+global tabledata() [0:]ichar catnames =
+	(voidcat=0,		$),
+	(d64cat,		$),
+	(x32cat,		$),
+	(x64cat,		$),
+	(shortcat,		$),
+	(widecat,		$),
+	(blockcat,		$),
+end
+
+global tabledata() [0:]ichar opndnames =
+	(no_opnd=0,			$),
+	(mem_opnd,			$),
+	(memaddr_opnd,		$),
+	(label_opnd,		$),
+	(int_opnd,			$),
+	(real_opnd,			$),
+	(int128_opnd,		$),
+	(real32_opnd,		$),
+	(string_opnd,		$),
+	(assem_opnd,		$),
+end
+
+!Stack operands are:
+!	Xa				1st of 1
+!   Xb, Ya			1st/2nd of 2
+!   Xc, Yb, Za		1st/2nd/3rd of 3
+!   Xd, Yc, Zb, Wa	1st/2nd/3rd/4th of 4
+! X is always the 'left-most' operand, but will be at offset 0, 1 2 from top of stack
+! a (as in Xa, Ya, Za, Wa) is always the top of stack
+
+!Immediate operand:
+!   A			(various)
+!Extra info:
+!   op			opindex
+!   fn			fnindex
+!   cc			cond code
+!   t[:size]    type (:size for block types)
+!   u           secondary type for some ops (convert etc)
+!   n			nargs for calls
+!   s x			scale and offset for ptr/offset ops
+!   x y			min/max lab index for switch
+!	B			Secondary operand in a following kopnd instruction
+!	C			Tertiary operand in a following kopnd instruction
+
+!Stack usage is represented by (a b):
+! a is the number of stack elements that will be popped
+! b is the number of new stack elements that will be pushed
+! Something like (1 1) can mean the same element stays in place
+
+
+export tabledata() [0:]ichar pclnames,
+			[0:]byte pclhasopnd,			!1+ has operand; 2=name defines a name; 3=defines local/param; 4=imported func
+			[0:]byte pclhastype,
+			[0:]byte pclextra =
+
+!                          Op T X
+	(kzero=0,			$,	0,0,0),	! (0 0)
+	(knop,				$,	0,0,0),	! (0 0)
+	(kstop,				$,	0,0,0),	! (1 0)	Stop Xa
+	(kcomment,			$,	1,0,0),	! (0 0)	Comment A (a string)
+
+	(kimportdll,		$,	1,0,0),	! (0 0) A Use external dll A
+!	(kimport,			$,	1,0,0),	! (0 0) A Import symbol A
+!	(kexport,			$,	1,0,0),	! (0 0) A Export symbol A (or declare using ::)
+	(kistatic,			$,  2,1,0),	! (0 0) (A,t) Define idata label (must be followed by correct kdata ops)
+	(kzstatic,			$,	2,1,0),	! (0 0) (A,t) Define zdata labe and reserve sufficient space
+	(kequiv,			$,	2,0,0),	! (0 0) (A) Define equivalence to this var?
+
+!	(kprocdef,			$,	2,1,1),	! (0 0) (A,t, isrts) Define proc A, of given return type
+	(kprocdef,			$,	2,1,0),	! (0 0) (A,t) Define proc A, of given return type
+	(kprocentry,		$,	0,0,0),	! (0 0)
+	(kendproc,			$,	0,0,0),	! (0 0)
+	(kendprogram,		$,	0,0,0),	! (0 0)
+	(kextproc,			$,	4,1,0),	! (0 0) (t)
+	(kextparam,			$,	0,1,0),	! (0 0) (t) Anonymous params
+	(kextvariadics,		$,	0,1,0),	! (0 0) (t) ... parameter
+	(kendextproc,		$,	0,0,0),	! (0 0)
+	(kthreadedproc,		$,	2,1,0),	! (0 0) (A,t) Define proc A, of given return type
+	(kprocrts,			$,	2,1,0),	! (0 0) (A,t) Alternate to procdef but for rts functions
+
+	(klocal,			$,	3,1,0),	! (0 0) (A,t) Define local A of type t
+	(kparam,			$,	3,1,0),	! (0 0) (A,t) Define param A of type t
+	(klabel,			$,	1,0,0),	! (0 0) (L) Define numbered label L
+	(klabelname,		$,	2,0,0),	! (0 0) (A) Define named label
+
+	(kpush,				$,	1,1,0),	! (0 1) (X,t)	Push operand X of type t; X is anything pushable
+	(kpop,				$,	1,1,0),	! (1 0) (L,t)	pop to label X
+	(kstore,			$,	1,1,0),	! (1 1) (L,t)	store to label X but stays on the stack
+	(kpushnc,			$,	1,1,0),	! (0 1) (X,t)	Push optimised for blocks (no copying)
+	(kpushlabel,		$,	1,0,0),	! (0 1) (L)		Push address of label L
+
+	(kopnd,				$,	1,0,0),	! (0 0) (X) Define auxiliary operand X (not sure about extra stuff yet)
+	(ktype,				$,	0,1,0),	! (0 0) (t) Define auxiliary type t
+	(kduplstack,		$,	0,1,0),	! (1 2) (t) Ya':=Xa; X stays on stack
+	(kswapstack,		$,	0,1,1),	! (1 1) (t,N) Swap Xa with element +N away
+
+	(kpushptroff,		$,	0,1,2),	! (2 1) (t,scale,offset) Xa:=(Xb+Ya*scale+offset)^ using given type
+	(kpopptroff,		$,	0,1,2),	! (3 0) (t,scale,offset) (Yb+Za*scale+offset)^:=Xc
+	(kstoreptroff,		$,	0,1,2),	! (3 1) (t,scale,offset) (Yb+Za*scale+offset)^:=Xc, Xc stays as Xa
+!	(kindex,			$,	0,0,0),	! (0 0)
+!	(kpopindex,			$,	0,0,0),	! (0 0)
+!	(kstoreindex,		$,	0,0,0),	! (0 0)
+
+	(kpushptr,			$,	0,1,0),	! (1 1) Xa:=Xa^
+	(kpopptr,			$,	0,1,0),	! (2 0) Ya^:=Xb
+	(kstoreptr,			$,	0,1,0),	! (2 1) Ya^:=Xb, keep Xb on stack as Xa
+
+	(kdotindex,			$,	0,1,0),	! (2 1)	Xa:=Xb.[Ya]
+	(kpopdotindex,		$,	0,1,0),	! (3 0) Yb^.[Za]:=Xc
+	(kstoredotindex,	$,	0,1,0),	! (3 1) Yb^.[Za]:=Xc, keep Xc as Xa
+
+	(kdotslice,			$,	0,1,0),	! (3 1) Xa:=Xc.[Yb..Za]
+	(kpopdotslice,		$,	0,1,0),	! (4 0) Yc^.[Zb..Wa]:=Xd
+	(kstoredotslice,	$,	0,1,0),	! (4 1) Yc^.[Zb..Wa]:=Xd, keep
+
+!	(kfree,				$,	0,1,0),	! (1 0)	Pop Xa
+	(kpopstack,			$,	0,1,0),	! (1 0)	Pop Xa
+	(keval,				$,	0,1,0),	! (1 0) Evaluate Xa [load to an actual register], then pop
+
+	(kcallproc,			$,	1,0,0),	! (n 0) (A) Call &A with nargs, then pop args
+	(kcallprocptr,		$,	0,0,0),	! (n+1 0) Call Xa with nargs, then pop args
+	(kretproc,			$,	0,0,0),	! (0 0) Return from proc
+
+	(kcallfn,			$,	1,1,0),	! (n 1) (A, t), Call &A, then pop args, leave retval
+	(kcallfnptr,		$,	0,1,0),	! (n+1 1) (t) Call Xa, then pops args, leave retval
+	(kretfn,			$,	0,1,0),	! (0 0) (t) Return from function with Xa=retval
+
+	(kjump,				$,	1,0,0),	! (0 0) (L) goto L
+	(kjumpptr,			$,	0,0,0),	! (1 0) goto Xa
+
+	(kjumpeq,			$,	1,1,0),	! (2 0) (L,t) goto L when Xb = Ya
+	(kjumpne,			$,	1,1,0),	! (2 0) (L,t) goto L when <>
+	(kjumplt,			$,	1,1,0),	! (2 0) (L,t) goto L when Xb < Ya
+	(kjumple,			$,	1,1,0),	! (2 0) (L,t) goto L when <=
+	(kjumpge,			$,	1,1,0),	! (2 0) (L,t) goto L when >=
+	(kjumpgt,			$,	1,1,0),	! (2 0) (L) goto L when >
+
+	(kjumptrue,			$,	1,1,0),	! (1 0) (L,t) goto L when Xa is true
+	(kjumpfalse,		$,	1,1,0),	! (1 0) (L,t) goto L when Xa is false
+
+	(kjumpinrange,		$,	1,1,0),	! (3 0) (L,t) goto L when Xc in Yb..Za
+	(kjumpnotinrange,	$,	1,1,0),	! (3 0) (L,t) goto L when Xc not in Yb..Za
+
+	(ksetjumpeq,		$,	1,1,0),	! (2 1) (L,t) goto L when Xb=Ya; pop Y, leave Xa
+	(ksetjumpeqx,		$,	1,1,0),	! (0 0) (L,t) goto L when Xb=Ya; pop both
+	(ksetjumpne,		$,	1,1,0),	! (0 0) (L,t) goto L when Xb<>Ya; pop both
+
+!	(ksetcc,			$,	0,1,1),	! (2 1) (t,cc) Xa:=Xb cc Ya
+	(kseteq,			$,	0,1,0),	! (2 1) (t) Xa:=Xb = Ya
+	(ksetne,			$,	0,1,0),	! (2 1) (t) Xa:=Xb <> Ya
+	(ksetlt,			$,	0,1,0),	! (2 1) (t) Xa:=Xb < Ya
+	(ksetle,			$,	0,1,0),	! (2 1) (t) Xa:=Xb <= Ya
+	(ksetge,			$,	0,1,0),	! (2 1) (t) Xa:=Xb >= Ya
+	(ksetgt,			$,	0,1,0),	! (2 1) (t) Xa:=Xb > Ya
+
+	(kcasejumpeq,		$,	1,1,1),	! (2 1) (L,t) goto L when Xb=Ya; pop Ya, leave Xa
+
+!	(kselectcc,			$,	0,1,1),	! (4 1) (t,cc) Xa:=(Zb op Wa|Xd|Yc)
+	(kselecteq,			$,	0,1,0),	! (4 1) (t) Xa:=(Zb = Wa|Xd|Yc)
+	(kselectne,			$,	0,1,0),	! (4 1) (t) Xa:=(Zb <> Wa|Xd|Yc)
+	(kselectlt,			$,	0,1,0),	! (4 1) (t) Xa:=(Zb < Wa|Xd|Yc)
+	(kselectle,			$,	0,1,0),	! (4 1) (t) Xa:=(Zb <= Wa|Xd|Yc)
+	(kselectge,			$,	0,1,0),	! (4 1) (t) Xa:=(Zb >= Wa|Xd|Yc)
+	(kselectgt,			$,	0,1,0),	! (4 1) (t) Xa:=(Zb > Wa|Xd|Yc)
+
+	(kselecttrue,		$,	0,1,0),	! (3 1) (t) Xa:=(Za|Xc|Yb)
+
+	(kto,				$,	1,0,0),	! (0 0) (L)(B,t) --B (aux); goto L when B<>0 
+
+	(kforup,			$,	1,1,1),	! (0 0) (L,t,n)(B,t)(C,t) B+:=n; goto L when B<=C
+	(kfordown,			$,	1,1,1),	! (0 0) (L,t,n)(B,t)(C,t) B-:=n; goto L when B>=C
+
+	(kswap,				$,	0,1,0),	! (2 0) (t) swap(Xb^,Yb^)
+
+	(kmakeslice,		$,	0,1,0),	! (2 1) (t) Xa:=slice(Xb, Ya)
+
+	(kswitch,			$,	1,0,2),	! (1 0) (L,x,y)(B) L=jumptab; B=elselab; x/y=min/max values
+	(kswitchlabel,		$,	1,0,0),	! (0 0) (L) jumptable entry
+	(kendswitch,		$,	0,0,0),	! (0 0)	Mark end of switch jumptable
+
+	(kclear,			$,	0,1,0),	! (1 0) (t) Clear Xa^
+
+	(kcsegment,			$,	0,0,0),	! (0 0) Switch to that segment (usually automatic, so these override)
+	(kisegment,			$,	0,0,0),	! (0 0) ..
+	(kzsegment,			$,	0,0,0),	! (0 0) ..
+	(krosegment,		$,	0,0,0),	! (0 0) ..
+
+	(kdata,				$,	1,1,0),	! (0 0) (X,t) Define inline data of various kinds
+
+	(kdb,				$,	1,0,0),	! (0 0) (X) Define a u8 data value
+	(kdw,				$,	1,0,0),	! (0 0) (X) u16 value: ...
+	(kdd,				$,	1,0,0),	! (0 0) (X) u32 value: u32/i32/r32, depends on operand
+	(kdq,				$,	1,0,0),	! (0 0) (X) u64 value: u64/i64/r64/string/addr/label, depends on operan
+	(kdstring,			$,	1,0,0),	! (0 0) (S) u8 sequence from string literal (no terminator)
+	(kdstringz,			$,	1,0,0),	! (0 0) (S) u8 sequence from string literal, nul added
+
+	(kreserve,			$,	0,1,0),	! (0 0) (t) Reserve space big enough for t
+	(kassem,			$,	1,0,0),	! (0 0) to be worked out....
+
+	(kadd,				$,	0,1,0),	! (2 1) (t) Xa := Xb + Ya
+	(ksub,				$,	0,1,0),	! (2 1) (t)
+	(kmul,				$,	0,1,0),	! (2 1) (t)
+	(kdiv,				$,	0,1,0),	! (2 1) (t)
+	(kidiv,				$,	0,1,0),	! (2 1) (t)
+	(kirem,				$,	0,1,0),	! (2 1) (t)
+	(kiand,				$,	0,1,0),	! (2 1) (t)
+	(kior,				$,	0,1,0),	! (2 1) (t)
+	(kixor,				$,	0,1,0),	! (2 1) (t)
+	(kshl,				$,	0,1,0),	! (2 1) (t)
+	(kshr,				$,	0,1,0),	! (2 1) (t)
+	(kin,				$,	0,1,0),	! (2 1) (t)
+	(knotin,			$,	0,1,0),	! (2 1) (t)
+	(kmin,				$,	0,1,0),	! (2 1) (t)
+	(kmax,				$,	0,1,0),	! (2 1) (t)
+	(keq,				$,	0,1,0),	! (2 1) (t)
+	(kne,				$,	0,1,0),	! (2 1) (t)
+	(klt,				$,	0,1,0),	! (2 1) (t)
+	(kle,				$,	0,1,0),	! (2 1) (t)
+	(kge,				$,	0,1,0),	! (2 1) (t)
+	(kgt,				$,	0,1,0),	! (2 1) (t)
+	(ksame,				$,	0,1,0),	! (2 1) (t)
+	(kandl,				$,	0,1,0),	! (2 1) (t)
+	(korl,				$,	0,1,0),	! (2 1) (t)
+	(kaddrefoff,		$,	0,1,2),	! (2 1) (t,scale,offset) Xa := Xb + Ya*scale + offset
+	(ksubrefoff,		$,	0,1,2),	! (2 1) (t,scale,offset) Xa := Xb - Ya*scale + offset
+	(ksubref,			$,	0,1,1),	! (2 1) (t,scale) Xa := (Xb - Ya)/scale
+
+	(kneg,				$,	0,1,0),	! (1 1) (t) Xa:=-Xa
+	(kabs,				$,	0,1,0),	! (1 1) (t)
+	(kinot,				$,	0,1,0),	! (1 1) (t)
+	(knotl,				$,	0,1,0),	! (1 1) (t)
+	(kistruel,			$,	0,1,0),	! (1 1) (t)
+	(ksqr,				$,	0,1,0),	! (1 1) (t)
+
+	(ksqrt,				$,	0,1,0),	! (1 1) (t) Xa:=sqrt(Xa)
+	(ksin,				$,	0,1,0),	! (1 1) (t)
+	(kcos,				$,	0,1,0),	! (1 1) (t)
+	(ktan,				$,	0,1,0),	! (1 1) (t)
+	(kasin,				$,	0,1,0),	! (1 1) (t)
+	(kacos,				$,	0,1,0),	! (1 1) (t)
+	(katan,				$,	0,1,0),	! (1 1) (t)
+	(kln,				$,	0,1,0),	! (1 1) (t)
+	(klog,				$,	0,1,0),	! (1 1) (t)
+	(kexp,				$,	0,1,0),	! (1 1) (t)
+	(kround,			$,	0,1,0),	! (1 1) (t)
+	(kfloor,			$,	0,1,0),	! (1 1) (t)
+	(kceil,				$,	0,1,0),	! (1 1) (t)
+	(kfract,			$,	0,1,0),	! (1 1) (t)
+	(ksign,				$,	0,1,0),	! (1 1) (t)
+	(katan2,			$,	0,1,0),	! (1 1) (t)
+	(kpower,			$,	0,1,0),	! (1 1) (t)
+	(kfmod,				$,	0,1,0),	! (1 1) (t)
+
+	(kincr,				$,	0,1,1),	! (1 0) (t,step) Xa^+:=step
+	(kdecr,				$,	0,1,1),	! (1 0) (t,step) Xa^-:=step
+	(kincrload,			$,	0,1,1),	! (1 1) (t,step) Xa:=(Xa+:=step)^
+	(kdecrload,			$,	0,1,1),	! (1 1) (t,step) Xa:=(Xa-:=step)^
+	(kloadincr,			$,	0,1,1),	! (1 1) (t,step) Xa:=Xa++^ (difficult to express step)
+	(kloaddecr,			$,	0,1,1),	! (1 1) (t,step) Xa:=Xa--^
+
+	(kaddto,			$,	0,1,0),	! (2 0) (t) Xa^ +:= Ya
+	(ksubto,			$,	0,1,0),	! (2 0) (t)
+	(kmulto,			$,	0,1,0),	! (2 0) (t)
+	(kdivto,			$,	0,1,0),	! (2 0) (t)
+	(kidivto,			$,	0,1,0),	! (2 0) (t)
+	(kiremto,			$,	0,1,0),	! (2 0) (t)
+	(kiandto,			$,	0,1,0),	! (2 0) (t)
+	(kiorto,			$,	0,1,0),	! (2 0) (t)
+	(kixorto,			$,	0,1,0),	! (2 0) (t)
+	(kshlto,			$,	0,1,0),	! (2 0) (t)
+	(kshrto,			$,	0,1,0),	! (2 0) (t)
+	(kminto,			$,	0,1,0),	! (2 0) (t)
+	(kmaxto,			$,	0,1,0),	! (2 0) (t)
+	(kandlto,			$,	0,1,0),	! (2 0) (t)
+	(korlto,			$,	0,1,0),	! (2 0) (t)
+	(kaddrefoffto,		$,	0,1,2),	! (2 0) (t,scale,offset) Xa^ +:= Ya
+	(ksubrefoffto,		$,	0,1,2),	! (2 0) (t,scale,offset) Xa^ -:= Ya
+
+	(knegto,			$,	0,1,0),	! (1 0) (t) -:=Xa^
+	(kabsto,			$,	0,1,0),	! (1 0) (t)
+	(kinotto,			$,	0,1,0),	! (1 0) (t)
+	(knotlto,			$,	0,1,0),	! (1 0) (t)
+	(kistruelto,		$,	0,1,0),	! (1 0) (t)
+
+!for conversions, t is always the current operand type
+!u is the new type. However, for conversions involving widening, the result
+!must end up at at least 64 bit. So i64->u8 masks to 8 bits, the sign-extends to u64
+
+!	(kconvert,			$,	0,2,1),	! (1 1) (t,u)
+	(ktypepun,			$,	0,2,1),	! (1 1) (t,u)
+
+	(ksoftconv,			$,	0,2,0),	! (1 1) (t,u) Xa:=cast(Xa,u) ??
+
+	(kwiden,			$,	0,2,0),	! (1 1) (t,u) Xa:=cast(Xa,u) Widen int type, from t to wider int u
+	(knarrow,			$,	0,2,0),	! (1 1) (t,u) Xa:=cast(Xa,u) I think reduces i128/u128 t to i64/u64 u
+	(kfloat,			$,	0,2,0),	! (1 1) (t,u) Xa:=cast(Xa,t) Int u to real t
+	(kfix,				$,	0,2,0),	! (1 1) (t,u) Xa:=cast(Xa,t) Real u to int t
+	(ktruncate,			$,	0,2,0),	! (1 1) (t,u) Xa:=cast(Xa,u) Mask to width of u, but type is widend to i64/u64
+	(kfwiden,			$,	0,2,0),	! (1 1) (t,u) Xa:=cast(Xa,u) r32 to r64
+	(kfnarrow,			$,	0,2,0),	! (1 1) (t,u) Xa:=cast(Xa,u) r64 to r32
+	(ksofttruncw,		$,	0,2,0),	! (1 1) (t,u) Xa:=cast(Xa,u) 128 bits to 64
+	(kwidenw,			$,	0,2,0),	! (1 1) (t,u) Xa:=cast(Xa,u) 64 bits to 128
+
+!These ones are currently still needed by or all PCL targets
+
+	(kstartmult,		$,	0,0,0),
+	(kresetmult,		$,	0,0,0),
+	(kendmult,			$,	0,0,0),
+	(ksetret,			$,	0,1,0),	! (0 0) (t) Set Xa as return value of type t
+!	(ksetretmult,		$,	0,1,2),
+	(ksetretmult,		$,	0,0,1), ! (0 0) (n) Set N return values
+	(ksetargs,			$,	0,0,2), ! (nargs, nvars)
+
+!these are special ones used reflection
+
+	(kgetnprocs,		$,	0,0,0), ! (0 1) Get number of functions in function table
+	(kgetprocname,		$,	0,0,0), ! (1 1) Xa:=Getprocname(Xa) Name of nth function (1-based)
+	(kgetprocaddr,		$,	0,0,0), ! (1 1) Xa:=Getprocaddr(Xa) Addr of nth function (1-based)
+
+!ops used internally by M compiler until they can be replaced
+!(usually they will be turned into something else, constants etc)
+	(klen,				$,	0,0,0),
+	(klwb,				$,	0,0,0),
+	(kupb,				$,	0,0,0),
+	(kbounds,			$,	0,0,0),
+	(klenstr,			$,	0,0,0),
+	(kbitwidth,			$,	0,0,0),
+	(kbytesize,			$,	0,0,0),
+	(kbytes,			$,	0,0,0),
+	(kminvalue,			$,	0,0,0),
+	(kmaxvalue,			$,	0,0,0),
+	(ktypestr,			$,	0,0,0),
+	(kerror,			$,	0,0,0),
+	(karraytoslice,		$,	0,0,0),
+	(kichartoslice,		$,	0,0,0),
+	(ksofttruncshort,	$,	0,0,0),
+	(kcharaxtoichar,	$,	0,0,0),
+	(ksliceptr,			$,	0,0,0),
+
+	(klast,				$,	0,0,0),	! (0 0)
+end
+
+global tabledata() []ichar rtsnames =
+	(rts_rts_unimpl,		$),
+	(rts_power_i64,			$),
+	(rts_float_u64r64,		$),
+	(rts_mul_i128,			$),
+	(rts_div_i128,			$),
+	(rts_div_u128,			$),
 end
 === mm_support.m 18/45 ===
 import clib
@@ -12011,6 +11995,8 @@ global function allocunitrec:ref unitrec=
 	ref unitrec p
 	ref int64 q
 	int nwords
+
+	++nunits
 
 	if remainingunits-- then
 		p:=unitheapptr
@@ -37601,7 +37587,39 @@ proc wxmode(int mode)=
 	fi
 	wxstr(strmode(mode,0))
 end
-=== rts.pcl 39/45 ===
+=== mm_help.txt 39/45 ===
+M Compiler Generating x64 native code - Windows Version
+
+Whole-program compiler builds entire program from the lead module
+into a executable file.
+
+    mm main              # Create main.exe from lead module main.m
+    mm main.m            # Same (.m extension is default)
+    mm -c main           # Create single-file main.asm intermediate ASM
+
+Options:
+
+    -exe                 # Generate .exe executable file (default)
+    -dll                 # Generate .dll library and .exp file
+    -pcl                 # Generate intermediate PCL file only
+    -asm                 # Generate intermediate ASM file only
+
+    -opt                 # Apply simple optimiser
+
+    -out:file            # Name of output file 
+
+    -ma                  # Create .ma file combining source/support files
+    -docs                # Create .txt with docstrings of exported files (not finished)
+    -run                 # For -exe mode only: run resulting executable
+
+    @file                # Read options from file
+
+Example:
+
+     mm -run prog : abc def
+
+Any parameters for the new program must follow " : " (spaces needed).
+=== rts.pcl 40/45 ===
 !
 Procrts rts.$power_i64: i64
     param          rts.$power_i64.a i64 
@@ -37666,38 +37684,6 @@ End
 
 !
     endprogram                
-=== mm_help.txt 40/45 ===
-M Compiler Generating x64 native code - Windows Version
-
-Whole-program compiler builds entire program from the lead module
-into a executable file.
-
-    mm main              # Create main.exe from lead module main.m
-    mm main.m            # Same (.m extension is default)
-    mm -c main           # Create single-file main.asm intermediate ASM
-
-Options:
-
-    -exe                 # Generate .exe executable file (default)
-    -dll                 # Generate .dll library and .exp file
-    -pcl                 # Generate intermediate PCL file only
-    -asm                 # Generate intermediate ASM file only
-
-    -opt                 # Apply simple optimiser
-
-    -out:file            # Name of output file 
-
-    -ma                  # Create .ma file combining source/support files
-    -docs                # Create .txt with docstrings of exported files (not finished)
-    -run                 # For -exe mode only: run resulting executable
-
-    @file                # Read options from file
-
-Example:
-
-     mm -run prog : abc def
-
-Any parameters for the new program must follow " : " (spaces needed).
 === msysp.m 41/45 ===
 import clib
 import mlib

@@ -1141,6 +1141,8 @@ global function allocunitrec:ref unitrec=
 	ref int64 q
 	int nwords
 
+	++nunits
+
 	if remainingunits-- then
 		p:=unitheapptr
 		++unitheapptr

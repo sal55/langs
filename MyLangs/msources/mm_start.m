@@ -1093,7 +1093,7 @@ proc do_genpcl=
 
 	case passlevel
 	when asm_pass then
-		if fasmexe then			!invoke AA on resulting .pcl
+		if fasmexe then			!invoke PC on resulting .pcl
 			fprint @str,f"aa -exe #",asmfilename
 			println "Running:",str
 			stop system(str)
