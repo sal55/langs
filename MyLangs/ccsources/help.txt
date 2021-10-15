@@ -1,0 +1,33 @@
+C Subset Compiler for 64-bit Windows
+
+Normal use:
+
+    bcc prog            Compile file prog.c to prog.exe
+    bcc prog.c          Same (extension is optional)
+    bcc a b c d.dll     Compile a.c, b.c, c.c and link with d.dll to a.exe
+
+Options:
+
+    -e              Write preprocessed output to prog.i
+    -s              Compile only, to .asm
+    -c              Same as -obj
+    -exe            (DEFAULT) compile and link to .exe file
+
+    -i:path         Add include path
+    -ext            Don't use internal standard headers
+    -old            Allow features such as () parameter lists, for old programs
+    -out:file       Name exe file
+
+    -obj            Link to single .obj file rather .exe
+    -run            Link to .exe then run that program
+    -auto           Locate .c files matched to headers and add to modules
+    @file           Read further files and options from a file
+
+Other Options:
+
+    -info           Show further information
+    -time           Show compiler timing stats
+    -writeheaders   Write out internal headers as .hdr (not .h) files
+    -at             Create an @ file of filenames suitable for most compilers
+    -stdin          Read C file from console
+    -stdout         Write preprocessor output to console, rather than .i file
