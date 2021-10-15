@@ -1,0 +1,24 @@
+'AA' Assembler-Linker for Win64
+
+Assembles ASM files written in a special syntax to OBJ or EXE or DLL format.
+
+Usage:
+
+    aa prog            Assemble prog.asm to prog.exe
+    aa prog -dll       Assemble prog.asm to prog.dll
+    aa prog -obj       Assemble prog.asm to prog.obj (needs ext. linker)
+
+    aa a b c           Assemble&link modules a.asm, b.asm, c.asm into a.exe
+
+Options:
+
+    -out:file          Name output file (default is .exe applied to 1st module)
+    -out:exe           Generate executable (default)
+    -out:obj           Generate object file (one .obj file for multiple i/p files)
+    file.dll           Include library in list of DLLs to search
+
+    @file              Read options and files from @ file
+
+Can only link to external DLL libraries; not other .o/.obj/.lib/.a files.
+
+DLLs msvcrt.dll, user32.dll, gdi32.dll, user32.dll are automatically included.
