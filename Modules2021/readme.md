@@ -64,3 +64,26 @@ That is one use for introducing Subprograms and extra segregation
 
 **Export** can be used in the project file as source code. Here it is used to say that all global names of a whole module should be exported. Mainly useful for names that are DLL imports, which don't allow attributes.
 
+### Overview
+
+The current compiler system uses these 3 lots of inputs:
+
+* Source code (the compiler only knows one module, and derives the module structure from that)
+* The compiler command-line parameter: mainly, the lead module (.m or .ma), any libraries, options
+* The project file. This lists the various modules separately. The compiler knows nothing about this file, it is used by my IDE.
+
+Above, info about the module structure is in 2 places: within the various source modules; and some is repeated inside the project file. (I have experimented with the IDE extracting module info from the source code, but some complications were introduced, and I dropped that)
+
+The new scheme also uses those 3 kinds of info:
+
+* Source code, but there us no info about modules or structure, other than indivdual names have global/export attributes
+* The command line, which now accepts the project file as the primary info, but still reads .m/.ma files, libraries and options
+* The project file, which is now read by the compiler as well as the IDE
+
+The compiler input is one of:
+
+* .mm file, with extra options that can override the ones in .mm
+* Multiple .m files, plus libs and options; this info is used to construct suitable mm data
+* .ma file, which must contain a .mm file.
+
+
