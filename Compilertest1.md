@@ -43,7 +43,7 @@ g++8.1.0    | C     | Y | Y | Y | - | 19.3  | 5.2 Klps  |  (Not tested above 100
 V           | Vlang     |  Y | Y | - | - | 20.0  | 5 Klps    | (500K+ not attempted)
 Nim-CC      | Nim   | Y | Y | - | - |  25.0     | 4 Klps    | Timed out (Nim to C only)
 Julia       | Julia     | Y | Y | Y | - | 132.0     | 3.8 Klps  |  (2000K not attempted)
-Rustc-O     | Rust  | Y | - | - | - | 5.20  | 3.8 Klps  |  Timed out at 100
+Rustc       | Rust  | Y | - | - | - | 5.20  | 3.8 Klps  |  Timed out at 100
 gcc-8.1.0   | C     | Y | Y | Y | - | 137.0     | 3.6 Klps  |   Machine OOM at 2000K
 Zig         | Zig   | Y | Y | - | - | 40.0  | 2.5 Klps  |  Machine OOM on 500K
 DMC         | C     | - | - | - | - | 4.5   | 2.2 Klps  | * Crashed on 20K
@@ -52,7 +52,7 @@ Javac       | Java  | - | - | - | - |3.2 | 1.5 Klps     |  'Code too large' on 2
 Nim+CC      | Nim   | Y | - | - | - | 16.0  | 1.2 Klps  |  Out of memory (Nim to C + C compilation)
 PellesC-opt | C     | Y | - | - | - | 25.0  | 0.8 Klps  |  Timed out at 100K
 DMD         | D     | Y | - | - | - | 28.7  | 0.7 Klps  |  Timed out on 100K
-Rustc       | Rust  | Y | - | - | -     | 30.7  | 0.65 Klps     | Timed out at 100K
+Rustc-O     | Rust  | Y | - | - | -     | 30.7  | 0.65 Klps     | Timed out at 100K
 DMC         | C     | - | - | - | -     | 20.0  | 0.25 Klps     | * Crashed on bigger inputs 
 Pico-C      | C     | - | - | - | -     | -     | 0     | * Various errors
 FPC         | Pascal    | - | - | - | - | -     | 0     |  (Proc too complex)
