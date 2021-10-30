@@ -1,58 +1,28 @@
-## Modules IV, 2nd Attempt
+## Modules IV, 3rd Attempt
 
-The last idea got too elaborate I think, and require extra levels in the compiler's ST
+* **import** statements are removed from individual module files
+* A special kind of module, called a Header, is introduced that contains only project directives.
+* The Header module defines the project structure, listing the subprograms and modules, and anything else needed for building
+* All modules in the same subprogram can share each others global names
+* Names must be exported to be used across subprograms
+* Each module name creates a namespace used for disambiguating global names that clash within a subprogram
+* Each subprogram name also creates a namespace, used to disambiguate names across subprograms (however, exported names must be unique)
+* To compile a project, submit the header module to the compiler
+* For simple one-module projects, just submit that; the compiler will add the standard library only
+* Subprograms can be defined with their own dedicated Header module
+* The main Header can use **import** to include the header of a subprogram, which describes its modules
+* The same set of modules can be in more than one header module, allowing different configurations of a program via different headers
+* Most lines in a header are conditional, another waty to configure a program
+* A mixed header + code module is not allowed, because the namespaces of header (which forms the primary subprogram) and module will clash
 
-The scheme below is somewhat simpler, but is also a significant departure from how it works now.
+### Project Files
 
-### How It Works Now
-```
-    mm test
-```
-This processes test.m, which may contain **import** statements to invoke other modules. The compiler builds the module structure from following imports.
+My simple IDE uses project files, separate from any source code, which lists the modules and files used by a project. Plus a bench of extra stuff like how to run the program.
 
-This is quite tidy, and can be improved further:
-```
-    mm test.ma
-```
-test.ma contains all relevant modules and support files. It can be generated with the -ma option of mm when compiling test.m. It makes it easier to distribute apps as source code for someone else to build; they need only mm.exe and test.ma.
+I had hoped that the new Header modules would replace project files, but that is not yet practical:
 
-There are some problems however:
+* Header syntax and other matters mean the file is not so simple to read in without proper parsing
+* Project files include extra info, like listing miscellaneous support files, run info, run options, command line parameters, that don't really belong in a Header
 
-* If there are N modules, every module might contain an arbitrary number of imports to some arbitrary subset of the other N-1 modules
-* It makes it harder to use a related set of M modules, which also form part of another project.
-* In the latter case, all globals shared by the M modules, but not intended for use outside, become visble to the modules of this project when any of those modules is imported
-* There are poor arrangements for defining locations
-* **import\*** was introduced, to make it possible to import a module X, which itself imports A, B and C; and make it as though A, B, C were imported directly
-* But, if qualification is needed for ambiguous function F, I can't do X.F, it might be B.X for example, yet A, B, C are not directly known; they don't appear where X is imported
-* This feature was also used to just collect together all modules as one list of imports, put them all into the main module P, say, then **import P** is used in all the other modules. Which then raises the question, was it that needed at all?
-* In addition, if every module has **import P**, how can I use the same module in project Q?
+What I will have, instead, is a way for the IDE to get the compiler to turn a header file into project file format. Typically this file will be included within the main project file, which has all that extra info. The the module data, which is needed for browsing through, is kept up-to-date.
 
-### How The New Scheme Works
-
-This uses a separate project file, with extension .mm, then lists all the modules. For my test.m example, let's say it's called proj.mm. Building proj.exe (not test.exe) then becomes:
-```
-    mm proj
-```
-Still fairly tidy, and can incorporate options and libraries that would have to be specified separately before.
-
-The -ma option still works, and now includes proj.mm (whether verbatim, or synthesised, is not clear):
-```
-    mm proj.ma
-```
-So distributed source code can work the same way. But there are some advantages:
-
-* Source modules no longer have **import** statements, or specify the layout of the program. (**global** and **export** attributes are still there.) This makes it easier to share them with different projects
-* The module order is determined by the project file. Previously, circular imports meant the module order was not determinable. (Causing problems with the order of calling $init functions, or start() and autmatic setup functions in the dynamic language.)
-* The project file can group the modules into subprograms. Modules in each subprogram can all share each other's globals, but they are not visible to other subprograms.
-* To share names across subprograms, they need the **export** attribute
-* A subprogram also has a name (cannot be a module name) which forms a new namespace, at the same level of module namespaces.
-* This subprogram namespace can be used to disambiguate clashing names. All exports from a subprogram belong in its namespace.
-* Exports and globals still belong to the namespace of their owner module, but this is only used for disambiguating clashes within a subprogram.
-* Project files can include lots of other directives:
-    * Path information
-    * Export directives (eg. export all globals in a module)
-    * Build options
-    * Arbitrary files for browsing
-* An **import** statement can be used to include a project file of a separate program. It is treated as though it was headed with **subprog** with the name of that project. Build info will be ignored.
-* **module** statements can specifiy actual files; they can have **as** to define an alias; and **when** to make them conditional.
-* So, this can replace module mapping, both implicit and explicit.
