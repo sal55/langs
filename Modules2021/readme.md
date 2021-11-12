@@ -78,6 +78,8 @@ This was when I decided I needed another overhaul.
 * The standard library, which comprised several modules, now forms one subprogram **mlib**, which usually is automatically imported
 * Each module creates a namespace used for qualifying imported names (although rarely needed unless ambiguous)
 * Each subprogram creates a separate namespace used for qualifying names imported from that subprogram (so code doesn't need to know the individual modules, just the subprogram name). (Again, at the moment I allow unqualified imports from subprograms.)
+* A **link** directive gives the name of any external DLL used by the program, if not already known. (An **importdll** block in code can either give the actual name of the DLL, or a dummy name if it's more complicated)
+
 
 Cons:
 
@@ -89,7 +91,7 @@ Cons:
 I had hoped that the header files of scheme IV would replace the project files of my (still crude) IDE. But it's not possible yet. Project files will contain a bunch of stuff not relevant to a program header. However:
 
 * The IDE could extract the list of modules from the program header
-* Or, as the syntax is more involved than expected, invoke the compiler on the program to return a flat list of modules
+* Or, as the syntax is more involved than expected (conditionals, alternate paths, imports), invoke the compiler on the program to return a flat list of modules and their locations
 
 This part is on-going. The IDE needs the file list so I can browser through for editing; it no longer needs it to feed to the compiler or linker (that's ancient history)
 
@@ -99,7 +101,7 @@ This is another subject, not covered here. But:
 
 * All schemes have required imports via FFIs (external libraries not in my language) to have declarations for those written manually, as **importdll...end** blocks
 * I've experimented with tools to convert C headers for example into suitable import blocks; but these are not 100%
-* When I generate DLL files with my compiler (which can be used from other languages), I used the **export** attribute above, to determine which main program names are exported.
+* When I generate DLL files with my compiler (which can be used from other languages), I use the **export** attribute above, to determine which main program names are exported.
 * The process also generates a new kind of .exp exports file, for my own language to be able to use. I may extend this to generating a .h file too.
 
 ### Sample Header File
