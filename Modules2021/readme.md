@@ -67,7 +67,7 @@ This was when I decided I needed another overhaul.
 ### Modules IV (2021)
 
 * All **import** and **importpath** statements are removed from individual source files
-* Every significant project starts with a Header module, which contains only directoives such **module subprog import**; no code
+* Every significant project starts with a Header module, which contains only directives such as **module subprog import**; no code
 * The header module lists all modules in the program, using **module**, with more precise location info as needed
 * When compiling, the header module is submitted. It will assemble the info about all modules, including their locations, before loading all sources together
 * Simple one-file programs with no header are still supported (it will create a one-module project, which imports **mlib**; see below)
