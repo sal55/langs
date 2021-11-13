@@ -157,4 +157,4 @@ So either there can be two header files, or that extra module will be conditiona
 
 At the moment I haven't taken it far except revising my current projects just enough to work with this new scheme.
 
-(Also, the old-style **import**s are still littered through source modules, to allow building with the old compile still. They are ignored by the new one.)
+(Also, the old-style **import**s are still littered through source modules, to allow building with the old compiler still. They are ignored by the new one.)
