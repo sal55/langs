@@ -44,7 +44,7 @@ Cons:
 
 ### Modules III (mid 2010s?)
 
-* I now had a whole-program compiler: all source modules were compiled at the same time to provide initially ASM, then direct EXE
+* I now had a whole-program compiler: all source modules were compiled at the same time to initially ASM, then directly EXE or DLL
 * A program was compiled by submitting the lead module. It would follow its imports to locate all other modules
 * It still had **import**
 * I introduced **importpath** to give some info about where to look for modules (this just added an extra search path)
@@ -213,3 +213,17 @@ This is an example of an IDE-generator header file, from info in the project fil
     include "glhdr.q"
     include "dxhdr.q"
 ````
+### Header Directives, Scheme IV
+
+**module**
+**subprog**
+**import**
+**sysmodule**  (For std libraries) As above but different rules on locating modules
+**syssubprog**
+**sysimport**
+**altpath**
+**headerpath**
+**link**
+**setvar**
+
+
