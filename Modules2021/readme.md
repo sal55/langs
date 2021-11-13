@@ -1,6 +1,8 @@
-## Modules IV 2021
+## Modules 2021
 
-Module schemes used mainly in my lower level systems language. Similar ones were used in my scripting language.
+These are the Module schemes used mainly in my lower level systems language. Similar ones were used in my scripting language.
+
+I've just devised a new scheme called Modules IV, described below. But it makes a bit more sense after reading about the previous ones.
 
 ### Modules I (1990s)
 
@@ -108,7 +110,7 @@ This is another subject, not covered here. But:
 
 This is the header for my 'M' compiler, an early example of such a file:
 ````
-    module mmcli
+    module mmcli             # (mm modules are the compiler front-end)
     module mm_blockpcl
     module mm_decls
     module mm_diags
@@ -125,8 +127,8 @@ This is the header for my 'M' compiler, an early example of such a file:
     module mm_tables
     module mm_type
 
-    subprog pc
-        module pc_decls
+    subprog pc             # (pc modules are the backend, translating 'pcl' code to, here, native win64 code.
+        module pc_decls    # In this, this forms a static part of the compiler. These will later be better structured)
         module pc_disasm
         module pc_genmcl
         module pc_genss
