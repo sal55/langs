@@ -215,15 +215,22 @@ This is an example of an IDE-generator header file, from info in the project fil
 ````
 ### Header Directives, Scheme IV
 
-**module**
-**subprog**
-**import**
-**sysmodule**  (For std libraries) As above but different rules on locating modules
-**syssubprog**
-**sysimport**
-**altpath**
-**headerpath**
-**link**
-**setvar**
+Directive  | Parameter | Optional | Description
+--- | --- | --- | ---
+**module** | name | **as**, **when** | Module name used by project
+**subprog** | name | **as** | Start new subprogram section
+**import** | name | **as**, **when** | Import subprogram info from a separate header
+**sysmodule** | name | **as**, **when** | As above but different rules on locating modules
+**syssubprog** | name | **as** |
+**sysimport** | name | **as**, **when** |
+**altpath** | expr | **when** | Alternate module path
+**headerpath** | expr | **when** | Alternate subprogram/import path
+**link** | expr | **when** | Define any DLLs not already specified in code
+**setvar** | var **=** expr| **when** |
+
+A 'name' is an identifier (module base-filenames must be valid language identifiers)
+A 'var' is one of a set of predefined variables giving some environment info, current path etc. There are also some user-definable names
+An expr is one of 'var', 'name' or 'string'
+
 
 
