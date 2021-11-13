@@ -228,9 +228,13 @@ Directive  | Parameter | Optional | Description
 **link** | expr | **when** | Define any DLLs not already specified in code
 **setvar** | var **=** expr| **when** |
 
-A 'name' is an identifier (module base-filenames must be valid language identifiers)
-A 'var' is one of a set of predefined variables giving some environment info, current path etc. There are also some user-definable names
-An expr is one of 'var', 'name' or 'string'
+**name** is an identifier (module base-filenames must be valid language identifiers)
 
+**var** is one of a set of predefined variables giving some environment info, current path etc. There are also some user-definable names
 
+**expr** is one of 'var', 'name' or 'string'
+
+**as** is followed by an alias for a module or subprogram name
+
+**when** is followed by an 'expr' (this bit, like a lot of it, not fully developed; it depends on what comes up)
 
