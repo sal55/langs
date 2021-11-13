@@ -60,6 +60,7 @@ Cons:
 * This was better, but when I tried to create an app that incorporated modules from another program, it got chaotic.
 * The path controls for locating a module were insufficient. There was also a scheme which maintained a list of directories to search through, but I considered this poor; you could never be certain where it would end up getting a module from. Accidentally delete a source file, and it might find an old one elsewhere)
 * If I decided to change a module name, I might have to update a bunch of other modules
+* Because of unrestricted circular imports, module import order is indeterminate. Since modules can have inititialisation routines called automatically, a program can't know for sure which order they are called. (This is especially a program in the dynamic language with complex static data initialisation.)
 
 This was when I decided I needed another overhaul.
 
@@ -81,12 +82,16 @@ This was when I decided I needed another overhaul.
 * Each module creates a namespace used for qualifying imported names (although rarely needed unless ambiguous)
 * Each subprogram creates a separate namespace used for qualifying names imported from that subprogram (so code doesn't need to know the individual module names, just the subprogram name). (Again, at the moment I allow unqualified imports from subprograms.)
 * A **link** directive gives the name of any external DLL used by the program, if not already known. (An **importdll** block in code can either give the actual name of the DLL, or a dummy name if it's more complicated; then it will need **link**)
-
+* The module import order will always be fixed in the order encountered in the header module.
 
 Cons:
 
 * I've just started trying it out, give me a few months...
 
+Restrictions:
+
+* Currently module names must be unique; they can't be shared between subprograms
+* A subprogram name can't have the same name as a module name; this is because each creates a namespace, at the same scope level, and they would clash
 
 ### Project Files
 
