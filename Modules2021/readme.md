@@ -160,6 +160,9 @@ At the moment I haven't taken it far except revising my current projects just en
 (Also, the old-style **import**s are still littered through source modules, to allow building with the old compiler still. They are ignored by the new one.)
 
 ### Sample Project File (Scheme I)
+
+Some lines such as run-info omitted:
+
 ````
     module mplc.q
     module gltest.q
@@ -183,7 +186,6 @@ At the moment I haven't taken it far except revising my current projects just en
     module shade.q
     module mbitmaps.q
     module dsgdi.q
-
     module bitmaps.q
 
     header \m\winhdr.q
