@@ -111,9 +111,9 @@ This is another subject, not covered here. But:
 * When I generate DLL files with my compiler (which can then be used from other languages), I use the **export** attribute above, to determine which main program names are exported.
 * The process also generates a new kind of .exp exports file, for my own language to be able to use. I may extend this to generating a .h file too.
 
-### Sample Header File (Scheme IV)
+### Sample Header Modules (Scheme IV)
 
-This is the header for my 'M' compiler, an early example of such a file:
+This is the header module for my 'M' compiler, an early example of such a file; the module is called mm.m:
 ````
     module mmcli             # (mm modules are the compiler front-end)
     module mm_blockpcl
@@ -163,6 +163,62 @@ So either there can be two header files, or that extra module will be conditiona
 At the moment I haven't taken it far except revising my current projects just enough to work with this new scheme.
 
 (Also, the old-style **import**s are still littered through source modules, to allow building with the old compiler still. They are ignored by the new one.)
+
+This is another header module, for a C compiler project. This incorporates an assembler/linker:
+````
+    module cccli
+    module cc_parse
+    module cc_lex
+    module cc_genmcl
+    module cc_blockmcl
+    module cc_lib
+    module cc_genasm
+    module cc_libmcl
+    module cc_export
+
+    module cc_headers
+    module cc_support
+    module cc_decls
+    module cc_tables
+
+    importpath "/ax/"
+    subprog aa
+        module cc_assembler
+        module aa_writeexe
+        module aa_disasm
+        module aa_genss
+        module aa_lex
+        module aa_lib
+        module aa_parse
+        module aa_objdecls
+        module aa_writeobj
+        module aa_decls
+        module aa_tables
+ ````
+Here, the header module itself is the file cc.m, which also gives its name to the executable: cc.exe (which is later renamed to bcc.exe for the production program; since 'cc' clashes with components of other C compilers).
+
+The assembler project is built as a standalone file aa.exe, using this header module aa.m:
+````
+    module aacli
+    module aa_decls
+    module aa_tables
+    module aa_objdecls
+    module aa_lex
+    module aa_parse
+    module aa_writeobj
+    module aa_writeexe
+    module aa_writess
+    module aa_disasm
+    module aa_genss
+    module aa_lib
+````
+
+Building any of these projects is done by submitting the header module to the mm compiler as follows:
+````
+    mm aa          # assembler
+    mm cc          # C compiler
+    \m\mm mm       # M compiler (the two mm.exe's must be in different locations; Windows doesn't allow overwriting a running EXE file)
+````
 
 ### Sample Project File (Scheme I)
 
