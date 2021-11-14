@@ -93,6 +93,14 @@ Restrictions:
 * Currently module names must be unique; they can't be shared between subprograms
 * A subprogram name can't have the same name as a module name; this is because each creates a namespace, at the same scope level, and they would clash
 
+Thanks to feedback from Reddit uses, I've made some tweaks:
+* I've relaxed the need for modules to be either all-header info or all-code
+* A header information block can appear at the top of the lead module (the one submitted to the compiler)
+* It can also appear at the start of the lead module of a subprogram, which is **import**ed elsewhere
+* Where a program with header H and first module A; is turned into composite header/module H, then the main program name is still H. But the first module becomes $H. However for name qualifying, H can be used in place of $H.
+
+
+
 ### Project Files
 
 I had hoped that the header files of scheme IV would replace the project files of my (still crude) IDE. But it's not possible yet. Project files will contain a bunch of stuff not relevant to a program header. However:
