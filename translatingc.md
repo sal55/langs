@@ -1,4 +1,4 @@
-## Traspiling C to Another Language
+## Translating C to Another Language
 
 Here are some issues with that, even when the target is a similarly lower-level and 'unsafe' language like mine.
 
