@@ -31,13 +31,13 @@ C is case-sensitive; what happens when the target is case-insensitive (like mine
 ### Independent Modules
 
 * The information you get from C will be from individual modules.
-* You will need to precise set of source modules comprising the project to do a proper translation
+* You will need the precise set of source modules comprising the project to do a proper translation
 * For, you may need, as well as the compiler front end, a tool to emulate the build system used (make, cmake etc) or somehow extract that information
-* Even with all info collated, to have to cross-reference names, see how owns what, see what is either imported from an external library, or may be missing cpmpletely
+* Even with all info collated, to have to cross-reference names, see who owns what, see what is either imported from an external library, or may be missing cpmpletely
 
 ### The Small Stuff
 
-* C integer types are poorly defined. While **int** is usually 32 bits, **long** varies across machines. What are you supposed to do with a **long** type?
+* C integer types are poorly defined. While **int** is usually 32 bits, **long** varies across machines; what are you supposed to do with a **long** type?
 * How do you translate a **char** type? It is technically neither **unsigned char** nor **signed char**
 * C conflates arrays and pointers too much. P\[i\], is allowed, so is A\[i\]. The target will not allow that. Since most C arrays in expressions reduce to a pointer, it may be necessary to turn everything into explicit pointer/offset accesses
 * Most C struct layouts follow struct rules for alignment and padding. It is necessary duplicate the exact same layout in the target
@@ -67,5 +67,6 @@ This only shows whether a combination is treated as signed or unsigned.
 * Label names can also clash as, in C, "L" can be used as both a variable/function name, and a label name, in the same scope
 * Functions declared with an empty parameter list can be called with unchecked arguments. How to emulate this in a proper language?
 * C's namespace handling (putting aside it unusual tag and label namespaces) is crude. Non-decorated/non-mangled names are used between modules, ie. in linker space, which may clash with other modules in the target language. (This is made worse because all functions/variables at module scope in C are exported unless made static)
+* With things like printf, you can choose to keep those calls in, relying on the format codes being accurate. My experience however is that they are troublesome, and something you don't really want in a target language if it has something better or safer.
 
 
