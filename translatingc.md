@@ -7,7 +7,7 @@ Here are some issues with that, even when the target is a similarly lower-level 
 Either implement one, or employ an existing compiler to do that. However:
 
 * C code may have conditional blocks which depend on things like environmental factors (which C compiler) or D-macros; which ones will you plug in?
-* A **lot** of C code uses **#define**s; preprocessing will eliminate all those, leaving plain literals everywhere
+* A **lot** of C code uses **#define**s; preprocessing will eliminate all those, leaving plain literals everywhere (too few programs use enums for named literals)
 * It will also inline macros such as min/max, giving bloated code.
 * Some code over-uses macros. which expands to bloated C that is not meant to ever be read. It will end up as gobbledygook in the target
 * Preprocessing will also expand all headers used, including giant ones like windows.h and gtk.h. Each module may have half a million lines of declarations, and 100 lines of actual program!
@@ -23,6 +23,17 @@ Unless you can somehow utilise an existing one, that can generate a representati
 * This has already come up with preprocessors. But generating proper code may require types, enums, imports, variables etc that are defined in a header.
 * What about system headers? Surely the target will not require all those fiddly details like the half-dozen versions of 'struct stat'?
 * The same headers used in multiple modules will result in many duplicates sets of declarations
+
+### Case-Sensitivity
+
+C is case-sensitive; what happens when the target is case-insensitive (like mine)?
+
+### Independent Modules
+
+* The information you get from C will be from individual modules.
+* You will need to precise set of source modules comprising the project to do a proper translation
+* For, you may need, as well as the compiler front end, a tool to emulate the build system used (make, cmake etc) or somehow extract that information
+* Even with all info collated, to have to cross-reference names, see how owns what, see what is either imported from an external library, or may be missing cpmpletely
 
 ### The Small Stuff
 
@@ -49,6 +60,12 @@ Unless you can somehow utilise an existing one, that can generate a representati
   i64   S   S   S   U    S   S   S   S
 ````
 This only shows whether a combination is treated as signed or unsigned.
-
+* **goto**: the target had better have this, or it will have its work cut out!
+* **setjmp** and **longjmp**: urghh...
+* Struct tags? Best to eliminate them I think. They don't exist anywhere else.
+* Block scopes; some languages (eg. mine) don't have them. Together with being case-insensitive, this may mean 100 distinct versions of an identifier in a function, to be emulated using only one identifier in the target
+* Label names can also clash as, in C, "L" can be used as both a variable/function name, and a label name, in the same scope
+* Functions declared with an empty parameter list can be called with unchecked arguments. How to emulate this in a proper language?
+* C's namespace handling (putting aside it unusual tag and label namespaces) is crude. Non-decorated/non-mangled names are used between modules, ie. in linker space, which may clash with other modules in the target language. (This is made worse because all functions/variables at module scope in C are exported unless made static)
 
 
