@@ -26,34 +26,34 @@ eui         | Euphoria  |  Y | Y | Y | Y    | 21.0  | 95 Klps   |
 CLISP       | Lisp  | Y | Y | Y | Y | 22.0  | 91 Klps   | 
 Python3.8.1 | Python | Y | Y | Y |  Y | 6.6     | 76 Klps   | \* Timed out at 2000K
 Go          | Go    | Y | Y | Y | Y | 31.0  | 64 Klps   | 
-lccwin      | C     | Y | Y | Y | - | 8.7   | 57 Klps   |  Machine OOM at 2000K
-gcc-opt     | C     | Y | Y | Y | - | 12.0  |  42 Klps  | Timed out at 2000K
-g++8.1-opt  | C     | Y | Y | - | - | 2.7   | 37 Klps   |  (Not tested above 100K)
-PyPy        | Python    | Y | Y | Y | -     | 15.3  | 33 Klps   | * Timed out/became unstable at 2000K
-lccwin-opt  | C     | Y | Y | Y | Y | 67.0  |  30 Klps
-Clang       | C     | Y | Y | Y | - | 22.5  | 22 Klps   |  Machine OOM at 2000K
-MSVC        | C     | Y |  Y | - | -    | 6.2   | 16 Klps   |\*  Timed out at 500K
-MSVC-opt    | C     | Y | Y | - | - | 6.2   | 16 Klps   |\*  Timed out at 500K
-PellesC     | C     | Y | Y | Y | - | 35.0  | 14 Klps   |  Reported OOM at 2000K
-Gnat        | Ada   | Y | Y | - | - | 13.0  | 7.7 Klps   | Abandoned at 500K at 3 mins
-Clang-opt   | C     | Y | Y | Y | - | 73.0  | 6.8 Klps  | 
-A68G        | Algol68   | - | - | - | - | 1.5   | 6.7 Klps  | For 10K (OOM on 20K)
-Dart        | Dart  | Y | Y | Y | - | 74.5  | 6.7 Klps  | (2000K not attempted)
-g++8.1.0    | C     | Y | Y | Y | - | 19.3  | 5.2 Klps  |  (Not tested above 100K)
-V           | Vlang     |  Y | Y | - | - | 20.0  | 5 Klps    | (500K+ not attempted)
-Nim-CC      | Nim   | Y | Y | - | - |  25.0     | 4 Klps    | Timed out (Nim to C only)
-Julia       | Julia     | Y | Y | Y | - | 132.0     | 3.8 Klps  |  (2000K not attempted)
-Rustc       | Rust  | Y | - | - | - | 5.20  | 3.8 Klps  |  Timed out at 100
-gcc-8.1.0   | C     | Y | Y | Y | - | 137.0     | 3.6 Klps  |   Machine OOM at 2000K
-Zig         | Zig   | Y | Y | - | - | 40.0  | 2.5 Klps  |  Machine OOM on 500K
-DMC         | C     | - | - | - | - | 4.5   | 2.2 Klps  | * Crashed on 20K
-FBC         | Basic     | Y | - | - | - | 9.0   | 2.2 Klps  |  Timed out at 100K
-Javac       | Java  | - | - | - | - |3.2 | 1.5 Klps     |  'Code too large' on 20K
-Nim+CC      | Nim   | Y | - | - | - | 16.0  | 1.2 Klps  |  Out of memory (Nim to C + C compilation)
-PellesC-opt | C     | Y | - | - | - | 25.0  | 0.8 Klps  |  Timed out at 100K
-DMD         | D     | Y | - | - | - | 28.7  | 0.7 Klps  |  Timed out on 100K
-Rustc-O     | Rust  | Y | - | - | -     | 30.7  | 0.65 Klps     | Timed out at 100K
-DMC         | C     | - | - | - | -     | 20.0  | 0.25 Klps     | * Crashed on bigger inputs 
+lccwin      | C     | Y | Y | Y | - | (34.8)   | 57 Klps   |  Machine OOM at 2000K
+gcc-opt     | C     | Y | Y | Y | - | (48)  |  42 Klps  | Timed out at 2000K
+g++8.1-opt  | C     | Y | Y | - | - | (54)   | 37 Klps   |  (Not tested above 100K)
+PyPy        | Python    | Y | Y | Y | -     | (61.2)  | 33 Klps   | * Timed out/became unstable at 2000K
+lccwin-opt  | C     | Y | Y | Y | Y | 67  |  30 Klps
+Clang       | C     | Y | Y | Y | - | (90)  | 22 Klps   |  Machine OOM at 2000K
+MSVC        | C     | Y |  Y | - | -    | (124)   | 16 Klps   |\*  Timed out at 500K
+MSVC-opt    | C     | Y | Y | - | - | (124)   | 16 Klps   |\*  Timed out at 500K
+PellesC     | C     | Y | Y | Y | - | (140)  | 14 Klps   |  Reported OOM at 2000K
+Gnat        | Ada   | Y | Y | - | - | (260)  | 7.7 Klps   | Abandoned at 500K at 3 mins
+Clang-opt   | C     | Y | Y | Y | - | (292)  | 6.8 Klps  | 
+A68G        | Algol68   | - | - | - | - | (300)   | 6.7 Klps  | For 10K (OOM on 20K)
+Dart        | Dart  | Y | Y | Y | - | (298)  | 6.7 Klps  | (2000K not attempted)
+g++8.1.0    | C     | Y | Y | Y | - | (386)  | 5.2 Klps  |  (Not tested above 100K)
+V           | Vlang     |  Y | Y | - | - | (400)  | 5 Klps    | (500K+ not attempted)
+Nim-CC      | Nim   | Y | Y | - | - |  (500)     | 4 Klps    | Timed out (Nim to C only)
+Rustc       | Rust  | Y | - | - | - | (520)  | 3.8 Klps  |  Timed out at 100
+Julia       | Julia     | Y | Y | Y | - | (528)     | 3.8 Klps  |  (2000K not attempted)
+gcc-8.1.0   | C     | Y | Y | Y | - | (548) | 3.6 Klps  |   Machine OOM at 2000K
+Zig         | Zig   | Y | Y | - | - | (800)  | 2.5 Klps  |  Machine OOM on 500K
+DMC         | C     | - | - | - | - | ---   | 2.2 Klps  | * Crashed on 20K
+FBC         | Basic     | Y | - | - | - | (900)   | 2.2 Klps  |  Timed out at 100K
+Javac       | Java  | - | - | - | - |--- | 1.5 Klps     |  'Code too large' on 20K
+Nim+CC      | Nim   | Y | - | - | - | (1600) | 1.2 Klps  |  Out of memory (Nim to C + C compilation)
+PellesC-opt | C     | Y | - | - | - | (2500)  | 0.8 Klps  |  Timed out at 100K
+DMD         | D     | Y | - | - | - | (2870)  | 0.7 Klps  |  Timed out on 100K
+Rustc-O     | Rust  | Y | - | - | -     | (3070)  | 0.65 Klps     | Timed out at 100K
+DMC         | C     | - | - | - | -     | --- | 0.25 Klps     | * Crashed on bigger inputs 
 Pico-C      | C     | - | - | - | -     | -     | 0     | * Various errors
 FPC         | Pascal    | - | - | - | - | -     | 0     |  (Proc too complex)
 
