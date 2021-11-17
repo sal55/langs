@@ -18,4 +18,5 @@ I've given up on this as an actual C compiler. However the project is retained a
 * Sometimes, it can serve as second opinion after using a mainstream C compiler, as bcc's messages tend to be blunt (there are no warnings, just hard errors)
 * Seeing how C maps to native code, as it can produce output cleaner than gcc's.
 * Experimenting with techniques for fast C compilation
+* Sometimes, trying experimental C features
 
