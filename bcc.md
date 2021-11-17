@@ -1,6 +1,6 @@
 ## BCC 'C' Compiler
 
-I've given up on this as an actual C compiler. However the project is retained as it still have some practical and potential uses:
+I've given up on this as an actual C compiler for general use. However the project is retained as it still has some practical and potential uses:
 
 * I don't have many significant applications for main M language, so this is counts as a major test program. If I change M's compiler, use it to rebuild bcc, and bcc can still build and run the 250,000-line sql.c test, then that's one indicator that something is still working right!
 * It is still my first choice when writing small C programs of my own
