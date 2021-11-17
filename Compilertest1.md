@@ -65,9 +65,9 @@ A **Y** in that column indicates it managed to complete. Some products that fail
 
 ### Compile Time
 
-How long it took to compile its largest successfully compiled input. These values were not directly comparable, as not all managed the full 2000K lines (or it would have taken too long).
+How long it took to compile its largest successfully compiled input.
 
-It is not possible either to extrapolate the times to how long it *would* have taken to compile 2M lines of input, since compile time sometimes increases exponentially.
+Values in brackets are extrapolated, as not all managed the full 2000K lines (or it would have taken too long). However, that assumes compile-time increases linearly; many will have exponential increases in compile-time as input sizes get bigger.
 
 ### Lines per Second
 
