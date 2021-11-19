@@ -92,6 +92,9 @@ TM: 0.62
 ```
 So building **all** my compilers, assemblers etc, from source code, takes 0.6 seconds, on my very ordinary PC. (In total, 175,000 lines, and just over 200 modules and files. Timings take advantage of any file-cacheing.)
 
+**Update** I've changed my PC to a more recent one, although still low-end (still second cheapest!). It now has a processor with a name: AMD Ryzen 3, 2.6GHz, and an SSD, although that doesn't really affect timings as repeating tests are done so files will be cached.
+
+Build time is now 0.38; so 0.4 instead of 0.6 seconds.
 
 ### So, What's Special about these Languages?
 
