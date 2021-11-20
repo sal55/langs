@@ -54,7 +54,7 @@ Generally:
 
 On the latter point, it's designed to do ahead-of-time compilation only, and to do it quickly.
 
-(On my machine, pc.exe \[for fixed Win64 asm/exe/dll target\] builds from source in around 0.1 seconds, for some 18KLoC. I think I once estimated that building LLVM from source would take 6-12 hours on the same machine.)
+(On my machine, pc.exe \[for fixed Win64 asm/exe/dll target\] builds from source in around 0.07 seconds, for some 18KLoC. I don't know how long it would take to build LLVM from source on the same machine; my guess is that it's longer than 1/14th of a second.)
 
 ### Targets
 
