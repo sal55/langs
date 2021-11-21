@@ -87,6 +87,8 @@ global function getalignment(int m)int=
     case ttbasetype[m]
     when tcarray then
         return getalignment(tttarget[m])
+    when tstruct then
+        return ttnamedef[m].maxalign
     esac
 
     a:=ttsize[m]
