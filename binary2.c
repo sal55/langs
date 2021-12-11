@@ -50,9 +50,6 @@ void * pc_alloc(int64_t n) {
         alloccode = pc_getac(n);
         allocbytes = (int64_t)(allocupper[(alloccode)]);
         p = (byte *)(allocmem(allocbytes));
-        if (!(!!(p))) {
-            abortprogram((uint8_t*)"pc_alloc failure");
-        };
         return (void *)(p);
     };
     alloccode = (int64_t)(sizeindextable[(n)]);
