@@ -160,8 +160,7 @@ int main(int argc, char** argv) {
 	char		c;
 	long		i;
 
-  	puts("hello from 8080");
-	for (i = 0; i < ADDRSPACE; i++) memory[i] = I_HLT;
+  	for (i = 0; i < ADDRSPACE; i++) memory[i] = I_HLT;
 	pc = 0;
 	dbg = 0;
 	spbot = 0;
