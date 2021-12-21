@@ -17,6 +17,7 @@
 #include <stdlib.h>
 #include <fcntl.h>
 #include <signal.h>
+#include <unistd.h>
 
 typedef unsigned char byte_t;
 byte_t regs[8];
@@ -129,8 +130,8 @@ void cycle(void);
 void clear_screen(void);
 void load_file(char*, long);
 void set_psw(byte_t, short, short);
-int getopt(int argc, char** argv, char*);
-char* gets(char*);
+//int getopt(int argc, char** argv, char*);
+//char* gets(char*);
 
 void interr(void)
 {
@@ -159,6 +160,7 @@ int main(int argc, char** argv) {
 	char		c;
 	long		i;
 
+  	puts("hello from 8080");
 	for (i = 0; i < ADDRSPACE; i++) memory[i] = I_HLT;
 	pc = 0;
 	dbg = 0;
