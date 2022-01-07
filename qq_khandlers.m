@@ -1,16 +1,11 @@
 !HLL bytecode handlers
 
-global macro getopnda = (pcptr+1)^
-global macro getopndb = (pcptr+2)^
-global macro getopndc = (pcptr+3)^
-global macro getopndd = (pcptr+4)^
+macro getopnda = (pcptr+1)^
+macro getopndb = (pcptr+2)^
+macro getopndc = (pcptr+3)^
+macro getopndd = (pcptr+4)^
 
-!step pcptr to next bytecode, skipping n operands
-global macro skip(n) = pcptr:=pcptr+(n+1)
-
-
-var ref int paramdefretloc
-var int insiderecorddef
+macro skip(n) = pcptr:=pcptr+(n+1)
 
 !const doretcheck=1
 const doretcheck=0
