@@ -1,4 +1,4 @@
-## `M` Programming Language
+## 'M' Programming Language
 
 Low level language long used as a tidier alternative to C.
 
