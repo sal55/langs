@@ -17,6 +17,8 @@ Extension | Description
 
 A .m source file can be a Header file (lists files comprising the project), or a Module file (contains the usual program code), or can contain both.
 
+.ma files are always generated automatically from the compiler using the -ma option, to produce a convenient single-file source representation.
+
 ### Output Files (Binary)
 
 Extension | Description
