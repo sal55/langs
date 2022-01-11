@@ -35,7 +35,7 @@ Extension | Description
 
 **2** .dll files can only be produced via a third party linker, but a .obj file generated from aa.exe
 
-### Output Files (Source Code or Docs)
+### Output Files (Source Code, Interfaces and Docs)
 
 Extension | Description
 ---  | ---
