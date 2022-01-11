@@ -27,13 +27,13 @@ Extension | Description
 **.mx** | Private executable file (which is also portable across OSes)
 **.ml** | Private dynamic library file
 (**.obj**) | Windows COFF64 object file format (note 1)
-(**.dll**) | Windows dynamic linkl library (note 2)
+(**.dll**) | Windows dynamic link library (note 2)
 
 **Notes**
 
 **1** .obj files can only be generated from my **aa.exe** assembler. For that, choose `-asm` output option of mm.exe then run aa.exe (this step not automatic)
 
-**2** .dll files can only be produced via a third party linker, but a .obj file generated from aa.exe
+**2** .dll files can only be produced via a third party linker, from a .obj file generated from aa.exe
 
 ### Output Files (Source Code, Interfaces and Docs)
 
