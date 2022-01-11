@@ -4,30 +4,30 @@
 
 Option | Description (Note)
 --- | ---
+-- | **Binary Output**
 **-exe** | (Default) Compile to .exe binary
 **-mx** | Compile to .mx binary (main program)
 **-ml** | Compile to .ml binary (dynamic library)
 **-run** | Compile to in-memory 'mx' format and execute
---- | ---
+-- | **Intermediate Forms**
 **-pcl** | Compile to IL source code in .pcl file
 **-asm** | Compile to ASM source code in .asm file (1)
---- | ---
+-- | **Create One-File Sources**
 **-ma** | Combine all input files into single .ma source file
 **-mas** | Like `-ma` but include also library modules (2)
---- | ---
+-- | **Misc Text Output**
 **-docs** | Write out exported functions with docs to .txt file
 **-export** |
 **-lib** | Set library mode as used with `-ml` (3)
---- | ---
+-- | **Set Output Name or Path**
 **-out:file** | Set name of output file (4)
 **-outpath:path** | Set path containing output file (5)
-**-ext** | Don't use M library files inside mm.exe (6)
---- | ---
+-- | **Optimising**
 **-opt1** | Store some locals in registers
 **-opt2 -opt** | Also do some peephole optimisation
---- | ---
+-- | **Misc**
+**-ext** | Don't use M library files inside mm.exe (6)
 **-help -h** | Display some of these options
---- | ---
 **-q** | Quiet mode
 **-v** | More verbose
 **-unused** | List declared functions/variables that are not used (7)
