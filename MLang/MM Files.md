@@ -24,10 +24,14 @@ Extension | Description
 **.exe** | Windows binary executable file (PE+ format)
 **.mx** | Private executable file (which is also portable across OSes)
 **.ml** | Private dynamic library file
+(**.obj**) | Windows COFF64 object file format (note 1)
+(**.dll**) | Windows dynamic linkl library (note 2)
 
-**.obj** files (COFF64) are only generated from my **aa.exe** assembler. For that, choose **.asm** output option.
+**Notes**
 
-**.dll** generation is no longer directly support as the output is buggy. **.dll** files can be generated using a third party linker, from **.obj** files from **aa.exe**.
+**1** .obj files can only be generated from my **aa.exe** assembler. For that, choose `-asm` output option of mm.exe then run aa.exe (this step not automatic)
+
+**2** .dll files can only be produced via a third party linker, but a .obj file generated from aa.exe
 
 ### Output Files (Source Code or Docs)
 
