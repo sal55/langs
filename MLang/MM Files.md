@@ -4,7 +4,7 @@ Input and Output files of the M compiler `mm.exe`.
 
 ### A 'Program' Unit
 
-A Program in the context used here means a program normally represented by a single .exe executable on Windows, or a library normally contained within a .dll shared library.
+A Program in the context used here means a program normally represented by a single .exe executable on Windows, or a library normally contained within a sinfle .dll shared library file.
 
 Both my M and Q compilers are whole-program compilers, compiling all sources at the same time. And all output files, including .mx, .ml and .obj, also represent the the whole program.
 
