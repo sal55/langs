@@ -1,4 +1,4 @@
-## M Compiler
+## M Compiler Files
 
 Input and Output files of the M compiler `mm.exe`.
 
