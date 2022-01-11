@@ -1,6 +1,6 @@
-## mm.exe M Compiler
+## M Compiler
 
-Input and Output files of the M compiler.
+Input and Output files of the M compiler `mm.exe`.
 
 ### A 'Program' Unit
 
