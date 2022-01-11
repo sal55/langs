@@ -1,5 +1,23 @@
 ## M Compiler Options
 
+### Passing Options to Compiler
+````
+    mm [options] filename [options]
+````
+Input to mm.exe is always exactly one source file, either .m (lead module of project, optional extension) or .ma (composite source file for entire project, extension necessary.
+
+Any options can go before the filename, after it, or both. **Except** when `-run` is used, when they go before:
+````
+    mm -opt -run prog            # no parameters to program
+    mm -opt -run prog a b c      # pass `a b c' to program
+````
+This is to allow anything following the filename to be the command-line parameters expected by the program being run.
+
+Input can also be placed in a script, using multiple lines, then it can be used like this (not tested with -run):
+````
+    mm @file
+````
+
 ### Main Options
 
 Option | Description (Note)
