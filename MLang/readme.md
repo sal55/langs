@@ -28,15 +28,15 @@ A binary for the compiler (`mm.exe`) is available in this folder, and combined s
 
 ### Building from Source
 
-M is self-hosted so it will need an M compiler to build. If happy downloading a binary (see below), download the files mm.exe and mm.qa (right-click on the links). You can build a second version from source code using:
+M is self-hosted so it will need an M compiler to build. If happy downloading a binary (see below), download the files [mm.exe](mm.exe) and [mm.qa](mm.qa) (right-click on the links). You can build a second version from source code using:
 ```
-    mm mm.ma -out:mm2
+    mm mm.ma -out:mm2               # compile mm.ma to mm2.exe
 ```
 But if running mm.exe is OK, then no need to do that except as a test or demonstration that it works.
 
 **AV Issues** If you are a developer, then you will already know to deal with AV matters for your own projects.
 
-I may make available a version supplied as two programs: `mm.mx`, a binary in a special format, and a loader `run.c`, a 600-line program which when compiled locally can be used to run the compiler like this: `run mm hello`. This ought to less AV attention.
+I may make available a version supplied as two programs: `mm.mx`, a binary in a special format, and a loader `run.c`, a 600-line program which when compiled locally can be used to run the compiler like this: `run mm hello`. This ought to attract less AV attention.
 
 (This approach makes possible compiling *some* programs to run on x64 Linux, without needing to use Linux ABIs or write ELF formats; this is something I'm looking into.)
 
