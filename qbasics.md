@@ -12,15 +12,15 @@ Python may have acquired some or makes them possible via add-on modules, althoug
 
 * Algol-style syntax with a proper **end** to mark the end of a block, and separate **proc, function** prefixes
 
-* Built-in support for 'pack' types (what I call C-style primitive types)
+* Built-in support for 'pack' types (my name for C-style primitive types)
 
 * Built-in support for C-style structs
 
-* Built-in FFI for C-base APIs
+* Built-in FFI for C-based APIs (includes APIs for own systems language; see below)
 
 * Simple enumerations (`enum (red, green, blue)`; like named constants, these allow for constant expression reductions, use as switch-cases, etc)
 
-* `'A'` up to `'ABCDEFGH'` character constants stored as integers (`'A'` is 64)
+* `'A'` up to `'ABCDEFGH'` character constants stored as integers (`'A'` is the value 65)
 
 * Pascal-like bit-sets with constructors (`['A'..'Z', '0'..'9']`)
 
@@ -28,7 +28,7 @@ Python may have acquired some or makes them possible via add-on modules, althoug
 
 * Built-in arrays of pack-types
 
-* Bit and bit-field indexing: `A.[i], A.[i..j]`
+* Bit and bit-field indexing: `A.[i], A.[i..j]`, as rvalues or lvalues
 
 * Built-in mutable records with named fields, and constructors: `date(31, 12, 1999)`
 
