@@ -4,7 +4,7 @@ This is a set of features and characteristics of my Q language which are or have
 
 Python may have acquired some or makes them possible via add-on modules, although often via several incompatible add-ons none of which do the whole job.
 
-* Case insensitive (I consider that more user-friendly)
+* Case insensitive and 1-based (I consider these to be more user-friendly)
 
 * Named constants (`const abc = 100`)
 
@@ -78,7 +78,7 @@ Python may have acquired some or makes them possible via add-on modules, althoug
 
 * New (2021) module system uses header blocks to define the structure of a project. This eliminates `import` statements from most modules
 
-* Built-in feature to combine all modules/files of an application into one source file. An app can then be distributed as one file, plus the one-file intepreter.
+* Built-in feature to combine all modules/files of an application into one source file. An app can then be distributed as one file, plus the one-file interpreter.
 
 * `tabledata` feature to define parallel sets of enums and corresponding lists of data
 
