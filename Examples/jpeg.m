@@ -3,14 +3,6 @@
 !Some algorithms derived from the C code in the book:
 ! 'Basic Algorithms' by Malcolm McLean
 
-import msys
-import mlib
-import clib
-import oslib
-
-const jpegerror=10
-int debug=0
-
 record stream =
     ref byte ptr
     ref byte ptrend
@@ -45,13 +37,15 @@ end
 jpeginforec hdr
 
 proc start=
-ref byte p
-ichar file
-int64 width,height
+    ref byte p
+    ichar file
+    int64 width,height
 
     file:="\\jpeg\\card2.jpg"
 
-    p:=loadjpeg(file,&width,&height)
+    println =file
+
+    p:=loadjpeg(file,width,height)
 
     if p=nil then
         println "Couldn't load",file
@@ -61,34 +55,29 @@ int64 width,height
     println =ref void(p)
     println =width,=height
     to 100 do
-        print p^,," "
+        print p^,$
         ++p
     od
     println
 end
 
-global function loadjpeg(ichar file, ref int64 width, height)ref byte =
+export function loadjpeg(ichar file, int64 &width, &height)ref byte =
 !Load jpeg file into a memory buffer
 !return a pointer to the image
 !width/height info is returned via references in the parameter list
-ref byte p
+    ref byte p
 
-    width^:=height^:=-1
+    width:=height:=-1
+    p:=nil
 
     p:=loadjpegfile(file)
-
-    width^:=hdr.width
-    height^:=hdr.height
+    width:=hdr.width
+    height:=hdr.height
 
     return p
 end
 
-global callback function "DllMain"(intm hinst,int reason, reserved)int=
-!println "Jpeg decode 3",hinst, reason
-    return 1
-end
-
-global proc freejpeg(ref byte p)=
+export proc freejpeg(ref byte p)=
     free(p)
 end
 
@@ -202,19 +191,19 @@ proc read_dht(ref stream fs)=
             codeswithlength[i] :=nextbyte(fs)
             tot+:=codeswithlength[i]
         od
-    
+
         for i:=1 to tot do
             symbol[i]:=nextbyte(fs)
         od
-    
+
         tree:=buildhufftree(cast(&codeswithlength),cast(&symbol))
-    
+
         if tabtype=0 then
             hdr.dctable[tabno+1]:=tree
         else
             hdr.actable[tabno+1]:=tree
         fi
-    
+
         length -:=(tot+16+1)
     od
 end
@@ -239,7 +228,7 @@ end
 
 proc buildtreerec(ref[]huffnode nodes,ref[]ref[]char code,ref[]int symbol, int n, bitx,level=0)=
     ref huffnode first
-    int i,k
+    int i,i2,k
 
     if n=0 then
         return
@@ -248,6 +237,7 @@ proc buildtreerec(ref[]huffnode nodes,ref[]ref[]char code,ref[]int symbol, int n
     first:=&nodes^[1]
 
     if n=1 then
+
         first^.child0:=nil
         first^.child1:=nil
         first^.symbol:=symbol^[1]
@@ -308,6 +298,7 @@ function tostrbin(int a,length)ichar=
 !leading zeros
 !return pointer to static buffer containing result
     static [65]char result
+    int i
 
     result[length+1]:=0
     for i:=length downto 1 do
@@ -342,7 +333,7 @@ proc read_dqt(ref stream fs)=
 end
 
 proc read_sof(ref stream fs)=
-    int precision,sampling
+    int precision,i,sampling
 
     readword(fs)
     precision:=nextbyte(fs)
@@ -362,6 +353,7 @@ proc read_sof(ref stream fs)=
         hdr.hsample[i]:=sampling>>4
         hdr.useq[i]:=nextbyte(fs)+1
     od
+
 end
 
 proc read_sos(ref stream fs)=
@@ -541,7 +533,7 @@ function getsymbol(ref stream fs,int nbits)int=
     return a
 end
 
-proc unzigzag(ref[64]int block)=
+proc unzigzag([64]int &block)=
     static []int zigzag=(
     1,2,6,7,15,16,28,29,
     3,5,8,14,17,27,30,43,
@@ -553,42 +545,43 @@ proc unzigzag(ref[64]int block)=
     36,37,49,50,58,59,63,64)
     [64]int temp
 
-    temp:=block^
+    temp:=block
 
     for i:=1 to 64 do
-        block^[i]:=temp[zigzag[i]]
+        block[i]:=temp[zigzag[i]]
     od
 end
 
-proc idct8x8(ref[]int block)=
+proc idct8x8([64]int block)=
     int j
+
     for i:=0 to 7 do
         j:=i*8+1
         fastidct8(
-            block^[j],
-            block^[j+1],
-            block^[j+2],
-            block^[j+3],
-            block^[j+4],
-            block^[j+5],
-            block^[j+6],
-            block^[j+7])
+            block[j],
+            block[j+1],
+            block[j+2],
+            block[j+3],
+            block[j+4],
+            block[j+5],
+            block[j+6],
+            block[j+7])
     od
 
     for i:=1 to 64 do
-        block^[i] >>:= 3
+        block[i] >>:= 3
     od
 
     for i:=1 to 8 do
         fastidct8(
-            block^[i],
-            block^[i+8],
-            block^[i+16],
-            block^[i+24],
-            block^[i+32],
-            block^[i+40],
-            block^[i+48],
-            block^[i+56])
+            block[i],
+            block[i+8],
+            block[i+16],
+            block[i+24],
+            block[i+32],
+            block[i+40],
+            block[i+48],
+            block[i+56])
     od
 end
 
@@ -647,17 +640,16 @@ proc fastidct8(int &a1,&a2,&a3,&a4,&a5,&a6,&a7,&a8) =       ! FASTIDCT8X8
     a8 := (x8 - x2) >> 8
 end
 
-proc getblock(ref stream fs,ref huffnode dctree,actree,ref[]int block)=
+proc getblock(ref stream fs,ref huffnode dctree,actree,[64]int block)=
     int nbits,nread,bb,zeroes
 
     nbits := tree_getsymbol(fs,dctree)
     nread:=0
 
     ++nread
-    memset(block,0,64*int.bytes)
+    memset(&block,0,64*int.bytes)
 
-    block^[nread] := getsymbol(fs, nbits)
-!println =block^[1]
+    block[nread] := getsymbol(fs, nbits)
 
     repeat
         bb := tree_getsymbol(fs,actree)
@@ -679,7 +671,7 @@ proc getblock(ref stream fs,ref huffnode dctree,actree,ref[]int block)=
             fi
             nread+:=zeroes
             ++nread
-            block^[nread] := getsymbol(fs, nbits)
+            block[nread] := getsymbol(fs, nbits)
             if (nread = 64) then
                 return
             fi
@@ -687,18 +679,18 @@ proc getblock(ref stream fs,ref huffnode dctree,actree,ref[]int block)=
     until not bb
 end
 
-proc readblock(ref stream fs,ref[]int block, ref huffnode dctable,actable,
-    ref[]int qtable, ref int dc)=
+proc readblock(ref stream fs,[64]int &block, ref huffnode dctable,actable,
+            ref[]int qtable, ref int dc)=
     int u
 
     getblock(fs,dctable, actable,block)
-    block^[1]:=block^[1]+dc^
+    block[1]:=block[1]+dc^
 
-    dc^:=block^[1]
+    dc^:=block[1]
     u:=hdr.useq[2]
 
     for k:=1 to 64 do
-        block^[k]*:=qtable^[k]
+        block[k]*:=qtable^[k]
     od
 
     unzigzag(block)
@@ -723,9 +715,6 @@ function loadcolour(ref stream fs,int hoz,vert)ref byte=
     [64]int cr,cb
     [4,64]int lum
 
-!println "READ COLOUR",hoz,vert
-
-!data:=jalloc(hdr.framebytes)
     data:=jallocz(hdr.framebytes)
 
     diffdc:=dcb:=dcr:=0
@@ -756,11 +745,11 @@ function loadcolour(ref stream fs,int hoz,vert)ref byte=
             fi
 
             for j:=1 to nlum do
-                readblock(fs,&lum[j],dctable_lum, actable_lum, qtable_lum, &diffdc)
+                readblock(fs,lum[j],dctable_lum, actable_lum, qtable_lum, &diffdc)
             od
 
-            readblock(fs,&cb,dctable_cb, actable_cb, qtable_cb, &dcb)
-            readblock(fs,&cr,dctable_cr, actable_cr, qtable_cr, &dcr)
+            readblock(fs,cb,dctable_cb, actable_cb, qtable_cb, &dcb)
+            readblock(fs,cr,dctable_cr, actable_cr, qtable_cr, &dcr)
 
             reconsblockcolour(&lum[1],&lum[2],&lum[3],&lum[4],&cr,&cb,data,x,y, hoz,vert)
             ++count
@@ -808,7 +797,6 @@ proc reconsblockcolour(ref[]int lum1,lum2,lum3,lum4,cr,cb, ref byte data,int x,y
             ix:=i/vert*8+j>>1+1
             rr := cr^[ix]
             bb := cb^[ix]
-
             p^ := clamp((bb*57/2048)+luminance, 0,255)              !blue
             ++p
             p^ := clamp(luminance - (bb*11 + rr*23)/2048, 0,255)    !green
@@ -821,9 +809,10 @@ end
 
 function jalloc(int n)ref void=
     ref void p
+
     p:=malloc(n)
     if p=nil then
-        println "JPEG MALLOC FAILS"
+        println "Jpeg malloc fails"
         stop
     fi
     return p
