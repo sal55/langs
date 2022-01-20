@@ -1,6 +1,6 @@
 ## Summary of Language Projects
 
-I will shortly be wrapping up further development of my personal languages, so this is a summary of what they are up to.
+I will shortly \[at Nov 2021\] be wrapping up further development of my personal languages, so this is a summary of what they are up to.
 
 These are not modern languages with all the lastest ideas in advanced features. Just simple, down-to-earth tools to do a job of work.
 
