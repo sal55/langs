@@ -276,7 +276,11 @@ There were some big ideas, including, for Q, allowing multiple programs to work 
 
 But I'll have to see how it works out with my rather more staid version.)
 
+#### Update Jan 2022
 
+The wrapping-up got delayed with a new module system, and problems with DLL generation which required finding a new solution to shared libraries.
+
+It might be delayed further as I have some new ideas for combining the two main languages. However it didn't really work last time; it might fail again.
 
 
 
