@@ -18,7 +18,7 @@ It has the working title 'B'. (If it manages to replace 'M', then it will be ren
 * Self-hosting might therefore be a possibility, which means it could replace both the other languages
 * Performance of native code depends on how much of the code relies on dynamic features. But it is expected that any bottlenecks will have some static typing applied
 
-The main problem with the two-language solution, was that it was two languages. You need to constantly think about where any function should go, about their interface, and bear in mind the limitations of each language. A resulting application could also be messy as it will involve Q compiler, Q sources, M application, and likely also a RUN program if the solution involves my new MX/ML binary formats.
+The main problem with the two-language solution, was that it was two languages. You need to constantly think about where any function should go, about their interface, and bear in mind the limitations of each language. A resulting application could also be messy as it will involve Q compiler, Q interpreter, Q sources, M application, and likely also a RUN program if the solution involves my new MX/ML binary formats.
 
 The new language should generate a single EXE, without needing to use utilities to combine diverse components into a pretend single EXE.
 
