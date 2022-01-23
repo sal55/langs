@@ -9,7 +9,7 @@ It has the working title 'B'. (If it manages to replace 'M', then it will be ren
 * Includes Dynamic types of Q, and Static types of M, which can mixed in any code in any function
 * Compiles first to internal PCL code, which can include static and dynamic elements
 * PCL code can then be 100% interpreted
-* Or PCL can be 100% compiled to native code
+* Or PCL can be 100% compiled to native code (this does not guarantee native code speed: see below)
 * I wanted to avoid mixing interpreted and native code, but is necessary in some cases (eg. functions with inline ASM, or callback functions called from external libraries, need to be native code)
 * Any program can be run-from-source just like Q scripts are now; either by interpreting, or generating in-memory native code
 * There should be no noticeable delay in compiling when run from source (compilation speed will be 0.5 to 1.0 million lines per second)
