@@ -16,6 +16,14 @@ It has the working title 'B'. (If it manages to replace 'M', then it will be ren
 * Features of Q for informal, rapid developement will be retained, such as optional local declarations
 * I'm planning the ability to write external binary files too (as EXE, MX/ML), but some reflection features (eg. the compiler symbol table) may not be available.
 * Self-hosting might therefore be a possibility, which means it could replace both the other languages
-* Performance of native code depends on how much of the code depends on dynamic features. But it is expected that any bottlenecks will have some static typing applied
+* Performance of native code depends on how much of the code relies on dynamic features. But it is expected that any bottlenecks will have some static typing applied
 
+The main problem with the two-language solution, was that it was two languages. You need to constantly think about where any function should go, about their interface, and bear in mind the limitations of each language. A resulting application could also be messy as it will involve Q compiler, Q sources, M application, and likely also a RUN program if the solution involves my new MX/ML binary formats.
 
+The new language should generate a single EXE, without needing to use utilities to combine diverse components into a pretend single EXE.
+
+Attempts at combining these two languages were made at least twice before, but they didn't really work. The first try, with separate compilation, lacked the spontaneity and rapid development style of proper scripting. The last, was rather unwieldy.
+
+But both were based on the static language, which always compiled to native code in an EXE file, with dynamic elements.
+
+This one will start being primarily run-from-source and using an interpreter, but with lots of static elements. So it can be used for informal, rapid development, but will have the capability to be fast enough to match C.
