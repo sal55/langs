@@ -8,7 +8,7 @@ A summary of my current scheme:
 * It also defines an ordering to the modules, important when automatically called init routines are present
 * The info can also be picked up by my toy IDE so that I can browse through or search the relevant project files
 * My whole-program compilers like to load all modules used, before starting any parsing, and that info is provided by that list, all in one place
-* (This approach also means that you don't have arbitrary lists of imports of top of every module, creating a chaotic import graph, which also hard work to maintain.)
+* (This approach also means that you don't have arbitrary lists of imports at the top of every module, creating a chaotic import graph, which are also hard work to maintain.)
 * Any entity in a module marked `global`, is exported, and can be used from any other module without needing to fully qualify the name (unless there is clash, which is discouraged)
 * I can change module names easily without changing the code (any qualified names generally use a short alias, that doesn't change)
 * I can compile a version of the program with a slightly different set of modules (which still export the same names), for different functionality (eg. with or without a diagnostic module)
