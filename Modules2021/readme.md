@@ -1,6 +1,6 @@
 ## Modules 2021
 
-A summary of my current scheme (called Modules IV/2021 in the history summary):
+A summary of my current scheme:
 
 * All modules used in a program are listed in a special header section in the lead module (and it uses `module` not `import`)
 * This is a few dozen lines out of tens of thousands, so is hardly onerous to maintain
