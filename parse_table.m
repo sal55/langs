@@ -1,5 +1,5 @@
 !Table-driven expression parser
-!a unit is an expression or statement (not declarations)
+!a 'unit' is an expression or statement (not declarations); a 'unit' type is an AST node
 
 function readunit:unit=
     return readfactor(8)
