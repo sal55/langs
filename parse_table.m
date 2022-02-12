@@ -1,7 +1,7 @@
 !Table-driven expression parser
+!a unit is an expression or statement (not declarations)
 
 function readunit:unit=
-!a unit is an expression or statement only; not declarations
     return readfactor(8)
 end
 
@@ -10,7 +10,7 @@ function readfactor(int level)unit=
     int opc,opprio,lineno,isassign
 
     if level<=1 then
-	      p:=readterm()
+        p:=readterm()
     else
         p:=readfactor(level-1)
     fi
