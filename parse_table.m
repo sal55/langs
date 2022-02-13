@@ -7,7 +7,7 @@ end
 
 function readfactor(int level)unit=
     unit p,q,r
-    int opc,opprio,lineno,isassign
+    int opc,opprio
 
     if level<=1 then
         p:=readterm()
@@ -21,7 +21,6 @@ function readfactor(int level)unit=
         
         if nextlx.symbol = assignsym then         ! op:= augmented assignment
             lex()
-            isassign:=1
             opprio:=jtagpriotable[j_assignx]
             opc:=getoptocode(opc)
         else
