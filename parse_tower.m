@@ -1,7 +1,7 @@
 !expression parser using a tower of functions
 !a 'unit' is an expression or statement
-!The code on lines 10 to 28 optimises for expressions with a single term
-
+!The code on lines 10 to 28 optimises for expressions with a single term, 
+! or assignments with a single term on the rhs
 
 function readunit:unit p=
     unit pt
@@ -9,18 +9,18 @@ function readunit:unit p=
 !   pt:=nil
     pt:=readterm2()
 
-    if jisexpr[pt.tag]=0 then
+    if jisexpr[pt.tag]=0 then      ! read a statement that never returns a value
         return pt
     fi
 
-    if endsexpr[lx.symbol] then
+    if endsexpr[lx.symbol] then    !lone term with no binary op following
         return pt
     fi
 
     if lx.symbol=assignsym then
         lex()
         p:=readterm2()
-        if endsexpr[lx.symbol] then
+        if endsexpr[lx.symbol] then      ! assignment of the form term := term
             p:=createunit2(j_assign, pt, p)
             return p
         fi
