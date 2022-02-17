@@ -77,3 +77,7 @@ Symbol |  |     Represents any symbol (used for function pointers)
 Refvar |  **refvar**|            Pointer to any object type
 Refpack | **refpack**|            Pointer to any T value type
 Refbit |  **refbit**|            Pointer to a bit type u1/2/4, or bitfield 1-64 bits
+
+A variant itself uses **variant**, but it's rare to have to write it, as it is either assumed, or it is the default when a type is omitted.
+
+The above syntax is used for a type-hinted version (with parentheses to distinguish from a value type of the same name). Some of it is also needed to refer to the type a variant  might currently hold, for conversions and so on.
