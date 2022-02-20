@@ -51,16 +51,16 @@ The 'one-file' representation contains all source modules and support files (str
 
 ### Outputs
 
-Output File| Option | Description
---- | ---
-<run> | mc -run, or mm | No ouput; application is compiled/run from memory
- .exe | mm -exe | Produce Windows PE+ executable file
- .ma | mm -ma, mm -mas | Make one-file representation (.mas includes std lib)
- .mx | mm -mx | Produce private binary format (run with run.exe)
- .ml | mm -ml | Produce private shared library format (use from mx only)
- .mexe | mm -mexe | Produce one .exe file that bundles run.exe+prog.mx
-.asm | mm -asm | Produce .asm file for whole program; assemble with aa.exe
-.pcl | mm -pcl | Produce .pcl IL representation (debugging only) 
+Output File| mc Option | Description
+--- | --- | ---
+ (run) | -run | (Or use mm) No ouput; application is compiled/run from memory
+ .exe | exe | Produce Windows PE+ executable file
+ .ma | -ma, -mas | Make one-file representation (.mas includes std lib)
+ .mx | -mx | Produce private binary format (run with run.exe)
+ .ml | -ml | Produce private shared library format (use from mx only)
+ .mexe | -mexe | Produce one .exe file that bundles run.exe+prog.mx
+.asm | -asm | Produce .asm file for whole program; assemble with aa.exe
+.pcl | -pcl | Produce .pcl IL representation (debugging only) 
 
 
 
