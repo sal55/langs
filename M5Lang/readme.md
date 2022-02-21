@@ -1,9 +1,9 @@
 ## 'M5' Language
 
 * The new language will replace both my current 'M' statically typed, native-code compiled systems language ...
-* ... and my 'Q' dynamically types, bytecode interpreted scripting language
+* ... and my 'Q' dynamically typed, bytecode-interpreted scripting language
 * Programs can mixed strict static typing, with dynamic typing
-* They can also mix static coding style (eg. declare everything) with informal scripting style (declarations optional)
+* They can also mix static coding style (eg. declare everything) with informal scripting style (declarations optional), however this is by-function only.
 * Any program can directly from source, with no intermediate binary file), just like a scripting language
 * Any program, even using 100% dynamic typing, can be compiled into a standalone executable
 * As usual, the implementation will be a single, self-contained binary; a compiler between 0.5MB and 1.0MB
@@ -54,9 +54,26 @@ Output File| `mc` Option | Description
 .asm | `-asm` | Produce .asm file for whole program; assemble with aa.exe
 .pcl | `-pcl` | Produce .pcl IL representation (debugging only) 
 
+### Examples
 
-
-
-
-    
+Informal, dynamic style:
+```
+    fun fib(n) =
+        if n<3 then
+            1
+        else
+            fib(n-1)+fib(n-2)
+        fi
+    end
+```
+Static style:
+```
+    function fib(int n) =
+        if n<3 then
+            1
+        else
+            fib(n-1)+fib(n-2)
+        fi
+    end
+```
 
