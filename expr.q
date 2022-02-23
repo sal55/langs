@@ -1,4 +1,5 @@
-# Simple expression parser
+!Simple expression parser
+!Output is an 'AST', here just implemented as nested lists
 
 var token
 var priotable = ["+":5, "-":5, "*":3, "/":3, "=":7, "^":1]
@@ -9,11 +10,10 @@ function readexpr=
 end
 
 function readfactor(n)=
-
     if n<=1 then
-        p:=readterm()
+        p := readterm()
     else
-        p:=readfactor(n-1)
+        p := readfactor(n-1)
     fi
 
     while token in "=^+-*/" do
@@ -26,13 +26,13 @@ function readfactor(n)=
 
         case opcode
         when "=" then           ! assignments
-            q:=readexpr()
+            q := readexpr()
         when "^" then           ! power (right to left)
-            q:=readfactor(n)
+            q := readfactor(n)
         else                    ! normal binary op
-            q:=readfactor(n-1)
+            q := readfactor(n-1)
         esac
-        p:=makeAST(opcode, p,q)
+        p := (opcode, p,q)
     od
     return p
 end
@@ -41,29 +41,29 @@ function readterm=
     case token
     when "(" then
         lex()
-        p:=readexpr()
+        p := readexpr()
         if token<>")" then abort("')' expected") fi
         lex()
 
     when "-" then
         lex()
-        return makeAST("neg",readterm())
+        p := ("neg",readterm())
 
     elsif token in "abcdefghijklmnopqrstuvwxyz" then
-        name:=token
+        name := token
         lex()
         if token="(" then
             lex()
-            q:=readexpr()
+            q := readexpr()
             if token<>")" then abort("')' expected") fi
             lex()
-            return makeAST("call",name, q)
+            return ("call",name, q)
         else
-            return makeAST(name)
+            return name
         fi
 
     elsif token in "abcdefghijklmnopqrstuvwxyz0123456789" then
-        p:=makeAST(token)
+        p := token
         lex()
 
     else
@@ -72,29 +72,19 @@ function readterm=
     return p
 end
 
-function makeAST(tag, ?a, ?b)=
-    if b.isdef then
-        return (tag, a, b)
-    elsif a.isdef then
-        return (tag, a)
-    else
-        return tag
-    fi
-end
-
 proc lex=
     repeat
         if sourcepos>source.len then
-            token:="?"
+            token := "?"
         else
-            token:=source[sourcepos++]
+            token := source[sourcepos++]
         fi
     until token <> " "
 end
 
 proc readprogram(s)=
-    source:=s
-    sourcepos:=1
+    source := s
+    sourcepos := 1
     lex()
     ast:=readexpr()
 
