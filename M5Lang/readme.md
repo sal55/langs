@@ -18,8 +18,6 @@ M/2022 replaces both the older M (systems) and Q (scripting) languages evolved s
 
 All have been used as personal or in-house languages during that time. Actually, I have used only my own languages for nearly all my programming. (I did try to give C a go but I found it dire.)
 
-M has been self-hosted in a chain going back decades. Early versions used ASM (and on the first, I wrote the assembler as well as building the machine it ran on).
-
 ### Characteristics
 
 * Case insensitive
@@ -31,9 +29,27 @@ M has been self-hosted in a chain going back decades. Early versions used ASM (a
 * No build system needed
 * Can run applications from source
 * Accessible language simple enough for anyone to understand
-* Builds itself from source in about 0.1 seconds (some 40Kloc)
 * Minimal dependencies (a Windows OS is needed)
 
+The implementation:
+
+* Self-hosted, 100% written in itself, in a chain going back to the original version in early 80s
+* Always bootstrapped using the previous version (original was written using *my* assembler on a home-made machine)
+* Currently builds itself from source in about 0.1 seconds (some 40Kloc)
+* No other languages are used at all
+* No other tools are used (eg external assemblers and linkers)
+
+Dependencies:
+
+* Compiler: none (minimal requirements are some CRT functions in msvcrt.dll, which is part of Windows)
+* Applications: none, other than the external libraries a program may choose to make use of (eg. OpenGL)
+* Other tools (eg. assembler, linker, building, script): none
+* Other languages: none
+
+A special tool is sometimes used to help convert C-style APIs into M bindings, but that tool (built-in to a C compiler) is written in M.
+
+M covers the entire compiler 'stack'
+ 
 ### Comparisons With Other Languages
 
 * Clunky 1980s style with few more modern or advanced features
@@ -42,9 +58,13 @@ M has been self-hosted in a chain going back decades. Early versions used ASM (a
 
 ### Availability
 
-While executables exist, I can't do the huge amount of work and support needed for it to be usable by anyone, and there is a huge amount missing that people will expect from a quality product. For example, docs.
+While executables exist to try out, I can't do the huge amount of work and support needed for it to usable by other people, and there is a huge amount missing that people will expect from a quality product. For example, docs.
 
-This is purely a personal tool. It is presented here to highlight some aspects of how a language could be tidily packaged, and what can be achievable compared with tools such as LLVM. There may also be interesting ideas for people to take away.
+This is purely a personal tool. It is presented here to demonstrate how a language could be tidily packaged, and what can be achievable compared with tools such as LLVM (yes you can get close to LLVM's code, while being 100 times smaller and 100 times faster to compile).
+
+There may also be interesting ideas for people to take away.
+
+So I'm not 'selling' my language or its tools. (Think of it as a custom-made car, or a tasty recipe; they don't mean I want to start manufacturing automobiles or go into mass production of ready-meals.)
 
 ### Products
 
@@ -106,3 +126,4 @@ Static style:
 
 ### Features
 
+TBD
