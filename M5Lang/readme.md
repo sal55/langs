@@ -23,21 +23,18 @@ All have been used as personal or in-house languages during that time. Actually,
 * Case insensitive
 * Naturally 1-based, also N-based
 * Algol/Pascal/Ada-style syntax (basically, no braces nor significant indentation)
-* Self-contained one-file implementation, typically 0.5MB to 1.0MB (so, small(ish) footprint)
+* Self-contained one-file implementation, typically 0.5MB to 1.0MB
 * Very fast compilation, at least 0.5M lines per second and generating 5MB of code per second
 * Targetting Windows 64
 * No build system needed
 * Can run applications from source
 * Accessible language simple enough for anyone to understand
-* Minimal dependencies (a Windows OS is needed)
 
 The implementation:
 
 * Self-hosted, 100% written in itself, in a chain going back to the original version in early 80s
 * Always bootstrapped using the previous version (original was written using *my* assembler on a home-made machine)
 * Currently builds itself from source in about 0.1 seconds (some 40Kloc)
-* No other languages are used at all
-* No other tools are used (eg external assemblers and linkers)
 
 Dependencies:
 
@@ -46,7 +43,7 @@ Dependencies:
 * Other tools (eg. assembler, linker, building, script): none
 * Other languages: none
 
-A special tool is sometimes used to help convert C-style APIs into M bindings, but that tool (built-in to a C compiler) is written in M.
+A special tool is sometimes used to help convert C-style APIs into M bindings, but that tool (basically a C compiler) is written in M.
 
 M covers the entire compiler 'stack'
  
@@ -70,8 +67,8 @@ So I'm not 'selling' my language or its tools. (Think of it as a custom-made car
 
 Tool | Written In | Description
 --- | --- | ---
-**mm.exe**  | M | Run M5 app from source
-**mc.exe** | M | Build M5 app to EXE, MX/ML or ASM
+**mm.exe**  | M | Run M app from source
+**mc.exe** | M | Build M app to EXE, MX/ML or ASM
 **aa.exe** | M |Assemble ASM to EXE or OBJ (and hence to DLL)
 **run.exe** | M | Run MX files (see below); this is a stub file
 
