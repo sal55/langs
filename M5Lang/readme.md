@@ -1,29 +1,36 @@
 ## 'M5' Language
 
-* The new language will replace both my current 'M' statically typed, native-code compiled systems language ...
-* ... and my 'Q' dynamically typed, bytecode-interpreted scripting language
-* Programs can mixed strict static typing, with dynamic typing
-* They can also mix static coding style (eg. declare everything) with informal scripting style (declarations optional), however this is by-function only.
-* Any program, even 100% static, can be run directly from source, with no intermediate binary file), just like a scripting language
-* Any program, even using 100% dynamic typing, can be compiled into a standalone executable
-* As usual, the implementation will be a single, self-contained binary; a compiler between 0.5MB and 1.0MB
-* As usual, this is a whole-program compiler, with a throughput of at least 0.5M files per second
-* Performance of 100% static code will be typically 50% slower than equivalent C code compiled with gcc-O3 (for typical applications that I would write)
-* Performance of 100% dynamic code is expected to be at least as good as the non-accelerated (ie. 100% HLL) Q interpreter; which is also typically brisker than non-JITed Python and Lua. (Not however as good as accelerated Q)
+**M** is my new 2022 language, a hybrid that combines and replaces my systems and scripting languages.
 
-'M' has evolved since around 1982, and 'Q' since about 1990, with many versions, changes of names, different targets and increasing capabilities.
+It is a 3-in-one language:
 
-Although they had been slowly converging, this is still a significant departure after decades of maintaining and using two languages. Some attempts have been made to combine before, but it never really work. But now it ~~should~~ will.
+* Dynamic scripting language
+* Static systems language
+* Inline assembly language
 
-### Status
+Dynamic and static code can be mixed, in a manner I believe is called 'gradual typing'.
 
-A version of M5, with some of the changes necessary to make the above possible, is working with a static-only type system. It is my production language and compiler. A few more weeks should yield a language with dynamic capabilities and able to be used for scripting.
+Applications, of any mix of stypes, can be run directly from source code just like a scripting language. Or they can be compiled to normal executables.
 
-### Is M5 High Level?
+I call it M5 for now to distinguish it from the older systems-only language also called **M**, or sometimes M4 to avoid confusion.
 
-Sort of. M was a little above C in level. Q was a long way below Python in level, and is not that dynamic either.
+### History
 
-The new composite language combines their respective data types, but it still lack most of the new features people expect in other languages:
+The first M systems language was 40 years ago, running on 8-bit Z80 microprocessors. It has changed significantly since then.
+
+The first Q scripting language was in the form of an add-on language for my GUI 3D graphics applications, from the later part from the 80s, which run on IBM PCs.
+
+M has been self-hosted via a chain of versions going back decades, possibly as long as 40 years. The first experimental version was written in ASM. I also wrote that assembler in hex machine code (and actually wrote the hex editor in binary, and even built that first machine).
+
+But the chain was broken early on as it must have been rebooted at least once, from ASM; I can't remember.
+
+Regardless, I have used no other languages than my own for nearly all my programming. I have tried to switch to C a few times, but I just couldn't hack it.
+
+### How High Level is M5?
+
+Not very. The static side of M5 is a little above C in level. The dynamic part is a long way below Python, and is not that dynamic either.
+
+There are few fancy features that most people now expect:
 
 * Most of them I don't understand or can't use
 * Some I do appreciate, but are too hard to implement
@@ -32,14 +39,26 @@ The new composite language combines their respective data types, but it still la
 
 In particular, the type system is as basic and unesoteric as I could make it. 
 
+### Any Interesting Features
+
+Special features that I find useful are listed elsewhere. But the characteristics of my languages have long been:
+
+* Case insensitive
+* Naturally 1-based, also N-based
+* Self-contained one-file implementations, typically 0.5MB to 1.0MB
+* Very fast compilation, at 0.5M lines per second and generating 5MB of code per second
+* Targetting Windows 64
+* No build system needed
+* Can run from source (a recent feature)
+* Accessible language simple enough for anyone to understand
 
 ### Products
 
 Tool | Description
 --- | ---
 **mm.exe**  | Run M5 app from source
-**mc.exe** | Build M5 app to executable
-**aa.exe** | Assemble ASM to executable
+**mc.exe** | Build M5 app to EXE, MX/ML or ASM
+**aa.exe** | Assemble ASM to EXE or OBJ (and hence to DLL)
 **run.exe** | Run MX files (see below); this is a stub file
 
 `mm.exe` and `mc.exe` are actually identical binaries. The executable name is used to determine the default option (-run or -exe).
