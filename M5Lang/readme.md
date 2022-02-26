@@ -53,6 +53,16 @@ Special features that I find useful are listed elsewhere. But the characteristic
 * Accessible language simple enough for anyone to understand
 * Builds itself from source in about 0.1 seconds (some 40Kloc)
 
+### Significant Downsides
+
+* Minimal interaction with other software, libraries, networking etc etc
+* The only interface to the outside world is via the FFI (and bindings to libraries have to be laboriously created)
+* Minimal standard library
+* No proper docs
+* Syntax not supported in editors etc for syntax highlighting and other things that are expected
+* Mainly targets Windows 64. (Getting in onto Linux would involve C in some way; I don't want to do that.)
+* As stated above, there are no trendy features that people expect, like new kinds of enums, pattern matching, nor even OOP
+
 ### Products
 
 Tool | Written In | Description
@@ -90,9 +100,7 @@ Output File| `mc` Option | Description
 
 ### Can Anyone Use It?
 
-That is not practical as it would be a huge amount of work to properly support such a product.
-
-It just wouldn't have been used extensively enough to ensure decent coverage of all the combinations of features, and to find all the bugs, design flaws and ambiguities. It's also still volatile, and aimed at my own preferences rather than general use. That has always been the case since it was an in-house tool.
+That is not practical as it would be a huge amount of work to properly support such a product. There are no proper docs, and it simply hasn't been tested extensively enough.
 
 But the ideas in the language, the way it is packaged and the effortless way it is designed to work, are all things that can be taken away from this project.
 
