@@ -1,4 +1,4 @@
-## 'M5' Language
+## 'M' Language
 
 **M** is my new 2022 language, a hybrid that combines and replaces my systems and scripting languages.
 
@@ -12,56 +12,39 @@ Dynamic and static code can be mixed, in a manner I believe is called 'gradual t
 
 Applications, of any mix of stypes, can be run directly from source code just like a scripting language. Or they can be compiled to normal executables.
 
-I call it M5 for now to distinguish it from the older systems-only language also called **M**, or sometimes M4 to avoid confusion.
-
 ### History
 
-The first M systems language was 40 years ago, running on 8-bit Z80 microprocessors. It has changed significantly since then.
+M/2022 replaces both the older M (systems) and Q (scripting) languages evolved since early versions in the 1980s. These had gradually been converging anyway.
 
-The first Q scripting language was in the form of an add-on language for my GUI 3D graphics applications, from the later part from the 80s, which run on IBM PCs.
+All have been used as personal or in-house languages during that time. Actually, I have used only my own languages for nearly all my programming. (I did try to give C a go but I found it dire.)
 
-M has been self-hosted via a chain of versions going back decades, possibly as long as 40 years. The first experimental version was written in ASM. I also wrote that assembler in hex machine code (and actually wrote the hex editor in binary, and even built that first machine).
+M has been self-hosted in a chain going back decades. Early versions used ASM (and on the first, I wrote the assembler as well as building the machine it ran on).
 
-But the chain was broken early on as it must have been rebooted at least once, from ASM; I can't remember.
-
-Regardless, I have used no other languages than my own for nearly all my programming. I have tried to switch to C a few times, but I just couldn't hack it.
-
-### How High Level is M5?
-
-Not very. The static side of M5 is a little above C in level. The dynamic part is a long way below Python, and is not that dynamic either.
-
-There are few fancy features that most people now expect:
-
-* Most of them I don't understand or can't use
-* Some I do appreciate, but are too hard to implement
-* Some I could implement, but I would not use them enough to make it worthwhile
-* A few might be interesting box-ticking exercises.
-
-In particular, the type system is as basic and unesoteric as I could make it. 
-
-### Any Interesting Features
-
-Special features that I find useful are listed elsewhere. But the characteristics of my languages have long been:
+### Characteristics
 
 * Case insensitive
 * Naturally 1-based, also N-based
-* Self-contained one-file implementations, typically 0.5MB to 1.0MB
-* Very fast compilation, at 0.5M lines per second and generating 5MB of code per second
+* Algol/Pascal/Ada-style syntax (basically, no braces nor significant indentation)
+* Self-contained one-file implementation, typically 0.5MB to 1.0MB (so, small(ish) footprint)
+* Very fast compilation, at least 0.5M lines per second and generating 5MB of code per second
 * Targetting Windows 64
 * No build system needed
-* Can run from source (a recent feature)
+* Can run applications from source
 * Accessible language simple enough for anyone to understand
 * Builds itself from source in about 0.1 seconds (some 40Kloc)
+* Minimal dependencies (a Windows OS is needed)
 
-### Significant Downsides
+### Comparisons With Other Languages
 
-* Minimal interaction with other software, libraries, networking etc etc
-* The only interface to the outside world is via the FFI (and bindings to libraries have to be laboriously created)
-* Minimal standard library
-* No proper docs
-* Syntax not supported in editors etc for syntax highlighting and other things that are expected
-* Mainly targets Windows 64. (Getting in onto Linux would involve C in some way; I don't want to do that.)
-* As stated above, there are no trendy features that people expect, like new kinds of enums, pattern matching, nor even OOP
+* Clunky 1980s style with few more modern or advanced features
+* Static part is somewhat higher level than C
+* Dynamic part is much lower level than Python, and not very dynamic either
+
+### Availability
+
+While executables exist, I can't do the huge amount of work and support needed for it to be usable by anyone, and there is a huge amount missing that people will expect from a quality product. For example, docs.
+
+This is purely a personal tool. It is presented here to highlight some aspects of how a language could be tidily packaged, and what can be achievable compared with tools such as LLVM. There may also be interesting ideas for people to take away.
 
 ### Products
 
@@ -98,16 +81,6 @@ Output File| `mc` Option | Description
 .asm | `-asm` | Produce .asm file for whole program; assemble with aa.exe
 .pcl | `-pcl` | Produce .pcl IL representation (debugging only) 
 
-### Can Anyone Use It?
-
-That is not practical as it would be a huge amount of work to properly support such a product. There are no proper docs, and it simply hasn't been tested extensively enough.
-
-But the ideas in the language, the way it is packaged and the effortless way it is designed to work, are all things that can be taken away from this project.
-
-Another might be in seeing how well a small project with a crude code generator can generate code compared with massive toolchains like LLVM. Yes you can get within 50% of gcc-O3 without that much effort! (Depending on application...)
-
-Executables also exist for experimentation. As do source-code snapshots for perusal.
-
 ### Examples
 
 Informal, dynamic style:
@@ -130,4 +103,6 @@ Static style:
         fi
     end
 ```
+
+### Features
 
