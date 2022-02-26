@@ -51,6 +51,7 @@ Special features that I find useful are listed elsewhere. But the characteristic
 * No build system needed
 * Can run from source (a recent feature)
 * Accessible language simple enough for anyone to understand
+* Builds itself from source in about 0.1 seconds (some 40Kloc)
 
 ### Products
 
@@ -86,6 +87,18 @@ Output File| `mc` Option | Description
  .exe | `-mexe` | Produce one .exe file that bundles run.exe+prog.mx
 .asm | `-asm` | Produce .asm file for whole program; assemble with aa.exe
 .pcl | `-pcl` | Produce .pcl IL representation (debugging only) 
+
+### Can Anyone Use It?
+
+That is not practical as it would be a huge amount of work to properly support such a product.
+
+It just wouldn't have been used extensively enough to ensure decent coverage of all the combinations of features, and to find all the bugs, design flaws and ambiguities. It's also still volatile, and aimed at my own preferences rather than general use. That has always been the case since it was an in-house tool.
+
+But the ideas in the language, the way it is packaged and the effortless way it is designed to work, are all things that can be taken away from this project.
+
+Another might be in seeing how well a small project with a crude code generator can generate code compared with massive toolchains like LLVM. Yes you can get within 50% of gcc-O3 without that much effort! (Depending on application...)
+
+Executables also exist for experimentation. As do source-code snapshots for perusal.
 
 ### Examples
 
