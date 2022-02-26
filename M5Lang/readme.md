@@ -55,12 +55,12 @@ Special features that I find useful are listed elsewhere. But the characteristic
 
 ### Products
 
-Tool | Description
---- | ---
-**mm.exe**  | Run M5 app from source
-**mc.exe** | Build M5 app to EXE, MX/ML or ASM
-**aa.exe** | Assemble ASM to EXE or OBJ (and hence to DLL)
-**run.exe** | Run MX files (see below); this is a stub file
+Tool | Written In | Description
+--- | --- | ---
+**mm.exe**  | M | Run M5 app from source
+**mc.exe** | M | Build M5 app to EXE, MX/ML or ASM
+**aa.exe** | M |Assemble ASM to EXE or OBJ (and hence to DLL)
+**run.exe** | M | Run MX files (see below); this is a stub file
 
 `mm.exe` and `mc.exe` are actually identical binaries. The executable name is used to determine the default option (-run or -exe).
 
