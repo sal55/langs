@@ -59,7 +59,7 @@ Basically, it doesn't need to please anyone except me.
 
 ### `One-File`
 
-This is a now a common theme in my languages:
+This is now a common theme in my languages:
 
 * The implemention is a single executable file
 * The output of compilation is always a single file (exe, asm, pcl, even C if and when that is a target again)
@@ -77,9 +77,9 @@ Produces cc.exe, which is itself one-file C compiler.
 
 ### Availability
 
-While executables exist to try out, this is a personal tool. A product suitable for others to use would be a huge amount of extra work and require considerable support/
+While executables exist to try out, this is a personal tool. A product suitable for others to use would be a huge amount of extra work and require considerable support.
 
-It is presented here to demonstrate how a language could be tidily packaged, and what can be achievable in a smallish self-contained language with no dependencies and using the simplest algorithms. For example, while there is no proper optimiser to speak of, typical programs might only be 50% slower than gcc-O3.
+It is presented here to demonstrate how a language can be tidily packaged, and what can be achievable in a smallish self-contained language with no dependencies and using the simplest algorithms. For example, while there is no proper optimiser to speak of, typical programs might only be 50% slower than gcc-O3.
 
 There may also be interesting features or ideas for people to take away. So I'm not 'selling' my language or its tools.
 
