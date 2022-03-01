@@ -98,7 +98,7 @@ Input is a single file name:
 ```
     mm prog          # run program whose lead module is prog.m
     mm prog.ma       # (or `prog` if no clash) run the one-file project prog.ma
-
+```
 `mm` will run the program by compiling to in-memory native code; `mc` will compile to EXE; see below.
 
 ### Outputs
