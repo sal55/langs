@@ -24,19 +24,21 @@ All have been used as personal or in-house languages during that time. Actually,
 * Naturally 1-based, also N-based
 * Algol/Pascal/Ada-style syntax (basically, no braces nor significant indentation)
 * Self-contained one-file implementation, typically 0.5MB to 1.0MB
+* Whole-program compiler
 * Very fast compilation, at least 0.5M lines per second and generating 5MB of code per second
 * Targetting Windows 64
 * No build system needed
 * Can run applications from source
 * Accessible language simple enough for anyone to understand
+* 'One-File' principle (see below)
 
-The implementation:
+**The implementation:**
 
 * Self-hosted, 100% written in itself, in a chain going back to the original version in early 80s
 * Always bootstrapped using the previous version (original was written using *my* assembler on a home-made machine)
 * Currently builds itself from source in about 0.1 seconds (some 40Kloc)
 
-Dependencies:
+**Dependencies:**
 
 * Compiler: none (minimal requirements are some CRT functions in msvcrt.dll, which is part of Windows)
 * Applications: none, other than the external libraries a program may choose to make use of (eg. OpenGL)
@@ -53,15 +55,33 @@ M covers the entire compiler 'stack'
 * Static part is somewhat higher level than C
 * Dynamic part is much lower level than Python, and not very dynamic either
 
+Basically, it doesn't need to please anyone except me.
+
+### `One-File`
+
+This is a now a common theme in my languages:
+
+* The implemention is a single executable file
+* The output of compilation is always a single file (exe, asm, pcl, even C if and when that is a target again)
+* The source code of a project can also a single text file
+
+To demonstrate that last point, this creates a one-file version of the 76 files comprising my C compiler project:
+```
+    mm -mas cc
+```
+It produces a file cc.ma that is 50KLoc, which includes headers. `mas` means it includes std library files for M. This is convenient for backup or distribution, and can be compiled directly:
+```
+    mm cc.ma
+```
+Produces cc.exe, which is itself one-file C compiler.
+
 ### Availability
 
-While executables exist to try out, I can't do the huge amount of work and support needed for it to usable by other people, and there is a huge amount missing that people will expect from a quality product. For example, docs.
+While executables exist to try out, this is a personal tool. A product suitable for others to use would be a huge amount of extra work and require considerable support/
 
-This is purely a personal tool. It is presented here to demonstrate how a language could be tidily packaged, and what can be achievable compared with tools such as LLVM (yes you can get close to LLVM's code, while being 100 times smaller and 100 times faster to compile).
+It is presented here to demonstrate how a language could be tidily packaged, and what can be achievable in a smallish self-contained language with no dependencies and using the simplest algorithms. For example, while there is no proper optimiser to speak of, typical programs might only be 50% slower than gcc-O3.
 
-There may also be interesting ideas for people to take away.
-
-So I'm not 'selling' my language or its tools. (Think of it as a custom-made car, or a tasty recipe; they don't mean I want to start manufacturing automobiles or go into mass production of ready-meals.)
+There may also be interesting features or ideas for people to take away. So I'm not 'selling' my language or its tools.
 
 ### Products
 
@@ -69,21 +89,17 @@ Tool | Written In | Description
 --- | --- | ---
 **mm.exe**  | M | Run M app from source
 **mc.exe** | M | Build M app to EXE, MX/ML or ASM
-**aa.exe** | M |Assemble ASM to EXE or OBJ (and hence to DLL)
-**run.exe** | M | Run MX files (see below); this is a stub file
 
-`mm.exe` and `mc.exe` are actually identical binaries. The executable name is used to determine the default option (-run or -exe).
+`mm.exe` and `mc.exe` are actually identical binaries (so still 'one file'!); . The executable name is used to determine the default option (-run or -exe).
 
 ### Inputs
 
-For an example application 'prog':
+Input is a single file name:
+```
+    mm prog          # run program whose lead module is prog.m
+    mm prog.ma       # (or `prog` if no clash) run the one-file project prog.ma
 
-Input | Description
---- | ---
-prog.m file | Lead module of application
-prog.ma file | 'One-file' representation of application
-
-The 'one-file' representation contains all source modules and support files (strinclude/include) of an application. It is generated from discrete files using the `-ma/-mas` options of `mc.exe`
+`mm` will run the program by compiling to in-memory native code; `mc` will compile to EXE; see below.
 
 ### Outputs
 
@@ -94,33 +110,21 @@ Output File| `mc` Option | Description
  .ma | `-ma`, `-mas` | Make one-file representation (.mas includes std lib)
  .mx | `-mx` | Produce private binary format (run with run.exe)
  .ml | `-ml` | Produce private shared library format (use from mx only)
- .exe | `-mexe` | Produce one .exe file that bundles run.exe+prog.mx
+ .exe | `-mexe` | Produce one .exe file that bundles run.exe+prog.mx (not ready)
 .asm | `-asm` | Produce .asm file for whole program; assemble with aa.exe
 .pcl | `-pcl` | Produce .pcl IL representation (debugging only) 
 
 ### Examples
 
-Informal, dynamic style:
+(Not ready)
+
+However, Hello World is:
 ```
-    fun fib(n) =
-        if n<3 then
-            1
-        else
-            fib(n-1)+fib(n-2)
-        fi
-    end
-```
-Static style:
-```
-    function fib(int n) =
-        if n<3 then
-            1
-        else
-            fib(n-1)+fib(n-2)
-        fi
-    end
+   println "Hello, World!"
 ```
 
 ### Features
 
-TBD
+While there are very few big, advanced features, there are lots of smaller ones that make everyday coding a pleasant experience. Feature summary:
+
+(Not ready)
