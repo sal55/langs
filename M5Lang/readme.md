@@ -89,6 +89,9 @@ Tool | Written In | Description
 --- | --- | ---
 **mm.exe**  | M | Run M app from source
 **mc.exe** | M | Build M app to EXE, MX/ML or ASM
+-- | -- | Auxiliary Tools
+**aa.exe** | M | Assembler-linker (ASM -> EXE/DLL/OBJ)
+**run.exe** | M | Run MX binaries
 
 `mm.exe` and `mc.exe` are actually identical binaries (so still 'one file'!); . The executable name is used to determine the default option (-run or -exe).
 
