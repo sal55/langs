@@ -2,6 +2,8 @@
 
 A summary of my current scheme:
 
+(Note this is written as a riposte to a Reddit thread suggesting source code should have no explicit module import directives. Some may not make sense without that context!)
+
 * All modules used in a program are listed in a special header section in the lead module (and it uses `module` not `import`)
 * This is a few dozen lines out of tens of thousands, so is hardly onerous to maintain
 * It always tells me *exactly* what modules are being used
