@@ -42,7 +42,7 @@ u1 | **u1**, **bit** | 1-bit field
 u2 | **u2** | 2-bit field
 u4 | **u4** | 4-bit field
  **Misc** |
-type | Represents a type |
+type | | Represents a type
 auto | **auto** | Infer from initialisation
 enum | **enum...** |  (Forms int type) |
 bitfield | |Internal type |
