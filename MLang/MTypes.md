@@ -1,16 +1,7 @@
 ## M5 Type System
 
-M types come in two varieties:
 
-* Value Types, also called Pack or Packed Types
-* Object Types, implemented as tagged variants
-
-Value types came from the static-only types of the original M language,
-and Object types from the dynamic Q scripting language.
-
-### Value Types
-
-**T** is any value type.
+### M Types
 
 Type |  Syntax | Notes
 --- | --- | ---
@@ -31,13 +22,18 @@ c64 | | (Internal type) |
 r32 | **r32**, **real32**
 r64 | **r64**, **real64**, **real**
 **Composite Types** |
-Array | **[*bounds*]T** | Fixed size array
-Record | **U** | (User type name) Mixed T
-Slice | **slice[*lwb*]T** | Subarray or slice
+Record | **T** | (T is a user type) Mixed type fields
 Range | **range** | Two i64 values
+**Arrays and Slices** |
+Array | **[*bounds*]T** | Fixed size array
+Slice | **slice[*lwb:*]T** | View into array, vector, flex
+Vector\* | **vector[*lwb:*]T** | Dynamic, fixed-length array
+Flex\* | **flex[*lwb:*]T** | Dynamic growable array
 **Pointers** |
-Ref | **ref T** | Pointer to T
-**Pointer Targets** |
+Ref | **ref U**| Pointer to any type
+**Variants** |
+Variant\* | **variant** | Contains types shown below
+**Special Pointer Targets** |
 void | **void** | Can only be used with **ref**
 proc | **proc...** | Need full signature
 function | **func ...**
@@ -52,32 +48,63 @@ enum | **enum...** |  (Forms int type) |
 bitfield | |Internal type |
 tuple |  | Internal type |
 
-### Object Types
+### Key
 
-This initial implementation has really just the one tagged Variant type.
-A Variant can contain any of these kinds of objects:
+**T** is any non-managed type (see below)
 
-Type | Syntax |  Notes
---- | --- | ---
-Int |  **(int)** |  int64
-Word | **(word)** | word64
-Real | **(real)** |  real64
-Decimal | **decimal** |     Arbitrary precision int/float decimal type
-String | **string** |           Flex string (strings and lists include slices)
-List |  **list** |             Flex array of variants
-Dict |  **dict** |             Flex set of key:value pairs
-Set |   **set** |   Flex bit-set
-Array |  **array**|  Flex array of T (user-defined arrays are fixed size)
-Bits |  **bits** |    Flex array of u1/u2/u4
-Record |  **U** | (User type with some object elements)
-Packrecord |  **U** | (User type with value elements only)
+**U** is *any* type including managed types and variants
+
+***lwb:*** Optional lower bound
+
+***bounds*** Optional bounds:
+ ```
+     []          Unbounded (array), or dynamic (slices, vector, flex)
+     [A:]        Same but using lower bound of A
+     [N]         Length N, lower bound 1
+     [A:N]       Length N, lower bound A
+     [A..B]      Length B-A+1, lower bound A
+```
+Unbounded arrays are mainly for pointer targets
+
+### Managed and Unmanaged Types
+
+The types marked with a **\*** suffix in the above table are managed types. This is where the language initialises the type, allocates any storage needed, and recovers the storage when it's no longer required (overwrite with something new, or it goes out of scope).
+
+These aren't allowed a
+
+### Variants
+
+A Variant can contain any of these kinds of objects (V is a variant type):
+
+Type | Notes
+--- | ---
+Int |  int64
+Word | word64
+Real |  real64
+Decimal |  Arbitrary precision int/float decimal type
+String |   Flex string (strings and lists include slices)
+List |  Flex array of V
+Dict |  Flex set of key:value pairs, each of type V
+Set |  Flex bit-set
+Record | User type with named fields of type V
 Type |   |       Represents any type
-Operator | |            Represents a built-in operator
-Symbol |  |     Represents any symbol (used for function pointers)
-Refvar |  **refvar**|            Pointer to any object type
-Refpack | **refpack**|            Pointer to any T value type
-Refbit |  **refbit**|            Pointer to a bit type u1/2/4, or bitfield 1-64 bits
+Operator |   Represents a built-in operator
+Symbol |    Represents any symbol (used for function pointers)
+Refvar |    Pointer to any variant type
 
-A variant itself uses **variant**, but it's rare to have to write it, as it is either assumed, or it is the default when a type is omitted.
+A variant itself uses **variant** when declared, but it's rare to have to write it, as it is either assumed, or it is the default when a type is omitted:
+```
+    int a, b, c                 # Declare 3 ints
+    var int a, b, c             # Using the optional `var` prefix
+    var a, b, c                 # Missing type, assumes `variant`
+    var variant a, b, c         # Make it explicit
+    variant a,b ,c              # And dtop the `var` prefix
+```
+The last 3 examples declare the same things. In practice these forms are used:
+```
+    int a, b, c                 # 3 ints
+    var a, b, c                 # 3 variants
+```
+In some contexts, eg. parameter lists where it is clear it is a declaration, the `var` can be dropped, so that `(a, b, c)` is 3 variant parameters.
+    
 
-The above syntax is used for a type-hinted version (with parentheses to distinguish from a value type of the same name). Some of it is also needed to refer to the type a variant  might currently hold, for conversions and so on.
