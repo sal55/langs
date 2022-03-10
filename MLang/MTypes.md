@@ -27,12 +27,12 @@ Range | **range** | Two i64 values
 **Arrays and Slices** |
 Array | **[*bounds*]T** | Fixed size array
 Slice | **slice[*lwb:*]T** | View into array, vector, flex
-Vector\* | **vector[*lwb:*]T** | Dynamic, fixed-length array
-Flex\* | **flex[*lwb:*]T** | Dynamic growable array
+Vector**\*** | **vector[*lwb:*]T** | Dynamic, fixed-length array
+Flex**\* **| **flex[*lwb:*]T** | Dynamic growable array
 **Pointers** |
 Ref | **ref U**| Pointer to any type
 **Variants** |
-Variant\* | **variant** | Contains types shown below
+Variant**\*** | **variant** | Contains types shown below
 **Special Pointer Targets** |
 void | **void** | Can only be used with **ref**
 proc | **proc...** | Need full signature
@@ -70,11 +70,13 @@ Unbounded arrays are mainly for pointer targets
 
 The types marked with a **\*** suffix in the above table are managed types. This is where the language initialises the type, allocates any storage needed, and recovers the storage when it's no longer required (overwrite with something new, or it goes out of scope).
 
-These aren't allowed a
+These aren't allowed as elements of arrays, vectors, records and so on on. This is because the management of such structured nested types becomes complex.
+
+Use Variants for complete freedom in this area. (Arrays of managed types could be allowed, but it would need some manual freeing of the elements.)
 
 ### Variants
 
-A Variant can contain any of these kinds of objects (V is a variant type):
+A Variant is a 100% managed type can contain any of these kinds of objects (V is a variant type):
 
 Type | Notes
 --- | ---
@@ -98,13 +100,15 @@ A variant itself uses **variant** when declared, but it's rare to have to write 
     var int a, b, c             # Using the optional `var` prefix
     var a, b, c                 # Missing type, assumes `variant`
     var variant a, b, c         # Make it explicit
-    variant a,b ,c              # And dtop the `var` prefix
+    variant a,b ,c              # And drop the `var` prefix
 ```
 The last 3 examples declare the same things. In practice these forms are used:
 ```
     int a, b, c                 # 3 ints
     var a, b, c                 # 3 variants
 ```
+Just be aware that `var` doesn't mean the same thing as `variant`; it's not a type. It's a prefix like `let'.
+
 In some contexts, eg. parameter lists where it is clear it is a declaration, the `var` can be dropped, so that `(a, b, c)` is 3 variant parameters.
     
 
