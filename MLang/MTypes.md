@@ -27,12 +27,12 @@ Range | **range** | Two i64 values
 **Arrays and Slices** |
 Array | **[*bounds*]T** | Fixed size array
 Slice | **slice[*lwb:*]T** | View into array, vector, flex
-Vector**\*** | **vector[*lwb:*]T** | Dynamic, fixed-length array
-Flex**\* **| **flex[*lwb:*]T** | Dynamic growable array
+Vector(**M**) | **vector[*lwb:*]T** | Dynamic, fixed-length array
+Flex(**M**)| **flex[*lwb:*]T** | Dynamic growable array
 **Pointers** |
 Ref | **ref U**| Pointer to any type
 **Variants** |
-Variant**\*** | **variant** | Contains types shown below
+Variant(**M**) | **variant** | Contains types shown below
 **Special Pointer Targets** |
 void | **void** | Can only be used with **ref**
 proc | **proc...** | Need full signature
@@ -68,7 +68,7 @@ Unbounded arrays are mainly for pointer targets
 
 ### Managed and Unmanaged Types
 
-The types marked with a **\*** suffix in the above table are managed types. This is where the language initialises the type, allocates any storage needed, and recovers the storage when it's no longer required (overwrite with something new, or it goes out of scope).
+The types marked with **(M)** suffix in the above table are managed types. This is where the language initialises the type, allocates any storage needed, and recovers the storage when it's no longer required (overwrite with something new, or it goes out of scope).
 
 These aren't allowed as elements of arrays, vectors, records and so on on. This is because the management of such structured nested types becomes complex.
 
@@ -111,4 +111,27 @@ Just be aware that `var` doesn't mean the same thing as `variant`; it's not a ty
 
 In some contexts, eg. parameter lists where it is clear it is a declaration, the `var` can be dropped, so that `(a, b, c)` is 3 variant parameters.
     
+### Shared and Non-Shared Types
+
+Most objects represented by variants share their data, so in `A := B := "XYZ"` both A and B refer to the exact same string.
+
+Where objects are mutable, then an in-place change in one, will be visible from all shared references to the object.
+
+Specifically, Strings, Lists, Records, Dicts and Sets are mutable. Ints, Reals, Ranges, Decimals are immutable; an attempt at in-place modifications, will result
+in a new objects.
+
+Note that objects created from a constructor have the immutable flag set. Constructors are:
+```
+    "ABC"              String literals
+    (x, y, z)          List constructors (elements don't need to be constant)
+    R(a, b, c)         Record constructors
+    [i, j..k]          Set constructors
+    [a:b, c:d]         Dict constructor
+```
+This was to ensure that a constant list such as (10, 20, 30) needs not need building each time it's encountered. It was also simpler have a rule that these are always immutable, whether the elements are constant or not. (If they are, it can be optimised.)
+
+To create a mutable copy, use one of:
+
+   A ::= (10, 20, 30)
+   A := copy((10, 20, 30))
 
