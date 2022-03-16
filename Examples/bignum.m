@@ -104,7 +104,7 @@ end
 
 function getbintype(bignum a,b)int=
 !return bintype code for combination of a and b
-    int atype:=a^.numtype, btype:=b^.numtype
+    int atype:=a.numtype, btype:=b.numtype
 
     if atype=nan_type or btype=nan_type then
         return xx_types
@@ -149,15 +149,15 @@ function makebignum(int length)bignum=
 
     a:=bn_alloc(bignumrec.bytes)
     if length then
-        a^.num:=bn_alloc(length*elemsize)
-        a^.numtype:=normal_type
+        a.num:=bn_alloc(length*elemsize)
+        a.numtype:=normal_type
     else
-        a^.num:=nil
-        a^.numtype:=zero_type
+        a.num:=nil
+        a.numtype:=zero_type
     fi
-    a^.length:=length
-    a^.expon:=0
-    a^.neg:=0
+    a.length:=length
+    a.expon:=0
+    a.neg:=0
 
     return a
 end
@@ -200,15 +200,15 @@ function smalltobig(bignum c, ref elemtype a, int length,alloc,offset=0)bignum =
         newlength:=length-trailingzeros-leadingzeros
 
         if newlength=length=alloc then       !can use data in a directly
-           c^.num:=cast(a)
+           c.num:=cast(a)
         else
-           c^.num:=cast(makesmallnum(newlength))
-           memcpy(c^.num,a+leadingzeros,newlength*elemsize)
+           c.num:=cast(makesmallnum(newlength))
+           memcpy(c.num,a+leadingzeros,newlength*elemsize)
            freesmall(a+offset,alloc)
         fi
-        c^.length:=newlength
-        c^.numtype:=normal_type
-        c^.expon:=length-1-leadingzeros         !include trailing zeros, but not leading ones?
+        c.length:=newlength
+        c.numtype:=normal_type
+        c.expon:=length-1-leadingzeros         !include trailing zeros, but not leading ones?
     elsif alloc then                              !result stays at zero
         freesmall(a+offset,alloc)
     fi
@@ -258,14 +258,14 @@ end
 export proc bn_setzero(bignum a)=
 !clear digit memory only; clear descriptor to a zero number
     if a then
-        if a^.num then
-           freesmall(cast(a^.num),a^.length)
+        if a.num then
+           freesmall(cast(a.num),a.length)
         fi
-        a^.num:=nil
-        a^.length:=0
-        a^.neg:=0
-        a^.expon:=0
-        a^.numtype:=zero_type
+        a.num:=nil
+        a.length:=0
+        a.neg:=0
+        a.expon:=0
+        a.numtype:=zero_type
     fi
 end
 
@@ -285,9 +285,9 @@ export proc bn_dupl(bignum a,b)=
 !   if a=b then
         c:=bn_init()
         c^:=b^
-        if c^.length then
-            c^.num:=cast(makesmallnum(size:=c^.length))
-            memcpy(c^.num,b^.num, size*elemsize)
+        if c.length then
+            c.num:=cast(makesmallnum(size:=c.length))
+            memcpy(c.num,b.num, size*elemsize)
         fi
         bn_move(a,c)
         bn_free(c)
@@ -295,19 +295,19 @@ export proc bn_dupl(bignum a,b)=
 
 !   bn_setzero(a)
 !   a^:=b^
-!   if a^.length then
-!      a^.num:=bn_alloc(a^.length*elemtype.bytes)
+!   if a.length then
+!      a.num:=bn_alloc(a.length*elemtype.bytes)
 !   fi
 end
 
 export proc bn_setinf(bignum dest) =
     bn_setzero(dest)
-    dest^.numtype:=inf_type
+    dest.numtype:=inf_type
 end
 
 export proc bn_setnan(bignum dest) =
     bn_setzero(dest)
-    dest^.numtype:=nan_type
+    dest.numtype:=nan_type
 end
 
 proc bn_error(ichar mess) =
@@ -316,32 +316,32 @@ proc bn_error(ichar mess) =
 end
 
 export function bn_iszero(bignum a)int=
-    return a^.numtype=zero_type
+    return a.numtype=zero_type
 end
 
 export proc bn_negto(bignum a)=
     if not bn_iszero(a) then
-        a^.neg:=not a^.neg
+        a.neg:=not a.neg
     fi
 end
 
 export proc bn_absto(bignum a)=
-    a^.neg:=0
+    a.neg:=0
 end
 
 export function bn_isint(bignum a)int =
-    return a^.length<=a^.expon+1
+    return a.length<=a.expon+1
 end
 
 export function bn_getprec(bignum a)int=
-    return a^.length*digitwidth
+    return a.length*digitwidth
 end
 
 export proc bn_setprec(bignum a,int prec)=
     int oldlength,newlength
     bignum c
 
-    if a^.numtype<>normal_type then
+    if a.numtype<>normal_type then
         return
     fi
 
@@ -355,21 +355,21 @@ export proc bn_setprec(bignum a,int prec)=
 !prec should be rounded up as needed to next multiple of digitwith
     newlength:=prec/digitwidth                 !no. words
 
-    oldlength:=a^.length
+    oldlength:=a.length
 
     if oldlength<=newlength then
         return
     fi
 
     c:=makebignum(newlength)
-    c^.neg:=a^.neg
-    c^.expon:=a^.expon
+    c.neg:=a.neg
+    c.expon:=a.expon
 
     for i:=0 to newlength-1 do
         if i<oldlength then
-           c^.num^[i]:=a^.num^[i]
+           c.num^[i]:=a.num^[i]
         else
-           c^.num^[i]:=0
+           c.num^[i]:=0
         fi
     od
 
@@ -393,11 +393,11 @@ export function bn_makeint(int x)bignum =
         a:=makebignum(0)
     elsif x in 0..digitmax then
         a:=makebignum(1)
-        a^.num^[0]:=x
+        a.num^[0]:=x
     elsif -x in 0..digitmax then
         a:=makebignum(1)
-        a^.num^[0]:=-x
-        a^.neg:=1
+        a.num^[0]:=-x
+        a.neg:=1
     else
         print @str,x
         a:=bn_makestr(&.str)
@@ -538,16 +538,16 @@ function smallmulto(ref elemtype p,q, int plen, m)int=
 end
 
 export function bn_equal(bignum a,b)int=
-    if a^.length<>b^.length or 
-       a^.numtype<>b^.numtype or 
-       a^.neg<>b^.neg or 
-       a^.expon<>b^.expon then
+    if a.length<>b.length or 
+       a.numtype<>b.numtype or 
+       a.neg<>b.neg or 
+       a.expon<>b.expon then
         return 0
     fi
 
-    if a^.length=0 then return 1 fi
+    if a.length=0 then return 1 fi
 
-    return eqbytes(a^.num,b^.num,a^.length*elemsize)
+    return eqbytes(a.num,b.num,a.length*elemsize)
 end
 
 export proc bn_addu(bignum dest,a,b)=
@@ -559,14 +559,14 @@ export proc bn_addu(bignum dest,a,b)=
     ref elemtype pax,pbx
     ref elemtype c,c2
 
-    if a^.expon<b^.expon then      !A has definite smaller magnitude
+    if a.expon<b.expon then      !A has definite smaller magnitude
         swap(a,b)               !make sure A is always bigger or (approx) equal
     fi
 
-    expona:=a^.expon
-    exponb:=b^.expon
-    preca:=a^.length
-    precb:=b^.length
+    expona:=a.expon
+    exponb:=b.expon
+    preca:=a.length
+    precb:=b.length
 
     offset:=expona-exponb         !for indexing B elements shift to match A
     uppera:=preca-1
@@ -581,8 +581,8 @@ export proc bn_addu(bignum dest,a,b)=
 
     c:=makesmallnum(precc)       !no space for carry
     carry:=0
-    pa:=a^.num
-    pb:=b^.num
+    pa:=a.num
+    pb:=b.num
 
     for i:=upperc downto 0 do         !do the add, starting from ls digit
 
@@ -617,7 +617,7 @@ export proc bn_addu(bignum dest,a,b)=
 
     smalltobig(dest,c,precc,precc)
 
-    dest^.expon:=expona+carry
+    dest.expon:=expona+carry
 end
 
 proc bn_subu(bignum dest,a,b)=
@@ -630,18 +630,18 @@ proc bn_subu(bignum dest,a,b)=
 
 !can only do subtract when a>=b; do some basic checks
     isneg:=0
-    if a^.expon<b^.expon then      !A has definite smaller magnitude
+    if a.expon<b.expon then      !A has definite smaller magnitude
         swap(a,b)               !make sure A is always bigger or (approx) equal
         isneg:=1
     fi
 
 !know that a>=b, and that isneg might be true
 retry::
-    expona:=a^.expon
-    preca:=a^.length
-    precb:=b^.length
+    expona:=a.expon
+    preca:=a.length
+    precb:=b.length
 
-    offset:=expona-b^.expon     !for indexing B elements shift to match A
+    offset:=expona-b.expon     !for indexing B elements shift to match A
     uppera:=preca-1
     upperb:=precb-1
 
@@ -654,8 +654,8 @@ retry::
 
     c:=makesmallnum(precc)
     carry:=0
-    pa:=a^.num
-    pb:=b^.num
+    pa:=a.num
+    pb:=b.num
 
     for i:=upperc downto 0 do         !do the add, starting from ls digit
         j:=i-offset               !index of A/C in terms of B
@@ -691,8 +691,8 @@ retry::
     fi
 
     smalltobig(dest,c,precc,precc)
-    dest^.neg:=isneg
-    dest^.expon:=expona-stblz
+    dest.neg:=isneg
+    dest.expon:=expona-stblz
 
 end
 
@@ -716,17 +716,17 @@ proc bn_mulu(bignum dest, a,b) =
     ref elemtype c
     i64 pdquot,pdrem
 
-    expona:=a^.expon
-    exponb:=b^.expon
-    uppera:=a^.length-1
-    upperb:=b^.length-1
+    expona:=a.expon
+    exponb:=b.expon
+    uppera:=a.length-1
+    upperb:=b.length-1
 
     precc:=uppera+upperb+2
     nc2:=precc
 
     c:=makesmallnum(nc2)
     memset(c,0,precc*elemsize)
-!   c^.expon:=a^.expon+b^.expon+1
+!   c.expon:=a.expon+b.expon+1
     cx:=precc-1
 
     for bx:=upperb downto 0 do
@@ -734,17 +734,17 @@ proc bn_mulu(bignum dest, a,b) =
 
         cx1:=cx
         for ax:=uppera downto 0 do
-           p:=i64((a^.num^[ax]))*i64((b^.num^[bx]))+carry
+           p:=i64((a.num^[ax]))*i64((b.num^[bx]))+carry
            pdquot:=p/digitbase
-!         x:=int(c^.num^[cx1])+p rem digitbase
+!         x:=int(c.num^[cx1])+p rem digitbase
            x:=int64((c+cx1)^)+p rem digitbase
            if x>digitmax then
               carry:=pdquot+x/digitbase
-!            c^.num^[cx1--]:=x rem digitbase
+!            c.num^[cx1--]:=x rem digitbase
               (c+cx1--)^:=x rem digitbase
            else
               carry:=pdquot
-!            c^.num^[cx1--]:=x
+!            c.num^[cx1--]:=x
               (c+cx1--)^:=x
            fi
 
@@ -754,7 +754,7 @@ proc bn_mulu(bignum dest, a,b) =
     od
 
     smalltobig(dest,c,precc,nc2)
-    dest^.expon:=expona+exponb+1-stblz
+    dest.expon:=expona+exponb+1-stblz
 
 end
 
@@ -828,10 +828,10 @@ export proc bn_idivu(bignum dest,a,b,rm=nil)=
     int64 xx,y
     ref elemtype pa,pb
 
-    na:=a^.length
-    nb:=b^.length
-    expona:=a^.expon
-    exponb:=b^.expon
+    na:=a.length
+    nb:=b.length
+    expona:=a.expon
+    exponb:=b.expon
     badjust:=exponb+1-nb
 
     if na>expona+1 or nb>exponb+1 then
@@ -850,8 +850,8 @@ export proc bn_idivu(bignum dest,a,b,rm=nil)=
     uppera:=na-1
     upperb:=nb-1
     upperc:=nc-1
-    pa:=cast(a^.num)
-    pb:=cast(b^.num)           !p is not zero, and all digits of interest are present
+    pa:=cast(a.num)
+    pb:=cast(b.num)           !p is not zero, and all digits of interest are present
 
 !x is the moving and changing window into a that b is divided into get next digit of result
 !use a permanently allocated smallnum, 1 digit wider than b
@@ -1044,14 +1044,14 @@ export function bn_makestr(ichar s, int length=0)bignum=
     (t+n)^:=0
 
     a:=makebignum(length)
-    a^.neg:=neg
-    a^.expon:=wd
+    a.neg:=neg
+    a.expon:=wd
     u:=t
-    a^.num^[0]:=strvaln(u,na)
+    a.num^[0]:=strvaln(u,na)
     u+:=na
     
     for i:=1 to length-1 do
-        a^.num^[i]:=strvaln(u,w)
+        a.num^[i]:=strvaln(u,w)
         u+:=w
     od
 
@@ -1072,10 +1072,10 @@ proc bn_fdivu(bignum dest,a,b,int precision)=
     int64 xx,y
     ref elemtype pa,pb
 
-    na:=a^.length
-    nb:=b^.length
-    expona:=a^.expon
-    exponb:=b^.expon
+    na:=a.length
+    nb:=b.length
+    expona:=a.expon
+    exponb:=b.expon
 
     if precision then
         precision:=((precision-1)/digitwidth+1)     !must be multiple of digitwidth
@@ -1087,8 +1087,8 @@ proc bn_fdivu(bignum dest,a,b,int precision)=
     uppera:=na-1
     upperb:=nb-1
     upperc:=nc-1
-    pa:=cast(a^.num)
-    pb:=cast(b^.num)           !p is not zero, and all digits of interest are present
+    pa:=cast(a.num)
+    pb:=cast(b.num)           !p is not zero, and all digits of interest are present
 
 !x is the moving and changing window into a that b is divided into get next digit of result
 !use a permanently allocated smallnum, 1 digit wider than b
@@ -1136,10 +1136,10 @@ proc bn_fdivu(bignum dest,a,b,int precision)=
 
     if c^=0 and cx>=2 then          !leading zero (may not need cx check)
         smalltobig(dest,c+1,cx-1,nc2,-1)
-        dest^.expon:=expona-exponb-1
+        dest.expon:=expona-exponb-1
     else
         smalltobig(dest,c,cx,nc2)
-        dest^.expon:=expona-exponb
+        dest.expon:=expona-exponb
     fi
 !   freesmall(c,nc2)
 end
@@ -1149,8 +1149,8 @@ function tostring_float(bignum a,int fmt)ichar=
     int expon,upper,nchars,w,prel,n,showdot
     ichar s,t
 
-    expon:=a^.expon
-    upper:=a^.length-1
+    expon:=a.expon
+    upper:=a.length-1
 
     if fmt='I' and bn_isint(a) then
         showdot:=0
@@ -1163,7 +1163,7 @@ function tostring_float(bignum a,int fmt)ichar=
     if expon<0 then
         nchars+:=abs(expon-1)*w
     fi
-    nchars+:=a^.length*w
+    nchars+:=a.length*w
     if expon-upper>0 then
         nchars+:=(expon-upper)*w
     fi
@@ -1172,7 +1172,7 @@ function tostring_float(bignum a,int fmt)ichar=
 !   s:=t:=bn_alloc(nchars)
     s:=t:=checkedmalloc(nchars)
     
-    if a^.neg then
+    if a.neg then
         t++^:='-'
     fi
 
@@ -1189,7 +1189,7 @@ function tostring_float(bignum a,int fmt)ichar=
     fi
 
     for i:=0 to upper do
-        n:=sprintf(t,(i>0 or prel|digitfmt|"%d"),a^.num^[i])
+        n:=sprintf(t,(i>0 or prel|digitfmt|"%d"),a.num^[i])
         t+:=n
         if expon=i and i<upper and showdot then
            t++^:='.'
@@ -1219,7 +1219,7 @@ export function bn_tostring(bignum a,int fmt=0)ichar=
     if a=nil then
         t:="<void>"
     else
-        case a^.numtype
+        case a.numtype
         when zero_type then t:=(fmt='E' or fmt='F'|"0.0"|"0")
         when inf_type then t:="<inf>"
         when nan_type then t:="<nan>"
@@ -1233,9 +1233,9 @@ export function bn_tostring(bignum a,int fmt=0)ichar=
     fi
 
     if fmt=0 or fmt='A' then
-        if bn_isint(a) and (a^.expon-a^.length)*digitwidth<60 then
+        if bn_isint(a) and (a.expon-a.length)*digitwidth<60 then
            fmt:='I'
-        elsif abs(a^.expon*digitwidth)<60 then
+        elsif abs(a.expon*digitwidth)<60 then
            fmt:='F'
         else
            fmt:='E'
@@ -1258,9 +1258,9 @@ function tostring_scient(bignum a)ichar=
 
     nchars:=3
 
-    expon:=a^.expon*digitwidth
+    expon:=a.expon*digitwidth
 
-    x:=a^.num^[0]
+    x:=a.num^[0]
     scale:=1
     shift:=0
     while x>=10 do
@@ -1270,11 +1270,11 @@ function tostring_scient(bignum a)ichar=
         ++shift
     od
 
-    nchars:=a^.length*digitwidth+16  !allow for 1., and exponent
+    nchars:=a.length*digitwidth+16  !allow for 1., and exponent
 
     s:=t:=checkedmalloc(nchars)
 
-    if a^.neg then
+    if a.neg then
         t++^:='-'
     fi
 
@@ -1282,12 +1282,12 @@ function tostring_scient(bignum a)ichar=
     t+:=strlen(t)
 
     if shift then
-        print @t, shift:"v",,a^.num^[0]-x*scale:"z*"
+        print @t, shift:"v",,a.num^[0]-x*scale:"z*"
         t+:=strlen(t)
     fi
 
-    for i to a^.length-1 do
-        print @t,a^.num^[i]:mdigitfmt
+    for i to a.length-1 do
+        print @t,a.num^[i]:mdigitfmt
         t+:=strlen(t)
     od
 
@@ -1321,8 +1321,8 @@ export function bn_add(bignum dest,a,b)int=
         return 0
     end switch
 
-    nega:=a^.neg
-    negb:=b^.neg
+    nega:=a.neg
+    negb:=b.neg
 
     if not nega and not negb then      !both positive
         bn_addu(dest,a,b)
@@ -1358,8 +1358,8 @@ export function bn_sub(bignum dest,a,b)int=
         return 0
     end switch
 
-    nega:=a^.neg
-    negb:=b^.neg
+    nega:=a.neg
+    negb:=b.neg
 
     if not nega and not negb then      !both positive
         bn_subu(dest,a,b)
@@ -1387,7 +1387,7 @@ export function bn_mul(bignum dest,a,b)int=
         return 0
     end switch
 
-    neg:=a^.neg<>b^.neg
+    neg:=a.neg<>b.neg
     bn_mulu(dest,a,b)
     if neg then  !different signs
         bn_negto(dest)
@@ -1419,7 +1419,7 @@ export function bn_div(bignum dest,a,b,int prec=0)int=
         return 0
     end switch
 
-    neg:=a^.neg<>b^.neg
+    neg:=a.neg<>b.neg
 
     bn_fdivu(dest,a,b,prec)
 
@@ -1444,7 +1444,7 @@ export function bn_idiv(bignum dest,a,b)int=
         return 0
     end switch
 
-    neg:=a^.neg<>b^.neg
+    neg:=a.neg<>b.neg
     bn_idivu(dest,a,b)
     if neg then
         bn_negto(dest)
@@ -1470,8 +1470,8 @@ export function bn_idivrem(bignum dest,rm,a,b)int=
         return 0
     end switch
 
-    nega:=a^.neg
-    negb:=b^.neg
+    nega:=a.neg
+    negb:=b.neg
     bn_idivu(dest,a,b,rm)
     if nega<>negb then    !different signs
         bn_negto(dest)
@@ -1498,7 +1498,7 @@ export function bn_irem(bignum dest,a,b)int=
         return 0
     end switch
 
-    nega:=a^.neg
+    nega:=a.neg
     d:=bn_init()
     bn_idivu(d,a,b,dest)
     if nega then bn_negto(dest) fi
@@ -1516,7 +1516,7 @@ export function bn_cmp(bignum a,b)int=
 
     d:=bn_init()
     bn_sub(d,a,b)
-    neg:=d^.neg
+    neg:=d.neg
     bn_free(d)
     return (neg|-1|1)
 end
@@ -1528,25 +1528,25 @@ export function bn_const(int value)bignum =
     p:=constlist
 
     while p do
-        if p^.value=value then
-           return p^.bnvalue
+        if p.value=value then
+           return p.bnvalue
         fi
-        p:=p^.nextconst
+        p:=p.nextconst
     od
 
 !not encountered before
     p:=bn_alloc(constrec.bytes)
-    p^.bnvalue:=bn_makeint(value)
-    p^.value:=value
-    p^.nextconst:=constlist
+    p.bnvalue:=bn_makeint(value)
+    p.value:=value
+    p.nextconst:=constlist
     constlist:=p
-    return p^.bnvalue
+    return p.bnvalue
 end
 
 export function bn_sign(bignum a)int=
     if bn_iszero(a) then
         return 0
-    elsif a^.neg then
+    elsif a.neg then
         return -1
     else
         return 0
@@ -1556,7 +1556,7 @@ end
 function badnumber:bignum=
     bignum c
     c:=makebignum(0)
-    c^.numtype:=nan_type
+    c.numtype:=nan_type
     return c
 end
 
@@ -1572,8 +1572,8 @@ export function bn_digits(bignum a)int=
         return 1
     fi
 
-    n:=sprintf(&.str,"%d",a^.num^[0])
-    return n+a^.expon*digitwidth
+    n:=sprintf(&.str,"%d",a.num^[0])
+    return n+a.expon*digitwidth
 end
 
 export function bn_toint(bignum a)int64=
@@ -1586,11 +1586,11 @@ export function bn_toint(bignum a)int64=
     fi
 
     x:=0
-    for i:=0 to a^.length-1 do
-        x:=x*digitbase+a^.num^[i]
+    for i:=0 to a.length-1 do
+        x:=x*digitbase+a.num^[i]
     od
 
-    if a^.neg then
+    if a.neg then
         return -x
     else
         return x
@@ -1612,13 +1612,13 @@ export function bn_tofloat(bignum a)real64=
 end
 
 export proc bn_fix(bignum c, a) =
-    if bn_iszero(a) or a^.expon<0 then
+    if bn_iszero(a) or a.expon<0 then
         bn_setzero(c)
         return
     fi
 
     bn_dupl(c,a)
     if not bn_isint(c) then
-        bn_setprec(c,(c^.expon+1))
+        bn_setprec(c,(c.expon+1))
     fi
 end
