@@ -141,8 +141,6 @@ global proc lexreadtoken=
     int c,hsum,commentseen,hashindex,length
     ref char pstart,pnext,p,ss,lxsvalue
 
-!CPL "LTR",=SOURCELEVEL; OS_GETCH()
-
     nextlx.subcode:=0
 
     doswitch lxstart:=lxsptr; lxsptr++^
