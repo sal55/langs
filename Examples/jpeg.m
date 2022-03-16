@@ -94,25 +94,25 @@ proc showtree(ref huffnode tree,int level=0)=
     to level do
         print "    "
     od
-    println tree^.symbol,tree^.suppbits
-    showtree(tree^.child0,level+1)
-    showtree(tree^.child1,level+1)
+    println tree.symbol,tree.suppbits
+    showtree(tree.child0,level+1)
+    showtree(tree.child1,level+1)
 end
 
 proc initbitstream(ref stream fs)=
-    fs^.currbyte:=0
-    fs^.currbit:=1          !force new byte read on next nextbit
+    fs.currbyte:=0
+    fs.currbit:=1          !force new byte read on next nextbit
 end
 
 function nextbit(ref stream fs)int=
 
-    if fs^.currbit=1 then
-        fs^.currbyte:=nextdatabyte(fs)
-        fs^.currbit:=0x100              !pick up .[7] below
+    if fs.currbit=1 then
+        fs.currbyte:=nextdatabyte(fs)
+        fs.currbit:=0x100              !pick up .[7] below
     fi
 
-    fs^.currbit>>:=1
-    return (fs^.currbyte iand fs^.currbit|1|0)
+    fs.currbit>>:=1
+    return (fs.currbyte iand fs.currbit|1|0)
 end
 
 function nextdatabyte(ref stream fs)int=
@@ -132,23 +132,23 @@ end
 function getstream(ichar filename)ref stream=
     ref stream fs
     fs:=jalloc(stream.bytes)
-    fs^.data:=readfile(filename)
-    if fs^.data=nil then
+    fs.data:=readfile(filename)
+    if fs.data=nil then
         println "JPEGDLL:Can't open",filename
         return nil
     fi
-    fs^.ptr:=fs^.data
-    fs^.ptrend:=fs^.ptr+rfsize
-    fs^.ptrstart:=fs^.ptr
+    fs.ptr:=fs.data
+    fs.ptrend:=fs.ptr+rfsize
+    fs.ptrstart:=fs.ptr
     return fs
 end
 
 function nextbyte(ref stream fs)int=
     int c
 
-    if fs^.ptr<fs^.ptrend then
-        c:=fs^.ptr^
-        ++fs^.ptr
+    if fs.ptr<fs.ptrend then
+        c:=fs.ptr^
+        ++fs.ptr
         return c
     fi
     abortjpeg("nextbyte")
@@ -167,8 +167,8 @@ proc readapp(ref stream fs,int n)=
     ref byte ptr
     int length
     length:=readword(fs)-2
-    ptr:=fs^.ptr
-    fs^.ptr:=ptr+length
+    ptr:=fs.ptr
+    fs.ptr:=ptr+length
 end
 
 proc read_dht(ref stream fs)=
@@ -238,13 +238,13 @@ proc buildtreerec(ref[]huffnode nodes,ref[]ref[]char code,ref[]int symbol, int n
 
     if n=1 then
 
-        first^.child0:=nil
-        first^.child1:=nil
-        first^.symbol:=symbol^[1]
-        first^.suppbits:=0
+        first.child0:=nil
+        first.child1:=nil
+        first.symbol:=symbol^[1]
+        first.suppbits:=0
         k:=strlen(cast(code^[1]))-bitx
         if k>0 then
-            first^.suppbits:=k
+            first.suppbits:=k
             bitx+:=k
         fi
         return
@@ -257,10 +257,10 @@ proc buildtreerec(ref[]huffnode nodes,ref[]ref[]char code,ref[]int symbol, int n
         fi
         i:=i2
     od
-    first^.child0:=&nodes^[2]
-    first^.child1:=&nodes^[2*i-1]
-    first^.symbol:=-1
-    first^.suppbits:=0
+    first.child0:=&nodes^[2]
+    first.child1:=&nodes^[2*i-1]
+    first.symbol:=-1
+    first.suppbits:=0
 
     buildtreerec(cast(&nodes^[2]),code,symbol,i-1,bitx+1, level+1)
     buildtreerec(cast(&nodes^[2*i-1]),cast(&code^[i]),cast(&symbol^[i]),n-i+1,bitx+1,level+1)
@@ -498,19 +498,19 @@ end
 
 function tree_getsymbol(ref stream fs,ref huffnode node)int=
 
-    while node^.child0 do
+    while node.child0 do
         if nextbit(fs) then
-            node := node^.child1
+            node := node.child1
         else
-          node := node^.child0
+          node := node.child0
         fi
     od
 
-    to node^.suppbits do
+    to node.suppbits do
         nextbit(fs)
     od
 
-    return node^.symbol
+    return node.symbol
 end
 
 function getsymbol(ref stream fs,int nbits)int=
