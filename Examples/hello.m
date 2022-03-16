@@ -1,3 +1,3 @@
-proc start=
-	println "Hello, World!"
+proc main =
+    println "Hello, World!"
 end
