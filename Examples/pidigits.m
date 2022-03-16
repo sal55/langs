@@ -1,9 +1,6 @@
 !(Bignumber library for integers and floats)
 
-import clib
-import msys
-import mlib
-import mbignum
+module mbignum
 
 proc start=
 	int n:=0
