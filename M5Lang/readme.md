@@ -12,9 +12,11 @@ Dynamic and static code can be mixed, in a manner I believe is called 'gradual t
 
 Applications, of any mix of stypes, can be run directly from source code just like a scripting language. Or they can be compiled to normal executables.
 
+It is also, for now, called **M5** to distinguish it from prevoious versions: **M4** (static-only lower level systems language) and **M3** using an older module scheme.
+
 ### History
 
-M/2022 replaces both the older M (systems) and Q (scripting) languages evolved since early versions in the 1980s. These had gradually been converging anyway.
+M5 replaces both the older M (systems) and Q (scripting) languages evolved since early versions in the 1980s. These had gradually been converging anyway.
 
 All have been used as personal or in-house languages during that time. Actually, I have used only my own languages for nearly all my programming. (I did try to give C a go but I found it dire.)
 
