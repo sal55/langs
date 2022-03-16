@@ -1,9 +1,5 @@
 !(Decimal 'bignumber' library for integers and floats)
 
-import clib
-import mlib
-import oslib
-
 const digitwidth   = 9
 const digitbase = 1000000000
 const digitfmt   = "%09d"
