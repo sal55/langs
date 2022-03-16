@@ -12,7 +12,7 @@ Dynamic and static code can be mixed, in a manner I believe is called 'gradual t
 
 Applications, of any mix of stypes, can be run directly from source code just like a scripting language. Or they can be compiled to normal executables.
 
-It is also, for now, called **M5** to distinguish it from prevoious versions: **M4** (static-only lower level systems language) and **M3** using an older module scheme.
+It is also, for now, called **M5** to distinguish it from previous versions: **M4** (static-only lower level systems language) and **M3** using an older module scheme.
 
 ### History
 
@@ -27,7 +27,7 @@ All have been used as personal or in-house languages during that time. Actually,
 * Algol/Pascal/Ada-style syntax (basically, no braces nor significant indentation)
 * Self-contained one-file implementation, typically 0.5MB to 1.0MB
 * Whole-program compiler
-* Very fast compilation, at least 0.5M lines per second and generating 5MB of code per second
+* Very fast compilation, at least 0.5M lines per second and generating 5MB of code per second (on low-end AMD Ryzen 3)
 * Targetting Windows 64
 * No build system needed
 * Can run applications from source
