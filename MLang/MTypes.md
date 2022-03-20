@@ -35,7 +35,7 @@ Ref | **ref T**| Pointer to any flat type
 Refvar | **ref V**| Pointer to any variant type
 Refbit | **ref B**| Pointer to a bit type
 **Variants** |
-Variant | **variant** | Contains types shown below
+Variant | **var** | Contains types shown below
 Vector | **vector[*bounds*]T** | Implemented as var flex arrays
 **Special Pointer Targets** |
 void | **ref void** | Can only be used with **ref**
