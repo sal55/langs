@@ -59,5 +59,6 @@ Type       |                  | V |     - |
 Code | Meaning
 --- | ---
 **T** | Static, fixed-size flat type
-**V** | Any tagged, variant type
-**B** | Any bit-type
+**V** | Tagged, managed variant type
+**B** | Bit-type (u1, u2, u4)
+**U** | User-defined type
