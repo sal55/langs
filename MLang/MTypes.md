@@ -1,4 +1,4 @@
-Type       | Syntax            |  Cat  | Var      |  Notes
+Type       | Syntax            |  Cat  | ->Var      |  Notes
 ---        | ---               |  ---  | ---      | ---
 **Primitives**  | -     |  -  | -      | -
 i64        | **i64, int64, int**   | T |     int      |   Signed integer
@@ -34,25 +34,25 @@ u2         |**u2**                | B |     - |
 u4         |**u4**                | B |     - |
 **Variant Types**   |  -  | -      | - |
 Variant    |**var**               | V |     -      |     Variant
-**Variant SubTypes**   |  -  | -      | - |
-Int        |                  | V |     - |
-Word       |                  | V |     - |
-Real       |                  | V |     - |
+**Variant SubTypes**   |  -  | -    | ->**T** |
+Int        |                  | V |     i64 |
+Word       |                  | V |     u64 |
+Real       |                  | V |     r64 |
 Decimal    |                  | V |     - |
 Range (of i64)     |                  | V |     - |
-String (of c8)    |                  | V |     - |
+String (of c8)    |                  | V |     ichar |
 List of V   |                  | V |     - |
 Dict       |                  | V |     - |
 Set (of B)        |                  | V |     - |
 Record of V     |**U**                 | V |     - |
-Vector of T     |**vector[]T**         | V |     - |     Hinted variant
+Vector of T     |**vector[]T**         | V |     Slice |     Hinted variant
 Bits of B       |                  | V |     - |
-Struct of T     |                  | V |     - |
-Ref to T   |                  | V |     - |
-Ref to V    |                  | V |     - |
-Ref to B    |                  | V |     - |
+Struct of T     |                  | V |     Record of T |
+Ref to T   |                  | V |     Ref T |
+Ref to V    |                  | V |     Ref V |
+Ref to B    |                  | V |     Ref B |
 Symbol     |                  | V |     - |
-Type       |                  | V |     - |
+Type       |                  | V |     i64 |
 
 **Key**
 
