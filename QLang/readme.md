@@ -57,7 +57,7 @@ Efficient x64 code generation also used a considerable backend (to IL then to x6
 
 If it looks promising, then I can incorporate the more efficient code generator (register-based rather than stack-based).
 
-What I'm trying to avoid is getting into complicated varieties of JIT. The approach above is a simple form of it. I'm not dynamically analysing interpreted code looking for 'hot' paths and turning that into native code. The programmer designates which functions will be compiled to native code.
+What I'm trying to avoid is getting into complicated varieties of JIT. The approach above is a simple form of it. I'm not dynamically analysing interpreted code looking for 'hot' paths and turning that into native code. The programmer designates which functions will be compiled to native code, and those functions will (1) need suitable type annotations; and (2) can only contain code that can work as T types. There may be other constraints too.
 
 Other, semi-automatic approaches can be investigated at some later time.
 
