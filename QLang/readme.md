@@ -16,7 +16,7 @@ This new project uses the Q language as a start point:
 
 Currently Q has **V**, **T** and **B** types.
 
-Broadly, V are tagged, variant types. T are low-level static types, as much be found in lower-level APIs. B are bit types.
+Broadly, V are tagged, variant types. T are low-level static types, as might be found in lower-level APIs. B are bit types.
 
 Everything is Q is done via V types, which include:
 
