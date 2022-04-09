@@ -59,5 +59,5 @@ If it looks promising, then I can incorporate the more efficient code generator 
 
 What I'm trying to avoid is getting into complicated varieties of JIT. The approach above is a simple form of it. I'm not dynamically analysing interpreted code looking for 'hot' paths and turning that into native code. The programmer designates which functions will be compiled to native code, and those functions will (1) need suitable type annotations; and (2) can only contain code that can work as T types.
 
-There may be other constraints too. But overall, it should still be more convenient writing such with a Q module, with the ability to share global types, enums, external libraries and so on, then having to collect them into a separate M module, compile it to a shared library, and also lose access to the Q program's environment.
+There may be other constraints too. But overall, it should still be more convenient writing such functions within a Q module, with the ability to share global types, enums, external libraries and so on, then having to collect them into a separate M module, compile it to a shared library, and also lose access to the Q program's environment.
 
