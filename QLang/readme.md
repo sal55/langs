@@ -14,7 +14,7 @@ This new project uses the Q language as a start point:
 
 ### Q Types
 
-Currently Q has supports types I will designate as **V**, **T** and **B**
+Currently Q has support for type categories I will designate as **V**, **T** and **B**
 
 Broadly, V are tagged, variant types. T are low-level static types, as might be found in lower-level APIs. B are bit types.
 
@@ -43,7 +43,7 @@ Call those **S** and **F** functions respectively (Slow and Fast; I don't yet ha
 
 To simplify the project, F functions only use T types, not mixed V and T as I attempted within the M5 project, which got very hairy.
 
-For calls between one S and F functions, conversions are needed. Unboxing V types to a compatible T type if there is one (eg. Array of T to Slice of T), or boxing T types to a suitable V type. (B bit-types are mainly used with a V type.)
+For calls between S and F functions, conversions are needed. Unboxing V types to a compatible T type if there is one (eg. Array of T to Slice of T), or boxing T types to a suitable V type. (B bit-types are mainly used with a V type.)
 
 I'm going to try and keep the language the same, except that F functions will need type annotations. S functions can have optional type annotations, to allow a function to be flipped from one to the other, provided the types will work on both.
 
