@@ -16,7 +16,7 @@ This new project uses the Q language as a start point:
 
 Currently Q has support for type categories I will designate as **V**, **T** and **B**
 
-Broadly, V are tagged, variant types. T are low-level static types, as might be found in lower-level APIs. B are bit types.
+Broadly, V are tagged (and 'boxed'), variant types. T are low-level ('unboxed') static types, as might be found in lower-level APIs. B are bit types.
 
 Everything is Q is done via V types, which includes:
 
@@ -27,7 +27,7 @@ Everything is Q is done via V types, which includes:
 * Records of T (structs)
 * Pointers to T and B
 
-Effectively, everything is 'boxed'. Unboxed types exist within data structures, but to be operated on, will be boxed into an enclosing V type. And those V types need single and double type dispatching to deal with.
+Effectively, everything is boxed. Unboxed types exist within data structures, but to be operated on, will be boxed into an enclosing V type. And those V types need single and double type dispatching to deal with.
 
 This is what makes Q much slower compared to a compiled language working with T types. Even compiling Q to native code will not significantly speed it up, if V types are still used.
 
