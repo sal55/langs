@@ -33,25 +33,21 @@ This is what makes Q much slower compared to a compiled language working with T 
 
 ### Q Compiled Functions
 
-The aim of this new project is to add a new category of compiled function:
+The aim of this new project is to have special functions that work with T types and compile to native code.
 
-**sub, fun** Procedures and functions which are intepreted and use V types (so T and B are only used within a V type).
+To that end, Q will effectively incorporate another language, that I will call **B** for now. B is a kind of M-lite.
 
-**proc, func/function** Procedures and functions which are compiled to in-memory native code, and use solely T types
+Q functions will use **fun sub**, B uses **func proc**. B requires type declarations, will be allowed in Q functions do, but there they are optional. This to allow suitable functions to be flipped between Q and B, by having compatible syntax.
 
-Call those **S** and **F** functions respectively (Slow and Fast; I don't yet have a snappy designation).
+B will only deal with T types, not mixed V and T as I'd attempted within the M5 project which got very hairy.
 
-To simplify the project, F functions only use T types, not mixed V and T as I attempted within the M5 project, which got very hairy.
-
-For calls between S and F functions, conversions are needed. Unboxing V types to a compatible T type if there is one (eg. Array of T to Slice of T), or boxing T types to a suitable V type. (B bit-types are mainly used with a V type. Support is limited.)
-
-I'm going to try and keep the language the same, except that F functions will need type annotations. S functions can have optional type annotations, to allow a function to be flipped from one to the other, provided the types will work on both.
+Q functions can call B ones, and I think B functions will be to call Q, but that is less common and probably less useful. Q calling B is little different to calling FFI functions.
 
 ### Implementation
 
 Q normally compiles programs to in-memory bytecode and runs it immediately. (I no longer have an on-disk bytecode representation.)
 
-For embedded F functions, those are converted to in-memory x64 code. This part will be challenging; static code normlly uses a hefty type-analysis phase, which is missing from Q. So I will try and perform any interventions that are needed, eg. type conversions, within the code generator.
+For embedded B functions, those are converted to in-memory x64 code. This part will be challenging; static code normlly uses a hefty type-analysis phase, which is missing from Q. So I will try and perform any interventions that are needed, eg. type conversions, within the code generator.
 
 Efficient x64 code generation also used a considerable backend (to IL then to x64 representation then to actual machine code). Here, I may start off with naive x64 code generation. Not as performant, but such code working on T types should still be much faster than interpreted code on V types.
 
