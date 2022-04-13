@@ -10,7 +10,7 @@ Code | Name | Characteristics
 **T** | **Pack** | Static; flat; fixed-size; primitive (ie. C-style)
 **B** | **Bit** | One of `u1 u2 u4` 1/2/4-bit types; used with Bits and Refbit only
 
-My M systems language exclusively uses T types and deliberately keeps them low-level)
+My M systems language exclusively uses T types and deliberately keeps them low-level
 
 Q uses mainly V types, but these can incorporate T types (eg. by 'boxing').
 
@@ -80,10 +80,10 @@ These are also called 'Pack' types within Q.
 
 Type      | Syntax                 | Description
 ---       | ---                    | ---
-int       | **int int64 i64**      | Signed integer
-word      | **word word64 u64**    | Unsigned integer
-real      | **real r64**           | Float
-real32    | **real32 r32**         | Float
+int       | **i64 int64  int**     | Signed integer
+word      | **u64 word64 word64**  | Unsigned integer
+real      | **r64 real64 real**    | Float
+real32    | **r32 real32**         | Float
 --        |                        |
 bool      | **bool bool64**        | Boolean 1/0 true/false
 --        |                        |
@@ -93,12 +93,12 @@ record    | **U**                  | User-defined record of T
 array     | **[*bounds*]T**        | Fixed-size array of T
 slice     | **slice\[\]T**   | Slice of T
 --        |                        |
-i8        | **int8 i8**            | Storage types
-i16       | **int16 i16**          | ...
-i32       | **int32 i32**          | ...
-u8        | **word8 u8 byte**      | ...
-u16       | **word16 u16**         | ...
-u32       | **word32 u32**         | ...
+i8        | **i8  int8**            | Storage types
+i16       | **i16 int16**          | ...
+i32       | **i32 int32**          | ...
+u8        | **u8  word8 byte**      | ...
+u16       | **u16 u16**         | ...
+u32       | **u32 word32**         | ...
 
 #### Bounds ####
 
