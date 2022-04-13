@@ -81,7 +81,7 @@ These are also called 'Pack' types within Q.
 Type      | Syntax                 | Description
 ---       | ---                    | ---
 int       | **i64 int64  int**     | Signed integer
-word      | **u64 word64 word64**  | Unsigned integer
+word      | **u64 word64 word**  | Unsigned integer
 real      | **r64 real64 real**    | Float
 real32    | **r32 real32**         | Float
 --        |                        |
