@@ -2,7 +2,7 @@
 
 The individual source files of my projects are too numerous to upload individually.
 
-The files here are amalgamations created by my compiler. They can be compiled directly in that form, or with a simple tool can be extracted again (the directory at the start gives file size and offset within the file).
+The files here are amalgamations created by my compiler. They can be compiled directly in that form, or with a simple tool can be extracted again.
 
 **Note**: the .ma extension apparently means something to github, so the text is highlighted in a funny way. All sources need 4-space tabs but github uses 8 spaces.
 
