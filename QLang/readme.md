@@ -35,23 +35,23 @@ This is what makes Q much slower compared to a compiled language working with T 
 
 The aim of this new project is to have special functions that work with T types and compile to native code.
 
-To that end, Q will effectively incorporate another language, that I will call **B** for now. B is a kind of M-lite.
+To that end, Q will effectively incorporate another language, that I will call **Mlite** for now.
 
-Q functions will use **fun sub**, B uses **func proc**. B requires type declarations, will be allowed in Q functions do, but there they are optional. This to allow suitable functions to be flipped between Q and B, by having compatible syntax.
+Q functions will use **fun sub**, Mlite uses **func proc**. Mlite requires type declarations, which will be allowed in Q functions too, but there they are optional. This to allow suitable functions to be flipped between Q and Mlite, by having compatible syntax.
 
-B will only deal with T types, not mixed V and T as I'd attempted within the M5 project which got very hairy.
+Mlite will only deal with T types, not mixed V and T as I'd attempted within the M5 project which got very hairy.
 
-Q functions can call B ones, and I think B functions will be to call Q, but that is less common and probably less useful. Q calling B is little different to calling FFI functions.
+Q functions can call MLite ones, and I think Mlite functions will be to call Q, but that is less common and probably less useful (eg. used for callbacks from external libraries: they will call Mlite that passes control to Q). Q calling Mlite is little different to calling FFI functions.
 
 ### Implementation
 
 Q normally compiles programs to in-memory bytecode and runs it immediately. (I no longer have an on-disk bytecode representation.)
 
-For embedded B functions, those are converted to in-memory x64 code. This part will be challenging; static code normlly uses a hefty type-analysis phase, which is missing from Q. So I will try and perform any interventions that are needed, eg. type conversions, within the code generator.
+For embedded Mlite functions, those are converted to in-memory x64 code. This part will be challenging; static code normlly uses a hefty type-analysis phase, which is missing from Q. So I will try and perform any interventions that are needed, eg. type conversions, within the code generator.
 
-Efficient x64 code generation also used a considerable backend (to IL then to x64 representation then to actual machine code). Here, I may start off with naive x64 code generation. Not as performant, but such code working on T types should still be much faster than interpreted code on V types.
+Efficient x64 code generation also used a considerable backend (to IL then to x64 representation then to actual machine code). Here, I'm planning a new, simpler,  streamlined backend (however they always start off simple...)
 
-If it looks promising, then I can incorporate the more efficient code generator (register-based rather than stack-based).
+This may not be as performant, but such code working on T types should still be much faster than interpreted code on V types.
 
 What I'm trying to avoid is getting into complicated varieties of JIT. The approach above is a simple form of it. I'm not dynamically analysing interpreted code looking for 'hot' paths and turning that into native code. The programmer designates which functions will be compiled to native code, and those functions will (1) need suitable type annotations; and (2) can only contain code that can work as T types.
 
