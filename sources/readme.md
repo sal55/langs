@@ -29,6 +29,7 @@ Language | Description
 --- | ---
 M | My systems programming language
 Q | My dynamic, interpreted, embeddable scripting language
+QM | A temporary name for a new Q version with embedded M functions
 ASM | In this context, the source format of my x64-subset assembly language
 C  | Here, it means the large subset of C that my bcc product compiles
 
