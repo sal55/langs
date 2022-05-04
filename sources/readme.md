@@ -12,6 +12,7 @@ Language | Product  | Project | Written In | Lead Module | Amalgamation
 --- | --- | --- | --- | --- | ---
 M |  mm.exe | mx |  M  | mm.m | mm.ma 
 Q |  qq.exe | qx |  M  | qq.m | qq.ma
+QM |  bb.exe | bx |  M  | bb.m | bb.ma
 ASM |  aa.exe |  ax  | M |  aa.m | aa.ma
 C |  bcc.exe | cx |  M  | cc.m | cc.ma
 
@@ -22,6 +23,7 @@ aa | x64-subset Assembly/Linker
 bcc | Experimental C-subset compiler 
 mm | M compiler
 qq | Q compiler/interpeter
+bb | 'QM' Q with embedded M compiler/interpeter (WIP)
 
 Language | Description
 --- | ---
@@ -34,4 +36,3 @@ C  | Here, it means the large subset of C that my bcc product compiles
 
 * **'Product'** is the name of the executable. For these programs, it is always a single, self-contained file
 * **'Project'** is the name of the project folder on my machine
-* **rr.ma** The Q language is being reimplemented, using a temporary project name of 'rx', and here a file name of rr.ma to void a clash with qq.ma. 
