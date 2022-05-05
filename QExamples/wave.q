@@ -4,10 +4,6 @@
 ! - creating (synthesising) wav data
 ! - playing wav data via SDL
 
-import sys
-import clib
-import files
-
 type sdl_audiospec = struct
     int32       freq
     word16      format
