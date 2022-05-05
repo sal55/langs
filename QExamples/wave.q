@@ -41,7 +41,7 @@ importdll sdl2 =
     clang function "SDL_Init"           (word32)int32
     clang function "SDL_LoadWAV_RW"     (ref byte,i32,ref sdl_audiospec,
                                          ref byte, ref U32)Ref sdl_audiospec
-    clang function "SDL_RWFromFile"     (string,string)ref void
+    clang function "SDL_RWFromFile"     (stringz, stringz)ref void
     clang function "SDL_OpenAudio"      (ref sdl_audiospec, ref sdl_audiospec)i32
     clang proc     "SDL_CloseAudio"
     clang function "SDL_QueueAudio"     (u32, ref byte, u32)i32
