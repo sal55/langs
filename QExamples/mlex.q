@@ -1,10 +1,6 @@
 !Simple Lexer for Q source code
 !For benchmark purposes only
 
-import sys
-import clib
-import files
-
 tabledata() symbolnames=
     (errorsym,          $),
     (dotsym,            $),
@@ -66,8 +62,8 @@ const lf    = 10
 const etx   = 26
 
 proc start=
-    if ncmdparams>=2 then
-        infile:=cmdparams[2]
+    if ncmdparams>=1 then
+        infile:=cmdparams[1]
     else
         infile:="input"
     fi
