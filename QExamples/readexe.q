@@ -1,5 +1,3 @@
-!Dump EXE file
-
 module disasm
 module genlib
 
@@ -149,7 +147,7 @@ var symbolnames=(0:)
 
 var storageclassnames=[0:"Null", 2:"Extern", 3:"Static",5:"Extern2"]
 
-proc start=
+sub start=
 
     infile:=""
     showdata:=1
@@ -161,7 +159,6 @@ proc start=
         fi
 
         if "hdr" in cmdswitches or "h" in cmdswitches then showdata:=0 fi
-!       showdata:="data" in cmdswitches
     fi
 
     if infile="" then
@@ -243,7 +240,7 @@ proc start=
     execwait(f"\m\med.bat kkk1",1)
 end
 
-proc showsections=
+sub showsections=
     genstrln("proc Section Headers")
 
     p:=sectionptr
@@ -261,7 +258,7 @@ proc showsections=
     od
 end
 
-proc showsectiondata=
+sub showsectiondata=
     genstrln("proc Section Data")
 
     p:=sectionptr
@@ -316,7 +313,7 @@ proc showsectiondata=
     od
 end
 
-proc showsectionrelocs=
+sub showsectionrelocs=
     genstrln("proc Section Relocs")
 
     p:=sectionptr
@@ -337,7 +334,7 @@ proc showsectionrelocs=
     od
 end
 
-proc showoptheader=
+sub showoptheader=
     genstrln("proc Optional Header")
     genstrln("Opt header size:  "+tostr(optheadersize))
     genstrln("Opt hdr rec size: "+tostr(optionalheader.bytes))
@@ -395,7 +392,7 @@ proc showoptheader=
     genline()
 end
 
-function getstring(p)=
+fun getstring(p)=
 !p is a ref byte pointing to zero-terminated string
 !return the string
     s::=""
@@ -405,13 +402,13 @@ function getstring(p)=
     return s
 end
 
-function getimportname(p)=
+fun getimportname(p)=
 !p is a byte pointer to a 16-bit hint then zero-terminated name
 
     return (makeref(p,word16)^,getstring(p+2))
 end
 
-proc showlookuptable(p,rawoffset,virtaddr)=
+sub showlookuptable(p,rawoffset,virtaddr)=
 !p points to a zero-terminated list of 64-bit values
 !assume top bit of each is 0 (uses name not ordinal)
 
@@ -427,7 +424,7 @@ proc showlookuptable(p,rawoffset,virtaddr)=
     od
 end
 
-proc showimportdir=
+sub showimportdir=
 
     genstrln("Import Directory")
     genline()
@@ -468,7 +465,7 @@ proc showimportdir=
 
 end
 
-proc showexportdir=
+sub showexportdir=
 
     genline()
     genstrln("Export Directory")
@@ -515,7 +512,7 @@ proc showexportdir=
     genline()
 end
 
-function fixexportaddr(addr)=
+fun fixexportaddr(addr)=
 !search sections to see where
     p:=sectionptr
 
@@ -535,7 +532,7 @@ function fixexportaddr(addr)=
 
 end
 
-function findtable(sectionname,tableaddr, &rawoffset, &virtaddr)=
+fun findtable(sectionname,tableaddr, &rawoffset, &virtaddr)=
     p:=sectionptr
 
     for i:=1 to nsections do
@@ -568,15 +565,15 @@ function findtable(sectionname,tableaddr, &rawoffset, &virtaddr)=
     return nil
 end
 
-function getedataptr(&rawoffset, &virtaddr)=
+fun getedataptr(&rawoffset, &virtaddr)=
     return findtable(".edata",opthdrptr^.exporttable.virtualaddr,rawoffset,virtaddr)
 end
 
-function getidataptr(&rawoffset, &virtaddr)=
+fun getidataptr(&rawoffset, &virtaddr)=
     return findtable(".idata",opthdrptr^.importtable.virtualaddr,rawoffset,virtaddr)
 end
 
-proc showbasereloctable=
+sub showbasereloctable=
     p:=opthdrptr
     offset:=p^.basereloctable.virtualaddr
     size:=p^.basereloctable.size
