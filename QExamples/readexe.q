@@ -1,3 +1,5 @@
+!Display contents of PE+ format EXE/DLL file (not OBJ/COFF which also uses PE+)
+
 module disasm
 module genlib
 
@@ -586,7 +588,6 @@ sub showbasereloctable=
 
     p:=makeref(pedata+rawoffset,word32)
 
-
     repeat
         blocksize:=(p+1)^
         n:=(blocksize-8)%2
@@ -594,7 +595,6 @@ sub showbasereloctable=
 
         base:=p^
 
-!       println p^:"h", =blocksize
         q:=makeref(p+2,word16)
         to n do
             offset:=q^.[0..11]
