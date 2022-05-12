@@ -2,58 +2,34 @@
 
 'M' and 'Q' are my static and dynamic, compiled and interpreted languages.
 
-Attempts to combine these into one language ('M5' described elsewhere) ran into problems. While the M5 compiler is unfinished, it still works fine for what it does, and is currently used as my production compiler.
+I wanted to revise Q so as to embedded an 'M lite` version of the static language. This was to make it far more convenience to write applications which mix code from both languages. (No need to write separate M modules and compile those to libraries accessed from an FFI. And the global entities can be more easily shared.)
 
-This new project uses the Q language as a start point:
+I started embedding a separate M-lite compiler into Q, but ran into trouble. It was just too much work, and too unwieldy. Too many corners would have to be cut too.
 
-* I originally had a two-language solution for writing applications: Q and M, with the latter written as separate modules and accessed from Q via the usual mechanisms for dynamic libraries (except that, for technical reasons, I use a private shared library format, not DLL)
-* The aim had been to incorporate the dynamic elements of Q into M, so that I could write in one language
-* This new project will still need two languages, since a systems-level one that produces EXEs is needed to implement the interpreter of the other
-* But Q will acquire more static features, such as functions that compile to native code, so that a lot more can be done with the one language
-* So it will be a 1.5 language solution to writing applications
+Then it also become clear that the M backend, the bit I was trying to incorporate, was still incredibly messy. I decided that the use of a stack-based VM for the IL, while very easy to generate and inspired the the VM of Q's bytecode, was probably unsuitable for a native code compiler.
 
-### Q Types
+### The TCL Project
 
-Currently Q has support for type categories I will designate as **V**, **T** and **B**
+This revises the M compiler with a new middle-end, ie. a new IL based on Three-Address Code (TCL). I'd abandoned my last attempt at it because of some problems: it was slower than alternatives (in compilation speed); it made use of huge numbers of temps (4 million in one function on one of my test inputs); and the generated code was poor.
 
-Broadly, V are tagged (and 'boxed') variant types. T are simple ('unboxed') static types, as might be found in lower-level APIs. B are bit types.
+But I think it will be easier to try and fix these, then stay with the stack-based IL. And there are advantages:
 
-Everything is Q is done via V types, which includes:
+* It doesn't have the restrictions of the stack structure
+* The generated code actually doesn't use a stack (only for function calls with 5 or more arguments)
+* It would be very easy to transpile to C is necessary
 
-* Arrays of V (Lists)
-* Records of V
-* Pointers to V
-* Arrays of T and B
-* Records of T (structs)
-* Pointers to T and B
+### Compiling the Hybrid Language
 
-Effectively, everything is boxed. Unboxed types exist within data structures, but to do any operations on them, will be boxed into an enclosing V type. And those V types need single and double type dispatching to deal with.
+That is, Q source with embedded M functions. There are cruder ways of achieving this:
 
-This is what makes Q much slower compared to a compiled language working with T types. Even compiling Q to native code will not significantly speed it up, if V types are still used.
+* Make the M compiler able to compile Q source code: it will ignore Q functions and dynamic variables, and process only static data
+* The M compiler can then make an ML file (dynamic library), complete with FFI declaration block needed
+* The composite source is then processed with the Q compiler, which will do the fixups the embedded M functions
+* Possibly, the Q compiler could invoke the M compiler, to produce the needed ML file
 
-### Q Compiled Functions
+The above involves generating a separate disk file. Another approach:
+* Make the M compiler, or a special version of it, into an ML library
+* Q can then load the library, and tell the M compiler to produce in-memory native code
 
-The aim of this new project is to have special functions that work with T types and compile to native code.
-
-To that end, Q will effectively incorporate another language, that I will call **Mlite** for now.
-
-Q functions will use **fun sub**, Mlite uses **func proc**. Mlite requires type declarations, which will be allowed in Q functions too, but there they are optional. This to allow suitable functions to be flipped between Q and Mlite, by having compatible syntax.
-
-Mlite will only deal with T types, not mixed V and T as I'd attempted within the M5 project which got very hairy.
-
-Q functions can call MLite ones, and I think Mlite functions will be to call Q, but that is less common and probably less useful (eg. used for callbacks from external libraries: they will call Mlite that passes control to Q). Q calling Mlite is little different to calling FFI functions.
-
-### Implementation
-
-Q normally compiles programs to in-memory bytecode and runs it immediately. (I no longer have an on-disk bytecode representation.)
-
-For embedded Mlite functions, those are converted to in-memory x64 code. This part will be challenging; static code normlly uses a hefty type-analysis phase, which is missing from Q. So I will try and perform any interventions that are needed, eg. type conversions, within the code generator.
-
-Efficient x64 code generation also used a considerable backend (to IL then to x64 representation then to actual machine code). Here, I'm planning a new, simpler,  streamlined backend (however they always start off simple...)
-
-This may not be as performant, but such code working on T types should still be much faster than interpreted code on V types.
-
-What I'm trying to avoid is getting into complicated varieties of JIT. The approach above is a simple form of it. I'm not dynamically analysing interpreted code looking for 'hot' paths and turning that into native code. The programmer designates which functions will be compiled to native code, and those functions will (1) need suitable type annotations; and (2) can only contain code that can work as T types.
-
-There may be other constraints too. But overall, it should still be more convenient writing such functions within a Q module, with the ability to share global types, enums, external libraries and so on, then having to collect them into a separate M module, compile it to a shared library, and also lose access to the Q program's environment.
+What's important, is that there still just two compilers to maintain, and not a third, inferior one.
 
