@@ -2,34 +2,28 @@
 
 'M' and 'Q' are my static and dynamic, compiled and interpreted languages.
 
-I wanted to revise Q so as to embedded an 'M lite` version of the static language. This was to make it far more convenience to write applications which mix code from both languages. (No need to write separate M modules and compile those to libraries accessed from an FFI. And the global entities can be more easily shared.)
+I wanted to revise Q so as to embed an 'M lite` version of the static language. This was to make it far more convenient to write applications which mix code from both languages. For example, so they can have a shared environment more easily.
 
 I started embedding a separate M-lite compiler into Q, but ran into trouble. It was just too much work, and too unwieldy. Too many corners would have to be cut too.
 
-Then it also become clear that the M backend, the bit I was trying to incorporate, was still incredibly messy. I decided that the use of a stack-based VM for the IL, while very easy to generate and inspired the the VM of Q's bytecode, was probably unsuitable for a native code compiler.
+It also become clear that the M backend, the bit I was trying to incorporate, just wasn't right. I decided that the use of a stack-based VM for the IL, while very easy to generate and inspired by the VM of Q's bytecode, was less suitable for a native code compiler.
 
-### The TCL Project
+### Starting Again
 
-This revises the M compiler with a new middle-end, ie. a new IL based on Three-Address Code (TCL). I'd abandoned my last attempt at it because of some problems: it was slower than alternatives (in compilation speed); it made use of huge numbers of temps (4 million in one function on one of my test inputs); and the generated code was poor.
+Well, not quite. The Q compiler can still parse embedded M code, it just can't do much with it (interpret it, possibly; since this is statically typed, it wil be faster than normal bytecode, but not spectacularly)
 
-But I think it will be easier to try and fix these, then stay with the stack-based IL. And there are advantages:
+This project is not just about getting a working product, it's also about getting it done in a way I'm happy with. So:
 
-* It doesn't have the restrictions of the stack structure
-* The generated code actually doesn't use a stack (only for function calls with 5 or more arguments)
-* It would be very easy to transpile to C is necessary
+* I've decided to replace M's stack-based IL, with one based on '3-address-code' I prefered this, but certain practical problems like getting decent code put me off. I think it will be better to fix those problems.
+* The new IL is called `TCL`, and has its own advantages. One is that it makes a C target much simpler should I ever want to do that.
+* I still have the aim of using a hybrid language which is primarily Q, and secondarily M. But not, for the first version, by creating a third, less-capable M compiler which is part of the Q interpreter.
 
-### Compiling the Hybrid Language
+There is already a mechanism I can mix Q and M in an application: I duplicate any shared global entities (enums etc) in an M program. I write M functions in M modules. I compile that to a shared library. And create (possibly automatically) an interface module providing the necessary FFI.
 
-That is, Q source with embedded M functions. There are cruder ways of achieving this:
+But that is messy. I want to put everything into Q source files, and just run the Q as a normal script.
 
-* Make the M compiler able to compile Q source code: it will ignore Q functions and dynamic variables, and process only static data
-* The M compiler can then make an ML file (dynamic library), complete with FFI declaration block needed
-* The composite source is then processed with the Q compiler, which will do the fixups the embedded M functions
-* Possibly, the Q compiler could invoke the M compiler, to produce the needed ML file
+There are crude ways of doing this: let Q identify the static elements of a program, write them out in an M module, invoke the M compiler and tell it to write an ML shared library, which is loaded dynamically. Rather messy (especially chopping the source code up, and having to re-parse in the M compiler), but it can still be done transpatently, and done fast.
 
-The above involves generating a separate disk file. Another approach:
-* Make the M compiler, or a special version of it, into an ML library
-* Q can then load the library, and tell the M compiler to produce in-memory native code
+There are also was to invoke the M compiler itself as a shared library, and tell it to put the compiled code direcly into memory accessible from Q.
 
-What's important, is that there still just two compilers to maintain, and not a third, inferior one.
-
+If the hybrid language works, then I can look at a more integrated solution.
