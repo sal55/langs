@@ -18,12 +18,12 @@ This project is not just about getting a working product, it's also about gettin
 * The new IL is called `TCL`, and has its own advantages. One is that it makes a C target much simpler should I ever want to do that.
 * I still have the aim of using a hybrid language which is primarily Q, and secondarily M. But not, for the first version, by creating a third, less-capable M compiler which is part of the Q interpreter.
 
-There is already a mechanism I can mix Q and M in an application: I duplicate any shared global entities (enums etc) in an M program. I write M functions in M modules. I compile that to a shared library. And create (possibly automatically) an interface module providing the necessary FFI.
+There is already a mechanism I can use to mix Q and M in an application: I duplicate any shared global entities (enums etc) in an M program. I write M functions in M modules. I compile that to a shared library. And create (possibly automatically) an interface module providing the necessary FFI for Q code to call.
 
 But that is messy. I want to put everything into Q source files, and just run the Q as a normal script.
 
-There are crude ways of doing this: let Q identify the static elements of a program, write them out in an M module, invoke the M compiler and tell it to write an ML shared library, which is loaded dynamically. Rather messy (especially chopping the source code up, and having to re-parse in the M compiler), but it can still be done transpatently, and done fast.
+There are crude ways of doing this: let Q identify the static elements of a program, write them out in an M module, invoke the M compiler and tell it to write an ML shared library, which is loaded dynamically. Rather messy (especially chopping the source code up, and having to re-parse in the M compiler), but it can still be done transparently, and done fast.
 
-There are also was to invoke the M compiler itself as a shared library, and tell it to put the compiled code direcly into memory accessible from Q.
+There are also ways to invoke the M compiler itself as a shared library, and tell it to put the compiled code direcly into memory accessible from Q.
 
 If the hybrid language works, then I can look at a more integrated solution.
