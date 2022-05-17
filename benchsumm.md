@@ -1,6 +1,6 @@
 ### Benchmark Results.
 
-Figues are in seconds of runtime.
+Figures are in seconds of runtime.
 
 Benchmark | GCC-O3 | BB-Opt | BB-Orig | BCC | TCC | Description
 --- | --- | --- | --- | --- | --- | ---
