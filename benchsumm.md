@@ -20,6 +20,7 @@ Benchmark | GCC-O3 | BB-Opt | BB-Orig | BCC | TCC | Description
 **Average**  | 2.9 | 4.35 | 5.4  | 5.7 | 7.1  | seconds
 **Rel to GCC** | 1.00  | 1.50 | 1.86 | 1.97 | 2.45 | How many times as slow as gcc-O3
 
+* 'BB' was my experimental 'M' compiler towards the end of 2020 when I was putting in the optimiser. BCC is my C compiler. TCC is Tiny C.
 * gcc does well at the Pi/2K test, partly due to its optimising division by constants, something not done with the other compilers. But it does skew that 1.50 factor in the bottom line a little.
 * For the timings with the C compilers (gcc, tcc and my bcc), these test programs, all written in my M language, were transpiled to a single C file each. This gives gcc a small advantage with the bigger tests as it allows it to do whole-program optimisation.
 * Timings for gcc-O1 (not shown) were approx 10% slower than gcc-O3.
