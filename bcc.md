@@ -33,7 +33,7 @@ BCC runs on and targets 64-bit Windows. A binary can be found here:
 
 https://github.com/sal55/langs/blob/master/bcc.exe
 
-This the complete self-contained compiler, about 1MB but UPX-compressed here to some 0.3MB. It incomporates standard headers plus windows.h.
+This is the complete self-contained compiler, about 1MB but UPX-compressed here to some 0.3MB. It incomporates standard headers plus windows.h.
 
 I can't support it nor promise it will work.
 
