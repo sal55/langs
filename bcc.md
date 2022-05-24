@@ -2,16 +2,16 @@
 
 This is one I created in 2017. It has long been withdrawn because:
 
-* It omits such major features such as VLAs, compound literals, dynamically initialised arrays and structs, designated initialisers and bitfields. (These weren't that common back in 2017; they are now!)
-* There are myriad ways in which the compiler does not conform, too many to list (eg. `long` is a synonym for `int`; `char` is a synonym for `signed char`, both incorrect; my rules for {...} initialisers are stricter than C allows)
+* It omits some major features such as VLAs, compound literals, dynamically initialised arrays and structs, designated initialisers and bitfields. (These weren't that common back in 2017; they are now!)
+* There are myriad ways in which the compiler does not conform, too many to list (eg. `long` is a synonym for `int`; `char` is a synonym for `signed char`, both incorrect; my rules for {...} initialisers are stricter than C allows; ...)
 * There is a major problem with callback functions (functions called from external code need to be marked as $callback or #pragma callback)
 * It is too buggy in terms of the generated code
 * The supplied headers are incomplete
-* The preprocessor is not up to standard (it will for most things, but not the esoteric stuff that some like to use the preprocessor for)
+* The preprocessor is not up to standard (it will do for most things, but not the esoteric stuff that some like to use the preprocessor for)
 
 I also realised creating a C compiler that will tackle any input, even aside from the omissions, is years of work.
 
-It's also kept alive for the following reasons:
+It's kept alive for the following reasons:
 
 * It is still my first choice when writing small C programs of my own
 * It's also my first choice when trying out smallish C programs of other people's, provided that don't depend on make systems or use features I don't support
@@ -27,3 +27,10 @@ It's also kept alive for the following reasons:
 * Experimenting with techniques for fast C compilation
 * Sometimes, trying experimental C features
 
+### Download
+
+BCC runs on and targets 64-bit Windows. A binary can be found here:
+
+https://github.com/sal55/langs/blob/master/bcc.exe
+
+This the complete self-contained compiler, about 1MB but UPX-compressed here to some 0.3MB. It incomporates standard headers plus windows.h.
