@@ -151,10 +151,10 @@ proc main=
         for x:=0 to n-1 do
             g := 0.000000
             for dx:=0 to ss-1 do
-            for dy:=0 to ss-1 do
-                d := unitise(vec(x+dx*1.000000/ss-n/2.000000,y+dy*1.000000/ss-n/2.000000,n))
-                g +:= ray_trace(vec(0,0,-4),d,scene)
-            od
+                for dy:=0 to ss-1 do
+                    d := unitise(vec(x+dx*1.000000/ss-n/2.000000,y+dy*1.000000/ss-n/2.000000,n))
+                    g +:= ray_trace(vec(0,0,-4),d,scene)
+                od
             od
             outbyte(f,0.500000+255.000000*g/sqr(ss))
         od
