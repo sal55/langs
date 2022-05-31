@@ -1,4 +1,4 @@
-!Port of raytrace C demo
+!Port of raytrace C demo (adapted from automated syntax translation)
 
 const ss        = 2
 const n         = 1024
@@ -6,9 +6,7 @@ const levels    = 5
 const delta     = 0.0001
 
 record Vector =
-    real x
-    real y
-    real z
+    real x, y, z
 end
 
 record Scenet =
@@ -43,7 +41,7 @@ function dot(Vector a, b)real =
 end
 
 function unitise(Vector a)Vector =
-    scale(1.000000/sqrt(dot(a,a)), a)
+    scale(1.0/sqrt(dot(a,a)), a)
 end
 
 function ray_sphere(Vector o, d, c, real r)real =
@@ -95,13 +93,13 @@ function ray_trace(Vector o, d, Scenet scene)real =
     t := nil
     intersect(o,d,&lambda,&t,&scene)
     if lambda=Infinity then
-        return 0.000000
+        return 0.0
     fi
     p := add(o,scale(lambda,d))
     normal := unitise(subx(p,t^.center))
     g := dot(normal,neglight)
-    if g<=0.000000 then
-        return 0.000000
+    if g<=0.0 then
+        return 0.0
     fi
     p := add(p,scale(delta,normal))
     lambda := Infinity
@@ -149,15 +147,16 @@ proc main=
 
     for y:=n-1 downto 0 do
         for x:=0 to n-1 do
-            g := 0.000000
+            g := 0.0
             for dx:=0 to ss-1 do
                 for dy:=0 to ss-1 do
-                    d := unitise(vec(x+dx*1.000000/ss-n/2.000000,y+dy*1.000000/ss-n/2.000000,n))
+                    d := unitise(vec(x+dx*1.0/ss-n/2.0,y+dy*1.0/ss-n/2.0,n))
                     g +:= ray_trace(vec(0,0,-4),d,scene)
                 od
             od
-            outbyte(f,0.500000+255.000000*g/sqr(ss))
+            outbyte(f,0.5+255.0*g/sqr(ss))
         od
     od
     fclose(f)
 end
+
