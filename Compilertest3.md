@@ -11,7 +11,7 @@ I've concentrated on compilers generating native code, as interpreted languages 
 Implem | Language | Time (Note) | Funcs/sec | Exe Size 
 --- | --- | --- | --- | ---
 **Rustc -O** | Rust  | 79000 secs (1) | 0.13 | 10MB
-**Zig -O ReleaseFast** | Zig | 11000 (9) | 7.5MB
+**Zig -O ReleaseFast** | Zig | 11000 (9) | 1.1 | 7.5MB
 **Julia**    | Julia  | 1320 (2) |  7.60  | ---
 **Clang -O3**        | C | 780 | 13 | 16MB
 **Clang -O2**        | C | 650 | 15 |  ---
