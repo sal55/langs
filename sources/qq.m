@@ -30169,9 +30169,9 @@ global tabledata() []ichar symbolnames=
 	(questionsym,		$),		! ?
 	(addrsym,			$),		! &
 	(daddrsym,			$),		! &&
-	(poundsym,			$),		! Œ Hmm, should be Pound A+156
+	(poundsym,			$),		! ÂŒ Hmm, should be Pound A+156
 	(curlsym,			$),		! ~
-!	(gatesym,			$),		! ª
+!	(gatesym,			$),		! Âª
 	(rangesym,			$),		! ..
 	(ellipsissym,		$),		! ...
 	(hashsym,			$),		! #
@@ -44620,8 +44620,8 @@ export function getkeyname(key)=
 	else
 		if key.charcode in [1..26] then	!ctrl code
 			name:=chr(key.charcode+'a'-1)
-		elsif key.charcode in ['!','"','£','$','%','^','&','*','(',')','-','_','+','=','[',']',
-		'{','}',':',';','\'','@','~','#','<','>',',','.','/','¬','¦','|','\\','?'] then
+		elsif key.charcode in ['!','"','Â£','$','%','^','&','*','(',')','-','_','+','=','[',']',
+		'{','}',':',';','\'','@','~','#','<','>',',','.','/','Â¬','Â¦','|','\\','?'] then
 			name:=chr(key.charcode)
 			key.shift iand:=inot shiftmask		!ignore any shift press needed to get char
 
@@ -44728,11 +44728,11 @@ export function keynametokey(name)=
 				when '.','>' then keycode:=vkperiod
 				when '/','?' then keycode:=vkslash
 				when '\\','|' then keycode:=vkbackslash
-				when '`','¬' then keycode:=vkbackquote
+				when '`','Â¬' then keycode:=vkbackquote
 				when '#','~' then keycode:=vkhash
 				when '!' then keycode:='1'
 				when '"' then keycode:='2'
-				when '£' then keycode:='3'
+				when 'Â£' then keycode:='3'
 				when '$' then keycode:='4'
 				when '%' then keycode:='5'
 				when '^' then keycode:='6'
