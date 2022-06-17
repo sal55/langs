@@ -1,4 +1,4 @@
-=importdll opengl32 =
+importdll opengl32 =
     clang proc "glAccum"                           (u32,r32)
     clang proc "glAlphaFunc"                       (u32,r32)
     clang func "glAreTexturesResident"             (i32,ref u32,ref byte)byte
