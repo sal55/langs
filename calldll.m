@@ -1,5 +1,4 @@
-export function os_calldllfunction(ref proc fnaddr,
-        int retcode, nargs, ref[]i64 args, ref[]byte argcodes)word64 =
+export function os_calldllfunction(ref proc fnaddr, int retcode, nargs, ref[]i64 args, ref[]byte argcodes)word64 =
     word64 a
     real64 x
     int oddstack, nextra, pushedbytes
@@ -39,8 +38,8 @@ L100:
         asm push word64 [a]
     od
 
-d first 4 args to registers; this version will blindly load 4 args
-en if there are fewer) to both integer and xmm registers.
+! Load first 4 args to registers; this version will blindly load 4 args
+! even if there are fewer) to both integer and xmm registers.
     assem
         mov D10,[Dstack]
         movq XMM0,[Dstack]
