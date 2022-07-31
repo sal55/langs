@@ -141,7 +141,7 @@ Hello, World!
 ```
 This compiles the sources for the M compiler, runs it from memory, which compiles the sources for the Q interpreter, then runs that in memory which executes that hello.q script. This takes under 0.2 seconds and needs to write 0 bytes to disk.
 
-The equivalent with mainstream products would be for gcc to first build itself from scratch, then use that new version to build CPyton from scratch, then run hello.py.)
+The equivalent with mainstream products would be for gcc to first build itself from scratch, then use that new version to build CPython from scratch, then run hello.py.)
 
 ### Intermediate Language/Representation
 
