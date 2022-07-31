@@ -1,8 +1,10 @@
 ## Summary of My Compiler Projects
 
+1979 to Present.
+
 This concentrates on compilers for lower-level langauges. It omits details of my bytecode compilers for my interpreted languages, or my C compiler project.
 
-All of them apart from the first are for my 'M' lower-level systems language. While that has evolved significantly since the first 8-bit version, the current 64-bit product would be still be regarded as lower level compared with the current crop of 'systems' languages. It is somewhat higher level than C89.
+All of them apart from the first are for my 'M' lower-level systems language. While that has evolved significantly since the first 8-bit version, the current 64-bit product would be still be regarded as quite level compared with the current crop of 'systems' languages. It is somewhat higher level than C89.
 
 This describes also some of the challenges faced decades ago, which might be of historical interest.
 
@@ -106,13 +108,13 @@ So...
 
 I had to bite the bullet and get my assembler to directly generate EXE files; a soul-destroying few weeks.
 
-By this time, the backend of the assembler was also incorporated into the compiler; there was no discrete ASM represented, unless it was
+By this time, the backend of the assembler was also incorporated into the compiler; there was no discrete ASM representation, unless it was
 requested. Now any application could be easily built using a one-file self-contained compiler (it included also library sources):
 ```
 mm qq
 ```
 
-qq.m is the lead module of my interpreter. This builds that 40Kloc project in 1/8 or 1/10th of a second.
+qq.m is the lead module of my interpreter. This builds that 40Kloc project in about 1/10th of a second.
 
 ### x64 Compiler (4)
 
@@ -123,7 +125,7 @@ the environment of the host application.) Of course, it can only be used from my
 
 This idea was extended to my own executable format, called MX and using .mx files. However Windows doesn't understand MX files, so to run those it needs conventional stub program, about 12KB.
 
-(Since ML/MX are portable formats, one possible use would be on Linux, where I don't need to learn about ELF format; I just need a separate loader, say written in C. Which in fact, I've already written, to try it out on Windows. I wanted to run my code for x64, without even needing to adjust it to use the SYS V ABI, which is just about possible for certaimn programs, but then I lost interest: WSL can run EXEs anyway...)
+(Since ML/MX are portable formats, one possible use would be on Linux, where I don't need to learn about ELF format; I just need a separate loader, say written in C, to run MX applications. Which in fact, I've already written, to try it out on Windows. I wanted to run my code for x64, without even needing to adjust it to use the SYS V ABI, which is just about possible for certaimn programs, but then I lost interest: WSL can run EXEs anyway...)
 
 Another by-product of the fixups needed for MX/ML files, is to fix up generated code to run directly in memory, without needing to write those files.
 
@@ -143,7 +145,7 @@ Compiling mm.m to memory
 Compiling qq.m to memory
 Hello, World!
 ```
-This compiles the sources for the M compiler, runs it from memory, which compiles the sources for the Q interpreter, runs that on memory which executes that hello.q script. This takes under 0.2 seconds and needs to write 0 bytes to disk. (I wonder how long it would take, time and storeage, with gcc first building itself then building CPython).
+This compiles the sources for the M compiler, runs it from memory, which compiles the sources for the Q interpreter, then runs that in memory which executes that hello.q script. This takes under 0.2 seconds and needs to write 0 bytes to disk. (I wonder what it would take, time and storage, with gcc first building itself then building CPython).
 
 ### Compiler Internals
 
@@ -153,16 +155,22 @@ I haven't said much about this, partly because I can't really remember. But all 
     AST2     Name-resolved version (for the last decade; before that these were combined)
     AST3     Type-analysed
 ````
-Early compilers used ad hoc code generation without an IL. For the last few years I've used an IL, trying both a stack-based one, and a three-address-code version.
+#### Intermediate Language/Representation
 
-The IL is actually what I've been working on recently. I've just decided to remove it completely as it doesn't pay its way.
+Early compilers used ad hoc code generation without an IL. For the last few years I've used an IL, trying both a stack-based one, and a three-address-code version. At one point, the IL could also be used as a separate language in its own right, with a source syntax for input files.
 
-### Language Changes Affecting Compilation
+ILs are what I've been working on recently, trying to see which one is best for moving things forwards.
 
-This is other than switching targets.
+After many weeks and to-ing and froing, my decision was: to discard both! I decided having an IL at all didn't buy me much.
 
-* Different modules schemes
-* Out-of-order compilation (the reasomn for the separate name-resolving pass)
+For non-executable code, it's an unnecessary extra layer. For helping improve the generated code, my latest ideas involved either doing something before the IL was generated, or as part of the next stage. So I'm going back to an earlier model. It might take me a week to get that working on my code-base.
+
+### Language Changes Affecting Compiler Internals
+
+This is other than switching targets or adding minor features:
+
+* Different module schemes
+* Out-of-order compilation (the reason for that separate name-resolving pass)
 * Whole-program compilation (eg. all modules must be parsed before progressing to the next stage)
 * Different backend schemes
 
@@ -173,7 +181,55 @@ For a period I supported an optional C target:
 * To get the benefit of an optimising compiler
 * To allow my programs to run on Linux
 
-But that was not really satisfactory. Also, 
+But that was not really satisfactory. Also, some M languages features couldn't be used. While admittedly highly useful, I decided to withdraw the feature.
 
+### What Were They Used For
 
+The very first was just an interesting project that I had a genuine interest in.
+
+The next (Z80) was the hobby one. I got a kick of being to write HLL code on my home £100 computer, which a year or two earlier I was doing on a £500,000 mainframe.
+
+The following compilers for Z80 then x86 were used for a range of low-level code. It should be remembered that in the world of home and small business microcomputers and PCs, for most of the 80s and half the 90s, the OS was was very primitive and did very little: basically keyword, console display, and file system.
+
+Everything else, applications had to program themselves, or find some library that could so so. In my case, since I used zero other software other than the meagre OS, that included:
+
+* Boot loaders
+* Hardware test programs
+* Drivers for various devices: serial, floppy disks, interrupts...
+* Printer and plotter drivers
+* Low-level graphics support (my job for a while was designing new video circuits)
+* Vector-drawing graphics libraries
+* Basic GUIs
+* Interfacing to input devices (mainly tablet pointing devices)
+* Floating point emulation
+* Maths libraries
+* 3D graphics support
+* Bitmap font support
+* Reading and writing myriad different files formats
+* Memory allocators
+* ...
+
+The sort of stuff that people think only C is capable of. Plus of course writing compilers, editors, loaders, assemblers, interpreters. 
+
+Other than that, they were used for commercial apps.
+
+For the last 10-20 years however, when I haven't actually worked, little has been done with them, except for tinkering and hobbyist stuff, mostly language-related. I decided to not just let the language die.
+
+### Optimisation
+
+I mentioned in a recent thread I made that I did not regard this as a priority. The targets I've used over the years have probably gotten 1000 times faster or more. But even the best optimisation would only give a one-off speed-up of 2 times, for a typical program of mine.
+
+(It depends on the actual program, even the actual processor, as they all have different characteristics.)
+
+Against that is the cost. So it's more of an annoyance that on the same hardware, my language plus my compiler will disadvantaged when compared with other products that have the benefit of a fully optimised build.
+
+Still I will look at the issue again shortly, to the minimise the difference. But I'm still going going to have as effective an optimisers as top end products. Not unless I reeinstate a C target (and compromise my language to make it fit).
+
+Instead, I concentrate on language design: making it easier to generate efficient code, because the features make it clear what is being attempted. For example:
+
+    swap(A[i], B[i])
+ 
+ instead of having to write, even hidden behind a macro:
+ 
+    temp := A[i]; A[i] := B[i]; B[i] := temp
 
