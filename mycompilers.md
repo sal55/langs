@@ -201,7 +201,7 @@ For the last 10-20 years however, when I haven't actually worked, little has bee
 That would be a long article, but I'm not going there. Regarding their compilers however, there are many differences:
 
 * Mine were in-house or private tools, only used by myself.
-* Mine were not intended to be portable across 100 architectures. They were usually created for one target at a time, until the technicology and/or the market changed. Hence the progression from Z80, and then generations of x86, whatever was the latest product that ordinary consumers (ie. my customers) could buy.
+* Mine were not intended to be portable across 100 architectures. They were usually created for one target at a time, until the technology and/or the market changed. Hence the progression from Z80, and then generations of x86, whatever was the latest product that ordinary consumers (ie. my customers) could buy.
 * Mine didn't need to provide 100% coverage of all combinations of features, since my codebase was limited. Eg. to 100-200Kloc per generation. C compilers have to cope with billions of lines of existing code (as I found out with my C compiler project, now in a state of disuse.)
 
 So, I can cut corners, I can work around bugs or limitations. I wasn't after all employed as a compiler writer; they were just a useful tool, good enough to benefit my work, and, as it turned out, my company (I think we might have sold some $10m of software built with those compilers, poor as they were).
