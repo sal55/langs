@@ -166,9 +166,9 @@ But that was not really satisfactory. Also, some M languages features couldn't b
 
 The very first was just an appealing project that I had a genuine interest in.
 
-The next (Z80) was the hobby one. I got a kick of being to write HLL code on my home £100 computer, which a year or two earlier I was doing on a £500,000 mainframe.
+The next (Z80) was the hobby one. I got a kick of being able to write HLL code on my home £100 computer, that a few years earlier I need to use a £500,000 mainframe.
 
-The following compilers for Z80 then x86 were used for a range of low-level code. It should be remembered that in the world of home and small business microcomputers and PCs, for most of the 80s and half the 90s, the OS was was very primitive and did very little: basically keyword, console display, and file system.
+The subsequent compilers for Z80 then x86 were used for a range of low-level code. It should be remembered that in the world of home and small business microcomputers and PCs, for most of the 80s and half the 90s, the OS was was very primitive and did very little: basically keyword, console display, and file system.
 
 Everything else, applications had to program themselves, or find some library that could do so, especially concerning graphics. In my case, since I used zero other software other than the meagre OS, that included:
 
@@ -184,7 +184,7 @@ Everything else, applications had to program themselves, or find some library th
 * Maths libraries
 * 3D graphics support
 * Bitmap font support
-* Reading and writing myriad different files formats
+* Reading and writing myriad different file formats
 * Memory allocators
 * ...
 
