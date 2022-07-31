@@ -4,7 +4,7 @@
 
 This lists compilers for lower-level languages. It omits the bytecode compilers for my interpreted languages, and my C compiler project.
 
-All of them apart from the first are for my 'M' lower-level systems language. While that has evolved significantly since the first 8-bit version, the current 64-bit product would still be regarded as quite level compared with the current crop of 'systems' languages. It is somewhat higher level than C89.
+All of them apart from the first are for my 'M' lower-level systems language. While that has evolved significantly since the first 8-bit version, the current 64-bit product would still be regarded as quite low level compared with the current crop of 'systems' languages. It is somewhat higher level than C89.
 
 This describes also some of the challenges faced decades ago, which might be of historical interest.
 
