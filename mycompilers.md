@@ -121,7 +121,7 @@ the environment of the host application, something uncertain with DLLs.) Of cour
 
 This idea was extended to my own executable format, called MX and using .mx files. However Windows doesn't understand MX files, so to run those it needs a conventional stub program, about 12KB.
 
-(Since ML/MX are portable formats, one possible use would be on Linux, where I don't need to learn about ELF format; I just need a separate loader, say written in C, to run MX applications. Which in fact, I've already written, to try it out on Windows. I wanted to run my code for x64, without even needing to adjust it to use the SYS V ABI, which is just about possible for certain programs, but then I lost interest: WSL can run EXEs anyway...)
+(Since ML/MX are portable formats, one possible use would be on Linux, where I don't need to learn about ELF format; I just need a separate loader, say written in C, to run MX applications. Which in fact, I've already written, to try it out on Windows. I wanted to run my code for x64, without even needing to adjust it to use the SYS V ABI, which is just about possible for certain programs, but then I lost interest: WSL can run EXEs anyway...
 
 Another by-product of the fixups needed for MX/ML files, is to fix up generated code to run directly in memory, without needing to write those files.
 
@@ -141,7 +141,7 @@ Hello, World!
 ```
 This compiles the sources for the M compiler, runs it from memory, which compiles the sources for the Q interpreter, then runs that in memory which executes that hello.q script. This takes under 0.2 seconds and needs to write 0 bytes to disk.
 
-(The equivalent with mainstream products would be for gcc to first build itself from scratch, then use that new version to build CPyton from scratch, then run hello.py.)
+The equivalent with mainstream products would be for gcc to first build itself from scratch, then use that new version to build CPyton from scratch, then run hello.py.)
 
 ### Intermediate Language/Representation
 
@@ -232,3 +232,15 @@ Here's a last anecdote: I didn't bother with comparing performance of language t
 That 2Kloc is not far off what I've measured for quite a few compilers, especially in optimising mode and even assemblers (yes, Nasm), which run on 64-bit machines with a 1000x higher clock, 250,000 times more RAM and infinitely more storage. So I put more emphasis on writing efficient software rather than just depending on optimiser to take care of sloppy code.
 
 Optimisation should be a bonus, not an essential.
+
+### Assemblers
+
+An assembler can complement a compiler, or it can be used where a compiler is not practical or it follows later. The following are standalone assemblers that I actually remember writing:
+
+* Z80 Assembler - this is the one mentioned above
+* 80186/88 Assembler - The 80186/188 is a version of the 8086/88 with enhanced instruction set and integrated peripherals. (We were going to use it for a portable machine - in 1984. Possibly this was the basis for my later 8086 assembler)
+* 8051/8035 Assembler - I forget exactly which microcontroller this was. But I found it primitive - the Z80 was a supercomputer by comparison. Apparently a C compiler existed for it - kudos to them.
+* x64 Assembler - this the much more recent one that I reluctantly created, which also does the job of linker
+
+Generally assembly is used inline within a HLL where possible, since they can benefit from the extensive features of the HLL for the non-executable aspects.
+
