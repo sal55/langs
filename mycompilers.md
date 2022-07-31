@@ -22,7 +22,7 @@ This was for the first crude language I devised, called 'M' (around 1981). It wa
 
 There was no storage however, except for slow (1200 bps) and unreliable cassette tape. For this reason the compiler (together with a simple editor plus the source code of the application) were resident in memory.
 
-This was written in a primitive assembler, itself written in hex machine code (and the program to allow that was itself written in actual binary, using switches and LEDs - real bootstrapping!).
+This was written using a primitive assembler, itself written in hex machine code (and the program to allow that was itself written in actual binary, using switches and LEDs - real bootstrapping!).
 
 To avoid everything being wiped out in the event of a program crash, the 32KB main memory was split into two 16KB banks, one of which could be write-protected via a switch. Then the compiler, editor and source could be made safe.
 
