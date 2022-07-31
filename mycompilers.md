@@ -28,7 +28,7 @@ To avoid everything being wiped out in the event of a program crash, the 32KB ma
 
 (As for the sorts of programs I was writing, I built an add-on graphics circuit for this. This could display either 256x256x1-bit, or 128x128x4-bit greyscale - thanks to a homemade DAC, which could be externally synced ('genlocked') to a TV signal, so that I could use it as a frame-grabber (requiring a homemade ADC).
 
-Some programs played with 3D vector graphics (the language `byte int real` types, that is `u8 i16 f24` - 24-bit floats), which also required some maths support. Remember there was zero existing software and there was no internet. Other programs worked with frame-grabbing and image-processing, like trying to recorded captured video on cassette.)
+Some programs played with 3D vector graphics (the language had `byte int real` types, that is `u8 i16 f24` - 24-bit floats), which also required some maths support. Remember there was zero existing software and there was no internet. Other programs worked with frame-grabbing and image-processing, like trying to record captured video on audio cassette.)
 
 ### Z80 Compiler (2)
 
