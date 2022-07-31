@@ -2,7 +2,7 @@
 
 1979 to Present.
 
-This concentrates on compilers for lower-level langauges. It omits details of my bytecode compilers for my interpreted languages, or my C compiler project.
+This lists compilers for lower-level languages. It omits the bytecode compilers for my interpreted languages, or my C compiler project.
 
 All of them apart from the first are for my 'M' lower-level systems language. While that has evolved significantly since the first 8-bit version, the current 64-bit product would still be regarded as quite level compared with the current crop of 'systems' languages. It is somewhat higher level than C89.
 
@@ -10,27 +10,25 @@ This describes also some of the challenges faced decades ago, which might be of 
 
 ### 'Babbage' Compiler
 
-This was my very first compiler, done as a college project (circa 1979). 'Babbage' was a machine-oriented language (now called a High Level Assembler) for GEC 4080 and the task was to port that to the college's PDP10 mainframe machine.
+This was my very first compiler, done as a college project (circa 1979). 'Babbage' was a machine-oriented language (now called a High Level Assembler) for GEC 4000 and the task was to port that to the college's PDP10 mainframe machine.
 
 This was written in assembly (using MACRO 10, DEC's assembler for PDP10), and generated assembly output. I tested it by using it to implement itself ('self-hosting').
 
-I found it quite challenging. (Bear in mind also that I could only work on it from a terminal that you had to book for an hour at a time. I could only work on it off-line from a printouts.)
+I found it quite challenging. (Bear in mind that I could only work on it from a terminal that you had to book for an hour at a time.)
 
 ### Z80 Compiler (1)
 
-This was for the first crude language I devised, called 'M' (around 1981).
-
-It was also written on, and for, my homemade Z80 computer, a second version which had extra memory, a real keyboard, and a text (and later graphical) display.
+This was for the first crude language I devised, called 'M' (around 1981). It was also written on, and for, my homemade Z80 computer, a second version which had extra memory, a real keyboard, and a text (and later graphical) display.
 
 There was no storage however, except for slow (1200 bps) and unreliable cassette tape. For this reason the compiler (together with a simple editor plus the source code of the application) were resident in memory.
 
 This was written in a primitive assembler, itself written in hex machine code (and the program to allow that was itself written in actual binary, using switches and LEDs - real bootstrapping!).
 
-To avoid everything being wiped out in the event of a program going haywire, the 32KB main memory was split into two 16KB banks, one of which could be write-protected via a switch. Then the compiler, editor and source could be made safe.
+To avoid everything being wiped out in the event of a program crash, the 32KB main memory was split into two 16KB banks, one of which could be write-protected via a switch. Then the compiler, editor and source could be made safe.
 
 (As for the sorts of programs I was writing, I built an add-on graphics circuit for this. This could display either 256x256x1-bit, or 128x128x4-bit greyscale - thanks to a homemade DAC, which could be externally synced ('genlocked') to a TV signal, so that I could use it as a frame-grabber (requiring a homemade ADC).
 
-Some programs played with 3D vector graphics (the language had `u8`, `i16` and `f24` (not `f32`) data types, called `byte int real`), which also required some maths support. Remember this had zero existing software and no libraries, and there was no internet. Other programs worked with frame-grabbing and image-processing, like trying to recorded captured video on cassette (about 0.2fps full-screen, 4-5fps at small frame sizes, not that great).)
+Some programs played with 3D vector graphics (the language `byte int real` types, that is `u8 i16 f24` - 24-bit floats), which also required some maths support. Remember there was zero existing software and there was no internet. Other programs worked with frame-grabbing and image-processing, like trying to recorded captured video on cassette.)
 
 ### Z80 Compiler (2)
 
@@ -38,7 +36,7 @@ This was created to help with my job as hardware engineer developing business co
 
 I can't remember the details of the bootstrapping process (whether I used an available assembler, or wrote one somehow). But this compiler was also memory-resident. The reason was two-fold: floppy disks were too slow for the turnaround I wanted (commercially available C compilers for example would take minutes for the simplest program; my small programs compiled near-instantly).
 
-But also I was doing a lot of work on new hardware with an embedded processor and the compiled code had to be somehow downloaded to the test board.
+But also I was doing a lot of work developing new hardware with embedded processors and the compiled code had to be somehow downloaded to the test board.
 
 At this time, the language didn't have modules at all.
 
@@ -58,17 +56,17 @@ It now starts to change quickly. Again I forget the method I used to bootstrap t
 
 Most M versions also had inline assembly. That was essential for the stuff I was doing. But also, since there was no optimiser, it was needed for bottlenecks.
 
-Still, I vaguely remember my 8086 compilers outperforming C compilers, the few times I compared them. Then C compilers acquired optimisers (gcc first appeared in around 1987).
+Still, I vaguely remember my 8086 compilers outperforming C compilers, the few times I compared them. Then C compilers acquired optimisers (gcc first appeared around 1987).
 
 ### x86 (80386) Compiler (2)
 
-Around 1992 I decided to give up own languages, and switch to C. (I also wanted to get a different job.) I bought a Visual C compiler from MS, for some £160 (the first and last time I paid for a compiler).
+Around 1992 I decided to give up my own languages, and switch to C. (I also wanted to get a different job.) I bought a Visual C compiler from MS, for some £160 (the first and last time I paid for a compiler).
 
-Using new MSDOS, using DLLs, using Windows, all meant different tools anyway. The trouble is, I hadn't looked at C in detail before, and I thought it was dreadful!
+Using Windows, DLLs and so on, all meant new tools anyway. The trouble is, I hadn't looked at C in detail before, and I thought it was dreadful!
 
-I decided to perserve with my own language, but needed a new compiler for Windows. I also forgot about changing jobs; I become self-employed. The C compiler was given away.
+I decided to persevere with my own language, but needed a new compiler for Windows. I also forgot about changing jobs; I become self-employed. The C compiler was given away.
 
-This new compiler generated 16-bit code still but for the 80386 processor. That had a useful feature: even in 16-bit mode, it was possible to make use of 32-bit registers, 32-bit operations, and extra 32-bit address modes, via prefix bytes.
+This new compiler generated 16-bit code still but for the 80386 processor. That had a useful feature: even in 16-bit mode, it was possible to make use of 32-bit registers, 32-bit operations, and extra 32-bit address modes, via prefix bytes, something not possible on x64.
 
 (You couldn't just switch to full 32-bit mode since the OS still ran as 16-bits. Some products got around that, DOS-extenders and such, but that was beyond me.)
 
@@ -82,7 +80,7 @@ At some time, I think 2002, I made it a full 32-bit compiler.
 
 ### x64 Compiler (1)
 
-At my first attempt at an x64 compiler (these are all for Windows), tried something unusual: pointers would stay at 32 bits, while ints etc would be 64 bits. This was to avoid wasting memory since most programs worked within 2GB of memory still.
+At my first attempt at an x64 compiler (these are all for Windows), I tried something unusual: pointers would stay at 32 bits, while ints etc would be 64 bits. This was to avoid wasting memory since most programs worked within 2GB of memory still.
 
 But this proved troublesome without OS cooperation, and eventually I went with 64-bit pointers.
 
@@ -92,12 +90,12 @@ At this point, the compiler still used independent compilation, still generated 
 
 I wanted to create a whole-program compiler, but if the output was ASM, it would be a single ASM file. While NASM had gotten faster, it had some bug or other that made it exponentially slower on large inputs. Like taking a minute or more to assemble a 100Kloc file. (I didn't know at this time about YASM.)
 
-I developed my own x64 assembler, which meant learning about the OBJ file format. This made possible whole-program compilations. (There was also parallel develoment with creating new module schemes for the language.)
+I developed my own x64 assembler, which meant learning about the OBJ file format. This made possible whole-program compilation. (There was also parallel develoment with creating new module schemes for the language.)
 
 My assembler was much faster (it worked at millions of lines per second). However, it still relied on an external linker, and they were all troublesome:
 
 * Using `gcc` meant a 0.5GB dependency for my 0.5MB compiler. I also had no idea what it might be linking in to my executable
-* Extracting its `ld` linker was better, but it was 1-2MB, and used a handful of DLLs. But it gave mysterious errors on my laptop
+* Extracting its `ld` linker was better, it was 1-2MB plus a handful of DLLs. But it gave mysterious errors on my laptop
 * The tiny GoLink (47KB) was also tried. But it used peculiar ways of dealing with imported DLL names, that required different code generation. (It also generated EXEs that attracted the attention of AV software, more so than normal, and which were mysteriously double the size they ought to have been.)
 
 So...
@@ -141,7 +139,9 @@ Compiling mm.m to memory
 Compiling qq.m to memory
 Hello, World!
 ```
-This compiles the sources for the M compiler, runs it from memory, which compiles the sources for the Q interpreter, then runs that in memory which executes that hello.q script. This takes under 0.2 seconds and needs to write 0 bytes to disk. (I wonder what it would take, time and storage, with gcc first building itself then building CPython.)
+This compiles the sources for the M compiler, runs it from memory, which compiles the sources for the Q interpreter, then runs that in memory which executes that hello.q script. This takes under 0.2 seconds and needs to write 0 bytes to disk.
+
+(The equivalent with mainstream products would be for gcc to first build itself from scratch, then use tha new version to build CPyton from scratch, then run hello.py.)
 
 ### Intermediate Language/Representation
 
@@ -160,17 +160,17 @@ For a period I supported an optional C target:
 * To get the benefit of an optimising compiler
 * To allow my programs to run on Linux
 
-But that was not really satisfactory. Also, some M languages features couldn't be used. While admittedly highly useful, I decided to withdraw the feature.
+But that was not really satisfactory. Also, some M languages features couldn't be used. While admittedly highly useful, I decided to withdraw the feature; purity and self-sufficiency is too attractive.
 
 ### What Were They Used For
 
-The very first was just an interesting project that I had a genuine interest in.
+The very first was just an appealing project that I had a genuine interest in.
 
 The next (Z80) was the hobby one. I got a kick of being to write HLL code on my home £100 computer, which a year or two earlier I was doing on a £500,000 mainframe.
 
 The following compilers for Z80 then x86 were used for a range of low-level code. It should be remembered that in the world of home and small business microcomputers and PCs, for most of the 80s and half the 90s, the OS was was very primitive and did very little: basically keyword, console display, and file system.
 
-Everything else, applications had to program themselves, or find some library that could so so. In my case, since I used zero other software other than the meagre OS, that included:
+Everything else, applications had to program themselves, or find some library that could do so, especially concerning graphics. In my case, since I used zero other software other than the meagre OS, that included:
 
 * Boot loaders
 * Hardware test programs
@@ -192,15 +192,20 @@ The sort of stuff that people think only C is capable of. Plus of course writing
 
 Other than that, they were used for commercial apps.
 
-For the last 10-20 years however, when I haven't actually worked, little has been done with them, except for tinkering and hobbyist stuff, mostly language-related. I decided to not just let the language die.
+So it is clear that my compilers were tools intended to get things done. They were secondary to my main job.
+
+For the last 10-20 years however, when I haven't actually worked, little has been done with them, except for tinkering and hobbyist stuff, mostly language-related. I decided no to just let the language die. Some interesting developments have been experimented with over the last few years, even if the language itself is old-fashioned.
 
 ### Comparison of M and C
 
 That would be a long article, but I'm not going there. Regarding their compilers however, there are many differences:
 
-* Mine are in-house or private tools
-* Mine are not intended to be portable across 100 architectures. They were usually created for one target at a time, until the technicology and/or the market changed. Hence the progression from Z80, and then generations of x86, whatever was the latest product that ordinary consumers (ie. my customers) could buy.
+* Mine were in-house or private tools, only used by myself.
+* Mine were not intended to be portable across 100 architectures. They were usually created for one target at a time, until the technicology and/or the market changed. Hence the progression from Z80, and then generations of x86, whatever was the latest product that ordinary consumers (ie. my customers) could buy.
 * Mine didn't need to provide 100% coverage of all combinations of features, since my codebase was limited. Eg. to 100-200Kloc per generation. C compilers have to cope with billions of lines of existing code (as I found out with my C compiler project, now in a state of disuse.)
+
+So, I can cut corners, I can work around bugs or limitations. I wasn't after all employed as a compiler writer; they were just a useful tool, good enough to benefit my work, and, as it turned out, my company (I think we might have sold some $10m of software built with those compilers, poor as they were).
+
 
 ### Optimisation
 
@@ -222,7 +227,8 @@ Instead, I concentrate on language design: making it easier to generate efficien
  
  Or not having an implementation that builds multiple layers of code which then relies on a decent optimiser to remove all the redundancy.
 
-However, here's one anecdote: I didn't really bother with measuring performance of language tools until recently. But in 1981, I did measure the speed of my first simple Z80 assembler: it could assemble 1800 lines per second on my 2.5MHz Z80.
+Here's a last anecdote: I didn't bother with comparing performance of language tools until recently. But in 1981, I did measure the speed of my first simple Z80 assembler: it could assemble 1800 lines per second on my 2.5MHz Z80.
 
-That 2Kloc is not far off the I've measured for quite a few compilers and even assemblers (yes, Nasm), which run on 64-bit machines with a 1000x higher clock, 250,000 times more RAM and infinitely more storage. So I put more emphasis on writing efficient software rather than just leaving it to the optimiser.
+That 2Kloc is not far off what I've measured for quite a few compilers, especially in optimising mode and even assemblers (yes, Nasm), which run on 64-bit machines with a 1000x higher clock, 250,000 times more RAM and infinitely more storage. So I put more emphasis on writing efficient software rather than just depending on optimiser to take care of sloppy code.
 
+Optimisation should be a bonus, not an essential.
