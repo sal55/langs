@@ -211,11 +211,11 @@ So, I can cut corners, I can work around bugs or limitations. I wasn't after all
 
 I mentioned in a recent thread I made that I did not regard this as a priority. The targets I've used over the years have probably gotten 1000 times faster or more. But even the best optimisation would only give a one-off speed-up of 2 times, for a typical program of mine.
 
-(It depends on the actual program, even the actual processor, as they all have different characteristics.)
+(It depends on the actual program, even the actual processor model, as they all have different characteristics.)
 
-Against that is the cost. So it's more of an annoyance that on the same hardware, my language plus my compiler will disadvantaged when compared with other products that have the benefit of a fully optimised build.
+Against that is the cost. So it's more of an annoyance that on the same hardware, my language plus my compiler will be disadvantaged when compared with other products that have the benefit of a fully optimised build.
 
-Still I will look at the issue again shortly, to the minimise the difference. But I'm still not going to have as effective an optimiser as top end products. Not unless I reinstate a C target (and compromise my language to make it work).
+Still, I will look at the issue again shortly, to the minimise the difference. But I'm still not going to have as effective an optimiser as top end products. Not unless I reinstate a C target (and compromise my language to make it work).
 
 Instead, I concentrate on language design: making it easier to generate efficient code, because the features make it clear what is being attempted. For example:
 
@@ -229,7 +229,7 @@ Or not having an implementation that builds multiple layers of code which then r
 
 Here's a last anecdote: I didn't bother with comparing performance of language tools until recently. But in 1981, I did measure the speed of my first simple Z80 assembler: it could process 1800 lines per second on my 2.5MHz Z80.
 
-That 2Kloc is not far off what I've measured for quite a few compilers, especially in optimising mode, and even assemblers (yes, Nasm), which run on 64-bit machines with a 1000x higher clock, 250,000 times more RAM and infinitely more storage. So I put more emphasis on writing efficient software rather than just depending on optimiser to take care of sloppy code.
+That 2Kloc is not far off what I've measured for quite a few compilers, especially in optimising mode, and even assemblers (yes, Nasm), which run on 64-bit machines with a 1000x higher clock, 250,000 times more RAM and infinitely more storage. So I put more emphasis on writing efficient software rather than just depending on an optimiser to take care of sloppy code.
 
 Optimisation should be a bonus, not an essential.
 
@@ -242,4 +242,4 @@ There were some assemblers along the way too. The following are standalone assem
 * 8051/8035 Assembler - I forget exactly which microcontroller this was. But I found it primitive - the Z80 was a supercomputer by comparison. Apparently a C compiler existed for it - kudos to them.
 * x64 Assembler - this is the much more recent one that I reluctantly created, which also does the job of linker
 
-Most assembly however was written line within a HLL.
+Most assembly however was written inline within a HLL.
