@@ -240,7 +240,6 @@ There were some assemblers along the way too. The following are standalone assem
 * Z80 Assembler - this is the one mentioned above
 * 80186/88 Assembler - The 80186/188 is a version of the 8086/88 with enhanced instruction set and integrated peripherals. (We were going to use it for a portable machine - in 1984. Possibly this was the basis for my later 8086 assembler)
 * 8051/8035 Assembler - I forget exactly which microcontroller this was. But I found it primitive - the Z80 was a supercomputer by comparison. Apparently a C compiler existed for it - kudos to them.
-* x64 Assembler - this the much more recent one that I reluctantly created, which also does the job of linker
+* x64 Assembler - this is the much more recent one that I reluctantly created, which also does the job of linker
 
-Assembly is best used inline within a HLL where possible, since they can benefit from the extensive features of the HLL.
-
+Most assembly however was written line within a HLL.
