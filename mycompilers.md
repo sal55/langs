@@ -194,7 +194,7 @@ Other than that, they were used for commercial apps.
 
 So it is clear that my compilers were tools intended to get things done. They were secondary to my main job.
 
-For the last 10-20 years however, when I haven't actually worked, little has been done with them, except for tinkering and hobbyist stuff, mostly language-related. I decided no to just let the language die. Some interesting developments have been experimented with over the last few years, even if the language itself is old-fashioned.
+For the last 10-20 years however, when I haven't actually worked, little has been done with them, except for tinkering and hobbyist stuff, mostly language-related. I decided not to just let the language die. Some interesting ideas have been experimented with over the last few years, even if the language itself is old-fashioned.
 
 ### Comparison of M and C
 
@@ -225,22 +225,22 @@ Instead, I concentrate on language design: making it easier to generate efficien
  
     temp := A[i]; A[i] := B[i]; B[i] := temp
  
- Or not having an implementation that builds multiple layers of code which then relies on a decent optimiser to remove all the redundancy.
+Or not having an implementation that builds multiple layers of code which then relies on a decent optimiser to remove all the redundancy.
 
-Here's a last anecdote: I didn't bother with comparing performance of language tools until recently. But in 1981, I did measure the speed of my first simple Z80 assembler: it could assemble 1800 lines per second on my 2.5MHz Z80.
+Here's a last anecdote: I didn't bother with comparing performance of language tools until recently. But in 1981, I did measure the speed of my first simple Z80 assembler: it could process 1800 lines per second on my 2.5MHz Z80.
 
-That 2Kloc is not far off what I've measured for quite a few compilers, especially in optimising mode and even assemblers (yes, Nasm), which run on 64-bit machines with a 1000x higher clock, 250,000 times more RAM and infinitely more storage. So I put more emphasis on writing efficient software rather than just depending on optimiser to take care of sloppy code.
+That 2Kloc is not far off what I've measured for quite a few compilers, especially in optimising mode, and even assemblers (yes, Nasm), which run on 64-bit machines with a 1000x higher clock, 250,000 times more RAM and infinitely more storage. So I put more emphasis on writing efficient software rather than just depending on optimiser to take care of sloppy code.
 
 Optimisation should be a bonus, not an essential.
 
 ### Assemblers
 
-An assembler can complement a compiler, or it can be used where a compiler is not practical or it follows later. The following are standalone assemblers that I actually remember writing:
+There were some assemblers along the way too. The following are standalone assemblers that I actually remember writing:
 
 * Z80 Assembler - this is the one mentioned above
 * 80186/88 Assembler - The 80186/188 is a version of the 8086/88 with enhanced instruction set and integrated peripherals. (We were going to use it for a portable machine - in 1984. Possibly this was the basis for my later 8086 assembler)
 * 8051/8035 Assembler - I forget exactly which microcontroller this was. But I found it primitive - the Z80 was a supercomputer by comparison. Apparently a C compiler existed for it - kudos to them.
 * x64 Assembler - this the much more recent one that I reluctantly created, which also does the job of linker
 
-Generally assembly is used inline within a HLL where possible, since they can benefit from the extensive features of the HLL for the non-executable aspects.
+Assembly is best used inline within a HLL where possible, since they can benefit from the extensive features of the HLL.
 
