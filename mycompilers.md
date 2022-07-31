@@ -109,7 +109,7 @@ I had to bite the bullet and get my assembler to directly generate EXE files; a 
 By this time, the backend of the assembler was also incorporated into the compiler; there was no discrete ASM represented, unless it was
 requested. Now any application could be easily built using a one-file self-contained compiler (it included also library sources):
 ```
-    mm qq
+mm qq
 ```
 
 qq.m is the lead module of my interpreter. This builds that 40Kloc project in 1/8 or 1/10th of a second.
@@ -127,6 +127,53 @@ This idea was extended to my own executable format, called MX and using .mx file
 
 Another by-product of the fixups needed for MX/ML files, is to fix up generated code to run directly in memory, without needing to write those files.
 
-This nows allows to compiler doit
+This nows allows the compiler to run code directly from source, just like a scripting language. Take these 3 files:
+```
+c:\demo>dir
+04/12/2021  15:07                24 hello.q
+18/07/2022  11:07           716,194 mm.ma
+18/07/2022  11:06         1,016,555 qq.ma
+```
+mm.qq is the source for my M compiler; qq.ma is the source for my Q compiler/interpreter; both are one-file amalgations produced via the `-ma` options of the M compiler. Here, the first `mm` is the `mm.exe` M compiler, located elsewhere:
+```
+c:\demo>mm -run mm -run qq hello
+(Building mm.ma)
+Compiling mm.m to memory
+(Building qq.ma)
+Compiling qq.m to memory
+Hello, World!
+```
+This compiles the sources for the M compiler, runs it from memory, which compiles the sources for the Q interpreter, runs that on memory which executes that hello.q script. This takes under 0.2 seconds and needs to write 0 bytes to disk. (I wonder how long it would take, time and storeage, with gcc first building itself then building CPython).
+
+### Compiler Internals
+
+I haven't said much about this, partly because I can't really remember. But all of them, from the late Z80 version to now, create ASTs with 2-3 passes:
+````
+    AST1     Produced by the parser
+    AST2     Name-resolved version (for the last decade; before that these were combined)
+    AST3     Type-analysed
+````
+Early compilers used ad hoc code generation without an IL. For the last few years I've used an IL, trying both a stack-based one, and a three-address-code version.
+
+The IL is actually what I've been working on recently. I've just decided to remove it completely as it doesn't pay its way.
+
+### Language Changes Affecting Compilation
+
+This is other than switching targets.
+
+* Different modules schemes
+* Out-of-order compilation (the reasomn for the separate name-resolving pass)
+* Whole-program compilation (eg. all modules must be parsed before progressing to the next stage)
+* Different backend schemes
+
+### Using a C Target
+
+For a period I supported an optional C target:
+
+* To get the benefit of an optimising compiler
+* To allow my programs to run on Linux
+
+But that was not really satisfactory. Also, 
+
 
 
