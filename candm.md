@@ -129,7 +129,7 @@ it could be different. In M, nothing changes: there are no format codes that tel
 what it already knows: the type of an expression.
 
 **31** C uses `sizeof` for the byte-size of a type or expression. For the latter, suppose you define
-a pointer `T* sizeOf`, then the size that what points to is `sizeof*sizeOf`. Which looks a little like
+a pointer `T* sizeOf`, then the size that that points to is `sizeof*sizeOf`. Which looks a little like
 it is multiplying two variables! In M it is `sizeoOf.bytes` or `sizeof.bytes` (case-insensitive).
 
 **32** `sizeof(T)` needs parentheses around a type but not around an expression: `sizeof X`. But an
