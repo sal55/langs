@@ -27,8 +27,8 @@ at length elsewhere.
 **3** It doesn't have this thing where one statement needs no braces, but have two or more and you need to add them,
 or remove statements and you have to remove braces when it gets down to one
 
-**4** Because it doesn't have optional braces, it's not subject to same errors of C, but you can
- an extra indented statement, but forget the braces; or missing/extra braces cancel out for
+**4** Because it doesn't have optional braces, it's not subject to same errors of C, where you can
+ add an extra indented statement, but forget the braces; or missing/extra braces cancel out for
  errors.
 
 **5** For the same reason, there will never be issues with dangling else.
