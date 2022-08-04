@@ -10,11 +10,8 @@
 * See it as what one alternative to C could look like, without turning into Rust or Zig
 
 ### Links:
-(Out of date)
-* [M Language](Mosaic/readme.md)
+(Out of date links removed)
 * [Examples](Examples)
-* [Features](mfeatures.md) Many features set out at greater length
-* [Compiler speed tests](Compilertest3.md)
 
 ### A Selection of Differences from C
 
@@ -41,7 +38,7 @@ or remove statements and you have to remove braces when it gets down to one
     }
 ````
 
-**7** For some reason, C can't have a label immediately before a } brace, or in front
+**7** For some reason, C can't have a label immediately before a `}` brace, or in front
 of a declaration. M allows them pretty much everywhere.
 
 **8** Line comments in C have some flaws. eg. the 2nd line is commented out here:
@@ -51,52 +48,49 @@ of a declaration. M allows them pretty much everywhere.
 ````
 M's line comments start with "!", and have no such issues.
 
-**9** M no longer has block comments (they are relegated to the editor). C's /*...*/ block
-comments had their own problems: non-nested, by missing out one \*/, they could unintentionally
-comment out a whole block of code. And they make things harder for a text editor as it would need
-to keep track block comments from 1000s of lines earlier in a file.
+**9** M no longer has block comments (they are relegated to the editor). C's `/*...*/` block comments had their own problems: non-nested, by missing out one \*/, they could unintentionally comment out a whole block of code. And they make things harder for a text editor as it would need to keep track block comments from 1000s of lines earlier in a file.
 
-**10** M has binary literals written as 2x1011 (alternatively as 1011B). While mosy C compilers
-will support 0b1011 format, it is not standard C, and -Wpedantic will report a warning
+**10** M has binary literals written as `2x1011` (alternatively as `1011B`). While mosy C compilers
+will support `0b1011` format, it is not standard C, and `-Wpedantic` will report a warning
 
-**11** In C, use a leading 0 as in 0100, and the number is assumed to be octal, so this
-has the value 64. In M, it has the value 100. Octal numbers are written as 8x100.
+**11** In C, use a leading 0 as in `0100`, and the number is assumed to be octal, so this
+has the value 64. In M, it has the value 100. Octal numbers are written as `8x100`.
 
-**12** M actually allows numbers in any base from 2 to 16 using the same scheme: 4x100 is in base 4 (16)
-12x100 is in base 12 (144). Hex can be written as 0x100 like C, or as 16x100.
+**12** M actually allows numbers in any base from 2 to 16 using the same scheme: `4x100` is in base 4 (16)
+`12x100` is in base 12 (144). Hex can be written as `0x100` like C, or as `16x100`.
 
-**13** M allows numeric separators ' and \_, for example 1'000'000 or 2x1011\_1110\_0001.
+**13** M allows numeric separators `'` and `_`, for example `1'000'000` or `2x1011_1110_0001`.
 
-**14** M uses scale factors such as 3 million, or 4 billion.
+**14** M uses scale factors such as `3 million`, or `4 billion`.
 
-**15** M has raw string literals written F"abc\\def\\ghi", where "\\" is not used as an escape code.
+**15** M has raw string literals written `F"abc\def\ghi"`, where `"\"` is not used as an escape code.
 
-**16** C doesn't properly define multi-character literals like 'ABCD'. They are implementation-defined.
-In M they are well defined (and on little-endian sytems, laid out so that in memory, 'ABCD' is the
-same as the string "ABCD").
+**16** C doesn't properly define multi-character literals like `'ABCD'`. They are implementation-defined.
+In M they are well defined (and on little-endian sytems, laid out so that in memory, `'ABCD'` is the
+same as the string `"ABCD"`).
 
-**17** C character constants are also limited to the same size as 'int', so usually 4 characters.
-M has 64-bit types so they can go up to 'ABCDEFGH', or additionally up to 'ABCDEFGHIJKLMNOP' for 128-bit int.
+**17** C character constants are also limited to the same size as `int`, so usually 4 characters.
+M has 64-bit types so they can go up to `'ABCDEFGH'`, or additionally up to 'ABCDEFGHIJKLMNOP' for 128-bit int.
 
-**18** C uses suffixes such as -U, -L and -LL to control the types of integer literals (but see below
-about long/long long). M's literals have i64 type unless their magnitude makes them u64, i128 or u128.
+**18** C uses suffixes such as `-U`, `-L` and `-LL` to control the types of integer literals (but see below
+about long/long long). M's literals have `i64` type unless their magnitude makes them `u64`, `i128` or `u128`.
 There are no suffixes; to force a particular type, a cast is used.
 
-**19** Those -LL suffixes will anyway not work with types like int64_t; special macros are needed. M has no such needs.
+**19** Those `-LL` suffixes will anyway not work with types like `int64_t` (since that is usually implemented on top of either `long` or `long long`); special macros are needed. M has no such needs.
 
 **20** The basic integer types in C are signed/unsigned versions of four 8/16/32/64-bit widths on most
-current systems. Yet there are FIVE basic types: char, short, int, long, long long. Usually long
-is the same width as int or long long, but is compatible with neither.
+current systems. Yet there are FIVE basic types: `char, short, int, long, long long`. Usually `long`
+is the same width as `int` or `long long`, but is compatible with neither.
 
-**21** C doesn't even solidly define what the basic types mean, except that long long >= long >= int >= short >= char with certain minimums.
+**21** C doesn't even solidly define what the basic types mean, except that `long long >= long >= int >= short >= char` with certain minimums.
 
-**22** C99 defines int32_t, uint64_t etc, but usually on top of int/long etc. Yet the rest of C still uses
-"%lld" formats (long long); or -LL suffixes.
+**22** C99 defines `int32_t`, `uint64_t` etc, but usually on top of `int/long` etc. Yet the rest of C still uses
+`"%lld"` formats (`long long)`; or `-LL` suffixes.
 
-**23** Basic types have untidy long-winded denotations: unsigned long long int, that can be written
-in any order, with parts missing: long unsigned long.
+**23** Basic types have untidy long-winded denotations: `unsigned long long int`, that can be written
+in any order, with parts missing: `long unsigned long`.
 
-**24** C has signed char, unsigned char, but also plain char which is imcompatible with both of the first two.
+**24** C has `signed char, unsigned char`, but also plain `char` which is imcompatible with both of the first two.
 
 **25** Additionally, plain char on most systems is a signed type, which is most inconvenient, and at odds which most other langauges.
 
@@ -113,48 +107,48 @@ in any order, with parts missing: long unsigned long.
 Each is written as one token only. Each is exactly defined. char is effectively unsigned.
 
 **27** M includes a 128-bit type, written a shown in #26. Some C extensions might have a version
-written as __int128 or some such name.
+written as `__int128` or some such name.
 
-**28** M has 128-bit literals and can print 128-bit values (not present in C even with __int128 support)
+**28** M has 128-bit literals and can print 128-bit values (not present in C even with `__int128` support)
 
-**29** C's printf: where do you even start? If A is int, B is long long int, C is a char\*, D is a pointer, E is a uint64_t, then
+**29** C's printf: where do you even start? If A is `int`, B is `long long int`, C is a `char*`, D is a pointer, E is a `uint64_t`, then
 you might print those using:
 ````
     printf("%d %lld %s %p %ull", a,b,c,d,e);
 ````
-You have to specify the exact format. The %ull is also correct for Windows or Linux32, but is wrong
-for Linux64 (you need to use a macro like PRId64). In M it is just:
+You have to specify the exact format. The `%ull` is also correct for Windows or Linux32, but is wrong
+for Linux64 (you need to use a macro like `PRId64`). In M it is just:
 ````
     print a,b,c,d,e
 ````
 Could it be any simpler?
 
-**30** On the same topic, try printing the result of an expression that involves int32_t, clock_t and size_t; what
+**30** On the same topic, try printing the result of an expression that involves `int32_t`, `clock_t` and `size_t`; what
 format code to use? Even when you figure it out; you later change a declaraton or tweak the expression, and
 it could be different. In M, nothing changes: there are no format codes that tell the compiler
 what it already knows: the type of an expression.
 
-**31** C uses 'sizeof' for the byte-size of a type or expression. For the latter, suppose you define
-a pointer 'T\* sizeOf', then the size that it points to is sizeof\*sizeOf. Which looks a little like
-it is multiplying two variables! In M it is sizeoOf.bytes or sizeof.bytes (case-insensitive).
+**31** C uses `sizeof` for the byte-size of a type or expression. For the latter, suppose you define
+a pointer `T* sizeOf`, then the size that what points to is `sizeof*sizeOf`. Which looks a little like
+it is multiplying two variables! In M it is `sizeoOf.bytes` or `sizeof.bytes` (case-insensitive).
 
-**32** sizeof(T) needs parentheses around a type but not around an expression: sizeof X. But an
-expression might have parentheses anyway: sizeof(A)-1. Now it starts to get confusing... (Not an issue with M)
+**32** `sizeof(T)` needs parentheses around a type but not around an expression: `sizeof X`. But an
+expression might have parentheses anyway: `sizeof(A)-1`. Now it starts to get confusing... (Not an issue with M)
 
-**33** To get the size of a fixed array A in C, you need sizeof(A)/sizeof(A[0]). Or, thanks to #32,
-you can write it as sizeof(A)/sizeof(A)[0] - I think. In M it is A.len, with no need to repeat a possibly long name.
+**33** To get the size of a fixed array A in C, you need `sizeof(A)/sizeof(A[0]`). Or, thanks to #32,
+you can write it as `sizeof(A)/sizeof(A)[0]` - I think. In M it is `A.len`, with no need to repeat a possibly long name.
 
-**34** The maximum value of int? In C it's INT_MAX or MAX_INT; one of those two. But you need limits.h. Of uint64_t? Now you need stdint.h or inttypes.h, and it's -- I don't know, some macro you have to go and look up. In M it's just int.max or in general T.min and T.max for any integer type.
+**34** The maximum value of int? In C it's `INT_MAX` or `MAX_INT`; one of those two. But you need limits.h. Of `uint64_t`? Now you need stdint.h or inttypes.h, and it's -- I don't know, some macro you have to go and look up. In M it's just `int.max` or in general `T.min` and `T.max` for any integer type.
 
-**35** The maximum value of the type of an expression X? In C you can't do it. In M it is X.max or X.min for the minimum.
+**35** The maximum value of the type of an expression X? In C you can't do it. In M it is `X.max` or `X.min` for the minimum.
 
-**39** How many bits in a type? C uses CHAR_BIT for bits in a char, so bits in T would be sizeof(T)\*CHAR_BIT. In M: T.bitwidth.
+**39** How many bits in a type? C uses `CHAR_BIT` for bits in a char, so bits in `T` would be `sizeof(T)*CHAR_BIT`. In M: `T.bitwidth`.
 
-**37** M also has min/max operators built-in that work on ints and floats: min(x,y), max(x,y) (can also be written as infix)
+**37** M also has `min/max` operators built-in that work on ints and floats: `min(x,y)`, `max(x,y)` (can also be written as infix)
 
-**38** Min/max can be used in augmented assignments: x min:= y; equivalent to x := min(x,y).
+**38** `Min/max` can be used in augmented assignments: `x min:= y`; equivalent to `x := min(x,y)`.
 
-**39** M has 'swap' to exchange any two values: swap(A[i], A[i+1)
+**39** M has `swap` to exchange any two values: `swap(A[i], A[i+1)`
 
 **40** Perform an operation between two integer types, and there will be a wildering set of rules that will determine whether the operation is done as signed or unsigned, and what signedness the result will be:
 ````
@@ -1078,7 +1072,24 @@ which just return true or false. Very easy. Sure you can trivially emulate these
 ````
 Seems to me that someone else thinks this is a good idea!
 
+### Update
 
-### Other Differences
+Since the above was written, some M features have been dropped or have changed. They include:
 
-There are some other features that I decided not to have in the language: many were to be imported from the scripting language, or are experimental, or I'd been thinking of adding, but I think this is enough to be getting on with...
+* 128-bit support
+* Arbitrary number bases for integer and float literals. I still have base 2 and 16, and arbitrary bases 2-16 can still be used for printing
+
+
+### So, Does C Do Anything Better?
+
+I don't know about better, but this is a list of significant C features that I don't have in M:
+
+* Extensive macro system. (If someone is desperate for such a thing, they can apply the preprocessor in my C compiler to M source code, but it is not full-spec)
+* VLAs
+* Compound literals (M has syntax for an equivalent feature, but is poorly supported in later compiler stages)
+* Designated initialisers
+* Complex number support
+* Case sensitivity, which allows you to have identifiers `abc Abc and ABC` in the same namespace without clashing (as well as `abC aBc aBC AbC ABc`).
+* `const` attributes
+
+Plus of course there are C compilers for every processor on the planet, including optimising ones.
