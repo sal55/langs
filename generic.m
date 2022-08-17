@@ -1,4 +1,4 @@
-    function readgeneric:unit=
+    function readgeneric:unit=      # 'unit' is a reference to an AST node
     # read generic construct; return chosen expr according to type of control expr
     # at '_Generic'
         unit pexpr,pmatch,p
@@ -9,8 +9,8 @@
         lex()
         checksymbol(lbracksym)
         lex()
-        oldingeneric:=ingeneric   # _Generic may be nested (never tried this)
-        ingeneric:=1              # (this flags inhibits type promotions elsewhere, usually 0)
+        oldingeneric:=ingeneric     # _Generic may be nested (never tried this)
+        ingeneric:=1                # (this flags inhibits type promotions elsewhere, usually 0)
         pexpr:=readassignexpr()		# control expr
         ingeneric:=oldingeneric
 
