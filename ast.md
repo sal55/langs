@@ -17,9 +17,9 @@ The latter is partly filled in during parsing (and many need to be tentative, be
 The next pass resolves names, and fills in a few more types (so that the node for a for example is filled in as i64 from its symbol table entry, once that is known).
 
 The third pass is type analysis that fills in the rest. That ensures the types of `a` and `b` of my example are compatible (converted and/or promoted if not), and fills in the result of a + b in the node for binary add. (The final AST for this is shown below too.)
-
-global type unit = ref unitrec    # for convenience
 ```
+global type unit = ref unitrec    # for convenience
+
 global record unitrec =
     byte tag
     byte simple
