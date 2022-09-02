@@ -1,3 +1,5 @@
+(Reply to request to see compiler sources. Below is the example posted and adapted for reddit. To see real sources, some older versions of projects are in [sources](sources). Look for `record unitrec`, since it exists in most (not 'aa' or 'px').)
+
 Well, it's not closed source but it's messy, and it uses crude, ad hoc, manually managed unions (not the latest sum types and tagged unions of Rust etc) that most here will look down upon.
 
 I doubt one can gain much insight from browsing sources of substantial applications, since what's needed is in the bigger picture, not the minutiae of source code. Plus the complexities of a real compiler will obscure things anyway.
