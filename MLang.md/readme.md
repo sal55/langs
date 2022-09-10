@@ -79,7 +79,7 @@ This new one is about 10% smaller and 10% faster. I've just got it to the point 
 
 ### Future Development
 
-There's quite a lot I can think of to put into M that is suited to the level of language (unlike C and VLAs, say), and that would straightforward to implement and that can be easily appreciated.
+There's quite a lot I can think of to put into M that is suited to the level of language (unlike C and VLAs, say), and that would straightforward to implement and that can be easily appreciated. This is on top of improving covering of existing features.
 
 But it would not be worthwhile since the range of use of M in my hands is limited. Mainly for language projects and libraries. It's too much work just for box-ticking.
 
