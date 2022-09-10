@@ -22,7 +22,7 @@ Name | Written In | Description
 
 ### Q Language
 
-* Dynamically typed, byte-code interpreted
+* Dynamically typed, bytecode interpreter
 * Started off as an add-on scripting language for my applications, now standalone
 * Unusual scripting language which is a lot less dynamic than most, but also faster
 * Self-contained interpreter in one 0.8MB executable for Windows 64
@@ -44,7 +44,7 @@ Name | Written In | Description
 
 While the languages largely do the same things, mine varies in significant ways:
 
-* Algol-style syntax without braces and without begin-end either (which are as bad as braces)
+* Algol-style syntax without braces and without begin-end either (which are as bad as braces), and largely semi-colon free. So uncluttered
 * Case-insensitive syntax
 * 1-based indexing with option to use 0-based or N-based
 * Module scheme
@@ -62,19 +62,19 @@ Plus dozens more, including many micro-features.
 
 ###  Availability
 
-These were in-house tools, now are hobbyist projects. As such, while not exactly private or proprietory, their standard of implementation is not good enough for general use; they cannot be supported. (They're a little *too* informal!)
+These were in-house tools, now are hobbyist projects used as personal tools. As such, while not exactly private or proprietory, their standard of implementation is not good enough for general use; they cannot be supported. (They're a little *too* informal!)
 
 However anyone is welcome to take from them whatever they wish.
 
 ### The Current M Compiler.
 
-I've been used an IL stage for a years, but have decided to do away with that. For my limited targets, it brought me few benefits.
+I've been using an IL stage for a years, but have decided to do away with that. For my limited targets, it brought me few benefits.
 
-The last one is about 10% smaller and 10% faster. I've just got it to the point where it can build and run all my language projects (Assembler, Interpreter, C compiler, PCL \[independent IL project\] processor (last two maintained as test programs) and all active M compilers), but there's lots more to do in:
+This new one is about 10% smaller and 10% faster. I've just got it to the point where it can build and run all my language projects (Assembler, Interpreter, C compiler, PCL \[independent IL project\] processor (last two maintained as test programs) and all active M compilers), but there's lots more to do in:
 
 * Testing and breaking in
-* Improving coverage of combinations of features (but this won't be 100% for a personal language used for a a limited set of applications)
-* Tidying up the code
+* Improving coverage of combinations of features (but this won't be 100% for a personal language used for a limited set of applications)
+* Tidying up the generated code
 * Seeing if I can make it a bit faster, but without a formal optimiser. My compilers can run very fast even unoptimised, so that is low priority
 
 ### Future Development
