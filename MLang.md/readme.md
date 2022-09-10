@@ -10,9 +10,13 @@ This is an overview of what it is, what it does and what I've been doing with it
 
 ### My Languages
 
-**M** The systems language discussed here, which is statically typed and compiles to native code
+Name | Description
+--- | ---
+**M** | The systems language discussed here, which is statically typed and compiles to native code
+**Q** | My dynamic, interpreter scripting language, described elsewhere (or it will be).
 
-**Q** My dynamic, interpreter scripting language, described elsewhere (or it will be). Again, this is lower level and less dynamic than typical scripting languages, but also tend to be faster. It shares syntax with M, and future development involves making them work together better
+Again, this is lower level and less dynamic than typical scripting languages, 
+but also tend to be faster. It shares syntax with M, and future development involves making them work together better
 
 **ASM** This is my assembler (with built-in linker) for x64, created because the available third party products were so woeful
 
