@@ -1,24 +1,32 @@
-## M Language
-
-'M' is my lower-level systems language, well below the level of ones like Rust, Java, Zig, C++, C#, at roughly the same level of C regarding its type system and thje sorts of things it can do.
-
-I would have let it die, but C's continuing popularity shows a need for this kind of language. That makes me happier about maintaining my own take on such a language.
-
-This is an overview of what it is, what it does and what I've been doing with it.
-
-### My Languages
+### My Languages 2022
 
 Name | Description
 --- | ---
-**M** | The systems language discussed here, which is statically typed and compiles to native code
-**Q** | My dynamic, interpreter scripting language, described elsewhere (or it will be).
-Plus: | 
-**ASM** | This is my assembler (with built-in linker) for x64
-**PCL** | A now discontinued IL used by the M compileers
+**M** | Systems programming language, statically typed and compiles to native code
+**Q** | Dynamic, interpreted scripting language
+**ASM** | x64 assembler with built-in linker
 
-M and Q are my primary languages, sharing the same syntax, current development is about allowing them to interact better.
+(There was also **PCL**, an intermediate language used by my M compilers for a while, which was turned into an independent language. This 250KB application, which turned .pcl files into .exe, was partly a protest against the complexities of LLVM. It has now been dropped, and the M compiler no longer uses even an internal IL.)
 
-### M History
+For 2022, M is almost embarrassingly low level and crude compared to the current crop of what are termed 'systems' languages. However, it is at about the same level of C, which remains very popular. It shows there is a still an appetite for this kind of language. I believe that M implements it better.
+
+### Principles
+
+Since this stuff is more of a hobby now, I can concentrate on certain principles for my languages and compilers:
+
+**Simple** I need to understand the languages inside out, which rules out complex ideas and elaborate type systems. This also makes them **Accessible**
+
+**Small** The executables range from 150KB for the assembler, to about 400KB each for M and Q, excluding bundled libraries. There are smaller products, but M and Q are still comprehensive languages, and competing language are far bigger. All three products were just about still fit on a single floppy disk.
+
+**Informal** I don't need to explain this
+
+**Fast** This is mainly about compilation speed. On a low-end AMD Ryzen 3 processor, the M compiler works at up to 0.7M lines per second; Q's bytecode compiler up to 1.5M lps, and the assembler upwardds of 2M lps.
+
+**Self-contained** Each of the three products is a single EXE file with no dependencies, only what is provided by the OS. M and Q will bundle standard libraries within the same file.
+
+**One-File** 
+
+### M 
 
 This started a *very* long time ago when working with 8-bit hardware. The language has evolved, but it only really targets one platform at a time, currently 64-bit Windows running on x64.
 
