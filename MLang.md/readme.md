@@ -1,38 +1,58 @@
 ### My Languages 2022
 
-Name | Description
---- | ---
-**M** | Systems programming language, statically typed and compiles to native code
-**Q** | Dynamic, interpreted scripting language
-**ASM** | x64 assembler with built-in linker
+I use two complementary languages, plus a support one:
 
-(There was also **PCL**, an intermediate language used by my M compilers for a while, which was turned into an independent language. This 250KB application, which turned .pcl files into .exe, was partly a protest against the complexities of LLVM. It has now been dropped, and the M compiler no longer uses even an internal IL.)
+Name | Written In | Description
+--- | --- | ---
+**M** | M | Systems programming language, statically typed and compiles to native code
+**Q** | M | Dynamic, interpreted scripting language
+**ASM** | M | x64 assembler with built-in linker
 
-For 2022, M is almost embarrassingly low level and crude compared to the current crop of what are termed 'systems' languages. However, it is at about the same level of C, which remains very popular. It shows there is a still an appetite for this kind of language. I believe that M implements it better.
+(There was also **PCL**, an intermediate language used by my M compilers for a while, which was turned into an independent language. Now dropped, I wanted to see what LLVM might have looked like if I applied my principles)
+
+For 2022, M is almost embarrassingly low level and crude compared to the current crop of what are termed 'systems' languages. However, it is at about the same level of C, which still remains very popular. It shows there is a still an appetite for this kind of language. I believe that M implements it better.
+
+All products work on Windows 64 only. I decided not to continue experiments on Linux although M and Q have both worked there in the past.
 
 ### Principles
 
 Since this stuff is more of a hobby now, I can concentrate on certain principles for my languages and compilers:
 
-**Simple** I need to understand the languages inside out, which rules out complex ideas and elaborate type systems. This also makes them **Accessible**
+Simple, Accessible, Small, Informal, Fast, Self-contained, Zero-dependencies, One-file
 
-**Small** The executables range from 150KB for the assembler, to about 400KB each for M and Q, excluding bundled libraries. There are smaller products, but M and Q are still comprehensive languages, and competing language are far bigger. All three products were just about still fit on a single floppy disk.
+Languages make all sorts of such claims about themselves, but some of these can at least be quantified:
 
-**Informal** I don't need to explain this
+**Small** My assembler is 160KB; My M compiler is 400-500KB; the Q interpreter is 400-700KB. The higher figure includes bundled library sources. The whole suite would just fit on a 1.44MB floppy still. There are much smaller products, but for equivalent languages, the relevant tools are usually bigger.
 
-**Fast** This is mainly about compilation speed. On a low-end AMD Ryzen 3 processor, the M compiler works at up to 0.7M lines per second; Q's bytecode compiler up to 1.5M lps, and the assembler upwardds of 2M lps.
+**Fast** This refers to compilation speed. The M compiler has a throughput up to 0.7M lines per second; the Q bytecode compiler up to 1.5Mlps; and the assembler upwards of 2Mlps, all on a low-end PC.
 
-**Self-contained** Each of the three products is a single EXE file with no dependencies, only what is provided by the OS. M and Q will bundle standard libraries within the same file.
+**Self-contained** All three products are run from a single executable file (that is, one each!). No other support files are needed.
 
-**One-File** 
+**Zero-dependencies** No external languages, compilers or other tools are needed to build or to use. And no add-on libraries. There is a dependency on some C functions within msvcrt.dll, but this is part of Windows. The M compiler is self-hosted, and other tools are written in M.
 
-### M 
+**One-File** This applies to several aspects of what I do:
 
-This started a *very* long time ago when working with 8-bit hardware. The language has evolved, but it only really targets one platform at a time, currently 64-bit Windows running on x64.
+* Installations are single-file, self-contained installations as I've said
+* Any outputs from these tools are always single files:
+  * A single EXE, ASM, OBJ, MX/ML file (or a PCL file at one time)
+  * A single .ma or .qa file representing amalgamated source files
+* Inputs can also be a single .ma or .qa or .asm source file representing an entire application
+* When I used to distribute my programs as C source versions, it was as a single C source file automatically generated, designed to be as simple to build as hello.c.
 
-### Comparison With C
 
-Here are the main differences:
+### History
+
+The M language started a *very* long time ago when working with 8-bit hardware. The language has evolved, but it only really targets one platform at a time, currently 64-bit Windows running on x64.
+
+The Q language started off as an add-on scripting language for my applications.
+
+The x64 assembler was created out of necessity (like the above actually), since external tools such as Nasm and LD had all sorts of issues. The backend of the assembler, which can directly generate EXE files, was incorporated into the M compiler.
+
+### M vs C
+
+Saying that M is a different take on C is a little misleading. I'd been coding for 15 years, and using my own M language for 10, before I even tried C for the first time. The idea was to drop M and switch to C, but I found it so disapointing that I decided to stick with M, even though I need to write a new compiler to work under Windows.
+
+M and C share a similar type system and can be used for the same sorts of tasks. They are both lower level. But M has these differences:
 
 * Algol-style syntax without braces and without begin-end either (which are as bad as braces)
 * Case-insensitive syntax
@@ -44,24 +64,52 @@ Here are the main differences:
 * Slices
 * Embed (the C23 name for features I've long had)
 * Very fast, single-file and self-contained whole-program compiler
-* Programs can also be run directly run from source
+* The ability to run programs directly run from source
 * Can create compilable one-file source amalgamations of projects
+* Does not need a build system like `make` (submit only the lead module, it will discover program structure automatically)
 
-So there are few of the advanced features that people are so keen on these days, but it still provides, for my purposes, a much more comfortable coding experience compared with C.
+Among dozens more. So while M has few advanced language features and especially elaborate type systems that people are so keen on these days, it still provides, for my purposes, a much more comfortable coding experience compared with C.
 
-### Dislike of C
+Actually, my disdain for C has developed to an active dislike. It seems to be given too much regard and too much prominence when talking about lower-level languages, despite many appalling and downright dangerous design choices. (Yes C is unsafe, but more so than necessary.)
 
-What had been an indifference to C years ago has now turned into an active dislike and disdain. This is yet another reason why my M language still exists. Not only that, but it strives to be self-contained and self-sufficient. No other tools are used. It does use the C library, but that is just another binary DLL the same as 100 other libraries; the other side of an FFI is just binary machine code.
+So, while my M compilers supported a C target for a while (helping portability and benefiting from optimised code), I have decided against that for now. I will use C as necessary as it comes up in APIs, but I will rely on it as little as possible. (Remember that the other side of any FFI is just binary machine code, not C.)
 
-### The Current Compiler.
+###  Availablity
 
-The current working one is numbered M5, and I've played with M6 and M7 this year. But those all used an IL/IR stage, which I decided to eliminate in the latest M8 compiler.
+In the past, my languages and compilers were in-house tools created for productivity, now are hobbyist projects.
 
-This last one is about 10% smaller and 10% faster. I've just got it to the point where it can build and run all my language projects (Assembler, Interpreter, C compiler, PCL processor (last two maintained as test programs) all M compilers including itself), but there's lots more to do in:
+As such, while not exactly private or proprietory, their standard of implementation is not good enough for general use; they cannot be supported. (They're a little *too* informal!) However anyone is welcome to take from them whatever they wish.
 
-* Testing
-* Improving coverage of combinations of features (but this won't be 100% for a private language used for a a limited set of applications)
+### The Current M Compiler.
+
+The current stable one is numbered M5, and I've played with M6 and M7 this year. But those all used an IL/IR stage, which I decided to eliminate in the latest M8 compiler.
+
+This last one is about 10% smaller and 10% faster. I've just got it to the point where it can build and run all my language projects (Assembler, Interpreter, C compiler, PCL processor (last two maintained as test programs) and the M5-M8 M compilers), but there's lots more to do in:
+
+* Testing and breaking in
+* Improving coverage of combinations of features (but this won't be 100% for a personal language used for a a limited set of applications)
 * Tidying up the code
 * Seeing if I can make it a bit faster, but without a formal optimiser. My compilers can run very fast even unoptimised, so that is low priority
 
+### Future Development
 
+There's quite a lot I can think of to put into M that is suited to the level of language (unlike C and VLAs, say), and that would straightforward to implement and that can be easily appreciated.
+
+But it would not be worthwhile since the range of use of M in my hands is limited. Mainly for language projects and libraries. It's too much work just for box-ticking.
+
+I did try earlier this year to combine M and Q into one language; it didn't work. (Resulting in combining the disadvantages of each rather then the advantages!)
+
+Then I tried to embed a version of M ('M lite`) into Q. That got a fair way, but I code stuck in the code generator for M, which would have involved incorporating the whole backend of M, into the Q interpreter. There were also too many boundary issues to sort (switching between interpreted and dynamic code, and converting from high level dynamic types to and from M's simpler ones).
+
+The new M8 compiler, with one less pass, would be simpler, but the result is still unwieldy.
+
+Q can already call M via its FFI mechanism. When M is compiled to a shared library, it can generate the FFI info automatically, in the form of a Q import module. But that can't easily share non-executable entities (types, macros, named constants, enum tables, variables), which anyway really need to originate in Q.
+
+So the solution I'm looking at is for Q and M to be able to share modules that describe only such entities, and not executable code like functions. That allows modules containing M code (the full language now), to be processed with the M compiler; not half of an M compiled hacked into the interpreter.
+
+The challenge is to make use of the dual language intuitive and effortless.
+
+
+### Further Info
+
+Not ready.
