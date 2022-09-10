@@ -4,13 +4,9 @@ I use two complementary languages, plus a support one:
 
 Name | Written In | Description
 --- | --- | ---
-**M** | M | Systems programming language, statically typed and compiles to native code
+**M** | M | Systems programming language, statically typed and compiled to native code
 **Q** | M | Dynamic, interpreted scripting language
 **ASM** | M | x64 assembler with built-in linker
-
-(There was also **PCL**, an intermediate language used by my M compilers for a while, which was turned into an independent language. Now dropped, I wanted to see what LLVM might have looked like if I applied my principles)
-
-For 2022, M is almost embarrassingly low level and crude compared to the current crop of what are termed 'systems' languages. However, it is at about the same level of C, which still remains very popular. It shows there is a still an appetite for this kind of language. I believe that M implements it better.
 
 All products work on Windows 64 only. I decided not to continue experiments on Linux although M and Q have both worked there in the past.
 
@@ -42,7 +38,7 @@ Languages make all sorts of such claims about themselves, but some of these can 
 
 ### History
 
-The M language started a *very* long time ago when working with 8-bit hardware. The language has evolved, but it only really targets one platform at a time, currently 64-bit Windows running on x64.
+The M language started a *very* long time ago when working with 8-bit hardware. Actually, about a decade before the first time I tried C (and promptly decided to stick with my language). The language has evolved, but it only really targets one platform at a time, currently 64-bit Windows running on x64.
 
 The Q language started off as an add-on scripting language for my applications.
 
@@ -50,9 +46,9 @@ The x64 assembler was created out of necessity (like the above actually), since 
 
 ### M vs C
 
-Saying that M is a different take on C is a little misleading. I'd been coding for 15 years, and using my own M language for 10, before I even tried C for the first time. The idea was to drop M and switch to C, but I found it so disapointing that I decided to stick with M, even though I need to write a new compiler to work under Windows.
+For 2022, M is almost embarrassingly low level and crude compared to the current crop of what are termed 'systems' languages. However, it is at about the same level of C, which still remains very popular. It shows there is a still an appetite for this kind of language.
 
-M and C share a similar type system and can be used for the same sorts of tasks. They are both lower level. But M has these differences:
+But while M and C do the same things can be used for the same tasks, M has these differences:
 
 * Algol-style syntax without braces and without begin-end either (which are as bad as braces)
 * Case-insensitive syntax
@@ -68,11 +64,9 @@ M and C share a similar type system and can be used for the same sorts of tasks.
 * Can create compilable one-file source amalgamations of projects
 * Does not need a build system like `make` (submit only the lead module, it will discover program structure automatically)
 
-Among dozens more. So while M has few advanced language features and especially elaborate type systems that people are so keen on these days, it still provides, for my purposes, a much more comfortable coding experience compared with C.
+Among dozens more. It provides a much more comfortable coding experience compared with C.
 
-Actually, my disdain for C has developed to an active dislike. It seems to be given too much regard and too much prominence when talking about lower-level languages, despite many appalling and downright dangerous design choices. (Yes C is unsafe, but more so than necessary.)
-
-So, while my M compilers supported a C target for a while (helping portability and benefiting from optimised code), I have decided against that for now. I will use C as necessary as it comes up in APIs, but I will rely on it as little as possible. (Remember that the other side of any FFI is just binary machine code, not C.)
+Actually, my disdain for C has developed to an active dislike (far too much fuss is made of a language with many appalling and unnecessarily dangerous design choices). So, while my M compilers supported a C target for a while (helping portability and benefiting from optimised code), I have decided against that for now. I will use C as necessary as it comes up in APIs, but I will rely on it as little as possible.
 
 ###  Availablity
 
@@ -84,7 +78,7 @@ As such, while not exactly private or proprietory, their standard of implementat
 
 The current stable one is numbered M5, and I've played with M6 and M7 this year. But those all used an IL/IR stage, which I decided to eliminate in the latest M8 compiler.
 
-This last one is about 10% smaller and 10% faster. I've just got it to the point where it can build and run all my language projects (Assembler, Interpreter, C compiler, PCL processor (last two maintained as test programs) and the M5-M8 M compilers), but there's lots more to do in:
+This last one is about 10% smaller and 10% faster. I've just got it to the point where it can build and run all my language projects (Assembler, Interpreter, C compiler, PCL \[independent IL project\] processor (last two maintained as test programs) and the M5-M8 M compilers), but there's lots more to do in:
 
 * Testing and breaking in
 * Improving coverage of combinations of features (but this won't be 100% for a personal language used for a a limited set of applications)
