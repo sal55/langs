@@ -61,36 +61,21 @@ I update this every so often. The current one just completed has one away with t
 
 Both M and Q have very long histories. I'm hesitant to say exactly how long, since they might have been expected to have evolved a lot more by now! Let's say the first version of M was developed for and ran on 8-bit microprocessors with tiny memories.
 
-Actually, they have evolved, but along lines that I considered more useful:
-
-* They have progressed from 8-bit targets to 16, 32 and now 64-bit targets
-* Host OS has evolved from None (bare metal), to CP/M, MS-DOS and Windows
-* (Experimental versions have also run on Linux, but that involved targetting C and using a C compiler, which was unsatisfactory)
-* Both have acquired module schemes
-* Both are whole-program compilers and both compile code at very fast speeds, allowing more or less instant build times
-* This allows M to be used as a scripting language
-* Both have super-simple single-file installations
-* Both can generate single-file amalgamations for easy distribution of application source code
-* They have acquired a plethora of small features that I consider more handy then elaborate type systems
+(Actually, they have evolved and become more polished, but also along lines that I considered more useful such as whole program compilation and applying my 'one-file' principle as much as possible: one-file installations, outputs, amalgmations, distributions.)
 
 ### Future Development
 
-There's quite a lot I can think of to put into M that is suited to the level of language (unlike C and VLAs, say), and that would straightforward to implement and that can be easily appreciated. This is on top of improving covering of existing features.
-
-But it would not be worthwhile since the range of use of M in my hands is limited. Mainly for language projects and libraries. It's too much work just for box-ticking.
+There's quite a lot that be put into M while not making it significantly higher level, but as my personal use of it is limited, most would not be worthwile.
 
 I did try earlier this year to combine M and Q into one language; it didn't work. (Resulting in combining the disadvantages of each rather then the advantages!)
 
-Then I tried to embed a version of M ('M Lite`) into Q. That got a fair way, but I got stuck in the code generator for M, which would have involved incorporating the whole backend of M, into the Q interpreter. There were also too many boundary issues to sort out (jumping between interpreted and dynamic code, and converting Q's high level dynamic types to and from M's simpler ones).
+Then I tried to embed a version of M ('M Lite`) into Q. That got a fair way, but since it involved grafting the backend of the M compiler into the interpreter, it got unwieldly. But there were many boundary issues to be resolved still.
 
-The new M compiler, with one less pass, would be simpler, but the result is still unwieldy.
+Q can already call M via its FFI mechanism, and the M compile can automatically generate the interface modules Q needs. But sharing non-executable entities (enums, types, variables etc) is limited. That should also originate in Q.
 
-Q can already call M via its FFI mechanism. When M is compiled to a shared library, it can generate the FFI info automatically, in the form of a Q import module. But that can't easily share non-executable entities (types, macros, named constants, enum tables, variables), which anyway really need to originate in Q.
+So a solution I'm looking at is for Q and M to be able to share modules that describe only such entities, and not executable code like functions. That allows modules containing M code (the full language now), to be processed with the discrete M compiler.
 
-So the solution I'm looking at is for Q and M to be able to share modules that describe only such entities, and not executable code like functions. That allows modules containing M code (the full language now), to be processed with the M compiler; not half of an M compiled hacked into the interpreter.
-
-The challenge is to make use of the dual language intuitive and effortless.
-
+The challenge then is to make use of the dual language intuitive and effortless.
 
 ### Further Info
 
