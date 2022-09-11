@@ -2,11 +2,11 @@
 
 I use two complementary languages, plus a support one:
 
-Language | Tool | Description
+Language | Tool | Target | Description
 --- | --- | ---
-M | mm.exe (compiler) | Lower level systems language
-Q | qq.exe (interpreter) | Dynamic scripting language
-ASM | aa.exe (assembler) | x64 assembler/linker
+M | mm.exe (compiler) | Win64 | Lower level systems language
+Q | qq.exe (interpreter) | Win64 | Dynamic scripting language
+ASM | aa.exe (assembler) | Win64 | x64 assembler/linker
 
 This describes those three tools in more detail:
 
@@ -56,6 +56,14 @@ I update this every so often. The current one just completed has one away with t
 * Improving coverage of combinations of features (but this won't be 100% for a personal language used for a limited set of applications)
 * Tidying up the generated code
 * Seeing if I can make it a bit faster, but without a formal optimiser. My compilers can run very fast even unoptimised, so that is low priority
+
+### History
+
+Both M and Q have very long histories. I'm hesitant to say exactly how long, since they might have been expected to have evolved a lot more by now!
+
+(They have evolved, but not much in terms of advanced language features and type systems.)
+
+Let's say the first version of M was developed for and ran on 8-bit microprocessors with tiny memories.
 
 ### Future Development
 
