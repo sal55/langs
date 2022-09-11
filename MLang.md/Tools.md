@@ -118,18 +118,23 @@ This example:
 ```
 Compiles the mm compiler into memory, and runs it immediately with input of hello. Such programs can be stacked:
 ```
-    c:\mx>mm -run mm -run hello
+    c:\mx>mm -run mm -run mm -run hello
+    Compiling mm.m to memory
     Compiling mm.m to memory
     Compiling hello.m to memory
     Hello World!
 ```
-This builds the M compiler, runs it on hello.m, and runs that.
+This builds the M compiler, runs it to build a second generation compiler, then runs that on hello.m (and does it faster than it takes gcc just to conventionally compile hello.c; that is, without gcc building itself first, not even once).
 
-I'm looking at ways to automaticaly have this behaviour (by building a special version of mm.exe, or it detecting a specially renamed copy of mm.exe) without having to use `-run` option. This would then allow M programs to be run just like Q scripts. If I mock this up, then this line:
+#### Running M Scripts
+
+This can be done with the `-run` option as shown, but that gets in the way. Nicer to not need it to use it. Well, if `mm.exe` is copies to `ms.exe`, it will detect that special file name ('MS' for 'M Script') and invoke -run automatically:
 ```
-   mm mm mm mm mm mm mm mm mm mm mm hello
+    c:\mx>ms hello
+    Compiling hello.m to memory
+    Hello World!
 ```
-Compiles 10 successive generations of the compiler, before running hello.m. (This example takes 0.75 seconds running unoptimised code on a cheap PC.)
+(Maybe that Compiling message can be suppressed to make it more transparent.)
 
 #### Using Amalgamated Source Files
 
