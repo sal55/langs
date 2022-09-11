@@ -45,7 +45,7 @@ Plus many more micro-features.
 
 ###  Availability
 
-These were in-house tools, now are hobbyist projects used as personal tools. As such, while not exactly private or proprietory, their standard of implementation is not good enough for general use; they cannot be supported; and documentation is erratic.
+These were in-house tools, now are hobbyist projects used as personal tools. As such, while not exactly private or proprietory, their standard of implementation is not good enough for general use; they cannot be supported; and documentation is erratic. (See What's Missing below)
 
 However anyone is welcome to take from them whatever they wish.
 
