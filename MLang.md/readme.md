@@ -3,7 +3,7 @@
 I use two complementary languages, plus a support one:
 
 Language | Tool | Target | Description
---- | --- | ---
+--- | --- | --- | ---
 M | mm.exe (compiler) | Win64 | Lower level systems language
 Q | qq.exe (interpreter) | Win64 | Dynamic scripting language
 ASM | aa.exe (assembler) | Win64 | x64 assembler/linker
@@ -64,10 +64,13 @@ Both M and Q have very long histories. I'm hesitant to say exactly how long, sin
 Actually, they have evolved, but along lines that I considered more useful:
 
 * They have progressed from 8-bit targets to 16, 32 and now 64-bit targets
+* Host OS has evolved from None (bare metal), to CP/M, MS-DOS and Windows
+* (Experimental versions have also run on Linux, but that involved targetting C and using a C compiler, which was unsatisfactory)
 * Both have acquired module schemes
 * Both are whole-program compilers and both compile code at very fast speeds, allowing more or less instant build times
 * This allows M to be used as a scripting language
 * Both have super-simple single-file installations
+* Both can generate single-file amalgamations for easy distribution of application source code
 * They have acquired a plethora of small features that I consider more handy then elaborate type systems
 
 ### Future Development
