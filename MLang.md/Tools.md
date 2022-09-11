@@ -2,6 +2,8 @@
 
 These all work on and for 64-bit Windows.
 
+I'm documenting only the basic compilers. For things like editors and IDEs, everyone will have their own preferences. No one would interested in my stone-age text-based tools anyway (but I will mention that they are of course implemented in my languages; here I used my Q scripting language).
+
 ### M Compiler mm.exe
 
 This is a 0.5MB executable which incorporates everything needed to compile M programs, including the sources of M's small standard library. Currently these are just compiled as part of each application.
