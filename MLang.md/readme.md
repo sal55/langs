@@ -82,9 +82,10 @@ So a solution I'm looking at is for Q and M to be able to share modules that des
 
 The challenge then is to make use of the dual language intuitive and effortless.
 
-### 
+### Further Info on Tools
 
+For more details of how these three main tools work, see [Tools](Tools).
 
 ### Further Info
 
-Not ready.
+For more details about these three languages ... Not ready.
