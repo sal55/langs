@@ -2,7 +2,7 @@
 
 ### M Compiler mm.exe
 
-This is a 0.5MB executable which incorporates everything needed to compiler M programs, including the sources of M's small standard library. Currently these are just compiled in to each application.
+This is a 0.5MB executable which incorporates everything needed to compile M programs, including the sources of M's small standard library. Currently these are just compiled in to each application.
 
 No dependencies are involved in building M apps, except for the msvcrt.dll library that provides some C functions, but this is part of Windows. Plus any external libraries that application itself might needed, such as opengl.dll.
 
