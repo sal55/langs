@@ -46,5 +46,11 @@ Eventually, the backend was directly incorporated into the M compiler. But the A
 
 * Development of a compiler, since it is much easier to debug when it produces ASM
 * When an OBJ file is needed (not supported by the compiler), which may be necessary to produce DLLs and work with object files from other languages
+* My C compiler (although it dispenses with the CLI front end of the assembler)
+
+Input to AA is usually a single ASM file (from my whole-program compiler), but it can also cope with multiple ASM files. This is still necessary for my C compiler as that uses independent compilation.
+
+AA can 'link' multiple ASM modules (no discrete linker is needed) and direct generate a single EXE or OBJ file. (Also a DLL file, but that has been shown to be buggy.)
+
 
 
