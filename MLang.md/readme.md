@@ -2,49 +2,32 @@
 
 I use two complementary languages, plus a support one:
 
-Name | Written In | Description
+Language | Tool | Description
 --- | --- | ---
-**M** | M | Systems programming language, statically typed and compiled to native code
-**Q** | M | Dynamic, interpreted scripting language
-**ASM** | M | x64 assembler with built-in linker
+M | mm.exe (compiler) | Lower level systems language
+Q | qq.exe (interpreter) | Dynamic scripting language
+ASM | aa.exe (assembler) | x64 assembler/linker
 
-### M Language
+This describes those three tools in more detail:
 
-* Originally created for 8-bit microprocessors, as a systems language, now evolved and used to create standalone programs and libraries for Windows 64
-* Is embarrassingly low level and crude compared with contemporary languages for 'systems' use, but so is C, which remains popular and in demand
-* See M vs C below; my product gives a more comfortable programming experience
-* Self-contained: everything is in one 0.5MB executable file
-* Whole program compiler generating .exe files
-* Fast compilation at up to 0.7M lines per second on low end PC
-* Self-hosted, builds itself in 80msec
-* Zero external dependencies other than what comes with Windows
-* Can generate and directly compile one-file amalgamations of any project
+Tool | Size |Installation | Max throughput | Written in | Sources | Build time | Dependencies
+--- | --- | --- | --- | --- | --- | --- | ---
+mm.exe | 500KB | 1 File | 0.7Mlps |M |  31Kloc | 80ms | None
+qq.exe | 800KB | 1 File | 1.5Mlps | M |  41Kloc | 100ms | None
+aa.exe | 160KB | 1 File | 2Mlps+ | M | 13Kloc | 50ms | None
 
-### Q Language
+Basically, they are smallish, self-contained, very fast and can be built from scratch more or less instantly. M is self-hosted, the others are implemented in M.
 
-* Dynamically typed, bytecode interpreter
-* Started off as an add-on scripting language for my applications, now standalone
-* Unusual scripting language which is a lot less dynamic than most, but also faster
-* Self-contained interpreter in one 0.8MB executable for Windows 64
-* Has excellent built-in support for FFIs and the types encountered in such APIs
-* Bytecode compiler works at up to 1.5M lines per second
-* Built-in accelerator which can double the speed of some programs
-* Shared syntax with the M language
-* Can generate and directly compile one-file amalgamations of any project
+M itself is embarrassinly dated and unsophisticated compared with the current crop of advanced languages that are used for 'systems' programming these days.
 
-### ASM x64 Assembler
-
-* Created to overcome various problems with mainstream products like Nasm and 'ld'
-* Lean, cut-down assembler designed for the output of my compilers (during developement, as these normally bypass ASM)
-* Incorporates a simple linker, can directly generate .exe files
-* Works at 2M lines per second and up
-* Assembler is a self-contained 0.16MB executable
+Yet it works at roughly the same level as C, which is still popular and still seems to be in demand. That makes me feel better in describing my own take on such a language. The main differences are listed below.
+lgamations of any project
 
 ### M vs C
 
 While the languages largely do the same things, mine varies in significant ways:
 
-* Algol-style syntax without braces and without begin-end either (which are as bad as braces), and largely semi-colon free. So uncluttered
+* Algol-style syntax without braces and without begin-end either (which are as bad as braces), and largely semi-colon free. So, uncluttered
 * Case-insensitive syntax
 * 1-based indexing with option to use 0-based or N-based
 * Module scheme
@@ -57,20 +40,17 @@ While the languages largely do the same things, mine varies in significant ways:
 * Can create compilable one-file source amalgamations of projects
 * Does not need a build system like `make` (submit only the lead module, it will discover program structure automatically)
 
-Plus dozens more, including many micro-features.
-
+Plus many more micro-features.
 
 ###  Availability
 
-These were in-house tools, now are hobbyist projects used as personal tools. As such, while not exactly private or proprietory, their standard of implementation is not good enough for general use; they cannot be supported. (They're a little *too* informal!)
+These were in-house tools, now are hobbyist projects used as personal tools. As such, while not exactly private or proprietory, their standard of implementation is not good enough for general use; they cannot be supported.
 
 However anyone is welcome to take from them whatever they wish.
 
 ### The Current M Compiler.
 
-I've been using an IL stage for a years, but have decided to do away with that. For my limited targets, it brought me few benefits.
-
-This new one is about 10% smaller and 10% faster. I've just got it to the point where it can build and run all my language projects (Assembler, Interpreter, C compiler, PCL \[independent IL project\] processor (last two maintained as test programs) and all active M compilers), but there's lots more to do in:
+I update this every so often. The current one just completed has one away with the IL stage I've used for a few years, which makes it about 10% smaller and 10% faster. I've just got it to the point where it can build and run all my language projects (Assembler, Interpreter, C compiler, PCL \[independent IL project\] processor (last two maintained as test programs) and all active M compilers), but there's lots more to do in:
 
 * Testing and breaking in
 * Improving coverage of combinations of features (but this won't be 100% for a personal language used for a limited set of applications)
