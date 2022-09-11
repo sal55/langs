@@ -76,7 +76,7 @@ Then I tried to embed a version of M ('M Lite`) into Q, but it got unwieldy, and
 
 Q can already call M via its FFI mechanism, and the M compile can automatically generate the interface modules Q needs. But this does deal with shared entities such as types, records, enums, named constants, macros and variables, which are needed for an application to make proper use of both.
 
-(In the 1990s, M was used for apps, and an early version of Q was used as an add-on scripting language implemented within the app. There was the rich, shared environment of that 3D graphics- and GUI-intensive application. Now Q is a standalone language.)
+(In the 1990s, M was used for apps, and an early version of Q was used as an add-on scripting language implemented within the app. There, it had the rich, shared environment of that 3D graphics- and GUI-intensive application. Now Q is a standalone language.)
 
 So a solution I'm looking at is for Q and M to be able to share modules that describe only such entities, and not executable code like functions. That allows modules containing M code (the full language now), to be processed with the discrete M compiler.
 
@@ -84,8 +84,19 @@ The challenge then is to make use of the dual language intuitive and effortless.
 
 ### Further Info on Tools
 
-For more details of how these three main tools work, see [Tools](Tools).
+For more details of how these three main tools work, see [Tools](Tools.md).
 
 ### Further Info
 
 For more details about these three languages ... Not ready.
+
+### What's Missing
+
+There is a huge range of things that people expect from a language these days. Other than features within the language, which are the easy bits, the following are the difficulties with trying to maintain your own language:
+
+* No editor will understand your syntax so there's no syntax highlighting (on code editors, github, paste-bin, pretty much everything)
+* Not IDE will know your language. (I understand there are things like language servers, but that's probably a bigger project than my language, and beyond me). Suffice that my source code will be shown as plain text and with the wrong tabbing
+* Lack of libraries. The standard libraries are tiny. There are huge numbers of external libraries, but I don't have an army of people writing bindings for my language. Neither do I have a tool that can take a bunch of C headers and creating bindings from that. (There is one, but it doesn't work; C - actual C - was terrible choice for such APIs)
+For general use, there need to be large numbers of people trying out your language, testing the boundaries, uncovering bugs and omissions and design faults
+* Decent documentation such as tutorials and reference manuals, and presented in a manner that is easy on the eye. While github markdown is better than plain text, it still looks unappealing. And it still needs to be written
+
