@@ -35,7 +35,8 @@ While the languages largely do the same things, mine varies in significant ways:
 * Default 64-bit data types (integers, floats, pointers)
 * Built-in `print` and `read` statements
 * Slices
-* Has 'Embed' (the C23 name for features I've long had)
+* Built-in 'Embed' (Only just being introduced into C23)
+* Built-in 'tabledata` (A superior approach to 'X-macros`)
 * Very fast, single-file and self-contained whole-program compiler
 * Can create compilable one-file source amalgamations of projects
 * Does not need a build system like `make` (submit only the lead module, it will discover program structure automatically)
@@ -44,13 +45,13 @@ Plus many more micro-features.
 
 ###  Availability
 
-These were in-house tools, now are hobbyist projects used as personal tools. As such, while not exactly private or proprietory, their standard of implementation is not good enough for general use; they cannot be supported.
+These were in-house tools, now are hobbyist projects used as personal tools. As such, while not exactly private or proprietory, their standard of implementation is not good enough for general use; they cannot be supported; and documentation is erratic.
 
 However anyone is welcome to take from them whatever they wish.
 
 ### The Current M Compiler.
 
-I update this every so often. The current one just completed has one away with the IL stage I've used for a few years, which makes it about 10% smaller and 10% faster. I've just got it to the point where it can build and run all my language projects (Assembler, Interpreter, C compiler, PCL \[independent IL project\] processor (last two maintained as test programs) and all active M compilers), but there's lots more to do in:
+I revise this every so often. The current one just completed has done away with the IL stage I've used for a few years, which makes it about 10% smaller and 10% faster. I've just got it to the point where it can build and run all my language projects (Assembler, Interpreter, C compiler, PCL (independent IL project) processor and all active M compilers), but there's lots more to do in:
 
 * Testing and breaking in
 * Improving coverage of combinations of features (but this won't be 100% for a personal language used for a limited set of applications)
@@ -59,23 +60,30 @@ I update this every so often. The current one just completed has one away with t
 
 ### History
 
-Both M and Q have very long histories. I'm hesitant to say exactly how long, since they might have been expected to have evolved a lot more by now! Let's say the first version of M was developed for and ran on 8-bit microprocessors with tiny memories.
+M started off some 40 years ago, and Q perhaps 35 years ago. You might have expected them to have evolved a lot more than they have!
 
-(Actually, they have evolved and become more polished, but also along lines that I considered more useful such as whole program compilation and applying my 'one-file' principle as much as possible: one-file installations, outputs, amalgmations, distributions.)
+But they were just tools I devised to help in my main work, and worked well enough.
+
+(Actually, they have evolved and become more polished, but also along lines that I considered more useful than such as whole program compilation and applying my 'one-file' principle as much as possible: one-file installations, outputs, amalgmations, distributions.)
 
 ### Future Development
 
-There's quite a lot that be put into M while not making it significantly higher level, but as my personal use of it is limited, most would not be worthwile.
+There's quite a lot that be put into M while not making it significantly higher level, but as my personal use of it is limited, most would not be worthwile. As it is, it can still do anything that C can do.
 
 I did try earlier this year to combine M and Q into one language; it didn't work. (Resulting in combining the disadvantages of each rather then the advantages!)
 
-Then I tried to embed a version of M ('M Lite`) into Q. That got a fair way, but since it involved grafting the backend of the M compiler into the interpreter, it got unwieldly. But there were many boundary issues to be resolved still.
+Then I tried to embed a version of M ('M Lite`) into Q, but it got unwieldy, and there were many boundary issues to be resolved still.
 
-Q can already call M via its FFI mechanism, and the M compile can automatically generate the interface modules Q needs. But sharing non-executable entities (enums, types, variables etc) is limited. That should also originate in Q.
+Q can already call M via its FFI mechanism, and the M compile can automatically generate the interface modules Q needs. But this does deal with shared entities such as types, records, enums, named constants, macros and variables, which are needed for an application to make proper use of both.
+
+(In the 1990s, M was used for apps, and an early version of Q was used as an add-on scripting language implemented within the app. There was the rich, shared environment of that 3D graphics- and GUI-intensive application. Now Q is a standalone language.)
 
 So a solution I'm looking at is for Q and M to be able to share modules that describe only such entities, and not executable code like functions. That allows modules containing M code (the full language now), to be processed with the discrete M compiler.
 
 The challenge then is to make use of the dual language intuitive and effortless.
+
+### 
+
 
 ### Further Info
 
