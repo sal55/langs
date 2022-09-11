@@ -62,8 +62,6 @@ This is then visible across all modules, and can be called `foo()`; you don't ne
 
 For bigger projects, that list of modules is generally put into its own module, and that becomes the submitted module.
 
-
-
 ### Circular and Mutual Imports
 
 Previous versions of the module system required modules to be in a strict top-down hierarchy. That was too restrictive. The current scheme allows imports in any order including circular imports: A can import B, and B can import A.
@@ -90,7 +88,7 @@ While M ostensibly requires semicolons to separate statements, in practice these
        "(" "\[" "," or a binary operator
 
 ### Comments
-M only has single-line comments starting with "!" until end-of-line. ("!" came from the DEC Fortran and Algol I used in the late 70s.) I've recently introduced '#' for the same purpose, however take care with nested comments using #, since ## introduces a doc-string
+M only has single-line comments starting with "!" until end-of-line. ("!" came from the DEC Fortran and Algol I used in the late 70s.) I've recently introduced '#' for the same purpose, however take care with nested comments using #, since ## introduces a doc-string (a flaw I will need to look at)
 
 It has had block comments in the past, but I believe those should be an editor function (which can use multiple "!" comments). (This also makes things simpler for highlighting editors, as it doesn't need to keep track of context from 1000s of lines before.)
 
@@ -155,20 +153,7 @@ Some conditional directives are used in the program header (where all the `modul
 ### Function Tables
 There is a limited amount of reflection in that all functions (names and addresses) in the program are written to the executable, and can be accessed via special functions.
 
-This allows finding out the name of a function from a function pointer. But what I most use it for is building, at runtime, tables of functions pointers for special handlers. For example, handlers for the commands of, say, an editor, may have functions with names such as 'ed_left', 'ed_delcharright':
-
-    proc ed_left(txdescr td) = ...
-    proc ed_delcharright(txdescr td) = ...
-    ...
- 
-By searching for functions that start with "ed_", and picking up the name of the command it deals with ('left' or 'delcharright'), then a list of handlers for the commands can be created, with defaults for missing commands. This makes it easy to maintain such handlers without manually updating tables of such functions.
-
-### Data Types
-M is low-level so has mainly simple, fixed-size types: scalars, records (ie. structs) and fixed-length arrays with a size known at compile-time.
-
-Dynamic arrays with a length known at run-time can be created with pointers and allocations, but the size remains fixed.
-
-A new type recently added are slices or views into arrays and strings, which can do more along those lines (see below) but I haven't done much with them yet.
+This allows finding out the name of a function from a function pointer. But what I most use it for is building, at runtime, tables of functions pointers for special handlers, by looking for specially contrived function names.
 
 ### Numeric Types
 
@@ -178,41 +163,39 @@ The official set of types are these (either long or short forms can be used):
     int16    i16
     int32    i32
     int64    i64
-    int128   i128
-    
+
     word8    u8      Unsigned integers
     word16   u16
     word32   u32
     word64   u64
-    word128  u128
-    
+
     real32   r32     Floating point
     real64   r64
 
-    char     (c8)
-    char64   (c64)
-
+    char
+    char64
+    bool8
+    bool64
+    
 Common aliases:
 
     int    =  int64
     word   =  word64
     real   =  real64
     byte   =  word8
+    bool   =  bool64
 
-(There had been also machine types for 32/64 bit ints, words and pointers, but since I've settled on 64 bit targets with everything 64 bits, those has been dropped.)
+(There had been also machine types for 32/64 bit ints, words and pointers, but since I've settled on 64 bit targets with everything 64 bits, those have been dropped.)
 
 ### Type of Integer Constants
 These are defaults before any casts are applied, depending on the magnitude of the constant:
 
     0      to 2**63-1         int64 (see note)
     2**63  to 2**64-1         word64
-    2**64  to 2**127-1        int128
-    2**127 to 2**128-1        word128
-    2**128 and above          decimal type (not implemented in this version)
-
-(No suffixes are used to force a particular type, except that in the next M version -L is used to force a decimal type for integers and floats. To force a type, just use a cast, eg. word64(0).)
-
-**Note:** in some contexts, when an int64 constant is combined with a word64 operand, then the constant is considered to be word64 too. The ensures the whole operation is unsigned. Otherwise, because int64 is domninant, in an operation like this:
+    2**64  to ...             (Overflow)
+    
+* Some machines of M had i128/u128 types, and also had some preparatory supportd bignums. But I decided not use add bignums, and 128-bit types were dropped. They just weren't enough and needed too much support
+* In some contexts, when an int64 constant is combined with a word64 operand, then the constant is considered to be word64 too. The ensures the whole operation is unsigned. Otherwise, because int64 is domninant, in an operation like this:
 
     word64 a = 0xFFFF'FFFF'FFFF'FFFF
     if a > 5 then ...
@@ -221,37 +204,39 @@ The comparison is perfored using int64, which means comparing -1 with 5, giving 
 
 ### Numeric Separators
 
-Numeric constants including floating point can use ' _ or \` to separate groups of digits:
+Numeric constants including floating point can use `'` or `_` to separate groups of digits:
 
     1'000'000
-    5`678
     0.142_857
 
 These can all be mixed up, or duplicated: 124'878\_\_\_\_000, so should be used sensibly.
 
 ### Numeric Scaling
 
-M allows scale factors such as 'million', used like this:
+M allows scale factors such as `million`, used like this:
 
     4 million           # 4000000
 
-There used to be others (like m, cm and km to scale lengths to the same units), but this part of the language will be reviewed to try and have user-definable scale factors.
-
-Such names are in their own namespace; 'million' can still be used as an identifier.
+There used to be others (like m, cm and km to scale lengths to the same units), but this part of the language will be reviewed to try and have user-definable scale factors. 
+Such names are in their own namespace; `million` can still be used as an identifier.
 
 ### Number Bases
+
+M had allowed number bases for literals from 2 to 16, but these have been dropped. Now only binary and hex are allowowed other than decimal:
 
 Number bases from 2 to 16 can be used for integers and floats, eg:
 
     2x100    # base 2; 4
     100B     # Alternative way to write binary
-    3x121    # base 3; 16
-    8x377    # octal: 255
-    12xBBB   # base 12: 1727 (not sure if bases 10x to 15x work in this language)
     0xFFF    # hex: 4095
-    16xFFF   # also hex 4095 for completeness
-    5x3.4    # base 5: 3.8 (3 and 4/5)
-    
+
+However, `print` still supports output in different bases, which is probably more useful:
+
+   println 100         # decimal
+   println 100:"H"     # hex
+   println 100:"B"     # binary
+   println 100:"X3"    # ternary (X2 to X16 allowed, X0 should work to match 0x)
+   
 ### Numeric Limits and Type Sizes
 Given any numeric type T or expression X, then:
 
@@ -260,14 +245,14 @@ Given any numeric type T or expression X, then:
     X.minvalue
     X.maxvalue
 
-will yield the smallest and largest values possible. (Next version, where a 'range' (see below) is an actual type, then I may introduce T.bounds to mean 'T.minvalue..T.maxvalue'.)
+will yield the smallest and largest values possible.
 
 For the fixed size of a type or expression:
 
     T.bytes
     X.bytes
 
-For array lengths and bounds, there is a whole set of properties that can be extracted; see section on Lengths and Bounds.
+See section on Lengths and Bounds for arrays.
 
 ### Character Constants
 M uses ASCII, so 'A' has the value 65, but it has type 'char'.
@@ -276,10 +261,10 @@ Multi-character constants are possible, with these types:
 
     'A'                                    c8
     'AB' up to 'ABCDEFGH'                  u64
-    'ABCDEFGHI' up to 'ABCDEFGHIJKLMNOP'   u128
 
+    
 ### Unicode String and Char Constants
-Not sure how to tackle Unicode support yet, so these constants are not supported. UTF8 sequences can be used, but to work with those, any routines called need to support UTF8. A 'print' on a UTF8 string ends up calling C's printf for normal (not wide) characters, so these also depends on Windows, locale, codepages and the like.
+Not sure how to tackle Unicode support yet, so these constants are not supported. UTF8 sequences can be used, but to work with those, any routines called need to support UTF8. A 'print' on a UTF8 string ends up calling C's printf for normal (not wide) characters, so these also depend on Windows, locale, codepages and the like.
 
 ### Type Reflection
 The expression X.type returns an internal type code, so that it can be used as 'if X.type = int.type' for example. Although types are static, the result type of an expression may not be obvious. It can also be turned into a string:
@@ -306,10 +291,10 @@ These are written as, for example:
 Like C, these do not introduce a new type.
 
 ### Pointers and Arrays
-Unlike C, you can't index a pointer like an array, and you can't dereference an array like a pointer. Offsets to pointers can be done, but are written as '(P+i)^' rather than using P\[i\] like C, making it clear something underhand is going on.
+Unlike C, you can't index a pointer like an array, and you can't dereference an array like a pointer. Offsets to pointers can be done, but are written as `(P+i)^` rather than using `P[i]` like C, making it clear something underhand is going on.
 
 ### Auto Dereference
-M used to be a more transparent language needing explicit derefs, but that has been relaxed. Now, a dereference op (a postfix '^' like Pascal) can be omitted in many cases:
+M used to be a more transparent language needing explicit derefs, but that has been relaxed. Now, a dereference op (a postfix `^` like Pascal) can be omitted in many cases:
 
     P^[i]   can be written as P[i]      (P is pointer to array)
     P^.m    can be written as P.m       (P is pointer to record)
@@ -353,10 +338,10 @@ M arrays are always handled by value (C converts them always to a pointer, with 
     [10]int A,B
     A := B
 
-However, there is little support for passing value arrays to functions or returning such arrays. (I used to allow that long ago, but it was never used.) Better ways to pass arrays are by pointer, by reference, or via a slice.
+However, the Win64 ABI doesn't like passing arbitrary blocks of data by value; an implicit pointer is used. This means that when passing arrays and record notionally by value, a callee could modify the data. (There is a parameter mode 'in' which is intended to guard against that, but it's poorly developed.)
 
 ### Array Indexing
-M allows multi-dimensional indexing using the more fluid A\[i,j,k\] instead of the A\[i\]\[j\]\[k\] used in many languages. Although A\[i\]\[j\[k\] is legal too.
+M allows multi-dimensional indexing using the more fluid `A[i,j,k]` instead of the `A[i][j][k]` used in many languages. Although the latter is legeal too.
 
 ### Records
 These are structs, eg:
@@ -419,7 +404,7 @@ Such strings are generally passed as 'ref char' (or ichar) types, rather than re
 
     []char S = ('A','B','C')
 
-This would be a lot of work to write like this. C allows such an array to be initialised from "ABC", but "ABC" has the wrong type, char\* rather than char\[\] (a C quirk allows it). In M, special string constants exist:
+This would be a lot of work to write like this. C allows such an array to be initialised from "ABC", but "ABC" has the wrong type, `char*` rather than `char[]` (a C quirk allows it). In M, special string constants exist:
 
     []char S = a"ABC"             # 3-char array, non-terminated
     []char S = z"ABC"             # 4-char array, zero-terminated
@@ -437,16 +422,16 @@ This is another concept from Algol68 - any expression can be used as a statement
 
 (Name definitions are not classed as statements however.)
 
-'Statements' that can usefully yield a value are: 'if' (long and short versions), 'switch' and 'case', although they will require an 'else' part.
+'Statements' that can usefully yield a value are: `if switch case`, although they will require an `else` part.
 
-Any sequence of statements can be easily turned into a single expression by writing as (s1; s2; s3), or sometimes a sequence can be written anyway without the brackets:
+Any sequence of statements can be easily turned into a single expression by writing as `(s1; s2; s3)`, or sometimes a sequence can be written anyway without the brackets:
 
     if c:=nextch(); d:=c; c<>0 then                # uses the value of the last expression
     
 ### Functions and Procs
 M likes to make a stronger distinction between functions that return a value, and those that don't. The latter are defined with 'proc'
 
-    function add(int a,b)int =
+    func add(int a,b)int =
         return a+b
     end
 
@@ -461,7 +446,7 @@ M likes to make a stronger distinction between functions that return a value, an
 
 Here the '&' signifies a reference parameter. Functions require a return type, and they need to return a value. Alternate syntax:
 
-    function add(int a,b) => int = {a+b}
+    funct add(int a,b) => int = {a+b}
 
 This demonstrates:
 
@@ -480,7 +465,7 @@ M has default and keyword parameters:
 
 Since functions from external libraries need to be recreated in M, it is also possible to add defaults, and use keyword arguments, to existing functions where that was not available in the original language:
 
-    windows function "MessageBoxA" (
+    windows funct "MessageBoxA" (
              ref void hwnd=nil,
              ichar message="Hello", caption="Default Caption",
              int flags=0)int
@@ -500,9 +485,6 @@ As shown above, '&' means a reference parameter, allowing a callee to modify dat
     setlength2(length)
 
 setlength1 uses explicit & and ^ operators, setlength2 does things implicitly. This also means it's not possible to pass a nil pointer.
-
-### Nested Functons
-Functions can be nested, but in a limited manner because a nested function can't access the stack-frame variables of its enclosing functions (that is difficult to implement). But it can still access static variable, named constants etc of those functions.
 
 ### Multiple Return Values
 An experimental feature limited to scalar return types:
@@ -536,7 +518,6 @@ I've never been a fan of C's 'const' attribute, which really complicates the typ
     let int A := 100         # (type should be optional, but that is not supported yet)
 
 Here, the initialisation is mandatory, as A can't be used as an lvalue like in an assignment. This provides some weak protection, but won't do much for more complex variables, such as arrays or pointers to data structures. Let is experimental.
-
 
 (Also experimental are 'in', 'out' and 'inout' attributes for function parameters. 'out' vaguely corresponds to '&' used for reference parameters. I haven't played with these attributes yet, and I'm not sure whether an 'in' parameter should be equivalent to 'let'.)
 
@@ -743,8 +724,8 @@ This is done with the "^" symbol, applying as as suffix to a term like in Pascal
 And can be used consistently with multiple derefs:
 
     Q^^
-    R^.S^.T                # (In such instances, that ^ can be omitted for cleaner code.)
-    R.S.T                  # Provided ^ is followed by "." or "[", it can be omitted for cleaner code
+    R^.S^.T
+    R.S.T                  # Provided ^ is followed by "." or "(" or "[", it can be omitted for cleaner code
 
 Each ^ can be cancelled by one &, so that &Q^^ is equal to Q, and &&Q^ equals &Q.
 
@@ -1096,7 +1077,6 @@ Iterating in reverse would use **inrev** not **in**, but not yet ready.
 
 ### Loop Controls
 
-* **restart** Restart the loop (mainly applies to for loops)
 * **redo** Repeat this iteration
 * **next** Continue to next iteration
 * **exit** Break out of the loop
