@@ -128,13 +128,11 @@ This builds the M compiler, runs it to build a second generation compiler, then 
 
 #### Running M Scripts
 
-This can be done with the `-run` option as shown, but that gets in the way. Nicer to not need it to use it. Well, if `mm.exe` is copies to `ms.exe`, it will detect that special file name ('MS' for 'M Script') and invoke -run automatically:
+This can be done with the `-run` option as shown, but that gets in the way. Nicer to not need it. Well, if `mm.exe` is copied to `ms.exe`, it will detect that special file name ('MS' for 'M Script') and invoke -run automatically (here it suppresses the Compiling message to keep the magic):
 ```
     c:\mx>ms hello
-    Compiling hello.m to memory
     Hello World!
 ```
-(Maybe that Compiling message can be suppressed to make it more transparent.)
 
 #### Using Amalgamated Source Files
 
