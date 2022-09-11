@@ -59,11 +59,16 @@ I update this every so often. The current one just completed has one away with t
 
 ### History
 
-Both M and Q have very long histories. I'm hesitant to say exactly how long, since they might have been expected to have evolved a lot more by now!
+Both M and Q have very long histories. I'm hesitant to say exactly how long, since they might have been expected to have evolved a lot more by now! Let's say the first version of M was developed for and ran on 8-bit microprocessors with tiny memories.
 
-(They have evolved, but not much in terms of advanced language features and type systems.)
+Actually, they have evolved, but along lines that I considered more useful:
 
-Let's say the first version of M was developed for and ran on 8-bit microprocessors with tiny memories.
+* They have progressed from 8-bit targets to 16, 32 and now 64-bit targets
+* Both have acquired module schemes
+* Both are whole-program compilers and both compile code at very fast speeds, allowing more or less instant build times
+* This allows M to be used as a scripting language
+* Both have super-simple single-file installations
+* They have acquired a plethora of small features that I consider more handy then elaborate type systems
 
 ### Future Development
 
