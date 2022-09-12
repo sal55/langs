@@ -7,35 +7,55 @@ Possibly it can be useful to someone else who wants to understand examples of M 
 
 For an overview of how compilation and program building works, see See [Tools](Tools.md)
 
+### M versus C
 
-## M Syntax 
-Originally inspired by Algol-68, but has evolved its own style. Best described by looking at [example programs](Examples).
+While the languages largely do the same things, to remind myself of the signficant differences, M has:
+
+* Algol-style syntax without braces and without begin-end either (which are as bad as braces)
+* More line-oriented and largely semi-colon free
+* Case-insensitive syntax
+* 1-based indexing with option to use 0-based or N-based
+* Modules
+* Out-of-order definitions throughout
+* Default 64-bit integer types (which match 64-bit floats and pointers)
+* Built-in `print` and `read` statements
+* Slices
+* Embedded text and binary files
+* Built-in 'tabledata` (A superior approach to 'X-macros`)
+* Very fast, single-file and self-contained whole-program compiler
+* Can create compilable one-file source amalgamations of projects
+* Does not need a build system like `make` (submit only the lead module, it will discover program structure automatically)
 
 ### Modules and Imports
 
 M has a module/import scheme that really needs its own docs. But as a simple example, if a project uses modules A.m, B.m, C.m, then at the top of A.m, write:
 ````
-    module A
     module B
     module C
 ````
-Anything in those three modules that needs to be shared by the others, use a `global` attribute:
+This program is compiled as `mm a` and produces `a.exe`. For anything in those three modules that needs to be shared by the others, use a `global` attribute:
 ````
    global func foo => int
 ````
 This is then visible across all modules, and can be called `foo()`; you don't need `B.foo()` (depending on where it resides) unless there is an ambiguity.
 
-For bigger projects, that list of modules is generally put into its own module, and that becomes the submitted module.
+For bigger projects, that list of modules is generally put into its own module, and that becomes the submitted module. If that new module is P.m, that can contain *only*:
+```
+    module A
+    module B
+    module C
+```
+This one is compiled as `mm p` and produces `p.exe`. A very simple one-module program doesn't need any directives at all; it just works. Note that the standard library is automatically included. See separate docs for full info.
 
 ### Circular and Mutual Imports
 
 Previous versions of the module system required modules to be in a strict top-down hierarchy. That was too restrictive. The current scheme allows imports in any order including circular imports: A can import B, and B can import A.
 
-Where initialisation functions are called in each that may depend on the order, the order used is that of those `module` directives. For the example above, it'll be A then B (TO BE CHECKED; I think the lead module is actually last)
+Where automatic initialisation functions are called in each (eg. `start()`), then the order they are called is that of those `module` directives, with the lead module done last. For the first example above, it'll be B C A, and for the second, it is A B C P (it P were to have any init functions)
 
 ### Out of Order Definitions
 
-Actually, this also applies to other named entities, so you could for example choose to define all the local variables at the end of a function! Only `module` directives need to go at the top of the main module.
+This applies to all named entities across all modules, other than module names, so you could for example choose to define all local variables at the end of a function.
 
 ### Qualified Type Names
 
