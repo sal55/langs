@@ -9,7 +9,7 @@ For an overview of how compilation and program building works, see See [Tools](T
 
 ### M versus C
 
-While the languages largely do the same things, to remind myself of the signficant differences, M has:
+They're both roughly at the same level, but these are some ignficant differences. M has:
 
 * Algol-style syntax without braces and without begin-end either (which are as bad as braces)
 * More line-oriented and largely semi-colon free
@@ -17,53 +17,29 @@ While the languages largely do the same things, to remind myself of the signfica
 * 1-based indexing with option to use 0-based or N-based
 * Modules
 * Out-of-order definitions throughout
-* Default 64-bit integer types (which match 64-bit floats and pointers)
+* Tidy set of primitive types with default 64-bit integers
 * Built-in `print` and `read` statements
 * Slices
 * Embedded text and binary files
-* Built-in 'tabledata` (A superior approach to 'X-macros`)
+* Built-in `enumdata/tabledata` (a superior approach to 'X-macros`)
 * Very fast, single-file and self-contained whole-program compiler
 * Can create compilable one-file source amalgamations of projects
 * Does not need a build system like `make` (submit only the lead module, it will discover program structure automatically)
 
 ### Modules and Imports
 
-M has a module/import scheme that really needs its own docs. But in short, if a module comprises modules A.m, B.m, C.m, those modules are listed in a section called a **Header**.
-
-That header block is either at the top of the lead module (the one submitted) to the compiler, so that it looks like this when A.m is the lead moduile:
+M has a module/import scheme that really needs its own docs. But in brief, if a module comprises modules A.m, B.m, C.m, then module A.m starts like this:
 ````
     module B
     module C
-
-    ... the rest of module A
 ````
-This is compiled as `mm a`, creating `a.exe`. Or it is in a module by itself. called a **Header Module** like this, say in a module P.m:
-```
-    module A
-    module B
-    module C
-```
-This form is compiled as `mm p`, creating `p.exe`, and is favoured for bigger projects. In both cases, A.m is still the lead module, the one containing the `main` entry point function.
+You don't need to repeat this stuff in every module, only in one place. For a single-module program, nothing is needed. M's standard library is availble automatically. A module doesn't list itself.
 
-Anything in those modules with `global` attribute:
-````
-   global func foo => int
-````
-will be visible across all modules, and can be called as `foo()`; you don't need `b.foo()` (depending on where it resides) unless there is an ambiguity.
+Anything declared with a `global` attribute in any module is accessable in every other module. You don't even need to qualify the name, eg. `b.f()`, just use `f()`. 
 
-A very simple one-module program doesn't need a header (you don't even need code inside a function, however the compiler will put it inside a proc called 'main`)
-```
-   println "Hello"
-```
-Note that the standard library is automatically included. See separate docs for full info. To summarise:
+(This set of directives is called a Header Block. It can be at the top of the Lead Module - the one submitted to the compiler. Or it can be in a module by itself, which is then called the Header Module, which is what is now submitted.)
 
-Project Type | Header Module | Lead Module | Other | Build as | Description
---- | --- | --- | --- | --- | ---
-Simple | - | A | - | mm a | Simple one-file project
-Small | - | A | B, C, ... | mm a | Small multi-file project, header block is in A
-Large | P | A | B, C, ... | mm p | Multi-file project with separate header block in P
-
-
+There is more to the module scheme, but that needs its own docs.
 
 ### Circular and Mutual Imports
 
@@ -131,22 +107,29 @@ Backtick has other benefits:
 * It preserves case in a name
 * It allows the use of reserved works in an identifier (like the `exit` above, which is a keyword in M)
 
-
 ### Program Entry Point
 This is usually the `main` function, which is always global (ie. exported, no `global` needed.) `main` takes no parameters.
 
-This needs to be present in the lead module.
+This needs to be present in the Lead Module, the one submitted to the compiler. If that is a Header-only Module, then it must be in the first module listed.
 
-M will insert a call to a start-up routine in M's runtime module, to set up command-line parameters etc as global variables (`ncmdparams`, and `cmdparams`, the latter being an array of strings).
+M will insert a call to a start-up routine in M's runtime module, to set up command-line parameters etc as global variables (`ncmdparams`, and `cmdparams`, the latter being an array of strings). It will also insert calls to `start()` functions in every module that has one (see below), before executing user code in `main`.
 
 `main` can be present in other modules, but only the one in the lead module becomes the entry point. Other `main` routines can be called (they will need qualifiers, such as `B.main()`), but are otherwise ignored, unless that module is compiled directly to form its own program.
 
+### Program Exit Point
+
+Programs can be terminated by running into the end of the `main` function, with return code 0. For a different return code, or to exit from anywhere in the program, use:
+````
+    stop N
+````
+Note that `main` is a proc not a function; it has no return value itself. The compiler inserts `stop 0` at the end.
+ 
 ### The start() Function
 If encountered in a module, it will be called automatically by start-up code. No 'global' attribute needed.
 
 ### Include, Strinclude and Bininclude
 
-`include` is an ordinary textual include, and is only needed in M when you actually want to include code (not headers) from another file. (For example, a file generated from a program.)
+`include` is an ordinary textual include, and is only needed in M when you actually want to include code from another file. (For example, a file generated from a program.)
 
 `strinclude` can be used in an expression, and can include any text file as a string constant. (I use this to incorporate the sources for M libraries into the M compiler; or the C header sources into my C compiler.)
 
@@ -163,10 +146,10 @@ The source file prog.m does not need to be present at runtime; it becomes part o
 ### Conditional Compilation
 M has no preprocessor and no conditional directives for code (there used to be, but I didn't like them).
 
-Some conditional directives are used in the program header (where all the `module` lines go). But the main approach to building different configuration is:
+Some conditional directives are used in the program header (where all the `module` lines go). But the main approach to building different configurations is:
 
-* Put all the module header stuff into its own module (no normal code), which becomes the lead module, say A.m
-* For a different version, create B.m with a slightly different set of modules
+* Put the Header Block into its own module to form a discrete Header Module, say A.m
+* For a different version, create a separate Header Module B.m with a slightly different set of modules
 * Compiler either A.m into A.exe, or B.m into B.exe, depending on desired configuration.
 
 ### Function Tables
@@ -183,7 +166,7 @@ Note: this scheme can contain duplicate function names, as the same name `F` in 
 ### Numeric Types
 
 The official set of types are these (either long or short forms can be used):
-
+````
     int8     i8      Signed integers
     int16    i16
     int32    i32
@@ -197,19 +180,19 @@ The official set of types are these (either long or short forms can be used):
     real32   r32     Floating point
     real64   r64
 
-    char
+    char             Character type is a thin wrapper around u8/byte/word8
     char64
     bool8
     bool64
-    
+````    
 Common aliases:
-
+````
     int    =  int64
     word   =  word64
     real   =  real64
     byte   =  word8
     bool   =  bool64
-
+````
 Some types have been dropped: `intm wordm intp wordp` which are set to size of a machine word and pointer on the target machine. But since I only support 64-bit targets, these have been dropped.
 
 Also dropped are `i128 u128` types, as they needed far to much support, for little benefit. (Their primary use had been in implementing 128-bit support in the M compiler!) Plus I've dropped plans for big-num type; I've decided to have those only in Q.
@@ -249,44 +232,42 @@ Such names are in their own namespace; `million` can still be used as an identif
 ### Number Bases
 
 M had allowed number bases for literals from 2 to 16, but these have been dropped. Now only binary and hex are allowed other than decimal:
-
-2x100    # base 2; 4
+````
+    2x100    # base 2; 4
     100B     # Alternative way to write binary
     0xFFF    # hex: 4095
-
+````
 However, `print` still supports output in different bases, which is probably more useful that having it for literals within sourcecode:
-
+````
    println 100         # decimal
    println 100:"H"     # hex
    println 100:"B"     # binary
    println 100:"X3"    # ternary (X2 to X16 allowed, X0 should work to match 0x)
-   
+````
 ### Numeric Limits and Type Sizes
 Given any numeric type T or expression X, then:
-
+````
     T.minvalue
     T.maxvalue
     X.minvalue
     X.maxvalue
-
-will yield the smallest and largest values possible.
-
-For the fixed size of a type or expression:
-
+````
+will yield the smallest and largest values possible. For the fixed size of a type or expression:
+````
     T.bytes
     X.bytes
-
+````
 See section on Lengths and Bounds for arrays.
 
 ### Character Constants
 M uses ASCII, so 'A' has the value 65, but it has type 'char'.
 
 Multi-character constants are possible, with these types: 
-
+````
     'A'                            char
     'AB' up to 'ABCDEFGH'          u64 (not char64)
+````
 
-    
 ### Unicode String and Char Constants
 Not sure how to tackle Unicode support yet, so these constants are not supported. UTF8 sequences can be used, but to work with those, any routines called need to support UTF8. A 'print' on a UTF8 string ends up calling C's printf for normal (not wide) characters, so these also depend on Windows, locale, codepages and the like.
 
@@ -312,7 +293,7 @@ These are written as, for example:
     type intptr = ref int
     type matrix = [4,4]int real
 
-Like C, these do not introduce a new type. For creating a new Record type, juse `record`; see below.
+Like C, these do not introduce a new type. For creating a new Record type, use `record`; see below.
 
 ### Pointers and Arrays
 Unlike C, you can't index a pointer like an array, and you can't dereference an array like a pointer. Offsets to pointers can be done, but are written as `(P+i)^` rather than using `P[i]` like C, making it clear something underhand is going on.
@@ -379,16 +360,7 @@ These are structs, eg:
 
     date d,e,f
 ```
-Before I used unions, offsets of fields could be specified directly:
-```
-    record date =
-         int d, m, y
-         int year @ y         # .year as same offset as .y
-         [3]int x @ d         # .x has same offset as .d
-    end
-```
-
-But I now have `struct/union` (terms are from C, here they are only used for layout control):
+For layout control, M uses `struct/union` (terms are from C, here they are only used for layout control):
 ```
     record R =
         union
@@ -400,7 +372,9 @@ But I now have `struct/union` (terms are from C, here they are only used for lay
         end
     end
 ```
-Here, the struct occupies 4 consecutive bytes. There is no padding added to ensure alighnment; this must be done manually. Sometimes using @ is clear; if I define R using @, it looks like this:
+Here, the struct occupies 4 consecutive bytes. There is no padding added to ensure alighnment; this must be done manually.
+
+Before `struct/union`, `@` was used to share offsets in a record. That still works, and the above example would look like this:
 ```
     record R =
         int32 a
@@ -411,11 +385,10 @@ Here, the struct occupies 4 consecutive bytes. There is no padding added to ensu
         byte  i @ a+3
    end
 ```
-Here, there is little between them.
 
 ### Matching Foreign C Structs
 
-If a record is constructed to match a struct in a C interface, then field offsets must match exactly. However C can inject padding for alignment. This is tricky to duplicate, so a special attribute can be used:
+If a record is constructed to match a struct in a C interface, then field offsets must match exactly. However C can inject padding for alignment. This is tricky to duplicate, as rules are tricky, so a special attribute can be used:
 
     record rec = $caligned
         byte a
@@ -735,27 +708,25 @@ For example, **abs** can be applied to ints or reals, and will give the expected
 Disregarding "\*\*" and ".." which don't exist in C, there are six levels, compared to a 11 in C.
 
 ### Array Indexing
-
-If A is an array, then you can index it as:
-
+Given:
+````
+    [10]int A
+    [20,30]int B
+    ref[]int P
+````
+These can be indexed as follows:
+````
     A[i]
-
-If A is a pointer to array, it must be dereferenced first:
-
-    A^[i]           # (M now makes such a deref optional)
-
-Where there are multi-dimensions of a flat array, then the indexing goes like this:
-
-    A[i,j,k]
-    A[i][j][k]          # C style alternative will also work
-
-With slicing, then a slice can be created using:
-
+    B[i, j]           # Also B[i][j] but who wants to type that
+    P^[i] or P^[i]    # ^ is optional before [, ( or .
+````
+For slicing:
+````
     A[i..j]
+````
+This results in a slice object. Since a slice can be index too, this is valid: `A[i..j][k]` or `A[i..j,k]`, or it can be further sliced: `A[i..j, k..l]`.
 
-(This results in a slice that can be indexed like an array, so A[i..j][k], which can be written as: A[i..j,k]. Or it can be further sliced: A\[i..j, k..l\])
-
-As a convenience, the special symbol $ used in an array index, returns the upper bound of that array. So A[$] is the last value, equivalent to A\[A.upb\].
+As a convenience, the special symbol $ used in an array index, returns the upper bound of that array. So `A[$]` is the last value, equivalent to `A[A.upb]`.
 
 ### Pointer Dereferencing
 
@@ -768,7 +739,6 @@ And can be used consistently with multiple derefs:
 
     Q^^
     R^.S^.T
-    R.S.T                  # Provided ^ is followed by "." or "(" or "[", it can be omitted for cleaner code
 
 Each ^ can be cancelled by one &, so that &Q^^ is equal to Q, and &&Q^ equals &Q.
 
@@ -777,20 +747,27 @@ When mixing ^ with ++ and --, it needs to be used like this:
     P++^        # Increment P then deref the original value
     ++P^        # Increment P then deref the new value
 
+Explicit defers are not needed in these cases:
 
-### Field Selection
+    A^[i]    write as  A[i]
+    P^.m     write as  P.m
+    F^(x)    write as  F(x)
 
-Little to say about this, except it uses the common "." notation:
+### The Dot Operator
 
-    pt.x + pt.y
+This is used both for member selection, and selecting names within namespaces. The latter is done at compile-time, the format at runtime:
 
-When used with a pointer to a record P, it's like this: P^.x or the ^ can be omitted for P.x.
+    M.a            # M is module (or subprogram; see module scheme docs)
+    R.b            # R is a record: access elements such as named constants, enums, functions, but not members
+                   # which only exist within instances of R
+    F.b            # F is a function; it is possible to access local names within F, including static variables,
+                   # but not normal local variables which can only be accessed from within F
 
-Note that "." is also used for selecting names from a namespace. A namespace might be a module, function or record. That use is detected and resolved at compile time:
+    X.m            # X is an instance of record, so access a conventional field
 
-    a.b.c
+The last can also be used for calling methods (functions defined inside the record): `X.f()` or `X.g(Y)`, but this is not a OOP language so those are poorly developed.
 
-It's not possible to tell, until resolved, whether both dots select fields, or just the second, or neither.
+the second, or neither.
         
 ### Min/Max and Clamp
 
@@ -806,12 +783,6 @@ Clamp is used as follows:
     c:=clamp(x,a,b)
 
 and is equivalent to c:=min(max(x,a),b)
-
-### Assignment and Equality
-
-Assignment always uses ":=" for assignment, and "=" for equality. This reduces the potential for mistakes as is common when "=" and "==" are used.
-
-Assignments can of course be used inside an expressions which is how the mixup arises.
 
 ### Augmented Assignments
 
@@ -860,7 +831,7 @@ but is written with ";", and with mandatory parentheses. x and y are evaluated f
 
 ### Chained Compare Operators
 
-The compare operators are =, <>, <, <=, >= and >.
+The compare operators are `=, <>, <, <=, >=` and `>`.
 
 When combined like this:
 
@@ -875,13 +846,13 @@ Other examples:
     if a <= b < c            # a <= b and b < c
     if a > b < c = d         # if a > b and b < c and c <= d
     
-It's is recommended howeverf that if any angle brackets are involved, they all point the same way to make them easier to understand.
+It is recommended however that if any angle brackets are involved, they all point the same way to make them easier to understand.
+
+(Middle terms such as `b` in `a==b==c` may be evaluated once or twice depending on compiler. Try and avoid side-effects here just in case.)
 
 If you need to use the 1/0 return value of a=b, then break it up using parentheses:
 
     if (a = b) = (c = d)
-
-(Middle terms such as in a==b==c may be evaluated once or twice depending on compiler. Try and avoid side-effects here just in case.)
 
 ### Swap
 
@@ -889,15 +860,15 @@ Any two fixed size compatible values can be exchanged like this:
 
     swap(a, b)
 
-This is more efficient that doing it via (a,b):=(b,a), as terms are written once with less chance of error.
+This is more efficient that doing it via `(a,b):=(b,a)`, as terms are written once with less chance of error.
 
 ### Promotions
 
-Like C, narrow integer types are widened, but to int64 rather than int32 as is common for C (word64 for unsigned).
+Like C, narrow integer types are widened, but to `int64` rather than `int32` as is common for C (word64 for unsigned).
 
-The same applies to the char type, widened to C64. But real32 floats are not widened to real64.
+The same applies to the char type, widened to `char64`. But `real32` floats are not widened to `real64`.
 
-This usually applies to any term of an expression, except for terms like X.type, X.typestr, X.bytes, X.bitwidth where the non-promoted type of X is used.
+This usually applies to any term of an expression, except for terms like `X.type`, `X.typestr`, `X.bytes`, `X.bitwidth` where the non-promoted type of `X` is used.
 
 ### Mixed Sign Arithmetic
 
@@ -906,7 +877,7 @@ All integer types are widened to 64 bits for arithmetic. Then the rules are:
 * At least one operand is i64: use i64
 * Otherwise: use u64
 
-(Note that the char type is unsigned and char64 is treated as u64 for this purpose.)
+(Note that the `char` type is unsigned and `char64` is treated as `u64` for this purpose.)
 
 ### Type Conversion and Punning
 
@@ -925,45 +896,59 @@ There is also type punning, which is a re-interpretation of a type without chang
     println int64(x)       # display 1
     println int64@(x)      # display 4607632778762754458 (0x3FF199999999999A)
 
-The @ symbol makes it type punning (equivalent to \*(int64_t\*)&x in C, but unlike C, can be applied to rvalues too, that is, expressiomns: int@(x+y)).
+The `@` symbol makes it type punning (equivalent to `*(int64_t*)&x` in C, but unlike C, can be applied to rvalues too, that is, expressions: `int@(x+y)`).
 
-Again, for complex types, use cast@(x,int64).
+Again, for complex types, use `cast@(x,int64)`.
 
-Sometimes, it can be difficult to get on top of which precise conversion is needed, as happens with pointer types. Then, 'cast' can be used to automate it:
+Sometimes, it can be difficult to get on top of which precise conversion is needed, as happens with pointer types. Then, `cast` can be used to automate it:
 
     ref int64 p
     ref []int q
 
     p := cast(q)             # omit the target type
 
-'cast' will apply whatever cast is required. This is handy when the necessary type needs to be tracked down, or when it is likely to change.
+`cast` will apply whatever cast is required. This is handy when the necessary type needs to be tracked down, or when it is likely to change.
 
-(There are issues at present with getting function pointer types to match properly. So here cast() is an easy way to do that.)
+(There are issues at present with getting function pointer types to match properly. So here `cast()` is an easy way to do that.)
 
-### Conditional Statements
+### Block Delimiters
 
-This is mainly the **if** statement:
-
+````
     if cond then
-       stmt1
-       stmt2
-    elsif cond then
-       ....
-    elsif cond then
-       ...
+        stmt1
+        tmt2
+    elsif cond2 then
+        stmt3
     else
-       ...
-    fi
+        stmt4
+        stmt5
+    end
+````
+This has 3 blocks - sequence of statements. The first two are delimited by `elsif` and `else`, but it depends on the statements used.
 
-With **elsif** and **else** both optional so that a simple if-statement is:
+But the last block of all statement is always `end` or variations. M allows a lot of choice here; for statements that open with `if`, the closing keyword can be any of:
 
-    if cond then
-       stmts...
-    fi
+     end
+     end if            # followed by opening keyword
+     endif             # space can be omitted
+     fi                # As used in Algol68 which inspired my syntax
 
-(You can use **end**, **end if** or **endif** in place of **fi**)
+Where the keyword is used, it will be checked that it matches, otherwise it is not checked - `end` can close any statement.
 
-There is also:
+The following are the statements where special closers are allowed as well as the regular ones:
+
+Statement | Special closer
+--- | ---
+`if` | `fi`
+`case` | `esac`
+`for`, `while`, `to`, `do` | `od`, or allow `end do` etc
+
+
+
+
+### Unless Statements
+
+The `if-elsif-else` statement is well known. This form has the opposite logic:
 
     unless cond then
         stmts....
@@ -971,20 +956,7 @@ There is also:
         stmts....
     end
  
-with the opposite logic. (Sometimes this helps, sometimes not.)
-
-When you have this pattern: if x=a then.. elsif x=b then ..., then consider using the **case** statement which is designed for exactly that.
-
-Sometimes, if, case and switch can be combine to form a composite statement:
-
-    if cond then
-    elsif cond2
-    elsecase x
-    when a then
-    when b,c then
-    else
-    fi              # final block delimiter needs to match opening keyword
- 
+Note that `elsif` is not allowed here (I couldn't figure out what it meant).
 
 ### Conditional Suffixes
 
@@ -998,7 +970,7 @@ The possible condition keywords can be:
     when expr
     unless expr          # this one has the opposite logic
 
-('if' used to be allowed but in the revised language that has an ambiguity.)
+(`if` used to be allowed but in the revised language that has an ambiguity.)
 
 The statements where such a suffix is allowed are:
 
@@ -1007,7 +979,6 @@ The statements where such a suffix is allowed are:
     stop
     exit
     redo
-    restart
     next
 
 ### Goto
@@ -1035,12 +1006,12 @@ A mild variation is the experimental feature **recase**:
         recase a
     esac
 
-**recase** here will jump to the branch of the case statement that deals with 'a', equivalent to reentering the case statement with x = a (but x is not actually changed).
+**recase** here will jump to the branch of the case statement that deals with 'a', equivalent to reentering the case statement with x = a (but x is not actually changed). (I've not enabled nested case statements for this feature.)
 
 
 ### Loops
 
-Modern languages seem to be lacking in looping constructs even though, as mere syntax, they have little cost. M offers:
+M offers:
 
     do ... od                      # endless loop
     to n do ... od                 # repeat n times
@@ -1051,11 +1022,11 @@ Modern languages seem to be lacking in looping constructs even though, as mere s
     while x do ... od
     repeat ... until x
 
-There are also looping versions of **switch** and **case** statements.
+There are also looping versions of `switch` and `case` statements.
 
 There is no equivalent of C's open 'for' loop which encourages all sorts of weird  and wonderful constructions, usually all on the same line.
 
-Loop controls are **redo**, **next** and **exit**, and can be used to any level of nested loop.
+Loop controls are **redo**, **next** and **exit**, and can be used to span any level of nested loop.
 
 
 ### For Loops: Iterate over a Range
@@ -1068,9 +1039,9 @@ The full syntax for iterating over an integer range is:
       ....
     end
 
-This iterates the loop variable of over a to b inclusive, stepping by c. 'when d' can be used to conditionally execute any particular iteration. The 'else' part executes on normal termination.
+This iterates the loop variable of over a to b inclusive, stepping by c. `when d` can be used to conditionally execute any particular iteration. The `else` part executes on normal termination.
 
-The loop index does not need defining; it will be auto-declared using the equivalent of 'let', so that you can't change it inside the loop. (To do that, declare it outside.)
+The loop index does not need defining; it will be auto-declared using the equivalent of `let`, so that you can't change it inside the loop. (To do that, declare it outside.)
 
 But many parts are optional, and a more typical loop is:
 
@@ -1082,13 +1053,13 @@ The start value can be omitted when it starts from 1:
 
     for i to b do ...
 
-To count downwards, use **downto** instead of **to**. The **by** step value must always be positive in either case.
+To count downwards, use `downto` instead of `to`. The `by` step value must always be positive in either case.
 
 Simple iteration can also be written using:
 
     for i in a..b do
 
-A special case of the following:
+which is a special case of the following.
 
 ### For Loops: Iterate over Values
 
@@ -1096,7 +1067,7 @@ This is:
 
     for x in A do
 
-A should be an indexable type, such as an array, slice or string, but it must be type where the bounds are known.
+A should be an indexable type, such as an array, slice or string, but it must be a type where the bounds are known.
 
 x takes on each value in turn (if not already declared, will be auto-declared). A slice can be specified:
 
@@ -1114,7 +1085,6 @@ Iterating over a range is a little special:
     for x in a..b do              # same as for x:=a to b do
 
 Iterating in reverse would use **inrev** not **in**, but not yet ready.
-
 
 ### Loop Controls
 
@@ -1155,7 +1125,7 @@ Test expressions can be ranges:
     when 'A'..'Z','a'..'z', '_' then
         ....
 
-There is a limit of a few hundred values between smallest and largest in a switch. If exceeded, try using a **case** statement.
+There is a limit of a few hundred values between smallest and largest in a switch. If exceeded, try using a `case` statement.
 
 ### Case Statement
 
@@ -1170,7 +1140,7 @@ When x is not an integer, or a, b are not integers or not constants, or the rang
         ....
     esac
 
-Case statements will sequentially test x against a, b and c in turn, until the first match. (Currently ranges can't be used.)
+Case statements will sequentially test `x` against `a`, `b` and `c` in turn, until the first match. (Currently ranges can't be used.)
 
 One variation on case is when the test expression is omitted:
 
@@ -1180,7 +1150,7 @@ One variation on case is when the test expression is omitted:
     when e<0 then
         ....
 
-Then it will evaluate expressions until one returns true, then it will execute that when-block.
+Then it will evaluate expressions until one returns true, then it will execute that when-block. This can be used as a tidier alternative to `if-then-elsif-else`, which is easier to maintain.
 
 ### Looping Switch and Case
 
@@ -1196,7 +1166,7 @@ Both switch and case statements have looping equivalents:
         ...
     end
 
-At the end of each when or else block, it will jump back to the start to repeat. Some means is usually needed to exit at some point (exit, goto, return, stop).
+At the end of each when or else block, it will jump back to the start to repeat. Some means is usually needed to exit at some point (`exit, goto, return, stop`).
 
 ### Print and Println
 
