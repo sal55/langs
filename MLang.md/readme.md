@@ -59,7 +59,9 @@ While I'm pleased that I do a somewhat better job than C (anyone could I think!)
 
 In short, they are small, personal limited languages, with implementations that are not complete nor robust enough for general use. I have in the past provided binaries, but I'm not happy about doing that, and doing the support necessary is not practical.
 
-So, why am I posting about this stuff? Since some have complained about this before. It's just for interest. Maybe there is something of value that people can take away from this. 
+So, why am I posting about this stuff? Since some have complained about this before. It's just for interest. Maybe there is something of value that people can take away from this.
+
+After all I only manage to try out a small number of the languages I read about. Either no binary exists for Window (or requires an elaborate build process, that usually fails), or it doesn't properly work. I can still pick up ideas, or just ensure mine wouldn't have the same problem.
 
 
 ### History
