@@ -74,7 +74,7 @@ Why these languages are going to stay personal:
 
 * These were in-house tools, now are hobbyist projects used as personal tools. As such, while not exactly private or proprietory, their standard of implementation is not good enough for general use; they cannot be supported.
 
-* Besides, there is a huge range of auxiliary things that people expect from a language these days, which are not going to get done (especially someone adverse to working with modern tools:
+* Besides, there is a huge range of auxiliary things that people expect from a language these days, which are not going to get done (especially someone adverse to working with modern tools):
   * Syntax highlighting, IDE support (language servers?)
   * Tons of ready-to-use libraries
   * Widely-tested many people over millions of lines of code
