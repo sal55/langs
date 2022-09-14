@@ -52,7 +52,7 @@ While I'm pleased that I do a somewhat better job than C (anyone could I think!)
 * Don't have tons of ready-to-use libraries, and creating new bindings is a chore
 * Have not been tested by 1000s of people on tens of millions of lines of code across diverse applications
 * There are no debugging tools, no language servers, no ready-made syntax highlighting
-* There are no tutorials or reference materials that are attractively presented (that means something Github markdown)
+* There are no tutorials or reference materials that are attractively presented (that means something other than Github markdown)
 * Having been used with no other software, only simple file operating systems, for the first 10-15 years, interaction with other software has always been poorly developed
 * The result is an insular suite of languages that can only communicate with the world via DLL libraries, and only via the simplest APIs
 * Some aspects have not been touched at all, such as threading, parallel execution, networking
