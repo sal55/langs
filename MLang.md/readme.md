@@ -24,7 +24,7 @@ My product is better, in my opinion. The main differences from C are listed belo
 
 ### M vs C
 
-While the languages largely do the same things, mine varies in significant ways:
+Although the languages largely do the same things, mine varies in significant ways:
 
 * Algol-style syntax without braces and without begin-end either (which are as bad as braces), and largely semicolon free
 * Case-insensitive syntax
@@ -42,13 +42,33 @@ While the languages largely do the same things, mine varies in significant ways:
 
 Plus lots more.
 
+### The Context
+
+While I'm pleased that I do a somewhat better job than C (anyone could I think!), I'm aware that what I'm doing is just a microcosm of what languages are about these days. My products:
+
+* Lack most trendy modern features and advanced type systems
+* Are bare, unoptimising compilers that do no analysis
+* Only work on Windows64, and can only generate self-contained EXEs for that OS
+* Don't have tons of ready-to-use libraries, and creating new bindings is a chore
+* Have not been tested by 1000s of people on tens of millions of lines of code across diverse applications
+* There are no debugging tools, no language servers, no ready-made syntax highlighting
+* There are no tutorials or reference materials that are attractively presented (that means something Github markdown)
+* Having been used with no other software, only simple file operating systems, for the first 10-15 years, interaction with other software has always been poorly developed
+* The result is an insular suite of languages that can only communicate with the world via DLL libraries, and only via the simplest APIs
+* Some aspects have not been touched at all, such as threading, parallel execution, networking
+
+In short, they are small, personal limited languages, with implementations that are not complete nor robust enough for general use. I have in the past provided binaries, but I'm not happy about doing that, and doing the support necessary is not practical.
+
+So, why am I posting about this stuff? Since some have complained about this before. It's just for interest. Maybe there is something of value that people can take away from this. 
+
+
 ### History
 
-M started off in the early 80s, and Q came long towards the late 80s. You might have expected them to have evolved a lot more than they have!
+M started off in the early 80s, and Q came along towards the late 80s. You might have expected them to have evolved a lot more than they have!
 
 But they were just tools I devised, part-time, to help in my main work, and worked well enough.
 
-(Actually, they *have* evolved and become more polished, but along lines that I considered more useful. The languages have been kept simple.)
+(Actually, they *have* evolved and become more polished, but along lines that I considered more useful. The languages have been kept simple. I've written a more detailed summary of my various native code compilers [here](../mycompilers.md).) 
 
 ### Future Development
 
@@ -67,24 +87,3 @@ For more details of how these three main tools work, see [Tools](Tools.md).
 ### Further Info
 
 For more details about these three languages ... Not ready.
-
-###  Availability
-
-Why these languages are going to stay personal:
-
-* These were in-house tools, now are hobbyist projects used as personal tools. As such, while not exactly private or proprietory, their standard of implementation is not good enough for general use; they cannot be supported.
-
-* Besides, there is a huge range of auxiliary things that people expect from a language these days, which are not going to get done (especially someone adverse to working with modern tools):
-  * Syntax highlighting, IDE support (language servers?)
-  * Tons of ready-to-use libraries
-  * Widely-tested by many people over millions of lines of code across diverse applications
-  * Debugging tools or at least support
-  * Tutorials and reference material attractively presented (ie. not in Github markdown!)
-
-* They are not likely to work on Linux again (which apparently most developers are on); such experiments have been done and those boxes ticked, but I work on Windows.
-
-* Since for the first 10-15 years the languages worked in isolaton from most other software (only under basic file systems), they are insular and interaction with anything else has been poorly developed. They can only talk to the world via DLL shared libraries. Or files. And cannot work with other tools or frameworks.
-
-* Lots of aspects that people might expect are not covered at all, since I've never worked with them: threading, parallel execution and networking for example.
-
-Put like this, there's quite a lot that can go into developing a complete language! However there might still be the odd interesting idea here that people find useful.
