@@ -70,12 +70,20 @@ For more details about these three languages ... Not ready.
 
 ###  Availability
 
-These were in-house tools, now are hobbyist projects used as personal tools. As such, while not exactly private or proprietory, their standard of implementation is not good enough for general use; they cannot be supported.
+Why these languages are going to stay personal:
 
-Besides, there is a huge range of things that people expect from a language these days: syntax highlighting, IDE support (language servers?), tons of ready-to-use libraries, widely-tested, bug-free tools, tutorials and references attractively presented (ie. not in Github markdown).
+* These were in-house tools, now are hobbyist projects used as personal tools. As such, while not exactly private or proprietory, their standard of implementation is not good enough for general use; they cannot be supported.
 
-That's not going to get done for a personal project (especially for someone averse to overcomplicated tools).
+* Besides, there is a huge range of things that people expect from a language these days, which are not going to get done (especially someone adverse to working with modern tools:
+  * Syntax highlighting, IDE support (language servers?)
+  * Tons of ready-to-use libraries
+  * Widely-tested many people over millions of lines of code
+  * Tutorials and reference material attractively presented (ie. not in Github markdown!)
 
-Neither are any of them likely to work on Linux again (which apparently most developers are on); such experiments have been done and those boxes ticked, but I don't routinely use Linux myself.
+* They are likely to work on Linux again (which apparently most developers are on); such experiments have been done and those boxes ticked, but I don't routinely use Linux myself.
 
-However anyone is welcome to take from them anything interesting or useful.
+* Since for the first 10-15 years the languages worked in isolaton from most other software (only under basic file systems), they are insular and interaction with anything else has been poorly developed. They can only talk to the world via DLL shared libraries. Or files.
+
+* Lots of aspects that people might expect are not covered at all, since I've never worked with them: threading and parallel execution; networking; debugging
+
+Put like this, there's quite a lot that can go into developing a complete language! However there might be the odd interesting idea here that people find useful.
