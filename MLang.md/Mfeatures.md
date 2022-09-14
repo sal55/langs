@@ -28,24 +28,42 @@ While the languages largely do the same things, to remind myself of the signfica
 
 ### Modules and Imports
 
-M has a module/import scheme that really needs its own docs. But as a simple example, if a project uses modules A.m, B.m, C.m, then at the top of A.m, write:
+M has a module/import scheme that really needs its own docs. But in short, if a module comprises modules A.m, B.m, C.m, those modules are listed in a section called a **Header**.
+
+That header block is either at the top of the lead module (the one submitted) to the compiler, so that it looks like this when A.m is the lead moduile:
 ````
     module B
     module C
-````
-This program is compiled as `mm a` and produces `a.exe`. For anything in those three modules that needs to be shared by the others, use a `global` attribute:
-````
-   global func foo => int
-````
-This is then visible across all modules, and can be called `foo()`; you don't need `B.foo()` (depending on where it resides) unless there is an ambiguity.
 
-For bigger projects, that list of modules is generally put into its own module, and that becomes the submitted module. If that new module is P.m, that can contain *only*:
+    ... the rest of module A
+````
+This is compiled as `mm a`, creating `a.exe`. Or it is in a module by itself. called a **Header Module** like this, say in a module P.m:
 ```
     module A
     module B
     module C
 ```
-This one is compiled as `mm p` and produces `p.exe`. A very simple one-module program doesn't need any directives at all; it just works. Note that the standard library is automatically included. See separate docs for full info.
+This form is compiled as `mm p`, creating `p.exe`, and is favoured for bigger projects. In both cases, A.m is still the lead module, the one containing the `main` entry point function.
+
+Anything in those modules with `global` attribute:
+````
+   global func foo => int
+````
+will be visible across all modules, and can be called as `foo()`; you don't need `b.foo()` (depending on where it resides) unless there is an ambiguity.
+
+A very simple one-module program doesn't need a header (you don't even need code inside a function, however the compiler will put it inside a proc called 'main`)
+```
+   println "Hello"
+```
+Note that the standard library is automatically included. See separate docs for full info. To summarise:
+
+Project Type | Header Module | Lead Module | Other | Build as | Description
+--- | --- | --- | --- | --- | ---
+Simple | - | A | - | mm a | Simple one-file project
+Small | - | A | B, C, ... | mm a | Small multi-file project, header block is in A
+Large | P | A | B, C, ... | mm p | Multi-file project with separate header block in P
+
+
 
 ### Circular and Mutual Imports
 
@@ -65,7 +83,7 @@ The same goes for `typeof(T)`.
 
 ### Block Scopes
 
-There are no block scopes used inside my functions in either language. Further, there is a single name space (no crazy tag namespaces and even label namespaces of C).
+There are no block scopes used inside my functions in either language. Further, there is a single name space (and no crazy tag even label namespaces like C).
 
 Since functions are best kept small, there is no real need for multiple scopes and overloading the same identifiers.
 
@@ -117,7 +135,11 @@ Backtick has other benefits:
 ### Program Entry Point
 This is usually the `main` function, which is always global (ie. exported, no `global` needed.) `main` takes no parameters.
 
+This needs to be present in the lead module.
+
 M will insert a call to a start-up routine in M's runtime module, to set up command-line parameters etc as global variables (`ncmdparams`, and `cmdparams`, the latter being an array of strings).
+
+`main` can be present in other modules, but only the one in the lead module becomes the entry point. Other `main` routines can be called (they will need qualifiers, such as `B.main()`), but are otherwise ignored, unless that module is compiled directly to form its own program.
 
 ### The start() Function
 If encountered in a module, it will be called automatically by start-up code. No 'global' attribute needed.
@@ -563,48 +585,47 @@ Use of A, B or C in source code are synonyms for the constants 300, 100 and 200.
 
 'const' is useful for numeric types, but less so for anything else.
 
-### Enums
-These are a little like C:
+### Enum Data
 
-    enum (A, B, C=10, D)         # A=1, B=2, C=10, D=11
+The simple enum feature: `enum (red, green, blue)` has been removed. The equivalent is now:
+````
+    enumdata =
+        red,
+        green,
+        blue
+    end
+````
+But `enumdata` is normally used like the `tabledata` feature below, for example:
+````
+    enumdata = []ichar colournames, []u32 colourvalues =
+        (red,     $,    0xFF'00'00),
+        (green,   $,    0x00'FF'00),
+        (blue,    $,    0x00'00'FF),            # trailing commas are OK
+    end
+````
+It defines enumerations, and a corresponding parallel set of arrays at the same time.
 
-Or can also part of a type:
+* `$` is a device which returns the last-created enum name as a string, eg. "red", to avoid having to repeat them all as strings. (I know, this should be done automatically, but this crude approach works)
+* For 0-based arrays, define the array bounds using `[0:]`, but also the first enum value must be set to zero: `red = 0`
 
-    type colours = enum (red, green, blue)
-    type lights  = enum (red, amber, green)
+Older M versions allowed an umbrella type to be applied:
+````
+    enumdata(colours) []ichar colournames, []u32 colourvalues =
+    ....
+````
+But this did very little, as proper enum types are not supported. All it did was to put the enum names into a namespace, so that they had to be written as `colours.red` etc. This feature was never used, so is temporarily unavailable. (A proper type system would rarely need those qualifiers, but as is clear, M likes to keep that part simple.)
 
-Here, the names need to be qualified: you have to write colours.green (2), or lights.green (3). However the type system isn't that sophisticated, so the actual types are merely ints, and nothing stops you using colours.green or lights.green interchangeably.
-
-Typed enums are not used much, and actually, enums themselves are rare because I normally use the **tabledata** feature next:
 
 ### Tabledata
-This is an unusual feature that defines sets of enums, and parallel data arrays, at the same time:
-
-    tabledata() []ichar colournames, []word colourvalues =
-        (red,       $,      0xFF'00'00),
-        (green,     $,      0x00'FF'00),
-        (blue,      "Blue", 0x00'00'FF),
-    end
-
-This defines enums red=1, green=2, blue=3. And an array \[1..3\]ichar with the values ("red","green","Blue"). And an array \[1..3\]colourvalues with the given numbers.
-
-The "$" is a device which returns the name of the last enum defined, so it saves having to duplicate each enum name, but you can just use a regular string.
-
-In this form, entries can be added, deleted or moved very easily. Notice the trailing comma on the last entry to facilitate this.
-
-The arrays can be zero-based (or some other value): use \[0:\] on the array declarations, and start with red=0. (But don't try to override the other enum values, as the array mapping can't cope with that.)
-
-The () in tabledata() can contain a type name to contain the enums, as suggested above, eg:
-
-    tabledata(colours) ....
-
-Or the () can be omitted completely, then it just defines parallel arrays, no enums:
-
+`tabledata` is used to define parallel data arrays. Older versions did the job of `enumdata` too (using `tabledata()`), but those have been split. It works now ike this:
+```
 tabledata []ichar names, []int values =
     ("one",   100),
     ("two",   200),
     ("three", 300),
 end
+```
+This defines and initialises an array of strings, and a corresponding one of bytes, when it is better to have them separate, but it can be any combination of arrays. It simplifies maintenance, as entries can be added, deleted or moved very easily. Allowing a trailing comma on the last entry facilitates this.
 
 ### Lengths and Bounds
 
