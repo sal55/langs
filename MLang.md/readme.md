@@ -35,7 +35,7 @@ While the languages largely do the same things, mine varies in significant ways:
 * Built-in `print` and `read` statements
 * Slices
 * Embedded text and binary files (only just being introduced into C23)
-* Built-in 'tabledata` (A superior approach to 'X-macros`)
+* Built-in 'tabledata' (A superior approach to 'X-macros')
 * Very fast, single-file and self-contained whole-program compiler - nothing else is needed
 * Can create compilable one-file source amalgamations of projects
 * Does not need a build system like `make` (submit only the lead module, it will discover program structure automatically)
@@ -52,7 +52,7 @@ But they were just tools I devised, part-time, to help in my main work, and work
 
 ### Future Development
 
-There's quite a lot that could done to M, they would be in keeping with that level of language, but as my personal use of it is limited, most would not be worthwile. As it is, it can still do pretty much anything that C can do.
+There's quite a lot that could done to M, that would be in keeping with that level of language, but as my personal use of it is limited, most would not be worthwile. As it is, it can still do pretty much anything that C can do.
 
 I have made several attempts to combine the M and Q lanuguages, but the attempts were over-ambitious, and the results poor and unwieldy.
 
@@ -74,16 +74,17 @@ Why these languages are going to stay personal:
 
 * These were in-house tools, now are hobbyist projects used as personal tools. As such, while not exactly private or proprietory, their standard of implementation is not good enough for general use; they cannot be supported.
 
-* Besides, there is a huge range of things that people expect from a language these days, which are not going to get done (especially someone adverse to working with modern tools:
+* Besides, there is a huge range of auxiliary things that people expect from a language these days, which are not going to get done (especially someone adverse to working with modern tools:
   * Syntax highlighting, IDE support (language servers?)
   * Tons of ready-to-use libraries
   * Widely-tested many people over millions of lines of code
+  * Debugging tools or at least support
   * Tutorials and reference material attractively presented (ie. not in Github markdown!)
 
-* They are likely to work on Linux again (which apparently most developers are on); such experiments have been done and those boxes ticked, but I don't routinely use Linux myself.
+* They are not likely to work on Linux again (which apparently most developers are on); such experiments have been done and those boxes ticked, but I work on Windows.
 
-* Since for the first 10-15 years the languages worked in isolaton from most other software (only under basic file systems), they are insular and interaction with anything else has been poorly developed. They can only talk to the world via DLL shared libraries. Or files.
+* Since for the first 10-15 years the languages worked in isolaton from most other software (only under basic file systems), they are insular and interaction with anything else has been poorly developed. They can only talk to the world via DLL shared libraries. Or files. And cannot work with other tools or frameworks.
 
-* Lots of aspects that people might expect are not covered at all, since I've never worked with them: threading and parallel execution; networking; debugging
+* Lots of aspects that people might expect are not covered at all, since I've never worked with them: threading and parallel execution and networking for example.
 
-Put like this, there's quite a lot that can go into developing a complete language! However there might be the odd interesting idea here that people find useful.
+Put like this, there's quite a lot that can go into developing a complete language! However there might still be the odd interesting idea here that people find useful.
