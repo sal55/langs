@@ -2,11 +2,11 @@
 
 I use two complementary languages, plus a support one:
 
-Language | Tool | Target | Description
---- | --- | --- | ---
-M | mm.exe (compiler) | Win64 | Lower level systems language
-Q | qq.exe (interpreter) | Win64 | Dynamic scripting language
-ASM | aa.exe (assembler) | Win64 | x64 assembler/linker
+Language | Tool | Target | Description | Nearest Mainstream Equivalent (% match)
+--- | --- | --- | --- | ---
+M | mm.exe (compiler) | Win64 | Lower level systems language | C (80%)
+Q | qq.exe (interpreter) | Win64 | Dynamic scripting language | Python (40%)
+ASM | aa.exe (assembler) | Win64 | x64 assembler/linker | Nasm (90%)
 
 Those three tools in more detail:
 
