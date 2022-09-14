@@ -77,7 +77,7 @@ Why these languages are going to stay personal:
 * Besides, there is a huge range of auxiliary things that people expect from a language these days, which are not going to get done (especially someone adverse to working with modern tools):
   * Syntax highlighting, IDE support (language servers?)
   * Tons of ready-to-use libraries
-  * Widely-tested many people over millions of lines of code
+  * Widely-tested by many people over millions of lines of code across diverse applications
   * Debugging tools or at least support
   * Tutorials and reference material attractively presented (ie. not in Github markdown!)
 
@@ -85,6 +85,6 @@ Why these languages are going to stay personal:
 
 * Since for the first 10-15 years the languages worked in isolaton from most other software (only under basic file systems), they are insular and interaction with anything else has been poorly developed. They can only talk to the world via DLL shared libraries. Or files. And cannot work with other tools or frameworks.
 
-* Lots of aspects that people might expect are not covered at all, since I've never worked with them: threading and parallel execution and networking for example.
+* Lots of aspects that people might expect are not covered at all, since I've never worked with them: threading, parallel execution and networking for example.
 
 Put like this, there's quite a lot that can go into developing a complete language! However there might still be the odd interesting idea here that people find useful.
