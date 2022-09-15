@@ -20,7 +20,7 @@ Unfortunately my meagre suite of languages support none of that. They are embarr
 
 They also only work on Windows and not Linux. There are no proper docs. Coverage of combinations of types, operations and features is patchy, and very buggy.
 
-Neither are my implementations good enough for general use, so I cannot provide binaries, which I could not support anyway.
+Neither are my implementations good enough for general use, so I cannot provide binaries, which I could not support anyway. The purpose here is not to offer working products, but to write about my languages because someone might find it interesting, or take something away from it.
 
 So, having got that out of the way, and for anyone still reading, I'll continue.
 
