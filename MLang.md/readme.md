@@ -1,86 +1,49 @@
 ## My Languages 2022, Overview
 
-I use two complementary languages, plus a support one:
+I maintain and use these two complementary languages:
 
-Language | Tool | Target | Description | Nearest Mainstream Equivalent (% match)
---- | --- | --- | --- | ---
-M | mm.exe (compiler) | Win64 | Lower level systems language | C (80%)
-Q | qq.exe (interpreter) | Win64 | Dynamic scripting language | Python (40%)
-ASM | aa.exe (assembler) | Win64 | x64 assembler/linker | Nasm (90%)
+**'M'** Lower level systems language
+**'Q'** Dynamic, interpreted scripting language
 
-Those three tools in more detail:
+Plus:
 
-Tool | Size |Installation | Max throughput | Written in | Sources | Build time | Dependencies
---- | --- | --- | --- | --- | --- | --- | ---
-mm.exe | 500KB | 1 File | 0.7Mlps |M |  31Kloc | 80ms | None
-qq.exe | 800KB | 1 File | 1.5Mlps | M |  41Kloc | 100ms | None
-aa.exe | 160KB | 1 File | 2Mlps+ | M | 13Kloc | 50ms | None
+**ASM** My take on x64 assembly code.
 
-Basically, they are smallish, self-contained, very fast and can be built from scratch more or less instantly. M is self-hosted, the others are implemented in M.
+### Features
 
-M itself is embarrassingly dated and unsophisticated compared with the current crop of 'systems' languages, yet it works at roughly the same level as C, which is still popular and still seems to be in demand.
+... that people of expect of a language and implementation these days:
 
-My product is better, in my opinion. The main differences from C are listed below.
+Sum types, pattern-matching, lambdas, closures, OOP, inheritance, type inference, exotic type systems, syntax-highlighting, language servers, static analysers, optimising compilers, debugging tools, tutorials and reference materials attractively presented, testing performed tens of millions of lines of code by armies of beta testers, threading, parallel execution, networking support, IDE support, robust implementations, great error reporting, available on multiple targets...
 
-### M vs C
+Unfortunately my meagre suite of languages support none of that. They are embarrassingly crude compared with any modern languages, they have minimal implementations, and next to no libraries, with no easy path to creating bindings to more. They are insular and cannot talk to any other software except via DLL functions. They can't even link to other languages without a lot of trouble.
 
-Although the languages largely do the same things, mine varies in significant ways:
+They also only work on Windows and not Linux. There are no proper docs. Coverage of combinations of types, operations and features is patchy.
 
-* Algol-style syntax without braces and without begin-end either (which are as bad as braces), and largely semicolon free
-* Case-insensitive syntax
-* 1-based indexing with option to use 0-based or N-based
-* Module scheme
-* Out-of-order definitions for everything
-* Tidy, consistent set of types with 64-bit ints and constants by default
-* Built-in `print` and `read` statements
-* Slices
-* Embedded text and binary files (only just being introduced into C23)
-* Built-in 'tabledata' (A superior approach to 'X-macros')
-* Very fast, single-file and self-contained whole-program compiler - nothing else is needed
-* Can create compilable one-file source amalgamations of projects
-* Does not need a build system like `make` (submit only the lead module, it will discover program structure automatically)
+Neither are my implementations good enough for general use, so I cannot provide binaries, which I could not support them anyway.
 
-Plus lots more.
+So, having got that out of the way, and for anyone still reading, I'll continue.
 
-### The Context
-
-While I'm pleased that I do a somewhat better job than C (anyone could I think!), I'm aware that what I'm doing is just a microcosm of what languages are about these days. My products:
-
-* Lack most trendy modern features and advanced type systems
-* Are bare, unoptimising compilers that do no analysis
-* Only work on Windows64, and can only generate self-contained EXEs for that OS
-* Don't have tons of ready-to-use libraries, and creating new bindings is a chore
-* Have not been tested by 1000s of people on tens of millions of lines of code across diverse applications
-* There are no debugging tools, no language servers, no ready-made syntax highlighting
-* There are no tutorials or reference materials that are attractively presented (that means something other than Github markdown)
-* Having been used with no other software, only simple file operating systems, for the first 10-15 years, interaction with other software has always been poorly developed
-* The result is an insular suite of languages that can only communicate with the world via DLL libraries, and only via the simplest APIs
-* Some aspects have not been touched at all, such as threading, parallel execution, networking
-
-In short, they are small, personal limited languages, with implementations that are not complete nor robust enough for general use. I have in the past provided binaries, but I'm not happy about doing that, and doing the support necessary is not practical.
-
-So, why am I posting about this stuff? Since some have complained about this before. It's just for interest. Maybe there is something of value that people can take away from this.
-
-After all I only manage to try out a small number of the languages I read about. Either no binary exists for Window (or requires an elaborate build process, that usually fails), or it doesn't properly work. I can still pick up ideas, or just ensure mine wouldn't have the same problem.
-
-
-### History
+### Background
 
 M started off in the early 80s, and Q came along towards the late 80s. You might have expected them to have evolved a lot more than they have!
 
-But they were just tools I devised, part-time, to help in my main work, and worked well enough.
+But they were just tools I devised, part-time, to help in my main work, and they worked well enough (enough that when the opportunity arose to switch to C, I decided to stay with M).
 
-(Actually, they *have* evolved and become more polished, but along lines that I considered more useful. The languages have been kept simple. I've written a more detailed summary of my various native code compilers [here](../mycompilers.md).) 
+Actually, they *have* evolved and become more polished, but along lines that I considered more useful. The languages have been kept simple. I've written a more detailed summary of my various native code compilers [here](../mycompilers.md).
+
+Currently, the nearest mainstream alternative to M is C, with about an 80% match (in things like type systems, and what the languages can do).
+
+With Q, perhaps Python at 30-40% match. (Python at least one level higher, and *much* more dynamic; it also has most of the stuff in my list. OK, make that 10% match then!)
+
+My ASM language probably a 90% match with Nasm (it's just 1000 times faster at assembling; literally so on some tests).
 
 ### Future Development
 
-There's quite a lot that could done to M, that would be in keeping with that level of language, but as my personal use of it is limited, most would not be worthwile. As it is, it can still do pretty much anything that C can do.
+I've decided to stop development of both languages for a while. Document what there is, make sure both languages work the same way for common features, just create stable working versions.
 
-I have made several attempts to combine the M and Q lanuguages, but the attempts were over-ambitious, and the results poor and unwieldy.
+Several previous attempts to combine M and Q (since they seemed to be converging over the years) have failed. I will instead try and make them work together better, which will focus on them being able to share environments.
 
-The next project is to make them work together better, while still keeping them separate languages with discrete implementations.
-
-As such, I'm trying to get stable, part-documented versions of both projects first, since I have tried all sorts of ideas and can't remember which have stuck, or whether they're implemented in one or the other, or both. Hence articles like these, whose purpose is partly to get me to test the tools to see what actually works, or work as I thought they did.
+With M especially, lots of things could be added that would suit that level of language, but since my utilisation of it is limited, mainly language apps and support libraries, it just wouldn't be worth it. (Another reason it is not ready for general use.)
 
 ### Further Info on Tools
 
