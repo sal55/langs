@@ -31,11 +31,11 @@ Although languages are quite low level for their class, they are quite rich in f
 
 **Lead Module** Out of the modules that comprise the Program, this is the one submitted to the compiler, and which needs to contain the `main` entry point (but see Header Module)
 
+**Main Module** The one where the entry point `main` resides. It will either be the Lead Module, or the next one if that contains header stuff only.
+
 **Header Block** A set of directives describing the program structure, usually modules, subprograms, and any imported DLL/ML libraries. This must go at the top of the Lead Module. Not needed for simple one-module programs.
 
 **Header Module** When the Lead Module only contains a Header Block and no code or data, it forms a Header Module. (In that case, the `main` entry point must be in the first module listed.)
-
-**Main Module** The one where the entry point `main` resides. It will either be the Lead Module, or the next one if that contains header stuff only.
 
 **Subprogram** A Subprogram is a related collection of Modules, and a Program is technically a collection of Subprograms. See docs for Modules. In practice, there is usually just one explicit Subprogram (one set of modules), plus the standard library forming another, which does not need specifying. 
 
@@ -51,17 +51,11 @@ An Algol-style syntax is used, but without begin-end. Algol68 was a particular i
 
 These use `A-Z a-z 0-9 _ $`, and can't start with a digit.
 
-The names of modules are normal identifiers, which are used to determine the filename of the module.
-
-All identifiers are legal filenames, but not all filenames will be legal identifiers. Names of source files should be carefully chosen.
-
+The base filename of a source file must also be a valid identifier (not all filenames are). Because that name becomes the module name: filename "\path\bignum.m" will become module `bignum`.
 
 #### Case Insensitive
 
 Identifiers, and keywords, type names and other reserved words are case-insensitive.
-
-Module names (and hence the names of their source files) will be case-insensitive too. This is not a problem under Windows, but needs to be kept in mind if ever working with Linux.
-
 
 To access case-sensitive names used with external libraries, there are two schemes. One is to declare the name as a string, but can then be used in any case. The other is to use the \` prefix:
 ```
@@ -131,7 +125,7 @@ Some statements can have alternate block endings:
 
 
 ### Program Entry Point
-This is the `main` function, which is always exported (ie. `global` or `export` needed.) `main` takes no parameters.
+This is the `main` function, which is always exported (ie. no `global` or `export` needed.) `main` takes no parameters.
 
 This needs to be present in the Main Module (see Terms).
 
@@ -143,7 +137,7 @@ proc main =
    <my code>
 end
 ```
-Special code is inserted by the compiler to that it does this:
+Special code is inserted by the compiler so that it does this:
 ```
 proc main =
    msys.start()              # unless -nosys option used
@@ -374,7 +368,7 @@ These are written as follows:
 #### Char Constants
 Char constants look like this:
 ````
-    'A'                            char
+    'A'                            char, with value 65
     'AB' up to 'ABCDEFGH'          u64 (not char64)
 ````
 
@@ -551,7 +545,7 @@ Static arrays and records will be all-zeros unless initialised. To set others to
 
 I added these three methods to see which one worked best. I mainly use `clear`, but decided to keep the other two in.
 
-#### Read-only Variables
+### Read-only Variables
 
 These are declared with `let` as described above. As I said, this is more for documentation as the language does not handle this fully.
 
@@ -604,7 +598,7 @@ I've introduced `struct/union` - C terms, but used here only for this purpose - 
         end
     end
 ```
-This record is only 4 bytes in size, because the space is shared: `a b f` are all at offset 0. In the past I used `@` to share space in the record. The same example would be:
+This record is only 4 bytes in size, because the space is shared: `a b f` are all at offset 0. In the past I used `@` to share space in the record. This still works; the same example would be:
 ```
     record R =
         int32 a
@@ -748,14 +742,14 @@ In Q, it's a little more elaborate: simple types are passed by value, complex on
 But they can *only* be modified; it is not possible to completely replace the caller's variable by assigning to it in the callee. That will need a proper reference parameter, also denoted with &.
 
 #### Function Pointers
-There no proper first class functions in either language. But there are function pointers, or function references:
+There are no proper first class functions in either language. But there are function pointers, or function references:
 ```
     proc F = println "Hello"
 
     P := F                 # P is reference to F
     P()                    # calls F indirectly, display Hello
 ```
-* In M, P needs to be defined as suitable function pointer (`ref proc P` for my example), to ensure correct type checking
+* In M, P needs to be defined as a suitable function pointer (`ref proc P` for my example), to ensure correct type checking
 * But an omission means M can't correctly match P with signature of F; it may be necessary to use `P := cast(F)`
 
 In Q:
@@ -772,7 +766,7 @@ This is done with `:=`:
 
     A := B := C                 # equivalent to A := (B := C)
 
-Because what's returned has the value and type of the LHS, it is suggested all terms in a chained assignment have the same type, to avoid unexpected behaviour.
+Because what's returned has the value and type of the LHS, it is suggested all terms in a chained assignment have the same type, to avoid surprises.
 
 #### Multiple Assignment
 There are two kinds:
@@ -792,7 +786,7 @@ when the RHS is a function returning multiple values; see above.
 One restriction at the minute is that all types must match precisely (M).
 
 ### Properties
-X is an expression, but most of these also work with X is a type:
+X is an expression, but most of these also work with X as a type:
 
 ```
 X.lwb         Inclusive lower bound of array or slice.
@@ -845,7 +839,6 @@ Operator | Precedence | Description
 `and` | 3 | Logical And (short circuit operators used in conditional exprs)
 -- | |
 `or` | 2 | Logical Or
-`xor` | 2 | Logical Xor
 -- | |
 `:=` |1 | Assign (right to left precedence)
 
@@ -916,7 +909,7 @@ Augmented assignments do not return values as they do in C. This was considered 
     ceil
     fract
 
-#### Chained Compares
+### Chained Compares
 The compare operators are `=, <>, <, <=, >=` and `>`.
 
 When combined like this:
@@ -940,7 +933,7 @@ If you need to use the `1/0` or `true/false` return value of `a=b`, then break i
 
     if (a = b) = (c = d)
 
-#### Piping Operator
+### Piping Operator
 This is experimental syntax in M:
 
     a -> f -> g
@@ -1049,7 +1042,7 @@ The general form is:
 * `else` is optional, *unless* the whole statement is expected to return a value (see below)
 * Conditional expressions are actually Sunits, which means being able to do: `if c:=getnext(); c<>0 then` without needing to wrap those into an expression list.
 
-##### Short-form If
+#### Short-form If
 
 `if` statements can return values, so could be used in expressions:
 
@@ -1112,7 +1105,7 @@ This will sequentially test `x` against `a`, `b` and `c` in turn, until the firs
 
 #### Alternative to `if-elsif` chains:
 
-One variation of `case` when the test expression is omitted:
+One variation of `case` is when the test expression is omitted:
 
     case
     when a=b, c=d then
@@ -1249,7 +1242,7 @@ Labels need to be written with two colons:
 (":" is heavily used elsewhere, so there would be too many ambiguities.)
 
 
-##### Label Pointers
+#### Label Pointers
 
 If L is a label, then:
 ```
@@ -1583,7 +1576,7 @@ Anything declared with a `global` attribute in any module is accessable in every
 
 Bigger projects tend to have the first or lead module containing only lists of modules (Header Modules). There is more to the module scheme, but I need to write those docs.
 
-#### Globals and Exports
+### Globals and Exports
 In M, nothing is exported or shared from module unless done explicily using `global` or `export` in front of the definiton. The following can be exported and shared:
 
 * Functions
@@ -1636,7 +1629,7 @@ It can look inside bignum.dll to pick up (by calling a special function) that ne
 
 I'm working on that last aspect, especially in sharing between DLL/LIB and Q code.
 
-#### Conditional Compilation
+### Conditional Compilation
 Neither language has conditional code unless this counts:
 ```
 const flag = 1
@@ -1655,7 +1648,7 @@ Some conditional directives are used in header blocks, but the approach I use mo
 * Compile either A.m or B.m, to result in A.exe or B.exe.
 
 
-#### DLL Imports
+### DLL Imports
 Use of an external DLL library requires an interface to be created in M or Q code. If a DLL `jpeg.dll` is to be used for example:
 ```
 importdll jpeg =
@@ -1677,7 +1670,7 @@ For bigger libraries, creating these 'bindings' is a lot of work, especially wor
 
 (When tried on GTK2, which is described by 550 C headers over 330,000 lines of code, it produces a 25,000-line `importdll` block, which includes 3000 lines of C macros needing to be sorted out by hand. The result, however, would be a single file interface to that whole library.)
 
-#### LIB Imports
+### LIB Imports
 This is pretty much the same, but it uses `importlib` instead, and `.ml` files not `.dll`. LIB files can do more, make it easier to access variables across the FFI, have a shared environment with the host application, and there are plans to share more than just functions and variables. But this is on-going development.
 
 
@@ -1871,11 +1864,3 @@ sysmodule mclib
 puts("Hello, World!")
 ```
 Compile this as `mm -nosys hello`. (`-nosys` disables the automatic inclusion also of the MCLIB module that defines some C functions, so it has to be reinstated)
-
-### Formal Grammar
-
-There isn't one. Or at least one that is up-to-date and 100% unambiguous.
-
-
-
-
