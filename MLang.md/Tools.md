@@ -118,15 +118,7 @@ This example:
     Compiling mm.m to memory
     Compiling hello.m------- to hello.exe
 ```
-Compiles the mm compiler into memory, and runs it immediately with input of hello. Such programs can be stacked:
-```
-    c:\mx>mm -run mm -run mm -run hello
-    Compiling mm.m to memory
-    Compiling mm.m to memory
-    Compiling hello.m to memory
-    Hello World!
-```
-This builds the M compiler, runs it to build a second generation compiler, then runs that on hello.m (and does it faster than it takes gcc just to conventionally compile hello.c; that is, without gcc building itself first, not even once).
+Compiles the mm compiler into memory, and runs it immediately with input of hello. Such programs can be stacked to any level.
 
 #### Running M Scripts
 
