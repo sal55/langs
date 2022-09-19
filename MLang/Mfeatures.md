@@ -1840,6 +1840,15 @@ Note: this scheme can contain duplicate function names, as the same name `F` in 
 
 (Q has its own schemes.)
 
+### Integer Overflow
+
+Both signed and unsigned overflow can occur, each is well-defined. It is not trapped by the language.
+
+However, integers are evaluated at 64 bits, rather than 32 bits as is common for C implementations, so values need to be 4 billion times bigger for overflows to occur.
+
+This applies to Q too; overflow will not trigger an automatic overflow into a Bignum type (cast at least one operand to Bignum, to evaluate using that type).
+
+
 ### Hello World
 ```
     proc main =
