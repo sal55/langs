@@ -34,7 +34,7 @@ These are my private languages:
 
 Basically, by any comparison to anything else, they are rubbish. So, for anyone still reading, why am I posting this?
 
-I'm primarily documenting what I've done for my own benefit, since I can never remember what features work and in what language, and would like to finally have a stable set of languages as I've spent too long tinkering.
+I'm primarily documenting what I've done for my own benefit, since there are various odd features where I can never remember how they work and in what language, and would like to finally have a stable set of languages as I've spent too long tinkering.
 
 This might be of interest to other people, or there might be things that someone can take away, even it's to help avoid making the same mistakes.
 
@@ -43,7 +43,7 @@ This might be of interest to other people, or there might be things that someone
 From my perspective, yes:
 
 * One of my languages will always be my first choice in any project (and has been for, ahem, about 40 years...)
-* I understand them perfectly (the bits I can remember)
+* I understand them perfectly
 * I rarely have to do battle with the language; they will generally let me do what I want
 * They use a near-perfect syntax (IMO)
 * The tools (compiler, interpreter, assembler) are smallish, lean, self-contained and very fast
