@@ -98,7 +98,7 @@ Both M and Q can produce one-file source amalgamations of any application.
 
 The nearest mainstream asssembler might be Nasm, at a 80% match. However my AA product is faster (literally 1000 times faster on one test, although that is more of an issue with Nasm, and one of the reasons I developed my product; AA is still 10 times faster than YASM.)
 
-However, AA supports only a subset of all the x64 instructions, mainly the ones I used myself or used by my code-generator.
+AA supports only a subset of all the x64 instructions, mainly the ones I use myself or used by my code-generator. 
 
 * Lean, minimal design intended for machine-generated code
 * Can use alternative, more consistent register naming and ordering
