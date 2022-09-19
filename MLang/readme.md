@@ -121,7 +121,7 @@ But they will be kept as discrete languages with separate implementations.
 
 What I will concentrate on is making them work together more smoothly, and allowing them to share the complex environment of the same application.
 
-(This is exactly how the original Q language, an add-on scripting language then called 'MPL', was used within my graphical applications. Those had a very rich environment more like an mini-OS. But that was for a dedicated applicated with an embedded version of the interpreter.)
+(This is exactly how the original Q language, an add-on scripting language then called 'MPL', was used within my graphical applications. Those had a very rich environment more like an mini-OS. But that was for a dedicated application with an embedded version of the interpreter.)
 
 So, this will be my 'Two Language` solution. Well, if it works...
 
