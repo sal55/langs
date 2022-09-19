@@ -57,7 +57,7 @@ M and Q have both in the past worked on Linux, so that box has been ticked. But 
 
 ### M Overview
 
-The nearest mainstream alternative would be C, at roughly 80%, in how the type system works, and what the languages can do. But M varies in a few ways:
+The nearest mainstream alternative would be C, with a roughly 80% match, in how the type system works, and what the languages can do. But M varies in some significant ways:
 
 * Algol-style syntax with no braces
 * Case-insensitive
@@ -65,7 +65,7 @@ The nearest mainstream alternative would be C, at roughly 80%, in how the type s
 * Primarily 1-based indexing
 * Module scheme
 * Out-of-order definitions
-* 64-bit based types
+* 64-bit-based types
 * Expression-based (interchangeable expressions and statements)
 * Designed for whole-program compilation
 * Companion scripting language (Q) with identical syntax
@@ -75,20 +75,21 @@ So, compared with C at least, M comes out well. The characteristics of the M com
 * Completely self-contained in a 0.5MB executable
 * Whole-program compiler works at up to 0.7M lines per second on my low-end PC
 * Can run programs from source
+* Can build itself in 0.08 seconds
 
 ### Q Overview
 
-The nearest mainstream language might be Python, at 30%, if comparing capability within the language and ignoring all the stuff listed above
+The nearest mainstream language might be Python, at a 30% match, if comparing capability within the language and ignoring all the stuff listed above
 
 * Identical syntax to M as stated above, and shares many common features
 * While it has dynamic typing, it is much less dynamic than Python
 * Built-in FFI and direct support for C-style type systems
 * Executes more briskly than many non-JIT interpreted/dynamic languages, and has a built-in accelerator
-* Includes many features no present in Python (proper named constants, `switch`, embedded text/binary files, proper record etc etc)
+* Includes many features not present in Python (proper named constants, `switch`, embedded text/binary files, proper records etc etc)
 
 ### AA Overview
 
-The is the assembler. The nearest mainstream asssembler might be Nasm, at a 90% match. However my AA product is faster (literally 1000 times faster on one test, although that is more of an issue with Nasm, and one the reason I developed my product; AA is still 10 times faster than YASM.)
+The is the assembler. The nearest mainstream asssembler might be Nasm, at a 90% match. However my AA product is faster (literally 1000 times faster on one test, although that is more of an issue with Nasm, and one of the reasons I developed my product; AA is still 10 times faster than YASM.)
 
 * Lean, minimal design intended for machine-generated code
 * Can use alternative, more consistent register naming and ordering
@@ -103,9 +104,9 @@ Some information about how the three main tools work: [Tools](Tools.md).
 
 Documenting most features of M: [M Features](Mfeatures.md).
 
-Some info about the module scheme used by M and Q is not ready.
+Info about the module scheme used by M and Q is not ready.
 
-Docs for AA and Q are also not ready, but much of those M docs applies to Q too.
+Docs for AA and Q are also not ready, but much of those M docs apply to Q too.
 
 ### Demos
 
