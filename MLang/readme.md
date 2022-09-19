@@ -38,6 +38,8 @@ I'm primarily documenting what I've done for my own benefit, since there are var
 
 This might be of interest to other people, or there might be things that someone can take away, even it's to help avoid making the same mistakes.
 
+While short on advanced types, both the HLLs have a rich syntax with dozens of useful minor features including some experimental ones.
+
 ### So, Are There Any Upsides?
 
 From my perspective, yes:
