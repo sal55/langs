@@ -1,6 +1,6 @@
 ## 'M' and 'Q' Languages
 
-These are my private languages as of 2022:
+These are my personal languages as of 2022:
 
 **M** My systems programming language
 
@@ -51,7 +51,7 @@ From my perspective, yes:
 
 (The first crude version of M didn't even use an OS. I wrote a long article about my native code compilers [here](../mycompilers.md).)
 
-So I have the advantage, which I know will not be shared by anyone else, of having language and tools  tailored to my needs. But I'm also not bothered that the languages and tools might be considered unbelievably crude by many (perhaps I'd better not say anything about the text editor and IDE I use).
+So I have the advantage, which I know will not be shared by anyone else, of having language and tools tailored to my needs. But I'm also not bothered that the languages and tools might be considered unbelievably crude by many (perhaps I'd better not say anything about the text editor and IDE I use).
 
 M and Q have both in the past worked on Linux, so that box has been ticked. But that relied on using a C target for the M compiler, so not satisfactory.
 
@@ -79,22 +79,24 @@ So, compared with C at least, M comes out well. The characteristics of the M com
 
 ### Q Overview
 
-The nearest mainstream language might be Python, at a 30% match, if comparing capability within the language and ignoring all the stuff listed above
+The nearest mainstream language might be Python, at a 30% match, if comparing capability within the language and ignoring all the stuff listed above.
 
 * Identical syntax to M as stated above, and shares many common features
 * While it has dynamic typing, it is much less dynamic than Python
 * Built-in FFI and direct support for C-style type systems
 * Executes more briskly than many non-JIT interpreted/dynamic languages, and has a built-in accelerator
-* Includes many features not present in Python (proper named constants, `switch`, embedded text/binary files, proper records etc etc)
+* Includes many features not present in Python (proper named constants, `switch`, embedded text/binary files, proper records etc; see link below)
 * Interpreter is a self-contained 0.8MB executable.
 
 Both M and Q can produce one-file source amalgamations of any application.
 
 ### AA Overview
 
-The is the assembler. The nearest mainstream asssembler might be Nasm, at a 80% match. However my AA product is faster (literally 1000 times faster on one test, although that is more of an issue with Nasm, and one of the reasons I developed my product; AA is still 10 times faster than YASM.)
+'AA` is actually the name of the tool, the language as such is just 'ASM' but that is rather generic.
 
-However, AA supports only a subset of all the x64 instructions, mainly the ones I used myself or by my code-generator.
+The nearest mainstream asssembler might be Nasm, at a 80% match. However my AA product is faster (literally 1000 times faster on one test, although that is more of an issue with Nasm, and one of the reasons I developed my product; AA is still 10 times faster than YASM.)
+
+However, AA supports only a subset of all the x64 instructions, mainly the ones I used myself or used by my code-generator.
 
 * Lean, minimal design intended for machine-generated code
 * Can use alternative, more consistent register naming and ordering
