@@ -744,7 +744,9 @@ But they can *only* be modified; it is not possible to completely replace the ca
 #### Function Pointers
 There are no proper first class functions in either language. But there are function pointers, or function references:
 ```
-    proc F = println "Hello"
+    proc F =
+        println "Hello"
+    end
 
     P := F                 # P is reference to F
     P()                    # calls F indirectly, display Hello
