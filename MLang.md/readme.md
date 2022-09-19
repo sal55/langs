@@ -36,7 +36,7 @@ Basically, by any comparison to anything else, they are rubbish. So, for anyone 
 
 I'm primarily documenting what I've done for my own benefit, since I can never remember what features work and in what language, and would like to finally have a stable set of languages as I've spent too long tinkering.
 
-This might be of interest to other people, or there might be things that someone can take away, even it's to help making the same mistakes.
+This might be of interest to other people, or there might be things that someone can take away, even it's to help avoid making the same mistakes.
 
 ### So, Are There Any Upsides?
 
@@ -47,8 +47,13 @@ From my perspective, yes:
 * I rarely have to do battle with the language; they will generally let me do what I want
 * They use a near-perfect syntax (IMO)
 * The tools (compiler, interpreter, assembler) are smallish, lean, self-contained and very fast
+* There are satisfyingly few external dependencies. Basically, they need a Windows OS, and that's it.
 
-So I have the advantage, which I know will not be shared by anyone else, of having a language tailored to my needs. But I'm also not bothered that the languages and tools might be considered unbelievably crude by many (perhaps I'd better not say anything about text editor and IDE I use).
+(The first crude version of M didn't even use an OS. I wrote a long article about my native code compilers [here](..\mycompilers.md).)
+
+So I have the advantage, which I know will not be shared by anyone else, of having language and tools  tailored to my needs. But I'm also not bothered that the languages and tools might be considered unbelievably crude by many (perhaps I'd better not say anything about text editor and IDE I use).
+
+M and Q have both in the past worked on Linux, so that box has been ticked. But that relied on using a C target for the M compiler, so not satisfactory.
 
 ### M Overview
 
@@ -87,10 +92,21 @@ The is the assembler. The nearest mainstream asssembler might be Nasm, at a 90% 
 
 * Lean, minimal design intended for machine-generated code
 * Can use alternative, more consistent register naming and ordering
-* Can directly assembler ASM files to EXE files with no intermediate object files
+* Can directly assemble multiple ASM files to one EXE file with no intermediate object files
 * Can do the job of a linker
 * Self-contained in a 160KB executable
 * Throughput is 2M+ lines per second
 
+### Further Links
 
+Some information about how the three main tools work: [Tools](Tools.md).
 
+Documenting most features of M: [M Features](Mfeatures.md).
+
+Some info about the module scheme used by M and Q is not ready.
+
+Docs for AA and Q are also not ready, but much of those M docs applies to Q too.
+
+### Demos
+
+I said there'd be no binaries, but probably I will supply at least `mm.exe` (M compiler) and `mm.ma` (M sources in one file) to demonstrate how it can build itself from scratch, using only two files. But this will need some preparation.
