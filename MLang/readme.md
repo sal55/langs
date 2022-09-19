@@ -135,13 +135,11 @@ So, this will be my 'Two Language` solution. Well, if it works...
 
 For anyone wandering exactly how they differ:
 
-* M programs, while they can be run like a script, usually are compiled to EXE binaries. Q runs only bytecode
+* M programs, while they can be run like a script, usually are compiled to EXE binaries containing native. Q runs only bytecode
 * M has a static type system; Q's is dynamic
 * M's types are primitive and fixed size; Q has higher level types with first class strings, lists, dicts, the usual stuff
 * Q has more reflection, eg it is possible to directly access the symbol table used to compile code
 * Q is much safer, most errors are trapped, and report the precise location in the source
-* M programs typically run 1-2 magnitudes for the same code expressed in Q
+* M programs typically run 1-2 magnitudes faster than the same code expressed in Q
 
-### Demos
 
-I said there'd be no binaries, but probably I will supply at least `mm.exe` (M compiler) and `mm.ma` (M sources in one file) to demonstrate how it can build itself from scratch, using only two files. But this will need some preparation.
