@@ -199,7 +199,7 @@ Q has its own higher level types (flex strings and arrays for example), but also
 
 #### Numeric Types
 
-The official set of types are these (either long or short forms can be used):
+The official set of types are these (either long or short forms can be used, and in any case):
 ````
     int8     i8      Signed integers
     int16    i16
