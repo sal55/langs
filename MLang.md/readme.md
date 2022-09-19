@@ -49,7 +49,7 @@ From my perspective, yes:
 * The tools (compiler, interpreter, assembler) are smallish, lean, self-contained and very fast
 * There are satisfyingly few external dependencies. Basically, they need a Windows OS, and that's it.
 
-(The first crude version of M didn't even use an OS. I wrote a long article about my native code compilers [here](..\mycompilers.md).)
+(The first crude version of M didn't even use an OS. I wrote a long article about my native code compilers [here](../mycompilers.md).)
 
 So I have the advantage, which I know will not be shared by anyone else, of having language and tools  tailored to my needs. But I'm also not bothered that the languages and tools might be considered unbelievably crude by many (perhaps I'd better not say anything about text editor and IDE I use).
 
