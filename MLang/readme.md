@@ -135,7 +135,7 @@ So, this will be my 'Two Language` solution. Well, if it works...
 
 For anyone wandering exactly how they differ:
 
-* M programs, while they can be run like a script, usually are compiled to EXE binaries containing native. Q runs only bytecode
+* M programs, while they can be run like a script, usually are compiled to EXE binaries containing native code. Q runs only bytecode
 * M has a static type system; Q's is dynamic
 * M's types are primitive and fixed size; Q has higher level types with first class strings, lists, dicts, the usual stuff
 * Q has more reflection, eg it is possible to directly access the symbol table used to compile code
