@@ -374,7 +374,7 @@ Char constants look like this:
 
 Note that `'A'` has type `char`, not `int`, unless it is multibyte.
 
-`'ABC'` has the rightmost character (`C` here), in the least significant position in the word. The intention is that when stored in memory, it has the same layout as the string `"ABC"`. (However this is only valid for little-endian; I've never used big-endian.)
+`'ABC'` has the leftmost character (`A` here), in the least significant position in the word. The intention is that when stored in memory, it has the same layout as the string `"ABC"`. (However this is only valid for little-endian; I've never used big-endian.)
 
 Unused parts of a word will be zeros.
 
