@@ -8,12 +8,6 @@ These are my private languages:
 
 **AA** My take on x64 assembly
 
-The nearest mainstream equivalent to M is probably C, at an 80% match (in their type systems and what they do)
-
-The nearest to Q might be Python at 30% (but Python is least one level higher, is much more dynamic, and doesn't have the downsides I've listed)
-
-AA is 90% equivalent to Nasm
-
 ### Description
 
 * Old-fashioned (both devised in 1980s, and little changed)
@@ -44,6 +38,59 @@ I'm primarily documenting what I've done for my own benefit, since I can never r
 
 This might be of interest to other people, or there might be things that someone can take away, even it's to help making the same mistakes.
 
+### So, Are There Any Upsides?
+
+From my perspective, yes:
+
+* One of my languages will always be my first choice in any project (and has been for, ahem, about 40 years...)
+* I understand them perfectly (the bits I can remember)
+* I rarely have to do battle with the language; they will generally let me do what I want
+* They use a near-perfect syntax (IMO)
+* The tools (compiler, interpreter, assembler) are smallish, lean, self-contained and very fast
+
+So I have the advantage, which I know will not be shared by anyone else, of having a language tailored to my needs. But I'm also not bothered that the languages and tools might be considered unbelievably crude by many (perhaps I'd better not say anything about text editor and IDE I use).
+
+### M Overview
+
+The nearest mainstream alternative would be C, at roughly 80%, in how the type system works, and what the languages can do. But M varies in a few ways:
+
+* Algol-style syntax with no braces
+* Case-insensitive
+* Line-oriented and largely semicolon-free
+* Primarily 1-based indexing
+* Module scheme
+* Out-of-order definitions
+* 64-bit based types
+* Expression-based (interchangeable expressions and statements)
+* Designed for whole-program compilation
+* Companion scripting language (Q) with identical syntax
+
+So, compared with C at least, M comes out well. The characteristics of the M compiler are:
+
+* Completely self-contained in a 0.5MB executable
+* Whole-program compiler works at up to 0.7M lines per second on my low-end PC
+* Can run programs from source
+
+### Q Overview
+
+The nearest mainstream language might be Python, at 30%, if comparing capability within the language and ignoring all the stuff listed above
+
+* Identical syntax to M as stated above, and shares many common features
+* While it has dynamic typing, it is much less dynamic than Python
+* Built-in FFI and direct support for C-style type systems
+* Executes more briskly than many non-JIT interpreted/dynamic languages, and has a built-in accelerator
+* Includes many features no present in Python (proper named constants, `switch`, embedded text/binary files, proper record etc etc)
+
+### AA Overview
+
+The is the assembler. The nearest mainstream asssembler might be Nasm, at a 90% match. However my AA product is faster (literally 1000 times faster on one test, although that is more of an issue with Nasm, and one the reason I developed my product; AA is still 10 times faster than YASM.)
+
+* Lean, minimal design intended for machine-generated code
+* Can use alternative, more consistent register naming and ordering
+* Can directly assembler ASM files to EXE files with no intermediate object files
+* Can do the job of a linker
+* Self-contained in a 160KB executable
+* Throughput is 2M+ lines per second
 
 
 
