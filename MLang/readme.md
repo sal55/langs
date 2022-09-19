@@ -1,4 +1,4 @@
-## M/Q Languages
+## 'M' and 'Q' Languages
 
 These are my private languages as of 2022:
 
