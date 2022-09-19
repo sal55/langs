@@ -103,7 +103,7 @@ However, AA supports only a subset of all the x64 instructions, mainly the ones 
 * Self-contained in a 160KB executable
 * Throughput is 2M+ lines per second
 
-### Further Links
+### Further Docs
 
 Some information about how the three main tools work: [Tools](Tools.md).
 
