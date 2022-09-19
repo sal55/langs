@@ -1,6 +1,6 @@
 ## M/Q Languages
 
-These are my private languages:
+These are my private languages as of 2022:
 
 **M** My systems programming language
 
@@ -12,7 +12,7 @@ These are my private languages:
 
 * Old-fashioned (both devised in 1980s, and little changed)
 * Embarrassingly unsophisticated, they are devoid of most trendy modern features
-* Primitive type systems
+* Primitive type systems, in particular no proper sum types
 * No lambdas, closures, continuations, currying ...
 * Unsafe (eg. everything is mutable)
 * No 'language servers' or other ways to get syntax highlighting
