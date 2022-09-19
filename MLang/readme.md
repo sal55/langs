@@ -32,7 +32,7 @@ These are my private languages as of 2022:
 * No formal grammar, which is not practical anyway as syntax has ambiguities
 * No binaries available to use, which cannot be supported anyway
 
-Basically, by any comparison to anything else, they are rubbish. So, for anyone still reading, why am I posting this?
+Basically, by any comparison to anything else, they are rubbish. So, for anyone still reading, why am I writing about them?
 
 I'm primarily documenting what I've done for my own benefit, since there are various odd features where I can never remember how they work and in what language, and would like to finally have a stable set of languages as I've spent too long tinkering.
 
@@ -112,6 +112,18 @@ Documenting most features of M: [M Features](Mfeatures.md).
 Info about the module scheme used by M and Q is not ready.
 
 Docs for AA and Q are also not ready, but much of those M docs apply to Q too.
+
+### Future Development
+
+M and Q have been gradually converging, but several attempts to turn them into one language have failed, even though they are so similar. For example, M's compiler could now run applications directly from source just like Q.
+
+But they will be kept as discrete languages with separate implementations.
+
+What I will concentrate on is making them work together more smoothly, and allowing them to share the complex environment of the same application.
+
+(This is exactly how the original Q language, an add-on scripting language then called 'MPL', was used within my graphical applications. Those had a very rich environment more like an mini-OS. But that was for a dedicated applicated with an embedded version of the interpreter.)
+
+So, this will be my 'Two Language` solution. Well, if it works...
 
 ### Demos
 
