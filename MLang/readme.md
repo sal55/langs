@@ -113,6 +113,8 @@ Info about the module scheme used by M and Q is not ready.
 
 Docs for AA and Q are also not ready, but much of those M docs apply to Q too.
 
+However, this is a list of Q features which are missing or poorly supported in Python: [QBasics](../QLang/QBasics.md)
+
 ### Future Development
 
 M and Q have been gradually converging, but several attempts to turn them into one language have failed, even though they are so similar. For example, M's compiler could now run applications directly from source just like Q.
