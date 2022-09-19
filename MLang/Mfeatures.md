@@ -6,7 +6,7 @@ However, while this document describes most of the features of M, including thos
 
 It is not a formal reference, mainly it documents the current state of the languages for my own purposes, But hopefully it can give enough of a picture for anyone else too.
 
-Although languages are quite low level for their class, they are quite rich in features; there's quite a lot to describe!
+Although both languages are quite low level for their class, they are quite rich in features; there's quite a lot to describe!
 
 ### Overview
 
@@ -29,7 +29,7 @@ Although languages are quite low level for their class, they are quite rich in f
 
 **Module** A single source file. (Note source file names, excluding paths and extensions, must be valid identifiers.)
 
-**Lead Module** Out of the modules that comprise the Program, this is the one submitted to the compiler, and which needs to contain the `main` entry point (but see Header Module)
+**Lead Module** Out of the modules that comprise the Program, this is the one submitted to the compiler.
 
 **Main Module** The one where the entry point `main` resides. It will either be the Lead Module, or the next one if that contains header stuff only.
 
