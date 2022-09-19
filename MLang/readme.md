@@ -36,7 +36,7 @@ Basically, by any comparison to anything else, they are rubbish. So, for anyone 
 
 I'm primarily documenting what I've done for my own benefit, since there are various odd features where I can never remember how they work and in what language, and would like to finally have a stable set of languages as I've spent too long tinkering.
 
-This might be of interest to other people, or there might be things that someone can take away, even it's to help avoid making the same mistakes.
+This might be of interest to other people, or there might be things that someone can take away, even if it's to help avoid making the same mistakes.
 
 While short on advanced types, both the HLLs have a rich syntax with dozens of useful minor features including some experimental ones.
 
@@ -130,6 +130,17 @@ What I will concentrate on is making them work together more smoothly, and allow
 (This is exactly how the original Q language, an add-on scripting language then called 'MPL', was used within my graphical applications. Those had a very rich environment more like an mini-OS. But that was for a dedicated application with an embedded version of the interpreter.)
 
 So, this will be my 'Two Language` solution. Well, if it works...
+
+### M versus Q
+
+For anyone wandering exactly how they differ:
+
+* M programs, while they can be run like a script, usually are compiled to EXE binaries. Q runs only bytecode
+* M has a static type system; Q's is dynamic
+* M's types are primitive and fixed size; Q has higher level types with first class strings, lists, dicts, the usual stuff
+* Q has more reflection, eg it is possible to directly access the symbol table used to compile code
+* Q is much safer, most errors are trapped, and report the precise location in the source
+* M programs typically run 1-2 magnitudes for the same code expressed in Q
 
 ### Demos
 
