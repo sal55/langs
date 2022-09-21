@@ -136,4 +136,10 @@ For anyone wandering exactly how they differ:
 * Q is much safer, most errors are trapped, and report the precise location in the source
 * M programs typically run 1-2 magnitudes faster than the same code expressed in Q
 
+### Demo
 
+I want to avoid providing binaries because they are not of the quality I would like, however one has been uploaded as demo, if you have a suitable machine and can get past AV issues (or are feeling brave).
+
+See **Building the Projects** in [Sources](../sources), about half way down.
+
+The binary is intended to demonstrate building those one-file representations of the sources of the various projects.
