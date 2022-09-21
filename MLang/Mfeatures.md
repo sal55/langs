@@ -123,6 +123,25 @@ Some statements can have alternate block endings:
 
 (`od fi esac` are the original Algol68 endings.)
 
+### N-Based
+
+The languages prefer 1-based, and will default to that, but sometimes that can be overrided and sometimes it's 0-based. Here is a summary:
+
+Feature | Start | Override | Notes
+--- | --- | --- | ---
+Arrays | 1 | Yes | Override with explicit lower bound
+For-loops | 1  | Yes | `for i to B`/`for i:=A to B`
+N-way select | 1 | No | `(n \| a, b, c \| z)`
+Enumerations | 1 | Yes | Default ordinal value of first
+Bit-indexing | 0 | No | `A.[i]` and `A.[i..j]`
+--  |  |  | In Q:
+Lists| 1 | Yes |
+Arrays | 1 | Yes | Also bit-arrays
+Constructors | 1 | Yes | `(10, 20, 30)` or `(n:10, 20, 30)`
+Enumerations | 1 | Yes | Default ordinal value of first
+Strings | 1 | No |
+Records | 1 | No | Fields can be accessed by name or index
+Bit-sets | 0 | No |
 
 ### Program Entry Point
 This is the `main` function, which is always exported (ie. no `global` or `export` needed.) `main` takes no parameters.
