@@ -44,18 +44,12 @@ While short on advanced types, both the HLLs have a rich syntax with dozens of u
 
 From my perspective, yes:
 
-* One of my languages will always be my first choice in any project (and has been for, ahem, about 40 years...)
-* I understand them extremely well
-* I rarely have to do battle with the language; they will generally let me do what I want
-* Naturally, they have a syntax I like
-* The tools (compiler, interpreter, assembler) are smallish, lean, self-contained and very fast
-* There are satisfyingly few external dependencies. Basically, they need a Windows OS, and that's it.
+* One of my languages will always be my first choice in any project (and has been since 1981, although the choice then was *very* limited)
+* I understand them extremely well and can usually get them to do whatever I want, and in the syntax I prefer
+* The tools (compiler, interpreter, assembler) are small, self-contained, very fast and to the point
+* There are satisfyingly few external dependencies, they self-contained, and I wrote everything myself. (I didnt't write the OS they run under, but the first [M  version](../mycompilers.md) didn't even need an OS.)
 
-(The first crude version of M didn't even use an OS. I wrote a long article about my native code compilers [here](../mycompilers.md).)
-
-So I have the advantage, which I know will not be shared by anyone else, of having language and tools tailored to my needs. But I'm also not bothered that the languages and tools might be considered unbelievably crude by many (perhaps I'd better not say anything about the text editor and IDE I use).
-
-M and Q have both in the past worked on Linux, so that box has been ticked. But that relied on using a C target for the M compiler, so not satisfactory.
+The requirements for a personal language with a limited target are very different than for a mainstream language. They can be geared towards my own preferences and my own capabilities.
 
 ### M Overview
 
