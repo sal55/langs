@@ -50,7 +50,7 @@ Note that `mm.exe` has been UPX-compressed, from 450KB to 130KB, with slightly l
 
 #### Build Instructions
 
-Get mm.exe and those .ma files in the same place. Then:
+Get mm.exe and any of those .ma files in the same place. Then:
 ```
 mm aa.ma                      # Build asssembler aa.exe
 mm cc.ma                      # Build C compiler cc.exe
