@@ -11,12 +11,12 @@ The files here are amalgamations created by my compiler. They can be compiled di
 
 ### Guide to Projects
 
-Language | Product  | Project | Written In | Lead Module | Amalgamation
---- | --- | --- | --- | --- | ---
-M |  mm.exe | mx |  M  | mm.m | mm.ma 
-Q |  qq.exe | qx |  M  | qq.m | qq.ma
-ASM |  aa.exe |  ax  | M |  aa.m | aa.ma
-C |  bcc.exe | cx |  M  | cc.m | cc.ma
+Language | Product  | Project | Written In | Lead Module | Amalgamation | Description
+--- | --- | --- | --- | --- | --- | ---
+M |  mm.exe | mx |  M  | mm.m | mm.ma | Systems Programming
+Q |  qq.exe | qx |  M  | qq.m | qq.ma | Dynamic, Interpreted, Scripting
+ASM |  aa.exe |  ax  | M |  aa.m | aa.ma | My x64-subset assembly languuage
+C |  bcc.exe | cx |  M  | cc.m | cc.ma | My C-language subset
 
 
 Product | Description
@@ -26,12 +26,6 @@ bcc | Experimental C-subset compiler
 mm | M compiler
 qq | Q compiler/interpeter
 
-Language | Description
---- | ---
-M | My systems programming language
-Q | My dynamic, interpreted, embeddable scripting language
-ASM | In this context, the source format of my x64-subset assembly language
-C  | Here, it means the large subset of C that my bcc product compiles
 
 #### Notes
 
