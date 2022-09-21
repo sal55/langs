@@ -46,7 +46,7 @@ This needs Windows 64 to run. Alternatively, anything that can run Windows execu
 
 But the main obstacle is likely to be getting it past your AV software. This is a hazard when generating your own EXEs, in that it might advertently create false positives when AV checked. (Alternatives I've used have been to supply C-source versions, then the onus is on your C compiler. I no longer do that.)
 
-Note that `mm.exe` has been UPX-compressed, from 450KB to 130KB, which slightly longer start-up time.
+Note that `mm.exe` has been UPX-compressed, from 450KB to 130KB, with slightly longer start-up time.
 
 #### Build Instructions
 
