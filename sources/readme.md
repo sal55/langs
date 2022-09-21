@@ -44,7 +44,7 @@ A binary `mm.exe` has been provided that can be used to turn any of those amalga
 
 This needs Windows 64 to run. Alternatively, anything that can run Windows executables and that can provide msvcrt.dll.
 
-But the main obstacle is likely to be getting it past your AV software. This is a hazard when generating your own EXEs, in that it might advertently create false positives when AV checked. (Alternatives I've used have been to supply C-source versions, then the onus is on your C compiler.)
+But the main obstacle is likely to be getting it past your AV software. This is a hazard when generating your own EXEs, in that it might advertently create false positives when AV checked. (Alternatives I've used have been to supply C-source versions, then the onus is on your C compiler. I no longer do that.)
 
 Note that `mm.exe` has been UPX-compressed, from 450KB to 130KB, which slightly longer start-up time.
 
@@ -67,3 +67,5 @@ aa mm                         # Assemble mm.asm to mm.exe (note this will overwr
 mm aa                         # Perhaps check that new mm.exe can assemble the asssembler
 ```
 For testing qq.exe, try `qq hello`. (Note both `hello` programs include date and time display; this is to ensure the latest just-compiled version is the one being run.)
+
+For testing cc.exe, I'd recommend renaming it, eg to bcc.exe, to avoid clashes with other programs called 'cc'). This C compiler has fallen into disuse, but should still work on a hello.c; download from anywhere if stuck.
