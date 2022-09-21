@@ -64,7 +64,7 @@ For testing the assembler aa.exe try this:
 ```
 mm -asm mm                    # Compile M compiler to mm.asm (note .ma extension optional if not ambiguous)
 aa mm                         # Assemble mm.asm to mm.exe (note this will overwrite the original mm.exe)
-mm aa                         # Perhaps check that new mm.exe can assemble the asssembler
+mm aa                         # Perhaps check that new mm.exe can compile the asssembler
 ```
 For testing qq.exe, try `qq hello`. (Note both `hello` programs include date and time display; this is to ensure the latest just-compiled version is the one being run.)
 
