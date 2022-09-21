@@ -102,10 +102,7 @@ proc main=
             println
         fi
         loadsourcefiles()
-INT TT:=CLOCK()
         parsemodules()
-TT:=CLOCK()-TT
-CPL =TT
 
         genss()
         case axlevel
