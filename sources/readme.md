@@ -62,4 +62,4 @@ mm aa                         # Perhaps check that new mm.exe can compile the as
 ```
 For testing qq.exe, try `qq hello`. (Note both `hello` programs include date and time display; this is to ensure the latest just-compiled version is the one being run.)
 
-For testing cc.exe, I'd recommend renaming it, eg to bcc.exe, to avoid clashes with other programs called 'cc'). This C compiler has fallen into disuse, but should still work on a hello.c; download from anywhere if stuck.
+For testing cc.exe, I'd recommend renaming it, eg to bcc.exe, to avoid clashes with other programs called 'cc'. This C compiler has fallen into disuse, but should still work on a hello.c; download from anywhere if stuck.
