@@ -181,9 +181,9 @@ I'm looking at reinstating a C target for the M compiler. This can provide these
 
 * Optimised code
 * Allow bootstrapping from source, for those not happy using my mm.exe binary
-* Allow code to run on Linux (these would need an extra tweak)
+* Allow code to run on Linux
 
-But it's the first I'm interested in, since I want a fairer comparison of speed, with other compilers that are mostly going to be optimised.
+But it's the first I'm interested in, since I want a fairer comparison of speed, when tested against compilers that are mostly going to be optimised.
 
 Probably, this will in the form of a dedicated `mc.exe` compiler, rather than options on the main `mm.exe` product. The inputs are the same; outputs will be:
 
@@ -192,7 +192,7 @@ Outputs | Option | Description
 `.exe` | `-exe` | (Default) Assemble to EXE format, via gcc (default) C compiler
 `.c`   | `-c`  | Produce single C source file representating entire application
 
-The C file produced will be specific to Windows and specific to 64 bits (since assumptions are pointers etc will be built-in). There are no use headers and, a departure from previous attempts, there are no standard library headers used either. (The reason is partly to avoid mismatches between 'unsigned char` that I like to use, and `char` that are used within the standard headers. Plain `char`, a type of unspecified signedness, does not exist in M.)
+The C file produced will be specific to an OS (default is Windows) and specific to 64 bits (M assumes 64-bit pointers). There are no user headers and, a departure from previous attempts, there are no standard library headers used either. (The reason is partly to avoid mismatches between `unsigned char` that I like to use, and `char` that are used within the standard headers. Plain `char`, a type of unspecified signedness, does not exist in M.)
 
 Other options:
 
@@ -202,4 +202,10 @@ Other options:
     -windows      (Default) Windows64 target (OS-library module uses WinAPI functions)
     -linux        Linux64 target (OS-library module uses Linux-specific functions)
     -nos          Neutral OS target (OS-library limits OS-specific functions or works around them)
-    
+
+The following features in M source code will not be supported:
+
+* Multiple function return values
+* Inline assembly
+* Equivalence (int a @ b for variables, and for record fields)
+* But probably passing arrays by 'value' will be OK (they are passed by reference anyway in native code)
