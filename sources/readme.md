@@ -46,9 +46,9 @@ Note that `mm.exe` has been UPX-compressed, from 450KB to 130KB, with slightly l
 
 Get mm.exe and any of those .ma files in the same place. Then:
 ```
-mm aa.ma                      # Build asssembler aa.exe
+mm aa.ma                      # Build assembler aa.exe
 mm cc.ma                      # Build C compiler cc.exe
-mm qq.ma                      # Build Q intepreter qq.exe
+mm qq.ma                      # Build Q interpreter qq.exe
 mm mm.ma -out:mm2.exe         # Build another M compiler mm2.exe
 ```
 The last is a little different, as Windows won't let you overwrite an active executable, so the output is a different file. But this one will be uncompressed. You can test the new compiler on those other .ma files (or use it on hello.m: `mm hello`)
