@@ -1,7 +1,7 @@
-### Shared Characteristics of All My Languages
+### Shared Characteristics
 
-* Each is implemented as a smallish (0.2MB to 1.0MB), single, self-contained executable, which includes any libraries needed.
-* No installation needed other than copying that one file anywhere, and just running it
+* Each is implemented as a single, smallish (0.2MB to 1.0MB), self-contained executable, which includes any libraries needed.
+* No installation needed other than downloading or copying that one file anywhere, and just running it
 * No dependencies to use the tools, only the relevant host OS. (Certain applications and libraries may have extra dependencies.)
 * Original sources can be provided as a single, buildable amalgamated source file (.ma files)
 * Generated-C versions can be provided as a single C source file
@@ -10,11 +10,9 @@
 
 ### M Overview
 
-M is my lower-level systems programming language, which was first developed for 8-bit Z80 machines in the early 1980s.
+M is my lower-level systems programming language, which was first developed for 8-bit Z80 machines in the early 1980s. Now it works mainly on 64-bit Windows machines, but there is a way now to make it work on Linux.
 
-Now it works mainly on 64-bit Windows machines, but there is a way now to make it work on Linux.
-
-The nearest mainstream alternative would be C, with a roughly 80% match, in how the type system works, and what the languages can do. But M varies in some significant ways:
+The nearest mainstream alternative would be C, with similarities in their type systems and what the languages can do. But M varies in some significant ways:
 
 * Algol-style syntax with no braces
 * Case-insensitive
@@ -27,23 +25,25 @@ The nearest mainstream alternative would be C, with a roughly 80% match, in how 
 * Designed for whole-program compilation
 * Companion scripting language (Q) with identical syntax
 
+Contemporary languages that are use for systems programming (Java, D, C#, Go, C++, Rust, Zig) are MUCH more advanced with modern type systems and all those features listed in my [Cons](Cons.md) summary.
+
+Yet for actual systems programming, this is my first choice.
+
 ### Q Overview
 
-The nearest mainstream language might be Python, at a 30% match, if comparing capability within the language.
-
-* Identical syntax to M as stated above, and shares many common features
-* While it has dynamic typing, it is much less dynamic than Python
+* Interpreted scripting language
+* Dynamically typed only; much less dynamic that typical scripting languages like Python
+* Identical syntax to M, and shares many of the same features
 * Built-in FFI and direct support for C-style type systems
 * Executes more briskly than many non-JIT interpreted/dynamic languages, and has a built-in accelerator
-* Includes many features not present in Python (proper named constants, `switch`, embedded text/binary files, proper records etc; see link in home page)
-
-Both M and Q can produce one-file source amalgamations of any application.
+* Includes many fundamental features that I value, which are not present in Python see [Q versus Python](QBasics.md).
+* Both M and Q can produce one-file source amalgamations of any application.
 
 ### AA Overview
 
-'AA` is actually the name of the tool, the language as such is just 'ASM' but that is rather generic.
+'AA' is actually the name of the tool, the language as such is just 'ASM' but that is rather generic.
 
-The nearest mainstream asssembler might be Nasm, at a 80% match. However my AA product is faster (literally 1000 times faster on one test, although that is more of an issue with Nasm, and one of the reasons I developed my product; AA is still 10 times faster than YASM.)
+The nearest mainstream asssembler might be Nasm, at a 80% match. However my AA product is much faster.
 
 AA supports only a subset of all the x64 instructions, mainly the ones I use myself or used by my code-generator. 
 
