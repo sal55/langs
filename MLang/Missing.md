@@ -8,7 +8,7 @@
 * No 'language servers' or other ways to get syntax highlighting
 * No proper references or tutorials attractively presented (ie. something better than Github markdown)
 * Compiler implementations are buggy and minimal
-* No optimising passes and no tatic analysis
+* No optimising passes and no static analysis
 * No extensive error reporting
 * No debuggers or other such tools
 * No ecosystem
@@ -29,5 +29,5 @@
 * Line-based (at least outside of scripting languages)
 * No block-scopes (only one identifier scope within each function)
 
-Note that the requirements for a personal language with a limited target are very different than for a mainstream language; a *lot* of corners can be cut.
+Note that the requirements for a personal language with limited targets are very different than for a mainstream language; a *lot* of corners can be cut.
 
