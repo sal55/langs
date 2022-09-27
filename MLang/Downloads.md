@@ -26,13 +26,13 @@ compiling from `mm.c` using a C compiler.
 
 Other binaries are built from `.ma` amalgamated source files using `mm.exe`, or from `.c` files using `gcc` or `tcc`.
 
-Use `-O2` or `-O3` as desired if using gcc, to get best performance. Tiny C (tcc) can also be used, but may need `-luser32` option on Windows.
+Use `-O2` or `-O3` as desired if using gcc, to get best performance. When `tcc` (Tiny C) is used, it may need `-luser32` option on Windows.
 
-(.ma files have been generated from original, discrete source modules using `mm -ma`; .c files have been generated using `mc -c` or (using version of `mu` running on Windows), `mu -c`.)
+(`.ma` files have been generated from original, discrete source modules using `mm -ma`; `.c` files have been generated using `mc -c` or (using version of `mu` running on Windows), `mu -c`.)
 
 ### Testing Binaries
 
-This will test whether installed tools are working properly. Tools and inputs are assumed to be in the same place in the examples, otherwise just fill in the paths.
+This will test whether installed tools are working properly. Tools and inputs are assumed to be in the same place in the examples, otherwise just fill in their paths.
 
 Download [hello.m](hello.m) or [hello.q](hello.q), although both just consist of this one line:
 ````
@@ -53,7 +53,7 @@ To test on something bigger, try building qq.exe:
     qq hello
 ````
 **Testing aa.exe:**
-Not ASM files in my format at provided. You can create one like this:
+No ASM files in my format are provided. You can create one like this:
 ````
     mm -asm hello            # compile hello.m to hello.asm
     aa hello                 # assemble hello.asm to hello.exe
