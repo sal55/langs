@@ -8,11 +8,13 @@ These are my personal languages as of 2022:
 
 **AA** My take on x64 assembly
 
-The languages are small, simple, old-fashioned, amateurish and are poorly and minimally implemented. Yet as personal tools I find them invaluable, and satisfying to refine and maintain.
+The languages are small, simple, old-fashioned, amateurish and are poorly and minimally implemented. Yet as personal tools I find them invaluable, can tackle most of my programming tasks, and are satisfying to refine and maintain. 
 
-I've decided that this modest set of references will be written with myself as the primary audience, but I'll also be aware aware that others could be reading.
+I really, really, don't want to use C++. Or Rust. Or Python. Or even C.
 
-Downloads are available to anyone to peruse or try out, at their own risk. Nothing is supported, nothing is guaranteed.
+I've decided that this modest set of references will be written with myself in mind as the primary audience, but I'll also be aware aware that others could be reading.
+
+Downloads are available for anyone to try out, at their own risk. Nothing is supported, nothing is guaranteed. The Download page itself is an experiment in making such tools available as binaries or source bundles, with as little fuss as possible.
 
 Link | Description
 --- | ---
