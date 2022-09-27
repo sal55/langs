@@ -22,7 +22,7 @@
 * No formal grammar, which is not practical anyway as syntax has ambiguities
 * No support possible (but binaries, or ways to create binaries are now available)
 
-### Unpopular Features
+### Unpopular or Untypical Features
 
 * Case-insensitive syntax
 * 1-based indexing (this is the default; N-based possible in some cases)
