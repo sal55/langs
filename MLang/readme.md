@@ -10,7 +10,7 @@ These are my personal languages as of 2022:
 
 The languages are small, simple, old-fashioned, amateurish and are poorly and minimally implemented. Yet as personal tools I find them invaluable, and satisfying to refine and maintain.
 
-I've decided that this modest set of references will be written with myself as the primary audiences, but also aware that others could be reading it.
+I've decided that this modest set of references will be written with myself as the primary audience, but I'll also be aware aware that others could be reading.
 
 Downloads are available to anyone to peruse or try out, at their own risk. Nothing is supported, nothing is guaranteed.
 
