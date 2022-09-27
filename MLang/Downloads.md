@@ -1,6 +1,6 @@
 ## Downloads for MM, QQ, AA Tools
 
-Each download is one self-contained file. Either a Windows binary `mm.exe`, or a .ma amalgamated source file (build with `mm.exe`), or a single C source file (build with `gcc` or `tcc`).
+Each download is one self-contained file. Either a Windows binary `mm.exe`, or a .ma amalgamated source file, or a single C source file.
 
 ### Windows
 
