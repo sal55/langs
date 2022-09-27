@@ -19,4 +19,5 @@ Link | Description
 [M Features](Mfeatures.md) | Lists features of the M language, most of which also apply to Q
 [Q versus Python](../QLang/QBasics.md) | Valued basic features poorly supported in Python
 [Module Scheme](Modules.md) | Some details of the module scheme used by both
-
+[M Examples](Examples) | Example programs (further examples in Downloads)
+[Q Examples](../QLang/Examples) | Example programs
