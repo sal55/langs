@@ -11,33 +11,33 @@ This is a 0.5MB executable which incorporates everything needed to compile M pro
 No dependencies are involved in building M apps, except for the msvcrt.dll library that provides some C functions, but this is part of Windows. Plus any external libraries that an application itself might needed, such as opengl.dll.
 
 No separate build system is needed, only the compiler.
-
-Inputs | Description
---- | ---
-`.m` file | Lead module of application. Other modules/support files will be discovered
-`.ma` file | Amalgamated source file of aplication created with -ma option
-`.dll` file | (Specified in project header) External libraries
-`.ml` file | (Specified in project header) External libraries
-
+```
+Inputs        Description
+------        -----------
+.m   file     Lead module of application. Other modules/support files will be discovered
+.ma  file     Amalgamated source file of aplication created with -ma option
+.dll files    External libraries (Specified in project header)
+.ml  files    External libraries (Specified in project header)
+```
 External libraries can only be DLL or ML files. Some - msvctrt.dll, user32.dll, gdi32.dll, kernel32.dll - are included automatically. Others are listed in the project header that describes the application's module structure. The project header is in the lead module.
 
 It it not possible to directly include object, lib or archive files of other languages. This may be possible by generating .asm outputs, and getting the assembler to produce a conventional .obj file (which will represent the entire program). But this then requires external tools.
 
+```
+Outputs     Option    Description
+-------     ------    -----------
+.exe file   -exe      (Default) Compiler to executable file
+.asm file   -asm      Generate single ASM file representing entire app
+.mx  file   -mx       Create private executable format
+.ml  file   -ml       Create private shared library format
+Run         -run      Compile and immediately execute application in-memory
 
-Outputs | Option | Description
---- | --- | ---
-`.exe` file | `-exe` | (Default) Compiler to executable file
-`.asm` file | `-asm` | Generate single ASM file representing entire app
-`.mx` file | `-mx` | Create private executable format
-`.ml` file | `-ml` | Create private shared library format
-Run | `-run` | Compile and immediately execute application in-memory
--- | --
-`.ma` file | `-ma` | Create amalgamated source file (excludes standard library)
-`.ma` file | `-mas` | Create amalgamated source file (includes standard library)
-`.m` file | -- | Create exports (interface) file when using `-ml`
-`.q` file | -- | Create exports (interface) file when `-ml`
-`.txt` file | `-docs` | Create Documentation file of functions with doc-strings
-
+.ma  file   -ma       Create amalgamated source file (excludes standard library)
+.ma  file   -mas      Create amalgamated source file (includes standard library)
+.m   file             Create exports (interface) file when using `-ml`
+.q   file             Create exports (interface) file when using `-ml`
+.txt file   -docs     Create Documentation file of functions with doc-strings
+```
 M can no longer directly generate DLL files, as the output turned out to be buggy for certain programs, and I was unable to establish the reason.
 
 Instead, a simpler ML library format was devised, for use only with M applications. To generate an actual DLL, it may be possible by generating ASM, then producing an OBJ file from that, then using an external tool such as GCC.
