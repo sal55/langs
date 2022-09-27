@@ -1,6 +1,6 @@
 ## Downloads for MM, QQ, AA Tools
 
-Each download is one self-contained file. Either a Windows binary `mm.exe`, or a .ma amalgamated source file, or a single C source file.
+Each download is one self-contained file. Either a Windows binary `mm.exe`, or a `.ma` amalgamated source file, or a single C source file.
 
 ### Windows
 
@@ -27,3 +27,52 @@ compiling from `mm.c` using a C compiler.
 Other binaries are built from `.ma` amalgamated source files using `mm.exe`, or from `.c` files using `gcc` or `tcc`.
 
 Use `-O2` or `-O3` as desired if using gcc, to get best performance. Tiny C (tcc) can also be used, but may need `-luser32` option on Windows.
+
+### Testing Binaries
+
+This will test whether installed tools are working properly. Tools and inputs are assumed to be in the same place in the examples, otherwise just fill in the paths.
+
+Download [Hello.m](hello.m) or [hello.q](hello.q), although both just consist of this one line:
+````
+    println "Hello, World!", $date, $time
+````
+
+**Testing mm.exe:**
+````
+    mm hello                 # compile hello.m to hello.exe
+    hello                    # run it
+````
+To test on something bigger, try building qq.exe:
+````
+    mm qq.ma
+````
+**Testing qq.exe:**
+````
+    mm hello
+    hello
+````
+**Testing aa.exe:**
+Not ASM files in my format at provided. You can create one like this:
+````
+    mm -asm hello            # compile hello.m to hello.asm
+    aa hello                 # assemble hello.asm to hello.exe
+    hello                    # run executable
+````
+**Testing bcc.exe:**
+Download any C Hello program, or use this:
+````
+#include <stdio.h>
+
+int main(void) {
+    printf("Hello, World!\n");
+}
+````
+Run the compiler like this:
+````
+    bcc hello                # compile hello.c to hello.exe
+    hello                    # run it
+````
+For something bigger, try:
+````
+    bcc mm                   # compile mm.c to mm.exe (note will overwrite original mm.exe if in same place)
+````
