@@ -28,11 +28,13 @@ Other binaries are built from `.ma` amalgamated source files using `mm.exe`, or 
 
 Use `-O2` or `-O3` as desired if using gcc, to get best performance. Tiny C (tcc) can also be used, but may need `-luser32` option on Windows.
 
+(.ma files have been generated from original, discrete source modules using `mm -ma`; .c files have been generated using `mc -c` or (using version of `mu` running on Windows), `mu -c`.)
+
 ### Testing Binaries
 
 This will test whether installed tools are working properly. Tools and inputs are assumed to be in the same place in the examples, otherwise just fill in the paths.
 
-Download [Hello.m](hello.m) or [hello.q](hello.q), although both just consist of this one line:
+Download [hello.m](hello.m) or [hello.q](hello.q), although both just consist of this one line:
 ````
     println "Hello, World!", $date, $time
 ````
@@ -48,8 +50,7 @@ To test on something bigger, try building qq.exe:
 ````
 **Testing qq.exe:**
 ````
-    mm hello
-    hello
+    qq hello
 ````
 **Testing aa.exe:**
 Not ASM files in my format at provided. You can create one like this:
