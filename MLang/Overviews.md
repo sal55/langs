@@ -1,11 +1,14 @@
 ### Shared Characteristics
 
-* Each is implemented as a single, smallish (0.2MB to 1.0MB), self-contained executable, which includes any libraries needed.
+* Each is implemented as a single, smallish (0.2MB to 1.0MB), self-contained executable, which includes any libraries needed
+* All are very fast:
+  * **mm.exe** 0.5MB, up to 0.7M lines per second throughput: source to EXE (on my low-end PC, unoptimised)
+  * **qq.exe** 0.8MB, up to 1.5M lines per second throughput (source to runnable bytecode)
+  * **aa.exe** 0.16MB, 2M+ lines per second throughput (source to EXE)
 * No installation needed other than downloading or copying that one file anywhere, and just running it
 * No dependencies to use the tools, only the relevant host OS. (Certain applications and libraries may have extra dependencies.)
 * Original sources of each tool can be provided as a single, buildable amalgamated source file (.ma files)
 * Generated-C versions can be provided as a single C source file
-* Very fast with throughput from 0.7M lines per second (M compiler) to 2M+ lines per second (assembler). (Building all 3 tools from scratch takes about 0.2 seconds)
 * All are written in my M language, and the M compiler itself is self-hosted
 
 ### M Overview
@@ -27,7 +30,7 @@ The nearest mainstream alternative would be C, with similarities in their type s
 
 Contemporary languages that are used for systems programming (Java, D, C#, Go, C++, Rust, Zig) are much more advanced with modern type systems and all those things listed in my Missing summary.
 
-Still, *my* systems programming, this is my first choice.
+Still, for *my* systems programming, this is my first choice.
 
 ### Q Overview
 
