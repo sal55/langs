@@ -19,12 +19,9 @@ Tool | Download File | Description | Build as
 
 ### Download Files
 
-Only `mm.exe`, the M compiler, is supplied as a binary. This can be used to build
-the other tools locally by compiling their `.ma` files.
-
-If the supplied `mm.exe` cannot be used (eg. gives AV problems or just not trusted), try
+Only `mm.exe`, the M compiler, is supplied as a binary. If the supplied `mm.exe` cannot be used (eg. gives AV problems or just not trusted), try
 compiling from `mm.c` using a C compiler.
 
-Other binaries are built from `.ma` amalgamated source files (using `mm.exe`), or `.c` files (use gcc or tcc).
+Other binaries are built from `.ma` amalgamated source files using `mm.exe`, or from `.c` files using `gcc` or `tcc`.
 
 Use `-O2` or `-O3` as desired if using gcc, to get best performance. Tiny C (tcc) can also be used, but may need `-luser32` option on Windows.
