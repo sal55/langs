@@ -1,8 +1,4 @@
-## Downloads
-
-Summary of Tools:
-
-Tool		Download
+## Downloads for MM, QQ, AA Tools
 
 ### Windows
 
