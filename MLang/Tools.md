@@ -4,9 +4,13 @@ These all work on and for 64-bit Windows.
 
 I'm documenting only the basic compilers. For things like editors and IDEs, everyone will have their own preferences. No one would interested in my stone-age text-based tools anyway (but I will mention that they are of course implemented in my languages; here I used my Q scripting language).
 
-### M Compiler mm.exe
+### M Compilers mm.exe (also mc.exe, mu)
 
 This is a 0.5MB executable which incorporates everything needed to compile M programs, including the sources of M's small standard library. Currently these are just compiled as part of each application.
+
+`mc.exe` can be used to generate a C file of an M application, or can also invoke a C compiler on that file to produce an executable.
+
+'mu` works the same way, but runs on Linux.
 
 No dependencies are involved in building M apps, except for the msvcrt.dll library that provides some C functions, but this is part of Windows. Plus any external libraries that an application itself might needed, such as opengl.dll.
 
@@ -14,29 +18,30 @@ No separate build system is needed, only the compiler.
 ```
 Inputs        Description
 ------        -----------
-.m   file     Lead module of application. Other modules/support files will be discovered
-.ma  file     Amalgamated source file of aplication created with -ma option
-.dll files    External libraries (Specified in project header)
-.ml  files    External libraries (Specified in project header)
+prog.m        Lead module of application. Other modules/support files will be discovered
+prog.ma       Amalgamated source file of aplication created with -ma option
+lib.dll       External libraries (Specified in project header)
+lib.ml        External libraries (Specified in project header)
 ```
 External libraries can only be DLL or ML files. Some - msvctrt.dll, user32.dll, gdi32.dll, kernel32.dll - are included automatically. Others are listed in the project header that describes the application's module structure. The project header is in the lead module.
 
 It it not possible to directly include object, lib or archive files of other languages. This may be possible by generating .asm outputs, and getting the assembler to produce a conventional .obj file (which will represent the entire program). But this then requires external tools.
 
 ```
-Outputs     Option    Description
--------     ------    -----------
-.exe file   -exe      (Default) Compiler to executable file
-.asm file   -asm      Generate single ASM file representing entire app
-.mx  file   -mx       Create private executable format
-.ml  file   -ml       Create private shared library format
-Run         -run      Compile and immediately execute application in-memory
+Output File  Option    Description
+-----------  ------    -----------
+prog.exe     -exe      (Default) Compiler to executable file (via intermediate C using `mc` or `mu` versions)
+prog.asm     -asm      Generate single ASM file representing entire app
+prog.mx      -mx       Create private executable format
+prog.ml      -ml       Create private shared library format
+(Run)        -run      Compile and immediately execute application in-memory
 
-.ma  file   -ma       Create amalgamated source file (excludes standard library)
-.ma  file   -mas      Create amalgamated source file (includes standard library)
-.m   file             Create exports (interface) file when using `-ml`
-.q   file             Create exports (interface) file when using `-ml`
-.txt file   -docs     Create Documentation file of functions with doc-strings
+prog.c       -c        Generate single C file representing entire app (`mc` and `mu` versions only)
+prog.ma      -ma       Create amalgamated source file (excludes standard library)
+prog.ma      -mas      Create amalgamated source file (includes standard library)
+prog_exp.m             Create exports (interface) file when using `-ml`
+prog.q                 Create exports (interface) file when using `-ml`
+prog.txt     -docs     Create Documentation file of functions with doc-strings
 ```
 M can no longer directly generate DLL files, as the output turned out to be buggy for certain programs, and I was unable to establish the reason.
 
