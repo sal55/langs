@@ -1,5 +1,7 @@
 ## Module Import Scheme
 
+(Discusses how this is done in reference to by `M`  and `Q` languages using `mm.exe` and `qq.exe` compilers.)
+
 Modules are typically dealt with by explicitly importing them like this:
 
     import A
@@ -8,7 +10,7 @@ Modules are typically dealt with by explicitly importing them like this:
 
 This is done at the top of each module, with each being a different set of `imports` depending on which other module's exports are needed.
 
-This was how my previous scheme worked as well. But it looked dreadful: each module started with a rag-tag 'shopping list' of modules that was different from every other, and that needed constant maintenance as code changed: new symbols were imported, some were delete.
+This was how my previous scheme worked as well. But it looked dreadful: each module started with a ragtag 'shopping list' of modules, that was different from every other, and that needed constant maintenance as code changed: new symbols were imported, some were deleted.
 
 Also, it didn't really work when a group of related modules wanted to share entities, but which they wanted to keep private from other modules.
 
@@ -16,7 +18,7 @@ Also, it didn't really work when a group of related modules wanted to share enti
 
 Here, the entire module structure is specified in one place, at the top of the first module, called the Header Module.
 
-For simplicity, it can be assumed for now that that module, only contains such information, no code. So it might look like this in a header module `P.m`:
+For simplicity, it can be assumed for now that that module only contains such information, no code. So it might look like this in a header module `P.m`:
 
     module A
     module B
@@ -44,18 +46,34 @@ A further refinement is that modules can be grouped into Subprograms. Effectivel
 
 But for simple programs such as my example above, that first collection of modules is assumed to be a Subprogram called `P`.
 
-Modules within each subprogram can see other's globals, but they cannot see globals in other subprograms' modules. To export from a subprogram requires 'export` rather than `global`.
+Modules within each subprogram can see other's globals, but they cannot see globals in other subprograms' modules. To export from a subprogram requires `export` rather than `global`.
 
-Further, while module names form a namespace that can be used to qualify imported names, a module name from another subprogram is not visible.
+Further, while module names themselves are not exported from a subprogram; they are not visible from another subprogram.
 
-If module B.m of my example used `export` on a function `Foo` for example, and it would need to be written as `P.Foo` not `B.Foo` if accessed from another subprogram.
-(In practice, qualifiers are not needed here either, unless there are clashes. M is very lax and informal here.)
+If module B.m of my above program defined `export func Foo` for example, it would need to be called as `P.Foo()` not `B.Foo()` if accessed from another subprogram. (In practice, qualifiers are not needed here either, unless there are clashes. M is very lax and informal here.)
 
 So, subprograms can be used to directly incorporate libraries consisting of a collection of modules, without needing to expose everything that is shared across that library.
 
+If a library comprised modules Q.m, X.m. Y.m and I wanted to use it from `P`, I can add this line:
+
+    import Q
+
+or I can enumerate the modules individually (use of `import` requires that Q.m only contains directives):
+
+    subprog Q
+    module X
+    module Y
+
+The library itself can be compiled into a separate library:
+
+    mm -dll Q             # produces Q.dll (plus an export file, containing its API)
+
+Within a top-level Subprogram like Q here, the `export` attribute will export functions and variables from the library, so that
+they are accessible to other programs. (I'm working on exporting also types, enums, macro and so on, but that will be done via the export file.)
+
 ### The Standard Library
 
-This is a collection 5 or so modules, which are usually compiled together with user-written modules. But the compiler will automatically add the necessary header directives.
+This is a collection of 5 or so modules, which are usually compiled together with user-written modules. But the compiler will automatically add the necessary header directives.
 
 If it didn't do that, then my example above would have needed to add either this to the header module:
 
@@ -74,7 +92,7 @@ The `sys` prefix to these directives just changes where it looks for those modul
 
 This is also an example of a subprogram: user programs only see function names, variables etc from this standard library that are explicitly exported usng `export`.
 
-So, above example program is now seen to consist of two Subprograms, 'P' and 'mlibx', which is typical for most of my apps.
+So, the above example program is now seen to consist of two Subprograms, 'P' and 'mlibx', which is typical for most of my apps.
 
 ### Header Modules
 
@@ -82,9 +100,9 @@ I've said that header modules containing only module directives, not code. This 
 
 Simple programs of one module contain only code. But after feedback from Reddit users when I first posted about this scheme towards the end of last year, this was relaxed.
 
-The Lead Module, the one submitted to this whole-program compiler, can contains header directives followed by normal code.
+The Lead Module, the one submitted to this whole-program compiler, can contain header directives followed by normal code.
 
-Although this is a little problematical; that module name, say `P`, is used for both the primary Subprogram name `P`, and the name of the first module 'P'. But Subprogram and Module names cannot clash, because they create separate namespaces.
+Although this is a little problematical; that module name, say `P`, is used for both the primary Subprogram name `P`, and the name of the first module 'P'. But Subprogram and Module names cannot clash, because they both create separate namespaces.
 
 (The solution used is to internally rename the main module as `$P`, which is usually not seen as module names are rarely used. But it can be seen in error messages.)
 
@@ -99,7 +117,7 @@ There are conditional directives as listed below, but I haven't really used thes
 
 ### Header Directives
 
-**Principle directives** Here `A B C` etc are examples of different names:
+**Principle directives** Here `A B C` etc are examples of different names, which must be valid identifiers:
 
     module  A            Add a new module A to the list of modules belonging to the subprogram
                          Create a module namespace A
@@ -112,14 +130,17 @@ There are conditional directives as listed below, but I haven't really used thes
                          Creat a subprogram namespace C
                          Read further directives from source file C.m in current subprogram search path
 
-    linkdll D            Add D.dll the list of imported DLLs
+    linkdll D            Add D.dll to the list of imported DLLs
                          Can also specify as "D", or a header-variable
 
-    linklib E            Add E.ml the list of imported ML library files (ML is my version of DLL)
+    linklib E            Add E.ml to the list of imported ML library files (ML is my version of DLL)
 
-    modulepath "F"       Use this path as search path for subsequent modules. Can also specify as a header-var
-    headerpath "G"       Use this path as search path for subsequent imports.
+    modulepath expr      Use this path as search path for subsequent modules
+    headerpath expr      Use this path as search path for subsequent imports.
                          These two can also be done using `setvar`
+
+
+(M applications already link to these DLLs on Windows: `msvcrt gdi32 user32 kernel32` automatically.)
 
 **Special directives:**
 
@@ -138,7 +159,19 @@ There are conditional directives as listed below, but I haven't really used thes
 
     module name when expr
 
-Note that `modulepath X` is a tidier equivalent to writing `setvar $modulepath = X`, and the same with `headerpath`.
+That `expr` can be a string constant or one of these predefined header variables:
+````
+     $devpath            (Path used for M compiler development: internal)
+     $mmpath             Path where the invoked M compiler resides
+     $headerpath         Both of these are set to path of the lead module submitted to compiler/interpeter
+     $modulepath         They can be separately overwridden using `headerpath` and `modulepath` directives
+
+     $ctarget            All set to "" or "1", depending on compiler and options
+     $windows
+     $linux
+     $optim
+     $a, $b, $c          All set to "", can be changed with setvar
+````
 
 ### Conditional Directives
 
@@ -146,24 +179,7 @@ The `module` directive can be written conditionally:
 
     module name when expr
 
-`expr` is one of:
-
-* Name (an identifier)
-* String constant
-* User-variable, one of `$a $b $c`, initially all set to ""
-* One of these predefined variables:
-````
-     $devpath            (Path used for M compiler development: internal)
-     $mmpath             Path where the invoked M compiler resides
-     $headerpath         Both of these are set to path of the lead module submitted to compiler/interpeter
-     $modulepath         They can be separately overwridden using `headerpath` and `modulepath` directives
-
-     $ctarget            Set all to "" or "1", depending on compiler and options
-     $windows
-     $linux
-     $optim
-````
-`when expr` is True when `expr` yields a non-empty string. I haven't tried this yet, it would be used like this:
+Here, `expr` will be a header variable, one that is either `""` (false) or not `""` (true). I haven't tried this yet, it would be used like this:
 
     module winmod as osmod when $windows
     module linmod as osmod when $linux
@@ -175,14 +191,4 @@ But at the moment, I tend to use commenting for conditional code:
     module mm_diags              # With diagnostics
 #   module mm_diags_dummy        # Without
 ```
-Comment or uncomment on line or the other. This is another advantage of specifying a particular module in only one place.
-
-### Building Libraries
-
-A bunch of modules intended to form a library - that is, a discrete, shared dynamic binary like a DLL - is structured just like an ordinary program.
-
-The only difference is that here, in the primary subprogram, `export` will export names from the program/library:
-
-* Any `export` functions and variables will part of the export table from a DLL
-* This applies also when generating my private ML shared library format (since DLLs don't work well ATM)
-* Such names are not qualified, decorated or mangled, so they need to be unique across programs and libraries.
+Comment or uncomment one line or the other. This is another advantage of specifying a particular module in only one place.
