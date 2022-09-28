@@ -48,7 +48,7 @@ But for simple programs such as my example above, that first collection of modul
 
 Modules within each subprogram can see other's globals, but they cannot see globals in other subprograms' modules. To export from a subprogram requires `export` rather than `global`.
 
-Further, module names themselves are not exported from a subprogram; they are not visible from another subprogram. If module `X.m` (see example below), exported function `Foo`, it would be called from `P` using `Q.Foo()` not `X.Foo()`, as `X` would not be visible from `P`.
+Further, module names themselves are not exported from a subprogram; they are not visible from another subprogram. If module `X.m` (see example below), exported function `Foo`, it would be called from `P` using `Q.Foo()` not `X.Foo()`, as `X` would not be visible from `P`. (In practice it would be `Foo()` unless there was a clash.)
 
 So, subprograms can be used to directly incorporate libraries consisting of a collection of modules, without needing to expose everything that is shared across that library.
 
