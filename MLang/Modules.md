@@ -48,9 +48,7 @@ But for simple programs such as my example above, that first collection of modul
 
 Modules within each subprogram can see other's globals, but they cannot see globals in other subprograms' modules. To export from a subprogram requires `export` rather than `global`.
 
-Further, while module names themselves are not exported from a subprogram; they are not visible from another subprogram.
-
-If module B.m of my above program defined `export func Foo` for example, it would need to be called as `P.Foo()` not `B.Foo()` if accessed from another subprogram. (In practice, qualifiers are not needed here either, unless there are clashes. M is very lax and informal here.)
+Further, module names themselves are not exported from a subprogram; they are not visible from another subprogram. If module `X.m` (see example below), exported function `Foo`, it would be called from `P` using `Q.Foo()` not `X.Foo()`, as `X` would not be visible from `P`.
 
 So, subprograms can be used to directly incorporate libraries consisting of a collection of modules, without needing to expose everything that is shared across that library.
 
@@ -214,3 +212,5 @@ But the order they are called can sometimes be critical. With my older scheme, d
 Here, the module order is that in which the modules appear in the header block, with one exception: any `start()` function of the lead module - the one containing the `main` entry point - is called last of all.
 
 (There was another exception: `start()` belonging to `msys.m`, the support library, was called first. But I will rename that and call it via another mechanism, to keep the module order rules simple.)
+
+Note that Subprograms don't have the same freedom: their ordering is strictly hierarchical. In my example using subprograms `P` and `Q` above, `P` can access exports of `Q`, but `Q` can't access `P`'s exports.
