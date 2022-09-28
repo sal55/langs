@@ -204,3 +204,13 @@ So, sometimes explicit paths *are* specified, via the `modulepath` and `headerpa
 Older schemes had a stack of possible places, so you could never be sure what it was loading. Maybe several search locations had a matching file; which one will it pick up?
 
 The rules for system files (standard library, anything using `sysmodule` etc) are a little different, partly such files are often *inside* the compiler.
+
+### Module Loading Order
+
+My languages contain special functions (`start()`) which if present are automatically called when the application starts.
+
+But the order they are called can sometimes be critical. With my older scheme, due to unrestricted circular imports, the load order was not determinable.
+
+Here, the module order is that in which the modules appear in the header block, with one exception: any `start()` function of the lead module - the one containing the `main` entry point - is called last of all.
+
+(There was another exception: `start()` belonging to `msys.m`, the support library, was called first. But I will rename that and call it via another mechanism, to keep the module order rules simple.)
