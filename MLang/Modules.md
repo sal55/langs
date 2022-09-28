@@ -197,7 +197,7 @@ Comment or uncomment one line or the other. This is another advantage of specify
 
 I like to keep these separate. Ideally there is no mention of files or paths at all in my header information.
 
-There is an abstract module name, say `A`. The source file associated with that will be `A.m`. But the location of that file depends on the input given to the compiler. The same location will be used for other discovered modules, unless overridden.
+There is an abstract module name, say `A`. The source file associated with that will be `A.m`. But the location of that file depends on the input given to the compiler for the lead module. The same location will be used for other discovered modules, unless overridden.
 
 So, sometimes explicit paths *are* specified, via the `modulepath` and `headerpath` directives. But there will always be exactly one place where it will look for a module.
 
