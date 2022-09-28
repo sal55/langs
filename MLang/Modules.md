@@ -192,3 +192,15 @@ But at the moment, I tend to use commenting for conditional code:
 #   module mm_diags_dummy        # Without
 ```
 Comment or uncomment one line or the other. This is another advantage of specifying a particular module in only one place.
+
+### Modules and the File System
+
+I like to keep these separate. Ideally there is no mention of files or paths at all in my header information.
+
+There is an abstract module name, say `A`. The source file associated with that will be `A.m`. But the location of that file depends on the input given to the compiler. The same location will be used for other discovered modules, unless overridden.
+
+So, sometimes explicit paths *are* specified, via the `modulepath` and `headerpath` directives. But there will always be exactly one place where it will look for a module.
+
+Older schemes had a stack of possible places, so you could never be sure what it was loading. Maybe several search locations had a matching file; which one will it pick up?
+
+The rules for system files (standard library, anything using `sysmodule` etc) are a little different, partly such files are often *inside* the compiler.
