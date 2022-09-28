@@ -1,3 +1,4 @@
+
 [### Modules IV (2021)
 
 * All **import** and **importpath** statements are removed from individual source files
@@ -39,7 +40,7 @@ Thanks to feedback from Reddit uses, I've made some tweaks:
 
         module pci_mcl as md
         module pc_win64
-````
+
 At some point I will extract that subprogram part into its own header, then I will just use **import pc** here.
 
 For modules that can form a separate program, like 'pc' here, usually there will be an extra module that contains a command line interface, and its own entry point. Bu that module is not needed when importing the rest into another program.
@@ -176,16 +177,16 @@ The `module` directive can be written conditionally:
 * String constant
 * User-variable, one of `$a $b $c`, initially all set to ""
 * One of these predefined variables:
-
-     $devpath				(Path of M compiler develment: internal)
-     $mmpath				Path where M compiler resides
-     $hdrpath				Path of module containing header info (usually same as lead module)
-     $ctarget				"" or "1"
-     $windows				"" or "1"
-     $linux					"" or "1"
-     $optim					"" or "1"
-     $mainmodule			"" or "1"
-
+````
+     $devpath               (Path of M compiler develment: internal)
+     $mmpath                Path where M compiler resides
+     $hdrpath               Path of module containing header info (usually same as lead module)
+     $ctarget               "" or "1"
+     $windows               "" or "1"
+     $linux                 "" or "1"
+     $optim                 "" or "1"
+     $mainmodule            "" or "1"
+````
 `when expr` yields True when `expr` yields a name or string that isn't an empty `""` string. I haven't played with this much, but it's used like this:
 
     module winmod when $windows
