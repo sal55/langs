@@ -1,6 +1,6 @@
 ## Module Import Scheme
 
-(Discusses how this is done in reference to by `M`  and `Q` languages using `mm.exe` and `qq.exe` compilers.)
+(Discusses how this is done in reference to my `M`  and `Q` languages using `mm.exe` and `qq.exe` compilers.)
 
 Modules are typically dealt with by explicitly importing them like this:
 
