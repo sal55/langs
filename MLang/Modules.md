@@ -217,28 +217,29 @@ Note that Subprograms don't have the same freedom: their ordering is strictly hi
 
 ### The Subprogram Hierarchy
 
-There isn't one - all subprograms belong to the Program (although that first has some special status). If P requires Q, and Q requires R, then all can co-exist, with R accessible from P too. 
+There isn't one - all subprograms belong to the Program (although the first has some special status). If `P` requires `Q`, and `Q` requires `R`, then all can co-exist, with `R` accessible from `P` too. 
 
-What might cause a problem if when P requires Q, and both P and Q require R. R can only be specified once. This can come up here; P.m contains:
+What might cause a problem is when `P` requires `Q`, and both `P` and `Q` require `R`. `R` can only be specified once. This can come up here; `P.m` contains:
 
     module A
     import Q
     import R         # or use subprog R
 
-and Q.m contains
+and `Q.m` contains:
+
     module X
     import R
 
 `import R`/`subprog R` occurs twice. This needs some attention, but at the moment there are enough workarounds, eg. comment out the first `import R`.
 
-What is not really possible at the moment are circular subprogram dependencies: Q requires R, and R requires Q. A subprogram ought to be compilable as an independent program (it might need a `main` entry point, but that can be empty, and is ignored when part of another program).
+What is not really possible at the moment are circular subprogram dependencies: `Q` requires `R`, and `R` requires `Q`. A subprogram ought to be compilable as an independent program (it might need a `main` entry point, but that can be empty, and is ignored when part of another program).
 
-The only solution is for the common parts to be extracted to a third module S, imported by both Q and R.
+The only solution is for the common parts to be extracted to a third module `S`, imported by both `Q` and `R`.
 
 
 ### Re-exporting DLL Imports
 
-In both languages, external imports are declared like this; suppose this is module A.m:
+In both languages, external imports are declared like this; suppose this is module `A.m`:
 ````
 importdll lib =
     func F:int
