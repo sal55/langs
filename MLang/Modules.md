@@ -214,3 +214,39 @@ Here, the module order is that in which the modules appear in the header block, 
 (There was another exception: `start()` belonging to `msys.m`, the support library, was called first. But I will rename that and call it via another mechanism, to keep the module order rules simple.)
 
 Note that Subprograms don't have the same freedom: their ordering is strictly hierarchical. In my example using subprograms `P` and `Q` above, `P` can access exports of `Q`, but `Q` can't access `P`'s exports.
+
+### The Subprogram Hierarchy
+
+There isn't one - all subprograms belong to the Program (although that first has some special status). If P requires Q, and Q requires R, then all can co-exist, with R accessible from P too. 
+
+What might cause a problem if when P requires Q, and both P and Q require R. R can only be specified once. This can come up here; P.m contains:
+
+    module A
+    import Q
+    import R         # or use subprog R
+
+and Q.m contains
+    module X
+    import R
+
+`import R`/`subprog R` occurs twice. This needs some attention, but at the moment there are enough workarounds, eg. comment out the first `import R`.
+
+What is not really possible at the moment are circular subprogram dependencies: Q requires R, and R requires Q. A subprogram ought to be compilable as an independent program (it might need a `main` entry point, but that can be empty, and is ignored when part of another program).
+
+The only solution is for the common parts to be extracted to a third module S, imported by both Q and R.
+
+
+### Re-exporting DLL Imports
+
+In both languages, external imports are declared like this; suppose this is module A.m:
+````
+importdll lib =
+    func F:int
+end
+````
+
+`F()` is an imported function. Its owner however is not `lib`, it is the containing module `A.m`. So its qualified name would be `A.F`, if that were needed.
+
+Such imported names are automatically made global, and accessible anywhere in the same sub-program. Which is fortunate as there is no way to specify that in user-code.
+
+Names are also partly exported to other subprograms, so `F` can be accessed from anywhere in the program. But when `F` is in a subprogram `Q`, it's not possible to refer to it as `Q.F` at the moment.
