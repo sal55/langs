@@ -2,12 +2,12 @@
 
 * Embarrassingly unsophisticated, they are devoid of most trendy modern features
 * Primitive type systems, in particular no proper sum types
-* No lambdas, closures, continuations, currying ...
+* No lambdas, closures, continuations, currying, higher level functions (whatever those are...)
 * No support for threads, or parallel execution
-* No generics in M (Q has that for free)
+* No generics (in the language where that would matter)
 * Few safety features, eg. most things are mutable
-* No 'language servers' or other ways to get syntax highlighting
-* No proper references or tutorials attractively presented (ie. something better than Github markdown)
+* No 'language servers' or other ways to get syntax highlighting and other real-time language info
+* No proper references or tutorials attractively presented (ie. something better than .txt or .md)
 * Compiler implementations are buggy and minimal
 * No optimising passes and no static analysis
 * No extensive error reporting
