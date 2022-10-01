@@ -97,8 +97,8 @@ Eventually, the backend was directly incorporated into the M compiler. But the A
 
 Input is usually a single ASM file (from my whole-program compiler), but it can also cope with multiple ASM files. This is still necessary for my C compiler as that uses independent compilation.
 
-    aa      prog            Assemble prog.asm to prog.exe
-    aa -exe prog            Same thing (-exe is default option)
+    aa      prog            Assemble prog.asm to prog.exe (assumes -exe option)
+    aa -exe prog            Same thing
     aa -obj prog            Assemble to prog.obj (not used for a while so may need checking)
     aa -dll prog            Assemble to prog.dll (temporarily suspended)
     aa      one two three   Assemble one.asm, two.asm, three.asm to one.exe
@@ -119,7 +119,7 @@ Other options:
 This compiles Q programs to in-memory bytecode and runs it immediately; here `prog` means `prog.q`, the lead module of the application:
 
     qq       prog          Compile and run program headed by prog.q; uses default -asm option
-    qq -asm  prog          (Default) use ASM-base dispatcher witb some extra bytecodes
+    qq -asm  prog          (Default) use ASM-base dispatcher with some extra bytecodes
     qq -asm2 prog          Same thing
     qq -asm1 prog          Use ASM-base dispatcher (no extra bytecodes)
     qq -fn   prog          Use slower HLL-only dispatcher (function-table-based)
