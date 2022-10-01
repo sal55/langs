@@ -26,7 +26,14 @@ compiling from `mm.c` using a C compiler.
 
 Other binaries are built from `.ma` amalgamated source files using `mm.exe`, or from `.c` files using `gcc` or `tcc`.
 
-Use `-O2` or `-O3` as desired if using gcc, to get best performance. When `tcc` (Tiny C) is used, it may need `-luser32` option on Windows.
+Use `-O2` or `-O3` as desired if using gcc, to get best performance.
+
+When `tcc` (Tiny C) is used, it may additionally need:
+
+    -luser32                     # when used on Windows
+    -fdollars-in-identifiers
+
+(Generated C makes extensive use of '$' for special names, or for separating elements of fully qualified identifiers. But for some reason Tiny C doesn't support them with that funny option.)
 
 (`.ma` files have been generated from original, discrete source modules using `mm -ma`; `.c` files have been generated using `mc -c` or (using version of `mu` running on Windows), `mu -c`.)
 
