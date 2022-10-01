@@ -7,34 +7,34 @@ outputs and options.
 ### Common to All Tools
 
 * All are a single executable file. No particular installation is necessary, just run it from wherever it happens to be
-* Most take a single input file (exception: extra .dll files for `aa` can be listed on the command line)
-* Usually the input file extension is not needed: it will know what files it deal with. (Exception: .dll files; for .ma files it is recommended)
-* Usually there is a single output file: .exe, .asm, .ma etc (exception: some outputs will write an auxiliary file)
+* Most take a single input file *(exception: extra .dll files for `aa` can be listed on the command line)*
+* Usually the input file extension is not needed: it will know what files it deal with. *(Exception: .dll files; for .ma files it is recommended)*
+* Usually there is a single output file: .exe, .asm, .ma etc *(exception: some outputs will write an auxiliary file)*
 
 ### M Compiler `mm.exe` for Windows
 
-For all examples, `prog.m` is the lead (or only) module of the application; `prog.ma` is the amalgatation sources of the application.
+For all examples, `prog.m` is the lead (or only) module of the application; `prog.ma` is the amalgamated sources of the application.
 
-    mm      prog        Compile to prog.exe
-    mm -exe prog        Compile to prog.exe (-exe is default)
+    mm      prog        Compile to prog.exe (assumes -exe option)
+    mm -exe prog        Compile to prog.exe
     mm -asm prog        Compile to prog.asm
     mm -mx  prog        Compile to prog.mx (private exe/dll formats)
     mm -ml  prog        Compile to prog.ml and prog_exp.m (prog.q also planned)
     mm -dll prog        Compile to prog.dll (temporarily suspended)
-    mm -run prog ...    Compile in-memory run immediately (... represents any params of target program)
-    mm      prog.ma     Compile amalgamation prog.ma to prog.exe; the lead module inside must be prog.m
-
+    mm -run prog ...    Compile in-memory then run immediately (... represents any params of target program)
+    mm      prog.ma     Compile amalgamation prog.ma to prog.exe (above options can be used too)
+    
     mm      prog.m      This works too; but you don't need the extension
     mm      prog.       This compiles a module `prog`, with no extension.
 
     mm -ma  prog        Create prog.ma amalgamation of all modules and support files, but not standard library files
     mm -mas prog        Same, but include standard library files
-    mm -docs prog       (Auxiallary option) Write prog.txt contains functions with docstrings (WIP)
+    mm -docs prog       (Auxialary option) Write prog.txt contains functions with docstrings (WIP)
 
 Other options:
 
     -out:file           Write output to file.exe, file.ma etc (or supply extension)
-    -outpath:path       Write output file in given folder path
+    -outpath:path       Write output file in given folder path, if not using -out
     -nosys              Do not include standard libraries
     -opt/-opt2          Optimisation (works only on M5 compiler; temporarily suspected on current M6)
     -opt1
@@ -53,9 +53,9 @@ Generates C source code, or can go further and invoke a C compiler to produce an
     mc      prog        Compile to prog.c, then invoke gcc on prog.c to produce prog.exe
     mc -opt prog        Same, but use gcc -O3
     mc -tcc prog        Compile to prog.c, then invoke tcc on prog.c to produce prog.exe
-    mc -c   prog        Compile to prog.c
+    mc -c   prog        Compile to prog.c, do not invoke C compiler
 
-(tcc is recommended companion C compiler, but if `-opt` is needed, which is the main reason to use `mc`, then only `gcc` supports that.)
+(tcc is the recommended companion C compiler, but if `-opt` is needed, which is the main reason to use `mc`, then only `gcc` supports that.)
 
 A single C-source file is produced for an entire application. This can be compiled pretty much like hello.c.
 
@@ -63,12 +63,12 @@ The reasons for a C version are:
 
 * Allow optimising compilers like gcc, to get the fastest production versions of M applications
 * Allow source code to be shared or built by other people who don't want to rely on my `mm.exe` binary
-* Using `mu -c` (when done on Windows), create C versions that can be compiled and run on Linux
+* Using `mu -c` (when done on Windows), creates C versions that can be compiled and run on Linux
 * When using `mu` on Linux, this is the only way to get the M compiler to run directly on Linux
 
 ### M Compiler `mu.exe` for Linux
 
-Generates C source code, or can go further and invoke a C compiler to produce an ELF executable. Special options when different from `mm.exe`:
+Like `mc.exe`, but runs on Linux:
 
     ./mu      prog        Compile to prog.c, then invoke gcc on prog.c to produce `prog` (Linux executable)
     ./mu -opt prog        Same, but use gcc -O3
