@@ -2,7 +2,7 @@
 
 This is one I created in 2017 to target Windows 64. It has long been withdrawn because:
 
-* It omits some major features such as VLAs, compound literals, dynamically initialised arrays and structs, designated initialisers and bitfields. (These weren't that common back in 2017; they are now!)
+* It omits some major features such as VLAs, compound literals, dynamically initialised arrays and structs, designated initialisers and bitfields. (These weren't that common back in 2017.)
 * There are myriad ways in which the compiler does not conform, too many to list (eg. `long` is a synonym for `int`; `char` is a synonym for `signed char`, both incorrect; my rules for `{...}` initialisers are stricter than C allows; mixed-sign arithmetic uses different rules; ...)
 * There is a major problem with callback functions (functions called from external code need to be marked as `$callback` or `#pragma callback` because the code is not fully ABI compliant)
 * It is too buggy in terms of the generated code
