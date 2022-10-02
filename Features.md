@@ -6,23 +6,22 @@ My languages are pretty much devoid of most advanced, modern features and type s
 regards as indispensable.
 
 This is partly a consequence of having started devising them when my main influences had been Pascal, Algol,and Fortran, and then working
-in isolation for the next few decades (and for mostly low level programming, such as most of the things now taken care of by OSes
-and external libraries).
+in isolation for the next few decades.
 
-Then it became harder to adopt new ideas: they were too difficult to understand, and/or too hard to implement, or didn't fit in
-with my existing features or coding style. Or, they just didn't solve the problems I actually encountered.
+That made it harder to later adopt new ideas. Either they were hard to understand, too hard to implement, or just didn't fit it. The fact
+is that they rarely solved the problems I actually encountered.
 
 So I have my own primitive feature-set. Here I'm just going to list the more unusual, unpopular, or
-intriguing ones, as most of them are well-known and unexceptional.
+quirky ones, or ideas I consider characteristic of what I do.
 
-There are some 'big' features, but maybe most will come across as trivial, or easily expressed or added via other features. But this is a list of things I value and prioritise:
+There are some 'big' features, but most will come across as ordinary or even trivial (like `stop`). But this is a list of things I value and prioritise:
 give me my `strinclude` over higher-order functions any day.
 
 (I might refer to specific languages of mine as 'M': static, compiled; `Q`: dynamic, interpreted, and also `ASM`: my assembly syntax).
 
 
 ### Scripting Language
- You might say this is not a feature, nor unusual. But I came up with the idea of an add-on scripting language
+You might say this is not a feature, nor unusual. But I came up with the idea of an add-on scripting language
 for my applications, sometime in the second half of the 1980s. It solved a number of problems with using just the one language, and I ended
 up with a two-language solution, one I still use now. (The scripting language is now not tied to an application).
 
@@ -44,7 +43,7 @@ otherwise possible since `exit` is a reserved word:
 ```
 
 ### Named constants
- Yeah, this just `const abc = 100`. Surely this is everywhere, yet Python doesn't have such a feature (my Q language does),
+Yeah, this just `const abc = 100`. Surely this is everywhere, yet Python doesn't have such a feature (my Q language does),
 and even C has to emulate it using one of `#define, enum, const int, constexpr (C23)` none of which quite manage it 100%
 
 ### Flexible `end`
@@ -149,7 +148,7 @@ This ought to be common, but I don't really remember seeing it anywhere. Typical
 
     a[i], b[i+1] = b[i+1], a[i]
 
-But this has a problem: each term is written twice, so there is a chance of error. Also it's not clear if exchanging values is the intention: you
+But this has a problem: each term is written twice, so there is a chance of error (and issues with side-effects). Also it's not clear if exchanging values is the intention: you
 need to check carefully. If it's not quite exchanging terms, was that a typo?
 
 Or worse, an intermediate temporary needs to be employed.
@@ -630,4 +629,13 @@ via function pointers, to be called as though they were regular functions.
 
 Not really needed now as I allow some degree of auto-deref anyway, and I have by-ref parameters (although those `A B C` examples would still need derefs).
 
+### Bytecode Binaries
 
+For most of its evolution, my scripting language generated discrete bytecode files, one per module. Later versions would produce a single,
+monolithic file for the whole application (the One File principle).
+
+The advantage was a tidy packaging of the application, and the source code was not visible. However I've recently brought it into
+line with how other scripting languages work, which is usually direct from source.
+
+That leaves the problem of packaging applications, but that is done now by generating a .qa single-file amalgamation. Source stays
+visible however.
