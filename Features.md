@@ -65,8 +65,8 @@ Multi-char versions are even less common. Even in C, they are implementation-def
 usually has `i32` type). I support 'A' up to 'ABCDEFG', yielding an integer-type constant (it can be used like a `u64` type).
 
 ### Goto
-`goto` is around, although it seems to be on the endangered list as modern languages tend to omit it. (Try transpiling arbitrary control-flow
-statements to a language which doesn't directly support that statement, and which doesn't have `goto`.)
+`goto` is around, although it seems to be on the endangered list as modern languages tend to omit it. (Try porting an unusual control-flow
+statements to a language which doesn't have `goto`.)
 
 But what's a little different how I do it is that it can be written in two ways (three if `go to` counts):
 
