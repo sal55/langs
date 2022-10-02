@@ -48,7 +48,7 @@ and even C has to emulate it using one of `#define, enum, const int, constexpr (
 
 ### Flexible `end`
 This merely refers to being able to use, for example `end`, `endif`, `end if` and `fi` to mark the end of a statement.
-Again it provides a style choice. The first three work on all statements that need an `end` keyword, but some have extra ones (eg. `fi od esac` which
+It provides a style choice. The first three work on all statements that need an `end` keyword, but some have extra ones (eg. `fi od esac` which
 come from Algol68).
 
 ### `enumdata` and `tabledata`
