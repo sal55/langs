@@ -236,8 +236,8 @@ The other `main`s are for when those other modules are compiled into independent
 Any module can have a `start()` function, if so it will be called automatically at program entry, to provide any needed
 initialisations. (The order they are called is determining by the module ordering in the project information which lists the modules.)
 
-### `b..c` AND `[b,c,d]`
-These constructs create first class range/set types in the Q language, so not very interesting. In M however they
+### `b..c` and `[b,c,d]`
+These constructs create first class range/set values in the Q language, so not very interesting. In M however they
 are commonly used in conditions:
 
     if a in b..c               # true when A is in that include range
