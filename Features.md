@@ -58,7 +58,7 @@ Both allow an easy and maintainable to way to initialise parallel arrays of data
 in the first column. See [Example](MLang/Examples/aa_tables.m).
 
 ### Character Constants
-These are constants such as `'A'` and `'ABC'`. Nothing unusual you might think. But you will struggle to find a scripting
+These are integer constants such as `'A'` and `'ABC'`. Nothing unusual you might think. But you will struggle to find a scripting
 language that directly supports `'A'` (in Python it's `ord("A")`, in Lua it's `string.byte('A')`).
 
 Multi-char versions are even less common. Even in C, they are implementation-defined, and are still generally limited to 'ABCD' (because `int`
