@@ -49,7 +49,7 @@ Just download the executable to wherever you want and run it from there. Or buil
 
 This will test whether installed tools are working properly. Tools and inputs are assumed to be in the same place in the examples, otherwise just fill in their paths.
 
-Download [hello.m](hello.m) or [hello.q](hello.q), although both just consist of this one line:
+Download [hello.m](Examples/hello.m) or [hello.q](../QLang/Examples/hello.q), although both just consist of this one line:
 ````
     println "Hello, World!", $date, $time
 ````
