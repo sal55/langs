@@ -1,6 +1,6 @@
 ## Downloads for MM, QQ, AA Tools
 
-(Page under constructions, files under development.)
+(Page under construction, links not ready.)
 
 Each download is one self-contained file. Either a Windows binary `mm.exe`, or a `.ma` amalgamated source file, or a single C source file.
 
