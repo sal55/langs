@@ -39,6 +39,12 @@ When `tcc` (Tiny C) is used, it may additionally need:
 
 (`.ma` files have been generated from original, discrete source modules using `mm -ma`; `.c` files have been generated using `mc -c` or (using version of `mu` running on Windows), `mu -c`.)
 
+### Installation
+
+There is no install process.
+
+Just download the executable to wherever you want and run it from there. Or build the source bundle file wherever it's most convenient.
+
 ### Testing Binaries
 
 This will test whether installed tools are working properly. Tools and inputs are assumed to be in the same place in the examples, otherwise just fill in their paths.
