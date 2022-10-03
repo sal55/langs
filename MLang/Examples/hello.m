@@ -1,3 +1,1 @@
-proc main =
-    println "Hello, World!"
-end
+println "Hello, World!", $date, $time
