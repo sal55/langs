@@ -35,7 +35,7 @@ When `tcc` (Tiny C) is used, it may additionally need:
     -luser32                     # when used on Windows
     -fdollars-in-identifiers
 
-(Generated C makes extensive use of '$' for special names, or for separating elements of fully qualified identifiers. But for some reason Tiny C doesn't support them without that funny option.)
+(Generated C makes extensive use of '$', but for some reason Tiny C doesn't support them without that funny option.)
 
 (`.ma` files have been generated from original, discrete source modules using `mm -ma`; `.c` files have been generated using `mc -c` or (using version of `mu` running on Windows), `mu -c`.)
 
