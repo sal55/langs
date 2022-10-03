@@ -45,9 +45,9 @@ There is no install process.
 
 Just download the executable to wherever you want and run it from there. Or build the source bundle file wherever it's most convenient.
 
-### Testing Binaries
+### Testing Binaries (Windows)
 
-This will test whether installed tools are working properly. Tools and inputs are assumed to be in the same place in the examples, otherwise just fill in their paths. The following assumes Windows; for Linux, you'll have to add `./`, eg. `./mm hello`.
+This will test whether installed tools are working properly. Tools and inputs are assumed to be in the same place in the examples, otherwise just fill in their paths.
 
 Download [hello.m](Examples/hello.m) or [hello.q](../QLang/Examples/hello.q), although both just consist of this one line:
 ````
@@ -92,3 +92,9 @@ For something bigger, try:
 ````
     bcc mm                   # compile mm.c to mm.exe (note will overwrite original mm.exe if in same place)
 ````
+
+
+### Testing Binaries (Linux)
+
+(Not ready.)
+
