@@ -1,10 +1,27 @@
 ## Downloads for MM, QQ, AA Tools
-
 (Page under construction, links not ready.)
 
 Each download is one self-contained file. Either a Windows binary `mm.exe`, or a `.ma` amalgamated source file, or a single C source file.
 
-### Windows
+
+
+
+
+
+
+### Languages
+
+Language | Description | Tool
+--- | --- | ---
+**M** | Lower level systems language | `mm.exe` compiler (Windows)
+ | | `mc.exe` compiler via C (Windows)
+ | | `mu` compiler via C (Linux)
+**Q** | Lower level scripting language | `qq.exe` interpreter (Windows)
+ | | `qu` interpreter (Linux)
+**ASM** | x64-subset assembly language | `aa.exe` assembler/linker
+**C** | C-language subset | `bcc.exe` compiler
+
+### Windows Downloads
 
 Tool | Download File | Description | Build as
 --- | --- | --- | ---
@@ -15,7 +32,7 @@ Tool | Download File | Description | Build as
 `qq.exe`	|	`qq.ma`	|	Q interpreter for Windows | `mm qq.ma`
 `bcc.exe`	|	`bcc.ma`	|	C-subset compiler for Windows | `mm bcc.ma`
 
-### Linux
+### Linux Downloads
 Tool | Download File | Description | Build as
 --- | --- | --- | ---
 `mu`	|		`mu.c`	|	M Compiler for Linux, via C intermediate | `gcc mu.c -omu -lm`
@@ -23,21 +40,25 @@ Tool | Download File | Description | Build as
 
 ### Download Files
 
-Only `mm.exe`, the M compiler, is supplied as a binary. If the supplied `mm.exe` cannot be used (eg. gives AV problems or just not trusted), try
-compiling from `mm.c` using a C compiler.
+* Only `mm.exe`, the M compiler, is supplied as a binary. If the supplied `mm.exe` cannot be used (eg. gives AV problems or just not trusted), try
+building from from `mm.c`
+* Other binaries are built from `.ma` amalgamated source files using `mm.exe`
+* Or from `.c` files using `gcc` or `tcc`. Use `-O2` or `-O3` as desired if using gcc, to get best performance.
 
-Other binaries are built from `.ma` amalgamated source files using `mm.exe`, or from `.c` files using `gcc` or `tcc`.
+Build instructions are shown above: just directly run `mm.exe` or `gcc`.
 
-Use `-O2` or `-O3` as desired if using gcc, to get best performance.
+### Using Tiny C
 
-When `tcc` (Tiny C) is used, it may additionally need:
+This is very fast C compiler. If installed, it can be invoked automatically by using `mc -tcc` or `./mu -tcc`, which applies the necessary options.
 
-    -luser32                     # when used on Windows
-    -fdollars-in-identifiers
+For directly building the C sources files provided, use these options (examples):
+```
+    tcc mm.c -fdollars-in-identifiers -luser32 -lkernel32                 # Windows
+    tcc mu.c -omu -fdollars-in-identifiers -luser32 -lkernel32 -lm -ldl   # Linux
 
 (Generated C makes extensive use of '$', but for some reason Tiny C doesn't support them without that funny option.)
 
-(`.ma` files have been generated from original, discrete source modules using `mm -ma`; `.c` files have been generated using `mc -c` or (using version of `mu` running on Windows), `mu -c`.)
+## Building `.ma` files
 
 ### Installation
 
