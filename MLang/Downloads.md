@@ -18,8 +18,8 @@ Tool | Download File | Description | Build as
 `mm.exe`	|	`mm.exe`	|	M Compiler for Windows, direct EXE generation | --
 -- |	`mm.c`	|	(Alternative) | `gcc mm.c -omm.exe`
 `mc.exe`	|	`mc.ma`	|	M Compiler for Windows, via C intermediate | `mm mc.ma`
-`aa.exe`	|	`aa.ma`	|	x64-subset Assembler/Linker for Windows | `mm aa.ma`
 `qq.exe`	|	`qq.ma`	|	Q interpreter for Windows | `mm qq.ma`
+`aa.exe`	|	`aa.ma`	|	x64-subset Assembler/Linker for Windows | `mm aa.ma`
 `bcc.exe`	|	`bcc.ma`	|	C-subset compiler for Windows | `mm bcc.ma`
 
 ### Linux Downloads
@@ -44,8 +44,8 @@ This is a very fast C compiler. If installed, it can be invoked automatically by
 
 For directly building the C sources files provided, use these options (examples):
 ```
-    tcc mm.c -fdollars-in-identifiers -luser32 -lkernel32                 # Windows
-    tcc mu.c -omu -fdollars-in-identifiers -luser32 -lkernel32 -lm -ldl   # Linux
+    tcc mm.c      -fdollars-in-identifiers -luser32             # Windows
+    tcc mu.c -omu -fdollars-in-identifiers -lm -ldl             # Linux
 ```
 (Generated C makes extensive use of '$', but for some reason Tiny C doesn't support them without that funny option.)
 
