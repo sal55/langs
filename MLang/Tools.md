@@ -68,14 +68,14 @@ Like `mc.exe`, but runs on Linux:
     ./mu -tcc prog        Compile to prog.c, then invoke tcc on prog.c to produce `prog`
     ./mu -c   prog        Compile to prog.c
 
-### M Compiler `ms.exe` or Windows
+### M 'Script' Compiler `ms.exe` for Windows
 
 This runs just like `mm.exe`, but defaults to the `-run` option. No separate version is provided; just copy mm.exe to ms.exe:
 ````
     copy mm.exe ms.exe
     ms hello              Should compile hello.m into memory and run it immediately
 ````
-The compiler checks whether the name of the executable is `ms` or not.
+The compiler checks whether the name of the executable is `ms` or not. The name 'ms' (M Script) is because M programs can be run like Q scripts.
 
 ### Assembler aa.exe
 
