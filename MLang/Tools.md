@@ -18,11 +18,11 @@ For all examples, `prog.m` is the lead (or only) module of the application; `pro
     mm -dll prog        Compile to prog.dll (temporarily suspended)
     mm      prog.ma     Compile amalgamation prog.ma to prog.exe (above options can be used too)
 
-    mm -run prog ...    Compile in-memory then run immediately (... represents any params of target program)
+    mm -run prog ...    Compile in-memory then run immediately (... represents any parameters of target program)
 
     mm -ma  prog        Create prog.ma amalgamation of all modules and support files, but not standard library files
     mm -mas prog        Same, but include standard library files
-    mm -docs prog       (Auxialary option) Write prog.txt contains functions with docstrings (WIP)
+    mm -docs prog       (Auxiliary option) Write prog.txt contains functions with docstrings (WIP)
 
 Other options:
 
