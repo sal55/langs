@@ -1,15 +1,10 @@
 ## Language Tools
 
+This documents how the tools are used when run from a command line.
 
-This documents how the tools are used when run from a command line, with their inputs,
-outputs and options.
+Each tool is a self-contained executable file. It can be installed and run from anywhere.
 
-### Common to All Tools
-
-* All are a single executable file. No particular installation is necessary, just run it from wherever it happens to be
-* Most take a single input file *(exception: extra .dll files for `aa` can be listed on the command line)*
-* Usually the input file extension is not needed: it will know what files it deal with. *(Exception: .dll files; for .ma files it is recommended)*
-* Usually there is a single output file: .exe, .asm, .ma etc *(exception: some outputs will write an auxiliary file)*
+Most take a single file as input, and, if there is output, will write a single file too. Usually no file extensions are needed, but can be added for clarity.
 
 ### M Compiler `mm.exe` for Windows
 
@@ -21,11 +16,9 @@ For all examples, `prog.m` is the lead (or only) module of the application; `pro
     mm -mx  prog        Compile to prog.mx (private exe/dll formats)
     mm -ml  prog        Compile to prog.ml and prog_exp.m (prog.q also planned)
     mm -dll prog        Compile to prog.dll (temporarily suspended)
-    mm -run prog ...    Compile in-memory then run immediately (... represents any params of target program)
     mm      prog.ma     Compile amalgamation prog.ma to prog.exe (above options can be used too)
-    
-    mm      prog.m      This works too; but you don't need the extension
-    mm      prog.       This compiles a module `prog`, with no extension.
+
+    mm -run prog ...    Compile in-memory then run immediately (... represents any params of target program)
 
     mm -ma  prog        Create prog.ma amalgamation of all modules and support files, but not standard library files
     mm -mas prog        Same, but include standard library files
@@ -123,7 +116,6 @@ This compiles Q programs to in-memory bytecode and runs it immediately; here `pr
     qq -asm2 prog          Same thing
     qq -asm1 prog          Use ASM-base dispatcher (no extra bytecodes)
     qq -fn   prog          Use slower HLL-only dispatcher (function-table-based)
-    qq       prog.qa        Use slower HLL-only dispatcher (function-table-based)
     qq       prog.qa       Compile and run amalgamation prog.q; the lead module inside must be prog.q
 
     qq -qa   prog          Create prog.qa amalgamation of all modules and support files, but not standard library files
