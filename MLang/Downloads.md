@@ -3,13 +3,13 @@
 
 Language | Description | Tool
 --- | --- | ---
-**M** | Lower level systems language | `mm.exe` compiler (Windows)
- | | | `mc.exe` compiler via C (Windows)
- | | | `mu` compiler via C (Linux)
-**Q** | Lower level scripting language | `qq.exe` interpreter (Windows)
- | | | `qu` interpreter (Linux)
-**ASM** | x64-subset assembly language | `aa.exe` assembler/linker
-**C** | C-language subset | `bcc.exe` compiler
+**M** | Lower level systems language | `mm.exe` M compiler (Windows)
+ | | | `mc.exe` M compiler via C (Windows)
+ | | | `mu` M compiler via C (Linux)
+**Q** | Lower level scripting language | `qq.exe` Q interpreter (Windows)
+ | | | `qu` Q interpreter (Linux)
+**ASM** | x64-subset assembly language | `aa.exe` ASM assembler/linker
+**C** | C-language subset | `bcc.exe` C-subset compiler
 
 ### Windows Downloads
 
@@ -32,7 +32,7 @@ Tool | Download File | Description | Build as
 
 All the software here is written in my M language.
 
-Only `mm.exe` is provided as a pre-built binary for Windows. Other versions need to be build from source: either actual M sources (the .ma files) or from a C rendering (the .c files), whatever is provided.
+Only `mm.exe` is provided as a pre-built binary for Windows. Other versions need to be built from source: either actual M sources (the .ma files) or from a C rendering (the .c files), whatever is provided. (Note that github is primarily for source code, hence binaries are kept to a minimum.)
 
 If `mm.exe` can't be used (AV issues or not trusted), then try building from `mm.c`.
 
@@ -40,7 +40,7 @@ Build instructions are shown above for `mm` and `gcc`. For the latter, add `-O2`
 
 #### Using Tiny C
 
-This is avery fast C compiler. If installed, it can be invoked automatically by using `mc -tcc` or `./mu -tcc`, which applies the necessary options.
+This is a very fast C compiler. If installed, it can be invoked automatically by using `mc -tcc` or `./mu -tcc`, which applies the necessary options.
 
 For directly building the C sources files provided, use these options (examples):
 ```
