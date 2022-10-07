@@ -9,7 +9,7 @@ Language | Description | Tool
 **Q** | Lower level scripting language | `qq.exe` Q interpreter (Windows)
  | | | `qu` Q interpreter (Linux)
 **ASM** | x64-subset assembly language | `aa.exe` ASM assembler/linker
-**C** | C-language subset | `bcc.exe` C-subset compiler
+**'C'** | C-language subset | `bcc.exe` C-subset compiler
 
 ### Windows Downloads
 
@@ -32,11 +32,13 @@ Tool | Download File | Description | Build as
 
 All the software here is written in my M language.
 
-Only `mm.exe` is provided as a pre-built binary for Windows. Other versions need to be built from source: either actual M sources (the .ma files) or from a C rendering (the .c files), whatever is provided. (Note that github is primarily for source code, hence binaries are kept to a minimum.)
+Only `mm.exe` is provided as a pre-built binary for Windows. It is the actual compiler, ready-to-go, not an installer.
+
+Other versions need to be built from source: either actual M sources (the .ma files) or from a C rendering (the .c files), whatever is provided. (Note that github is primarily for source code, hence binaries are kept to a minimum.)
 
 If `mm.exe` can't be used (AV issues or not trusted), then try building from `mm.c`.
 
-Build instructions are shown above for `mm` and `gcc`. For the latter, add `-O2` or `-O3` as desired.
+Build instructions are shown above, using `mm` and `gcc`. For the latter, add `-O2` or `-O3` as desired.
 
 #### Using Tiny C
 
