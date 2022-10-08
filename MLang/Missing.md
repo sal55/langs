@@ -17,7 +17,7 @@
 * No community (I'm the only user, and even I don't use them that much!)
 * Minimal, practically non-existent libraries, and no easy way of creating bindings to more
 * Insular, incapable of working with other software except via DLL libraries - or files
-* Don't work on anything except indows 64 (with experimental Linux versions)
+* Don't work on anything except Windows 64 (ATM)
 * Patchy and buggy coverage of combinations of features, types and operations
 * No Unicode support, except what works by accident through UTF8
 * No formal grammar, which is not practical anyway as syntax has ambiguities
