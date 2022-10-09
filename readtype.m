@@ -1,18 +1,20 @@
 !Parse a named C type within a declaration like:
 !   int a, *b, c[10];
 
-!readtype() is called the base type is already known, eg. `int` above, and passed as 'm';
-! but the identifier is not yet known; for the above, the current token will be 'a' or '*' or 'c'
-!It returns the identifier via 'd' and either the same or modified type 
-!For function types with parameter lists, that is returned via 'pm'.
+!readtype() is called with the base type is already known, eg. `int` above, and passed as 'm';
+! but the identifier is not yet known; for the above, the current token will be 'a' or '*' or 'c';
+! it will be called separately for each variable
+
+!It returns the identifier via 'd' and either the same or modified type as the return type
+!For function types with parameter lists, those are returned via 'pm' (& means reference param)
 
 function readtype(ref strec owner, &d, int m, ref paramrec &pm)int=
     [maxtypemods]int modtype
     [maxtypemods]ref void modvalue
     ref paramrec pmx
-    int nmodifiers,i
+    int nmodifiers
+    
     nmodifiers:=0
-
     pm:=nil
 
     readnamedtype(owner,d, modtype,modvalue,nmodifiers)
@@ -20,13 +22,13 @@ function readtype(ref strec owner, &d, int m, ref paramrec &pm)int=
 !now apply modifiers to base type:
     for i:=nmodifiers downto 1 do
         case modtype[i]
-        when 'A' then
+        when 'A' then                    # array
             m:=createarraymode(m,int(modvalue[i]))
-        when 'R' then
+        when 'R' then                    # pointer
             m:=createrefmode(m)
-        when 'C' then
+        when 'C' then                    # const
             m:=createconstmode(m)
-        when 'F' then
+        when 'F' then                    # function
             if i=1 then             !indicate to caller that this is a normal function
                 pm:=modvalue[1]
             else                    !assume fu nction pointer of some sort
@@ -38,8 +40,7 @@ function readtype(ref strec owner, &d, int m, ref paramrec &pm)int=
     return m
 end
 
-proc readnamedtype(ref strec owner, &d,
-            []int &modtype, []ref void &modvalue, int &nmodifiers)=
+proc readnamedtype(ref strec owner, &d, []int &modtype, []ref void &modvalue, int &nmodifiers)=
     int length
     [maxtypemods]int fconst
     int nrefs
@@ -86,10 +87,9 @@ proc readnamedtype(ref strec owner, &d,
             length:=0
         else
             pdim:=readassignexpr()
-            if pdim^.tag=j_const then
-                length:=pdim^.value
+            if pdim.tag=j_const then
+                length:=pdim.value
             else
-
                 serror("Can't do VLAs")
             fi
             checksymbol(rsqsym)
