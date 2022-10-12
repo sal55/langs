@@ -357,7 +357,7 @@ These are defined as:
 
 (Since their main use was for my threaded-code intepreter.) They have no entry or exit code, and no stackframe. Unusual? I don't know know (hard to imagine Rust having anything like this; I think it doesn't even have regular `goto`)
 
-### Inline Assembler
+### Inline Assembly
 A consistent feature of my systems language for 40 years, for me it is nothing remarkable.
 
 You will come across inline assembly in other lower level languages, but often with ghastly implementations, for example having to write your assembly code within a string literal; having no access to locals (you need to hardcode stack-frame offsets), or the recent gcc one where you first to have to define an interface between ASM and C using a mysterious set of directives, so that it can work within its optimiser.
