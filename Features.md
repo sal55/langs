@@ -493,7 +493,7 @@ I can't remember the exact syntax, but any block could be labeled, and `@fred` w
 
 So more like a local function, but no call/return, no stack, no locals.
 
-The feature was dropped because it was too naff; too reminiscent of Basics `GOSUB`. However I will don't have a solution for low-level code-sharing within a function. (One feature, `recase`, handles some use-cases, but now listed here as it is temporarily disabled.)
+The feature was dropped because it was too naff; too reminiscent of Basics `GOSUB`. However I still don't have a solution for low-level code-sharing within a function. (One feature, `recase`, handles some use-cases, but not listed here as it is temporarily disabled.)
 
 ### `/` Translation operator
 In the script language, `/"Length"` would apply a translation function to the string, used for internationalisation.
