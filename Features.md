@@ -20,7 +20,7 @@ You might say this is not a feature, nor unusual. But I came up with the idea of
 So they are two complementary languages, which *share the same syntax*, have largely the same features, and are designed to interact with each other. But one is static, the other dynamic. (Imagine if C and Python had the same syntax.)
 
 ### Case insensitivity
-This might seen an odd one, but since modern languages tend to be case-sensitive, to me case-insensitivity confers a number of advantages, that I won't go into (I'm not fighting that battle). The downside: if you want to use `abc Abc ABC` to all mean different things, then you're out of luck.
+This might seen an odd one, but since modern languages tend to be case-sensitive, to me case-insensitivity confers a number of advantages, that I won't go into (I'm not fighting that battle). The downside: if you want to use `abc Abc ABC` to all mean different things, then you're out of luck, unless ...
 
 ### Backtick
  This is the \` character that can be prepended to any identifier, which gives two useful attributes:
@@ -32,7 +32,9 @@ This might seen an odd one, but since modern languages tend to be case-sensitive
 ```
 
 ### Named constants
-Yeah, this just `const abc = 100`. Surely this is everywhere, yet Python doesn't have such a feature (my Q language does), and even C has to emulate it using one of `#define, enum, const int, constexpr (C23)` none of which quite manage it 100%
+Yeah, this i just `const abc = 100`. Surely this is everywhere, yet Python doesn't have such a feature (my Q language does), and even C has to emulate it using one of `#define, enum, const int, constexpr (C23)` none of which quite manage it 100%.
+
+Within a scripting language, this feature makes fast, jump-table-based `switch` practical (however those generally used simple enumerations, something else that most scripting languages can't seem to manage properly).
 
 ### Flexible `end`
 This merely refers to being able to use, for example `end`, `endif`, `end if` and `fi` to mark the end of a statement. It provides a style choice. The first three work on all statements that need an `end` keyword, but some have extra ones (eg. `fi od esac` which come from Algol68).
@@ -124,7 +126,7 @@ But this has a problem: each term is written twice, so there is a chance of erro
 
 Or worse, an intermediate temporary needs to be employed.
 
-I would just write `swap(a[i], b[i+1])` - job done. That `swap` gives a significant hint as to what was intended! And less change of error.
+I would just write `swap(a[i], b[i+1])` - job done. That `swap` gives a significant hint as to what was intended! And less chance of error.
 
 ### `switch` and `case`
 These are two kinds of statements, usually implemented as one. My `switch` is for integer values and requires contant test values, and is intended to be implemented as a jump table. If the test values are two wide-ranging then `case` must be used. `case` is more general purpose, works with any types, and test values can be variable. However in the latter the test values are compared one at a time, not all at once.
