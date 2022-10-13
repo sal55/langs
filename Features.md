@@ -204,7 +204,7 @@ But they do allow 0-based as well as N-based arrays. This is not the only langua
 Clarification:
 
 * Arrays and Lists can be N-based but default to 1-based
-* Strings in Records (this is Q), are 1-based only (as are for-loop default starts, and N-way selections)
+* Strings and Records (this is in Q; records can be accessed by index), are 1-based only (as are for-loop default start values, and N-way selections)
 * Sets are 0-based only
 * Bit and bitfield indexing is always 0-based
 
