@@ -201,6 +201,12 @@ All my languages have a strong-preference for 1-based everything (array lower bo
 
 But they do allow 0-based as well as N-based arrays. This is not the only language that has definable lower-bounds, but it does appear to be an unpopular characteristic. (The last discussion on this wasn't so much about being 1-based, as allowing *a choice*. I didn't realise it was that controversial.)
 
+Clarification:
+
+* Arrays and Lists can be N-based but default to 1-based
+* Strings in Records (this is Q), are 1-based only (as are for-loop default starts, and N-way selections)
+* Sets are 0-based only
+* Bit and bitfield indexing is always 0-based
 
 ### Scale factors
 I have a handful of suffixes which are used as `3 million`, `4 billion` and so on, which just apply a scale factor to yield `3'000'000` and `4'000'000'000` respectively.
