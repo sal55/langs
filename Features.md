@@ -284,7 +284,7 @@ I write my type conversions as `T(x)` or `cast(x, T)` (syntax ambiguities mean I
 
 A type-punning conversion (reinterpreting bits without doing any conversions) would be written as `T@(x)` or `cast@(x, T`).
 
-Unusual? Well, compared to C, this works happily with rvalues: `T(x*2+1)`. As for type-punning itself, it won't be unknown, though I can imagine the Rust compiler having kittens if you tried to do some of this stuff.
+Unusual? Well, compared to C, this works happily with rvalues: `T@(x*2+1)`. As for type-punning itself, it won't be unknown, though I can imagine the Rust compiler having kittens if you tried to do some of this stuff.
 
 ### `if-then-else` and `(||)`
 Expression-based means that `if-then-else-fi` can be directly used inside an expression, but that syntax is too heavy for that purpose IMO. So there is a more compact syntax for that purpose:
@@ -391,7 +391,7 @@ That refers to this in Q:
 The angle brackets contain a string that is associated within the function, and can be retrieved at runtime given a function reference. This feature is still in use, but is deprecated. I would now encode any special info within the function name; see Function Tables above.
 
 
-### `One File`
+### 'One File'
 This is a principle I've been working with over the last few years (in the past, hardware wasn't quite up to it):
 
 * Each tool (compiler, interpreter, assembler) is a single, self-contained executable
