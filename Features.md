@@ -47,7 +47,7 @@ Both allow an easy and maintainable to way to initialise parallel arrays of data
 ### Character Constants
 These are integer constants such as `'A'` and `'ABC'`. Nothing unusual you might think. But you will struggle to find a scripting language that directly supports `'A'` (in Python it's `ord("A")`, in Lua it's `string.byte('A')`).
 
-Multi-char versions are even less common. Even in C, they are implementation-defined, and are still generally limited to 'ABCD' (because `int` usually has `i32` type). I support 'A' up to 'ABCDEFG', yielding an integer-type constant (it can be used like a `u64` type).
+Multi-char versions are even less common. Even in C, they are implementation-defined, and are still generally limited to 'ABCD' (because `int` usually has `i32` type). I support 'A' up to 'ABCDEFGH', yielding an integer-type constant (it can be used like a `u64` type).
 
 ### Goto
 `goto` is around, although it seems to be on the endangered list as modern languages tend to omit it. (Try porting an unusual control-flow statements to a language which doesn't have `goto`.)
