@@ -340,7 +340,7 @@ This is one of my favourite features, because it's so simple and to the point:
 (In my original Q language, when used as an application scripting language, `stop` would terminate the current module, and return control to whatever code invoked this module.)
 
 ### Conditional suffix
-I use these simple statements than change control flow: `goto return exit redo next stop recase`. Any of these can be made conditional like these:
+I use these simple statements that change control flow: `goto return exit redo next stop recase`. Any of these can be made conditional like these:
 
      return 0 when n>100
      stop unless n=777
@@ -358,7 +358,7 @@ This just means that `A` and `X` share the same memory. (Not quite like C's `uni
 ### Naked Functions
 These are defined as:
 
-    threadproc F =
+    threadedproc F =
     end
 
 (Since their main use was for my threaded-code intepreter.) They have no entry or exit code, and no stackframe. Unusual? I don't know know (hard to imagine Rust having anything like this; I think it doesn't even have regular `goto`)
