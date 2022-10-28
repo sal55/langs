@@ -1,4 +1,4 @@
-## Lexing and Parsing Speed
+### Lexing and Parsing Speed
 
 I'm not sure what's going on with your code versus my code. Maybe your machine is just slower? Mine is a low-end PC (AMD Ryzen 2650U 2.6Ghz, if that means anything to you).
 
@@ -20,7 +20,7 @@ On my WSL Linux, that reports 9.5M lines per second for basic tokening (no symbo
 
 (The same tool that produced clex.c from my language, could translate my compiler to run on Linux (where it can do the frontend but not backend), but that is in its early stages, so it would need a lot more testing.)
 
-### The AST
+#### The AST
 
 It looks like this might be the problem area. First create a suitable input (say, 100,000 or 500,000 lines of `a=b+c*d`, in multiple functions if that helps, whatever gives a convenient timing and that doesn't put pressure on machine memory.).
 
@@ -38,13 +38,13 @@ Basically, it's narrowing done what is the bottleneck. If the above tests are OK
 
 (I'd post one of my parsers, but they tend to be 4000 lines or so, so probably not too enlightening. I don't really understand them myself.)
 
-### File Loading
+#### File Loading
 
 Once loaded for the first time,  so that the contents are cached by the OS, loading source code by the compiler should take no time at all (a few msec). But it's important that the whole file is loaded as you want the source to appear as a single string, a single block of memory.
 
 If you're already using something mmap (something I've never used), and that is not slowing things down (clex gives a decent result), then just carry on doing that.
 
-### Tiny C
+#### Tiny C
 
 I wouldn't pay too much attention to tcc. It will cut a lot of corners. Since it's a single pass compiler and (AIUI) generates code as it goes, it does not need to keep ASTs in memory, assuming it generates them at all.
 
