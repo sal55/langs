@@ -16,7 +16,7 @@ Run it like this:
 
 It processes sqlite3.c (another file above, or change line 1071 in clex.c to use your own input). The file is scanned 10 times and the results shown. (Note these may be 1000 times bigger or smaller than intended if your Linux' clock() uses 1000000 ticks per second instead of 1000, but that should be obvious!)
 
-On my WSL Linux, that reports 9.5M lines per second for basic tokening (no symbol table lookups).
+On my WSL Linux, that reports 9.5M lines per second for basic tokenising (no symbol table lookups).
 
 (The same tool that produced clex.c from my language, could translate my compiler to run on Linux (where it can do the frontend but not backend), but that is in its early stages, so it would need a lot more testing.)
 
@@ -32,9 +32,9 @@ How many AST nodes are needed for each line? I use 6 (so 3M for 500Klines). How 
 
 How long does a program take which does nothing but allocate that number of AST nodes?
 
-My compiler takes 62ms to allocate 3M notes cleared to zero (that bit is important). (I notice I use a block allocator for ASTs: I allocate 32K of them at a time in a single block, which are cleared to zero in one lot too. However the advantage is not great, maybe 15% faster.)
+My compiler takes 62ms to allocate 3M notes cleared to zero (that bit is important). (I notice I use a block allocator for ASTs: I allocate 32K of them at a time in a single block, which are cleared to zero in one lot too. However the advantage is not great, maybe 15% faster. But even aside from that, I normally use my own small object allocator anyway.)
 
-Basically, it's narrowing done what is the bottleneck. If the above tests are OK, then look at the parsing code itself; are there inefficiences there like using long chains of if-else statements, or is there too much recursion. How efficient is symbol table lookup and name resolving?
+Basically, it's narrowing down what is the bottleneck. If the above tests are OK, then look at the parsing code itself; are there inefficiences there like using long chains of if-else statements, or is there too much recursion. How efficient is symbol table lookup and name resolving?
 
 (I'd post one of my parsers, but they tend to be 4000 lines or so, so probably not too enlightening. I don't really understand them myself.)
 
