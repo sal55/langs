@@ -38,8 +38,11 @@ Basically, it's narrowing done what is the bottleneck. If the above tests are OK
 
 (I'd post one of my parsers, but they tend to be 4000 lines or so, so probably not too enlightening. I don't really understand myself.)
 
+### File Loading
+
+Once loaded for the first time,  so that the contents are cached by the OS, loading source code by the compiler should take no time at all (a few msec). But it's important that the whole file is loaded as you want the source to appear as a single string, a single block of memory.
+
+If you're already using something mmap (something I've never used), and that is not slowing things down (clex gives a decent result), then just carry on doing that.
 
 
-
-    
  
