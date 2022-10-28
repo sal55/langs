@@ -42,7 +42,7 @@ Basically, it's narrowing down what is the bottleneck. If the above tests are OK
 
 Once loaded for the first time,  so that the contents are cached by the OS, loading source code by the compiler should take no time at all (a few msec). But it's important that the whole file is loaded as you want the source to appear as a single string, a single block of memory.
 
-If you're already using something mmap (something I've never used), and that is not slowing things down (clex gives a decent result), then just carry on doing that.
+If you're already using something like mmap (which never used), and that is not slowing things down (clex gives a decent result), then just carry on doing that.
 
 #### Tiny C
 
