@@ -1,4 +1,4 @@
-#### Lexing and Parsing Speed
+## Lexing and Parsing Speed
 
 I'm not sure what's going on with your code versus my code. Maybe your machine is just slower? Mine is a low-end PC (AMD Ryzen 2650U 2.6Ghz, if that means anything to you).
 
@@ -34,9 +34,9 @@ How long does a program take which does nothing but allocate that number of AST 
 
 My compiler takes 62ms to allocate 3M notes cleared to zero (that bit is important). (I notice I use a block allocator for ASTs: I allocate 32K of them at a time in a single block, which are cleared to zero in one lot too. However the advantage is not great, maybe 15% faster.)
 
-Basically, it's narrowing done what is the bottleneck. If the above tests are OK, then look at the parsing code itself; are there inefficiences there like using long chains of if-else statements, or is there too much recursion.
+Basically, it's narrowing done what is the bottleneck. If the above tests are OK, then look at the parsing code itself; are there inefficiences there like using long chains of if-else statements, or is there too much recursion. How efficient is symbol table lookup and name resolving?
 
-(I'd post one of my parsers, but they tend to be 4000 lines or so, so probably not too enlightening. I don't really understand myself.)
+(I'd post one of my parsers, but they tend to be 4000 lines or so, so probably not too enlightening. I don't really understand them myself.)
 
 ### File Loading
 
@@ -44,5 +44,14 @@ Once loaded for the first time,  so that the contents are cached by the OS, load
 
 If you're already using something mmap (something I've never used), and that is not slowing things down (clex gives a decent result), then just carry on doing that.
 
+### Tiny C
+
+I wouldn't pay too much attention to tcc. It will cut a lot of corners. Since it's a single pass compiler and (AIUI) generates code as it goes, it does not need to keep ASTs in memory, assuming it generates them at all.
+
+A good compiler will use an AST, but it may also choose to deallocate an AST when it is no longer needed, eg. once you reach the later stages of the compiler.
+
+However, my own programs not only keep all memory allocations until the end, but will do so for all modules at the same time (being whole program compilers). And they're still quite fast. 
+
+(Tiny C is generally up to twice was fast as my compilers, but on your 24-file test, mine was faster.)
 
  
