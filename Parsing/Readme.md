@@ -28,7 +28,7 @@ With my compiler, 100K lines takes 22ms to parse, and 500K lines about 160ms (un
 
 If your programs take substantially more (factoring in the difference between my machine of yours; this was another purpose of the clex test), then this is what needs attention.
 
-How many AST nodes are needed for each line? I use 6 (for 3M for 500Klines). How many bytes for each (I use 64 for the main compiler, but the simpler bytecode compiler uses 32 I think).
+How many AST nodes are needed for each line? I use 6 (so 3M for 500Klines). How many bytes for each (I use 64 for the main compiler, but the simpler bytecode compiler uses 32 I think).
 
 How long does a program take which does nothing but allocate that number of AST nodes?
 
