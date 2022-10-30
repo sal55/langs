@@ -1,10 +1,6 @@
 !Simple Lexer for Q source code
 !For benchmark purposes only
 
-!import sys
-!import clib
-!import files
-
 tabledata() symbolnames=
     (errorsym,          $),
     (dotsym,            $),
