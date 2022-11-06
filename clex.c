@@ -1,3 +1,9 @@
+// Simple lexer for C-style syntax
+// Build on Linux as follows:
+//   gcc -O3 clex.c -o clex -lm -ldl -fno-builtin
+// Run as:
+//   ./clex
+// It has a hard-coded input file (set to 'sqlite3.c') that needs to be changed on line 1077
 
 #pragma GCC diagnostic ignored "-Wbuiltin-declaration-mismatch"
 
