@@ -3,7 +3,8 @@
 //   gcc -O3 clex.c -o clex -lm -ldl -fno-builtin
 // Run as:
 //   ./clex
-// It has a hard-coded input file (set to 'sqlite3.c') that needs to be changed on line 1077
+// It has a hard-coded input file (set to 'sqlite3.c') that needs to be changed on line 1078
+// If clock() ticks are not 1000, change line 1128 to perhaps 1000000
 
 #pragma GCC diagnostic ignored "-Wbuiltin-declaration-mismatch"
 
