@@ -107,7 +107,6 @@
     proc os_peek()
     func os_allocexecmem(i64 n) => ref u8
     func os_calldllfunction(ref proc() fnaddr,i64 retcode,nargs,ref []i64 args,ref []u8 argcodes) => u64
-    proc main()
     proc m$print_startfile(ref void dev)
     proc m$print_startstr(ichar s)
     proc m$print_startptr(ref ichar p)
