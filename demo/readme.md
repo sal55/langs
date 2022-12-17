@@ -49,3 +49,4 @@ This needs Tiny C to be installed
     ./mc -opt prog
 ````
 * The `mc.ma` file has been detabbed (converted to 4-space tabs) and decommented.
+* The `-help` compiler option shows options for the `mm` Windows/native x64 compiler; I haven't yet done a help file for `mc/mu` C/Linux versions.
