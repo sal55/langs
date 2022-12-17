@@ -37,7 +37,7 @@
 Notes:
 
 * The M compiler on Linux relies on intermediate C. So run-from-source
-  (-run option) is not available
+  (`-run` option) is not available, as that works with a native x64 backend only.
 
 * For faster throughput, use:
 ````
