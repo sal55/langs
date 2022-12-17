@@ -25,7 +25,7 @@
     ./mc extract              # extraction program
     md fred                   # where the modules will go
     ./extract                 # should show files extracted
-    ls fred                   # test they are now
+    ls fred                   # test they are there
 ````
 * Try building from those discrete files:
 ````
@@ -48,4 +48,4 @@ This needs Tiny C to be installed
 ````
     ./mc -opt prog
 ````
- 
+* The `mc.ma` file has been detabbed (converted to 4-space tabs) and decommented.
