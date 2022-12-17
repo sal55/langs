@@ -5,7 +5,8 @@
 
 * An M compiler is needed first. Create this from the C file as follows:
 ````
-    gcc mc.c -omc -lm -ldl -fno-builtin
+    gcc mc.c -omc -lm -ldl -fno-builtin              # or:
+    tcc mc.c -omc -lm -ldl -fdollars-in-identifiers
 ````
 * Test it on hello.m:
 ````
