@@ -64,6 +64,8 @@ struct msysc$procinforec;
 struct msysc$fmtrec;
 struct mlib$strbuffer;
 struct mlinux$termios;
+struct mlinux$timeval;
+struct mlinux$tm_rec;
 struct mlinux$rsystemtime;
 
 /* Struct Definitions */
@@ -396,6 +398,24 @@ struct mlinux$termios {
     byte filler[3];
     i32 c_ispeed;
     i32 c_ospeed;
+};
+
+struct mlinux$timeval {
+    i64 tv_sec;
+    i64 tv_usec;
+};
+
+struct mlinux$tm_rec {
+    i32 tm_sec;
+    i32 tm_min;
+    i32 tm_hour;
+    i32 tm_mday;
+    i32 tm_mon;
+    i32 tm_year;
+    i32 tm_wday;
+    i32 tm_yday;
+    i32 tm_isdst;
+    byte padding[20];
 };
 
 struct mlinux$rsystemtime {
@@ -919,6 +939,7 @@ static i64 mm_type$dobinnumf(struct mm_decls$unitrec *p,struct mm_decls$unitrec 
 static i64 mm_type$dobinnumi(struct mm_decls$unitrec *p,struct mm_decls$unitrec *a,struct mm_decls$unitrec *b);
 static i64 mm_type$doin(struct mm_decls$unitrec *p,struct mm_decls$unitrec *a,struct mm_decls$unitrec *b);
 static void mm_type$setsimple(struct mm_decls$unitrec *p);
+static void mm_type$do_printlist(struct mm_decls$unitrec *b);
 void mm_type$start(void);
 void mm_winc$codegen(void);
 i64 mm_winc$runlibfile(u8 *filename);
@@ -1051,7 +1072,6 @@ u8 *mlib$extractbasefile(u8 *s);
 u8 *mlib$addext(u8 *s,u8 *newext);
 void *mlib$pcm_alloc32(void);
 void mlib$pcm_free32(void *p);
-void *mlib$pcm_alloc64(void);
 void mlib$pcm_free64(void *p);
 void *mlib$pcm_alloc16(void);
 void mlib$pcm_free16(void *p);
@@ -1183,6 +1203,8 @@ extern void *dlopen(u8 *$1,i32 $2);
 extern void *dlsym(void *$1,u8 *$2);
 extern i32 tcgetattr(i32 $1,struct mlinux$termios *$2);
 extern i32 tcsetattr(i32 $1,i32 $2,struct mlinux$termios *$3);
+extern i32 gettimeofday(struct mlinux$timeval *$1,void *$2);
+extern void *gmtime_r(i64 *$1,struct mlinux$tm_rec *$2);
 void mlinux$os_init(void);
 i64 mlinux$os_execwait(u8 *cmdline,i64 newconsole,u8 *workdir);
 i64 mlinux$os_execcmd(u8 *cmdline,i64 newconsole);
@@ -1289,8 +1311,6 @@ static u8 *  mm_cli$optionnames[59] = {
     (byte*)"linux"
 };
 static byte mm_cli$fasmexe;
-static i64 mm_cli$abc;
-static i64 mm_cli$def;
 static u8 *  mm_cli$outext = (byte*)"";
 static i64 mm_cli$startclock;
 static i64 mm_cli$endclock;
@@ -1486,11 +1506,11 @@ static u8 *  mc_libc$clineptr;
 static u8 *  mc_libc$clineend;
 static u8 *  mm_libsourcesc$syslibnames[5] = {(byte*)"msysc.m",(byte*)"mlib.m",(byte*)"mclib.m",(byte*)"mlinux.m",(byte*)"mwindllc.m"};
 static u8 *  mm_libsourcesc$libtext[5] = {
-(byte*)"!MSYS version for C target\n\n!import clib\n!import mlib\n\n[]ref void _fnaddresses\n[]ichar _fnnames\n![1]procinforec _fnexports\nint _fnnprocs\nint _fnnexports\n\nglobal record procinforec=\n\tword16\t\tfnindex\n\tbyte\t\trettype\n\tbyte\t\tnparams\n\t[12]byte\tparamlist\nend\n\n!for print/read routines\n!------------------------------------------\nrecord fmtrec=\t! (default)\n\tbyte\tminwidth\t! n (0)   min field width (0 if not used or don't care)\n\ti8\t\tprecision\t! .n (0)   number of decimals/significant figures/max width\n\tbyte\tbase\t\t! B,H or Xn (10)  2 to 16\n\n\tchar\tquotechar\t! Qc (0)   0 or '\"' or c\n\tchar\tpadchar\t\t! Pc, Z (' ')\n\tchar\trealfmt\t\t! E,F,G ('f') 'e' or 'f' or 'g'\n\n\tchar\tplus\t\t! (0)   0 or '+'\n\tchar\tsepchar\t\t! Sc (0)   0 or ',' or c placed every 3 (base=10) or 4 digits\n\tchar\tlettercase\t! A,a ('A') 'A' or 'a'\n\tchar\tjustify\t\t! JL, JR, JC ('R') 'L' or 'R' or 'C'?\n\tchar\tsuffix\t\t! Tc (0)   0 or 'B' or 'H' or c\n\tchar\tusigned\t\t! W (0)   0 or 'W' force unsigned o/p for ints (eg. for hex display)\n\tchar\tcharmode\t! C,D (0)  0 or 'C' or 'D'\to/p int as int or single char or double/multi-char\n\tchar\theapmode\t! M (0)  'M' for str-functions, return ptr tp heap string\n\tchar\tparam\t\t! Use int value for <fmtparam>\n\tbyte\tspare\nend\n\nint fmtparam\t\t\t!as set with :'V'\n\nenumdata =\n\tstd_io,\n\tfile_io,\n\tstr_io\nend\n\nconst comma = ','\n\nglobal int needgap\t\t\t= 0\nint outdev\t\t\t= std_io\nfilehandle outchan\t= nil\nref char fmtstr \t= nil\n\nconst maxiostack=10\n[maxiostack]filehandle\toutchan_stack\n[maxiostack]int\t\t\toutdev_stack\n[maxiostack]ref char\tfmtstr_stack\n[maxiostack]byte\t\tneedgap_stack\n\n[maxiostack]ref char\tptr_stack\t\t!this one doesn't need pushing, as each is pointed to from outchan\nint niostack=0\n\n[0:]char digits=A\"0123456789ABCDEF\"\nconst onesixty=360\nfmtrec defaultfmt = (0,0, 10, 0,' ','f', 0,0,0,'R',0,0, 0,0,0,0)\n\nconst smallstrlen=256\n\n!Read buffer vars\nconst rd_buffersize = 16384\t!total capacity of line buffer\n\nexport ref char rd_buffer\t\t! point to start of read buffer\nint rd_length\t\t\t! length of this line (as read by readln)\nref char rd_pos\t\t\t! current position it's up to (next read starts here)\nref char rd_lastpos\t\t! set by sread() just before reading used for reread()\nint termchar\t\t\t! terminator char set by readxxx()\nint itemerror\t\t\t!\tset by some read functions, eg for reals\n\nexport int $cmdskip\t\t\t!0 unless set by READMCX/etc\n\nconst maxparam=128\nexport int nsysparams\nexport int ncmdparams\nexport int nenvstrings\nexport [maxparam]ichar sysparams\nexport ref[0:]ichar cmdparams\nexport ref[]ichar envstrings\n\n\n!------------------------------------------\n\nword64 mask63\t= 0x7FFF'FFFF'FFFF'FFFF\nreal offset64\t= 9223372036854775808.0\t\t! 2**63 as r64\nreal offset32\t= 9223372036854775808.0\t\t! 2**63 as r32\n\nexport proc m_init(int nargs, ref[]ichar args, envstrings)=\n!export proc m_init(int nargs, ref ref char args0, envstrings0)=\n!\tref[]ichar args, envstrings\n!\targs:=cast(args0)\n!\tenvstrings:=cast(envstrings0)\n\n\tnsysparams:=nargs\n\n\tif nsysparams>maxparam then\n\t\tprintf(\"Too many params\\n\")\n\t\tstop 1\n\tfi\n\n\tfor i:=1 to nargs do\n\t\tsysparams[i]:=args[i]\n\tod\n\n!assume nsysparams is >=1, since first is always the program name\n\tncmdparams:=nsysparams-($cmdskip+1)\n\tcmdparams:=cast(&sysparams[$cmdskip+1])\n\n\tint j:=1\n\tnenvstrings:=0\n\twhile envstrings[j] do\n\t\t++nenvstrings\n\t\t++j\n\tod\n\nend\n\n\nglobal function m_getdotindex(word64 a,int i)int=\n\treturn (a iand (1<<i))>>i\nend\n\nglobal func m_setdotindex(word64 a, int i,x)word64=\n\tref word32 a32\n\n!see comments on setdotslice\n\t(a iand inot (1<<i)) ior (word64(x)<<i)\nend\n\nglobal function m_getdotslice(word64 a,int i,j)int=\n\tif i>=j then\n\t\treturn (a>>j)  iand  inot(0xFFFF'FFFF'FFFF'FFFF<<(i-j+1))\n\telse\n\t\treturn (a>>i)  iand  inot(0xFFFF'FFFF'FFFF'FFFF<<(j-i+1))\n\tfi\nend\n\nglobal func m_setdotslice(word64 a, int i,j,word64 x)word64=\n!a^:=(a^ iand inot (1dw<<i)) ior (word64(x)<<i)\n\tint w\n\tword64 mask64\n\tword mask\n\tref word32 a32\n\n\tif i>j then println \"SETDOTSLICE?\"; stop 52 fi\n\n!when j>=32, assume 64 bit dest, otherwise assume 32 bits to avoid writing\n!to bytes beyond the 32-bit value\n!THIS WILL BE A PROBLEM IF writing to 8/16 bit values too\n\n\tmask64:=inot((0xFFFF'FFFF'FFFF'FFFF<<(j-i+1)))<<i\t\t\t!shifted field of w 1s\n\t(a iand inot mask64) ior x<<i\nend\n\nglobal function m_get_nprocs:int=\n\treturn _fnnprocs\nend\n\nglobal function m_get_nexports:int=\n\treturn _fnnexports\nend\n\nglobal function m_get_procname(int n)ref char=\n\treturn _fnnames[n]\nend\n\nglobal function m_get_procaddr(int n)ref void=\n\treturn _fnaddresses[n]\nend\n\nglobal function m_get_procexport(int n)ref void=\n\tnil\n!\treturn &_fnexports[n]\nend\n\nproc pushio=\n\tif niostack>=maxiostack then\n\t\tprintf(\"Too many io levels\\n\")\n\t\tstop 53\n\tfi\n\t++niostack\n\toutchan_stack[niostack]\t:= outchan\n\toutdev_stack[niostack]\t:= outdev\n\tfmtstr_stack[niostack]\t:= fmtstr\n\tneedgap_stack[niostack]\t:= needgap\n\tneedgap:=0\n\tfmtstr:=nil\n\toutchan:=nil\nend\n\nglobal proc m_print_startfile(ref void dev)=\n\tpushio()\n\toutchan:=cast(dev)\n\tif dev then\n\t\toutdev:=file_io\n\telse\n\t\toutdev:=std_io\n\tfi\nend\n\nglobal proc m_print_startstr(ref char s)=\n\tref ref char p\n\tpushio()\n\n\tptr_stack[niostack]:=s\n\tp:=&ptr_stack[niostack]\n\n\toutchan:=cast(p)\n\toutdev:=str_io\nend\n\nglobal proc m_print_startptr(ref ref char p)=\n\tpushio()\n\n\toutchan:=cast(p)\n\toutdev:=str_io\nend\n\nglobal proc m_print_startcon=\n\tpushio()\n\toutdev:=std_io\nend\n\nglobal proc m_print_setfmt(ref char format)=\n\tfmtstr:=format\nend\n\nglobal proc m_print_end=\n\tneedgap:=0\n\tnextfmtchars(1)\n\tif niostack=0 then return fi\n\toutchan\t:= outchan_stack[niostack]\n\toutdev\t:= outdev_stack[niostack]\n\tfmtstr\t:= fmtstr_stack[niostack]\n\tneedgap\t:= needgap_stack[niostack]\n\t--niostack\nend\n\nglobal proc m_print_ptr(ref void a,ichar fmtstyle=nil)=\n\tnextfmtchars()\n\n\tprintstr(strword(u64(a),\"z8h\"))\n\tneedgap:=1\nend\n\nglobal proc m_print_i64(int64 a,ichar fmtstyle=nil)=\n\t[40]char s\n\tfmtrec fmt\n\tint n\n\n\tnextfmtchars()\n\n\tif fmtstyle=nil then\n\t\tif a>=0 then\n\t\t\tn:=u64tostr(a,&.s,10,0)\n\t\telse\n\t\t\ts[1]:='-'\n\t\t\tn:=u64tostr(-a,&s[2],10,0)+1\n\t\tfi\n\t\tprintstr_n(&.s,n)\n\n\telse\n\t\tstrtofmt(fmtstyle,-1,&fmt)\n\t\tif fmt.param='V' then\n\t\t\tfmtparam:=a\n\t\t\tneedgap:=0\n\t\telse\n\t\t\ttostr_i64(a,&fmt)\n\t\tfi\n\tfi\n\tneedgap:=1\nend\n\nglobal proc m_print_u64(word64 a,ichar fmtstyle=nil)=\n\tfmtrec fmt\n\n\tnextfmtchars()\n\tif fmtstyle=nil then\n\t\tprintstr(strword(a))\n\telse\n\t\tstrtofmt(fmtstyle,-1,&fmt)\n\t\ttostr_u64(a,&fmt)\n\tfi\n\tneedgap:=1\nend\n\nglobal proc m_print_r64(real x,ichar fmtstyle=nil)=\n\t[360]char s\n\tfmtrec fmt\n\n\tnextfmtchars()\n\tif fmtstyle=nil then\n\t\tsprintf(&.s,\"%f\",x)\n\t\tprintstr(&.s)\n\telse\n\t\tstrtofmt(fmtstyle,-1,&fmt)\n\t\ttostr_r64(x,&fmt)\n\tfi\n\n\tneedgap:=1\nend\n\nglobal proc m_print_r32(real32 x,ichar fmtstyle=nil)=\n\tm_print_r64(x,fmtstyle)\nend\n\nglobal proc m_print_c8(int64 a,ichar fmtstyle=nil)=\n\t[40]char s\n\tfmtrec fmt\n\tint n\n\n\tnextfmtchars()\n\n\ts[1]:=a\n\ts[2]:=0\n\tprintstr(&.s)\n\tneedgap:=1\nend\n\nglobal proc m_print_str(ichar s, fmtstyle=nil)=\n\tnextfmtchars()\n\tfmtrec fmt\n\tif fmtstyle=nil then\n\t\tprintstr(s)\n\telse\n\t\tstrtofmt(fmtstyle,-1,&fmt)\n\t\ttostr_str(s,&fmt)\n\tfi\n\tneedgap:=1\nend\n\nglobal proc m_print_newline=\n\tneedgap:=0\n\tnextfmtchars(1)\n\tprintstr(\"\\w\")\nend\n\nglobal proc m_print_nogap=\n\tneedgap:=0\nend\n\nglobal proc m_print_space=\n\tneedgap:=0\n!RETURN\n\tprintstr(\" \")\nend\n\nexport proc printstr(ichar s)=\n\tint n\n\tref ref char p\n\t\n\tcase outdev\n\twhen std_io then\n\t\tprintf(\"%s\",s)\n\twhen file_io then\n\t\tfprintf(outchan,\"%s\",s)\n\twhen str_io then\n\t\tp:=cast(outchan)\n\t\tstrcpy(p^,s)\n\t\tp^+:=strlen(s)\n\tesac\nend\n\nglobal proc printstr_n(ichar s,int n=-1)=\n\t[smallstrlen]char str\n\tref ref char p\n\n\tcase n\n\twhen -1 then n:=strlen(s)\t\t!assume zero-terminated\n\twhen 0 then return\n\tesac\n\n\tcase outdev\n\twhen str_io then\n\t\tp:=cast(outchan)\n\t\tmemcpy(p^,s,n)\n\t\tp^+:=n\n\t\tp^^:=0\n\twhen file_io then\n\t\ts:=makezstring(s,n,&.str)\n\t\tfprintf(outchan,\"%s\",s)\n\t\tfreezstring(s,n)\n\n\twhen std_io then\n\t\ts:=makezstring(s,n,&.str)\n\t\tprintf(\"%s\",s)\n\t\tfreezstring(s,n)\n!\t\tprintf(\"%.*s\",int32(n),s)\n\tesac\nend\n\nexport proc printstrn_app(ichar s, int length, filehandle f=nil)=\n\tif length then\n\t\tif f=nil then\n\t\t\temitc \"printf((u8*)\"\"%.*s\"\",(i32)length,s);\"\n\t\telse\n\t\t\temitc \"fprintf(f,(u8*)\"\"%.*s\"\",(i32)length,s);\"\n\t\tfi\n!\t\tprintf(\"%.*s\",length,s)\n\tfi\nend\n\nfunction makezstring(ichar s,int n,ichar local)ichar=\n\tichar t\n\tif n<smallstrlen then\n\t\tmemcpy(local,s,n)\n\t\t(local+n)^:=0\n\t\treturn local\n\telse\n\t\tt:=pcm_alloc(n+1)\n\t\tmemcpy(t,s,n)\n\t\t(t+n)^:=0\n\t\treturn t\n\tfi\nend\n\nproc freezstring(ichar t,int n)=\n\tif n>=smallstrlen then\n\t\tpcm_free(t,n+1)\n\tfi\nend\n\nproc printchar(int ch)=\n\tref ref char p\n\tcase outdev\n\twhen std_io then\n\t\temitc \"printf((u8*)\"\"%c\"\",(int)ch)\"\n\twhen file_io then\n\t\temitc \"fprintf(msysc$outchan,(u8*)\"\"%c\"\",(int)ch)\"\n\twhen str_io then\n\t\tp:=cast(outchan)\n\t\tp^^:=ch\n\t\tp^+:=1\n\t\tp^^:=0\n\tesac\nend\n\nglobal proc nextfmtchars(int lastx=0)=\n\tchar c\n\tref char pstart\n\tint n\n\n\tif not fmtstr then\t\t\t!format not in use\n\t\tif needgap then\n\t\t\tprintchar(' ')\n!\t\tprintstr_n(\" \",1)\n\t\tfi\n\t\tneedgap:=0\n\t\treturn\n\tfi\n\n\tpstart:=fmtstr\n\tn:=0\n\n\twhile (1) do\n\t\tc:=fmtstr^\n\t\tswitch c\n\t\twhen '#' then\n\t\t\tif lastx then\n\t\t\t\tgoto skip\n\t\t\tfi\n\t\t\t++fmtstr\n\t\t\tif n then\n\t\t\t\tprintstr_n(pstart,n)\n\t\t\tfi\n\t\t\treturn\n\t\twhen 0 then\n\t\t\tif n then\n\t\t\t\tprintstr_n(pstart,n)\n\t\t\telsif not lastx then\n\t\t\t\tprintstr_n(\"|\",1)\n\t\t\tfi\n\t\t\treturn\n\t\twhen '~' then\n\t\t\tif n then\n\t\t\t\tprintstr_n(pstart,n)\n\t\t\t\tn:=0\n\t\t\tfi\n\t\t\t++fmtstr\n\t\t\tc:=fmtstr^\n\t\t\tif c then\n\t\t\t\t++fmtstr\n\t\t\t\tprintchar(c)\n\t\t\tfi\n\t\t\tpstart:=fmtstr\n\t\telse\n\tskip::\n\t\t\t++n\n\t\t\t++fmtstr\n\t\tendswitch\n\tod\nend\n\nglobal proc strtofmt(ref char s,int slen,ref fmtrec fmt) =\t\t!PC_STRTOFMT\n!convert format code string in s, to fmtrec at fmt^\n!Format code is a string containing the following char codes (upper or lower when mostly)\n!n\tWidth\n!.n\tMax width/precision\n!A\tConvert to upper when\n!a\tConvert to lower when\n!B\tBinary\n!C\tShow int as single n-bit (unicode) character\n!D\tShow int as multi-bit (unicode) character\n!E,F,G\tSpecify format for double (corresponds to C format codes)\n!F\n!G\n!H\tHex\n!JC\tJustify centre\n!JL\tJustify left\n!JR\tJustify right\n!M\tHEAPMODE???\n!O\tOctal\n!Pc\tUse padding char c\n!Q\tAdd double quotes around string (and deal with embedded quotes)\n!'\tAdd single quotes around string (and deal with embedded quotes)\n!Sc\tUse separator char c between every 3 or 4 digits\n!Tc\tUse terminator char c (typically B or H)\n!U\tShow ints as unsigned\n!V\tFor ints, don't display: store value as parameter for subsequent '*'\n!W\tUnsigned\n!Xn\tUse base n (n is hex 0 to F)\n!Z\tUse \"0\" padding\n!+\tAlways have + or - in front of integers\n!~\tQuote char is ~\n!*\tSame as n but uses parameter set with :'V' on previous int\n\n\tchar c\n\tbyte wset\n\tint n\n\t[0:100]char str\n\n\tfmt^:=defaultfmt\n\n\tif s=nil then return fi\n\n\tif slen=-1 then slen:=strlen(s) fi\n\n\tmemcpy(&.str,s,slen)\t\t!convert s/slen to zero-terminated string\n\tstr[slen]:=0\n\ts:=&.str\n\n\twset:=0\n\twhile s^ do\n\t\tc:=s^\n\t\t++s\n\t\tswitch c\n\t\twhen 'B', 'b' then fmt^.base:=2\n\t\twhen 'H', 'h' then fmt^.base:=16\n\t\twhen 'O', 'o' then fmt^.base:=8\n\t\twhen 'X', 'x' then\n\t\t\tc:=s^\n\t\t\tif c then\n\t\t\t\tswitch c\n\t\t\t\twhen '0'..'9' then c:=c-'0'\n\t\t\t\twhen 'A'..'F' then c:=c-'A'+10\n\t\t\t\twhen 'a'..'f' then c:=c-'a'+10\n\t\t\t\telse\n\t\t\t\t\tc:=10\n\t\t\t\tend\n\t\t\t\tfmt^.base:=c\n\t\t\t\t++s\n\t\t\tfi\n\t\twhen 'Q', 'q' then fmt^.quotechar:='\"'\n\t\twhen '~' then fmt^.quotechar:='~'\n\t\twhen 'J', 'j' then\n\t\t\tfmt^.justify:=toupper(s^)\n\t\t\tif s^ then\n\t\t\t\t++s\n\t\t\tfi\n\t\twhen 'A' then fmt^.lettercase:='A'\n\t\twhen 'a' then fmt^.lettercase:='a'\n\t\twhen 'Z', 'z' then fmt^.padchar:='0'\n\t\twhen 'S', 's' then\n\t\t\tfmt^.sepchar:=s^\n\t\t\tif s^ then\n\t\t\t\t++s\n\t\t\tfi\n\t\twhen 'P', 'p' then\n\t\t\tfmt^.padchar:=s^\n\t\t\tif s^ then\n\t\t\t\t++s\n\t\t\tfi\n\t\twhen 'T', 't' then\n\t\t\tfmt^.suffix:=s^\n\t\t\tif s^ then\n\t\t\t\t++s\n\t\t\tfi\n\t\twhen 'W', 'w' then fmt^.usigned:='W'\n\t\twhen 'E', 'e' then fmt^.realfmt:='e'\n\t\twhen 'F', 'f' then fmt^.realfmt:='f'\n\t\twhen 'G', 'g' then fmt^.realfmt:='g'\n\t\twhen '.' then\n\t\t\twset:=1\n\t\twhen comma,'_' then fmt^.sepchar:=c\n\t\twhen '+' then fmt^.plus:='+'\n\t\twhen 'D', 'd' then fmt^.charmode:='D'\n\t\twhen 'C', 'c' then fmt^.charmode:='C'\n\t\twhen 'M', 'm' then fmt^.heapmode:='M'\n\t\twhen 'V','v' then fmt.param:='V'\n\t\twhen '*' then\n\t\t\tn:=fmtparam\n\t\t\tgoto gotwidth\n\t\telse\n\t\t\tif c>='0' and c<='9' then\n\t\t\t\tn:=c-'0'\n\t\t\t\tdo\n\t\t\t\t\tc:=s^\n\t\t\t\t\tif s^=0 then\n\t\t\t\t\t\texit\n\t\t\t\t\tfi\n\t\t\t\t\tif c>='0' and c<='9' then\n\t\t\t\t\t\t++s\n\t\t\t\t\t\tn:=n*10+c-'0'\n\t\t\t\t\telse\n\t\t\t\t\t\texit\n\t\t\t\t\tfi\n\t\t\t\tod\ngotwidth::\n\t\t\t\tif not wset then\n\t\t\t\t\tfmt^.minwidth:=n\n\t\t\t\t\twset:=1\n\t\t\t\telse\n\t\t\t\t\tfmt^.precision:=n\n\t\t\t\tfi\n\t\t\tfi\n\t\tendswitch\n\tod\nend\n\nfunction domultichar (ref char p,int n,ref char dest,ref fmtrec fmt)int =\n!there are n (4 or 8) chars at p.!\n!There could be 0 to 4 or 8 printable chars converted to string at dest\n\t[0:20]char str\n\tref char q\n\tint i,nchars\n\n\tq:=&.str\n\n\tnchars:=n\n\n\tto n do\n\t\tif p^=0 then exit fi\n\t\tq^:=p^\n\t\t++q\n\t\t++p\n\tod\n\tq^:=0\n\n\treturn expandstr(&.str,dest,strlen(&.str),fmt)\nend\n\nfunction expandstr(ref char s,ref char t,int n,ref fmtrec fmt)int =\t\t!EXPANDSTR\n!s contains a partly stringified value.\n!widen s if necessary, according to fmt, and copy result to t\n!n is current length of s\n!note) = for non-numeric strings, fmt^.base should be set to 0, to avoid moving\n!a leading +/- when right-justifying with '0' padding.\n!t MUST be big enough for the expanded string; caller must take care of this\n!result will be zero-terminated, for use in this module\n\n\tint i,w,m\n\n!check to see if result is acceptable as it is\n\tw:=fmt^.minwidth\n\tif w=0 or w<=n then\t\t! allow str to be longer than minwidth\n\t\tstrncpy(t,s,n)\n\t\t(t+n)^:=0\n\t\treturn n\n\tfi\n\n\tif fmt^.justify='L' then\t! left-justify\n\t\tstrncpy(t,s,n)\n\t\tt+:=n\n\t\tfor i:=1 to w-n do\n\t\t\tt^:=fmt^.padchar\n\t\t\t++t\n\t\tod\n\t\tt^:=0\n\telsif fmt^.justify='R' then\n\t\tif fmt^.padchar='0' and fmt^.base and (s^='-' or s^='+') then ! need to move sign outside \n\t\t\tt^:=s^\n\t\t\t++t\n\t\t\tto w-n do\n\t\t\t\tt^:=fmt^.padchar\n\t\t\t\t++t\n\t\t\tod\n\t\t\tstrncpy(t,s+1,n-1)\n\t\t\t(t+n-1)^:=0\n\t\telse\n\t\t\tto w-n do\n\t\t\t\tt^:=fmt^.padchar\n\t\t\t\t++t\n\t\t\tod\n\t\t\tstrncpy(t,s,n)\n\t\t\t(t+n)^:=0\n\t\tfi\n\n\telse\t\t\t\t! centre-justify?\n\n\t\tm:=(w-n+1)/2\n\t\tto m do\n\t\t\tt^:=fmt^.padchar\n\t\t\t++t\n\t\tod\n\t\tstrncpy(t,s,n)\n\t\tt+:=n\n\t\tto w-n-m do\n\t\t\tt^:=fmt^.padchar\n\t\t\t++t\n\t\tod\n\t\tt^:=0\n\n\tfi\n\treturn w\nend\n\n!function xdivrem(word64 a,b, &remainder)word64=\n!\tword64 q,r\n!ABORTPROGRAM(\"XDIVREM\")\n!!\tassem\n!!\t\txor rdx,rdx\n!!\t\tmov rax,[a]\n!!\t\tdiv qword [b]\n!!\t\tmov [q],rax\t\n!!\t\tmov [r],rdx\t\n!!\tend\n!!\tremainder:=r\n!\treturn q\n!end\n!\nfunction u64tostr(u64 aa,ref char s,word base,int sep)int =\t\t!U64TOSTR\n!convert 64-bit int a to string in s^\n!base is number base, usually 10 but can be 2 or 16. Other bases allowed\n!result when a=minint (will give \"<minint>\")\n\t[0:onesixty]char t\n\tu64 dd\n\tint i,j,k,g\n\tint dummy\n\tref char s0\n\n\ti:=0\n\tk:=0\n\tg:=(base=10|3|4)\n\n\trepeat\n!\t\taa:=xdivrem(aa,base,dd)\n!\t\tt[++i]:=digits[dd]\n\n\t\tt[++i]:=digits[aa rem base]\n\t\taa:=aa/base\n\n!BUG in separator logic, doesn't work when leading zeros used, eg. printing\n!out a full length binary\n!so perhaps move this out to expandstr\n\t\t++k\n\t\tif sep and aa<>0 and k=g then\n\t\t\tt[++i]:=sep\n\t\t\tk:=0\n\t\tfi\n\tuntil aa=0\n\n\tj:=i\n\ts0:=s\n\twhile i do\n\t\ts^:=t[i--]\n\t\t++s\n\tod\n\ts^:=0\n\n\treturn j\nend\n\nfunction i64tostrfmt(i64 aa,ref char s,ref fmtrec fmt)int =\n!a is signed 64-bit int/long, fmt is a ref to a filled-in fmtrec\n!convert a to a string in s, according to fmt\n!a basic conversion is done first,: the field manipulation is done\n!signed=1 for int, 0 for u32 (fmt^.unsigned forces ints to be treated as longs)\n!returns length of s\n\t[0:onesixty]char str\t\t\t\t! allow for binary with separators!\n\tint i,j,k,n,w,usigned\n\tstatic u64 mindint=0x8000'0000'0000'0000\n\n\tusigned:=0\n\tif fmt^.usigned then\n\t\tusigned:=1\n\tfi\n\n\tif aa=mindint and not usigned then\t\t! minint\n\n\t\tstr[0]:='-'\n\t\tn:=i64mintostr(&str[1],fmt^.base,fmt^.sepchar)+1\n\telse\n\t\tif (not usigned and aa<-0) or fmt^.plus then\n\t\t\tif aa<0 then\n\t\t\t\taa:=-aa\n\t\t\t\tstr[0]:='-'\n\t\t\telse\n\t\t\t\tstr[0]:='+'\n\t\t\tfi\n\t\t\tn:=u64tostr(aa,&str[1],fmt^.base,fmt^.sepchar)+1\n\t\telse\n\t\t\tn:=u64tostr(aa,&.str,fmt^.base,fmt^.sepchar)\n\t\tfi\n\tfi\n\n\tif fmt^.suffix then\n\t\tstr[n]:=fmt^.suffix\n\t\tstr[++n]:=0\n\tfi\n\n!str uses upper cases for hex/etc see if lc needed\n\tif (fmt^.base>10 or fmt^.suffix) and fmt^.lettercase='a'\tthen\t! need lower when\n\t\tconvlcstring(&.str)\n\tfi\n\n!at this point, n is the str length including signs and suffix\n\treturn expandstr(&.str,s,n,fmt)\nend\n\nfunction u64tostrfmt(i64 aa,ref char s,ref fmtrec fmt)int =\t\t!U64TOSTRFMT\n!see i64tostrfmt\n\t[0:onesixty]char str\t\t\t\t! allow for binary with separators!\n\tint i,j,k,n,w\n\n\tn:=u64tostr(aa,&.str,fmt^.base,fmt^.sepchar)\n\n\tif fmt^.suffix then\n\t\tstr[n]:=fmt^.suffix\n\t\tstr[++n]:=0\n\tfi\n\n!str uses upper cases for hex/etc see if lc needed\n\tif fmt^.base>10 or fmt^.suffix and fmt^.lettercase='a'\tthen\t! need lower when\n\t\tconvlcstring(&.str)\n\tfi\n\n!at this point, n is the str length including signs and suffix\n\treturn expandstr(&.str,s,n,fmt)\nend\n\nfunction i64mintostr(ref char s,int base,int sep)int =\t\t!I64MINTOSTR\n!convert minint to string in s do not include minus sign\n!return number of chars in string\n\t[0:onesixty]char t\n\tint i,j,k,g,neg\n\n\tswitch base\n\twhen 10 then\n\t\tstrcpy(&t[0],\"9223372036854775808\")\n\t\tj:=3\n\twhen 16 then\n\t\tstrcpy(&t[0],\"8000000000000000\")\n\t\tj:=1\n\twhen 2 then\n\t\tstrcpy(&t[0],\"1000000000000000000000000000000000000000000000000000000000000000\")\n\t\tj:=7\n\telse\n\t\tstrcpy(&t[0],\"<mindint>\")\n\tendswitch\n\n\ti:=strlen(&t[0])\n\ts+:=i\n\tif sep then\n\t\ts+:=j\n\tfi\n\ts^:=0\n\n\tk:=0\n\tg:=(base=10|3|4)\n\n\twhile i do\n\t\t--s\n\t\ts^:=t[i-- -1]\n\t\tif sep and i and ++k=g then\n\t\t\t--s\n\t\t\ts^:=sep\n\t\t\tk:=0\n\t\tfi\n\tod\n\treturn strlen(s)\nend\n\nfunction strtostrfmt(ref char s,ref char t,int n,ref fmtrec fmt)int =\n!s is a string process according to fmtrec fmt^, and return result in t\n!caller should check whether any changes are required to s (now it can just use s), but this\n!check is done here anyway (with a simple copy to t)\n!n is current length of s\n!return length of t\n!Three processing stages:\n!1 Basic input string s\n!2 Additions or mods: quotes, suffix, when conversion\n!3 Width adjustment\n!1 is detected here, 2 is done here, 3 is done by expandstr\n\tref char u,v\n\t[256]char str\n\tint w,nheap\t\t! whether any heap storage is used # bytes allocated\n\n\tnheap:=0\n\n\tif fmt^.quotechar or fmt^.lettercase then\t\t! need local copy\n\t\tif n<256 then\n\t\t\tu:=&.str\n\t\telse\n\t\t\tnheap:=n+3\t\t\t\t\t! allow for quotes+terminator\n\t\t\tu:=pcm_alloc(nheap)\n\t\tfi\n\t\tif fmt^.quotechar then\n\t\t\tv:=u\n\t\t\tv^:=fmt^.quotechar\n\t\t\t++v\n\t\t\tif n then\n\t\t\t\tstrcpy(v,s)\n\t\t\t\tv+:=n\n\t\t\tfi\n\t\t\tv^:=fmt^.quotechar\n\t\t\t++v\n\t\t\tv^:=0\n\t\t\tn+:=2\n\t\telse\n\t\t\tmemcpy(u,s,n)\n\t\tfi\n\t\tswitch fmt^.lettercase\n\t\twhen 'a' then\t! need lower when\n\t\t\tconvlcstring(u)\n\t\twhen 'A' then\n\t\t\tconvucstring(u)\n\t\tendswitch\n\t\ts:=u\n\tfi\n\n\tw:=fmt^.minwidth\n\tif w>n then\n\t\tn:=expandstr(s,t,n,fmt)\n\telse\n\t\tmemcpy(t,s,n)\n\tfi\n\tif nheap then\n\t\tpcm_free(u,nheap)\n\tfi\n\treturn n\nend\n\nproc tostr_i64(int64 a, ref fmtrec fmt)=\n\t[360]char str\n\tint n\n\n\tcase fmt^.charmode\n\twhen 0 then\n\t\tn:=i64tostrfmt(a,&.str,fmt)\n\twhen 'D','d' then\n\t\tn:=domultichar(ref char(&a),8,&.str,fmt)\n\n\telse\t\t\t\t\t\t!assume 'C'\n\t\tprintchar(a)\t\t\t!no other formatting allowed\n\t\treturn\n\tesac\n\n\tprintstr_n(&.str,n)\nend\n\nproc tostr_u64(word64 a, ref fmtrec fmt)=\n\t[360]char str\n\tint n\n\n\tcase fmt^.charmode\n\twhen 'D','d' then\n\t\tn:=domultichar(ref char(&a),8,&.str,fmt)\n\n\twhen 'C','c' then\n\t\tprintchar(a)\t\t\t!no other formatting allowed\n\t\treturn\n\n\telse\n\t\tn:=u64tostrfmt(a,&.str,fmt)\n\tesac\n\n\tprintstr_n(&.str,n)\nend\n\nproc tostr_r64(real x,ref fmtrec fmt) =\n\t[360]char str,str2\n\t[0:10]char cfmt\n\tint n\n\n\tcfmt[0]:='%'\n\n\tif fmt^.precision then\n\t\tcfmt[1]:='.'\n\t\tcfmt[2]:='*'\n\t\tcfmt[3]:=fmt^.realfmt\n\t\tcfmt[4]:=0\n\t\tsprintf(&.str,&.cfmt,fmt^.precision,x)\n\telse\n\t\tcfmt[1]:=fmt^.realfmt\n\t\tcfmt[2]:=0\n\t\tsprintf(&.str,&.cfmt,x)\n\tfi\n\n!at this point, n is the str length including signs and suffix\n\n\tn:=strlen(&.str)\t\t! current length\n\n\tif n<fmt^.minwidth then\n\t\tn:=expandstr(&.str,&.str2,n,fmt)\n\t\tstrcpy(&.str,&.str2)\n\tfi\n\n\tprintstr_n(&.str,n)\nend\n\nproc tostr_str(ref char s, ref fmtrec fmt) =\n\tint oldlen,newlen,n\n\tref char t\n\n!try and work out size of formatted string\n\toldlen:=strlen(s)\n\tnewlen:=oldlen\n\n\tif fmt^.quotechar or fmt^.minwidth>newlen or fmt^.lettercase then\n\t\tif fmt^.quotechar then\n\t\t\tnewlen+:=2\n\t\tfi\n\t\tif fmt^.minwidth>newlen then\n\t\t\tnewlen:=fmt^.minwidth\n\t\tfi\n\t\tt:=pcm_alloc(newlen+1)\n\t\tn:=strtostrfmt(s,t,oldlen,fmt)\n\t\tprintstr_n(t,n)\n\t\tpcm_free(t,newlen+1)\n\telse\n\t\tprintstr_n(s,oldlen)\n\tfi\nend\n\nfunction getfmt(ichar fmtstyle)ref fmtrec=\n\tstatic fmtrec fmt\n\tif fmtstyle then\n\t\tstrtofmt(fmtstyle,-1,&fmt)\n\t\treturn &fmt\n\telse\n\t\treturn &defaultfmt\n\tfi\nend\n\nexport function strint(int64 a, ichar fmtstyle=nil)ichar=\n\tstatic [100]char str\n\tref fmtrec fmt\n\n\tm_print_startstr(&.str)\n\ttostr_i64(a,fmt:=getfmt(fmtstyle))\n\tm_print_end()\n\treturn getstr(&.str,fmt)\nend\n\nexport proc getstrint(int64 a, ichar dest)=\n\tm_print_startstr(dest)\n\ttostr_i64(a,getfmt(nil))\n\tm_print_end()\nend\n\nexport function strword(word64 a, ichar fmtstyle=nil)ichar=\n\tstatic [100]char str\n\tref fmtrec fmt\n\n\tm_print_startstr(&.str)\n\ttostr_u64(a,fmt:=getfmt(fmtstyle))\n\tm_print_end()\n\treturn getstr(&.str,fmt)\nend\n\nexport function strreal(real a, ichar fmtstyle=nil)ichar=\n\tstatic [320]char str\n\tref fmtrec fmt\n\n\tm_print_startstr(&.str)\n\ttostr_r64(a,fmt:=getfmt(fmtstyle))\n\tm_print_end()\n\treturn getstr(&.str,fmt)\nend\n\nfunction getstr(ichar s, ref fmtrec fmt)ichar=\n\tif fmt^.heapmode then\n\t\treturn pcm_copyheapstring(s)\n\telse\n\t\treturn s\n\tfi\nend\n\nproc initreadbuffer=\n\tif rd_buffer then return fi\n!CPL \"INITREADBUFFER\"\n\trd_buffer:=pcm_alloc(rd_buffersize)\n\trd_buffer^:=0\n\trd_pos:=rd_lastpos:=rd_buffer\nend\n\nglobal proc m_read_conline=\n\tinitreadbuffer()\n\treadlinen(nil,rd_buffer,rd_buffersize)\n\n\trd_length:=strlen(rd_buffer)\n\trd_pos:=rd_buffer\n\trd_lastpos:=nil\nend\n\nglobal proc m_read_fileline(filehandle f)=\n\tinitreadbuffer()\n\treadlinen(f,rd_buffer,rd_buffersize)\n\n\trd_length:=strlen(rd_buffer)\n\trd_pos:=rd_buffer\n\trd_lastpos:=nil\nend\n\nexport proc m_read_strline(ichar s)=\n\tint n\n\n\tinitreadbuffer()\n\tn:=strlen(s)\n\n\tif n<rd_buffersize then\n\t\tstrcpy(rd_buffer,s)\n\telse\n\t\tmemcpy(rd_buffer,s,rd_buffersize-1)\n\t\t(rd_buffer+rd_buffersize-1)^:=0\n\tfi\n\trd_length:=n\n\trd_pos:=rd_buffer\n\trd_lastpos:=nil\nend\n\nfunction readitem(int &itemlength)ref char =\n!read next item from rd_buffer\n!identify a substring that can contain a name, int, real, string or filename\n!return updated position of s that points past the item and past the immediate\n!terminator \n!information about the read item is returned in itemstr, which points to\n!the start of the item, and in itemlength. Item excludes any surrounding whitespace\n!Item can be quoted, then the item points inside the quotes\n!Any embedded quotes are removed, and the characters moved up. The item will\n!be that reduced subsequence\n!NOTE THAT THIS IS DESTRUCTIVE. On reread, the input will be different.\n!I can mitigate this by adding spaces between the end of the item, and the next item,\n!overwriting also the terminator. But this won't restore the line if one of the next\n!reads is literal, using 'L' or 'C' codes.\n\tref char p,s,itemstr\n\tchar quotechar, c\n\n\tunless rd_buffer then \n\t\tinitreadbuffer()\n!abortprogram(\"No readln\")\n\tend unless\n\n\ts:=rd_pos\n\n!scan string, eliminating leading white space\n\twhile s^=' ' or s^=9 do\n\t\t++s\n\tod\n\n\titemstr:=s\t\t\t\t!assume starts here\n\trd_lastpos:=rd_pos:=s\n\n\tif s^=0 then\t\t\t! No more chars left to read return null string\n\t\ttermchar:=0\n\t\titemlength:=0\n\t\treturn s\n\tfi\n\n\tquotechar:=0\t\t\t! Allow possible enclosing single or double quotes\n\tif s^='\"' then\n\t\tquotechar:='\"'\n\t\t++s\n\telsif s^='\\'' then\n\t\tquotechar:='\\''\n\t\t++s\n\tfi\n\n!loop reading characters until separator or end reached\n\tp:=itemstr:=s\n\n\twhile s^ do\n\t\tc:=s++^\n\t\tswitch c\n\t\twhen ' ', 9, comma, '=' then\t\t! separator\n\t\t\tif quotechar or p=s then\t\t\t!can be considered part of name if inside quotes, or is only char\n\t\t\t\tgoto normalchar\n\t\t\tfi\n\t\t\ttermchar:=c\n\t\t\texit\n\t\telse\n\tnormalchar::\n\t\t\tif c=quotechar then\n\t\t\t\tif s^=quotechar then\t! embedded quote\n\t\t\t\t\tp^:=c\n\t\t\t\t\t++s\n\t\t\t\t\t++p\n\t\t\t\telse\t\t\t\t\t! end of name\n\t\t\t\t\ttermchar:=s^\n\t\t\t\t\tif termchar=',' or termchar='=' then\n\t\t\t\t\t\t++s\n\t\t\t\t\t\ttermchar:=s^\n\t\t\t\t\tfi\n\t\t\t\t\texit\n\t\t\t\tfi\n\t\t\telse\n\t\t\t\tp^:=c\n\t\t\t\t++p\n\t\t\tfi\n\t\tendswitch\n\tod\n\n\tif s^=0 then\n\t\ttermchar:=0\n\tfi\n\titemlength:=p-itemstr\t\t\t\t! actual length of token\n\trd_pos:=s\n\n\treturn itemstr\nend\n\nexport function strtoint(ichar s,int length=-1, base=10)int64=\n!return point to next char after terminator (which can be just off length of string)\n\tbyte signd\n\tword64 aa\n\tchar c,d\n\n\titemerror:=0\n\n\tif length=-1 then\n\t\tlength:=strlen(s)\n\tfi\n!check for sign\n\tsignd:=0\n\tif length and s^='-' then\n\t\tsignd:=1; ++s; --length\n\telsif length and s^='+' then\n\t\t++s; --length\n\tfi\n\n\taa:=0\n\twhile length do\n\t\tc:=s++^\n\t\t--length\n\t\tswitch c\n\t\twhen 'A'..'F' then d:=c-'A'+10\n\t\twhen 'a'..'f' then d:=c-'a'+10\n\t\twhen '0'..'9' then d:=c-'0'\n\t\twhen '_', '\\'' then\n\t\t\tnext\n\t\telse\n\t\t\titemerror:=1\n\t\t\texit\n\t\tendswitch\n\n\t\tif d>=base then\n\t\t\titemerror:=1\n\t\t\texit\n\t\tfi\n\t\taa:=aa*base+d\n\tod\n\n\tif signd then\n\t\treturn -aa\n\telse\n\t\treturn aa\n\tfi\nend\n\nglobal function m_read_i64(int fmt=0)int64=\n\tref char s\n\tint length,c\n\tint64 aa\n\n\tcase fmt\n\twhen 'C','c' then\n\t\trd_lastpos:=rd_pos\n\t\tif rd_pos^ then\n\t\t\treturn rd_pos++^\n\t\telse\n\t\t\treturn 0\n\t\tfi\n\twhen 'T','t' then\n\t\treturn termchar\n\twhen 'E','e' then\n\t\treturn itemerror\n\tesac\n\n\ts:=readitem(length)\n\n\n\tcase fmt\n\twhen 0,'I','i' then\n\t\treturn strtoint(s,length)\n\twhen 'B','b' then\n\t\treturn strtoint(s,length,2)\n\twhen 'H','h' then\n\t\treturn strtoint(s,length,16)\n\tesac\n\treturn 0\nend\n\nglobal function m_read_r64(int fmt=0)real=\n\t[512]char str\n\tref char s\n\tint length\n\tint32 numlength\n\treal x\n\n\ts:=readitem(length)\n\n\tif length=0 or length>=str.len then\t\t!assume not a real\n\t\treturn 0.0\n\tfi\n\tmemcpy(&.str,s,length)\n\tstr[length+1]:=0\n\n\titemerror:=0\n\n\tif sscanf(&.str,\"%lf%n\", &x, &numlength)=0 or numlength<>length then\n\t\tx:=0.0\n\t\titemerror:=1\n\tfi\n\n\treturn x\nend\n\nexport proc m_read_str(ref char dest, int destlen=0,fmt=0)=\n\tref char s\n\tint length,numlength\n\treal x\n\n\titemerror:=0\n\tif fmt='L' or fmt='l' then\n\t\ts:=rd_pos\n\t\tlength:=rd_buffer+rd_length-rd_pos\n\n\telse\n\t\ts:=readitem(length)\n\n\t\tif fmt='N' or fmt='n' then\n\t\t\ticonvlcn(s,length)\n\t\tfi\n\tfi\n\n\tif destlen>0 then\n\t\tif length>=destlen then\n\t\t\tlength:=destlen-1\n\t\t\titemerror:=1\n\t\tfi\n\tfi\n\tmemcpy(dest,s,length)\n\t(dest+length)^:=0\nend\n\nexport proc readstr(ref char dest, int fmt=0,destlen=0)=\n\tm_read_str(dest,destlen,fmt)\nend\n\nexport proc rereadln=\n\trd_pos:=rd_buffer\n\trd_lastpos:=rd_pos\nend\n\nexport proc reread=\n\trd_pos:=rd_lastpos\nend\n\nglobal function valint(ichar s, int fmt=0)int64=\n\tref char old_pos, old_lastpos\n\tint64 aa\n\n\tinitreadbuffer()\n\told_pos:=rd_pos\n\told_lastpos:=rd_lastpos\n\n\trd_pos:=s\n\taa:=m_read_i64(fmt)\n\trd_pos:=old_pos\n\trd_lastpos:=old_lastpos\n\treturn aa\nend\n\nglobal function valreal(ichar s)real=\n\tref char old_pos, old_lastpos\n\treal x\n\n\tinitreadbuffer()\n\told_pos:=rd_pos\n\told_lastpos:=rd_lastpos\n\n\trd_pos:=s\n\tx:=m_read_r64()\n\trd_pos:=old_pos\n\trd_lastpos:=old_lastpos\n\treturn x\nend\n\nproc iconvlcn(ref char s,int n) =\t\t!ICONVLCN\n\tto n do\n\t\ts^:=tolower(s^)\n\t\t++s\n\tod\nend\n\nproc iconvucn(ref char s,int n) =\t\t!ICONVUCN\n\tto n do\n\t\ts^:=toupper(s^)\n\t\t++s\n\tod\nend\n\nproc convlcstring(ref char s)=\t\t!CONVLCSTRING\n\twhile (s^) do\n\t\ts^:=tolower(s^)\n\t\t++s\n\tod\nend\n\nproc convucstring(ref char s)=\t\t!CONVUCSTRING\n\twhile (s^) do\n\t\ts^:=toupper(s^)\n\t\t++s\n\tod\nend\n\nglobal function m_power_i64(int64 n,a)int64=\n\tif n<0 then\n\t\treturn 0\n\telsif n=0 then\n\t\treturn 1\n\telsif n=1 then\n\t\treturn a\n\telsif (n iand 1)=0 then\n\t!\treturn ipower(a*a,n/2)\n\t\treturn m_power_i64(n/2,sqr a)\n\telse\t\t\t!assume odd\n\t\treturn m_power_i64((n-1)/2,sqr a)*a\n\tfi\nend\n\nglobal proc m_intoverflow=\n\tabortprogram(\"Integer overflow detected\")\nend\n\nglobal proc m_dotindex(word i,a)=\n!return a.[i] in d0\n\tABORTPROGRAM(\"DOT INDEX\")\n!\tassem\n!\t\tmov d0,[a]\n!\t\tmov cl,[i]\n!\t\tshr d0,cl\n!\t\tand d0,1\n!\tend\t\nend\n\nglobal proc m_dotslice(word j,i,a)=\n!return a.[i..j] in d0; assumes j>=i\n\tABORTPROGRAM(\"DOT SLICE\")\n!\tassem\n!\t\tmov d0,[a]\n!\t\tmov rcx,[i]\n!\t\tshr d0,cl\n!\t\tsub rcx,[j]\n!\t\tneg rcx\t\t\t\t!j-1\n!\t\tmov d2,0xFFFF'FFFF'FFFF'FFFE\n!\t\tshl d2,cl\n!\t\tnot d2\n!\t\tand d0,d2\n!\tend\t\nend\n\nglobal proc m_popdotindex(word i,ref word p,word x)=\n!p^.[i]:=x\n\tABORTPROGRAM(\"POP DOT INDEX\")\n!\tassem\n!\t\tmov d3,[p]\n!\t\tmov cl,[i]\n!\t\tmov d0,[d3]\n!\t\tmov d1,1\n!\t\tshl d1,cl\t\t\t!000001000\n!\t\tnot d1\t\t\t\t!111110111\n!\t\tand d0,d1\t\t\t!clear that bit in dest\n!\t\tmov d1,[x]\n!\t\tand d1,1\n!\t\tshl d1,cl\n!\t\tor d0,d1\n!\t\tmov [d3],d0\n!\tend\t\nend\n\nglobal proc m_popdotslice(word j,i, ref word p, word x)=\n!p^.[i..j]:=x\n\tABORTPROGRAM(\"POP DOT SLICE\")\n!\tassem\n!!d3 = p\n!!d4 = x, then shifted then masked x\n!!d5 = i\n!!d6 = clear mask\n!\n!\t\tmov d3,[p]\n!\t\tmov d4,[x]\n!\t\tmov d5,[i]\n!\t\tmov rcx,d5\t\t\t!i\n!\t\tshl d4,cl\t\t\t!x<<i\n!\t\tmov rcx,[j]\n!\t\tsub rcx,d5\t\t\t!j-i\n!\t\tinc rcx\t\t\t\t!j-i+1\n!\t\tmov d2,0xFFFF'FFFF'FFFF'FFFF\n!\t\tshl d2,cl\t\t\t!...111100000     (assume 5-bit slice)\n!\t\tnot d2\t\t\t\t!...000011111\n!\t\tmov rcx,d5\t\t\t!i\n!\t\tshl d2,cl\t\t\t!...000011111000  (assume i=3)\n!\t\tand d4,d2\t\t\t!mask x (truncate extra bits)\n!\t\tmov d0,[d3]\n!\t\tnot d2\t\t\t\t!...111100000111\n!\t\tand d0,d2\t\t\t!clear dest bits\n!\t\tor d0,d4\t\t\t!add in new bits\n!\t\tmov [d3],d0\n!\tend\t\nend\n\nglobal function m_imin(int64 a,b)int64=\n\treturn min(a,b)\nend\n\nglobal function m_imax(int64 a,b)int64=\n\treturn max(a,b)\nend\n\nglobal function m_sign(real x)real=\n\tif x>0.0 then return 1.0\n\telsif x<0.0 then return -1.0\n\telse return 0.0\n\tfi\nend\n\nexport function m_tp_i64tor64(i64 a)r64 x=\n\tmemcpy(&x, &a, 8)\n\tx\nend\n\nexport function m_tp_r64toi64(r64 x)i64 a=\n\tmemcpy(&a, &x, 8)\n\ta\nend\n\nexport function m_tp_reftoi64(ref void p)i64 a=\n\tmemcpy(&a, &p, 8)\n\ta\nend\n\nexport function m_tp_i64toref(i64 a)ref void p=\n\tmemcpy(&p, &a, 8)\n\tp\nend\n",
-(byte*)"!const mem_check=1\nconst mem_check=0\n\nglobal [0..300]u64 allocupper\nglobal int alloccode\t\t\t\t!set by heapalloc\nexport int allocbytes\t\t\t\t!set by heapalloc\nexport int fdebug=0\nexport int rfsize\n\nconst threshold=1<<25\nconst alloc_step=1<<25\nword maxmemory\nint  maxalloccode\n\nGLOBAL REF VOID ALLOCBASE\n\nbyte pcm_setup=0\n\nint show=0\n\nglobal int memtotal=0\nexport int64 smallmemtotal=0\nglobal int smallmemobjs=0\nglobal int maxmemtotal=0\n\nEXPORT INT BIGMEMTOTAL\n!EXPORT INT BIGMEMMAX\n!EXPORT INT SMALLMEMMAX\n\n\n!store all allocated pointers\nconst int maxmemalloc=(mem_check|500000|2)\narray [maxmemalloc+1]ref int32 memalloctable\narray [maxmemalloc+1]int32 memallocsize\n\nconst pcheapsize=1048576*2\nref byte pcheapstart\nref byte pcheapend\t\t\t!points to first address past heap\nref byte pcheapptr\n\nconst int maxblockindex = 8 \t\t!2048\nexport const int maxblocksize = 2048\nexport const int $maxblocksizexx = 2048\n\narray [0:maxblocksize+1]byte sizeindextable\t!convert byte size to block index 1..maxblockindex\n\nconst int size16   = 1\t\t\t!the various index codes\nconst int size32   = 2\nconst int size64   = 3\nconst int size128  = 4\nconst int size256  = 5\nconst int size512  = 6\nconst int size1024 = 7\nconst int size2048 = 8\n\nexport [0:9]ref word freelist\n\nexport record strbuffer =\n\tichar strptr\n\tint32 length\n\tint32 allocated\nend\n\n!export tabledata() [0:]ichar pmnames=\nexport enumdata [0:]ichar pmnames=\n\t(pm_end=0,\t\t$),\n\t(pm_option,\t\t$),\n\t(pm_sourcefile,\t$),\n\t(pm_libfile,\t$),\n\t(pm_colon,\t\t$),\n\t(pm_extra,\t\t$),\nend\n\n[2]word seed = (0x2989'8811'1111'1272',0x1673'2673'7335'8264)\n!array [2]int seed = (0x2989'8811'1111'1272',0x1673'2673'7335'8264)\n\nexport function pcm_alloc(int n)ref void =\n\tref byte p\n!CPL \"ALLOC\"\n\n\tif not pcm_setup then\n\t\tpcm_init()\n\tfi\n\n!GOTO SKIP\n\tif n>maxblocksize then\t\t\t!large block allocation\n!SKIP::\n\t\talloccode:=pcm_getac(n)\n\t\tallocbytes:=allocupper[alloccode]\n\n\t\tp:=allocmem(allocbytes)\n\t\tif not p then\n\t\t\tabortprogram(\"pcm_alloc failure\")\n\t\tfi\n!CPL \"ALLOC\",N\nbigmemtotal+:=allocbytes\n!bigmemmax max:=bigmemtotal\n\n\t\tif mem_check then addtomemalloc(ref int32(p),allocbytes) fi\n\n\t\treturn p\n\tfi\n\n\talloccode:=sizeindextable[n]\t\t!Size code := 0,1,2 etc for 0, 16, 32 etc\n\tallocbytes:=allocupper[alloccode]\n\tsmallmemtotal+:=allocbytes\n!SMALLMEMMAX MAX:=SMALLMEMTOTAL\n\n\tif p:=ref byte(freelist[alloccode]) then\t\t!Items of this block size available\n\t\tif mem_check then addtomemalloc(ref int32(p),allocbytes) fi\n\t\tfreelist[alloccode]:=ref word(int((freelist[alloccode])^))\n\n\t\treturn p\n\tfi\n\n!No items in freelists: allocate new space in this heap block\n\tp:=pcheapptr\t\t\t\t!Create item at start of remaining pool in heap block\n\tpcheapptr+:=allocbytes\t\t\t!Shrink remaining pool\n\n\tif pcheapptr>=pcheapend then\t\t!Overflows?\n\t\tp:=pcm_newblock(allocbytes)\t\t!Create new heap block, and allocate from start of that\n\t\treturn p\n\tfi\n\tif mem_check then addtomemalloc(ref int32(p),allocbytes) fi\n\n\treturn p\nend\n\nexport proc pcm_free(ref void p,int n) =\n!n can be the actual size requested it does not need to be the allocated size\n\tint acode\n\n\tif n=0 then return fi\n\n!GOTO SKIP\n\tif n>maxblocksize then\t\t!large block\n!SKIP::\n\t\tif mem_check then removefrommemalloc(p,n) fi\n\nBIGMEMTOTAL-:=N\n\n!MAXMEMTOTAL-:=N\n\n\t\tfree(p)\n\t\treturn\n\tfi\n\n\tif p then\n\t\tacode:=sizeindextable[n]\t\t!Size code := 0,1,2 etc for 0, 16, 32 etc\n\n\t\tsmallmemtotal-:=allocupper[acode]\n\n\t\tif mem_check then removefrommemalloc(p,allocupper[acode]) fi\n\n\t\tcast(p,ref word)^:=word(int(freelist[acode]))\n\t\tfreelist[acode]:=p\n\tfi\nend\n\nexport proc pcm_freeac(ref void p,int alloc) =\n\tpcm_free(p,allocupper[alloc])\nend\n\n!export proc pcm_copymem4(ref void p,q,int n) =\t!PCM_COPYMEM4\n!!copy n bytes of memory from q to p.\n!!the memory spaces used are multiples of 16 bytes, but n itself could be anything\n!!n can be zero, and need not be a multiple of 4 bytes\n!\n!\tmemcpy(p,q,n)\n!end\n\nexport proc pcm_clearmem(ref void p,int n) =\n\tmemset(p,0,n)\nend\n\nexport proc pcm_init =\n!set up sizeindextable too\n\tint j,k,k1,k2\n\tint64 size\n\tconst limit=1<<33\n\n\talloccode:=0\n\tif pcm_setup then\n\t\treturn\n\tfi\n\n\tpcm_newblock(0)\n\n!\tALLOCBASE:=PCHEAPPTR\n\n\tfor i to maxblocksize do\t!table converts eg. 78 to 4 (4th of 16,32,64,128)\n\t\tj:=1\n\t\tk:=16\n\t\twhile i>k do\n\t\t\tk:=k<<1\n\t\t\t++j\n\t\tod\n\t\tsizeindextable[i]:=j\n\tod\n\n\tallocupper[1]:=16\n\tsize:=16\n\n\tfor i:=2 to 27 do\n\t\tsize*:=2\n\t\tallocupper[i]:=size\n\t\tif size>=threshold then\n\t\t\t\tk:=i\n\t\t\texit\n\t\tfi\n\tod\n\n\tfor i:=k+1 to allocupper.upb do\n\t\tsize+:=alloc_step\n\t\tif size<limit then\n\t\t\tallocupper[i]:=size\n\t\t\tmaxmemory:=size\n\t\telse\n\t\t\tmaxalloccode:=i-1\n\t\t\texit\n\t\tfi\n\t\t\n\tod\n\tpcm_setup:=1\n\n!FOR I,J IN SIZEINDEXTABLE DO\n!\tPRINTLN I,J, allocupper[i]\n!OD \n\nend\n\nexport function pcm_getac(int size)int =\n! convert linear blocksize from 0..approx 2GB to 8-bit allocation code\n\n!sizeindextable scales values from 0 to 2048 to allocation code 0 to 9\n\n\tif size<=maxblocksize then\n\t\treturn sizeindextable[size]\t\t!size 0 to 2KB\n\tfi\n\n\tsize:=(size+255)>>8\t\t\t\t\t!scale by 256\n\n!now same sizetable can be used for 2KB to 512KB (288 to 2KB)\n\n\tif size<=maxblocksize then\n\t\treturn sizeindextable[size]+8\n\tfi\n\n!sizetable now used for 512KB to 128MB (to 2KB)\n\tsize:=(size+63)>>6\t\t\t\t\t!scale by 256\n\n\tif size<=maxblocksize then\n\t\treturn sizeindextable[size]+14\n\tfi\n\n!size>2048, which means it had been over 128MB.\n\tsize:=(size-2048+2047)/2048+22\n\treturn size\nend\n\nexport function pcm_newblock(int itemsize)ref void=\n!create new heap block (can be first)\n!also optionally allocate small item at start\n!return pointer to this item (and to the heap block)\n\tstatic int totalheapsize\n\tref byte p\n\n\ttotalheapsize+:=pcheapsize\n\talloccode:=0\n\tp:=allocmem(pcheapsize)\t!can't free this block until appl terminates\n\tif p=nil then\n\t\tabortprogram(\"Can't alloc pc heap\")\n\tfi\n\n\tpcheapptr:=p\n\tpcheapend:=p+pcheapsize\n\n\tif pcheapstart=nil then\t\t!this is first block\n\t\tpcheapstart:=p\n\tfi\n\tpcheapptr+:=itemsize\n\treturn ref u32(p)\nend\n\nexport function pcm_round(int n)int =\n!for any size n, return actual number of bytes that would be allocated\n\tstatic [0:maxblockindex+1]int32 allocbytes=(0,16,32,64,128,256,512,1024,2048)\n\n\tif n>maxblocksize then\n\t\treturn n\n\telse\n\t\treturn allocbytes[sizeindextable[n]]\n\tfi\nend\n\n!export function pcm_array(int n)int =\t\t!PCM_ARRAY\n!!n bytes are needed for an array return the number of bytes to be actually allocated\n!\tint m\n!\n!\tif n<=maxblocksize then\t!automatic rounding up used for small heap\n!\t\treturn pcm_round(n)\n!\telse\t\t\t\t!devise some strategy probably doubling up.\n!\t\tm:=2048\n!\t\twhile n>m do\n!\t\t\tm<<:=1\n!\t\tod\n!\t\treturn m\n!\tfi\n!\n!end\n!\n!global proc pcm_printfreelist(int size,ref word p) =\t\t!PCM_PRINTFREELIST\n!\tprintln \"Size: \",size\n!\twhile p do\n!\t\tprint \" \",,p:\"h\"\n!\t\tp:=ref word(int(p^))\n!\tod\n!\tputs(\"\")\n!end\n!\n!global proc pcm_diags(ref char caption) =\t\t!PCM_DIAGS\n!\tint m\n!\n!\tprintln \"HEAP FREELISTS:\",caption\n!\n!\tm:=16\n!\tfor i:=1 to 8 do\n!\t\tpcm_printfreelist(m,freelist[i])\n!\t\tm<<:=1\n!\tod\n!end\n\nexport function pcm_allocz(int n)ref void =\n\tref void p\n\tp:=pcm_alloc(n)\n\n\tmemset(p,0,n)\n\treturn p\nend\n\nexport function pcm_copyheapstring(ref char s)ref char =\n!allocate enough bytes for string s: copy s to the heap\n!return pointer to new string\n\tref char q\n\tint n\n\tif s=nil then return nil fi\n\n\tn:=strlen(s)+1\n\tq:=pcm_alloc(n)\n\tmemcpy(q,s,n)\n\treturn q\nend\n\nexport function pcm_copyheapstringn(ref char s,int n)ref char =\n\tref char q\n\tif s=nil then return nil fi\n\n\tq:=pcm_alloc(n+1)\n\tmemcpy(q,s,n)\n\t(q+n)^:=0\n\treturn q\nend\n\nexport function pcm_copyheapblock(ref char s, int length)ref char =\n!allocate enough bytes for string s: copy s to the heap\n!return pointer to new string\n\tref char q\n\tif length=0 then return nil fi\n\n\tq:=pcm_alloc(length)\n\tmemcpy(q,s,length)\n\treturn q\nend\n\nproc addtomemalloc(ref int32 ptr,int size)=\n!add ptr to allocated table\n\tint allocated, code\n\n!CPL \"***************ADD TO ALLOC:\",ptr,size\n\tfor i to maxmemalloc do\n\t\tif memalloctable[i]=ptr then\n\t\t\tCPL \"ALLOC ERROR:\",ptr,\"ALREADY ALLOCATED\\n\\n\\n\"\n\t\t\tstop 2\n\t\tfi\n\n\t\tif memalloctable[i]=nil then\t\t!unused entry\n\t\t\tmemalloctable[i]:=ptr\n\n\t\t\tcode:=pcm_getac(size)\n\t\t\tallocated:=allocupper[code]\n\n!CPL \"STORING\",SIZE,ALLOCATED\n\t\t\tmemallocsize[i]:=allocated\n!\t\t\tmemallocsize[i]:=size\n\t\t\treturn\n\t\tfi\n\tod\n\tCPL \"MEMALLOCTABLE FULL\\n\\n\\n\\n\"; os_getch()\n\tCPL\n\tstop 3\nend\n\nproc removefrommemalloc(ref int32 ptr,int size)=\n!remove ptr to allocated table\n\tint allocated, code\n\n!CPL \"------------------************REMOVE FROM ALLOC:\",ptr,size\n\tcode:=pcm_getac(size)\n\tallocated:=allocupper[code]\n\n\tfor i to maxmemalloc do\n\t\tif memalloctable[i]=ptr then\n\t\t\tif memallocsize[i]<>ALLOCATED then\n!\t\t\t\tCPL \"REMOVE:FOUND\",ptr,\"IN MEMALLOCTABLE, FREESIZE=\",size,\", BUT STORED AS BLOCK SIZE:\",memallocsize[i]\n\t\t\t\tCPL \"REMOVE:FOUND\",ptr,\"IN MEMALLOCTABLE, ROUNDED FREESIZE=\",ALLOCATED,\", BUT STORED AS BLOCK SIZE:\",memallocsize[i]\n\t\t\t\tabortprogram(\"MEMSIZE\")\n\t\t\tfi\n\t\t\tmemalloctable[i]:=nil\n\t\t\treturn\n\t\tfi\n\tod\n\tCPL \"CAN'T FIND\",ptr,\"IN MEMALLOCTABLE\",size\n\tCPL \nos_GETCH()\n\tabortprogram(\"MEM\")\n\tstop 4\nend\n\nexport function allocmem(int n)ref void =\n\tref void p\n\n\tp:=malloc(n)\n\tif p then\n\t\treturn p\n\tfi\n\tprintln n,memtotal\n\tabortprogram(\"Alloc mem failure\")\n\treturn nil\nend\n\nglobal function reallocmem(ref void p,int n)ref void =\n\tp:=realloc(p,n)\n\treturn p when p\n\tprintln n\n\tabortprogram(\"Realloc mem failure\")\n\treturn nil\nend\n\nexport proc abortprogram(ref char s) =\n\tprintln s\n\tprint   \"ABORTING: Press key...\"\n!os_getch()\n\tstop 5\nend\n\nexport function getfilesize(filehandle handlex)int=\n\tword32 p,size\n\n\tp:=ftell(handlex)\t\t!current position\n\tfseek(handlex,0,2)\t\t!get to eof\n\tsize:=ftell(handlex)\t\t!size in bytes\n\tfseek(handlex,p,seek_set)\t!restore position\n\treturn size\nend\n\nexport proc readrandom(filehandle handlex, ref byte mem, int offset, size) =\n\tint a\n\tfseek(handlex,offset,seek_set)\n\ta:=fread(mem,1,size,handlex)\t\t\t!assign so as to remove gcc warning\nend\n\nexport function writerandom(filehandle handlex, ref byte mem, int offset,size)int =\n\tfseek(handlex,offset,seek_set)\n\treturn fwrite(mem,1,size,handlex)\nend\n\nexport function setfilepos(filehandle file,int offset)int=\n\treturn fseek(file,offset,0)\nend\n\nexport function getfilepos(filehandle file)int=\n\treturn ftell(file)\nend\n\nexport function readfile(ref char filename)ref byte =\n\tfilehandle f\n\tint size\n\tref byte m,p\n\n\tf:=fopen(filename,\"rb\")\n\tif f=nil then\n\t\treturn nil\n\tfi\n\trfsize:=size:=getfilesize(f)\n\n!\tm:=malloc(size+2)\t\t!allow space for etx/zeof etc\n\tm:=pcm_alloc(size+2)\t\t!allow space for etx/zeof etc\n\n\tif m=nil then\n\t\treturn nil\n\tfi\n\n\treadrandom(f,m,0,size)\n\tp:=m+size\t\t\t!point to following byte\n\t(ref u16(p)^:=0)\t!add two zero bytes\n\n\tfclose(f)\n\treturn m\nend\n\nexport function writefile(ref char filename,ref byte data,int size)int =\n\tfilehandle f\n\tint n\n\n\tf:=fopen(filename,\"wb\")\n\tif f=nil then\n\t\treturn 0\n\tfi\n\n\tn:=writerandom(f,data,0,size)\n\tfclose(f)\n\treturn n\nend\n\nexport function checkfile(ref char file)int=\n\tfilehandle f\n\tif f:=fopen(file,\"rb\") then\n\t\tfclose(f)\n\t\treturn 1\n\tfi\n\treturn 0\nend\n\nexport proc readlinen(filehandle handlex,ref char buffer,int size) =\n!size>2\n\tint ch\n\tref char p\n\tint n\n\tarray [0:100]char buff\n\tbyte crseen\n\n\tif handlex=nil then\n\t\thandlex:=filehandle(os_getstdin())\n\tfi\n\tif handlex=nil then\n\t\tn:=0\n\t\tp:=buffer\n\t\tdo\n\t\t\tch:=getchar()\n\t\t\tif ch=13 or ch=10 or ch=-1 then\n\t\t\t\tp^:=0\n\t\t\t\treturn\n\t\t\tfi\n\t\t\tp++^:=ch\n\t\t\t++n\n\t\t\tif n>=(size-2) then\n\t\t\t\tp^:=0\n\t\t\t\treturn\n\t\t\tfi\n\t\tod\n\tfi\n\n\tbuffer^:=0\n\tif fgets(buffer,size-2,handlex)=nil then\n\t\treturn\n\tfi\n\n\tn:=strlen(buffer)\n\tif n=0 then\n\t\treturn\n\tfi\n\n\tp:=buffer+n-1\t\t!point to last char\n\tcrseen:=0\n\twhile (p>=buffer and (p^=13 or p^=10)) do\n\t\tif p^=13 or p^=10 then crseen:=1 fi\n\t\tp--^ :=0\n\tod\n\n!NOTE: this check doesn't work when a line simply doesn't end with cr-lf\n\n\tif not crseen and (n+4>size) then\n\t\tcpl size,n\n\t\tabortprogram(\"line too long\")\n\tfi\nend\n\nexport proc iconvlcn(ref char s,int n) =\n\tto n do\n\t\ts^:=tolower(s^)\n\t\t++s\n\tod\nend\n\nexport proc iconvucn(ref char s,int n) =\n\tto n do\n\t\ts^:=toupper(s^)\n\t\t++s\n\tod\nend\n\nexport function convlcstring(ref char s)ichar s0=\n\ts0:=s\n\twhile (s^) do\n\t\ts^:=tolower(s^)\n\t\t++s\n\tod\n\ts0\nend\n\nexport function convucstring(ref char s)ichar s0=\n\ts0:=s\n\twhile (s^) do\n\t\ts^:=toupper(s^)\n\t\t++s\n\tod\n\ts0\nend\n\nexport function changeext(ref char s,newext)ichar=\n!whether filespec has an extension or not, change it to newext\n!newext should start with \".\"\n!return new string (locally stored static string, so must be used before calling again)\n\tstatic [260]char newfile\n\tarray [32]char newext2\n\tref char sext\n\tint n\n\n\tstrcpy(&newfile[1],s)\n\n\tcase newext^\n\twhen 0 then\n\t\tnewext2[1]:=0\n\t\tnewext2[2]:=0\n\twhen '.' then\n\t\tstrcpy(&newext2[1],newext)\n\telse\n\t\tstrcpy(&newext2[1],\".\")\n\t\tstrcat(&newext2[1],newext)\n\tesac\n\n\n\tsext:=extractext(s,1)\t\t\t!include \".\" when it is only extension\n\n\tcase sext^\n\twhen 0 then\t\t\t\t\t\t!no extension not even \".\"\n\t\tstrcat(&newfile[1],&newext2[1])\n\twhen '.' then\t\t\t\t\t\t!no extension not even \".\"\n\t\tstrcat(&newfile[1],&newext2[2])\n\telse\t\t\t\t\t\t\t!has extension\n\t\tn:=sext-s-2\t\t\t!n is number of chars before the \".\"\n\t\tstrcpy(&newfile[1]+n+1,&newext2[1])\n\tesac\n\n\treturn &newfile[1]\nend\n\nexport function extractext(ref char s,int period=0)ichar=\n!if filespec s has an extension, then return pointer to it otherwise return \"\"\n!if s ends with \".\", then returns \".\"\n\tref char t,u\n\n\tt:=extractfile(s)\n\n\tif t^=0 then\t\t\t!s contains no filename\n\t\treturn \"\"\n\tfi\n\n!t contains filename+ext\n\tu:=t+strlen(t)-1\t\t!u points to last char of t\n\n\twhile u>=t do\n\t\tif u^='.' then\t\t!start extension found\n\t\t\tif (u+1)^=0 then\t\t!null extension\n\t\t\t\treturn (period|\".\"|\"\")\n\t\t\tfi\n\t\t\treturn u+1\t\t\t!return last part of filename as extension exclude the dot\n\t\tfi\n\t\t--u\n\tod\n\treturn \"\"\t\t\t!no extension seen\nend\n\nexport function extractpath(ref char s)ichar=\n\tstatic [0:260]char str\n\tref char t\n\tint n\n\n\tt:=s+strlen(s)-1\t\t!t points to last char\n\n\twhile (t>=s) do\n\t\tswitch t^\n\t\twhen '\\\\','/',':' then\t\t!path separator or drive letter terminator assume no extension\n\t\t\tn:=t-s+1\t\t\t!n is number of chars in path, which includes rightmost / or \\ or :\n\t\t\tmemcpy(&.str,s,n)\n\t\t\tstr[n]:=0\n\t\t\treturn &.str\n\t\tendswitch\n\t\t--t\n\tod\n\treturn \"\"\t\t\t!no path found\nend\n\nexport function extractfile(ref char s)ichar=\n\tref char t\n\n\tt:=extractpath(s)\n\n\tif t^=0 then\t\t\t!s contains no path\n\t\treturn s\n\tfi\n\n\treturn s+strlen(t)\t\t!point to last part of s that contains the file\n\tend\n\nexport function extractbasefile(ref char s)ichar=\n\tstatic [0:100]char str\n\tref char f,e\n\tint n,flen\n\n\tf:=extractfile(s)\n\tflen:=strlen(f)\n\tif flen=0 then\t\t!s contains no path\n\t\treturn \"\"\n\tfi\n\te:=extractext(f,0)\n\n\tif e^ then\t\t\t!not null extension\n\t\tn:=flen-strlen(e)-1\n\t\tmemcpy(&str,f,n)\n\t\tstr[n]:=0\n\t\treturn &.str\n\tfi\n\tif (f+flen-1)^='.' then\n\t\tmemcpy(&str,f,flen-1)\n\t\tstr[flen-1]:=0\n\t\treturn &.str\n\tfi\n\treturn f\nend\n\nexport function addext(ref char s,ref char newext)ichar=\n!when filespec has no extension of its own, add newext\n\tref char sext\n\n\tsext:=extractext(s,1)\n\n\tif sext^=0 then\t\t\t\t\t\t!no extension not even \".\"\n\t\treturn changeext(s,newext)\n\tfi\n\n\treturn s\t\t\t\t\t\t\t!has own extension; use that\nend\n\n!export function alloctable(int n, size)ref void =\t\t!ALLOCTABLE\n!!Allocate table space for n elements, each of size <size>\n!!Allows for 1-based indexing, so allocates (n+1) elements\n!\tref void p\n!\n!\tp:=malloc((n+1)*size)\n!\n!\tif not p then\n!\t\tabortprogram(\"Alloctable failure\")\n!\tfi\n!\treturn p\n!end\n\n!export function zalloctable(int n, size)ref void =\t\t!ALLOCTABLE\n!!Allocate table space for n elements, each of size <size>\n!!Allows for 1-based indexing, so allocates (n+1) elements\n!\tref int p\n!\n!\tp:=alloctable(n,size)\n!\n!\tpcm_clearmem(p,(n+1)*size)\n!\treturn p\n!end\n!\n!global proc checkfreelists(ichar s)=\n!\tref word p,q\n!\tint64 aa\n!\n!\tfor i:=2 to 2 do\n!\t\tp:=freelist[i]\n!\n!\t\twhile p do\n!\t\t\taa:=int64(p)\n!\t\t\tif aa>0xffff'FFFF or aa<100 then\n!\t\t\t\tCPL s,\"FREE LIST ERROR\",i,p,q\n!!\t\t\tos_getch(); stop 1\n!\t\t\tfi\n!\t\t\tq:=p\n!\t\t\tp:=ref word(int(p^))\n!\t\tod\n!\n!\tod\n!end\n\nexport function pcm_alloc32:ref void =\n\tref byte p\n\n!RETURN PCM_ALLOC(32)\n\n\tallocbytes:=32\n\tsmallmemtotal+:=32\n!SMALLMEMMAX MAX:=SMALLMEMTOTAL\n\n\tif p:=ref byte(freelist[2]) then\t\t!Items of this block size available\n\t\tfreelist[2]:=ref word(int((freelist[2])^))\n\t\treturn p\n\tfi\n\n!No items in freelists: allocate new space in this heap block\n\treturn pcm_alloc(32)\nend\n\nexport proc pcm_free32(ref void p) =\n!n can be the actual size requested it does not need to be the allocated size\n\n!PCM_FREE(P,32)\n!RETURN\n\n\tsmallmemtotal-:=32\n\tif mem_check then removefrommemalloc(p,32) fi\n\n\tcast(p,ref word)^:=word(int(freelist[2]))\n\tfreelist[2]:=p\nend\n\nexport function pcm_alloc64:ref void =\n\tref byte p\n\tallocbytes:=64\n\tsmallmemtotal+:=64\n!SMALLMEMMAX MAX:=SMALLMEMTOTAL\n\n\tif p:=ref byte(freelist[3]) then\t\t!Items of this block size available\n\t\tfreelist[3]:=ref word(int((freelist[3])^))\n\t\treturn p\n\tfi\n\n!No items in freelists: allocate new space in this heap block\n\treturn pcm_alloc(64)\n\n!\tp:=pcheapptr\t\t\t\t!Create item at start of remaining pool in heap block\n!\tpcheapptr+:=64\t\t\t!Shrink remaining pool\n!\n!\tif pcheapptr>=pcheapend then\t\t!Overflows?\n!\t\tp:=pcm_newblock(64)\t\t!Create new heap block, and allocate from start of that\n!\t\treturn p\n!\tfi\n!\tif mem_check then addtomemalloc(ref int32(p),allocbytes) fi\n!\n!\treturn p\nend\n\nexport proc pcm_free64(ref void p) =\n!n can be the actual size requested it does not need to be the allocated size\n\n\tsmallmemtotal-:=64\n\tif mem_check then removefrommemalloc(p,64) fi\n\n\tcast(p,ref word)^:=word(int(freelist[3]))\n\tfreelist[3]:=p\nend\n\nexport function pcm_alloc16:ref void =\n\tref byte p\n\tallocbytes:=16\n\tsmallmemtotal+:=16\n!SMALLMEMMAX MAX:=SMALLMEMTOTAL\n\n\tif p:=ref byte(freelist[1]) then\t\t!Items of this block size available\n\t\tfreelist[1]:=ref word(int((freelist[1])^))\n\t\treturn p\n\tfi\n\n!No items in freelists: allocate new space in this heap block\n\treturn pcm_alloc(16)\nend\n\nexport proc pcm_free16(ref void p) =\n!n can be the actual size requested it does not need to be the allocated size\n\n\tsmallmemtotal-:=16\n\tif mem_check then removefrommemalloc(p,32) fi\n\n\tcast(p,ref word)^:=word(int(freelist[1]))\n\tfreelist[1]:=p\nend\n\nexport proc outbyte(filehandle f,int x)=\n\tfwrite(&x,1,1,f)\nend\n\nexport proc outword16(filehandle f,word x)=\n\tfwrite(&x,2,1,f)\nend\n\nexport proc outword32(filehandle f,word x)=\n\tfwrite(&x,4,1,f)\nend\n\nexport proc outword64(filehandle f,word64 x)=\n\tfwrite(&x,8,1,f)\nend\n\nexport proc outstring(filehandle f, ichar s)=\n\tfwrite(s,strlen(s)+1,1,f)\nend\n\nexport proc outblock(filehandle f, ref void p, int n)=\n\tfwrite(p,n,1,f)\nend\n\nexport function myeof(filehandle f)int=\n\tint c\n\n\tc:=fgetc(f)\n\tif c=c_eof then return 1 fi\n\tungetc(c,f)\n\treturn 0;\nend\n\nexport proc strbuffer_add(ref strbuffer dest, ichar s, int n=-1)=\n\tint newlen,oldlen\n\tichar newptr\n\n\tIF N=0 THEN CPL \"N=0\" FI\n\n\tif n=-1 then\n\t\tn:=strlen(s)\n\tfi\n\n\toldlen:=dest.length\n\n\tif oldlen=0 then\t\t\t\t!first string\n\t\tdest.strptr:=pcm_alloc(n+1)\n\t\tdest.allocated:=allocbytes\n\t\tdest.length:=n\t\t\t\t!length always excludes terminator\n\t\tmemcpy(dest.strptr,s,n)\n\t\t(dest.strptr+n)^:=0\n\t\treturn\n\tfi\n\n\tnewlen:=oldlen+n\n\tif newlen+1>dest.allocated then\n\t\tnewptr:=pcm_alloc(newlen+1)\n\t\tmemcpy(newptr,dest.strptr,oldlen)\n\t\tdest.strptr:=newptr\n\t\tdest.allocated:=allocbytes\n\tfi\n\n\tmemcpy(dest.strptr+oldlen,s,n)\n\t(dest.strptr+newlen)^:=0\n\n\tdest.length:=newlen\nend\n\nexport proc gs_init(ref strbuffer dest)=\n\tpcm_clearmem(dest,strbuffer.bytes)\nend\n\nexport proc gs_free(ref strbuffer dest)=\n\tif dest.allocated then\n\t\tpcm_free(dest.strptr,dest.allocated)\n\tfi\nend\n\nexport proc gs_str(ref strbuffer dest,ichar s)=\n\tstrbuffer_add(dest,s)\nend\n\nexport proc gs_char(ref strbuffer dest,int c)=\n\tarray [16]char s\n\n\ts[1]:=c\n\ts[2]:=0\n\n\tstrbuffer_add(dest,&.s,1)\nend\n\nexport proc gs_strn(ref strbuffer dest,ichar s,int length)=\n\tstrbuffer_add(dest,s,length)\nend\n\nexport proc gs_strvar(ref strbuffer dest,s)=\n\tstrbuffer_add(dest,s.strptr)\nend\n\nexport proc gs_strint(ref strbuffer dest,int64 a)=\n\tstrbuffer_add(dest,strint(a))\nend\n\nexport proc gs_strln(ref strbuffer dest,ichar s)=\n\tgs_str(dest,s)\n\tgs_line(dest)\nend\n\nexport proc gs_strsp(ref strbuffer dest,ichar s)=\n\tgs_str(dest,s)\n\tgs_str(dest,\" \")\nend\n\nexport proc gs_line(ref strbuffer dest)=\n\tstrbuffer_add(dest,\"\\w\")\nend\n\nexport function gs_getcol(ref strbuffer dest)int=\n\treturn dest.length\nend\n\nexport proc gs_leftstr(ref strbuffer dest, ichar s, int w, padch=' ')=\n\tint col,i,n,slen\n\tarray [2560]char str\n\tcol:=dest.length\n\tstrcpy(&.str,s)\n\tslen:=strlen(s)\n\tn:=w-slen\n\tif n>0 then\n\t\tfor i:=1 to n do\n\t\t\tstr[slen+i]:=padch\n\t\tod\n\t\tstr[slen+n+1]:=0\n\tfi\n\tgs_str(dest,&.str)\nend\n\nexport proc gs_leftint(ref strbuffer dest, int a, int w, padch=' ')=\n\tgs_leftstr(dest,strint(a),w,padch)\nend\n\nexport proc gs_padto(ref strbuffer dest,int col, ch=' ')=\n\tint n\n\tarray [2560]char str\n\n\tn:=col-dest.length\n\tif n<=0 then return fi\n\tfor i:=1 to n do\n\t\tstr[i]:=ch\n\tod\n\tstr[n+1]:=0\n\tgs_str(dest,&.str)\nend\n\nexport proc gs_println(ref strbuffer dest,filehandle f=nil)=\n\tif dest.length=0 then return fi\n\t(dest.strptr+dest.length)^:=0\n\n\tif f=nil then\n!\t\tprintln dest.strptr,,\"\\c\"\n\t\tprintln dest.strptr\n\telse\n!\t\tprintln @f,dest.strptr,,\"\\c\"\n\t\tprintln @f,dest.strptr\n\tfi\nend\n\nexport function nextcmdparamnew(int &paramno, ichar &name, &value, ichar defext=nil)int=\n\tstatic int infile=0\n\tstatic ichar filestart=nil\n\tstatic ichar fileptr=nil\n\tstatic byte colonseen=0\n\tref char q\n\tichar item,fileext\n\tichar rest\n\tint length\n\tstatic [300]char str\n\n\treenter::\n\tvalue:=nil\n\tname:=nil\n\n\tif infile then\n\t\tif readnextfileitem(fileptr,item)=0 then\t\t!eof\n\t\t\tfree(filestart)\t\t\t\t\t\t\t\t!file allocated via malloc\n\t\t\tinfile:=0\n\t\t\tgoto reenter\n\t\tfi\n\telse\n\t\tif paramno>ncmdparams then\n\t\t\treturn pm_end\n\t\tfi\n\t\titem:=cmdparams[paramno]\n\t\t++paramno\n\n\t\tlength:=strlen(item)\n\n\t\tif item^='@' then\t\t!@ file\n!\t\t\tfilestart:=fileptr:=cast(readfile(item+1))\n!\t\t\tif filestart=nil then\n!\t\t\t\tprintln \"Can't open\",item\n!\t\t\t\tstop 7\n!\t\t\tfi\n\t\t\tinfile:=1\n\t\t\tgoto reenter\n\t\tfi\n\n\t\tif item^=':' then\n\t\t\tcolonseen:=1\n\t\t\treturn pm_colon\n\t\tfi\n\tfi\n\n\tvalue:=nil\n\tif item^='-' then\n\t\tname:=item+(colonseen|0|1)\n\t\tq:=strchr(item,':')\n\t\tif not q then\n\t\t\tq:=strchr(item,'=')\n\t\tfi\n\t\tif q then\n\t\t\tvalue:=q+1\n\t\t\tq^:=0\n\t\tfi\n\t\treturn (colonseen|pm_extra|pm_option)\n\tfi\n\n\tfileext:=extractext(item,0)\n\tname:=item\n\n\tif fileext^=0 then\t\t\t\t\t\t\t!no extension\n\t\tstrcpy(&.str,name)\n\t\tif defext and not colonseen then\n\t\t\tname:=addext(&.str,defext)\t\t\t\t!try .c\n\t\tfi\n!\telsif eqstring(fileext,\"dll\") then\n\telsif eqstring(fileext,\"dll\") or eqstring(fileext,\"mcx\") then\n\t\treturn (colonseen|pm_extra|pm_libfile)\n\tfi\n\treturn (colonseen|pm_extra|pm_sourcefile)\nend\n\nfunction readnextfileitem(ichar &fileptr,&item)int=\n\tref char p,pstart,pend\n\tint n\n\tstatic [256]char str\n\n\tp:=fileptr\n\n\treenter::\n\tdo\n\t\tcase p^\n\t\twhen ' ','\\t',13,10 then\t!skip white space\n\t\t\t++p\n\t\twhen 26,0 then\t\t\t\t!eof\n\t\t\treturn 0\n\t\telse\n\t\t\texit\n\t\tesac\n\tod\n\n\tcase p^\n\twhen '!', '#' then\t\t\t!comment\n\t\t++p\n\t\tdocase p++^\n\t\twhen 10 then\n\t\t\tgoto reenter\n\t\twhen 26,0 then\n\t\t\tfileptr:=p-1\n\t\t\treturn 0\n\t\telse\n\n\t\tenddocase\n\tesac\n\n\n\tcase p^\n\twhen '\"' then\t\t\t\t!read until closing \"\n\t\tpstart:=++p\n\t\tdo\n\t\t\tcase p^\n\t\t\twhen 0,26 then\n\t\t\t\tprintln \"Unexpected EOF in @file\"\n\t\t\t\tstop 8\n\t\t\twhen '\"' then\n\t\t\t\tpend:=p++\n\t\t\t\tif p^=',' then ++p fi\n\t\t\t\texit\n\t\t\tesac\n\t\t\t++p\n\t\tod\n\telse\n\t\tpstart:=p\n\t\tdo\n\t\t\tcase p^\n\t\t\twhen 0,26 then\n\t\t\t\tpend:=p\n\t\t\t\texit\n\t\t\twhen ' ','\\t',',',13,10 then\n\t\t\t\tpend:=p++\n\t\t\t\texit\n\t\t\tesac\n\t\t\t++p\n\t\tod\n\tesac\n\n\tn:=pend-pstart\n\tif n>=str.len then\n\t\tprintln \"@file item too long\"\n\t\tstop 9\n\tfi\n\tmemcpy(&.str,pstart,n)\n\tstr[n+1]:=0\n\titem:=&.str\n\tfileptr:=p\n\n\treturn 1\nend\n\nexport proc ipadstr(ref char s,int width,ref char padchar=\" \")=\n\tint n\n\n\tn:=strlen(s)\n\tto width-n do\n\t\tstrcat(s,padchar)\n\tod\nend\n\nexport function padstr(ref char s,int width,ref char padchar=\" \")ichar=\n\tstatic [256]char str\n\n\tstrcpy(&.str,s)\n\tipadstr(&.str,width,padchar)\n\treturn &.str\nend\n\nexport function chr(int c)ichar=\n\tstatic [8]char str\n\n\tstr[1]:=c\n\tstr[2]:=0\n\treturn &.str\nend\n\nexport function cmpstring(ichar s,t)int=\n\tint res\n\tif (res:=strcmp(s,t))<0 then\n\t\treturn -1\n\telsif res>0 then\n\t\treturn 1\n\telse\n\t\treturn 0\n\tfi\nend\n\nexport function cmpstringn(ichar s,t,int n)int=\n\tint res\n\tif (res:=strncmp(s,t,n))<0 then\n\t\treturn -1\n\telsif res>0 then\n\t\treturn 1\n\telse\n\t\treturn 0\n\tfi\nend\n\nexport function eqstring(ichar s,t)int=\n\treturn strcmp(s,t)=0\nend\n\nexport function cmpbytes(ref void p,q,int n)int=\n\tint res\n\tif (res:=memcmp(p,q,n))<0 then\n\t\treturn -1\n\telsif res>0 then\n\t\treturn 1\n\telse\n\t\treturn 0\n\tfi\nend\n\nexport function eqbytes(ref void p,q,int n)int=\n\treturn memcmp(p,q,n)=0\nend\n\nexport proc mseed(word64 a,b=0)=\n\tseed[1]:=a\n\tif b then\n\t\tseed[2]:=b\n\telse\n\t\tseed[2] ixor:=a\n\tfi\nend\n\nexport function mrandom:word =\n!return pure 64-bit word value, 0 to 2**64-1\n!(cast result for signed value)\n!\tword64 x,y\n\tint x,y\n\tx:=seed[1]\n\ty:=seed[2]\n\tseed[1]:=y\n\tx ixor:=(x<<23)\n\tseed[2]:= x ixor y ixor (x>>17) ixor (y>>26)\n\treturn seed[2]+y\nend\n\nexport function mrandomp:int =\n!pure 64-bit int value, positive only, 0 to 2**63-1\n\treturn mrandom() iand 0x7FFF'FFFF'FFFF'FFFF\nend\n\nexport function mrandomint(int n)int=\n!positive random int value from 0 to n-1\n\treturn mrandomp() rem n\nend\n\nexport function mrandomrange(int a,b)int=\n!random int value from a to b inclusive\n!span extent must be 1 to 2**63-1\n\tint span\n\tspan:=b-a+1\n\tif span<=0 then\n\t\treturn 0\n\tfi\n\treturn (mrandomp() rem span)+a\nend\n\nexport function mrandomreal:real x=\n!positive random real value from 0 to just under (but not including) 1.0\n\trepeat x:=mrandomp()/9223372036854775808.0 until x<>1.0\n\treturn x\nend\n\nexport function mrandomreal1:real=\n!positive random real value from 0 to 1.0 inclusive\n\treturn mrandomp()/9223372036854775807\nend\n\nexport function checkpackfile:ref byte=\n!find out if this executable contains extra packed files\n!return 1 or 0\n\n\tint a,offset,i,size\n\t[100]char name\n\t[300]char exefile\n\tref byte packexeptr\t\t\t!for embedded pack files, contains pointer to in-memory version of this .exe file plus extras; else nil\n\tint packexesize\t\t\t\t!byte size\n\tref char packfilename\n\tint packfilesize\n\tref byte packfileptr\n\n!macro getfileint(data,offset)=(ref int32(data+offset))^\n\tmacro getfileint(data,offset)=cast(data+offset,ref int32)^\n\n\tstrcpy(&exefile[1],os_gethostname())\n\tprintln \"Attempting to open\",&.exefile\n\tpackexeptr:=readfile(&exefile[1])\n\n\tif not packexeptr then\n\t\tcpl \"Can't open\",&.exefile,packexeptr\n\t\tstop\n\tfi\n\n\tpackexesize:=rfsize\n\tcpl \"File read OK. Size\",packexesize\n\n\ta:=getfileint(packexeptr,packexesize-int32.bytes)\n\tif a<>'PCAK' then\n\t\tfree(packexeptr)\n\t\tpackfileptr:=nil\n\t\treturn nil\n\tfi\n\n\toffset:=getfileint(packexeptr,packexesize-int32.bytes*2)\n\n\tpackfilename:=cast(packexeptr+offset)\n\toffset+:=strlen(packfilename)+1\n\tpackfilesize:=getfileint(packexeptr,offset)\n\tpackfileptr:=packexeptr+offset+int32.bytes\n\n\treturn packfileptr\nend\n\n!export function pcm_allocx:ref void =\n!\tconst n=32\n!\tref word p\n!\n!\tallocbytes:=32\n!\n!\tif p:=ref word(freelist[2]) then\t\t!Items of this block size available\n!\t\tfreelist[2]:=ref word(int((freelist[2])^))\n!\n!\telse\n!\n!!No items in freelists: allocate new space in this heap block\n!\t\tp:=cast(pcheapptr)\t\t\t\t!Create item at start of remaining pool in heap block\n!\t\tpcheapptr+:=32\t\t\t!Shrink remaining pool\n!\n!\t\tif pcheapptr>=pcheapend then\t\t!Overflows?\n!\t\t\tp:=pcm_newblock(32)\t\t!Create new heap block, and allocate from start of that\n!\t\tfi\n!\n!\t\tp^:=0\n!\t\t(p+1)^:=0\n!\t\t(p+2)^:=0\n!\t\t(p+3)^:=0\n!\n!\t\treturn p\n!\tfi\n!end\n\nexport function readline:ichar=\n\treadln\n\treturn rd_buffer\nend\n\n!export function stralloc(ref void p)ichar=\n!\treturn strint(int(ref byte(p)-allocbase))\n!end\n\nexport function findfunction(ichar name)ref void=\n\tfor i to $getnprocs() do\n\t\tif eqstring($getprocname(i),name) then\n\t\t\treturn $getprocaddr(i)\n\t\tfi\n\tod\n\treturn nil\nend\n\nexport function roundtoblock(int n,align)int=\n!round up n until it is a multiple of filealign (which is a power of two)\n!return aligned value. Returns original if already aligned\n\tif n iand (align-1)=0 then return n fi\n\treturn n+(align-(n iand (align-1)))\nend\n\n",
-(byte*)"export type filehandle=ref void\n\nimportdll $cstd=\n\tfunc  malloc\t\t(word64)ref void\n\tfunc  realloc\t(ref void, word)ref void\n\tproc free\t\t(ref void)\n\tproc memset\t\t(ref void, int32, word)\n\tproc memcpy\t\t(ref void, ref void, word)\n\tproc memmove\t\t(ref void, ref void, word)\n\tfunc  clock\t\t:int32\n\tfunc  ftell\t\t(filehandle)int32\n\tfunc  fseek\t\t(filehandle, int32, int32)int32\n\tfunc  fread\t\t(ref void, word, word, filehandle)word\n\tfunc  fwrite\t\t(ref void, word, word, filehandle)word\n\tfunc  getc\t\t(filehandle)int32\n\tfunc  ungetc\t\t(int32, filehandle)int32\n\tfunc  fopen\t\t(ichar a, b=\"rb\")filehandle\n\tfunc  fclose\t\t(filehandle)int32\n\tfunc  fgets\t\t(ichar, int, filehandle)ichar\n\tfunc  remove\t\t(ichar)int32\n\tfunc  rename\t\t(ichar, ichar)int32\n\tfunc  getchar\t:int32\n\tproc putchar\t(int32)\n\tproc setbuf\t\t(filehandle, ref byte)\n\n\tfunc  strlen\t\t(ichar)int\n\tfunc  strcpy\t\t(ichar, ichar)ichar\n\tfunc  strcmp\t\t(ichar, ichar)int32\n\tfunc  strncmp\t(ichar, ichar, word)int32\n\tfunc  strncpy\t(ichar, ichar, word)word\n\tfunc  memcmp\t\t(ref void, ref void, word)int32\n\tfunc  strcat\t\t(ichar, ichar)ichar\n\tfunc  tolower\t(int32)int32\n\tfunc  toupper\t(int32)int32\n\tfunc  isalpha\t(int32)int32\n\tfunc  isupper\t(int32)int32\n\tfunc  islower\t(int32)int32\n\tfunc  isalnum\t(int32)int32\n\tfunc  isspace\t(int32)int32\n\tfunc  strstr\t\t(ichar, ichar)ichar\n\tfunc  atol\t\t(ichar)int\n\tfunc  atoi\t\t(ichar)int32\n!\tfunc  strtod\t\t(ichar,ref ref char)real64\n\tfunc  strtod\t\t(ichar,ref ref char)real64\n\tfunc  _strdup\t(ichar)ichar\n\n\tfunc  puts\t\t(ichar)int32\n\tfunc  printf\t\t(ichar, ...)int32\n\n\tfunc  sprintf\t(ichar, ichar, ...)int32\n\n\tfunc  sscanf\t\t(ichar, ichar, ...)int32\n\tfunc  scanf\t\t(ichar, ...)int32\n\n\tfunc  rand\t\t:int32\n\tproc srand\t\t(word32)\n\tfunc  system\t\t(ichar)int32\n\n\tfunc  fgetc\t\t(filehandle)int32\n\tfunc  fputc\t\t(int32,  filehandle)int32\n\tfunc  fprintf\t(filehandle, ichar, ...)int32\n\tfunc  fputs\t\t(ichar,  filehandle)int32\n\tfunc  feof\t\t(filehandle)int32\n\tfunc  getch\t\t:int32\n\tfunc  _getch\t\t:int32\n\tfunc  kbhit\t\t:int32\n\tfunc  _mkdir\t\t(ichar)int32\n\tfunc  mkdir\t\t(ichar)int32\n\tfunc  strchr\t\t(ichar,int32)ichar\n\n\tfunc  _setmode\t(int32,int32)int32\n\n\tproc _exit\t\t(int32)\n\tproc \"exit\"\t\t(int32)\n!\tproc `exit\t\t(int32)\n\tfunc  pow\t\t(real,real)real\n\n\tfunc  `sin \t\t(real)real\n\tfunc  `cos\t\t(real)real\n\tfunc  `tan\t\t(real)real\n\tfunc  `asin\t\t(real)real\n\tfunc  `acos\t\t(real)real\n\tfunc  `atan \t\t(real)real\n\tfunc  `log\t\t(real)real\n\tfunc  `log10\t\t(real)real\n\tfunc  `exp\t\t(real)real\n\tfunc  `floor\t\t(real)real\n\tfunc  `ceil\t\t(real)real\n\n\tfunc  `llabs\t(i64)i64\n\n\tproc  qsort   \t(ref void, word64, word64, ref proc)\n\tproc  sleep\t\t(word32)\n\nend\n\nexport macro strdup=_strdup\n\nimportdll $cstdextra=\n\tfunc  __getmainargs(ref int32, ref void, ref void, int, ref void)int32\nend\n\nexport const c_eof\t\t=-1\nexport const seek_set\t= 0\nexport const seek_curr\t= 1\nexport const seek_end\t= 2\n",
-(byte*)"!import clib\n!import mlib\n!\n!importlib cstd=\n!\tclang proc     sleep\t(word32)\n!end\n\nrecord termios =\n\tint32 c_iflag\n\tint32 c_oflag\n\tint32 c_cflag\n\tint32 c_lflag\n\tchar c_line\n\t[32]char c_cc\t\t\t\t!at offset 17\n\t[3]byte filler\n\tint32 c_ispeed\t\t\t\t!at offset 52\n\tint32 c_ospeed\nend\n\nimportlib dlstuff=\n\tclang function dlopen\t\t(ichar, int32)ref void\n\tclang function dlsym\t\t(ref void, ichar)ref void\n\tclang function tcgetattr\t(int32, ref termios) int32\n\tclang function tcsetattr\t(int32, int32, ref termios) int32\nend\n\n!this record is used by some apps, so these fields must be present\nexport record rsystemtime =\n\tint32 year\n\tint32 month\n\tint32 dayofweek\n\tint32 day\n\tint32 hour\n\tint32 minute\n\tint32 second\n\tint milliseconds\nend\n\nint init_flag=0\n\n\nexport proc os_init=\ninit_flag:=1\nend\n\nexport function os_execwait(ichar cmdline,int newconsole=0,ichar workdir=nil)int =\nreturn system(cmdline)\nend\n\nexport function os_execcmd(ichar cmdline, int newconsole)int =\nreturn system(cmdline)\nend\n\nexport function os_getch:int=\n\tconst ICANON  = 8x000002\n\tconst ECHO    = 8x000010\n\tconst TCSANOW = 0\n\n\ttermios old,new\n\tchar ch\n\n\ttcgetattr(0,&old)\n\tnew:=old\n\tnew.c_lflag iand:=inot ICANON\n\tnew.c_lflag iand:=inot ECHO\n\ttcsetattr(0,TCSANOW,&new)\n\n\tch:=getchar()\n\n\ttcsetattr(0,TCSANOW,&old)\n\n\treturn ch\nend\n\nexport function os_kbhit:int=\nabortprogram(\"kbhit\")\nreturn 0\nend\n\nexport proc os_flushkeys=\nabortprogram(\"flushkeys\")\nend\n\nexport function os_getconsolein:ref void=\nreturn nil\nend\n\nexport function os_getconsoleout:ref void=\nreturn nil\nend\n\nexport function os_proginstance:ref void=\nabortprogram(\"PROGINST\")\nreturn nil\nend\n\nexport function os_getdllinst(ichar name)u64=\nconst RTLD_LAZY=1\nref void h\n\nh:=dlopen(name,RTLD_LAZY)\n\nif h=nil then\n\tif strcmp(name,\"msvcrt\")=0 then\t\t\t!might be linux\n\t\th:=dlopen(\"libc.so.6\",RTLD_LAZY);\n\tfi\nfi\n\nreturn cast(h)\nend\n\nexport function os_getdllprocaddr(int hlib,ichar name)ref void=\nref void fnaddr\n\nif hlib=0 then\n\treturn nil\nfi\n\nfnaddr:=dlsym(cast(int(hlib)), name)\nreturn fnaddr\nend\n\nexport proc os_initwindows=\nend\n\nexport function os_getchx:int=\nabortprogram(\"getchx\")\nreturn 0\nend\n\nexport function os_getos=>ichar=\nif $targetbits=32 then\n\treturn \"L32\"\nelse\n\treturn \"L64\"\nfi\nend\n\nexport function os_gethostsize=>int=\nreturn $targetbits\nend\n\nexport function os_iswindows:int=\nreturn 0\nend\n\nexport function os_shellexec(ichar opc, file)int=\nabortprogram(\"SHELL EXEC\")\nreturn 0\nend\n\nexport proc  os_sleep(int a)=\nsleep(a)\nend\n\nexport function os_getstdin:filehandle =\nreturn nil\n!return fopen(\"con\",\"rb\")\nend\n\nexport function os_getstdout:filehandle =\nreturn nil\n!return fopen(\"con\",\"wb\")\nend\n\nexport function os_gethostname:ichar=\n!abortprogram(\"gethostname\")\nreturn \"\"\nend\n\nexport function os_getmpath:ichar=\n!abortprogram(\"getmpath\")\nreturn \"\"\nend\n\nexport proc os_exitprocess(int x)=\nstop\n!_exit(0)\n!ExitProcess(x)\nend\n\n!export function os_gettimestamp:dint=\n!return clock()\n!end\n!\n!export function os_gettickcount:dint=\n!return clock()\n!end\n\nexport function os_clock:int64=\nif os_iswindows() then\n\treturn clock()\nelse\n\treturn clock()/1000\nfi\nend\n\nexport function os_ticks:int64=\n\treturn clock()\nend\n\nexport function os_getclockspersec:int64=\nreturn (os_iswindows()|1000|1000'000)\nend\n\nexport proc os_setmesshandler(ref void addr)=\nabortprogram(\"SETMESSHANDLER\")\n!wndproc_callbackfn:=addr\nend\n\nexport function os_hpcounter:int64=\nreturn 1\nend\n\nexport function os_hpfrequency:int64=\nreturn 1\nend\n\nexport function os_filelastwritetime(ichar filename)int64=\nreturn 0\nend\n\nexport proc os_getsystime(ref rsystemtime tm)=\nmemset(tm,0,rsystemtime.bytes)\ntm.month:=1\t\t\t!avoid crashing the M compiler\nend\n\nexport proc os_peek=\nend\n\nexport function  os_allocexecmem(int n)ref byte=\n\tabortprogram(\"No allocexec\")\n\tnil\nend\n\n",
-(byte*)"type dll0_int=ref clang function:int\ntype dll1_int=ref clang function(int)int\ntype dll2_int=ref clang function(int,int)int\ntype dll3_int=ref clang function(int,int,int)int\ntype dll4_int=ref clang function(int,int,int,int)int\ntype dll5_int=ref clang function(int,int,int,int,int)int\ntype dll6_int=ref clang function(int,int,int,int,int,int)int\ntype dll9_int=ref clang function(int,int,int,int, int,int,int,int, int)int\ntype dll10_int=ref clang function(int,int,int,int, int,int,int,int, int,int)int\ntype dll11_int=ref clang function(int,int,int,int, int,int,int,int, int,int,int)int\ntype dll12_int=ref clang function(int,int,int,int, int,int,int,int, int,int,int,int)int\ntype dll14_int=ref clang function(int,int,int,int, int,int,int,int, int,int,int,int, int,int)int\n\ntype dll0_r64=ref clang function:r64\ntype dll1_r64=ref clang function(int)r64\ntype dll2_r64=ref clang function(int,int)r64\n\ntype dll0_r64x=ref clang function:r64\ntype dll1_r64x=ref clang function(real)r64\ntype dll2_r64x=ref clang function(real,real)r64\n\ntype m_dll0_int=ref function:int\ntype m_dll1_int=ref function(int)int\ntype m_dll2_int=ref function(int,int)int\ntype m_dll3_int=ref function(int,int,int)int\ntype m_dll4_int=ref function(int,int,int,int)int\ntype m_dll5_int=ref function(int,int,int,int,int)int\ntype m_dll12_int=ref function(int,int,int,int, int,int,int,int, int,int,int,int)int\n\ntype m_dll0_r64=ref function:r64\ntype m_dll1_r64=ref function(int)r64\ntype m_dll2_r64=ref function(int,int)r64\n\n\nexport function os_calldllfunction(ref proc fnaddr,\n\t\tint retcode, nargs, ref[]i64 args, ref[]byte argcodes)word64 =\n!retcode is 'R' or 'I'\n!each argcodes element is 'R' or 'I' too\n!The x64 version can work with any combination.\n!Here, for C, only some combinations are dealt with:\n! I result, params all I (not all param counts)\n! R result, params all I (not all param counts)\n!Mixed params, for arbitrary return type, not handled (not really detected either)\n\n\tword64 a\n\treal64 x\n\tint oddstack, nextra, pushedbytes\n\n\tif retcode='I' then\n\t\treturn calldll_cint(fnaddr,args,nargs)\n\telse\n\t\treturn calldll_creal(fnaddr,args,nargs)\n\tfi\nend\t\n\nglobal function os_pushargs(ref[]word64 args, int nargs, nextra,\n\t\t\t\t\tref proc fnaddr, int isfloat)word64=\n\tword64 a\n\treal64 x\n!ABORTPROGRAM(\"PUSHARGS/C NOT READY\")\n\n\treturn os_calldllfunction(fnaddr, (isfloat|0|'I'), nargs, cast(args), nil)\n\n\n!\treturn a\nend\n\nfunction calldll_cint (ref proc fnaddr,ref[]i64 params,int nparams)i64=\nswitch nparams\nwhen 0 then\n\treturn dll0_int(fnaddr)^()\nwhen 1 then\n\treturn dll1_int(fnaddr)^(params^[1])\nwhen 2 then\n\treturn dll2_int(fnaddr)^(params^[1],params^[2])\nwhen 3 then\n\treturn dll3_int(fnaddr)^(params^[1],params^[2],params^[3])\nwhen 4 then\n\treturn dll4_int(fnaddr)^(params^[1],params^[2],params^[3],\n\t\t\tparams^[4])\nwhen 5 then\n\treturn dll5_int(fnaddr)^(params^[1],params^[2],params^[3],\n\t\t\tparams^[4], params^[5])\nwhen 6 then\n\treturn dll6_int(fnaddr)^(params^[1],params^[2],params^[3],\n\t\t\tparams^[4], params^[5],params^[6])\nwhen 9 then \n\treturn (dll9_int(fnaddr))^(params^[1],params^[2],params^[3],params^[4],\tparams^[5],params^[6],\n\t\t\t\tparams^[7],params^[8],params^[9])\nwhen 10 then \n\treturn (dll10_int(fnaddr))^(params^[1],params^[2],params^[3],params^[4],\tparams^[5],params^[6],\n\t\t\t\tparams^[7],params^[8],params^[9],params^[10])\nwhen 11 then \n\treturn (dll11_int(fnaddr))^(params^[1],params^[2],params^[3],params^[4],\tparams^[5],params^[6],\n\t\t\t\tparams^[7],params^[8],params^[9],params^[10],\tparams^[11])\n\nwhen 12 then \n\treturn (dll12_int(fnaddr))^(params^[1],params^[2],params^[3],params^[4],\tparams^[5],params^[6],\n\t\t\t\tparams^[7],params^[8],params^[9],params^[10],\tparams^[11],params^[12])\n\nwhen 14 then \n\treturn (dll14_int(fnaddr))^(params^[1],params^[2],params^[3],params^[4],\tparams^[5],params^[6],\n\t\t\t\tparams^[7],params^[8],params^[9],params^[10],\tparams^[11],params^[12],\n\t\t\t\tparams^[13],params^[14])\n\nelse\n\tcpl nparams\n\tprintln \"calldll/c/int unsupported # of params\", nparams\n\tstop 1\nendswitch\nreturn 0\nend\n\nfunction calldll_creal (ref proc fnaddr,ref[]i64 params,int nparams)i64=\nreal64 x\n\nswitch nparams\nwhen 0 then\n\treturn dll0_r64(fnaddr)^()\nwhen 1 then\n\tos_dummycall(params^[1],params^[2],params^[3],params^[4])\n\tx:=dll1_r64(fnaddr)^(params^[1])\nwhen 2 then\n\tx:=dll2_r64(fnaddr)^(params^[1],params^[2])\nelse\n\tprintln \"calldll/c/real too many params\"\n\tstop 1\nendswitch\nreturn int64@(x)\nend\n\n\nglobal proc os_dummycall(r64 a,b,c,d)=\nend\n"};
+(byte*)"!MSYS version for C target\n\n[]ref void _fnaddresses\n[]ichar _fnnames\nint _fnnprocs\nint _fnnexports\n\nglobal record procinforec=\n    word16      fnindex\n    byte        rettype\n    byte        nparams\n    [12]byte    paramlist\nend\n\n!for print/read routines\n!------------------------------------------\nrecord fmtrec=  ! (default)\n    byte    minwidth    ! n (0)   min field width (0 if not used or don't care)\n    i8      precision   ! .n (0)   number of decimals/significant figures/max width\n    byte    base        ! B,H or Xn (10)  2 to 16\n\n    char    quotechar   ! Qc (0)   0 or '\"' or c\n    char    padchar     ! Pc, Z (' ')\n    char    realfmt     ! E,F,G ('f') 'e' or 'f' or 'g'\n\n    char    plus        ! (0)   0 or '+'\n    char    sepchar     ! Sc (0)   0 or ',' or c placed every 3 (base=10) or 4 digits\n    char    lettercase  ! A,a ('A') 'A' or 'a'\n    char    justify     ! JL, JR, JC ('R') 'L' or 'R' or 'C'?\n    char    suffix      ! Tc (0)   0 or 'B' or 'H' or c\n    char    usigned     ! W (0)   0 or 'W' force unsigned o/p for ints (eg. for hex display)\n    char    charmode    ! C,D (0)  0 or 'C' or 'D'  o/p int as int or single char or double/multi-char\n    char    heapmode    ! M (0)  'M' for str-functions, return ptr tp heap string\n    char    param       ! Use int value for <fmtparam>\n    byte    spare\nend\n\nint fmtparam            !as set with :'V'\n\nenumdata =\n    std_io,\n    file_io,\n    str_io\nend\n\nconst comma = ','\n\nglobal int needgap          = 0\nint outdev          = std_io\nfilehandle outchan  = nil\nref char fmtstr     = nil\n\nconst maxiostack=10\n[maxiostack]filehandle  outchan_stack\n[maxiostack]int         outdev_stack\n[maxiostack]ref char    fmtstr_stack\n[maxiostack]byte        needgap_stack\n\n[maxiostack]ref char    ptr_stack       !this one doesn't need pushing, as each is pointed to from outchan\nint niostack=0\n\n[0:]char digits=A\"0123456789ABCDEF\"\nconst onesixty=360\nfmtrec defaultfmt = (0,0, 10, 0,' ','f', 0,0,0,'R',0,0, 0,0,0,0)\n\nconst smallstrlen=256\n\n!Read buffer vars\nconst rd_buffersize = 16384 !total capacity of line buffer\n\nexport ref char rd_buffer       ! point to start of read buffer\nint rd_length           ! length of this line (as read by readln)\nref char rd_pos         ! current position it's up to (next read starts here)\nref char rd_lastpos     ! set by sread() just before reading used for reread()\nint termchar            ! terminator char set by readxxx()\nint itemerror           !   set by some read functions, eg for reals\n\nexport int $cmdskip         !0 unless set by READMCX/etc\n\nconst maxparam=128\nexport int nsysparams\nexport int ncmdparams\nexport int nenvstrings\nexport [maxparam]ichar sysparams\nexport ref[0:]ichar cmdparams\nexport ref[]ichar envstrings\n\n\n!------------------------------------------\n\nword64 mask63   = 0x7FFF'FFFF'FFFF'FFFF\nreal offset64   = 9223372036854775808.0     ! 2**63 as r64\nreal offset32   = 9223372036854775808.0     ! 2**63 as r32\n\nexport proc m_init(int nargs, ref[]ichar args, envstrings)=\n    nsysparams:=nargs\n\n    if nsysparams>maxparam then\n        printf(\"Too many params\\n\")\n        stop 1\n    fi\n\n    for i:=1 to nargs do\n        sysparams[i]:=args[i]\n    od\n\n!assume nsysparams is >=1, since first is always the program name\n    ncmdparams:=nsysparams-($cmdskip+1)\n    cmdparams:=cast(&sysparams[$cmdskip+1])\n\n    int j:=1\n    nenvstrings:=0\n    while envstrings[j] do\n        ++nenvstrings\n        ++j\n    od\n\nend\n\n\nglobal function m_getdotindex(word64 a,int i)int=\n    return (a iand (1<<i))>>i\nend\n\nglobal func m_setdotindex(word64 a, int i,x)word64=\n    ref word32 a32\n\n!see comments on setdotslice\n    (a iand inot (1<<i)) ior (word64(x)<<i)\nend\n\nglobal function m_getdotslice(word64 a,int i,j)int=\n    if i>=j then\n        return (a>>j)  iand  inot(0xFFFF'FFFF'FFFF'FFFF<<(i-j+1))\n    else\n        return (a>>i)  iand  inot(0xFFFF'FFFF'FFFF'FFFF<<(j-i+1))\n    fi\nend\n\nglobal func m_setdotslice(word64 a, int i,j,word64 x)word64=\n!a^:=(a^ iand inot (1dw<<i)) ior (word64(x)<<i)\n    int w\n    word64 mask64\n    word mask\n    ref word32 a32\n\n    if i>j then println \"SETDOTSLICE?\"; stop 52 fi\n\n!when j>=32, assume 64 bit dest, otherwise assume 32 bits to avoid writing\n!to bytes beyond the 32-bit value\n!THIS WILL BE A PROBLEM IF writing to 8/16 bit values too\n\n    mask64:=inot((0xFFFF'FFFF'FFFF'FFFF<<(j-i+1)))<<i           !shifted field of w 1s\n    (a iand inot mask64) ior x<<i\nend\n\nglobal function m_get_nprocs:int=\n    return _fnnprocs\nend\n\nglobal function m_get_nexports:int=\n    return _fnnexports\nend\n\nglobal function m_get_procname(int n)ref char=\n    return _fnnames[n]\nend\n\nglobal function m_get_procaddr(int n)ref void=\n    return _fnaddresses[n]\nend\n\nglobal function m_get_procexport(int n)ref void=\n    nil\n!   return &_fnexports[n]\nend\n\nproc pushio=\n    if niostack>=maxiostack then\n        printf(\"Too many io levels\\n\")\n        stop 53\n    fi\n    ++niostack\n    outchan_stack[niostack] := outchan\n    outdev_stack[niostack]  := outdev\n    fmtstr_stack[niostack]  := fmtstr\n    needgap_stack[niostack] := needgap\n    needgap:=0\n    fmtstr:=nil\n    outchan:=nil\nend\n\nglobal proc m_print_startfile(ref void dev)=\n    pushio()\n    outchan:=cast(dev)\n    if dev then\n        outdev:=file_io\n    else\n        outdev:=std_io\n    fi\nend\n\nglobal proc m_print_startstr(ref char s)=\n    ref ref char p\n    pushio()\n\n    ptr_stack[niostack]:=s\n    p:=&ptr_stack[niostack]\n\n    outchan:=cast(p)\n    outdev:=str_io\nend\n\nglobal proc m_print_startptr(ref ref char p)=\n    pushio()\n\n    outchan:=cast(p)\n    outdev:=str_io\nend\n\nglobal proc m_print_startcon=\n    pushio()\n    outdev:=std_io\nend\n\nglobal proc m_print_setfmt(ref char format)=\n    fmtstr:=format\nend\n\nglobal proc m_print_end=\n    needgap:=0\n    nextfmtchars(1)\n    if niostack=0 then return fi\n    outchan := outchan_stack[niostack]\n    outdev  := outdev_stack[niostack]\n    fmtstr  := fmtstr_stack[niostack]\n    needgap := needgap_stack[niostack]\n    --niostack\nend\n\nglobal proc m_print_ptr(ref void a,ichar fmtstyle=nil)=\n    nextfmtchars()\n\n    printstr(strword(u64(a),\"z8h\"))\n    needgap:=1\nend\n\nglobal proc m_print_i64(int64 a,ichar fmtstyle=nil)=\n    [40]char s\n    fmtrec fmt\n    int n\n\n    nextfmtchars()\n\n    if fmtstyle=nil then\n        if a>=0 then\n            n:=u64tostr(a,&.s,10,0)\n        else\n            s[1]:='-'\n            n:=u64tostr(-a,&s[2],10,0)+1\n        fi\n        printstr_n(&.s,n)\n\n    else\n        strtofmt(fmtstyle,-1,&fmt)\n        if fmt.param='V' then\n            fmtparam:=a\n            needgap:=0\n        else\n            tostr_i64(a,&fmt)\n        fi\n    fi\n    needgap:=1\nend\n\nglobal proc m_print_u64(word64 a,ichar fmtstyle=nil)=\n    fmtrec fmt\n\n    nextfmtchars()\n    if fmtstyle=nil then\n        printstr(strword(a))\n    else\n        strtofmt(fmtstyle,-1,&fmt)\n        tostr_u64(a,&fmt)\n    fi\n    needgap:=1\nend\n\nglobal proc m_print_r64(real x,ichar fmtstyle=nil)=\n    [360]char s\n    fmtrec fmt\n\n    nextfmtchars()\n    if fmtstyle=nil then\n        sprintf(&.s,\"%f\",x)\n        printstr(&.s)\n    else\n        strtofmt(fmtstyle,-1,&fmt)\n        tostr_r64(x,&fmt)\n    fi\n\n    needgap:=1\nend\n\nglobal proc m_print_r32(real32 x,ichar fmtstyle=nil)=\n    m_print_r64(x,fmtstyle)\nend\n\nglobal proc m_print_c8(int64 a,ichar fmtstyle=nil)=\n    [40]char s\n    fmtrec fmt\n    int n\n\n    nextfmtchars()\n\n    s[1]:=a\n    s[2]:=0\n    printstr(&.s)\n    needgap:=1\nend\n\nglobal proc m_print_str(ichar s, fmtstyle=nil)=\n    nextfmtchars()\n    fmtrec fmt\n    if fmtstyle=nil then\n        printstr(s)\n    else\n        strtofmt(fmtstyle,-1,&fmt)\n        tostr_str(s,&fmt)\n    fi\n    needgap:=1\nend\n\nglobal proc m_print_newline=\n    needgap:=0\n    nextfmtchars(1)\n    printstr(\"\\w\")\nend\n\nglobal proc m_print_nogap=\n    needgap:=0\nend\n\nglobal proc m_print_space=\n    needgap:=0\n    printstr(\" \")\nend\n\nexport proc printstr(ichar s)=\n    int n\n    ref ref char p\n    \n    case outdev\n    when std_io then\n        printf(\"%s\",s)\n    when file_io then\n        fprintf(outchan,\"%s\",s)\n    when str_io then\n        p:=cast(outchan)\n        strcpy(p^,s)\n        p^+:=strlen(s)\n    esac\nend\n\nglobal proc printstr_n(ichar s,int n=-1)=\n    [smallstrlen]char str\n    ref ref char p\n\n    case n\n    when -1 then n:=strlen(s)       !assume zero-terminated\n    when 0 then return\n    esac\n\n    case outdev\n    when str_io then\n        p:=cast(outchan)\n        memcpy(p^,s,n)\n        p^+:=n\n        p^^:=0\n    when file_io then\n        s:=makezstring(s,n,&.str)\n        fprintf(outchan,\"%s\",s)\n        freezstring(s,n)\n\n    when std_io then\n        s:=makezstring(s,n,&.str)\n        printf(\"%s\",s)\n        freezstring(s,n)\n!       printf(\"%.*s\",int32(n),s)\n    esac\nend\n\nexport proc printstrn_app(ichar s, int length, filehandle f=nil)=\n    if length then\n        if f=nil then\n            emitc \"printf((u8*)\"\"%.*s\"\",(i32)length,s);\"\n        else\n            emitc \"fprintf(f,(u8*)\"\"%.*s\"\",(i32)length,s);\"\n        fi\n    fi\nend\n\nfunction makezstring(ichar s,int n,ichar local)ichar=\n    ichar t\n    if n<smallstrlen then\n        memcpy(local,s,n)\n        (local+n)^:=0\n        return local\n    else\n        t:=pcm_alloc(n+1)\n        memcpy(t,s,n)\n        (t+n)^:=0\n        return t\n    fi\nend\n\nproc freezstring(ichar t,int n)=\n    if n>=smallstrlen then\n        pcm_free(t,n+1)\n    fi\nend\n\nproc printchar(int ch)=\n    ref ref char p\n    case outdev\n    when std_io then\n        emitc \"printf((u8*)\"\"%c\"\",(int)ch)\"\n    when file_io then\n        emitc \"fprintf(msysc$outchan,(u8*)\"\"%c\"\",(int)ch)\"\n    when str_io then\n        p:=cast(outchan)\n        p^^:=ch\n        p^+:=1\n        p^^:=0\n    esac\nend\n\nglobal proc nextfmtchars(int lastx=0)=\n    char c\n    ref char pstart\n    int n\n\n    if not fmtstr then          !format not in use\n        if needgap then\n            printchar(' ')\n!       printstr_n(\" \",1)\n        fi\n        needgap:=0\n        return\n    fi\n\n    pstart:=fmtstr\n    n:=0\n\n    while (1) do\n        c:=fmtstr^\n        switch c\n        when '#' then\n            if lastx then\n                goto skip\n            fi\n            ++fmtstr\n            if n then\n                printstr_n(pstart,n)\n            fi\n            return\n        when 0 then\n            if n then\n                printstr_n(pstart,n)\n            elsif not lastx then\n                printstr_n(\"|\",1)\n            fi\n            return\n        when '~' then\n            if n then\n                printstr_n(pstart,n)\n                n:=0\n            fi\n            ++fmtstr\n            c:=fmtstr^\n            if c then\n                ++fmtstr\n                printchar(c)\n            fi\n            pstart:=fmtstr\n        else\n    skip::\n            ++n\n            ++fmtstr\n        endswitch\n    od\nend\n\nglobal proc strtofmt(ref char s,int slen,ref fmtrec fmt) =      !PC_STRTOFMT\n!convert format code string in s, to fmtrec at fmt^\n!Format code is a string containing the following char codes (upper or lower when mostly)\n!n  Width\n!.n Max width/precision\n!A  Convert to upper when\n!a  Convert to lower when\n!B  Binary\n!C  Show int as single n-bit (unicode) character\n!D  Show int as multi-bit (unicode) character\n!E,F,G  Specify format for double (corresponds to C format codes)\n!F\n!G\n!H  Hex\n!JC Justify centre\n!JL Justify left\n!JR Justify right\n!M  HEAPMODE???\n!O  Octal\n!Pc Use padding char c\n!Q  Add double quotes around string (and deal with embedded quotes)\n!'  Add single quotes around string (and deal with embedded quotes)\n!Sc Use separator char c between every 3 or 4 digits\n!Tc Use terminator char c (typically B or H)\n!U  Show ints as unsigned\n!V  For ints, don't display: store value as parameter for subsequent '*'\n!W  Unsigned\n!Xn Use base n (n is hex 0 to F)\n!Z  Use \"0\" padding\n!+  Always have + or - in front of integers\n!~  Quote char is ~\n!*  Same as n but uses parameter set with :'V' on previous int\n\n    char c\n    byte wset\n    int n\n    [0:100]char str\n\n    fmt^:=defaultfmt\n\n    if s=nil then return fi\n\n    if slen=-1 then slen:=strlen(s) fi\n\n    memcpy(&.str,s,slen)        !convert s/slen to zero-terminated string\n    str[slen]:=0\n    s:=&.str\n\n    wset:=0\n    while s^ do\n        c:=s^\n        ++s\n        switch c\n        when 'B', 'b' then fmt^.base:=2\n        when 'H', 'h' then fmt^.base:=16\n        when 'O', 'o' then fmt^.base:=8\n        when 'X', 'x' then\n            c:=s^\n            if c then\n                switch c\n                when '0'..'9' then c:=c-'0'\n                when 'A'..'F' then c:=c-'A'+10\n                when 'a'..'f' then c:=c-'a'+10\n                else\n                    c:=10\n                end\n                fmt^.base:=c\n                ++s\n            fi\n        when 'Q', 'q' then fmt^.quotechar:='\"'\n        when '~' then fmt^.quotechar:='~'\n        when 'J', 'j' then\n            fmt^.justify:=toupper(s^)\n            if s^ then\n                ++s\n            fi\n        when 'A' then fmt^.lettercase:='A'\n        when 'a' then fmt^.lettercase:='a'\n        when 'Z', 'z' then fmt^.padchar:='0'\n        when 'S', 's' then\n            fmt^.sepchar:=s^\n            if s^ then\n                ++s\n            fi\n        when 'P', 'p' then\n            fmt^.padchar:=s^\n            if s^ then\n                ++s\n            fi\n        when 'T', 't' then\n            fmt^.suffix:=s^\n            if s^ then\n                ++s\n            fi\n        when 'W', 'w' then fmt^.usigned:='W'\n        when 'E', 'e' then fmt^.realfmt:='e'\n        when 'F', 'f' then fmt^.realfmt:='f'\n        when 'G', 'g' then fmt^.realfmt:='g'\n        when '.' then\n            wset:=1\n        when comma,'_' then fmt^.sepchar:=c\n        when '+' then fmt^.plus:='+'\n        when 'D', 'd' then fmt^.charmode:='D'\n        when 'C', 'c' then fmt^.charmode:='C'\n        when 'M', 'm' then fmt^.heapmode:='M'\n        when 'V','v' then fmt.param:='V'\n        when '*' then\n            n:=fmtparam\n            goto gotwidth\n        else\n            if c>='0' and c<='9' then\n                n:=c-'0'\n                do\n                    c:=s^\n                    if s^=0 then\n                        exit\n                    fi\n                    if c>='0' and c<='9' then\n                        ++s\n                        n:=n*10+c-'0'\n                    else\n                        exit\n                    fi\n                od\ngotwidth::\n                if not wset then\n                    fmt^.minwidth:=n\n                    wset:=1\n                else\n                    fmt^.precision:=n\n                fi\n            fi\n        endswitch\n    od\nend\n\nfunction domultichar (ref char p,int n,ref char dest,ref fmtrec fmt)int =\n!there are n (4 or 8) chars at p.!\n!There could be 0 to 4 or 8 printable chars converted to string at dest\n    [0:20]char str\n    ref char q\n    int i,nchars\n\n    q:=&.str\n\n    nchars:=n\n\n    to n do\n        if p^=0 then exit fi\n        q^:=p^\n        ++q\n        ++p\n    od\n    q^:=0\n\n    return expandstr(&.str,dest,strlen(&.str),fmt)\nend\n\nfunction expandstr(ref char s,ref char t,int n,ref fmtrec fmt)int =     !EXPANDSTR\n!s contains a partly stringified value.\n!widen s if necessary, according to fmt, and copy result to t\n!n is current length of s\n!note) = for non-numeric strings, fmt^.base should be set to 0, to avoid moving\n!a leading +/- when right-justifying with '0' padding.\n!t MUST be big enough for the expanded string; caller must take care of this\n!result will be zero-terminated, for use in this module\n\n    int i,w,m\n\n!check to see if result is acceptable as it is\n    w:=fmt^.minwidth\n    if w=0 or w<=n then     ! allow str to be longer than minwidth\n        strncpy(t,s,n)\n        (t+n)^:=0\n        return n\n    fi\n\n    if fmt^.justify='L' then    ! left-justify\n        strncpy(t,s,n)\n        t+:=n\n        for i:=1 to w-n do\n            t^:=fmt^.padchar\n            ++t\n        od\n        t^:=0\n    elsif fmt^.justify='R' then\n        if fmt^.padchar='0' and fmt^.base and (s^='-' or s^='+') then ! need to move sign outside \n            t^:=s^\n            ++t\n            to w-n do\n                t^:=fmt^.padchar\n                ++t\n            od\n            strncpy(t,s+1,n-1)\n            (t+n-1)^:=0\n        else\n            to w-n do\n                t^:=fmt^.padchar\n                ++t\n            od\n            strncpy(t,s,n)\n            (t+n)^:=0\n        fi\n\n    else                ! centre-justify?\n\n        m:=(w-n+1)/2\n        to m do\n            t^:=fmt^.padchar\n            ++t\n        od\n        strncpy(t,s,n)\n        t+:=n\n        to w-n-m do\n            t^:=fmt^.padchar\n            ++t\n        od\n        t^:=0\n\n    fi\n    return w\nend\n\nfunction u64tostr(u64 aa,ref char s,word base,int sep)int =     !U64TOSTR\n!convert 64-bit int a to string in s^\n!base is number base, usually 10 but can be 2 or 16. Other bases allowed\n!result when a=minint (will give \"<minint>\")\n    [0:onesixty]char t\n    u64 dd\n    int i,j,k,g\n    int dummy\n    ref char s0\n\n    i:=0\n    k:=0\n    g:=(base=10|3|4)\n\n    repeat\n        t[++i]:=digits[aa rem base]\n        aa:=aa/base\n\n!BUG in separator logic, doesn't work when leading zeros used, eg. printing\n!out a full length binary\n!so perhaps move this out to expandstr\n        ++k\n        if sep and aa<>0 and k=g then\n            t[++i]:=sep\n            k:=0\n        fi\n    until aa=0\n\n    j:=i\n    s0:=s\n    while i do\n        s^:=t[i--]\n        ++s\n    od\n    s^:=0\n\n    return j\nend\n\nfunction i64tostrfmt(i64 aa,ref char s,ref fmtrec fmt)int =\n!a is signed 64-bit int/long, fmt is a ref to a filled-in fmtrec\n!convert a to a string in s, according to fmt\n!a basic conversion is done first,: the field manipulation is done\n!signed=1 for int, 0 for u32 (fmt^.unsigned forces ints to be treated as longs)\n!returns length of s\n    [0:onesixty]char str                ! allow for binary with separators!\n    int i,j,k,n,w,usigned\n    static u64 mindint=0x8000'0000'0000'0000\n\n    usigned:=0\n    if fmt^.usigned then\n        usigned:=1\n    fi\n\n    if aa=mindint and not usigned then      ! minint\n\n        str[0]:='-'\n        n:=i64mintostr(&str[1],fmt^.base,fmt^.sepchar)+1\n    else\n        if (not usigned and aa<-0) or fmt^.plus then\n            if aa<0 then\n                aa:=-aa\n                str[0]:='-'\n            else\n                str[0]:='+'\n            fi\n            n:=u64tostr(aa,&str[1],fmt^.base,fmt^.sepchar)+1\n        else\n            n:=u64tostr(aa,&.str,fmt^.base,fmt^.sepchar)\n        fi\n    fi\n\n    if fmt^.suffix then\n        str[n]:=fmt^.suffix\n        str[++n]:=0\n    fi\n\n!str uses upper cases for hex/etc see if lc needed\n    if (fmt^.base>10 or fmt^.suffix) and fmt^.lettercase='a'    then    ! need lower when\n        convlcstring(&.str)\n    fi\n\n!at this point, n is the str length including signs and suffix\n    return expandstr(&.str,s,n,fmt)\nend\n\nfunction u64tostrfmt(i64 aa,ref char s,ref fmtrec fmt)int =     !U64TOSTRFMT\n!see i64tostrfmt\n    [0:onesixty]char str                ! allow for binary with separators!\n    int i,j,k,n,w\n\n    n:=u64tostr(aa,&.str,fmt^.base,fmt^.sepchar)\n\n    if fmt^.suffix then\n        str[n]:=fmt^.suffix\n        str[++n]:=0\n    fi\n\n!str uses upper cases for hex/etc see if lc needed\n    if fmt^.base>10 or fmt^.suffix and fmt^.lettercase='a'  then    ! need lower when\n        convlcstring(&.str)\n    fi\n\n!at this point, n is the str length including signs and suffix\n    return expandstr(&.str,s,n,fmt)\nend\n\nfunction i64mintostr(ref char s,int base,int sep)int =      !I64MINTOSTR\n!convert minint to string in s do not include minus sign\n!return number of chars in string\n    [0:onesixty]char t\n    int i,j,k,g,neg\n\n    switch base\n    when 10 then\n        strcpy(&t[0],\"9223372036854775808\")\n        j:=3\n    when 16 then\n        strcpy(&t[0],\"8000000000000000\")\n        j:=1\n    when 2 then\n        strcpy(&t[0],\"1000000000000000000000000000000000000000000000000000000000000000\")\n        j:=7\n    else\n        strcpy(&t[0],\"<mindint>\")\n    endswitch\n\n    i:=strlen(&t[0])\n    s+:=i\n    if sep then\n        s+:=j\n    fi\n    s^:=0\n\n    k:=0\n    g:=(base=10|3|4)\n\n    while i do\n        --s\n        s^:=t[i-- -1]\n        if sep and i and ++k=g then\n            --s\n            s^:=sep\n            k:=0\n        fi\n    od\n    return strlen(s)\nend\n\nfunction strtostrfmt(ref char s,ref char t,int n,ref fmtrec fmt)int =\n!s is a string process according to fmtrec fmt^, and return result in t\n!caller should check whether any changes are required to s (now it can just use s), but this\n!check is done here anyway (with a simple copy to t)\n!n is current length of s\n!return length of t\n!Three processing stages:\n!1 Basic input string s\n!2 Additions or mods: quotes, suffix, when conversion\n!3 Width adjustment\n!1 is detected here, 2 is done here, 3 is done by expandstr\n    ref char u,v\n    [256]char str\n    int w,nheap     ! whether any heap storage is used # bytes allocated\n\n    nheap:=0\n\n    if fmt^.quotechar or fmt^.lettercase then       ! need local copy\n        if n<256 then\n            u:=&.str\n        else\n            nheap:=n+3                  ! allow for quotes+terminator\n            u:=pcm_alloc(nheap)\n        fi\n        if fmt^.quotechar then\n            v:=u\n            v^:=fmt^.quotechar\n            ++v\n            if n then\n                strcpy(v,s)\n                v+:=n\n            fi\n            v^:=fmt^.quotechar\n            ++v\n            v^:=0\n            n+:=2\n        else\n            memcpy(u,s,n)\n        fi\n        switch fmt^.lettercase\n        when 'a' then   ! need lower when\n            convlcstring(u)\n        when 'A' then\n            convucstring(u)\n        endswitch\n        s:=u\n    fi\n\n    w:=fmt^.minwidth\n    if w>n then\n        n:=expandstr(s,t,n,fmt)\n    else\n        memcpy(t,s,n)\n    fi\n    if nheap then\n        pcm_free(u,nheap)\n    fi\n    return n\nend\n\nproc tostr_i64(int64 a, ref fmtrec fmt)=\n    [360]char str\n    int n\n\n    case fmt^.charmode\n    when 0 then\n        n:=i64tostrfmt(a,&.str,fmt)\n    when 'D','d' then\n        n:=domultichar(ref char(&a),8,&.str,fmt)\n\n    else                        !assume 'C'\n        printchar(a)            !no other formatting allowed\n        return\n    esac\n\n    printstr_n(&.str,n)\nend\n\nproc tostr_u64(word64 a, ref fmtrec fmt)=\n    [360]char str\n    int n\n\n    case fmt^.charmode\n    when 'D','d' then\n        n:=domultichar(ref char(&a),8,&.str,fmt)\n\n    when 'C','c' then\n        printchar(a)            !no other formatting allowed\n        return\n\n    else\n        n:=u64tostrfmt(a,&.str,fmt)\n    esac\n\n    printstr_n(&.str,n)\nend\n\nproc tostr_r64(real x,ref fmtrec fmt) =\n    [360]char str,str2\n    [0:10]char cfmt\n    int n\n\n    cfmt[0]:='%'\n\n    if fmt^.precision then\n        cfmt[1]:='.'\n        cfmt[2]:='*'\n        cfmt[3]:=fmt^.realfmt\n        cfmt[4]:=0\n        sprintf(&.str,&.cfmt,fmt^.precision,x)\n    else\n        cfmt[1]:=fmt^.realfmt\n        cfmt[2]:=0\n        sprintf(&.str,&.cfmt,x)\n    fi\n\n!at this point, n is the str length including signs and suffix\n\n    n:=strlen(&.str)        ! current length\n\n    if n<fmt^.minwidth then\n        n:=expandstr(&.str,&.str2,n,fmt)\n        strcpy(&.str,&.str2)\n    fi\n\n    printstr_n(&.str,n)\nend\n\nproc tostr_str(ref char s, ref fmtrec fmt) =\n    int oldlen,newlen,n\n    ref char t\n\n!try and work out size of formatted string\n    oldlen:=strlen(s)\n    newlen:=oldlen\n\n    if fmt^.quotechar or fmt^.minwidth>newlen or fmt^.lettercase then\n        if fmt^.quotechar then\n            newlen+:=2\n        fi\n        if fmt^.minwidth>newlen then\n            newlen:=fmt^.minwidth\n        fi\n        t:=pcm_alloc(newlen+1)\n        n:=strtostrfmt(s,t,oldlen,fmt)\n        printstr_n(t,n)\n        pcm_free(t,newlen+1)\n    else\n        printstr_n(s,oldlen)\n    fi\nend\n\nfunction getfmt(ichar fmtstyle)ref fmtrec=\n    static fmtrec fmt\n    if fmtstyle then\n        strtofmt(fmtstyle,-1,&fmt)\n        return &fmt\n    else\n        return &defaultfmt\n    fi\nend\n\nexport function strint(int64 a, ichar fmtstyle=nil)ichar=\n    static [100]char str\n    ref fmtrec fmt\n\n    m_print_startstr(&.str)\n    tostr_i64(a,fmt:=getfmt(fmtstyle))\n    m_print_end()\n    return getstr(&.str,fmt)\nend\n\nexport proc getstrint(int64 a, ichar dest)=\n    m_print_startstr(dest)\n    tostr_i64(a,getfmt(nil))\n    m_print_end()\nend\n\nexport function strword(word64 a, ichar fmtstyle=nil)ichar=\n    static [100]char str\n    ref fmtrec fmt\n\n    m_print_startstr(&.str)\n    tostr_u64(a,fmt:=getfmt(fmtstyle))\n    m_print_end()\n    return getstr(&.str,fmt)\nend\n\nexport function strreal(real a, ichar fmtstyle=nil)ichar=\n    static [320]char str\n    ref fmtrec fmt\n\n    m_print_startstr(&.str)\n    tostr_r64(a,fmt:=getfmt(fmtstyle))\n    m_print_end()\n    return getstr(&.str,fmt)\nend\n\nfunction getstr(ichar s, ref fmtrec fmt)ichar=\n    if fmt^.heapmode then\n        return pcm_copyheapstring(s)\n    else\n        return s\n    fi\nend\n\nproc initreadbuffer=\n    if rd_buffer then return fi\n    rd_buffer:=pcm_alloc(rd_buffersize)\n    rd_buffer^:=0\n    rd_pos:=rd_lastpos:=rd_buffer\nend\n\nglobal proc m_read_conline=\n    initreadbuffer()\n    readlinen(nil,rd_buffer,rd_buffersize)\n\n    rd_length:=strlen(rd_buffer)\n    rd_pos:=rd_buffer\n    rd_lastpos:=nil\nend\n\nglobal proc m_read_fileline(filehandle f)=\n    initreadbuffer()\n    readlinen(f,rd_buffer,rd_buffersize)\n\n    rd_length:=strlen(rd_buffer)\n    rd_pos:=rd_buffer\n    rd_lastpos:=nil\nend\n\nexport proc m_read_strline(ichar s)=\n    int n\n\n    initreadbuffer()\n    n:=strlen(s)\n\n    if n<rd_buffersize then\n        strcpy(rd_buffer,s)\n    else\n        memcpy(rd_buffer,s,rd_buffersize-1)\n        (rd_buffer+rd_buffersize-1)^:=0\n    fi\n    rd_length:=n\n    rd_pos:=rd_buffer\n    rd_lastpos:=nil\nend\n\nfunction readitem(int &itemlength)ref char =\n!read next item from rd_buffer\n!identify a substring that can contain a name, int, real, string or filename\n!return updated position of s that points past the item and past the immediate\n!terminator \n!information about the read item is returned in itemstr, which points to\n!the start of the item, and in itemlength. Item excludes any surrounding whitespace\n!Item can be quoted, then the item points inside the quotes\n!Any embedded quotes are removed, and the characters moved up. The item will\n!be that reduced subsequence\n!NOTE THAT THIS IS DESTRUCTIVE. On reread, the input will be different.\n!I can mitigate this by adding spaces between the end of the item, and the next item,\n!overwriting also the terminator. But this won't restore the line if one of the next\n!reads is literal, using 'L' or 'C' codes.\n    ref char p,s,itemstr\n    char quotechar, c\n\n    unless rd_buffer then \n        initreadbuffer()\n    end unless\n\n    s:=rd_pos\n\n!scan string, eliminating leading white space\n    while s^=' ' or s^=9 do\n        ++s\n    od\n\n    itemstr:=s              !assume starts here\n    rd_lastpos:=rd_pos:=s\n\n    if s^=0 then            ! No more chars left to read return null string\n        termchar:=0\n        itemlength:=0\n        return s\n    fi\n\n    quotechar:=0            ! Allow possible enclosing single or double quotes\n    if s^='\"' then\n        quotechar:='\"'\n        ++s\n    elsif s^='\\'' then\n        quotechar:='\\''\n        ++s\n    fi\n\n!loop reading characters until separator or end reached\n    p:=itemstr:=s\n\n    while s^ do\n        c:=s++^\n        switch c\n        when ' ', 9, comma, '=' then        ! separator\n            if quotechar or p=s then            !can be considered part of name if inside quotes, or is only char\n                goto normalchar\n            fi\n            termchar:=c\n            exit\n        else\n    normalchar::\n            if c=quotechar then\n                if s^=quotechar then    ! embedded quote\n                    p^:=c\n                    ++s\n                    ++p\n                else                    ! end of name\n                    termchar:=s^\n                    if termchar=',' or termchar='=' then\n                        ++s\n                        termchar:=s^\n                    fi\n                    exit\n                fi\n            else\n                p^:=c\n                ++p\n            fi\n        endswitch\n    od\n\n    if s^=0 then\n        termchar:=0\n    fi\n    itemlength:=p-itemstr               ! actual length of token\n    rd_pos:=s\n\n    return itemstr\nend\n\nexport function strtoint(ichar s,int length=-1, base=10)int64=\n!return point to next char after terminator (which can be just off length of string)\n    byte signd\n    word64 aa\n    char c,d\n\n    itemerror:=0\n\n    if length=-1 then\n        length:=strlen(s)\n    fi\n!check for sign\n    signd:=0\n    if length and s^='-' then\n        signd:=1; ++s; --length\n    elsif length and s^='+' then\n        ++s; --length\n    fi\n\n    aa:=0\n    while length do\n        c:=s++^\n        --length\n        switch c\n        when 'A'..'F' then d:=c-'A'+10\n        when 'a'..'f' then d:=c-'a'+10\n        when '0'..'9' then d:=c-'0'\n        when '_', '\\'' then\n            next\n        else\n            itemerror:=1\n            exit\n        endswitch\n\n        if d>=base then\n            itemerror:=1\n            exit\n        fi\n        aa:=aa*base+d\n    od\n\n    if signd then\n        return -aa\n    else\n        return aa\n    fi\nend\n\nglobal function m_read_i64(int fmt=0)int64=\n    ref char s\n    int length,c\n    int64 aa\n\n    case fmt\n    when 'C','c' then\n        rd_lastpos:=rd_pos\n        if rd_pos^ then\n            return rd_pos++^\n        else\n            return 0\n        fi\n    when 'T','t' then\n        return termchar\n    when 'E','e' then\n        return itemerror\n    esac\n\n    s:=readitem(length)\n\n\n    case fmt\n    when 0,'I','i' then\n        return strtoint(s,length)\n    when 'B','b' then\n        return strtoint(s,length,2)\n    when 'H','h' then\n        return strtoint(s,length,16)\n    esac\n    return 0\nend\n\nglobal function m_read_r64(int fmt=0)real=\n    [512]char str\n    ref char s\n    int length\n    int32 numlength\n    real x\n\n    s:=readitem(length)\n\n    if length=0 or length>=str.len then     !assume not a real\n        return 0.0\n    fi\n    memcpy(&.str,s,length)\n    str[length+1]:=0\n\n    itemerror:=0\n\n    if sscanf(&.str,\"%lf%n\", &x, &numlength)=0 or numlength<>length then\n        x:=0.0\n        itemerror:=1\n    fi\n\n    return x\nend\n\nexport proc m_read_str(ref char dest, int destlen=0,fmt=0)=\n    ref char s\n    int length,numlength\n    real x\n\n    itemerror:=0\n    if fmt='L' or fmt='l' then\n        s:=rd_pos\n        length:=rd_buffer+rd_length-rd_pos\n\n    else\n        s:=readitem(length)\n\n        if fmt='N' or fmt='n' then\n            iconvlcn(s,length)\n        fi\n    fi\n\n    if destlen>0 then\n        if length>=destlen then\n            length:=destlen-1\n            itemerror:=1\n        fi\n    fi\n    memcpy(dest,s,length)\n    (dest+length)^:=0\nend\n\nexport proc readstr(ref char dest, int fmt=0,destlen=0)=\n    m_read_str(dest,destlen,fmt)\nend\n\nexport proc rereadln=\n    rd_pos:=rd_buffer\n    rd_lastpos:=rd_pos\nend\n\nexport proc reread=\n    rd_pos:=rd_lastpos\nend\n\nglobal function valint(ichar s, int fmt=0)int64=\n    ref char old_pos, old_lastpos\n    int64 aa\n\n    initreadbuffer()\n    old_pos:=rd_pos\n    old_lastpos:=rd_lastpos\n\n    rd_pos:=s\n    aa:=m_read_i64(fmt)\n    rd_pos:=old_pos\n    rd_lastpos:=old_lastpos\n    return aa\nend\n\nglobal function valreal(ichar s)real=\n    ref char old_pos, old_lastpos\n    real x\n\n    initreadbuffer()\n    old_pos:=rd_pos\n    old_lastpos:=rd_lastpos\n\n    rd_pos:=s\n    x:=m_read_r64()\n    rd_pos:=old_pos\n    rd_lastpos:=old_lastpos\n    return x\nend\n\nproc iconvlcn(ref char s,int n) =\n    to n do\n        s^:=tolower(s^)\n        ++s\n    od\nend\n\nproc iconvucn(ref char s,int n) =\n    to n do\n        s^:=toupper(s^)\n        ++s\n    od\nend\n\nproc convlcstring(ref char s)=\n    while (s^) do\n        s^:=tolower(s^)\n        ++s\n    od\nend\n\nproc convucstring(ref char s)=\n    while (s^) do\n        s^:=toupper(s^)\n        ++s\n    od\nend\n\nglobal function m_power_i64(int64 n,a)int64=\n    if n<0 then\n        return 0\n    elsif n=0 then\n        return 1\n    elsif n=1 then\n        return a\n    elsif (n iand 1)=0 then\n    !   return ipower(a*a,n/2)\n        return m_power_i64(n/2,sqr a)\n    else            !assume odd\n        return m_power_i64((n-1)/2,sqr a)*a\n    fi\nend\n\nglobal proc m_intoverflow=\n    abortprogram(\"Integer overflow detected\")\nend\n\nglobal proc m_dotindex(word i,a)=\n!return a.[i] in d0\n    ABORTPROGRAM(\"DOT INDEX\")\n!   assem\n!       mov d0,[a]\n!       mov cl,[i]\n!       shr d0,cl\n!       and d0,1\n!   end \nend\n\nglobal proc m_dotslice(word j,i,a)=\n!return a.[i..j] in d0; assumes j>=i\n    ABORTPROGRAM(\"DOT SLICE\")\n!   assem\n!       mov d0,[a]\n!       mov rcx,[i]\n!       shr d0,cl\n!       sub rcx,[j]\n!       neg rcx             !j-1\n!       mov d2,0xFFFF'FFFF'FFFF'FFFE\n!       shl d2,cl\n!       not d2\n!       and d0,d2\n!   end \nend\n\nglobal proc m_popdotindex(word i,ref word p,word x)=\n!p^.[i]:=x\n    ABORTPROGRAM(\"POP DOT INDEX\")\n!   assem\n!       mov d3,[p]\n!       mov cl,[i]\n!       mov d0,[d3]\n!       mov d1,1\n!       shl d1,cl           !000001000\n!       not d1              !111110111\n!       and d0,d1           !clear that bit in dest\n!       mov d1,[x]\n!       and d1,1\n!       shl d1,cl\n!       or d0,d1\n!       mov [d3],d0\n!   end \nend\n\nglobal proc m_popdotslice(word j,i, ref word p, word x)=\n!p^.[i..j]:=x\n    ABORTPROGRAM(\"POP DOT SLICE\")\n!   assem\n!!d3 = p\n!!d4 = x, then shifted then masked x\n!!d5 = i\n!!d6 = clear mask\n!\n!       mov d3,[p]\n!       mov d4,[x]\n!       mov d5,[i]\n!       mov rcx,d5          !i\n!       shl d4,cl           !x<<i\n!       mov rcx,[j]\n!       sub rcx,d5          !j-i\n!       inc rcx             !j-i+1\n!       mov d2,0xFFFF'FFFF'FFFF'FFFF\n!       shl d2,cl           !...111100000     (assume 5-bit slice)\n!       not d2              !...000011111\n!       mov rcx,d5          !i\n!       shl d2,cl           !...000011111000  (assume i=3)\n!       and d4,d2           !mask x (truncate extra bits)\n!       mov d0,[d3]\n!       not d2              !...111100000111\n!       and d0,d2           !clear dest bits\n!       or d0,d4            !add in new bits\n!       mov [d3],d0\n!   end \nend\n\nglobal function m_imin(int64 a,b)int64=\n    return min(a,b)\nend\n\nglobal function m_imax(int64 a,b)int64=\n    return max(a,b)\nend\n\nglobal function m_sign(real x)real=\n    if x>0.0 then return 1.0\n    elsif x<0.0 then return -1.0\n    else return 0.0\n    fi\nend\n\nexport function m_tp_i64tor64(i64 a)r64 x=\n    memcpy(&x, &a, 8)\n    x\nend\n\nexport function m_tp_r64toi64(r64 x)i64 a=\n    memcpy(&a, &x, 8)\n    a\nend\n\nexport function m_tp_reftoi64(ref void p)i64 a=\n    memcpy(&a, &p, 8)\n    a\nend\n\nexport function m_tp_i64toref(i64 a)ref void p=\n    memcpy(&p, &a, 8)\n    p\nend\n",
+(byte*)"!const mem_check=1\nconst mem_check=0\n\nglobal [0..300]u64 allocupper\nglobal int alloccode                !set by heapalloc\nexport int allocbytes               !set by heapalloc\nexport int fdebug=0\nexport int rfsize\n\nconst threshold=1<<25\nconst alloc_step=1<<25\nword maxmemory\nint  maxalloccode\n\nGLOBAL REF VOID ALLOCBASE\n\nbyte pcm_setup=0\n\nint show=0\n\nglobal int memtotal=0\nexport int64 smallmemtotal=0\nglobal int smallmemobjs=0\nglobal int maxmemtotal=0\n\n!store all allocated pointers\nconst int maxmemalloc=(mem_check|500000|2)\narray [maxmemalloc+1]ref int32 memalloctable\narray [maxmemalloc+1]int32 memallocsize\n\nconst pcheapsize=1048576*2\nref byte pcheapstart\nref byte pcheapend          !points to first address past heap\nref byte pcheapptr\n\nconst int maxblockindex = 8         !2048\nexport const int maxblocksize = 2048\nexport const int $maxblocksizexx = 2048\n\narray [0:maxblocksize+1]byte sizeindextable !convert byte size to block index 1..maxblockindex\n\nconst int size16   = 1          !the various index codes\nconst int size32   = 2\nconst int size64   = 3\nconst int size128  = 4\nconst int size256  = 5\nconst int size512  = 6\nconst int size1024 = 7\nconst int size2048 = 8\n\nexport [0:9]ref word freelist\n\nexport record strbuffer =\n    ichar strptr\n    int32 length\n    int32 allocated\nend\n\n!export tabledata() [0:]ichar pmnames=\nexport enumdata [0:]ichar pmnames=\n    (pm_end=0,      $),\n    (pm_option,     $),\n    (pm_sourcefile, $),\n    (pm_libfile,    $),\n    (pm_colon,      $),\n    (pm_extra,      $),\nend\n\n[2]word seed = (0x2989'8811'1111'1272',0x1673'2673'7335'8264)\n!array [2]int seed = (0x2989'8811'1111'1272',0x1673'2673'7335'8264)\n\nexport function pcm_alloc(int n)ref void =\n    ref byte p\n\n    if not pcm_setup then\n        pcm_init()\n    fi\n\n    if n>maxblocksize then          !large block allocation\n        alloccode:=pcm_getac(n)\n        allocbytes:=allocupper[alloccode]\n\n        p:=allocmem(allocbytes)\n        if not p then\n            abortprogram(\"pcm_alloc failure\")\n        fi\n\n        if mem_check then addtomemalloc(ref int32(p),allocbytes) fi\n\n        return p\n    fi\n\n    alloccode:=sizeindextable[n]        !Size code := 0,1,2 etc for 0, 16, 32 etc\n    allocbytes:=allocupper[alloccode]\n    smallmemtotal+:=allocbytes\n\n    if p:=ref byte(freelist[alloccode]) then        !Items of this block size available\n        if mem_check then addtomemalloc(ref int32(p),allocbytes) fi\n        freelist[alloccode]:=ref word(int((freelist[alloccode])^))\n\n        return p\n    fi\n\n!No items in freelists: allocate new space in this heap block\n    p:=pcheapptr                !Create item at start of remaining pool in heap block\n    pcheapptr+:=allocbytes          !Shrink remaining pool\n\n    if pcheapptr>=pcheapend then        !Overflows?\n        p:=pcm_newblock(allocbytes)     !Create new heap block, and allocate from start of that\n        return p\n    fi\n    if mem_check then addtomemalloc(ref int32(p),allocbytes) fi\n\n    return p\nend\n\nexport proc pcm_free(ref void p,int n) =\n!n can be the actual size requested it does not need to be the allocated size\n    int acode\n\n    if n=0 then return fi\n\n    if n>maxblocksize then      !large block\n        if mem_check then removefrommemalloc(p,n) fi\n        free(p)\n        return\n    fi\n\n    if p then\n        acode:=sizeindextable[n]        !Size code := 0,1,2 etc for 0, 16, 32 etc\n\n        smallmemtotal-:=allocupper[acode]\n\n        if mem_check then removefrommemalloc(p,allocupper[acode]) fi\n\n        cast(p,ref word)^:=word(int(freelist[acode]))\n        freelist[acode]:=p\n    fi\nend\n\nexport proc pcm_freeac(ref void p,int alloc) =\n    pcm_free(p,allocupper[alloc])\nend\n\n!export proc pcm_copymem4(ref void p,q,int n) = !PCM_COPYMEM4\n!!copy n bytes of memory from q to p.\n!!the memory spaces used are multiples of 16 bytes, but n itself could be anything\n!!n can be zero, and need not be a multiple of 4 bytes\n!\n!   memcpy(p,q,n)\n!end\n\nexport proc pcm_clearmem(ref void p,int n) =\n    memset(p,0,n)\nend\n\nexport proc pcm_init =\n!set up sizeindextable too\n    int j,k,k1,k2\n    int64 size\n    const limit=1<<33\n\n    alloccode:=0\n    if pcm_setup then\n        return\n    fi\n\n    pcm_newblock(0)\n\n    for i to maxblocksize do    !table converts eg. 78 to 4 (4th of 16,32,64,128)\n        j:=1\n        k:=16\n        while i>k do\n            k:=k<<1\n            ++j\n        od\n        sizeindextable[i]:=j\n    od\n\n    allocupper[1]:=16\n    size:=16\n\n    for i:=2 to 27 do\n        size*:=2\n        allocupper[i]:=size\n        if size>=threshold then\n                k:=i\n            exit\n        fi\n    od\n\n    for i:=k+1 to allocupper.upb do\n        size+:=alloc_step\n        if size<limit then\n            allocupper[i]:=size\n            maxmemory:=size\n        else\n            maxalloccode:=i-1\n            exit\n        fi\n        \n    od\n    pcm_setup:=1\nend\n\nexport function pcm_getac(int size)int =\n! convert linear blocksize from 0..approx 2GB to 8-bit allocation code\n\n!sizeindextable scales values from 0 to 2048 to allocation code 0 to 9\n\n    if size<=maxblocksize then\n        return sizeindextable[size]     !size 0 to 2KB\n    fi\n\n    size:=(size+255)>>8                 !scale by 256\n\n!now same sizetable can be used for 2KB to 512KB (288 to 2KB)\n\n    if size<=maxblocksize then\n        return sizeindextable[size]+8\n    fi\n\n!sizetable now used for 512KB to 128MB (to 2KB)\n    size:=(size+63)>>6                  !scale by 256\n\n    if size<=maxblocksize then\n        return sizeindextable[size]+14\n    fi\n\n!size>2048, which means it had been over 128MB.\n    size:=(size-2048+2047)/2048+22\n    return size\nend\n\nexport function pcm_newblock(int itemsize)ref void=\n!create new heap block (can be first)\n!also optionally allocate small item at start\n!return pointer to this item (and to the heap block)\n    static int totalheapsize\n    ref byte p\n\n    totalheapsize+:=pcheapsize\n    alloccode:=0\n    p:=allocmem(pcheapsize) !can't free this block until appl terminates\n    if p=nil then\n        abortprogram(\"Can't alloc pc heap\")\n    fi\n\n    pcheapptr:=p\n    pcheapend:=p+pcheapsize\n\n    if pcheapstart=nil then     !this is first block\n        pcheapstart:=p\n    fi\n    pcheapptr+:=itemsize\n    return ref u32(p)\nend\n\nexport function pcm_round(int n)int =\n!for any size n, return actual number of bytes that would be allocated\n    static [0:maxblockindex+1]int32 allocbytes=(0,16,32,64,128,256,512,1024,2048)\n\n    if n>maxblocksize then\n        return n\n    else\n        return allocbytes[sizeindextable[n]]\n    fi\nend\n\nexport function pcm_allocz(int n)ref void =\n    ref void p\n    p:=pcm_alloc(n)\n\n    memset(p,0,n)\n    return p\nend\n\nexport function pcm_copyheapstring(ref char s)ref char =\n!allocate enough bytes for string s: copy s to the heap\n!return pointer to new string\n    ref char q\n    int n\n    if s=nil then return nil fi\n\n    n:=strlen(s)+1\n    q:=pcm_alloc(n)\n    memcpy(q,s,n)\n    return q\nend\n\nexport function pcm_copyheapstringn(ref char s,int n)ref char =\n    ref char q\n    if s=nil then return nil fi\n\n    q:=pcm_alloc(n+1)\n    memcpy(q,s,n)\n    (q+n)^:=0\n    return q\nend\n\nexport function pcm_copyheapblock(ref char s, int length)ref char =\n!allocate enough bytes for string s: copy s to the heap\n!return pointer to new string\n    ref char q\n    if length=0 then return nil fi\n\n    q:=pcm_alloc(length)\n    memcpy(q,s,length)\n    return q\nend\n\nproc addtomemalloc(ref int32 ptr,int size)=\n!add ptr to allocated table\n    int allocated, code\n\n!CPL \"***************ADD TO ALLOC:\",ptr,size\n    for i to maxmemalloc do\n        if memalloctable[i]=ptr then\n            CPL \"ALLOC ERROR:\",ptr,\"ALREADY ALLOCATED\\n\\n\\n\"\n            stop 2\n        fi\n\n        if memalloctable[i]=nil then        !unused entry\n            memalloctable[i]:=ptr\n\n            code:=pcm_getac(size)\n            allocated:=allocupper[code]\n\n            memallocsize[i]:=allocated\n            return\n        fi\n    od\n    CPL \"MEMALLOCTABLE FULL\\n\\n\\n\\n\"; os_getch()\n    CPL\n    stop 3\nend\n\nproc removefrommemalloc(ref int32 ptr,int size)=\n!remove ptr to allocated table\n    int allocated, code\n\n!CPL \"------------------************REMOVE FROM ALLOC:\",ptr,size\n    code:=pcm_getac(size)\n    allocated:=allocupper[code]\n\n    for i to maxmemalloc do\n        if memalloctable[i]=ptr then\n            if memallocsize[i]<>ALLOCATED then\n!               CPL \"REMOVE:FOUND\",ptr,\"IN MEMALLOCTABLE, FREESIZE=\",size,\", BUT STORED AS BLOCK SIZE:\",memallocsize[i]\n                CPL \"REMOVE:FOUND\",ptr,\"IN MEMALLOCTABLE, ROUNDED FREESIZE=\",ALLOCATED,\", BUT STORED AS BLOCK SIZE:\",memallocsize[i]\n                abortprogram(\"MEMSIZE\")\n            fi\n            memalloctable[i]:=nil\n            return\n        fi\n    od\n    CPL \"CAN'T FIND\",ptr,\"IN MEMALLOCTABLE\",size\n    CPL \nOS_GETCH()\n    abortprogram(\"MEM\")\n    stop 4\nend\n\nexport function allocmem(int n)ref void =\n    ref void p\n\n    p:=malloc(n)\n    if p then\n        return p\n    fi\n    println n,memtotal\n    abortprogram(\"Alloc mem failure\")\n    return nil\nend\n\nglobal function reallocmem(ref void p,int n)ref void =\n    p:=realloc(p,n)\n    return p when p\n    println n\n    abortprogram(\"Realloc mem failure\")\n    return nil\nend\n\nexport proc abortprogram(ref char s) =\n    println s\n    print   \"ABORTING: Press key...\"\n!os_getch()\n    stop 5\nend\n\nexport function getfilesize(filehandle handlex)int=\n    word32 p,size\n\n    p:=ftell(handlex)       !current position\n    fseek(handlex,0,2)      !get to eof\n    size:=ftell(handlex)        !size in bytes\n    fseek(handlex,p,seek_set)   !restore position\n    return size\nend\n\nexport proc readrandom(filehandle handlex, ref byte mem, int offset, size) =\n    int a\n    fseek(handlex,offset,seek_set)\n    a:=fread(mem,1,size,handlex)            !assign so as to remove gcc warning\nend\n\nexport function writerandom(filehandle handlex, ref byte mem, int offset,size)int =\n    fseek(handlex,offset,seek_set)\n    return fwrite(mem,1,size,handlex)\nend\n\nexport function setfilepos(filehandle file,int offset)int=\n    return fseek(file,offset,0)\nend\n\nexport function getfilepos(filehandle file)int=\n    return ftell(file)\nend\n\nexport function readfile(ref char filename)ref byte =\n    filehandle f\n    int size\n    ref byte m,p\n\n    f:=fopen(filename,\"rb\")\n    if f=nil then\n        return nil\n    fi\n    rfsize:=size:=getfilesize(f)\n\n    m:=pcm_alloc(size+2)        !allow space for etx/zeof etc\n\n    if m=nil then\n        return nil\n    fi\n\n    readrandom(f,m,0,size)\n    p:=m+size           !point to following byte\n    (ref u16(p)^:=0)    !add two zero bytes\n\n    fclose(f)\n    return m\nend\n\nexport function writefile(ref char filename,ref byte data,int size)int =\n    filehandle f\n    int n\n\n    f:=fopen(filename,\"wb\")\n    if f=nil then\n        return 0\n    fi\n\n    n:=writerandom(f,data,0,size)\n    fclose(f)\n    return n\nend\n\nexport function checkfile(ref char file)int=\n    filehandle f\n    if f:=fopen(file,\"rb\") then\n        fclose(f)\n        return 1\n    fi\n    return 0\nend\n\nexport proc readlinen(filehandle handlex,ref char buffer,int size) =\n!size>2\n    int ch\n    ref char p\n    int n\n    array [0:100]char buff\n    byte crseen\n\n    if handlex=nil then\n        handlex:=filehandle(os_getstdin())\n    fi\n    if handlex=nil then\n        n:=0\n        p:=buffer\n        do\n            ch:=getchar()\n            if ch=13 or ch=10 or ch=-1 then\n                p^:=0\n                return\n            fi\n            p++^:=ch\n            ++n\n            if n>=(size-2) then\n                p^:=0\n                return\n            fi\n        od\n    fi\n\n    buffer^:=0\n    if fgets(buffer,size-2,handlex)=nil then\n        return\n    fi\n\n    n:=strlen(buffer)\n    if n=0 then\n        return\n    fi\n\n    p:=buffer+n-1       !point to last char\n    crseen:=0\n    while (p>=buffer and (p^=13 or p^=10)) do\n        if p^=13 or p^=10 then crseen:=1 fi\n        p--^ :=0\n    od\n\n!NOTE: this check doesn't work when a line simply doesn't end with cr-lf\n\n    if not crseen and (n+4>size) then\n        cpl size,n\n        abortprogram(\"line too long\")\n    fi\nend\n\nexport proc iconvlcn(ref char s,int n) =\n    to n do\n        s^:=tolower(s^)\n        ++s\n    od\nend\n\nexport proc iconvucn(ref char s,int n) =\n    to n do\n        s^:=toupper(s^)\n        ++s\n    od\nend\n\nexport function convlcstring(ref char s)ichar s0=\n    s0:=s\n    while (s^) do\n        s^:=tolower(s^)\n        ++s\n    od\n    s0\nend\n\nexport function convucstring(ref char s)ichar s0=\n    s0:=s\n    while (s^) do\n        s^:=toupper(s^)\n        ++s\n    od\n    s0\nend\n\nexport function changeext(ref char s,newext)ichar=\n!whether filespec has an extension or not, change it to newext\n!newext should start with \".\"\n!return new string (locally stored static string, so must be used before calling again)\n    static [260]char newfile\n    array [32]char newext2\n    ref char sext\n    int n\n\n    strcpy(&newfile[1],s)\n\n    case newext^\n    when 0 then\n        newext2[1]:=0\n        newext2[2]:=0\n    when '.' then\n        strcpy(&newext2[1],newext)\n    else\n        strcpy(&newext2[1],\".\")\n        strcat(&newext2[1],newext)\n    esac\n\n\n    sext:=extractext(s,1)           !include \".\" when it is only extension\n\n    case sext^\n    when 0 then                     !no extension not even \".\"\n        strcat(&newfile[1],&newext2[1])\n    when '.' then                       !no extension not even \".\"\n        strcat(&newfile[1],&newext2[2])\n    else                            !has extension\n        n:=sext-s-2         !n is number of chars before the \".\"\n        strcpy(&newfile[1]+n+1,&newext2[1])\n    esac\n\n    return &newfile[1]\nend\n\nexport function extractext(ref char s,int period=0)ichar=\n!if filespec s has an extension, then return pointer to it otherwise return \"\"\n!if s ends with \".\", then returns \".\"\n    ref char t,u\n\n    t:=extractfile(s)\n\n    if t^=0 then            !s contains no filename\n        return \"\"\n    fi\n\n!t contains filename+ext\n    u:=t+strlen(t)-1        !u points to last char of t\n\n    while u>=t do\n        if u^='.' then      !start extension found\n            if (u+1)^=0 then        !null extension\n                return (period|\".\"|\"\")\n            fi\n            return u+1          !return last part of filename as extension exclude the dot\n        fi\n        --u\n    od\n    return \"\"           !no extension seen\nend\n\nexport function extractpath(ref char s)ichar=\n    static [0:260]char str\n    ref char t\n    int n\n\n    t:=s+strlen(s)-1        !t points to last char\n\n    while (t>=s) do\n        switch t^\n        when '\\\\','/',':' then      !path separator or drive letter terminator assume no extension\n            n:=t-s+1            !n is number of chars in path, which includes rightmost / or \\ or :\n            memcpy(&.str,s,n)\n            str[n]:=0\n            return &.str\n        endswitch\n        --t\n    od\n    return \"\"           !no path found\nend\n\nexport function extractfile(ref char s)ichar=\n    ref char t\n\n    t:=extractpath(s)\n\n    if t^=0 then            !s contains no path\n        return s\n    fi\n\n    return s+strlen(t)      !point to last part of s that contains the file\n    end\n\nexport function extractbasefile(ref char s)ichar=\n    static [0:100]char str\n    ref char f,e\n    int n,flen\n\n    f:=extractfile(s)\n    flen:=strlen(f)\n    if flen=0 then      !s contains no path\n        return \"\"\n    fi\n    e:=extractext(f,0)\n\n    if e^ then          !not null extension\n        n:=flen-strlen(e)-1\n        memcpy(&str,f,n)\n        str[n]:=0\n        return &.str\n    fi\n    if (f+flen-1)^='.' then\n        memcpy(&str,f,flen-1)\n        str[flen-1]:=0\n        return &.str\n    fi\n    return f\nend\n\nexport function addext(ref char s,ref char newext)ichar=\n!when filespec has no extension of its own, add newext\n    ref char sext\n\n    sext:=extractext(s,1)\n\n    if sext^=0 then                     !no extension not even \".\"\n        return changeext(s,newext)\n    fi\n\n    return s                            !has own extension; use that\nend\n\nexport function pcm_alloc32:ref void =\n    ref byte p\n\n    allocbytes:=32\n    smallmemtotal+:=32\n\n    if p:=ref byte(freelist[2]) then        !Items of this block size available\n        freelist[2]:=ref word(int((freelist[2])^))\n        return p\n    fi\n\n!No items in freelists: allocate new space in this heap block\n    return pcm_alloc(32)\nend\n\nexport proc pcm_free32(ref void p) =\n!n can be the actual size requested it does not need to be the allocated size\n\n    smallmemtotal-:=32\n    if mem_check then removefrommemalloc(p,32) fi\n\n    cast(p,ref word)^:=word(int(freelist[2]))\n    freelist[2]:=p\nend\n\nexport proc pcm_free64(ref void p) =\n!n can be the actual size requested it does not need to be the allocated size\n\n    smallmemtotal-:=64\n    if mem_check then removefrommemalloc(p,64) fi\n\n    cast(p,ref word)^:=word(int(freelist[3]))\n    freelist[3]:=p\nend\n\nexport function pcm_alloc16:ref void =\n    ref byte p\n    allocbytes:=16\n    smallmemtotal+:=16\n\n    if p:=ref byte(freelist[1]) then        !Items of this block size available\n        freelist[1]:=ref word(int((freelist[1])^))\n        return p\n    fi\n\n!No items in freelists: allocate new space in this heap block\n    return pcm_alloc(16)\nend\n\nexport proc pcm_free16(ref void p) =\n!n can be the actual size requested it does not need to be the allocated size\n\n    smallmemtotal-:=16\n    if mem_check then removefrommemalloc(p,32) fi\n\n    cast(p,ref word)^:=word(int(freelist[1]))\n    freelist[1]:=p\nend\n\nexport proc outbyte(filehandle f,int x)=\n    fwrite(&x,1,1,f)\nend\n\nexport proc outword16(filehandle f,word x)=\n    fwrite(&x,2,1,f)\nend\n\nexport proc outword32(filehandle f,word x)=\n    fwrite(&x,4,1,f)\nend\n\nexport proc outword64(filehandle f,word64 x)=\n    fwrite(&x,8,1,f)\nend\n\nexport proc outstring(filehandle f, ichar s)=\n    fwrite(s,strlen(s)+1,1,f)\nend\n\nexport proc outblock(filehandle f, ref void p, int n)=\n    fwrite(p,n,1,f)\nend\n\nexport function myeof(filehandle f)int=\n    int c\n\n    c:=fgetc(f)\n    if c=c_eof then return 1 fi\n    ungetc(c,f)\n    return 0;\nend\n\nexport proc strbuffer_add(ref strbuffer dest, ichar s, int n=-1)=\n    int newlen,oldlen\n    ichar newptr\n\n    IF N=0 THEN CPL \"N=0\" FI\n\n    if n=-1 then\n        n:=strlen(s)\n    fi\n\n    oldlen:=dest.length\n\n    if oldlen=0 then                !first string\n        dest.strptr:=pcm_alloc(n+1)\n        dest.allocated:=allocbytes\n        dest.length:=n              !length always excludes terminator\n        memcpy(dest.strptr,s,n)\n        (dest.strptr+n)^:=0\n        return\n    fi\n\n    newlen:=oldlen+n\n    if newlen+1>dest.allocated then\n        newptr:=pcm_alloc(newlen+1)\n        memcpy(newptr,dest.strptr,oldlen)\n        dest.strptr:=newptr\n        dest.allocated:=allocbytes\n    fi\n\n    memcpy(dest.strptr+oldlen,s,n)\n    (dest.strptr+newlen)^:=0\n\n    dest.length:=newlen\nend\n\nexport proc gs_init(ref strbuffer dest)=\n    pcm_clearmem(dest,strbuffer.bytes)\nend\n\nexport proc gs_free(ref strbuffer dest)=\n    if dest.allocated then\n        pcm_free(dest.strptr,dest.allocated)\n    fi\nend\n\nexport proc gs_str(ref strbuffer dest,ichar s)=\n    strbuffer_add(dest,s)\nend\n\nexport proc gs_char(ref strbuffer dest,int c)=\n    array [16]char s\n\n    s[1]:=c\n    s[2]:=0\n\n    strbuffer_add(dest,&.s,1)\nend\n\nexport proc gs_strn(ref strbuffer dest,ichar s,int length)=\n    strbuffer_add(dest,s,length)\nend\n\nexport proc gs_strvar(ref strbuffer dest,s)=\n    strbuffer_add(dest,s.strptr)\nend\n\nexport proc gs_strint(ref strbuffer dest,int64 a)=\n    strbuffer_add(dest,strint(a))\nend\n\nexport proc gs_strln(ref strbuffer dest,ichar s)=\n    gs_str(dest,s)\n    gs_line(dest)\nend\n\nexport proc gs_strsp(ref strbuffer dest,ichar s)=\n    gs_str(dest,s)\n    gs_str(dest,\" \")\nend\n\nexport proc gs_line(ref strbuffer dest)=\n    strbuffer_add(dest,\"\\w\")\nend\n\nexport function gs_getcol(ref strbuffer dest)int=\n    return dest.length\nend\n\nexport proc gs_leftstr(ref strbuffer dest, ichar s, int w, padch=' ')=\n    int col,i,n,slen\n    array [2560]char str\n    col:=dest.length\n    strcpy(&.str,s)\n    slen:=strlen(s)\n    n:=w-slen\n    if n>0 then\n        for i:=1 to n do\n            str[slen+i]:=padch\n        od\n        str[slen+n+1]:=0\n    fi\n    gs_str(dest,&.str)\nend\n\nexport proc gs_leftint(ref strbuffer dest, int a, int w, padch=' ')=\n    gs_leftstr(dest,strint(a),w,padch)\nend\n\nexport proc gs_padto(ref strbuffer dest,int col, ch=' ')=\n    int n\n    array [2560]char str\n\n    n:=col-dest.length\n    if n<=0 then return fi\n    for i:=1 to n do\n        str[i]:=ch\n    od\n    str[n+1]:=0\n    gs_str(dest,&.str)\nend\n\nexport proc gs_println(ref strbuffer dest,filehandle f=nil)=\n    if dest.length=0 then return fi\n    (dest.strptr+dest.length)^:=0\n\n    if f=nil then\n!       println dest.strptr,,\"\\c\"\n        println dest.strptr\n    else\n!       println @f,dest.strptr,,\"\\c\"\n        println @f,dest.strptr\n    fi\nend\n\nexport function nextcmdparamnew(int &paramno, ichar &name, &value, ichar defext=nil)int=\n    static int infile=0\n    static ichar filestart=nil\n    static ichar fileptr=nil\n    static byte colonseen=0\n    ref char q\n    ichar item,fileext\n    ichar rest\n    int length\n    static [300]char str\n\n    reenter::\n    value:=nil\n    name:=nil\n\n    if infile then\n        if readnextfileitem(fileptr,item)=0 then        !eof\n            free(filestart)                             !file allocated via malloc\n            infile:=0\n            goto reenter\n        fi\n    else\n        if paramno>ncmdparams then\n            return pm_end\n        fi\n        item:=cmdparams[paramno]\n        ++paramno\n\n        length:=strlen(item)\n\n        if item^='@' then       !@ file\n!           filestart:=fileptr:=cast(readfile(item+1))\n!           if filestart=nil then\n!               println \"Can't open\",item\n!               stop 7\n!           fi\n            infile:=1\n            goto reenter\n        fi\n\n        if item^=':' then\n            colonseen:=1\n            return pm_colon\n        fi\n    fi\n\n    value:=nil\n    if item^='-' then\n        name:=item+(colonseen|0|1)\n        q:=strchr(item,':')\n        if not q then\n            q:=strchr(item,'=')\n        fi\n        if q then\n            value:=q+1\n            q^:=0\n        fi\n        return (colonseen|pm_extra|pm_option)\n    fi\n\n    fileext:=extractext(item,0)\n    name:=item\n\n    if fileext^=0 then                          !no extension\n        strcpy(&.str,name)\n        if defext and not colonseen then\n            name:=addext(&.str,defext)              !try .c\n        fi\n!   elsif eqstring(fileext,\"dll\") then\n    elsif eqstring(fileext,\"dll\") or eqstring(fileext,\"mcx\") then\n        return (colonseen|pm_extra|pm_libfile)\n    fi\n    return (colonseen|pm_extra|pm_sourcefile)\nend\n\nfunction readnextfileitem(ichar &fileptr,&item)int=\n    ref char p,pstart,pend\n    int n\n    static [256]char str\n\n    p:=fileptr\n\n    reenter::\n    do\n        case p^\n        when ' ','\\t',13,10 then    !skip white space\n            ++p\n        when 26,0 then              !eof\n            return 0\n        else\n            exit\n        esac\n    od\n\n    case p^\n    when '!', '#' then          !comment\n        ++p\n        docase p++^\n        when 10 then\n            goto reenter\n        when 26,0 then\n            fileptr:=p-1\n            return 0\n        else\n\n        enddocase\n    esac\n\n\n    case p^\n    when '\"' then               !read until closing \"\n        pstart:=++p\n        do\n            case p^\n            when 0,26 then\n                println \"Unexpected EOF in @file\"\n                stop 8\n            when '\"' then\n                pend:=p++\n                if p^=',' then ++p fi\n                exit\n            esac\n            ++p\n        od\n    else\n        pstart:=p\n        do\n            case p^\n            when 0,26 then\n                pend:=p\n                exit\n            when ' ','\\t',',',13,10 then\n                pend:=p++\n                exit\n            esac\n            ++p\n        od\n    esac\n\n    n:=pend-pstart\n    if n>=str.len then\n        println \"@file item too long\"\n        stop 9\n    fi\n    memcpy(&.str,pstart,n)\n    str[n+1]:=0\n    item:=&.str\n    fileptr:=p\n\n    return 1\nend\n\nexport proc ipadstr(ref char s,int width,ref char padchar=\" \")=\n    int n\n\n    n:=strlen(s)\n    to width-n do\n        strcat(s,padchar)\n    od\nend\n\nexport function padstr(ref char s,int width,ref char padchar=\" \")ichar=\n    static [256]char str\n\n    strcpy(&.str,s)\n    ipadstr(&.str,width,padchar)\n    return &.str\nend\n\nexport function chr(int c)ichar=\n    static [8]char str\n\n    str[1]:=c\n    str[2]:=0\n    return &.str\nend\n\nexport function cmpstring(ichar s,t)int=\n    int res\n    if (res:=strcmp(s,t))<0 then\n        return -1\n    elsif res>0 then\n        return 1\n    else\n        return 0\n    fi\nend\n\nexport function cmpstringn(ichar s,t,int n)int=\n    int res\n    if (res:=strncmp(s,t,n))<0 then\n        return -1\n    elsif res>0 then\n        return 1\n    else\n        return 0\n    fi\nend\n\nexport function eqstring(ichar s,t)int=\n    return strcmp(s,t)=0\nend\n\nexport function cmpbytes(ref void p,q,int n)int=\n    int res\n    if (res:=memcmp(p,q,n))<0 then\n        return -1\n    elsif res>0 then\n        return 1\n    else\n        return 0\n    fi\nend\n\nexport function eqbytes(ref void p,q,int n)int=\n    return memcmp(p,q,n)=0\nend\n\nexport proc mseed(word64 a,b=0)=\n    seed[1]:=a\n    if b then\n        seed[2]:=b\n    else\n        seed[2] ixor:=a\n    fi\nend\n\nexport function mrandom:word =\n!return pure 64-bit word value, 0 to 2**64-1\n!(cast result for signed value)\n!   word64 x,y\n    int x,y\n    x:=seed[1]\n    y:=seed[2]\n    seed[1]:=y\n    x ixor:=(x<<23)\n    seed[2]:= x ixor y ixor (x>>17) ixor (y>>26)\n    return seed[2]+y\nend\n\nexport function mrandomp:int =\n!pure 64-bit int value, positive only, 0 to 2**63-1\n    return mrandom() iand 0x7FFF'FFFF'FFFF'FFFF\nend\n\nexport function mrandomint(int n)int=\n!positive random int value from 0 to n-1\n    return mrandomp() rem n\nend\n\nexport function mrandomrange(int a,b)int=\n!random int value from a to b inclusive\n!span extent must be 1 to 2**63-1\n    int span\n    span:=b-a+1\n    if span<=0 then\n        return 0\n    fi\n    return (mrandomp() rem span)+a\nend\n\nexport function mrandomreal:real x=\n!positive random real value from 0 to just under (but not including) 1.0\n    repeat x:=mrandomp()/9223372036854775808.0 until x<>1.0\n    return x\nend\n\nexport function mrandomreal1:real=\n!positive random real value from 0 to 1.0 inclusive\n    return mrandomp()/9223372036854775807\nend\n\nexport function checkpackfile:ref byte=\n!find out if this executable contains extra packed files\n!return 1 or 0\n\n    int a,offset,i,size\n    [100]char name\n    [300]char exefile\n    ref byte packexeptr         !for embedded pack files, contains pointer to in-memory version of this .exe file plus extras; else nil\n    int packexesize             !byte size\n    ref char packfilename\n    int packfilesize\n    ref byte packfileptr\n\n!macro getfileint(data,offset)=(ref int32(data+offset))^\n    macro getfileint(data,offset)=cast(data+offset,ref int32)^\n\n    strcpy(&exefile[1],os_gethostname())\n    println \"Attempting to open\",&.exefile\n    packexeptr:=readfile(&exefile[1])\n\n    if not packexeptr then\n        cpl \"Can't open\",&.exefile,packexeptr\n        stop\n    fi\n\n    packexesize:=rfsize\n    cpl \"File read OK. Size\",packexesize\n\n    a:=getfileint(packexeptr,packexesize-int32.bytes)\n    if a<>'PCAK' then\n        free(packexeptr)\n        packfileptr:=nil\n        return nil\n    fi\n\n    offset:=getfileint(packexeptr,packexesize-int32.bytes*2)\n\n    packfilename:=cast(packexeptr+offset)\n    offset+:=strlen(packfilename)+1\n    packfilesize:=getfileint(packexeptr,offset)\n    packfileptr:=packexeptr+offset+int32.bytes\n\n    return packfileptr\nend\n\nexport function readline:ichar=\n    readln\n    return rd_buffer\nend\n\nexport function findfunction(ichar name)ref void=\n    for i to $getnprocs() do\n        if eqstring($getprocname(i),name) then\n            return $getprocaddr(i)\n        fi\n    od\n    return nil\nend\n\nexport function roundtoblock(int n,align)int=\n!round up n until it is a multiple of filealign (which is a power of two)\n!return aligned value. Returns original if already aligned\n    if n iand (align-1)=0 then return n fi\n    return n+(align-(n iand (align-1)))\nend\n\n",
+(byte*)"export type filehandle=ref void\n\nimportdll $cstd=\n    func  malloc        (word64)ref void\n    func  realloc   (ref void, word)ref void\n    proc free       (ref void)\n    proc memset     (ref void, int32, word)\n    proc memcpy     (ref void, ref void, word)\n    proc memmove        (ref void, ref void, word)\n    func  clock     :int32\n    func  ftell     (filehandle)int32\n    func  fseek     (filehandle, int32, int32)int32\n    func  fread     (ref void, word, word, filehandle)word\n    func  fwrite        (ref void, word, word, filehandle)word\n    func  getc      (filehandle)int32\n    func  ungetc        (int32, filehandle)int32\n    func  fopen     (ichar a, b=\"rb\")filehandle\n    func  fclose        (filehandle)int32\n    func  fgets     (ichar, int, filehandle)ichar\n    func  remove        (ichar)int32\n    func  rename        (ichar, ichar)int32\n    func  getchar   :int32\n    proc putchar    (int32)\n    proc setbuf     (filehandle, ref byte)\n\n    func  strlen        (ichar)int\n    func  strcpy        (ichar, ichar)ichar\n    func  strcmp        (ichar, ichar)int32\n    func  strncmp   (ichar, ichar, word)int32\n    func  strncpy   (ichar, ichar, word)word\n    func  memcmp        (ref void, ref void, word)int32\n    func  strcat        (ichar, ichar)ichar\n    func  tolower   (int32)int32\n    func  toupper   (int32)int32\n    func  isalpha   (int32)int32\n    func  isupper   (int32)int32\n    func  islower   (int32)int32\n    func  isalnum   (int32)int32\n    func  isspace   (int32)int32\n    func  strstr        (ichar, ichar)ichar\n    func  atol      (ichar)int\n    func  atoi      (ichar)int32\n!   func  strtod        (ichar,ref ref char)real64\n    func  strtod        (ichar,ref ref char)real64\n    func  _strdup   (ichar)ichar\n\n    func  puts      (ichar)int32\n    func  printf        (ichar, ...)int32\n\n    func  sprintf   (ichar, ichar, ...)int32\n\n    func  sscanf        (ichar, ichar, ...)int32\n    func  scanf     (ichar, ...)int32\n\n    func  rand      :int32\n    proc srand      (word32)\n    func  system        (ichar)int32\n\n    func  fgetc     (filehandle)int32\n    func  fputc     (int32,  filehandle)int32\n    func  fprintf   (filehandle, ichar, ...)int32\n    func  fputs     (ichar,  filehandle)int32\n    func  feof      (filehandle)int32\n    func  getch     :int32\n    func  _getch        :int32\n    func  kbhit     :int32\n    func  _mkdir        (ichar)int32\n    func  mkdir     (ichar)int32\n    func  strchr        (ichar,int32)ichar\n\n    func  _setmode  (int32,int32)int32\n\n    proc _exit      (int32)\n    proc \"exit\"     (int32)\n!   proc `exit      (int32)\n    func  pow       (real,real)real\n\n    func  `sin      (real)real\n    func  `cos      (real)real\n    func  `tan      (real)real\n    func  `asin     (real)real\n    func  `acos     (real)real\n    func  `atan         (real)real\n    func  `log      (real)real\n    func  `log10        (real)real\n    func  `exp      (real)real\n    func  `floor        (real)real\n    func  `ceil     (real)real\n\n    func  `llabs    (i64)i64\n\n    proc  qsort     (ref void, word64, word64, ref proc)\n    proc  sleep     (word32)\n\nend\n\nexport macro strdup=_strdup\n\nimportdll $cstdextra=\n    func  __getmainargs(ref int32, ref void, ref void, int, ref void)int32\nend\n\nexport const c_eof      =-1\nexport const seek_set   = 0\nexport const seek_curr  = 1\nexport const seek_end   = 2\n",
+(byte*)"!import clib\n!import mlib\n!\n!importlib cstd=\n!   clang proc     sleep    (word32)\n!end\n\nrecord termios =\n    int32 c_iflag\n    int32 c_oflag\n    int32 c_cflag\n    int32 c_lflag\n    char c_line\n    [32]char c_cc               !at offset 17\n    [3]byte filler\n    int32 c_ispeed              !at offset 52\n    int32 c_ospeed\nend\n\nimportlib dlstuff=\n    clang function dlopen       (ichar, int32)ref void\n    clang function dlsym        (ref void, ichar)ref void\n    clang function tcgetattr    (int32, ref termios) int32\n    clang function tcsetattr    (int32, int32, ref termios) int32\n    clang function gettimeofday (ref timeval, ref void) int32\n    clang function gmtime_r     (ref i64, ref tm_rec) ref void\nend\n \nrecord timeval =\n    i64 tv_sec\n    i64 tv_usec\nend\n\nrecord tm_rec =\n    int32 tm_sec\n    int32 tm_min\n    int32 tm_hour\n    int32 tm_mday\n\n    int32 tm_mon\n    int32 tm_year\n    int32 tm_wday\n    int32 tm_yday\n    int32 tm_isdst\n    [20]byte padding\nend\n\n!this record is used by some apps, so these fields must be present\nexport record rsystemtime =\n    int32 year\n    int32 month\n    int32 dayofweek\n    int32 day\n    int32 hour\n    int32 minute\n    int32 second\n    int milliseconds\nend\n\nint init_flag=0\n\n\nexport proc os_init=\n    init_flag:=1\nend\n\nexport function os_execwait(ichar cmdline,int newconsole=0,ichar workdir=nil)int =\n    return system(cmdline)\nend\n\nexport function os_execcmd(ichar cmdline, int newconsole)int =\n    return system(cmdline)\nend\n\nexport function os_getch:int=\n    const ICANON  = 8x000002\n    const ECHO    = 8x000010\n    const TCSANOW = 0\n\n    termios old,new\n    char ch\n\n    tcgetattr(0,&old)\n    new:=old\n    new.c_lflag iand:=inot ICANON\n    new.c_lflag iand:=inot ECHO\n    tcsetattr(0,TCSANOW,&new)\n\n    ch:=getchar()\n\n    tcsetattr(0,TCSANOW,&old)\n\n    return ch\nend\n\nexport function os_kbhit:int=\n    abortprogram(\"kbhit\")\n    return 0\nend\n\nexport proc os_flushkeys=\n    abortprogram(\"flushkeys\")\nend\n\nexport function os_getconsolein:ref void=\n    return nil\nend\n\nexport function os_getconsoleout:ref void=\n    return nil\nend\n\nexport function os_proginstance:ref void=\n    abortprogram(\"PROGINST\")\n    return nil\nend\n\nexport function os_getdllinst(ichar name)u64=\n    const RTLD_LAZY=1\n    ref void h\n\n    h:=dlopen(name,RTLD_LAZY)\n\n    if h=nil then\n        if strcmp(name,\"msvcrt\")=0 then         !might be linux\n            h:=dlopen(\"libc.so.6\",RTLD_LAZY);\n        fi\n    fi\n\n    return cast(h)\nend\n\nexport function os_getdllprocaddr(int hlib,ichar name)ref void=\n    ref void fnaddr\n\n    if hlib=0 then\n        return nil\n    fi\n\n    fnaddr:=dlsym(cast(int(hlib)), name)\n    return fnaddr\nend\n\nexport proc os_initwindows=\nend\n\nexport function os_getchx:int=\n    abortprogram(\"getchx\")\n    return 0\nend\n\nexport function os_getos=>ichar=\n    if $targetbits=32 then\n        return \"L32\"\n    else\n        return \"L64\"\n    fi\nend\n\nexport function os_gethostsize=>int=\n    return $targetbits\nend\n\nexport function os_iswindows:int=\n    return 0\nend\n\nexport function os_shellexec(ichar opc, file)int=\n    abortprogram(\"SHELL EXEC\")\n    return 0\nend\n\nexport proc  os_sleep(int a)=\n    sleep(a)\nend\n\nexport function os_getstdin:filehandle =\n    return nil\nend\n\nexport function os_getstdout:filehandle =\n    return nil\n!   return fopen(\"con\",\"wb\")\nend\n\nexport function os_gethostname:ichar=\n!   abortprogram(\"gethostname\")\n    return \"\"\nend\n\nexport function os_getmpath:ichar=\n!   abortprogram(\"getmpath\")\n    return \"\"\nend\n\nexport proc os_exitprocess(int x)=\n    stop\n!   _exit(0)\n!   ExitProcess(x)\nend\n\nexport function os_clock:int64=\n    if os_iswindows() then\n        return clock()\n    else\n        return clock()/1000\n    fi\nend\n\nexport function os_ticks:int64=\n    return clock()\nend\n\nexport function os_getclockspersec:int64=\n    return (os_iswindows()|1000|1000'000)\nend\n\nexport proc os_setmesshandler(ref void addr)=\n    abortprogram(\"SETMESSHANDLER\")\n!   wndproc_callbackfn:=addr\nend\n\nexport function os_hpcounter:int64=\n    return 1\nend\n\nexport function os_hpfrequency:int64=\n    return 1\nend\n\nexport function os_filelastwritetime(ichar filename)int64=\n    return 0\nend\n\nexport proc os_getsystime(ref rsystemtime tm)=\n    timeval tv\n    tm_rec tmr\n\n\n    gettimeofday(&tv, nil)\n    gmtime_r(&tv.tv_sec, &tmr)\n\n    tm.year := tmr.tm_year + 1900\n    tm.month := tmr.tm_mon + 1\n    tm.dayofweek := tmr.tm_wday + 1\n    tm.day := tmr.tm_mday\n    tm.hour := tmr.tm_hour\n    tm.minute := tmr.tm_min\n    tm.second := tmr.tm_sec\n    tm.milliseconds := tv.tv_usec/1000\ntm.month:=1         !avoid crashing the M compiler\nend\n\nexport proc os_peek=\nend\n\nexport function  os_allocexecmem(int n)ref byte=\n    abortprogram(\"No allocexec\")\n    nil\nend\n\n",
+(byte*)"type dll0_int=ref clang function:int\ntype dll1_int=ref clang function(int)int\ntype dll2_int=ref clang function(int,int)int\ntype dll3_int=ref clang function(int,int,int)int\ntype dll4_int=ref clang function(int,int,int,int)int\ntype dll5_int=ref clang function(int,int,int,int,int)int\ntype dll6_int=ref clang function(int,int,int,int,int,int)int\ntype dll9_int=ref clang function(int,int,int,int, int,int,int,int, int)int\ntype dll10_int=ref clang function(int,int,int,int, int,int,int,int, int,int)int\ntype dll11_int=ref clang function(int,int,int,int, int,int,int,int, int,int,int)int\ntype dll12_int=ref clang function(int,int,int,int, int,int,int,int, int,int,int,int)int\ntype dll14_int=ref clang function(int,int,int,int, int,int,int,int, int,int,int,int, int,int)int\n\ntype dll0_r64=ref clang function:r64\ntype dll1_r64=ref clang function(int)r64\ntype dll2_r64=ref clang function(int,int)r64\n\ntype dll0_r64x=ref clang function:r64\ntype dll1_r64x=ref clang function(real)r64\ntype dll2_r64x=ref clang function(real,real)r64\n\ntype m_dll0_int=ref function:int\ntype m_dll1_int=ref function(int)int\ntype m_dll2_int=ref function(int,int)int\ntype m_dll3_int=ref function(int,int,int)int\ntype m_dll4_int=ref function(int,int,int,int)int\ntype m_dll5_int=ref function(int,int,int,int,int)int\ntype m_dll12_int=ref function(int,int,int,int, int,int,int,int, int,int,int,int)int\n\ntype m_dll0_r64=ref function:r64\ntype m_dll1_r64=ref function(int)r64\ntype m_dll2_r64=ref function(int,int)r64\n\n\nexport function os_calldllfunction(ref proc fnaddr,\n        int retcode, nargs, ref[]i64 args, ref[]byte argcodes)word64 =\n!retcode is 'R' or 'I'\n!each argcodes element is 'R' or 'I' too\n!The x64 version can work with any combination.\n!Here, for C, only some combinations are dealt with:\n! I result, params all I (not all param counts)\n! R result, params all I (not all param counts)\n!Mixed params, for arbitrary return type, not handled (not really detected either)\n\n    word64 a\n    real64 x\n    int oddstack, nextra, pushedbytes\n\n    if retcode='I' then\n        return calldll_cint(fnaddr,args,nargs)\n    else\n        return calldll_creal(fnaddr,args,nargs)\n    fi\nend \n\nglobal function os_pushargs(ref[]word64 args, int nargs, nextra,\n                    ref proc fnaddr, int isfloat)word64=\n    word64 a\n    real64 x\n!ABORTPROGRAM(\"PUSHARGS/C NOT READY\")\n\n    return os_calldllfunction(fnaddr, (isfloat|0|'I'), nargs, cast(args), nil)\n\n\n!   return a\nend\n\nfunction calldll_cint (ref proc fnaddr,ref[]i64 params,int nparams)i64=\nswitch nparams\nwhen 0 then\n    return dll0_int(fnaddr)^()\nwhen 1 then\n    return dll1_int(fnaddr)^(params^[1])\nwhen 2 then\n    return dll2_int(fnaddr)^(params^[1],params^[2])\nwhen 3 then\n    return dll3_int(fnaddr)^(params^[1],params^[2],params^[3])\nwhen 4 then\n    return dll4_int(fnaddr)^(params^[1],params^[2],params^[3],\n            params^[4])\nwhen 5 then\n    return dll5_int(fnaddr)^(params^[1],params^[2],params^[3],\n            params^[4], params^[5])\nwhen 6 then\n    return dll6_int(fnaddr)^(params^[1],params^[2],params^[3],\n            params^[4], params^[5],params^[6])\nwhen 9 then \n    return (dll9_int(fnaddr))^(params^[1],params^[2],params^[3],params^[4], params^[5],params^[6],\n                params^[7],params^[8],params^[9])\nwhen 10 then \n    return (dll10_int(fnaddr))^(params^[1],params^[2],params^[3],params^[4],    params^[5],params^[6],\n                params^[7],params^[8],params^[9],params^[10])\nwhen 11 then \n    return (dll11_int(fnaddr))^(params^[1],params^[2],params^[3],params^[4],    params^[5],params^[6],\n                params^[7],params^[8],params^[9],params^[10],   params^[11])\n\nwhen 12 then \n    return (dll12_int(fnaddr))^(params^[1],params^[2],params^[3],params^[4],    params^[5],params^[6],\n                params^[7],params^[8],params^[9],params^[10],   params^[11],params^[12])\n\nwhen 14 then \n    return (dll14_int(fnaddr))^(params^[1],params^[2],params^[3],params^[4],    params^[5],params^[6],\n                params^[7],params^[8],params^[9],params^[10],   params^[11],params^[12],\n                params^[13],params^[14])\n\nelse\n    cpl nparams\n    println \"calldll/c/int unsupported # of params\", nparams\n    stop 1\nendswitch\nreturn 0\nend\n\nfunction calldll_creal (ref proc fnaddr,ref[]i64 params,int nparams)i64=\nreal64 x\n\nswitch nparams\nwhen 0 then\n    return dll0_r64(fnaddr)^()\nwhen 1 then\n    os_dummycall(params^[1],params^[2],params^[3],params^[4])\n    x:=dll1_r64(fnaddr)^(params^[1])\nwhen 2 then\n    x:=dll2_r64(fnaddr)^(params^[1],params^[2])\nelse\n    println \"calldll/c/real too many params\"\n    stop 1\nendswitch\nreturn int64@(x)\nend\n\n\nglobal proc os_dummycall(r64 a,b,c,d)=\nend\n"};
 static byte mm_libsourcesc$syslibfileno[5];
 static u8 *  mm_modules$headerpathx = (byte*)"";
 static u8 *  mm_modules$altpathx = (byte*)"";
@@ -6053,6 +6073,7 @@ static void *  msysc$_fnaddresses[]= {
     &mm_type$dobinnumi,
     &mm_type$doin,
     &mm_type$setsimple,
+    &mm_type$do_printlist,
     &mm_type$start,
     &mm_winc$codegen,
     &mm_winc$runlibfile,
@@ -6185,7 +6206,6 @@ static void *  msysc$_fnaddresses[]= {
     &mlib$addext,
     &mlib$pcm_alloc32,
     &mlib$pcm_free32,
-    &mlib$pcm_alloc64,
     &mlib$pcm_free64,
     &mlib$pcm_alloc16,
     &mlib$pcm_free16,
@@ -6785,6 +6805,7 @@ static u8 *  msysc$_fnnames[]= {
     (byte*)"dobinnumi",
     (byte*)"doin",
     (byte*)"setsimple",
+    (byte*)"do_printlist",
     (byte*)"start",
     (byte*)"codegen",
     (byte*)"runlibfile",
@@ -6917,7 +6938,6 @@ static u8 *  msysc$_fnnames[]= {
     (byte*)"addext",
     (byte*)"pcm_alloc32",
     (byte*)"pcm_free32",
-    (byte*)"pcm_alloc64",
     (byte*)"pcm_free64",
     (byte*)"pcm_alloc16",
     (byte*)"pcm_free16",
@@ -7071,8 +7091,8 @@ static u8 *  msysc$sysparams[128];
 static u8 *(*msysc$cmdparams)[];
 static u8 *(*msysc$envstrings)[];
 static u64 msysc$mask63 = (u64)9223372036854775807u;
-static r64 msysc$offset64 = (double)9223372036854775800.;
-static r64 msysc$offset32 = (double)9223372036854775800.;
+static r64 msysc$offset64 = (double)9223372036854775808.;
+static r64 msysc$offset32 = (double)9223372036854775808.;
 static u64 mlib$allocupper[301];
 static i64 mlib$alloccode;
 static i64 mlib$allocbytes;
@@ -7087,7 +7107,6 @@ static i64 mlib$memtotal = (i64)0;
 static i64 mlib$smallmemtotal = (i64)0;
 static i64 mlib$smallmemobjs = (i64)0;
 static i64 mlib$maxmemtotal = (i64)0;
-static i64 mlib$bigmemtotal;
 static i32 *  mlib$memalloctable[3];
 static i32 mlib$memallocsize[3];
 static byte *  mlib$pcheapstart;
@@ -7233,7 +7252,6 @@ static void mm_cli$do_loadmodules(void) {
     }
 ;
     mm_modules$loadmodules();
-    tt = (clock() - mm_cli$rpclock);
     if (!!((i64)mm_decls$fshowtiming)) {
         msysc$m_print_startcon();
         msysc$m_print_str((byte*)"LOAD",NULL);
@@ -7476,7 +7494,7 @@ L13 :;
         msysc$m_print_end();
         ;
         msysc$m_print_startcon();
-        msysc$m_print_str((byte*)"\t",NULL);
+        msysc$m_print_str((byte*)"   ",NULL);
         msysc$m_print_nogap();
         msysc$m_print_str((*msysc$cmdparams)[((i64)0)],NULL);
         msysc$m_print_str((byte*)"filename[.m]     # Compile project to executable",NULL);
@@ -7484,7 +7502,7 @@ L13 :;
         msysc$m_print_end();
         ;
         msysc$m_print_startcon();
-        msysc$m_print_str((byte*)"\t",NULL);
+        msysc$m_print_str((byte*)"   ",NULL);
         msysc$m_print_nogap();
         msysc$m_print_str((*msysc$cmdparams)[((i64)0)],NULL);
         msysc$m_print_str((byte*)"-help            # Other options",NULL);
@@ -7848,8 +7866,8 @@ static void mm_cli$showcaption(void) {
     msysc$m_print_startcon();
     msysc$m_print_str((byte*)"M",NULL);
     msysc$m_print_str((byte*)"Compiler [M6]",NULL);
-    msysc$m_print_str((byte*)"17-Dec-2022",NULL);
-    msysc$m_print_str((byte*)"21:51:51",NULL);
+    msysc$m_print_str((byte*)"18-Jan-2022",NULL);
+    msysc$m_print_str((byte*)"22:50:14",NULL);
     msysc$m_print_newline();
     msysc$m_print_end();
     ;
@@ -10681,7 +10699,7 @@ if (($temp==(i64)81)) {
                 L131 :;
                 while (!!(p)) {
                     msysc$m_print_startfile(f);
-                    msysc$m_print_str((byte*)"\t",NULL);
+                    msysc$m_print_str((byte*)"    ",NULL);
                     msysc$m_print_ptr(p,NULL);
                     msysc$m_print_str((*p).name,NULL);
                     msysc$m_print_str(mm_tables$symbolnames[((i64)(*p).symbol)-1],NULL);
@@ -11678,7 +11696,7 @@ static void mm_diags$showsttree(u8 *caption,void *f) {
     while (!!(pp)) {
         d = (*pp).def;
         msysc$m_print_startfile(f);
-        msysc$m_print_setfmt((byte*)"#\t#.# (#) Mod:");
+        msysc$m_print_setfmt((byte*)"#  #.# (#) Mod:");
         msysc$m_print_ptr(d,NULL);
         msysc$m_print_str((*(*d).owner).name,NULL);
         msysc$m_print_str((*d).name,(byte*)"20jl");
@@ -11706,7 +11724,7 @@ L172 :;
 L173 :;
         d = mm_decls$dllproctable[(i)-1];
         msysc$m_print_startfile(f);
-        msysc$m_print_setfmt((byte*)"#\t#.# (#) Mod: # # #");
+        msysc$m_print_setfmt((byte*)"#  #.# (#) Mod: # # #");
         msysc$m_print_ptr(d,NULL);
         msysc$m_print_str((*(*d).owner).name,NULL);
         msysc$m_print_str((*d).name,(byte*)"20jl");
@@ -13983,7 +14001,7 @@ void mm_lex$psx(u8 *caption) {
     ;
     mm_diags$printsymbol(&mm_decls$lx);
     msysc$m_print_startcon();
-    msysc$m_print_str((byte*)"\t",NULL);
+    msysc$m_print_str((byte*)" ",NULL);
     msysc$m_print_end();
     ;
     mm_diags$printsymbol(&mm_decls$nextlx);
@@ -14960,7 +14978,6 @@ struct mm_decls$strec *mm_lib$newstrec(void) {
         struct mm_decls$strec *  p;
     p = (struct mm_decls$strec *)mlib$pcm_alloc((i64)193);
     memset(&((*p)),0,193);
-    ++(mm_decls$nstrecs);
     (*p).pos = (i64)mm_decls$lx.pos;
     (*p).moduleno = mm_decls$currmoduleno;
     (*p).subprogno = (i64)mm_decls$moduletosub[(mm_decls$currmoduleno)];
@@ -18803,7 +18820,7 @@ L509 :;
                     }
 ;
                     msysc$m_print_startcon();
-                    msysc$m_print_str((byte*)"\t",NULL);
+                    msysc$m_print_str((byte*)"   ",NULL);
                     msysc$m_print_str((*d).name,NULL);
                     msysc$m_print_newline();
                     msysc$m_print_end();
@@ -24770,23 +24787,8 @@ static void mm_type$tpass(struct mm_decls$unitrec *p,i64 t,i64 lv) {
         {
             mm_type$tx_unitlist(a,(i64)22,(i64)0);
             mm_type$fixchararray(a);
-            L739 :;
-            while (!!(b)) {
-                if (((i64)(*b).tag == (i64)83)) {
-                    mm_type$tpass((c = (*b).a),(i64)22,(i64)0);
-                    mm_type$tpass((*b).b,(i64)20,(i64)0);
-                }
-                else {
-                    mm_type$tpass((c = b),(i64)22,(i64)0);
-                }
-;
-                mm_type$fixchararray(c);
-                b = (*b).nextunit;
-L740 :;
-            }
-L741 :;
-            ;
-            mm_type$tx_unitlist((*p).c,(i64)22,(i64)0);
+            mm_type$do_printlist(b);
+            mm_type$do_printlist((*p).c);
         }
         break;
     case 91:;
@@ -25073,15 +25075,15 @@ if (($temp==(i64)29)) {
         msysc$m_print_end();
         ;
         //doelse:
-L742 :;
+L739 :;
 ;
                 ($av_1 = (i64)mm_tables$jsubs[((i64)(*p).tag)]);
         for (i=(i64)1;i<=$av_1;++i) {
-L743 :;
+L740 :;
             mm_type$tx_unitlist((*p).abc[(i)-1],t,(i64)0);
-L744 :;
+L741 :;
         }
-L745 :;
+L742 :;
         ;
     }
     } //SW
@@ -25117,7 +25119,7 @@ void mm_type$tx_allprocs(void) {
         struct mm_decls$unitrec *  pcode;
         struct mm_decls$strec *  d;
     pp = (struct mm_decls$procrec *)mm_decls$proclist;
-    L746 :;
+    L743 :;
     while (!!(pp)) {
         mm_decls$currproc = (*pp).def;
         pcode = (*mm_decls$currproc).code;
@@ -25128,7 +25130,7 @@ void mm_type$tx_allprocs(void) {
 ;
         if ((u64)0u) {
             d = (struct mm_decls$strec *)(*mm_decls$currproc).deflist;
-            L750 :;
+            L747 :;
             while (!!(d)) {
                 if (((i64)(*d).nameid == (i64)13)) {
                     if ((!!((i64)mm_decls$ttisblock[((i64)(*d).mode)]) && ((i64)(*d).parammode != (i64)2))) {
@@ -25138,22 +25140,22 @@ void mm_type$tx_allprocs(void) {
 ;
                 }
 ;
-L751 :;
+L748 :;
                 d = (struct mm_decls$strec *)(*d).nextdef;
-L753 :;
+L750 :;
                             }
-L752 :;
+L749 :;
             ;
         }
 ;
-L747 :;
+L744 :;
         pp = (struct mm_decls$procrec *)(*pp).nextproc;
-L749 :;
+L746 :;
             }
-L748 :;
+L745 :;
     ;
     pp = (struct mm_decls$procrec *)mm_decls$proclist;
-    L754 :;
+    L751 :;
     while (!!(pp)) {
         mm_decls$currproc = (*pp).def;
         pcode = (*mm_decls$currproc).code;
@@ -25173,20 +25175,20 @@ if (($temp==(i64)0)) {
         }
         };
         pp = (struct mm_decls$procrec *)(*pp).nextproc;
-L755 :;
+L752 :;
     }
-L756 :;
+L753 :;
     ;
 }
 
 static void mm_type$tx_block(struct mm_decls$unitrec *p,struct mm_decls$unitrec *a,i64 t,i64 lv) {
-    L757 :;
+    L754 :;
     while ((!!(a) && !!((*a).nextunit))) {
         mm_type$tpass(a,(i64)0,(i64)0);
         a = (*a).nextunit;
-L758 :;
+L755 :;
     }
-L759 :;
+L756 :;
     ;
     if (!!(a)) {
         mm_type$tpass(a,t,lv);
@@ -25199,15 +25201,15 @@ void mm_type$tx_typetable(void) {
         struct mm_decls$strec *  d;
         i64 i;
     for (i=(i64)29;i<=mm_decls$ntypes;++i) {
-L760 :;
+L757 :;
         if (((i64)mm_decls$ttbasetype[(i)] == (i64)8)) {
             mm_type$tx_passdef((d = mm_decls$ttnamedef[(i)]));
         }
 ;
         mm_type$setmodesize(i);
-L761 :;
+L758 :;
     }
-L762 :;
+L759 :;
     ;
 }
 
@@ -25370,13 +25372,13 @@ void mm_type$tx_passdef(struct mm_decls$strec *p) {
     oldmlineno = mm_tables$mlineno;
     mm_tables$mlineno = (i64)(*p).pos;
     d = (struct mm_decls$strec *)(*p).deflist;
-    L763 :;
+    L760 :;
     while (!!(d)) {
         mm_type$tx_passdef(d);
         d = (struct mm_decls$strec *)(*d).nextdef;
-L764 :;
+L761 :;
     }
-L765 :;
+L762 :;
     ;
     q = (*p).code;
         {i64 $temp = (i64)(*p).nameid;
@@ -25395,13 +25397,13 @@ if (($temp==(i64)6)) {
 }
 
 static void mm_type$tx_unitlist(struct mm_decls$unitrec *p,i64 t,i64 lv) {
-    L766 :;
+    L763 :;
     while (!!(p)) {
         mm_type$tpass(p,t,(i64)0);
         p = (*p).nextunit;
-L767 :;
+L764 :;
     }
-L768 :;
+L765 :;
     ;
 }
 
@@ -25411,15 +25413,6 @@ static void mm_type$tx_namedef(struct mm_decls$strec *d) {
         i64 inidataold;
         struct mm_decls$unitrec *  dcode;
         struct mm_decls$unitrec *  pequiv;
-    if (!!(mm_type$deb)) {
-        msysc$m_print_startcon();
-        msysc$m_print_str((byte*)"NAMEDEF1",NULL);
-        msysc$m_print_str((*d).name,NULL);
-        msysc$m_print_newline();
-        msysc$m_print_end();
-        ;
-    }
-;
     m = (i64)(*d).mode;
     mm_type$setmodesize(m);
     if (!!(msysc$m_getdotindex((i64)(*d).flags,(i64)3))) {
@@ -25525,13 +25518,13 @@ if (($temp==(i64)1) || ($temp==(i64)52)) {
     }
     else if (($temp==(i64)15)) {
         q = (*p).a;
-        L769 :;
+        L766 :;
         while (!!(q)) {
             mm_type$checkconstexpr(q);
             q = (*q).nextunit;
-L770 :;
+L767 :;
         }
-L771 :;
+L768 :;
         ;
     }
     else if (($temp==(i64)48)) {
@@ -25541,17 +25534,17 @@ L771 :;
                 mm_lib$deleteunit(p,(*p).a);
             }
             else {
-                goto L772 ;
+                goto L769 ;
 ;
             }
 ;
         }
 ;
         //cerror:
-L772 :;
+L769 :;
 ;
         if ((u64)0u) {
-            goto L773 ;
+            goto L770 ;
 ;
         }
 ;
@@ -25564,7 +25557,7 @@ L772 :;
 if (($temp==(i64)3)) {
         }
         else {
-            goto L773 ;
+            goto L770 ;
 ;
         }
         };
@@ -25578,12 +25571,12 @@ if (($temp==(i64)3)) {
             return;
         }
 ;
-        goto L773 ;
+        goto L770 ;
 ;
     }
     else {
         //error:
-L773 :;
+L770 :;
 ;
         msysc$m_print_startcon();
         msysc$m_print_str(mm_tables$jtagnames[((i64)(*p).tag)],NULL);
@@ -25841,7 +25834,7 @@ static void mm_type$tx_bin(struct mm_decls$unitrec *p,struct mm_decls$unitrec *a
         {
             if (((amode == (i64)3 || amode == (i64)2 || amode == (i64)1) && (bmode == (i64)3 || bmode == (i64)2 || bmode == (i64)1))) {
                 (*p).pclop = (i64)5;
-                goto L774 ;
+                goto L771 ;
 ;
             }
 ;
@@ -25866,7 +25859,7 @@ static void mm_type$tx_bin(struct mm_decls$unitrec *p,struct mm_decls$unitrec *a
     case 10:;
         {
             //doidiv:
-L774 :;
+L771 :;
 ;
             if (!!(mm_type$dobinnumi(p,a,b))) {
                 return;
@@ -25933,11 +25926,6 @@ L774 :;
     }
     } //SW
 ;
-    msysc$m_print_startcon();
-    msysc$m_print_str(mm_tables$pclnames[((i64)(*p).pclop)],NULL);
-    msysc$m_print_newline();
-    msysc$m_print_end();
-    ;
     mm_support$txerror_ss((byte*)"BIN/CAN'T RESOLVE MODES",mm_lib$strmode(amode,(i64)1),mm_lib$strmode2(bmode,(i64)1));
 }
 
@@ -26019,7 +26007,7 @@ static void mm_type$tx_cmpchain(struct mm_decls$unitrec *p,struct mm_decls$unitr
         struct mm_decls$unitrec *  q;
         struct mm_decls$unitrec *  r;
     q = a;
-    L775 :;
+    L772 :;
     while (!!(q)) {
         mm_type$tpass(q,(i64)22,(i64)0);
         if ((q == a)) {
@@ -26030,19 +26018,19 @@ static void mm_type$tx_cmpchain(struct mm_decls$unitrec *p,struct mm_decls$unitr
         }
 ;
         q = (*q).nextunit;
-L776 :;
+L773 :;
     }
-L777 :;
+L774 :;
     ;
     q = a;
     r = (*a).nextunit;
-    L778 :;
+    L775 :;
     while (!!(q)) {
         mm_type$coerceunit(q,u,(i64)0);
         q = (*q).nextunit;
-L779 :;
+L776 :;
     }
-L780 :;
+L777 :;
     ;
     (*p).mode = (i64)6;
 }
@@ -26071,7 +26059,7 @@ static void mm_type$tx_callproc(struct mm_decls$unitrec *p,struct mm_decls$unitr
     nargs = (nparams = (i64)0);
     ismproc = (i64)0;
     //retry:
-L781 :;
+L778 :;
 ;
         {i64 $temp = (i64)(*a).tag;
 if (($temp==(i64)3)) {
@@ -26079,10 +26067,10 @@ if (($temp==(i64)3)) {
         if (((i64)(*d).nameid == (i64)6 || (i64)(*d).nameid == (i64)7)) {
             ismproc = (i64)((i64)(*d).nameid == (i64)6);
             //getparams:
-L782 :;
+L779 :;
 ;
             e = (struct mm_decls$strec *)(*d).deflist;
-            L783 :;
+            L780 :;
             while (!!(e)) {
                 if (((i64)(*e).nameid == (i64)13)) {
                     if ((nparams >= (i64)100)) {
@@ -26093,21 +26081,21 @@ L782 :;
                 }
 ;
                 e = (struct mm_decls$strec *)(*e).nextdef;
+L781 :;
+            }
+L782 :;
+            ;
+        }
+        else {
+            L783 :;
+            while (((i64)mm_decls$ttbasetype[((i64)(*a).mode)] == (i64)7)) {
+                mm_lib$insertunit(a,(i64)45);
+                (*a).mode = (i64)mm_decls$tttarget[((i64)(*a).mode)];
 L784 :;
             }
 L785 :;
             ;
-        }
-        else {
-            L786 :;
-            while (((i64)mm_decls$ttbasetype[((i64)(*a).mode)] == (i64)7)) {
-                mm_lib$insertunit(a,(i64)45);
-                (*a).mode = (i64)mm_decls$tttarget[((i64)(*a).mode)];
-L787 :;
-            }
-L788 :;
-            ;
-            goto L789 ;
+            goto L786 ;
 ;
         }
 ;
@@ -26117,13 +26105,13 @@ L788 :;
     }
     else {
         //dorefproc:
-L789 :;
+L786 :;
 ;
         if (((i64)(*a).tag == (i64)42)) {
             mm_type$tmethodcall(p,a,pargs);
             a = (*p).a;
             pargs = (*p).b;
-            goto L781 ;
+            goto L778 ;
 ;
         }
 ;
@@ -26136,12 +26124,12 @@ L789 :;
             mm_support$txerror((byte*)"Function expected",0);
         }
 ;
-        goto L782 ;
+        goto L779 ;
 ;
     }
     };
     q = pargs;
-    L790 :;
+    L787 :;
     while (!!(q)) {
         if ((nargs >= (i64)100)) {
             mm_support$txerror((byte*)"Param overflow",0);
@@ -26149,9 +26137,9 @@ L789 :;
 ;
         arglist[(++(nargs))-1] = q;
         q = (*q).nextunit;
-L791 :;
+L788 :;
     }
-L792 :;
+L789 :;
     ;
     (*p).mode = (i64)(*d).mode;
     if ((((i64)(*p).mode == (i64)0) && ((i64)(*p).tag == (i64)28))) {
@@ -26164,7 +26152,7 @@ L792 :;
 ;
     if (!!((i64)(*d).varparams)) {
         for (i=(i64)1;i<=nargs;++i) {
-L793 :;
+L790 :;
             if ((i <= nparams)) {
                 mm_type$tpass(arglist[(i)-1],(i64)(*paramlist[(i)-1]).mode,(i64)0);
             }
@@ -26172,9 +26160,9 @@ L793 :;
                 mm_type$tpass(arglist[(i)-1],(i64)22,(i64)0);
             }
 ;
-L794 :;
+L791 :;
         }
-L795 :;
+L792 :;
         ;
         if ((t == (i64)0)) {
             (*p).tag = (i64)86;
@@ -26186,31 +26174,31 @@ L795 :;
     k = (i64)0;
     kwdused = (i64)0;
     for (i=(i64)1;i<=nparams;++i) {
-L796 :;
+L793 :;
         newarglist[(i)-1] = 0;
-L797 :;
+L794 :;
     }
-L798 :;
+L795 :;
     ;
     for (i=(i64)1;i<=nargs;++i) {
-L799 :;
+L796 :;
         q = arglist[(i)-1];
         switch ((i64)(*q).tag) {
         case 21:;
             {
                 name = (*(*(*q).a).def).name;
                 for (j=(i64)1;j<=nparams;++j) {
-L802 :;
+L799 :;
                     if (!!(mlib$eqstring((*paramlist[(j)-1]).name,name))) {
-                        goto L804 ;
+                        goto L801 ;
                     }
 ;
-L803 :;
+L800 :;
                 }
                 {
                     mm_support$txerror_s((byte*)"Can't find kwd param: #",name,0);
                 }
-L804 :;
+L801 :;
                 ;
                 if (!!(newarglist[(j)-1])) {
                     mm_support$txerror_s((byte*)"Kwd: # already used or was implicit",name,0);
@@ -26227,13 +26215,13 @@ L804 :;
                 }
 ;
                 q = 0;
-                goto L805 ;
+                goto L802 ;
 ;
             }
             break;
         default: {
             //doregparam:
-L805 :;
+L802 :;
 ;
             if (!!(kwdused)) {
                 mm_support$txerror((byte*)"Normal param follows kwd",0);
@@ -26255,12 +26243,12 @@ L805 :;
         }
         } //SW
 ;
-L800 :;
+L797 :;
     }
-L801 :;
+L798 :;
     ;
     for (i=(i64)1;i<=nparams;++i) {
-L806 :;
+L803 :;
         q = newarglist[(i)-1];
         pm = paramlist[(i)-1];
         if ((q == 0)) {
@@ -26277,14 +26265,14 @@ L806 :;
 ;
         }
 ;
-L807 :;
+L804 :;
     }
-L808 :;
+L805 :;
     ;
     ulist = 0;
     ulistx = 0;
     for (i=(i64)1;i<=nparams;++i) {
-L809 :;
+L806 :;
         pm = paramlist[(i)-1];
         q = newarglist[(i)-1];
         if (((i64)(*pm).parammode == (i64)2)) {
@@ -26311,9 +26299,9 @@ L809 :;
 ;
         mm_lib$addlistunit(&ulist,&ulistx,q);
         (*q).nextunit = 0;
-L810 :;
+L807 :;
     }
-L811 :;
+L808 :;
     ;
     (*p).b = ulist;
     if ((t == (i64)0)) {
@@ -26506,7 +26494,7 @@ static void mm_type$tx_if(struct mm_decls$unitrec *p,struct mm_decls$unitrec *pc
         u = t;
     }
 ;
-    L812 :;
+    L809 :;
     while (!!(pc)) {
         mm_type$tpass(pc,(i64)22,(i64)0);
         mm_type$tpass(pl,t,lv);
@@ -26520,14 +26508,14 @@ static void mm_type$tx_if(struct mm_decls$unitrec *p,struct mm_decls$unitrec *pc
 ;
         }
 ;
-L813 :;
+L810 :;
         {
             pc = (*pc).nextunit;
             pl = (*pl).nextunit;
         }
-L815 :;
+L812 :;
             }
-L814 :;
+L811 :;
     ;
     if (((t != (i64)0) && (pelse == 0))) {
         mm_support$txerror((byte*)"else needed",0);
@@ -26540,17 +26528,17 @@ L814 :;
 ;
     if ((t != (i64)0)) {
         pl = plist;
-        L816 :;
+        L813 :;
         while (!!(pl)) {
             if ((t == (i64)22)) {
                 mm_type$coerceunit(pl,u,(i64)0);
             }
 ;
-L817 :;
+L814 :;
             pl = (*pl).nextunit;
-L819 :;
+L816 :;
                     }
-L818 :;
+L815 :;
         ;
         if ((t == (i64)22)) {
             mm_type$coerceunit(pelse,u,(i64)0);
@@ -26750,7 +26738,7 @@ static void mm_type$setrecordsize(i64 m) {
     e = (struct mm_decls$strec *)(*d).deflist;
     nfields = (i64)0;
     fieldlist[(++(nfields))-1] = (struct mm_decls$strec *)'S';
-    L820 :;
+    L817 :;
     while (!!(e)) {
         if (((i64)(*e).nameid == (i64)14)) {
             if ((nfields >= (i64)200)) {
@@ -26759,7 +26747,7 @@ static void mm_type$setrecordsize(i64 m) {
 ;
             mm_type$setmodesize((i64)(*e).mode);
             flags = (u8 *)&(*e).uflags;
-            L823 :;
+            L820 :;
                         {u64 $temp = (u64)(*flags);
 if (($temp=='S') || ($temp=='U')) {
                 flag = (i64)(u64)(*flags);
@@ -26767,13 +26755,13 @@ if (($temp=='S') || ($temp=='U')) {
                 ++(flags);
             }
             else {
-                goto L824 ;
+                goto L821 ;
             }
-            }goto L823 ;
-L824 :;
+            }goto L820 ;
+L821 :;
             ;
             fieldlist[(++(nfields))-1] = e;
-            L825 :;
+            L822 :;
             while (1) {
                 flag = (i64)(u64)(*(flags)++);
                 if ((flag==(i64)42)) {
@@ -26782,18 +26770,18 @@ L824 :;
                     fieldlist[(++(nfields))-1] = (struct mm_decls$strec *)'E';
                 }
                 else {
-                    goto L826 ;
+                    goto L823 ;
                 }
 ;
             }
-L826 :;
+L823 :;
             ;
         }
 ;
         e = (struct mm_decls$strec *)(*e).nextdef;
-L821 :;
+L818 :;
     }
-L822 :;
+L819 :;
     ;
     fieldlist[(++(nfields))-1] = (struct mm_decls$strec *)'E';
     fieldlist[((nfields + (i64)1))-1] = 0;
@@ -26839,7 +26827,7 @@ static void mm_type$scanrecord(i64 state,struct mm_decls$strec *(*fields)[],i64 
         i64 newoffset;
     size = (i64)0;
     bitoffset = (i64)0;
-    L827 :;
+    L824 :;
     while (!!((f = (*fields)[(((*index))++)-1]))) {
                 {i64 $temp = (i64)f;
 if (($temp==(i64)83) || ($temp==(i64)85)) {
@@ -26909,9 +26897,9 @@ if (($temp==(i64)83) || ($temp==(i64)85)) {
             size = (size>fieldsize?size:fieldsize);
         }
 ;
-L828 :;
+L825 :;
     }
-L829 :;
+L826 :;
     ;
 }
 
@@ -26922,12 +26910,12 @@ static i64 mm_type$roundoffset(i64 offset,i64 alignment) {
     }
 ;
     mask = (alignment - (i64)1);
-    L830 :;
+    L827 :;
     while (!!((offset & mask))) {
         ++(offset);
-L831 :;
+L828 :;
     }
-L832 :;
+L829 :;
     ;
     return offset;
 }
@@ -26978,7 +26966,7 @@ if (($temp==(i64)10)) {
         }
 ;
         q = a;
-        L833 :;
+        L830 :;
         while (!!(q)) {
             mm_type$tpass(q,elemtype,lv);
             if (!(((i64)(*q).tag == (i64)1))) {
@@ -26986,28 +26974,28 @@ if (($temp==(i64)10)) {
             }
 ;
             q = (*q).nextunit;
-L834 :;
+L831 :;
         }
-L835 :;
+L832 :;
         ;
         (*p).mode = newt;
     }
     else if (($temp==(i64)8)) {
         e = (struct mm_decls$strec *)(*mm_decls$ttnamedef[(t)]).deflist;
         q = a;
-        L836 :;
+        L833 :;
         while ((!!(q) && !!(e))) {
             if (((i64)(*e).nameid == (i64)14)) {
-                L839 :;
+                L836 :;
                 while (((i64)(*e).mode == (i64)26)) {
                     e = (struct mm_decls$strec *)(*e).nextdef;
                     if (!(!!(e))) {
-                        goto L841 ;
+                        goto L838 ;
                     }
 ;
-L840 :;
+L837 :;
                 }
-L841 :;
+L838 :;
                 ;
                 mm_type$tpass(q,(i64)(*e).mode,lv);
                 if (!(((i64)(*q).tag == (i64)1))) {
@@ -27018,16 +27006,16 @@ L841 :;
             }
 ;
             e = (struct mm_decls$strec *)(*e).nextdef;
-L837 :;
+L834 :;
         }
-L838 :;
+L835 :;
         ;
-        L842 :;
+        L839 :;
         while ((!!(e) && (((i64)(*e).nameid != (i64)14) || ((i64)(*e).mode == (i64)26)))) {
             e = (struct mm_decls$strec *)(*e).nextdef;
-L843 :;
+L840 :;
         }
-L844 :;
+L841 :;
         ;
         if ((!!(q) || !!(e))) {
             mm_support$txerror((byte*)"Can't initialise unions",0);
@@ -27087,18 +27075,18 @@ static void mm_type$tx_makeset(struct mm_decls$unitrec *p,struct mm_decls$unitre
         return;
     }
 ;
-    L845 :;
+    L842 :;
     while (!!(a)) {
         mm_type$tpass(a,(i64)22,(i64)0);
         if (!(!!((i64)(*a).isconst))) {
             (*p).isconst = (i64)0;
         }
 ;
-L846 :;
+L843 :;
         a = (*a).nextunit;
-L848 :;
+L845 :;
             }
-L847 :;
+L844 :;
     ;
     (*p).mode = (i64)0;
 }
@@ -27117,16 +27105,16 @@ static void mm_type$tx_dot(struct mm_decls$unitrec *p,struct mm_decls$unitrec *a
     mm_type$setsimple(a);
     recmode = (i64)(*a).mode;
     recbasemode = (i64)mm_decls$ttbasetype[(recmode)];
-    L849 :;
+    L846 :;
     while ((recbasemode == (i64)7)) {
         tmode = (i64)mm_decls$tttarget[(recmode)];
         mm_lib$insertunit(a,(i64)45);
         mm_type$setsimple(a);
         recmode = ((*a).mode = tmode);
         recbasemode = (i64)mm_decls$ttbasetype[(recmode)];
-L850 :;
+L847 :;
     }
-L851 :;
+L848 :;
     ;
     if (((i64)mm_decls$ttbasetype[(recmode)] != (i64)8)) {
         mm_support$txerror((byte*)"Bad record type",0);
@@ -27248,7 +27236,7 @@ static void mm_type$tx_select(struct mm_decls$unitrec *p,struct mm_decls$unitrec
         struct mm_decls$unitrec *  q;
     mm_type$tpass(a,(i64)3,(i64)0);
     q = b;
-    L852 :;
+    L849 :;
     while (!!(q)) {
         mm_type$tpass(q,t,lv);
         if ((q == b)) {
@@ -27259,20 +27247,20 @@ static void mm_type$tx_select(struct mm_decls$unitrec *p,struct mm_decls$unitrec
         }
 ;
         q = (*q).nextunit;
-L853 :;
+L850 :;
     }
-L854 :;
+L851 :;
     ;
     mm_type$tpass(c,t,lv);
     u = mm_type$getdominantmode(u,(i64)(*c).mode);
     q = b;
-    L855 :;
+    L852 :;
     while (!!(q)) {
         mm_type$coerceunit(q,u,(i64)0);
         q = (*q).nextunit;
-L856 :;
+L853 :;
     }
-L857 :;
+L854 :;
     ;
     if ((t != (i64)0)) {
         (*p).mode = u;
@@ -27307,10 +27295,10 @@ static void mm_type$tx_case(struct mm_decls$unitrec *p,struct mm_decls$unitrec *
 ;
     u = (i64)0;
     wt = b;
-    L858 :;
+    L855 :;
     while (!!(wt)) {
         w = (*wt).a;
-        L861 :;
+        L858 :;
         while (!!(w)) {
             mm_type$tpass(w,(i64)22,(i64)0);
             if (((i64)(*w).tag == (i64)16)) {
@@ -27334,9 +27322,9 @@ static void mm_type$tx_case(struct mm_decls$unitrec *p,struct mm_decls$unitrec *
             }
 ;
             w = (*w).nextunit;
-L862 :;
+L859 :;
         }
-L863 :;
+L860 :;
         ;
         mm_type$tpass((*wt).b,t,lv);
         if ((t != (i64)0)) {
@@ -27350,9 +27338,9 @@ L863 :;
         }
 ;
         wt = (*wt).nextunit;
-L859 :;
+L856 :;
     }
-L860 :;
+L857 :;
     ;
     if (!!(c)) {
         mm_type$tpass(c,t,lv);
@@ -27455,10 +27443,10 @@ static void mm_type$tx_switch(struct mm_decls$unitrec *p,struct mm_decls$unitrec
     memset(&valueset,(i32)(i64)0,(u64)2048u);
     u = (i64)0;
     wt = b;
-    L864 :;
+    L861 :;
     while (!!(wt)) {
         w = (*wt).a;
-        L867 :;
+        L864 :;
         while (!!(w)) {
             mm_type$tpass(w,(i64)22,(i64)0);
             if (!(!!(mm_lib$isconstunit(w)))) {
@@ -27470,10 +27458,10 @@ if (($temp==(i64)9)) {
                 ax = (*(*w).a).value;
                 bx = (*(*w).b).value;
                 //dorange:
-L870 :;
+L867 :;
 ;
                 for (i=ax;i<=bx;++i) {
-L871 :;
+L868 :;
                     if (((i < (i64)0) || (i > (i64)2047))) {
                         mm_support$txerror((byte*)"switch: value out of range",0);
                     }
@@ -27488,9 +27476,9 @@ L871 :;
                     }
 ;
                     valueset[(i)] = (i64)1;
-L872 :;
+L869 :;
                 }
-L873 :;
+L870 :;
                 ;
             }
             else {
@@ -27501,14 +27489,14 @@ L873 :;
                 }
 ;
                 ax = (bx = (*w).value);
-                goto L870 ;
+                goto L867 ;
 ;
             }
             };
             w = (*w).nextunit;
-L868 :;
+L865 :;
         }
-L869 :;
+L866 :;
         ;
         mm_type$tpass((*wt).b,t,lv);
         if ((t == (i64)22)) {
@@ -27522,9 +27510,9 @@ L869 :;
         }
 ;
         wt = (*wt).nextunit;
-L865 :;
+L862 :;
     }
-L866 :;
+L863 :;
     ;
     if (!!(c)) {
         mm_type$tpass(c,t,lv);
@@ -27539,7 +27527,7 @@ L866 :;
 ;
     if ((t != (i64)0)) {
         w = (*b).a;
-        L874 :;
+        L871 :;
         while (!!(w)) {
             if ((t == (i64)22)) {
                 mm_type$coerceunit((*b).b,u,(i64)0);
@@ -27547,9 +27535,9 @@ L866 :;
 ;
             (*w).mode = (i64)(*(*b).b).mode;
             w = (*w).nextunit;
-L875 :;
+L872 :;
         }
-L876 :;
+L873 :;
         ;
         if ((t == (i64)22)) {
             mm_type$coerceunit(c,u,(i64)0);
@@ -27617,12 +27605,12 @@ if (($temp==(i64)8) || ($temp==(i64)10)) {
 ;
         q = (*a).a;
         for (i=(i64)1;i<=nret;++i) {
-L877 :;
+L874 :;
             mm_type$tpass(q,(i64)(*pmult)[(i)-1],(i64)0);
             q = (*q).nextunit;
-L878 :;
+L875 :;
         }
-L879 :;
+L876 :;
         ;
         mm_lib$deleteunit(p,a);
         (*p).resultflag = (i64)1;
@@ -27840,11 +27828,6 @@ if (($temp==(i64)2)) {
         (*(*r).b).resultflag = (i64)1;
         (*r).mode = (i64)9;
         (*p).tag = (i64)44;
-        msysc$m_print_startcon();
-        msysc$m_print_str((byte*)"HERE",NULL);
-        msysc$m_print_newline();
-        msysc$m_print_end();
-        ;
         (*p).b = r;
     }
 ;
@@ -27855,16 +27838,16 @@ static void mm_type$deref(struct mm_decls$unitrec *a,i64 needres) {
         i64 abasemode;
         i64 tmode;
     abasemode = (i64)mm_decls$ttbasetype[((i64)(*a).mode)];
-    L880 :;
+    L877 :;
     while ((abasemode == (i64)7)) {
         tmode = (i64)mm_decls$tttarget[((i64)(*a).mode)];
         mm_lib$insertunit(a,(i64)45);
         mm_type$setsimple(a);
         (*a).mode = tmode;
         abasemode = (i64)mm_decls$ttbasetype[((i64)(*a).mode)];
-L881 :;
+L878 :;
     }
-L882 :;
+L879 :;
     ;
 }
 
@@ -27910,7 +27893,7 @@ if (($temp==(i64)89)) {
         }
         else {
             //error:
-L883 :;
+L880 :;
 ;
             mm_support$txerror_s((byte*)"lwb/upb/len?",mm_lib$strmode(m,(i64)1),0);
         }
@@ -27924,7 +27907,7 @@ L883 :;
             (*p).pclop = (i64)90;
         }
         else {
-            goto L883 ;
+            goto L880 ;
 ;
         }
 ;
@@ -27937,7 +27920,7 @@ L883 :;
             (*p).pclop = (i64)88;
         }
         else {
-            goto L883 ;
+            goto L880 ;
 ;
         }
 ;
@@ -27955,7 +27938,7 @@ L883 :;
         else if ((mbase==(i64)11)) {
         }
         else {
-            goto L883 ;
+            goto L880 ;
 ;
         }
 ;
@@ -28007,12 +27990,6 @@ static void mm_type$tevaluate(struct mm_decls$unitrec *p) {
 static struct mm_decls$unitrec *mm_type$addrdotindex(struct mm_decls$unitrec *p,i64 *offset) {
         struct mm_decls$unitrec *  q;
         i64 axmode;
-    msysc$m_print_startcon();
-    msysc$m_print_str((byte*)"ADDRDOTIX",NULL);
-    msysc$m_print_str(mm_lib$strmode((i64)(*p).mode,(i64)1),NULL);
-    msysc$m_print_newline();
-    msysc$m_print_end();
-    ;
         {i64 $temp = (i64)(*p).tag;
 if (($temp==(i64)42)) {
         if (((i64)(*(*p).a).tag == (i64)3)) {
@@ -28444,7 +28421,7 @@ static i64 mm_type$getconversionop(i64 s,i64 t,i64 hard) {
                 {
                     opc = (i64)82;
                     //checkhard:
-L884 :;
+L881 :;
 ;
                     if (!(!!(hard))) {
                         opc = (i64)99;
@@ -28499,7 +28476,7 @@ L884 :;
         {
             if ((tbase==(i64)3) || (tbase==(i64)2)) {
                 opc = (i64)82;
-                goto L884 ;
+                goto L881 ;
 ;
             }
             else if ((tbase==(i64)7)) {
@@ -28512,11 +28489,11 @@ L884 :;
                 }
                 else {
                     //checkref:
-L885 :;
+L882 :;
 ;
                     opc = (i64)82;
                     if (!(!!(mm_type$comparemodes(s,t)))) {
-                        goto L884 ;
+                        goto L881 ;
 ;
                     }
 ;
@@ -28524,7 +28501,7 @@ L885 :;
 ;
             }
             else if ((tbase==(i64)20)) {
-                goto L885 ;
+                goto L882 ;
 ;
             }
             else if ((tbase==(i64)6)) {
@@ -28537,7 +28514,7 @@ L885 :;
         {
             if ((tbase==(i64)3) || (tbase==(i64)2)) {
                 opc = (i64)82;
-                goto L884 ;
+                goto L881 ;
 ;
             }
             else if ((tbase==(i64)7)) {
@@ -28663,20 +28640,20 @@ static void mm_type$applyconversion(struct mm_decls$unitrec *p,i64 s,i64 t,i64 o
     if (((u64)1u && ((i64)(*p).tag == (i64)4))) {
         (*p).mode = t;
         q = (*p).a;
-        L886 :;
+        L883 :;
         while (!!((*q).nextunit)) {
             q = (*q).nextunit;
-L887 :;
+L884 :;
         }
-L888 :;
+L885 :;
         ;
         p = q;
-        goto L889 ;
+        goto L886 ;
 ;
     }
     else {
         //dorest:
-L889 :;
+L886 :;
 ;
         mm_lib$insertunit(p,(i64)48);
         (*p).pclop = opc;
@@ -28921,28 +28898,28 @@ static void mm_type$tx_assignmultmult(struct mm_decls$unitrec *pp,struct mm_decl
     rhs = (*b).a;
     lhs = (*a).a;
     p = lhs;
-    L890 :;
+    L887 :;
     while (!!(p)) {
         mm_type$tpasslv(p,(i64)22);
-L891 :;
+L888 :;
         p = (*p).nextunit;
-L893 :;
+L890 :;
             }
-L892 :;
+L889 :;
     ;
     p = lhs;
     q = rhs;
-    L894 :;
+    L891 :;
     while (!!(q)) {
         mm_type$tpass(q,(i64)(*p).mode,(i64)0);
-L895 :;
+L892 :;
         {
             p = (*p).nextunit;
             q = (*q).nextunit;
         }
-L897 :;
+L894 :;
             }
-L896 :;
+L893 :;
     ;
 }
 
@@ -28978,23 +28955,17 @@ if (($temp==(i64)27)) {
         p = alist;
         pmult = mm_decls$ttmult[((i64)(*d).mode)];
         i = (i64)1;
-        L898 :;
+        L895 :;
         while (!!(p)) {
             mm_type$tpasslv(p,(i64)(*pmult)[((i)++)-1]);
-L899 :;
+L896 :;
             p = (*p).nextunit;
-L901 :;
+L898 :;
                     }
-L900 :;
+L897 :;
         ;
     }
     else if (($temp==(i64)11)) {
-        msysc$m_print_startcon();
-        msysc$m_print_str((byte*)"MULT:=SLICE",NULL);
-        msysc$m_print_i64((i64)(*a).length,NULL);
-        msysc$m_print_newline();
-        msysc$m_print_end();
-        ;
         if ((alength != (i64)2)) {
             mm_support$txerror((byte*)"(a,b):=slice",0);
         }
@@ -29105,18 +29076,18 @@ static i64 mm_type$doin(struct mm_decls$unitrec *p,struct mm_decls$unitrec *a,st
     simpleset = (i64)1;
     if (((i64)(*b).tag == (i64)17)) {
         q = (*b).a;
-        L902 :;
+        L899 :;
         while (!!(q)) {
             if (!(!!((i64)mm_decls$ttisinteger[((i64)(*q).mode)]))) {
                 simpleset = (i64)0;
-                goto L904 ;
+                goto L901 ;
             }
 ;
-L903 :;
+L900 :;
             q = (*q).nextunit;
-L905 :;
+L902 :;
                     }
-L904 :;
+L901 :;
         ;
     }
 ;
@@ -29152,17 +29123,37 @@ if (($temp==(i64)28) || ($temp==(i64)86)) {
     };
         ($av_1 = (i64)mm_tables$jsubs[((i64)(*p).tag)]);
     for (i=(i64)1;i<=$av_1;++i) {
-L906 :;
+L903 :;
         a = (*p).abc[(i)-1];
         if ((!!(a) && !(!!((i64)(*a).simple)))) {
             return;
         }
 ;
+L904 :;
+    }
+L905 :;
+    ;
+    (*p).simple = (i64)1;
+}
+
+static void mm_type$do_printlist(struct mm_decls$unitrec *b) {
+        struct mm_decls$unitrec *  c;
+    L906 :;
+    while (!!(b)) {
+        if (((i64)(*b).tag == (i64)83)) {
+            mm_type$tpass((c = (*b).a),(i64)22,(i64)0);
+            mm_type$tpass((*b).b,(i64)20,(i64)0);
+        }
+        else {
+            mm_type$tpass((c = b),(i64)22,(i64)0);
+        }
+;
+        mm_type$fixchararray(c);
+        b = (*b).nextunit;
 L907 :;
     }
 L908 :;
     ;
-    (*p).simple = (i64)1;
 }
 
 // START
@@ -29281,7 +29272,7 @@ void mm_winc$do_link_lin(u8 *cfile,u8 *exefile,u8 *linkoption,i64 ccompiler,i64 
     strcpy(newexefile,mlib$changeext(exefile,(byte*)""));
     if ((ccompiler==(i64)1)) {
         msysc$m_print_startstr(str);
-        msysc$m_print_setfmt((byte*)"gcc -m64 # # -o# # -lm -ldl -s -fno-builtin");
+        msysc$m_print_setfmt((byte*)"gcc # # -o# # -lm -ldl -s -fno-builtin");
         msysc$m_print_str((!!(doobj) ? (byte*)"-c" : (byte*)""),NULL);
         msysc$m_print_str((!!(optimise) ? (byte*)"-O3" : (byte*)""),NULL);
         msysc$m_print_str(newexefile,NULL);
@@ -31029,7 +31020,6 @@ void *mlib$pcm_alloc(i64 n) {
             mlib$abortprogram((byte*)"pcm_alloc failure");
         }
 ;
-        mlib$bigmemtotal += mlib$allocbytes;
         if ((u64)0u) {
             mlib$addtomemalloc((i32 *)p,mlib$allocbytes);
         }
@@ -31074,7 +31064,6 @@ void mlib$pcm_free(void *p,i64 n) {
             mlib$removefrommemalloc((i32 *)p,n);
         }
 ;
-        mlib$bigmemtotal -= n;
         free(p);
         return;
     }
@@ -31747,18 +31736,6 @@ void mlib$pcm_free32(void *p) {
     mlib$freelist[((i64)2)] = (u64 *)p;
 }
 
-void *mlib$pcm_alloc64(void) {
-        byte *  p;
-    mlib$allocbytes = (i64)64;
-    mlib$smallmemtotal += (i64)64;
-    if (!!((p = (byte *)mlib$freelist[((i64)3)]))) {
-        mlib$freelist[((i64)3)] = (u64 *)(i64)(*mlib$freelist[((i64)3)]);
-        return p;
-    }
-;
-    return mlib$pcm_alloc((i64)64);
-}
-
 void mlib$pcm_free64(void *p) {
     mlib$smallmemtotal -= (i64)64;
     if ((u64)0u) {
@@ -32304,7 +32281,7 @@ r64 mlib$mrandomreal(void) {
         r64 x;
     L1033 :;
     do {
-        x = ((r64)mlib$mrandomp() / (double)9223372036854775800.);
+        x = ((r64)mlib$mrandomp() / (double)9223372036854775808.);
 L1034 :;
     }
     while (!(x != (double)1.));
@@ -32575,7 +32552,18 @@ i64 mlinux$os_filelastwritetime(u8 *filename) {
 }
 
 void mlinux$os_getsystime(struct mlinux$rsystemtime *tm) {
-    memset(tm,(i32)(i64)0,(u64)36u);
+        struct mlinux$timeval tv;
+        struct mlinux$tm_rec tmr;
+    gettimeofday(&tv,0);
+    gmtime_r(&tv.tv_sec,&tmr);
+    (*tm).year = ((i64)tmr.tm_year + (i64)1900);
+    (*tm).month = ((i64)tmr.tm_mon + (i64)1);
+    (*tm).dayofweek = ((i64)tmr.tm_wday + (i64)1);
+    (*tm).day = (i64)tmr.tm_mday;
+    (*tm).hour = (i64)tmr.tm_hour;
+    (*tm).minute = (i64)tmr.tm_min;
+    (*tm).second = (i64)tmr.tm_sec;
+    (*tm).milliseconds = (tv.tv_usec / (i64)1000);
     (*tm).month = (i64)1;
 }
 
