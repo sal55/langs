@@ -28,10 +28,6 @@ The nearest mainstream alternative would be C, with similarities in their type s
 * Designed for whole-program compilation
 * Companion scripting language (Q) with identical syntax
 
-Contemporary languages that are used for systems programming (Java, D, C#, Go, C++, Rust, Zig) are much more advanced with modern type systems and all those things listed in my Missing summary.
-
-Still, for *my* systems programming, this is my first choice.
-
 ### Q Overview
 
 * Interpreted scripting language
