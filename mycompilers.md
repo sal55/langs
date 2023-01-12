@@ -125,23 +125,23 @@ This idea was extended to my own executable format, called MX and using .mx file
 
 Another by-product of the fixups needed for MX/ML files, is to fix up generated code to run directly in memory, without needing to write those files.
 
-This nows allows the compiler to run code directly from source, just like a scripting language, using the -run option. Here:
+This nows allows the compiler to run code directly from source, just like a scripting language, using the -run option. Given this small set of files:
 ````
     c:\demo>dir/b
-    hello.q            # 38 bytes
+    hello.q            # 38 bytes        Test input for the Q interpreter that will be compiled and run
     ms.exe             # 470KB           M compiler configured to apply -run automatically
     ms.ma              # 630KB           1-file combined sources of the M compiler
     qq.ma              # 1MB             1-file combined source of the Q interpreter (my other language)
 ````
 
-Now I can do this:
+I can do this:
 ````
     c:\demo>ms ms qq hello
     Hello, World! 12-Jan-2023 21:01:49
 ````
 ms.exe builds itself (ms.ma) and then runs that new version in-memory. That is used to build qq.ma, the interpreter, and runs that in-memory, using it to run hello.q.
 
-The equivalent with mainstream products would be for gcc to first build itself from scratch, then use that new version to build CPython from scratch, then run hello.py. The difference with mine is that there are just 4 files in total, including hello.q, and the whole process took 1/6th of a second.
+The equivalent with mainstream products would be for gcc to first build itself from scratch, then use that new version to build CPython from scratch, then run hello.py. The difference with mine is that there are just 4 files in total, including hello.q, and the whole process takes 1/6th of a second.
 
 ### Intermediate Language/Representation
 
