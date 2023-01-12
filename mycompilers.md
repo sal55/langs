@@ -125,23 +125,23 @@ This idea was extended to my own executable format, called MX and using .mx file
 
 Another by-product of the fixups needed for MX/ML files, is to fix up generated code to run directly in memory, without needing to write those files.
 
-This nows allows the compiler to run code directly from source, just like a scripting language. Take these 3 files:
-```
-c:\demo>dir
-04/12/2021  15:07                24 hello.q
-18/07/2022  11:07           716,194 mm.ma
-18/07/2022  11:06         1,016,555 qq.ma
-```
-mm.qq is the source for my M compiler; qq.ma is the source for my Q compiler/interpreter; both are one-file amalgamations produced via the `-ma` options of the M compiler. Here, the first `mm` is the `mm.exe` M compiler, located elsewhere:
-```
-c:\demo>mm -run mm -run qq hello
-Compiling mm.m to memory
-Compiling qq.m to memory
-Hello, World!
-```
-This compiles the sources for the M compiler, runs it from memory, which compiles the sources for the Q interpreter, then runs that in memory which executes that hello.q script. This takes under 0.2 seconds and needs to write 0 bytes to disk.
+This nows allows the compiler to run code directly from source, just like a scripting language, using the -run option. Here:
+````
+    c:\demo>dir/b
+    hello.q            # 38 bytes
+    ms.exe             # 470KB           M compiler configured to apply -run automatically
+    ms.ma              # 630KB           1-file combined sources of the M compiler
+    qq.ma              # 1MB             1-file combined source of the Q interpreter (my other language)
+````
 
-The equivalent with mainstream products would be for gcc to first build itself from scratch, then use that new version to build CPython from scratch, then run hello.py.)
+Now I can do this:
+````
+    c:\demo>ms ms qq hello
+    Hello, World! 12-Jan-2023 21:01:49
+````
+ms.exe builds itself (ms.ma) and then runs that new version in-memory. That is used to build qq.ma, the interpreter, and runs that in-memory, using it to run hello.q.
+
+The equivalent with mainstream products would be for gcc to first build itself from scratch, then use that new version to build CPython from scratch, then run hello.py. The difference with mine is that there are just 4 files in total, including hello.q, and the whole process took 1/6th of a second.
 
 ### Intermediate Language/Representation
 
@@ -151,7 +151,7 @@ ILs are what I've been working on recently, trying to see which one is best for 
 
 After many weeks and to-ing and froing, my decision was: to discard both! I decided having an IL at all didn't buy me much.
 
-For non-executable code, it's an unnecessary extra layer. For helping improve the generated code, my latest ideas involved either doing something before the IL was generated, or as part of the next stage. So I'm going back to an earlier model. It might take me a week to get that working on my code-base.
+For non-executable code, it's an unnecessary extra layer. For helping improve the generated code, my latest ideas involved either doing something before the IL was generated, or as part of the next stage. So I'm going back to an earlier model.
 
 ### Using a C Target
 
@@ -162,11 +162,13 @@ For a period I supported an optional C target:
 
 But that was not really satisfactory. Also, some M languages features couldn't be used. While admittedly highly useful, I decided to withdraw the feature; purity and self-sufficiency is too attractive.
 
+(Update: that C target has been reinstatated. But it is only 90%. So some features have had to be avoided to allow it to be applied to my tools. The main reason is to be able to claim higher lines-per-second throughput for my compilers.)
+
 ### What Were They Used For
 
-The very first was just an appealing project that I had a genuine interest in.
+The very first (Babbage) was just an appealing project that I had a genuine interest in.
 
-The next (Z80) was the hobby one. I got a kick of being able to write HLL code on my home £100 computer, that a few years earlier I need to use a £500,000 mainframe.
+The next (Z80) was the hobby one. I got a kick of being able to write HLL code on my home £100 computer, that a few years earlier I need to use a £500,000 mainframe. \[Figures not inflation adjusted.\]
 
 The subsequent compilers for Z80 then x86 were used for a range of low-level code. It should be remembered that in the world of home and small business microcomputers and PCs, for most of the 80s and half the 90s, the OS was was very primitive and did very little: basically keyword, console display, and file system.
 
