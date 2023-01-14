@@ -1,7 +1,7 @@
 !Simple Lexer for Q source code
 !For benchmark purposes only
 
-tabledata() symbolnames=
+enumdata symbolnames=
     (errorsym,          $),
     (dotsym,            $),
     (commasym,          $),
