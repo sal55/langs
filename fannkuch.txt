@@ -1,0 +1,1255 @@
+# "Fannkuch" Benchmark from:
+#  https://benchmarksgame-team.pages.debian.net/benchmarksgame/description/fannkuchredux.html#fannkuchredux
+
+# Languages covered are M and Q (mine), plus:
+# Go, Lua, Python, Ruby, C, Julia, Rust, D, Nim, Algol68, Odin, Zig
+
+# Lua and probably Ruby versions are original Shootout code. The M version seems to derived from the Lua,
+# the rest are ported from the M code so as to use the same algorithm
+
+# ***********************************************************************************************
+# M Language giving the reference algorithm. (Which I now realise was derived from the Lua version
+# on the Shootout site. Most other versions will be based on this one.)
+# ***********************************************************************************************
+
+function fannkuch(int n)int,int=
+    int signx,maxflips,sum
+    int i,j,k
+    int q1,flips,qq,t,sx,tt
+    [100]int p,q,s
+
+    signx:=1
+    maxflips:=0
+    sum:=0
+
+    for i:=1 to n do
+        p[i]:=i
+        q[i]:=i
+        s[i]:=i
+    od
+
+    do
+
+        q1:=p[1]
+        if q1<>1 then
+            for i:=2 to n do q[i]:=p[i] od
+            flips:=1
+            do
+                qq:=q[q1]
+                if qq=1 then
+                    sum+:=signx*flips
+                    if flips>maxflips then
+                            maxflips:=flips
+                    fi
+                    exit
+                fi
+                q[q1]:=q1
+                if q1>=4 then
+                    i:=2; j:=q1-1
+                    repeat
+                        swap(q[i],q[j])
+                        ++i
+                        --j
+                    until i>=j
+                fi
+                q1:=qq
+                ++flips
+            od
+        fi
+
+        if signx=1 then
+            swap(p[2],p[1])
+            signx:=-1
+        else
+            swap(p[2],p[3])
+            signx:=1
+            for i:=3 to n do
+                sx:=s[i]
+                if sx<>1 then s[i]:=sx-1; exit fi
+                if i=n then
+                    return (sum,maxflips)
+                fi
+                s[i]:=i
+                tt:=p[1]
+
+                for j:=1 to i do
+                    p[j]:=p[j+1]
+                od
+
+                p[i+1]:=tt
+            od
+        fi
+    od
+
+    return (0,0)
+end
+
+proc start=
+    int res,res2
+    const n = 11
+
+    (res,res2):=fannkuch(n)
+
+    fprintln "Pfannkuchen(#) = # #", n, res, res2
+end
+
+# ***********************************************************************************************
+# Q version (my scripting language)
+# ***********************************************************************************************
+
+function fannkuch(n) =
+    p:=(0,)*(n+1)
+    q:=(0,)*(n+1)
+    s:=(0,)*(n+1)
+    signx:=1
+    maxflips:=0
+    sum:=0
+
+    for i:=1 to n do
+        p[i]:=i
+        q[i]:=i
+        s[i]:=i
+    od
+
+    do
+        q1:=p[1]
+        if q1<>1 then
+            for i:=2 to n do q[i]:=p[i] od
+
+            flips:=1
+
+            do
+                qq:=q[q1]
+                if qq=1 then
+                    sum+:=signx*flips
+                    if flips>maxflips then maxflips:=flips fi
+                    exit
+                fi
+                q[q1]:=q1
+                if q1>=4 then
+                    i:=2; j:=q1-1
+                    repeat
+                        swap(q[i],q[j])
+                        ++i
+                        --j
+                    until i>=j
+                fi
+                q1:=qq
+                ++flips
+            od
+        fi
+
+        if signx=1 then
+            swap(p[2],p[1])
+            signx:=-1
+        else
+            swap(p[2],p[3])
+            signx:=1
+            for i:=3 to n do
+                sx:=s[i]
+                if sx<>1 then s[i]:=sx-1; exit fi
+                if i=n then return (sum,maxflips) fi
+                s[i]:=i
+                tt:=p[1]
+                for j:=1 to i do
+                    p[j]:=p[j+1]
+                od
+                p[i+1]:=tt
+            od
+        fi
+    od
+    return (0,0)
+end
+
+# ***********************************************************************************************
+# Go Language version
+# ***********************************************************************************************
+
+package main
+
+import (
+    "fmt"
+)
+
+var res2 int
+
+func fann1(n int)int {
+    sign:=1
+    maxflips:=0
+    sum:=0
+    i:=0
+    j:=0
+    q1:=0
+    flips:=0
+    qq:=0
+    t:=0
+    sx:=0
+
+    p     := make([]int, n+1)
+    q     := make([]int, n+1)
+    s     := make([]int, n+1)
+
+    for i := 1; i<=n; i++ {
+        p[i] = i
+        q[i] = i
+        s[i] = i
+    }
+
+    for ;; {
+        q1=p[1]
+        if q1!=1 {
+            for i=2; i<=n; i+=1 {
+                q[i]=p[i]
+            }
+            flips=1
+            for ;; {
+                qq=q[q1]
+                if qq==1 {
+                    sum=sum+sign*flips
+                    if flips>maxflips {
+                        maxflips=flips
+                    }
+                    break
+                }
+                q[q1]=q1
+                if q1>=4 {
+                    i=2
+                    j=q1-1
+                    for ;; {
+                        t=q[i]
+                        q[i]=q[j]
+                        q[j]=t
+                        i=i+1
+                        j=j-1
+                        if i>=j {
+                            break
+                        }
+                    }
+                }
+                q1=qq
+                flips=flips+1
+            }
+        }
+
+        if sign==1 {
+            t=p[2]
+            p[2]=p[1]
+            p[1]=t
+            sign=-1
+        } else {
+            t=p[2]
+            p[2]=p[3]
+            p[3]=t
+            sign=1
+            for i=3; i<=n; i+=1 {
+                sx=s[i]
+                if sx!=1 {
+                    s[i]=sx-1
+                    break
+                }
+                if i==n {
+                    res2=maxflips
+                    return sum
+                }
+                s[i]=i
+                t=p[1]
+                for j=1; j<=i; j+=1 {
+                    p[j]=p[j+1]
+                }
+                p[i+1]=t
+            }
+        }
+    }
+
+    return 0
+}
+
+func main() {
+
+    n:=11
+
+    fmt.Printf("Pfannkuchen(%d) = %d %d\n", n, fann1(n), res2)
+}
+
+# ***********************************************************************************************
+# Lua Version - this one is from that site as it seems to use my algorith (or possibly this is what
+# I derived mine from; I can't remember!)
+# ***********************************************************************************************
+-- The Computer Language Benchmarks Game
+-- http://benchmarksgame.alioth.debian.org/
+-- contributed by Mike Pall
+
+local function fannkuch(n)
+  local p, q, s, sign, maxflips, sum = {}, {}, {}, 1, 0, 0
+  for i=1,n do p[i] = i; q[i] = i; s[i] = i end
+  repeat
+    -- Copy and flip.
+    local q1 = p[1]       -- Cache 1st element.
+    if q1 ~= 1 then
+      for i=2,n do q[i] = p[i] end    -- Work on a copy.
+      local flips = 1
+      repeat
+  local qq = q[q1]
+  if qq == 1 then       -- ... until 1st element is 1.
+    sum = sum + sign*flips
+    if flips > maxflips then maxflips = flips end -- New maximum?
+    break
+  end
+  q[q1] = q1
+  if q1 >= 4 then
+    local i, j = 2, q1 - 1
+    repeat q[i], q[j] = q[j], q[i]; i = i + 1; j = j - 1; until i >= j
+  end
+  q1 = qq; flips = flips + 1
+      until false
+    end
+    -- Permute.
+    if sign == 1 then
+      p[2], p[1] = p[1], p[2]; sign = -1  -- Rotate 1<-2.
+    else
+      p[2], p[3] = p[3], p[2]; sign = 1   -- Rotate 1<-2 and 1<-2<-3.
+      for i=3,n do
+  local sx = s[i]
+  if sx ~= 1 then s[i] = sx-1; break end
+  if i == n then return sum, maxflips end -- Out of permutations.
+  s[i] = i
+  -- Rotate 1<-...<-i+1.
+  local t = p[1]; for j=1,i do p[j] = p[j+1] end; p[i+1] = t
+      end
+    end
+  until false
+end
+
+local n = 11
+-- local
+sum, flips = fannkuch(n)
+io.write(sum, "\nPfannkuchen(", n, ") = ", flips, "\n")
+
+# ***********************************************************************************************
+# Python version
+# ***********************************************************************************************
+
+def fannkuch(n):
+    p=[0,]*(n+1)
+    q=[0,]*(n+1)
+    s=[0,]*(n+1)
+    signx=1
+    maxflips=0
+    sum=0
+    for i in range(1,n+1):
+        p[i]=i
+        q[i]=i
+        s[i]=i
+    while 1:
+        q1=p[1]
+        if q1!=1:
+            for i in range(2,n+1):
+                q[i]=p[i]
+            flips=1
+            while 1:
+                qq=q[q1]
+                if qq==1:
+                    sum=sum+signx*flips
+                    if flips>maxflips: maxflips=flips
+                    break
+                q[q1]=q1
+                if q1>=4:
+                    i=2
+                    j=q1-1
+                    while 1:
+                        t=q[i]
+                        q[i]=q[j]
+                        q[j]=t
+                        i=i+1
+                        j=j-1
+                        if i>=j: break
+                q1=qq
+                flips=flips+1
+
+        if signx==1:
+            t=p[2]
+            p[2]=p[1]
+            p[1]=t
+            signx=-1
+        else:
+            t=p[2]
+            p[2]=p[3]
+            p[3]=t
+            signx=1
+            for i in range(3,n+1):
+                sx=s[i]
+                if sx!=1:
+                    s[i]=sx-1
+                    break
+                if i==n: return [sum,maxflips]
+                s[i]=i
+                t=p[1]
+                for j in range(1,i+1):
+                    p[j]=p[j+1]
+                p[i+1]=t
+
+
+n=11
+x=fannkuch(n)
+
+print ("Pfannkuchen(",n,")=",x[0],x[1])
+
+# ***********************************************************************************************
+# Ruby version (I can't remember writing this so might be a Shootout original)
+# ***********************************************************************************************
+
+def fannkuch(n)
+  p = (0..n).to_a
+  s = p.dup
+  q = p.dup
+  sign = 1
+  sum = maxflips = 0
+  while(true)
+    # flip.
+
+    if (q1 = p[1]) != 1
+      q[0..-1] = p
+      flips = 1
+      until (qq = q[q1]) == 1
+        q[q1] = q1
+        if q1 >= 4
+          i, j = 2, q1 - 1
+          while i < j
+            q[i], q[j] = q[j], q[i]
+            i += 1
+            j -= 1
+          end
+        end
+        q1 = qq
+        flips += 1
+      end
+      sum += sign * flips
+      maxflips = flips if flips > maxflips # New maximum?
+
+    end
+    # Permute.
+
+    if sign == 1
+      # Rotate 1<-2.
+
+      p[1], p[2] = p[2], p[1]
+      sign = -1
+    else
+      # Rotate 1<-2 and 1<-2<-3.
+
+      p[2], p[3] = p[3], p[2]
+      sign = 1
+      i = 3
+      while i <= n && s[i] == 1
+        return [sum, maxflips] if i == n     # Out of permutations.
+
+        s[i] = i
+        # Rotate 1<-...<-i+1.
+
+        t = p.delete_at(1)
+        i += 1
+        p.insert(i, t)
+      end
+      s[i] -= 1  if i <= n
+    end
+  end
+end
+
+n = 11
+sum, flips = fannkuch(n)
+printf "%d\nPfannkuchen(%d) = %d\n", sum, n, flips
+
+# ***********************************************************************************************
+# C version (derived from machine-transpiled version)
+# ***********************************************************************************************
+
+#include <stdio.h>
+#include <stdio.h>
+
+int	res2;
+
+static int fann1(int n) {
+int	signx;
+int	maxflips;
+int	sum;
+int	i;
+int	j;
+int	k;
+int	q1;
+int	flips;
+int	qq;
+int	t;
+int	sx;
+int	tt;
+int	p[100];
+int	q[100];
+int	s[100];
+    signx = 1;
+    maxflips = 0;
+    sum = 0;
+    for (i=1; i<=n; ++i) {
+        p[i-1] = i;
+        q[i-1] = i;
+        s[i-1] = i;
+    }
+    while (1) {
+        q1 = p[1-1];
+        if (q1 != 1) {
+            for (i=2; i<=n; ++i) {
+                q[i-1] = p[i-1];
+            }
+            flips = 1;
+            while (1) {
+                qq = q[q1-1];
+                if (qq == 1) {
+                    sum += signx*flips;
+                    if (flips > maxflips) {
+                        maxflips = flips;
+                    }
+                    goto L12;
+                }
+                q[q1-1] = q1;
+                if (q1 >= 4) {
+                    i = 2;
+                    j = q1-1;
+                    do {
+                        {int	temp;
+                            temp = q[i-1];
+                            q[i-1] = q[j-1];
+                            q[j-1] = temp;
+                        }
+                        ++i;
+                        --j;
+                    } while (!(i >= j));
+                }
+                q1 = qq;
+                ++flips;
+            }
+L12:;
+        }
+        if (signx == 1) {
+            {int	temp;
+                temp = p[2-1];
+                p[2-1] = p[1-1];
+                p[1-1] = temp;
+            }
+            signx = -1;
+        }
+        else {
+            {int	temp;
+                temp = p[2-1];
+                p[2-1] = p[3-1];
+                p[3-1] = temp;
+            }
+            signx = 1;
+            for (i=3; i<=n; ++i) {
+                sx = s[i-1];
+                if (sx != 1) {
+                    s[i-1] = sx-1;
+                    goto L19;
+                }
+                if (i == n) {
+                    res2 = maxflips;
+                    return sum;
+                }
+                s[i-1] = i;
+                tt = p[1-1];
+                for (j=1; j<=i; ++j) {
+                    p[j-1] = p[j+1-1];
+                }
+                p[i+1-1] = tt;
+            }
+L19:;
+        }
+    }
+    return 0;
+}
+
+int main(void) {
+	int	res;
+	enum {n=11};
+	res = fann1(n);
+    printf("fannkuch(%d) = %d %d\n",n,res,res2);
+}
+
+# ***********************************************************************************************
+
+
+# ***********************************************************************************************
+# Julia version
+# ***********************************************************************************************
+
+function fannkuch(n::Int64)
+    p=[0,0,0,0,0, 0,0,0,0,0, 0]
+    q=[0,0,0,0,0, 0,0,0,0,0, 0]
+    s=[0,0,0,0,0, 0,0,0,0,0, 0]
+
+    sign=1
+    maxflips=0
+    sum=0
+
+    for i=1:n
+        p[i]=i
+        q[i]=i
+        s[i]=i
+    end
+
+    while true
+        q1=p[1]
+        if q1!=1
+            for i=2:n
+                q[i]=p[i]
+            end
+            flips=1
+            
+            while true
+                qq=q[q1]
+                if qq==1
+                    sum=sum+sign*flips
+                    if flips>maxflips
+                        maxflips=flips
+                    end
+                    break
+                end
+                q[q1]=q1
+                if q1>=4
+                    i=2
+                    j=q1-1
+                    while true
+                        temp=q[i]
+                        q[i]=q[j]
+                        q[j]=temp
+                        i=i+1
+                        j=j-1
+                        if i>=j
+                            break
+                        end
+                    end
+                end
+                q1=qq
+                flips=flips+1
+            end
+        end
+
+        if sign==1
+            temp=p[2]
+            p[2]=p[1]
+            p[1]=temp
+            sign=-1
+        else
+            temp=p[2]
+            p[2]=p[3]
+            p[3]=temp
+            sign=1
+            for i=3:n
+                sx=s[i]
+                if sx!=1
+                    s[i]=sx-1
+                    break
+                end
+                if i==n
+                    return (sum,maxflips)
+                end
+                s[i]=i
+                tt=p[1]
+
+                for j=1:i
+                    p[j]=p[j+1]
+                end
+
+                p[i+1]=tt
+            end
+        end
+    end
+
+    return 0
+end
+
+println(fannkuch(11))
+
+# ***********************************************************************************************
+# Rust version
+# ***********************************************************************************************
+fn fannkuch(n:i32)->(i32,i32) {
+    let mut sign:i32=1;
+    let mut maxflips:i32=0;
+    let mut sum:i32=0;
+    let mut i:i32;
+    let mut j:i32;
+    let mut q1:i32;
+    let mut qq:i32;
+    let mut t:i32;
+    let mut sx:i32;
+    let mut flips:i32;
+    let mut p:[i32;20]=[0;20];
+    let mut q:[i32;20]=[0;20];
+    let mut s:[i32;20]=[0;20];
+
+    for i in 1..=n {
+        p[i as usize] = i;
+        q[i as usize] = i;
+        s[i as usize] = i;
+    }
+    
+    loop {
+        
+        q1=p[1];
+        if q1!=1 {
+            for i in 2..=n { q[i as usize] = p[i as usize]; }
+            flips=1;
+            loop {
+                qq=q[q1 as usize];
+                if qq==1 {
+                    sum=sum+sign*flips;
+                    if flips>maxflips {
+                        maxflips=flips;
+                    }
+                    break;
+                }
+                q[q1 as usize]=q1;
+                if q1>=4 {
+                    i=2; j=q1-1;
+                    loop {
+                        t=q[i as usize];
+                        q[i as usize]=q[j as usize];
+                        q[j as usize]=t;
+                        i=i+1;
+                        j=j-1;
+                        if i>=j {break;}
+                    }
+                }
+                q1=qq;
+                flips=flips+1;
+            }
+        }
+        
+        
+        if sign==1 {
+            t=p[2]; p[2]=p[1]; p[1]=t;
+            sign=-1;
+        } else {
+            t=p[2]; p[2]=p[3]; p[3]=t;
+            sign=1;
+            for i in 3..=n {
+                sx=s[i as usize];
+                if sx!=1 {s[i as usize]=sx-1; break; }
+                if i==n {
+                    return (sum, maxflips);
+                }
+                s[i as usize]=i;
+                t=p[1];
+                for j in 1..=i {
+                    p[j as usize] = p[(j+1) as usize];
+                }
+                p[(i+1) as usize]=t;
+            }
+        }
+    }
+    
+}
+
+fn main() {
+    let n:i32 = 11;
+    
+    let (res,res2)=fannkuch(n);
+    
+    println!("Fannkuch({}) ={} {}", n,res, res2);
+}
+# ***********************************************************************************************
+# D version (derived from the C which was transpiled from M)
+# ***********************************************************************************************
+
+import std.stdio;
+
+int res2;
+
+int fannkuch(int n) {
+int	signx;
+int	maxflips;
+int	sum;
+int	i;
+int	j;
+int	k;
+int	q1;
+int	flips;
+int	qq;
+int	t;
+int	sx;
+int	tt;
+int[100] p;
+int[100] q;
+int[100] s;
+    signx = 1;
+    maxflips = 0;
+    sum = 0;
+    for (i=1; i<=n; ++i) {
+        p[i-1] = i;
+        q[i-1] = i;
+        s[i-1] = i;
+    }
+    while (1) {
+        q1 = p[1-1];
+        if (q1 != 1) {
+            for (i=2; i<=n; ++i) {
+                q[i-1] = p[i-1];
+            }
+            flips = 1;
+            while (1) {
+                qq = q[q1-1];
+                if (qq == 1) {
+                    sum += signx*flips;
+                    if (flips > maxflips) {
+                        maxflips = flips;
+                    }
+                    goto L12;
+                }
+                q[q1-1] = q1;
+                if (q1 >= 4) {
+                    i = 2;
+                    j = q1-1;
+                    do {
+                        {int	temp;
+                            temp = q[i-1];
+                            q[i-1] = q[j-1];
+                            q[j-1] = temp;
+                        }
+                        ++i;
+                        --j;
+                    } while (!(i >= j));
+                }
+                q1 = qq;
+                ++flips;
+            }
+L12:;
+        }
+        if (signx == 1) {
+            {int	temp;
+                temp = p[2-1];
+                p[2-1] = p[1-1];
+                p[1-1] = temp;
+            }
+            signx = -1;
+        }
+        else {
+            {int	temp;
+                temp = p[2-1];
+                p[2-1] = p[3-1];
+                p[3-1] = temp;
+            }
+            signx = 1;
+            for (i=3; i<=n; ++i) {
+                sx = s[i-1];
+                if (sx != 1) {
+                    s[i-1] = sx-1;
+                    goto L19;
+                }
+                if (i == n) {
+                    res2 = maxflips;
+                    return sum;
+                }
+                s[i-1] = i;
+                tt = p[1-1];
+                for (j=1; j<=i; ++j) {
+                    p[j-1] = p[j+1-1];
+                }
+                p[i+1-1] = tt;
+            }
+L19:;
+        }
+    }
+    return 0;
+}
+
+void main()
+{
+    int n=11;
+    int res;
+    res=fannkuch(n);
+    writefln("fannkuch(%d) = %d %d", n, res, res2);
+}
+
+#***********************************************************************************************
+# Nim version
+#***********************************************************************************************
+
+proc fann1(n:int):(int,int)=
+    var sign:int
+    var maxflips:int
+    var sum:int
+    var i:int
+    var j:int
+    var q1:int
+    var flips:int
+    var qq:int
+    var t:int
+    var sx:int
+    var p:array[1..20,int]
+    var q:array[1..20,int]
+    var s:array[1..20,int]
+
+    sign=1
+    maxflips=0
+    sum=0
+
+    for i in countup(1,n):
+        p[i]=i;
+        q[i]=i;
+        s[i]=i;
+#   end
+
+    while true:
+        q1=p[1]
+        if q1!=1:
+            for i in countup(2,n):
+                q[i]=p[i]
+#           end
+            flips=1
+            while true:
+                qq=q[q1]
+                if qq==1:
+                    sum+=sign*flips
+                    if flips>maxflips:
+                        maxflips=flips
+                    break
+                q[q1]=q1
+                if q1>=4:
+                    i=2
+                    j=q1-1
+                    while true:
+                        t=q[i]
+                        q[i]=q[j]
+                        q[j]=t
+                        i+=1
+                        j-=1
+                        if i>=j:
+                            break
+#                       end
+#                   end
+#               end
+                q1=qq
+                flips+=1
+#           end
+#       end
+
+        if sign==1:
+            t=p[2]
+            p[2]=p[1]
+            p[1]=t
+            sign= -1
+        else:
+            t=p[2]
+            p[2]=p[3]
+            p[3]=t
+            sign=1
+            for i in countup(3,n):
+                sx=s[i]
+                if sx!=1:
+                    s[i]=sx-1
+                    break
+#               end
+                if i==n:
+                    return (sum,maxflips)
+#               end
+                s[i]=i
+                t=p[1]
+
+                for j in countup(1,i):
+                    p[j]=p[j+1]
+#               end
+                p[i+1]=t
+#           end
+#       end
+#   end
+
+    return (0,0)
+#end
+
+
+let n=11
+let (a,b)=fann1(n)
+
+echo ""
+echo "fannkuch(",n,") = ",a," ",b
+
+#***********************************************************************************************
+# Algol 68 version (using A68G stropping)
+#***********************************************************************************************
+
+INT res2;
+
+PROC fannkuch=(INT n)INT: BEGIN
+    [n]INT p,q,s;
+    INT sign, maxflips, sum, q1, flips, qq, t, sx, i,j;
+
+    sign:=1;
+    maxflips:=0;
+    sum:=0;
+
+    FOR i TO n DO
+        p[i]:=i;
+        q[i]:=i;
+        s[i]:=i
+    OD;
+
+    DO
+        q1:=p[1];
+        IF q1/=1 THEN
+            FOR i FROM 2 TO n DO q[i]:=p[i] OD;
+            flips:=1;
+            DO
+                qq:=q[q1];
+                IF qq=1 THEN
+                    sum+:=sign*flips;
+                    IF flips>maxflips THEN
+                            maxflips:=flips
+                    FI;
+                    exit1
+                FI;
+
+                q[q1]:=q1;
+                IF q1>=4 THEN
+                    i:=2; j:=q1-1;
+                    WHILE
+                        t:=q[i]; q[i]:=q[j]; q[j]:=t;
+                        i+:=1;
+                        j-:=1;
+                        i<j
+                    DO SKIP OD
+                FI;
+                q1:=qq;
+                flips+:=1
+            OD;
+exit1: SKIP
+        FI;
+
+        IF sign=1 THEN
+            t:=p[2]; p[2]:=p[1]; p[1]:=t;
+            sign:=-1
+        ELSE
+            t:=p[2]; p[2]:=p[3]; p[3]:=t;
+            sign:=1;
+            FOR i FROM 3 TO n DO
+                sx:=s[i];
+                IF sx/=1 THEN s[i]:=sx-1; exit2 FI;
+                IF i=n THEN
+                    res2:=maxflips;
+                    return
+                FI;
+                s[i]:=i;
+                t:=p[1];
+
+                FOR j TO i DO
+                    p[j]:=p[j+1]
+                OD;
+
+                p[i+1]:=t
+            OD;
+exit2: SKIP
+        FI
+    OD;
+return:
+    sum
+END;
+
+INT n=11;
+INT res;
+res:=fannkuch(n);
+
+print(("Fannkuch(",n,") = ",res," ", res2,newline))
+
+#***********************************************************************************************
+# Odin version
+#***********************************************************************************************
+
+package main
+
+import "core:fmt"
+
+fann:: proc(n: int) -> (res, res2: int) {
+    p:=[20]int {0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0};
+    q:=[20]int {0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0};
+    s:=[20]int {0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0};
+    i,j,k:int;
+    sign, maxflips, sum: int;
+    q1, flips, qq, t, sx, tt:int;
+
+    sign=1;
+    maxflips=0;
+    sum=0;
+
+    for i:=1; i<=n; i+=1 {
+        p[i]=i;
+        q[i]=i;
+        s[i]=i;
+    }
+
+    for 1==1 {
+        q1=p[1];
+        if q1!=1 {
+            for i:=2; i<=n; i+=1 { q[i]=p[i] }
+            flips=1;
+            for 1==1 {
+                qq=q[q1];
+                if qq==1 {
+                    sum += sign*flips;
+                    if flips>maxflips {
+                        maxflips=flips;
+                    }
+                    break;
+                }
+                q[q1]=q1;
+                if q1>=4 {
+                    i=2; j=q1-1;
+                    for 1==1 {
+                        tt=q[i]; q[i]=q[j]; q[j]=tt;
+                        i+=1;
+                        j-=1;
+                        if i>=j { break}
+                    }
+                }
+                q1=qq;
+                flips+=1;
+            }
+        }
+
+        if (sign==1) {
+            tt=p[1]; p[1]=p[2]; p[2]=tt;
+            sign= -1;
+        } else {
+            tt=p[2]; p[2]=p[3]; p[3]=tt;
+            sign=1;
+            for i:=3; i<=n; i+=1 {
+                sx=s[i];
+                if sx!=1 {s[i]=sx-1; break }
+                if i==n {
+                    return sum, maxflips;
+                }
+                s[i]=i;
+                tt=p[1];
+                for j:=1; j<=i; j+=1 {
+                    p[j]=p[j+1];
+                }
+                p[i+1]=tt;
+            }
+        }
+    }
+
+    return 0,0;
+}
+
+
+main :: proc() {
+    n:=11;
+    a:=1;
+    b:=2;
+
+    a, b = fann(n);
+    a, b = fann(n);
+    a, b = fann(n);
+
+    fmt.println("Fann(",n,") = ",a,b);
+}
+
+#***********************************************************************************************
+# Zig version
+#***********************************************************************************************
+
+const print = @import("std").debug.print;
+
+var res2:i32=0;
+
+pub fn fann(n:usize) i32 {
+    var p=[20]usize {0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0};
+    var q=[20]usize {0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0};
+    var s=[20]usize {0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0};
+
+    var sign:i32=1;
+    var maxflips:i32=0;
+    var sum:i32=0;
+    var i:usize=0;
+    var j:usize=0;
+    var q1:usize=0;
+    var flips:i32=0;
+    var qq:usize=0;
+    var t:usize=0;
+    var tt:usize=0;
+    var sx:usize=0;
+
+    i=1;
+    while (i<=n) {
+        p[i]=i;
+        q[i]=i;
+        s[i]=i;
+        i+=1;
+    }
+
+    while (true) {
+        q1=p[1];
+        if (q1!=1) {
+            i=2;
+            while (i<=n) { q[i]=p[i]; i=i+1;}
+            flips=1;
+            while (true) {
+                qq=q[q1];
+                if (qq==1) {
+                    sum+=sign*flips;
+                    if (flips>maxflips) {
+                        maxflips=flips;
+                    }
+                    break;
+                }
+                q[q1]=q1;
+                if (q1>=4) {
+                    i=2; j=q1-1;
+                    while (true) {
+                        t=q[i]; q[i]=q[j]; q[j]=t;
+                        i+=1;
+                        j-=1;
+                        if (i>=j) {break;}
+                    }
+                }
+                q1=qq;
+                flips+=1;
+            }
+        }
+
+        if (sign==1) {
+            t=p[1]; p[1]=p[2]; p[2]=t;
+            sign=-1;
+        } else {
+            t=p[2]; p[2]=p[3]; p[3]=t;
+            sign=1;
+            i=3;
+            while (i<=n) {
+                sx=s[i];
+                if (sx!=1) { s[i]=sx-1; break; }
+                if (i==n) {
+                    res2=maxflips;
+                    return sum;
+                }
+                s[i]=i;
+                tt=p[1];
+                j=1;
+                while (j<=i) {
+                    p[j]=p[j+1]; j+=1;
+                }
+                p[i+1]=tt;
+                i+=1;
+            }
+        }
+    }
+
+    return 0;
+}
+
+pub fn main() !void {
+    var n: usize = 11;
+    var res: i32=0;
+
+    res=fann(n);
+
+    print("{d} ", .{res});
+    print("{d}\n", .{res2});
+}
+
+
