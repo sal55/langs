@@ -1,3 +1,5 @@
+('What should a compiler do')
+
 ...And then, I had a closer look at my own compiler (for my lower-level systems language), and I realised it could also go quite a way outside that remit. Other products may have their own 'extra-curricular' features, so this is purely what *my* compiler does, much of it untypical I think.
 
 **It's a single file** Literally, it is the file `mm.exe` on Windows, currently some 440KB, which contains *everything* need to do its primary job. Most other products cannot be easily pinned down: `gcc.exe` is 1.2MB, but within a 1000MB installation of 10,000 files; which bits are the essential parts of the compiler?
