@@ -5,9 +5,7 @@ var numericstarter = ['0'..'9']
 var identchars = ['A'..'Z', 'a'..'z','0'..'9','_','$']
 var numericchars = ['0'..'9']
 
-var puncttable = [
-    '(':tklbrack, ')':tkrbrack, '+':tkadd, '-':tksub, '*':tkmul, '/':tkdiv,
-        '=':tkeq, ',':tkcomma]
+var puncttable = ['(':tklbrack, ')':tkrbrack, '+':tkadd, '-':tksub, '*':tkmul, '/':tkdiv,'=':tkeq, ',':tkcomma]
 
 enumdata kwdnames =
     (letkwd,    "let"),
@@ -54,8 +52,7 @@ enumdata tokennames, priotable, qoptable =
     (tkother,   $,      0,      0),
 end
 
-var binops = [tkadd, tksub, tkmul, tkdiv,
-                tkeq, tkne, tklt, tkle, tkge, tkgt, tkand, tkor]
+var binops = [tkadd, tksub, tkmul, tkdiv, tkeq, tkne, tklt, tkle, tkge, tkgt, tkand, tkor]
 
 var lexstr, lexlen, lexpos
 var tk, tkvalue
