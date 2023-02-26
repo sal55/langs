@@ -244,6 +244,6 @@ end
 
 proc main=
     loadprogram("test.bas")
-!   listprogram()
+#   listprogram()
     runprogram()
 end
