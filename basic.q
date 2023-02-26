@@ -103,8 +103,8 @@ proc nexttoken(tkexp=0) =
         exit
 
     when 0 then --lexpos; tk:=tkeol; exit
-    when '<' then tk:=(lexstr.[lexpos]='='|(++lxpos; tkle) | tklt); exit
-    when '>' then tk:=(lexstr.[lexpos]='='|(++lxpos; tkge) | tkgt); exit
+    when '<' then tk:=(lexstr.[lexpos]='='|(++lexpos; tkle) | tklt); exit
+    when '>' then tk:=(lexstr.[lexpos]='='|(++lexpos; tkge) | tkgt); exit
     elsif tk:=puncttable{c,0} then exit
     else tk:=tkother; exit
     end
