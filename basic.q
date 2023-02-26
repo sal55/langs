@@ -60,7 +60,7 @@ var binops = [tkadd, tksub, tkmul, tkdiv,
 var lexstr, lexlen, lexpos
 var tk, tkvalue
 
-var vars::=[:]
+var vars::=[:]             # empty dict (::= assignments create mutable copies)
 record linerec = (var lineno, kwd, source)
 var program::=()
 
