@@ -1,22 +1,25 @@
 !'Basic' interpreter
+! Supports:
+!* Keywords:   LET PRINT IF GOTO REM BYE
+!* Operators:  + - * / % (int div) = <> < <= >= > and or 
+!* Builtins:   SQR LEN
+!* Types:      Number (float), STRING
+!* Totally blank lines, or commented at start with ' (eg. '100 LET A=1)
+!* IF-THEN body must be LINENO or GOTO LINENO 
+!* Case-insensitive
+!* String variables can use A or A$
+!* PRINT works on list of expressions; no automatic spacing
+!* PRINT adds automatic newline at end unless ends with ';'
 
 var identstarter = ['A'..'Z', 'a'..'z']
 var numericstarter = ['0'..'9']
 var identchars = ['A'..'Z', 'a'..'z','0'..'9','_','$']
 var numericchars = ['0'..'9']
 
-var puncttable = ['(':tklbrack, ')':tkrbrack, '+':tkadd, '-':tksub, '*':tkmul, '/':tkdiv,'=':tkeq, ',':tkcomma]
-
-enumdata kwdnames =
-    (letkwd,    "let"),
-    (printkwd,  "print"),
-    (ifkwd,     "if"),
-    (forkwd,    "for"),
-    (gotokwd,   "goto"),
-    (nextkwd,   "next"),
-    (thenkwd,   "then"),
-    (remkwd,    "rem"),
-end
+var puncttable = [
+    '(':tklbrack, ')':tkrbrack, '+':tkadd, '-':tksub, '*':tkmul, '/':tkdiv,
+        '=':tkeq, ',':tkcomma, ';':tksemi, '%':tkidiv]
+var zero=chr(0)
 
 enumdata tokennames, priotable, qoptable =
     (tkvar,     $,      0,      0),
@@ -31,6 +34,7 @@ enumdata tokennames, priotable, qoptable =
     (tksub,     $,      2,      -),
     (tkmul,     $,      1,      *),
     (tkdiv,     $,      1,      /),
+    (tkidiv,    $,      1,      %),
 
     (tkeq,      $,      3,      =),
     (tkne,      $,      3,      <>),
@@ -43,28 +47,42 @@ enumdata tokennames, priotable, qoptable =
     (tkor,      "or",   5,      or),
 
     (tkcomma,   $,      0,      0),
+    (tksemi,    $,      0,      0),
 
-    (tksqr,     "sqr",  0,      sqr),
+    (tksqr,     "sqr",  0,      sqrt),
     (tklen,     "len",  0,      len),
 
+    (tklet,     "let",  0,      0),
+    (tkprint,   "print",0,      0),
+    (tkif,      "if",   0,      0),
+    (tkgoto,    "goto", 0,      0),
+    (tkbye,     "bye",  0,      0),
+
+    (tkrem,     "rem",  0,      0),
     (tkthen,    "then", 0,      0),
 
     (tkother,   $,      0,      0),
 end
 
-var binops = [tkadd, tksub, tkmul, tkdiv, tkeq, tkne, tklt, tkle, tkge, tkgt, tkand, tkor]
+var binops      = [tkadd, tksub, tkmul, tkdiv,tkidiv,
+                    tkeq, tkne, tklt, tkle, tkge, tkgt, tkand, tkor]
+var keywords    = [tklet, tkprint, tkif, tkgoto, tkrem]
+var builtins    = [tksqr, tklen]
 
 var lexstr, lexlen, lexpos
 var tk, tkvalue
 
-var vars::=[:]             # empty dict (::= assignments create mutable copies)
-record linerec = (var lineno, kwd, source)
+var vars::=[:]
+record linerec = (var lineno, source)
 var program::=()
+var linecount
 
 var pcindex
 
 sub startlex(s) = (lexlen:=s.len; lexstr:=s+chr(0); lexpos:=1)
-sub error(m) = abort("Error:"+m)
+
+sub error(m) = abort(m+" on line "+tostr(program[pcindex].lineno))
+sub loaderror(m) = abort(m)
 
 proc nexttoken(tkexp=0) =
 
@@ -72,8 +90,8 @@ proc nexttoken(tkexp=0) =
 
     docase c:=lexstr.[lexpos++]
     when identstarter then
-        tkvalue::=chr(c)
-        while (c:=lexstr.[lexpos++]) in identchars do tkvalue+:=c od
+        tkvalue::=chr(tolower(c))
+        while (c:=lexstr.[lexpos++]) in identchars do tkvalue+:=tolower(c) od
         --lexpos
 
         tk:=tkvalue inx tokennames
@@ -83,6 +101,7 @@ proc nexttoken(tkexp=0) =
                 vars{tkvalue}:=0.0
             fi
         fi
+        if tk=tkrem then tk:=tkeol fi
         exit
 
     when numericstarter then
@@ -100,7 +119,14 @@ proc nexttoken(tkexp=0) =
         exit
 
     when 0 then --lexpos; tk:=tkeol; exit
-    when '<' then tk:=(lexstr.[lexpos]='='|(++lexpos; tkle) | tklt); exit
+    when '<' then
+        tk:=
+            case lexstr.[lexpos]
+            when '=' then ++lexpos; tkle
+            when '>' then ++lexpos; tkne
+            else tklt
+            esac
+            exit
     when '>' then tk:=(lexstr.[lexpos]='='|(++lexpos; tkge) | tkgt); exit
     elsif tk:=puncttable{c,0} then exit
     else tk:=tkother; exit
@@ -113,26 +139,23 @@ sub checktoken(tkexp)= if tk<>tkexp then error(tokennames[tkexp]+" expected") fi
 
 proc loadprogram(filename)=
     lines:=readtextfile(filename)
-    if lines=0 then error("Bad file") fi
+    if lines=0 then loaderror("Load open "+filename) fi
 
     lastn:=0
 
     for line in lines when leftstr(line)<>"'" and line do
-        sreadln(line)
-        read n:"i", kwd:"n", s:"L"
-        if n<=lastn then error("Line seq") fi
-        k:=kwd inx kwdnames
-        if not k.isfound then error("Bad kwd:"+kwd) fi
-        if k=remkwd then next fi
+        sreadln(line+zero)
+        read n:"i", s:"L"
+        if n<=lastn then loaderror("Line seq "+tostr(n)) fi
 
-        program &:= linerec(n, k, s+chr(0))
+        program &:= linerec(n, s+zero)
         lastn:=n
     od
 end
 
 proc listprogram=
     for line in program do
-        println line.lineno, kwdnames[line.kwd]:"jl6", line.source
+        println line.lineno, line.source
     od
 end
 
@@ -167,11 +190,13 @@ func readterm=
     when tksub then
         nexttoken()
         x:=-readterm()
-    when tksqr then
+    when builtins then
+        fn:=qoptable[tk]
         nexttoken(tklbrack)
-        x:=sqrt(readexpr())
+        x:=readexpr()
         checktoken(tkrbrack)
         nexttoken()
+        x:=maps(fn, x)
 
     else
         error("Readterm?")
@@ -182,24 +207,33 @@ end
 
 func executeline(index)=
 
-    line:=program[index]
-    startlex(line.source)
+    startlex(s:=program[index].source)
+    nexttoken()
 
-    case line.kwd
-    when letkwd then
+    case tk
+    when tklet then
         nexttoken(tkvar)
+dolet::
         varname:=tkvalue
-        nexttoken(tkeq)
+        nexttoken()
+        if tk<>tkeq then error("Missing =, or unknown keyword") fi
         vars{varname}:=readexpr()
 
-    when printkwd then
+    when tkvar then
+        dolet
+
+    when tkprint then
         repeat
             x:=readexpr()
             print x
         until tk<>tkcomma
-        println
-    
-    when gotokwd then
+        if tk=tksemi then           !suppress newline
+            nexttoken()
+        else
+            println
+        fi
+
+    when tkgoto then
         nexttoken(tknumber)
         lineno:=tkvalue
         nexttoken()
@@ -212,35 +246,54 @@ dogoto::
             error("Bad line:"+tostr(lineno))
         end
 
-    when ifkwd then
+    when tkif then
         x:=readexpr()
         checktoken(tkthen)
-        nexttoken(tknumber)
+        nexttoken()
+        if tk=tkgoto then
+            nexttoken()
+        fi
+        checktoken(tknumber)
         lineno:=tkvalue
         nexttoken()
         if x then dogoto fi
 
+    when tkeol then             !rem or blank
+    when tkbye then
+        stop
     else
-        error(kwdnames[line.kwd]+" not ready")
+        println tkvalue
+        error("Unknown keyword "+s)
     esac
-    if tk<>tkeol then error(kwdnames[line.kwd]+": EOL expected:"+tokennames[tk]) fi
+    if tk<>tkeol then error("EOL expected:"+s) fi
 
     index+1
 end
 
 proc runprogram=
-    if not program then error("Empty prog") fi
+    if not program then loaderror("Empty prog") fi
     pcindex:=1
+    linecount:=0
 
     repeat
         pcindex:=executeline(pcindex)
+        ++linecount
     until pcindex>program.len
 
-    println "Stopped"
+    println "Stopped",linecount
 end
 
 proc main=
-    loadprogram("test.bas")
-#   listprogram()
+    if ncmdparams>=1 then
+        file:=changeext(cmdparams[1],"bas")
+    else
+        println "No REPL, submit .bas file only"
+        stop
+    fi
+
+    loadprogram(file)
+!   listprogram()
     runprogram()
+!
+!   println vars
 end
