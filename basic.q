@@ -13,7 +13,7 @@
 !* String variables can use A or A$
 !* PRINT works on list of expressions; no automatic spacing
 !* PRINT adds automatic newline at end unless ends with ';'
-
+! !
 var identstarter = ['A'..'Z', 'a'..'z']
 var numericstarter = ['0'..'9']
 var identchars = ['A'..'Z', 'a'..'z','0'..'9','_','$']
@@ -169,8 +169,8 @@ proc listprogram=
     od
 end
 
-func readexpr=
-    nexttoken()
+func readexpr(needtk=1)=
+    if needtk then nexttoken() fi
     readfactor(5)
 end
 
@@ -234,10 +234,16 @@ dolet::
         dolet
 
     when tkprint then
-        repeat
-            x:=readexpr()
-            print x
-        until tk<>tkcomma
+        nexttoken()
+        needtk:=0
+        if tk<>tkeol then
+            repeat
+                x:=readexpr(needtk)
+                needtk:=1
+                print x
+            until tk<>tkcomma
+        fi
+
         if tk=tksemi then           !suppress newline
             nexttoken()
         else
@@ -316,6 +322,6 @@ proc main=
     loadprogram(file)
 !   listprogram()
     runprogram()
-!
+
 !   println vars
 end
