@@ -2,11 +2,13 @@
 ! Supports:
 !* Keywords:   LET PRINT IF GOTO REM BYE
 !* Operators:  + - * / % (int div) = <> < <= >= > and or 
-!* Builtins:   SQR LEN
+!* Builtins:   SQR LEN CHR ASC
 !* Types:      Number (float), STRING
 !* Totally blank lines, or commented at start with ' (eg. '100 LET A=1)
-!* IF-THEN body must be LINENO or GOTO LINENO 
 !* Optional LET
+!* ":" can separate multiple statements on a line
+!* IF can be followed by any statements; THEN is optional
+!* Quote (') for comments as well as REM
 !* Case-insensitive
 !* String variables can use A or A$
 !* PRINT works on list of expressions; no automatic spacing
@@ -19,7 +21,7 @@ var numericchars = ['0'..'9']
 
 var puncttable = [
     '(':tklbrack, ')':tkrbrack, '+':tkadd, '-':tksub, '*':tkmul, '/':tkdiv,
-        '=':tkeq, ',':tkcomma, ';':tksemi, '%':tkidiv]
+        '=':tkeq, ',':tkcomma, ';':tksemi, '%':tkidiv, ':':tkcolon]
 var zero=chr(0)
 
 enumdata tokennames, priotable, qoptable =
@@ -49,9 +51,12 @@ enumdata tokennames, priotable, qoptable =
 
     (tkcomma,   $,      0,      0),
     (tksemi,    $,      0,      0),
+    (tkcolon,   $,      0,      0),
 
     (tksqr,     "sqr",  0,      sqrt),
     (tklen,     "len",  0,      len),
+    (tkchr,     "chr",  0,      chr),
+    (tkasc,     "asc",  0,      asc),
 
     (tklet,     "let",  0,      0),
     (tkprint,   "print",0,      0),
@@ -129,7 +134,11 @@ proc nexttoken(tkexp=0) =
             esac
             exit
     when '>' then tk:=(lexstr.[lexpos]='='|(++lexpos; tkge) | tkgt); exit
-    elsif tk:=puncttable{c,0} then exit
+    when '\'' then
+        tk:=tkeol
+        exit
+    elsif tk:=puncttable{c,0} then
+        exit
     else tk:=tkother; exit
     end
 
@@ -211,6 +220,7 @@ func executeline(index)=
     startlex(s:=program[index].source)
     nexttoken()
 
+nextstmt::
     case tk
     when tklet then
         nexttoken(tkvar)
@@ -236,6 +246,7 @@ dolet::
 
     when tkgoto then
         nexttoken(tknumber)
+dogoto1::
         lineno:=tkvalue
         nexttoken()
 dogoto::
@@ -249,15 +260,17 @@ dogoto::
 
     when tkif then
         x:=readexpr()
-        checktoken(tkthen)
-        nexttoken()
-        if tk=tkgoto then
-            nexttoken()
+        if x then
+            if tk in [tkthen, tkcolon] then     !then is optional
+                nexttoken()
+                if tk=tknumber then
+                    dogoto1
+                fi
+            fi
+            nextstmt
+        else
+            tk:=tkeol
         fi
-        checktoken(tknumber)
-        lineno:=tkvalue
-        nexttoken()
-        if x then dogoto fi
 
     when tkeol then             !rem or blank
     when tkbye then
@@ -266,7 +279,15 @@ dogoto::
         println tkvalue
         error("Unknown keyword "+s)
     esac
-    if tk<>tkeol then error("EOL expected:"+s) fi
+
+    case tk
+    when tkcolon then               !multiple statements per line
+        nexttoken()
+        nextstmt
+    when tkeol then                 !normal ending
+    else
+        error("EOL expected:"+s)
+    esac
 
     index+1
 end
