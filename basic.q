@@ -6,6 +6,7 @@
 !* Types:      Number (float), STRING
 !* Totally blank lines, or commented at start with ' (eg. '100 LET A=1)
 !* IF-THEN body must be LINENO or GOTO LINENO 
+!* Optional LET
 !* Case-insensitive
 !* String variables can use A or A$
 !* PRINT works on list of expressions; no automatic spacing
