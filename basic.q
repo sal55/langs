@@ -181,6 +181,7 @@ func readfactor(n)=
         opc:=tk
         nexttoken()
         x:=mapss(qoptable[opc], x, readfactor(n-1))
+        if x.type=bool then x:=(x|1|0) fi
     od
     x
 end
