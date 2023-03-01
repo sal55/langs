@@ -242,14 +242,11 @@ dolet::
 
     when tkgoto then
         nexttoken(tknumber)
-dogoto1::
+dogoto::
         lineno:=tkvalue
         nexttoken()
-dogoto::
-        for i,l in program do
-            if l.lineno=lineno then
-                return i
-            fi
+        for i,l in program when l.lineno=lineno do
+            return i
         else
             error("Bad line:"+tostr(lineno))
         end
