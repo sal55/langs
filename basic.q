@@ -1,3 +1,19 @@
+!'Basic' interpreter
+! Supports:
+!* Keywords:   LET PRINT IF GOTO REM BYE
+!* Operators:  + - * / % (int div) = <> < <= >= > and or 
+!* Builtins:   SQR LEN CHR ASC
+!* Types:      Number (float), STRING
+!* Totally blank lines, or commented at start with ' (eg. '100 LET A=1)
+!* Optional LET
+!* ":" can separate multiple statements on a line
+!* IF can be followed by any statements; THEN is optional
+!* Quote (') for comments as well as REM
+!* Case-insensitive
+!* String variables can use A or A$
+!* PRINT works on list of expressions; no automatic spacing
+!* PRINT adds automatic newline at end unless ends with ';'
+
 var identstarter = ['A'..'Z', 'a'..'z']
 var numericstarter = ['0'..'9']
 var identchars = ['A'..'Z', 'a'..'z','0'..'9','_','$']
@@ -144,12 +160,6 @@ proc loadprogram(filename)=
     od
 end
 
-proc listprogram=
-    for line in program do
-        println line.lineno, line.source
-    od
-end
-
 func readexpr(needtk=1)=
     if needtk then nexttoken() fi
     readfactor(5)
@@ -193,12 +203,10 @@ func readterm=
     else
         error("Readterm?")
     esac
-
     x
 end
 
 func executeline(index)=
-
     startlex(s:=program[index].source)
     nexttoken()
 
