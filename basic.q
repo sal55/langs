@@ -19,9 +19,7 @@ var numericstarter = ['0'..'9']
 var identchars = ['A'..'Z', 'a'..'z','0'..'9','_','$']
 var numericchars = ['0'..'9']
 
-var puncttable = [
-    '(':tklbrack, ')':tkrbrack, '+':tkadd, '-':tksub, '*':tkmul, '/':tkdiv,
-        '=':tkeq, ',':tkcomma, ';':tksemi, '%':tkidiv, ':':tkcolon]
+var puncttable = ['(':tklbrack, ')':tkrbrack, '+':tkadd, '-':tksub, '*':tkmul, '/':tkdiv, '=':tkeq, ',':tkcomma, ';':tksemi, '%':tkidiv, ':':tkcolon]
 var zero=chr(0)
 
 enumdata tokennames, priotable, qoptable =
@@ -70,8 +68,7 @@ enumdata tokennames, priotable, qoptable =
     (tkother,   $,      0,      0),
 end
 
-var binops      = [tkadd, tksub, tkmul, tkdiv,tkidiv,
-                    tkeq, tkne, tklt, tkle, tkge, tkgt, tkand, tkor]
+var binops      = [tkadd, tksub, tkmul, tkdiv,tkidiv, tkeq, tkne, tklt, tkle, tkge, tkgt, tkand, tkor]
 var keywords    = [tklet, tkprint, tkif, tkgoto, tkrem]
 var builtins    = [tksqr, tklen]
 
@@ -321,8 +318,5 @@ proc main=
     fi
 
     loadprogram(file)
-!   listprogram()
     runprogram()
-
-!   println vars
 end
