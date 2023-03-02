@@ -1,3 +1,12 @@
+/*
+Build on Windows as follows:
+
+    gcc -O3 qc.c -oqq.exe
+
+or using Tiny C:
+
+    tcc qc.c -oqq.exe -fdollars-in-identifiers -luser32 c:\windows\system32\kernel32.dll
+*/
 
 #pragma GCC diagnostic ignored "-Wbuiltin-declaration-mismatch"
 
