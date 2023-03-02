@@ -1,13 +1,3 @@
-/*
-Build on Windows as follows:
-
-    gcc -O3 -s qc.c -oqq.exe
-
-or using Tiny C:
-
-    tcc qc.c -oqq.exe -fdollars-in-identifiers -luser32 c:\windows\system32\kernel32.dll
-
-*/
 
 #pragma GCC diagnostic ignored "-Wbuiltin-declaration-mismatch"
 
@@ -71,9 +61,6 @@ struct qq_decls$stringrec;
 struct qq_host$dimrec;
 struct qq_parse$readterm$dummy;
 struct qq_print$fmtrec;
-struct mx_show$showrelocs$dummy;
-struct mx_decls$mcxreloc;
-struct mx_decls$librec;
 struct msysc$procinforec;
 struct msysc$fmtrec;
 struct mlib$strbuffer;
@@ -427,53 +414,6 @@ struct qq_print$fmtrec {
     byte spare;
 };
 
-struct mx_show$showrelocs$dummy {
-    union {
-        u64 *  baseptr64;
-        u32 *  baseptr32;
-    };
-};
-
-struct mx_decls$mcxreloc {
-    u32 offset;
-    union {
-        u16 stindex;
-        byte targetsegment;
-    };
-    byte segment;
-    byte reloctype;
-};
-
-struct mx_decls$librec {
-    u8 *  version;
-    i64 codesize;
-    i64 idatasize;
-    i64 zdatasize;
-    i64 nrelocs;
-    i64 ndlllibs;
-    i64 nlibs;
-    i64 nimports;
-    i64 nexports;
-    byte *  codeptr;
-    byte *  idataptr;
-    struct mx_decls$mcxreloc (*reloctable)[];
-    u8 *(*dllnames)[];
-    u8 *(*libnames)[];
-    u8 *(*importnames)[];
-    u8 *(*exports)[];
-    byte (*exportsegs)[];
-    u64 (*exportoffsets)[];
-    u64 entryoffset;
-    byte *  zdataptr;
-    i64 codexsize;
-    u64 (*exportaddr)[];
-    i16 (*importxreftable)[];
-    u8 *  filespec;
-    u8 *  libname;
-    byte *  entryaddr;
-    i64 libno;
-};
-
 struct msysc$procinforec {
     u16 fnindex;
     byte rettype;
@@ -686,7 +626,6 @@ static void (*qq_calldll$getlibprocaddr(struct qq_decls$strec *d))(void);
 static u64 qq_calldll$vartopacked(struct qq_decls$varrec *p,struct qq_decls$strec *d);
 static void qq_calldll$packedtovar(u64 retval,i64 t,struct qq_decls$varrec *dest);
 static void (*qq_calldll$loaddllfunction(struct qq_decls$strec *d))(void);
-static void (*qq_calldll$loadlibfunction(struct qq_decls$strec *d))(void);
 void qq_calldll$start(void);
 void qq_decimal$obj_free_dec(struct qq_decls$objrec *p);
 void qq_decimal$var_dupl_dec(struct qq_decls$varrec *a);
@@ -1651,78 +1590,6 @@ void qq_vars$var_putdotix_intint(struct qq_decls$varrec *a,i64 index,struct qq_d
 void qq_vars$var_power(struct qq_decls$varrec *a,struct qq_decls$varrec *b);
 void qq_vars$var_powermixed(struct qq_decls$varrec *a,struct qq_decls$varrec *b);
 void qq_vars$start(void);
-struct mx_decls$librec *mx_lib$readlibfile(u8 *filespec,byte *p);
-static i64 mx_lib$readbyte(byte **p);
-static u64 mx_lib$readu32(byte **p);
-static u8 *mx_lib$readstring(byte **p);
-void mx_lib$alloclibdata(struct mx_decls$librec *lib);
-void mx_lib$error(u8 *mess,u8 *param);
-void mx_lib$loadmemmcu(struct mx_decls$librec *lib);
-void mx_lib$checknew(u8 *name,u8 *filename);
-i64 mx_lib$findlib(u8 *name);
-i64 mx_lib$mxaddlib(u8 *name);
-void mx_lib$fixuplib(struct mx_decls$librec *lib);
-static void mx_lib$loaddlls(void);
-static void *mx_lib$finddllsymbol(u8 *name,i64 *dllindex);
-static void mx_lib$checksymbols(void);
-static void mx_lib$dorelocations(void);
-static void mx_lib$reloclib(struct mx_decls$librec *lib);
-void mx_lib$loadimports(struct mx_decls$librec *plib);
-static void mx_lib$dosublib(u8 *name);
-struct mx_decls$librec *mx_lib$loadlibfile(u8 *filename,i64 libno);
-static void mx_lib$dosymbols(struct mx_decls$librec *lib);
-static byte *mx_lib$readmxfile(u8 *filename);
-static void mx_lib$adddll(u8 *name);
-static i64 mx_lib$addsymbol(u8 *name);
-static void mx_lib$setspecialglobals(i64 cmdskip);
-void mx_lib$runprogram(struct mx_decls$librec *lib,i64 cmdskip);
-void mx_lib$calllibinit(struct mx_decls$librec *lib);
-void *mx_lib$findsymbol(u8 *name);
-struct mx_decls$librec *mx_lib$loadmx(u8 *filename);
-struct mx_decls$librec *mx_lib$loadmemmcb(u8 *filename,byte *p);
-void mx_lib$mltest(void);
-void mx_lib$start(void);
-void mx_show$initlogfile(void);
-void mx_show$closelogfile(void);
-void mx_show$showlibs(void);
-void mx_show$showlib(struct mx_decls$librec *lib,void *logdev);
-static void mx_show$showstr(u8 *str);
-static void mx_show$showstrln(u8 *str);
-static void mx_show$showstrint(i64 a);
-static void mx_show$shownames(u8 *(*names)[],i64 n);
-static void mx_show$showrelocs(struct mx_decls$librec *lib);
-static void mx_show$showsectiondata(byte *p,i64 length);
-static void mx_show$showsectioncode(byte *p,i64 length,i64 extra);
-void mx_show$showglobals(void *logdev);
-void mx_show$start(void);
-void mx_decls$start(void);
-u8 *aa_disasm$decodeinstr(byte **cptr,byte *baseaddr);
-static void aa_disasm$decodetwobyteinstr(void);
-static void aa_disasm$decodeaddr(i64 w);
-static i64 aa_disasm$readbyte(void);
-static i64 aa_disasm$readsbyte(void);
-static u64 aa_disasm$readword16(void);
-static i64 aa_disasm$readint16(void);
-static u64 aa_disasm$readword32(void);
-static i64 aa_disasm$readint32(void);
-static i64 aa_disasm$readint64(void);
-static i64 aa_disasm$getreg(i64 regcode,i64 upper);
-u8 *aa_disasm$strreg(i64 reg,i64 opsize);
-static u8 *aa_disasm$strfreg(i64 freg);
-static void aa_disasm$printaddrmode(i64 xmm);
-static void aa_disasm$genstr(u8 *s);
-static void aa_disasm$genintd(i64 a);
-static void aa_disasm$genhex(i64 a);
-static i64 aa_disasm$readimm(void);
-static i64 aa_disasm$readimm8(void);
-static u8 *aa_disasm$strxmm(i64 reg);
-static u8 *aa_disasm$strmmx(i64 reg);
-static void aa_disasm$decode8087(i64 ttt);
-static void aa_disasm$do87arith(u8 *opcstr,i64 ttt,i64 freg);
-static void aa_disasm$do87mem(u8 *opcstr,i64 mf);
-static void aa_disasm$getsil(i64 *reg);
-static void aa_disasm$getsilx(i64 *reg);
-void aa_disasm$start(void);
 void msysc$m_init(i64 nargs,u8 *(*args)[],u8 *(*envstrings)[]);
 i64 msysc$m_getdotindex(u64 a,i64 i);
 u64 msysc$m_setdotindex(u64 a,i64 i,i64 x);
@@ -5874,83 +5741,6 @@ static struct qq_decls$strec *  qq_dummyshow$currpclproc;
 static struct mlib$strbuffer qq_dummyshow$pclv;
 static struct mlib$strbuffer *  qq_dummyshow$pcldest = (struct mlib$strbuffer *)&qq_dummyshow$pclv;
 static struct qq_decls$objrec qq_vars$zeroobj;
-static u8 *  mx_lib$segmentnames[6] = {(byte*)"no_seg",(byte*)"code_seg",(byte*)"idata_seg",(byte*)"zdata_seg",(byte*)"rodata_seg",(byte*)"impdata_seg"};
-static i64 mx_show$logdest = (i64)2;
-static void *  mx_show$logdev;
-static struct mlib$strbuffer mx_show$destv;
-static struct mlib$strbuffer *  mx_show$dest = (struct mlib$strbuffer *)&mx_show$destv;
-static u8 *  mx_decls$mcxdirnames[14] = {
-    (byte*)"pad_dir",
-    (byte*)"version_dir",
-    (byte*)"code_dir",
-    (byte*)"idata_dir",
-    (byte*)"zdata_dir",
-    (byte*)"reloc_dir",
-    (byte*)"dlls_dir",
-    (byte*)"libs_dir",
-    (byte*)"importsymbols_dir",
-    (byte*)"exportsymbols_dir",
-    (byte*)"exportsegs_dir",
-    (byte*)"exportoffsets_dir",
-    (byte*)"entry_dir",
-    (byte*)"end_dir"
-};
-static u8 *  mx_decls$mcxrelocnames[6] = {(byte*)"no_rel",(byte*)"locabs32",(byte*)"locabs64",(byte*)"impabs32",(byte*)"impabs64",(byte*)"imprel32"};
-static u8 *  mx_decls$dllnametable[20];
-static u64 mx_decls$dllinsttable[20];
-static i64 mx_decls$ndlllibs;
-static u8 *  mx_decls$libnametable[20];
-static struct mx_decls$librec *  mx_decls$libtable[20];
-static byte mx_decls$librelocated[20];
-static byte mx_decls$libinitdone[20];
-static i64 mx_decls$nlibs;
-static u8 *  mx_decls$symbolnametable[3000];
-static byte mx_decls$symboldefined[3000];
-static void *  mx_decls$symboladdress[3000];
-static i16 mx_decls$symbollibindex[3000];
-static byte mx_decls$symboldllindex[3000];
-static i64 mx_decls$nsymbols;
-static i64 mx_decls$nsymimports = (i64)0;
-static i64 mx_decls$nsymexports = (i64)0;
-static i64 aa_disasm$nmodules;
-static i64 aa_disasm$xfchsmask_pd;
-static u8 *  aa_disasm$opnames[8] = {(byte*)"add",(byte*)"or",(byte*)"adc",(byte*)"sbb",(byte*)"and",(byte*)"sub",(byte*)"xor",(byte*)"cmp"};
-static u8 *  aa_disasm$condnames[16] = {
-    (byte*)"o",
-    (byte*)"no",
-    (byte*)"b",
-    (byte*)"ae",
-    (byte*)"z",
-    (byte*)"nz",
-    (byte*)"be",
-    (byte*)"a",
-    (byte*)"s",
-    (byte*)"ns",
-    (byte*)"p",
-    (byte*)"np",
-    (byte*)"l",
-    (byte*)"ge",
-    (byte*)"le",
-    (byte*)"g"
-};
-static u8 *  aa_disasm$addrmodenames[3] = {(byte*)"amreg",(byte*)"ammem",(byte*)"amrel"};
-static i64 aa_disasm$rex;
-static i64 aa_disasm$addrmode;
-static i64 aa_disasm$rmreg;
-static i64 aa_disasm$rmopc;
-static i64 aa_disasm$basereg;
-static i64 aa_disasm$indexreg;
-static i64 aa_disasm$scale;
-static i64 aa_disasm$opsize;
-static i64 aa_disasm$offset;
-static i64 aa_disasm$offsetsize;
-static i64 aa_disasm$sizeoverride;
-static i64 aa_disasm$addroverride;
-static i64 aa_disasm$f2override;
-static i64 aa_disasm$f3override;
-static u8 aa_disasm$deststr[256];
-static u8 *  aa_disasm$destptr;
-static byte *  aa_disasm$codeptr;
 static void *  msysc$_fnaddresses[]= {
     &main,
     &qqcli$getinputoptions,
@@ -6023,7 +5813,6 @@ static void *  msysc$_fnaddresses[]= {
     &qq_calldll$vartopacked,
     &qq_calldll$packedtovar,
     &qq_calldll$loaddllfunction,
-    &qq_calldll$loadlibfunction,
     &qq_calldll$start,
     &qq_decimal$obj_free_dec,
     &qq_decimal$var_dupl_dec,
@@ -6988,78 +6777,6 @@ static void *  msysc$_fnaddresses[]= {
     &qq_vars$var_power,
     &qq_vars$var_powermixed,
     &qq_vars$start,
-    &mx_lib$readlibfile,
-    &mx_lib$readbyte,
-    &mx_lib$readu32,
-    &mx_lib$readstring,
-    &mx_lib$alloclibdata,
-    &mx_lib$error,
-    &mx_lib$loadmemmcu,
-    &mx_lib$checknew,
-    &mx_lib$findlib,
-    &mx_lib$mxaddlib,
-    &mx_lib$fixuplib,
-    &mx_lib$loaddlls,
-    &mx_lib$finddllsymbol,
-    &mx_lib$checksymbols,
-    &mx_lib$dorelocations,
-    &mx_lib$reloclib,
-    &mx_lib$loadimports,
-    &mx_lib$dosublib,
-    &mx_lib$loadlibfile,
-    &mx_lib$dosymbols,
-    &mx_lib$readmxfile,
-    &mx_lib$adddll,
-    &mx_lib$addsymbol,
-    &mx_lib$setspecialglobals,
-    &mx_lib$runprogram,
-    &mx_lib$calllibinit,
-    &mx_lib$findsymbol,
-    &mx_lib$loadmx,
-    &mx_lib$loadmemmcb,
-    &mx_lib$mltest,
-    &mx_lib$start,
-    &mx_show$initlogfile,
-    &mx_show$closelogfile,
-    &mx_show$showlibs,
-    &mx_show$showlib,
-    &mx_show$showstr,
-    &mx_show$showstrln,
-    &mx_show$showstrint,
-    &mx_show$shownames,
-    &mx_show$showrelocs,
-    &mx_show$showsectiondata,
-    &mx_show$showsectioncode,
-    &mx_show$showglobals,
-    &mx_show$start,
-    &mx_decls$start,
-    &aa_disasm$decodeinstr,
-    &aa_disasm$decodetwobyteinstr,
-    &aa_disasm$decodeaddr,
-    &aa_disasm$readbyte,
-    &aa_disasm$readsbyte,
-    &aa_disasm$readword16,
-    &aa_disasm$readint16,
-    &aa_disasm$readword32,
-    &aa_disasm$readint32,
-    &aa_disasm$readint64,
-    &aa_disasm$getreg,
-    &aa_disasm$strreg,
-    &aa_disasm$strfreg,
-    &aa_disasm$printaddrmode,
-    &aa_disasm$genstr,
-    &aa_disasm$genintd,
-    &aa_disasm$genhex,
-    &aa_disasm$readimm,
-    &aa_disasm$readimm8,
-    &aa_disasm$strxmm,
-    &aa_disasm$strmmx,
-    &aa_disasm$decode8087,
-    &aa_disasm$do87arith,
-    &aa_disasm$do87mem,
-    &aa_disasm$getsil,
-    &aa_disasm$getsilx,
-    &aa_disasm$start,
     &msysc$m_init,
     &msysc$m_getdotindex,
     &msysc$m_setdotindex,
@@ -7332,7 +7049,6 @@ static u8 *  msysc$_fnnames[]= {
     (byte*)"vartopacked",
     (byte*)"packedtovar",
     (byte*)"loaddllfunction",
-    (byte*)"loadlibfunction",
     (byte*)"start",
     (byte*)"obj_free_dec",
     (byte*)"var_dupl_dec",
@@ -8297,78 +8013,6 @@ static u8 *  msysc$_fnnames[]= {
     (byte*)"var_power",
     (byte*)"var_powermixed",
     (byte*)"start",
-    (byte*)"readlibfile",
-    (byte*)"readbyte",
-    (byte*)"readu32",
-    (byte*)"readstring",
-    (byte*)"alloclibdata",
-    (byte*)"error",
-    (byte*)"loadmemmcu",
-    (byte*)"checknew",
-    (byte*)"findlib",
-    (byte*)"mxaddlib",
-    (byte*)"fixuplib",
-    (byte*)"loaddlls",
-    (byte*)"finddllsymbol",
-    (byte*)"checksymbols",
-    (byte*)"dorelocations",
-    (byte*)"reloclib",
-    (byte*)"loadimports",
-    (byte*)"dosublib",
-    (byte*)"loadlibfile",
-    (byte*)"dosymbols",
-    (byte*)"readmxfile",
-    (byte*)"adddll",
-    (byte*)"addsymbol",
-    (byte*)"setspecialglobals",
-    (byte*)"runprogram",
-    (byte*)"calllibinit",
-    (byte*)"findsymbol",
-    (byte*)"loadmx",
-    (byte*)"loadmemmcb",
-    (byte*)"mltest",
-    (byte*)"start",
-    (byte*)"initlogfile",
-    (byte*)"closelogfile",
-    (byte*)"showlibs",
-    (byte*)"showlib",
-    (byte*)"showstr",
-    (byte*)"showstrln",
-    (byte*)"showstrint",
-    (byte*)"shownames",
-    (byte*)"showrelocs",
-    (byte*)"showsectiondata",
-    (byte*)"showsectioncode",
-    (byte*)"showglobals",
-    (byte*)"start",
-    (byte*)"start",
-    (byte*)"decodeinstr",
-    (byte*)"decodetwobyteinstr",
-    (byte*)"decodeaddr",
-    (byte*)"readbyte",
-    (byte*)"readsbyte",
-    (byte*)"readword16",
-    (byte*)"readint16",
-    (byte*)"readword32",
-    (byte*)"readint32",
-    (byte*)"readint64",
-    (byte*)"getreg",
-    (byte*)"strreg",
-    (byte*)"strfreg",
-    (byte*)"printaddrmode",
-    (byte*)"genstr",
-    (byte*)"genintd",
-    (byte*)"genhex",
-    (byte*)"readimm",
-    (byte*)"readimm8",
-    (byte*)"strxmm",
-    (byte*)"strmmx",
-    (byte*)"decode8087",
-    (byte*)"do87arith",
-    (byte*)"do87mem",
-    (byte*)"getsil",
-    (byte*)"getsilx",
-    (byte*)"start",
     (byte*)"m_init",
     (byte*)"m_getdotindex",
     (byte*)"m_setdotindex",
@@ -8569,7 +8213,7 @@ static u8 *  msysc$_fnnames[]= {
     (byte*)"os_dummycall",
     (byte*)"start",
 (byte*)""};
-static i64 msysc$_fnnprocs=1307;
+static i64 msysc$_fnnprocs=1234;
 static i64 msysc$_fnnexports;
 static i64 msysc$fmtparam;
 static i64 msysc$needgap = (i64)0;
@@ -8670,7 +8314,6 @@ int main(int _nargs, char** _args, char** _envstrings) {
     msysc$m_init(_nargs, (void*)_args, (void*)_envstrings);
 
 // call main-start() routines...
-    mx_lib$start();
     msysc$start();
     qqcli$start();
 
@@ -10567,7 +10210,7 @@ static void (*qq_calldll$getlibprocaddr(struct qq_decls$strec *d))(void) {
             fnaddr = (void (*)(void))qq_calldll$loaddllfunction(d);
         }
         else {
-            fnaddr = (void (*)(void))qq_calldll$loadlibfunction(d);
+            mlib$abortprogram((byte*)"LOADLIB MISSING");
         }
 ;
     }
@@ -10782,47 +10425,6 @@ static void (*qq_calldll$loaddllfunction(struct qq_decls$strec *d))(void) {
     fnaddr = (void (*)(void))mwindows$os_getdllprocaddr((i64)dllinst,name);
     if ((fnaddr == 0)) {
         qq_lib$pcerror_s((byte*)"Can't find DLL func:",name);
-    }
-;
-    qq_decls$dllprocaddr[(fnindex)-1] = fnaddr;
-    return (void (*)(void))fnaddr;
-}
-
-static void (*qq_calldll$loadlibfunction(struct qq_decls$strec *d))(void) {
-        u8 filename[300];
-        i64 fnindex;
-        i64 libindex;
-        struct mx_decls$librec *  plib;
-        void (*fnaddr)(void);
-        u8 *  name;
-    fnindex = (*d).index;
-    fnaddr = (void (*)(void))qq_decls$dllprocaddr[(fnindex)-1];
-    if (!!(fnaddr)) {
-        return (void (*)(void))fnaddr;
-    }
-;
-    libindex = (i64)qq_decls$dllproclibindex[(fnindex)-1];
-    plib = (struct mx_decls$librec *)qq_decls$dllinsttable[(libindex)-1];
-    if ((plib == 0)) {
-        msysc$m_print_startstr(filename);
-        msysc$m_print_str((*qq_decls$libtable[(libindex)-1]).name,NULL);
-        msysc$m_print_nogap();
-        msysc$m_print_str((byte*)".ml",NULL);
-        msysc$m_print_end();
-        ;
-        plib = (struct mx_decls$librec *)mx_lib$loadmx(filename);
-        if ((plib == 0)) {
-            qq_lib$pcerror_s((byte*)"Can't load LIB:",filename);
-        }
-;
-        qq_decls$dllinsttable[(libindex)-1] = (u64)plib;
-        mx_lib$fixuplib((struct mx_decls$librec *)plib);
-    }
-;
-    name = (!!((*d).truename) ? (*d).truename : (*d).name);
-    fnaddr = (void (*)(void))mx_lib$findsymbol(name);
-    if ((fnaddr == 0)) {
-        qq_lib$pcerror_s((byte*)"Can't find LIB func:",name);
     }
 ;
     qq_decls$dllprocaddr[(fnindex)-1] = fnaddr;
@@ -39916,3274 +39518,6 @@ void qq_vars$start(void) {
 
 }
 
-struct mx_decls$librec *mx_lib$readlibfile(u8 *filespec,byte *p) {
-        struct mx_decls$librec *  plib;
-        struct mx_decls$librec lib;
-        u64 sig;
-        i64 dir;
-        i64 n;
-        i64 i;
-    memset(&(lib),0,216);
-    sig = mx_lib$readu32(&p);
-    if ((sig != (u64)441992013u)) {
-        msysc$m_print_startcon();
-        msysc$m_print_str((byte*)"Bad sig - not MCX file",NULL);
-        msysc$m_print_newline();
-        msysc$m_print_end();
-        ;
-        exit((i64)1);
-    }
-;
-    lib.filespec = mlib$pcm_copyheapstring(filespec);
-    lib.libname = mlib$pcm_copyheapstring(mlib$extractbasefile(filespec));
-    L1157 :;
-    switch ((dir = mx_lib$readbyte(&p))) {
-    case 1:;
-        {
-            lib.version = mx_lib$readstring(&p);
-        }
-        break;
-    case 4:;
-        {
-            lib.zdatasize = (i64)mx_lib$readu32(&p);
-        }
-        break;
-    case 3:;
-        {
-            lib.idatasize = (n = (i64)mx_lib$readu32(&p));
-            lib.idataptr = (byte *)mlib$pcm_alloc(n);
-            memcpy(lib.idataptr,p,(u64)n);
-            p += n;
-        }
-        break;
-    case 2:;
-        {
-            lib.codesize = (n = (i64)mx_lib$readu32(&p));
-            lib.codeptr = p;
-            p += n;
-        }
-        break;
-    case 6:;
-        {
-            lib.ndlllibs = (n = (i64)mx_lib$readu32(&p));
-            lib.dllnames = (u8 *(*)[])mlib$pcm_alloc(((i64)8 * n));
-            for (i=(i64)1;i<=n;++i) {
-L1159 :;
-                (*lib.dllnames)[(i)-1] = mx_lib$readstring(&p);
-L1160 :;
-            }
-L1161 :;
-            ;
-        }
-        break;
-    case 7:;
-        {
-            lib.nlibs = (n = (i64)mx_lib$readu32(&p));
-            lib.libnames = (u8 *(*)[])mlib$pcm_alloc(((i64)8 * n));
-            for (i=(i64)1;i<=n;++i) {
-L1162 :;
-                (*lib.libnames)[(i)-1] = mx_lib$readstring(&p);
-L1163 :;
-            }
-L1164 :;
-            ;
-        }
-        break;
-    case 8:;
-        {
-            lib.nimports = (n = (i64)mx_lib$readu32(&p));
-            lib.importnames = (u8 *(*)[])mlib$pcm_alloc(((i64)8 * n));
-            for (i=(i64)1;i<=n;++i) {
-L1165 :;
-                (*lib.importnames)[(i)-1] = mx_lib$readstring(&p);
-L1166 :;
-            }
-L1167 :;
-            ;
-        }
-        break;
-    case 9:;
-        {
-            lib.nexports = (n = (i64)mx_lib$readu32(&p));
-            lib.exports = (u8 *(*)[])mlib$pcm_alloc(((i64)8 * n));
-            for (i=(i64)1;i<=n;++i) {
-L1168 :;
-                (*lib.exports)[(i)-1] = mx_lib$readstring(&p);
-L1169 :;
-            }
-L1170 :;
-            ;
-        }
-        break;
-    case 10:;
-        {
-            n = (i64)mx_lib$readu32(&p);
-            lib.exportsegs = (byte (*)[])mlib$pcm_alloc(n);
-            for (i=(i64)1;i<=n;++i) {
-L1171 :;
-                (*lib.exportsegs)[(i)-1] = mx_lib$readbyte(&p);
-L1172 :;
-            }
-L1173 :;
-            ;
-        }
-        break;
-    case 11:;
-        {
-            n = (i64)mx_lib$readu32(&p);
-            lib.exportoffsets = (u64 (*)[])mlib$pcm_alloc(((i64)8 * n));
-            for (i=(i64)1;i<=n;++i) {
-L1174 :;
-                (*lib.exportoffsets)[(i)-1] = mx_lib$readu32(&p);
-L1175 :;
-            }
-L1176 :;
-            ;
-        }
-        break;
-    case 5:;
-        {
-            lib.nrelocs = (n = (i64)mx_lib$readu32(&p));
-            n = (lib.nrelocs * (i64)8);
-            lib.reloctable = (struct mx_decls$mcxreloc (*)[])mlib$pcm_alloc(n);
-            memcpy(lib.reloctable,p,(u64)n);
-            p += n;
-        }
-        break;
-    case 12:;
-        {
-            lib.entryoffset = mx_lib$readu32(&p);
-        }
-        break;
-    case 13:;
-        {
-            goto L1158 ;
-        }
-        break;
-    case 0:;
-        {
-        }
-        break;
-    default: {
-        msysc$m_print_startcon();
-        msysc$m_print_str((byte*)"Unknown directive:",NULL);
-        msysc$m_print_str(mx_decls$mcxdirnames[(dir)],NULL);
-        msysc$m_print_newline();
-        msysc$m_print_end();
-        ;
-        exit(0);
-    }
-    } //SW
-goto L1157 ;
-L1158 :;
-    ;
-    plib = (struct mx_decls$librec *)mlib$pcm_alloc((i64)216);
-    memcpy(plib,&lib,(u64)216u);
-    return plib;
-}
-
-static i64 mx_lib$readbyte(byte **p) {
-    return (i64)(*((*p))++);
-}
-
-static u64 mx_lib$readu32(byte **p) {
-        u64 x;
-    x = (u64)(i64)(*(u32 *)(*p));
-    (*p) += (i64)4;
-    return x;
-}
-
-static u8 *mx_lib$readstring(byte **p) {
-        u8 *  s;
-    s = mlib$pcm_copyheapstring((u8 *)(*p));
-    L1177 :;
-    while (!!((i64)(*++((*p))))) {
-L1178 :;
-    }
-L1179 :;
-    ;
-    ++((*p));
-    return s;
-}
-
-void mx_lib$alloclibdata(struct mx_decls$librec *lib) {
-        i64 tablesize;
-        i64 n;
-        byte *  p;
-    (*lib).zdataptr = (byte *)mlib$pcm_allocz((*lib).zdatasize);
-    tablesize = ((*lib).nimports * (i64)16);
-    n = (*lib).codesize;
-    p = mwindows$os_allocexecmem((n + tablesize));
-    if ((p == 0)) {
-        mx_lib$error((byte*)"Can't alloc code memory",(byte*)"");
-    }
-;
-    memcpy(p,(*lib).codeptr,(u64)n);
-    memset((p + n),(i32)(i64)0,(u64)tablesize);
-    (*lib).codeptr = p;
-    (*lib).codexsize = tablesize;
-    (*lib).exportaddr = (u64 (*)[])mlib$pcm_alloc(((i64)8 * (*lib).nexports));
-    (*lib).importxreftable = (i16 (*)[])mlib$pcm_alloc(((i64)2 * (*lib).nimports));
-    if (((i64)(*lib).entryoffset != (i64)4294967295)) {
-        (*lib).entryaddr = ((*lib).codeptr + (i64)(*lib).entryoffset);
-    }
-;
-}
-
-void mx_lib$error(u8 *mess,u8 *param) {
-    if (!!((u64)(*param))) {
-        msysc$m_print_startcon();
-        msysc$m_print_setfmt(mess);
-        msysc$m_print_str(param,NULL);
-        msysc$m_print_newline();
-        msysc$m_print_end();
-        ;
-    }
-    else {
-        msysc$m_print_startcon();
-        msysc$m_print_str(mess,NULL);
-        msysc$m_print_newline();
-        msysc$m_print_end();
-        ;
-    }
-;
-    msysc$m_print_startcon();
-    msysc$m_print_str((byte*)"Aborting",NULL);
-    msysc$m_print_newline();
-    msysc$m_print_end();
-    ;
-    exit((i64)1);
-}
-
-void mx_lib$loadmemmcu(struct mx_decls$librec *lib) {
-        i64 newlib;
-        u8 *  name;
-    name = (*lib).libname;
-    mx_lib$checknew(name,(*lib).filespec);
-    newlib = mx_lib$mxaddlib(name);
-    mx_decls$libtable[(newlib)-1] = (struct mx_decls$librec *)lib;
-    mx_lib$loadimports((struct mx_decls$librec *)lib);
-}
-
-void mx_lib$checknew(u8 *name,u8 *filename) {
-    if (!!(mx_lib$findlib(name))) {
-        mx_lib$error((byte*)"Lib already exists:",filename);
-    }
-;
-}
-
-i64 mx_lib$findlib(u8 *name) {
-        i64 i;
-    for (i=(i64)1;i<=mx_decls$nlibs;++i) {
-L1180 :;
-        if (!!(mlib$eqstring(name,mx_decls$libnametable[(i)-1]))) {
-            return i;
-        }
-;
-L1181 :;
-    }
-L1182 :;
-    ;
-    return (i64)0;
-}
-
-i64 mx_lib$mxaddlib(u8 *name) {
-    if ((mx_decls$nlibs >= (i64)20)) {
-        mx_lib$error((byte*)"Too many libs",(byte*)"");
-    }
-;
-    mx_decls$libnametable[(++(mx_decls$nlibs))-1] = name;
-    return mx_decls$nlibs;
-}
-
-void mx_lib$fixuplib(struct mx_decls$librec *lib) {
-    mx_lib$loaddlls();
-    mx_lib$checksymbols();
-    mx_lib$dorelocations();
-}
-
-static void mx_lib$loaddlls(void) {
-        u64 inst;
-        i64 i;
-    for (i=(i64)1;i<=mx_decls$ndlllibs;++i) {
-L1183 :;
-        if (!(!!(mx_decls$dllinsttable[(i)-1]))) {
-            inst = mwindows$os_getdllinst(mx_decls$dllnametable[(i)-1]);
-            if (((i64)inst == (i64)0)) {
-                mx_lib$error((byte*)"Can't find DLL: #",mx_decls$dllnametable[(i)-1]);
-            }
-;
-            mx_decls$dllinsttable[(i)-1] = inst;
-        }
-;
-L1184 :;
-    }
-L1185 :;
-    ;
-}
-
-static void *mx_lib$finddllsymbol(u8 *name,i64 *dllindex) {
-        void *  p;
-        i64 i;
-    (*dllindex) = (i64)0;
-    for (i=(i64)1;i<=mx_decls$ndlllibs;++i) {
-L1186 :;
-        p = mwindows$os_getdllprocaddr((i64)mx_decls$dllinsttable[(i)-1],name);
-        if (!!(p)) {
-            (*dllindex) = i;
-            return p;
-        }
-;
-L1187 :;
-    }
-L1188 :;
-    ;
-    return 0;
-}
-
-static void mx_lib$checksymbols(void) {
-        i64 dllindex;
-        i64 undef;
-        void *  p;
-        i64 i;
-    undef = (i64)0;
-    for (i=(i64)1;i<=mx_decls$nsymbols;++i) {
-L1189 :;
-        if (!(!!((i64)mx_decls$symboldefined[(i)-1]))) {
-            p = mx_lib$finddllsymbol(mx_decls$symbolnametable[(i)-1],&dllindex);
-            if (!!(p)) {
-                mx_decls$symboladdress[(i)-1] = p;
-                mx_decls$symboldllindex[(i)-1] = dllindex;
-                mx_decls$symboldefined[(i)-1] = (i64)1;
-            }
-            else {
-                msysc$m_print_startcon();
-                msysc$m_print_str((byte*)"Undef",NULL);
-                msysc$m_print_str(mx_decls$symbolnametable[(i)-1],NULL);
-                msysc$m_print_newline();
-                msysc$m_print_end();
-                ;
-                ++(undef);
-            }
-;
-        }
-;
-L1190 :;
-    }
-L1191 :;
-    ;
-    if (!!(undef)) {
-    }
-;
-}
-
-static void mx_lib$dorelocations(void) {
-        i64 i;
-    for (i=(i64)1;i<=mx_decls$nlibs;++i) {
-L1192 :;
-        if (!(!!((i64)mx_decls$librelocated[(i)-1]))) {
-            mx_lib$reloclib((struct mx_decls$librec *)mx_decls$libtable[(i)-1]);
-        }
-;
-L1193 :;
-    }
-L1194 :;
-    ;
-}
-
-static void mx_lib$reloclib(struct mx_decls$librec *lib) {
-        i64 index;
-        i64 targetoffset;
-        u8 *  name;
-        byte *  p;
-        byte *  q;
-        u64 *  qaddr;
-        struct mx_decls$mcxreloc r;
-        i64 $av_1;
-        i64 $av_2;
-        i64 i;
-    p = ((*lib).codeptr + (*lib).codesize);
-    qaddr = (u64 *)(p + ((*lib).nimports * (i64)8));
-        ($av_1 = (*lib).nimports);
-    for (i=(i64)1;i<=$av_1;++i) {
-L1195 :;
-        name = (*(*lib).importnames)[(i)-1];
-        (*(p)++) = (i64)72;
-        (*(p)++) = (i64)255;
-        (*(p)++) = (i64)36;
-        (*(p)++) = (i64)37;
-        (*(u32 *)p) = (i64)qaddr;
-        p += (i64)4;
-        index = (i64)(*(*lib).importxreftable)[(i)-1];
-        (*(qaddr)++) = (u64)mx_decls$symboladdress[(index)-1];
-L1196 :;
-    }
-L1197 :;
-    ;
-        ($av_2 = (*lib).nrelocs);
-    for (i=(i64)1;i<=$av_2;++i) {
-L1198 :;
-        r = (*(*lib).reloctable)[(i)-1];
-                {i64 $temp = (i64)r.segment;
-if (($temp==(i64)1)) {
-            p = ((*lib).codeptr + (i64)r.offset);
-        }
-        else if (($temp==(i64)2)) {
-            p = ((*lib).idataptr + (i64)r.offset);
-        }
-        else if (($temp==(i64)3)) {
-            p = ((*lib).zdataptr + (i64)r.offset);
-        }
-        };
-                {i64 $temp = (i64)r.reloctype;
-if (($temp==(i64)1)) {
-            targetoffset = (i64)(*(u32 *)p);
-                        {i64 $temp = (i64)r.targetsegment;
-if (($temp==(i64)1)) {
-                (*(u32 *)p) = (i64)((*lib).codeptr + targetoffset);
-            }
-            else if (($temp==(i64)2)) {
-                (*(u32 *)p) = (i64)((*lib).idataptr + targetoffset);
-            }
-            else if (($temp==(i64)3)) {
-                (*(u32 *)p) = (i64)((*lib).zdataptr + targetoffset);
-            }
-            };
-        }
-        else if (($temp==(i64)2)) {
-            targetoffset = (i64)(*(u32 *)p);
-                        {i64 $temp = (i64)r.targetsegment;
-if (($temp==(i64)1)) {
-                (*(u64 *)p) = (u64)((*lib).codeptr + targetoffset);
-            }
-            else if (($temp==(i64)2)) {
-                (*(u64 *)p) = (u64)((*lib).idataptr + targetoffset);
-            }
-            else if (($temp==(i64)3)) {
-                (*(u64 *)p) = (u64)((*lib).zdataptr + targetoffset);
-            }
-            };
-        }
-        else if (($temp==(i64)4)) {
-            index = (i64)(*(*lib).importxreftable)[((i64)r.stindex)-1];
-            (*(u64 *)p) += (u64)mx_decls$symboladdress[(index)-1];
-        }
-        else if (($temp==(i64)3)) {
-            index = (i64)(*(*lib).importxreftable)[((i64)r.stindex)-1];
-            (*(u32 *)p) += (u32)(u64)mx_decls$symboladdress[(index)-1];
-        }
-        else if (($temp==(i64)5)) {
-            if (((i64)r.segment != (i64)1)) {
-                mx_lib$error((byte*)"imprel32?",(byte*)"");
-            }
-;
-            index = (i64)r.stindex;
-            q = (((*lib).codeptr + (*lib).codesize) + ((index - (i64)1) * (i64)8));
-            (*(u32 *)p) = (q - (p + (i64)4));
-        }
-        };
-L1199 :;
-    }
-L1200 :;
-    ;
-    mx_decls$librelocated[((*lib).libno)-1] = (i64)1;
-}
-
-void mx_lib$loadimports(struct mx_decls$librec *plib) {
-        i64 $av_1;
-        i64 i;
-        ($av_1 = (*plib).nlibs);
-    for (i=(i64)1;i<=$av_1;++i) {
-L1201 :;
-        mx_lib$dosublib((*(*plib).libnames)[(i)-1]);
-L1202 :;
-    }
-L1203 :;
-    ;
-    mx_lib$alloclibdata((struct mx_decls$librec *)plib);
-    mx_lib$dosymbols((struct mx_decls$librec *)plib);
-}
-
-static void mx_lib$dosublib(u8 *name) {
-        struct mx_decls$librec *  qlib;
-        i64 n;
-    n = mx_lib$findlib(name);
-    if (!(!!(n))) {
-        n = mx_lib$mxaddlib(name);
-        msysc$m_print_startcon();
-        msysc$m_print_str((byte*)"Loading sublib",NULL);
-        msysc$m_print_str(name,NULL);
-        msysc$m_print_newline();
-        msysc$m_print_end();
-        ;
-        qlib = (struct mx_decls$librec *)mx_lib$loadlibfile(mlib$addext(name,(byte*)"ml"),n);
-        mx_lib$loadimports((struct mx_decls$librec *)qlib);
-    }
-;
-}
-
-struct mx_decls$librec *mx_lib$loadlibfile(u8 *filename,i64 libno) {
-        struct mx_decls$librec *  plib;
-        byte *  p;
-    p = mx_lib$readmxfile(filename);
-    if ((p == 0)) {
-        mx_lib$error((byte*)"Can't find #",filename);
-    }
-;
-    plib = (struct mx_decls$librec *)mx_lib$readlibfile(filename,p);
-    (*plib).libno = libno;
-    return (struct mx_decls$librec *)(mx_decls$libtable[(libno)-1] = (struct mx_decls$librec *)plib);
-}
-
-static void mx_lib$dosymbols(struct mx_decls$librec *lib) {
-        i64 ix;
-        byte *  baseaddr;
-        i64 $av_1;
-        i64 $av_2;
-        i64 $av_3;
-        i64 i;
-        ($av_1 = (*lib).ndlllibs);
-    for (i=(i64)1;i<=$av_1;++i) {
-L1204 :;
-        mx_lib$adddll((*(*lib).dllnames)[(i)-1]);
-L1205 :;
-    }
-L1206 :;
-    ;
-        ($av_2 = (*lib).nimports);
-    for (i=(i64)1;i<=$av_2;++i) {
-L1207 :;
-        ix = mx_lib$addsymbol((*(*lib).importnames)[(i)-1]);
-        (*(*lib).importxreftable)[(i)-1] = ix;
-L1208 :;
-    }
-L1209 :;
-    ;
-        ($av_3 = (*lib).nexports);
-    for (i=(i64)1;i<=$av_3;++i) {
-L1210 :;
-        ix = mx_lib$addsymbol((*(*lib).exports)[(i)-1]);
-        if (!!((i64)mx_decls$symboldefined[(ix)-1])) {
-            msysc$m_print_startcon();
-            msysc$m_print_str((byte*)"Dupl symbol:",NULL);
-            msysc$m_print_str((*(*lib).exports)[(i)-1],NULL);
-            msysc$m_print_newline();
-            msysc$m_print_end();
-            ;
-            goto L1211 ;
-        }
-;
-        mx_decls$symboldefined[(ix)-1] = (i64)1;
-                {i64 $temp = (i64)(*(*lib).exportsegs)[(i)-1];
-if (($temp==(i64)1)) {
-            baseaddr = (*lib).codeptr;
-        }
-        else if (($temp==(i64)2)) {
-            baseaddr = (*lib).idataptr;
-        }
-        else if (($temp==(i64)3)) {
-            baseaddr = (*lib).zdataptr;
-        }
-        else {
-            baseaddr = 0;
-        }
-        };
-        mx_decls$symboladdress[(ix)-1] = (baseaddr + (i64)(*(*lib).exportoffsets)[(i)-1]);
-        mx_decls$symbollibindex[(ix)-1] = (*lib).libno;
-L1211 :;
-    }
-L1212 :;
-    ;
-}
-
-static byte *mx_lib$readmxfile(u8 *filename) {
-        byte *  p;
-    p = mlib$readfile(filename);
-    if ((p == 0)) {
-        return 0;
-    }
-;
-    (*(p + mlib$rfsize)) = (i64)13;
-    return p;
-}
-
-static void mx_lib$adddll(u8 *name) {
-        i64 i;
-    for (i=(i64)1;i<=mx_decls$ndlllibs;++i) {
-L1213 :;
-        if (!!(mlib$eqstring(name,mx_decls$dllnametable[(i)-1]))) {
-            return;
-        }
-;
-L1214 :;
-    }
-L1215 :;
-    ;
-    if ((mx_decls$ndlllibs >= (i64)20)) {
-        mx_lib$error((byte*)"Too many DLLs",(byte*)"");
-    }
-;
-    mx_decls$dllnametable[(++(mx_decls$ndlllibs))-1] = name;
-}
-
-static i64 mx_lib$addsymbol(u8 *name) {
-        i64 i;
-    for (i=(i64)1;i<=mx_decls$nsymbols;++i) {
-L1216 :;
-        if (!!(mlib$eqstring(name,mx_decls$symbolnametable[(i)-1]))) {
-            return i;
-        }
-;
-L1217 :;
-    }
-L1218 :;
-    ;
-    if ((mx_decls$nsymbols >= (i64)3000)) {
-        mx_lib$error((byte*)"Too many Imports",(byte*)"");
-    }
-;
-    mx_decls$symbolnametable[(++(mx_decls$nsymbols))-1] = name;
-    return mx_decls$nsymbols;
-}
-
-static void mx_lib$setspecialglobals(i64 cmdskip) {
-        i64 i;
-    for (i=(i64)1;i<=mx_decls$nsymbols;++i) {
-L1219 :;
-        if (((u64)(*mx_decls$symbolnametable[(i)-1]) == '$')) {
-            if (!!(mlib$eqstring(mx_decls$symbolnametable[(i)-1],(byte*)"$cmdskip"))) {
-                (*(byte *)mx_decls$symboladdress[(i)-1]) = cmdskip;
-            }
-;
-        }
-;
-L1220 :;
-    }
-L1221 :;
-    ;
-}
-
-void mx_lib$runprogram(struct mx_decls$librec *lib,i64 cmdskip) {
-        void (*fnptr)(void);
-        i64 libno;
-        i64 i;
-    libno = (*lib).libno;
-    for (i=(i64)1;i<=mx_decls$nlibs;++i) {
-L1222 :;
-        if (((i != libno) && !(!!((i64)mx_decls$libinitdone[(i)-1])))) {
-            mx_lib$calllibinit((struct mx_decls$librec *)mx_decls$libtable[(i)-1]);
-        }
-;
-L1223 :;
-    }
-L1224 :;
-    ;
-    if (((*lib).entryaddr == 0)) {
-        mx_lib$error((byte*)"No entry point found",(byte*)"");
-    }
-;
-    mx_lib$setspecialglobals(cmdskip);
-    fnptr = (void (*)(void))(*lib).entryaddr;
-    ((*fnptr))();
-    mx_decls$libinitdone[(libno)-1] = (i64)1;
-}
-
-void mx_lib$calllibinit(struct mx_decls$librec *lib) {
-        void (*fnptr)(void);
-        i64 libno;
-    libno = (*lib).libno;
-    if (!!((*lib).entryaddr)) {
-        fnptr = (void (*)(void))(*lib).entryaddr;
-        ((*fnptr))();
-    }
-;
-    mx_decls$libinitdone[((*lib).libno)-1] = (i64)1;
-}
-
-void *mx_lib$findsymbol(u8 *name) {
-        i64 i;
-    for (i=(i64)1;i<=mx_decls$nsymbols;++i) {
-L1225 :;
-        if (!!(mlib$eqstring(mx_decls$symbolnametable[(i)-1],name))) {
-            return mx_decls$symboladdress[(i)-1];
-        }
-;
-L1226 :;
-    }
-L1227 :;
-    ;
-    return 0;
-}
-
-struct mx_decls$librec *mx_lib$loadmx(u8 *filename) {
-        struct mx_decls$librec *  plib;
-        i64 newlib;
-        u8 *  name;
-    name = mlib$pcm_copyheapstring(mlib$convlcstring(mlib$extractbasefile(filename)));
-    mx_lib$checknew(name,filename);
-    newlib = mx_lib$mxaddlib(name);
-    plib = (struct mx_decls$librec *)mx_lib$loadlibfile(filename,newlib);
-    mx_lib$loadimports((struct mx_decls$librec *)plib);
-    return plib;
-}
-
-struct mx_decls$librec *mx_lib$loadmemmcb(u8 *filename,byte *p) {
-        struct mx_decls$librec *  plib;
-        i64 newlib;
-        u8 *  name;
-    name = mlib$pcm_copyheapstring(mlib$convlcstring(mlib$extractbasefile(filename)));
-    mx_lib$checknew(name,filename);
-    newlib = mx_lib$mxaddlib(name);
-    plib = (struct mx_decls$librec *)mx_lib$readlibfile(filename,p);
-    (*plib).libno = newlib;
-    mx_decls$libtable[(newlib)-1] = (struct mx_decls$librec *)plib;
-    mx_lib$loadimports((struct mx_decls$librec *)plib);
-    return plib;
-}
-
-void mx_lib$mltest(void) {
-    msysc$m_print_startcon();
-    msysc$m_print_str((byte*)"MLTEST CALLED",NULL);
-    msysc$m_print_newline();
-    msysc$m_print_end();
-    ;
-}
-
-// START
-void mx_lib$start(void) {
-    mx_show$start();
-    mx_decls$start();
-    aa_disasm$start();
-
-}
-
-void mx_show$initlogfile(void) {
-    if ((mx_show$logdest==(i64)2)) {
-        remove((byte*)"rx.log");
-        mx_show$logdev = fopen((byte*)"rx.log",(byte*)"w");
-    }
-    else if ((mx_show$logdest==(i64)0) || (mx_show$logdest==(i64)1)) {
-        mx_show$logdev = 0;
-    }
-;
-}
-
-void mx_show$closelogfile(void) {
-        u8 str[512];
-    if ((mx_show$logdest == (i64)2)) {
-        fclose(mx_show$logdev);
-        msysc$m_print_startstr(str);
-        msysc$m_print_str((byte*)"\\m\\ed.bat",NULL);
-        msysc$m_print_str((byte*)"rx.log",NULL);
-        msysc$m_print_end();
-        ;
-        mwindows$os_execwait((u8 *)str,(i64)1,0);
-    }
-;
-}
-
-void mx_show$showlibs(void) {
-        i64 i;
-    mx_show$showglobals(mx_show$logdev);
-    for (i=(i64)1;i<=mx_decls$nlibs;++i) {
-L1228 :;
-        mx_show$showlib((struct mx_decls$librec *)mx_decls$libtable[(i)-1],mx_show$logdev);
-L1229 :;
-    }
-L1230 :;
-    ;
-}
-
-void mx_show$showlib(struct mx_decls$librec *lib,void *logdev) {
-        u8 str[300];
-        i64 n;
-        u8 *(*names)[];
-        i64 i;
-    mlib$gs_init((struct mlib$strbuffer *)mx_show$dest);
-    mx_show$showstrln((byte*)"-------------------------");
-    mx_show$showstr((byte*)"LIBFILE: ");
-    mx_show$showstr((*lib).libname);
-    mx_show$showstr((byte*)" ");
-    mx_show$showstrln((*lib).filespec);
-    msysc$m_print_startstr(str);
-    msysc$m_print_str((byte*)"Version:",NULL);
-    msysc$m_print_str((*lib).version,NULL);
-    msysc$m_print_end();
-    ;
-    mx_show$showstrln(str);
-    mx_show$showstrln((byte*)"");
-    msysc$m_print_startstr(str);
-    msysc$m_print_setfmt((byte*)"Zdata size: # #");
-    msysc$m_print_i64((*lib).zdatasize,NULL);
-    msysc$m_print_ptr((*lib).zdataptr,NULL);
-    msysc$m_print_end();
-    ;
-    mx_show$showstrln(str);
-    msysc$m_print_startstr(str);
-    msysc$m_print_setfmt((byte*)"Idata size: # #");
-    msysc$m_print_i64((*lib).idatasize,NULL);
-    msysc$m_print_ptr((*lib).idataptr,NULL);
-    msysc$m_print_end();
-    ;
-    mx_show$showstrln(str);
-    mx_show$showsectiondata((*lib).idataptr,(*lib).idatasize);
-    msysc$m_print_startstr(str);
-    msysc$m_print_setfmt((byte*)"Code size: # # Extra:#");
-    msysc$m_print_i64((*lib).codesize,NULL);
-    msysc$m_print_ptr((*lib).codeptr,NULL);
-    msysc$m_print_i64((*lib).codexsize,NULL);
-    msysc$m_print_end();
-    ;
-    mx_show$showstrln(str);
-    mx_show$showsectioncode((*lib).codeptr,(*lib).codesize,(*lib).codexsize);
-    mx_show$showrelocs((struct mx_decls$librec *)lib);
-    msysc$m_print_startstr(str);
-    msysc$m_print_setfmt((byte*)"DLL Libs #");
-    msysc$m_print_i64((n = (*lib).ndlllibs),NULL);
-    msysc$m_print_end();
-    ;
-    mx_show$showstrln(str);
-    mx_show$shownames((*lib).dllnames,n);
-    mx_show$showstrln((byte*)"");
-    msysc$m_print_startstr(str);
-    msysc$m_print_setfmt((byte*)"Libs #");
-    msysc$m_print_i64((n = (*lib).nlibs),NULL);
-    msysc$m_print_end();
-    ;
-    mx_show$showstrln(str);
-    mx_show$shownames((*lib).libnames,n);
-    mx_show$showstrln((byte*)"");
-    msysc$m_print_startstr(str);
-    msysc$m_print_setfmt((byte*)"Imports #");
-    msysc$m_print_i64((n = (*lib).nimports),NULL);
-    msysc$m_print_end();
-    ;
-    mx_show$showstrln(str);
-    names = (*lib).importnames;
-    for (i=(i64)1;i<=n;++i) {
-L1231 :;
-        msysc$m_print_startstr(str);
-        msysc$m_print_setfmt((byte*)"   #: #");
-        msysc$m_print_i64(i,NULL);
-        msysc$m_print_str((*names)[(i)-1],(byte*)"20jl");
-        msysc$m_print_end();
-        ;
-        mx_show$showstrln(str);
-L1232 :;
-    }
-L1233 :;
-    ;
-    mx_show$showstrln((byte*)"");
-    msysc$m_print_startstr(str);
-    msysc$m_print_setfmt((byte*)"Exports #");
-    msysc$m_print_i64((n = (*lib).nexports),NULL);
-    msysc$m_print_end();
-    ;
-    mx_show$showstrln(str);
-    names = (*lib).exports;
-    mx_show$showstrln((byte*)"     Name                 Seg      Offset");
-    mx_show$showstrln((byte*)"--------------------------------------------");
-    for (i=(i64)1;i<=n;++i) {
-L1234 :;
-        msysc$m_print_startstr(str);
-        msysc$m_print_setfmt((byte*)"#: # # #");
-        msysc$m_print_i64(i,(byte*)"3");
-        msysc$m_print_str((*names)[(i)-1],(byte*)"20jl");
-        msysc$m_print_str(mx_lib$segmentnames[((i64)(*(*lib).exportsegs)[(i)-1])],(byte*)"8jl");
-        msysc$m_print_u64((*(*lib).exportoffsets)[(i)-1],(byte*)"8zh");
-        msysc$m_print_end();
-        ;
-        mx_show$showstrln(str);
-L1235 :;
-    }
-L1236 :;
-    ;
-    mx_show$showstrln((byte*)"");
-    msysc$m_print_startstr(str);
-    msysc$m_print_setfmt((byte*)"Entry point offset:  #");
-    msysc$m_print_u64((*lib).entryoffset,NULL);
-    msysc$m_print_end();
-    ;
-    mx_show$showstrln(str);
-    msysc$m_print_startstr(str);
-    msysc$m_print_setfmt((byte*)"Entry point address: #");
-    msysc$m_print_ptr((*lib).entryaddr,NULL);
-    msysc$m_print_end();
-    ;
-    mx_show$showstrln(str);
-    mx_show$showstrln((byte*)"");
-    //finish:
-L1237 :;
-;
-    mlib$gs_println((struct mlib$strbuffer *)mx_show$dest,logdev);
-}
-
-static void mx_show$showstr(u8 *str) {
-    mlib$gs_str((struct mlib$strbuffer *)mx_show$dest,str);
-}
-
-static void mx_show$showstrln(u8 *str) {
-    mlib$gs_strln((struct mlib$strbuffer *)mx_show$dest,str);
-}
-
-static void mx_show$showstrint(i64 a) {
-    mlib$gs_strint((struct mlib$strbuffer *)mx_show$dest,a);
-}
-
-static void mx_show$shownames(u8 *(*names)[],i64 n) {
-        u8 str[300];
-        i64 i;
-    for (i=(i64)1;i<=n;++i) {
-L1238 :;
-        msysc$m_print_startstr(str);
-        msysc$m_print_setfmt((byte*)"   #: #");
-        msysc$m_print_i64(i,NULL);
-        msysc$m_print_str((*names)[(i)-1],NULL);
-        msysc$m_print_end();
-        ;
-        mx_show$showstrln(str);
-L1239 :;
-    }
-L1240 :;
-    ;
-}
-
-static void mx_show$showrelocs(struct mx_decls$librec *lib) {
-        u8 str[300];
-        struct mx_decls$mcxreloc r;
-        i64 n;
-        i64 m;
-        u64 targetoffset;
-        struct mx_show$showrelocs$dummy ubase;
-        i64 i;
-    n = (*lib).nrelocs;
-    msysc$m_print_startstr(str);
-    msysc$m_print_setfmt((byte*)"Relocs #");
-    msysc$m_print_i64((n = (*lib).nrelocs),NULL);
-    msysc$m_print_end();
-    ;
-    mx_show$showstrln(str);
-    mx_show$showstrln((byte*)"     Type       Seg      Offset    Symbol/Target+Offset");
-    mx_show$showstrln((byte*)"---------------------------------------------------------");
-    for (i=(i64)1;i<=n;++i) {
-L1241 :;
-        r = (*(*lib).reloctable)[(i)-1];
-        msysc$m_print_startstr(str);
-        msysc$m_print_setfmt((byte*)"#: # # ##");
-        msysc$m_print_i64(i,(byte*)"3");
-        msysc$m_print_str(mx_decls$mcxrelocnames[((i64)r.reloctype)],(byte*)"10jl");
-        msysc$m_print_str(mx_lib$segmentnames[((i64)r.segment)],(byte*)"8jl");
-        msysc$m_print_i64((i64)r.offset,(byte*)"8zh");
-        msysc$m_print_nogap();
-        msysc$m_print_str((byte*)"  ",NULL);
-        msysc$m_print_end();
-        ;
-        m = strlen(str);
-                {i64 $temp = (i64)r.reloctype;
-if (($temp==(i64)1) || ($temp==(i64)2)) {
-                        {i64 $temp = (i64)r.segment;
-if (($temp==(i64)1)) {
-                ubase.baseptr64 = (u64 *)((*lib).codeptr + (i64)r.offset);
-            }
-            else if (($temp==(i64)2)) {
-                ubase.baseptr64 = (u64 *)((*lib).idataptr + (i64)r.offset);
-            }
-            };
-            if (((i64)r.reloctype == (i64)1)) {
-                targetoffset = (u64)(i64)(*ubase.baseptr32);
-            }
-            else {
-                targetoffset = (*ubase.baseptr64);
-            }
-;
-            msysc$m_print_startstr((str + m));
-            msysc$m_print_str(mx_lib$segmentnames[((i64)r.targetsegment)],(byte*)"6jlt:");
-            msysc$m_print_nogap();
-            msysc$m_print_u64(targetoffset,(byte*)"8zh");
-            msysc$m_print_end();
-            ;
-        }
-        else {
-            msysc$m_print_startstr((str + m));
-            msysc$m_print_str((*(*lib).importnames)[((i64)r.stindex)-1],NULL);
-            msysc$m_print_end();
-            ;
-        }
-        };
-        mx_show$showstrln(str);
-L1242 :;
-    }
-L1243 :;
-    ;
-    mx_show$showstrln((byte*)"");
-}
-
-static void mx_show$showsectiondata(byte *p,i64 length) {
-        i64 i;
-        i64 k;
-        i64 bb;
-        u8 str[128];
-        u8 str2[128];
-        byte *  baseaddr;
-        i64 $av_1;
-    mx_show$showstr((byte*)"proc Section ");
-    mx_show$showstr((byte*)"Idata:");
-    mx_show$showstr((byte*)" Size:");
-    mx_show$showstrint(length);
-    mlib$gs_line((struct mlib$strbuffer *)mx_show$dest);
-    mlib$gs_line((struct mlib$strbuffer *)mx_show$dest);
-    k = (i64)0;
-    str[((i64)1)-1] = (u64)0u;
-    baseaddr = 0;
-    msysc$m_print_startstr(str2);
-    msysc$m_print_ptr(baseaddr,(byte*)"Z8H");
-    msysc$m_print_nogap();
-    msysc$m_print_str((byte*)": ",NULL);
-    msysc$m_print_end();
-    ;
-    mx_show$showstr((u8 *)str2);
-    for (i=(i64)1;i<=length;++i) {
-L1244 :;
-        bb = (i64)(*(p)++);
-        msysc$m_print_startstr(str2);
-        msysc$m_print_i64(bb,(byte*)"z2H");
-        msysc$m_print_nogap();
-        msysc$m_print_str((byte*)" ",NULL);
-        msysc$m_print_end();
-        ;
-        mx_show$showstr((u8 *)str2);
-        if (((i64)32<=bb && bb<=(i64)127)) {
-            str2[((i64)1)-1] = (u64)bb;
-            str2[((i64)2)-1] = (u64)0u;
-            strcat((u8 *)str,(u8 *)str2);
-        }
-        else {
-            strcat((u8 *)str,(byte*)".");
-        }
-;
-        if (((++(k) == (i64)16) || (i == length))) {
-            if ((k < (i64)16)) {
-                $av_1 = ((i64)16 - k);
-                while ($av_1-- > 0) {
-L1247 :;
-                    mx_show$showstr((byte*)"   ");
-                    strcat((u8 *)str,(byte*)" ");
-L1248 :;
-                }
-L1249 :;
-                ;
-            }
-;
-            mx_show$showstr((byte*)"\t[");
-            mx_show$showstr((u8 *)str);
-            mx_show$showstrln((byte*)"]");
-            k = (i64)0;
-            str[((i64)1)-1] = (u64)0u;
-            baseaddr += (i64)16;
-            msysc$m_print_startstr(str2);
-            msysc$m_print_ptr(baseaddr,(byte*)"z8h");
-            msysc$m_print_nogap();
-            msysc$m_print_str((byte*)": ",NULL);
-            msysc$m_print_end();
-            ;
-            mx_show$showstr((u8 *)str2);
-        }
-;
-L1245 :;
-    }
-L1246 :;
-    ;
-    if ((k == (i64)0)) {
-        mlib$gs_line((struct mlib$strbuffer *)mx_show$dest);
-    }
-;
-    mlib$gs_line((struct mlib$strbuffer *)mx_show$dest);
-    if (!!(k)) {
-        mlib$gs_line((struct mlib$strbuffer *)mx_show$dest);
-    }
-;
-}
-
-static void mx_show$showsectioncode(byte *p,i64 length,i64 extra) {
-        byte *  codeptr;
-        byte *  codeend;
-        byte *  codeendx;
-        byte *  codestart;
-        i64 offset;
-        u8 *  s;
-        u8 str[16];
-        byte *  baseaddr;
-    mx_show$showstrln((byte*)"proc Section Code");
-    codestart = (codeptr = p);
-    codeend = (codeptr + length);
-    codeendx = (codeend + extra);
-    baseaddr = 0;
-    L1250 :;
-    while ((codeptr < codeendx)) {
-        if ((codeptr == codeend)) {
-            mx_show$showstrln((byte*)"");
-        }
-;
-        offset = (codeptr - codestart);
-        s = 0;
-        if ((s == 0)) {
-            goto L1252 ;
-        }
-;
-        msysc$m_print_startstr(str);
-        msysc$m_print_i64(offset,(byte*)"4");
-        msysc$m_print_nogap();
-        msysc$m_print_str((byte*)" ",NULL);
-        msysc$m_print_end();
-        ;
-        mx_show$showstr((u8 *)str);
-        mx_show$showstrln(s);
-L1251 :;
-    }
-L1252 :;
-    ;
-    mlib$gs_line((struct mlib$strbuffer *)mx_show$dest);
-}
-
-void mx_show$showglobals(void *logdev) {
-        u8 str[300];
-        u8 name[300];
-        i64 i;
-    mlib$gs_init((struct mlib$strbuffer *)mx_show$dest);
-    mx_show$showstrln((byte*)"Global Tables\n");
-    msysc$m_print_startstr(str);
-    msysc$m_print_str((byte*)"DLLs:",NULL);
-    msysc$m_print_i64(mx_decls$ndlllibs,NULL);
-    msysc$m_print_end();
-    ;
-    mx_show$showstrln(str);
-    for (i=(i64)1;i<=mx_decls$ndlllibs;++i) {
-L1253 :;
-        msysc$m_print_startstr(str);
-        msysc$m_print_i64(i,NULL);
-        msysc$m_print_nogap();
-        msysc$m_print_str((byte*)":",NULL);
-        msysc$m_print_str(mx_decls$dllnametable[(i)-1],(byte*)"16jl");
-        msysc$m_print_u64(mx_decls$dllinsttable[(i)-1],(byte*)"h");
-        msysc$m_print_end();
-        ;
-        mx_show$showstrln(str);
-L1254 :;
-    }
-L1255 :;
-    ;
-    mx_show$showstrln((byte*)"");
-    msysc$m_print_startstr(str);
-    msysc$m_print_str((byte*)"LIBs:",NULL);
-    msysc$m_print_i64(mx_decls$nlibs,NULL);
-    msysc$m_print_end();
-    ;
-    mx_show$showstrln(str);
-    for (i=(i64)1;i<=mx_decls$nlibs;++i) {
-L1256 :;
-        msysc$m_print_startstr(str);
-        msysc$m_print_i64(i,NULL);
-        msysc$m_print_nogap();
-        msysc$m_print_str((byte*)":",NULL);
-        msysc$m_print_str(mx_decls$libnametable[(i)-1],(byte*)"20jl");
-        msysc$m_print_str((!!((i64)mx_decls$librelocated[(i)-1]) ? (byte*)"Relocated" : (byte*)"-"),NULL);
-        msysc$m_print_end();
-        ;
-        mx_show$showstrln(str);
-L1257 :;
-    }
-L1258 :;
-    ;
-    mx_show$showstrln((byte*)"");
-    msysc$m_print_startstr(str);
-    msysc$m_print_str((byte*)"Global Symbols:",NULL);
-    msysc$m_print_i64(mx_decls$nsymbols,NULL);
-    msysc$m_print_end();
-    ;
-    mx_show$showstrln(str);
-    mx_show$showstrln((byte*)"     Name              Def Address       Lib        Dll");
-    mx_show$showstrln((byte*)"-----------------------------------------------------------");
-    for (i=(i64)1;i<=mx_decls$nsymbols;++i) {
-L1259 :;
-        strcpy(name,mx_decls$symbolnametable[(i)-1]);
-        if ((strlen(name) > (i64)17)) {
-            strcat(name,(byte*)"\n                      ");
-        }
-;
-        msysc$m_print_startstr(str);
-        msysc$m_print_setfmt((byte*)"#: # # #  # #");
-        msysc$m_print_i64(i,(byte*)"3");
-        msysc$m_print_str(name,(byte*)"17jl");
-        msysc$m_print_str((!!((i64)mx_decls$symboldefined[(i)-1]) ? (byte*)"Y" : (byte*)"-"),(byte*)"3JL");
-        msysc$m_print_ptr(mx_decls$symboladdress[(i)-1],(byte*)"Z12H");
-        msysc$m_print_str((!!((i64)mx_decls$symbollibindex[(i)-1]) ? mx_decls$libnametable[((i64)mx_decls$symbollibindex[(i)-1])-1] : (byte*)"-"),(byte*)"10jl");
-        msysc$m_print_str((!!((i64)mx_decls$symboldllindex[(i)-1]) ? mx_decls$dllnametable[((i64)mx_decls$symboldllindex[(i)-1])-1] : (byte*)"-"),(byte*)"10jl");
-        msysc$m_print_end();
-        ;
-        mx_show$showstrln(str);
-L1260 :;
-    }
-L1261 :;
-    ;
-    mx_show$showstrln((byte*)"");
-    mlib$gs_println((struct mlib$strbuffer *)mx_show$dest,logdev);
-}
-
-// START
-void mx_show$start(void) {
-
-}
-
-// START
-void mx_decls$start(void) {
-
-}
-
-u8 *aa_disasm$decodeinstr(byte **cptr,byte *baseaddr) {
-        i64 n;
-        i64 w;
-        i64 opc;
-        i64 reg;
-        i64 op;
-        byte *  pstart;
-        static u8 str[256];
-        u8 str2[128];
-        i64 $av_1;
-        i64 $av_2;
-    aa_disasm$deststr[((i64)1)-1] = (u64)0u;
-    pstart = (aa_disasm$codeptr = (*cptr));
-    aa_disasm$rex = (i64)0;
-    aa_disasm$opsize = (i64)1;
-    aa_disasm$f2override = (aa_disasm$f3override = (aa_disasm$sizeoverride = (aa_disasm$addroverride = (i64)0)));
-    aa_disasm$basereg = (aa_disasm$indexreg = (aa_disasm$offset = (i64)0));
-    //retry:
-L1262 :;
-;
-    switch ((opc = (i64)(*(aa_disasm$codeptr)++))) {
-    case 0:;
-    case 1:;
-    case 8:;
-    case 9:;
-    case 16:;
-    case 17:;
-    case 24:;
-    case 25:;
-    case 32:;
-    case 33:;
-    case 40:;
-    case 41:;
-    case 48:;
-    case 49:;
-    case 56:;
-    case 57:;
-        {
-            op = (opc >> (i64)3);
-            aa_disasm$decodeaddr((opc & (i64)1));
-            aa_disasm$getsilx(&aa_disasm$basereg);
-            aa_disasm$getsil(&aa_disasm$rmreg);
-            aa_disasm$genstr(aa_disasm$opnames[(op)]);
-            aa_disasm$printaddrmode((i64)0);
-            aa_disasm$genstr((byte*)", ");
-            aa_disasm$genstr(aa_disasm$strreg(aa_disasm$rmreg,aa_disasm$opsize));
-        }
-        break;
-    case 2:;
-    case 3:;
-    case 10:;
-    case 11:;
-    case 18:;
-    case 19:;
-    case 26:;
-    case 27:;
-    case 34:;
-    case 35:;
-    case 42:;
-    case 43:;
-    case 50:;
-    case 51:;
-    case 58:;
-    case 59:;
-        {
-            op = (opc >> (i64)3);
-            aa_disasm$decodeaddr((opc & (i64)1));
-            aa_disasm$genstr(aa_disasm$opnames[(op)]);
-            aa_disasm$genstr((byte*)" ");
-            aa_disasm$getsil(&aa_disasm$rmreg);
-            aa_disasm$genstr(aa_disasm$strreg(aa_disasm$rmreg,aa_disasm$opsize));
-            aa_disasm$genstr((byte*)", ");
-            aa_disasm$printaddrmode((i64)0);
-        }
-        break;
-    case 4:;
-    case 5:;
-    case 12:;
-    case 13:;
-    case 20:;
-    case 21:;
-    case 28:;
-    case 29:;
-    case 36:;
-    case 37:;
-    case 44:;
-    case 45:;
-    case 52:;
-    case 53:;
-    case 60:;
-    case 61:;
-        {
-            aa_disasm$genstr(aa_disasm$opnames[((opc >> (i64)3))]);
-            aa_disasm$genstr((byte*)" ");
-            if (!!((opc & (i64)1))) {
-                aa_disasm$opsize = (i64)4;
-                if (!!(aa_disasm$sizeoverride)) {
-                    aa_disasm$opsize = (i64)2;
-                }
-;
-                if (!!((aa_disasm$rex & (i64)8))) {
-                    aa_disasm$opsize = (i64)8;
-                }
-;
-            }
-;
-            aa_disasm$genstr(aa_disasm$strreg((i64)1,aa_disasm$opsize));
-            aa_disasm$genstr((byte*)", ");
-            aa_disasm$genintd(aa_disasm$readimm());
-        }
-        break;
-    case 15:;
-        {
-            aa_disasm$decodetwobyteinstr();
-        }
-        break;
-    case 64:;
-    case 65:;
-    case 66:;
-    case 67:;
-    case 68:;
-    case 69:;
-    case 70:;
-    case 71:;
-    case 72:;
-    case 73:;
-    case 74:;
-    case 75:;
-    case 76:;
-    case 77:;
-    case 78:;
-    case 79:;
-        {
-            aa_disasm$rex = opc;
-            goto L1262 ;
-;
-        }
-        break;
-    case 80:;
-    case 81:;
-    case 82:;
-    case 83:;
-    case 84:;
-    case 85:;
-    case 86:;
-    case 87:;
-        {
-            reg = aa_disasm$getreg((opc & (i64)7),(aa_disasm$rex & (i64)1));
-            aa_disasm$genstr((byte*)"push ");
-            aa_disasm$genstr(aa_disasm$strreg(reg,(i64)8));
-        }
-        break;
-    case 88:;
-    case 89:;
-    case 90:;
-    case 91:;
-    case 92:;
-    case 93:;
-    case 94:;
-    case 95:;
-        {
-            reg = aa_disasm$getreg((opc & (i64)7),(aa_disasm$rex & (i64)1));
-            aa_disasm$genstr((byte*)"pop ");
-            aa_disasm$genstr(aa_disasm$strreg(reg,(i64)8));
-        }
-        break;
-    case 99:;
-        {
-            aa_disasm$decodeaddr((i64)1);
-            aa_disasm$genstr((byte*)"movsxd ");
-            aa_disasm$genstr(aa_disasm$strreg(aa_disasm$rmreg,aa_disasm$opsize));
-            aa_disasm$genstr((byte*)", ");
-            aa_disasm$opsize = (i64)4;
-            aa_disasm$printaddrmode((i64)0);
-        }
-        break;
-    case 102:;
-        {
-            aa_disasm$sizeoverride = (i64)1;
-            goto L1262 ;
-;
-        }
-        break;
-    case 103:;
-        {
-            aa_disasm$addroverride = (i64)1;
-            goto L1262 ;
-;
-        }
-        break;
-    case 104:;
-        {
-            aa_disasm$genstr((byte*)"push ");
-            aa_disasm$genintd(aa_disasm$readint32());
-        }
-        break;
-    case 106:;
-        {
-            aa_disasm$genstr((byte*)"push ");
-            aa_disasm$genintd(aa_disasm$readsbyte());
-        }
-        break;
-    case 105:;
-    case 107:;
-        {
-            aa_disasm$decodeaddr((i64)1);
-            if ((aa_disasm$basereg != aa_disasm$rmreg)) {
-                aa_disasm$genstr((byte*)"imul3");
-                aa_disasm$genstr((byte*)" ");
-                aa_disasm$genstr(aa_disasm$strreg(aa_disasm$rmreg,aa_disasm$opsize));
-                aa_disasm$genstr((byte*)", ");
-            }
-            else {
-                aa_disasm$genstr((byte*)"imul2");
-            }
-;
-            aa_disasm$printaddrmode((i64)0);
-            aa_disasm$genstr((byte*)", ");
-            aa_disasm$opsize = (!!((opc & (i64)2)) ? (i64)1 : aa_disasm$opsize);
-            aa_disasm$genintd(aa_disasm$readimm());
-        }
-        break;
-    case 112:;
-    case 113:;
-    case 114:;
-    case 115:;
-    case 116:;
-    case 117:;
-    case 118:;
-    case 119:;
-    case 120:;
-    case 121:;
-    case 122:;
-    case 123:;
-    case 124:;
-    case 125:;
-    case 126:;
-    case 127:;
-        {
-            aa_disasm$genstr((byte*)"j");
-            aa_disasm$genstr(aa_disasm$condnames[((opc & (i64)15))]);
-            aa_disasm$genstr((byte*)" ");
-            aa_disasm$genintd(aa_disasm$readsbyte());
-        }
-        break;
-    case 128:;
-    case 129:;
-    case 130:;
-    case 131:;
-        {
-            aa_disasm$decodeaddr((opc & (i64)1));
-            aa_disasm$genstr(aa_disasm$opnames[(aa_disasm$rmopc)]);
-            aa_disasm$getsilx(&aa_disasm$basereg);
-            aa_disasm$printaddrmode((i64)0);
-            aa_disasm$genstr((byte*)", ");
-            if ((opc != (i64)131)) {
-                aa_disasm$genintd(aa_disasm$readimm());
-            }
-            else {
-                aa_disasm$genintd(aa_disasm$readsbyte());
-            }
-;
-        }
-        break;
-    case 132:;
-    case 133:;
-        {
-            aa_disasm$decodeaddr((opc & (i64)1));
-            aa_disasm$getsilx(&aa_disasm$basereg);
-            aa_disasm$getsil(&aa_disasm$rmreg);
-            aa_disasm$genstr((byte*)"test ");
-            aa_disasm$printaddrmode((i64)0);
-            aa_disasm$genstr((byte*)", ");
-            aa_disasm$genstr(aa_disasm$strreg(aa_disasm$rmreg,aa_disasm$opsize));
-        }
-        break;
-    case 134:;
-    case 135:;
-        {
-            aa_disasm$decodeaddr((opc & (i64)1));
-            aa_disasm$genstr((byte*)"exch2 ");
-            aa_disasm$getsilx(&aa_disasm$basereg);
-            aa_disasm$getsil(&aa_disasm$rmreg);
-            aa_disasm$genstr(aa_disasm$strreg(aa_disasm$rmreg,aa_disasm$opsize));
-            aa_disasm$genstr((byte*)",");
-            aa_disasm$printaddrmode((i64)0);
-        }
-        break;
-    case 136:;
-    case 137:;
-        {
-            aa_disasm$decodeaddr((opc & (i64)1));
-            aa_disasm$genstr((byte*)"mov");
-            aa_disasm$getsilx(&aa_disasm$basereg);
-            aa_disasm$getsil(&aa_disasm$rmreg);
-            aa_disasm$printaddrmode((i64)0);
-            aa_disasm$genstr((byte*)", ");
-            aa_disasm$genstr(aa_disasm$strreg(aa_disasm$rmreg,aa_disasm$opsize));
-        }
-        break;
-    case 138:;
-    case 139:;
-        {
-            aa_disasm$decodeaddr((opc & (i64)1));
-            aa_disasm$genstr((byte*)"mov ");
-            aa_disasm$getsilx(&aa_disasm$basereg);
-            aa_disasm$getsil(&aa_disasm$rmreg);
-            aa_disasm$genstr(aa_disasm$strreg(aa_disasm$rmreg,aa_disasm$opsize));
-            aa_disasm$genstr((byte*)", ");
-            aa_disasm$printaddrmode((i64)0);
-        }
-        break;
-    case 141:;
-        {
-            aa_disasm$decodeaddr((i64)1);
-            aa_disasm$genstr((byte*)"lea ");
-            aa_disasm$genstr(aa_disasm$strreg(aa_disasm$rmreg,aa_disasm$opsize));
-            aa_disasm$genstr((byte*)", ");
-            aa_disasm$printaddrmode((i64)0);
-        }
-        break;
-    case 143:;
-        {
-            aa_disasm$decodeaddr((i64)1);
-            aa_disasm$opsize = (i64)1;
-            aa_disasm$genstr((byte*)"pop");
-            aa_disasm$printaddrmode((i64)0);
-        }
-        break;
-    case 144:;
-        {
-            if (!!(aa_disasm$rex)) {
-                goto L1263 ;
-;
-            }
-;
-            aa_disasm$genstr((byte*)"nop");
-        }
-        break;
-    case 145:;
-    case 146:;
-    case 147:;
-    case 148:;
-    case 149:;
-    case 150:;
-    case 151:;
-        {
-            //doexch:
-L1263 :;
-;
-            reg = ((opc & (i64)7) + (i64)1);
-            if (!!((aa_disasm$rex & (i64)1))) {
-                reg += (i64)8;
-            }
-;
-            aa_disasm$opsize = (!!(aa_disasm$sizeoverride) ? (i64)2 : (i64)4);
-            if (!!((aa_disasm$rex & (i64)8))) {
-                aa_disasm$opsize = (i64)8;
-            }
-;
-            aa_disasm$genstr((byte*)"xchg ");
-            aa_disasm$genstr(aa_disasm$strreg((i64)1,aa_disasm$opsize));
-            aa_disasm$genstr((byte*)", ");
-            aa_disasm$genstr(aa_disasm$strreg(reg,aa_disasm$opsize));
-        }
-        break;
-    case 152:;
-        {
-            if (!!(aa_disasm$sizeoverride)) {
-                aa_disasm$genstr((byte*)"cbw");
-            }
-            else {
-                aa_disasm$genstr((byte*)"cbw???");
-            }
-;
-        }
-        break;
-    case 153:;
-        {
-            if (!!(aa_disasm$sizeoverride)) {
-                aa_disasm$genstr((byte*)"cwd");
-            }
-            else if (!!((aa_disasm$rex & (i64)8))) {
-                aa_disasm$genstr((byte*)"cqo");
-            }
-            else {
-                aa_disasm$genstr((byte*)"cdq");
-            }
-;
-        }
-        break;
-    case 155:;
-        {
-            aa_disasm$genstr((byte*)"wait");
-        }
-        break;
-    case 156:;
-        {
-            aa_disasm$genstr((byte*)"pushf");
-        }
-        break;
-    case 157:;
-        {
-            aa_disasm$genstr((byte*)"popf");
-        }
-        break;
-    case 158:;
-        {
-            aa_disasm$genstr((byte*)"sahf");
-        }
-        break;
-    case 159:;
-        {
-            aa_disasm$genstr((byte*)"lahf");
-        }
-        break;
-    case 164:;
-    case 165:;
-    case 166:;
-    case 167:;
-    case 170:;
-    case 171:;
-    case 172:;
-    case 173:;
-    case 174:;
-    case 175:;
-        {
-            aa_disasm$genstr((((opc >> (i64)1) & (i64)7)==1?(byte*)"?":(((opc >> (i64)1) & (i64)7)==2?(byte*)"movs":(((opc >> (i64)1) & (i64)7)==3?(byte*)"cmps":(((opc >> (i64)1) & (i64)7)==4?(byte*)"?":(((opc >> (i64)1) & (i64)7)==5?(byte*)"stos":(((opc >> (i64)1) & (i64)7)==6?(byte*)"lods":(((opc >> (i64)1) & (i64)7)==7?(byte*)"scas":(byte*)"?"))))))));
-            if (((opc & (i64)1) == (i64)0)) {
-                aa_disasm$genstr((byte*)"b");
-            }
-            else {
-                if (!!((aa_disasm$rex & (i64)8))) {
-                    aa_disasm$genstr((byte*)"q");
-                }
-                else if (!!(aa_disasm$sizeoverride)) {
-                    aa_disasm$genstr((byte*)"w");
-                }
-                else {
-                    aa_disasm$genstr((byte*)"d");
-                }
-;
-            }
-;
-        }
-        break;
-    case 168:;
-    case 169:;
-        {
-            aa_disasm$genstr((byte*)"test ");
-            if (!!((opc & (i64)1))) {
-                aa_disasm$opsize = (!!(aa_disasm$sizeoverride) ? (i64)2 : (i64)4);
-                if (!!((aa_disasm$rex & (i64)8))) {
-                    aa_disasm$opsize = (i64)8;
-                }
-;
-            }
-;
-            aa_disasm$genstr(aa_disasm$strreg((i64)1,aa_disasm$opsize));
-            aa_disasm$genstr((byte*)", ");
-            aa_disasm$genintd(aa_disasm$readimm());
-        }
-        break;
-    case 176:;
-    case 177:;
-    case 178:;
-    case 179:;
-    case 180:;
-    case 181:;
-    case 182:;
-    case 183:;
-    case 184:;
-    case 185:;
-    case 186:;
-    case 187:;
-    case 188:;
-    case 189:;
-    case 190:;
-    case 191:;
-        {
-            reg = ((opc & (i64)7) + (i64)1);
-            if (!!((aa_disasm$rex & (i64)1))) {
-                reg += (i64)8;
-            }
-;
-            if (!!((opc & (i64)8))) {
-                aa_disasm$opsize = (!!(aa_disasm$sizeoverride) ? (i64)2 : (i64)4);
-                if (!!((aa_disasm$rex & (i64)8))) {
-                    aa_disasm$opsize = (i64)8;
-                }
-;
-            }
-;
-            aa_disasm$genstr((byte*)"mov ");
-            msysc$m_print_startcon();
-            msysc$m_print_str((byte*)"DIS",NULL);
-            msysc$m_print_str((byte*)"REG=",NULL);
-            msysc$m_print_i64(reg,NULL);
-            msysc$m_print_newline();
-            msysc$m_print_end();
-            ;
-            aa_disasm$getsil(&reg);
-            aa_disasm$genstr(aa_disasm$strreg(reg,aa_disasm$opsize));
-            aa_disasm$genstr((byte*)", ");
-            aa_disasm$genintd(aa_disasm$readimm8());
-        }
-        break;
-    case 192:;
-    case 193:;
-    case 208:;
-    case 209:;
-    case 210:;
-    case 211:;
-        {
-            aa_disasm$decodeaddr((opc & (i64)1));
-            aa_disasm$getsilx(&aa_disasm$basereg);
-            aa_disasm$genstr(((aa_disasm$rmopc + (i64)1)==1?(byte*)"rol":((aa_disasm$rmopc + (i64)1)==2?(byte*)"ror":((aa_disasm$rmopc + (i64)1)==3?(byte*)"rcl":((aa_disasm$rmopc + (i64)1)==4?(byte*)"rcr":((aa_disasm$rmopc + (i64)1)==5?(byte*)"shl":((aa_disasm$rmopc + (i64)1)==6?(byte*)"shr":((aa_disasm$rmopc + (i64)1)==7?(byte*)"?":((aa_disasm$rmopc + (i64)1)==8?(byte*)"sar":(byte*)"?")))))))));
-            aa_disasm$printaddrmode((i64)0);
-            if ((opc <= (i64)193)) {
-                aa_disasm$genstr((byte*)", ");
-                aa_disasm$genintd(aa_disasm$readbyte());
-            }
-            else {
-                aa_disasm$genstr((!!((opc & (i64)2)) ? (byte*)", cl" : (byte*)", 1"));
-            }
-;
-        }
-        break;
-    case 194:;
-        {
-            aa_disasm$genstr((byte*)"retn ");
-            aa_disasm$genintd((i64)aa_disasm$readword16());
-        }
-        break;
-    case 195:;
-        {
-            aa_disasm$genstr((byte*)"ret");
-        }
-        break;
-    case 198:;
-    case 199:;
-        {
-            aa_disasm$decodeaddr((opc & (i64)1));
-            aa_disasm$genstr((byte*)"mov");
-            aa_disasm$printaddrmode((i64)0);
-            aa_disasm$genstr((byte*)", ");
-            aa_disasm$genintd(aa_disasm$readimm());
-        }
-        break;
-    case 215:;
-        {
-            aa_disasm$genstr((byte*)"xlat");
-        }
-        break;
-    case 216:;
-    case 217:;
-    case 218:;
-    case 219:;
-    case 220:;
-    case 221:;
-    case 222:;
-    case 223:;
-        {
-            aa_disasm$decode8087((opc & (i64)7));
-        }
-        break;
-    case 224:;
-        {
-            aa_disasm$genstr((byte*)"loopnz ");
-            aa_disasm$genintd(aa_disasm$readsbyte());
-        }
-        break;
-    case 225:;
-        {
-            aa_disasm$genstr((byte*)"loopz ");
-            aa_disasm$genintd(aa_disasm$readsbyte());
-        }
-        break;
-    case 226:;
-        {
-            aa_disasm$genstr((byte*)"loop ");
-            aa_disasm$genintd(aa_disasm$readsbyte());
-        }
-        break;
-    case 227:;
-        {
-            if (!!(aa_disasm$addroverride)) {
-                aa_disasm$genstr((byte*)"jecxz ");
-            }
-            else {
-                aa_disasm$genstr((byte*)"jrcxz ");
-            }
-;
-            aa_disasm$genintd(aa_disasm$readsbyte());
-        }
-        break;
-    case 232:;
-        {
-            aa_disasm$genstr((byte*)"call ");
-            aa_disasm$genintd(aa_disasm$readint32());
-        }
-        break;
-    case 233:;
-        {
-            aa_disasm$genstr((byte*)"[4] jmp ");
-            aa_disasm$genintd(aa_disasm$readint32());
-        }
-        break;
-    case 235:;
-        {
-            aa_disasm$genstr((byte*)"jmp ");
-            aa_disasm$genintd(aa_disasm$readsbyte());
-        }
-        break;
-    case 242:;
-        {
-            if ((((i64)(*aa_disasm$codeptr) != (i64)15) && (((i64)(*aa_disasm$codeptr) < (i64)64) && ((i64)(*aa_disasm$codeptr) > (i64)79)))) {
-                aa_disasm$genstr((byte*)"repne");
-            }
-            else {
-                aa_disasm$f2override = (i64)1;
-                goto L1262 ;
-;
-            }
-;
-        }
-        break;
-    case 243:;
-        {
-            if ((((i64)(*aa_disasm$codeptr) != (i64)15) && (((i64)(*aa_disasm$codeptr) < (i64)64) && ((i64)(*aa_disasm$codeptr) > (i64)79)))) {
-                aa_disasm$genstr((byte*)"repe");
-            }
-            else {
-                aa_disasm$f3override = (i64)1;
-                goto L1262 ;
-;
-            }
-;
-        }
-        break;
-    case 244:;
-        {
-        }
-        break;
-    case 246:;
-    case 247:;
-        {
-            aa_disasm$decodeaddr((opc & (i64)1));
-            aa_disasm$getsilx(&aa_disasm$basereg);
-            aa_disasm$genstr(((aa_disasm$rmopc + (i64)1)==1?(byte*)"test":((aa_disasm$rmopc + (i64)1)==2?(byte*)"?":((aa_disasm$rmopc + (i64)1)==3?(byte*)"not":((aa_disasm$rmopc + (i64)1)==4?(byte*)"neg":((aa_disasm$rmopc + (i64)1)==5?(byte*)"mul":((aa_disasm$rmopc + (i64)1)==6?(byte*)"imul":((aa_disasm$rmopc + (i64)1)==7?(byte*)"div":((aa_disasm$rmopc + (i64)1)==8?(byte*)"idiv":(byte*)"?")))))))));
-            aa_disasm$printaddrmode((i64)0);
-            if ((aa_disasm$rmopc == (i64)0)) {
-                if ((aa_disasm$opsize == (i64)8)) {
-                    aa_disasm$opsize = (i64)4;
-                }
-;
-                aa_disasm$genstr((byte*)", ");
-                aa_disasm$genintd(aa_disasm$readimm());
-            }
-;
-        }
-        break;
-    case 254:;
-        {
-            w = (i64)0;
-            goto L1264 ;
-;
-        }
-        break;
-    case 255:;
-        {
-            w = (i64)1;
-            //doff:
-L1264 :;
-;
-            aa_disasm$decodeaddr(w);
-            if ((aa_disasm$rmopc==(i64)0)) {
-                aa_disasm$getsilx(&aa_disasm$basereg);
-                aa_disasm$genstr((byte*)"inc");
-            }
-            else if ((aa_disasm$rmopc==(i64)1)) {
-                aa_disasm$getsilx(&aa_disasm$basereg);
-                aa_disasm$genstr((byte*)"dec");
-            }
-            else if ((aa_disasm$rmopc==(i64)2)) {
-                aa_disasm$opsize = (i64)8;
-                aa_disasm$genstr((byte*)"icall");
-            }
-            else if ((aa_disasm$rmopc==(i64)4)) {
-                aa_disasm$opsize = (i64)8;
-                aa_disasm$genstr((byte*)"jmp");
-            }
-            else if ((aa_disasm$rmopc==(i64)6)) {
-                aa_disasm$opsize = (i64)8;
-                aa_disasm$genstr((byte*)"push");
-            }
-            else {
-                msysc$m_print_startcon();
-                msysc$m_print_str((byte*)"FFxx?",NULL);
-                msysc$m_print_newline();
-                msysc$m_print_end();
-                ;
-            }
-;
-            aa_disasm$printaddrmode((i64)0);
-        }
-        break;
-    default: {
-        aa_disasm$genstr((byte*)"Unknown opcode: ");
-        aa_disasm$genhex(opc);
-    }
-    } //SW
-;
-    msysc$m_print_startstr(str);
-    msysc$m_print_ptr(baseaddr,(byte*)"z6h");
-    msysc$m_print_nogap();
-    msysc$m_print_str((byte*)": ",NULL);
-    msysc$m_print_end();
-    ;
-    n = (aa_disasm$codeptr - pstart);
-    $av_1 = n;
-    while ($av_1-- > 0) {
-L1265 :;
-        msysc$m_print_startstr(str2);
-        msysc$m_print_i64((i64)(*(pstart)++),(byte*)"z2H");
-        msysc$m_print_nogap();
-        msysc$m_print_str((byte*)" ",NULL);
-        msysc$m_print_end();
-        ;
-        strcat((u8 *)str,(u8 *)str2);
-L1266 :;
-    }
-L1267 :;
-    ;
-    $av_2 = ((i64)14 - n);
-    while ($av_2-- > 0) {
-L1268 :;
-        strcat((u8 *)str,(byte*)"-- ");
-L1269 :;
-    }
-L1270 :;
-    ;
-    strcat((u8 *)str,(u8 *)aa_disasm$deststr);
-    (*cptr) = aa_disasm$codeptr;
-    return (u8 *)str;
-}
-
-static void aa_disasm$decodetwobyteinstr(void) {
-        i64 opc;
-        i64 rhssize;
-        i64 third;
-        i64 imm;
-        u8 *  opcstr;
-    switch ((opc = (i64)(*(aa_disasm$codeptr)++))) {
-    case 42:;
-        {
-            aa_disasm$decodeaddr((i64)1);
-            if (!!(aa_disasm$f3override)) {
-                aa_disasm$genstr((byte*)"cvtsi2ss ");
-            }
-            else {
-                aa_disasm$genstr((byte*)"cvtsi2sd ");
-            }
-;
-            aa_disasm$genstr(aa_disasm$strxmm(aa_disasm$rmreg));
-            aa_disasm$genstr((byte*)", ");
-            aa_disasm$printaddrmode((i64)0);
-        }
-        break;
-    case 44:;
-        {
-            aa_disasm$decodeaddr((i64)1);
-            if (!!(aa_disasm$f3override)) {
-                aa_disasm$genstr((byte*)"cvttss2si ");
-                rhssize = (i64)4;
-            }
-            else {
-                aa_disasm$genstr((byte*)"cvttsd2si ");
-                rhssize = (i64)8;
-            }
-;
-            if (!!((aa_disasm$rex & (i64)8))) {
-                aa_disasm$genstr(aa_disasm$strreg(aa_disasm$rmreg,(i64)8));
-            }
-            else {
-                aa_disasm$genstr(aa_disasm$strreg(aa_disasm$rmreg,(i64)4));
-            }
-;
-            aa_disasm$genstr((byte*)", ");
-            aa_disasm$opsize = rhssize;
-            aa_disasm$printaddrmode((i64)1);
-        }
-        break;
-    case 45:;
-        {
-            aa_disasm$decodeaddr((i64)1);
-            if (!!(aa_disasm$f3override)) {
-                aa_disasm$genstr((byte*)"cvtss2si ");
-                rhssize = (i64)4;
-            }
-            else {
-                aa_disasm$genstr((byte*)"cvtsd2si ");
-                rhssize = (i64)8;
-            }
-;
-            if (!!((aa_disasm$rex & (i64)8))) {
-                aa_disasm$genstr(aa_disasm$strreg(aa_disasm$rmreg,(i64)8));
-            }
-            else {
-                aa_disasm$genstr(aa_disasm$strreg(aa_disasm$rmreg,(i64)4));
-            }
-;
-            aa_disasm$genstr((byte*)", ");
-            aa_disasm$opsize = rhssize;
-            aa_disasm$printaddrmode((i64)1);
-        }
-        break;
-    case 47:;
-        {
-            aa_disasm$decodeaddr((i64)1);
-            if (!!(aa_disasm$sizeoverride)) {
-                aa_disasm$opsize = (i64)8;
-                aa_disasm$genstr((byte*)"comisd ");
-            }
-            else {
-                aa_disasm$opsize = (i64)4;
-                aa_disasm$genstr((byte*)"comiss ");
-            }
-;
-            aa_disasm$genstr(aa_disasm$strxmm(aa_disasm$rmreg));
-            aa_disasm$genstr((byte*)", ");
-            aa_disasm$printaddrmode((i64)1);
-        }
-        break;
-    case 58:;
-        {
-            third = (i64)(*(aa_disasm$codeptr)++);
-            if ((third==(i64)99)) {
-                aa_disasm$genstr((byte*)"pcmpistri ");
-            }
-            else if ((third==(i64)98)) {
-                aa_disasm$genstr((byte*)"pcmpistrm ");
-            }
-            else {
-                aa_disasm$genstr((byte*)"Unknown opcode 2-byte opcode: 0F ");
-                aa_disasm$genhex(opc);
-                return;
-            }
-;
-            aa_disasm$decodeaddr((i64)1);
-            aa_disasm$genstr(aa_disasm$strxmm(aa_disasm$rmreg));
-            aa_disasm$genstr((byte*)", ");
-            aa_disasm$printaddrmode((i64)1);
-            aa_disasm$genstr((byte*)", ");
-            imm = (i64)(*(aa_disasm$codeptr)++);
-            aa_disasm$genintd(imm);
-        }
-        break;
-    case 64:;
-    case 65:;
-    case 66:;
-    case 67:;
-    case 68:;
-    case 69:;
-    case 70:;
-    case 71:;
-    case 72:;
-    case 73:;
-    case 74:;
-    case 75:;
-    case 76:;
-    case 77:;
-    case 78:;
-    case 79:;
-        {
-            aa_disasm$decodeaddr((i64)1);
-            aa_disasm$genstr((byte*)"cmov");
-            aa_disasm$genstr(aa_disasm$condnames[((opc & (i64)15))]);
-            aa_disasm$genstr((byte*)" ");
-            aa_disasm$genstr(aa_disasm$strreg(aa_disasm$rmreg,aa_disasm$opsize));
-            aa_disasm$genstr((byte*)", ");
-            aa_disasm$printaddrmode((i64)0);
-        }
-        break;
-    case 81:;
-        {
-            aa_disasm$decodeaddr((i64)1);
-            aa_disasm$opsize = (!!(aa_disasm$f3override) ? (i64)4 : (i64)8);
-            aa_disasm$genstr(((aa_disasm$opsize == (i64)4) ? (byte*)"sqrtss " : (byte*)"sqrtsd "));
-            aa_disasm$genstr(aa_disasm$strxmm(aa_disasm$rmreg));
-            aa_disasm$genstr((byte*)", ");
-            aa_disasm$printaddrmode((i64)1);
-        }
-        break;
-    case 84:;
-        {
-            aa_disasm$decodeaddr((i64)1);
-            aa_disasm$genstr((!!(aa_disasm$sizeoverride) ? (byte*)"andpd " : (byte*)"andps "));
-            aa_disasm$genstr(aa_disasm$strxmm(aa_disasm$rmreg));
-            aa_disasm$genstr((byte*)", ");
-            aa_disasm$opsize = (!!(aa_disasm$sizeoverride) ? (i64)8 : (i64)4);
-            aa_disasm$printaddrmode((i64)1);
-        }
-        break;
-    case 87:;
-        {
-            aa_disasm$decodeaddr((i64)1);
-            aa_disasm$genstr((!!(aa_disasm$sizeoverride) ? (byte*)"xorpd " : (byte*)"xorps "));
-            aa_disasm$genstr(aa_disasm$strxmm(aa_disasm$rmreg));
-            aa_disasm$genstr((byte*)", ");
-            aa_disasm$opsize = (!!(aa_disasm$sizeoverride) ? (i64)8 : (i64)4);
-            aa_disasm$printaddrmode((i64)1);
-        }
-        break;
-    case 88:;
-        {
-            opcstr = (byte*)"adds";
-            //doarith:
-L1271 :;
-;
-            aa_disasm$genstr(opcstr);
-            aa_disasm$decodeaddr((i64)1);
-            if (!!(aa_disasm$f2override)) {
-                aa_disasm$opsize = (i64)8;
-                aa_disasm$genstr((byte*)"d ");
-            }
-            else {
-                aa_disasm$opsize = (i64)4;
-                aa_disasm$genstr((byte*)"s ");
-            }
-;
-            aa_disasm$genstr(aa_disasm$strxmm(aa_disasm$rmreg));
-            aa_disasm$genstr((byte*)", ");
-            aa_disasm$printaddrmode((i64)1);
-        }
-        break;
-    case 89:;
-        {
-            opcstr = (byte*)"muls";
-            goto L1271 ;
-;
-        }
-        break;
-    case 90:;
-        {
-            aa_disasm$decodeaddr((i64)1);
-            if (!!(aa_disasm$f3override)) {
-                aa_disasm$genstr((byte*)"cvtss2sd ");
-                rhssize = (i64)4;
-            }
-            else {
-                aa_disasm$genstr((byte*)"cvtsd2ss ");
-                rhssize = (i64)8;
-            }
-;
-            aa_disasm$genstr(aa_disasm$strxmm(aa_disasm$rmreg));
-            aa_disasm$genstr((byte*)", ");
-            aa_disasm$opsize = rhssize;
-            aa_disasm$printaddrmode((i64)1);
-        }
-        break;
-    case 92:;
-        {
-            opcstr = (byte*)"subs";
-            goto L1271 ;
-;
-        }
-        break;
-    case 93:;
-        {
-            opcstr = (byte*)"mins";
-            goto L1271 ;
-;
-        }
-        break;
-    case 94:;
-        {
-            opcstr = (byte*)"divs";
-            goto L1271 ;
-;
-        }
-        break;
-    case 95:;
-        {
-            opcstr = (byte*)"maxs";
-            goto L1271 ;
-;
-        }
-        break;
-    case 110:;
-        {
-            aa_disasm$decodeaddr((i64)1);
-            aa_disasm$opsize = (!!((aa_disasm$rex & (i64)8)) ? (i64)8 : (i64)4);
-            aa_disasm$genstr(((aa_disasm$opsize == (i64)4) ? (byte*)"movd " : (byte*)"movq "));
-            if (!!(aa_disasm$sizeoverride)) {
-                aa_disasm$genstr(aa_disasm$strxmm(aa_disasm$rmreg));
-            }
-            else {
-                aa_disasm$genstr(aa_disasm$strmmx(aa_disasm$rmreg));
-            }
-;
-            aa_disasm$genstr((byte*)", ");
-            aa_disasm$printaddrmode((i64)0);
-        }
-        break;
-    case 111:;
-        {
-            aa_disasm$decodeaddr((i64)1);
-            aa_disasm$opsize = (i64)16;
-            if (!!(aa_disasm$sizeoverride)) {
-                aa_disasm$genstr((byte*)"movdqa ");
-            }
-            else if (!!(aa_disasm$f3override)) {
-                aa_disasm$genstr((byte*)"movdqu ");
-            }
-            else {
-                aa_disasm$genstr((byte*)"No 66/F3 ");
-            }
-;
-            aa_disasm$genstr(aa_disasm$strxmm(aa_disasm$rmreg));
-            aa_disasm$genstr((byte*)", ");
-            aa_disasm$printaddrmode((i64)1);
-        }
-        break;
-    case 126:;
-        {
-            aa_disasm$decodeaddr((i64)1);
-            if (!!(aa_disasm$f3override)) {
-                aa_disasm$opsize = (i64)8;
-                aa_disasm$genstr((byte*)"movq ");
-                aa_disasm$genstr(aa_disasm$strxmm(aa_disasm$rmreg));
-                aa_disasm$genstr((byte*)", ");
-                aa_disasm$printaddrmode((i64)1);
-            }
-            else if (!!((aa_disasm$rex & (i64)8))) {
-                aa_disasm$opsize = (i64)8;
-                aa_disasm$genstr((byte*)"movq ");
-                aa_disasm$printaddrmode((i64)0);
-                aa_disasm$genstr((byte*)", ");
-                aa_disasm$genstr(aa_disasm$strxmm(aa_disasm$rmreg));
-            }
-            else {
-                aa_disasm$opsize = (i64)4;
-                aa_disasm$genstr((byte*)"movd ");
-                aa_disasm$printaddrmode((i64)0);
-                aa_disasm$genstr((byte*)", ");
-                if (!!(aa_disasm$sizeoverride)) {
-                    aa_disasm$genstr(aa_disasm$strxmm(aa_disasm$rmreg));
-                }
-                else {
-                    aa_disasm$genstr(aa_disasm$strmmx(aa_disasm$rmreg));
-                }
-;
-            }
-;
-        }
-        break;
-    case 127:;
-        {
-            aa_disasm$decodeaddr((i64)1);
-            aa_disasm$opsize = (i64)16;
-            if (!!(aa_disasm$sizeoverride)) {
-                aa_disasm$genstr((byte*)"movdqa ");
-            }
-            else if (!!(aa_disasm$f3override)) {
-                aa_disasm$genstr((byte*)"movdqu ");
-            }
-            else {
-                aa_disasm$genstr((byte*)"No 66/F3 ");
-            }
-;
-            aa_disasm$printaddrmode((i64)1);
-            aa_disasm$genstr((byte*)", ");
-            aa_disasm$genstr(aa_disasm$strxmm(aa_disasm$rmreg));
-        }
-        break;
-    case 128:;
-    case 129:;
-    case 130:;
-    case 131:;
-    case 132:;
-    case 133:;
-    case 134:;
-    case 135:;
-    case 136:;
-    case 137:;
-    case 138:;
-    case 139:;
-    case 140:;
-    case 141:;
-    case 142:;
-    case 143:;
-        {
-            aa_disasm$genstr((byte*)"[long] j");
-            aa_disasm$genstr(aa_disasm$condnames[((opc & (i64)15))]);
-            aa_disasm$genstr((byte*)" ");
-            if (!!(aa_disasm$sizeoverride)) {
-                aa_disasm$genintd(aa_disasm$readint16());
-            }
-            else {
-                aa_disasm$genintd(aa_disasm$readint32());
-            }
-;
-        }
-        break;
-    case 144:;
-    case 145:;
-    case 146:;
-    case 147:;
-    case 148:;
-    case 149:;
-    case 150:;
-    case 151:;
-    case 152:;
-    case 153:;
-    case 154:;
-    case 155:;
-    case 156:;
-    case 157:;
-    case 158:;
-    case 159:;
-        {
-            aa_disasm$decodeaddr((i64)0);
-            aa_disasm$genstr((byte*)"set");
-            aa_disasm$genstr(aa_disasm$condnames[((opc & (i64)15))]);
-            aa_disasm$genstr((byte*)" ");
-            aa_disasm$getsilx(&aa_disasm$basereg);
-            aa_disasm$printaddrmode((i64)0);
-        }
-        break;
-    case 175:;
-        {
-            aa_disasm$decodeaddr((i64)1);
-            aa_disasm$genstr((byte*)"imul ");
-            aa_disasm$genstr(aa_disasm$strreg(aa_disasm$rmreg,aa_disasm$opsize));
-            aa_disasm$genstr((byte*)", ");
-            aa_disasm$printaddrmode((i64)0);
-        }
-        break;
-    case 182:;
-    case 183:;
-    case 190:;
-    case 191:;
-        {
-            aa_disasm$decodeaddr((i64)1);
-            aa_disasm$genstr(((opc < (i64)190) ? (byte*)"movzx " : (byte*)"movsx "));
-            aa_disasm$genstr(aa_disasm$strreg(aa_disasm$rmreg,aa_disasm$opsize));
-            aa_disasm$genstr((byte*)", ");
-            aa_disasm$opsize = (!!((opc & (i64)1)) ? (i64)2 : (i64)1);
-            aa_disasm$printaddrmode((i64)0);
-        }
-        break;
-    case 184:;
-        {
-            aa_disasm$decodeaddr((i64)1);
-            aa_disasm$genstr((byte*)"popcnt ");
-            aa_disasm$genstr(aa_disasm$strreg(aa_disasm$rmreg,aa_disasm$opsize));
-            aa_disasm$genstr((byte*)", ");
-            aa_disasm$printaddrmode((i64)0);
-        }
-        break;
-    case 188:;
-    case 189:;
-        {
-            aa_disasm$decodeaddr((i64)1);
-            aa_disasm$genstr(((opc == (i64)188) ? (byte*)"bsf " : (byte*)"bsr "));
-            aa_disasm$genstr(aa_disasm$strreg(aa_disasm$rmreg,aa_disasm$opsize));
-            aa_disasm$genstr((byte*)", ");
-            aa_disasm$printaddrmode((i64)0);
-        }
-        break;
-    case 214:;
-        {
-            aa_disasm$decodeaddr((i64)1);
-            aa_disasm$opsize = (i64)8;
-            aa_disasm$genstr((byte*)"movq ");
-            aa_disasm$printaddrmode((i64)1);
-            aa_disasm$genstr((byte*)",");
-            aa_disasm$genstr(aa_disasm$strxmm(aa_disasm$rmreg));
-        }
-        break;
-    case 219:;
-        {
-            aa_disasm$decodeaddr((i64)1);
-            aa_disasm$genstr((byte*)"pand ");
-            aa_disasm$genstr(aa_disasm$strxmm(aa_disasm$rmreg));
-            aa_disasm$genstr((byte*)", ");
-            aa_disasm$opsize = (i64)8;
-            aa_disasm$printaddrmode((i64)1);
-        }
-        break;
-    case 239:;
-        {
-            aa_disasm$decodeaddr((i64)1);
-            aa_disasm$genstr((byte*)"pxor ");
-            aa_disasm$genstr(aa_disasm$strxmm(aa_disasm$rmreg));
-            aa_disasm$genstr((byte*)", ");
-            aa_disasm$opsize = (i64)8;
-            aa_disasm$printaddrmode((i64)1);
-        }
-        break;
-    default: {
-        //error:
-L1272 :;
-;
-        aa_disasm$genstr((byte*)"Unknown opcode 2-byte opcode: 0F ");
-        aa_disasm$genhex(opc);
-    }
-    } //SW
-;
-}
-
-static void aa_disasm$decodeaddr(i64 w) {
-        i64 modrm;
-        i64 xxx;
-        i64 mode;
-        i64 sib;
-        i64 rm;
-    aa_disasm$basereg = (aa_disasm$indexreg = (i64)0);
-    aa_disasm$scale = (i64)1;
-    aa_disasm$offset = (i64)0;
-    if (!!(w)) {
-        aa_disasm$opsize = (!!(aa_disasm$sizeoverride) ? (i64)2 : (i64)4);
-        if (!!((aa_disasm$rex & (i64)8))) {
-            aa_disasm$opsize = (i64)8;
-        }
-;
-    }
-    else {
-        aa_disasm$opsize = (i64)1;
-    }
-;
-    modrm = (i64)(*(aa_disasm$codeptr)++);
-    mode = (modrm >> (i64)6);
-    xxx = ((modrm >> (i64)3) & (i64)7);
-    rm = (modrm & (i64)7);
-    if ((mode == (i64)3)) {
-        aa_disasm$basereg = (rm + (i64)1);
-        aa_disasm$addrmode = (i64)1;
-    }
-    else if ((rm != (i64)4)) {
-        if (((mode == (i64)0) && (rm == (i64)5))) {
-            aa_disasm$offset = aa_disasm$readint32();
-            aa_disasm$addrmode = (i64)2;
-        }
-        else {
-            aa_disasm$basereg = (rm + (i64)1);
-            aa_disasm$addrmode = (i64)2;
-            if ((mode==(i64)1)) {
-                aa_disasm$offset = aa_disasm$readsbyte();
-            }
-            else if ((mode==(i64)2)) {
-                aa_disasm$offset = aa_disasm$readint32();
-            }
-;
-        }
-;
-    }
-    else {
-        aa_disasm$addrmode = (i64)2;
-        sib = aa_disasm$readbyte();
-        aa_disasm$indexreg = (((sib >> (i64)3) & (i64)7) + (i64)1);
-        aa_disasm$basereg = ((sib & (i64)7) + (i64)1);
-        aa_disasm$scale = (((sib >> (i64)6) + (i64)1)==1?(i64)1:(((sib >> (i64)6) + (i64)1)==2?(i64)2:(((sib >> (i64)6) + (i64)1)==3?(i64)4:(((sib >> (i64)6) + (i64)1)==4?(i64)8:(i64)0))));
-        if ((((mode == (i64)0) && (aa_disasm$basereg == (i64)6)) && (aa_disasm$indexreg == (i64)5))) {
-            aa_disasm$indexreg = (aa_disasm$basereg = (i64)0);
-            aa_disasm$offset = aa_disasm$readint32();
-        }
-        else if (((mode == (i64)0) && (aa_disasm$basereg == (i64)6))) {
-            aa_disasm$basereg = (i64)0;
-            aa_disasm$offset = aa_disasm$readint32();
-        }
-        else if (((mode == (i64)0) && (aa_disasm$indexreg == (i64)5))) {
-            aa_disasm$indexreg = (i64)0;
-        }
-        else {
-            if ((mode==(i64)1)) {
-                aa_disasm$offset = aa_disasm$readsbyte();
-            }
-            else if ((mode==(i64)2)) {
-                aa_disasm$offset = aa_disasm$readint32();
-            }
-;
-            if ((aa_disasm$indexreg == (i64)5)) {
-                aa_disasm$indexreg = (i64)0;
-            }
-;
-        }
-;
-    }
-;
-    if ((!!(aa_disasm$basereg) && !!((aa_disasm$rex & (i64)1)))) {
-        aa_disasm$basereg += (i64)8;
-    }
-;
-    if ((!!(aa_disasm$indexreg) && !!((aa_disasm$rex & (i64)2)))) {
-        aa_disasm$indexreg += (i64)8;
-    }
-;
-    aa_disasm$rmreg = (xxx + (i64)1);
-    if (!!((aa_disasm$rex & (i64)4))) {
-        aa_disasm$rmreg += (i64)8;
-    }
-;
-    aa_disasm$rmopc = xxx;
-}
-
-static i64 aa_disasm$readbyte(void) {
-    return (i64)(*(aa_disasm$codeptr)++);
-}
-
-static i64 aa_disasm$readsbyte(void) {
-    return (i64)(*(i8 *)(aa_disasm$codeptr)++);
-}
-
-static u64 aa_disasm$readword16(void) {
-        u64 a;
-    a = (u64)(i64)(*(u16 *)aa_disasm$codeptr);
-    aa_disasm$codeptr += (i64)2;
-    return a;
-}
-
-static i64 aa_disasm$readint16(void) {
-        i64 a;
-    a = (i64)(*(i16 *)aa_disasm$codeptr);
-    aa_disasm$codeptr += (i64)2;
-    return a;
-}
-
-static u64 aa_disasm$readword32(void) {
-        u64 a;
-    a = (u64)(i64)(*(u32 *)aa_disasm$codeptr);
-    aa_disasm$codeptr += (i64)4;
-    return a;
-}
-
-static i64 aa_disasm$readint32(void) {
-        i64 a;
-    a = (i64)(*(i32 *)aa_disasm$codeptr);
-    aa_disasm$codeptr += (i64)4;
-    return a;
-}
-
-static i64 aa_disasm$readint64(void) {
-        i64 a;
-    a = (*(i64 *)aa_disasm$codeptr);
-    aa_disasm$codeptr += (i64)8;
-    return a;
-}
-
-static i64 aa_disasm$getreg(i64 regcode,i64 upper) {
-    if (!!(upper)) {
-        return ((regcode + (i64)8) + (i64)1);
-    }
-;
-    return (regcode + (i64)1);
-}
-
-u8 *aa_disasm$strreg(i64 reg,i64 opsize) {
-        static u8 *  regnames8[20] = {
-    (byte*)"al",
-    (byte*)"cl",
-    (byte*)"dl",
-    (byte*)"bl",
-    (byte*)"spl",
-    (byte*)"bpl",
-    (byte*)"sil",
-    (byte*)"dil",
-    (byte*)"r8b",
-    (byte*)"r9b",
-    (byte*)"r10b",
-    (byte*)"r11b",
-    (byte*)"r12b",
-    (byte*)"r13b",
-    (byte*)"r14b",
-    (byte*)"r15b",
-    (byte*)"ah",
-    (byte*)"bh",
-    (byte*)"ch",
-    (byte*)"dh"
-};
-        static u8 *  regnames16[16] = {
-    (byte*)"ax",
-    (byte*)"cx",
-    (byte*)"dx",
-    (byte*)"bx",
-    (byte*)"sp",
-    (byte*)"bp",
-    (byte*)"si",
-    (byte*)"di",
-    (byte*)"r8w",
-    (byte*)"r9w",
-    (byte*)"r10w",
-    (byte*)"r11w",
-    (byte*)"r12w",
-    (byte*)"r13w",
-    (byte*)"r14w",
-    (byte*)"r15w"
-};
-        static u8 *  regnames32[16] = {
-    (byte*)"eax",
-    (byte*)"ecx",
-    (byte*)"edx",
-    (byte*)"ebx",
-    (byte*)"esp",
-    (byte*)"ebp",
-    (byte*)"esi",
-    (byte*)"edi",
-    (byte*)"r8d",
-    (byte*)"r9d",
-    (byte*)"r10d",
-    (byte*)"r11d",
-    (byte*)"r12d",
-    (byte*)"r13d",
-    (byte*)"r14d",
-    (byte*)"r15d"
-};
-        static u8 *  regnames64[16] = {
-    (byte*)"rax",
-    (byte*)"rcx",
-    (byte*)"rdx",
-    (byte*)"rbx",
-    (byte*)"rsp",
-    (byte*)"rbp",
-    (byte*)"rsi",
-    (byte*)"rdi",
-    (byte*)"r8",
-    (byte*)"r9",
-    (byte*)"r10",
-    (byte*)"r11",
-    (byte*)"r12",
-    (byte*)"r13",
-    (byte*)"r14",
-    (byte*)"r15"
-};
-        static u8 *  mregnames8[20] = {
-    (byte*)"B0",
-    (byte*)"B10",
-    (byte*)"B11",
-    (byte*)"B4",
-    (byte*)"B15",
-    (byte*)"B14",
-    (byte*)"B5",
-    (byte*)"B3",
-    (byte*)"B12",
-    (byte*)"B13",
-    (byte*)"B1",
-    (byte*)"B2",
-    (byte*)"B6",
-    (byte*)"B7",
-    (byte*)"B8",
-    (byte*)"B9",
-    (byte*)"B16",
-    (byte*)"B18",
-    (byte*)"B19",
-    (byte*)"B17"
-};
-        static u8 *  mregnames16[16] = {
-    (byte*)"W0",
-    (byte*)"W10",
-    (byte*)"W11",
-    (byte*)"W4",
-    (byte*)"Wsp",
-    (byte*)"Wbp",
-    (byte*)"W5",
-    (byte*)"W3",
-    (byte*)"W12",
-    (byte*)"W13",
-    (byte*)"W1",
-    (byte*)"W2",
-    (byte*)"W6",
-    (byte*)"W7",
-    (byte*)"W8",
-    (byte*)"W9"
-};
-        static u8 *  mregnames32[16] = {
-    (byte*)"A0",
-    (byte*)"A10",
-    (byte*)"A11",
-    (byte*)"A4",
-    (byte*)"Astack",
-    (byte*)"Aframe",
-    (byte*)"A5",
-    (byte*)"A3",
-    (byte*)"A12",
-    (byte*)"A13",
-    (byte*)"A1",
-    (byte*)"A2",
-    (byte*)"A6",
-    (byte*)"A7",
-    (byte*)"A8",
-    (byte*)"A9"
-};
-        static u8 *  mregnames64[16] = {
-    (byte*)"D0",
-    (byte*)"D10",
-    (byte*)"D11",
-    (byte*)"D4",
-    (byte*)"Dstack",
-    (byte*)"Dframe",
-    (byte*)"D5",
-    (byte*)"D3",
-    (byte*)"D12",
-    (byte*)"D13",
-    (byte*)"D1",
-    (byte*)"D2",
-    (byte*)"D6",
-    (byte*)"D7",
-    (byte*)"D8",
-    (byte*)"D9"
-};
-    if ((reg == (i64)0)) {
-        return (byte*)"<>";
-    }
-;
-    if ((u64)0u) {
-        if ((opsize==(i64)1)) {
-            return mregnames8[(reg)-1];
-        }
-        else if ((opsize==(i64)2)) {
-            return mregnames16[(reg)-1];
-        }
-        else if ((opsize==(i64)4)) {
-            return mregnames32[(reg)-1];
-        }
-        else if ((opsize==(i64)8)) {
-            return mregnames64[(reg)-1];
-        }
-;
-    }
-    else {
-        if ((opsize==(i64)1)) {
-            return regnames8[(reg)-1];
-        }
-        else if ((opsize==(i64)2)) {
-            return regnames16[(reg)-1];
-        }
-        else if ((opsize==(i64)4)) {
-            return regnames32[(reg)-1];
-        }
-        else if ((opsize==(i64)8)) {
-            return regnames64[(reg)-1];
-        }
-;
-    }
-;
-    return (byte*)"";
-}
-
-static u8 *aa_disasm$strfreg(i64 freg) {
-        static u8 *  fregnames[8] = {(byte*)"st0",(byte*)"st1",(byte*)"st2",(byte*)"st3",(byte*)"st4",(byte*)"st5",(byte*)"st6",(byte*)"st7"};
-    return fregnames[(freg)-1];
-}
-
-static void aa_disasm$printaddrmode(i64 xmm) {
-        u8 *  plus;
-        i64 addrsize;
-    aa_disasm$genstr((byte*)" ");
-    if ((aa_disasm$addrmode==(i64)1)) {
-        if (!!(xmm)) {
-            aa_disasm$genstr(aa_disasm$strxmm(aa_disasm$basereg));
-        }
-        else {
-            aa_disasm$getsilx(&aa_disasm$basereg);
-            aa_disasm$genstr(aa_disasm$strreg(aa_disasm$basereg,aa_disasm$opsize));
-        }
-;
-        return;
-    }
-;
-    if ((aa_disasm$opsize==(i64)1)) {
-        aa_disasm$genstr((byte*)"byte ");
-    }
-    else if ((aa_disasm$opsize==(i64)2)) {
-        aa_disasm$genstr((byte*)"word ");
-    }
-    else if ((aa_disasm$opsize==(i64)4)) {
-        aa_disasm$genstr((byte*)"dword ");
-    }
-    else if ((aa_disasm$opsize==(i64)8)) {
-        aa_disasm$genstr((byte*)"qword ");
-    }
-    else if ((aa_disasm$opsize==(i64)10)) {
-        aa_disasm$genstr((byte*)"tword ");
-    }
-    else if ((aa_disasm$opsize==(i64)16)) {
-        aa_disasm$genstr((byte*)"oword ");
-    }
-    else {
-        msysc$m_print_startcon();
-        msysc$m_print_str((byte*)"///OPSIZE",NULL);
-        msysc$m_print_i64(aa_disasm$opsize,NULL);
-        msysc$m_print_newline();
-        msysc$m_print_end();
-        ;
-    }
-;
-    aa_disasm$genstr((byte*)"[");
-    plus = (byte*)"";
-    addrsize = (!!(aa_disasm$addroverride) ? (i64)4 : (i64)8);
-    if (!!(aa_disasm$basereg)) {
-        aa_disasm$genstr(aa_disasm$strreg(aa_disasm$basereg,addrsize));
-        plus = (byte*)"+";
-    }
-;
-    if (!!(aa_disasm$indexreg)) {
-        aa_disasm$genstr(plus);
-        aa_disasm$genstr(aa_disasm$strreg(aa_disasm$indexreg,addrsize));
-        if ((aa_disasm$scale > (i64)1)) {
-            aa_disasm$genstr((byte*)"*");
-            aa_disasm$genintd(aa_disasm$scale);
-        }
-;
-        plus = (byte*)"+";
-    }
-;
-    if ((!!(aa_disasm$offset) || ((aa_disasm$basereg == (i64)0) && (aa_disasm$indexreg == (i64)0)))) {
-        if (((aa_disasm$basereg == (i64)0) && (aa_disasm$indexreg == (i64)0))) {
-            aa_disasm$genhex(aa_disasm$offset);
-        }
-        else {
-            if ((aa_disasm$offset > (i64)0)) {
-                aa_disasm$genstr(plus);
-            }
-;
-            aa_disasm$genintd(aa_disasm$offset);
-        }
-;
-    }
-;
-    aa_disasm$genstr((byte*)"]");
-    if ((aa_disasm$addrmode == (i64)3)) {
-        aa_disasm$genstr((byte*)"+RIP");
-    }
-;
-}
-
-static void aa_disasm$genstr(u8 *s) {
-    strcat((u8 *)aa_disasm$deststr,s);
-}
-
-static void aa_disasm$genintd(i64 a) {
-    aa_disasm$genstr(msysc$strint(a,0));
-}
-
-static void aa_disasm$genhex(i64 a) {
-    aa_disasm$genstr(msysc$strint(a,(byte*)"h"));
-}
-
-static i64 aa_disasm$readimm(void) {
-    if ((aa_disasm$opsize==(i64)1)) {
-        return aa_disasm$readsbyte();
-    }
-    else if ((aa_disasm$opsize==(i64)2)) {
-        return aa_disasm$readint16();
-    }
-    else if ((aa_disasm$opsize==(i64)4) || (aa_disasm$opsize==(i64)8)) {
-        return aa_disasm$readint32();
-    }
-;
-    return (i64)0;
-}
-
-static i64 aa_disasm$readimm8(void) {
-    if ((aa_disasm$opsize < (i64)8)) {
-        return aa_disasm$readimm();
-    }
-;
-    return aa_disasm$readint64();
-}
-
-static u8 *aa_disasm$strxmm(i64 reg) {
-        static u8 str[32];
-    msysc$m_print_startstr(str);
-    msysc$m_print_str((byte*)"xmm",NULL);
-    msysc$m_print_nogap();
-    msysc$m_print_i64((reg - (i64)1),NULL);
-    msysc$m_print_end();
-    ;
-    return (u8 *)str;
-}
-
-static u8 *aa_disasm$strmmx(i64 reg) {
-        static u8 str[32];
-    msysc$m_print_startstr(str);
-    msysc$m_print_str((byte*)"mmx",NULL);
-    msysc$m_print_nogap();
-    msysc$m_print_i64((reg - (i64)1),NULL);
-    msysc$m_print_end();
-    ;
-    return (u8 *)str;
-}
-
-static void aa_disasm$decode8087(i64 ttt) {
-        byte bb;
-        i64 longopc;
-        i64 freg;
-        i64 shortopc;
-    bb = (i64)(*(aa_disasm$codeptr)++);
-    longopc = ((ttt << (i64)8) + (i64)bb);
-    freg = (((i64)bb & (i64)7) + (i64)1);
-    if ((longopc==(i64)1753)) {
-        aa_disasm$genstr((byte*)"fcompp");
-    }
-    else if ((longopc==(i64)484)) {
-        aa_disasm$genstr((byte*)"ftst");
-    }
-    else if ((longopc==(i64)485)) {
-        aa_disasm$genstr((byte*)"fxam");
-    }
-    else if ((longopc==(i64)494)) {
-        aa_disasm$genstr((byte*)"fldz");
-    }
-    else if ((longopc==(i64)488)) {
-        aa_disasm$genstr((byte*)"fld1");
-    }
-    else if ((longopc==(i64)491)) {
-        aa_disasm$genstr((byte*)"fldpi");
-    }
-    else if ((longopc==(i64)489)) {
-        aa_disasm$genstr((byte*)"fldl2t");
-    }
-    else if ((longopc==(i64)490)) {
-        aa_disasm$genstr((byte*)"fldl2e");
-    }
-    else if ((longopc==(i64)492)) {
-        aa_disasm$genstr((byte*)"fldlg2");
-    }
-    else if ((longopc==(i64)493)) {
-        aa_disasm$genstr((byte*)"fldln2");
-    }
-    else if ((longopc==(i64)506)) {
-        aa_disasm$genstr((byte*)"fsqrt");
-    }
-    else if ((longopc==(i64)510)) {
-        aa_disasm$genstr((byte*)"fsin");
-    }
-    else if ((longopc==(i64)511)) {
-        aa_disasm$genstr((byte*)"fcos");
-    }
-    else if ((longopc==(i64)507)) {
-        aa_disasm$genstr((byte*)"fsincos");
-    }
-    else if ((longopc==(i64)509)) {
-        aa_disasm$genstr((byte*)"fscale");
-    }
-    else if ((longopc==(i64)504)) {
-        aa_disasm$genstr((byte*)"fprem");
-    }
-    else if ((longopc==(i64)508)) {
-        aa_disasm$genstr((byte*)"frndint");
-    }
-    else if ((longopc==(i64)500)) {
-        aa_disasm$genstr((byte*)"fxtract");
-    }
-    else if ((longopc==(i64)481)) {
-        aa_disasm$genstr((byte*)"fabs");
-    }
-    else if ((longopc==(i64)480)) {
-        aa_disasm$genstr((byte*)"fchs");
-    }
-    else if ((longopc==(i64)498)) {
-        aa_disasm$genstr((byte*)"fptan");
-    }
-    else if ((longopc==(i64)499)) {
-        aa_disasm$genstr((byte*)"fpatan");
-    }
-    else if ((longopc==(i64)496)) {
-        aa_disasm$genstr((byte*)"f2xm1");
-    }
-    else if ((longopc==(i64)497)) {
-        aa_disasm$genstr((byte*)"fyl2x");
-    }
-    else if ((longopc==(i64)505)) {
-        aa_disasm$genstr((byte*)"fyl2xp1");
-    }
-    else if ((longopc==(i64)995)) {
-        aa_disasm$genstr((byte*)"finit");
-    }
-    else if ((longopc==(i64)992)) {
-        aa_disasm$genstr((byte*)"feni");
-    }
-    else if ((longopc==(i64)993)) {
-        aa_disasm$genstr((byte*)"fdisi");
-    }
-    else if ((longopc==(i64)994)) {
-        aa_disasm$genstr((byte*)"fclex");
-    }
-    else if ((longopc==(i64)503)) {
-        aa_disasm$genstr((byte*)"fincstp");
-    }
-    else if ((longopc==(i64)502)) {
-        aa_disasm$genstr((byte*)"fdecstp");
-    }
-    else if ((longopc==(i64)464)) {
-        aa_disasm$genstr((byte*)"fnop");
-    }
-    else {
-                {i64 $temp = (longopc & (i64)2040);
-if (($temp==(i64)448)) {
-            aa_disasm$genstr((byte*)"fld ");
-            aa_disasm$genstr(aa_disasm$strfreg(freg));
-        }
-        else if (($temp==(i64)1488)) {
-            aa_disasm$genstr((byte*)"fst ");
-            aa_disasm$genstr(aa_disasm$strfreg(freg));
-        }
-        else if (($temp==(i64)1496)) {
-            aa_disasm$genstr((byte*)"fstp ");
-            aa_disasm$genstr(aa_disasm$strfreg(freg));
-        }
-        else if (($temp==(i64)456)) {
-            aa_disasm$genstr((byte*)"fxch ");
-            aa_disasm$genstr(aa_disasm$strfreg(freg));
-        }
-        else if (($temp==(i64)208)) {
-            aa_disasm$genstr((byte*)"fcom ");
-            aa_disasm$genstr(aa_disasm$strfreg(freg));
-        }
-        else if (($temp==(i64)216)) {
-            aa_disasm$genstr((byte*)"fcomp ");
-            aa_disasm$genstr(aa_disasm$strfreg(freg));
-        }
-        else if (($temp==(i64)1472)) {
-            aa_disasm$genstr((byte*)"ffree ");
-            aa_disasm$genstr(aa_disasm$strfreg(freg));
-        }
-        else {
-                        {i64 $temp = (longopc & (i64)504);
-if (($temp==(i64)192)) {
-                aa_disasm$do87arith((byte*)"fadd",ttt,freg);
-            }
-            else if (($temp==(i64)224)) {
-                aa_disasm$do87arith((byte*)"fsub",ttt,freg);
-            }
-            else if (($temp==(i64)232)) {
-                aa_disasm$do87arith((byte*)"fsubr",ttt,freg);
-            }
-            else if (($temp==(i64)200)) {
-                aa_disasm$do87arith((byte*)"fmul",ttt,freg);
-            }
-            else if (($temp==(i64)240)) {
-                aa_disasm$do87arith((byte*)"fdiv",ttt,freg);
-            }
-            else if (($temp==(i64)248)) {
-                aa_disasm$do87arith((byte*)"fdivr",ttt,freg);
-            }
-            else {
-                --(aa_disasm$codeptr);
-                aa_disasm$decodeaddr((i64)0);
-                shortopc = ((ttt << (i64)3) + aa_disasm$rmopc);
-                if ((shortopc==(i64)61)) {
-                    aa_disasm$do87mem((byte*)"fld",(i64)4);
-                }
-                else if ((shortopc==(i64)29)) {
-                    aa_disasm$do87mem((byte*)"fld",(i64)5);
-                }
-                else if ((shortopc==(i64)60)) {
-                    aa_disasm$do87mem((byte*)"fldbcd",(i64)-1);
-                }
-                else if ((shortopc==(i64)63)) {
-                    aa_disasm$do87mem((byte*)"fstp",(i64)4);
-                }
-                else if ((shortopc==(i64)31)) {
-                    aa_disasm$do87mem((byte*)"fstp",(i64)5);
-                }
-                else if ((shortopc==(i64)62)) {
-                    aa_disasm$do87mem((byte*)"fstpbcd",(i64)-1);
-                }
-                else if ((shortopc==(i64)13)) {
-                    aa_disasm$do87mem((byte*)"fldcw",(i64)-1);
-                }
-                else if ((shortopc==(i64)15)) {
-                    aa_disasm$do87mem((byte*)"fstcw",(i64)-1);
-                }
-                else if ((shortopc==(i64)47)) {
-                    aa_disasm$do87mem((byte*)"fstsw",(i64)-1);
-                }
-                else if ((shortopc==(i64)14)) {
-                    aa_disasm$do87mem((byte*)"fstenv",(i64)-1);
-                }
-                else if ((shortopc==(i64)12)) {
-                    aa_disasm$do87mem((byte*)"fldenv",(i64)-1);
-                }
-                else if ((shortopc==(i64)46)) {
-                    aa_disasm$do87mem((byte*)"fsave",(i64)-1);
-                }
-                else if ((shortopc==(i64)44)) {
-                    aa_disasm$do87mem((byte*)"frstor",(i64)-1);
-                }
-                else {
-                                        {i64 $temp = (shortopc & (i64)15);
-if (($temp==(i64)8)) {
-                        aa_disasm$do87mem((byte*)"fld",(ttt >> (i64)1));
-                    }
-                    else if (($temp==(i64)10)) {
-                        aa_disasm$do87mem((byte*)"fst",(ttt >> (i64)1));
-                    }
-                    else if (($temp==(i64)11)) {
-                        aa_disasm$do87mem((byte*)"fstp",(ttt >> (i64)1));
-                    }
-                    else if (($temp==(i64)2)) {
-                        aa_disasm$do87mem((byte*)"fcom",(ttt >> (i64)1));
-                    }
-                    else if (($temp==(i64)3)) {
-                        aa_disasm$do87mem((byte*)"fcomp",(ttt >> (i64)1));
-                    }
-                    else if (($temp==(i64)0)) {
-                        aa_disasm$do87mem((byte*)"fadd",(ttt >> (i64)1));
-                    }
-                    else if (($temp==(i64)4)) {
-                        aa_disasm$do87mem((byte*)"fsub",(ttt >> (i64)1));
-                    }
-                    else if (($temp==(i64)5)) {
-                        aa_disasm$do87mem((byte*)"fsubr",(ttt >> (i64)1));
-                    }
-                    else if (($temp==(i64)1)) {
-                        aa_disasm$do87mem((byte*)"fmul",(ttt >> (i64)1));
-                    }
-                    else if (($temp==(i64)6)) {
-                        aa_disasm$do87mem((byte*)"fdiv",(ttt >> (i64)1));
-                    }
-                    else if (($temp==(i64)7)) {
-                        aa_disasm$do87mem((byte*)"fdivr",(ttt >> (i64)1));
-                    }
-                    else {
-                        aa_disasm$genstr((byte*)"UNKNOWN x87 OPCODE");
-                    }
-                    };
-                }
-;
-            }
-            };
-        }
-        };
-    }
-;
-}
-
-static void aa_disasm$do87arith(u8 *opcstr,i64 ttt,i64 freg) {
-        i64 d;
-        i64 p;
-    d = (ttt & (i64)4);
-    p = (ttt & (i64)2);
-    aa_disasm$genstr(opcstr);
-    if (!!(p)) {
-        aa_disasm$genstr((byte*)"p");
-    }
-;
-    aa_disasm$genstr((byte*)" ");
-    if ((d == (i64)0)) {
-        aa_disasm$genstr((byte*)"st0, ");
-        aa_disasm$genstr(aa_disasm$strfreg(freg));
-    }
-    else {
-        aa_disasm$genstr(aa_disasm$strfreg(freg));
-        aa_disasm$genstr((byte*)", st0");
-    }
-;
-}
-
-static void aa_disasm$do87mem(u8 *opcstr,i64 mf) {
-    aa_disasm$genstr((byte*)"f");
-    if ((mf==(i64)0)) {
-        aa_disasm$opsize = (i64)4;
-    }
-    else if ((mf==(i64)1)) {
-        aa_disasm$genstr((byte*)"i");
-        aa_disasm$opsize = (i64)4;
-    }
-    else if ((mf==(i64)2)) {
-        aa_disasm$opsize = (i64)8;
-    }
-    else if ((mf==(i64)3)) {
-        aa_disasm$genstr((byte*)"i");
-        aa_disasm$opsize = (i64)2;
-    }
-    else if ((mf==(i64)4)) {
-        aa_disasm$genstr((byte*)"i");
-        aa_disasm$opsize = (i64)8;
-    }
-    else if ((mf==(i64)5)) {
-        aa_disasm$opsize = (i64)10;
-    }
-;
-    aa_disasm$genstr((opcstr + (i64)1));
-    aa_disasm$genstr((byte*)" ");
-    aa_disasm$printaddrmode((i64)0);
-}
-
-static void aa_disasm$getsil(i64 *reg) {
-        i64 oldreg;
-    if (((((aa_disasm$opsize == (i64)1) && !(!!(aa_disasm$rex))) && ((*reg) >= (i64)5)) && ((*reg) <= (i64)8))) {
-        oldreg = (*reg);
-                {i64 $temp = (*reg);
-if (($temp==(i64)5)) {
-            (*reg) = (i64)17;
-        }
-        else if (($temp==(i64)6)) {
-            (*reg) = (i64)19;
-        }
-        else if (($temp==(i64)7)) {
-            (*reg) = (i64)20;
-        }
-        else if (($temp==(i64)8)) {
-            (*reg) = (i64)18;
-        }
-        };
-        msysc$m_print_startcon();
-        msysc$m_print_str((byte*)"OLDREG=",NULL);
-        msysc$m_print_i64(oldreg,NULL);
-        msysc$m_print_str((byte*)"REG=",NULL);
-        msysc$m_print_i64((*reg),NULL);
-        msysc$m_print_newline();
-        msysc$m_print_end();
-        ;
-    }
-;
-}
-
-static void aa_disasm$getsilx(i64 *reg) {
-    if ((((((aa_disasm$addrmode == (i64)1) && (aa_disasm$opsize == (i64)1)) && (aa_disasm$rex == (i64)0)) && ((*reg) >= (i64)5)) && ((*reg) <= (i64)8))) {
-                {i64 $temp = (*reg);
-if (($temp==(i64)5)) {
-            (*reg) = (i64)17;
-        }
-        else if (($temp==(i64)6)) {
-            (*reg) = (i64)19;
-        }
-        else if (($temp==(i64)7)) {
-            (*reg) = (i64)20;
-        }
-        else if (($temp==(i64)8)) {
-            (*reg) = (i64)18;
-        }
-        };
-    }
-;
-}
-
-// START
-void aa_disasm$start(void) {
-
-}
-
 void msysc$m_init(i64 nargs,u8 *(*args)[],u8 *(*envstrings)[]) {
         i64 j;
         i64 i;
@@ -43194,23 +39528,23 @@ void msysc$m_init(i64 nargs,u8 *(*args)[],u8 *(*envstrings)[]) {
     }
 ;
     for (i=(i64)1;i<=nargs;++i) {
-L1273 :;
+L1157 :;
         msysc$sysparams[(i)-1] = (*args)[(i)-1];
-L1274 :;
+L1158 :;
     }
-L1275 :;
+L1159 :;
     ;
     msysc$ncmdparams = (msysc$nsysparams - (msysc$$cmdskip + (i64)1));
     msysc$cmdparams = (u8 *(*)[])&msysc$sysparams[((msysc$$cmdskip + (i64)1))-1];
     j = (i64)1;
     msysc$nenvstrings = (i64)0;
-    L1276 :;
+    L1160 :;
     while (!!((*envstrings)[(j)-1])) {
         ++(msysc$nenvstrings);
         ++(j);
-L1277 :;
+L1161 :;
     }
-L1278 :;
+L1162 :;
     ;
 }
 
@@ -43555,14 +39889,14 @@ void msysc$nextfmtchars(i64 lastx) {
 ;
     pstart = msysc$fmtstr;
     n = (i64)0;
-    L1279 :;
+    L1163 :;
     while (1) {
         c = (u64)(*msysc$fmtstr);
         switch ((i64)(u64)c) {
         case 35:;
             {
                 if (!!(lastx)) {
-                    goto L1281 ;
+                    goto L1165 ;
 ;
                 }
 ;
@@ -43605,7 +39939,7 @@ void msysc$nextfmtchars(i64 lastx) {
             break;
         default: {
             //skip:
-L1281 :;
+L1165 :;
 ;
             ++(n);
             ++(msysc$fmtstr);
@@ -43613,7 +39947,7 @@ L1281 :;
         } //SW
 ;
     }
-L1280 :;
+L1164 :;
     ;
 }
 
@@ -43635,7 +39969,7 @@ void msysc$strtofmt(u8 *s,i64 slen,struct msysc$fmtrec *fmt) {
     str[(slen)] = (u64)0u;
     s = (u8 *)str;
     wset = (i64)0;
-    L1282 :;
+    L1166 :;
     while (!!((u64)(*s))) {
         c = (u64)(*s);
         ++(s);
@@ -43843,18 +40177,18 @@ void msysc$strtofmt(u8 *s,i64 slen,struct msysc$fmtrec *fmt) {
         case 42:;
             {
                 n = msysc$fmtparam;
-                goto L1285 ;
+                goto L1169 ;
 ;
             }
             break;
         default: {
             if ((((u64)c >= '0') && ((u64)c <= '9'))) {
                 n = (i64)((u64)c - '0');
-                L1286 :;
+                L1170 :;
                 while (1) {
                     c = (u64)(*s);
                     if (((i64)(u64)(*s) == (i64)0)) {
-                        goto L1287 ;
+                        goto L1171 ;
                     }
 ;
                     if ((((u64)c >= '0') && ((u64)c <= '9'))) {
@@ -43862,14 +40196,14 @@ void msysc$strtofmt(u8 *s,i64 slen,struct msysc$fmtrec *fmt) {
                         n = (((n * (i64)10) + (i64)(u64)c) - (i64)48);
                     }
                     else {
-                        goto L1287 ;
+                        goto L1171 ;
                     }
 ;
                 }
-L1287 :;
+L1171 :;
                 ;
                 //gotwidth:
-L1285 :;
+L1169 :;
 ;
                 if (!(!!((i64)wset))) {
                     (*fmt).minwidth = n;
@@ -43884,9 +40218,9 @@ L1285 :;
         }
         } //SW
 ;
-L1283 :;
+L1167 :;
     }
-L1284 :;
+L1168 :;
     ;
 }
 
@@ -43899,17 +40233,17 @@ static i64 msysc$domultichar(u8 *p,i64 n,u8 *dest,struct msysc$fmtrec *fmt) {
     nchars = n;
     $av_1 = n;
     while ($av_1-- > 0) {
-L1288 :;
+L1172 :;
         if (((i64)(u64)(*p) == (i64)0)) {
-            goto L1290 ;
+            goto L1174 ;
         }
 ;
         (*q) = (u64)(*p);
         ++(q);
         ++(p);
-L1289 :;
+L1173 :;
     }
-L1290 :;
+L1174 :;
     ;
     (*q) = (u64)0u;
     return msysc$expandstr((u8 *)str,dest,strlen((u8 *)str),(struct msysc$fmtrec *)fmt);
@@ -43936,12 +40270,12 @@ static i64 msysc$expandstr(u8 *s,u8 *t,i64 n,struct msysc$fmtrec *fmt) {
         t += n;
                 ($av_1 = (w - n));
         for (i=(i64)1;i<=$av_1;++i) {
-L1291 :;
+L1175 :;
             (*t) = (u64)(*fmt).padchar;
             ++(t);
-L1292 :;
+L1176 :;
         }
-L1293 :;
+L1177 :;
         ;
         (*t) = (u64)0u;
     }
@@ -43951,12 +40285,12 @@ L1293 :;
             ++(t);
             $av_2 = (w - n);
             while ($av_2-- > 0) {
-L1294 :;
+L1178 :;
                 (*t) = (u64)(*fmt).padchar;
                 ++(t);
-L1295 :;
+L1179 :;
             }
-L1296 :;
+L1180 :;
             ;
             strncpy(t,(s + (i64)1),(u64)(n - (i64)1));
             (*((t + n) - (i64)1)) = (u64)0u;
@@ -43964,12 +40298,12 @@ L1296 :;
         else {
             $av_3 = (w - n);
             while ($av_3-- > 0) {
-L1297 :;
+L1181 :;
                 (*t) = (u64)(*fmt).padchar;
                 ++(t);
-L1298 :;
+L1182 :;
             }
-L1299 :;
+L1183 :;
             ;
             strncpy(t,s,(u64)n);
             (*(t + n)) = (u64)0u;
@@ -43980,23 +40314,23 @@ L1299 :;
         m = (((w - n) + (i64)1) / (i64)2);
         $av_4 = m;
         while ($av_4-- > 0) {
-L1300 :;
+L1184 :;
             (*t) = (u64)(*fmt).padchar;
             ++(t);
-L1301 :;
+L1185 :;
         }
-L1302 :;
+L1186 :;
         ;
         strncpy(t,s,(u64)n);
         t += n;
         $av_5 = ((w - n) - m);
         while ($av_5-- > 0) {
-L1303 :;
+L1187 :;
             (*t) = (u64)(*fmt).padchar;
             ++(t);
-L1304 :;
+L1188 :;
         }
-L1305 :;
+L1189 :;
         ;
         (*t) = (u64)0u;
     }
@@ -44014,7 +40348,7 @@ static i64 msysc$u64tostr(u64 aa,u8 *s,u64 base,i64 sep) {
     i = (i64)0;
     k = (i64)0;
     g = (((i64)base == (i64)10) ? (i64)3 : (i64)4);
-    L1306 :;
+    L1190 :;
     do {
         t[(++(i))] = (u64)msysc$digits[((i64)(aa % base))];
         aa = (aa / base);
@@ -44024,20 +40358,20 @@ static i64 msysc$u64tostr(u64 aa,u8 *s,u64 base,i64 sep) {
             k = (i64)0;
         }
 ;
-L1307 :;
+L1191 :;
     }
     while (!((i64)aa == (i64)0));
-L1308 :;
+L1192 :;
     ;
     j = i;
     s0 = s;
-    L1309 :;
+    L1193 :;
     while (!!(i)) {
         (*s) = (u64)t[((i)--)];
         ++(s);
-L1310 :;
+L1194 :;
     }
-L1311 :;
+L1195 :;
     ;
     (*s) = (u64)0u;
     return j;
@@ -44142,7 +40476,7 @@ static i64 msysc$i64mintostr(u8 *s,i64 base,i64 sep) {
     (*s) = (u64)0u;
     k = (i64)0;
     g = ((base == (i64)10) ? (i64)3 : (i64)4);
-    L1312 :;
+    L1196 :;
     while (!!(i)) {
         --(s);
         (*s) = (u64)t[(((i)-- - (i64)1))];
@@ -44152,9 +40486,9 @@ static i64 msysc$i64mintostr(u8 *s,i64 base,i64 sep) {
             k = (i64)0;
         }
 ;
-L1313 :;
+L1197 :;
     }
-L1314 :;
+L1198 :;
     ;
     return strlen(s);
 }
@@ -44424,12 +40758,12 @@ static u8 *msysc$readitem(i64 *itemlength) {
     }
 ;
     s = msysc$rd_pos;
-    L1315 :;
+    L1199 :;
     while ((((u64)(*s) == ' ') || ((i64)(u64)(*s) == (i64)9))) {
         ++(s);
-L1316 :;
+L1200 :;
     }
-L1317 :;
+L1201 :;
     ;
     itemstr = s;
     msysc$rd_lastpos = (msysc$rd_pos = s);
@@ -44450,7 +40784,7 @@ L1317 :;
     }
 ;
     p = (itemstr = s);
-    L1318 :;
+    L1202 :;
     while (!!((u64)(*s))) {
         c = (u64)(*(s)++);
         switch ((i64)(u64)c) {
@@ -44460,17 +40794,17 @@ L1317 :;
         case 61:;
             {
                 if ((!!((u64)quotechar) || (p == s))) {
-                    goto L1321 ;
+                    goto L1205 ;
 ;
                 }
 ;
                 msysc$termchar = (i64)(u64)c;
-                goto L1320 ;
+                goto L1204 ;
             }
             break;
         default: {
             //normalchar:
-L1321 :;
+L1205 :;
 ;
             if (((u64)c == (u64)quotechar)) {
                 if (((u64)(*s) == (u64)quotechar)) {
@@ -44485,7 +40819,7 @@ L1321 :;
                         msysc$termchar = (i64)(u64)(*s);
                     }
 ;
-                    goto L1320 ;
+                    goto L1204 ;
                 }
 ;
             }
@@ -44497,9 +40831,9 @@ L1321 :;
         }
         } //SW
 ;
-L1319 :;
+L1203 :;
     }
-L1320 :;
+L1204 :;
     ;
     if (((i64)(u64)(*s) == (i64)0)) {
         msysc$termchar = (i64)0;
@@ -44532,7 +40866,7 @@ i64 msysc$strtoint(u8 *s,i64 length,i64 base) {
     }
 ;
     aa = (u64)0u;
-    L1322 :;
+    L1206 :;
     while (!!(length)) {
         c = (u64)(*(s)++);
         --(length);
@@ -44574,24 +40908,24 @@ i64 msysc$strtoint(u8 *s,i64 length,i64 base) {
         case 95:;
         case 39:;
             {
-                goto L1323 ;
+                goto L1207 ;
             }
             break;
         default: {
             msysc$itemerror = (i64)1;
-            goto L1324 ;
+            goto L1208 ;
         }
         } //SW
 ;
         if (((i64)(u64)d >= base)) {
             msysc$itemerror = (i64)1;
-            goto L1324 ;
+            goto L1208 ;
         }
 ;
         aa = (u64)(((i64)aa * base) + (i64)(u64)d);
-L1323 :;
+L1207 :;
     }
-L1324 :;
+L1208 :;
     ;
     if (!!((i64)signd)) {
         return (i64)-(aa);
@@ -44731,12 +41065,12 @@ static void msysc$iconvlcn(u8 *s,i64 n) {
         i64 $av_1;
     $av_1 = n;
     while ($av_1-- > 0) {
-L1325 :;
+L1209 :;
         (*s) = (u64)tolower((i32)(u64)(*s));
         ++(s);
-L1326 :;
+L1210 :;
     }
-L1327 :;
+L1211 :;
     ;
 }
 
@@ -44744,34 +41078,34 @@ static void msysc$iconvucn(u8 *s,i64 n) {
         i64 $av_1;
     $av_1 = n;
     while ($av_1-- > 0) {
-L1328 :;
+L1212 :;
         (*s) = (u64)toupper((i32)(u64)(*s));
         ++(s);
-L1329 :;
+L1213 :;
     }
-L1330 :;
+L1214 :;
     ;
 }
 
 static void msysc$convlcstring(u8 *s) {
-    L1331 :;
+    L1215 :;
     while (!!((u64)(*s))) {
         (*s) = (u64)tolower((i32)(u64)(*s));
         ++(s);
-L1332 :;
+L1216 :;
     }
-L1333 :;
+L1217 :;
     ;
 }
 
 static void msysc$convucstring(u8 *s) {
-    L1334 :;
+    L1218 :;
     while (!!((u64)(*s))) {
         (*s) = (u64)toupper((i32)(u64)(*s));
         ++(s);
-L1335 :;
+L1219 :;
     }
-L1336 :;
+L1220 :;
     ;
 }
 
@@ -44943,39 +41277,39 @@ void mlib$pcm_init(void) {
 ;
     mlib$pcm_newblock((i64)0);
     for (i=(i64)1;i<=(i64)2048;++i) {
-L1337 :;
+L1221 :;
         j = (i64)1;
         k = (i64)16;
-        L1340 :;
+        L1224 :;
         while ((i > k)) {
             k = (k << (i64)1);
             ++(j);
-L1341 :;
+L1225 :;
         }
-L1342 :;
+L1226 :;
         ;
         mlib$sizeindextable[(i)] = j;
-L1338 :;
+L1222 :;
     }
-L1339 :;
+L1223 :;
     ;
     mlib$allocupper[((i64)1)] = (u64)16u;
     size = (i64)16;
     for (i=(i64)2;i<=(i64)27;++i) {
-L1343 :;
+L1227 :;
         size *= (i64)2;
         mlib$allocupper[(i)] = (u64)size;
         if ((size >= (i64)33554432)) {
             k = i;
-            goto L1345 ;
+            goto L1229 ;
         }
 ;
-L1344 :;
+L1228 :;
     }
-L1345 :;
+L1229 :;
     ;
     for (i=(k + (i64)1);i<=(i64)300;++i) {
-L1346 :;
+L1230 :;
         size += (i64)33554432;
         if ((size < (i64)8589934592)) {
             mlib$allocupper[(i)] = (u64)size;
@@ -44983,12 +41317,12 @@ L1346 :;
         }
         else {
             mlib$maxalloccode = (i - (i64)1);
-            goto L1348 ;
+            goto L1232 ;
         }
 ;
-L1347 :;
+L1231 :;
     }
-L1348 :;
+L1232 :;
     ;
     mlib$pcm_setup = (i64)1;
 }
@@ -45227,7 +41561,7 @@ void mlib$readlinen(void *handlex,u8 *buffer,i64 size) {
     if ((handlex == 0)) {
         n = (i64)0;
         p = buffer;
-        L1349 :;
+        L1233 :;
         while (1) {
             ch = getchar();
             if ((((ch == (i64)13) || (ch == (i64)10)) || (ch == (i64)-1))) {
@@ -45243,7 +41577,7 @@ void mlib$readlinen(void *handlex,u8 *buffer,i64 size) {
             }
 ;
         }
-L1350 :;
+L1234 :;
         ;
     }
 ;
@@ -45259,16 +41593,16 @@ L1350 :;
 ;
     p = ((buffer + n) - (i64)1);
     crseen = (i64)0;
-    L1351 :;
+    L1235 :;
     while (((p >= buffer) && (((i64)(u64)(*p) == (i64)13) || ((i64)(u64)(*p) == (i64)10)))) {
         if ((((i64)(u64)(*p) == (i64)13) || ((i64)(u64)(*p) == (i64)10))) {
             crseen = (i64)1;
         }
 ;
         (*(p)--) = (u64)0u;
-L1352 :;
+L1236 :;
     }
-L1353 :;
+L1237 :;
     ;
     if ((!(!!((i64)crseen)) && ((n + (i64)4) > size))) {
         msysc$m_print_startcon();
@@ -45286,12 +41620,12 @@ void mlib$iconvlcn(u8 *s,i64 n) {
         i64 $av_1;
     $av_1 = n;
     while ($av_1-- > 0) {
-L1354 :;
+L1238 :;
         (*s) = (u64)tolower((i32)(u64)(*s));
         ++(s);
-L1355 :;
+L1239 :;
     }
-L1356 :;
+L1240 :;
     ;
 }
 
@@ -45299,25 +41633,25 @@ void mlib$iconvucn(u8 *s,i64 n) {
         i64 $av_1;
     $av_1 = n;
     while ($av_1-- > 0) {
-L1357 :;
+L1241 :;
         (*s) = (u64)toupper((i32)(u64)(*s));
         ++(s);
-L1358 :;
+L1242 :;
     }
-L1359 :;
+L1243 :;
     ;
 }
 
 u8 *mlib$convlcstring(u8 *s) {
         u8 *  s0;
     s0 = s;
-    L1360 :;
+    L1244 :;
     while (!!((u64)(*s))) {
         (*s) = (u64)tolower((i32)(u64)(*s));
         ++(s);
-L1361 :;
+L1245 :;
     }
-L1362 :;
+L1246 :;
     ;
     return s0;
 }
@@ -45325,13 +41659,13 @@ L1362 :;
 u8 *mlib$convucstring(u8 *s) {
         u8 *  s0;
     s0 = s;
-    L1363 :;
+    L1247 :;
     while (!!((u64)(*s))) {
         (*s) = (u64)toupper((i32)(u64)(*s));
         ++(s);
-L1364 :;
+L1248 :;
     }
-L1365 :;
+L1249 :;
     ;
     return s0;
 }
@@ -45380,7 +41714,7 @@ u8 *mlib$extractext(u8 *s,i64 period) {
     }
 ;
     u = ((t + strlen(t)) - (i64)1);
-    L1366 :;
+    L1250 :;
     while ((u >= t)) {
         if (((u64)(*u) == '.')) {
             if (((i64)(u64)(*(u + (i64)1)) == (i64)0)) {
@@ -45391,9 +41725,9 @@ u8 *mlib$extractext(u8 *s,i64 period) {
         }
 ;
         --(u);
-L1367 :;
+L1251 :;
     }
-L1368 :;
+L1252 :;
     ;
     return (byte*)"";
 }
@@ -45403,7 +41737,7 @@ u8 *mlib$extractpath(u8 *s) {
         u8 *  t;
         i64 n;
     t = ((s + strlen(s)) - (i64)1);
-    L1369 :;
+    L1253 :;
     while ((t >= s)) {
         switch ((i64)(u64)(*t)) {
         case 92:;
@@ -45419,9 +41753,9 @@ u8 *mlib$extractpath(u8 *s) {
         } //SW
 ;
         --(t);
-L1370 :;
+L1254 :;
     }
-L1371 :;
+L1255 :;
     ;
     return (byte*)"";
 }
@@ -45631,11 +41965,11 @@ void mlib$gs_leftstr(struct mlib$strbuffer *dest,u8 *s,i64 w,i64 padch) {
     n = (w - slen);
     if ((n > (i64)0)) {
         for (i=(i64)1;i<=n;++i) {
-L1372 :;
+L1256 :;
             str[((slen + i))-1] = (u64)padch;
-L1373 :;
+L1257 :;
         }
-L1374 :;
+L1258 :;
         ;
         str[(((slen + n) + (i64)1))-1] = (u64)0u;
     }
@@ -45657,11 +41991,11 @@ void mlib$gs_padto(struct mlib$strbuffer *dest,i64 col,i64 ch) {
     }
 ;
     for (i=(i64)1;i<=n;++i) {
-L1375 :;
+L1259 :;
         str[(i)-1] = (u64)ch;
-L1376 :;
+L1260 :;
     }
-L1377 :;
+L1261 :;
     ;
     str[((n + (i64)1))-1] = (u64)0u;
     mlib$gs_str((struct mlib$strbuffer *)dest,(u8 *)str);
@@ -45702,7 +42036,7 @@ i64 mlib$nextcmdparamnew(i64 *paramno,u8 **name,u8 **value,u8 *defext) {
         i64 atsize;
         static u8 str[300];
     //reenter:
-L1378 :;
+L1262 :;
 ;
     (*value) = 0;
     (*name) = 0;
@@ -45710,7 +42044,7 @@ L1378 :;
         if ((mlib$readnextfileitem(&fileptr,&item) == (i64)0)) {
             mlib$pcm_free((void *)filestart,atsize);
             infile = (i64)0;
-            goto L1378 ;
+            goto L1262 ;
 ;
         }
 ;
@@ -45746,7 +42080,7 @@ L1378 :;
 ;
             infile = (i64)1;
             atsize = mlib$allocbytes;
-            goto L1378 ;
+            goto L1262 ;
 ;
         }
 ;
@@ -45803,9 +42137,9 @@ static i64 mlib$readnextfileitem(u8 **fileptr,u8 **item) {
         static u8 str[256];
     p = (*fileptr);
     //reenter:
-L1379 :;
+L1263 :;
 ;
-    L1380 :;
+    L1264 :;
     while (1) {
                 {u64 $temp = (u64)(*p);
 if (($temp==' ') || ($temp==(u64)9u) || ($temp==(u64)13u) || ($temp==(u64)10u)) {
@@ -45815,19 +42149,19 @@ if (($temp==' ') || ($temp==(u64)9u) || ($temp==(u64)13u) || ($temp==(u64)10u)) 
             return (i64)0;
         }
         else {
-            goto L1381 ;
+            goto L1265 ;
         }
         };
     }
-L1381 :;
+L1265 :;
     ;
         {u64 $temp = (u64)(*p);
 if (($temp=='!') || ($temp=='#')) {
         ++(p);
-        L1382 :;
+        L1266 :;
                 {u64 $temp = (u64)(*(p)++);
 if (($temp==(u64)10u)) {
-            goto L1379 ;
+            goto L1263 ;
 ;
         }
         else if (($temp==(u64)26u) || ($temp==(u64)0u)) {
@@ -45836,15 +42170,15 @@ if (($temp==(u64)10u)) {
         }
         else {
         }
-        }goto L1382 ;
-L1383 :;
+        }goto L1266 ;
+L1267 :;
         ;
     }
     };
         {u64 $temp = (u64)(*p);
 if (($temp=='"')) {
         pstart = ++(p);
-        L1384 :;
+        L1268 :;
         while (1) {
                         {u64 $temp = (u64)(*p);
 if (($temp==(u64)0u) || ($temp==(u64)26u)) {
@@ -45861,31 +42195,31 @@ if (($temp==(u64)0u) || ($temp==(u64)26u)) {
                     ++(p);
                 }
 ;
-                goto L1385 ;
+                goto L1269 ;
             }
             };
             ++(p);
         }
-L1385 :;
+L1269 :;
         ;
     }
     else {
         pstart = p;
-        L1386 :;
+        L1270 :;
         while (1) {
                         {u64 $temp = (u64)(*p);
 if (($temp==(u64)0u) || ($temp==(u64)26u)) {
                 pend = p;
-                goto L1387 ;
+                goto L1271 ;
             }
             else if (($temp==' ') || ($temp==(u64)9u) || ($temp==',') || ($temp==(u64)13u) || ($temp==(u64)10u)) {
                 pend = (p)++;
-                goto L1387 ;
+                goto L1271 ;
             }
             };
             ++(p);
         }
-L1387 :;
+L1271 :;
         ;
     }
     };
@@ -45912,11 +42246,11 @@ void mlib$ipadstr(u8 *s,i64 width,u8 *padchar) {
     n = strlen(s);
     $av_1 = (width - n);
     while ($av_1-- > 0) {
-L1388 :;
+L1272 :;
         strcat(s,padchar);
-L1389 :;
+L1273 :;
     }
-L1390 :;
+L1274 :;
     ;
 }
 
@@ -46026,13 +42360,13 @@ i64 mlib$mrandomrange(i64 a,i64 b) {
 
 r64 mlib$mrandomreal(void) {
         r64 x;
-    L1391 :;
+    L1275 :;
     do {
         x = ((r64)mlib$mrandomp() / (double)9223372036854775800.);
-L1392 :;
+L1276 :;
     }
     while (!(x != (double)1.));
-L1393 :;
+L1277 :;
     ;
     return x;
 }
@@ -46052,14 +42386,14 @@ void *mlib$findfunction(u8 *name) {
         i64 i;
         ($av_1 = msysc$m_get_nprocs());
     for (i=(i64)1;i<=$av_1;++i) {
-L1394 :;
+L1278 :;
         if (!!(mlib$eqstring(msysc$m_get_procname(i),name))) {
             return msysc$m_get_procaddr(i);
         }
 ;
-L1395 :;
+L1279 :;
     }
-L1396 :;
+L1280 :;
     ;
     return 0;
 }
@@ -46256,14 +42590,14 @@ i64 mwindows$os_getchx(void) {
     }
     else {
         if (((i64)mwindows$lastkey.repeatcount == (i64)0)) {
-            L1397 :;
+            L1281 :;
             do {
                 count = (i64)0;
                 ReadConsoleInputA(mwindows$hconsolein,&mwindows$lastkey,(u32)(i64)1,&count);
-L1398 :;
+L1282 :;
             }
             while (!(((i64)mwindows$lastkey.eventtype == (i64)1) && ((i64)mwindows$lastkey.keydown == (i64)1)));
-L1399 :;
+L1283 :;
             ;
         }
 ;
