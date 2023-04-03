@@ -141,7 +141,7 @@ Unary Operators
     sqr              T            (1-1) X' := X*X
     sign             T            (1-1) X' := -1,0,1 according to X<0, X=0, X>0
 
-Maths Operators (T must be r32 or r64)
+Maths Operators
 
     sqrt             F            (1-1)
     sin              F            (1-1) X' := sin(X)
@@ -203,13 +203,13 @@ that lower bound value.)
 
 Misc: not needed for Interpreted or Stack target
 
-    startm                         Multi-path markers
+    startm                        Multi-path markers
     resetm
     endm
 
-    callargs         n             In advance of loading call arguments
+    callargs         n            In advance of loading call arguments
 
-    assem                          Ignored in discrete PCL code
+    assem                         Ignored in discrete PCL code
 
     push             T            (1-0) Push X to hardware stack
     pop              T            (0-1) Pop hardware stack to X'
@@ -272,7 +272,11 @@ INLINE OPERANDS
 As well as the variable stack operands, there are fixed operands that are
 part of the instruction.
 
-Most instructions have a type attribute, a type name described above.
+Most instructions have a type attribute, a type name described above. This is represented in the listing by:
+
+  T         Any type (or U for a secondary type)
+  F         Float
+  D         Integer
 
 Many have a main operand shown as a capital letter:
 
