@@ -97,12 +97,15 @@ Tool | Input files | Outputs  | Description
 
 **(4)** The 'MC' binary formerly (formerly 'MX' for apps and 'ML' for libraries) is my own simpler format intended to replace DLL, since DLL-generation worked badly. It can also produce standalone executables, but since they are not recognised by Windows, they need a stub program `mc.exe` to execute.
 
- A pure C version of `mc.exe` exists, and one of several possibilities was to generate Linux binaries for x64, without needing to use external tools like `as`, `nasm` and `ld`. I only need to build the C stub program. (The format is portable across the two OSes, but the code contained will be ABI-specific.)
+A pure C version of `mc.exe` exists, and one of several possibilities was to generate Linux binaries for x64, without needing to use external tools like `as`, `nasm` and `ld`. I only need to build the C stub program. (The format is portable across the two OSes, but the code contained will be ABI-specific.)
  
  **(5)** The M compiler can combine all the source and support files of an application into a single 'amalgamated' `.ma` source file. This one file can be built directly using `mm prog.ma` or run using `ms prog.ma`. A similar ability for the Q compiler has been dropped now that it can produce monolithic `.pc` bytecode files.
  
- **(6)** original 'PCL' IL was dropped in M6 and is being reinstated in revised form in M7. Here there will be a serious attempt to have this as an independent language, and to implement an interpreter which could serve as a reference implementation. The backend of M7 which turns PCL into x64 code has been put on hold, as the PCL IL is being refined.
+ **(6)** The original 'PCL' IL was dropped in M6 and is being reinstated in revised form in M7. Here there will be a serious attempt to have this as an independent language, and to implement an interpreter which could serve as a reference implementation. The backend of M7 which turns PCL into x64 code has been put on hold, as the PCL IL is being refined.
  
 There are a few possibilities with PCL (including replacing the C compiler backend to generate PCL, to allow testing on external programs), but the interpreter has to be completed first; it's harder than I expected!
 
 **(7)** This is a Z80 assembler written Q, which was supposed to have an emulator but that part has been shelved.
+
+Bart ('till-one` on Reddit)
+
