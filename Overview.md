@@ -26,7 +26,7 @@ Name | Description
 -- |
 `mcc.exe` | M subset to C transpiler (part of M6 only) (3)
 `qq.exe` | Run Q from source (1)
-`ms.exe` | Run M from source(2)
+`ms.exe` | Run M from source (2)
 `mc.exe` | Execute `.mc` file (4)
 
 ### File Formats
@@ -38,9 +38,10 @@ Extension | Description
 `.q`  | Q source files
 `.pcl` | PCL source file
 `.asm` | x64 assembly in my syntax
-`.exe` | Windows executable binary
+`.exe` | Windows executable binary, PE+ format
+`.obj` | Windows object file, COFF64 format
 `.pc`  | Binary bytecode file (represents complete application)
-`.mc` | Private executable formats; mainly used in place of `.dll`
+`.mc` | Private executable format; mainly used in place of `.dll`
 
 ### Tools
 
