@@ -1,4 +1,4 @@
-## Language Projects 2023
+**## Language Projects 2023
 
 A summary of Languages and Tools that are still active or are being developed.
 
@@ -23,7 +23,7 @@ Name | Description
 `pci.exe` | PCL IL interpreter
 `aa.exe` | ASM assembler
 `bcc.exe` | C subset compiler
--- |
+. |
 `mcc.exe` | M subset to C transpiler (part of M6 only) (3)
 `qq.exe` | Run Q from source (1)
 `ms.exe` | Run M from source (2)
@@ -43,33 +43,39 @@ Extension | Description
 `.pc`  | Binary bytecode file (represents complete application)
 `.mc` | Private executable format; mainly used in place of `.dll`
 
-### Tools
+### Tools: Inputs and Outputs
 
-Input files | Tool | Output  | Description
+Tool | Input files | Outputs  | Description
 ---| --- | --- | ---
-`.m`  | `mm.exe` | `.exe` | M compiler default output
--- |             | `.pcl` | `-pcl` for IL output (M7 only)
--- |             | `.asm` | `-asm` for ASM output
--- |             | `.mc` | `-mc`; generate private binary format
--- |             | `.asm` | `-asm` for ASM output
--- |             | `.ma .mas`  | `-ma`; produce amalgamated source file. (`-mas` includes std lib sources)
--- |             | Run  | `-run` execute code immediately
--- | |
-`.q` | `qc.exe`  | `.pc`  | Q compiler output
-`.pc` | `pc.exe` | Run | Run bytecode program
-`.q`|             | Run | (Invole `qc.exe` first then run)
-`.pcl` | `pci.exe` | Run | Interpret PCL program
-`.asm` | `aa.exe`  | `.exe` | Assemble to EXE (default)
--- |               | `.obj` | Single file COFF output
-`.mc` | `mc.exe`   | Run | Execute `.mc` file when it is a complete program
-`.c` | `bcc.exe`   | `.exe` | C compiler default output
--- |               | `.asm` | `-s` Produce ASM files
--- |               | `.obj`  | `-c` Produce COFF files
--- |               | `.pcl`  | `-pcl` Produce PCL files (experimental)
--- |               | `.i`  | `-e` Produce preprocessed output
--- |               | `.m` | `-mheader` Turn C headers into M syntax declarations (experimental)
-`.m` | `ms.exe`    | Run | Run M program from source ('M Script') (2)
-`.q` | `qq.exe`    | Run | Run Q program from source (1)
+`mm.exe` | `.m .ma`  | `.exe` | M compiler default output
+. |             | `.pcl` | `-pcl` for IL output (M7 only)
+. |             | `.asm` | `-asm` for ASM output
+. |             | `.mc` | `-mc`; generate private binary format
+. |             | `.asm` | `-asm` for ASM output
+. |             | `.ma .mas`  | `-ma`; produce amalgamated source file. (`-mas` includes std lib sources)
+. |             | Run  | `-run` execute code immediately
+------- | | 
+`qc.exe` | `.q` | `.pc`  | Q compiler output
+------- | |
+`qc.exe` | `.pc .q` | Run | Run bytecode program or Q source via `qc.exe`
+------- | |
+`pci.exe` | `.pcl` | Run | Interpret PCL program
+------- | |
+`aa.exe` | `.asm` | `.exe` | Assemble to EXE (default)
+. |               | `.obj` | Single file COFF output
+------- | |
+`mc.exe` | `.mc`   | Run | Execute `.mc` file when it is a complete program
+------- | |
+`bcc.exe` | `.c`   | `.exe` | C compiler default output
+. |               | `.asm` | `-s` Produce ASM files
+. |               | `.obj`  | `-c` Produce COFF files
+. |               | `.pcl`  | `-pcl` Produce PCL files (experimental)
+. |               | `.i`  | `-e` Produce preprocessed output
+. |               | `.m` | `-mheader` Turn C headers into M syntax declarations (experimental)
+------- | |
+`ms.exe` | `.m`  | Run | Run M program from source ('M Script') (2)
+------- | |
+`qq.exe` | `.q`    | Run | Run Q program from source (1)
 
 ### Dependencies
 
@@ -98,3 +104,4 @@ Input files | Tool | Output  | Description
  here are a few possibilities with PCL (including replacing the C compiler backend to generate PCL, to allow testing on external programs), but the interpreter has to be completed first; it's harder than I expected!
 
 **(7)** 'ZA' was the assembly for a Z80 project I started last year. I create an assembler and disassembler (in Q), but lost interest when I found out how difficult emulation was going to be. On that of that, I would be tempted to write a compiler for it
+**
