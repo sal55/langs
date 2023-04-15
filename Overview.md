@@ -35,7 +35,7 @@ Name | Description
 Extension | Description
 --- | ---
 `.m` | M source files
-`.ma` | M amalgamated source files in one source file (5)
+`.ma` | M amalgamated source files in one text file (5)
 `.q`  | Q source files
 `.pcl` | PCL source file
 `.asm` | x64 assembly in my extensively tweaked Intel syntax
@@ -99,7 +99,9 @@ Tool | Input files | Outputs  | Description
 
 A pure C version of `mc.exe` exists, and one of several possibilities was to generate Linux binaries for x64, without needing to use external tools like `as`, `nasm` and `ld`. I only need to build the C stub program. (The format is portable across the two OSes, but the code contained will be ABI-specific.)
  
- **(5)** The M compiler can combine all the source and support files of an application into a single 'amalgamated' `.ma` source file. This one file can be built directly using `mm prog.ma` or run using `ms prog.ma`. A similar ability for the Q compiler has been dropped now that it can produce monolithic `.pc` bytecode files.
+ **(5)** The M compiler can combine all the source and support files of an application into a single 'amalgamated' `.ma` source file. This one file can be built directly using `mm prog.ma` or run using `ms prog.ma`. Currently binary support files can't be included unless I go back to an earlier format.
+ 
+A similar ability for the Q compiler has been dropped now that it can produce monolithic `.pc` bytecode files to represent a whole app.
  
  **(6)** The original 'PCL' IL was dropped in M6 and is being reinstated in revised form in M7. Here there will be a serious attempt to have this as an independent language, and to implement an interpreter which could serve as a reference implementation. The backend of M7 which turns PCL into x64 code has been put on hold, as the PCL IL is being refined.
  
