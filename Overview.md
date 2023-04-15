@@ -1,4 +1,4 @@
-**## Language Projects 2023
+## Language Projects 2023
 
 A summary of Languages and Tools that are still active or are being developed.
 
@@ -11,7 +11,7 @@ Name | Description
 **PCL** | Intermediate Language (6)
 **ASM** | x64 subset in my syntax
 **C**  | C subset used by the BCC project
-**ZA** | Z80 assembly (7)
+**ZA** | Z80 assembly (project shelved)
 
 ### Tools Summary
 
@@ -28,6 +28,7 @@ Name | Description
 `qq.exe` | Run Q from source (1)
 `ms.exe` | Run M from source (2)
 `mc.exe` | Execute `.mc` file (4)
+`za.pc` | Z80 assembler (7)
 
 ### File Formats
 
@@ -37,11 +38,12 @@ Extension | Description
 `.ma` | M amalgamated source files in one source file (5)
 `.q`  | Q source files
 `.pcl` | PCL source file
-`.asm` | x64 assembly in my syntax
+`.asm` | x64 assembly in my extensively tweaked Intel syntax
 `.exe` | Windows executable binary, PE+ format
 `.obj` | Windows object file, COFF64 format
 `.pc`  | Binary bytecode file (represents complete application)
 `.mc` | Private executable format; mainly used in place of `.dll`
+`.za` | Z80 assembly (tweaked Zilog syntax)
 
 ### Tools: Inputs and Outputs
 
@@ -57,7 +59,7 @@ Tool | Input files | Outputs  | Description
 ------- | | 
 `qc.exe` | `.q` | `.pc`  | Q compiler output
 ------- | |
-`qc.exe` | `.pc .q` | Run | Run bytecode program or Q source via `qc.exe`
+`pc.exe` | `.pc .q` | Run | Run bytecode program, or Q source via `qc.exe`
 ------- | |
 `pci.exe` | `.pcl` | Run | Interpret PCL program
 ------- | |
@@ -81,7 +83,7 @@ Tool | Input files | Outputs  | Description
 
 * Most programs run on Windows OS
 * No external tools needed except when generated .c or .obj files require further processing
-* Unless an application requires a specific library (eg. SDL), no external libraries are used other than parts of the C library in `msvcrt.dll`, part of Windows. Other libraries need a suitable DLL binary, plus (this is the hard apart) an API in the form of a set of bindings in my syntax.
+* Unless an application requires a specific library (eg. SDL), no external libraries are used other than parts of the C library in `msvcrt.dll`, part of Windows. Other libraries need a suitable DLL binary, plus (this is the hard part) an API in the form of a set of bindings in my syntax.
 * All programs here are written in my M language, and the compiler for that is self-hosted.
 
 
@@ -101,7 +103,6 @@ Tool | Input files | Outputs  | Description
  
  **(6)** original 'PCL' IL was dropped in M6 and is being reinstated in revised form in M7. Here there will be a serious attempt to have this as an independent language, and to implement an interpreter which could serve as a reference implementation. The backend of M7 which turns PCL into x64 code has been put on hold, as the PCL IL is being refined.
  
- here are a few possibilities with PCL (including replacing the C compiler backend to generate PCL, to allow testing on external programs), but the interpreter has to be completed first; it's harder than I expected!
+There are a few possibilities with PCL (including replacing the C compiler backend to generate PCL, to allow testing on external programs), but the interpreter has to be completed first; it's harder than I expected!
 
-**(7)** 'ZA' was the assembly for a Z80 project I started last year. I create an assembler and disassembler (in Q), but lost interest when I found out how difficult emulation was going to be. On that of that, I would be tempted to write a compiler for it
-**
+**(7)** This is a Z80 assembler written Q, which was supposed to have an emulator but that part has been shelved.
