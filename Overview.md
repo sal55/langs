@@ -18,9 +18,9 @@ Name | Description
 Name | Description
 --- | ---
 `mm.exe` | M compiler for Windows, M6 and M7 versions
-`qc.exe` | Q bytecode compiler (writes bytecode)
-`pc.exe` | Q interpreter (runs bytecode, or source via `qc.exe`)
-`pci.exe` | PCL IL interpreter
+`qc.exe` | Q bytecode compiler (writes bytecode to `.pc` file)
+`pc.exe` | Q interpreter (runs `.pc` bytecode file, or `.q` source via `qc.exe`)
+`pci.exe` | PCL IL interpreter for `.pcl` files
 `aa.exe` | ASM assembler
 `bcc.exe` | C subset compiler
 . |
