@@ -10,7 +10,7 @@ Name | Description
 **Q** | Lower level dynamic scripting language
 **PCL** | Intermediate Language (6)
 **ASM** | x64 subset in my syntax
-**C**  | C subset used by the BCC project
+**(C)**  | (C subset used by the BCC project)
 **ZA** | Z80 assembly (project shelved)
 
 ### Tools Summary
@@ -59,7 +59,7 @@ Tool | Input files | Outputs  | Description
 ------- | | 
 `qc.exe` | `.q` | `.pc`  | Q compiler output
 ------- | |
-`pc.exe` | `.pc .q` | Run | Run bytecode program, or Q source via `qc.exe`
+`pc.exe` | `.pc .q` | Run | Run bytecode program (default), or run Q source via `qc.exe`
 ------- | |
 `pci.exe` | `.pcl` | Run | Interpret PCL program
 ------- | |
