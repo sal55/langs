@@ -95,7 +95,7 @@ Tool | Input files | Outputs  | Description
 
 **(3)** A C target was an option of the M6 implementation; it has been dropped from M7. It did not support the full M language, so that programs such as the M compiler were tweaked to be able to transpile. This enabled the use of an optimising C compiler to get the best throughputs.
 
-**(4)** The 'MC' binary formerly (formerly 'MX' for apps and 'ML' for libraries) is my own simpler format intended to replace DLL, since DLL-generation worked badly. It can also produce standalone executables, but since they are not recognised by Windows, they need a stub program `mc.exe` to execute.
+**(4)** The 'MC' binary format (formerly 'MX' for apps and 'ML' for libraries) is my own simpler format intended to replace DLL, since DLL-generation worked badly. It can also produce standalone programs, but since they are not recognised by Windows, they need a stub program `mc.exe` to execute.
 
 A pure C version of `mc.exe` exists, and one of several possibilities was to generate Linux binaries for x64, without needing to use external tools like `as`, `nasm` and `ld`. I only need to build the C stub program. (The format is portable across the two OSes, but the code contained will be ABI-specific.)
  
