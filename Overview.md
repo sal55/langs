@@ -56,7 +56,7 @@ Tool | Input files | Outputs  | Description
 . |             | `.ma .mas`  | `-ma`; produce amalgamated source file. (`-mas` includes std lib sources)
 . |             | Run  | `-run` execute code immediately
 ------- | | 
-`qc.exe` | `.q` | `.pc`  | Q compiler output
+`qc.exe` | `.q` | `.pc`  | Q compiler generates `.pc` bytecode file
 ------- | |
 `pc.exe` | `.pc .q` | Run | Run bytecode program (default), or run Q source via `qc.exe`
 ------- | |
