@@ -53,7 +53,6 @@ Tool | Input files | Outputs  | Description
 . |             | `.pcl` | `-pcl` for IL output (M7 only)
 . |             | `.asm` | `-asm` for ASM output
 . |             | `.mc` | `-mc`; generate private binary format
-. |             | `.asm` | `-asm` for ASM output
 . |             | `.ma .mas`  | `-ma`; produce amalgamated source file. (`-mas` includes std lib sources)
 . |             | Run  | `-run` execute code immediately
 ------- | | 
