@@ -14,7 +14,7 @@ enumdata =
     kstop,
 end
 
-# Note: this 'byte' uses separate, parallel arrays for opcodes and immediate operands:
+# Note: this 'bytecode' uses separate, parallel arrays for opcodes and immediate operands:
 
 tabledata []byte code, []int data =
     (kloadimm,      42),              # set up for x and y is not done, only main loop
