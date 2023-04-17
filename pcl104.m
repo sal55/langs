@@ -35,7 +35,7 @@ end
 
 macro nextinstr = goto jumptable[code[pc]]
 
-proc run=
+proc run =
     ref i64 a
     ref i64 sp
     int pc
@@ -100,6 +100,6 @@ jstop::
     stop
 end
 
-proc main=
+proc main =
     run()
 end
