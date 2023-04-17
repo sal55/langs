@@ -84,7 +84,7 @@ jadd::
 jjumpne::
     sp:=sp-2
     if (sp+1)^ <> (sp+2)^ then
-    pc := data[pc]
+        pc := data[pc]
     else
         ++pc
     fi
