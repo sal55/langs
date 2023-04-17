@@ -1,5 +1,3 @@
-# Note: this 'bytecode' uses separate arrays for opcodes and immediate operands
-
 [100]i64 stack
 int pcindex
 
@@ -16,37 +14,24 @@ enumdata =
     kstop,
 end
 
-[]byte code = (
-    kloadimm,
-    kloadimm,
-    kadd,
-    kunload,
+# Note: this 'byte' uses separate, parallel arrays for opcodes and immediate operands:
 
-    kload,
-    kload,
-    kadd,
-    kstore,
+tabledata []byte code, []int data =
+    (kloadimm,      42),
+    (kloadimm,      56),
+    (kadd,          0),
+    (kunload,       0),
 
-    kload,
-    kloadimm,
-    kjumpne,
-    kstop)
+    (kload,         int(&x)),
+    (kload,         int(&y)),
+    (kadd,          0),
+    (kstore,        int(&x)),
 
-[]int data = (
-    42,
-    56,
-    0,
-    0,
-
-    int(&x),
-    int(&y),
-    0,
-    int(&x),
-
-    int(&x),
-    100'000'000,
-    1,
-    0)
+    (kload,         int(&x)),
+    (kloadimm,      100'000'000),
+    (kjumpne,       1),
+    (kstop,         0),
+end
 
 macro nextinstr = goto jumptable[code[pc]]
 
@@ -113,7 +98,6 @@ junload::
 jstop::
     println "Stop",=x,=y
     stop
-
 end
 
 proc main=
