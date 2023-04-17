@@ -17,19 +17,19 @@ end
 # Note: this 'byte' uses separate, parallel arrays for opcodes and immediate operands:
 
 tabledata []byte code, []int data =
-    (kloadimm,      42),
+    (kloadimm,      42),              # set up for x and y is not done, only main loop
     (kloadimm,      56),
     (kadd,          0),
     (kunload,       0),
 
-    (kload,         int(&x)),
+    (kload,         int(&x)),         # variables are static ones as no stack frame for this test
     (kload,         int(&y)),
     (kadd,          0),
     (kstore,        int(&x)),
 
     (kload,         int(&x)),
     (kloadimm,      100'000'000),
-    (kjumpne,       1),
+    (kjumpne,       1),               # 1 is index of first instruction, not relative offset
     (kstop,         0),
 end
 
