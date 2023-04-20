@@ -1,9 +1,5 @@
 !Switch with compiler-generated jumptable
 
-[100]i64 stack
-ref i64 sptr
-int pcindex
-
 i64 x=0
 i64 y=1
 
@@ -35,10 +31,10 @@ tabledata []byte code, []int data =
 end
 
 proc run=
+    [100]i64 stack
     ref i64 a
     ref i64 sp
     int pc
-
 
     pc:=1
     sp:=cast(&stack)
@@ -77,8 +73,10 @@ proc run=
     when kunload then
         --sp
         ++pc
+        
     when kstop then
         exit
+
     else
         println "Umimpl op"
         stop
