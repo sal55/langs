@@ -26,7 +26,7 @@ void run(void) {
     i64* sp;
     i64 pc;
 
-    pc=1;
+    pc=0;
     sp=stack;
 
     while (1) {
