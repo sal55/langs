@@ -80,7 +80,7 @@ proc run=
     when kstop then
         exit
     else
-        println "Umimpl op", CODE[PCINDEX]
+        println "Umimpl op"
         stop
     end
 
