@@ -78,7 +78,7 @@ proc run=
         exit
 
     else
-        println "Umimpl op"
+        println "Unimpl op:", code[pc]
         stop
     end
 
