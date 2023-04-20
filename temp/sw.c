@@ -6,7 +6,6 @@ typedef unsigned char byte;
 enum {kloadimm, kload, kstore, kadd, kjumpne, kunload, kstop};
 
 i64 x=0, y=1;
-i64 stack[100];
 
 byte code[] = {
     kloadimm,kloadimm,kadd,kunload,
@@ -22,6 +21,7 @@ i64 data[] = {
 };
 
 void run(void) {
+    i64 stack[100];
     i64* a;
     i64* sp;
     i64 pc;
