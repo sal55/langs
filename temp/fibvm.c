@@ -1,5 +1,5 @@
 //VM switch/stack-based interpreter framework, populated with just enough handlers to run my Fib benchmark
-// in pccode[]+pcdata/b[] (bytecodes and inline operands are separate arrays)
+// The test program is in pccode[]+pcdata/b[] (bytecodes and inline operands are separate arrays)
 // Displays fib(1) to fib(36
 
 #include <stdio.h>
@@ -1904,7 +1904,7 @@ void exec(i64 pc, i64 sp) {
 		break;
 
 	case jprinti64:
-//		printf("%lld\n", stack[sp--]);
+		printf("%lld\n", stack[sp--]);
 		break;
 
 	case jprintu64:
