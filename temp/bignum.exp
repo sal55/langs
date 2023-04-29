@@ -8,8 +8,6 @@ importdll bignum =
         i32 numtype
     end
 
-    var [0..3]ichar fpnames
-
     const i64 zero_type = 0
     const i64 normal_type = 1
     const i64 inf_type = 2
