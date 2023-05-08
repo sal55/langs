@@ -1,0 +1,250 @@
+; hello.m
+    zstatic  i64   mmin.needgap 
+proc mmin.m$print_startcon
+;------------------------
+;------------------------
+#1:
+    return         
+end
+
+proc mmin.m$print_end
+;------------------------
+    loadimm  i64   0 
+    store    i64   mmin.needgap 
+;------------------------
+#2:
+    return         
+end
+
+proc mmin.m$print_ptr_nf
+    param    u64   .a 
+;------------------------
+    setcall        0
+    callp          mmin.nextfmtchars 0 0
+    setcall        2
+    load     u64   .a 
+    setarg   u64   2
+    loadimm  u64   "%p"
+    setarg   u64   1
+    callp          printf 2 2
+    loadimm  i64   1 
+    store    i64   mmin.needgap 
+;------------------------
+#3:
+    return         
+end
+
+proc mmin.m$print_i64_nf
+    param    i64   .a 
+;------------------------
+    setcall        0
+    callp          mmin.nextfmtchars 0 0
+    setcall        2
+    load     i64   .a 
+    setarg   i64   2
+    loadimm  u64   "%lld"
+    setarg   u64   1
+    callp          printf 2 2
+    loadimm  i64   1 
+    store    i64   mmin.needgap 
+;------------------------
+#5:
+    return         
+end
+
+proc mmin.m$print_u64
+    param    u64   .a 
+    param    u64   .fmtstyle 
+;------------------------
+    setcall        0
+    callp          mmin.nextfmtchars 0 0
+    setcall        2
+    load     u64   .a 
+    setarg   u64   2
+    loadimm  u64   "%llu"
+    setarg   u64   1
+    callp          printf 2 2
+    loadimm  i64   1 
+    store    i64   mmin.needgap 
+;------------------------
+#7:
+    return         
+end
+
+proc mmin.m$print_r64
+    param    r64   .x 
+    param    u64   .fmtstyle 
+;------------------------
+    setcall        0
+    callp          mmin.nextfmtchars 0 0
+    setcall        2
+    load     r64   .x 
+    setarg   r64   2
+    loadimm  u64   "%f"
+    setarg   u64   1
+    callp          printf 2 2
+    loadimm  i64   1 
+    store    i64   mmin.needgap 
+;------------------------
+#9:
+    return         
+end
+
+proc mmin.m$print_r32
+    param    r32   .x 
+    param    u64   .fmtstyle 
+;------------------------
+    setcall        0
+    callp          mmin.nextfmtchars 0 0
+    setcall        2
+    load     r32   .x 
+    fwiden   r64 r32 
+    setarg   r32   2
+    loadimm  u64   "%f"
+    setarg   u64   1
+    callp          printf 2 2
+    loadimm  i64   1 
+    store    i64   mmin.needgap 
+;------------------------
+#11:
+    return         
+end
+
+proc mmin.m$print_str_nf
+    param    u64   .s 
+;------------------------
+    setcall        0
+    callp          mmin.nextfmtchars 0 0
+    setcall        2
+    load     u64   .s 
+    setarg   u64   2
+    loadimm  u64   "%s"
+    setarg   u64   1
+    callp          printf 2 2
+    loadimm  i64   1 
+    store    i64   mmin.needgap 
+;------------------------
+#12:
+    return         
+end
+
+proc mmin.m$print_space
+;------------------------
+    loadimm  i64   0 
+    store    i64   mmin.needgap 
+    setcall        1
+    loadimm  u64   " "
+    setarg   u64   1
+    callp          printf 1 0
+;------------------------
+#14:
+    return         
+end
+
+proc mmin.m$print_newline
+;------------------------
+    loadimm  i64   0 
+    store    i64   mmin.needgap 
+    setcall        1
+    loadimm  u64   "\n"
+    setarg   u64   1
+    callp          printf 1 0
+;------------------------
+#16:
+    return         
+end
+
+proc mmin.m$unimpl
+;------------------------
+    setcall        1
+    loadimm  u64   "Sysfn unimpl"
+    setarg   u64   1
+    callf    i32   puts 1 0
+    unload   i32   
+    loadimm  i64   1 
+    stop           
+;------------------------
+#18:
+    return         
+end
+
+proc mmin.m$print_nogap
+;------------------------
+    loadimm  i64   0 
+    store    i64   mmin.needgap 
+;------------------------
+#20:
+    return         
+end
+
+proc mmin.nextfmtchars
+;------------------------
+    load     i64   mmin.needgap 
+    jumpf    i64   #23 
+    setcall        1
+    loadimm  u64   " "
+    setarg   u64   1
+    callp          printf 1 0
+    loadimm  i64   0 
+    store    i64   mmin.needgap 
+#23:
+#22:
+;------------------------
+#21:
+    return         
+end
+
+proc main*
+    callp          mmin.start 0 0
+    callp          $hello.start 0 0
+;------------------------
+    callp          mmin.m$print_startcon 0 0
+    loadimm  u64   "Hello World!"
+    callp          mmin.m$print_str_nf 1 0
+    loadimm  u64   "23:37:30"
+    callp          mmin.m$print_str_nf 1 0
+    callp          mmin.m$print_newline 0 0
+    callp          mmin.m$print_end 0 0
+;------------------------
+#25:
+    loadimm  i64   0 
+    stop           
+end
+
+;
+proc $hello.start
+;------------------------
+;------------------------
+#28:
+    return         
+end
+
+;
+proc mmin.start
+;------------------------
+;------------------------
+#29:
+    return         
+end
+
+;
+;Function Table
+    istatic  i64   $nprocs 
+    data     i64   0 
+;
+    istatic  mem 0 $procname 
+;
+    istatic  mem 0 $procaddr 
+;
+extproc i32 printf
+    extparam u64   
+    extvariadic      2 
+extend
+
+;
+extproc i32 puts
+    extparam u64   
+extend
+
+;
+
