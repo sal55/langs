@@ -262,4 +262,4 @@ Note that this `main` does not take any parameters such as the `(nargs, args)` y
 
 `dupl` and `double` do the same things in the interpreter or any target where PCL's stack is an actual one.
 
-For a register-target where the PCL stack is compile-time only, `double` steps a count on the same stack entry rather than create two entries. This is more efficient (reuses the same register), but can only be used where the 'duplicate' is affected by the next instruction, ie. not part of the top `A` slots in `(A - B)`.
+For a register-target where the PCL stack is compile-time only, `double` steps a count on the same stack entry rather than create two entries. This is more efficient (reuses the same register), but can only be used where the 'duplicate' is unaffected by the next instruction, ie. not part of the top `A` slots in `(A - B)`.
