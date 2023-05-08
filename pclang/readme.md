@@ -103,6 +103,7 @@ A bit silly but it's also an indication of healthy code.
 * A refined design suitable also for both interpreting and native code
 * A cleaner backend to turn PCL into native code. Previous attempts were a disaster, even if they worked. I will probably make use the dispatching used within PCI
 * Allow some more refinements to the M language
+* Provide a reference implementation
 
 PCI already provides features than MM6 has, but doesn't implement, for example `(a,b) := c divrem d` (`divrem` is an operator returning two values). 
 
