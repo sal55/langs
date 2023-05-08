@@ -257,3 +257,9 @@ There must be a function called `main` in order to have a runnable program. This
 `main` should end with a `stop` instruction; normal return won't work. (I will try and fix it so that `stop` is added automatically.)
 
 Note that this `main` does not take any parameters such as the `(nargs, args)` you find in C. Under Windows, command like parameters can be obtained via `__getmainargs()` or, all in one string, using `GetCommandLine`.
+
+### Notes
+
+`dupl` and `double` do the same things in the interpreter or any target where PCL's stack is an actual one.
+
+For a register-target where the PCL stack is compile-time only, 'double` steps a count on the same stack entry rather than create two entries. This is more efficient (reuses the same register), but can only be used where the 'duplicate' is affected by the next instruction, ie. not part of the top `A` slots in `(A - B)`.
