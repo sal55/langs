@@ -197,9 +197,9 @@ I tried my own temp-based IL, the 3-address form I mentiomed, and that looks lik
       7     jump            goto L2                      ()
       8 L3:
       9     sub             T3 := sub(n,1)               (i64, i64, i64)
-     10     callfn          T2:=&fib(T3)                 (i64, u64 -> i64)
+     10     callfn          T2 := &fib(T3)               (i64, u64 -> i64)
      11     sub             T5 := sub(n,2)               (i64, i64, i64)
-     12     callfn          T4:=&fib(T5)                 (i64, u64 -> i64)
+     12     callfn          T4 := &fib(T5)               (i64, u64 -> i64)
      13     add             T1 := add(T2,T4)             (i64, i64, i64)
      14 L2:
      15 
