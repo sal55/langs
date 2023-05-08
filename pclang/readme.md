@@ -20,16 +20,18 @@ Links:
 
 ### Supplied Files For Windows
 
-These should available to click on above:
+This is not something I intend to support, but if someone wants to have a go, these should available to click on above:
 
 * [pci.exe](fib.exe) PCL interpreter as Windows binary
-* [pci.c](fib.c) Transpiled C version
+* [pci.c](pci.c) Transpiled C version (Windows)
+* [pcilin.c](pcilib.c) Transpiled C version (Linux)
 * [hello.pcl](hello.pcl) Programs to try
 * [fib.pcl](fib.pcl)
 * [pci.pcl](pci.pcl) Run PCI on itself: `pci pci fib`
 
-If `pci.exe` doesn't make it
+If `pci.exe` doesn't make it through your AV software, then you might try building from `pci.c`. This is transpiled from my language (needing  a few tweaks to make it work). Build instructions at the top (basically `gcc pci.c -opci.exe`).
 
+(If not on Windows, you might try `pcilin.c` (this is also set up to use `libc.so.6`). Here you'll need the build instructions. I managed to get `./pci fib` working, but not `./pci pci fib` since `pci.pcl` has calls to Windows-specific functions build-in. This stuff gets complicated quickly.)
 
 ### General Purpose Use
 
@@ -220,4 +222,6 @@ I tried my own temp-based IL, the 3-address form I mentiomed, and that looks lik
      18 End
 
 So I can do it like LLVM too. This looks very enticing, but generating reasonable code from all those temps is a lot harder than it looks; I've tried several times. And interpreting such a language, with so many opcode combinations per instruction, would be a nightmare.
+
+There is WASM too, another complicated one, supposedly also stack-based, with a syntax that can't make its mind what it wants to me. But since it doesn't support an unrestricted `goto`, that's wouldn't work for me.
 
