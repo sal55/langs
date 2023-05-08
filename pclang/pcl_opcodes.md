@@ -1,151 +1,160 @@
-Opcode | Inline | Stack | Description
---- | --- | --- | ---
-kproc        | --        |  (0-0)     | Define proc
-kparam       | --        |  (0-0)     | Define parameter
-klocal       | --        |  (0-0)     | Define local variable
-krettype     | --        |  (0-0)     | Define return type
-kend         | --        |  (0-0)     | End of function
-kextproc     | --        |  (0-0)     | Declare proc import
-kextparam    | --        |  (0-0)     | Param of import
-kextvariadic | --        |  (0-0)     | Variadic start int
-kextend      | --        |  (0-0)     | Variadic start int
-kistatic     | --        |  (0-0)     | Define initialised static variable
-kzstatic     | --        |  (0-0)     | 
-kdata        | --        |  (0-0)     | Define data for statics
-klinkdll     | --        |  (0-0)     | Name of DLL as eg `msvcrt` or `"msvcrt"`
-kstartmx     | --        | --         |   Multi-path markers
-kresetmx     | --        | --         |  
-kendmx       | --        | --         |  
-kload        | --        |  (0-1)     | X' := M/L/N^
-kloadref     | --        |  (0-1)     | X' := &M/&L
-kloadimm     | --        |  (0-1)     | X' := N/S
-kstore       | --        |  (1-0)     | M := X
-kunload      | --        |  (1-0)     | Decr operand count, unload if zero
-kdouble      | --        |  (1-1)     | Count extra instance of X: (X) => (2X)
-kdupl        | --        |  (1-2)     | Dupl X: (X) => (X,X)
-kswapopnds   | --        |  (2-2)     | Swap X, Y: (X,Y) => (Y,X)
-kswapmem     | --        |  (2-0)     | Swap(X^, Y^)
-kclear       | --        |  (1-0)     | clear X^ to zeros
-kiload       | --        |  (1-1)     | X' := X^
-kistore      | --        |  (2-0)     | Y^ := X
-kiloadx      | --        |  (2-1)     | X' := (X + Y*scale + offset)^
-kistorex     | --        |  (3-0)     | (Y + Z*scale + offset)^ := X
-kaddptrx     | --        |  (2-1)     | X' := X + Y*scale + offset
-ksubptrx     | --        |  (2-1)     | X' := X - Y*scale + offset
-ksubptr      | --        |  (2-1)     | X' := (X - Y)*scale
-kcallp       | --        |  (n-0)     | M(...)
-kcallf       | --        |  (n-1)     | X' := M(...)
-kicallp      | --        |  (n-0)     | X^(...)
-kicallf      | --        |  (n+1-1)   | X' := X^(...)
-ksetcall     | --        |  (0-0)     | 
-ksetarg      | --        |  (1-1)     | 
-ksetret      | --        |  (1-1)     | Mark X as return value
-kreturn      | --        | --         |  
-kstop        | --        |  (1-0)     | Stop execution with return code X
-kjump        | --        |  (0-0)     | Goto L
-kijump       | --        |  (1-0)     | Goto X
-kjumpeq      | --        |  (2-0/1)   | Goto L when X = Y; popone: leave X on stack
-kjumpne      | --        |  (2-0/1)   | Goto L when X <> Y
-kjumplt      | --        |  (2-0/1)   | Goto L when X < Y
-kjumple      | --        |  (2-0/1)   | Goto L when X <= Y
-kjumpge      | --        |  (2-0/1)   | Goto L when X >= Y
-kjumpgt      | --        |  (2-0/1)   | Goto L when X > Y
-kjumpt       | --        |  (1-0)     | Goto L when X is true (X is always int)
-kjumpf       | --        |  (1-0)     | Goto L when X is false
-kforup       | --        |  (0-0)     | M+:=s; goto L when M<=MN
-kfordown     | --        |  (0-0)     | M-:=s; goto L when M>=MN
-kto          | --        |  (0-0)     | --M;   goto L when M<>0
-kswitch      | --        |  (1-0)     | L=jumptab, L2=elselab, a/b = min/max
-kswlabel     | --        |  (0-0)     | Jumptable entry
-kendsw       | --        |  (0-0)     | Mark end of jumptable (allow segment change etc)
-kloadbit     | --        |   (2-1)    | X' := X.[Y]
-kstorebit    | --        |   (3-0)    | Y^.[Z] := X
-kloadbf      | --        |   (3-1)    | X' := X.[Y..Z]
-kstorebf     | --        |   (4-0)    | X^.[Y..Z] := W
-kadd         | --        |  (2-1)     | X' := X + Y (Similar for following)
-ksub         | --        |  (2-1)     | 
-kmul         | --        |  (2-1)     | 
-kdivf        | --        |  (2-1)     | (Floating point divide)
-kdiv         | --        |  (2-1)     | (Integer divide)
-krem         | --        |  (2-1)     | (Integer remainder)
-kdivrem      | --        |  (2-2)     | (X', Y') := (X % Y, X rem Y) (% = int divide)
-kbitand      | --        |  (2-1)     | X' := X iand Y (bitwise AND)
-kbitor       | --        |  (2-1)     | 
-kbitxor      | --        |  (2-1)     | 
-kshl         | --        |  (2-1)     | (Shift left)
-kshr         | --        |  (2-1)     | (Shift right)
-kmin         | --        |  (2-1)     | X' := min(X, Y)
-kmax         | --        |  (2-1)     | 
-keq          | --        |  (2-1)     | X' := X = Y
-kne          | --        |  (2-1)     | 
-klt          | --        |  (2-1)     | 
-kle          | --        |  (2-1)     | 
-kge          | --        |  (2-1)     | 
-kgt          | --        |  (2-1)     | 
-kpower       | --        |  (2-1)     | X' := X ** Y
-katan2       | --        |  (2-1)     | 
-kaddto       | --        |  (2-0)     | X^ +:= Y (similar for following)
-ksubto       | --        |  (2-0)     | 
-kmulto       | --        |  (2-0)     | 
-kdivfto      | --        |  (2-0)     | 
-kdivto       | --        |  (2-0)     | 
-kremto       | --        |  (2-0)     | 
-kbitandto    | --        |  (2-0)     | 
-kbitorto     | --        |  (2-0)     | 
-kbitxorto    | --        |  (2-0)     | 
-kshlto       | --        |  (2-0)     | 
-kshrto       | --        |  (2-0)     | 
-kminto       | --        |  (2-0)     | X^ := min(X^, Y)
-kmaxto       | --        |  (2-0)     | 
-kaddpxto     | --        |  (2-0)     | X^ +:= Y*s + d; X^ points to T; Y is i64
-ksubpxto     | --        |  (2-0)     | X^ -:= Y*s + d; X^ points to T; Y is i64
-kneg         | --        |  (1-1)     | X' := -X
-kabs         | --        |  (1-1)     | X' := abs(X)
-kbitnot      | --        |  (1-1)     | Bitwise invert
-knot         | --        |  (1-1)     | X' := (X=0 | 1 | 0) (Logical)
-knotnot      | --        |  (1-1)     | X' := (X=0 | 0 | 1)
-ksqr         | --        |  (1-1)     | X' := X*X
-ksign        | --        |  (1-1)     | X' := -1,0,1 according to X<0, X=0, X>0
-ksqrt        | --        |  (1-1)     | 
-ksin         | --        |  (1-1)     | X' := sin(X)
-kcos         | --        |  (1-1)     | 
-ktan         | --        |  (1-1)     | 
-kasin        | --        |  (1-1)     | 
-kacos        | --        |  (1-1)     | 
-katan        | --        |  (1-1)     | 
-kln          | --        |  (1-1)     | Natural log
-klog         | --        |  (1-1)     | Base-10 log
-kexp         | --        |  (1-1)     | 
-kround       | --        |  (1-1)     | 
-kfloor       | --        |  (1-1)     | 
-kceil        | --        |  (1-1)     | 
-kfract       | --        |  (1-1)     | 
-knegto       | --        |  (1-0)     | X^ := -X^
-kabsto       | --        |  (1-0)     | 
-kbitnotto    | --        |  (1-0)     | 
-knotto       | --        |  (1-0)     | X^ := (X^=0 | 1 | 0)
-knotnotto    | --        |  (1-0)     | X^ := (X^=0 | 0 | 1)
-kincrto      | --        |  (0-0)     | X^ +:=s; default s is 1
-kincrload    | --        |  (0-0)     | X^ +:=s; X' := X^
-kloadincr    | --        |  (0-0)     | X' := X^; X^ +:= s
-kdecrto      | --        |  (0-0)     | X^ -:=s; default s is 1
-kdecrload    | --        |  (0-0)     | X^ -:=s; X' := X^
-kloaddecr    | --        |  (0-0)     | X' := X^; X^ -:= s
-kfloat       | --        |  (1-1)     | X' := T(X) (convert int to float)
-kfix         | --        |  (1-1)     | X' := T(X) (convert float to int)
-ktruncate    | --        |  (1-1)     | 
-kfwiden      | --        |  (1-1)     | X' := r64(x) (from r32)
-kfnarrow     | --        |  (1-1)     | X' := r32(X) (from r64)
-ktypepun     | --        |  (0-0)     | X' := T@(X) (T/U must be same size)
-kwiden       | --        |  (0-0)     | X' := Widen(X) widen narrow int values
-kopnd        | --        |  (0-0)     | auxiliary op
-kassem       | --        | --         |   Ignored in discrete PCL code
-kprinti64    | --        |  (1-0)     | print X as decimal
-kprintu64    | --        |  (1-0)     | 
-kprintr64    | --        |  (1-0)     | 
-kprintr32    | --        |  (1-0)     | 
-kprintstr    | --        |  (1-0)     | print X as string
-kprinthex    | --        |  (1-0)     | print X as hex (eg. ptr)
-kprintsp     | --        |  (0-0)     | print SP
-ktest        | --        |  (0-0)     | 
-kdebug       | --        |  (0-0)     | debug 1/0 to turn it on/off
+
+Opcode      | Inline    | Stack        | Description
+---         | ---       | ---          | ---
+**Declare**|            |              |
+proc        | [t] m[\*]  |  --          | Define proc/function m (* means exported)
+param       | t m       |  --          | Define parameter m 
+local       | t m       |  --          | Define local variable m
+rettype     | t         |  --          | Define return type
+end         | --        |  --          | End of proc/function
+extproc     | m         |  --          | Declare imported proc/function m
+extparam    | t         |  --          | Param of import
+extvariadic | n         |  --          | Variadic start int
+extend      | --        |  --          | End of extproc block
+istatic     | t m       |  --          | Define initialised static variable m
+zstatic     | t m       |  --          | Define unitialised static variable m
+data        | t m/s/l/n |  --          | Define data for istatic variable
+linkdll     | m/s       |  --          | Name of DLL as eg `msvcrt` or `"msvcrt"`
+**Load/Store**|         |              |
+load        | [t] m     |  (0 - 1)     | `X' := M`
+loadref     | [t] m/l   |  (0 - 1)     | `X' := &M` or `&L`
+loadimm     | [t] n/s   |  (0 - 1)     | `X' := N` or `S`
+store       | [t] m     |  (1 - 0)     | `M := X`
+unload      | t         |  (1 - 0)     | Pop X
+double      | [t]       |  (1 - 2)     | Dupl X: `(X) => (X,X)` (see notes)
+dupl        | [t]       |  (1 - 2)     | Dupl X: `(X) => (X,X)`
+swapopnds   | [t]       |  (2 - 2)     | Swap X, Y: `(X,Y) => (Y,X)`
+swapmem     | t         |  (2 - 0)     | `Swap(X^, Y^)`
+clear       | t         |  (1 - 0)     | clear `X^` to zeros
+iload       | t         |  (1 - 1)     | `X' := X^`
+istore      | t         |  (2 - 0)     | `Y^ := X`
+iloadx      | t s off   |  (2 - 1)     | `X' := (X + Y*scale + offset)^`
+istorex     | t s off   |  (3 - 0)     | `(Y + Z*scale + offset)^ := X`
+addptrx     | t s off   |  (2 - 1)     | `X' := X + Y*scale + offset`
+subptrx     | t s off   |  (2 - 1)     | `X' := X - Y*scale + offset`
+subptr      | t s       |  (2 - 1)     | `X' := (X - Y)*scale`
+loadbit     | --        |  (2 - 1)     | `X' := X.[Y]`
+storebit    | --        |  (3 - 0)     | `Y^.[Z] := X`
+loadbf      | --        |  (3 - 1)     | `X' := X.[Y..Z]`
+storebf     | --        |  (4 - 0)     | `X^.[Y..Z] := W`
+**Control Flow**|       |              |
+callp       | m n [v]   |  (n - 0)     | `M(...)`
+callf       | t m n [v] |  (n - 1)     | `X' := M(...)`
+icallp      | n [v]     |  (n - 0)     | `X^(...)`
+icallf      | t n [v]   |  (n+1 - 1)   | `X' := X^(...)`
+return      | --        |  ( - )       |  
+stop        | --        |  (1 - 0)     | Stop execution with return code X
+jump        | l         |  (0 - 0)     | `Goto L`
+ijump       | --        |  (1 - 0)     | `Goto X`
+jumpeq      | t l [p1]  |  (2 - 0/1)   | `Goto L when X = Y; popone: leave X on stack`
+jumpne      | t l [p1]  |  (2 - 0/1)   | `Goto L when X <> Y; "`
+jumplt      | t l [p1]  |  (2 - 0/1)   | `Goto L when X < Y`
+jumple      | t l [p1]  |  (2 - 0/1)   | `Goto L when X <= Y`
+jumpge      | t l [p1]  |  (2 - 0/1)   | `Goto L when X >= Y`
+jumpgt      | t l [p1]  |  (2 - 0/1)   | `Goto L when X > Y`
+jumpt       | t l       |  (1 - 0)     | `Goto L when X is true (X is always int)`
+jumpf       | t l       |  (1 - 0)     | `Goto L when X is false`
+forup       | l m [s]   |  (0 - 0)     | `M+:=s; goto L when A1<=A2` (uses 2 x aux opnds)
+fordown     | l m [s]   |  (0 - 0)     | `M-:=s; goto L when A1>=A2` (uses 2 aux)
+to          | l         |  (0 - 0)     | `--M;   goto L when A1<>0` (uses 1 aux)
+switch      | L min max |  (1 - 0)     | `L=jumptab, L2=elselab (1 aux)
+swlabel     | L         |  --          | Jumptable entry
+endsw       | --        |  --          | Mark end of jumptable (allow segment change etc)
+**Arithmetic**|           |              |
+add         | t         |  (2 - 1)     | `X' := X + Y` (Similar for following)`
+sub         | t         |  (2 - 1)     | 
+mul         | t         |  (2 - 1)     | 
+divf        | t         |  (2 - 1)     | (Floating point divide)
+div         | t         |  (2 - 1)     | (Integer divide)
+rem         | t         |  (2 - 1)     | (Integer remainder)
+divrem      | t         |  (2 - 2)     | `(X', Y') := (X % Y, X rem Y)` (`%` = int divide)
+bitand      | t         |  (2 - 1)     | `X' := X iand Y` (bitwise AND)
+bitor       | t         |  (2 - 1)     | 
+bitxor      | t         |  (2 - 1)     | 
+shl         | t         |  (2 - 1)     | (Shift left)
+shr         | t         |  (2 - 1)     | (Shift right)
+min         | t         |  (2 - 1)     | `X' := min(X, Y)`
+max         | t         |  (2 - 1)     | 
+eq          | t         |  (2 - 1)     | `X' := X = Y`
+ne          | t         |  (2 - 1)     | 
+lt          | t         |  (2 - 1)     | 
+le          | t         |  (2 - 1)     | 
+ge          | t         |  (2 - 1)     | 
+gt          | t         |  (2 - 1)     | 
+power       | t         |  (2 - 1)     | `X' := X ** Y`
+atan2       | t         |  (2 - 1)     | 
+neg         | t         |  (1 - 1)     | `X' := -X`
+abs         | t         |  (1 - 1)     | `X' := abs(X)`
+bitnot      | t         |  (1 - 1)     | Bitwise invert
+not         | t         |  (1 - 1)     | `X' := (X=0 | 1 | 0)` (Logical)
+notnot      | t         |  (1 - 1)     | `X' := (X=0 | 0 | 1)`
+sqr         | t         |  (1 - 1)     | `X' := X*X`
+sign        | t         |  (1 - 1)     | `X' := -1,0,1` according to `X<0, X=0, X>0`
+sqrt        | t         |  (1 - 1)     | 
+sin         | t         |  (1 - 1)     | `X' := sin(X)`
+cos         | t         |  (1 - 1)     | 
+tan         | t         |  (1 - 1)     | 
+asin        | t         |  (1 - 1)     | 
+acos        | t         |  (1 - 1)     | 
+atan        | t         |  (1 - 1)     | 
+log         | t         |  (1 - 1)     | Natural log
+log10       | t         |  (1 - 1)     | Base-10 log
+exp         | t         |  (1 - 1)     | 
+round       | t         |  (1 - 1)     | 
+floor       | t         |  (1 - 1)     | 
+ceil        | t         |  (1 - 1)     | 
+fract       | t         |  (1 - 1)     | 
+**In-place**|           |              |
+addto       | t         |  (2 - 0)     | `X^ +:= Y` (similar for following)
+subto       | t         |  (2 - 0)     | 
+multo       | t         |  (2 - 0)     | 
+divfto      | t         |  (2 - 0)     | 
+divto       | t         |  (2 - 0)     | 
+remto       | t         |  (2 - 0)     | 
+bitandto    | t         |  (2 - 0)     | 
+bitorto     | t         |  (2 - 0)     | 
+bitxorto    | t         |  (2 - 0)     | 
+shlto       | t         |  (2 - 0)     | 
+shrto       | t         |  (2 - 0)     | 
+minto       | t         |  (2 - 0)     | `X^ := min(X^, Y)`
+maxto       | t         |  (2 - 0)     | 
+addpxto     | t         |  (2 - 0)     | `X^ +:= Y*s + d`; `X^` points to T; Y is i64
+subpxto     | t         |  (2 - 0)     | `X^ -:= Y*s + d`; `X^` points to T; Y is i64
+negto       | t         |  (1 - 0)     | `X^ := -X^
+absto       | t         |  (1 - 0)     | 
+bitnotto    | t         |  (1 - 0)     | 
+notto       | t         |  (1 - 0)     | `X^ := (X^=0 | 1 | 0)`
+notnotto    | t         |  (1 - 0)     | `X^ := (X^=0 | 0 | 1)`
+incrto      | t         |  (0 - 0)     | `X^ +:=s`; default s is 1
+incrload    | t         |  (0 - 0)     | `X^ +:=s; X' := X^`
+loadincr    | t         |  (0 - 0)     | `X' := X^; X^ +:= s`
+decrto      | t         |  (0 - 0)     | `X^ -:=s`; default s is 1
+decrload    | t         |  (0 - 0)     | `X^ -:=s; X' := X^`
+loaddecr    | t         |  (0 - 0)     | `X' := X^; X^ -:= s`
+**Conversion**|         |              |
+float       | t         |  (1 - 1)     | `X' := T(X)` (convert int to float)
+fix         | t         |  (1 - 1)     | `X' := T(X)` (convert float to int)
+truncate    | t         |  (1 - 1)     | `X' := T(X)` (truncate integer to narrow type)
+fwiden      | [t]       |  (1 - 1)     | `X' := r64(x)` (from r32)
+fnarrow     | [t]       |  (1 - 1)     | `X' := r32(X)` (from r64)
+typepun     | --        |  (0 - 0)     | `X' := T@(X)`
+widen       | t         |  (0 - 0)     | `X' := Widen(X)` Widen from narrow type t
+**Auxiliary**|          |              |
+opnd        | [t] m/l/n |  --          | auxiliary op
+assem       | [s]       |  --          |   Ignored in discrete PCL code
+setcall     | n         |  --          | Init call seq with n args
+setarg      | n         |  --          | Mark X as n'th argument of call
+setret      | --        |  --          | Mark X as return value
+startmx     | --        |  --          | Multi-path markers
+resetmx     | --        |  --          |  
+endmx       | --        |  --          |  
+**Debug**   |           |              |
+printi64    | --        |  (1 - 0)     | print X as decimal
+printu64    | --        |  (1 - 0)     | 
+printr64    | --        |  (1 - 0)     | 
+printr32    | --        |  (1 - 0)     | 
+printstr    | --        |  (1 - 0)     | print X as string
+printhex    | --        |  (1 - 0)     | print X as hex (eg. ptr)
+printsp     | --        |  (0 - 0)     | print SP
+test        | --        |  (0 - 0)     | 
+debug       | --        |  (0 - 0)     | debug 1/0 to turn it on/off
