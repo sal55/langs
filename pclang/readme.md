@@ -123,7 +123,7 @@ All this means PCL isn't a pure IL, and whoever/whatever writes needs to provide
 
 ### Comparisons With Other ILs
 
-Apart from using no IL at all (workable, but produces a poorly engineered compiled IMV), I've used a 3-address-code IL of my own, and I've also looked at LLVM IR. (Only looked, since the tools for that are fantastically complex. I can only do that since Clang can be used to turn C into LLVM .ll files.)
+Apart from using no IL at all (workable, but produces a poorly engineered compiler IMV), I've used a 3-address-code IL of my own, and I've also looked at LLVM IR. (Only looked, since the tools for that are fantastically complex. I can only do that since Clang can be used to turn C into LLVM .ll files.)
 
 Here is my PCL code for a recursive `fib()` function (hints omitted; not needed for PCI):
 ````
