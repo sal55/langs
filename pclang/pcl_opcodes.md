@@ -10,6 +10,8 @@ PCL is a Stack-based virtual machine. This set of 0- or 1-address instructions c
 * PCL source is case-sensitive (this is unique among my languages)
 * It had been hoped that it had zero reserved words (allowing opcodes and types to be used as identifiers), but to allow more user-friendly optional types, the dozen or so type names are reserved (I may have to rename `mem`)
 * Line comments are introduced with `!` or `;`
+* There are no scopes; all names have program-wide scope except those starting with ".":
+* Identifiers can have embedded ".", but a leading "." allows more readable local names. So `.x` in function `F` means the same as `F.x`, and `.x` can be reused in other functions.
 
 
 ### PCL Instruction List
@@ -242,11 +244,11 @@ These must appear in an `extproc ... extend` block (see examples). The type info
 
 ### Exported Functions
 
-Thes are declared like this:
+These are declared like this:
 ````
 proc cube*
 ````
-The `*` means it is exported.
+The `*` means it is exported (note `main` is always exported).
 
 ### Program Entry and Exit
 
