@@ -106,3 +106,19 @@ A bit silly but it's also an indication of healthy code.
 
 PCI already provides features than MM6 has, but doesn't implement, for example `(a,b) := c divrem d` (`divrem` is an operator returning two values). 
 
+### The PCC Project
+
+This turns PCL code into register-based x64 native code. I have done this before, but it got extremely messy. This revised PCL as one import difference: I used opcode names based on `load` and `store` instead of `push` and `pop`. This removes much of the confusion with x64's hardware stack.
+
+For PCC, the 'stack' used by PCL is not an actual, dynamic stack; it is an operand-stack managed by the compiler, and traversed in a linear fashion.
+
+This introduces some issues, for example where code follows multiple paths to get one result:
+````
+    x := if c1 then A elsif c2 then B else C end
+````
+Here `A B C` represent arbitrarily complex expressions. With a true stack target, each of `A B C' will end up in the same place: the op of stack. With register based, each value could end up in a diferent register. Hence the hints that PCL needs (codes `startmx resetmx endmx`); ignored by PCI, here they are needed.
+
+There are also ABI issues. Ideally PCL would isolate you from those, but the stack format requires a lot of work to isolate each argument to call. This is needed to provide the correct stack alighnment, and place args into the right places. While PCL doesn't need the details, it makes the backend's job much easier with hints. These are `setcall` and `setarg`, which tell it the span of each call, and marks each argument.
+
+All this means PCL isn't a pure IL, and whoever/whatever writes needs t provide that extra info. But it is intended as a practical tool.
+
