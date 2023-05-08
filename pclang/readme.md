@@ -18,6 +18,18 @@ Links:
 * [PCL Description](pcl_overview.md)
 * [PCL Opcode Reference](pcl_opcodes.md)
 
+### Supplied Files For Windows
+
+These should available to click on above:
+
+* [pci.exe](fib.exe) PCL interpreter as Windows binary
+* [pci.c](fib.c) Transpiled C version
+* [hello.pcl](hello.pcl) Programs to try
+* [fib.pcl](fib.pcl)
+* [pci.pcl](pci.pcl) Run PCI on itself: `pci pci fib`
+
+If `pci.exe` doesn't make it
+
 
 ### General Purpose Use
 
