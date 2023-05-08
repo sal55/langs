@@ -22,9 +22,9 @@ Links:
 
 This is not something I intend to support, but if someone wants to have a go, these should available to click on above:
 
-* [pci.exe](fib.exe) PCL interpreter as Windows binary
+* [pci.exe](pci.exe) PCL interpreter as Windows binary
 * [pci.c](pci.c) Transpiled C version (Windows)
-* [pcilin.c](pcilib.c) Transpiled C version (Linux)
+* [pcilin.c](pcilin.c) Transpiled C version (Linux)
 * [hello.pcl](hello.pcl) Programs to try
 * [fib.pcl](fib.pcl)
 * [pci.pcl](pci.pcl) Run PCI on itself: `pci pci fib`
