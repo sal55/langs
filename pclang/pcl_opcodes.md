@@ -1,9 +1,15 @@
-## PCL Instruction Set
+## PCL Instruction Reference
 
 PCL is a Stack-based virtual machine. This set of 0- or 1-address instructions can be either interpreted, or translated to register-based native code, with these provisos:
 
 * Interpreted code can't fully deal with function pointers passed to or from FFis (there are other issues; see elsewhere)
-* Native code for intended targets needs addition hinting instructions listed in Auxiliary section (specically, `setcall/setarg` for calls, and `setmx/resetmx/endmx` for multiple paths used to evaluate a result.
+* Native code for intended targets needs additional hinting instructions listed in Auxiliary section (specifically, `setcall/setarg` for calls, and `setmx/resetmx/endmx` for multiple paths used to evaluate a result).
+
+### Syntax
+
+* PCL source is case-sensitive (this is unique among my languages)
+* It had been hoped that it had zero reserved words (allowing opcodes and types to be used as identifiers), but to allow more user-friendly optional types, the dozen or so type names are reserved (I may have to rename `mem`)
+* Line comments are introduced with `!` or `;`
 
 
 ### PCL Instruction List
@@ -168,14 +174,14 @@ printsp     | --        |  (0 - 0)     | print SP
 test        | --        |  (0 - 0)     | 
 debug       | --        |  (0 - 0)     | debug 1/0 to turn it on/off
 
-#### Stack Operation
+### Stack Operation
 
-Under **Stack**, the `(A - B)` denotes what is pushed from popped from the stack for each operation:
+Under **Stack**, `(A - B)` denotes what is pushed and popped from the stack for each operation:
 
 **A** is the number of relevant stack entries before the instruction, which are usually popped
 **B** is how many stack there are afterwards; these are usually pushed
 
-So `(2 - 1)` for `add` means that it consumes two stack operands, then pushed a new one, the result.
+So `(2 - 1)` for `add` means that it consumes two stack operands, then pushes a new one, the result.
 
 In the description, input operands are designated by `X Y Z`, sometimes `W`. Output operands, the values written, are shown as `X'` and sometimes `Y'`.
 
@@ -187,8 +193,8 @@ How each relates to the top of the stack depends on the `A` value in `(A - B)` a
   A = 4       Uses W, X, Y, Z   Z is last pushed
 ````
 
-#### Inline Operands
-The general syntax is:
+### Inline Operands
+The syntax is:
 ````
     Opcode [Type] [Name/Number/String/Label/Charstring] [Attributes]
 ````
@@ -208,4 +214,44 @@ Each operand can be optional depending on Opcode:
 
 **Attributes** These are small integer values specific to somecodes. For `callp` for example, `n` is the number of arguments used, and `v` (optional) is the argument number from which any args are variadic
 
+### Types
 
+Type  | Description
+--- | ---
+`i64` | 64-bit signed integer; these are the primary types
+`u64` | 64-bit unsigned
+`r64` | 64-bit float
+`r32` | 32-bit float
+`mem n` | Block type of `n` bytes 
+`i8` | Narrow signed integers which are secondary types
+`i16` |
+`i32` |
+`u8` | Unsigned
+`u16` |
+`u32` |
+
+The Stack comprises 64-bit elements only, which represent only one of `i64 u64 r64 r32` (the last occupies the bottom half of an element).
+
+Block types are represent on the stack by reference, which uses a `u64` type.
+
+Secondary types are mostly used with memory operations such as `iloadx`, in-place ops like `addto`, or sometimes for conversions.
+
+### Imported Functions
+
+These must appear in an `extproc ... extend` block (see examples). The type info is necessary in order to correctly call the function.
+
+### Exported Functions
+
+Thes are declared like this:
+````
+proc cube*
+````
+The `*` means it is exported.
+
+### Program Entry and Exit
+
+There must be a function called `main` in order to have a runnable program. This needs to be exported, but the `*` is not necessary as `main` is special.
+
+`main` should end with a `stop` instruction; normal return won't work. (I will try and fix it so that `stop` is added automatically.)
+
+Note that this `main` does not take any parameters such as the `(nargs, args)` you find in C. Under Windows, command like parameters can be obtained via `__getmainargs()` or, all in one string, using `GetCommandLine`.
