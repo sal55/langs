@@ -1,8 +1,17 @@
+## PCL Instruction Set
+
+PCL is a Stack-based virtual machine. This set of 0- or 1-address instructions can be either interpreted, or translated to register-based native code, with these provisos:
+
+* Interpreted code can't fully deal with function pointers passed to or from FFis (there are other issues; see elsewhere)
+* Native code for intended targets needs addition hinting instructions listed in Auxiliary section (specically, `setcall/setarg` for calls, and `setmx/resetmx/endmx` for multiple paths used to evaluate a result.
+
+
+### PCL Instruction List
 
 Opcode      | Inline    | Stack        | Description
 ---         | ---       | ---          | ---
 **Declare**|            |              |
-proc        | [t] m[\*]  |  --          | Define proc/function m (* means exported)
+proc        | \[t\] m\[\*\]  |  --          | Define proc/function m (* means exported)
 param       | t m       |  --          | Define parameter m 
 local       | t m       |  --          | Define local variable m
 rettype     | t         |  --          | Define return type
@@ -16,14 +25,14 @@ zstatic     | t m       |  --          | Define unitialised static variable m
 data        | t m/s/l/n |  --          | Define data for istatic variable
 linkdll     | m/s       |  --          | Name of DLL as eg `msvcrt` or `"msvcrt"`
 **Load/Store**|         |              |
-load        | [t] m     |  (0 - 1)     | `X' := M`
-loadref     | [t] m/l   |  (0 - 1)     | `X' := &M` or `&L`
-loadimm     | [t] n/s   |  (0 - 1)     | `X' := N` or `S`
-store       | [t] m     |  (1 - 0)     | `M := X`
+load        | \[t\] m     |  (0 - 1)     | `X' := M`
+loadref     | \[t\] m/l   |  (0 - 1)     | `X' := &M` or `&L`
+loadimm     | \[t\] n/s   |  (0 - 1)     | `X' := N` or `S`
+store       | \[t\] m     |  (1 - 0)     | `M := X`
 unload      | t         |  (1 - 0)     | Pop X
-double      | [t]       |  (1 - 2)     | Dupl X: `(X) => (X,X)` (see notes)
-dupl        | [t]       |  (1 - 2)     | Dupl X: `(X) => (X,X)`
-swapopnds   | [t]       |  (2 - 2)     | Swap X, Y: `(X,Y) => (Y,X)`
+double      | \[t\]       |  (1 - 2)     | Dupl X: `(X) => (X,X)` (see notes)
+dupl        | \[t\]       |  (1 - 2)     | Dupl X: `(X) => (X,X)`
+swapopnds   | \[t\]       |  (2 - 2)     | Swap X, Y: `(X,Y) => (Y,X)`
 swapmem     | t         |  (2 - 0)     | `Swap(X^, Y^)`
 clear       | t         |  (1 - 0)     | clear `X^` to zeros
 iload       | t         |  (1 - 1)     | `X' := X^`
@@ -38,24 +47,24 @@ storebit    | --        |  (3 - 0)     | `Y^.[Z] := X`
 loadbf      | --        |  (3 - 1)     | `X' := X.[Y..Z]`
 storebf     | --        |  (4 - 0)     | `X^.[Y..Z] := W`
 **Control Flow**|       |              |
-callp       | m n [v]   |  (n - 0)     | `M(...)`
-callf       | t m n [v] |  (n - 1)     | `X' := M(...)`
-icallp      | n [v]     |  (n - 0)     | `X^(...)`
-icallf      | t n [v]   |  (n+1 - 1)   | `X' := X^(...)`
+callp       | m n \[v\]   |  (n - 0)     | `M(...)`
+callf       | t m n \[v\] |  (n - 1)     | `X' := M(...)`
+icallp      | n \[v\]     |  (n - 0)     | `X^(...)`
+icallf      | t n \[v\]   |  (n+1 - 1)   | `X' := X^(...)`
 return      | --        |  ( - )       |  
 stop        | --        |  (1 - 0)     | Stop execution with return code X
 jump        | l         |  (0 - 0)     | `Goto L`
 ijump       | --        |  (1 - 0)     | `Goto X`
-jumpeq      | t l [p1]  |  (2 - 0/1)   | `Goto L when X = Y; popone: leave X on stack`
-jumpne      | t l [p1]  |  (2 - 0/1)   | `Goto L when X <> Y; "`
-jumplt      | t l [p1]  |  (2 - 0/1)   | `Goto L when X < Y`
-jumple      | t l [p1]  |  (2 - 0/1)   | `Goto L when X <= Y`
-jumpge      | t l [p1]  |  (2 - 0/1)   | `Goto L when X >= Y`
-jumpgt      | t l [p1]  |  (2 - 0/1)   | `Goto L when X > Y`
+jumpeq      | t l \[p1\]  |  (2 - 0/1)   | `Goto L when X = Y; popone: leave X on stack`
+jumpne      | t l \[p1\]  |  (2 - 0/1)   | `Goto L when X <> Y; "`
+jumplt      | t l \[p1\]  |  (2 - 0/1)   | `Goto L when X < Y`
+jumple      | t l \[p1\]  |  (2 - 0/1)   | `Goto L when X <= Y`
+jumpge      | t l \[p1\]  |  (2 - 0/1)   | `Goto L when X >= Y`
+jumpgt      | t l \[p1\]  |  (2 - 0/1)   | `Goto L when X > Y`
 jumpt       | t l       |  (1 - 0)     | `Goto L when X is true (X is always int)`
 jumpf       | t l       |  (1 - 0)     | `Goto L when X is false`
-forup       | l m [s]   |  (0 - 0)     | `M+:=s; goto L when A1<=A2` (uses 2 x aux opnds)
-fordown     | l m [s]   |  (0 - 0)     | `M-:=s; goto L when A1>=A2` (uses 2 aux)
+forup       | l m \[s\]   |  (0 - 0)     | `M+:=s; goto L when A1<=A2` (uses 2 x aux opnds)
+fordown     | l m \[s\]   |  (0 - 0)     | `M-:=s; goto L when A1>=A2` (uses 2 aux)
 to          | l         |  (0 - 0)     | `--M;   goto L when A1<>0` (uses 1 aux)
 switch      | L min max |  (1 - 0)     | `L=jumptab, L2=elselab (1 aux)
 swlabel     | L         |  --          | Jumptable entry
@@ -135,13 +144,13 @@ loaddecr    | t         |  (0 - 0)     | `X' := X^; X^ -:= s`
 float       | t         |  (1 - 1)     | `X' := T(X)` (convert int to float)
 fix         | t         |  (1 - 1)     | `X' := T(X)` (convert float to int)
 truncate    | t         |  (1 - 1)     | `X' := T(X)` (truncate integer to narrow type)
-fwiden      | [t]       |  (1 - 1)     | `X' := r64(x)` (from r32)
-fnarrow     | [t]       |  (1 - 1)     | `X' := r32(X)` (from r64)
+fwiden      | \[t\]       |  (1 - 1)     | `X' := r64(x)` (from r32)
+fnarrow     | \[t\]       |  (1 - 1)     | `X' := r32(X)` (from r64)
 typepun     | --        |  (0 - 0)     | `X' := T@(X)`
 widen       | t         |  (0 - 0)     | `X' := Widen(X)` Widen from narrow type t
 **Auxiliary**|          |              |
-opnd        | [t] m/l/n |  --          | auxiliary op
-assem       | [s]       |  --          |   Ignored in discrete PCL code
+opnd        | \[t\] m/l/n |  --          | auxiliary op
+assem       | \[s\]       |  --          |   Ignored in discrete PCL code
 setcall     | n         |  --          | Init call seq with n args
 setarg      | n         |  --          | Mark X as n'th argument of call
 setret      | --        |  --          | Mark X as return value
@@ -158,3 +167,45 @@ printhex    | --        |  (1 - 0)     | print X as hex (eg. ptr)
 printsp     | --        |  (0 - 0)     | print SP
 test        | --        |  (0 - 0)     | 
 debug       | --        |  (0 - 0)     | debug 1/0 to turn it on/off
+
+#### Stack Operation
+
+Under **Stack**, the `(A - B)` denotes what is pushed from popped from the stack for each operation:
+
+**A** is the number of relevant stack entries before the instruction, which are usually popped
+**B** is how many stack there are afterwards; these are usually pushed
+
+So `(2 - 1)` for `add` means that it consumes two stack operands, then pushed a new one, the result.
+
+In the description, input operands are designated by `X Y Z`, sometimes `W`. Output operands, the values written, are shown as `X'` and sometimes `Y'`.
+
+How each relates to the top of the stack depends on the `A` value in `(A - B)` as follows:
+````
+  A = 1       Uses X            X is the last pushed
+  A = 2       Uses X, Y         Y is last pushed
+  A = 3       Uses X, Y, Z      Z is last pushed
+  A = 4       Uses W, X, Y, Z   Z is last pushed
+````
+
+#### Inline Operands
+The general syntax is:
+````
+    Opcode [Type] [Name/Number/String/Label/Charstring] [Attributes]
+````
+Each operand can be optional depending on Opcode:
+
+**Type** See the set of allowed types below
+
+**Name** The name of a function (defined with `proc` or `extproc`) or variable (defined with `istatic`, `zstatic`, `param` or `local`). it is marked with `m` in the tables.
+
+**Number** An integer or float literal like 12345 or 67.89
+
+**String** A zero-terminated string literal like "ABC\nDEF"; here the operand is pointer to string data stored elsewhere (PCL takes care of that)
+
+**Label** Labels are numeric, and specified like this: `#1234`. Label numbers are arbitrary, but it is suggested they are kept stored and allocated incrementally (because the value is used to index internal tables and they have a limited size)
+
+**Charstring** This is a string literal like `ABCDEF`, non-zero-terminated, and as immediate data. This is only used in `data` instructions.
+
+**Attributes** These are small integer values specific to somecodes. For `callp` for example, `n` is the number of arguments used, and `v` (optional) is the argument number from which any args are variadic
+
+
