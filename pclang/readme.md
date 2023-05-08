@@ -96,4 +96,13 @@ A normal run of the test takes 0.25 seconds on my machine, for optimised native 
 
 A bit silly but it's also an indication of healthy code.
 
+### Aims and Benefits of this IL
+
+* Cleaner, less buggy mid-section of my M compiler
+* Easier to provide coverage of M features (generating PCL is much easier than direct native code, also less messy and less buggy)
+* A refined design suitable also for both interpreting and native code
+* A cleaner backend to turn PCL into native code. Previous attempts were a disaster, even if they worked. I will probably make use the dispatching used within PCI
+* Allow some more refinements to the M language
+
+PCI already provides features than MM6 has, but doesn't implement, for example `(a,b) := c divrem d` (`divrem` is an operator returning two values). 
 
