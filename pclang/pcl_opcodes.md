@@ -81,8 +81,7 @@ Opcode      | Inline    | Stack        | Description
 `add`         | t         |  (2 - 1)     | `X' := X + Y` (Similar for following)`
 `sub`         | t         |  (2 - 1)     | 
 `mul`         | t         |  (2 - 1)     | 
-`divf`        | t         |  (2 - 1)     | (Floating point divide)
-`div`         | t         |  (2 - 1)     | (Integer divide)
+`div`         | t         |  (2 - 1)     |
 `rem`         | t         |  (2 - 1)     | (Integer remainder)
 `divrem`      | t         |  (2 - 2)     | `(X', Y') := (X % Y, X rem Y)` (`%` = int divide)
 `bitand`      | t         |  (2 - 1)     | `X' := X iand Y` (bitwise AND)
@@ -225,7 +224,6 @@ Type  | Description
 `u64` | 64-bit unsigned
 `r64` | 64-bit float
 `r32` | 32-bit float
-`mem n` | Block type of `n` bytes 
 `i8` | Narrow signed integers which are secondary types
 `i16` |
 `i32` |
@@ -235,7 +233,7 @@ Type  | Description
 
 The Stack comprises 64-bit elements only, which represent only one of `i64 u64 r64 r32` (the last occupies the bottom half of an element).
 
-Block types are represent on the stack by reference, which uses a `u64` type.
+There is also a block type, denoted as `u8:n`, which declares an type of `n` bytes. Block types are represent on the stack by reference, which uses a `u64` type. It can also be denoted as `T:n`, so that `i64:10` declares a block type of 80 bytes.
 
 Secondary types are mostly used with memory operations such as `iloadx`, in-place ops like `addto`, or sometimes for conversions.
 
@@ -282,8 +280,3 @@ Note that this `main` does not take any parameters such as the `(nargs, args)` y
 
 For a register-target where the PCL stack is compile-time only, `double` steps a count on the same stack entry rather than create two entries. This is more efficient (reuses the same register), but can only be used where the 'duplicate' is unaffected by the next instruction, ie. not part of the top `A` slots in `(A - B)`.
 
-### Proposed Changes
-
-* Probably I will remove `divf` and just have `div`, since the type will indicate which one is needed
-* I may change the `mem n` type syntax to just `u8:n`, to free up the `mem` which is likely to clash with user identifiers. 
-* Possibly also allow `T:n` in general, so that an array of 10 ints can be represented as `i64:10`, equivalent to `mem 80`. Note that `i64:1` will denote a block type of 8 bytes, not a single i64 value type.
