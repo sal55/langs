@@ -270,6 +270,8 @@ Maybe the C could be rewritten to use computed goto. But look at my `doswitchu` 
 
 (PCI is slow; without that trick it would have been slower. As it is, it can beat gcc-O3 for this program, at least when running my transpiled code.)
 
-PCI reads PCL as source code. At that moment, that is not a bottleneck, and in any case, parsing speed seems to be about 3.5M lines per second. No real need to introduce a binary PCL format. Still, when part of a production compiler, there's no point in generating text then reparsing. For experimentation and development, intermediate text files are handy.
+PCI reads PCL as source code. At that moment, that is not a bottleneck, and in any case, parsing speed seems to be about 3.5M lines per second. No real need to introduce a binary PCL format. Still, when part of a production compiler, there's no point in generating text then reparsing. 
+
+But for experimentation and development, intermediate text files are handy. Effectively `PCI` does the same job here as as standalone assembler whose input is textual ASM.
 
 
