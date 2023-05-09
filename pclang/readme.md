@@ -65,7 +65,7 @@ Although this is a bit of a cheat since `printstr` is a debugging opcode. A bett
         extparam u64
     extend
 
-This used C's `puts` from the C library in Windows' `msvcrt.dll`, which is automatically linked. If it wasn't then the top of the program would have needed: `linkdll msvcrt` at the top. This is how non-standard libraries are made known.
+This uses C's `puts` from the C library in Windows' `msvcrt.dll`, which is automatically linked. If it wasn't then the top of the program would have needed: `linkdll msvcrt` at the top. This is how non-standard libraries are made known.
 
 ### Opcode List
 
@@ -109,9 +109,7 @@ In each case, a single .pcl file was produced, for example:
 ````
 It just takes a magnitude longer than normal. (Instead of 0.5 seconds, it takes 6 seconds to build that 250Kloc program. But that is still 3 times as fast as gcc-O0!)
 
-In the case of PC, an interpreter that executes dynamic bytecode, I was running it with a program that was itself interpreted bytecode! That one also ran, but I didn't attempt anything involving WinAPI libraries.
-
-(To run GUI via PC requires requires callbacks to deal with WinAPI message processing; I make a special exception for `MainWndProc`, which resides in `pc.exe`, but here, `MainWndProc` is itself bytecode. I'd have to make a further exception for PCI, and then have code then reenters bytecode loops in two nested interpreters. It gets hairy.)
+In the case of PC, an interpreter that executes dynamic bytecode, I was running it with a program that was itself interpreted bytecode! That one also ran, but I didn't attempt anything involving WinAPI callbacks as normally needed for graphics and GUI.
 
 The most fun was the following, running a Fibonacci test which prints `fib(1)` to `fib(36)` via increasingly nested instances of PCI. With this test you always see a stream of output, no matter how slow, but it starts to slow down at difference points depending on performance, and eventually it takes a while to even get started:
 
