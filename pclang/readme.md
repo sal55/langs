@@ -20,7 +20,7 @@ Links:
 
 ### Supplied Files For Windows
 
-This is not something I intend to support, but if someone wants to have a go, these should available to click on above:
+This is not something I intend to support, but if someone wants to have a go, or just wants to see what it's like, these should be available to click on above:
 
 * [pci.exe](pci.exe) PCL interpreter as Windows binary
 * [pci.c](pci.c) Transpiled C version (Windows)
@@ -31,7 +31,7 @@ This is not something I intend to support, but if someone wants to have a go, th
 
 If `pci.exe` doesn't make it through your AV software, then you might try building from `pci.c`. This is transpiled from my language (it needing a few tweaks to make it work - C support is being downgraded). Build instructions at the top (basically `gcc pci.c -opci.exe`).
 
-(If not on Windows, you might try `pcilin.c` (this is also set up to use `libc.so.6` not `msvcrt`). Here you'll need the build instructions. I managed to get `./pci fib` working, but not `./pci pci fib` since `pci.pcl` has calls to Windows-specific functions build-in. This stuff gets complicated quickly.)
+(If not on Windows, you might try `pcilin.c` (this is also set up to use `libc.so.6` not `msvcrt`). Here you'll need the build instructions. I managed to get `./pci fib` working under WSL, but not `./pci pci fib` since `pci.pcl` has calls to Windows-specific functions built-in. This stuff gets complicated quickly.)
 
 ### General Purpose Use
 
@@ -222,3 +222,18 @@ So I can do it like LLVM too. This looks very enticing, but generating reasonabl
 There is WASM too, another complicated one, supposedly also stack-based, with a syntax that can't make its mind what it wants to me. But since it doesn't support an unrestricted `goto`, that's wouldn't work for me.
 
 My linear, vertically written PCL syntax looks rather like assembly so is not that attractive, but remember this is code for machine processing. 
+
+### Implementing the PCI Interpreter
+
+This was helped by one or two recent PL threads about making interpeters fast. I decided on an approach where most of the interpreter core resides in a single function, within a large `switch` statement. (Normally I'd put each handler into a separate function.)
+
+This switch handles some 400 different cases, an expanded set of the main 130 PCL opcodes. Fortunately most are very simple to implement and only take a couple of lines.
+
+See [pci_exec.m](pci_exec.m). The macros at the start were to help when changing the bytecode representation to a more streamlined and more fixed-up data structure, but I might just leave it. (PCC will give me native code speed, so why bother?)
+
+If you build the C version, that doesn't use those `@` equivalenced data structures. Strangely the transpiled C, even with `gcc-O3`, is not any faster than my compiler, not using switch, and sometimes slower.
+
+Maybe the C could be rewritten to use computed goto. But look at my `doswitchu` looping switch: one of my compilers (MM5) will implement that using computed goto anyway, and generate the necessary jump tables. Using this, PCI runs 40% faster or more. (See my [thread] (https://www.reddit.com/r/ProgrammingLanguages/comments/12tgsip/switch_and_computed_goto/?utm_source=share&utm_medium=web2x&context=3) on the subject.)
+
+(PCI is slow; without that trick it would have been slower. As it is, it can beat gcc-O3 for this program, at least when running my transpiled code.)
+
