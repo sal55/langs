@@ -85,7 +85,7 @@ On the other hand, PCI is still 2-3 magnitudes faster than Pico C, a C interpret
 
 ### Problems with Interpreting Static Code
 
-Apart from performance, there issues with function pointers that cross FFI boundaries (callbacks etc); no support for inline assembly; the 'LIBFFI` problem (synthesise function calls at runtime); and also dealing with command line parameters (since there is now an unexpected parameter: the interpreter name).
+Apart from performance, there are issues with function pointers that cross FFI boundaries (callbacks etc); no support for inline assembly; the 'LIBFFI` problem (synthesise function calls at runtime); and also dealing with command line parameters (since there is now an unexpected parameter: the interpreter name, so that everything is offset).
 
 I can work with these for own programs or use my own simple solutions; I'm not complaining! But it means PCI cannot be a general purpose tool.
 
