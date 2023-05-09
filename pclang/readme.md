@@ -13,11 +13,6 @@ This is a work-in-progress and what I have now is as follows:
 
 The next stages are to complete the coverage of PCI's internal opcodes, and then to start the native code version, a project likely to be called `PCC`.
 
-Links:
-
-* [PCL Description](pcl_overview.md)
-* [PCL Opcode Reference](pcl_opcodes.md)
-
 ### Supplied Files For Windows
 
 This is not something I intend to support, but if someone wants to have a go, or just wants to see what it's like, these should be available to click on above:
@@ -32,6 +27,42 @@ This is not something I intend to support, but if someone wants to have a go, or
 If `pci.exe` doesn't make it through your AV software, then you might try building from `pci.c`. This is transpiled from my language (it needing a few tweaks to make it work - C support is being downgraded). Build instructions at the top (basically `gcc pci.c -opci.exe`).
 
 (If not on Windows, you might try `pcilin.c` (this is also set up to use `libc.so.6` not `msvcrt`). Here you'll need the build instructions. I managed to get `./pci fib` working under WSL, but not `./pci pci fib` since `pci.pcl` has calls to Windows-specific functions built-in. This stuff gets complicated quickly.)
+
+### Characteristics
+
+* Low-level intermediate language for my systems language compiler
+* Stack-based virtual machine
+* Primitive types of `i8-i64 u8-u64 r32-r64` and N-byte blocks (no array, struct or pointer types)
+* 64-bit execution model and 64-bit stack
+* A PCL program (whether as one .pcl file, or created via an API) always represents a whole program
+
+### Hello.pcl
+
+Here is the simplest program in PCL:
+
+    proc main
+        loadimm "Hello, World!\n"
+        printstr
+        return
+    end
+
+Although this is a bit of a cheat since `printstr` is a debugging opcode. A better one, as might be generated from a HLL, is:
+
+    proc main
+        loadimm "Hello, World!\n"
+        callp puts 1
+    end
+
+    extproc puts
+        extparam u64
+    extend
+
+This used C's `puts` from the C library in Windows' `msvcrt.dll`, which is automatically linked. If it wasn't then the top of the program would have needed: `linkdll msvcrt` at the top. This is how non-standard libraries are made known.
+
+### Opcode List
+
+See: [PCL Opcode Reference](pcl_opcodes.md)
+
 
 ### General Purpose Use
 
