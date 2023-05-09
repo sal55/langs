@@ -11,7 +11,8 @@ This is a work-in-progress, but this is what works right now:
 
 There are of course existing M compilers like `mm6` that directly turn M applications into .exe or .asm files, assemblers and so on. This is what I'm planning next:
 ````
-    pcc.exe            Turns a .pcl source file into register-based native code, producing .exe, .asm, or running it in-memory
+    pcc.exe            Turns a .pcl source file into register-based native code, producing .exe, .asm,
+                       or running it in-memory
     mm7.exe            Incorporates most of pcc.exe so it functions as a self-contained compiler like mm6.
 ````
 
