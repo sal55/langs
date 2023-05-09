@@ -239,6 +239,23 @@ Block types are represent on the stack by reference, which uses a `u64` type.
 
 Secondary types are mostly used with memory operations such as `iloadx`, in-place ops like `addto`, or sometimes for conversions.
 
+### Block Handling
+
+A Block is fixed-size memory object, used to represent arrays and records/structs in HLL code. It's treated as a type here, but PCL mainly handles blocks by reference:
+
+* Loading a block will load its address, so that it occupies a `u64` stack slot
+* Storing a block will copy the data to the destination
+
+This behaviour applies to all block sizes - no exceptions. ABIs mostly work like this, but they have exceptions for certain sizes, so on Windows, blocks of 1/2/4/8 bytes are manipulated by value.
+
+This means that when generating PCL code, if you want behaviour matching the ABI, structs/arrays of those sizes must be represented as `u8/u16/u32/u64` types.
+
+In addition, for functions returning block types, a dummy first parameter must be passed. The caller should fill this in with the address of a memory region that will contain the result. The copying however is taken care of (and the function also returns that block reference).
+
+So block handling within the ABI is exposed, but it is necessary because the HLL needs to be aware of the semantics involved. Since blocks are passed by reference, callees could modify the caller's data.
+
+I'm thinking of adding the ability to manipulate blocks by value, but it's likely to be in the form of special instructions rather than a new type. Multiple function returns already do that. Value blocks will be represented a multiple stack entries.
+
 ### Imported Functions
 
 These must appear in an `extproc ... extend` block (see examples). The type info is necessary in order to correctly call the function.
@@ -264,3 +281,9 @@ Note that this `main` does not take any parameters such as the `(nargs, args)` y
 `dupl` and `double` do the same things in the interpreter or any target where PCL's stack is an actual one.
 
 For a register-target where the PCL stack is compile-time only, `double` steps a count on the same stack entry rather than create two entries. This is more efficient (reuses the same register), but can only be used where the 'duplicate' is unaffected by the next instruction, ie. not part of the top `A` slots in `(A - B)`.
+
+### Proposed Changes
+
+* Probably I will remove `divf` and just have `div`, since the type will indicate which one is needed
+* I may change the `mem n` type syntax to just `u8:n`, to free up the `mem` which is likely to clash with user identifiers. 
+* Possibly also allow `T:n` in general, so that an array of 10 ints can be represented as `i64:10`, equivalent to `mem 80`. Note that `i64:1` will denote a block type of 8 bytes, not a single i64 value type.
