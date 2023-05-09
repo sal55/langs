@@ -1911,20 +1911,6 @@ dojumpcond::
         ++sp                !stack alignment op (not need for interpreter)
         steppc
 
-    when jstackadj then
-        if pcltable[pc-1].jcode not in [jcalldllp, jcalldllf] then
-            case getx           !(not stored in .nretvalues)
-            when 0 then         !proc: pop extra slot only
-                --sp
-            when 1 then         !func: move return value down one place and pop extra
-                --sp
-                stack[sp]:=stack[sp+1]
-            else                !mult ret
-                serror("stackadj/mult")
-            esac
-        fi
-        steppc
-
     when jlast then
         unimpl
         steppc
