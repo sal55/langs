@@ -26,8 +26,8 @@ This is not something I intend to support, but if someone wants to have a go, or
 * [pci.exe](pci.exe) PCL interpreter as Windows binary
 * [pci.c](pci.c) Transpiled C version (Windows)
 * [pcilin.c](pcilin.c) Transpiled C version (Linux)
-* [hello.pcl](hello.pcl) Programs to try; this hello is handwritten
-* [fib.pcl](fib.pcl) This is MM7 output using a minimal system library
+* [hello.pcl](hello.pcl) Programs to try; this hello is handwritten, run as `pci hello`
+* [fib.pcl](fib.pcl) This is MM7 output using a minimal system library; run as `pci fib`
 * [pci.pcl](pci.pcl) Run PCI on itself: `pci pci fib`
 
 If `pci.exe` doesn't make it through your AV software, then you might try building from `pci.c`. This is transpiled from my language (it needing a few tweaks to make it work - C support is being downgraded). Build instructions at the top (basically `gcc pci.c -opci.exe`).
@@ -59,6 +59,7 @@ Although this is a bit of a cheat since `printstr` is a debugging opcode. A bett
     proc main
         loadimm "Hello, World!\n"
         callp puts 1
+        return
     end
 
     extproc puts
