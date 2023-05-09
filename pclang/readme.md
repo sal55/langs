@@ -2,16 +2,21 @@
 
 This is the IL (or 'IR') I'm planning to use as the target of my lower level language compiler.
 
-I've tried versions of it in the past, but it was usually internal to the compiler, and I had a hard time converting it native code. It added chaos rather than reducing it. I'm hoping this this new attempt will stick.
+This is a work-in-progress, but this is what works right now:
 
-This is a work-in-progress and what I have now is as follows:
+````
+    mm7.exe            Compiles an M application to a .pcl source file
+    pci.exe            Runs a .pcl source file via an interpreter
+````
 
-* 'MM7', a version of my 'M' compiler that targets PCL (using an internal API), which than gets written to a textual PCL source file.
-* A standalone PCL interpreter, 'PCI' that reads the source code into an internal data structure (a sort of wide bytecode), and runs it.
-* That PCI program runs all of my major M programs, except my Q interpreter where some some GUI libraries (involving callbacks from WinAPI) will not work.
-* I also spent a few hours converting the backend of my C compiler to generate PCL. I got as far as translating programs programs such as fib.c, but then lost interest. I assume it will work, but C also presents a few challenges. I will use this test version to try out some constructs that are uncommon in my own language, such as value-returning augmented assignments.
+There are of course existing M compilers like `mm6` that directly turn M applications into .exe or .asm files, assemblers and so on. This is what I'm planning next:
+````
+    pcc.exe            Turns a .pcl source file into register-based native code, producing .exe, .asm, or running it in-memory
+    mm7.exe            Incorporates most of pcc.exe so it functions as a self-contained compiler like mm6.
+````
 
-The next stages are to complete the coverage of PCI's internal opcodes, and then to start the native code version, a project likely to be called `PCC`.
+The following describes the PCL language and that PCI interpreter for it. Note that all programs mentioned: compilers, interpreters, assemblers, are written in my established 'M' systems languages.
+
 
 ### Supplied Files For Windows
 
@@ -273,5 +278,4 @@ Maybe the C could be rewritten to use computed goto. But look at my `doswitchu` 
 PCI reads PCL as source code. At that moment, that is not a bottleneck, and in any case, parsing speed seems to be about 3.5M lines per second. No real need to introduce a binary PCL format. Still, when part of a production compiler, there's no point in generating text then reparsing. 
 
 But for experimentation and development, intermediate text files are handy. Effectively `PCI` does the same job here as as standalone assembler whose input is textual ASM.
-
 
