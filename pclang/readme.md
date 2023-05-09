@@ -146,6 +146,8 @@ A bit silly but it's also an indication of healthy code.
 * To provide a near-100% complete reference implementation (barring callback issues, but those are application-related)
 * Easier to provide coverage of M language features, and easier to add more enhancements
 
+It also opens up new possibilities for debugging and profiling, although debugging would need extra links to the original HLL source.
+
 ### The PCC Project
 
 This turns PCL code into register-based x64 native code. I have done this before, but it got extremely messy. This revised PCL has one important difference: I use opcode names based on `load` and `store` instead of `push` and `pop`. This removes much of the confusion with x64's hardware stack, which in the new backend will be little used, only for ABI conformance.
