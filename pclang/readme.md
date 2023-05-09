@@ -39,7 +39,7 @@ I had hoped this IL could by used by anyone, but it's clear that this not really
 
 It's fine however for my own projects and as a demonstration of what such a product can be like. For example, the standalone interpreter is under 100KB (ie. 0.1MB or 0.0001GB), and it can run all my compilers expressed as single file .pcl sources. (It can run itself; more on that below.) But otherwise, if were to be used as a C backend for example:
 
-* A PCL file is expected to represent an entire program, which suits my whole-program compiler. But C for is usually compiled a module at time (my experiment above would have worked for single-file programs only).
+* A PCL file is expected to represent an entire program, which suits my whole-program compiler. But C for example is usually compiled a module at time (my experiment above would have worked for single-file programs only).
 * PCL's execution core is based on 64 bits, but most C implementations use a 32-bit int type. (This can be emulated in PCL by truncating every intermediate op, but that's not ideal)
 * C's `setjmp/longjmp` are not supported (that would need a compile of extra intrinsics)
 * PCI has limitations with function pointers and callbacks passed via FFIs. Arbitrary C code will use those all the time. (This would not affect the PCC native code version.)
