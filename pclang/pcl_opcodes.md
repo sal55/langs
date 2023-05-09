@@ -137,7 +137,7 @@ Opcode      | Inline    | Stack        | Description
 `maxto`       | t         |  (2 - 0)     | 
 `addpxto`     | t         |  (2 - 0)     | `X^ +:= Y*s + d`; `X^` points to T; Y is i64
 `subpxto`     | t         |  (2 - 0)     | `X^ -:= Y*s + d`; `X^` points to T; Y is i64
-`negto`       | t         |  (1 - 0)     | `X^ := -X^
+`negto`       | t         |  (1 - 0)     | `X^ := -X^`
 `absto`       | t         |  (1 - 0)     | 
 `bitnotto`    | t         |  (1 - 0)     | 
 `notto`       | t         |  (1 - 0)     | `X^ := (X^=0 | 1 | 0)`
@@ -181,6 +181,7 @@ Opcode      | Inline    | Stack        | Description
 Under **Stack**, `(A - B)` denotes what is pushed and popped from the stack for each operation:
 
 **A** is the number of relevant stack entries before the instruction, which are usually popped
+
 **B** is how many stack there are afterwards; these are usually pushed
 
 So `(2 - 1)` for `add` means that it consumes two stack operands, then pushes a new one, the result.
@@ -206,11 +207,11 @@ Each operand can be optional depending on Opcode:
 
 **Name** The name of a function (defined with `proc` or `extproc`) or variable (defined with `istatic`, `zstatic`, `param` or `local`). it is marked with `m` in the tables.
 
-**Number** An integer or float literal like 12345 or 67.89
+**Number** An integer or float literal like `12345` or `67.89`
 
-**String** A zero-terminated string literal like "ABC\nDEF"; here the operand is pointer to string data stored elsewhere (PCL takes care of that)
+**String** A zero-terminated string literal like `"ABC\nDEF"`; here the operand is a pointer to string data stored elsewhere (PCL takes care of that)
 
-**Label** Labels are numeric, and specified like this: `#1234`. Label numbers are arbitrary, but it is suggested they are kept stored and allocated incrementally (because the value is used to index internal tables and they have a limited size)
+**Label** Labels are numeric, and specified like this: `#1234`. Label numbers are arbitrary, but it is suggested they are kept small and allocated incrementally (because the value is used to index internal tables and they have a limited size)
 
 **Charstring** This is a string literal like `ABCDEF`, non-zero-terminated, and as immediate data. This is only used in `data` instructions.
 
