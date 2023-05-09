@@ -1809,10 +1809,6 @@ dojumpcond::
         n:=getnparams
         sp-:=getnlocals
         fp:=stack[sp--]
-    if fp<0 or fp>(stacksize-20)then
-        CPL =GETNLOCALS
-        PCERROR2("RETP:INVALID FRAME PTR",STRINT(FP))
-    fi
         pc:=stack[sp--]
         sp-:=n
 
@@ -1860,10 +1856,6 @@ dojumpcond::
         unimpl
         steppc
 
-    when jcallargs then
-        unimpl
-        steppc
-
     when jstop then
         return stack[sp]
         exit
@@ -1907,19 +1899,11 @@ dojumpcond::
     when jopnd then
         steppc
 
-    when jpushany then
-        ++sp                !stack alignment op (not need for interpreter)
-        steppc
-
-    when jlast then
-        unimpl
-        steppc
-
     when jdebug then
         case getx
         when 0,1 then
             debug:=getx
-            CPL "Debug set to", debug
+            println "Debug set to", debug
         when 2 then
             println =SP
         esac
