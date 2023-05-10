@@ -60,7 +60,8 @@ Opcode      | Inline    | Stack        | Description
 `icallp`      | n \[v\]     |  (n - 0)     | `X^(...)`
 `icallf`      | t n \[v\]   |  (n+1 - 1)   | `X' := X^(...)`
 `return`      | --        |  ( - )       |  
-`stop`        | --        |  (1 - 0)     | Stop execution with return code X
+`stop`        | \[n\]     |  (0 - 0)     | Stop execution with return code n or 0
+`stopx`       | --        |  (1 - 0)     | Stop execution with return code X
 `jump`        | l         |  (0 - 0)     | `Goto L`
 `ijump`       | --        |  (1 - 0)     | `Goto X`
 `jumpeq`      | t l \[p1\]  |  (2 - 0/1)   | `Goto L when X = Y; popone: leave X on stack`
@@ -264,7 +265,9 @@ These are declared like this:
 ````
 proc cube*
 ````
-The `*` means it is exported (note `main` is always exported).
+The `*` means it is exported (note `main` is always exported). Apart from the `main` function, which is exported anyway, exported functions are only really needed when the program is made into a dynamic library, ie. via a backend that generates native code.
+
+That is not possible when running under PCI. Maybe a later verson of PCI can import .pcl files as libraries (declared as `linkpcl`), but not right now.
 
 ### Program Entry and Exit
 
