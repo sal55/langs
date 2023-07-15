@@ -1,3 +1,5 @@
+!(Machine-translate from C. For visualisaton only; not valid M code.)
+
 const N = 1024
 
 global word32 hp = 0
