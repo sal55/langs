@@ -24,7 +24,7 @@ mm.exe   M        M Compiler
 qq.exe   M        Q bytecode compiler and interpreter
 aa.exe   M        ASM assembler
 bcc.exe  M        C subset compiler
-za.qa    Q        ZA assembler
+zz.qa    Q        ZA assembler
 
 ms.exe   M        M compiler that runs programs from source (3)
 mmp.exe  M        Independent M compiler that generates textual PCL files
@@ -89,7 +89,7 @@ pci.exe   .pcl    1  Run                 Interpret PCL program
 
 run.exe   .mx     1  Run                 Run .mx application
 
-za.qa     .za     1  -         -asm      (Default) Assemble to in-memory machine code
+zz.qa     .za     1  -         -asm      (Default) Assemble to in-memory machine code
                      Run       -run      (Not ready) Assemble and run
 ```
 
