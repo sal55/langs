@@ -17,18 +17,17 @@ ZA        Z80 assembly based around Zilog syntax (2)
 ```
 ### Tools
 ```
-Tool     Written  Description
-         In
+Tool     Impl In  Description
 
 mm.exe   M        M Compiler
 qq.exe   M        Q bytecode compiler and interpreter
 aa.exe   M        ASM assembler
 bcc.exe  M        C subset compiler
+pci.exe  M        Interpreter of of PCL files
 zz.qa    Q        ZA assembler
 
 ms.exe   M        M compiler that runs programs from source (3)
 mmp.exe  M        Independent M compiler that generates textual PCL files
-pci.exe  M        Interpreter of of PCL files
 run.exe  M        Stub program to run .mx executables (4)
 ```
 
