@@ -97,13 +97,13 @@ N indicates the number of input files accepted. Only `bcc.exe`, and `aa.exe` bec
 
 ### Notes
 
-**(1)** `PCL` was the name of the discrete IL I'd planned for the M compiler, and I also worked on an interpreter for it. But the project became too much and was dropped. The special M compiler `mmp.exe` and the the interpreter `pci.exe` are retained as an independent project. I had ideas of using it as a debugging tool for M programs
+**(1)** `PCL` was the name of the discrete IL I'd planned for the M compiler, and I also worked on an interpreter for it. But the project became too much and was dropped. The special M compiler `mmp.exe` and the interpreter `pci.exe` are retained as an independent project. I had ideas of using it as a debugging tool for M programs
 
-**(2)** This was a project involved a Z80 assembler (completed), and an emulator (just started). It was shelved when I realised how much effort was needed to properly emulate Z80.
+**(2)** This was a project involving a Z80 assembler (completed), and an emulator (just started). It was shelved when I realised how much effort was needed to properly emulate Z80.
 
-**(3)** `ms.exe` is simply a renamed `mm.exe`. The M compiler checks the name of the executable, and if it is `ms`, it will automatically invoke the `-run` option (and sets a special flag for less verbose output, to make the compilation process transparent and the illusion of running a script language better)
+**(3)** `ms.exe` is simply a renamed `mm.exe`. The M compiler checks the name of the executable, and if it is `ms`, it will automatically invoke the `-run` option (and uses less verbose output, to make the compilation process transparent and the illusion of running a script language better)
 
-**(4)** (See **6**) Because of problems with DLLs, I created my own simpler shared library format using `.ml` files. These are accepted by Q programs, but in M, can only be transparently used by `.mx` files, or accessed via an API like `GetProcAddress/dlsym`.
+**(4)** (See **7**) Because of problems with DLLs, I created my own simpler shared library format using `.ml` files. These are accepted by Q programs, but in M, can only be transparently used by `.mx` files, or accessed via a special API from regular `.exe`.
 
 The format can also be used to write complete apps, with `.mx` extension, but being unknown to Windows, those must be started by a stub program `run.exe`
 
