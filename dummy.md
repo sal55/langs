@@ -1,12 +1,10 @@
-**Computer** Yes, at one point, while unemployed after college, I had to make my own computer. Not as hard as it sounds, this was 1981 not 1941, so I could just buy a ready-made CPU chip, a device that was only 2x1", about the size of your thumb.
+**Computer** Yes, at one point, while unemployed after college, I had to make my own computer. Not as hard as it sounds, this was 1981 not 1941, so I could just buy a ready-made CPU chip, a device that was only 2x1", about the size of your thumb. Of course, it had to be built into a circuit with other components, and using only a multi-meter for fault-finding.
 
-Of course, it had to be built into a circuit with other components, and using only a multi-meter for fault-finding.
-
-But eventually, after a first prototype version, I had a Z80-based computer with 32KB memory, 8KB graphics memory (128x128x4 greyscale with TV-frame-grabbing ability, or 256x256x1 mono display), 1KB text display, and 2KB EPROM (home-programmed with a Heath-Robinson setup). But of course zero software, or tools to create the software. This all had to be done.
+But eventually, after a first prototype version, I had a Z80-based computer with 32KB memory, 8KB graphics memory, switchable betweeen 4-bit greyscale and 1-bit vector, 1KB text display, and 2KB EPROM (home-programmed with a Heath-Robinson setup). But of course zero software, or tools to create the software. This all had to be done.
 
 **Video** I found work with a small company making 8-bit business computers, and ended up designing the motherboards. Which meant I was programming on machines I had helped design. I also created lots of experimental prototypes many revolving around graphics boards, so much of my graphics and other programming for a few years was in hardware I had created. 
 
-**The OS** My company also created its own CP/M-compatiable disk OS, in order to say paying licence fees. I wasn't involved in that, but that was the kinds of culture I was working in. The company also manufactured and populated its own PCBs for the motherboards.
+**The OS** My company also created its own CP/M-compatiable disk OS, in order to avoid paying licence fees. I wasn't involved in that, but that was the kind of culture I was working in.
 
 **Assembler (Z80, 1981)** This was a crude affair, written in hex machine code (via a program itself written in actual binary). As I said, the machine had nothing).
 
@@ -49,3 +47,4 @@ The obvious product is LLVM, but it doesn't meet any of those requirements. The 
 **GMP Library** This is a big-number library. I wouldn't mind using it, given the easy availability of the 0.5-1MB DLL, but there is no repository for that. You have to build it yourself, using a build-process that involves running 30Kloc BASH configure script - on Windows. You need to use CYGWIN or MSYS2 or (now) WSL. I tried a few times, and failed.
 
 So, what to do? I don't want to build-in a dependency on a library that is slow elusive. I wrote my own library, about 1.6Kloc. It's not as fast, but is guaranteed to be available. (There is now a product called mini-GMP that provides reduced functionality, using only 2 C files. However it is apparently no faster than my library.)
+
