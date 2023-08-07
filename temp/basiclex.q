@@ -2,8 +2,8 @@
 
 var identstarter = ['A'..'Z', 'a'..'z']
 var numericstarter = ['0'..'9']
-var identchars = ['A'..'Z', 'a'..'z','0'..'9','_','$']
-var numericchars = ['0'..'9', '.', 'e']
+var identchars = identstarter + ['0'..'9','_','$']
+var numericchars = numericstarter + ['.', 'e']
 
 var puncttable = ['(':tklbrack, ')':tkrbrack, '+':tkadd, '-':tksub, '*':tkmul, '/':tkdiv,
         '=':tkeq, ',':tkcomma, ';':tksemi, '%':tkidiv, ':':tkcolon]
