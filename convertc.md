@@ -37,7 +37,7 @@ An example of **(1)** is a program like this:
 
 There will be no definitions of SDL functions in this program, but M requires an interface module.
 
-Unfortunately, C syntax does not distinguish between `**(1)**` and `**(2)**` declarations. Those cannot be determined from a single module. Only after analysing the results of translating all the modules of a project.
+Unfortunately, C syntax does not distinguish between **(1)** and **(2)** declarations. Those cannot be determined from a single module. Only after analysing the results of translating all the modules of a project (and seeing which are missing, very hi-tech).
 
 One possibility is marking `includes` that refer to external libraries, or listing those headers either in the C source, or in an auxiliary file attached to the project.
 
