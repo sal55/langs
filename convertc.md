@@ -14,7 +14,7 @@ For use as translator however, only the front end is needed. It is possible thos
 
 I already have two existing tools that can do translation of C:
 
-* Translating headers into bindings for my two languages. This works via options `-mheaders` and `-qheaders` applied to BCC. The resulting outputs is 90% there, but need manual finishing off.
+* Translating headers into bindings for my two languages. This works via options `-mheaders` and `-qheaders` applied to BCC. The resulting outputs are 90% there, but need manual finishing off.
 * Translating acual programs into my M syntax. This was a fork of the BCC compiler, called 'CCM'. The output was purely for visualisation, as obstruse C syntax can suddenly become crystal clear, but the M code will not usually compile, and semantic diferences are ignored.
 
 This project is a development of the latter CCM tool.
