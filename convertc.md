@@ -60,5 +60,52 @@ Sometimes the program I want to translate is a library written in C, that I then
 
 I believe however that I can omit backticks for identifiers (not M reserved words) in lower case, and only use them (and then if unambiguous) for mixed or upper case.
 
+### Operator Precedence
 
+C's operator precedences are ignored by the CCM program to keep readability high. Fixing them would mean parentheses everywhere.
 
+So here, I'd need to use algorithms to minimise them: only apply them to correctly apply the priortities of my language. So `a << b + c` in C, which means `a << (b + c)` in that language, would have to be `a << (b + c)` in mine, but I don't need `(a << (b + c))`.
+
+C functions such as `abs labs llabs fabs` are operators in M, and should really be specially detected and converted. Some, like `sqrt(x)` which are also functions, would be parsed as operators anyway, so no special conversion is needed.
+
+However, being able to use function points (`&sqrt` or `sqrt`) will not be possible.
+
+### Macros
+
+Macros will be minefield. Simple ones `#define A 100`, `#define B 100` should really not be expanded in the M code, which otherwise will sea of meaningless constants, and you can't tell whether any `100` means `A`, `B`, another `#define`, or is an actual constant.
+
+More elaborate needs need expanding, but this risks the M code becoming unreadable. They can't be left as macros as, while M has a macro scheme, it works on well-formed expressions only, and expansion is done at a later stage.
+
+### Constants
+
+CCM will need to remember whether the constant 65 for example was written as `65`, `0x41` or `'A'`, and output it in the original form.
+
+This applies also to enum names; given `enum {A, B, C}`, then `B` should appear as `B` not `1`.
+
+Constant expressions such as `2 + 3 * 4` should not be reduced to `14`, but appear in original form. This means also that `C+1` (see above) is `C+1` and not `3`.
+
+Another problem is using `0` as a null pointer value; M requires `nil` here.
+
+### Block Scopes
+
+M has no block scopes; there is one function-wide scope only. This would mean that many local identifiers would need a block-id suffix. But I think that in most cases, identifiers are not re-used. So analysis can be used, and suffixes are only added when an identifier has more that one instance in any function.
+
+There is an issue with shadowing; suppose `A` exists with global scope:
+````
+     int A;                  // 1
+     void F(void) {
+         A;                  // 2
+         {int A;             // 3
+          A;                 // 4
+````
+Here, `A(2)` is the global `A`, but `(3)` and `(4)` are local. In M, those last two `A`s have function-wide scope; it is not possible to refer to the global 'A'. So more analysis is needed to see if local are shadowing a global, and apply block-suffixes.
+
+### Switch
+
+I'm sure that most uses of `switch` are properly structured, but C's `switch` can also be chaotic, with case labels nested deep inside statements, and `default:` appearing at the start! There is also fallthrough and `break` to deal with. It's going to be messy.
+
+Also, C-switch may have widely-spaced case values. Here I would need to detect this, and switch instead to M's `case` statement which is more flexible. Except that the constants used for case-labels might not be available, because of no const-expr reduction. But I will most will be simple constants.
+
+### Augmented Assignment
+
+Operators like `+` return a value in C: `a = (b += c)`. M's versions don't. I may need to translate to value-returning `b += c` to `(b +:= c; b)`, taking care if evaluating `b` twice.
