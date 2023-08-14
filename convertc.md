@@ -86,6 +86,12 @@ Constant expressions such as `2 + 3 * 4` should not be reduced to `14`, but appe
 
 Another problem is using `0` as a null pointer value; M requires `nil` here.
 
+### String Literals
+
+In C, `"ABC"` has type `char*`, where `char` is most likely a signed type. That is a signed plain `char` is incompatible with `signed char` is fortunately not relevant here. In M `"ABC"` has typed `ref char`, where `char` is a thin type wrapper around `byte` or `u8`.
+
+Simplest I think is to treat C's a `char` the same as my `char` type, and unsigned. However I know that some C code will assume `char` is signed.
+
 ### Block Scopes
 
 M has no block scopes; there is one function-wide scope only. This would mean that many local identifiers would need a block-id suffix. But I think that in most cases, identifiers are not re-used. So analysis can be used, and suffixes are only added when an identifier has more that one instance in any function.
@@ -109,3 +115,22 @@ Also, C-switch may have widely-spaced case values. Here I would need to detect t
 ### Augmented Assignment
 
 Operators like `+` return a value in C: `a = (b += c)`. M's versions don't. I may need to translate to value-returning `b += c` to `(b +:= c; b)`, taking care if evaluating `b` twice.
+
+### 64 Bits
+
+The C programs I want to translate have a 32-bit type, and most evaluation of integer expressions is done at 32-bits. But M works exclusively with 64-bit evaluation. Also, M doesn't support narrower integer types than 64 bits for function return types.
+
+I think that upping return types to 64 bits will usually be OK (the caller will truncate if needed). Doing 64-bit evaluation should be mostly OK but can give subtle differences in behaviour. Doing it properly will mean truncating every intermediate result to 32 bits.
+
+### M as a Target Language
+
+While I would class M as about the same level as C, I had never before considered M as target language other compilers as C frequently is.
+
+How well would it fill that role? I'd be interested in finding out. But it requires that any translation needs to be done 100% automatically with no intervention. That means solving all the problem that have been described. But in this case, M code does not need to be readable.
+
+The fact is that M is actually a little more high level than C, and a target language should ideally be lower level than the source language.
+
+Translating C with its chaotic nature and freedoms, is a little like translating ASM code to a HLL.
+
+Anyway, it might be useful to aim for a translator that will convert C to runnable M without having to change anything in the generated M. The maybe work backwards from that to make things more readable.
+
