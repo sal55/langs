@@ -1,6 +1,6 @@
 ## Translating C Programs
 
-A new project I've started has the aim of translating C programs into my own 'M' systems language. That is, doing a one-off conversion so that the bew program is maintained in my language.
+A new project I've started has the aim of translating C programs into my own 'M' systems language. That is, doing a one-off conversion so that the new program is maintained in my language.
 
 There are lots of problems, many of which are explored here. It could well be that in the end, the idea will be dropped. Even if viable, it's unlikely that a 100% perfect translation can be achieved without manual intervention, except for the simplest programs.
 
@@ -14,13 +14,17 @@ For use as translator however, only the front end is needed. It is possible thos
 
 I already have two existing tools that can do translation of C:
 
-* Translating headers into binders for my too languages. This works via options `-mheaders` and `-qheaders` applied to BCC. The result is 90% there, but needs manual finishing off.
-* Translating acual programs into my M syntax. This was a fork of the BCC compiler. The output was purely for visualisation, as obstruse C syntax can suddenly become crystal clear, but the M code will not usually compile, and semantic diferences are ignored. This tool is called `CCM`. This project is a development of the latter.
+* Translating headers into binders for my two languages. This works via options `-mheaders` and `-qheaders` applied to BCC. The resulting outputs is 90% there, but need manual finishing off.
+* Translating acual programs into my M syntax. This was a fork of the BCC compiler, called 'CCM'. The output was purely for visualisation, as obstruse C syntax can suddenly become crystal clear, but the M code will not usually compile, and semantic diferences are ignored.
+
+This project is a development of the latter CCM tool.
 
 A typical C module, as seen by a compiler when a source file is submitted, will contain these three kinds of code:
 
 **(1)** Declarations of functions from an external library. That is, functions not defined in the other modules of this program
+
 **(2)** Declarations of functions defined in other modules of this program
+
 **(3)** Local function definitions
 
 (I've left out variables for simplicity. Typedefs, structs, enums, macros and so on will usually need to be seen by both translator kinds.)
