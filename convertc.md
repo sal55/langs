@@ -39,3 +39,16 @@ One possibility is marking `includes` that refer to external libraries, or listi
 
 ### Case-Insensitivity
 
+My syntax is case-insensitive; C isn't. There are two approaches I can use in M:
+
+* For external function names (**(1)**), I can define the names in quotes, and subsequently call them in any case. This is prefered for translating an API that I will then use for newly written M code, although there will be the odd clash.
+* For translating **(3)** code, there will just be too many clashes. Here I can use a backtick:
+
+    `Abc `ABC `type
+
+The backtick preserves case so that `Abc` and `ABC` and `abc` are distinct identifiers. Also, I can use identifiers that are reserved words in my language, like `type`, another big program.
+
+The downside is that using backticks everywhere will make the resulting M code unreadable and unmaintainable. So here, I may need to do some analysis of all identifiers used in a whole program, and only use backticks where there is ambiguity.
+
+
+
