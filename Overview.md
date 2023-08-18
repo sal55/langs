@@ -11,9 +11,9 @@ Language  Description (Notes)
 M         Lower level systems language
 Q         Lower level dynamic scripting language
 ASM       x64 assembly in my take on Intel syntax
-'C'       C subset as used by my BCC compiler
 PCL       Intermediate language similar to the IL of the M compiler (1)
 ZA        Z80 assembly based around Zilog syntax (2)
+R         Working-title of a new embedded scripting language based on a cut-down Q language
 ```
 ### Tools
 ```
@@ -22,7 +22,6 @@ Tool     Impl In  Description
 mm.exe   M        M Compiler
 qq.exe   M        Q bytecode compiler and interpreter
 aa.exe   M        ASM assembler
-bcc.exe  M        C subset compiler
 pci.exe  M        Interpreter of of PCL files
 zz.qa    Q        ZA assembler
 
@@ -44,13 +43,11 @@ Extension  Represents  Description
 .za        Program     ZA assembly source file (there are no modules)
 .ml        Library     Private shared library format (4)
 .mx        Program     Private executable code format
-.i         Module      Output of BCC when using -E for preprocessing only
 .exp       Library     Temporary output file of -ml/-mx options: exports info
 
 .exe       Program     Windows executable file (PE+)
 .dll       Library     Windows shared dynamic library (PE+) (7)
 .obj       Program*    Object file (COFF64/PE+) (*Can be module) (8)
-.c/.h      Module      C language source files
 ```
 
 ### Inputs and Outputs
@@ -72,14 +69,6 @@ qq.exe    .q .qa  1   Run                (Default) Compile and run bytecode in-m
 aa.exe    .asm    N  .exe      -exe      (Default) Create executable
                      .obj      -obj      Write single object file (6)
                      .dll      -dll      Write DLL file (7)
-
-bcc.exe   .c      N  .exe      -exe      (Default) Create executable
-                     .asm      -s        Write one .asm file per C module
-                     .obj      -c        Write one .obj file per C module
-                     .i        -e        Write preprocessed output per C module
-                     .exe/Run  -run      Create executable and run immediately
-                     .m        -mheaders Convert header file to M syntax
-                     .q        -qheaders Convert header file to Q syntax
 
 ms.exe    .m .ma  1  Run                 Run M program from source
 
@@ -115,5 +104,5 @@ The format can also be used to write complete apps, with `.mx` extension, but be
 
 **(8)** OBJ files can still be produced by `aa.exe`, to allow combining with other software. But they need a third party linker, and these now like to create images that can also be loaded above 2GB. So at present DLL and OBJ outputs are shelved until I can sort that out.
 
-
+**(9)** R is a new project just started.
 
