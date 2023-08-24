@@ -6,14 +6,15 @@ These are private languages of mine. This is where docs and summaries about them
 
 ### Languages
 ```
-Language  Description (Notes)
+Language  Folder  Description (Notes)
 
-M         Lower level systems language
-Q         Lower level dynamic scripting language
-ASM       x64 assembly in my take on Intel syntax
-PCL       Intermediate language similar to the IL of the M compiler (1)
-ZA        Z80 assembly based around Zilog syntax (2)
-MS        New embedded scripting language based on a cut-down Q language (9)
+M         mx      Lower level systems language
+Q         qx      Lower level dynamic scripting language
+ASM       ax      x64 assembly in my take on Intel syntax
+PCL       px      Intermediate language similar to the IL of the M compiler (1)
+ZA        zx      Z80 assembly based around Zilog syntax (2)
+MS        bx      New embedded scripting language based on a cut-down Q language (9)
+('C'      cx      C subset used by archived bcc compiler)
 ```
 ### Tools
 ```
@@ -25,7 +26,7 @@ aa.exe   M        ASM assembler
 pci.exe  M        Interpreter of of PCL files
 zz.qa    Q        ZA assembler
 
-mmx.exe   M       M compiler that runs programs from source (3)
+mmx.exe  M       M compiler that runs programs from source (3)
 mmp.exe  M        Independent M compiler that generates textual PCL files
 run.exe  M        Stub program to run .mx executables (4)
 ```
