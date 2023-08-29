@@ -1,5 +1,0 @@
-proc main
-    loadimm "Hello, World!\n"
-    printstr
-    return
-end
