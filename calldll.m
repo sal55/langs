@@ -36,6 +36,7 @@ export function os_calldllfunction(ref proc fnaddr,
 !load first 4 args to registers; this version will blindly load all 4 args
 !(even if there are less, or none) to both integer and xmm registers (even if
 !all ints). That info is in argcodes[], currently not used.
+!Loading to both regs is necessary for any variadic functions
 
 !However, these 8 instructions are likely faster than either a rolled or unrolled loop
 !that checks arg numbers and flags, and loads the correct register
