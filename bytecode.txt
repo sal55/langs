@@ -1,0 +1,162 @@
+export enumdata [0:]ichar pclnames, [0:]byte pclfversion =
+    (knop = 0,      $,  0), ! 
+    (kstop,         $,  0), ! 
+
+    (kcomment,      $,  0), ! 
+    (kistatic,      $,  0), ! 
+    (kzstatic,      $,  0), ! 
+    (kprocdef,      $,  0), ! 
+    (kendproc,      $,  0), ! 
+    (kendprogram,   $,  0), ! 
+    (klabel,        $,  0), ! 
+
+    (kloadimm,      $,  0), ! A => d32/d64
+    (kfloadimm,     $,  0), ! A => r32/r64
+    (kloadaddr,     $,  0), ! &A => d64
+
+    (kload,         $,  2), ! i8/i16/i32/u8/u16/u32 => d32, i64/u64 => d64
+    (kfload,        $,  0), ! r32/r64
+    (kmload,        $,  0), ! &block => d64
+
+    (kstore,        $,  2), ! d32/d64 => d8/d16/d32/d64
+    (kfstore,       $,  0), ! r32/r64 => r32/r64
+    (kmstore,       $,  0), ! d64^ => block
+
+    (kloadptr,      $,  2), ! i8/i16/i32/u8/u16/u32 => d32, i64/u64 => d64
+    (kfloadptr,     $,  0), ! r32/r64 => r32/d64
+    (kmloadptr,     $,  0), ! <nop>
+
+    (kstoreptr,     $,  2), ! d32/d64 => d8/d16/d32/d64
+    (kfstoreptr,    $,  0), ! r32/r64 => r32/r64
+    (kmstoreptr,    $,  0), ! d64^ => block
+
+    (kdupl,         $,  0), ! 
+    (kduplopnds,    $,  0), ! 
+
+    (kswapopnds,    $,  0), ! 
+    (kunload,       $,  0), ! 
+    (kopnd,         $,  0), ! 
+
+    (keval,         $,  0), ! 
+
+    (kcall,         $,  0), ! Call A
+    (kcallptr,      $,  0), ! Call X^
+    (kretproc,      $,  0), !
+
+    (kcallf,        $,  1), ! i8/i16/d32/d64/u8/u16/ X^ := Call A
+    (kfcallf,       $,  0), ! r32/r64 X^ := Call A
+
+    (kcallfptr,     $,  1), ! "  X' := Call X^
+    (kfcallfptr,    $,  0), ! r32/r64 X' := Call X^
+    (kretfn,        $,  0), ! 
+
+    (kjump,         $,  0), ! Jump to L
+
+    (kjumpcc,       $,  1), ! i32/i64/u32/u64 Jump to L when cond
+    (kfjumpcc,      $,  0), ! r32/r64 Jump to L when cond
+
+    (kjumptrue,     $,  1), ! d32/d64 Jump to L when cond
+    (kfjumptrue,    $,  0), ! r32/r64
+    (kjumpfalse,    $,  1), ! d32/d64
+    (kfjumpfalse,   $,  0), ! r32/r64
+
+    (ksetcc,        $,  1), ! i32/i64/u32/u64 => 0/1 in d32
+    (kfsetcc,       $,  0), ! r32/r64 => 0/1 in d32
+
+    (kswitch,       $,  0), ! i32/i64
+    (kswitchlab,    $,  0), ! 
+    (kendsw,        $,  0), ! 
+
+    (kdb,           $,  0), ! 
+    (kdw,           $,  0), ! 
+    (kdd,           $,  0), ! 
+    (kdq,           $,  0), ! 
+
+    (kadd,          $,  1), ! d32/d64 X' := X + Y
+    (kfadd,         $,  0), ! r32/r64 X' := X + Y
+    (ksub,          $,  1), ! d32/d64
+    (kfsub,         $,  0), ! 
+    (kmul,          $,  1), ! d32/d64
+    (kfmul,         $,  0), ! 
+    (kdiv,          $,  1), ! i32/i64 u32/u64
+    (kfdiv,         $,  0), ! 
+
+    (krem,          $,  0), ! i32/i64 u32/u64
+    (kiand,         $,  0), ! d32/d64
+    (kior,          $,  0), ! d32/d64
+    (kixor,         $,  0), ! d32/d64
+    (kshl,          $,  0), ! d32/d64 X' := X << Y
+    (kshr,          $,  0), ! i32/i64/u32/u64   X' := X << Y
+
+    (kaddoff,       $,  0), ! d64 => d64 X' := X + Y*scale + offset
+    (ksuboff,       $,  0), ! d64 => d64 X' := X - (Y*scale + offset)
+    (ksubptr,       $,  0), ! d64 => d32 X' := (X - Y)/scale
+
+    (kneg,          $,  1), ! d32/d64
+    (kfneg,         $,  0), ! r32/r64
+
+    (kinot,         $,  0), ! d32/d64
+    (knotl,         $,  1), ! d32/d64 => 0/1 in d32; mode is d32/d64
+    (kfnotl,        $,  0), ! r32/r64 => 0/1 in d32
+    (knotnotl,      $,  1), ! d32/d64 => 0/1 in d32
+    (kfnotnotl,     $,  0), ! r32/r64 => 0/1 in d32
+
+    (kincr,         $,  0), ! d8/d16/d32/d64
+    (kdecr,         $,  0), ! 
+
+    (kincrload,     $,  0), ! i8/i16/i32/u8/u16 => i32, u32 => u32, i64->i64, u64->u64
+    (kdecrload,     $,  0), !
+    (kloadincr,     $,  0), ! 
+    (kloaddecr,     $,  0), ! 
+
+    (kaddto,        $,  1), ! d8/d16/d32/d64 X^ +:= Y; Y can be wider
+    (kfaddto,       $,  0), ! r32/r64 X^ +:= Y; Y must match LHS type
+
+    (ksubto,        $,  1), ! 
+    (kfsubto,       $,  0), ! 
+    (kmulto,        $,  1), ! 
+    (kfmulto,       $,  0), ! 
+    (kdivto,        $,  1), ! i8/i16/i32/i64/u8/u16/32/u64 X /:= Y; Y can be wider
+    (kfdivto,       $,  0), ! 
+
+    (kremto,        $,  0), ! See divto
+    (kiandto,       $,  0), ! d8/d16/d32/d64 X^ iand:= Y
+    (kiorto,        $,  0), ! 
+    (kixorto,       $,  0), ! 
+    (kshlto,        $,  0), ! d8/d16/d32/d64 X^ <<:= y
+    (kshrto,        $,  0), ! i8/i16/i32/i64/u8/u16/32/u64 X /:= Y; Y can be wider
+
+    (kaddoffto,     $,  0), ! d64 X^ +:= (Y*scale + offset)
+    (ksuboffto,     $,  0), ! d64 X^ -:= (Y*scale + offset)
+
+    (ktruncate,     $,  0), ! d32 => i8/i16/u8/u16 => i32, d64 => i32/u32, smode => mode => i32/u32
+    (kwiden,        $,  0), ! i32 => i64, u32 => u64; .mode is i64 or u64
+
+    (kfloat,        $,  0), ! i32/i64/u32/u64 => r32/r64, smode => mode
+    (kfix,          $,  0), ! r32/r64 => i32/i64/u32/u64, smode => mode
+
+    (kfwiden,       $,  0), ! r32 => r64
+    (kfnarrow,      $,  0), ! r64 => r32
+
+    (kstartmx,      $,  0), ! (Hints)
+    (kresetmx,      $,  0), ! 
+    (kendmx,        $,  0), ! 
+
+    (ksetret,       $,  1), ! 
+    (kfsetret,      $,  0), !
+    (ksetcall,      $,  0), ! (Hint)
+    (ksetarg,       $,  0), ! (Hint) 
+    (kloadall,      $,  0), ! 
+
+    (ksetjmp,       $,  0), ! X is address of buffer
+    (klongjmp,      $,  0), ! Using X = buffer address, restore location, return X':=Y 
+
+    (keq,           $,  0), ! 
+    (kne,           $,  0), ! 
+    (klt,           $,  0), ! 
+    (kle,           $,  0), ! 
+    (kge,           $,  0), ! 
+    (kgt,           $,  0), ! 
+
+    (klast,         $,  0), !
+end
