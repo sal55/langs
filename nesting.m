@@ -19,7 +19,7 @@
                     fi
                 else
                     case lx.symbol
-                    when rsqsym,commasym then           ![n]
+                    when rsqsym,commasym then       ![n]
                         lengthx:=x
                     when colonsym then              !a:n
                         lowerx:=x
