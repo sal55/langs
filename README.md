@@ -14,15 +14,14 @@ ASM       x64 assembly in my take on Intel syntax
 PCL       Intermediate language similar to the IL of the M compiler (1)
 ZA        Z80 assembly based around Zilog syntax (2)
 MS        New embedded scripting language based on a cut-down Q language (9)
-'C'       C subset used by mcc/bcc compilers
+'C'       C subset used by mcc compilers
 ```
 ### Tools
 ```
 Tool      Folder  Impl In  Description
 
 mm.exe    mx      M        M Compiler
- mc.exe   mxc     M        M to C transpiler (12)
- mmx.exe  (mx)    M        M compiler that runs programs from source (3)
+ mc.exe   mxc     M        M to C transpiler (11)
  mmp.exe  px      M        Independent M compiler that generates textual PCL files
  run.exe  mx      M        Stub program to run .mx executables (4)
 
@@ -36,8 +35,8 @@ ms.exe    bx      M        MS compiler and interpreter (WIP)
 
 zz.qa     zx      Q        ZA assembler
 
-mcc.exe   cx      M        C subset compiler (11)
- ccm.exe  ccx     M        C to M visualiser (13)
+mcc.exe   cx      M        C subset compiler (10)
+ ccm.exe  ccx     M        C to M visualiser (12)
  bcc.exe  bcx     M        C subset compiler (10)
 
 ```
@@ -90,8 +89,6 @@ aa.exe    .asm    N  .exe      -exe      (Default) Create executable
                      .obj      -obj      Write single object file (6)
                      .dll      -dll      Write DLL file (7)
 
-mmx.exe   .m .ma  1  Run                 Run M program from source
-
 mmp.exe   .m .ma  1  .pcl                Compile to single PCL source file
 
 pci.exe   .pcl    1  Run                 Interpret PCL program
@@ -105,6 +102,7 @@ mcc.exe   .c      N  .exe      -exe      (Default) Compile .c files to .exe via 
                      .obj      -c        Compile individual .c files to .obj via .asm/aa.exe
                      .asm      -s        Compile individual .c files to .asm
                      .i        -e        Preprocess individual .c files to .i
+                     .m        -mheaders Translate headers to M syntax in .m file
 
 mc.exe    .m      1  .exe      -gcc      (Default) Transpile M project to one C file then invoke gcc
                                -tcc      Use tcc
@@ -122,8 +120,6 @@ N indicates the number of input files accepted. Only `mcc.exe`, and `aa.exe` bec
 
 **(2)** This was a project involving a Z80 assembler (completed), and an emulator (just started). It was shelved when I realised how much effort was needed to properly emulate Z80.
 
-**(3)** `mmx.exe` is simply a renamed `mm.exe`. The M compiler checks the name of the executable, and if it is `mmx`, it will automatically invoke the `-run` option (and uses less verbose output, to make the compilation process transparent and the illusion of running a script language better)
-
 **(4)** (See **7**) Because of problems with DLLs, I created my own simpler shared library format using `.ml` files. These are accepted by Q programs, but in M, can only be transparently used by `.mx` files, or accessed via a special API from regular `.exe`.
 
 The format can also be used to write complete apps, with `.mx` extension, but being unknown to Windows, those must be started by a stub program `run.exe`
@@ -138,10 +134,8 @@ The format can also be used to write complete apps, with `.mx` extension, but be
 
 **(9)** MS is a new project just started. Short for M-Script.
 
-**(10)** BCC project is archived. It has been replaced by MCC, but it retains but it still supports the -mheaders/-qheaders options not yet part of MCC
+**(10)** MCC was a Sep 23 project to replace the backend of the older BCC compiler, which the same IL+backend used by my M compilers. In the end, the IL was revised quite a bit as the machine model of C is different. The optimising features are not yet enabled/debugged. I had hoped to have a direct-to-EXE backend developed too, but I lost interest and ran out of time. BCC had the AA assembler built-in; MCC invokes it as a separate program. Yet MCC can still do the job of compiling C code.
 
-**(11)** MCC was a Sep 23 project to replace the backend of BCC which the same IL+backend used by my M compilers. In the end, the IL was revised quite a bit as the machine model of C is different. The optimising features are not yet enabled/debugged. I had hoped to have a direct-to-EXE backend developed too, but I lost interest and ran out of time. BCC as the AA assembler built-in; MCC invokes it as a separate program. Yet MCC can still do the job of compiling C code.
+**11** MC was an M to C transpiler. It only supported a subset of M (so certain M features couldn't be used), and had been archived, but is once again because it is too useful.
 
-**12** MC was an M to C transpiler. It only supported a subset of M (so certain M features couldn't be used), and had been archived, but is once again because it is too useful.
-
-**13) CCM is another archived project. I had intended to take this further as a full C to M translator, but the task is too difficult. As it is, translates C to M-like syntax purely for visualisation. A few more things can be done to improve that, such as output enum names and simple #defines as their names rather than constants, but it is still a visualiser: M syntax, but C semantics still.
+**(12) CCM is another archived project. I had intended to take this further as a full C to M translator, but the task is too difficult. As it is, translates C to M-like syntax purely for visualisation. A few more things can be done to improve that, such as output enum names and simple #defines as their names rather than constants, but it is still a visualiser: M syntax, but C semantics still.
