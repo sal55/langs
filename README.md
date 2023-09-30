@@ -1,6 +1,6 @@
 ## Summary of Language Projects 2023
 
-August 2023
+September 2023
 
 These are private languages of mine. This is where docs and summaries about them come together.
 
@@ -14,7 +14,8 @@ ASM       ax      x64 assembly in my take on Intel syntax
 PCL       px      Intermediate language similar to the IL of the M compiler (1)
 ZA        zx      Z80 assembly based around Zilog syntax (2)
 MS        bx      New embedded scripting language based on a cut-down Q language (9)
-('C'      cx      C subset used by archived bcc compiler)
+'C'       bcx     C subset used by bcc compiler (10)
+'C'       cx      C subset used by mcc compiler (11)
 ```
 ### Tools
 ```
@@ -26,7 +27,8 @@ ms.exe   M        MS compiler and interpreter (WIP)
 aa.exe   M        ASM assembler
 pci.exe  M        Interpreter of of PCL files
 zz.qa    Q        ZA assembler
-(bcc.exe M        'C' subset compiler)
+bcc.exe  M        'C' subset compiler
+bcc.exe  M        'C' subset compiler
 
 mmx.exe  M        M compiler that runs programs from source (3)
 mmp.exe  M        Independent M compiler that generates textual PCL files
@@ -51,7 +53,7 @@ Extension  Represents  Description
 
 .exe       Program     Windows executable file (PE+)
 .dll       Library     Windows shared dynamic library (PE+) (7)
-.obj       Program*    Object file (COFF64/PE+) (*Can be module) (8)
+.obj       Program*    Object file (COFF64/PE+) (* Can be module) (8)
 ```
 
 ### Inputs and Outputs
@@ -86,9 +88,14 @@ run.exe   .mx     1  Run                 Run .mx application
 
 zz.qa     .za     1  -         -asm      (Default) Assemble to in-memory machine code
                      Run       -run      (Not ready) Assemble and run
+
+mcc.exe   .c      N  .exe      -exe      (Default) Compile .c files to .exe via .asm/aa.exe
+                     .obj      -c        Compile individual .c files to .obj via .asm/aa.exe
+                     .asm      -s        Compile individual .c files to .asm
+                     .i        -e        Preprocess individual .c files to .i
 ```
 
-N indicates the number of input files accepted. Only `bcc.exe`, and `aa.exe` because it was used to combine .asm outputs of BCC, accept multiple source files. All my own languages generally work from a single submitted module.
+N indicates the number of input files accepted. Only `mcc.exe`, and `aa.exe` because it was used to combine .asm outputs of BCC/MCC, accept multiple source files. All my own languages generally work from a single submitted module.
 
 ### Notes
 
@@ -112,5 +119,7 @@ The format can also be used to write complete apps, with `.mx` extension, but be
 
 **(9)** MS is a new project just started. Short for M-Script.
 
-**(10)** BCC project is archived, and is retained as a test program for my M compiler.
+**(10)** BCC project is archived. It has been replaced by MCC, but it retains but it still supports the -mheaders/-qheaders options not yet part of MCC
+
+**(11)** MCC was a Sep 23 project to replace the backend of BCC which the same IL+backend used by my M compilers. In the end, the IL was revised quite a bit as the machine model of C is different. The optimising features are not yet enabled/debugged. I had hoped to have a direct-to-EXE backend developed too, but I lost interest and ran out of time. BCC as the AA assembler built-in; MCC invokes it as a separate program. Yet MCC can still do the job of compiling C code.
 
