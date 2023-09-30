@@ -6,33 +6,34 @@ These are private languages of mine. This is where docs and summaries about them
 
 ### Languages
 ```
-Language  Folder  Description (Notes)
+Language  Description (Notes)
 
-M         mx      Lower level systems language
-Q         qx      Lower level dynamic scripting language
-ASM       ax      x64 assembly in my take on Intel syntax
-PCL       px      Intermediate language similar to the IL of the M compiler (1)
-ZA        zx      Z80 assembly based around Zilog syntax (2)
-MS        bx      New embedded scripting language based on a cut-down Q language (9)
-'C'       bcx     C subset used by bcc compiler (10)
-'C'       cx      C subset used by mcc compiler (11)
+M         Lower level systems language
+Q         Lower level dynamic scripting language
+ASM       x64 assembly in my take on Intel syntax
+PCL       Intermediate language similar to the IL of the M compiler (1)
+ZA        Z80 assembly based around Zilog syntax (2)
+MS        New embedded scripting language based on a cut-down Q language (9)
+'C'       C subset used by mcc/bcc compilers
 ```
 ### Tools
 ```
-Tool     Impl In  Description
+Tool     Folder  Impl In  Description
 
-mm.exe   M        M Compiler
-qq.exe   M        Q bytecode compiler and interpreter
-ms.exe   M        MS compiler and interpreter (WIP)
-aa.exe   M        ASM assembler
-pci.exe  M        Interpreter of of PCL files
-zz.qa    Q        ZA assembler
-bcc.exe  M        'C' subset compiler
-bcc.exe  M        'C' subset compiler
+mm.exe   mx      M        M Compiler
+qq.exe   qx      M        Q bytecode compiler and interpreter
+ms.exe   bx      M        MS compiler and interpreter (WIP)
+aa.exe   ax      M        ASM assembler
+pci.exe  px      M        Interpreter of of PCL files
+zz.qa    zx      Q        ZA assembler
+bcc.exe  bcx     M        'C' subset compiler (10)
+mcc.exe  cx      M        'C' subset compiler (11)
+mc.exe   mxc     M        M to C transpiler (12)
+ccm.exe  ccx     M        C to M visualiser (13)
 
-mmx.exe  M        M compiler that runs programs from source (3)
-mmp.exe  M        Independent M compiler that generates textual PCL files
-run.exe  M        Stub program to run .mx executables (4)
+mmx.exe  (mx)    M        M compiler that runs programs from source (3)
+mmp.exe  px      M        Independent M compiler that generates textual PCL files
+run.exe  mx      M        Stub program to run .mx executables (4)
 ```
 
 ### File Extensions
@@ -93,6 +94,13 @@ mcc.exe   .c      N  .exe      -exe      (Default) Compile .c files to .exe via 
                      .obj      -c        Compile individual .c files to .obj via .asm/aa.exe
                      .asm      -s        Compile individual .c files to .asm
                      .i        -e        Preprocess individual .c files to .i
+
+mc.exe    .m      1  .exe      -gcc      (Default) Transpile M project to one C file then invoke gcc
+                               -tcc      Use tcc
+                               -mcc      Use mcc
+                     .c        -c        Transpile to C only
+
+ccm       .c      N  .m                  Informally convert to M syntax
 ```
 
 N indicates the number of input files accepted. Only `mcc.exe`, and `aa.exe` because it was used to combine .asm outputs of BCC/MCC, accept multiple source files. All my own languages generally work from a single submitted module.
@@ -123,3 +131,6 @@ The format can also be used to write complete apps, with `.mx` extension, but be
 
 **(11)** MCC was a Sep 23 project to replace the backend of BCC which the same IL+backend used by my M compilers. In the end, the IL was revised quite a bit as the machine model of C is different. The optimising features are not yet enabled/debugged. I had hoped to have a direct-to-EXE backend developed too, but I lost interest and ran out of time. BCC as the AA assembler built-in; MCC invokes it as a separate program. Yet MCC can still do the job of compiling C code.
 
+**12** MC was an M to C transpiler. It only supported a subset of M (so certain M features couldn't be used), and had been archived, but is once again because it is too useful.
+
+**13) CCM is another archived project. I had intended to take this further as a full C to M translator, but the task is too difficult. As it is, translates C to M-like syntax purely for visualisation. A few more things can be done to improve that, such as output enum names and simple #defines as their names rather than constants, but it is still a visualiser: M syntax, but C semantics still.
