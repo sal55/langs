@@ -1,6 +1,6 @@
 ## Summary of Language Projects 2023
 
-September 2023
+October 2023
 
 These are private languages of mine. This is where docs and summaries about them come together.
 
@@ -13,7 +13,6 @@ Q         Lower level dynamic scripting language
 ASM       x64 assembly in my take on Intel syntax
 PCL       Intermediate language similar to the IL of the M compiler (1)
 ZA        Z80 assembly based around Zilog syntax (2)
-MS        New embedded scripting language based on a cut-down Q language (9)
 'C'       C subset used by mcc compilers
 ```
 ### Tools
@@ -24,21 +23,19 @@ mm.exe    mx      M        M Compiler
  mc.exe   mxc     M        M to C transpiler (11)
  mmp.exe  px      M        Independent M compiler that generates textual PCL files
  run.exe  mx      M        Stub program to run .mx executables (4)
-
-pci.exe   px      M        Interpreter of of PCL files
+ pci.exe  px      M        Interpreter of of PCL files
 
 aa.exe    ax      M        ASM assembler
 
-qq.exe    qx      M        Q bytecode compiler and interpreter
+qq.exe    qx      M        Q bytecode compiler and interpreter (Q5.1)
 
-ms.exe    bx      M        MS compiler and interpreter (WIP)
+qq.exe    rx      M        (Q5.2 development)
 
 zz.qa     zx      Q        ZA assembler
 
 mcc.exe   cx      M        C subset compiler (10)
  ccm.exe  ccx     M        C to M visualiser (12)
- bcc.exe  bcx     M        C subset compiler (10)
-
+ 
 ```
 
 ### File Extensions
@@ -57,8 +54,6 @@ Extension  Represents  Description
 
 .q         Module      Q source file
 .qa        Program     Q amalgamated source file (6)
-
-.ms        Program     MS source file
 
 .za        Program     ZA assembly source file (there are no modules)
 
@@ -82,8 +77,6 @@ mm.exe    .m .ma  1   .exe     -exe      (Default) Compile to executable
 qq.exe    .q .qa  1   Run                (Default) Compile and run bytecode in-memory
                       .qa      -qa       Write amalgamated source file ...
                                -qas      ... with standard library
-
-ms.exe    .ms     1   Run                Run MS script in standalone or embedded interpreter
 
 aa.exe    .asm    N  .exe      -exe      (Default) Create executable
                      .obj      -obj      Write single object file (6)
@@ -132,10 +125,8 @@ The format can also be used to write complete apps, with `.mx` extension, but be
 
 **(8)** OBJ files can still be produced by `aa.exe`, to allow combining with other software. But they need a third party linker, and these now like to create images that can also be loaded above 2GB. So at present DLL and OBJ outputs are shelved until I can sort that out.
 
-**(9)** MS is a new project just started. Short for M-Script.
-
 **(10)** MCC was a Sep 23 project to replace the backend of the older BCC compiler, which the same IL+backend used by my M compilers. In the end, the IL was revised quite a bit as the machine model of C is different. The optimising features are not yet enabled/debugged. I had hoped to have a direct-to-EXE backend developed too, but I lost interest and ran out of time. BCC had the AA assembler built-in; MCC invokes it as a separate program. Yet MCC can still do the job of compiling C code.
 
-**11** MC was an M to C transpiler. It only supported a subset of M (so certain M features couldn't be used), and had been archived, but is once again because it is too useful.
+**(11)** MC was an M to C transpiler. It only supported a subset of M (so certain M features couldn't be used), and had been archived, but is active once again because it is too useful.
 
-**(12) CCM is another archived project. I had intended to take this further as a full C to M translator, but the task is too difficult. As it is, translates C to M-like syntax purely for visualisation. A few more things can be done to improve that, such as output enum names and simple #defines as their names rather than constants, but it is still a visualiser: M syntax, but C semantics still.
+**(12)** CCM is another archived project. I had intended to take this further as a full C to M translator, but the task is too difficult. As it is, translates C to M-like syntax purely for visualisation. A few more things can be done to improve that, such as output enum names and simple #defines as their names rather than constants, but it is still a visualiser: M syntax, but C semantics still.
