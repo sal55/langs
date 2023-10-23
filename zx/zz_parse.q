@@ -347,8 +347,6 @@ end
 
 proc readincr(isdec)=
 !isdec is 0 (inc) or 1 (dec)
-!CPL "READI"
-!PS("RI")
     case readopnd()
     when reg16_opnd then
         case opndreg
