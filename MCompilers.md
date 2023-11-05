@@ -48,4 +48,42 @@ It's now only been a couple of years that a fully automatic, hassle-free module 
 
 ### Optimisations
 
-I've never bothered with these until re
+I've never bothered with these until recently. And then it was mainly to do with keeping some local variable in registers. That made an impressive difference with small benchmarks, but very little difference with real programs.
+
+However, for the sorts of apps the M compiler is now used for (compilers, assemblers, interpreters), the difference between unoptimised and optimised (ie. transpiling to C and applying gcc or clang/llvm) might only be 30-50%. That is, optimised code take 23-33% less runtime. But typical runtimes (for compiling/assembling) are only about 0.1 seconds anyway, so it's irrelevant.
+
+(For interpreting, runtimes depend on input programs and can be anything, but here I can enable the accelerated ASM dispatcher. Then most programs run faster than applying gcc-O3 to transpiled C.)
+
+### Intermediate Languages
+
+Most code-generation has been ad-hoc, yet performance hasn't been terrible. I'd never used an intermediate language (perhaps a stylised, more orthogonal version of the native code target sometimes), until recently. I played with a few different kinds, and have now settled on stack-based IL, called PCL. (Also the name of my interpreter's bytecode, which was not a problem, until I attempted a hybrid language combining both.)
+
+I've experimented with versions of PCL thjat could exist as a separate, independent language expressed textual source code. One version had a problem that could turn PCL into EXE (basically, what LLVM does, but in a 0.25MB program). Another had an interpreter.
+
+Both had limitations (eg. no inline assembly was possible, or problems interfacing between native code libraries and interpretec codes. Eventually that was dropped; the current 'PCL' is an internal language only, as it is in the Q interpreter.
+
+### Debuggers
+
+I've never bothered. But I've also gotten quite adept at hunting down bugs. In any case, with language-related development, you might be dealing with multiple sets of sources; which one do you single-step through? The bug might lie in the scripting code; in the interoreter code; in the compiler used to build the interpreter; or in the previous generation of that compiler.
+
+### Language Server
+
+I guess I hardly need to point out that no such thing exists. My tools are firmly 80s-style and console-based.
+
+### Packaging and Deployment
+
+I can't remember about older versions, but for the last few years, each compiler (and assember or interpreter) has been a single, self-contained EXE file. This is certainly true of the M compiler (my C compiler has recently changed from one file to a 2/3-file solution: compiler, assembler, and windows.h).
+
+One recent feature is the ability of the compiler to take a project of dozens of modules and support files, and package them into a single `.ma` file. Then the compiler can direcly build from this file, without needing to extract the files (unlike .zip for example). So to supply everything for someone else to build your app from source, only two files are needed: compiler and source file bundle:
+
+    mm qq.ma                    # build Q interpreter using mm.exe and qq.ma
+
+No 'make' files. Nothing stops anyone using makefiles to manage the wider aspects of a complete application than building one binary, but it's not something I use. I use my IDE, project files and possible shell scripts for my own needs.
+
+### Edit-Compile_Run Times
+
+I can't remember this taking more than a few seconds, even to re-compile every module, no matter what era and what hardware was in use. (Of course, older, slower hardware would also be running smaller programs!)
+
+And usually, you were familiar enough with your project to know which files required recompiles of all others. Maybe, interface files shared by all modules. So typically, only edited modules needed to be recompiled.
+
+With the whole-program compilers now, all modules are recompiled, but typical build times these days are around 0.1 seconds on projects up to 40/50Kloc.
