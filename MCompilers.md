@@ -19,7 +19,7 @@ x64   | 64 | Windows | `i64` | `f64` | 64 | Current | Latest with IL, 'optimiser
 
 All these compilers ran on their respective targets. All have ended up self-hosted, bootstrapped from an earlier version as they evolved. The first Z80 version was written in assembly, with an assembler I wrote in hex, with a hex editor itself written in actual binary (using homemade switches).
 
-assembly was also used for the PDP10 compiler before self-hosting, and it may have been used for rebooting between 8 and 16 bits; I can't remember the process. (I was at the time involved in the developing the hardware as well as devising compilers for it.)
+Assembly was also used for the PDP10 compiler before self-hosting, and it may have been used for rebooting between 8 and 16 bits; I can't remember the process. (I was at the time involved in the developing the hardware as well as devising compilers for it.)
 
 Most versions implemented the 'full stack', in going from source to executable using 100% my own code, but there were exceptions, for example, from late 90s to 2012 I generated NASM source and used a linker belonging to a C compiler. Currently it is again full stack and 100% self-hosted.
 
@@ -43,7 +43,7 @@ It's now only been a couple of years that a fully automatic, hassle-free module 
 
 ### Optimisation
 
-I've never bothered with this until recently. And then it mainly amounted to keeping some local variable in registers. That made an impressive difference with small benchmarks, but very little difference with real programs.
+I've never bothered with this until recently. And then it mainly amounted to keeping some local variables in registers. That made an impressive difference with small benchmarks, but very little difference with real programs.
 
 However, for the sorts of apps the M compiler is now used for (compilers, assemblers, interpreters), the difference between unoptimised and optimised (ie. transpiling to C and applying gcc or clang/llvm with -O3) might only be 30-50% faster. That is, optimised code take 23-33% less runtime. But typical runtimes (for compiling/assembling) are only about 0.1 seconds anyway, so it's irrelevant.
 
@@ -51,9 +51,15 @@ However, for the sorts of apps the M compiler is now used for (compilers, assemb
 
 There is also a crude peephole optimiser. This makes almost no difference to performance (modern CPUs are good at dealing with extraneous code), but it does make programs smaller.
 
+### Inline Assembly
+
+This has been a feature of the M language from the start. It's one reason why lack of optimisation was not a problem: bottlenecks were dealt with by using assembly code.
+
+But it added some challenges when a compiler did not itself generate ASM source code, and most of mine didn't. It meant part of an assembler had to be included. Also, when generating IL, my IL could not represent ASM code sequences. This was one problem in getting an independent PCL language to work. So using inline ASM could only be done when PCL was an integral part of the compiler.
+
 ### Intermediate Languages
 
-Most code-generation has been ad-hoc, yet performance hasn't been terrible. I'd never used an intermediate language (sometimes a stylised, more orthogonal version of the native code target), until recently. I played with a few different kinds, and have now settled on a stack-based IL, called PCL. (Also the name of my interpreter's bytecode; usually they don't clash...)
+Most code-generation has been ad-hoc, yet performance hasn't been terrible. I'd never used an intermediate language (only, sometimes, a stylised, more orthogonal version of the native code target), until recently. I played with a few different kinds, and have now settled on a stack-based IL, called PCL. (Also the name of my interpreter's bytecode; usually they don't clash...)
 
 I've experimented with versions of PCL that could exist as a separate, independent language expressed as textual source code. One version had a program that could turn PCL into EXE (basically, what LLVM does, but in a 0.25MB program). Another had an interpreter.
 
@@ -97,3 +103,4 @@ These days, machines are so fast that I could run my M applications from source 
 * No proper optimiser (this had been provided by using the C backend on Windows then using an optimising C compiler)
 * Generates code for low-memory x64 only, that is, within first 2GB. This is an issue when generating DLL files, which might be loaded high. And with generating OBJ files which are then passed to an external linker, as creating executables with an arbitrary (and high) image base address is now popular
 * The usual bugs, missing features, patchy coverage and poor error reporting. But this is OK in a personal language as you can work around them. It would be different if my compiler was a product like an application.
+
