@@ -21,10 +21,10 @@ PCL(Q)    Bytecode language used b the Q interpreter
 
 ### Tools
 ```
-Tool      Folder  Impl In  Description
+Tool        Folder  Impl In  Description
 
 mm.exe      mx      M        M Compiler
-  runmx.exe  mx      M        Stub program to run .mx executables (4)
+runmx.exe   mx      M        Stub program to run .mx executables (4)
 
 aa.exe      ax      M        ASM assembler
 
@@ -80,7 +80,7 @@ mcc.exe   .c      N  .exe      -exe      (Default) Compile .c files to .exe via 
                      .m        -mheaders Translate headers to M syntax in .m file
 ```
 
-N indicates the number of input files accepted. Only `mcc.exe`, and `aa.exe` because it was used to combine .asm outputs of BCC/MCC, accept multiple source files. All my own languages generally work from a single submitted module.
+N indicates the number of input files accepted. Only `mcc.exe`, and `aa.exe` because it was used to combine .asm outputs of MCC, accept multiple source files. All my own languages generally work from a single submitted module.
 
 ### Notes
 
