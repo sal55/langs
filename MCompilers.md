@@ -2,8 +2,11 @@
 
 M was never a general-purpose, cross-platform language. It always targetted whatever platform was current, in the world of personal and small business computers.
 
+The following is a rough summary of the various targets of my systems language compilers as they evolved over 40+ years. All are for my 'M' language except for the first, included as a contrast, which was for a kind of kind of HLA/HLL hybrid. The `int` and `real` columns show the widths of those primitive types
+:
 Processor | Bits| OS | `int` | `real` | Pointer size | Year | Other
 --- | --- | --- | --- | --- | --- | --- | ---
+PDP10 | 36 | TOPS10?  | `i36` | -- | 18 | 1980 | College mainframe
 Z80 | 16 | Bare metal | `i16` | `f24` | 16 | 1981 | Home-made machine
 Z80 | 16 | CP/M Clone | `i16` | `f32` | 16 | Early 80s | Business machine
 8086 | 16 | MSDOS | `i16` | `f32` | 32 | Mid 80s | (IBM PC; segmented address)
