@@ -1,12 +1,12 @@
 ## M Compiler Summary and Timeline
 
-M was never a general-purpose, cross-platform language. It always targetted whatever platform was current, in the world of personal and small business computers. So this progressed from 8-bit machines through generations of PCs, ending up with Windows running on 64-bit desktop machines. I don't do other platforms (at a pinch, I can just about run programs on Linux).
+M was never a general-purpose, cross-platform language. It targetted one platform at a time, whatever was current in the world of personal and small business computers. So this progressed from 8-bit machines through generations of PCs, ending up with Windows running on 64-bit desktop machines. I don't do other platforms.
 
-The following is a rough summary of the various targets of my systems language compilers as they evolved over 40+ years. All are for my 'M' language except for the first, included as a contrast, which was for a kind of HLA/HLL hybrid language. The `int` and `real` columns show the widths of those primitive types
+The following is a rough summary of the various targets of my systems language compilers as they evolved over 40+ years. All are for my 'M' language except for the first, included as a contrast, which was for a kind of HLA/HLL hybrid. The `int` and `real` columns show the widths of those primitive types
 :
 Processor | Bits| OS | `int` | `real` | Pointer size | Year | Comments
 --- | --- | --- | --- | --- | --- | --- | ---
-PDP10 | 36 | TOPS10?  | `i36` | -- | 18 | 1980 | ('Babbage' compile; college mainframe)
+PDP10 | 36 | TOPS10?  | `i36` | -- | 18 | 1980 | ('Babbage' compiler; college mainframe)
 Z80 | 16 | Bare metal | `i16` | `f24` | 16 bits | 1981 | Home-made machine
 Z80 | 16 | CP/M Clone | `i16` | `f32` | 16 | Early 80s | Business machine
 8086 | 16 | MSDOS | `i16` | `f32` | 32 (16+16)| Mid 80s | (IBM PC; segmented address)
