@@ -1,13 +1,16 @@
-    Source Files  ─┬─> AST1 ─> AST2 ─> AST3 ─┬─> PCL ─> MCL ─┬─> SS ─┬─> EXE Image ─┬─> EXE File
+````
+    Input              Intermediates                                                       Output
+    
+    Source Files  ─┬─> AST1 ─> AST2 ─> AST3 ─┬─> PCL ─> MCL ─┬─> SS ─┬─> EXE Image ─┬────> EXE File
     Support Files ─┤                         │               │       │              │
-    Ext Libs      ─┘                         │               │       │              └─> (DLL File)
-                                             │               │       └─> MCU ─┬─> MCB ─┬─> ML/EXP Files
+    Ext Libs      ─┘                         │               │       │              └────> (DLL File)
+                                             │               │       └─> MCU ─┬─> MCB ─┬─> ML/EXP File
                                              │               │                │        │
                                              │               │                │        └─> MX File
-                                             │               │                └─> MCX ─> Run
-                                             │               └─> ASM
-                                             └─> MA File
-
+                                             │               │                └─> MCX ───> (Run)
+                                             │               └───────────────────────────> ASM File
+                                             └───────────────────────────────────────────> MA File
+````
 
 Key:
 
