@@ -1,15 +1,16 @@
 ````
-    Input              Intermediates                                                       Output
-    
-    Source Files  ─┬─> AST1 ─> AST2 ─> AST3 ─┬─> PCL ─> MCL ─┬─> SS ─┬─> EXE Image ─┬────> EXE File
-    Support Files ─┤                         │               │       │              │
-    Ext Libs      ─┘                         │               │       │              └────> (DLL File)
-                                             │               │       └─> MCU ─┬─> MCB ─┬─> ML/EXP File
-                                             │               │                │        │
-                                             │               │                │        └─> MX File
-                                             │               │                └─> MCX ───> (Run)
-                                             │               └───────────────────────────> ASM File
-                                             └───────────────────────────────────────────> MA File
+    Inputs             Intermediates                                                         Outputs
+
+    Ext Libs      ───>─────────────────────────────────────────────────┐
+    Source Files  ─┬─> AST1 ─> AST2 ─┬─> AST3 ─┬─> PCL ─> MCL ─┬─> SS ─┼─> EXE Image ─┬────> EXE File
+    Include Files ─┘                 │         │               │       │              │
+    Strinclude    ───>───────────────┘         │               │       │              └────> (DLL File)
+                                               │               │       └─> MCU ─┬─> MCB ─┬─> ML/EXP File
+                                               │               │                │        │
+                                               │               │                │        └─> MX File
+                                               │               │                └─> MCX ───> (Run)
+                                               │               └───────────────────────────> ASM File
+                                               └───────────────────────────────────────────> MA File
 ````
 
 Key:
