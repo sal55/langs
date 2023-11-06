@@ -23,7 +23,7 @@ x64   | 64 | Windows | `i64` | `f64` | 64 | Current | Latest with IL, 'optimiser
 
 All these compilers ran on their respective targets. All have ended up self-hosted, bootstrapped from an earlier version as they evolved.
 
-The first Z80 version was written in assembly, with an assembler I wrote in hex, with a hex editor itself written in actual binary, using homemade switches to toggle bits on and off, on a home-made machine.
+The first Z80 version was written in assembly, with an assembler I wrote in hex, with a hex editor itself written in actual binary, using switches to toggle bits on and off, on a home-made machine.
 
 Assembly was also used for the PDP10 compiler before self-hosting, and it may have been used for rebooting the language between 8 and 16 bits; I can't remember the process. I was at the time involved with developing 8- and 16-bit hardware as well as devising compilers for it.)
 
