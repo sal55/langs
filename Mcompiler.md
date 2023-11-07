@@ -86,15 +86,15 @@ RUN           Not an output, the program is run immediately without generating a
 
 #### Compiler Size and Presentation
 
-The core compiler (no diagnostic module, no built-in stdlibs. no ML/MX/RUN support) is currently 307KB. With ML/MX/RUN, it is 317KB. With also the built-in stdlibs (ie. the stardard library source modules which are statically compiled within the compile), then `mm.exe` is a self-contained 382KB solution to build M applications.
+The core compiler (no diagnostic module, no built-in stdlibs. no ML/MX/RUN support) is currently 307KB. With ML/MX/RUN, it is 317KB. With also the built-in stdlibs (ie. the stardard library source modules which are statically compiled with each application), then `mm.exe` is a self-contained 382KB solution to build M applications.
 
-In other words, MM is a single 0.4MB blob which, working at 0.5M lines per second, turns most M programs into an executable in a fraction of second (usually, by the time you've released the Enter key). Being instant and effortless is exactly what I'm aiming for; building an app should be like flicking a light switch: it just works.
+In other words, MM is a single 0.4MB blob, which can translates source code to executable at some 0.5M lines per second. This is exactly what I've aimed for, a compiler that effortlessly builds programs more or less instantly. 
 
 #### Optimiser
 
-This is not shown, as there isn't a proper one. There is a simpler optimiser that allocates locals to register, and does some peep-hole optimising. This makes some benchmarks and some individual functions faster, but has little effect on real programs. Mainly it makes programs smaller.
+There is only a simple optimiser that allocates locals to register, and does some peep-hole optimising. This makes some benchmarks and some individual functions faster, but has little effect on real programs. Mainly it makes programs smaller.
 
-It is applied during MCL-generation by doing a second pass on a per-function basis. Without the optimiser, the 317KB core compiler would be 336KB.
+It is applied during MCL-generation by doing a second pass on a per-function basis. Without the optimiser enabled, the 317KB core product would be compiled to 336KB.
 
-The main applications M is used for are compilers, assemblers and interpreters. With those, full optimisation (tested by transpiling to C then using gcc or clang/llvm with `-O3`), might only make them 30-50% faster (that is, 23-33% less runtime). With compilers and assemblers, typical runtimes are only 0.1 seconds anyway.
+The main applications M is used for are compilers, assemblers and interpreters. With those, full optimisation (tested by transpiling to C then using gcc or clang/llvm with `-O3`), might only make them 30-50% faster (that is, 23-33% less runtime). With compilers and assemblers, typical runtimes are small fractions of a second anyway.
 
