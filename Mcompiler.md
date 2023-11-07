@@ -1,5 +1,7 @@
 ## M Compiler Structure
 
+The name of the compiler is `MM` or `mm.exe`.
+
 ````
     Inputs             Intermediates                                                         Outputs
 
@@ -17,7 +19,7 @@
 
 #### Inputs
 ````
-Source Files:     There is only ever one source file submitted to the compiler. This will usually be the lead module,
+Source Files:     There is only ever one source file submitted to MM. This will usually be the lead module,
                   that also lists other module other modules of the project.
                   Sometimes, that one input it will be a `.ma` file that contains all source and support files.
 
@@ -36,9 +38,9 @@ AST2          Has all name references resolved (language allows out of order def
 
 AST3          Has type info filled in, any conversions applied, and constant expressions reduced
 
-PCL           The generated IL instructions from the AST
+PCL           The generated IL (sometimes called IR) instructions from the AST
 
-MCL           A representation of the generated native code
+MCL           A representation of the generated native code, in this case it is for x64.
 
 SS            A set of data structures containing binary native code and data, organised into code and data segments and with reloc info
 
@@ -53,46 +55,52 @@ MCX           MCU with allocations, imports and fixups done to make it ready to 
 ````
 #### Outputs
 ````
-MCX           MCU with 
-
 EXE           The Windows executable file format (PE+)
 
-DLL           The Windows shared library format. It is not used at present, as the M
-              compiler can only generate code that runs in low memory (first 2GB).
-              ML files are used instead.
+DLL           The Windows shared library format. It is not used at present, as MM can only generate code
+              that runs in low memory (first 2GB). ML files are used instead.
 
 ML            My private shared library format which takes over DLL tasks until real DLL works properly again
 
 MX            The same format, used to write a complete executable. (Needs RUNMX app to load and run.
               In this form it is believed to attract less attention from AV software)
 
-ASM           x64 assembly source code, in a syntax used by my own assembler
+EXP           Export files. These are under review, but when generating ML (it was done for DLL too), it also generated an
+              import module, which I plan to do for both M and Q languages, which simplify using the library from an M or
+              Q application. Just import that generated module.
 
-MA            A a single-file amalgamation of all source and support files needed to build a program.
-              It can be directly built  by the M compiler.
+ASM           x64 assembly source code, in a syntax used by my own assembler `AA`.
+
+MA            A single-file amalgamation of all source and support files needed to build a program.
+              It can be directly built by MM to make for a tidy of distributing and building M applications.
 
 OBJ           Object files are not directly generated, only by writing ASM which can generate OBJ files.
               But the code is still limited to the low 2GB, and linkers now like to create programs with a high image base.
               So DLL/OBJ are temporarily out of commission. OBJ files allowed M code to be
               statically linked with other languages.
+
+RUN           Not an output, the program is run immediately without generating any executable file. This allows M to be used
+              like a scripting language, running programs directly from source code.
+
 ````
 
-#### ML Files
+#### Compiler Size and Presentation
 
-These can't quite be used as drop-in replacements for DLLs, as the Windows EXE loader
-only automatically deals with actual DLLs. They can be used like this:
+The core compiler (no diagnostic module, no built-in stdlibs. no ML/MX/RUN support) is currently 307KB. With ML/MX/RUN, it is 317KB. With also the built-in stdlibs (ie. the stardard library source modules which are statically compiled within the compile), then `mm.exe` is a self-contained 382KB solution to build M applications.
 
-* As FFI imports to my Q interpreter, as that can deal with either DLL or ML
-* When an application is compiled to .mx rather than .exe, as the special RUN launcher needed for MX files will do the special loading needed
-* Inside a regular EXE, ML libraries can be accessed by a special API,  similarly to how `LoadLibrary/GetProcAddress` are used for DLLs (or `dlopen/dlsym`
-  for .so files)
-
-#### Compiler Size
-
-The core compiler (no diagnostic module, no built-in stdlibs. no ML/MX/RUN support) is currently 307KB. With ML/MX/RUN, it is 317KB. With also the built-in stdlibs (ie. the stardard library source modules which are statically compiled with an application), the M compiler is a self-contained 382KB solution in one file.
+In other words, MM is a single 0.4MB blob which, working at 0.5M lines per second, turns most M programs into an executable in a fraction of second (usually, by the time you've released the Enter key). Being instant and effortless is exactly what I'm aiming for; building an app should be like flicking a light switch: it just works.
 
 #### Optimiser
 
 This is not shown, as there isn't a proper one. There is a simpler optimiser that allocates locals to register, and does some peep-hole optimising. This makes some benchmarks and some individual functions faster, but has little effect on real programs. Mainly it makes programs smaller.
 
 It is applied during MCL-generation by doing a second pass on a per-function basis. Without the optimiser, the 317KB core compiler would be 336KB.
+
+The main applications M is used for are compilers, assemblers and interpreters. With those, full optimisation (tested by transpiling to C then using gcc or clang/llvm with `-O3`), might only make them 30-50% faster (that is, 23-33% less runtime). With compilers and assemblers, typical runtimes are only 0.1 seconds anyway.
+
+#### Number of Passes
+
+The normal source -> EXE path has 7 intermediate representations. That sounds a lot. I looked at a 20-year-old compiler, and that had only 3: `AST1 -> AST2 -> MCL`, because there was no separate name resolve pass, and it generated ASM only. MM generating ASM would adds 2 passes.
+
+The binary backend adds two more. But here it can't be directly compared with other compilers if they only go as far as ASM or even stop at LLVM IR.
+
