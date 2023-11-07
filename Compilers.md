@@ -28,7 +28,7 @@ Most versions implemented the 'full stack', in going from source to executable u
 
 All compilers have been amateur efforts written by me for personal use, or as an in-house tool to help in my work. They were not professional products. Yet for quite a few years they were also used to write applications sold commercially.
 
-Other than when using the NASM backend, and for a period when my own replacement for NASM generating OBJ files, my products never used a conventional linker. Pre-NASM, I would use my own OBJ format and had a program called a Loader to combine multiple object files into an executable.
+Other than when using the NASM backend, and for a period when my own replacement for NASM generated OBJ files, my products never used a conventional linker. Pre-NASM, I would use my own OBJ format and had a program called a Loader to combine multiple object files into an executable.
 
 Post-NASM and after the OBJ-generating phase, my own assembler generated EXE files directly. The back-end of the assembler was eventually incorporated into the compiler. ASM output was then used only during debugging and development.
 
