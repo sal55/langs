@@ -98,9 +98,3 @@ It is applied during MCL-generation by doing a second pass on a per-function bas
 
 The main applications M is used for are compilers, assemblers and interpreters. With those, full optimisation (tested by transpiling to C then using gcc or clang/llvm with `-O3`), might only make them 30-50% faster (that is, 23-33% less runtime). With compilers and assemblers, typical runtimes are only 0.1 seconds anyway.
 
-#### Number of Passes
-
-The normal source -> EXE path has 7 intermediate representations. That sounds a lot. I looked at a 20-year-old compiler, and that had only 3: `AST1 -> AST2 -> MCL`, because there was no separate name resolve pass, and it generated ASM only. MM generating ASM would adds 2 passes.
-
-The binary backend adds two more. But here it can't be directly compared with other compilers if they only go as far as ASM or even stop at LLVM IR.
-
