@@ -19,7 +19,7 @@ The name of the compiler is `MM` or `mm.exe`.
 
 #### Inputs
 ````
-Source Files:     There is only ever one source file submitted to MM. This will usually be the lead module,
+Source Files:     There is only ever one `.m` source file submitted to MM. This will usually be the lead module,
                   that also lists other modules of the project.
                   Sometimes, that one input it will be a `.ma` file that contains all source and support files.
 
@@ -73,9 +73,9 @@ EXP           Export files. These are under review, but when generating ML (it w
 ASM           x64 assembly source code, in a syntax used by my own assembler `AA`.
 
 MA            A single-file amalgamation of all source and support files needed to build a program.
-              It can be directly built by MM to make for a tidy of distributing and building M applications.
+              It can be directly built by MM to make for a tidy way of distributing and building M applications.
 
-OBJ           Object files are not directly generated, only by writing ASM which can generate OBJ files.
+(OBJ)         Object files are not directly generated, only by writing ASM which can generate OBJ files.
               But the code is still limited to the low 2GB, and linkers now like to create programs with a high image base.
               So DLL/OBJ are temporarily out of commission. OBJ files allowed M code to be
               statically linked with other languages.
@@ -89,11 +89,11 @@ RUN           Not an output, the program is run immediately without generating a
 
 The core compiler (no diagnostic module, no built-in stdlibs. no ML/MX/RUN support) is currently 307KB. With ML/MX/RUN, it is 317KB. With also the built-in stdlibs (ie. the stardard library source modules which are statically compiled with each application), then `mm.exe` is a self-contained 382KB solution to build M applications.
 
-In other words, MM is a single 0.4MB blob, which can translate source code to executable at some 0.5M lines per second. This is exactly what I've aimed for, a compiler that effortlessly builds programs more or less instantly. 
+In other words, MM is a single 0.4MB blob, which can translate source code to executable binary at some 0.5M lines per second. This is exactly what I've aimed for, a compiler that effortlessly builds programs more or less instantly. 
 
 #### Optimiser
 
-There is only a simple optimiser that allocates locals to register, and does some peep-hole optimising. This makes some benchmarks and some individual functions faster, but has little effect on real programs. Mainly it makes programs smaller.
+There is only a simple optimiser that allocates locals to spare registers, and does some peep-hole optimising. This makes some benchmarks and some individual functions faster, but has little effect on real programs. Mainly it makes programs smaller.
 
 It is applied during MCL-generation by doing a second pass on a per-function basis. Without the optimiser enabled, the 317KB core product would be compiled to 336KB.
 
