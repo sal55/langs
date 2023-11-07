@@ -52,7 +52,7 @@ MCU           The binary code/data/import/reloc info for my private executable f
 MCB           MCU rendered to a flat data block, written out as an ML/MX file
 
 MCX           MCU with allocations, imports and fixups done to make it ready to run
-              in-memory. This allows M programs be run from source
+              in-memory.
 ````
 #### Outputs
 ````
@@ -89,7 +89,7 @@ RUN           Not an output, the program is run immediately without generating a
 
 The core compiler (no diagnostic module, no built-in stdlibs. no ML/MX/RUN support) is currently 307KB. With ML/MX/RUN, it is 317KB. With also the built-in stdlibs (ie. the stardard library source modules which are statically compiled with each application), then `mm.exe` is a self-contained 382KB solution to build M applications.
 
-In other words, MM is a single 0.4MB blob, which can translates source code to executable at some 0.5M lines per second. This is exactly what I've aimed for, a compiler that effortlessly builds programs more or less instantly. 
+In other words, MM is a single 0.4MB blob, which can translate source code to executable at some 0.5M lines per second. This is exactly what I've aimed for, a compiler that effortlessly builds programs more or less instantly. 
 
 #### Optimiser
 
