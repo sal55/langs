@@ -20,7 +20,7 @@ The name of the compiler is `MM` or `mm.exe`.
 #### Inputs
 ````
 Source Files:     There is only ever one source file submitted to MM. This will usually be the lead module,
-                  that also lists other module other modules of the project.
+                  that also lists other modules of the project.
                   Sometimes, that one input it will be a `.ma` file that contains all source and support files.
 
 Include Files     These are discovered only when parsing all the source files. They are handled by the lexer.
