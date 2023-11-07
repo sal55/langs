@@ -1,16 +1,13 @@
-## 'M' Compiler Summary and Timeline
+## 'M' Compilers Summary and Timeline
 
 M was never a general-purpose, cross-platform language. It targetted one platform at a time, whatever was current in the world of personal and small business computers. So this progressed from 8-bit machines through generations of PCs, ending up with Windows running on 64-bit desktop machines.
 
 It doesn't do other platforms, other than Linux which is only possible via a C backend.
 
-The following is a rough summary of the various targets of my systems language compilers as they evolved over 40+ years. All are for my 'M' language except for the first, included as a contrast, which was for a kind of HLA/HLL hybrid. This gave me valuable experience and the confidence to later attempt a compiler on a toy machine with zero resources.
-
-The `int` and `real` columns show the widths of those primitive types
+The following is a rough summary of the various targets of my 'M' ystems language compilers as they evolved over 40+ years. The `int` and `real` columns show the widths of those primitive types
 :
 Processor | Bits| OS | `int` | `real` | Pointer size | Year | Comments
 --- | --- | --- | --- | --- | --- | --- | ---
-PDP10 | 36 | TOPS10?  | `i36` | -- | 18 bits | 1980 | ('Babbage' compiler; college mainframe)
 Z80 | 16 | Bare metal | `i16` | `f24` | 16 | 1981 | Home-made machine
 Z80 | 16 | CP/M Clone | `i16` | `f32` | 16 | Early 80s | Business machine
 8086 | 16 | MSDOS | `i16` | `f32` | 32 (16+16)| Mid 80s | (IBM PC; segmented address)
@@ -25,11 +22,11 @@ All these compilers ran on their respective targets. All have ended up self-host
 
 The first Z80 version was written in assembly, with an assembler I wrote in hex, with a hex editor itself written in actual binary, using switches to toggle bits on and off, on a home-made machine.
 
-Assembly was also used for the PDP10 compiler before self-hosting, and it may have been used for rebooting the language between 8 and 16 bits; I can't remember the process. I was at the time involved with developing 8- and 16-bit hardware as well as devising compilers for it.)
+Assembly may have been used for rebooting the language between 8 and 16 bits; I can't remember the process. I was at the time involved with developing 8- and 16-bit hardware as well as devising compilers for it.
 
 Most versions implemented the 'full stack', in going from source to executable using 100% my own code, but there were exceptions, for example, from late 90s to 2012 I generated NASM source and used a linker belonging to a C compiler. Currently it is again full stack and 100% self-hosted.
 
-All compilers have been amateur efforts written by me for personal use, or as an in-house tool to help in my work. Yet for quite a few years they were also used to write applications sold commercially.
+All compilers have been amateur efforts written by me for personal use, or as an in-house tool to help in my work. They were not professional products. Yet for quite a few years they were also used to write applications sold commercially.
 
 None used an optimisation stage, except for the most recent, but that made little difference to real applications (only to benchmarks!). It does make programs smaller though.
 
