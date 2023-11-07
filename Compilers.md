@@ -4,7 +4,7 @@ M was never a general-purpose, cross-platform language. It targetted one platfor
 
 It doesn't do other platforms, other than Linux which is only possible via a C backend.
 
-The following is a rough summary of the various targets of my 'M' ystems language compilers as they evolved over 40+ years. The `int` and `real` columns show the widths of those primitive types
+The following is a rough summary of the various targets of my 'M' systems language compilers as they evolved over 40+ years. The `int` and `real` columns show the widths of those primitive types
 :
 Processor | Bits| OS | `int` | `real` | Pointer size | Year | Comments
 --- | --- | --- | --- | --- | --- | --- | ---
