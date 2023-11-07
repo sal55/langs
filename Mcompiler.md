@@ -42,9 +42,10 @@ PCL           The generated IL (sometimes called IR) instructions from the AST
 
 MCL           A representation of the generated native code, in this case it is for x64.
 
-SS            A set of data structures containing binary native code and data, organised into code and data segments and with reloc info
+SS            A set of data structures containing binary native code and data, organised into code and data
+              segments and with reloc info
 
-EXE Image     A an internal representation of what will go into the EXE file.
+EXE Image     An internal representation of what will go into the EXE file.
 
 MCU           The binary code/data/import/reloc info for my private executable format
 
