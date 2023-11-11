@@ -44,3 +44,8 @@ When generating ML/DLL library files, only MM, working from M code, can also gen
 
 With C-derived libraries, I either write the necessary bindings by hand, or use the MCC compiler to generate as much as it can automatically. However this process is not 100%; a lot of manual work will still be needed.
 
+The AA assembler is unusual. Its input can be multiple .asm files, and it can generated one .exe file without requiring any linker. Or, the output can be ONE .obj file (not one per input file as is common).
+
+However none of my tools will take .obj files as input (or .o, .a, .lib etc). For working with the outputs of other compilers and languages, OBJ must be generated from AA, and an external linker used (when the 2GB thing has been fixed). But this is not something *I* desperately need to do.
+
+
