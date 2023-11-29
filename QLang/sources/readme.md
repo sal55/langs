@@ -14,5 +14,5 @@ Some Q interpreter source files:
    are the types used
 * `qq_decls.m` The 16-byte descriptor is `record varrec`, which stores
    value-types. For reference types, there is a separate 32-byte descriptor
-   called `record objtype`.
+   called `record objrec`.
 
