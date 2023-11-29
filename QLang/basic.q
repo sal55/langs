@@ -77,7 +77,10 @@ var lexstr, lexlen, lexpos
 var tk, tkvalue
 
 var vars::=[:]
-record linerec = (var lineno, source)
+record linerec = 
+	var lineno, source
+end
+
 var program::=()
 var linecount
 
@@ -219,11 +222,11 @@ func executeline(index)=
 	startlex(s:=program[index].source)
 	nexttoken()
 
-nextstmt::
+nextstmt:
 	case tk
 	when tklet then
 		nexttoken(tkvar)
-dolet::
+dolet:
 		varname:=tkvalue
 		nexttoken()
 		if tk<>tkeq then error("Missing =, or unknown keyword") fi
@@ -250,8 +253,8 @@ dolet::
 		fi
 
 	when tkgoto then
-		nexttoken(tknumber)
-dogoto::
+		nextBtoken(tknumber)
+dogoto:
 		lineno:=tkvalue
 		nexttoken()
 		for i,l in program when l.lineno=lineno do

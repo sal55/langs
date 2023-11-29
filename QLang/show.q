@@ -468,6 +468,7 @@ func jpegtest(file)=
 !info about the image is in the hdr global
 !read/data errors in the file generate a 'jpegerror' exception
 
+!CPL 201,=VKTOMESSTABLE
 	initdata()
 	pimage:=0
 
@@ -477,8 +478,10 @@ func jpegtest(file)=
 	fi
 	N:=0
 
+!CPL 202,=VKTOMESSTABLE
 	do
 		c:=nextbyte(fs)
+!CPL 203,=VKTOMESSTABLE
 		pref:="  "
 		if c=0xFF then		!marker
 			c:=nextbyte(fs)
@@ -522,6 +525,7 @@ func jpegtest(file)=
 			esac
 		else
 		fi
+!CPL 209,=VKTOMESSTABLE
 	od
 	return pimage
 end
