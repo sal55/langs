@@ -2,7 +2,7 @@ Some Q interpreter source files:
 
 
 * Source code is in my systems language
-* View using 4-byte tabs (I haven't converted to spaces)
+* View using 4-space tabs (I haven't converted to spaces)
 * Line comments start with !
 * Start with `runqprogram()` in `qq_api.m`
 * `qq_khandlers.m` shows HLL bytecode handlers
@@ -14,5 +14,5 @@ Some Q interpreter source files:
    are the types used
 * `qq_decls.m` The 16-byte descriptor is `record varrec`, which stores
    value-types. For reference types, there is a separate 32-byte descriptor
-   called `record objtype`.
+   called `record objrec`.
 
