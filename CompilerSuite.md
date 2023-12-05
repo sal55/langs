@@ -3,8 +3,8 @@
 
 **'MM' M Systems Compiler**
 ````
-.m/.ma ────┬─> [mm.exe] ─┬────> EXE File
-.ml/.dll ──┘             ├────> DLL/ML/MX Files (+ M/Q Interface modules)
+.m/.ma ────┬─> [mm.exe] ─┬────> EXE/DLL File (+ M/Q Interface module for DLL/ML)
+.ml/.dll ──┘             ├────> [via aa.exe] ──> ML/MX Files
                          ├────> [via aa.exe] ──> OBJ File
                          ├────> ASM File
                          ├────> MA File
@@ -66,7 +66,7 @@ There are no external dependencies other than what is provided by Windows. Appli
 
 Interdependencies between these programs are:
 * **MCC** needs **AA** to produce binary files
-* **MM** needs **AA** to produce OBJ files
+* **MM** needs **AA** to produce OBJ/ML/MX files
 
 ### Implementation
 
