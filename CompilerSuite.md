@@ -8,6 +8,7 @@
                          ├────> [via aa.exe] ──> OBJ File
                          ├────> ASM File
                          ├────> MA File
+                         ├────> LIST/PROJ Files (info for my IDE)
                          └────> Run
 ````
 **'AA' x64 Assembler/linker**
