@@ -70,7 +70,9 @@ Interdependencies between these programs are:
 
 ### Implementation
 
-All products are written in my M language and build with **MM**. Single-file source amalgamations (MA files) can be generated for any project.
+All products are written in my M language and built with **MM**. Single-file source amalgamations (MA files) can be generated for any project.
+
+Building all of the above executables from source takes under 0.6 seconds.
 
 #### Notes
 
