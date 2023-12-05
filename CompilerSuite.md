@@ -5,6 +5,7 @@
 ````
 .m/.ma ────┬─> [mm.exe] ─┬────> EXE/DLL Files
 .ml/.dll ──┘             ├────> ML/MX Files (+ M/Q Interface modules)
+                         ├────> [via aa.exe] ──> OBJ File
                          ├────> ASM File
                          ├────> MA File
                          └────> Run
