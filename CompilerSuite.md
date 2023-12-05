@@ -53,14 +53,14 @@
 
 All the above programs are single-file, self-contained executables, and all are under 1MB. The current set of programs are:
 ````
-      403,456 mm.exe
-       95,744 aa.exe
-      278,528 mcc.exe
-      573,952 qq.exe
-       12,800 runmx.exe
-      317,952 mmp.exe
-       89,600 pci.exe
-      318,464 mc.exe
+mm.exe        385 KB
+aa.exe         96 KB
+mcc.exe       279 KB
+qq.exe        574 KB
+runmx.exe      13 KB
+mmp.exe       318 KB
+pci.exe        90 KB
+mc.exe        319 KB
 ````
 There are no external dependencies other than what is provided by Windows. Applications compiled or run with these may need external libraries. Some outputs (eg. OBJ, C) may need external tools to process further. (C may need an optimising compiler, or C could be generated to run on Linux.)
 
@@ -80,11 +80,8 @@ Building all of the above executables from source takes under 0.6 seconds.
 * Any output files are always a single primary output file, one of EXE, DLL, OBJ, MA, ML, MX, PCL, C, ASM, with these exceptions:
    * **MCC**, being a C compiler, supports independent compilation. So there can be multiple OBJ, ASM, I output files each corresponding to one input file
    * **MM** producing DLL, ML can also write a corresponding exports or interface file that provides bindings for my M/Q languages
-* With C-derived libraries, I either write the necessary bindings by hand, or use the MCC compiler to generate as much as it can automatically. However this process is not 100%; a lot of manual work will still be needed.
+* With C-derived libraries, I either write the necessary bindings by hand, or use the **MCC** compiler to generate as much as it can automatically. However this process is not 100%; a lot of manual work will still be needed.
 * The **AA** assembler is unusual. Its input can be multiple .asm files, and it can generate one .exe file without requiring any linker. Or, the output can be ONE .obj file (not one per input file as is common).
 * None of my tools take OBJ files as inputs, necessary for working with the outputs of other languages and compilers. An external linker is needed. Only **AA** can produce OBJ files.
-* **RUNMX** is needed to run MX programs, as otherwise this is not a format that Windows knows how to launch. (I can do file-association, but that would only tell Windows to use RUNMX.) MX files are a by-product of ML files, and might be of benefit in being less visible to AV software.
+* ML and MX files, with the **RUNMX** program, may be dropped. ML was introduced to take the place of DLL files which for a year or two were faulty. Both ML/MX have some useful characteristics, but that might not be enough to maintain their use.
 
-ML libraries have an advantage over DLL in that they share the same environment as the host. You can't for example use a file handle created in the host, and close it in a DLL library, as they will use different instances of MSVCRT.DLL.
-
-(Since the DLL/OBJ low-memory problems have been fixed, there is less need for ML files. So they may eventually be dropped. They were a by-product of the fixups need to run code directly in memory - the `Run` option in the chart for MM/MCC compilers.)
