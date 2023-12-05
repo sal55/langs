@@ -3,13 +3,13 @@
 
 **'MM' M Systems Compiler**
 ````
-.m/.ma ────┬─> [mm.exe] ─┬────> EXE/DLL Files
-.ml/.dll ──┘             ├────> ML/MX Files (+ M/Q Interface modules)
+.m/.ma ────┬─> [mm.exe] ─┬────> EXE Files
+.ml/.dll ──┘             ├────> DLL/ML/MX Files (+ M/Q Interface modules)
                          ├────> [via aa.exe] ──> OBJ File
                          ├────> ASM File
                          ├────> MA File
                          ├────> LIST/PROJ Files (info for my IDE)
-                         └────> Run
+                         └────> Run (immediately from memory)
 ````
 **'AA' x64 Assembler/linker**
 ````
@@ -51,7 +51,7 @@
 
 ### Packaging
 
-All the above programs are single-file, self-contained executables, and all are under 1MB. The current set of byte-sizes are:
+All the above programs are single-file, self-contained executables, and all are under 1MB. The current set of programs are:
 ````
       403,456 mm.exe
        95,744 aa.exe
@@ -84,8 +84,6 @@ Building all of the above executables from source takes under 0.6 seconds.
 * The **AA** assembler is unusual. Its input can be multiple .asm files, and it can generate one .exe file without requiring any linker. Or, the output can be ONE .obj file (not one per input file as is common).
 * None of my tools take OBJ files as inputs, necessary for working with the outputs of other languages and compilers. An external linker is needed. Only **AA** can produce OBJ files.
 * **RUNMX** is needed to run MX programs, as otherwise this is not a format that Windows knows how to launch. (I can do file-association, but that would only tell Windows to use RUNMX.) MX files are a by-product of ML files, and might be of benefit in being less visible to AV software.
-
-Another advantage of the MX format is that it can use ML shared libraries (as well as DLL of course), as easily as EXE can use DLL. An EXE can't directly use an ML library without some special code inside it (qq.exe has that code, but libraries are for access from Q programs).
 
 ML libraries have an advantage over DLL in that they share the same environment as the host. You can't for example use a file handle created in the host, and close it in a DLL library, as they will use different instances of MSVCRT.DLL.
 
