@@ -62,7 +62,7 @@ All the above programs are single-file, self-contained executables, and all are 
        89,600 pci.exe
       318,464 mc.exe
 ````
-There are no external dependencies other than what is provided by Windows. (Applications compiled or run with these may need external libraries.)
+There are no external dependencies other than what is provided by Windows. Applications compiled or run with these may need external libraries. Some outputs (eg. OBJ, C) may need external tools to process further. (C may need an optimising compiler, or C could be generated to run on Linux.)
 
 Interdependencies between these programs are:
 * **MCC** needs **AA** to produce binary files
