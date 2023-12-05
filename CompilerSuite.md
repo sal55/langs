@@ -3,7 +3,7 @@
 
 **'MM' M Systems Compiler**
 ````
-.m/.ma ────┬─> [mm.exe] ─┬────> EXE Files
+.m/.ma ────┬─> [mm.exe] ─┬────> EXE File
 .ml/.dll ──┘             ├────> DLL/ML/MX Files (+ M/Q Interface modules)
                          ├────> [via aa.exe] ──> OBJ File
                          ├────> ASM File
