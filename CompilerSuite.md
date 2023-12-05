@@ -49,6 +49,29 @@
 .m/.ma ───> [mc.exe] ──────> C File
 ````
 
+### Packaging
+
+All the above programs are single-file, self-contained executables, and all are under 1MB. The current set of byte-sizes are:
+````
+      403,456 mm.exe
+       95,744 aa.exe
+      278,528 mcc.exe
+      573,952 qq.exe
+       12,800 runmx.exe
+      317,952 mmp.exe
+       89,600 pci.exe
+      318,464 mc.exe
+````
+There are no external dependencies other than what is provided by Windows. (Applications compiled or run with these may need external libraries.)
+
+Interdependencies between these programs are:
+* **MCC** needs **AA** to produce binary files
+* **MM** needs **AA** to produce OBJ files
+
+### Implementation
+
+All products are written in my M language and build with **MM**. Single-file source amalgamations (MA files) can be generated for any project.
+
 #### Notes
 
 * All products are for x64 processor running wunder Win64 ABI
