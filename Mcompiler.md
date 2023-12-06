@@ -6,15 +6,15 @@ The name of the compiler is `MM` or `mm.exe`.
     Inputs             Intermediates                                                         Outputs
 
     Ext Libs      ───>─────────────────────────────────────────────────┐
-    Source Files  ─┬─> AST1 ─> AST2 ─┬─> AST3 ─┬─> PCL ─> MCL ─┬─> SS ─┼─> EXE Image ─┬────> EXE File
-    Include Files ─┘                 │         │               │       │              ├────> DLL/EXP Files
-    Strinclude    ───>───────────────┘         │               │       │              └────> OBJ File (via AA)
-                                               │               │       └─> MCU ─┬─> MCB ─┬─> ML/EXP Files
-                                               │               │                │        │
-                                               │               │                │        └─> MX File
-                                               │               │                └─> MCX ───> (Run)
-                                               │               └───────────────────────────> ASM File
-                                               └───────────────────────────────────────────> MA File
+    Source Files  ─┬─> AST1 ─> AST2 ─┬─> AST3 ─┬─> PCL ─> MCL ─┬─> SS ─┴─┬──> EXE Image ─┬────> EXE File
+    Include Files ─┘                 │         │               │         │               ├────> DLL/EXP Files
+    Strinclude    ───>───────────────┘         │               │         │               └────> OBJ File (via AA)
+                                               │               │         └─> MCU ─┬─> MCB ─┬──> ML/EXP Files
+                                               │               │                  │        │
+                                               │               │                  │        └──> MX File
+                                               │               │                  └─> MCX ────> (Run)
+                                               │               └──────────────────────────────> ASM File
+                                               └──────────────────────────────────────────────> MA File
 ````
 
 #### Inputs
