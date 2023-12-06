@@ -7,9 +7,9 @@ The name of the compiler is `MM` or `mm.exe`.
 
     Ext Libs      ───>─────────────────────────────────────────────────┐
     Source Files  ─┬─> AST1 ─> AST2 ─┬─> AST3 ─┬─> PCL ─> MCL ─┬─> SS ─┼─> EXE Image ─┬────> EXE File
-    Include Files ─┘                 │         │               │       │              ├────> DLL File
+    Include Files ─┘                 │         │               │       │              ├────> DLL/EXP Files
     Strinclude    ───>───────────────┘         │               │       │              └────> OBJ File (via AA)
-                                               │               │       └─> MCU ─┬─> MCB ─┬─> ML/EXP File
+                                               │               │       └─> MCU ─┬─> MCB ─┬─> ML/EXP Files
                                                │               │                │        │
                                                │               │                │        └─> MX File
                                                │               │                └─> MCX ───> (Run)
