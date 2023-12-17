@@ -76,11 +76,11 @@ Building all of the above executables from source takes under 0.6 seconds.
 
 #### Notes
 
-* All products are for x64 processor running wunder Win64 ABI
+* All products are for x64 processor running under Win64 ABI
 * Any output files are always a single primary output file, one of EXE, DLL, OBJ, MA, ML, MX, PCL, C, ASM, with these exceptions:
    * **MCC**, being a C compiler, supports independent compilation. So there can be multiple OBJ, ASM, I output files each corresponding to one input file
    * **MM** producing DLL, ML can also write a corresponding exports or interface file that provides bindings for my M/Q languages
-* With C-derived libraries, I either write the necessary bindings by hand, or use the **MCC** compiler to generate as much as it can automatically. However this process is not 100%; a lot of manual work will still be needed.
+* With C-derived libraries used by my M/Q languages, I either write the necessary bindings by hand, or use the **MCC** compiler to generate as much as it can automatically. However this process is not 100%; a lot of manual work will still be needed.
 * The **AA** assembler is unusual. Its input can be multiple .asm files, and it can generate one .exe file without requiring any linker. Or, the output can be ONE .obj file (not one per input file as is common).
 * None of my tools take OBJ files as inputs, necessary for working with the outputs of other languages and compilers. An external linker is needed. Only **AA** can produce OBJ files.
 * ML and MX files, with the **RUNMX** program, may be dropped. ML was introduced to take the place of DLL files which for a year or two were faulty. Both ML/MX have some useful characteristics, but that might not be enough to maintain their use.
