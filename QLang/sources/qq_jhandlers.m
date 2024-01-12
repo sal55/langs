@@ -1514,7 +1514,9 @@ threadedproc j_incrtom*=
 		cmp byte [D4+ktag],trefpack
 		jnz L2
 		movzx A0,word16 [D4+krefelemtag]
-		mov A0,[D0*8+ttsize]
+!		mov A0,[D0*8+ttsize]
+		lea D1,[ttsize]
+		mov A0,[D1+D0*8]
 		add [D4+kvarptr],D0
 		*jumpskip2
 
@@ -1540,7 +1542,9 @@ threadedproc j_incrtof*=
 		cmp byte [D4+ktag],trefpack
 		jnz L2
 		movzx A0,word16 [D4+krefelemtag]
-		mov A0,[D0*8+ttsize]
+!		mov A0,[D0*8+ttsize]
+		lea D1,[ttsize]
+		mov A0,[D1+D0*8]
 		add [D4+kvarptr],D0
 		*jumpskip2
 
@@ -1660,7 +1664,9 @@ threadedproc j_decrtom*=
 		cmp byte [D4+ktag],trefpack
 		jnz L2
 		movzx A0,word16 [D4+krefelemtag]
-		mov A0,[D0*8+ttsize]
+!		mov A0,[D0*8+ttsize]
+		lea D1,[ttsize]
+		mov A0,[D1+D0*8]
 		sub [D4+kvarptr],D0
 		*jumpskip2
 
@@ -1685,7 +1691,9 @@ threadedproc j_decrtof*=
 		cmp byte [Dframe+D4+ktag],trefpack
 		jnz L2
 		movzx A0,word16 [Dframe+D4+krefelemtag]
-		mov A0,[D0*8+ttsize]
+!		mov A0,[D0*8+ttsize]
+		lea D1,[ttsize]
+		mov A0,[D1+D0*8]
 		sub [Dframe+D4+kvarptr],D0
 		*jumpskip2
 
@@ -1787,7 +1795,9 @@ threadedproc j_chr*=
 		mov D0,[Dsptr+kvalue]
 		cmp D0,255
 		ja L99						!not in range
-		mov D0,[D0*8+chrtable]
+		lea D1,[chrtable]
+		mov D0,[D1+D0*8]
+!		mov D0,[D0*8+chrtable]
 		and D0,D0
 		jz L99						!value not cached; B will fill it in
 		mov word32 [Dsptr+ktag],tstring+hasrefmask

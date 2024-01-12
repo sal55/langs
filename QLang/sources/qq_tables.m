@@ -971,7 +971,6 @@ global tabledata []ichar stnames, []byte stsymbols, []byte stsubcodes=
 	("import",		kimportsym,		0),
 
 	("importdll",	kimportdllsym,	'D'),
-	("importlib",	kimportdllsym,	'L'),
 	("strinclude",	kstrincludesym,	0),
 	("unless",		kunlesssym,		0),
 
