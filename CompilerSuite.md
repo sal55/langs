@@ -3,26 +3,28 @@
 
 **'MM' M Systems Compiler**
 ````
-.m/.ma ────┬─> [mm.exe] ─┬────> EXE File
-.ml/.dll ──┘             ├────> ML/MX/DLL Files (+ M/Q Interface modules)
+.m/.ma ────┬─> [mm.exe] ─┬────> EXE/DLL File (+ M/Q Interface module for DLL/ML)
+.ml/.dll ──┘             ├────> [via aa.exe] ──> ML/MX Files
+                         ├────> [via aa.exe] ──> OBJ File
                          ├────> ASM File
                          ├────> MA File
-                         └────> Run
+                         ├────> LIST/PROJ Files (info for my IDE)
+                         └────> Run (immediately from memory)
 ````
 **'AA' x64 Assembler/linker**
 ````
-.asm ──────┬─> [aa.exe] ─┬────> EXE File
-.ml/.dll ──┘             ├────> ML/MX/DLL Files
+.asm ──────┬─> [aa.exe] ─┬────> EXE/DLL Files
+.ml/.dll ──┘             ├────> ML/MX Files
                          └────> OBJ File
 ````
 **'MCC' C Subset Compiler**
 ````
-.c/.h ─────┬─> [mcc.exe] ──┬──> [via aa.exe] ───┬────> EXE File
-.dll ──────┘               │                    ├────> ML/MX/DLL Files
+.c/.h ─────┬─> [mcc.exe] ──┬──> [via aa.exe] ───┬────> EXE/DLL Files
+.dll ──────┘               │                    ├────> ML/MX Files
                            │                    └────> OBJ File
                            ├─────────────────────────> ASM File
                            ├─────────────────────────> I File (preprocessed)
-                           └─────────────────────────> M/Q Files (interface modules from .h files)
+                           └─────────────────────────> M/Q Interface modules (from .h files)
 ````
 **'QQ' Q Interpreter**
 ````
@@ -36,17 +38,52 @@
 .mx ───────┬─> [runmx.exe] ───> Run
 .ml/.dll ──┘
  ````
+**'MMP' M Compiler to IL and Interpreter (Experimental)**
+````
+.m/.ma ───> [mmp.exe] ──────> PCL File
+
+.pcl ─────> [pci.exe] ──────> Run
+````
+**'MC' M Compiler to C (Deprecated)**
+````
+.m/.ma ───> [mc.exe] ──────> C File
+````
+
+### Packaging
+
+All the above programs are single-file, self-contained executables, and all are under 1MB. The current set of programs are:
+````
+mm.exe        385 KB
+aa.exe         96 KB
+mcc.exe       279 KB
+qq.exe        574 KB
+runmx.exe      13 KB
+mmp.exe       318 KB
+pci.exe        90 KB
+mc.exe        319 KB
+````
+There are no external dependencies other than what is provided by Windows. Applications compiled or run with these may need external libraries. Some outputs (eg. OBJ, C) may need external tools to process further. (C may need an optimising compiler, or C could be generated to run on Linux.)
+
+Interdependencies between these programs are:
+* **MCC** needs **AA** to produce binary files
+* **MM** needs **AA** to produce OBJ/ML/MX files
+
+### Implementation
+
+All products are written in my M language and built with **MM**. Single-file source amalgamations (MA files) can be generated for any project.
+
+Building all of the above executables from source takes under 0.6 seconds.
 
 #### Notes
 
-* All products are for x64 processor running wunder Win64 ABI
-* x64 code is generated for low-memory (first 2GB). This can cause problems for DLLs if loaded high, and for OBJ files is submitted to a linker that uses a high image-base.
-* Nevertheless, DLL output has been reinstated (it still mainly works), and OBJ is still an option. The high memory thing will be fixed at some point.
-* When generating ML/DLL library files, only MM, working from M code, can also generate a corresponding import module that automatically provides the bindings for use from M/Q languages.
-* With C-derived libraries, I either write the necessary bindings by hand, or use the MCC compiler to generate as much as it can automatically. However this process is not 100%; a lot of manual work will still be needed.
-* The **AA** assembler is unusual. Its input can be multiple .asm files, and it can generate one .exe file without requiring any linker. Or, the output can be ONE .obj file (not one per input file as is common). However none of my tools will take .obj files as input (or .o, .a, .lib etc). For working with the outputs of other compilers and languages, OBJ must be generated from AA, and an external linker used (when the 2GB thing has been fixed).
-* **RUNMX** is needed to run MX programs, as otherwise this is not a format that Windows knows how to launch. (I can do file-association, but that would only tell Windows to use RUNMX.) MX files are a by-product of ML files, and might be of benefit in being less visible to AV software.
+* All products are for x64 processor running under Win64 ABI
+* Any output files are always a single primary output file, one of EXE, DLL, OBJ, MA, ML, MX, PCL, C, ASM, with these exceptions:
+   * **MCC**, being a C compiler, supports independent compilation. So there can be multiple OBJ, ASM, I output files each corresponding to one input file
+   * **MM** producing DLL, ML can also write a corresponding exports or interface file that provides bindings for my M/Q languages
+* With C-derived libraries used by my M/Q languages, I either write the necessary bindings by hand, or use the **MCC** compiler to generate as much as it can automatically. However this process is not 100%; a lot of manual work will still be needed.
+* The **AA** assembler is unusual. Its input can be multiple .asm files, and it can generate one .exe file without requiring any linker. Or, the output can be ONE .obj file (not one per input file as is common).
+* None of my tools take OBJ files as inputs, necessary for working with the outputs of other languages and compilers. An external linker is needed. Only **AA** can produce OBJ files.
+* MA files are a single-file 'amalgamation' of all the source and support files used by a project. It is a convenient way to package distribute the source files, and can be directly built by **MM**.
+* QA files are a similar thing for the Q language. Here there is no binary format so it is a convenient way to distribute an application
+* ML and MX files, with the **RUNMX** program, may be dropped. ML was introduced to take the place of DLL files which for a year or two were faulty. Both ML/MX have some useful characteristics, but that might not be enough to maintain their use.
 
-Another advantage of the MX format is that it can use ML shared libraries (as well as DLL of course), as easily as EXE can use DLL. An EXE can't directly use an ML library without some special code inside it (qq.exe has that code, but libraries are for access from Q programs).
-
-ML libraries have an advantage over DLL in that they share the same environment as the host. You can't for example use a file handle created in the host, and close it in a DLL library, as they will use different instances of MSVCRT.DLL.
