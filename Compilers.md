@@ -8,8 +8,8 @@ The following is a rough summary of the various targets of my 'M' systems langua
 :
 Processor | Bits| OS | `int` | `real` | Pointer size | Year | Comments
 --- | --- | --- | --- | --- | --- | --- | ---
-Z80 | 16 | Bare metal | `i16` | `f24` | 16 bits | 1981 | Home-made machine
-Z80 | 16 | CP/M Clone | `i16` | `f32` | 16 | Early 80s | Business machine
+Z80 | 8 | Bare metal | `i16` | `f24` | 16 bits | 1981 | Home-made machine
+Z80 | 8 | CP/M Clone | `i16` | `f32` | 16 | Early 80s | Business machine
 8086 | 16 | MSDOS | `i16` | `f32` | 32 (16+16)| Mid 80s | (IBM PC; segmented address)
 80386 | 16 | MSDOS | `i16` | `f32` | 32 | Late 80s |
 80486 | 16 | Windows | `i16` | `f32` | 32 | 1992 |
