@@ -1,6 +1,8 @@
 ## M Compiler Structure
 
-The name of the compiler is `MM` or `mm.exe`.
+'M' is my lower level systems language.
+
+The name of the compiler is `MM` or `mm.exe`. It is a whole-program compiler, written in M, that converts M programs to x64 native code running under Windows ABI.
 
 ````
     Inputs             Intermediates                                                            Outputs
