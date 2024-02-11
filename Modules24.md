@@ -80,7 +80,7 @@ import msyslib
 
 ### NameSpaces
 
-Each module name creates a namespace within that subprogram. And each subprogram name also creates namespace visible across the program. Mainly these are used for disambiguation when global or exported names clash. In that case, aliases can be created:
+Each module name creates a namespace within that subprogram. And each subprogram name also creates a namespace visible across the program. Mainly these are used for disambiguation when global or exported names clash. In that case, aliases can be created:
 ````
  module longmodulename as lmn
 ````
