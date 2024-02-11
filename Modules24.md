@@ -8,7 +8,7 @@ With this scheme, no separate build system is needed to turn a bunch of sources 
 
 ### What is a Module
 
-A 'module' in this scheme is always one source file. One module cannot be implemented across multiple source files. One source file cannot define multiple modules. Modules cannot contain other modules. (Some language like go to town with this stuff. I think nested modules are more like classes; my modules are just source files.)
+A 'module' in this scheme is always one source file. One module cannot be implemented across multiple source files. One source file cannot define multiple modules. Modules cannot contain other modules (those would be more like classes).
 
 The name of a module must be both a valid identifier in the language, and a valid filename.
 
