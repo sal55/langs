@@ -1,10 +1,10 @@
 ## Modules 2024
 
-I created a new Modules scheme a couple of years ago. Based on my experience since, this has been greatly simplified. This new version is in use in two languages, one static and one dynamic, both ahead-of-time compiled.
+I created a new Modules scheme a couple of years ago. Based on my experience since, this has been simplified. This new version is in use in two languages, one static and one dynamic, both ahead-of-time compiled.
 
 ### What is a Module
 
-A 'module' in this scheme is always one source file. One module cannot be implemented across multiple source files. One source files cannot define multiple modules. Modules cannot contain other modules.
+A 'module' in this scheme is always one source file. One module cannot be implemented across multiple source files. One source file cannot define multiple modules. Modules cannot contain other modules.
 
 The name of a module must be both a valid identifier in the language, and a valid filename.
 
@@ -18,9 +18,9 @@ module A
 module B
 module C
 ````
-This is the pattern I use for most projects. This allows the lead module to be easily swapped with another, with a different set of modules to provide a differently configured application.
+This is the pattern I use for most projects. This allows the lead module to be easily swapped with another, with an alternate set of modules to provide a differently configured application.
 
-**(2)** Here, P can also contains code, although here you'd probably dispense with P completely, and put the module info at the start of A:
+**(2)** P can also contain code, although here you'd probably dispense with P completely, and put the module info at the start of A:
 ````
 module B
 module C
@@ -28,11 +28,11 @@ module C
 ````
 (Note that the application will now be called A, but of course you can name the modules P, B, C.)
 
-There is no project info, no `module` or `import` statements, in any other module. Other module schemes then to have rag-bag collections of `import` statements at the top of every module, which in my view is unnecessary micro-managing.
+There is no project info, no `module` or `import` statements, in any other module. Other module schemes tend to have rag-bag collections of `import` statements at the top of every module, which in my view is unnecessary micro-managing.
 
 ### The SubProgram
 
-Modules in my scheme are grouped into SubPrograms. Within that group, any entity exported by any module (using `global` attribute), is visible to all modules in the group. No specific `import` is needed, so long as all modules are listed in the lead module. My example program contains one subprogram.
+Modules in my scheme are grouped into SubPrograms. Within that group, any entity exported by any module (using a `global` attribute), is visible to all modules in the group. No specific `import` is needed, so long as all modules are listed in the lead module. My example program contains one subprogram.
 
 No name-qualifier is needed either: to call a global function `F` defined in `B` from `A`, I can just write `F()`. I only need to write `B.F()` if, for example, `C` also exported a function `F`.
 
@@ -111,18 +111,118 @@ The module scheme tries to be independent of the file system. But it can't alway
 
 There is currently a weak spot: unless all input modules are in the same directory of the lead module, it needs to be told where to look. But as it's done now, that info is hardcoded here, which is undesirable. See the real example below.
 
-So this needs a better solution. Otherwise a module like this:
+So this needs a better solution. Otherwise with that first example starting module P:
 ````
+module A
+module B
+module C
+````
+These represent 4 source files, `P.m A.m B.m C.m` (or `P.q A.q B.q C.q` if it's the other language). The location of `P.m` depends on what path was provided to the compiler, so if invoked like this (note both filesystem and my languages are case-insensitive, and the file extension is optional):
+````
+mm \abc\def\p
+````
+Then `P.m` is in directory `/abc/def/`, and the the other modules are looked there unless the path is overwridden as shown below.
 
+In the case of the standard library modules, those source files are embedded inside the compiler. (There is an option to load them from disk, but it then looks somewhere that is only meaningful with a developer's setup of the compiler.)
 
-
-
+In this scheme, the compiler will always look in exactly one place for a source file. It will never look in a range of places (that can lead to inadvertently mixing versions, or even loading an unrelated file of the same name).
 
 ### Module Evaluation Order
+A feature of my languages is that there is an optional special function `start` in each module. If present, this is automatically when the program starts. (In the dynamic one, there can also file-spec variables initialised with runtime expressions.)
 
+This can be used to initialise various data and data structures. However, this can depend on the order each function/each module is invoked. With a scheme using `import` everywhere, this can be unpredictable. Here, it is strictly in the order the modules are listed in the lead module, except the module containing the entry point (which must be near the start) is done last.
 
+### Program Entry Point
+This is the function called `main` in the main subprogram, and specifically in the first module or the second. Other `main` functions in other modules are ignored.
+
+(In the dynamic language, individual modules can be run directly. If there is a `main` function in the lead module submitted, it will call it. This is sometimes used for test code for that module.)
 
 ### Real Example
 
-This is from a C compiler, an old one which incorporates an x64 assembler as a separate subprogram. There are two programs plus the standard library.
+This is from a C compiler, an old one which incorporates an x64 assembler as a separate subprogram. Thus there are two programs plus the standard library.
+````
+    module cc_cli
+    module cc_decls
+    module cc_blockmcl
+    module cc_export
+    module cc_genasm
+    module cc_genmcl
+    module cc_headers
+    module cc_lex
+    module cc_lib
+    module cc_libmcl
 
+    module cc_parse
+    module cc_support
+    module cc_tables
+
+    $sourcepath "c:/ax/"
+    import aalib
+````
+
+That subprogram has its own lead module which is this:
+````
+    module cc_assembler
+    module aa_decls
+    module aa_disasm
+    module aa_genss
+    module aa_lex
+    module aa_lib
+    module aa_mcxdecls
+    module aa_objdecls
+    module aa_parse
+    module aa_tables
+    module aa_writeexe
+    module aa_writeobj
+````
+Normally, those `aa_` modules are used with a different lead module, `aa.m`, which is built into a standalone assembler:
+````
+    module aa_cli
+
+    module aa_decls
+    module aa_genss
+    module aa_lex
+    module aa_lib
+    module aa_objdecls
+    module aa_mcxdecls
+    module aa_parse
+
+    module aa_tables
+    module aa_writeexe
+    module aa_writemcx
+    module aa_writeobj
+
+#   module aa_disasm               # these two are optional; only used for development
+#   module aa_writess
+    module aa_writessdummy
+````
+The two projects are build like this:
+````
+c:\bcx>mm cc
+Compiling cc.m---------- to cc.exe
+
+c:\ax>mm aa
+Compiling aa.m---------- to aa.exe
+````
+
+### What Was Dropped ...
+
+... from the old scheme:
+
+* Conditional modules, for example:
+````
+module mwindows as os when $windows
+module mlinux as os when $linux
+````
+Both are refered to as `os` when needed. Here, it was easier to just use a dedicated lead module.
+* Directly listing subprogram modules using `subprog Q` followed by the modules, instead of `import Q`
+* More elaborate path control:
+  * Separate paths for `module` and `import`
+  * Access to the special developer's path
+  * Access to the path where the compiler resides
+* Variables to contain paths etc
+* Special `syssubprog` and `sysimport` directives for the standard library (with different search rules)
+
+You can see how it was too elaborate to use confidently.
+
+  
