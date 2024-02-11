@@ -2,7 +2,7 @@
 
 I created a new Modules scheme a couple of years ago. Based on my experience since, this has been simplified. This new version is in use in two languages, one static and one dynamic, both ahead-of-time compiled.
 
-There is quite a lot to explain, but in brief: all the module comprising a program are listed at the top of the lead module; that's it.
+There is quite a lot to explain, but in brief: all the modules comprising a program are listed at the top of the lead module; that's it.
 
 With this scheme, no separate build system is needed to turn a bunch of sources into an EXE or DLL file.
 
