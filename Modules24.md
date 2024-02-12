@@ -1,6 +1,8 @@
 ## Modules 2024
 
-I created a new Modules scheme a couple of years ago. Based on my experience since, this has been simplified. This new version is in use in two languages, one lower-level systems language, one dynamic scripting language, both ahead-of-time compiled. Although the comments mostly have the systems one in mind.
+I created a new Modules scheme a couple of years ago. Based on my experience since, this has been simplified.
+
+This new version is in use in two languages, one lower-level systems language, one dynamic scripting language, both ahead-of-time compiled. Both are whole-program compilers. Although the comments mostly have the systems one in mind.
 
 There is quite a lot to explain, but in brief: **all the modules comprising a program are listed at the top of the lead module**; that's pretty much it!
 
