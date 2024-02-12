@@ -64,7 +64,7 @@ The resulting program compromises modules P, A, B, C, Q, X, Y, although P and Q 
 
 Even global entities between the modules of Q, for example, are not visible from P, unless they are specifically exported from Q. This involves using an `export` attribute instead of `global`. (It is not possible to export without also making a name global in that subprogram.)
 
-So if X exports a file `G`, it can be called from module A using `G()`, you don't need to qualify the name unless there is again a clash. But if you do it will be written as `Q.G()` not `X.G()` or `Q.X.G()`; P knows nothing of the internal modules of Q. (It is not possible to export two different `G` functions from Q.)
+So if X exports a function `G`, it can be called from module A using `G()`, you don't need to qualify the name unless there is again a clash. But if you do it will be written as `Q.G()` not `X.G()` or `Q.X.G()`; P knows nothing of the internal modules of Q. (It is not possible to export two different `G` functions from Q.)
 
 Here there is a hierarchy of dependencies; cycles between subprograms are not allowed. The first subprogram (P in my example) is at the top of the hierarchy.
 
