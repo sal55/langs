@@ -212,4 +212,15 @@ Compiling cc.m to cc.exe
 c:\ax>mm aa
 Compiling aa.m to aa.exe
 ````
+### Directives
+They are:
+````
+     module name [as name]
+     import name
+     $sourcepath string                  # (temporary feature until sorted)
+     linkdll name
+     linklib name                        # Support for private library format; may be soon dropped
+```
+
+
 
