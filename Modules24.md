@@ -22,7 +22,7 @@ module A
 module B
 module C
 ````
-This is the pattern I use for most projects. This allows the lead module to be easily swapped with another, with an alternate set of modules to provide a differently configured application.
+This is the pattern I use for most projects. This allows the lead module to be easily swapped with another, with a slightly different set of modules to provide an alternate configuration.
 
 **(2)** P can also contain code, although here you'd probably dispense with P completely, and put the module info at the start of A:
 ````
