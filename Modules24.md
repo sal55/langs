@@ -1,8 +1,8 @@
 ## Modules 2024
 
-I created a new Modules scheme a couple of years ago. Based on my experience since, this has been simplified. This new version is in use in two languages, one static and one dynamic, both ahead-of-time compiled.
+I created a new Modules scheme a couple of years ago. Based on my experience since, this has been simplified. This new version is in use in two languages, one lower-level systems language, one dynamic scripting language, both ahead-of-time compiled. Although the comments mostly have the systems one in mind.
 
-There is quite a lot to explain, but in brief: all the modules comprising a program are listed at the top of the lead module; that's it.
+There is quite a lot to explain, but in brief: **all the modules comprising a program are listed at the top of the lead module**; that's pretty much it!
 
 With this scheme, no separate build system is needed to turn a bunch of sources into an EXE or DLL file.
 
@@ -40,7 +40,7 @@ Modules in my scheme are grouped into SubPrograms. Within that group, any entity
 
 No name-qualifier is needed either: to call a global function `F` defined in `B` from `A`, I can just write `F()`. I only need to write `B.F()` if, for example, `C` also exported a function `F`.
 
-So all modules in the subprogram group are on familiar terms with each other. There is no hierarchy. There can be cycles: A can import B that can import A.
+So all modules in the subprogram group are on familiar terms with each other. There is no hierarchy. There can be cycles: A can import B that can import A. (There is an ordering however; see below.)
 
 ### Multiple SubPrograms
 
@@ -51,7 +51,7 @@ Suppose there is a 3-module library Q with modules Q, X, Y. Q might contain:
 module X
 module Y
 ````
-To incorporate this into P, so that is Q statically compiled into the same EXE, P is defined like this:
+To incorporate this into P, so that Q is statically compiled into the same EXE, P is defined like this:
 ````
 module A
 module B
@@ -76,7 +76,7 @@ For my static language, this is a collection of 5 modules, listed in a 6th modul
 ````
 import msyslib
 ````
-(together with a rather specific source path directive) but this module is included automatically, unless specifically excluded.
+But this module is included automatically, unless specifically excluded. The standard library is anyway special since the source files are expected to be embedded within the compiler, not be files on disk.
 
 ### NameSpaces
 
@@ -115,7 +115,7 @@ Names imported via FFI are given a global attribute. So I can have a module (say
 
 The module scheme tries to be independent of the file system. But it can't always manage that.
 
-There is currently a weak spot: unless all input modules are in the same directory of the lead module, it needs to be told where to look. But as it's done now, that info is hardcoded within the project info, which is undesirable. (In general I will not know for sure where some arbitrary subprogram resides.) See the real example below.
+There is currently a weak spot: unless all input modules are in the same directory of the lead module, it needs to be told where to look. But as it's done now, that info is hardcoded within the project info, which is undesirable. (In general I will not know for sure where some arbitrary subprogram resides, or it cou;ld change.) See the real example below.
 
 So this needs a better solution. Otherwise with that first example starting module P:
 ````
