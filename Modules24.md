@@ -219,7 +219,6 @@ They are:
      import name
      $sourcepath string                  # (temporary feature until sorted)
      linkdll name
-     linklib name                        # Support for private library format; may be soon dropped
 ```
 
 
