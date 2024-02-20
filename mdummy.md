@@ -1,24 +1,28 @@
-## M/Q Languages Reference
+## M Language Reference
 
-**M** Lower level systems language
-
-**Q** Lower level scripting language
-Although both languages are quite low level for their class, they are quite rich in features; there's quite a lot to describe! They fit approximately here on this line:
+I maintain two languages of my own, 'M' which is a systems language, and 'Q' which is a scripting language. They fit approximately here on this line:
 ````
-    Lower level <-C-M----Q-----------Python-> Higher Level
+    Lower level <--C-M----Q-----------Python--> Higher Level
 ````
+M is statically typed and compiles to native code. Q is dynamically typed and runs as interpreted bytecode. Both share the same syntax. Much of this reference applies to Q as well, but that will have its own docs.
 
-This is not a formal reference, mainly it documents the current state of the languages for my own purposes, But hopefully it can give enough of a picture for anyone else too.
+What follows is not a formal reference, but a summary of features for my own use. It might have give enough of a picture to anyone else.
 
-Both languages share much of the same syntax and features, so many topics apply to both. However it is mainly about M, with Q having its own reference (one day).
+### Availability
 
-## M/Q Languages - What's Missing
+I class this as a private language. It's not proprietory or anything, I just don't consider the implementations of good enough quality; there hasn't been enough usage of it to iron out issues; and I don't want to do support.
 
-M in particular is embarassingly unsophisticated, and devoid of many modern or trendy features. So why am even presenting it?
+Keeping it private saves me a lot of work and means I can cut corners. If anyone wants a binary however, they can have one, if they can sneak it past their AV. (Alternatively I can supply a single-file C rendering of it.)
 
-The reason is C: C is at about the same level, yet is still tremendously popular; there is apparently still a need and an appetite for this kind of simple language. So this is my alternate take on such a language. (Actually I started developing it about a decade before I first tried C.)
+Note that the language targets 64-bit Windows using x64. It has worked on Linux via intermediate C code, but I don't want to be involved with that right now.
 
-But to stop people wasting their time on a language will likely not care for, here's a quick rundown of it:
+## M Language - What's Missing
+
+M in particular is embarassingly unsophisticated, and devoid of many modern or trendy features. So why does it still exist?
+
+The reason is C: C is at about the same level, yet is still tremendously popular; there is apparently still a need and an appetite for this kind of simple language. So this is my alternate take on such a language (even though I started developing it long before I first tried C).
+
+But to stop people wasting their time reading about a language they will likely not care for, here's a quick rundown of it:
 
 * Primitive type systems, in particular no proper sum types, and no variable length arrays
 * No lambdas, closures, continuations, currying, generators, higher level functions ...
@@ -33,24 +37,16 @@ But to stop people wasting their time on a language will likely not care for, he
 * No debuggers or other such tools
 * No ecosystem
 * Not tested on tens of million of lines of code by an army of users
-* No community (I'm the only user, and even I don't use them that much!)
+* No community (I'm the only user, and even I don't write a huge amount with it; mainly implemenent language tools)
 * Minimal, practically non-existent libraries, and no easy way of creating bindings to more
-* Insular, incapable of working with other software except via DLL libraries - or files
-* Don't work on anything except Windows 64 (ATM)
+* Insular, incapable of working with other software except via DLL libraries, or files
+* Don't work on anything except Windows 64
 * Patchy and buggy coverage of combinations of features, types and operations
 * No Unicode support, except what works by accident through UTF8
 * No formal grammar, which is not practical anyway as syntax has ambiguities
 * No support possible (but binaries, or ways to create binaries are now available)
 
-(Since I first wrote the above, a few things have been relaxed. However it changes little.)
-
-### Availability
-
-This is now a private language. It's not proprietory or anything, it's that I don't consider the implementations of good enough quality; there hasn't been enough usage of it; and I don't want to do support.
-
-Keeping it private save me a lot of work and means I can cut corners. If anyone wants a binary however, they can have one, if they can sneak it past their AV.
-
-Note that the language targets 64-bit Windows using x64. It has worked on Linux via intermediate C code, but I'd rather leave C out of it.
+(Since I first wrote the above, a few things have been relaxed. However it changes little; it's still in exactly the same place on that line.)
 
 ### Overview
 
@@ -59,25 +55,36 @@ Note that the language targets 64-bit Windows using x64. It has worked on Linux 
 * Case-insenstive
 * Module scheme
 * 1-based primarily, can also be N-based
-* Out-of-order definitions throughout
+* Allows out-of-order definitions for everything
 * Defaults to 64-bit integers, constants, and evaluation
-* Expression based (expressions and statements are interchangeable)
+* Expression-based (expressions and statements are interchangeable)
 * Built-in `print` and `read` statements
 * Very fast, single-file and self-contained whole-program compiler of about 0.4MB.
 * Can create compilable one-file source amalgamations of projects
 * Does not need a build system like `make`
 
-### Some Terms
+Some terms as used here:
 
-**Program** For M, this is a single binary executable or shared library. That is, one EXE or DLL file (one OBJ file is also possible). A program is a collection of Modules that can grouped into Subprograms.
+**Program** A collection of modules that are compiled to a single EXE, DLL or OBJ binary.
 
-**Module** A single source file.
+**Module** A single source file
 
-**Lead Module** Out of the modules that comprise the Program, this is the one submitted to the compiler. This is also the Main Module if it contains the `main` entry point; otherwise that will be the next.
+**Unit** An expression or statement.
 
-**Unit** A single expression or statement (these are usually interchangeable, although most statements don't return a value other than `void`)
+**Sunit** A sequence of Units
 
-**Sunit** A series of Units separated by semicolons (but rarely seen as newlines work as separators too). This is sometimes also refered to as a Block.
+### Module Scheme
+
+See [Modules](Modules24.md).
+
+### The M Compiler
+
+* Usually a single, self-contained file of some 0.4MB depending on configuration
+* Is a whole-program compiler: submit only the lead module, and it will build everything from source
+* Quite fast (about 0.5M lines per second on my machine, and can generate to 5MB per second of binary code)
+* Self-hosted; the compiler is written in M
+
+Some more info here: [Compiler Suite](CompilerSuite.md).
 
 ### Syntax
 
@@ -85,23 +92,9 @@ An Algol-style syntax is used, but without `begin-end`. Algol68 was a particular
 
 #### Case Insensitive
 
-Identifiers, and keywords, type names and other reserved words are case-insensitive.
+Identifiers, and keywords, type names and other reserved words are case-insensitive. There are ways to define case-sensitive imports (eg. write names as strings) or to preserve case within identifiers (using a leading back-tick, which also allows the use of reserved workds).
 
-To access case-sensitive names used with external libraries, there are two schemes. One is to declare the name as a string, but can then be used with any mix of case. The other is to use the \` prefix:
-```
-    proc "MessageBoxA" (...)
-    proc `exit(int32)
-
-    messageboxa(...)           # can use any case
-    `exit(1)                   # must use `
-```
-Backtick has other benefits:
-
-* It preserves case in a name
-* It allows the use of reserved works in an identifier (like the `exit` above, which is a keyword in M)
-
-
-#### Semicolons
+#### Semicolons and Newlines
 
 While semicolons are use to separate units, in practice these are rarely seen in source code. This is because newlines are converted to semicolons, except when:
 
@@ -109,9 +102,7 @@ While semicolons are use to separate units, in practice these are rarely seen in
 * The line clearly continues onto the next because it ends with one of:
        `( [ ,` (opening brackets or comma) or a binary operator
 
-Their main use is separating units on the same line. Extra semicolons are generally well tolerated as these rules mean they can occur in unexpected places, such as after `then` here:
-
-    if cond then       # ";" inserted here
+Their main use is separating units on the same line. Extra semicolons are generally well tolerated.
 
 #### Comments
 
@@ -129,24 +120,16 @@ The `-docs` compiler option will write out a text file listing all such function
 
 #### Character Set
 
-This is UTF8, but the language uses only ASCII within reserved words and identifiers. Non-ASCII characters are allowed in comments, string constants and char constants.
-
-(A char constant occupying more than 1 byte will have `u64` type rather than `char`.)
-
-Apart from this, the language does not itself deal with Unicode at all. That is all up to the editors used to create source code, and the libraries used to process strings.
+This is UTF8, but the language uses only ASCII within reserved words and identifiers. Non-ASCII characters are allowed in comments, string constants and char constants. Apart from this, the language does not itself deal with Unicode at all. That is all up to the editors used to create source code, and the libraries used to process strings.
 
 #### Block Endings
 
-You will notice in example code that `end` and so on are used to close blocks. Actually M is quite flexible here, in allowing anyone to choose their preferred style.
-
-The block ending can be either:
+You will notice in example code that `end` and so on are used to close blocks. The block ending can be either:
 
     end                 # Unchecked
     end if              # etc. The keyword needs to match the statement
 
-`endif` etc (without spaces) has been dropped (Reddit users weren't very kind about about so much choice).
-
-Some statements can have alternate block endings:
+`endif` etc (without spaces) has been dropped. Some statements can have alternate block endings:
 
 * Any loops using `do` (all of them except `repeat`) can also close with `end do` or just `od`
 * `if` statements can close with `fi`
@@ -157,95 +140,31 @@ Some statements can have alternate block endings:
 ### N-Based
 
 M prefers 1-based, and will default to that, but sometimes that can be overridden, and sometimes it's 0-based. Here is a summary:
-
-Feature | Start | Override | Notes
---- | --- | --- | ---
-Arrays | 1 | Yes | Override with explicit lower bound
-For-loops | 1  | Yes | `for i to B`/`for i:=A to B`
-N-way select | 1 | No | `(n \| a, b, c \| z)`
-Enumerations | 1 | Yes | Default ordinal value of first
-Bit-indexing | 0 | No | `A.[i]` and `A.[i..j]`
---  |  |  | In Q:
-Lists| 1 | Yes |
-Arrays | 1 | Yes | Also bit-arrays
-Constructors | 1 | Yes | `(10, 20, 30)` or `(n:10, 20, 30)`
-Enumerations | 1 | Yes | Default ordinal value of first
-Strings | 1 | No |
-Records | 1 | No | Fields can be accessed by name or index
-Bit-sets | 0 | No |
+````
+              Start Override?  Notes
+Arrays          1     Yes  
+For-loops       1     Yes      1 used for missing start value in: for i to N
+N-way select    1     No       As used in (n | a, b c | z)
+Enumerations    1     Yes
+Bit-indexing    0     No       For A.[i] and A.[i..j]
 
 ### Program Entry Point
-This is the `main` function, which is always exported (ie. no `global` or `export` needed.) `main` takes no parameters.
+This is the `main` function, which is always exported (ie. no `global` or `export` needed.) `main` takes no parameters. 
 
-This needs to be present in the Main Module (see Terms).
+This needs to be present in either the lead module, or the first module listed in the project list.
 
-M will insert a call to a start-up routine in M's runtime module, to set up command-line parameters etc as global variables (`ncmdparams`, and `cmdparams`, the latter being an array of strings). It will also insert calls to `start()` functions in every module that has one (see below), before executing user code in `main`.
-
-So given this `main` routine:
-```
-proc main =
-   <my code>
-end
-```
-Special code is inserted by the compiler so that it does this:
-```
-proc main =
-   msys.start()              # unless -nosys option used
-   <call any start() routines in other modules>
-   <my code>
-   stop 0
-end
-```
-`main` can be present in other modules, but only the one in the lead module becomes the entry point. Other `main` routines can be called (they will need qualifiers, such as `B.main()`), but are otherwise ignored, unless that module is compiled directly to form its own program.
-
-#### Start() Functions
+#### `Start()` Functions
 If present in a module, it will be called automatically by start-up code. No `global` attribute needed.
 
-The ordering of such calls when `start()` is present in multiple modules can be important. That order follows that of the `module` directives in the Header, except that the one in msys.m (a standard library) is done first, and any in the Main Module itself is done last.
-
+The ordering of such calls when `start()` is present in multiple modules can be important. That order follows that of the `module` directives in the lead module, except that the module containing `main()` is done last.
 
 #### Program Exit Point
-Programs can be terminated by running into the end of the `main` function, with return code 0. For a different return code, or to exit from anywhere in the program, use:
+Programs can be terminated by running into the end of the `main` function, with return code 0. For a different return code, or to exit from anywhere in the program, use one of:
 ````
+    stop                    # stop 0
     stop N
 ````
 Note that `main` is a proc not a function; it has no return value itself. The compiler inserts `stop 0` at the end, so that code actually runs into that.
-
-
-### Data Types (M)
-
-M's types are basic, and fixed length, like C's:
-
-Type  |   Bit-width/Length   |    UA | Notes 
---- | --- | --- | ---
-void  |  |   |  Pointer target only
--- |  |  | 
-int   |     `8 16 32 64 ---`    |    |  Signed integers
-word   |    `8 16 32 64 ---` |     |    Unsigned integers
-char    |   `8 -- -- 64 ---`  |   |  Character
-bool     |  `8  --  -- 64 ---`  |  |   Boolean
-real     |  `-  -- 32 64 ---` |    |  Float
--- |  |  | 
-ref     |   `-  --  -- 64 ---` |   A  |  Pointer to T 
-slice   |   `-  --  --  -- 128` |   A |   Slice of T (pointer and length)
-range    |  `-  --  --  -- 128`  |  |   Internal
--- |  |  | 
-record  |   Fixed size       |  U  |  Record of mixed T
-array   |   Fixed length | A | Array of T
-array   |   Unbounded | A | Pointer target only
--- |  |  | 
-proc   |                   |  A  |  Pointer target only (func signature)
-label   |                 |   A  |  Pointer target only
--- |  |  | 
-tuple  |    Fixed length   |    A  |  Internal
-type   |              |      |       Internal
-
-* U in the UA column means this is a named user type; each instance be for a different record
-* A in the UA column means this is an anonymous type; each instance will be a different pointer, array, func etc
-* Some types are only allowed as pointer targets
-* Non-float numeric types shorter than 64 bits are 'storage' types, suitable for optimising memory usage and record layouts
-
-Q has its own higher level types (flex strings and arrays for example), but also supports the above 'T' types because they are used in APIs, and are needed when working with M data. Q is described elsewhere.
 
 #### Numeric Types
 
