@@ -8,8 +8,8 @@ const mdigitfmt    = "z9"
 const digitmax     = digitbase-1
 
 export type bignum = ref bignumrec
-type elemtype = int32
-const elemsize = elemtype.bytes
+type elemtype      = int32
+const elemsize     = elemtype.bytes
 
 export record bignumrec =
     ref[0:]elemtype num
