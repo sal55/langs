@@ -1260,7 +1260,7 @@ These are looping versions of `switch` and `case`, for example:
         s
     end 
 ````
-Use `doswitchu` for a switch implemented with 'computed goto`, which can be faster for some applications. However, out of range
+Use `doswitchu` for a switch implemented with `computed goto`, which can be faster for some applications. However, out of range
 when-values are not trapped; `else` detects only values within gaps of the overall range.
 
 It is necessary to use `goto return exit` or `stop` to break out of the loop.
