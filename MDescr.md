@@ -193,6 +193,9 @@ There are no Block scopes in this language; each Function contains only a single
     DLL Function        Subpodule
     DLL Variable        Subprogram (DLL variables not fully supported by M's FFI)
 
+(This is quite heavy going; perhaps just have the two lists of scopes/names, and mark names for which attributes can be used, since other
+kinds of visibility are inherent.)
+
 #### Attributes
 
 From inside a Module M which is part of Subprogram S, these attributes can be applied to any name defined at module-scope:
@@ -210,6 +213,8 @@ From anywhere in other Subprograms, `S.abc` can access `abc` in any module of S,
 No actual names can be defined inside a Subprogram; only inside a Module. Subprogram names are a little abstract, and are kept outside the global Symbol Table, since they will clash with module names: `S` will have the same name as the leadmodule of the Subprogram.
 
 In most cases (at least 99% in my code), `M.abc` or `S.abc` can be written as just `abc`, unless there is a clash and disambiguation is needed.
+
+(Rewrite the above. And below!)
 
 From outside a Record definition `R`, with a possible instance `X`:
 ````
