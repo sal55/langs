@@ -1,17 +1,21 @@
 ## M Language Description - 6.3 March 2024
 
-An informal description  of the latest version, also highlighting things that don't work well, are buggy, missing, or should be removed.
+An informal description of the latest version, also highlighting things that need attention.
 
-It gives a picture of an untidy, sprawling language that needs to be tightened up. The same applies to this document!
+It's not a proper reference or user manual, but mainly for my benefit as developer and maintainer.
 
-I will need to go through and test that the features mentioned actually work as stated. If not, then fix them, or remove them.
+Looking through it, it gives a picture of an untidy, sprawling language that needs to be tightened up. The same applies to this document!
+
+I will need to go through it in detail and test that the features mentioned actually work as stated. If not, then fix them, or remove them.
+
+What I hadn't realised was how much behaviour has simply been assumed. Little of that is specified in detail. Doing so would result in something as big as the 700 pages of the C standard. But that doesn't suit this informal, personal language.
 
 ### Overview
 
-Quite a few things have been played with over the last few years. This is a summary of 6.3:
+Quite a few things have been changed over the last few years. This is a summary of 6.3:
 ````
 - Expression-based rather than Statement-based
-- Targets x64 processor running Windows using the Win64 ABI even internally
+- Targets x64 processor running Windows using the Win64 ABI, even internally
 - Uses 'PCL' stack-based intermediate language with 64-bit primary integer type
 - Simplified 2024 Module scheme
 - Supports EXE DLL directly, and OBJ, MX/ML via ASM and AA assembler
@@ -20,9 +24,13 @@ Quite a few things have been played with over the last few years. This is a summ
 - Can export to either M or Q for DLL/ML, but both need more work
 - Can run from source
 ````
-### Block Endings
+### Syntax
 
-These the endings for the final block in a statement or a declaration block:
+(For those not familiar, see examples in the `.m` files elsewhere on this site.)
+
+#### Block Endings
+
+These are the endings for the final block in a statement or a declaration block:
 ````
     end             # Works for any statement or declaration
     end if          #
