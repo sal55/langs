@@ -89,18 +89,17 @@ In practice, a lower bound  other than 1 or 0 is rare.
 
 
 ### Entry Point, Main and Start Functions
+These function names are special:
+```
+    proc main           (No params)
+    proc start          (No params)
+```
+The program entry is `main`, either in the lead module, or the one after that. `main` in other modules is ignored (it can be called by user code).
 
-Function names `main` and `start` are special. They need to be declared with `proc`, and take no parameters (this needs to be checked).
+Any `start` functions in any module are called automatically from the `main` function using specially inject calls. The call order depends on the `module` order
+in the project info, but the one in the `main` module is called last.
 
-They automatically have `global` or `export` attributes applied as needed.
-
-The program entry point will be the `main` function in either the lead module, or the second. (This needs checking: ATM if both have `main`, the second is used.)
-
-Other modules can have `main`; those are ignored, although you can call them explicitly. (This allows those modules to be compiled as independent programs with their own `main` function.)
-
-Any module can also have a `start` function. If present, it will be called automatically when the program starts. The order in which those functions are called depends on the order of the `module` directives in the lead module, except that the one containing the entry point will be done last. (This needs checking.)
-
-(For `start` functions within the modules of a subprogram, I'd need to check. Subprograms really need to be done first. There the hierarchy may be important, but it's not something I want to get into. I will just check what is actually does, and document that.)
+For `start` inside subprogram modules, I will need to investigate an report back.
 
 #### Open Main Code
 
@@ -173,60 +172,46 @@ The following scopes exist:
 
 There are no Block scopes in this language; each Function contains only a single, Function-wide scope.
 
-    Kinds of Names      Scopes they can exist in
+The following kinds of identifier exist:
 
-    Module              Program
-    Subprogram          Program
-    Function            Subprogram, Module, Record (no nested functions)
-    Variable            Subprogram, Module, Function, Record
-    Type/Record         Subprogram, Module, Function, Record
-    Named Constant      Subprogram, Module, Function, Record
-    Enumeration         Subprogram, Module, Function, Record
-    Macro               Subprogram, Module, Function, Record
-    Parameter           Function
-    Stack Local         Function
-    Static Local        Function
-    Macro Parameter     Macro
-    Label               Function
-    Field               Record
-    DLL Module          Program
-    DLL Function        Subpodule
-    DLL Variable        Subprogram (DLL variables not fully supported by M's FFI)
+    Module
+    Subprogram
+    Function*
+    Variable*
+    Type/Record*
+    Named Constant*
+    Enumeration*
+    Macro*
+    Parameter
+    Stack Local
+    Static Local
+    Macro Parameter
+    Label
+    Field
+    DLL Module
+    DLL Function
+    DLL Variable
 
-(This is quite heavy going; perhaps just have the two lists of scopes/names, and mark names for which attributes can be used, since other
-kinds of visibility are inherent.)
+Ones marked `*` when defined at module scope, can have `global` or `export` attributes to make them visible to other modules or also to other subprograms.
+
 
 #### Attributes
 
 From inside a Module M which is part of Subprogram S, these attributes can be applied to any name defined at module-scope:
 
 ````
-    global              This attribute makes it visible to other modules in the Subprogram
-    export              This additionally makes it visible other other Subprograms, or to
-                        outside the program is this is the main subprogram; it then becomes
-                        a library
-````
-From anywhere in the same Subprogram, `M.abc` can access an entity `abc` inside module `M`, provided it has `global` or `export` attribute.
+    global       This attribute makes it visible to other modules in the Subprogram
+    export       This additionally makes it visible other other Subprograms, or to
+                 outside the program is this is the main subprogram; it then becomes
+                 a library
 
-From anywhere in other Subprograms, `S.abc` can access `abc` in any module of S, provided it has `export` attribute.
+    Usage:
 
-No actual names can be defined inside a Subprogram; only inside a Module. Subprogram names are a little abstract, and are kept outside the global Symbol Table, since they will clash with module names: `S` will have the same name as the leadmodule of the Subprogram.
-
-In most cases (at least 99% in my code), `M.abc` or `S.abc` can be written as just `abc`, unless there is a clash and disambiguation is needed.
-
-(Rewrite the above. And below!)
-
-From outside a Record definition `R`, with a possible instance `X`:
+    M.F          Access F in module M in this subprogram. But usuall just F suffices unless
+                 there is a clash, or to bypass F in this module.
+    S.F          Access F somewhere in subprogram S (the modules of S are unknown outside it).
+                 Again just F will work if there is no clash.
 ````
-    R.name              Allows access to all names in R except Fields, which only come into
-                        existence when an instance is created
-    X.name              Allows access to all names including Fields
-````
-From outside a Function F:
-````
-    F.name              Allows access to all names except Parameters, Stack Locals and Labels.
-````
-There are no Private/Public attributes to control access to names inside Records; everything is Public. That applies to Functions too; access like this is unusual.
 
 #### `static`
 
@@ -236,9 +221,23 @@ This isn't to do with scope. It can applied to a variable inside a function so t
 
 Namespaces can be created within modules, functions and records. Subprograms also create a namespace, used to access exported names from its modules.
 
-Qualifed names such as `M.F()` to call function `F` exported from module `M` are usually not needed. Only if there is ambiguity, for example if another function also exports `F`, or `F` is a function in this module and you want the one from `M`.
+##### Record Namespaces
 
-Restriction: out-of-order definitions make things difficult with user types, even making it hard to recognise declarations:
+A name `A` (not a regular field, but a named const, function etc) defined inside a record definition `R` can be accessed from outside using `R.A`.
+
+If `X` is an instance of `R`, then `X.A` can be used too.
+
+(If `F` is a function defined inside `R`, then `R.F()` will call the function. `X.F` will call it using `R.F(X)`, but there the first
+parameter must be a by-reference parameter to an instance of `R`. This is common method-call syntax.)
+
+#### Function Namespaces
+
+Unusually, names inside a function (**not** local stack variables, parameters or labels), can also be accessed from outside.
+
+If `A` is defined inside record `F`, then `F.A` can access from outside. (This allows functions `F` and `G` to share a private static variable.)
+
+
+**Restriction** Out-of-order definitions make things difficult with user types, even making it hard to recognise declarations:
 ````
     A B, C
 ````
@@ -316,7 +315,7 @@ Elaborate types can be simply written left to right:
     [3][4][5]int B          Alternative
 ````
 
-The `array` prefix optional (something that may be dropped).
+The `array` prefix is optional (something that may be dropped).
 
 Function types (as used in function pointers) use slightly different syntax from definitions:
 ````
