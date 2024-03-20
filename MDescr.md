@@ -198,11 +198,10 @@ Other types; here `T` represents any other type
     label       label           Only allowed following 'ref' for label pointers
 ````
 These are all 'placeholder' types, requiring extra syntax and more info to form a custom anonymous type, except for records which must be named types:
-````
 
 ### Name IDs
 These are the different kinds of identifier the compiler deals witj:
-`````
+````
     Module
     Subprogram          The lead module name of a subprogram is also the subprogram name
     Function*
@@ -636,7 +635,7 @@ The general pattern is:
     [A:N]           N elements indexed A..A+N-1 inclusive (eg. [0:10]int also has 10 elements indexed 0..9) 
     [A:]            Unbounded but with with lower bound A
     [B.bounds]      Use B's bounds
-
+````
 ### Array and Record Constructors
 
 By these I mean constructing an array by enumerating the values:
