@@ -1,81 +1,269 @@
-## M Language Description - 6.3 March 2024
+## M Language and Compiler Reference
 
-An informal description of the latest version, also highlighting things that need attention.
+This summaries the 2024/6.24 version of of my 'M' systems language.
 
-It's not a proper reference or user manual, but mainly for my benefit as developer and maintainer.
+It is a collection of lists, tables, facts, examples and speculation on possible new ideas.
 
-Looking through it, it gives a picture of an untidy, sprawling language that needs to be tightened up. The same applies to this document!
+I want to ensure that the implementation works as described here. (Often I'm loathe to use
+a feature as I can't remember how well it is supported if at all. Sometimes features had once
+worked but no longer.)
 
-I will need to go through it in detail and test that the features mentioned actually work as stated. If not, then fix them, or remove them.
+So they will either be fixed, or they will work subject to limitations, or removed completely.
 
-What I hadn't realised was how much behaviour has simply been assumed. Little of that is specified in detail. Doing so would result in something as big as the 700 pages of the C standard. But that doesn't suit this informal, personal language.
 
 ### Overview
-
-Quite a few things have been changed over the last few years. This is a summary of 6.3:
+The language has been volatile recently as I try different ideas. This summarises 6.4:
 ````
 - Expression-based rather than Statement-based
-- Targets x64 processor running Windows using the Win64 ABI, even internally
-- Uses 'PCL' stack-based intermediate language with 64-bit primary integer type
+- Targets x64 processor running Windows using the Win64 ABI
+- 64-bit default floats, ints, pointers
+- Uses 'PCL' stack-based intermediate language
 - Simplified 2024 Module scheme
 - Supports EXE DLL directly, and OBJ, MX/ML via ASM and AA assembler
-- Supports -himem and -rip options (set automatically for DLL/OBJ outputs)
-- Has -regs and `-peep` optimiser settings
-- Can export to either M or Q for DLL/ML, but both need more work
+- Can generate high-loading and relocatable code for DLL/OBJ targets
+- Has `-regs` and `-peep` 'optimiser' settings (however there is no real optimiser)
+- Can export to either M or Q import modules for DLL, but both need more work
 - Can run from source
 ````
-### Syntax
 
-(For those not familiar, see examples in the `.m` files elsewhere on this site.)
-
-#### Block Endings
-
-These are the endings for the final block in a statement or a declaration block:
+### Hello, World
 ````
-    end             # Works for any statement or declaration
-    end if          #
-    end while       # etc, keyword should match opening keyword
+proc main =
+    println "Hello, World!"
+end
+````
+Build the `hello.m` program using:
+````
+mm hello
+````
+This produces a 27KB binary (which includes the standard library, needed to
+support `println`). For a cut-down binary, use `mm -minsys hello` to leave out most of the
+library (a basic `println` is still supported), then the binary is 2.5KB.
 
-    fi              # Only works with `if` (these three are from Algol68)
-    esac            # Only works with `case`
-    od              # Works with any loop where do opens the loop body
+### Whole program compiler
+The language is designed for whole-program compilation. A program is a single
+EXE or DLL binary, or a single ASM or OBJ file when that output is chosen.
+
+Other languages allow independent compilation of modules, here the granularity is the whole program instead.
+
+
+### Standard Library
+The standard library is collection of 5-6 modules (see below), which is usually
+compiled into the application. The alternative was for it to be a standalone DLL,
+an extra dependency when producing applications.
+
+It adds about 25K to any program, but most programs need at least some of it.
+
+### Compiler Inputs
+There is only one input file on the command line:
+````
+    .m  file    Lead module of an application
+    .ma file    Amalgamated file containing entire program sources
+````
+Other inputs needed to build a program are dealt with during compilation:
+````
+    .m files        Remaining modules are discovered via the module system
+    include files   Via include directives
+    sinclude files  Embedded text or data are via sinclude/binclude features
+    binclude files
+    DLL files       These are either infered from 'importdll` blocks or
+                    listed with 'linkdll' directived in the project info
+````
+DLL files are only needed for producing an EXE, and are used to discover where any imported
+symbol is located, info required for import tables inside the EXE.
+
+M doesn't require an import to be precisely matched with the exact DLL file, so all submitted DLLs are searched.
+
+(I can change this and make it stricter, as it has to be in the Q language, then actual
+DLLs are not needed when compiling, allowing cross-compiling or remote building. But
+for now it's fine and makes writing code simpler.)
+
+Some DLLs are automatically included and don't need specifying:
+````
+    msvcrt.dll
+    user32.dll
+    kernel32.dll
+    gdi32.dll
+````
+### Compiler Outputs
+````
+    Output  Option  Ext     Description
+
+    EXE     -exe    .exe    (Default) Executable binary in Windows PE format
+    DLL     -dll    .dll    Shared dynamic library, relocatable code
+    OBJ     -obj    .obj    Object file in COFF format (via ```
+    ASM     -asm    .asm    Produce a single ASM file representing the whole program
+    MA      -ma     .ma     Produce a single-file, compilable source amalgamation
+    RUN     -run    --      Compiler and run immediately; no file is written
+
+    ML      -ml     .ml     Generate ASM first, then run `aa` with that option
+    MX      -mx     .mx     These are a private binary format
+    PCL     -pcl    .pcl    (Default) Needs `mmp.exe` M compiler
+    C       -c      .pcl    Needs `mc.exe` M->C transpiler
 ````
 
-So `if` can end with any of `end`, `end if`, `fi`. `endif` and similar variations have been dropped.
-
-#### Semicolons and Newlines
-
-Newlines get converted internally to semicolons unless the line obviously continues onto the next, for example it ends with:
+### Compiler Binaries
 ````
-    ( or [ or ,
-    Binary operator
-    \ line continuation
-````
-Actual semicolons are rare in source code unless used to separate multiple units on one line.
+    Binary      Dev Folder      Description
 
-Extra semicolons due to newlines are usually harmless and well tolerated, since a simple `if` statement written across 5 lines may be seen as this:
-````
-    if a=b then; c:=d; else; e:=f; fi;
-````
-This would be tricky to express in a formal grammar. It's a good thing there isn't one...
-#### Case Insensitive
-Generally case insensive, unless an identifier starts with a backtick, then case is preserved. Backtick also allows reserved words to be used as identifiers:
-````
-    int `int, `Int, `INT
-````
-For interfacing to external routines that use a particular pattern of upper/lower case, then the function name can be written as a string containing the right case. But subsequently any case can be used.
+    mm.exe      c:\mx64         Main M compiler
+    ms.exe      c:\mx64         Copy of mm.exe; `-run -q` options are applied
 
-#### Comments
+    mmp.exe     c:\px           Compile M to standalone .pcl IL file
+    pci.exe     c:\px           Interpret .pcl file
+    aa.exe      c:\ax           x64 assembler, produces EXE, DLL, OBJ, ML, MX files
+    mc.exe      c:\mcx          Transpile M to single C source file
 
-There are only single-line comments, and they start with `!` or `#`. The status of `#` however is unclear.
+````
+The main compiler is mm.exe, 0.3 to 0.4MB depending on configuration, which is
+self-contained and independent when compiling M projects to EXE or DLL.
 
-Comments starting `##` has been used for doc-strings, but that feature has been removed for now. `#` is useful in shared code, but '#' might be
-too useful a character to duplicate the job of `!`.
+OBJ, ML, MX outputs require `aa.exe` (invoked automatically).
 
-There are no block comments (this is considered an editor function), nor ones in the middle of a line.
+The `ms.exe` version (M-script) can used to run M programs just like a script.
+The `-run -q` options otherwise needed are applied automatically.
+
+Interpreting M code requires using `mmp.exe` and `pci.exe` instead.
+
+Transpiling to C requires iuse of `mc.exe` instead
+
+`mc` and `mmp` are auxiliary products which may not support the latest version, and may
+dropped in the future.
+
+### Targets
+The primary target is x64 running Windows. Linux is possible via C only.
+````
+    x64         Use `mm.exe`
+    C           Use `mc.exe` (limited)
+    PCL         Use `mmp.exe` for experimental M interpreter
+    Run         Use `mm.exe -run`, or `ms.exe`, to run an M program as a script
+````
+
+### Units, Sunits and Decls
+
+A 'Unit' is either an expression or excecutable statement. Any unit can return a value,
+but for some statements just has 'void' type so it can't be used.
+
+A 'Decl' is any declaration/definition that introduces one or more new identifiers. It is a non-executable statement.
+
+An 'Sunit' is a sequence of Units or Decls separated with semicolons or newlines (since newlines usually transform into semicolons).
+
+Note that a construct like `(u; u; u)` doesn't create an Sunit, which must be
+specifically mentioned in the syntax descriptions to be allowed.
+It can mostly be used as one, but it can't contain declarations.
+
+In this reference, `unit`, `sunit`, or just `u` and `s`, possibly numbered, may
+appear in the descriptions.
+
+### Data Types
+
+Numeric types, which can have long and short designations plus common aliases:
+
+````
+    Long        Short   Aliases     Notes
+
+    int8        i8                  Signed integers
+    int16       i16
+    int32       i32
+    int64       i64     int
+
+    word8       u8      byte        Unsigned integers
+    word16      u16
+    word32      u32
+    word64      u64     word
+
+    real32      r32                 Floating point
+    real64      r64     real
+
+    char8       -       char        Character type is a thin wrapper around u8/byte/word8
+    char64      -
+    bool8       -
+    bool64      -       bool
+
+    void        -                   Only allowed following 'ref'
+    label       -                   Pointer target only
+    ichar       -                   Alias for 'ref char'
+````
+Other types; here `T` represents any other type
+
+````
+    Name        Syntax          Notes
+
+    ref         ref T           Pointer to T
+    array       [bounds]T       Array of T
+    slice       slice[]T        Slice of T; (a lower bound can be specified)
+    record      record ...      Record of mixed-type fields
+    proc        proc ...        Only allowed following 'ref' to define function pointers
+                func ...
+    label       label           Only allowed following 'ref' for label pointers
+````
+These are all 'placeholder' types, requiring extra syntax and more info to form a custom anonymous type, except for records which must be named types:
+````
+
+### Name IDs
+These are the different kinds of identifier the compiler deals witj:
+`````
+    Module
+    Subprogram          The lead module name of a subprogram is also the subprogram name
+    Function*
+    Static Variable*    Either at module scope or static local
+    Type/Record*
+    Named Constant*
+    Enumeration*
+    Macro*
+    Parameter
+    Local Variable
+    Macro Parameter
+    Label
+    Record Field        Variable part of a record instance
+    DLL Module
+    DLL Function
+    DLL Variable        Not fully accessible from M code
+````
+Ones marked `*`, when defined at module scope, can have `global` or `export` attributes to make them visible to other modules or also to other subprograms.
+
+Any DLL names are imported from external libraries, but are also exported from
+the containing module, the one with the enclosing `importdll-end` block.
+
+
+### Scopes and `global` and `export` Attributes
+
+Scopes affect visibility of top-level names.
+
+The following scopes exist, all lexical scopes:
+````
+    Program scope       The entire program
+    Subprogram scope    Shared by all modules in a subprogram
+    Module scope        Only in that module
+    Function scope      Only in that function
+    Record scope        Only in that record
+    Macro scope         Only in that macro
+````
+
+**Block Scopes** There are no local block scopes in the language. Each function
+body only has a single scope for all identifiers.
+
+**Global Entities** Any name with a `global` attribute (only allowed at module scope) is
+visible to all modules in that subprogram.
+
+**Exported Entities** Any name with an `export` attribute is also
+visible to other subprograms, or exported from the program when compiled as a DLL library.
+
+### Module Scheme Directives
+See [Modules24](Modules24.md) which describes the scheme in detail. In short, all project info is provided by a list of directives at the start of the lead module. Usually, they will be the only thing in the lead module. The directives are:
+````
+project =
+    module name             # module name forming part of the main subprogram
+    import name             # read the lead module and other modules of another subprogram
+    linkdll name            # Dynamic shared library if it is not clear from importdll statements
+    linklib name            # 'ML' library (this may be dropped)
+    $sourcepath string      # temporary directive until path control is sorted out
+end
+````
+The `project-end` block is a recent addition. This may be extended to allow an executable name that overrides that of the lead module.
 
 ### N-Based
-Primarily 1-based, but N-based including 0-based if usually allowed. A few things are 0-based only:
+M is primarily 1-based, but N-based including 0-based if usually allowed. A few things are 0-based only:
 ````
                     Default     Override?
 
@@ -87,31 +275,7 @@ Primarily 1-based, but N-based including 0-based if usually allowed. A few thing
 ````
 In practice, a lower bound  other than 1 or 0 is rare.
 
-
-### Entry Point, Main and Start Functions
-These function names are special:
-```
-    proc main           (No params)
-    proc start          (No params)
-```
-The program entry is `main`, either in the lead module, or the one after that. `main` in other modules is ignored (it can be called by user code).
-
-Any `start` functions in any module are called automatically from the `main` function using specially inject calls. The call order depends on the `module` order
-in the project info, but the one in the `main` module is called last.
-
-For `start` inside subprogram modules, I will need to investigate an report back.
-
-#### Open Main Code
-
-This allows you to dispense with a `main` function, so that short throwaway programs may be written in the manner of a scripting language.
-
-However, it's crashing at the moment. Also, if that code uses short identifiers, these will be in the common namespace of that module, possibly clashing with undeclared locals within functions, with unexpected results.
-
-I might then just drop the feature (so `hello.m` will need to be 3 lines instead of just one), or restrict it so that no other functions are allowed in that module, only open code.
-
-
-### Command Line Parameters
-
+### Command line params
 `main` takes no parameters. Two global variables, exported from the standard library, give information about parameters:
 ````
     ncmdparams         How many parameters were provided
@@ -136,6 +300,14 @@ then `cmdparams[0]` will contain `prog` in both cases. A special mechanism is us
 
 However programs which directly call functions like `__getmainargs` or `GetCommandLine` will see all inputs.
 
+### Entry point
+This will be the `main` function that must be located in either the lead module or the
+next one after that. (This allows the lead module to contain only project info.)
+
+The `main` name is special; it will automatically be exported. It should be a `proc`
+that takes no parameters and returns no result.
+
+
 ### Program Exit
 This can be done with any of these:
 ````
@@ -147,106 +319,15 @@ This can be done with any of these:
 
 The `main` entry point function will have `stop 0` injected at the end, so just running into the end of `main` will terminate too.
 
-### Modules
+### Start functions
+Each module can have an optional `start` procedure, which like `main` is exported
+and take no parameters.
 
-See [Modules24](Modules24.md) which describes the scheme in detail. In short, all project info is provided by a list of directives at the start of the lead module. Usually, they will be the only thing in the lead module. The directives are:
+If present, it is automatically called from start-up code when the program is launched.
 
-    module name             # module name forming part of the main subprogram
-    import name             # read the lead module and other modules of another subprogram
-    linkdll name            # Dynamic shared library if it is not clear from importdll statements
-    linklib name            # 'ML' library (this may be dropped)
-    $sourcepath string      # temporary directive until path control is sorted out
+The caller order depends on the modules in the project header; I will need to
+check the behaviour and report back.
 
-### Scopes
-
-Scopes affect visibility of top-level names.
-
-The following scopes exist:
-
-    Program scope       The entire program
-    Subprogram scope    Shared by all modules in a subprogram
-    Module scope        Only in that module
-    Function scope      Only in that function
-    Record scope        Only in that record
-    Macro scope         Only in that macro
-
-There are no Block scopes in this language; each Function contains only a single, Function-wide scope.
-
-The following kinds of identifier exist:
-
-    Module
-    Subprogram
-    Function*
-    Variable*
-    Type/Record*
-    Named Constant*
-    Enumeration*
-    Macro*
-    Parameter
-    Stack Local
-    Static Local
-    Macro Parameter
-    Label
-    Field
-    DLL Module
-    DLL Function
-    DLL Variable
-
-Ones marked `*` when defined at module scope, can have `global` or `export` attributes to make them visible to other modules or also to other subprograms.
-
-
-#### Attributes
-
-From inside a Module M which is part of Subprogram S, these attributes can be applied to any name defined at module-scope:
-
-````
-    global       This attribute makes it visible to other modules in the Subprogram
-    export       This additionally makes it visible other other Subprograms, or to
-                 outside the program is this is the main subprogram; it then becomes
-                 a library
-
-    Usage:
-
-    M.F          Access F in module M in this subprogram. But usuall just F suffices unless
-                 there is a clash, or to bypass F in this module.
-    S.F          Access F somewhere in subprogram S (the modules of S are unknown outside it).
-                 Again just F will work if there is no clash.
-````
-
-#### `static`
-
-This isn't to do with scope. It can applied to a variable inside a function so that there is a single instance shared by all invocations. Then it will keep its value between calls.
-
-### Namespaces
-
-Namespaces can be created within modules, functions and records. Subprograms also create a namespace, used to access exported names from its modules.
-
-##### Record Namespaces
-
-A name `A` (not a regular field, but a named const, function etc) defined inside a record definition `R` can be accessed from outside using `R.A`.
-
-If `X` is an instance of `R`, then `X.A` can be used too.
-
-(If `F` is a function defined inside `R`, then `R.F()` will call the function. `X.F` will call it using `R.F(X)`, but there the first
-parameter must be a by-reference parameter to an instance of `R`. This is common method-call syntax.)
-
-#### Function Namespaces
-
-Unusually, names inside a function (**not** local stack variables, parameters or labels), can also be accessed from outside.
-
-If `A` is defined inside record `F`, then `F.A` can access from outside. (This allows functions `F` and `G` to share a private static variable.)
-
-
-**Restriction** Out-of-order definitions make things difficult with user types, even making it hard to recognise declarations:
-````
-    A B, C
-````
-If there are two consecutive identifiers such as `A B`, it is assumed that A is the name of a user-type, and B a variable of that type. But type names
-can't be written like this to disambiguate:
-````
-    M.A B, C
-````
-There is a mechanism in place for this, but it's not fully implemented. So type ambiguities can't be resolved.
 
 ### Out-of-Order Definitions
 
@@ -254,90 +335,114 @@ All definitions in M programs can be written in any order. This applies to every
 
 The order of modules in the project info can be important, but these are directives rather than definitions.
 
-Sometimes this gives unexpected results, for example if the declaration for a local is forgotten, or a `for`-loop is written that auto-declares its index, it may end up inadvertently using a module-scope variable, perhaps one used toward the end of a module
-if an open `main` function is used (that is, outside of `proc main ... end`).
+### Attributes
+Used in front of any definition of variables, functions and so on.
 
-Such open code may be dropped.
-
-### Data Types
-
-#### Simple Types
 ````
-    Long        Short   Aliases     Notes
-
-    int8        i8                  Signed integers
-    int16       i16
-    int32       i32
-    int64       i64     int
-
-    word8       u8      byte        Unsigned integers
-    word16      u16
-    word32      u32
-    word64      u64     word
-
-    real32      r32                 Floating point
-    real64      r64     real
-
-    char8       -       char        Character type is a thin wrapper around u8/byte/word8
-    char64      -
-    bool8       -
-    bool64      -       bool
-
-    void        -                   Normally a pointer target only
-    label       -                   Pointer target only
-    ichar       -                   Alias for 'ref char'
+    global      Make visible to all modules in this subprogram
+    export      Make visible to other subprogram. For the top
+                program build into a DLL, export from the library
+    static      For variables inside a function, use static storage
 ````
 
-No variables of type `void` can be declared. (Just checked and apparently it is possible! But they will generate errors further down the line.)
+### Reserved Words
+These include: keywords, type names and aliases, named operators and properties.
 
-`void` can be used in `ref void`, and comes up as an internal type (a `while` loop returns a `void` result for example).
+There are quite a few because of multiple type aliases (`word8 u8 byte`) and lots of
+built-in operators that other languages provide via a library.
 
-#### Other Types
-
-These are all 'placeholder' types, requiring extra syntax and more info to form a custom anonymous type, except for records which must be named types:
 ````
-    Syntax
-
-    ref T               Pointer to type T
-    [bounds]T           Array of T
-    slice[bounds]T      Slice of T
-    proc(params)        Pointer target only
-    func(params)T       Pointer target only
-    record name = ...   User-defined only
+    abs          acos         and          asin         asm          
+    assem        atan         atan2        binclude     bitwidth     
+    bool         bool64       bool8        bounds       by           
+    byte         bytes        c64          c8           case         
+    cast         ceil         char         char64       char8        
+    clamp        clear        const        cos          divrem       
+    do           docase       doswitch     doswitchu    downto       
+    else         elsecase     elseswitch   elsif        end          
+    enumdata     esac         eval         even         exit         
+    exp          export       false        fi           floor        
+    fmod         for          fprint       fprintln     fract        
+    fun          func         function     global       goto         
+    i16          i32          i64          i8           iand         
+    ichar        if           import       importdll    in           
+    include      infinity     inot         inrev        int          
+    int16        int32        int64        int8         ior          
+    istrue       ixor         label        len          let          
+    linkdll      log          log10        lsb          lsbit        
+    lsw          lwb          macro        max          min          
+    module       msb          msbit        msw          nextloop     
+    nil          not          notin        od           odd          
+    or           pi           print        println      proc         
+    r32          r64          range        read         readln       
+    real         real32       real64       recase       record       
+    redoloop     ref          rem          repeat       return       
+    round        sign         sin          sinclude     slice        
+    sliceptr     sprint       sqr          sqrt         static       
+    stop         struct       swap         switch       tabledata    
+    tan          then         threadedproc to           true         
+    type         typestr      u16          u32          u64          
+    u8           union        unless       until        upb          
+    var          void         when         while        word         
+    word16       word32       word64       word8        xor          
+    project
 ````
 
-#### Type Syntax
-
-Elaborate types can be simply written left to right:
+Not included:
 ````
-    ref [10]ref int A       Pointer to array 10 of pointer to int
-    array [3,4,5]int B      3D array of int dimensions 3 x 4 x 5
-    [3][4][5]int B          Alternative
+    - Words that can still be used as identifiers, such as `million`
+    - Words that start with `$`, since those are reserved by the language
+    - The reserved words (opcodes, registers and directives) of the inline assembler
 ````
 
-The `array` prefix is optional (something that may be dropped).
-
-Function types (as used in function pointers) use slightly different syntax from definitions:
+Any of the above can be used as an identifier, but need to be written with a backtick:
 ````
-    ref proc(int,int)       P
-    ref func(int a,b,c)int  Q
+    int `int, `and, `goto
+    `goto := `and 
 ````
-Parameter names are optional, but if they used, they allow default values, keyword arguments and by-reference passing.
 
-(All this is currently not working for function pointers.)
+(A few keywords need to be shared between the main language, and the inline assembler,
+such as `and` and `not`; this is sorted out internally.)
 
-#### Type Aliases
+### Semicolons and Newlines
 
-`type` creates a single-token named alias for a type:
+Newlines get converted internally to semicolons unless the line obviously continues onto the next, for example it ends with:
 ````
-    type quad = [4]byte
-    type elemtype = int32
-    type T = int
-    type U = int
+    ( or [ or ,
+    Binary operator
+    \ line continuation
 ````
-It never creates a new type; `T U int` all refer to the same `int` type.
+Actual semicolons are rare in source code unless used to separate multiple units on one line.
 
-### Constants and Literals
+Extra semicolons due to newlines are usually harmless and well tolerated, since a simple `if` statement written across 5 lines may be seen as this:
+````
+    if a=b then; c:=d; else; e:=f; fi;
+````
+This would be tricky to express in a formal grammar. It's a good thing there isn't one...
+
+### Comments
+
+Only line comments are supported. They start with `!` and continue to end-of-line:
+````
+    ! A comment
+    int a,b,c      ! Another comment
+````
+Block comments for multiple lines are expected to use editor support.
+
+### Case Insensitivity
+The syntax is case insensitive, so that `abc ABC Abc` are all the same identifier.
+
+For defining case-sensitive function names in the FFI, write them inside a string
+constant. Subsequently, and style of case can be used.
+
+Alternatively, a back-tick can be used to preserve case:
+````
+    int abc, `Abc, `ABC
+    abc := `Abc + `ABC
+````
+But the back-tick needs to used in every instance of the name. Back-tick also
+allows the use of reserved words as identifiers.
+
 
 #### Integer Constants
 
@@ -394,9 +499,15 @@ Note that `'A'` has type `char`, unless it is multibyte.
 
 Unused parts of a word will be zeros.
 
-#### String Constants
+### String Constants
 
-These are the usual zero-terminated byte sequence. A string has type `ref char` or `ichar`. Escape codes are as follows (all case insensitive):
+These are written in double quotes "....". They cannot span multiple lines. Escape codes for embedded special characters are listed below.
+
+Adjacent strings, either constants or named constants, can be combined with `+`; see Concatenating Strings below.
+
+### String Escape Codes
+These can be used also for character constants.
+
 ````
     \a           Char 7 (bell/alert)
     \b           Char 8 (backspace)
@@ -405,85 +516,139 @@ These are the usual zero-terminated byte sequence. A string has type `ref char` 
     \l \n        Char 10 (line feed, or Linux newline)
     \e           Char 27 (Escape)
     \t           Char 9 (tab)
-    \u           Reserved for Unicode specifier
-    \v           Char 11 (vertical tab)
+    \udddd       Specify 16-bit hex Unicode character value
+    \vdddddd     Specify 24-bit hex Unicode character value
     \w           Char 13, 10 (Windows CR/LF sequence)
-    \xdd         Two-digit hex code gives char
+    \xdd         Specify 8-bit hex ASCII, UTF8 component, or raw binary value
     \y           Char 16 (backwards tab in my apps)
     \z \0        Char 0 (embedded zero; will need care)
-    \" \q ""     Char '"' (one double quote)
-    ""           Char '"' (one double quote)
+    \" ""        Char '"' (one double quote; used in string constant)
     \\           Char "\" (backslash)
-    \'           Char "'" (single quote)
+    \'           Char "'" (single quote, used in char constant)
 ````
 Raw strings: these ignore escape codes so that `"\"` is a normal character:
 ````
-    F"C:\demo\mm.exe"
+    F"C:\demo\mm.exe"           # F for file name 
+    r"C:\demo\mm.exe"           # R for raw string; any case can be used
 ````
-Initialising Char Arrays
+
+### String and Data Objects
+
+There are String (zero-terminated text) and Binary (raw-data) objects which
+can be specified via string constants or loaded from files:
+````
+    s"ABC"            3 bytes plus zero terminator, 4 bytes in all
+    b"ABC"            3 bytes only, no terminator
+
+    sinclude(file)    Should be a text file (no embedded zeros), zero terminator added
+    binclude(file)    Any text or binary file, no zero terminator added
+````
+
+String data can be used wherever a normal string is expected (its type is ref char).
+Binary data has type `ref byte` but is usually malleable to whatever data it initialises.
+
+Both String and Binary data can be used to initialise arrays:
+````
+    []char S = s"ABC"          4 bytes total
+    []char T = b"ABC"          3 bytes total
+    []char U = sinclude(file)  Length is size of file + terminator
+
+    []byte V = b"XYZ"
+    []byte W = binclude(file)  Length is the length of the file
+
+    []real x = binclude(file)  Length is the byte-length of the file / 8
+````
+For anything other than byte-arrays, binary files should contain suitable data
+in correct endian format
+
+### Initialising Char Arrays
 
 The type system demands that these are initialised like this:
 ````
     []char S = ('A', 'B', 'C', 0)
 ````
-which is inconvenient. Here two special string constants can be used instead:
+which is inconvenient. But here either string or binary data objects can
+be used; see above. One is zero-terminated, the other not.
+
+### Unicode Support
 ````
-    []char S = a"ABC"         # Same as ('A', 'B', 'C')
-    []char S = z"ABC"         # Same as ('A', 'B', 'C', 0)
+    Identifiers         A-Z and a-z only plus the usual other characters
+    Comments            UTF8 supported
+    String literals     UTF8 contents supported
 ````
-A-strings (it can be `a` or `A`) are not zero-terminated; Z-strings are.
+UTF8 content will need editor support to be add it directly. Otherwise
+Unicode and UTF8 sequences can be specified directly using string escape codes - see above.
+
+Apart from allowing UTF8 sequences in string data, the language provides no support.
+This is up to applications to use the right libraries, the right OS settings to make it
+possible.
+
+Strings are considered to be only sequences of 8-bit bytes or 8-bit char arrays.
 
 #### Pointer Constants
 
 There is only one, called `nil`, with type `ref void`. It is always all-bits zero on supported targets.
 
-### Include and Embedding Files
+### File inclusion and embedding
 ````
-    include "filespec"          Incorporate in-line source code from another file "file.m"
-                                Any path given is absolute, or relative to this module. Default extension is ".m"
-
-    strinclude("filespec")      Brackets are optional. Incorporate (embed) any text file as a string constant, can be used in any
-                                expression that allows string constants.
-
-    static []byte zipexe = bininclude("zip.exe")
+    include "filespec"      Incorporate in-line source code from another file "file.m"
+    sinclude("filespec")    Brackets are optional. Embed any text file as a string data object
+    binclude("filespec")    Embed any file as a binary data object
 ````
+`sinclude` adds a zero terminator which is counted as part of the data.
 
-This embeds a binary file, but it is currently inefficient. It can only be used as data for a byte-array, and is implemented internally as:
+While `sinclude` is mainly for text, and `binclude` for binary, either can have
+embedded zeros, or either can be all text. 
+
+`sinclude` produces a string data object that can be used wherever a string literal
+is allowed.
+
+### Contenating Strings and Data Objects
+
+Strings are not first-class types, but `+` can be used at compile-time to concatenate
+string constants:
 ````
-    static []byte zipexe = (0x49, 0x5A, ...)     # 135,000 entries
+    "abc" + "def"                    abcdef
+    "abc" + s"def"                   abcdef
+    "<"+ sinclude("file1")+">"       <...>
+    binclude("f1") + binclude("f2")  combine two files into one data block
 ````
-It needs a special byte-string repesentation, like a counted string, to be efficient. (In the Q language, `strinclude` will do both text and binary files.)
+It's not possible to mix string/s-data with binary data.
 
-### Named Constants
+Combining strings is useful when:
+
+* Long strings are split across multiple lines
+
+* Named string constants are used, using `const` or `macro`. Example:
 ````
-    const a = 100           # Simple type inference makes a an int type
-    const b = 101.1         # b is a real
-    const int c = 202.2     # Explicit type forces rhs to be int
-    const d = a + b         # d is real (dominant type)
-
-    const e = "ABC"         # These work, but 'const' is really for numbers
-    const f = nil
-    const g = &x            # should be an error, even if x is static           
+    const euro  = "\u20AC"
+    const price = "4.99"
+    ichar mess = euro + price
 ````
-The RHS should be a compile-time expression only, not an address which is known at run-time.
+(NOT WORKING; CHECK THIS)
 
-While `e = "ABC"` works, `const` should be limited to ints and reals.
+### Array bounds
+The general pattern is:
+````
+    []              Unbounded with lower bound 1; either size is from init data, or array must be a pointer targer, otherwise length is zero
+    [N]             N elements indexed 1..10 inclusive
+    [A..B]          B-A+1 elements indexed A..B inclusive (eg. [0..9]int has 10 elements)
+    [A:N]           N elements indexed A..A+N-1 inclusive (eg. [0:10]int also has 10 elements indexed 0..9) 
+    [A:]            Unbounded but with with lower bound A
+    [B.bounds]      Use B's bounds
 
-It should be impossible to apply `&` to a const name, or pass it by-reference.
-
-### Array Constructors
+### Array and Record Constructors
 
 By these I mean constructing an array by enumerating the values:
 ````
-    [3]int A    = (10, 20, 30)      # Exactly 3 elements must be provided if the bounds are 3
+    [3]int A    = (10,20,30)        # Exactly 3 elements must be provided if the bounds are 3
     []int B     = (10,20,30,40)     # Any number can be provided; this defines B's bounds as 1..4
     []int C     = ()                # Empty array ([0] also allowed)
     [1]int D    = (10,)             # One-element needs a trailing comma
-    []int E     = (10,)             #
+    []int E     = (10,)             # Length is 1
 ````
-All the above use `=`, so variables must be at file scope. Within a function, `static` is needed in order to use `=`.
-
-With `=`, all the values must be compile-time expressions or static addresses of variables and functions.
+All the above use `=`, so all must use static storage: either at file-scope, or using `static' if inside a function.
+And all the values must be compile-time expressions or static addresses of variables and functions.
 
 Initialising non-static arrays needs `:=`, but the values can be runtime expressions (check this still works).
 
@@ -497,81 +662,65 @@ For N-dimensional arrays, all dimensions needed to be specified except for the f
 ````
 The layout of the parentheses must exactly match the the type.
 
-### Record Constructors
-
-These are more or less the same as array constructors. All elements of the record must be provided.
-
-For `union` fields, where a union contains multiple types all at the same offset, the type of the first field in the union should be initialised (to be checked).
-
-For records with one field, initialise with `(x,)`. Records with zero fields can't be initialised with `()` ATM.
-
-Other restrictions apply as per arrays.
-
-Initialising via field names doesn't exist. They're in my Q language; in M, if they were added, it would look like this:
-````
-    date h := (month:10, year:1999)          # .day will be zero
-````
-
-### Variable Declarations
-````
-    int a, b:=23, c
-````
-These forms are rarely used or were experimental:
-````
-    var int a, b, c             # var is made optional
-    mut int a, b, c             # mut also means var
-    var a, b, c                 # missing type defaults to 'auto'. This was supposed to be infered, but
-                                # never got round to it. `var a,b,c` is, conveniently Q syntax
-    let int a := 100            # assign-once variable. Very poorly implemented, only works for
-                                # simple scalar types
-    var a:int:=0, b, c          # Tried out name:type ordering (not available for parameters)
-                                # b and c share the same type
-````
-I didn't take to `let` because it required initialising on declaration, which often means declaring in the middle of code.
-
-The while Read-Only thing is poorly handled in my languages, which are keen on having mutable everything. But I am thinking of at leasting moving data like string constants to read-only segments (I don't have one in my back-end, so it may need to go into the code segment).
-
 ### Clearing
 
-Arrays and records can't be cleared by initialising to a constructor with a single zero byte as in C. Any init data must match the type exactly. So alternate ways were introduced; here `T` represents some aggregate type:
+Arrays and records can't be cleared by initialising to a constructor with a single zero byte as in C. Any init data must match the type exactly.
+The language provides an explicit `clear` instruction:
+
 ````
-    T A := empty
-
-    T A
-    A := empty
-
-    T A
+    [100]int A
     clear A
 ````
-I mostly use `clear`, so I may drop `empty`. `clear` can also be used like this:
+I used to have the special symbol `empty` with could be used to initialise or assign to the
+array of record, but I found I only used `clear` so it's been dropped.
+
+`clear` can also be used like this:
 ````
     ref T P := ... allocate memory ...
     clear P^
 ````
-However it is easy to write `P` instead of `P^`, so the pointer is cleared, but not the data. So I may disallow clearing of a simple scalar type.
+`clear` only works on arrays and records (otherwise it's too easy to
+write `clear P` instead of `clear P^`.
 
-The above can only be used for fixed-size ojects. The alternative is to use my `pcm_clear` function or call C's `memset()` routine directly.
+It also can only be used for fixed-size ojects. For dynamic objects, use M's `pcm_clear` function or C's `memset()` routine.
 
-### Arrays
-* Indexing is by using `A[i]` or `B[i,j]` (or `B[i][j]` will also work)
-* Indexing starts from 1 unless specified otherwise; see below
-* Use one of `A.len A.lwb A.upb A.bounds` for info about the dimensions
-* Use `A[$]` as an alternative to `A[A.upb]`
-* Arrays are manipulated by value, and can be passed and returned notionally by value, except that the Win64 ABI implements that with references. No actual copying is done, which is something to be aware of (see Block Handling)
-* Arrays can only be initialised with the exact number of elements, not fewer like in C
-* To initialise an array A to zero, simple use `clear A`. Initialising/assigning using `A := empty` will likely be dropped.
-* Dynamic arrays must be created manually with pointers and allocations (here slices are better)
-
-#### Array Bounds
-The general pattern is:
+### Variable declarations
 ````
-    []              Unbounded with lower bound 1; either size is from init data, or array must be a pointer targer, otherwise length is zero
-    [N]             N elements indexed 1..10 inclusive
-    [A..B]          B-A+1 elements indexed A..B inclusive (eg. [0..9]int has 10 elements)
-    [A:N]           N elements indexed A..A+N-1 inclusive (eg. [0:10]int also has 10 elements indexed 0..9) 
-    [A:]            Unbounded but with with lower bound A
+    int a, b:=23, c
 ````
-#### N-Dimensional Arrays
+These other forms are rarely used:
+````
+    var int a, b, c             # var is made optional
+    let int a := 100            # assign-once variable. Very poorly implemented, only works for
+                                # simple scalar types
+````
+ The `var` form allows the type to be omitted and so infered, but that never got done.
+
+I didn't take to `let` because it required initialising on declaration, which often means declaring in the middle of code.
+
+The while Read-Only thing is poorly handled in my languages, which are keen on having mutable everything. But I am thinking of at leasting moving data like string constants to read-only segments (I don't have one in my back-end, so it may need to go into the code segment).
+
+### Array and Slice Indexing
+A slice is a 16-byte descriptor consisting of a pointer and a length. One can be declared like this:
+````
+    slice[]int S       # Lower bound 1; length and data undefined
+    slice[M:]int T     # Lower bound M; length and data undefined
+````
+Slices are indexed from 1; this can be changed using `slice[0:]int` for example, but that's uncommon. When creating a slice *value* from an array, for example `A[3..6]`, the slice will have a lower bound of 1 with no override, and the length will be 4.
+
+Slices can be initialised, or slice values created, in various ways:
+````
+    S := A[3..6]          A is a normal array
+    S := (P, N)           Construct directly from a pointer and length (this one is under review as I want
+                          to be able to allow: S := (10,20,30,40), initialise slice with a constructor)
+    S := A                Slice to entire array
+    S := S[2..4]          Slice to a slice
+````
+Slices only work for 1D arrays, or the first dimension of multi-dim arrays. A slice lower bound is set at compile-time.
+
+As implement, an arbitrary slice of an array, like `A[i..j]`, will yield a slice index from 1. This can only be changed with a cast, or copying/passing to something expecting a different slice lower bound.
+
+### N-dimensional arrays
 
 Flat arrays of 2 or more dimensions (that is, with all elements in one contiguous block), are only supported for fixed sizes for the trailing dimensions. Only the first dimension can be set at runtime, as happens with 1D unbounded arrays.
 
@@ -591,7 +740,8 @@ Once initialised and the pointers are set up (the language won't do this), then 
 ````
 Because `^[` can be dropped, this can be written as `A[i][j]`, or reduced further to `A[i,j]`. This kind of 2D array allows each row to be a different size; it is up to the application to keep track of those.
 
-### Slices (M)
+
+### Slices
 A slice is a 16-byte descriptor consisting of a pointer and a length. One can be declared like this:
 ````
     slice[]int S       # Lower bound 1; length and data undefined
@@ -611,7 +761,8 @@ Slices only work for 1D arrays, or the first dimension of multi-dim arrays. A sl
 
 As implemented, an arbitrary slice of an array, like `A[i..j]`, will yield a slice index from 1. This can only be changed with a cast, or copying/passing to something expecting a different slice lower bound.
 
-### Pointers (M)
+
+### Pointers
 These are defined with `ref T`:
 ````
     ref int P                Pointer to data
@@ -625,6 +776,7 @@ and dereferenced with `^`:
 The `^` dereference can omitted for `A^[i], P^.m, F^(x)`, so that you just write `A[i], P.m, F(x)`. Multiple `^` can be dropped: `Q^^.m` becomes `Q.m`.
 
 This loses some transparency, but it makes for clearer code, and makes some code identical to the Q equivalent where pointers are used much less.
+
 
 ### Records
 These always need to be a named user-type. There are no anonymous, ad hoc record types. There are two definition styles:
@@ -644,7 +796,7 @@ Records can contain other things besides those fields:
 
 This does make them look a little like classes, but there are no real OOP features; it's just a way of encapsulating things, or they can be used to create a namespace.
 
-#### Layout Control
+#### Record Layout Control
 I've introduced `struct/union` - C terms, but used here only for this purpose - to control layout of fields:
 ````
     record R =
@@ -670,7 +822,7 @@ This still works; the same example would be:
    end
 ````
 
-#### Field Alignment
+#### Record Field Alignment
 The compiler does not automatically insert padding to give ideal alignment to fields. This must be done manually.
 
 However, there is a feature used to match the layout of external structs which usually follow C rules. This can be used to emulate such alignment:
@@ -682,7 +834,8 @@ However, there is a feature used to match the layout of external structs which u
 ````
 Now, the size is 16 bytes, and `b` starts at offset +8. Without `$caligned`, the overall size would be 9 bytes, and `b` starts at offset +1.
 
-### Enumerations
+
+### Enumerations and Parallel Data
 The simple enum feature: `enum (red, green, blue)` has been removed. The equivalent is now:
 ````
     enumdata =
@@ -707,12 +860,7 @@ It defines a set of enumerations, and a corresponding parallel set of arrays at 
 * No override of an enums value is allowed except for the first. That would cause problems for matching parallel arrays. (If there are
   no parallel arrays and arbitrary values are need, use `const` instead.)
 
-Older M versions allowed an umbrella type to be applied:
-````
-    enumdata(colours) []ichar colournames, []u32 colourvalues =
-    ....
-````
-But this did very little, as proper enum types are not supported. All it did was to put the enum names into a namespace, so that they had to be written as `colours.red` etc. This feature was never used, so is temporarily unavailable. (A proper type system would rarely need those qualifiers, but as is clear, M likes to keep that part simple.)
+A set of enumerations do not form a new data type.
 
 ### Tabledata
 `tabledata` is used to define parallel data arrays (previously it did the job of `enumdata` too). It works now like this:
@@ -726,7 +874,6 @@ end
 This defines and initialises an array of strings, and a corresponding one of int, when it is better to have them separate rather than one array of records.
 
 It can be any combination of arrays. It simplifies maintenance, as entries can be added, deleted or moved very easily. Allowing a trailing comma on the last entry facilitates this.
-
 
 ### Functions
 ````
@@ -832,6 +979,23 @@ be mixed, but positional must come first:
 ````
 Keyword parameters can be applied to FFI functions, even when the original definitions don't use them.
 
+#### Multiple Return Values
+````
+    func F(int a, b)int, int =
+        return (a+b, a-b)
+    end
+````
+These need a multiple return type, a simple list of types. An explicit `return` keyword is needed, the return values must be in parentheses.
+Limitations:
+````
+    - Only up to three return values
+    - Only scalar types such as ints, reals and pointers can be returned
+````
+Consuming all, some or none of the return values is covered under Multiple Assignment, but is typically like this:
+````
+    (x, y) := F(10, 20)            # for my example, x is 30, and y is -10
+````
+
 #### Variadic Functions
 
 These are functions with an arbitrary number of parameterd. They are not supported in M, only within the FFI for C-style
@@ -853,10 +1017,9 @@ which dispenses with the need to write the slice as (30, 40, 50). Within the fun
 
 I decided there was no great benefit in eliminating explicit slice syntax.
 
-
 ### Assignment
 
-The LHS can only have a set number of forms:
+The LHS has a set number of simple forms:
 ````
     name :=                     Simple variable
     term^ :=                    Pointer
@@ -865,11 +1028,13 @@ The LHS can only have a set number of forms:
     term.[expr] :=              Bit or bitfield of integer (depends whether expr is a range)
     (term, term, ...) :=        Multiple assignment
 ````
-It can also be a more complex term that yields any the of above, for example:
+It can also be a more complex term that yields any of the of above, for example:
 ````
     if a then b else p^ fi :=   2-way select, assign to b or p^
 ````
 But these are rarely used, and have fallen into disuse. They need to be checked out.
+
+#### Multiple Assignments
 
 For multiple assignments like this:
 ````
@@ -909,8 +1074,8 @@ It is not possible to do this:
 This is stuff that Q should be used for. It needs to be allowed for the F() examples, as there is no alternative, but X can easily be
 written as (X.d, X.m, X.y) for example.
 
-### Promotions and Conversions
 
+### Promotions and Conversions
 All integer arithmetic is done on `int` or `word` types. Any narrow types are widened to 64 bits for any evaluation:
 
 `u8 u16 u32 i8 i16 i32` can all be converted to the primary `i64` type with no loss of information.
@@ -918,9 +1083,8 @@ All integer arithmetic is done on `int` or `word` types. Any narrow types are wi
 Floats are evaluated using either r32 or r64. There is no promotion of r32 to r64 except for mixed r32 and r64, or passing r32 to anything
 expecting r64.
 
-### Operators
 
-#### Binary Operators
+### Binary Operators
 ````
 x + y       int, real, pointer+int, ichar (constant only)
 x - y       int, real, pointer, pointer-int
@@ -943,7 +1107,7 @@ x atan2 y   or atan2(x, y)
 ````
 For mixed int/real, int operand is converted to real. `int` here means either `i64` or `u64`.
 ````
-x = y       Any type, yield bool
+x = y       Any type, including arrays and records, yields bool
 x <> y
 x < y       int, real, pointer
 x <= y
@@ -958,7 +1122,7 @@ x not in y
 
 x .. y      Only used in certain contexts, counts as syntax, not a true operator
 ````
-#### Unary Operators
+### Unary Operators
 ````
 - x         int, real
 abs x       int, real
@@ -989,7 +1153,7 @@ ceil x
 Note: this last group are implemented as built-in operators rather than functions. So they don't need parentheses around their operand,
 but it looks better if they are used.
 
-#### Chained Operators
+### Chained Operators
 
 Any of = <> < <= >= > can appear in a chain:
 ````
@@ -1000,7 +1164,7 @@ Middle terms are evaluated only only. The whole yields bool. It is suggest that 
 all face the same, otherwise the meaning is obscure.
 
 
-#### Augmented Assignment
+### Augmented Assignment
 
 Augmented assignments to not return any value so cannot 
 
@@ -1034,7 +1198,7 @@ inot:= x    int
 not:= x     bool
 istruel:=x  bool
 ````
-#### Properties
+### Properties
 
 `x` can be an expression, or a type
 ````
@@ -1049,7 +1213,7 @@ x.max                       Maximum value of type
 ````
 For `.bytes .bitwith .min .max`, if x is simple variable name, it is not promoted to i64 or u64 (CHECK THIS FOR FIRST TWO).
 
-#### Binary Operator Priorities
+### Binary Operator Priorities
 
 1 is highest precedence:
 ````
@@ -1067,7 +1231,7 @@ Level   Operators at that level
 * `min max` normally use function-like syntax
 * The "." in `a.b` is not a operator; it has syntax that binds more tightly than even unary operators
 
-#### Unary Operator Priorities
+### Unary Operator Priorities
 
 This is evaluation order rather than precedences. Some operators go before the operand (prefix), and some after that (postfix):
 
@@ -1076,18 +1240,19 @@ This is evaluation order rather than precedences. Some operators go before the o
 
 So for `sqrt -p^^`, `p` is deferenced twice (first `^` then second), then it is negated, then `sqrt` is applied.
 
-
 ### Statements
 
 `s` is an Sunit (sequence of units); `u` is single unit. A unit is a single expression or statement.
 
-#### `If` Statement (all can actually return values):
+All statements can return values, except that loops only have a `void` return type, so it can't be used anywhere.
+
+#### `If` Statement
 
     if s then s end
     if s then s else s end
     if s then s elsif s then s else s end       # etc
 
-#### 2-Way Select (uses an `if` syntax).
+#### 2-Way Select
 
 `a b c` are all single units:
 ````
@@ -1106,6 +1271,8 @@ So for `sqrt -p^^`, `p` is deferenced twice (first `^` then second), then it is 
     unless s then e end
     unless s then s else s end
 ````
+There is no `elsunless` as I couldn't figure out what it meant.
+
 #### `Switch` Statement
 ````
     switch x            # integer index
@@ -1117,7 +1284,7 @@ So for `sqrt -p^^`, `p` is deferenced twice (first `^` then second), then it is 
         s
     end
 ````
-All the values in when-lists should not span a range of more than 500 from lowest to highest. If exceeded, `case` should be used.
+All the values in when-lists should not span a range of more than 1000 from lowest to highest. If exceeded, `case` should be used. (See Hard-Coded Limits.)
 
 Any `u` following `when` can be a range, eg. `when '0'..'9'`.
 
@@ -1125,7 +1292,7 @@ Any `u` following `when` can be a range, eg. `when '0'..'9'`.
 
 This has mostly the same syntax as `Switch`:
 ````
-    case c              # Can be any time for which = and <> can be used
+    case x              # Can be any time for which = and <> can be used
     when a, b then      # Can be runtime expressions
         s
     when c
@@ -1136,9 +1303,9 @@ This has mostly the same syntax as `Switch`:
 ````
 Differences from `switch`:
 
-* Tests are done sequeniall, one at a time, instead of all in parallel
+* Tests are done sequentially, one at a time, instead of all in parallel
 * Duplicate `when` expressions allowed (or rather, they are not detected)
-* No ranges allowed
+* No ranges are allowed (I will look at adding these, but they will need implementing as `x in a..b` rather than testing every element in the range)
 * Control expression can be any type
 * `when` expressions can be runtime values
 
@@ -1158,6 +1325,16 @@ This equivalent to:
     etc
 ````
 `a b c` can be any conditional expressions.
+
+(THIS IS PARSED BUT HAS NO CODEGEN SUPPORT. I may instead looking at this other possibility:
+````
+    if
+    elsif a or b then
+    elsif c then
+    etc
+````
+So `if elsif` is an indicator that is should be treated as `if`. This may be much simpler to implement.)
+
 
 #### Composite `if`\`switch`\`case
 
@@ -1250,6 +1427,11 @@ be updated within the loop.
 
 The final value will be accessible after the loop.
 
+This version has never been implemented:
+````
+    for i inrev a do           # Iterate from last to first element
+````
+
 
 #### `Doswitch/DoCase` Loops
 
@@ -1271,27 +1453,18 @@ It is necessary to use `goto return exit` or `stop` to break out of the loop.
 
 For loop controls, see Control Flow.
 
-
 ### Control Flow
+Control flow statements are:
 ````
-    goto label                      Jump to label
-    goto expr                       Jump to label pointer which is stored in some variable or table
-    recase x                        In nearest case unit only, jump to `when x` block
-    return                          In a proc
-    return expr                     In a function
-    return (expr,...)
-    stop                            stop 0
-    stop expr                       Terminate program with that exit code
-    exit [loop index, all]
-    redoloop [loop index, all]
-    nextloop [loop index, all]
+    goto
+    return
+    exit
+    redoloop
+    nextloop
+    stop
+    recase
 ````
-Loop indices are number from 1 (innermost) to outermost. Index 0 (or `all`) can also be used to refer to outermost loop.
-
-Note: `goto label` (no suffix) can also be written as just `label`, without the `goto`.
-
-`goto` itself can be written `go to`, although that's been the case forever, but I've used it.
-
+All would return a `void` value, but that couldn't be used anyway since it's not going to hang about to do anything with it.
 
 All can have a conditional suffix:
 ````
@@ -1299,6 +1472,61 @@ All can have a conditional suffix:
     return unless x=0
 ````
 (`when` is used instead of `if`, since `if` could also start any expression that follows the keyword so would be ambiguous.)
+
+In this case, the `goto` or `return` keywords can't be optional.
+
+#### `goto`
+````
+    goto lab            # normal goto; lab must be somewhere in this function only
+    lab                 # the goto can be omitted
+    goto u              # the label can also be any expression yielding a label pointer
+````
+Label pointers can be used like this:
+````
+    static []ref label table = (L1, L2, L3)
+
+    goto table[i]
+    ...
+L1:
+L2:
+L3:
+````
+(THERE'S A PROBLEM INITIALISING THAT TABLE: 'not const')
+
+#### `return`
+For procs without a return value, `return` is optional at the end, and is only needed for an early return.
+
+For functions with a single return value, again it only needed for an early return. It can be omitted when the return value is
+the last value of function body:
+````
+func F(int a)int =
+    if a then
+        10
+    else
+        20
+    fi
+end
+````
+Functions with multiple return values always need `return`,  since the special tuple construct needed is not recognised by the type system;
+it is internal.
+
+#### `stop`
+
+See Program Exit above. `stop` terminates the program with an optional exit code (default is 0).
+
+#### Loop Controls
+````
+    exit     [index]         # terminate the loop early
+    redoloop [index]         # redo this iteration
+    nextloop [index]         # proceed to next iteration
+````
+These can have an optional index to deal with nested loops:
+````
+    1       Current or innermost loop
+    2       Next outer loop
+    0       Outermost loop
+    all     Also outermost loop
+````
 
 ### Read and Print
 ````
@@ -1313,6 +1541,7 @@ All can have a conditional suffix:
     print =a, =b            Display items with label, eg. A=12 B=24
 
     fprint "A=# b=#", a, b  Using a format string (fprint has -ln and @ variations too)
+    fprint "##", "#", 123   Display '#123' (how to display a literal '#')
 
     print a:"z 10 jr h"     Display a within a field of width 10, right-justified, zero-padded at left,
                             and in hex if this is a number
@@ -1329,7 +1558,7 @@ All can have a conditional suffix:
 (Formatting codes for `read` and `print` are documented inside msys.m.)
 
 Note: there is only one line buffer for reading. It's not possible to interleave `read` from more than one source at a time.
-The whole line must be consumed before switching.
+The whole line must either be consumed or abandoned before switching.
 
 `print` statements can be nested:
 ````
@@ -1348,10 +1577,11 @@ Ranges written `a .. b` are used like this:
 ````
 The range is always inclusive. `a`/`b` can any integer expressions, including enum values. For array bounds, they need to be compile-time expressions.
 
-`A.bounds` yields a range `A.lwb .. A.upb`, but it can only be used like this for now:
-````
-    for i in A.bounds do    (Using for i in A will iterate over A's values)
-````
+`A.bounds` yields a range `A.lwb .. A.upb`, and can be used wherever a range is allowed.
+
+(When A is a type, then only a user-defined type will yield the bounds, so it must
+be an array. For a built-in integer type, A.type yields the numeric range.)
+
 Ranges are not first-class objects in M (they are in Q).
 
 A Set is used only in conditions like this:
@@ -1361,9 +1591,10 @@ A Set is used only in conditions like this:
 Equivalent to: `x=a or x=b or x=c`, except that `x` is evaluated once. (In Q, sets are first-class objects, bitsets than can contains ints and ranges.)
 
 
-### Bits and bitfields
 
-The language favours special operators for bit access rather than special types:
+### Bits and Bitfields
+
+The language favors special operators for bit access rather than special types:
 ````
     A.[i]           Extracts bit i from `i64` value A. It will be 0 or 1. bit 0 is least significant
                     and bit 63 the most significant
@@ -1388,15 +1619,17 @@ Bitfield objects also exist, but only inside records:
         byte flags: (a:1, b:1, c:4)
     end
 ````
-Bitfield can only be defined inside a regular field. In my example, 6 bits are used out of 8 (they are allocated
+A bitfield can only be defined inside a regular field. In my example, 6 bits are used out of 8 (they are allocated
 from bit 0 up):
 ````
     demo x
     x.flags:=0      Access all 8 bits once
     x.b             Access bit b only
 ````
-Bitfields can only store unsigned value, but are promoted to i64 when extracted. (Unless extracting all 64 bits of a u64
+Bitfields can only store unsigned values, but are promoted to i64 when extracted. (Unless extracting all 64 bits of a u64
 field, but these points need checking.)
+
+Initialising or assigning to a record only works with regular fields, although binary can be used, eg. 1101_0_1B to initialise my `flags` field.
 
 I haven't find a way to use named bitfields like this, to access the bitfields in an integer. The nearest is this:
 ````
@@ -1404,22 +1637,10 @@ I haven't find a way to use named bitfields like this, to access the bitfields i
     int a
     a.[offset]              The square brackets are needed
 ````
-(I can't define `offset` as `[0..23]` then do `a.offset`, since name resolution of `.offset` doesn't work with the macro expansion
-needed. Allowing macro expansion here, would interfere with record field accesses right across the program, for example if there
-was a record that had a conventional field called 'offset'.
-
-This is an issue also with C's macro scheme; write `#define x 1234`, and any `p.x` or `p->x` access would be screwed up.
-But usually C macro names are in upper case.)
-
-(The Q language has bit arrays, with elements of 1, 2, and 4 bits (types `u1 u2 u4`); bit pointers; bit slices of arbitrary
-length and Pascal-style bitsets.
-
-Some of those could make sense in systems language like M, but they are little used and probably not worth the effort.)
-
 #### Some Built-in Bit/Bitfields
 ````
-    A.even          1 if A is even (bit 0 is 0) (read-only)
-    A.odd           1 if A is odd (value of bit 0) (read-only)
+    A.even          1 when A is even (read-only)
+    A.odd           1 when A is odd, same as A.[0] (read-only)
     A.lsbit         A.[0]
     A.msbit         A.[63]
     A.lsb           A.[0..7]
@@ -1427,7 +1648,7 @@ Some of those could make sense in systems language like M, but they are little u
     A.lsw           A.[0..31]
     A.msw           A.[32..63]
 ````
-All are read/write except the first two
+All are read/write except the first two.
 
 ### Importing via FFI
 
@@ -1447,7 +1668,7 @@ end
 The library name is that of an actual one (`msvcrt.dll`, which is specified as an import in the EXE), or a dummy one if it
 starts with "$". This is used when the DLL name is unknown or unclear, or the set of functions exist across multiple DLLS.
 
-But then the actual must be one of those specified with `linkdll` in the lead module. It will search all DLLs until it finds each imported
+But then the actual DLL must be one of those specified with `linkdll` in the lead module. It will search all DLLs until it finds each imported
 symbol. (The M compiler automatically looks inside `msvcrt gdi32 user32 kernel32` DLLs.)
 
 Notice that the MessageBoxA declaration includes parameter names and default values. This allows the use of keyword parameters even though the original
@@ -1481,13 +1702,8 @@ expressed as C headers, into M syntax. (And Q syntax also; I expect most librari
 * If the library is itself written in M, then then the DLL is generated, it will automatically create the import module suitable for M or Q. But
 even these needs more work. (If could also generate a C header file I suppose, but that part is not useful to me.)_
 
-### Conditional Compilation
 
-There is no conditional compilation within the language. Although, if `c` is constant in `if c then a then b end`, then only one branch will generate code.
-
-For different program configurations, the usual approach is to use an alternate lead module with a different set of module names.
-
-### Standard Library
+### Standard Library Modules
 This comprises the following modules:
 ````
     Module      Description
@@ -1526,7 +1742,34 @@ applications.
 ````
 `macro name(params) = unit
 ````
-A single unit is not that limited, as you can just do `(sunit)` is a sequence of units is needed.
+
+Macros with no parameters:
+````
+    macro M = F         # F is a function taking a parameter
+    M                   # Same as F, address of F
+    &M                  # Same as &F
+    M(10)               # Same as F(10)
+
+    macro M = F(20)
+    M                   # Same as M(20)
+    &M                  # Should be same as &F(20), but not working
+    M(30)               # Should be F(20)(30), an error but not reporting; the (30) is ignored
+````
+With parameters:
+````
+    macro M(a) = F
+    M                   # Error: missing macro arg
+    M(20)               # F (macro param not used)
+    M(20)(30)           # F(30) (param not used)
+
+    macro M(a) = F(a)
+    M                   # Missing macro arg
+    M(30)               # F(30)
+    M(30,40)            # Too many macro args
+    M(30)(40)           # Same error as F(30)(40) (F does not return a function pointer)
+````
+
+Macros can get very very hairy, and I don't want to try and fix them. They mostly work fine and they are used sparingly anyway.
 
 
 ### Naked Functions
@@ -1537,23 +1780,7 @@ Threaded functions can't have parameters or local stack-frame variables (statics
 They can be called, but there is no return. Normally you jump to a threaded function, and jump from that to the next, using ASM code.
 
 
-### Inline Assembly
-
-Multiline form:
-````
-assem
-    mov rax, 1234
-    mov rbx, rax
-end
-````
-One-line form:
-````
-    asm push rax
-````
-
-Assembly blocks can return values; if written where some value is expected, then it is assumed the value will be in rax or xmm0.
-
-### Compiler Constants
+### Built-in constants and properties
 
 Built-in constants.
 ```
@@ -1612,17 +1839,19 @@ belonging to callers.)
 However I think this should be addressed: a copy should be made. If someone wants the reference-like behaviour, then they
 explicitly use by-reference parameters.
 
-### Miscellaneous Features
 
-##### Clamp
+
+### Misc features
+
+#### Clamp
 
 `clamp(x, a, b)` is a built-in 3-operand op equivalent to `min(max(x, a), b)`.
 
-##### Last Array Element
+#### Last Array Element
 
 `A[$]` is equivalent to `A[A.upb]`, so accesses the last element of `A`. `A[$-1]` will be next-to-last.
 
-##### Equivalence
+#### Equivalence
 ````
     real x
     int a @ x
@@ -1645,14 +1874,14 @@ is from an interpreter:
     [stacksize]ref void pstack @stack
 ````
 
-##### Operator Constants
+#### Operator Constants
 
 Writing `(+)`, or any other operator inside brackets, returns an internal ordinal (an integer) representing that operator.
 
 This is no big deal, you could just use `'+'` for example, but it is a nice touch. And in Q, the value is recognised by the language:
 `mapss((+), 3, 4)` yields `7`.
 
-##### Type Constants
+#### Type Constants
 
 Similarly, writing `(int)` (or `int.type` for simple types), yields an internal ordinal for the type. It can be used like this:
 ````
@@ -1660,7 +1889,7 @@ Similarly, writing `(int)` (or `int.type` for simple types), yields an internal 
 ````
 where `T` has such an ordinal value.
 
-##### Type Reflection
+#### Type Reflection
 
 There is some use for this even in a static language:
 ````
@@ -1669,7 +1898,8 @@ There is some use for this even in a static language:
 ````
 `X` can be type or expression. Parentheses may be needed around `X`, when it is a number for example.
 
-### Compiler Outputs
+
+### Compiler Options: Outputs
 
 Assume the lead module is called prog.m:
 
@@ -1679,23 +1909,66 @@ Assume the lead module is called prog.m:
     -exe        prog.exe        Default option
     -dll        prog.dll        Also prog.q or prog_lib.m depends on config
     -obj        prog.obj        Generates prog.asm then vnvokes aa.exe assembler
-    -ml         prog.ml         Via assembler; private shared library format
-    -mx         prog.mx         Via assembler; private executable format
     -asm        prog.asm
     -ma         prog.ma         Single, compilable amalgamated source file representing whole program
     -run        <Run prog>      Generates in-memory code and runs the program
     -list       prog.list       To help my IDE
     -proj       prog.prog
 
-    -pcl        prog.pci        Using mmp.exe only, this is the default option there
 
-    -c          prog.c          Using mc.exe only
-    -gcc        prog.exe        Using mc.exe: generate prog.c then invoke gcc
-    -opt        prog.exe        Using mc.exe: generate prog.c then invoke gcc -O3
-    -tcc        prog.exe        Using mc.exe: generate prog.c then invoke tcc
-    -mcc        prog.exe        Using mc.exe: generate prog.c then invoke mcc
+### Compiler Options: Misc
+```
+    -peep                   Apply small peephole optimiser
+    -regs                   Keep first few locals in registers
+    -opt                    Do both the above
+
+    -rip                    Use RIP mode for low-mem EXE outputs
+    -himem                  Use RIP+HIMEM for DLL/OBJ outputs (default for -dll/-obj)
+
+    -h -help                Help summary
+    -q                      No message; default is `Compiling ... to ...`
+    -v                      More verbose: 'Finished'; AA invocations; size info
+    -vv                     Extra verbose: show files/paths used for inputs
+
+    -time                   Give timing stats
+    -size                   Give size stats
+
+    -out:file               Change output filename (extension will use default if omitted). Same path as
+    -outpath:path           Write output to different path, using same filename
+    -unused                 Display list of all unused variables
+
+    -sys                    (Default) Use normal msyslib.m
+    -minsys                 Use smaller msystemp.m to allow benchmarks to use 'print' etc
+    -nosys                  Use no syslib
+
 ````
-`mmp.exe` is experimenatl. `mc.exe` is deprecated, and will only work for a language subset.
+The rest are mostly for development:
+````
+    -load                   Load modules only
+    -parse                  Parse only (to AST1)
+    -fixup                  Fixup user types
+    -name                   Name resolve (to AST2)
+    -type                   Type analysis (to AST3)
+    -pcl                    To IL (to PCL)
+    -mcl                    To native code (to MCL)
+
+    -modules                Display modules
+    -st                     Display ST tree
+    -stflat                 Display flat ST (hashtable with dupl entries)
+    -showpcl                Display PCL
+    -showasm                Display MCL
+    -ast1                   Display AST1
+    -ast2                   Display AST2
+    -ast3                   Display AST3
+    -showss                 Display GENSS output
+    -types                  Display type table
+    -shortnames             Use shorter, not-so-qualified names in ASM display
+
+    -ext                    Use discrete std lib files in development directory, not built-in
+
+    -getst                  Write project.list file for IDE
+    -getproj                Write project.proj file for IDE
+````
 
 
 ### Amalgamations
@@ -1716,15 +1989,17 @@ names won't work.
 Standard library source files are not included; they must be part of mm.exe, so there is a small risk they may be a
 different version to that expected by the code in the MA file.
 
-### Run from Source
+
+### Run from source
 Using the `-run` compiler option will run programs from source just like a scriting language.
 
-To void using `-run`, it is possible to copy the compiler `mm.exe` to `ms.exe`; it will detect this name, and invoke `-run` automatically:
+To avoid using `-run`, it is possible to copy the compiler `mm.exe` to `ms.exe`; it will detect this name, and invoke `-run -q` automatically:
 ````
 c:\cx>ms cc hello
 Compiling cc.m to memory
 Compiling hello.c to hello.exe
 ````
+
 
 ### Interpreting
 There is an experimental M compiler called `mmp.exe`. It produces a discrete IL source file with extension `.pcl`.
@@ -1741,6 +2016,7 @@ It works the same, just 20 times slower: it takes the interpreted C compiler 5.5
 of 0.6 seconds; it's still faster than `gcc -O0` which takes 8.5 seconds! (However the project uses windows.h and gcc's version is
 much bigger. So the timing of my /interpreted/ C compiler is on a par with gcc-O0.)
 
+
 ### Transpiling to C
 There is program called `mc.exe` which tried to convert M programs into monolithic C source files.
 
@@ -1754,122 +2030,76 @@ It doesn't do the full job, and doesn't support such features as:
 There are dozens of small issues too. However, it usually suffices to convert my main language projects, since I deliberately
 avoid troublesome features, and serves for experimental work or to apply optimisation to a project to see what the upper limit
 of its performance is, or to compare with other products.
-
-### High-loading and Position-Independent Code
-
-Until recently, the `mm` and `aa` products only generated code that ran in low-memory. That is within the first 2GB of virtual memory,
-which could be accessed with positive values of a signed displacement.
-
-This caused some problems: DLLs generally have to be relocated, and might be moved anywhere. While if I generated OBJ files, those
-would need to be processed by external linkers. The only one available was gcc's 'ld', and that now likes to load programs into
-arbitrary addresses in high memory, requiring more than 32 bits of offsets.
-
-Fixing this required two steps: using RIP-relative address mkodes for absolute addresses not involving registers; and avoiding
-address modes that combined registers with the 32-bit absolute address of a static object.
-
-The first is enabled in the M compiler with the `-rip` option, or can be applied to the assembler. This is not enough to run code high,
-but it means programs might be 1% smaller since the rip-relative address modes have shorter instructions.
-
-To do it all requires the `-himem` option that affects the code generator. This often means extra instructions which offsets the savings of -rip.
-
-Unless a smaller low-loading EXE is required, these options are applied automatically when `-dll` or `-obj` options are selected.
+These are the options for `mc.exe`:
+````
+    -c          prog.c          (mc.exe)    Transpile to single C source file
+    -gcc        prog.exe        (mc.exe)    Generate prog.c then invoke gcc
+    -opt        prog.exe        (mc.exe)    Generate prog.c then invoke gcc -O3
+    -tcc        prog.exe        (mc.exe)    Generate prog.c then invoke tcc
+    -mcc        prog.exe        (mc.exe)    Generate prog.c then invoke mcc
+````
 
 
-### Generating DLL Libraries
-An M 'program' can compiled to a dynamic library. The `-dll` is used to produce a `.dll` file instead of `.exe`.
+### Inline assembly
+Multiline form:
+````
+assem
+    mov rax, 1234
+    mov rbx, rax
+end
+````
+One-line form:
+````
+    asm push rax
+````
 
-Libraries need to export names, and that is done using the `export` attribute on functions rather than `global`.
+Assembly blocks can return values; if written where some value is expected, then it is assumed the value will be in rax or xmm0.
 
-Variables can also be exported (but currently M has trouble importing variables from a DLL).
+That was intended to provide function return values. But the allows an asm block anywhere, so
+it needs to work.
 
-As well as a DLL file, a `.m` or `.q` import module is written (depending on which is configured within `mm.exe`; currently it can't do both).
 
-If the library lead module is `bignum.m` then either `bignum.q` or `bignum_lib.m` is written (the latter to avoid overwriting `bignum.m`).
-Then the DLL can be used in either language by simply adding `module bignum`, or `module_lib`. (Q of course has bignums built-in; this is just
-an example.)
+### High-loading and Position-indepedent code
 
-Other entities can be exported: named constants, records, user types, macros, enumerations. These are not tangible objects that are handled
-by the DLL mechanisms, but by the language. In theory they should written to that exported import module, but it is not yet working 100%.
+Normally `mm` generates x64 code that only runs in low-memory below 2GB.
 
-(The import module of course is only usable from my two languages. To use the DLL from C, could benefit from a `bignum.h` file being generated,
-but since I'm the only user and I don't need to write C, I haven't done that.
+It is not position independent. But when generating DLL or OBJ files via `-dll`
+or `-obj`, the `-himem` option is turned on which generates relocatable code,
+and also lets in run above 2GB.
 
-C headers would need writing manually, but the `bignum_lib.m` or even `bignum.q` files containg a tidy summary of what would be needed in the C file.)
+This is necessary for OBJ files since it will need an external linker which is
+likely to load the program at a high address.
 
-### ML and MX Files
-
-For a while, my DLL files were buggy. I assumed it was because of the high-loading issue, but that's only part of it. There was also a big
-in the base-reloc tables, now fixed.
-
-But while they were out of the running, I developed my own far simpler shared library format called ML files. These could be used directly from
-Q programs, but not directly from EXE programs, except via a mechanism using functions similar to `LoadLibrary/GetProcAddress`.
-
-Or they could be used directly from MX programs. MX is a version of ML used to represent whole programs: MX does the job of EXE, and ML does the
-job of DLL.
-
-Except since Windows doesn't understand MX, that need a stub program to launch, and small 12KB program called `runmx.exe`.
-
-Now that DLLs and also OBJs are working, there is less need for ML and MX formats, but they still have interesting possibilities:
-
-* ML files make it much easier for M to access exported variables
-* MX formats might be less visible to AV software, which will see only the RUNMX program; the MX part is just data
-* The RUNMX program also exists as 1K line C program
-* If I ever target Linux directly, then I don't need to generate ELF files, as the MX format is portable. I just need to compile
-  runmx.c on Linux
-
-In any case, half the work needed to for MX/ML, is still required to enable run-from-source.
 
 ### Self-hosting
-The M compiler is self-hosting as it is written in itself. It can compile itself like this, where `mm.m` is the lead module of the project,
-containing the main configuration:
-````
-c:\mx>mm mm
-New dest= mm2.m
-Compiling mm.m to mm2.exe
-````
-If there is already an `mm.exe` present as it the case here, it renamed the output to avoid a clash (Windows disallow overwriting
-a running executable).
 
-A more dramatic example is possible by first copying `ms.exe` to `mm.exe`, and copying `mm.m` to `ms.m`. Now each new generation can be
-reinvoked to compile again:
-````
-c:\mx>ms ms ms ms ms ms hello
-Compiling ms.m to memory
-Compiling ms.m to memory
-Compiling ms.m to memory
-Compiling ms.m to memory
-Compiling ms.m to memory
-Compiling hello.m to memory
-Hello World!
-````
-This compiles 5 new generations of the M compiler and runs each immediately. This took 0.37 seconds in all.
+The M compiler is written in its own language, and each new version has been implemented
+with an older one in a chain going back to the 1980s.
 
-For this demo, the `Compiling` message is enabled to show what's happening. Usually `ms` hides it to better give the illusion of a true scripting
-language.
+The first version for x86 I think was written in assembly, and I probably wrote
+the assembler. In any case, no other HLLs have ever been involved.
 
 ### Using Linux
-This is only practical via the MC transpiler. That normally generates C code for Windows, but has the -linux option to generate code
-for Linux (it replaces the OS-specific mwindows.m module with mlinux.m).
+This is only viable via the M to C transpiler as there is no native target of of M
+that works under Linux, either x64 using SYS V, or ARM64.
 
-This allows cross-compiling of M programs on Windows, to C programs for Linux, subject to the limitations above.
+But I want to drop that product at some point; it is not satisfactory. Currently it works like this:
+````
+    On Windows:
 
-If applied to the MC project itself, I can have an MC compiler running on Linux, where I normally call it MU to avoid confusion, which
-can build M programs directly under Linux, by using intermediate C and transparently invoking a C compiler. Preferably Tiny C, otherwise
-gcc is so slow that it would be like running into a brick wall after transpiling M to C.
+    mc -linux -c mc -out:mu       # Create a file mu.c using module for OS-specific stuff
 
-It was been applied to the QQ compiler, and at one time I was planning to port my Q apps (editor etc) to Linux, but lost interest.
-(That was using RPi boards that was tedious; it would be simpler until WSL, but there is also less point.)
+    On Linux:
+    gcc mu.c -omu -lm -ldl        # Create compiler binary
+
+    ./mu hello                    # Compile hello.m to hello using intermediate C and gcc
+    ./hello                       # Run it
+    ./mu -opt hello               # Use gcc-O3 to compile the output
+    ./mu -tcc hello               # Use Tiny C instead (a far better match in compile-speed)
+````
 
 ### Interfacing to Q
-This is a work-in-progress. I want to get to the point where I can write a Q application such substantial helper parts in M,
-or write an M application with some embedded Q parts.
-
-But I'm not currently writing either kind of application.
-
-There have been all sorts of projects, including creating a hybrid M-Q language (which ended up have disadvantages of both rather than the advantages!).
-And a version of Q that had embedded M source file. That one just got too hairy.
-
-In the end I realised a simple, purer M language, and a pure scripting language, were better.
+This is a WIP.
 
 ### Optimising
 There is no real optimiser. There are weak attempts enabled by these options:
@@ -1885,71 +2115,129 @@ However some benchmarks will run faster. And any specific function called from Q
 
 Note: using of `-regs` will not affect functions that use inline assembly. This is to ensure predictable locations of locals and params.
 
-
-### Building, and Project Files
+### Building Programs and Project Files
 There is no separate build process necessary to turn an M application into a single `.exe` or `.dll` file, you just do this on the `prog.m` lead module:
 ````
     mm prog                    # -exe is default option
     mm prog -dll
 ````
-However, the project will still usually consist of dozens of source and support files. That will still need a development process.
-I don't consider such a thing to be part of a language, or even a compiler: everyone will have their own process and their own prefered tools.
+However, the project will still usually consist of dozens of source and support files.
+There will be some some process the developer uses to browser, edit, build and do test runs.
 
-I normally work with a tiny 36KB IDE. It works from a project file listing the modules, other files that form part, misc related files, and that give run and input options for testing runs.
+I believe that lies outside the language and even compiler. In my case I use a tiny 36KB
+IDE which works from a project file. That file contains some of the same info as the project
+header in the lead module.
 
-So there is a connection. The project will list the modules in `prog.m`, and the IDE might use a project file `prog.pro` containing
-some common information.
+I haven't yet joined those together. Right now the M compiler has options `-prog` and `-list`
+to produce some info that my IDE can pick up. Integrating them better is a WIP.
 
-I haven't joined these together, except there are compiler options `-proj` and `-list` to produce info files usable from my IDE only.
+### External Libraries
+These are nearly always accessed via DLLs: shared, dynamically loaded libraies.
+
+Static linking with code from other languages is usually not done, but it is possible; see below.
+
+### Working with other languages and tools
+M programs are designed to be self-sufficient. External libraries can be used from DLL
+shared libraries. And a DLL created from an M program could be called from another language.
+But the M-program or library will be 100% M code.
+
+However there are ways to create programs that statically combine mix M and non-M code
+within the same binary. That involves generating OBJ files, and means using external
+tools to process those files and combine them with ones from other languages.
 
 
-### Working with other Languages and Tools
-There are ways to mix M with other languages, other than using DLL or generating DLL. It involves using OBJ files and tools like gcc:
+### Hard-coded limits
+Some constants I've seen in the source code. Most will be checked.
+
 ````
-c:\cx>mm -obj cc
-Compiling cc.m to cc.obj
-c:\cx>gcc cc.obj -occ.exe
-c:\cx>cc hello
-Compiling hello.c to hello.exe
-````
-This turns my C compiler into an object file which is then linked by gcc. Or an M module like this (test.m):
-````
-export proc fred=
-    println "M says 'Hi!"
-end
-````
-can be statically linked into a C program like this:
-````
-extern void fred(void);
-
-int main(void) {
-    fred();
-}
-````
-Example:
-````
-c:\c>mm -obj test
-Compiling test.m to test.obj
-c:\c>gcc c.c test.obj -oc.exe
-c:\c>c
-M says 'Hi!
+    Number of user types
+    Max params in a function 100/32        (Two different limits; to be fixed)
+    Max locals in a function    256        (In code generator)
+    Number of modules           200
+    Number of subprograms        30
+    Number of source files
+    Number of DLL imports     50/50        (Set in to places; fix)
+    Number of DLL procs        1000
+    Switch-when cases           500
+    Switch-when spread         1000
+    Loop nesting                 50
+    Case nesting    
+    Include file nesting         20
+    Max params in a macro        50
+    Nested $ as in A[$]          10         (Nested Array indexing all using $)
+    Nested for loops             10         (To be able to detect using the same index var)
+    Max array dims               30         Eg.A[n1,n2,...n30]int A
+    Enum/Tabledata max cols      20
+    Enum/Tabledata max rows     500
+    Max fields                  200         (In TX pass)
+    Max func return values      3/4         (Check)
+    Nested call depth            16         (In code generator)
+    Max symbols for COFF?       32K         (Check)
+    Max imported symbols       3000         (Generating EXE)
+    Max exported symbols  1000/2000         (Generating DLL; check)
 ````
 
-### Compiler Stress Testing
+### Compilation Speed
+On my low-end PC, the mm compiler generally has a throughput of 0.5M lines per second.
 
-Very, very little of this is done. For example what happens here:
+Adding an IL stage slowed it down a little, and invoking its optimiser slows it another 10% or so.
+
+Some code patterns or certain stress tests are problematical. But generally the
+speed is currently healthy. A self-build can take as little as 80 msec.
+
+
+### Grammar
+
+There isn't a formal or even informal grammar. The syntax of an M program is
+roughly:
 ````
-[1 billion]int A         # at module scope
+program    = subprogram+                   One or more subprograms
+
+subprogram = leadmodule module*            Zero or more modules
+
+leadmodule = [header] [sunit]
+
+module     = sunit
+
+header     = PROJECT = projectdir* END     Zero or more project directives
+
+sunit      = unit/decl |;                  Zero or more unit or decl separated by ;
+
+decl       = <declaration or definition>
+
+unit       = <expression or executable statement>
+
 ````
-As it happens, nothing, except that it produces an EXE file with a 'zdata` (bss) section which is -589MB in size. Windows refuses to run it.
 
-It should either detect it, or deal with it sensibly. There are dozens of such cases that need to be tested for and properly handled.
+That describes the top level.
 
-But because this is a personal tool, it is not that important. I will either not write such code, or I will soon find out it doesn't work!
+### Releases
+This is not a priority as M is a personal tool, and I can't support it as general product anyway.
 
-That is the compiler however; a language spec should give some idea of what's allowed and what isn't. Why shouldn't someone have a billion-int
-array, especially with enough RAM?
+But even if I wanted to make it available, the `mm.exe` binary probably won't
+make it past the AV software that Windows systems are usually bristling with.
 
-Getting back to that array, this: `[500 million]int32 A` produces a valid section size, but it still won't run. But then, the same program in C compiled with gcc won't work either. So the limiting factor here might be the EXE format. A 250M i32 array works.
+These are the possibilities if I wanted to make my compiler and language available to anyone else:
 
-There are a number of hard limits within the compiler, and these should really be documented above. At least, they are mostly tested for.
+* Transpile it to single C source file using the `mc.exe` tool.
+
+This is workable, but I had been hoping to get rid of that tool. The conversion is not perfect, it
+will not handle all features of it. I have to avoid using certain features in the compiler so that transpilation
+remains viable.
+
+However, this option also adds the ability to optimise the compiler, making it faster. And it allows a path
+to get M working on Linux, by applying `mc` to itself (see Using Linux)
+
+* I can suppy the binary in my private MX format as `mm.mx`, which should appear as data
+to AV software. To run it however requires a program called `runmx.exe`. That one
+already exists as a native C file, `runmx.c`.
+
+So `runmx.c` is compiled locally to `runmx.exe` (this is for Windows only). The compiler is then invoked like this:
+````
+    runmx mm hello           # invoke mm.mx and compile hello.m
+````
+This is can trivially scripted to simplify it, but it's not as convenient as mm.exe.
+
+* M produces ASM in my own syntax. If I could generate NASM format instead, then I can supply `mm.asm` as a
+single file, and NASM is run locally to produce `mm.exe`. Someone familiar with NASM should already know how to get
+generated EXE files past the local AV.
