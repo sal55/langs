@@ -175,8 +175,8 @@ Numeric types, which can have long and short designations plus common aliases:
     real32      r32                 Floating point
     real64      r64     real
 
-    char8       -       char        Character type is a thin wrapper around u8/byte/word8
-    char64      -
+    char8       c8      char        Character type is a thin wrapper around u8/byte/word8
+    char64      c64
     bool8       -
     bool64      -       bool
 
@@ -256,7 +256,7 @@ project =
     import name             # read the lead module and other modules of another subprogram
     linkdll name            # Dynamic shared library if it is not clear from importdll statements
     linklib name            # 'ML' library (this may be dropped)
-    $sourcepath string      # temporary directive until path control is sorted out
+    $sourcepath "path"      # temporary directive until path control is sorted out
 end
 ````
 The `project-end` block is a recent addition. This may be extended to allow an executable name that overrides that of the lead module.
@@ -300,12 +300,16 @@ then `cmdparams[0]` will contain `prog` in both cases. A special mechanism is us
 However programs which directly call functions like `__getmainargs` or `GetCommandLine` will see all inputs.
 
 ### Entry point
-This will be the `main` function that must be located in either the lead module or the
-next one after that. (This allows the lead module to contain only project info.)
+The main subprogram should be a `main` function located in any module. (Typically, the
+lead module contains only a project header, and `main` is in the following module.)
 
-The `main` name is special; it will automatically be exported. It should be a `proc`
-that takes no parameters and returns no result.
+The `main` name is special; it will automatically be exported. To avoid ambiguity, at most
+one `main` function is allowed in the subprogram.
 
+It should be a `proc` that takes no parameters and returns no result.
+
+Other subprograms can have their own `main`; this is ignored. (This can be used whe
+then subprogram is compiled independently.)
 
 ### Program Exit
 This can be done with any of these:
@@ -318,15 +322,27 @@ This can be done with any of these:
 
 The `main` entry point function will have `stop 0` injected at the end, so just running into the end of `main` will terminate too.
 
-### Start functions
+### Start Functions and Module Order
 Each module can have an optional `start` procedure, which like `main` is exported
-and take no parameters.
+and takes no parameters, but it is given global scope.
 
 If present, it is automatically called from start-up code when the program is launched.
 
-The caller order depends on the modules in the project header; I will need to
-check the behaviour and report back.
+The caller order depends on the `module` and `import` directives in the project header
+according to these rules:
 
+* Within a subprogram, all the modules are processed in top-down order as specified,
+  except that the module with `main` is done last. If there is no `main()`, then
+  it is assumed would have gone into the top module, so that is done last.
+
+* With multiple subprograms: all the subprograms are processed in the top-down order
+  specified, except the main subprogram (the one using `module` not `import`) is
+  done last.
+
+The automatically added `msyslib` module is notionally at the top of the list, so it is
+processed first. That is, all its `start` routines are called according to the above order.
+
+Subprograms should not have cyclical or mutual dependencies.
 
 ### Out-of-Order Definitions
 
@@ -592,7 +608,7 @@ There is only one, called `nil`, with type `ref void`. It is always all-bits zer
 ````
     include "filespec"      Incorporate in-line source code from another file "file.m"
     sinclude("filespec")    Brackets are optional. Embed any text file as a string data object
-    binclude("filespec")    Embed any file as a binary data object
+    binclude("filespec")    Embed any file as a binary data object, that can initialise any array.
 ````
 `sinclude` adds a zero terminator which is counted as part of the data.
 
@@ -617,14 +633,12 @@ It's not possible to mix string/s-data with binary data.
 Combining strings is useful when:
 
 * Long strings are split across multiple lines
-
 * Named string constants are used, using `const` or `macro`. Example:
 ````
     const euro  = "\u20AC"
     const price = "4.99"
     ichar mess = euro + price
 ````
-(NOT WORKING; CHECK THIS)
 
 ### Array bounds
 The general pattern is:
@@ -1061,10 +1075,8 @@ are discarded, or all of them. (F can also return more than 3 values here.)
 Further examples are:
 ````
     (ptr, length) := S      # when S is a slice, it unpacks
-    (d, r) := a divrem b    # does divide and remainder in one operation
+    (d, r) := a divrem b    # does divide and remainder in one operation; LHS needs to be 2 values
 ````
-I'd need to check whether these still work (every new implementation leaves the hard or little-used features until last, and often I
-forget).
 
 It is not possible to do this:
 ````
@@ -1084,6 +1096,10 @@ expecting r64.
 
 
 ### Binary Operators
+
+Not all type combinations are supported in the code geneator, especially for augmented assignments. These will be supported in
+due course. But usually there is an alternative way to write the expression.
+
 ````
 x + y       int, real, pointer+int, ichar (constant only)
 x - y       int, real, pointer, pointer-int
@@ -1121,7 +1137,7 @@ x not in y
 
 x .. y      Only used in certain contexts, counts as syntax, not a true operator
 ````
-### Unary Operators
+#### Unary Operators
 ````
 - x         int, real
 abs x       int, real
@@ -1152,7 +1168,7 @@ ceil x
 Note: this last group are implemented as built-in operators rather than functions. So they don't need parentheses around their operand,
 but it looks better if they are used.
 
-### Chained Operators
+#### Chained Operators
 
 Any of = <> < <= >= > can appear in a chain:
 ````
@@ -1160,10 +1176,10 @@ Any of = <> < <= >= > can appear in a chain:
     if a <= b < c
 ````
 Middle terms are evaluated only only. The whole yields bool. It is suggest that if any of `< <= >= >` appear, then they
-all face the same, otherwise the meaning is obscure.
+all face the same way, otherwise the meaning is obscure.
 
 
-### Augmented Assignment
+#### Augmented Assignment
 
 Augmented assignments to not return any value so cannot 
 
@@ -1197,7 +1213,7 @@ inot:= x    int
 not:= x     bool
 istruel:=x  bool
 ````
-### Properties
+#### Properties
 
 `x` can be an expression, or a type
 ````
@@ -1212,7 +1228,7 @@ x.max                       Maximum value of type
 ````
 For `.bytes .bitwith .min .max`, if x is simple variable name, it is not promoted to i64 or u64 (CHECK THIS FOR FIRST TWO).
 
-### Binary Operator Priorities
+#### Binary Operator Priorities
 
 1 is highest precedence:
 ````
@@ -1230,7 +1246,7 @@ Level   Operators at that level
 * `min max` normally use function-like syntax
 * The "." in `a.b` is not a operator; it has syntax that binds more tightly than even unary operators
 
-### Unary Operator Priorities
+#### Unary Operator Priorities
 
 This is evaluation order rather than precedences. Some operators go before the operand (prefix), and some after that (postfix):
 
@@ -1245,7 +1261,7 @@ So for `sqrt -p^^`, `p` is deferenced twice (first `^` then second), then it is 
 
 All statements can return values, except that loops only have a `void` return type, so it can't be used anywhere.
 
-#### `If` Statement
+##### `If` Statement
 
     if s then s end
     if s then s else s end
@@ -1897,6 +1913,17 @@ There is some use for this even in a static language:
 ````
 `X` can be type or expression. Parentheses may be needed around `X`, when it is a number for example.
 
+#### Field offsets.
+
+If `T` is a record type, then `T.m` yields the offset of field `m` within the records.
+
+This can be used in inline assembly:
+````
+	record date = (var day, month, year)
+
+	asm mov rax, [rbx + date.month]
+````
+Or used to set up constants: `const month = data.month`.
 
 ### Compiler Options: Outputs
 
@@ -2039,7 +2066,7 @@ These are the options for `mc.exe`:
 ````
 
 
-### Inline assembly
+### Inline Assembly
 Multiline form:
 ````
 assem
@@ -2056,6 +2083,8 @@ Assembly blocks can return values; if written where some value is expected, then
 
 That was intended to provide function return values. But the allows an asm block anywhere, so
 it needs to work.
+
+Assembly syntax is pretty much that of my AA assembly. I will not be documenting that.
 
 
 ### High-loading and Position-indepedent code
@@ -2175,6 +2204,11 @@ Some constants I've seen in the source code. Most will be checked.
     Max imported symbols       3000         (Generating EXE)
     Max exported symbols  1000/2000         (Generating DLL; check)
 ````
+### Error Reporting
+
+This is not great. When a poor error report, or even lack of detection, has caused grief, then I should really fix it.
+But too often I don't do that; once I've found the cause, I just carry on.
+
 
 ### Compilation Speed
 On my low-end PC, the mm compiler generally has a throughput of 0.5M lines per second.
