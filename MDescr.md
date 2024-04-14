@@ -1,6 +1,6 @@
 ## M Language and Compiler Reference
 
-This summaries the 2024/6.24 version of of my 'M' systems language.
+This summaries the 2024/6.4 version of of my 'M' systems language.
 
 It is a collection of lists, tables, facts, examples and speculation on possible new ideas.
 
