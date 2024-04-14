@@ -1,5 +1,5 @@
-=== MA 31 ===
-=== qq.m 0 0 1/31 ===
+=== MA 44 ===
+=== qq.m 0 0 1/44 ===
 project =
 	module qq_cli
 !	module qq_embed
@@ -40,8 +40,8 @@ project =
 
 !	module qq_switch
 
-!	module qq_syslibs
-	module qq_syslibsdummy
+	module qq_syslibs
+!	module qq_syslibsdummy
 
 	module qq_tables
 
@@ -50,7 +50,7 @@ project =
 !
 	module qq_vars
 end
-=== qq_cli.m 0 0 2/31 ===
+=== qq_cli.m 0 0 2/44 ===
 
 int cmdstartindex
 
@@ -172,7 +172,7 @@ proc do_option(int sw, ichar value)=
 
 end
 
-=== qq_api.m 0 0 3/31 ===
+=== qq_api.m 0 0 3/44 ===
 !global const syslibname="qlib"
 global const syslibname="sysp"
 !global const syslibname="minsys"
@@ -665,7 +665,7 @@ global proc loadsyslib=
 		runqprogram(subprogs[1])
 	fi
 end
-=== qq_arrays.m 0 0 4/31 ===
+=== qq_arrays.m 0 0 4/44 ===
 global proc var_empty_array(int tag, elemtype, lower, variant dest)=
 	dest.objptr:=obj_newarray(elemtype,lower, 0)
 	dest.tagx:=tag ior hasrefmask
@@ -1233,7 +1233,7 @@ global proc var_expand_array(variant p, dest, int m)=
 		--dest
 	od
 end
-=== qq_bits.m 0 0 5/31 ===
+=== qq_bits.m 0 0 5/44 ===
 global proc obj_free_bits(object p, int tag)=
 	if p.length then
 		pcm_free(p.ptr, getbitssize(p.alloc64, p.elemtag))
@@ -1618,7 +1618,7 @@ global function getbitssize(int n, t)int=
 	int nbits:=n*ttbitwidth[t]
 	return ((nbits-1)/64+1)*8			!bytes required in 64-bit blocks
 end
-=== qq_calldll.m 0 0 6/31 ===
+=== qq_calldll.m 0 0 6/44 ===
 global proc calldll(symbol d, variant args, result, int nargs)=
 	symbol e
 	const maxparams=100
@@ -1823,7 +1823,7 @@ function loaddllfunction(symbol d)ref proc=
 	return fnaddr
 end
 
-=== qq_decimal.m 0 0 7/31 ===
+=== qq_decimal.m 0 0 7/44 ===
 const digitwidth   = 9
 const digitbase	= 1000000000
 const digitfmt	 = "%09d"
@@ -3540,7 +3540,7 @@ function bn_toint(object a)int64=
 	fi
 end
 
-=== qq_decls.m 0 0 8/31 ===
+=== qq_decls.m 0 0 8/44 ===
 !global const fixbytecodes=1		!convert bytecodes to handler addresses
 
 !global int dispatchtype=fn_dispatch
@@ -4067,7 +4067,7 @@ global enumdata []ichar optionnames, []ref byte optionvars, []byte optionvalues 
 
 	(nosys_sw,		"nosys",		&fnosys,			1),
 end
-=== qq_dicts.m 0 0 9/31 ===
+=== qq_dicts.m 0 0 9/44 ===
 global proc var_make_dict(variant a, dest, int n) =
 !create a list of n vars starting from a in reverse order (a is the last)
 !put the result in dest (note this will be the last/first of the n vars)
@@ -4323,7 +4323,7 @@ proc adddictitem(variant d, p, q)=
 	var_unshare(r)			!overwrite any existing value
 	r^:=q^
 end
-=== qq_jhandlers.m 0 0 10/31 ===
+=== qq_jhandlers.m 0 0 10/44 ===
 !ASM bytecode handlers
 
 !int showasmflag=1
@@ -8870,7 +8870,7 @@ threadedproc j_isfound*=
 	jumpnext
 end
 
-=== qq_khandlers.m 0 0 11/31 ===
+=== qq_khandlers.m 0 0 11/44 ===
 !HLL bytecode handlers
 
 global macro getopnda = (pcptr+1)^
@@ -11956,7 +11956,7 @@ global proc k_even=
 	++pcptr
 end
 
-=== qq_host.m 0 0 12/31 ===
+=== qq_host.m 0 0 12/44 ===
 
 record dimrec=(int lbound, upper, length)
 
@@ -12877,7 +12877,7 @@ global proc pch_$procref(variant a, result)=
 	result.tagx:=tsymbol
 	result.def:=cast(procrefs[n])
 end
-=== qq_lex.m 0 0 13/31 ===
+=== qq_lex.m 0 0 13/44 ===
 const etx	= 26
 const cr	= 13
 const lf	= 10
@@ -14212,7 +14212,7 @@ proc readrawxname=
 
 	return
 end
-=== qq_lib.m 0 0 14/31 ===
+=== qq_lib.m 0 0 14/44 ===
 int currlineno
 global int nextavindex=0
 
@@ -15168,7 +15168,7 @@ global proc skipsymbol(int symbol)=
 	lex()
 end
 
-=== qq_lists.m 0 0 15/31 ===
+=== qq_lists.m 0 0 15/44 ===
 global object emptylist
 
 proc start=
@@ -15622,7 +15622,7 @@ global function var_inx_list(variant a,b)int =
 	od
 	return i64.min
 end
-=== qq_modules.m 0 0 16/31 ===
+=== qq_modules.m 0 0 16/44 ===
 
 global func loadsp(ichar filename, source=nil)isubprog sp=
 !source = nil:  load lead module and dependencies from given sourcefile
@@ -15945,7 +15945,7 @@ global proc readqabundle=
 		(qatext[i]+qasize[i])^:=0	
 	od
 end
-=== qq_names.m 0 0 17/31 ===
+=== qq_names.m 0 0 17/44 ===
 !Symbol table handling
 
 int sdsize, sdoffset
@@ -16332,7 +16332,7 @@ global function createdupldef(symbol owner,symptr, int id)symbol=
 
 	return p
 end
-=== qq_optim.m 0 0 18/31 ===
+=== qq_optim.m 0 0 18/44 ===
 ref int pc, pcstart
 
 macro getopnda = (pc+1)^
@@ -16732,7 +16732,7 @@ finish:
 	pc+:=skip
 end
 
-=== qq_packed.m 0 0 19/31 ===
+=== qq_packed.m 0 0 19/44 ===
 global proc var_loadpacked(ref void p,int t,variant dest, object ownerobj=nil) =
 ! p is a direct pointer to a packed type of type t.
 ! Extract target and store in varrec dest, which should have been freed.
@@ -17106,7 +17106,7 @@ global proc var_getix_struct(variant a, int index)=
 
 	var_loadpacked(p.ptr+r.fieldoffset, r.mode, a)
 end
-=== qq_parse.m 0 0 20/31 ===
+=== qq_parse.m 0 0 20/44 ===
 !Parser
 
 int intabledata
@@ -20365,7 +20365,7 @@ proc readpackvars(symbol owner, int id)=
 	od
 	if nvars=0 then serror("bad decl?") fi
 end
-=== qq_print.m 0 0 21/31 ===
+=== qq_print.m 0 0 21/44 ===
 !Vars for i/o
 !Makes use of stdio/fileio/strio/windio as used by Q system
 global  int mindev		!one of stdio/fileio/strio/windio
@@ -21978,7 +21978,7 @@ proc tostr_list(variant p, ref fmtrec fmt, object dest) =
 	r.refcount:=-r.refcount
 	--listdepth
 end
-=== qq_pclgen.m 0 0 22/31 ===
+=== qq_pclgen.m 0 0 22/44 ===
 !not opcodes, just used internally here for conditional jump logic
 const kjumpt = 1
 const kjumpf = 0
@@ -24493,7 +24493,7 @@ proc pushstring(ichar s, int length)=
 	genopnd_int(cast(ps))
 end
 
-=== qq_pcllib.m 0 0 23/31 ===
+=== qq_pcllib.m 0 0 23/44 ===
 const pclinitalloc=128
 
 global ref int pclstart				!point to start of current pcl block
@@ -24792,7 +24792,7 @@ end
 !global function isstatic(symbol d)int=
 !	return d.nameid=staticid
 !end
-=== qq_records.m 0 0 24/31 ===
+=== qq_records.m 0 0 24/44 ===
 global proc var_make_record(variant a, dest, int n, rectype) =
 !create a list of n vars starting from a in reverse order (a is the last)
 !put the result in dest (note this will be the last the n vars)
@@ -24991,7 +24991,7 @@ global proc var_getixref_record(variant a, int index, variant dest)=
 	dest.varptr:=p
 end
 
-=== qq_resolve.m 0 0 25/31 ===
+=== qq_resolve.m 0 0 25/44 ===
 int nprocs
 
 int noexpand
@@ -26143,7 +26143,7 @@ proc dobaseclass(int baseclassindex)=
 		d:=d.nextdef
 	od
 end
-=== qq_sets.m 0 0 26/31 ===
+=== qq_sets.m 0 0 26/44 ===
 global proc obj_free_set(object p)=
 	if p.length then
 		pcm_free(p.ptr, getbitssize(p.alloc64, tu1))
@@ -26550,7 +26550,7 @@ global proc var_inotto_set(variant x) =
 	fi
 end
 
-=== qq_strings.m 0 0 27/31 ===
+=== qq_strings.m 0 0 27/44 ===
 global object emptystring
 
 proc start=
@@ -27228,13 +27228,58 @@ global proc var_makechar(int ch,variant dest)=
 	dest.tagx:=tstring ior hasrefmask
 	dest.objptr:=p
 end
-=== qq_syslibsdummy.m 0 0 28/31 ===
-global const fsyslibs = 0
+=== qq_syslibs.m 0 0 28/44 ===
+global const fsyslibs = 1
+!global const fsyslibs = 0
+
+global tabledata []ichar syslibnames,[]ichar libtext =
+	("qlib.q",			(fsyslibs | strinclude "qlib.q" | "" )),
+	("sysp.q",			(fsyslibs | strinclude "sysp.q" | "" )),
+	("clibp.q",			(fsyslibs | strinclude "clibp.q" | "" )),
+	("smlib.q",			(fsyslibs | strinclude "smlib.q" | "" )),
+	("winapi.q",		(fsyslibs | strinclude "winapi.q" | "" )),
+	("gxlib.q",			(fsyslibs | strinclude "gxlib.q" | "" )),
+	("bmlib.q",			(fsyslibs | strinclude "bmlib.q" | "" )),
+	("console.q",		(fsyslibs | strinclude "console.q" | "" )),
+	("winconsts.q",		(fsyslibs | strinclude "winconsts.q" | "" )),
+	("wingxlib.q",		(fsyslibs | strinclude "wingxlib.q" | "" )),
+	("winmessages.q",	(fsyslibs | strinclude "winmessages.q" | "" )),
+	("gxmisc.q",		(fsyslibs | strinclude "gxmisc.q" | "" )),
+	("dates.q",			(fsyslibs | strinclude "dates.q" | "" )),
+end
+
+![syslibnames.len]byte syslibfileno
+
+function findsyslib(ichar filename)ichar=
+!filename must be module name with .q extension
+!return source code, or nil
+
+	for i to syslibnames.len do
+		if eqstring(filename, syslibnames[i]) then
+			return libtext[i]
+		fi
+	od
+
+	nil
+end
 
 global func loadsysmodule(ifile pm)int=
-	return 0
+!load the syslib specified within pm, then load it and fully populate pm
+!return 0 if it fails
+!for internal syslibs, the filename will have no path, but should have an extension
+	ichar source
+
+	source:=findsyslib(pm.filespec)
+
+	if source then
+		pm.text:=source
+		pm.size:=strlen(source)
+		return 1
+	else
+		return 0
+	fi
 end
-=== qq_tables.m 0 0 29/31 ===
+=== qq_tables.m 0 0 29/44 ===
 !!---
 global enumdata	[0:]ichar stdtypenames,
 					[0:]byte stdtypewidths =
@@ -28572,7 +28617,7 @@ proc start=
 	ntypes:=tlast
 end
 
-=== qq_show.m 0 0 30/31 ===
+=== qq_show.m 0 0 30/44 ===
 !labels are just numbers 1,2,3 which index both of these tables
 !labelblocktable is the pclblock no (as all labels are shared across the program)
 !labeloffsettable is the offset into the pclblock
@@ -29807,7 +29852,7 @@ global proc deletetempfiles=
 	remove("ST")
 	remove(logfile)
 end
-=== qq_vars.m 0 0 31/31 ===
+=== qq_vars.m 0 0 31/44 ===
 !Var-routines are usually called from bytecode handlers, either directly on indirectly
 
 !Rules for dealing with variant params are:
@@ -31536,6 +31581,12378 @@ global proc var_powermixed(variant a, b)=
 	a.tag:=newtag
 end
 
+=== qlib.q 0 1 32/44 ===
+module sysp
+module clibp
+module winapi
+
+module gxlib
+module bmlib
+module console
+module winconsts
+module wingxlib
+module winmessages
+module gxmisc
+module dates
+module smlib
+
+
+!module minsys
+=== sysp.q 0 1 33/44 ===
+!Q standard library
+
+!===============================
+!module sysp
+module clibp
+module winapi
+
+module gxlib
+module bmlib
+module console
+module winconsts
+module wingxlib
+module winmessages
+module gxmisc
+module dates
+module smlib
+!===============================
+
+
+
+export type rkey=struct	!key info as it's used locally
+	word16	charcode
+	byte	keycode
+	byte	shift
+end
+
+export var ncmdparams
+export var cmdparams
+export var stclock=0
+
+export const tab="\t"
+
+export var readfilesize
+
+export var infinity=$infinity()
+export var nan=$nan()
+
+proc start=
+
+	ncmdparams:=getcmdparam()
+
+	cmdparams:=new(list,1..ncmdparams)
+
+	s::=""
+	for i:=1 to ncmdparams do
+		cmdparams[i]:=getcmdparam(i)
+		s+:=cmdparams[i]+" "
+    od
+
+	sreadln(s)
+end
+
+export proc reporterror(m)=
+#print "Error:" followed by message m. Is that it? Count as being deprecated
+
+	println "Error:",m
+end
+
+export func splitstring(s,sep)=
+#split up the string s into strings separated by the sep sequence
+#return a list of all the individual strings, excluding the sep seq
+
+	a::=()
+	ns:=0
+	if s="" or sep="" then return (s,) fi
+	do
+		n:=sep inx s
+		if not n.isfound then
+			a[++ns]:=s
+			return a
+		fi
+		t:=leftstr(s,n-1)
+		a[++ns]:=t
+		s:=rightstr(s,-(n+sep.len-1))
+	od
+	return ""
+end
+
+export func joinstrings(a,sep)=
+#join the strings in list, using the given separator string
+#return new single string
+	if a.upb=0 then return "" fi
+	s:=a[1]
+	for i:=2 to a.upb do
+		s:=s+sep+a[i]
+	od
+	return s
+end
+
+export proc abort(s)=
+#Print message, pause for keypress, then stop the interpreter with stopcode 1
+
+	println "Abort:",s,"Error"
+	waitkey()
+	stop 1
+end
+
+export func extractpath(fs)=
+#fs is a full filespec string
+#extract any path from it and return that; ie, strip the filename
+#otherwise return ""
+	l:=fs.len
+	for i:=l downto 1 do
+		if chr(fs.[i]) in "\\/:" then
+			return leftstr(fs,i)
+		fi
+	od
+	return ""
+end
+
+export func extractfile(fs)=
+#return filename portion of path fs
+	p:=extractpath(fs)
+	if p="" then return fs fi
+	return rightstr(fs,-p.len)
+end
+
+export func extractbasefile(fs)=
+#return filename portion of path fs
+	f:=extractfile(fs)
+	if f="" then return "" fi
+	e:=extractext(f)
+	if e.len then
+		f:=leftstr(f,-e.len)
+	fi
+	if rightstr(f)="." then
+		f:=leftstr(f,-1)
+	fi
+	return f
+end
+
+export func extractext(fs,period=0)=
+#extract extension part of filespec fs
+#endings of "xxx" (no extension) and "xxx." both return ""
+#with period=1, then "xxx" returns "" and "xxx." returns . (so can be used to
+#override default extensions)
+
+	f:=extractfile(fs)
+	if f="" then return "" fi
+	e:=""
+	do
+		n:="." inx f
+		if n.isfound then
+			e:=rightstr(f,-n)
+			if e="" then		!. ending
+				return (period.defined and period|"."|"")
+			fi
+
+			f:=e
+		else
+			exit
+		fi
+	od
+
+	return e
+end
+
+export func changeext(file,newext,soft=0)=
+#normally face a change of extension to the file spec
+#use soft=1 to only change extension if no extension is present (a "." ending is an extension)
+	ext:=extractext(file)
+
+	p:=extractpath(file)
+	bf:=extractbasefile(file)
+	ep:=extractext(file,1)
+
+	if soft and ep<>"" then return file fi		!has extension, don't change!
+
+	if newext="" then
+		return p+bf
+	elsif leftstr(newext)="." then
+		return p+bf+newext
+	else
+		return p+bf+"."+newext
+	fi
+end
+
+export func addpath(path,file)=
+#If file doesn't already have an absolute path (here, starting with \ / or ?:)
+#then prepend 'path', which must end with \ or /
+	if leftstr(file) in "/\\." or file.len>=2 and file.[2]=":" then
+		return file
+	fi
+	return path+file
+end
+
+export func addext(file,ext)=
+#add extension to filename, if it doesn't already have it's own extenstion
+
+	if extractext(file,1)="" then
+		return changeext(file,ext)
+	fi
+	return file
+end
+
+export func replacestr (s,a,b)=
+#if string a exists in s, then replace with b
+#return original or modified s
+	do
+		n:=a inx s
+		if not n.isfound then return s fi
+		s:=leftstr(s,n-1)+b+rightstr(s,1-n-a.len)
+	od
+	return ""
+end
+
+export func parsecmdparams(cmd)=
+#cmd consists of:
+#blocks of text separated by whitespace or commas
+#each block is one of these formats
+# ...		param only
+# /...		consists of switches only
+# .../...	param followed by switches
+#return of (params,switches), where each is a list of strings
+#note that any correspondence between params and switches is lost; all switches assumed
+#to be global, but can appear anywhere
+#NOTE: cmd can also already be a list of blocks
+
+const dash="-"
+
+	if cmd.islist then
+		blocks:=cmd
+	else
+		sreadln(cmd)
+		blocks::=()
+		do
+			read a:"s"
+			if a="" then exit fi
+			blocks append:=a
+		od
+	fi
+
+	params::=()
+	switches::=()
+
+	for x in blocks do
+		n:=dash inx x
+!		if n=0 then		!pure param
+!			params append:=x
+		if n=1 then		!pure switches
+			switches concat:=splitstring(convlc(rightstr(x,-1)),"/")
+		else			!param followed by switches
+			params append:=x
+!			params append:=leftstr(x,n-1)
+!			switches concat:=splitstring(convlc(rightstr(x,-n)),"/")
+		fi
+	od
+
+	return (params,switches)
+end
+
+export proc waitsec(secs)=
+#wait for given number of seconds, which can be a float. Call sleep()
+	sleep(int(secs*1000))
+end
+
+export func cmd_getswitches=
+#params is a list of strings, which
+#read all switches, and return a list of switch names (minus the "/")
+#each string can have more than one switch
+#some switches can follow a name in a string
+
+	switches::=()
+	for i:=1 to cmdparams.upb do		!use 1..len in case called on <cmdparams> which has lwb 0
+		s:=cmdparams[i]
+		if leftstr(s) in "-/" then
+			switches append:=convlc(rightstr(s,-1))
+		fi
+	od
+	return switches
+end
+
+export func cmd_getparams=
+#params is a list of strings
+#return list of actual params, not including any switches
+#switches are read separately using cmd_getswitches, but are not associated with
+#specific params. That would need to be done here (when / is detected in the middle
+#of a param, then make use readswitches. But to return that info, may be best to
+#create a parallel function)
+
+	cmds::=()
+
+	for i:=1 to cmdparams.upb do
+		pm:=cmdparams[i]
+!for pm in params do
+		if leftstr(pm) in "/-" then
+			nextloop
+		fi
+!	n:="/" in pm
+!	if n=0 then
+			cmds append:=pm
+!	else
+!		cmds append:=leftstr(pm,n-1)
+!	fi
+	od
+	return cmds
+end
+
+export func starttimer=
+#Start timer and remember ticks at this point
+	return stclock:=ticks()
+end
+
+export func stoptimer=
+#Return number of ticks since starttimer was called, or last stoptimer
+#as the count is reset
+
+ 	d:=ticks()-stclock
+	stclock:=ticks()
+	return d
+end
+
+export func bnfact(n)=
+#n is limited to 9 million million million
+
+	if n<=2 then
+		return longint(n)
+	fi
+
+	f:=1L
+	g:=2L
+	to n-1 do
+		f:=f*g
+		g:=g+1L
+
+	od
+	return f
+end
+
+export proc isort(a,?ll,?rr)=
+#inplace quicksort of a, which is anything that is indexable
+#ll rr are used for recursive calls
+	if ll.isvoid then
+		ll:=a.lwb
+		rr:=a.upb
+	fi
+
+	i:=ll
+	j:=rr
+
+	pivot:=a[(ll+rr)%2]
+
+	repeat
+		while pivot>a[i] and i<rr do ++i od
+		while pivot<a[j] and j>ll do --j od
+		if i<=j then
+			swap(a[i],a[j])
+			++i
+			--j
+		fi
+	until i>j
+	if ll<j then isort(a,ll,j) fi
+	if i<rr then isort(a,i,rr) fi
+end
+
+export func sort(a)=
+#quicksort a and return newly sorted list. Duplicates a then uses isort
+	b::=a
+	isort(b)
+	return b
+end
+
+export func pcerror(m)=
+#Force an interpreter error; advantage is that source location is reported.
+
+	println "Internal error:",m
+	a:=b+c
+	return 0
+end
+
+
+
+!=========================================
+export proc insert(&a, b, c)=
+#insert value c just before index b
+#c is always a single value; to insert a sequence c, use insertn()
+	n:=a.upb
+	a[n+1]:=c
+	for i:=n downto b do
+		swap(a[i+1],a[i])
+	od
+end
+
+export proc isort2(a,b,?ll,?rr)=
+#Like isort but also sorts b in parallel; sort order is determined by a however
+	if ll.isvoid then
+		ll:=a.lwb
+		rr:=a.upb
+	fi
+
+	i:=ll
+	j:=rr
+
+	pivot:=a[(ll+rr)%2]
+
+	repeat
+		while pivot>a[i] and i<rr do ++i od
+		while pivot<a[j] and j>ll do --j od
+		if i<=j then
+			swap(a[i],a[j])
+			swap(b[i],b[j])
+			++i
+			--j
+		fi
+	until i>j
+	if ll<j then isort2(a,b,ll,j) fi
+	if i<rr then isort2(a,b,i,rr) fi
+end
+
+export func left(a,n=1)=
+#return leftmost n elements of a (default left element)
+#when n is negative, all except rightmost -n
+
+	if n>=0 then
+		return take(a,n)
+	else
+		return take(a,a.len+n)
+	fi
+end
+
+export func right(a,n=1)=
+#return rightmost n elements of a (default right element)
+#when n is negative, all except leftmost -n
+
+	if n>=0 then
+		return drop(a,a.len-n)
+	else
+		return drop(a,-n)
+	fi
+end
+
+export func reverse(a)=
+#return reversed version of a
+#when 0, returns empty
+#when 1 element, returns a distinct, writeable copy
+
+	if a.len=0 then
+		return makeempty(a)
+	fi
+	b::=a
+
+	if a then
+		for i in a.bounds do
+			b[a.upb-i+a.lwb]:=a[i]
+		od
+	fi
+	return b
+end
+
+export func expandrange(a,step=1)=
+#Turn range a into a list of inclusive values
+	x::=()
+	i:=a.lwb
+	while i<=a.upb do
+		x append:=i
+		i+:=step
+	od
+	return x
+end
+
+export func head(a)=
+#return first element, or empty when empty
+
+	if a.len then
+		return a[a.lwb]
+	else
+		return makeempty(a)
+	fi
+end
+
+export func tail(a)=
+#return all except the first element
+#returns empty when only 0 or 1 elements
+
+	case a.len
+	when 0,1 then
+		return makeempty(a)
+	esac
+	return a[2..$]
+end
+
+export func init(a)=
+#return all except last element
+#returns empty when only 0 or 1 elements
+	case a.len
+	when 0,1 then
+		return makeempty(a)
+	esac
+	return a[a.lwb..$-1]
+end
+
+export func last(a)=
+#return last element, or empty
+	if a.len then
+		return a[$]
+	else
+		return makeempty(a)
+	fi
+end
+
+export func take(a,n)=
+#return first n elements from list/string a
+#returns () or "" when a is empty
+#n > 0 (n<=0 returns empty)
+
+	if a.len=0 or n<=0 then
+		return makeempty(a)
+	fi
+	if n>=a.len then
+		return a
+	fi
+	return a[a.lwb..a.lwb+n-1]
+end
+
+export func drop(a,n)=
+#skips first n elements of a then returns the rest
+#returns () when empty, or skipping the whole list
+#n >= 0
+
+	if a.len=0 or n>=a.len then
+		return makeempty(a)
+	fi
+	if n<=0 then
+		return a
+	fi
+	return a[a.lwb+n..$]
+end
+
+export func zip(a,b)=
+#return a list consisting of alternate elements from a and b
+#uses smaller of the two dimensions
+
+	n:=min(a.len,b.len)
+	c::=()
+
+!	j:=a.lwb; k:=b.lwb
+	(j, k) := (a.lwb, b.lwb)
+
+	to n do
+		c append:=a[j++]
+		c append:=b[k++]
+	od
+	return c
+end
+
+export func repeatlist(a,n)=
+#duplicate a n times, and return the result
+#this ought to be built-in as a*n, but that's only implemented for a.len=1
+
+	b:=makeempty(a)
+	to n do
+		b concat:=a
+	od
+	return b
+end
+
+!export func minimum(a)=
+!#return minimum value of elements in a
+!	if not a then
+!		return void
+!	fi
+!	x:=head(a)
+!	for y in tail(a) do
+!		x min:=y
+!	od
+!	return x
+!end
+!
+!export func maximum(a)=
+!#return maximum value of elements in a
+!	if not a then
+!		return void
+!	fi
+!	x:=head(a)
+!	for y in tail(a) do
+!		x max:=y
+!	od
+!	return x
+!end
+!
+!export func sumlist(a)=
+!# apply "+" between all elements of a, and return result
+!# all elements must be compatble (all strings or all numbers for example)
+!# returns void then a is empty, or head(a) when just one element
+!
+!	if not a then
+!		return void
+!	fi
+!	x:=head(a)
+!	for y in tail(a) do
+!		x +:=y
+!	od
+!	return x
+!end
+
+export proc delete(&a,?b)=
+#delete element b
+	n:=a.upb
+	if b.isvoid then b:=n fi
+
+	if n=b=1 then
+		a::=()
+		return
+	fi
+
+	if b>n then return fi
+	if b<a.lwb then return fi
+	for i:=b to n-1 do
+		swap(a[i],a[i+1])			!swap is faster for complex elements
+	od
+!a[n]:=0		!don't leave any heap data beyond new end of list
+
+	resize(a,n-1)
+end
+
+export proc resize(&a,n)=
+#hange the upper bound of a to n
+
+	if n<a.lwb then
+		a:=makeempty(a)
+		return
+	fi
+
+	a::=a[a.lwb..n]			!duplication forces original to be freed
+end
+ 
+export func makebits(data,t=bit)=
+#turn data (list, array, or bit array of different type) into a bit array
+
+	a:=new(bits,t,data.bounds)
+	for i:=data.lwb to data.upb do
+		a[i]:=data[i]
+	od
+	return a
+end
+
+export func makearray(data,t=int64)=
+#turn data (list, array of different type, or bit array) into an array of 
+#given element type
+
+	a:=new(array,t,data.bounds)
+	for i:=data.lwb to data.upb do
+		a[i]:=data[i]
+	od
+	return a
+end
+
+export func tolist(a)=
+#convert a, a string, array or bits, to a list, and return that list
+
+	case a.basetype
+	when array,string,bits then
+		b:=new(list,a.bounds)
+		for i,x in a do
+			b[i]:=x
+		od
+		return b
+!	when string then
+!		b:=new(list,a.len)
+!		i:=1
+!		for i,x in a do
+!			b[i++]:=x
+!		od
+!		return b
+
+	when list then
+		return a
+	else
+		pcerror("tolist:"+tostr(a.type))
+	esac
+	return 0
+end
+
+export func toarray(a,?t)=
+#convert a, a list, string, array or bits, to an array, and return that array
+#can be used to turn one array type into another
+	case a.basetype
+	when list then
+		if t.isvoid then
+			if a then
+				t:=a[a.lwb].type
+			else
+				t:=int32
+			fi
+		fi
+
+	when bits then
+		if t.isvoid then
+			t:=byte
+		fi
+
+	when string then
+		if t.isvoid then t:=byte fi
+		b:=new(array,t,a.len)
+		foreach i,x in a do
+			b[i]:=x
+		od
+		return b
+	when array then
+		if t.isvoid then
+			return a
+		fi
+		u:=e.elemtype
+		if t=u then return a fi
+	else
+		pcerror("toarray:"+tostr(a.type))
+	esac
+	b:=new(array,t,a.bounds)
+
+	for i,x in a do
+		b[i]:=x
+	od
+	return b
+end
+
+export func tobits(a,t=bit)=
+#convert a, a list, array or other bit array, into a bit array
+
+	case a.basetype
+	when list,array then
+
+	when bits then
+		if a.elemtype=t then
+			return a
+		fi
+
+	else
+		pcerror("tobits:"+tostr(a.type))
+	esac
+	b:=new(bits,t,a.bounds)
+	for i,x in a do
+		b[i]:=x
+	od
+	return b
+end
+
+export func listtostring(a)=
+#a should be a list or array
+#interpreter elements as characters and form a single string
+	s:=""
+	for x in a do
+		s+:=chr(x)
+	od
+	return s
+end
+
+export func qversion=
+	return "4.0"
+end
+
+export proc issort(a,?ll,?rr)=
+#Version of isort that works with dot-indexing
+
+	if ll.isvoid then
+		ll:=a.lwb
+		rr:=a.upb
+	fi
+
+	i:=ll
+	j:=rr
+
+	pivot:=a.[(ll+rr)%2]
+
+	repeat
+		while pivot>a.[i] and i<rr do ++i od
+		while pivot<a.[j] and j>ll do --j od
+		if i<=j then
+			swap(a.[i],a.[j])
+			++i
+			--j
+		fi
+	until i>j
+	if ll<j then issort(a,ll,j) fi
+	if i<rr then issort(a,i,rr) fi
+end
+
+export func ssort(a)=
+#Version of sort() with dot-indexing, eg. strings, or int bits
+
+	b::=a
+	issort(b)
+	return b
+end
+
+export func maketable(rows, cols, initval=0)=
+#Create a table: a rectangular list, set to either 0 or to initval
+#Each rows/cols is a range, or length
+
+	row:=new(list,cols,initval)
+
+	table::=new(list,rows)
+	if rows.isint then rows:=1..rows fi
+
+	for i in rows do
+		table[i]::=row
+	od
+
+	return table
+end
+
+export func mapv(op,a)=
+#Apply operator or suitable unary func to all elements of vector a,
+#and return new list 
+	b::=makeempty(a)
+	for i,x in a do
+			b[i]:=mapss(op,x)
+	od
+	return b
+end
+
+export func mapvv(op,a,b)=
+#Apply op or func between corresponding elements of vectors a and b
+	c::=makeempty(a)
+	for i,x in a do
+		c[i]:=mapss(op,x,b[i])
+	od
+	return c
+end
+
+export func mapvs(op,a,bs)=
+#Apply op or func between elements of vector a and single value bs
+	c::=makeempty(a)
+	for i,x in a do
+		c[i]:=mapss(op,x,bs)
+	od
+	return c
+end
+
+export func mapsv(op,as,b)=
+#Apply op or func between elements of single value as and vector b
+!	c::=makeempty(b)
+	c::=()
+	for i,x in b do
+		c[i]:=mapss(op,as,x)
+	od
+	return c
+end
+
+export func openfile(name,option="rb")=
+#Open a file for reading. Uses C's fopen and default option is for binary mode
+#Return a valid file handle, which is an int64 value, or 0 when not found
+	if not name.isstring or name="" then
+		return 0
+	fi
+	return fopen(name,option)
+end
+
+export func createfile(name,options="wb")=
+#Create a new file and return its handle, or 0 if there was an error
+	if not name.isstring or name="" then return 0 fi
+	return fopen(name,options)
+end
+
+export func closefile(f)=
+#close the file associated with handle f
+	return fclose(f)=0
+end
+
+export func checkfile(name)=
+#return 1 if file name exists, otherwise 0
+	file:=fopen(name,"rb")
+	if file=0 then return 0 fi
+	fclose(file)
+	return 1
+end
+
+export func eof(f)=
+#return 1 if at eof on currently open file handle f
+	c:=fgetc(f)
+	if c=-1 then return 1 fi
+
+	ungetc(c,f)
+	return 0
+end
+
+export func getfilesize(f)=
+#return size of bytes of currently open file f
+	p:=ftell(f)			!p=current position
+	fseek(f,0,2)		!get eof position
+	size:=ftell(f)		!size in bytes
+	fseek(f,p,0)		!restore file position
+	return size
+end
+
+export func setfilepos(f,offset)=
+#set position in file f to given byte offset
+	return fseek(f,offset,0)
+end
+
+export func getfilepos(f)=
+#return current file position
+	return ftell(f)
+end
+
+export func readrandom(f,mem,offset,size)=
+#read size bytes from file f, to memory at mem, from given offset
+#returns number of bytes read
+#mem needs to be a pointer
+#new file offset will be offset+size (or offset+byte read if smaller)
+	fseek(f,offset,0)
+	return fread(mem,1,size,f)
+end
+
+export func writerandom(f,mem,offset,size)=
+#write size bytes from memory at mem, to current file f from given offset
+#returns bytes written
+	fseek(f,offset,0)
+	return fwrite(mem,1,size,f)
+end
+
+export func readbytes(f,mem,size)=
+#read size bytes from current position in file f to mem
+	return fread(mem,1,size,f)
+end
+
+export func writebytes(f,mem,size)=
+#write size bytes from mem to current position in f
+	return fwrite(mem,1,size,f)
+end
+
+export func inbyte(file)=		!INBYTE
+	return fgetc(file)
+end
+
+export func inword(file)=		!INWORD
+	bb:=fgetc(file)
+	return fgetc(file)<<8+bb
+end
+
+export func inlong(file)=		!INLONG
+	ww:=inword(file)
+	return inword(file)<<16+ww
+end
+
+export proc outbyte(file,x)=		!OUTBYTE
+!writerandom(file,&x,getfilepos(file),1)
+	fputc(x,file)
+end
+
+export proc outword(file,x)=		!OUTWORD
+	outbyte(file,x iand 255)
+	outbyte(file,x.[15..8])
+end
+
+export proc outlong(file,x)=		!OUTLONG
+	outword(file,x iand 65535)
+	outword(file,x>>16)
+end
+
+export func instring(file)=		!INSTRING
+	s::=""
+	do
+		c:=inbyte(file)
+		if c=0 then return s fi
+		s+:=c
+	od
+	return s
+end
+
+export func appendfile(a,b)=
+#append line-based text file a to file b
+
+f:=openfile(a)
+if f=0 then return 0 fi
+
+h:=openfile(b,"ab")
+if h=0 then return 0 fi
+
+while not eof(f) do
+	readln @f,x:"l"
+	println @h,x
+od
+
+closefile(f)
+closefile(h)
+return 1
+end
+
+export func readblockfile(filename,doetx=0)=
+#read text file into a memory block
+#block is allocated here
+#return byte pointer to start of block, or nil
+#doetx=1 to add etx byte to end
+
+f:=openfile(filename)
+if f=0 then return nil fi
+
+n:=getfilesize(f)
+readfilesize:=n
+
+s:=malloc(n+doetx)
+if s=0 then abort("Readfile/Malloc fails") fi
+sptr:=makeref(s,byte)
+
+!readrandom(f,&s,0,n)
+readrandom(f,s,0,n)
+
+if doetx then
+	(sptr+n)^:=26
+fi
+
+closefile(f)
+return sptr
+end
+
+export func readstrfile(filename,doetx=0)=
+#read text file into a single string
+#return string, or 0 if there was an error
+
+f:=openfile(filename)
+if f=0 then return 0 fi
+
+n:=getfilesize(f)
+readfilesize:=n
+
+ptr:=malloc(n+1+doetx)
+if ptr=0 then abort("Readfile/Malloc fails") fi
+
+readrandom(f,ptr,0,n)
+if doetx then
+	(makeref(ptr,byte)+n)^:=26
+fi
+
+closefile(f)
+
+s::=makestr(ptr,n+doetx)
+
+free(ptr)
+return s
+end
+
+export func writestrfile(filename,s)=
+#read text file from a single string
+#return status
+
+f:=createfile(filename)
+if f=0 then return 0 fi
+
+writerandom(f,makeref(s,byte),0,s.len)
+
+return closefile(f)
+end
+
+export func readbinfile(filename)=
+#read binary file into byte array
+#return () (empty list not array) on error
+
+f:=openfile(filename)
+if f=0 then return 0 fi
+
+n:=getfilesize(f)
+readfilesize:=n
+
+a:=new(array,byte,n)
+readrandom(f,&a,0,n)
+
+closefile(f)
+return a
+end
+
+export func writebinfile(filename,a)=
+#write binary file from byte array a
+#return status 1/0
+
+f:=createfile(filename)
+if f=0 then return 0 fi
+
+writerandom(f,(&a),0,a.len)
+
+closefile(f)
+return 1
+end
+
+export func writeblockfile(filename,p,length)=
+#return status 1/0
+
+f:=createfile(filename)
+if f=0 then return 0 fi
+
+if not writerandom(f,p,0,length) then return 0 fi
+
+closefile(f)
+return 1
+end
+
+export func erasefile(filename)=
+#delete given file, return status (check msdn)
+return remove(filename)
+end
+
+export func renamefile(oldfilename,newfilename)=
+#rename file, return status (check msnd)
+return rename(oldfilename,newfilename)
+end
+
+export func readtextfile(file)=
+#read text file into a list of strings; one per line
+#return list, or 0 on error
+f:=openfile(file)
+if not f then
+	return 0 
+fi
+
+readfilesize:=getfilesize(f)
+a::=()
+
+while not eof(f) do
+	a append:= sreadln(f)
+od
+closefile(f)
+return a
+end
+
+export func writetextfile(file,a)=
+#write list of strings <a> as a text file <file>
+f:=createfile(file)
+if not f then return 0 fi
+
+for i:=a.lwb to a.upb do
+	println @f,a[i]
+od
+closefile(f)
+return 1
+end
+
+export func readbinaryfile(filename,t)=
+#read binary file consisting of an array of type t values, into array of t
+#return () (empty list not array) on error
+
+	f:=openfile(filename)
+	if f=0 then return () fi
+
+	n:=getfilesize(f)
+	readfilesize:=n
+	elems:=n%t.bytes
+
+	a:=new(array,t,elems)
+	readrandom(f,&a,0,n)
+
+	closefile(f)
+	return a
+end
+
+export func writebinaryfile(filename,data)=
+#write binary file from array of a fixed type to a file
+#return 1/0 status
+	return writeblockfile(filename,&data,data.bytes)
+end
+
+export func confirm(m,caption="Confirm",default=1)=
+#Pop-up box to ask for confirmationdefault=1/2/3 for yes/no/cancel button
+#Return 1 or 0
+
+	flags:=0x20000+0x20	!foreground window/question mark icon
+	flags ior:=3		!yes/no/cancel
+
+	flags ior:=(default|0,0x100,0x200|0)
+
+	status:=messagebox(nil,m,caption,flags)
+	return status=6
+end
+
+export func messagebox(a=nil,mess,caption="Caption",d=0)=
+#Standard Windows' Messagebox
+	return messageboxa(nil,mess,caption,d)
+end
+
+export func dirlist(s,t=1)=
+#s is a export filename (eg. "*.dwg") with possible drive/path; scan
+#directory for all matching files and return as a list of names
+#also returns total no. of files so far
+#t= +1	Include normal files, no sub-directory names
+#t= +2  Include directories
+#t= +3  Include all files including directories
+#t= +4  Convert to lower case
+#t=  0  Defaults to +1
+
+!CPL "DIRLIST/WINLIB"
+
+	if t.isvoid then t:=1 fi			!files only
+
+	nfiles:=0
+	data::=()
+	file:=new(ws_finddata)
+
+	if (hfind:=findfirstfile(s,&file))<>-1 then	!at least one file
+		repeat
+			if (file.fileattributes iand 16) then		!this is a directory
+				if (t iand 2)=0 then goto skip fi		!no directories
+			else						!this is a file
+				if (t iand 1)=0 then goto skip fi
+			fi
+			++nfiles
+			if (t iand 4) then				!to lower case
+				data[nfiles]:=convlc(file.filename)
+			else
+				data[nfiles]::=file.filename
+			fi
+	skip:
+		until not findnextfile(hfind,&file)
+		findclose(hfind)
+	fi
+	return data
+end
+
+export func setcurrdir(newdir)=
+#Set current directory; return Windows' status code
+	return setcurrentdirectory(newdir)
+end
+
+export func getcurrdir=
+#Return current directory name, always ends with \ or /
+	a:=new(array,byte,256)
+	n:=getcurrentdirectory(a.len,&a[1])
+
+	if n then
+		dir::=makestr(&a[1],n)
+	else
+		dir:=""
+	fi
+
+	if not (rightstr(dir) in "\\/") then dir +:= "\\" fi
+	return dir
+end
+
+export func createdir(name)=
+#Create a new directory
+	return createdirectory(name,0)
+end
+
+export func direxists(path)=
+#Return 1 if directory path exists
+	const file_attribute_directory=16
+	const invalid_file_attributes=-1
+
+	attrib := getfileattributesa(path)
+
+	return attrib<>invalid_file_attributes and (attrib iand file_attribute_directory)
+end
+
+export proc beep1=
+#Standard beep
+	messagebeep(0)
+end
+
+export proc mem(mess)=
+	static var startmem
+	if startmem.isvoid then
+		startmem:=$smallmemtotal()
+	fi
+	println mess,,":",$smallmemtotal()-startmem
+end
+
+export func reduce(op, a)=
+	x:=head(a)
+	for y in tail(a) do
+		x:=mapss(op,x,y)
+	od
+	x
+end
+=== clibp.q 0 1 34/44 ===
+importdll msvcrt=
+	func "malloc"        (int64)ref byte
+	func realloc(int64, int32)int64
+	proc free        (int64)
+	proc memset      (ref byte, int32, int32)
+	proc memcpy      (ref byte, ref byte, int32)
+	func memcmp      (ref byte, ref byte, int32)int32
+!	func clock       :int32
+	func ftell       (int64)int32
+	func fseek       (int64, int32, int32)int32
+	func fread       (ref byte, int32, int32, int64)int32
+	func fwrite      (ref byte, int32, int32, int64)int32
+	func getc   (int64)int32
+	func ungetc (int32, int64)int32
+	func fopen       (stringz, stringz)int64
+	func fclose      (int64)int32
+	func fgets       (ref byte, int32, int64)ref byte
+	func remove      (stringz)int32
+	func rename      (stringz, stringz)int32
+	func getchar     :int32
+	proc putchar     (int32)
+	proc setbuf      (int64, int64)
+
+	func rand        :int32
+	proc srand       (int32)
+
+	func puts        (stringz)int32
+	func printf      (stringz, ...)int32
+
+	func sprintf     (stringz, stringz, ...)int32
+
+	func sscanf      (stringz, stringz, ...)int32
+	func isalpha     (int32)int32
+	func tolower     (int32)int32
+	func strlen      (ref byte)int32
+	func atoi        (stringz)int32
+
+!   clang func system      (stringz)int32
+
+	func fgetc  (int64)int32
+	func fputc  (int32,  int64)int32
+	func fprintf     (int64, stringz, ...)int32
+	func fputs       (stringz,  int64)int32
+	func feof        (int64)int32
+!   clang func getch       :int32
+	func _getch      :int32
+
+end
+
+global const c_eof     = -1
+global const seek_set  = 0
+global const seek_curr = 1
+global const seek_end  = 2
+
+=== smlib.q 0 1 35/44 ===
+
+export var popuplist::=()
+export var focuslist::=()
+export var npopups=0
+export var message
+export var messw
+export var wpopup=nil
+
+record blockrec=
+	var posx, posy				!pixel position of top left of block: relative to other
+								!blocks, later within client area of containing window
+	var dimx,dimy				!'client' area of block, including margins, cells and gaps
+	var celldimx, celldimy		!size of each cell, in pixels
+	var cellsx, cellsy			!number of identically-svert hoz and vertical controls
+	var gapx, gapy				!gap between cells, in pixels
+	var marginx, marginy		!margins around all cells
+	var labelwidth				!for edit boxes, how many pixels on left are for label
+	var cellposx,cellposy		!position of top left cell within block
+	var pitchx,pitchy			!1st cell is at for edit boxes, how many pixels on left are for label
+	var blockstyle				!style record for blocks
+	var name					!name for debugging
+	var dir						!'H' or 'V' for stepping direction
+
+end
+
+var blocklist::=()
+var nblocks=0
+var	currblock =nil				!current blockrec
+var	currgroup =nil				!rwindow corresponding to currblock
+var	currpopup =nil				!rwindow for menu to contain current set of blocks
+var cellx, celly				!current cell within current block
+var slposx,slposy,sldir			!set by smcreate in case sl-functions are used
+
+!proc showblockinfo(block)=
+!println "Block:      ",(block.name.isdef|block.name|"")
+!println "Pos:        ",block.posx,block.posy
+!println "Dim:        ",block.dimx,block.dimy
+!println "CellDim:    ",block.celldimx,block.celldimy
+!println "Gap:        ",block.gapx,block.gapy
+!println "Cells:      ",block.cellsx,block.cellsy
+!println "Gaps:       ",block.gapx,block.gapy
+!println "Margins:    ",block.marginx,block.marginy
+!println "Labelwidth: ",block.labelwidth
+!println "Cellpos:    ",block.cellposx,block.cellposy
+!println "Pitch:      ",block.pitchx,block.pitchy
+!println "Dir:        ",block.dir
+!println
+!end
+
+export proc sminit=
+	blocklist::=()
+	nblocks:=0
+end
+
+export func smdefblock(?dim,cells=1,style="",gap=0,labeldim="",margin=0,dir='V')=
+!define a matrix of cells, all the same size, to be used as controls
+!dim	is a the size of each cell, as pixel dims, or as a sample string
+!cells	is a the hoz and vert cell count. Or it can be an int for vert column only
+!gap	is the inter-cell gap, specified in pixels. Default is to use chx or chy.
+!		gap can be (x,y), or just n for the same gap in hoz and vert
+!style	Currently, a string containing various styles and options. Will be
+!	compatible with old uses of these functions. Or can be replaced with a dict
+!label	When specified, is a sample string givibg the length of the label on the left
+!		of edit boxes; can also be a pixel width
+!return handle to block
+!also add block to export blocklist
+
+	block:=new(blockrec,0)
+	block.dir:=dir
+!block.dir:='H'
+
+	if dim.isstring then
+		block.celldimx:=gxtextwidth(labelfont,dim)+smx*2
+		block.celldimy:=chy+smy*2
+	else
+		(block.celldimx,block.celldimy):=dim
+	fi
+
+	if cells.isint then
+		block.cellsx:=1
+		block.cellsy:=cells
+	else
+		(block.cellsx,block.cellsy):=cells
+	fi
+
+	if gap.isint then
+		block.gapx:=gap
+		block.gapy:=gap
+	else
+		(block.gapx,block.gapy):=gap
+	fi
+
+	if margin.isint then
+		block.marginx:=margin
+		block.marginy:=margin
+	else
+		(block.marginx,block.marginy):=margin
+	fi
+
+	if labeldim then
+		if labeldim.isstring then
+			block.labelwidth:=gxtextwidth(labelfont,labeldim)+smx*2
+		else
+			block.labelwidth:=labeldim
+		fi
+		block.celldimx+:=block.labelwidth
+	fi
+
+	block.blockstyle:=readstylestr(style)
+
+!CPL "BLOCKSTYLE",STYLE,BLOCK.BLOCKSTYLE
+
+!now work out overall size of the block, and the pitch between cells
+!this needs to take account of the frame size of each cell, which depends on
+!its border style
+!block position is done at a higher level using smorder
+
+	bdx:=bdy:=1				!use border widths of 0 for now (and assume same all round)
+
+	block.pitchx:=block.celldimx+bdx*2+block.gapx		!hoz pitch
+	block.pitchy:=block.celldimy+bdy*2+block.gapy		!vert
+
+!CPL "PITCHY",BLOCK.PITCHY,=BDY,=BLOCK.GAPY
+!CPL "MARGINY",BLOCK.MARGINY
+
+	block.cellposx:=block.marginx+bdx					!position of client area of 1st cell
+	block.cellposy:=block.marginy+bdy
+
+	block.dimx:=block.pitchx*block.cellsx-block.gapx+block.marginx*2
+	block.dimy:=block.pitchy*block.cellsy-block.gapy+block.marginy*2
+
+	blocklist[++nblocks]:=block
+
+	return block
+end
+
+export func smmenusize(margin=chy)=
+!work out overall bounding box for all blocks, and relocate blocks (or set their
+!pos values) so that each is positioned within to the bounding box rectangle
+!return (dimx,dimy)
+
+!get bounding box in (x1,y1), (x2,y2)
+	for i,block in blocklist do
+		if i=1 then				!first block
+			x1:=block.posx
+			y1:=block.posy
+			x2:=x1+block.dimx-1
+			y2:=y1+block.dimy-1
+		else
+			x1 min:=block.posx
+			y1 min:=block.posy
+			x2 max:=block.posx+block.dimx-1
+			y2 max:=block.posy+block.dimy-1
+		fi
+	od
+
+!now, need to relocate each block so they stay at the same position relative to
+!each other, but are positioned within the client area of an owner window
+!this effectively relocates (x1,y1) to (0,0), so the offset to be applied to
+!each block is -(x1,y1), plus (margin,margin)
+
+	for block in blocklist do
+		block.posx+:=margin-x1
+		block.posy+:=margin-y1
+	od
+
+!return (x1-margin,y1-margin,x2-y1+margin*2+1,y2-y1+margin*2+1)
+	return (x2-x1+margin*2+1,y2-y1+margin*2+1)
+end
+
+export proc smorder(blocks,dir='D')=
+!take a blocks, and arrange all in a line, relative to the first
+!dir is one of "U", "D", "L", "R" (or can be char codes or in lower case)
+!some block elements can be an integer specifing a gap between the blocks.
+!the gap is specified in pixels. The default gap is chx for hoz and chy for vertical
+!(***I THINK that the gap override is only between two blocks, so needs the reset to
+!default after. That mean also that the first list item must be a block***)
+
+	if dir.isstring then
+		dir:=asc(convuc(dir))			!"r","R" or 'R' possible, but not 'r'
+	fi
+
+	bdx:=bdy:=1						!border widths for the blocks
+
+	dx:=chx+bdx
+	dy:=chy+bdy
+	firstblock:=1
+
+	for block in blocks do
+		if block.isint then			!is a gap
+			dx:=block+bdx*2
+			dy:=block+bdy*2
+			nextloop
+		fi
+		if firstblock then
+			lastblock:=block
+			firstblock:=0
+			nextloop
+		fi
+		case dir
+		when 'D' then			!add below
+			block.posx:=lastblock.posx
+			block.posy:=lastblock.posy+lastblock.dimy+dy
+		when 'R' then
+			block.posx:=lastblock.posx+lastblock.dimx+dx
+			block.posy:=lastblock.posy
+		when 'U' then			!add above
+			block.posx:=lastblock.posx
+			block.posy:=lastblock.posy-block.dimy-dy
+		when 'L' then
+			block.posx:=lastblock.posx-block.dimx-dx
+			block.posy:=lastblock.posy
+		esac
+		lastblock:=block
+	od
+end
+
+proc showtestmenu(dim)=
+	wapplic:=gxcreatewindow(dim:dim,caption:"test")
+
+	for block in blocklist do
+		gxbutton(pos:(block.posx,block.posy),dim:(block.dimx,block.dimy),caption:block.name,
+		owner:wapplic,style:[ss_border:bs_simplew])
+	od
+
+	eventloop()
+end
+
+export func smcreate(caption="",?dim,?pos)=
+!create a pop-up menu window
+!dim ix (x,y) client area size in pixels
+!?pos is optional position, but can also existing button, then menu is placed nearby
+!Normally used after after series of smdefblock etc calls to setup a menu layout
+!Dim usually is a call to smmenusize which exactly contains the blocks
+!return handle to window
+
+	w:=gxcreatewindow(caption:caption, dim:dim, options:[wf_minmax:0],pos:pos)
+!	w:=gxcreatewindow(caption:caption, dim:dim)
+	w.windclass:=popup_class
+	currpopup:=w
+
+	slposx:=chx
+	slposy:=chy
+	sldir:=(dim[1]>dim[2]|'H'|'V')
+
+	wpopup:=w
+
+	oldfocus:=wfocus
+	if wfocus then
+		gxkillfocus()
+	fi
+
+	popuplist[++npopups]:=w
+	focuslist[npopups]:=oldfocus		!of underlying window
+
+	return w
+end
+
+export func smblock(block,border=0)=
+!set block as the current block for subsequent 
+!unlike old versions of the library, an actual window is created for the block,
+!and a handle to that is returned. That is a child group control.
+
+	wblock:=gxpanel(pos:(block.posx,block.posy),dim:(block.dimx,block.dimy),
+		owner:currpopup, style:[ss_border:border])
+	currblock:=block
+	currgroup:=wblock
+	cellx:=celly:=1
+
+	return wblock
+end
+
+!export func smpanel=
+!!set block as the current block for subsequent 
+!!unlike old versions of the library, an actual window is created for the block,
+!!and a handle to that is returned. That is a child group control.
+!
+!	return gxpanel(pos:getsmpos(),dim:getsmdim(),
+!		owner:currgroup, style:[ss_border:border])
+!end
+!
+export proc smclose=
+!NOTE: for nested menus, ie. invoking another popup menu while one is still
+!on the screen, requires:
+! * blocklist needs to be moved elsewhere, eg. to data field of current popup rwindow
+! * Then smclose can close blocks in that list, not the export one
+! * Global blocklist can be reused
+! * It might require that the owner window is disabled from being clicked on, but
+!   that will be awkward to do without disabling each control within it. Or perhaps
+!   this is a check that can be done within process_wmmessage, to see if click-window
+!   has an owner that has been disabled.
+!    Disabling is one with smcreate, and re-enableing here in smclose
+
+	gxclose(wpopup)
+!	for block in blocklist do
+!		block:=0
+!!		freehandle(block)
+!	od
+
+	oldfocus:=focuslist[npopups]
+	--npopups
+	if npopups then
+		wpopup:=popuplist[npopups]
+		if oldfocus then
+			gxfocus(oldfocus)
+		fi
+	else
+		wpopup:=nil
+	fi
+end
+
+export proc smoff=
+	smclose()
+end
+
+proc nextcell=
+!step cellx,y to next cell within current block
+	if currblock.dir='V' then
+		++celly
+		if celly>currblock.cellsy then
+			celly:=1
+			++cellx
+		fi
+	else					!hoz
+		++cellx
+		if cellx>currblock.cellsx then
+			cellx:=1
+			++celly
+		fi
+	fi
+end
+
+func getsmpos=
+	return ((cellx-1)*currblock.pitchx+currblock.cellposx,
+        (celly-1)*currblock.pitchy+currblock.cellposy)
+end
+
+func getsmdim=
+	return (currblock.celldimx,currblock.celldimy)
+end
+
+func getslpos=
+	return (slposx,slposy)
+end
+
+func getsldim(s)=
+	if s.isint then
+		return (s*chx+chx*2,chy+smy*2)
+	else
+		return (gxtextwidth(labelfont,s)+smx*2,chy+smy*2)
+	fi
+end
+
+proc nextslcell(dim)=
+	if sldir='H' then
+		slposx+:=dim[1]+chx
+	else
+		slposy+:=dim[2]+chy
+	fi
+end
+
+export func smcmd(caption,id=0,enable=1)=
+!create button within current block
+!caption can also be an integer code:
+! 0		skip this cell (just leave a blank space)
+! -1	insert divider line
+!when id is omitted or is zero, then creates a static label instead
+
+	if caption.isint then
+		case caption
+		when 0 then
+		when -1 then
+		esac
+		nextcell()
+		return nil
+	fi
+
+	if id=0 then
+		return smlabel(caption)
+	fi
+
+	ss:=[ss_border:bs_ownpanel]
+
+	w:=gxbutton(pos:getsmpos(), dim:getsmdim(), caption:caption, id:id,
+		owner:currgroup, style:ss, enable:enable)
+	nextcell()
+	return w
+end
+
+export func smhozscrollbar(id=0)=
+	w:=gxhozscrollbar(owner:currgroup, pos:getsmpos(), dim:getsmdim(), id:id,
+	style:[ss_border:bs_simplew])
+
+	nextcell()
+	return w
+end
+
+export func smvertscrollbar(id=0)=
+	w:=gxvertscrollbar(owner:currgroup, pos:getsmpos(), dim:getsmdim(), id:id,
+	style:[ss_border:bs_simplew])
+
+	nextcell()
+	return w
+end
+
+export func smlabel(caption)=
+	pos:=getsmpos()
+	dim:=(currblock.celldimx,currblock.celldimy)
+
+	w:=gxlabel(pos:pos,dim:dim,caption:caption,owner:currgroup)
+	nextcell()
+	return w
+end
+
+export func smarrow(dir,id)=
+	pos:=getsmpos()
+	dim:=(currblock.celldimx,currblock.celldimy)
+
+	w:=gxarrow(pos:pos,dim:dim,dir:dir,owner:currgroup)
+	nextcell()
+	return w
+end
+
+export func smtoggle(caption,linkvar,id=0,enable=1)=
+!create toggle control within current block
+
+	w:=gxtoggle(pos:getsmpos(), dim:getsmdim(), caption:caption,
+				linkvar:linkvar,id:id,owner:currgroup, enable:enable,
+				style:currblock.blockstyle)
+
+	nextcell()
+	return w
+end
+
+export func smselect(caption,linkvar,onvalue=1,id=0,enable=1)=
+!create toggle control within current block
+
+	w:=gxselect(pos:getsmpos(), dim:getsmdim(), caption:caption,
+			linkvar:linkvar,onvalue:onvalue,
+			id:id,owner:currgroup, enable:enable, style:currblock.blockstyle)
+
+	nextcell()
+	return w
+end
+
+export func smeditbox(?caption,linkvar,id=0,enable=1,?style)=
+!create toggle control within current block
+
+	pos:=getsmpos()
+	dim:=getsmdim()
+
+	if caption.isdef then
+		gxlabel(pos:pos, dim:(currblock.labelwidth-chx,dim[2]), caption:caption,
+		 owner:currgroup)
+		pos[1]+:=currblock.labelwidth
+		dim[1]-:=currblock.labelwidth
+	fi
+
+	w:=gxeditbox(pos:pos, dim:dim,
+		linkvar:linkvar,
+		id:id,owner:currgroup, enable:enable, style:getstyle(style))
+!	gxdrawmode(w,dm_screenmemory)
+
+	nextcell()
+	return w
+end
+
+export func smlistbox(linkvar,id=0,enable=1)=
+
+!CPL =CURRBLOCK.CELLSY,"(ROWS)"
+!CPL =CURRBLOCK.PITCHY,"(PITCH)"
+!CPL =CURRBLOCK.CELLDIMY,"(CELLDIMY)"
+!CPL =CURRBLOCK.CELLPOSY,"(OFFSET)"
+!CPL =CURRBLOCK.GAPY,"(GAPY)"
+!CPL =CURRBLOCK.DIMY,"(DIMY)"
+!CPL "LBDIMY=",CURRBLOCK.DIMY-CURRBLOCK.MARGINY*2
+!CPL =CURRBLOCK.MARGINY
+
+!$SETDEBUG(1)
+	w:=gxlistbox(pos:getsmpos(),
+		dim:(currblock.dimx-currblock.marginx*2,currblock.dimy-currblock.marginy*2),
+		linkvar:linkvar,
+		style:[ss_vscroll:1,
+		ss_border:bs_simplew],
+		rows:currblock.cellsy,
+		pitch:currblock.pitchy,
+	!	offset:currblock.cellposy,
+		id:id,owner:currgroup)
+!CPL "SMLB2"
+	return w
+end
+
+export func sllabel(caption)=
+	pos:=getslpos()
+	dim:=getsldim(caption)
+
+	w:=gxlabel(pos:pos,dim:dim,caption:caption,owner:currpopup)
+	nextslcell(dim)
+	return w
+end
+
+export func slcmd(caption,id=201,enable=1)=
+!create button within current block
+!caption can also be an integer code:
+! 0		skip this cell (just leave a blank space)
+! -1	insert divider line
+!when id is omitted or is zero, then creates a static label instead
+
+	pos:=getslpos()
+	dim:=getsldim(caption)
+	ss:=[ss_border:bs_simplew]
+
+	w:=gxbutton(pos:pos,dim:dim,caption:caption,id:id,owner:currpopup, 
+		style:ss)
+	nextslcell(dim)
+	return w
+end
+
+export func sleditbox(linkvar,width=30,id=0,enable=1)=
+	pos:=getslpos()
+	dim:=getsldim(width)
+
+	w:=gxeditbox(pos:pos, dim:dim,
+		linkvar:linkvar,
+		id:id,owner:currpopup)
+
+	nextslcell(dim)
+	return w
+end
+
+export func smok(caption="OKXXX",enable=1)=
+	return smcmd(caption,mm_ok,enable)
+end
+
+export func smcancel(caption="Cancel",enable=1)=
+	return smcmd(caption,mm_cancel,enable)
+end
+
+export func slok(caption="OK")=
+	return slcmd(caption,mm_ok)
+end
+
+export func slcancel(caption="Cancel")=
+	return slcmd(caption,mm_cancel)
+end
+
+export proc smokcancel=
+	smok()
+	smcancel()
+end
+
+export proc slinit(w)=
+	currpopup:=w
+	slposx:=chx
+	slposy:=0
+	sldir:=(w.dimx>w.dimy|'H'|'V')
+end
+
+export proc settab(?a,?b,?c,?d,?e,?f,?g,?h,?i)=
+	static var oldtabs
+
+	if not a.defined then
+		gxtabstops(oldtabs)
+		return
+	fi
+
+	oldtabs:=gxtabstops()
+	params::=allparams()
+
+!	gxtabstops(allparams())
+	gxtabstops(param)
+end
+
+export proc smupdatevalue(w)=
+	gxupdate(w)
+end
+
+export proc setfocus(w,?b)=
+	gxfocus(w)
+end
+
+export proc askmenu(a)=
+	message:=gxaskmess(1)
+	messw:=currmess.wind
+end
+
+func readstylestr(s)=
+!read cell style string s, and return option dict
+	d:=new(dict)
+	if s="" then return d fi
+
+	s:=convuc(s)
+
+	foreach c in s do
+		case c
+		when 'X' then d{ss_marktype}:=check_mark
+		when 'M' then d{ss_marktype}:=radio_mark
+		when 'I' then d{ss_marktype}:=invert_mark
+		when 'R' then d{ss_returnmess}:=1
+		when 'N' then d{ss_noupdate}:=1
+		esac
+	od
+	return d
+end
+
+func getstyle(style)=
+	if style.defined then
+		return readstylestr(style)
+	else
+		return currblock.blockstyle
+	fi
+end
+=== winapi.q 0 1 36/44 ===
+
+export type wt_word		= word16
+export type wt_bool		= word32
+export type wt_dword	= word32
+export type wt_wchar	= word16
+export type wt_char		= byte
+export type wt_ichar	= stringz
+export type wt_string	= stringz
+export type wt_ptr		= ref byte
+export type wt_wndproc	= word64
+
+export type wt_handle	= ref void
+export type wt_int		= int32
+export type wt_uint		= word32
+export type wt_long		= int32
+export type wt_wparam	= word64
+export type wt_lparam	= word64
+export type wt_size		= word64
+
+export type wt_wparam32	= word32
+export type wt_lparam32	= word32
+export type wt_handle32	= word32
+export type wt_ptr32	= word32
+export type wt_string32	= word32
+export type wt_wndproc32	= word32
+
+export type wt_wparam64	= word64
+export type wt_lparam64	= word64
+export type wt_handle64	= word64
+export type wt_ptr64	= word64
+export type wt_string64	= word64
+export type wt_wndproc64= word64
+
+export type wt_result	= word64
+export type wt_intptr	= word64
+export type wt_coord	= word32
+
+export type ws_spoint= struct
+	int16 x,y
+end
+
+export type ws_srect=struct
+	int16 leftx,top, rightx,bottom
+end
+
+export type ws_charinfo=struct
+	union
+		wt_word	unicodechar
+		wt_char	asciichar
+	end union
+	wt_word		attributes
+end
+
+export type ws_palette16=[0..15]int32
+
+export type ws_console=struct
+	ws_spoint size,pos
+	wt_word attributes
+	ws_srect window
+	ws_spoint maxwindowsize
+end
+
+export type ws_consoleex=struct
+	int32 recsize
+	ws_spoint size,pos
+	wt_word attributes
+	ws_srect window
+	ws_spoint maxwindowsize
+	wt_word wpopup
+	int32 fullscreen
+	ws_palette16 palette
+end
+
+export type ws_keyevent = struct $caligned
+	wt_word	eventtype
+		wt_bool	keydown
+		wt_word	repeatcount
+		wt_word	virtualkeycode
+		wt_word	virtualscancode
+		union
+			wt_word unicodechar
+			wt_char asciichar
+		end
+		wt_dword controlkeystate
+end
+
+export type ws_cursor=struct
+	int32 size,visible
+end
+
+export var hconsole, hconsolein
+
+export const stdoutputhandle=0xffff_fff5
+export const stdinputhandle=0xfffffff6
+export const stderrorputhandle=0xfffffff4
+export const invalidhandlevalue=0xffffffff
+
+export const maxpathlen=260
+
+type spath=stringz*maxpathlen
+type sshort=stringz*14
+!
+export type ws_filetime=struct
+	int32 ftlow
+	int32 fthigh
+end
+
+export type ws_finddata=struct
+	int32		fileattributes
+	ws_filetime	creationtime
+	ws_filetime	lastaccesstime
+	ws_filetime	lastwritetime
+	int32		filesizehigh
+	int32		filesizelow
+	int32		reserved0
+	int32		reserved1
+	spath		filename
+	sshort		shortfilename
+end
+
+export type ws_systemtime = struct
+	word16	year
+	word16	month
+	word16	dayofweek
+	word16	day
+	word16	hour
+	word16	minute
+	word16	second
+	word16	milliseconds
+end
+
+export type ws_msg64 = struct $caligned
+	ref void	hwnd
+	int32		message
+	int64		wparam
+	int64		lparam
+	int32		time
+	int32		ptx
+	int32		pty
+end
+
+export type ws_point = struct
+	int32 x, y
+end
+
+export type ws_rect=struct		!rect record occupying 16 bytes
+	union
+		struct
+			int32 leftx,top, rightx,bottom
+		end
+		struct
+			union int32 x,x1 end
+			union int32 y,y1 end
+			int32 x2,y2
+		end
+	end
+end
+
+export type ws_logbrush = struct
+	int32 lbstyle
+	int32 lbcolour
+	int32 lbhatch
+end
+
+export type ws_textmetrics = struct
+	int32	height
+	int32	ascent
+	int32	descent
+	int32	int32ernalleading
+	int32	externalleading
+	int32	avecharwidth
+	int32	maxcharwidth
+	int32	weight
+	int32	overhang
+	int32	digitizedaspectx
+	int32	digitizedaspecty
+	byte	firstchar
+	byte	lastchar
+	byte	defaultchar
+	byte	breakchar
+	byte	italic
+	byte	underlined
+	byte	struckout
+	byte	pitchandfamily
+	byte	charset
+end
+!=========================================
+
+export type ws_bitmapv5header = struct
+	int32	size
+	int32	width
+	int32	height
+	word16	planes
+	word16	bitcount
+	int32	compression
+	int32	sizeimage
+	int32	xpelspermeter
+	int32	ypelspermeter
+	int32	clrused
+	int32	clrimportant
+	int32	redmask
+	int32	greenmask
+	int32	bluemask
+	int32	alphamask
+	int32	cstype
+	[1..9]int32 endpoints
+	int32	redgamma
+	int32	greengamma
+	int32	bluegamma
+	int32	intent
+	int32	profiledata
+	int32	profilesize
+	int32	reserved
+end
+
+export type ws_bitmapfileheader = struct
+	wt_word		typex
+	wt_dword	size
+	wt_word		res1, res2
+	wt_dword	offbits
+end
+
+export type ws_bitmapinfoheader = struct
+	wt_dword 	size
+	wt_long		width
+	wt_long		height
+	wt_word		planes
+	wt_word		bitcount
+	wt_dword	compression
+	wt_dword	sizeimage
+	wt_long		xpelspermetre
+	wt_long		ypelspermetre
+	wt_dword	clrused
+	wt_dword	clrimportant
+end
+
+export type ws_paintstruct = struct
+!	int64		hdc
+	int64		hdc
+	int32		erase
+	ws_rect		paintrect
+	int32		restore
+	int32		incupdate
+	[32]byte	rgbreserved
+end
+
+!32-BIT VERSION
+export type ws_openfilename32 = struct
+	wt_dword		structsize
+	wt_handle32		owner
+	wt_handle32		instance
+	wt_string32		filter
+	wt_string32		customfilter
+	wt_dword		maxcustfilter
+	wt_dword		filterindex
+	wt_string32		file
+	wt_dword		maxfile
+	wt_string32		filetitle
+	wt_dword		maxfiletitle
+	wt_string32		initialdir
+	wt_string32		title
+	wt_dword		flags
+	wt_word			fileoffset
+	wt_word			fileextension
+	wt_string32		defext
+	wt_lparam32		custdata
+	wt_wndproc32	hook
+	wt_string32		templatename
+	wt_ptr32		reserved1
+	wt_dword		reserved2
+	wt_dword		flagsex
+end
+
+!64-BIT VERSION
+export type ws_openfilename64 = struct $caligned
+	wt_dword		structsize
+	wt_handle64		owner
+	wt_handle64		instance
+	wt_string64		filter
+	wt_string64		customfilter
+	wt_dword		maxcustfilter
+	wt_dword		filterindex
+	wt_string64		file
+	wt_dword		maxfile
+	wt_string64		filetitle
+	wt_dword		maxfiletitle
+	wt_string64		initialdir
+	wt_string64		title
+	wt_dword		flags
+	wt_word			fileoffset
+	wt_word			fileextension
+	wt_string64		defext
+	wt_lparam64		custdata
+	wt_wndproc64	hook
+	wt_string64		templatename
+	wt_ptr64		reserved1
+	wt_dword		reserved2
+	wt_dword		flagsex
+end
+
+importdll kernel32=
+	windows func	"GetLastError"					:wt_dword
+	windows func	"GetStdHandle"					(wt_dword)wt_handle
+	windows func	"WriteConsoleA" as writeconsole				(wt_handle,wt_string,wt_dword,wt_ptr,wt_ptr)wt_bool
+	windows func	"SetConsoleCursorPosition"		(wt_handle,wt_coord)wt_bool
+	windows func	"GetConsoleScreenBufferInfo"	(wt_handle,wt_ptr)wt_bool
+	windows func	"SetConsoleMode"				(wt_handle,wt_dword)wt_bool
+	windows func	"WriteConsoleOutputA" as writeconsoleoutput			(wt_handle,wt_ptr,wt_coord,wt_coord,wt_ptr)wt_bool
+
+	windows func	"GetConsoleScreenBufferInfoEx"	(wt_handle,wt_ptr)wt_bool
+	windows func	"SetConsoleScreenBufferInfoEx"	(wt_handle,wt_ptr)wt_bool
+	windows func	"GetConsoleWindow"				:wt_handle
+
+	windows func	"SetConsoleTextAttribute"		(wt_handle,wt_word)wt_bool
+	windows func	"SetConsoleTitleA" as setconsoletitle				(wt_string)wt_bool
+	windows func	"ReadConsoleInputA" as readconsoleinput			(wt_handle,wt_ptr,wt_dword,wt_ptr)wt_bool
+	windows func	"PeekConsoleInputA"			(wt_handle,wt_ptr,wt_dword,wt_ptr)wt_bool
+	windows func	"FlushConsoleInputBuffer"		(wt_handle)wt_bool
+	windows func	"SetConsoleWindowInfo"			(wt_handle,wt_bool,wt_ptr)wt_bool
+	windows func	"SetConsoleScreenBufferSize"	(wt_handle,wt_coord)wt_bool
+	windows func	"GetConsoleCursorInfo"			(wt_handle,wt_ptr)wt_bool
+	windows func	"SetConsoleCursorInfo"			(wt_handle,wt_ptr)wt_bool
+	windows func	"GetNumberOfConsoleInputEvents"(wt_handle,wt_ptr)wt_bool
+
+	windows func	"FindFirstFileA" as findfirstfile		(stringz,ref int32)int32
+	windows func	"FindNextFileA"  as findnextfile			(int32,ref int32)int32
+	windows func	"FindClose"					(int32)int32
+	windows func	"SetCurrentDirectoryA" as setcurrentdirectory	(stringz)int32
+	windows func	"GetCurrentDirectoryA" as getcurrentdirectory	(int32,int32)int32
+	windows func	"CreateDirectoryA" as createdirectory		(stringz,int32)int32
+	windows func	"GetFileAttributesA"			(stringz)int32
+	windows func	"GetModuleHandleA" as getmodulehandle		(wt_string)wt_handle
+	windows func	"GetTickCount"								:wt_dword
+	windows func	"GlobalAlloc"									(wt_uint,wt_size)wt_handle
+	windows func	"GlobalLock"									(wt_handle)wt_ptr
+	windows func	"GlobalUnlock"								(wt_handle)wt_bool
+	windows func	"GlobalSize"									(wt_handle)wt_size
+
+	windows func	"GetSystemTime"(ref byte)int32
+	windows func	"Beep"							(wt_dword, wt_dword)wt_bool
+	windows func	"SetConsoleCP"								(wt_uint)wt_bool
+end
+
+importdll user32=
+	windows func	"CreateWindowExA" as createwindowex		(wt_dword, wt_string, wt_string, wt_dword, wt_int,wt_int,wt_int,wt_int,
+													 wt_handle, wt_handle, wt_handle, wt_ptr)wt_handle
+
+	windows func	"GetMessageA" as getmessage				(wt_ptr, wt_handle, wt_uint, wt_uint)wt_bool
+	windows func	"TranslateMessage"						(wt_ptr)wt_bool
+	windows func	"DispatchMessageA" as dispatchmessage		(wt_ptr)wt_result
+	windows func	"SetTimer"								(wt_handle,wt_intptr,wt_uint,wt_ptr)wt_intptr
+	windows func	"KillTimer"								(wt_handle,wt_intptr)wt_bool
+	windows func	"SystemParametersInfoA"					(wt_uint,wt_uint,wt_ptr,wt_uint)wt_bool
+	windows func	"GetSystemMetrics"						(wt_int)wt_int
+!	windows func	"CreateMenu"								:int
+	windows func	"AppendMenuA" as appendmenu				(wt_handle,wt_uint,wt_intptr,wt_string)wt_bool
+	windows func	"GetDC"									(wt_handle)wt_handle
+	windows func	"ReleaseDC"								(wt_handle,wt_handle)wt_int
+
+	windows func	"SendMessageA" as sendmessage				(wt_handle,wt_uint,wt_wparam,wt_lparam)wt_result
+	windows func	"PostMessageA" as postmessage				(wt_handle,wt_uint,wt_wparam,wt_lparam)wt_bool
+	windows func	"PeekMessageA" as peekmessage				(wt_ptr,wt_handle,wt_uint,wt_uint,wt_uint)wt_bool
+	windows func	"BeginPaint"								(wt_handle,wt_ptr)wt_handle
+	windows func	"EndPaint"								(wt_handle,wt_ptr)wt_bool
+	windows proc     	"PostQuitMessage"					(wt_int)
+	windows func	"LoadIconA" as loadicon					(wt_handle,wt_string)wt_handle
+	windows func	"LoadCursorA" as loadcursor				(wt_handle,wt_string)wt_handle
+	windows func	"SetCursor"								(wt_handle)wt_handle
+	windows func	"DrawMenuBar"								(wt_handle)wt_bool
+	windows func	"GetSystemMenu"							(wt_handle,wt_bool)wt_handle
+	windows func	"CreateMenu"								:wt_handle
+	windows func	"CreatePopupMenu"							:wt_handle
+	windows func	"DestroyMenu"								(wt_handle)wt_bool
+	windows func	"CheckMenuItem"							(wt_handle,wt_uint,wt_uint)wt_dword
+	windows func	"EnableMenuItem"							(wt_handle,wt_uint,wt_uint)wt_bool
+	windows func	"GetSubMenu"								(wt_handle,wt_int)wt_handle
+	windows func	"GetMenuItemID"							(wt_handle,wt_int)wt_uint
+	windows func	"GetMenuItemCount"						(wt_handle)wt_int
+	windows func	"InsertMenuA" as insertmenu				(wt_handle,wt_uint,wt_uint,wt_intptr,wt_string)wt_bool
+	windows func	"ModifyMenuA" as modifymenu				(wt_handle,wt_uint,wt_uint,wt_intptr,wt_string)wt_bool
+	windows func	"RemoveMenu"								(wt_handle,wt_uint,wt_uint)wt_bool
+	windows func	"DeleteMenu"								(wt_handle,wt_uint,wt_uint)wt_bool
+
+	windows func	"DestroyWindow"							(wt_handle)wt_bool
+	windows func	"InvalidateRect"							(wt_handle,wt_ptr,wt_bool)wt_bool
+	windows func	"ValidateRect"							(wt_handle,wt_ptr)wt_bool
+	windows func	"ShowWindow"								(wt_handle,wt_int)wt_bool
+	windows func	"GetClassLongA" as getclassint			(wt_handle,wt_int)wt_word
+	windows func	"SetClassLongA" as setclasslong			(wt_handle,wt_int,wt_dword)wt_word
+	windows func	"SetWindowTextA" as setwindowtext			(wt_handle,wt_string)wt_bool
+	windows func	"GetWindowTextA" as getwindowtext			(wt_handle,wt_string,wt_int)wt_int
+	windows func	"GetWindowTextLengthA" as getwindowtextlength	(wt_handle)wt_int
+	windows func	"GetKeyState"								(wt_int)wt_word
+
+!	windows func	"GetWindowLongPtrA" as getwindowlongptr	(wt_handle,wt_int)int64
+!	windows func	"SetWindowLongPtrA" as setwindowlongptr	(wt_handle,wt_int,wt_int)int64
+	windows func	"GetWindowLongA" as getwindowlongptr		(wt_handle,wt_int)int64
+	windows func	"SetWindowLongA" as setwindowlongptr		(wt_handle,wt_int,int64)int64
+
+	windows func	"GetClientRect"							(wt_handle,wt_ptr)wt_bool
+	windows func	"ClientToScreen"							(wt_handle,wt_ptr)wt_bool
+	windows func	"ScreenToClient"							(wt_handle,wt_ptr)wt_bool
+	windows func	"GetWindowRect"							(wt_handle,wt_ptr)wt_bool
+	windows func	"GetSysColor" as getsyscolour				(wt_int)wt_dword
+	windows func	"GetScrollInfo"							(wt_handle,wt_int,wt_ptr)wt_bool
+	windows func	"GetMenu"									(wt_handle)wt_handle
+	windows func	"SetMenu"									(wt_handle,wt_handle)wt_ptr
+	windows func	"TrackPopupMenu"							(wt_handle,wt_uint,wt_int,wt_int,wt_int,wt_handle,wt_ptr)wt_bool
+	windows func	"GetMenuState"							(wt_handle,wt_uint,wt_uint)wt_uint
+	windows func	"MessageBoxA" \
+								(wt_handle a=nil,wt_string message, wt_string caption="Caption", wt_uint b=0)wt_int
+	windows func	"OpenClipboard"							(wt_handle)wt_bool
+	windows func	"CloseClipboard"							:wt_bool
+	windows func	"EmptyClipboard"							:wt_bool
+	windows func	"GetClipboardData"						(wt_uint)wt_handle
+	windows func	"SetClipboardData"						(wt_uint,wt_handle)wt_handle
+	windows func	"MessageBeep"							(wt_uint x=0)wt_bool
+end
+
+importdll gdi32=
+	windows func	"Rectangle"								(wt_handle,wt_int,wt_int,wt_int,wt_int)wt_bool
+	windows func	"RoundRect"								(wt_handle,wt_int,wt_int,wt_int,wt_int,wt_int,wt_int)wt_bool
+	windows func	"Ellipse"									(wt_handle,wt_int,wt_int,wt_int,wt_int)wt_bool
+	windows func	"Arc"										(wt_handle,wt_int,wt_int,wt_int,wt_int,wt_int,wt_int,wt_int,wt_int)wt_bool
+	windows func	"Chord"									(wt_handle,wt_int,wt_int,wt_int,wt_int,wt_int,wt_int,wt_int,wt_int)wt_bool
+	windows func	"Pie"										(wt_handle,wt_int,wt_int,wt_int,wt_int,wt_int,wt_int,wt_int,wt_int)wt_bool
+	windows func	"Polygon"									(wt_handle,wt_handle,wt_int)wt_bool
+	windows func	"TextOutA" as textout						(wt_handle,wt_int,wt_int,wt_string,wt_int)wt_bool
+	windows func	"TextOutW" 						(wt_handle,wt_int,wt_int,wt_ptr,wt_int)wt_bool
+	windows func	"GetStockObject"							(wt_int)wt_handle
+	windows func	"SelectObject"							(wt_handle,wt_handle)wt_handle
+	windows func	"CreateDCA" as createdc					(wt_string,wt_string,wt_string,wt_ptr)wt_handle
+	windows func	"MoveToEx"						(wt_handle a,wt_int b,wt_int c,wt_ptr d=nil)wt_bool
+	windows func	"CreatePen"								(wt_int,wt_int,wt_dword)wt_handle
+	windows func	"CreateSolidBrush"						(wt_dword)wt_handle
+	windows func	"CreateBrushIndirect"						(wt_ptr)wt_handle
+	windows func	"LineTo"									(wt_handle,wt_int,wt_int)wt_bool
+	windows func	"GetPixel"								(wt_handle,wt_int,wt_int)wt_dword
+	windows func	"SetPixel"								(wt_handle,wt_int,wt_int,wt_dword)wt_dword
+	windows func	"SetGraphicsMode"							(wt_handle,wt_int)wt_int
+	windows func	"CreateFontIndirectA" as createfontindirect	(wt_ptr)wt_handle
+	windows func	"CreateFontA" as createfont \
+			(wt_int height, wt_int width=0, wt_int escapement=0, wt_int orientation=0, wt_int bold=0,
+			 wt_dword italic=0, wt_dword underline=0, wt_dword strikeout=0, wt_dword charset=0,
+			 wt_dword outprec=0, wt_dword clipprec=0, wt_dword quality=0, wt_dword pitch=0, wt_string facename)wt_handle
+	windows func	"SaveDC"									(wt_handle)wt_int
+	windows func	"GetTextMetricsA" as gettextmetrics		(wt_handle,wt_ptr)wt_bool
+	windows func	"DeleteObject"							(wt_handle)wt_bool
+	windows func	"RestoreDC"								(wt_handle,wt_int)wt_bool
+	windows func	"GetTextExtentPoint32A" as gettextextentpoint32	(wt_handle,wt_string,wt_int,wt_ptr)wt_bool
+	windows func	"GetObjectA" as getobject					(wt_handle,wt_int,wt_ptr)wt_int
+	windows func	"CreatePalette"							(wt_ptr)wt_handle
+	windows func	"GetWindowExtEx"							(wt_handle,wt_ptr)wt_bool
+	windows func	"CreateCompatibleBitmap"					(wt_handle,wt_int,wt_int)wt_handle
+	windows func	"SetBitmapBits"							(wt_handle,wt_dword,wt_ptr)wt_long
+	windows func	"SelectPalette"							(wt_handle,wt_handle,wt_bool)wt_handle
+	windows func	"RealizePalette"							(wt_handle)wt_uint
+	windows func	"SetDIBitsToDevice"						(wt_handle,wt_int,wt_int,wt_dword,wt_dword,wt_int,wt_int,wt_uint,wt_uint,wt_ptr,wt_ptr,wt_uint)wt_int
+	windows func	"StretchDIBits"							(wt_handle,wt_int,wt_int,wt_int,wt_int,wt_int,wt_int,wt_int,wt_int,wt_ptr,wt_ptr,wt_uint,wt_dword)wt_int
+	windows func	"SetStretchBltMode"						(wt_handle,wt_int)wt_int
+	windows func	"PatBlt"									(wt_handle,wt_int,wt_int,wt_int,wt_int,wt_dword)wt_bool
+	windows func	"BitBlt"									(wt_handle,wt_int,wt_int,wt_int,wt_int,wt_handle,wt_int,wt_int,wt_dword)wt_bool
+	windows func	"SetROP2"									(wt_handle,wt_int)wt_int
+	windows func	"CreateCompatibleDC"						(wt_handle)wt_handle
+	windows func	"DeleteDC"								(wt_handle)wt_bool
+	windows func	"CreateBitmap"							(wt_int,wt_int,wt_uint,wt_uint,wt_ptr)wt_handle
+	windows func	"CreateBitmapIndirect"					(wt_ptr)wt_handle
+	windows func	"CreateDIBitmap"							(wt_handle,wt_ptr,wt_dword,wt_ptr,wt_ptr,wt_uint)wt_handle
+	windows func	"CreateDIBSection"						(wt_handle,wt_ptr,wt_uint,wt_ptr,wt_handle,wt_dword)wt_handle
+	windows func	"StretchBlt"								(wt_handle,wt_int,wt_int, wt_int,wt_int,wt_handle, wt_int,wt_int,wt_int, wt_int,wt_dword)wt_bool
+	windows func	"PlgBlt"								(wt_handle,wt_ptr,wt_handle, wt_int,wt_int,wt_int,wt_int, wt_handle, wt_int,wt_int)wt_bool
+	windows func	"SetTextColor"  as settextcolour			(wt_handle,wt_dword)wt_dword
+	windows func	"SetTextAlign"							(wt_handle,wt_uint)wt_uint
+	windows func	"SetTextJustification"					(wt_handle,wt_int,wt_int)wt_bool
+	windows func	"SetBkColor"  as setbkcolour				(wt_handle,wt_dword)wt_dword
+	windows func	"SetBkMode"								(wt_handle,wt_int)wt_int
+	windows func	"GetBkColor"  as getbkcolour				(wt_handle)wt_dword
+	windows func	"GetBkMode"								(wt_handle)wt_int
+	windows func	"StartDocA" as startdoc					(wt_handle,wt_ptr)wt_int
+	windows func	"StartPage"								(wt_handle)wt_int
+	windows func	"EndPage"									(wt_handle)wt_int
+	windows func	"EndDoc"									(wt_handle)wt_int
+	windows func	"AbortDoc"								(wt_handle)wt_int
+	windows func	"GetViewportOrgEx"						(wt_handle,wt_ptr)wt_bool
+	windows func	"GetDIBits"								(wt_handle,wt_handle,wt_uint,wt_uint,wt_ptr,wt_ptr,wt_uint)wt_int
+	windows func	"GetDIBColorTable" as getdibcolourtable	(wt_handle,wt_uint,wt_uint,wt_ptr)wt_uint
+	windows func	"SetDIBColorTable" as setdibcolourtable	(wt_handle,wt_uint,wt_uint,wt_ptr)wt_uint
+	windows func	"GetTextAlign"							(wt_handle)wt_uint
+end
+
+importdll comdlg32=
+	windows func	"GetOpenFileNameA"						(wt_ptr)wt_bool
+	windows func	"GetSaveFileNameA"						(wt_ptr)wt_bool
+end
+=== gxlib.q 0 1 37/44 ===
+!MODULE winmessages
+module sysp
+
+module winconsts
+module winapi
+module wingxlib
+module gxmisc
+
+export var debug=0
+
+export var messhandlertable=9000	!message by windowclass table of message handlers
+export var actionhandlertable
+
+export var chx,chy		!default text sizes for menus
+export var cha,chd		!ascender/descender heights
+export const smx=3		!margins around button text in pixels (both sides)
+export const smy=4
+export var arrowdim
+export var markdim
+export var buttonheight
+export var listrowheight
+export const labelfont=1
+
+export var tabstops=(8,)*20
+
+export var wmouse=0
+export var wfocus=0
+export var wprinter=0
+export var lastmousepos=0
+export var lastmousewindow=0
+export var currmousewindow=0
+
+export var mousepos
+export var mousesw
+export var quitmess=0
+export var dragmode=0
+export var lastbuttontime=0
+
+export var buttonstate=0
+export var wmessagetable		!see initdata
+export var buttontable		!see initdata
+
+const maxqueuesize=100
+export var messagequeue=()
+export var nmessages=()
+
+const dragtol=1
+
+export var copymode=4
+
+var vktomesstable
+
+!Describe gx window (also bitmap, control or child window)
+export record rwindow =
+
+	var windclass					! type of window (popup, control, etc)
+	var flags						! general purpose flags
+	var style						! stylerec entry
+	var name						! Optional debugging name
+
+	var owner						! owner when this is a child window
+	var index						! index 1..n when part of a list (eg. .childlist of owner)
+	var childlist					! list of child windows
+
+!framepos/dim describe the overall window size including Windows or gx-drawn borders,
+	var frameposx, frameposy		! top left of frame, in screen or owner window client coords
+	var framedimx, framedimy		! pixels dims including frame and caption
+
+	var	posx, posy					! Pixel pos client area as seen by application
+	var	dimx, dimy					! Pixel dims of client area as seen by application
+
+	var gdi							! (rgdistate)	gdi state record
+
+	var enable						! 1 to enable toggle/button/arrow etc, 0 to disable and show greyed out
+	var id							! button/et al: command code associated with control
+	var text						! caption or label or primary data
+!		var data 	@text
+	var linkvar						! pointer to linked var for toggle/select/scroll
+	var gindex						! window export index
+
+	var attrs						! general purpose attributes, depends on window class
+
+!bitmap data
+	var pixelbits					! 1, 4, 16, 24, 32 bits per pixel
+	var pixelptr					! pointer to image data
+	var pixelbytes					!bytes/pixel (round up to next whole byte)
+	var linebytes					!bytes/per row, also pitch
+	var framebytes
+	var paltype						!0, or palette type
+end
+
+export enumdata paltypenames =
+	(no_pal=0,		$),
+	(greyscale_pal,	$),
+	(tinted_pal,	$),
+	(colour_pal,	$),
+	(uv_pal,		$),
+end
+
+export type rgdistate = struct
+	ref void hwnd				! win32 handle (hwnd)
+	ref void hdc				! 0 or device context handle for hwnd
+	ref void hwnd2				! secondary window/memory backup
+	ref void hdc2				! 0 or hwnd3 DC screen or memory hdc
+	int64 originalwndproc	! win32 control handling proc
+	union
+		int64 menuhandle		! win32 handle to any menubar
+		int64 oldbmobj			!used for bitmaps
+	end
+	int32 drawmode			! see dm- drawcodes
+	int32 updated				! 1 when pixels have changed
+
+	int32 posx,posy			!current drawing position
+	int32 pencolour			! current line colour (rgb)
+	int32 penwidth			! current line width
+
+	int32 penstyle			! current line dotted style
+
+	int32 xormode				! 0=normal, 1=xor
+	int32 brushcolour			! current brush colour
+	int32 brushstyle			! current brush style (bs_solid/etc)
+	int32 brushpattern		! current brush hatch/bitmap pattern
+
+	int32 font				! current font number
+end
+
+export enumdata marktypenames =
+	(no_mark=0,			$),
+	(radio_mark,		$),
+	(tick_mark,			$),
+	(check_mark,		$),
+	(invert_mark,		$),
+	(outline_mark,		$),
+	(bold_mark,			$),
+end
+
+export enumdata hilitetypenames =
+	(no_hilite=0,		$),
+	(invert_hilite,		$),
+	(outline_hilite,	$),
+end
+
+export record togglerec=		!for toggle and select
+	var textoffset
+	var onvalue
+end
+
+export record scrollbarrec=		!scroll bars
+	var limits						!range
+	var span						!portion of limits represented by visible data (0 means not relevant)
+	var thumbsize					!pixel length of thumb (vert or hoz extent along scrollbar)
+	var thumbspan					!pixels that the thumb can move
+	var thumbpos					!current thumb position in pixels from start of scrollbar
+	var currpos						!current position, will be in limits range
+	var dragmode					!1 if thum currently being dragged
+end
+
+export record editboxrec=		!edit boxes
+!current char position within edit text
+!if text has N characters, then position will be 1..N+1
+!The position is just /before/ the stated character
+!This matches column position within the MED text editor
+	var currpos						!cursor position, 1 to N+1 (N=chars in edit text)
+	var caretpos					!current pixel position of any caret
+	var textpos						!start x,y pixel position of text, set by gxjust_text
+end
+
+export record listboxrec=
+	var rows						!number of displayed rows
+	var pagepos						!data position corresponding to row 1 of display
+	var length						!all data items, same as linkvar^.len
+	var currpos						!cursor position within the data, 1 to N (can be 0 when N=0)
+	var pitch, offset				!pixel dims of each row
+end
+
+export record rmessage=
+	var		wind		!main window/button associated with message
+	var		menuwind	!top-level window owning button
+	var		message		!message number
+	var		state		!button/shift key state at time of message
+	var		a,b			!general purpose data, depends on message
+	var		x,y			!current mouse position
+end
+
+!contains many different flags and style codes for assorted controls
+!But at one mostly byte each, is very low overhead (32 values is same as two vars)
+
+export type stylerec = struct
+	byte	border				!bs_ code
+	byte	justify				!'L', 'R', 'C'
+	byte	vjustify			!'T', 'B', 'M'
+	byte	windbgnd			!colour index for window background
+	byte	textfgnd			!colour index
+	byte	textbgnd			!
+	byte	bgndmode			!
+	byte	textfont			!font index
+	byte	textsize			!pixel size
+	byte	textbold			!1 if bold
+	byte	textitalic			!1 if italic
+	byte	ispassword			!1 when edit field is a password
+	byte	fieldwidth			!edit field maximum char width
+	byte	dir					!'L','R','U','D'
+	byte	marktype			!xxx_mark style, or:
+	byte	hilitetype			!xxx_hilite style
+	byte	iframe				!1: pos/dim include frame
+	byte	imark				!1: pos/dim include mark for toggle/select
+	byte	hscroll				!1: include windows-drawn hoz scroll bar
+	byte	vscroll				!1: include windows-drawn vert scroll bar
+	byte	lbchange			!1: return mm_change on list boxes when row has changed
+	byte	returnmess			!1: return id code when clicking toggle/select/editbox
+	byte	noupdate			!1: don't change or allow editing on toggle/select/editbox
+end
+
+export record rpoint = var x,y end
+export record rrect  =
+	var pos,dim
+end
+
+export record rframe =
+	var x1,y1,x2,y2
+end
+
+export record getrec=
+	fun getbounds(&self)= 0
+	fun getitem(&self,n)= 0
+	fun getstritem(&self,n)= ""
+end
+
+export enumdata stylenames =	! (default)
+	(ss_border,			$),		! Border style (wbs_simple)
+	(ss_justify,		$),		! 'L' 'C' 'R'	Horizontal text justify ('L')
+	(ss_vjustify,		$),		! 'T' 'M' 'B'	Vertical text justify ('M' for buttons)
+	(ss_textfgnd,		$),		! Text colour index (black)
+	(ss_textbgnd,		$),		! Text background colour index (if opaque mode) (0)
+	(ss_bgndmode,		$),		! 0
+	(ss_textfont,		$),		! Text font number (1)
+	(ss_textsize,		$),		! (0)
+	(ss_textbold,		$),		! (0)
+	(ss_textitalic,		$),		! (0)
+	(ss_ispassword,		$),		! (0)
+	(ss_marktype,		$),		! Toggle/select mark style (radio_mark)
+	(ss_hilitetype,		$),		! Toggle/select hilite style (no_hilite)
+	(ss_iframe,			$),		! Whether pos and dim include frame width (also caption bar/menu for windows)
+	(ss_windbgnd,		$),		! Background colour of window or button (ltgrey)
+	(ss_imark,			$),		! Background colour of window or button (ltgrey)
+	(ss_hscroll,		$),		! (0)
+	(ss_vscroll,		$),		! (0)
+	(ss_lbchange,		$),		! (0)
+	(ss_returnmess,		$),		! (0) Toggle/select/editbox, return id when clicked
+	(ss_noupdate,		$),		! (0) Toggle/select/editbox, don't change or allow edit
+end
+
+export enumdata drawmodenames =
+								!HDC	HDC2	Restore
+	(dm_screen=0,		$),		!screen	--		Custom routine	Draw directly to screen; no mem backup
+	(dm_memory,			$),		!memory	--		NA				Draw to memory only; no screen hdc (eg. bitmap)
+	(dm_screenmemory,	$),		!screen	memory	Blit mem->scr	Draw to both screen and memory at same time
+	(dm_memoryscreen,	$),		!memory	screen	Blit mem->scr	Draw to memory; update screen periodically
+end
+
+!var windowlist=nil
+
+export enumdata wfnames =
+	(wa_rightclick=0,	$),		!allow right click
+	(wa_middleclick,	$),		!allow middle click
+	(wa_leftdbl,		$),		!allow left double click
+	(wa_rightdbl,		$),		!allow right double click
+	(wa_middledbl,		$),		!allow middle double click
+	(wa_leftdrag,		$),		!allow left drag
+	(wa_rightdrag,		$),		!etc
+	(wa_middledrag,		$),
+	(wa_autoupdate,		$),		!auto update screen for toggles/etc
+	(wa_tab,			$), 	!allow tab to switch to next button which has watab
+	(wa_strvar,			$), 	!1 for listbox linkvar to use string not index
+	(wa_retmess,		$), 	!1 for button to return .value as mess not qmcommand
+	(wa_retsel,			$), 	!1 for button to return .value as mess not qmcommand
+	(wa_memory,			$), 	!1 when hdc/hdcmem have been switched, hdc points to memory dev
+	(wa_maximised,		$),		!1 when maximised, 0 when normal/minimised
+	(wa_param1,			$), 	!general purpose control-specific flags
+	(wa_param2,			$), 
+	(wa_useenter,		$),
+	(wa_closed,			$),		!whether window has been closed
+
+	(wa_$last,			$)
+end
+
+const wa_needdbl	= wa_param1	!1 requires double-click on listbox to return wmcommand
+const wa_editdd		= wa_param2	!1 means editable dropdown box
+
+!GX border styles, used for child windows.
+!some child windows
+export enumdata bsnames, bscat, bswidths=
+	(bs_none=0,		$,	0,	ws_rect(0,0,0,0)),			!no border
+!	(bs_windows,	$,	'W',	ws_rect(0,0,0,0)),			!windows-drawn, but no own-drawn border
+	(bs_simplew,	$,	'W',	ws_rect(1,1,1,1)),			!single 1-pixel black line, windows drawn
+	(bs_simple,		$,	'X',	ws_rect(1,1,1,1)),			!single 1-pixel black line
+	(bs_thick,		$,	'X',	ws_rect(2,2,2,2)),			!2-pixel border
+	(bs_panel,		$,	'X',	ws_rect(1,1,1,1)),			!raised panel, 1-pixel
+	(bs_inset,		$,	'X',	ws_rect(1,1,1,1)),			!inset panel, 1-pixel
+	(bs_ownsimple,	$,	'I',	ws_rect(0,0,0,0)),			!included inset panel, 1-pixel (drawn as part of client area)
+	(bs_ownpanel,	$,	'I',	ws_rect(0,0,0,0)),			!included inset panel, 1-pixel (drawn as part of client area)
+	(bs_owninset,	$,	'I',	ws_rect(0,0,0,0)),			!included inset panel, 1-pixel
+	(bs_testext,	$,	'X',	ws_rect(10,10,10,10)),
+	(bs_testint,	$,	'I',	ws_rect(8,8,8,8)),
+	(bs_dummy,		$,	0,	ws_rect(0,0,0,0))
+end
+
+export enumdata windowclassnames, defaultborderstyles =
+	(no_class=0,		$,	bs_none),			!Unassigned
+	(window_class,		$,	wbs_resize),		!Main window
+	(memwindow_class,	$,	wbs_none),			!memory backup to any window
+	(popup_class,		$,	wbs_thick),			!Pop-up window (forms a stack)
+	(float_class,		$,	bs_thick),			!Independent window
+	(bitmap_class,		$,	bs_none),			!(image handling)
+	(screen_class,		$,	bs_none),			!Describes the desktop screen (not owned by my app)
+	(printer_class,		$,	bs_none),			!Used for printing
+
+	(group_class,		$,	bs_inset),			!Used mainly for grouping other buttons (eg. for Smdefblock)
+	(panel_class,		$,	bs_inset),			!General purpose panel for drawing in etc
+!	(button_class,		$,	bs_panel),			!Click button
+	(button_class,		$,	bs_simplew),		!Click button
+	(toggle_class,		$,	bs_none),			!Toggle button (can be composite, eg mark and label)
+	(select_class,		$,	bs_none),			!Select from several choices
+	(editbox_class,		$,	bs_simplew),		!Single-line edit control
+	(scrollbar_class,	$,	bs_simplew),		!Hoz or vert scroll bar (Some windows can also have Windows-drawn scroll bars)
+	(listbox_class,		$,	bs_simplew),		!List of options (scrollable usually)
+	(dropdown_class,	$,	bs_none),			!Button revealing attached listbox when clicked
+	(framebar_class,	$,	bs_panel),			!Left or right full-height panel used for toolboxes etc
+	(statusbar_class,	$,	bs_panel),			!Top or bottom full-width panel used for scrollbars
+	(tooltip_class,		$,	bs_simplew),		!Tooltops displayed when hovering over enabled buttons
+	(arrow_class,		$,	bs_ownpanel),		!Click button normally displaying an error in one of 4 orientations
+	(mark_class,		$,	bs_none),			!Toggle or select mark
+	(label_class,		$,	bs_none),			!Contains unclickable text usually
+	(dummy_class,		$,	bs_none)
+end
+
+export enumdata actionnames=
+	(draw_w,		$),
+	(update_w,		$),
+	(last_w,		$),
+end
+
+!MM Message Numbers
+
+export enumdata messagenames=
+
+!all messages have x,y coord relative to top most window or child window
+!
+	(mm_null=0,			$),		! empty message
+
+!window messages
+	(mm_activate,		$),		! (w,a) a=1/0 activate/deactivate window
+	(mm_close,			$),		! (w) close window (X button clicked)
+	(mm_sizewindow,		$),		! (w...) resize window
+	(mm_movewindow,		$),		! (w...) move window
+	(mm_restore,		$),		! (w...) repaint window
+
+!cursor/focus messages
+	(mm_setcursor,		$),		! (w...) update cursor type
+	(mm_setfocus,		$),		! (w...) set focus to w
+	(mm_killfocus,		$),		! (w...) lose focus from w
+
+!basic mouse messages (click messages can be promoted to other messages eg mm_command)
+	(mm_move,			$),		! (w,x,y,b) mouse move, btns up/down (also drag messages when down)
+	(mm_click,			$),		! (w,x,y) left btn click, can be promoted to mm_command etc depending on context
+	(mm_dblclick,		$),		! (w,x,y) left btn dbl click, usu promoted
+	(mm_clickup,		$),		! (w,x,y) left btn released
+	(mm_rclick,			$),		! (w,x,y) right click in window, these usu. promoted
+	(mm_rdblclick,		$),		! (w,x,y) right double click
+	(mm_rclickup,		$),		! (w,x,y) right button released
+	(mm_mclick,			$),		! (w,x,y) middle button versions of above
+	(mm_mdblclick,		$),		! (w,x,y)
+	(mm_mclickup,		$),		! (w,x,y)
+	(mm_hover,			$),		! (w,x,y) paused over button
+
+	(mm_onwindow,		$),		! (w,x,y) newly over a window
+	(mm_offwindow,		$),		! (w,x,y) just came off window
+	(mm_draw,			$),		! (w,x,y) redraw window
+	(mm_update,			$),		! (w,x,y) update window (change of pos etc)
+
+!drag messages
+	(mm_startdrag,		$),		! (w) start mouse movement with some btns down
+	(mm_rstartdrag,		$),		! (w)
+	(mm_mstartdrag,		$),		! (w)
+	(mm_drag,			$),		! (w,x,y) moving mouse with buttons down (also qmmove sent)
+	(mm_enddrag,		$),		! (w,x,y) all buttons up after drag
+
+!left command
+	(mm_command,		$),		! (w,id) button clicked, id and sub-event given
+	(mm_dblcommand,		$),		! (w,id) button double clicked
+
+!right command
+	(mm_rcommand,		$),		! (w,id) right click button
+	(mm_rdblcommand,	$),		! (w,id) right double click button
+
+!middle command
+	(mm_mcommand,		$),		! (w,id)
+	(mm_mdblcommand,	$),		! (w,id)
+
+!general key messages
+	(mm_char,			$),		! (w,ch)
+	(mm_key,			$),		! (w,k,shift)
+	(mm_keyup,			$),		! (w,k,shift)
+
+!scroll/select/wheel messages
+	(mm_sethozpos,		$),		! (w,pos)		New logical position set by hoz scrollbar
+	(mm_setvertpos,		$),		! (w,pos)		from vertical scrollbar
+	(mm_select,			$),		! (w,n)			Set nth item as current/highlighted/selected item
+	(mm_pick,			$),		! (w,n)			Pick and return item n
+	(mm_wheel,			$),		! (w,delta)		Move log pos etc but depends on context
+	(mm_lbchange,		$),		! (w,n)			A listbox position has changed
+
+!misc messages
+	(mm_timer,			$),		! (w)
+
+!high level window messages
+	(mm_cancel,			$),		! (w)
+	(mm_ok,				$),		! (w)
+	(mm_help,			$),		! (w,id)
+	(mm_cmdline,		$),		! (w,s)
+
+!specific key messages
+	(mm_leftkey ,		$),		! (w,shift)
+	(mm_rightkey,		$),		! (w,shift)
+	(mm_upkey,			$),		! (w,shift)
+	(mm_downkey,		$),		! (w,shift)
+	(mm_pageupkey,		$),		! (w,shift)
+	(mm_pagedownkey,	$),		! (w,shift)
+	(mm_homekey,		$),		! (w,shift)
+	(mm_endkey,			$),		! (w,shift)
+	(mm_tabkey,			$),		! (w,shift)
+	(mm_bskey,			$),		! (w,shift)
+	(mm_deletekey,		$),		! (w,shift)
+	(mm_enterkey,		$),		! (w,shift)
+	(mm_insertkey,		$),		! (w,shift)
+	(mm_functionkey,	$),		! (w,shift)
+
+!Other messages for controls, mainly for attached arrow buttons
+	(mm_up,				$),		! (w,id) Arrow up/etc
+	(mm_down,			$),		! (w,id)
+	(mm_right,			$),		! (w,id)
+	(mm_left,			$),		! (w,id)
+	(mm_edit,			$),		! (w,id)	Update of edit box
+	(mm_edited,			$),		! (w,id)	Finished edit box entry (tab etc)
+	(mm_last,			$)
+end
+
+!export const mm_scroll	= mm_hscroll	!general scroll independent of orientation
+
+!!other messages wmuser+ are user assigned, usually applied as
+!ids to controls. Depending on the options to Waitmess(), a wm_commmand message
+!is coverted to a direct message number. So (wm_command, 230) is covered to
+!message 230. So message ids have to start from 200 so that they occupy a different
+!number space from normal message codes.
+export const mm_user	= 200
+
+export const kb_lbutton	= 0x1	!used in buttonstate
+export const kb_rbutton	= 0x2
+export const kb_mbutton	= 0x4
+
+export const kb_shift	= 0x8	!used in shiftstate
+export const kb_ctrl	= 0x10
+export const kb_alt		= 0x20
+export const kb_capslock	= 0x40
+export const kb_dblclick	= 0x80	!used for some messages that don't have dblclick versions,
+
+export const kb_rshift	= 0x100
+export const kb_rctrl	= 0x200
+export const kb_ralt	= 0x400
+
+export enumdata colournames, colourvalues =
+!					   BB'GG'RR
+	(black,		$,	0x_00'00'00),
+	(red,		$,	0x_00'00'C0),
+	(dkred,		$,	0x_00'00'90),
+	(red3,		$,	0x_00'00'70),
+	(green,		$,	0x_00'C0'00),
+	(dkgreen,	$,	0x_00'90'00),
+	(green3,	$,	0x_00'70'00),
+	
+	(blue,		$,	0x_C0'00'00),
+	(dkblue,	$,	0x_90'00'00),
+	(blue3,		$,	0x_70'00'00),
+
+	(cyan,		$,	0x_c0'c0'00),
+	(dkcyan,	$,	0x_90'90'00),
+	(cyan3,		$,	0x_70'70'00),
+
+	(magenta,	$,	0x_c0'00'c0),
+	(dkmagenta,	$,	0x_90'00'90),
+	(magenta3,	$,	0x_70'00'70),
+
+	(yellow,	$,	0x_00'C0'C0),
+	(dkyellow,	$,	0x_00'90'90),
+	(yellow3,	$,	0x_00'70'70),
+	(yellow4,	$,	0x_00'50'50),
+
+	(white,		$,	0x_FF'FF'FF),
+	(ltgrey,	$,	0x_C0'C0'C0),
+	(grey,		$,	0x_90'90'90),
+	(dkgrey,	$,	0x_70'70'70),
+
+	(ltorange,	$,	0x_00'A0'FF),
+	(orange,	$,	0x_00'60'FF),
+	(flesh,		$,	0x_70'85'EE),
+	(pink,		$,	0x_9A'32'DB),
+	(dkpink,	$,	0x_72'24'A9),
+	(brown,		$,	0x_46'43'7D),
+	(blue4,		$,	0x_B7'1C'5E),
+	(blue5,		$,	0x_6F'3D'0D),
+	(olive,		$,	0x_05'A0'88),
+	(ltbrown,	$,	0x_00'70'B0),
+
+	(blue6,		$,	0x_9C'63'1C),
+	(green4,	$,	0x_12'51'11),
+	(purple,	$,	0x_5E'0D'73),
+	(blue7,		$,	0x_E6'27'1C),
+	(crimson,	$,	0x_15'2A'D3),
+	(violet,	$,	0x_54'16'A0),
+	(blue8,		$,	0x_86'68'1E),
+	(dkorange,	$,	0x_25'6A'D4),
+	(green5,	$,	0x_09'46'41),
+	(blue9,		$,	0x_65'0A'1D),
+
+	(ltred,		$,	0x_00'00'FF),
+	(ltgreen,	$,	0x_00'FF'00),
+	(ltblue,	$,	0x_FF'00'00),
+	(ltcyan,	$,	0x_FF'FF'00),
+	(ltmagenta,	$,	0x_FF'00'FF),
+	(ltyellow,	$,	0x_00'FF'FF),
+
+!The following are the Windows system colours, set up as indices
+!Init needs need to retrieve the values and set up the rgb values in this table
+	(button_col,	$,	0),		!button colour
+	(window_col,	$,	0),		!window colour
+	(text_col,		$,	0),		!text in windows
+end
+
+export const skipmess = 1		!message has been processed; caller must wait for another message
+export const thismess = 0		!caller should deal with this message (it has not been processed, or has been but caller can process it too)
+
+export var bmbgnd
+export var defstyle			!set initdata
+export var currmess
+
+export var wapplic=nil
+export var wscreen=nil
+
+var data,ndata
+var tabstack,ntab
+var breakflag
+
+const k_menu=30000
+const kdivide=30001
+const kcolumn=30002
+const kfilehistory=30003
+
+var caretdrawn=0
+var dkcolour=0x000000
+var ltcolour=0xFFFFFF
+var thumbdragmode=0
+var thumbstartpos=0
+
+var dirtomess=['L':mm_left,'R':mm_right,'U':mm_up,'D':mm_down]
+
+proc start=
+!CPL "GXLIB START"
+
+initdata()
+mxinit()
+initmenuhandlers()
+end
+
+export proc setupgdi(w,hwnd)=			!SETUPGDI
+!NOTE: rare care of a func within a data header. This is to allow bitmap module
+!to be higher up the hierarchy than gx, but still let it use some gx functions.
+
+!set up the default gdi descriptor for window w
+
+if w.gdi then
+	return			!assume already done
+fi
+
+gdi:=new(rgdistate)
+gdi.hwnd:=hwnd
+
+!start with default drawmodes of dm_screen, or dm_memory for bitmaps
+!These can be converted later using gxdrawmode
+
+if w.type=rwindow then
+	gdi.hdc:=getdc(hwnd)
+	gdi.drawmode:=dm_screen
+else						!assume bitmap
+	gdi.hdc:=createcompatibledc(nil)
+	gdi.drawmode:=dm_memory
+fi
+
+gdi.posx:=gdi.posy:=0
+gdi.updated:=0
+gdi.font:=0
+gdi.pencolour:=getsyscolour(colour_windowtext)
+gdi.penwidth:=0
+gdi.penstyle:=ps_solid
+gdi.xormode:=0
+gdi.brushcolour:=0xff'ff'ff
+gdi.brushstyle:=bs_solid
+gdi.brushpattern:=0
+w.gdi:=gdi
+end
+
+export const arleft = "<"
+export const arright = ">"
+export const arup = "^"
+export const ardown = "V"
+
+export var allwindows::=()			!list of all windows and controls
+
+export func ctrlpressed = return (currmess.state iand kb_ctrl) end
+export func shiftpressed = return (currmess.state iand kb_shift) end
+
+proc initdata=
+messagequeue:=new(list,100)
+nmessages:=0
+
+colourvalues::=colourvalues
+
+colourvalues[button_col]:=getsyscolour(colour_btnface)
+
+colourvalues[window_col]:=getsyscolour(colour_window)
+colourvalues[text_col]:=getsyscolour(colour_windowtext)
+
+defstyle:=new(stylerec)
+defstyle.border		:= bs_simplew
+defstyle.justify	:= 'L'
+defstyle.vjustify	:= 'M'
+defstyle.textfgnd	:= black
+defstyle.marktype	:= check_mark
+defstyle.hilitetype	:= no_hilite
+defstyle.windbgnd	:= button_col
+defstyle.imark		:= 1
+!defstyle.windbgnd	:= window_col
+
+init_handlertables()
+d:=gxchardim(labelfont)
+chx:=d.x
+chy:=d.y
+
+d:=gxchardim(0,1)
+cha:=d.x
+chd:=d.y
+arrowdim:=chy+2
+markdim:=arrowdim-2
+
+buttonheight:=chy+smy*2
+listrowheight:=chy+smy*2
+end
+
+export func gxcreatewindow(?caption,?pos,?dim,?options,owner=nil)=		!CREATEWINDOW
+#create a popup window which is not a child window.
+#(nevertheless, it can have an owner window, such as the main window of the
+#application)
+#returns an rwindow handle
+#caption	optional caption txt
+#pos		(x,y) is pixel pos of top left corner in screen coordinates (of frame?)
+#		"cent" to place centrally
+#		omitted: use default placement
+#dim		(width,height) overall pixel size
+#		"max" maximised
+#		"desktop" fill desktop screen
+#		omitted: use (640,480)
+#owner	optional owner window (default nil)
+#options	option dict, default is [wf_caption:1, wf_border:wbs_resize]
+
+hwnd:=wx_createpopup(caption,pos,dim,options,(owner|owner.gdi.hwnd|nil))
+!CPL "CW2"
+
+w:=newwindow(hwnd,0,no_class,bs_windows)
+
+if wapplic=nil then
+	wapplic:=w
+fi
+
+W.STYLE:=NEW(STYLEREC)
+W.STYLE.BORDER:=0
+W.WINDCLASS:=WINDOW_CLASS
+W.STYLE.WINDBGND:=WINDOW_COL
+W.ENABLE:=1
+W.FLAGS.[WA_LEFTDRAG]:=1
+W.FLAGS.[WA_LEFTDBL]:=1
+
+setwindowdims_w(w,hwnd)
+
+setupgdi(w,hwnd)
+gxfont(w,1)
+
+GXDRAWMODE(W,DM_SCREENMEMORY)
+GXCLEAR(W)
+
+return w
+end
+
+proc setwindowdims_w(w,hwnd)=			!SETWINDOWDIMS
+!use windows functions to set up client and frame pos and dims of top-level window
+
+box:=new(ws_rect)
+getwindowrect(hwnd,&box)
+w.frameposx:=box.x
+w.frameposy:=box.y
+w.framedimx:=box.x2-box.x
+w.framedimy:=box.y2-box.y
+
+getclientrect(hwnd,&box)
+
+w.dimx:=box.x2-box.x
+w.dimy:=box.y2-box.y
+
+pt:=ws_point(0,0)
+clienttoscreen(hwnd,&pt)		!pos starts at 0,0
+w.posx:=pt.x
+w.posy:=pt.y
+end
+
+proc setwindowdims_c(w,hwnd)=			!SETWINDOWDIMS
+!use windows functions to set up client and frame pos and dims of child window
+
+
+box:=new(ws_rect)
+getwindowrect(hwnd,&box)			!client dims also Windows frame dims as has no Windows border
+w.posx:=box.x-w.owner.posx
+w.posy:=box.y-w.owner.posy
+w.dimx:=box.x2-box.x
+w.dimy:=box.y2-box.y
+
+widths:=bswidths[w.style.border]
+if bscat[w.style.border]='I' then widths:=ws_rect(0,0,0,0) fi
+
+w.frameposx:=w.posx-widths.x1
+w.frameposy:=w.posy-widths.y1
+w.framedimx:=w.dimx+widths.x1+widths.x2
+w.framedimy:=w.dimy+widths.y1+widths.y2
+end
+
+export proc gxclear(w,?colour)=			!GXCLEAR
+#fill window w with <colour>, or with current background if omitted
+
+!RETURN
+gdi:=w.gdi
+gdi.updated:=1
+
+gxcolour(w,getrgb(black))
+gxstyle(w,0)
+
+if colour.isvoid then
+	colour:=getrgb(w.style.windbgnd)
+fi
+
+oldpenstyle:=gdi.penstyle
+oldbrushstyle:=gdi.brushstyle
+
+gxbrushstyle(w,bs_solid)
+gxstyle(w,ps_null)
+
+gxfillrect(w,0,0,w.dimx,w.dimy,colour)
+gxbrushstyle(w,oldbrushstyle)
+gxstyle(w,oldpenstyle)
+end
+
+export func gxstyle(w,?style)=			!GXSTYLE
+#style omitted: get pen current pen style
+#style supplied: set pen style for subsequent line drawing
+#Style is a char code or int refering to a small variety of Windows dotted styles:
+#	0 S |		Solid
+#	Space		Null (pen up?)
+#	-			Dotted
+#	:			Dashdotdot
+#	!			Dashdotd
+#	F			Inside frame
+
+gdi:=w.gdi
+
+if style.isdef and gdi.penstyle<>style then
+	case style
+	when '!' then style:=ps_dashdot
+	when ':' then style:=ps_dashdotdot
+	when '-' then style:=ps_dot
+	when ' ' then style:=ps_null
+	when 'D' then style:=ps_alternate
+	when '|','S',0 then style:=ps_solid
+	when 'F' then style:=ps_insideframe
+	esac
+
+	gdi.penstyle:=style
+	if style>=10 then style:=ps_dot fi
+	deleteobject(selectobject(gdi.hdc,createpen(style,gdi.penwidth,gdi.pencolour)))
+	if gdi.drawmode=dm_screenmemory then
+		deleteobject(selectobject(gdi.hdc2,createpen(style,gdi.penwidth,gdi.pencolour)))
+	fi
+fi
+return gdi.penstyle
+end
+
+export proc gxbrushstyle(w,?style,?pattern)=		!GXBRUSHSTYLE
+#Set Windows brush style and pattern
+#Style supplied:	set style
+#pattern supplied:	set style
+#style is:		S, H, Space, B for Solid, Hatched, Null, DIB
+#pattern is:	- | \ / + x/X for Hoz, Vert, Diag, Fwd Diag, Cross, Diag Cross
+
+gdi:=w.gdi
+brush:=new(ws_logbrush)
+
+if style.isdef then
+	if style<>gdi.brushstyle then
+		case style
+		when 'S' then style:=bs_solid
+		when 'H' then style:=bs_hatched
+		when ' ' then style:=bs_null
+		when 'B' then style:=bs_dibpattern
+		esac
+
+		gdi.brushstyle:=style
+	fi
+	gdi.brushpattern:=0		!default to no pattern, will be changed by pattern if supplied
+fi
+
+if pattern.isdef and pattern<>gdi.brushpattern then
+	case pattern
+	when '-' then pattern:=hs_horizontal
+	when '|' then pattern:=hs_vertical
+	when '\\' then pattern:=hs_fdiagonal
+	when '/' then pattern:=hs_bdiagonal
+	when '+' then pattern:=hs_cross
+	when 'x','X' then pattern:=hs_diagcross
+	esac
+	gdi.brushpattern:=pattern
+fi
+
+brush.lbstyle:=gdi.brushstyle
+brush.lbcolour:=gdi.brushcolour
+brush.lbhatch:=gdi.brushpattern
+
+deleteobject(selectobject(gdi.hdc,createbrushindirect(&brush)))
+if gdi.drawmode=dm_screenmemory then
+	deleteobject(x:=selectobject(gdi.hdc2,createbrushindirect(&brush)))
+fi
+end
+
+export func gxbrushcolour(w,?colour)=			!GXBRUSHCOLOUR
+#colour supplied:	set current fill colour
+#colour omitted:	return current fill colour
+
+gdi:=w.gdi
+
+if colour.isdef and colour<>gdi.brushcolour then
+	gdi.brushcolour:=colour
+	brush:=new(ws_logbrush)
+	brush.lbstyle:=gdi.brushstyle
+	brush.lbcolour:=colour
+	brush.lbhatch:=gdi.brushpattern
+
+	deleteobject(selectobject(gdi.hdc,createbrushindirect(&brush)))
+	if gdi.drawmode=dm_screenmemory then
+		deleteobject(selectobject(gdi.hdc2,createbrushindirect(&brush)))
+	fi
+fi
+return gdi.brushcolour
+end
+
+export proc gxfillrect(w,x,y,width,height,?colour,mode=0)=		!GXFILLRECT
+#Draw filled rectangle with optional outline
+#x,y are top-left coordinates
+#width, height are overall pixel dimensions, inclusive; they include any outline
+#(When the outline is drawn, the filled region is 1 pixel smaller all round)
+#colour is the colour of the filled region (current brush colour when omitted)
+#mode=1 to draw the outline, or mode=0 (default) to omit it
+#The outline is drawn in the current pen colour
+
+gdi:=w.gdi
+gdi.updated:=1
+
+oldbrushcolour:=gdi.brushcolour
+if colour.isdef then
+	gxbrushcolour(w,colour)
+fi
+
+oldpenstyle:=gdi.penstyle
+if mode=0 then		!inside only
+	gxstyle(w,ps_null)
+fi
+
+if height<0 then y:=y+height+1; height:=-height fi
+if width<0 then x:=x+width+1; width:=-width fi
+
+if mode=0 then		!inside only, needs extra pixel width
+	rectangle(gdi.hdc,x, y,x+width+1,y+height+1)
+	if gdi.drawmode=dm_screenmemory then
+		rectangle(gdi.hdc2,x,y,x+width+1,y+height+1)
+	fi
+else			!inside and outside
+	rectangle(gdi.hdc,x, y, x+width, y+height)
+	if gdi.drawmode=dm_screenmemory then
+		rectangle(gdi.hdc2,x,y,x+width,y+height)
+	fi
+fi
+gxstyle(w,oldpenstyle)
+gxbrushcolour(w,oldbrushcolour)
+end
+
+export func gxcolour(w,?colour)=		!GXCOLOUR
+# colour supplied:	set current outline colour for subsequent line drawing
+# colour omitted:	return current outline colour
+
+gdi:=w.gdi
+
+if colour.isdef and gdi.pencolour<>colour then
+	gdi.pencolour:=colour
+	gdi.xormode:=0
+	deleteobject(selectobject(gdi.hdc,createpen(gdi.penstyle,gdi.penwidth,gdi.pencolour)))
+	setrop2(gdi.hdc,r2_copypen)
+	if gdi.drawmode=dm_screenmemory then
+		deleteobject(selectobject(gdi.hdc2,createpen(gdi.penstyle,gdi.penwidth,gdi.pencolour)))
+		setrop2(gdi.hdc2,r2_copypen)
+	fi
+
+fi
+
+return gdi.pencolour
+end
+
+export proc gxsetpen(w,pen)=
+gxcolour(w,getrgb(pen))
+end
+
+export proc gxline(w,x,y,?x2,?y2)=		!GXLINE
+#gxline(w,x,y)			Draw line from current position to x,y
+#gxline(w,x,y,x2,y2)	Draw line from x,y to x2,y2
+
+gdi:=w.gdi
+
+if x2.isvoid then		!assume 2 params
+	x2:=x
+	y2:=y
+
+	movetoex(gdi.hdc,gdi.posx, gdi.posy)
+	if gdi.drawmode=dm_screenmemory then
+		movetoex(gdi.hdc2,gdi.posx, gdi.posy)
+	fi
+else
+	movetoex(gdi.hdc,x, y)
+	if gdi.drawmode=dm_screenmemory then
+		movetoex(gdi.hdc2,x, y)
+	fi
+	gdi.posx:=x
+	gdi.posy:=y
+fi
+
+lineto(gdi.hdc,x2,y2)
+
+if gdi.drawmode=dm_screenmemory then
+	lineto(gdi.hdc2,x2,y2)
+fi
+gdi.posx:=x2
+gdi.posy:=y2
+end
+
+export func gxwidth(w,width)=
+!get/set pen width for subsequent line drawing
+gdi:=w.gdi
+if width.isvoid then
+	return gdi.penwidth
+fi
+
+if gdi.penwidth<>width then
+	gdi.penwidth:=width
+	deleteobject(selectobject(gdi.hdc,createpen(gdi.penstyle,gdi.penwidth,gdi.pencolour)))
+	if gdi.drawmode=dm_screenmemory then
+		deleteobject(selectobject(gdi.hdc2,createpen(gdi.penstyle,gdi.penwidth,gdi.pencolour)))
+	fi
+
+fi
+return width
+END
+
+export proc gxlinerel(w,dx,dy)=		!GXLINEREL
+#Draw line from current position, to current position + (dx,dy)
+
+gdi:=w.gdi
+movetoex(gdi.hdc, gdi.posx, gdi.posy)
+if gdi.drawmode=dm_screenmemory then
+	movetoex(gdi.hdc2, gdi.posx, gdi.posy)
+fi
+x:=gdi.posx+dx
+y:=gdi.posy+dy
+gxline(w,x,y)
+gdi.posx:=x
+gdi.posy:=y
+end
+
+export proc gxmove(w,x2,y2)=		!GXMOVE
+#Set current position to x2,y2
+
+gdi:=w.gdi
+
+movetoex(gdi.hdc, x2, y2)
+if gdi.drawmode=dm_screenmemory then
+	movetoex(gdi.hdc2,x2, y2)
+fi
+gdi.posx:=x2
+gdi.posy:=y2
+end
+
+export proc gxmoverel(w,dx,dy)=		!GXMOVEREL
+#	Set current position to current position+(dx,dy)
+gdi:=w.gdi
+
+gdi.posx+:=dx
+gdi.posy+:=dy
+
+movetoex(gdi.hdc,gdi.posx, gdi.posy)
+if gdi.drawmode=dm_screenmemory then
+	movetoex(gdi.hdc2,gdi.posx, gdi.posy)
+fi
+end
+
+export proc gxrect(w,x,y,width,height)=		!GXRECT
+#draw outline rectangle starting from x,y at top left, in current pen colour
+#overall size is width by height pixels inclusive (x,y to x+width+1,y+height-1)
+#outline is 1 pixel wide
+
+gdi:=w.gdi
+gdi.updated:=1
+if height<0 then y:=y+height+1; height:=-height fi
+if width<0 then x:=x+width+1; width:=-width fi
+
+oldbrushstyle:=gdi.brushstyle
+gxbrushstyle(w,bs_hollow)
+
+rectangle(gdi.hdc,x, y, x+width, y+height)
+if gdi.drawmode=dm_screenmemory then
+	rectangle(gdi.hdc2,x, y, x+width,y+height)
+fi
+gxbrushstyle(w,oldbrushstyle)
+end
+
+export proc gxcircle(w,x,y,r)=		!GXCIRCLE
+#draw circle at centre x,y in window w, of radius r, using current pen colour
+#outline is 1 pixel wide
+
+gdi:=w.gdi
+gdi.updated:=1
+oldbrushstyle:=gdi.brushstyle
+gxbrushstyle(w,bs_hollow)
+
+ellipse(gdi.hdc,x-r, y-r, x+r-1, y+r-1)
+if gdi.drawmode=dm_screenmemory then
+	ellipse(gdi.hdc2,x-r, y-r, x+r-1, y+r-1)
+fi
+gxbrushstyle(w,oldbrushstyle)
+end
+
+export proc gxfillcircle(w,x,y,r,?colour,mode=0)=		!GXFILLCIRCLE
+#Draw filled circle with optional outline
+#x,y is the centre, r is the radius
+#(When the outline is drawn, the filled region is 1 pixel smaller all round)
+#colour is the colour of the filled region (current brush colour when omitted)
+#mode=1 to draw the outline, or mode=0 (default) to omit it
+#The outline is drawn in the current pen colour
+gdi:=w.gdi
+
+gdi.updated:=1
+oldbrushcolour:=gdi.brushcolour
+if colour.isdef then
+	gxbrushcolour(w,colour)
+fi
+
+oldpenstyle:=gdi.penstyle
+if mode=0 then		!inside only
+	gxstyle(w,ps_null)
+fi
+
+ellipse(gdi.hdc,x-r, y-r, x+r-1, y+r-1)
+if gdi.drawmode=dm_screenmemory then
+	ellipse(gdi.hdc2,x-r, y-r, x+r-1, y+r-1)
+fi
+
+gxstyle(w,oldpenstyle)
+gxbrushcolour(w,oldbrushcolour)
+end
+
+export func gxpixel(w,x,y,?colour)=		!GXPIXEL
+#colour provided: set pixel at point x,y of window w to colour
+#colour omitted: return pixel colour from point x,y
+!set pixel at x,y with given rgb colour, or return pixel value if omitted (-1)
+w.gdi.updated:=1
+
+if colour.isvoid then		!get pixel
+	res:=getpixel(w.gdi.hdc, x, y)
+	if w.gdi.drawmode=dm_screenmemory then
+		getpixel(w.gdi.hdc2, x, y)
+	fi
+	return res
+else
+	setpixel(w.gdi.hdc,x, y, colour)
+	if w.gdi.drawmode=dm_screenmemory then
+		setpixel(w.gdi.hdc2,x,y,colour)
+	fi
+	return colour
+fi
+end
+
+export func gxcaption(w,?caption)=		!GXCAPTION
+#caption omitted:  return current window caption text
+#caption provided: set new window caption text
+
+case w.windclass
+when window_class,popup_class then
+
+	if caption.isdef then		!set text
+		setwindowtext(w.gdi.hwnd,caption)
+		return caption
+	else
+		buffer:=new(array,byte,512)
+		n:=getwindowtext(w.gdi.hwnd,int(&buffer),buffer.len)
+		if n then
+			s:=makestr(&buffer,n)		!needs assigment to ensure a copy is made befor buffer
+										!is freed (assignment of return value might do the same)
+		else
+			s:=""
+		fi
+		return s
+	fi
+esac
+
+if caption.isdef then		!set text
+	w.text:=caption
+	gxdraw(w)
+fi
+
+return w.text
+end
+
+export proc gxtext(w,s,?x,?y)=		!GXTEXT
+#Display text s
+#Text is drawn starting at (x,y) when provided, otherwise at current position
+#insertion point refers either to base line, or to top left of cell (not sure)
+#Text is drawn in current font, size, style and mode
+#Text typically contains no control codes, but can also contain cr and lf (also
+#tabs, but currently position isn't changed). However, text with control codes is
+#drawn a character at a time
+#Finishes with current position set to the end of the text
+
+!uses chr(16) for reverse tab. Reverse tabs are usually encoded as:
+!  chr(9)+chr(16), ie. normal tab then reverse tab
+!Reverse tab, after tabbing to next stop, then moves position back by width
+!of next substring
+
+return when s=""
+
+gdi:=w.gdi
+
+if x.isvoid then x:=gdi.posx fi
+if y.isvoid then y:=gdi.posy fi
+gdi.updated:=1
+
+!scan the string and create a table of substrings and control codes
+startpos::=lengths::=()
+ngroups:=0
+
+foreach i,c in s do
+	if c<32 then
+		++ngroups
+		startpos[ngroups]:=i
+		lengths[ngroups]:=0
+	else
+		if ngroups and lengths[ngroups] then		!extend this group
+			++lengths[ngroups]
+		else										!start new substring group
+			++ngroups
+			startpos[ngroups]:=i
+			lengths[ngroups]:=1
+		fi
+	fi
+od
+
+for i,l in lengths do
+	pos:=startpos[i]
+	if l then
+		slicex:=pos..pos+l-1
+		textout(gdi.hdc,x, y,s.[slicex],l)
+
+		if gdi.drawmode=dm_screenmemory then
+			textout(gdi.hdc2,x,y,s.[slicex],l)
+		fi
+		x +:= gxtextwidth(w,s.[slicex])
+
+	else				!Deal with control codes
+		case s.[pos]
+		when 13 then
+			x:=0
+		when 10 then
+			y+:=20				!NEEDS TO PICK CURRENT FONT DIMS
+
+		when 9,16 then			!16 will be used as reverse tab
+			currx:=x
+			x:=0
+			for t in tabstops do
+				x+:=t*chx				!MUST BE CURRENT FONT NOT CHX
+				if x>currx then exit fi
+			od
+			while x<=currx do x+:=chx*8 od
+
+			if s.[pos]=16 and i<ngroups and lengths[i+1] then	!reverse offset for next substring
+				pos:=startpos[i+1]
+				x -:= gxtextwidth(w,s.[pos..pos+lengths[i+1]-1])+1
+			fi
+
+		esac	
+	fi
+od
+
+gdi.posx:=x
+gdi.posy:=y
+end
+
+export func gxtextcolour(w,?colour,?bgndcolour)=		!GXTEXTCOLOUR
+#Set either text foreground colour or background colour, or both, or neither,
+#depending on which are supplied
+#Text colours will be colour indices, not rgb
+#Always returned current or new foreground
+
+gdi:=w.gdi
+
+if colour.isdef and colour<>w.style.textfgnd then
+	w.style.textfgnd:=colour
+	settextcolour(gdi.hdc,getrgb(colour))
+	if gdi.drawmode=dm_screenmemory then
+		settextcolour(gdi.hdc2,getrgb(colour))
+	fi
+fi
+if bgndcolour.isdef and bgndcolour<>w.style.textbgnd then
+	gxbgndcolour(w,bgndcolour)
+fi
+
+return w.style.textfgnd
+end
+
+export func gxtextwidth(font,?s)=		!GXTEXTWIDTH
+# font is a window, or a font number within fonttable
+# font can be zero (then uses font 1)
+# return total pixel width of string s, using given font
+
+if s="" then return 0 fi
+
+!if not font.isint then			!aasume font is window
+!CPL =FONT
+!CPL =FONT.TYPE
+
+
+!if not font.ispointer then			!aasume font is window
+if not font.isint then			!aasume font is window
+	font:=font.gdi.font
+fi
+if font=0 then font:=1 fi
+
+selectobject(screendc,fonttable[font])
+widthheight:=new(ws_point)
+
+!CPL =S
+
+gettextextentpoint32(screendc,s,s.len,&widthheight)
+
+return widthheight.x
+end
+
+export func gxloadfont(n,facename,?style,height=0,width=0)=		!GXLOADFONT
+#define new font
+#N is index into fonttable
+#facename is the name of the font
+#Style is optional font style, a string containing any of:
+#	B,b		Bold
+#	I,i		Italic
+#	U,u		Underline
+#	S,s		Strikeout
+#Height is height of text (default 0, gives default height?)
+#Weight is width; defautl 0 normally used for normal aspect of text
+
+CPL "GXLOADFONT"
+
+if n<=0 then return 0 fi
+!n:=min(n,nglobalfonts)
+
+if style.isvoid then style:="" fi
+
+if n<=nglobalfonts and fonttable[n] then			!remove existing font
+	igxremovefont(n)
+fi
+
+p:=style
+bold:=400
+italic:=0
+underline:=0
+strikeout:=0
+for c in style do
+	case asc(convuc(c))
+	when 'B' then bold:=700
+	when 'I' then italic:=1
+	when 'U' then underline:=1
+	when 'S' then strikeout:=1
+	esac
+od
+
+hfont:=createfont(
+	facename:	facename,
+	height:		height,
+	width:		width,
+	bold:		bold,
+	italic:		italic,
+	underline:	underline,
+	charset:	0,
+	quality:	2,
+	escapement:	0,
+	orientation:0)
+
+if hfont=0 then
+	hfont:=getstockobject(system_font)
+fi
+
+fonttable[n]:=hfont
+nglobalfonts:=max(n,nglobalfonts)
+
+selectobject(screendc,fonttable[n])
+
+tm:=new(ws_textmetrics)
+
+gettextmetrics(screendc,&tm)
+
+fontdimtable[n]::=ws_point(tm.avecharwidth, tm.height+tm.externalleading)
+fontvdimtable[n]::=ws_point(tm.ascent, tm.descent)
+
+selectobject(screendc,getstockobject(system_font))
+
+return n
+end
+
+proc igxremovefont(n)=
+!unload font n, free table entry
+
+unless n in 1..nglobalfonts then return end
+if fonttable[n]=0 then return fi	!already freed
+
+!w:=windowlist
+!while w<>nil do
+!	if w.gdi.hdc and w.gdi.font>0 then		!font was in use, set as undefined
+!		w.gdi.font:=1
+!		selectobject(w.gdi.hdc,fonttable[w.gdi.font])
+!		if w.gdi.hdc2 then
+!			selectobject(w.gdi.hdc2,fonttable[w.gdi.font])
+!		fi
+!	fi
+!	w:=w.nextwind
+!od
+
+deleteobject(fonttable[n])		!get rid of this font
+fonttable[n]:=0
+end
+
+export func gxfont(w,font=1)=		!GXFONT
+# select font from font table for subsequent text display; default is font 1
+
+if not w then w:=wapplic fi
+if not w then w:=wscreen fi
+gdi:=w.gdi
+
+if font.isdef and font<>gdi.font then
+	if font not in 1..nglobalfonts then
+		abort("Bad font number "+tostr(font))
+	fi
+	gdi.font:=font
+	if fonttable[font]=0 then
+		abort("Font not in use "+tostr(font))
+	fi
+
+	oldhfont:=selectobject(gdi.hdc,fonttable[font])
+	sendmessage(gdi.hwnd,wm_setfont,fonttable[font],0)
+
+	if gdi.drawmode=dm_screenmemory then
+		oldhfont:=selectobject(gdi.hdc2,fonttable[font])
+		sendmessage(gdi.hwnd2,wm_setfont,fonttable[font],0)
+	fi
+	if fontdimtable[font].x=0 then		!set up dims
+		gxchardim(font,0)
+	fi
+fi
+return gdi.font
+end
+
+func hascontrolchars(s)=		!TESTCTRLCHAR
+!scan string s looking for control chars
+!return 1 if control chars (<20H) are present
+
+foreach c in s do
+	if c<32 then return 1 fi
+od
+return 0
+end
+
+export func gxchardim(font,vert=0)=			!GXCHARDIM
+#return font char average width/height info as a point rec
+#wfont is a font number, or hwindow when the current font in that window is used
+#vert=1 means get ascent/descent pair instead of (vert=0) average width/height
+
+if not font.isint then
+	font:=font.gdi.font
+fi
+if font=0 then font:=1 fi
+
+!CPL =FONTDIMTABLE,=FONT
+
+if fontdimtable[font].x=0 then		!probably stock fonts not setup with gxloadfont
+	selectobject(screendc,fonttable[font])
+	tm:=new(ws_textmetrics)
+	gettextmetrics(screendc,&tm)
+
+	fontdimtable[font]::=ws_point(tm.avecharwidth, tm.height+tm.externalleading)
+
+	fontvdimtable[font]::=ws_point(tm.ascent, fontvdimtable[font].y:=tm.descent)
+
+	selectobject(screendc,getstockobject(ansi_var_font))
+fi
+
+if vert then
+	return fontvdimtable[font]
+fi
+
+return fontdimtable[font]
+END
+
+export func gxbgndcolour(w,?colour)=		!GXBGNDCOLOUR
+#Set background colour (for text mainly)
+#colour will be a colour index
+#return current colour when omitted
+gdi:=w.gdi
+
+if colour.isdef then
+
+	if colour<>w.style.textbgnd then
+		w.style.textbgnd:=colour
+		setbkcolour(gdi.hdc,getrgb(colour))
+		if gdi.drawmode=dm_screenmemory then
+			setbkcolour(gdi.hdc2,getrgb(colour))
+		fi
+	fi
+	gxbgndmode(w,(colour<>w.style.windbgnd|1|0))
+fi
+return w.style.textbgnd
+end
+
+export func gxbgndmode(w,?mode)=		!GXBGNDMODE
+#	mode supplied: set new background mode:
+#		1 y Y T		Set opaque (T for True? Looks like Transparent)
+#		0 n N F		Set Transparent
+
+gdi:=w.gdi
+
+if mode.isdef  then
+	case mode
+	when 1,'y','Y','T' then
+		w.style.bgndmode:=opaque
+	else
+		w.style.bgndmode:=transparent
+	esac
+
+	setbkmode(gdi.hdc,mode+1)
+	if gdi.drawmode=dm_screenmemory then
+		setbkmode(gdi.hdc2,mode+1)
+	fi
+fi
+return w.style.bgndmode
+end
+
+export proc gxhighlight(w,x,y,width,height)=		!GXHIGHLIGHT
+#Invert rectangular region
+const dstinvert=0x00550009	!patblt
+gdi:=w.gdi
+
+gdi.updated:=1
+patblt(gdi.hdc, x, y, width,height,dstinvert)
+if gdi.drawmode=dm_screenmemory then
+	patblt(gdi.hdc2, x,y, width,height,dstinvert)
+fi
+end
+
+export proc gxbitblt(w,x2,y2,width,height,x,y)=			!GXBITBLT
+#Copy rectangular region of window to another location
+gdi:=w.gdi
+gdi.updated:=1
+bitblt(gdi.hdc, x2, y2, width,height,
+			gdi.hdc,x,y,srccopy)
+
+if gdi.drawmode=dm_screenmemory then
+	bitblt(gdi.hdc2,x2,y2,width,height,gdi.hdc2,x,y,srccopy)
+fi
+end
+
+export func gxaskmess(mode=0)=
+#wait for next message and return message number
+#return 0 if close or quit message seen
+#some messages will be ignored here (processsed via procmess) and will wait for next
+#mode=0		Return currmess.message
+#mode=1		Return currmess.message, but if a mm_command message, then return
+#			the command id. This means message numbers and command ids share the
+#			same space. This should work because messages are below 200, and ids above 200
+
+repeat
+	if mxwait_mm_message()=0 then
+		return mm_cancel
+	fi
+	if quitmess then return mm_cancel fi
+	x:=process_message(currmess)
+
+	if currmess.message=mm_key and currmess.a=27 then
+		return mm_cancel
+	fi
+
+until x=thismess					!message ready to return
+
+if mode=1 and currmess.message=mm_command then
+	return currmess.a
+fi
+
+return currmess.message
+end
+
+func process_message(mess)=
+#user or default event processing for mm message
+#will call event handler if there is one
+#returns 1 (skipmess) if message has been processed here; caller must wait for another message
+#returns 0 (thismess) caller should deal with this message (it has not been processed, or has beenbut caller can process it too)
+
+if mess.wind=nil then
+	return thismess
+fi
+
+case mess.message
+when mm_close then
+	return thismess
+esac
+
+!CPL "PROCESS MESSAGE"
+
+status:=domessage(mess)
+!CPL =STATUS
+
+return status
+end
+
+export proc docs=
+!export proc where dostringzs for entire lib can go
+#Option dicts: used as args to gccreatewindow/gxcreatechildwindow:
+#	wf_border		Border style; see wbs_ enums
+#	wf_resize		1 for resizable border (for top-level windows)
+# wf_hscroll		1 for horizontal scrollbar
+# wf_vscroll		1 for vertical scrollbar
+# wf_menu			1 for a menubar
+# wf_caption		1 for a caption bar (needs to be the right kind of border too)
+# wf_max			1 for a max button
+# wf_minmax		1 for a min/max buttons
+# wf_sysmenu		1 for a system menu (right-click on top left I think)
+# wf_desktop		1 to fill desktop
+# wf_clip			1 to clip windows to desktop
+# wf_show			1 to show window after creating
+# wf_iframe		1 for pos/dim to refer to frame rather than client area
+# wf_cent			1 to centre window
+# wf_toolwind		1 for tool window (not sure what this means)
+
+end
+
+func newwindow(hwnd,index,windclass,borderstyle)=
+
+w:=new(rwindow,0)
+w.windclass:=windclass
+!w.style.borderstyle:=borderstyle
+w.index:=index
+w.childlist::=()
+w.owner:=nil
+
+addwindow(w)
+wx_setw(hwnd,w.gindex)
+return w
+end
+
+export func getrgb(index)=
+if index=0 then return 0 fi
+return colourvalues[index]
+end
+
+func readstyle(owner,windclass,options)=
+!process gx options stored in the given dict type
+!return a stylerec all filled in
+
+if options.type=stylerec then			!already a stylerec
+	return options
+fi
+
+ss:=new(stylerec)
+if options.isvoid then				!use bunch of defaults
+	d::=defstyle
+	d.border:=defaultborderstyles[windclass]
+	return d
+fi
+
+ss.border	:=options{ss_border,defaultborderstyles[windclass]}
+ss.justify	:=options{ss_justify,defstyle.justify}
+ss.vjustify	:=options{ss_vjustify,defstyle.vjustify}
+ss.textfgnd	:=options{ss_textfgnd,defstyle.textfgnd}
+ss.textbgnd	:=options{ss_textbgnd,defstyle.textbgnd}
+ss.bgndmode	:=options{ss_bgndmode,defstyle.bgndmode}
+
+ss.iframe	:=options{ss_iframe,0}
+
+ss.hilitetype	:=options{ss_hilitetype,defstyle.hilitetype}
+ss.marktype	:=options{ss_marktype,(ss.hilitetype|0|defstyle.marktype)}
+ss.imark	:=options{ss_imark,defstyle.imark}
+
+if windclass in [toggle_class, select_class,mark_class] and ss.marktype then
+	def:=owner.style.windbgnd
+else
+	def:=defstyle.windbgnd
+fi
+
+ss.windbgnd	:=options{ss_windbgnd,def}
+ss.hscroll	:=options{ss_hscroll,0}
+ss.vscroll	:=options{ss_vscroll,0}
+ss.lbchange	:=options{ss_lbchange,0}
+ss.returnmess	:=options{ss_returnmess,0}
+ss.noupdate	:=options{ss_noupdate,0}
+
+return ss
+end
+
+export func gxpanel(owner,pos,dim,?style)=
+ss:=readstyle(owner,panel_class,style)
+w:=gxcontrol(owner,panel_class,pos,dim,ss)
+gxdraw(w)
+
+return w
+end
+
+export func gxgroup(owner,pos,dim,?style)=
+ss:=readstyle(owner,group_class,style)
+w:=gxcontrol(owner,group_class,pos,dim,ss)
+gxdraw(w)
+
+return w
+end
+
+export func gxstatusbar(owner,pos,dim,?style)=
+
+ss:=readstyle(owner,statusbar_class,style)
+
+if ss.iframe=0 then					!frame not included, but can't have it leaking outside owner
+	bs:=ss.border
+	if bscat[bs]<>'I' then			!do adjustments
+		dim+:=bswidths[bs].y1+bswidths[bs].y2
+	fi
+	ss.iframe:=1					!stop gxcontrol expanding dims
+fi
+
+(ecapos,ecadim):=gxclientarea(owner)
+
+if pos.isint then pos:=chr(pos) fi
+!if pos.ispointer then pos:=chr(pos) fi
+if convuc(pos) in "T TOP" then			!along the top
+	pos:=ecapos
+	dir:='T'
+else									!along the bottom
+	pos:=(ecapos[1],ecadim[2]-dim+ecapos[2])
+	dir:='B'
+fi
+dim:=(ecadim[1],dim)
+
+ss.dir:=dir
+
+w:=gxcontrol(owner,statusbar_class,pos,dim,ss)
+
+gxdraw(w)
+
+return w
+end
+
+export func gxframebar(owner,pos,dim,?style)=
+
+ss:=readstyle(owner,framebar_class,style)
+if ss.iframe=0 then					!frame not included, but can't have it leaking outside owner
+	bs:=ss.border
+	if bscat[bs]<>'I' then			!do adjustments
+		dim+:=bswidths[bs].y1+bswidths[bs].y2
+	fi
+	ss.iframe:=1					!stop gxcontrol expanding dims
+fi
+
+(ecapos,ecadim):=gxclientarea(owner)
+
+!if pos.isint then pos:=chr(pos) fi
+if pos.ispointer then pos:=chr(pos) fi
+if convuc(pos) in "L LEFT" then			!along the left
+	pos:=ecapos
+	dir:='L'
+else									!along the right
+	pos:=(ecadim[1]-dim+ecapos[1],ecapos[2])
+	dir:='R'
+fi
+dim:=(dim,ecadim[2])
+
+ss.dir:=dir
+
+w:=gxcontrol(owner,	framebar_class,pos,dim,ss)
+
+gxdraw(w)
+
+return w
+end
+
+export func gxbutton(owner,pos,dim,caption,?style,id=201,enable=1)=
+#create clickable button
+#returns rwindow
+
+ss:=readstyle(owner,button_class,style)
+
+w:=gxcontrol(owner,button_class,pos,dim,ss)
+w.id:=id
+
+w.text:=caption
+w.enable:=enable
+gxdraw(w)
+
+return w
+end
+
+export func gxlabel(owner,pos,dim,caption,?style)=
+#create static label button
+#returns rwindow
+
+ss:=readstyle(owner,label_class,style)
+
+w:=gxcontrol(owner,label_class,pos,dim,ss)
+
+w.text:=caption
+gxdraw(w)
+
+return w
+end
+
+func gxcontrol(owner,windclass=button_class,pos,dim,?ss)=
+
+if ss.type=dict or ss.isvoid then
+	ss:=readstyle(owner,windclass,ss)
+fi
+wb:=wbs_none
+case ss.border			!find wbs- version of windows-drawn borders
+when bs_simplew then
+	wb:=wbs_simple
+esac
+
+if ss.iframe and bscat[ss.border]<>'I' then
+	widths:=bswidths[ss.border]
+	pos[1]+:=widths.x1
+	pos[2]+:=widths.y1
+	dim[1]-:=widths.x1+widths.x2
+	dim[2]-:=widths.y1+widths.y2
+FI
+
+hwnd:=wx_createcontrol(pos:pos,dim:dim,border:wb,owner:owner.gdi.hwnd)
+
+if hwnd=0 then
+	abort("Can't create control window")
+fi
+
+w:=newwindow(hwnd,0,no_class,ss.border)
+w.windclass:=windclass
+w.style:=ss
+w.owner:=owner
+w.enable:=1
+
+setwindowdims_c(w,hwnd)
+setupgdi(w,hwnd)
+
+gxdrawmode(w,dm_screenmemory)
+
+gxfont(w,labelfont)
+
+gxtextcolour(w,w.style.textfgnd,w.style.textbgnd)
+
+gxbgndmode(w,w.style.bgndmode)
+
+!link into owner
+w.owner.childlist append:=w
+w.index:=w.owner.childlist.upb
+
+return w
+end
+
+export func gxtoggle(owner,pos,dim,caption="",linkvar,?style,id=201,enable=1)=
+
+(posx,posy):=pos
+(dimx,dimy):=dim
+textoffset:=0
+
+
+ss:=readstyle(owner,toggle_class,style)
+
+!work out whether an auxiliary window is needed
+
+if ss.marktype then
+	if ss.imark=0 then			!dims don't include the mark
+		posx-:=markdim
+		dimx+:=markdim
+		textoffset:=markdim
+	fi
+fi
+
+w:=gxcontrol(owner,toggle_class,(posx,posy),(dimx,dimy),ss)
+!RETURN 0
+w.linkvar:=linkvar
+w.id:=id
+w.text:=caption
+w.attrs:=togglerec(textoffset,1)
+w.enable:=enable
+
+if w.style.marktype then
+!	gxmark(owner:w,pos:(0,(w.dimy-markdim)%2),id:id,style:style)
+	gxmark(owner:w,pos:(0,(w.dimy-markdim)%2),id:id, style:ss)
+fi
+
+gxdraw(w)
+return w
+end
+
+export func gxselect(owner,pos,dim,caption="",linkvar,onvalue,?style,id=201,enable=1)=
+
+(posx,posy):=pos
+(dimx,dimy):=dim
+textoffset:=0
+
+ss:=readstyle(owner,select_class,style)
+
+!work out whether an auxiliary window is needed
+if ss.marktype and ss.imark=0 then			!dims don't include the mark
+	posx-:=markdim
+	dimx+:=markdim
+	textoffset:=markdim
+fi
+
+w:=gxcontrol(owner,select_class,(posx,posy),(dimx,dimy),ss)
+
+w.linkvar:=linkvar
+w.id:=id
+w.text:=caption
+w.attrs:=togglerec(textoffset,onvalue)
+w.enable:=enable
+if w.style.marktype then
+	gxmark(owner:w,pos:(0,(w.dimy-markdim)%2),id:id, style:style)
+fi
+
+gxdraw(w)
+return w
+end
+
+export proc showmessage(mess)=
+RETURN
+CPL MESS.MESSAGE
+cp "Message:",leftstr(messagenames[mess.message],20)
+cp "A:",,mess.a,"B:",,mess.b
+cp " (X:",,mess.x,"Y:",,mess.y,,") Buttons:",mess.state:"b"
+
+cpl "	Window:",mess.wind.name
+end
+
+func domessage(mess)=
+
+m:=mess.message
+w:=mess.wind
+
+IF W.GDI=0 THEN PCERROR("DOM/GDI=0") FI
+
+case m
+when mm_move,mm_setcursor then
+	return skipmess
+esac
+
+x:=messhandlertable[m,w.windclass](mess,w)
+return x
+end
+
+proc init_handlertables=
+	messhandlertable:=maketable(mm_null..mm_last, no_class..dummy_class, nil)
+	actionhandlertable:=maketable(actionnames.bounds, no_class..dummy_class, nil)
+
+	messalltable:=new(list,mm_null..mm_last,0)		!for all mess_mess_all handlers
+	fnallall:=nil									!for single mess_all_all handler
+	fnfixups:=nil
+
+	actionalltable:=new(list,actionnames.bounds,0)
+
+	for d to $nprocs() do
+		fnptr:=$procref(d)
+		fnname:=$procname(d)
+
+		(name,messname,windname):=splitstring(fnname,"_")			!split func name
+
+		if fnname="gxhandler_fixups" then
+			fnfixups:=fnptr
+		elsif leftstr(fnname,5)="mess_" then
+			if messname="all" and windname="all" then
+				fnallall:=fnptr
+			else
+				message:=("mm_"+messname) inx messagenames
+				if not message.isfound then
+					ABORT("CAN'T FIND MESSAGE <"+messname+">")
+				fi
+
+				if windname="all" then				!assume <mess> all
+					messalltable[message]:=fnptr
+				else
+					messhandlertable[message,WX:=findwindclass(windname)]:=fnptr
+				fi
+			fi
+
+		elsif leftstr(fnname,8)="do_draw_" or leftstr(fnname,10)="do_update_" then
+			action:=messname+"_w" inx actionnames
+			if not action.isfound then
+				ABORT("CAN'T FIND ACTION "+MESSNAME)
+			fi
+			if windname="all" then
+				actionalltable[action]:=fnptr
+			else
+				windclass:=findwindclass(windname)
+				actionhandlertable[action,windclass]:=fnptr
+			fi
+		fi
+	od
+
+!!do some manual fixups
+	if fnfixups then
+		fnfixups()
+	fi
+
+	for mx:=0 to mm_last do
+		for wx:=0 to dummy_class do
+			if not messhandlertable[mx,wx] then
+				messhandlertable[mx,wx]:=(messalltable[mx]|messalltable[mx]|fnallall)
+			fi
+		od
+	od
+
+	if not fnallall then
+		pcerror("Can't find all/all mess handler")
+	fi
+
+	for ax:=1 to DRAW_w do
+		for wx:=0 to dummy_class do
+			if not actionhandlertable[ax,wx] then
+				if not actionalltable then
+					pcerror("No DO/ALL handler for:"+actionnames[ax])
+				fi
+				actionhandlertable[ax,wx]:=actionalltable[ax]
+			fi
+		od
+	od
+end
+
+func findwindclass(name)=
+	windclass:=name+"_class" inx windowclassnames
+	unless windclass.isfound then
+		ABORT("CAN'T FIND WINDOW "+windname)
+	end
+	return windclass
+end
+
+export proc gxdraw(w)=
+fnptr:=actionhandlertable[draw_w,w.windclass]
+
+if fnptr then
+	fnptr(w)
+else
+	cpl "NO DRAW HANDLER",windowclassnames[w.windclass],w.name
+	waitkey()
+	stop
+fi
+end
+
+export proc gxupdate(w)=
+fnptr:=actionhandlertable[update_w,w.windclass]
+if fnptr then
+	fnptr(w)
+else
+	gxdraw(w)
+fi
+end
+
+export proc eventloop=
+do
+	m:=gxaskmess()
+
+	SHOWMESSAGE(CURRMESS)
+
+	case m
+	when 0,mm_cancel then
+		return
+	esac
+
+od
+end
+
+export func gxeditbox(owner,pos,dim,linkvar,?style,id=201,enable=1)=
+
+ss:=readstyle(owner,editbox_class,style)
+
+w:=gxcontrol(owner,editbox_class,pos,dim,ss)
+
+w.linkvar:=linkvar
+w.id:=id
+w.attrs:=new(editboxrec)
+w.attrs.currpos:=linkvar^.len+1
+w.enable:=enable
+
+gxdraw(w)
+return w
+end
+
+export proc gxebchange(w,?linkvar,charpos=-1)=
+
+if linkvar.isdef then
+	w.linkvar:=linkvar
+fi
+
+if charpos=-1 then
+	w.attrs.currpos:=w.linkvar^.len+1
+else
+	w.attrs.currpos:=charpos
+fi
+gxupdate(w)
+end
+
+export proc gxsetlbdata(w,linkvar,?pos)=
+w.linkvar:=linkvar
+if pos.isvoid then
+	pos:=(linkvar^|1|0)
+fi
+w.attrs.currpos:=pos
+
+if w.childlist[1] then
+!	gxsetscrolllimits(ws,linkvar^.bounds,w.attrs.rows)
+	gxsetscrolllimits(ws,getlvbounds(linkvar),w.attrs.rows)
+	gxscrollpos(ws,pos)
+fi
+end
+
+export proc gxsetlbpos(w,pos)=
+!change in pos
+w.attrs.currpos:=pos
+
+!work out screen row
+if pos then
+	oldpagepos:=w.attrs.pagepos
+	if pos<oldpagepos then
+		w.attrs.pagepos:=pos
+	elsif pos>oldpagepos+w.attrs.rows-1 then
+		w.attrs.pagepos:=pos-w.attrs.rows+1
+	fi
+	if w.attrs.pagepos<>oldpagepos then
+		if w.childlist then
+			gxscrollpos(w.childlist[1],w.attrs.pagepos)
+		fi
+		m:=mm_draw
+	else
+		m:=mm_update
+	fi
+else
+	m:=mm_draw
+fi
+
+postmess(w,m)
+if w.style.lbchange then
+	postmess(w,mm_lbchange,w.attrs.currpos)
+fi
+end
+
+export proc gxsetlbpage(w,pagepos)=
+!change in pagepos (originates from scrollbar message)
+w.attrs.pagepos:=pagepos
+
+oldpos:=w.attrs.currpos
+if oldpos<pagepos then
+	w.attrs.currpos:=pagepos
+elsif oldpos>=pagepos+w.attrs.rows then
+	w.attrs.currpos:=pagepos+w.attrs.rows-1
+fi
+
+if w.childlist then
+	gxscrollpos(w.childlist[1],pagepos)
+fi
+
+postmess(w,mm_draw)
+if w.style.lbchange and oldpos<>w.attrs.currpos then
+	postmess(w,mm_lbchange,w.attrs.currpos)
+fi
+end
+
+export func gxlistbox(owner,pos,dim,linkvar,?style,id=201,rows=0,pitch=0,offset=0)=
+
+ss:=readstyle(owner,listbox_class,style)
+
+(dimx,dimy):=dim
+if ss_vscroll and ss_imark=0 then			!dims don't include the scrollbar
+	dimx+:=arrowdim
+fi
+
+w:=gxcontrol(owner,listbox_class,pos,(dimx,dimy),ss)
+w.linkvar:=linkvar
+w.id:=id
+w.attrs:=new(listboxrec)
+
+if pitch=0 then								!calculate all these here
+	pitch:=listrowheight
+	offset:=0
+	rows:=w.dimy%pitch
+fi
+w.attrs.rows:=rows
+w.attrs.pitch:=pitch
+w.attrs.offset:=offset
+
+w.attrs.pagepos:=1
+w.attrs.currpos:=(getlvbounds(linkvar).len|1|0)
+
+if w.style.vscroll then
+	ws:=gxvertscrollbar(owner:w,pos:(w.dimx-arrowdim,0),dim:w.dimy,id:id,style:style)
+	gxsetscrolllimits(ws,getlvbounds(linkvar),w.attrs.rows)
+
+	gxscrollpos(ws,getlvbounds(linkvar).lwb)
+fi
+
+gxdraw(w)
+return w
+end
+
+export func gxarrow(owner,pos,?dim,dir,?style,id=201)=
+
+ss:=readstyle(owner,arrow_class,style)
+if dim.isvoid then
+	dim:=(arrowdim,arrowdim)
+fi
+
+w:=gxcontrol(owner,arrow_class,pos,dim,ss)
+w.id:=id
+if dir.isstring then dir:=asc(dir) fi
+case dir					!allow compass bearings too, but convert to UDLR
+when 'N' then dir:='U'
+when 'E' then dir:='R'
+when 'S' then dir:='D'
+when 'W' then dir:='L'
+esac
+
+w.style.dir:=dir			!don't dir allow via style options
+gxdraw(w)
+
+return w
+end
+
+export proc gxsetscrolllimits(w,limits,span=0)=
+!set up or change scrollbar limits
+!span=0:
+!	Pure ranging control. Limits are actual range of the thumb.
+!	Thumb is drawn at a fixed, nominal size. Might be suppressed when limits are <=1
+!	Initial position set to limits.lwb
+!span=M:
+!	Paging control, such as used on a listbox or text editor.
+!	Span can be the number of rows display at one time.
+!	Limit can be single number N, or range 1..N.
+!	Actual scroll bar range will be 1..N-M+1. When upper limit<1 then
+!	limit will be 1..1, and thumb might not be drawn
+!	Data position will: actually there /is/ not data position, except for the
+!	data position represented by the top row, which will be the same as the scroll
+!	position.
+!Arrows should be disabled (and perhaps thumb suppressed) when scroll range if 1..1,
+!or data range is nor larger than a span
+
+w.attrs.span:=span
+if w.style.dir='H' then
+	width:=w.dimx
+else
+	width:=w.dimy
+fi
+m:=width-arrowdim*2				!number of pixels movement between arrows
+
+if span=0 then						!pure scrolling control
+	w.attrs.limits:=limits
+	w.attrs.currpos:=limits.lwb
+	w.attrs.thumbsize:=arrowdim
+	enable:=limits.len>1
+	w.attrs.thumbsize:=arrowdim*enable
+else
+	if limits.isrange then
+		length:=limits.len
+	else
+		length:=limits
+	fi
+	if length<=span then
+		enable:=0
+		w.attrs.limits:=1..1
+		w.attrs.thumbsize:=0
+	else
+		w.attrs.limits:=1..length-span+1
+		enable:=1
+		w.attrs.thumbsize:=max(10,int(m*(span/length)))
+	fi
+fi
+
+w.attrs.currpos:=w.attrs.limits.lwb
+w.enable:=enable
+
+w.attrs.thumbspan:=m-w.attrs.thumbsize		!movement available to thumb
+w.attrs.thumbpos:=arrowdim
+postmess(w,mm_draw)
+end
+
+export func gxscrollpos(w,pos,u=0)=
+!
+if pos.isvoid then
+	return w.attrs.currpos
+fi
+
+CPL =POS
+CPL =W.ATTRS.CURRPOS
+CPL =W.ATTRS.LIMITS
+
+w.attrs.currpos:=pos
+if pos not in w.attrs.limits then
+	pcerror("Bad scroll pos")
+fi
+
+tpos:=int(w.attrs.thumbspan*((pos-w.attrs.limits.lwb)/(w.attrs.limits.len-1)))
+w.attrs.thumbpos:=arrowdim+tpos
+
+w.childlist[1].enable:=pos>w.attrs.limits.lwb
+w.childlist[2].enable:=pos<w.attrs.limits.upb
+
+if u then
+	postmess(w,mm_update)
+fi
+return 0
+end
+
+export func gxhozscrollbar(owner,pos,dim,?style,id=201)=
+
+ss:=readstyle(owner,scrollbar_class,style)
+width:=arrowdim
+if dim.isint then
+!if dim.ispointer then
+	dim:=(dim,width)
+else
+	width:=dim[1]
+fi
+
+w:=gxcontrol(owner,scrollbar_class,pos,dim,ss)
+w.id:=id
+w.style.dir:='H'
+
+w.attrs:=new(scrollbarrec)
+w.flags.[wa_leftdrag]:=1
+
+!Now, create the arrows at each end. The thumbbar is not an explicit control,
+!it's just a drawn box
+wa:=gxarrow(owner:w, pos:(0,0), dim:(width,width),dir:'L')
+wb:=gxarrow(owner:w, pos:(dim[1]-width,0), dim:(width,width),dir:'R')
+
+gxsetscrolllimits(w,1..200,20)
+gxscrollpos(w,1)
+
+gxdraw(w)
+
+return w
+end
+
+export func gxvertscrollbar(owner,pos,dim,?style,id=201)=
+ss:=readstyle(owner,scrollbar_class,style)
+width:=arrowdim
+if dim.isint then
+!if dim.ispointer then
+	dim:=(width,dim)
+else
+	width:=dim[2]
+fi
+
+w:=gxcontrol(owner,scrollbar_class,pos,dim,ss)
+w.id:=id
+w.style.dir:='V'
+
+w.attrs:=new(scrollbarrec)
+w.flags.[wa_leftdrag]:=1
+
+!Now, create the arrows at each end. The thumbbar is not an explicit control,
+!it's just a drawn box
+wa:=gxarrow(owner:w, pos:(0,0), dim:(width,width),dir:'U')
+wb:=gxarrow(owner:w, pos:(0,dim[2]-width), dim:(width,width),dir:'D')
+gxsetscrolllimits(w,100..200,2)
+
+gxscrollpos(w,100)
+
+gxdraw(w)
+
+return w
+end
+
+export func gxmark(owner,pos,?dim,?style,id=201)=
+
+ss:=readstyle(owner,mark_class,style)
+if dim.isvoid then
+	dim:=(markdim,markdim)
+fi
+
+w:=gxcontrol(owner,mark_class,pos,dim,style)
+w.id:=id
+gxdraw(w)
+
+return w
+end
+
+export proc gxfocus(w)=
+!switch focus to window w
+if wfocus==w then
+	return
+fi
+
+if wfocus then
+	domessage(makemess(wfocus,mm_killfocus))
+fi
+caretdrawn:=0
+domessage(makemess(w,mm_setfocus))
+end
+
+export proc gxkillfocus=
+if wfocus then
+	drawcaret(0)
+fi
+wfocus:=nil
+end
+
+export func gxcopy(w,?bm,x=0,y=0,scalex=1.0,scaley=0,sx=0,sy=0,dimx=0,dimy=0)=		!GXCOPY
+!copy bitmap bm to window w, at position x,y in w. Scalex/y can be 0 for 1:1,
+!or Scalex/y can be any real value for unequal x/y scaling
+!For equal x/y scaling, Scaley can be 0
+!Entire bitmap is copied (sx,sy,w,h all 0); for portion, set sx,sy to top left of rect
+!and w,h to size to be copied
+![1..100]char str
+
+if bm.isvoid then
+	bm:=w
+	w:=nil
+fi
+if bm.isvoid then
+	return nil
+fi
+
+if dimx=0 then dimx:=bm.dimx-sx fi
+if dimy=0 then dimy:=bm.dimy-sy fi
+
+if scalex=0 then scalex:=1.0 fi
+if scaley=0 then scaley:=scalex fi
+
+if w=nil then		!create appropriate window
+	w:=gxcreatewindow(caption:"Bitmap "+tostr(bm.pixelbits)+" bit",pos:(500,500),
+			dim:(bm.dimx*scalex,bm.dimy*scaley))
+	w.gdi.drawmode:=dm_screenmemory			!default when using auto-window
+fi
+
+gdi:=w.gdi
+gdi.updated:=1
+
+mode:=copymode
+
+setstretchbltmode(gdi.hdc,mode)
+stretchblt(gdi.hdc, x, y,int(dimx*scalex),int(dimy*scaley),
+											bm.gdi.hdc,sx,sy,dimx,dimy, srccopy)
+if gdi.drawmode=dm_screenmemory then
+	setstretchbltmode(gdi.hdc2,mode)
+	stretchblt(gdi.hdc2,x,y,int(dimx*scalex),int(dimy*scaley),
+											bm.gdi.hdc,sx,sy,dimx,dimy, srccopy)
+fi
+return w
+end
+
+export proc gxrestore(w,?r)=
+!repaint window w
+!only called when repaint can be done from a backup
+!r is the region to restore within w; or restore all if omitted
+
+if r.isvoid then
+	x1:=y1:=0
+
+	width:=w.dimx
+	height:=w.dimy
+else
+	x1:=r.x1
+	y1:=r.x2
+	width:=r.x2-x1+1
+	height:=r.y2-y1+1
+fi
+
+case w.gdi.drawmode
+when dm_screen then			!can't restore; need to call gx_draw
+	gxdraw(w)
+when dm_screenmemory then
+	destdc:=w.gdi.hdc
+	sourcedc:=w.gdi.hdc2
+when dm_memoryscreen then
+	destdc:=w.gdi.hdc2
+	sourcedc:=w.gdi.hdc
+else
+	abort("gxrest/?")
+esac
+
+bitblt(destdc,x1,y1, width,height, sourcedc, x1,y1, srccopy)
+
+end
+
+export func gxdrawmode(w,?drawmode)=
+!set or get drawmode
+!really requires window to be cleared afterwards.
+
+olddrawmode:=w.gdi.drawmode
+if drawmode.isvoid then
+	return olddrawmode
+fi
+
+if olddrawmode=drawmode then		!already set
+	return drawmode
+elsif olddrawmode<>dm_screen then	!can only change screen => screenmemory/memoryscreen
+	abort("gxdrawmode2")			!not memory to anything else
+fi
+
+!assuming currently on screen, will need extra compatible bitmap
+memhwnd:=createcompatiblebitmap(screendc,w.dimx,w.dimy)
+memhdc:=createcompatibledc(nil)
+selectobject(memhdc,memhwnd)
+
+!need to change draw mode
+case drawmode
+when dm_screenmemory then
+	w.gdi.hwnd2:=memhwnd
+	w.gdi.hdc2:=memhdc
+when dm_memoryscreen then
+	w.gdi.hwnd2:=w.gdi.hwnd			!screen becomes secondary
+	w.gdi.hdc2:=w.gdi.hdc
+	w.gdi.hwnd:=memhwnd
+	w.gdi.hdc:=memhdc
+else
+	abort("gxdrawmode?")
+esac
+
+w.gdi.drawmode:=drawmode
+return drawmode
+end
+
+export proc switchdest(w)=
+!for a window with screenmemory drawmode, switch things around so that
+!it's drawing into the memory area only
+gdi:=w.gdi
+
+case gdi.drawmode
+when dm_screenmemory then
+	t:=gdi.hwnd; gdi.hwnd:=gdi.hwnd2; gdi.hwnd2:=t
+	t:=gdi.hdc; gdi.hdc:=gdi.hdc2; gdi.hdc2:=t
+	gdi.drawmode:=dm_memory
+when dm_memory then
+	t:=gdi.hwnd; gdi.hwnd:=gdi.hwnd2; gdi.hwnd2:=t
+	t:=gdi.hdc; gdi.hdc:=gdi.hdc2; gdi.hdc2:=t
+	gdi.drawmode:=dm_screenmemory
+esac
+end
+
+export proc gxclose(w)=
+
+case w.windclass
+when bitmap_class then
+else
+	if issubwindow(w,wfocus) then
+		wfocus:=nil
+	fi
+
+	if issubwindow(w,wmouse) then	
+		lastmousewindow:=nil
+		wmouse:=nil
+	fi
+
+	destroywindow(w.gdi.hwnd)
+	gxfreewindow(w)
+esac
+end
+
+proc gxfreewindow(w)=
+!recover memory used by this window and all childwindows
+for wc in w.childlist do
+	gxfreewindow(wc)
+od
+
+removewindow(w)
+
+w.gdi:=0
+w:=0
+end
+
+export func gxmsgbox(message,caption="",options="")=
+
+const mb_abortretryignore	= 0x02
+const mb_applmodal			= 0x00
+const mb_defbutton1			= 0x00
+const mb_defbutton2			= 100
+const mb_defbutton3			= 200
+const mb_defbutton4			= 300
+const mb_help				= 4000
+const mb_iconasterisk		= 40
+const mb_iconerror			= 10
+const mb_iconexclamation	= 30
+const mb_iconhand			= mb_iconerror
+const mb_iconinformation	= mb_iconasterisk
+const mb_iconquestion		= 20
+const mb_iconstop			= mb_iconhand
+const mb_iconwarning		= mb_iconexclamation
+const mb_ok					= 0x00
+const mb_okcancel			= 0x01
+const mb_retrycancel		= 0x05
+const mb_right				= 80000
+const mb_setforeground		= 10000
+const mb_systemmodal 		= 1000
+const mb_taskmodal			= 2000
+const mb_yesno				= 0x04
+const mb_yesnocancel		= 0x03
+const mb_topmost			= 0x040000
+
+!return values
+const idfail	= 0
+const idok		= 1
+const idcancel	= 2
+const idabort	= 3
+const idretry	= 4
+const idignore	= 5
+const idyes		= 6
+const idno		= 7
+
+static var rettable=(0:"fail","ok","cancel","abort","retry","ignore","yes","no",
+		"","","tryagain","continue")
+
+static var styletable=(
+("bari",mb_abortretryignore),
+("bo",mb_ok),
+("boc",mb_okcancel),
+("brc",mb_retrycancel),
+("byn",mb_yesno),
+("bync",mb_yesnocancel),
+("ix",mb_iconexclamation),
+("iw",mb_iconwarning),
+("ii",mb_iconinformation),
+("iq",mb_iconquestion),
+("is",mb_iconstop),
+("ie",mb_iconerror),
+("ih",mb_iconhand),
+("d1",mb_defbutton1),
+("d2",mb_defbutton2),
+("d3",mb_defbutton3),
+("d4",mb_defbutton4),
+("h",mb_help),
+("rj",mb_right),
+("sm",mb_systemmodal))
+
+hwnd:=nil
+
+style:=0
+optioncodes:=splitstring(options," ")
+
+for opt in optioncodes do
+	for i to styletable.len do
+		if styletable[i,1]=opt then style ior:=styletable[i,2] fi
+	od
+od
+
+style ior:=0x10000
+
+x:=messageboxa(hwnd,message,caption,style)
+return rettable[x]
+END
+
+
+export proc gxhandler(windclass,mess,fnptr)=
+!windclass is a window, or a window class
+!override the current message handler for w's window class, and fo message mess
+
+!if not windclass.isint then
+if not windclass.ispointer then
+	windclass:=windclass.windclass
+fi
+
+!CPL "SETTING GXHANDLER",MESS,WINDCLASS,FNPTR
+messhandlertable[mess,windclass]:=fnptr
+end
+
+export func gxaskfile(caption="File",filespec="*.*",deffile="",startdir="")=
+
+save:=0
+if caption='*' then
+	save:=1
+	caption:=rightstr(caption,-1)
+fi
+
+filters:=array(filespec+"@@@")		!turn into a byte-array
+
+for i,bb in filters do			!convert all @ into embedded zeros
+	if bb='@' then filters[i]:=0 fi
+od
+
+ofn:=new((iswin32|ws_openfilename32|ws_openfilename64))
+
+ofn.structsize:=ofn.bytes
+ofn.owner:=wapplic.gdi.hwnd
+ofn.instance:=getmodulehandle(0)
+ofn.filter:=int(&filters)
+ofn.flags:=ofn_explorer ior ofn_nochangedir ior ofn_hidereadonly !IOR OFN_NOVALIDATE
+
+ofn.initialdir:=getstringz(startdir)
+
+ofn.defext:=getstringz("")
+
+result:=new(array,byte,300)
+
+result[1]:=0
+if deffile<>"" then
+	memcpy(&result,&deffile,deffile.len)
+fi
+
+ofn.file:=int(&result)
+
+ofn.maxfile:=256
+ofn.title:=getstringz(caption)
+
+if not (not save | getopenfilenamea(&ofn) | getsavefilenamea(&ofn)) then
+	result[1]:=0		!return "" on error
+fi
+
+return string(result)
+END
+
+export func gxcurrpos(w)=
+return w.attrs.currpos
+end
+
+export func gxtabstops(?tabs,signed=0)=
+if tabs.isdef then
+	tabstops::=tabs
+	if signed then
+		for i,x in tabstops do
+			tabstops[i]:=abs(x)
+		od
+	fi
+fi
+return tabstops
+
+end
+
+export func getlvbounds(linkvar)=
+if linkvar.ispointer and linkvar^.islist then
+	return linkvar^.bounds
+else
+	return linkvar.getbounds()
+fi
+return 0
+end
+
+export func getlvitem(linkvar,n)=
+if linkvar.ispointer and linkvar^.islist then
+	return linkvar^[n]
+else
+	PCERROR("GETLVITEM")
+fi
+return 0
+end
+
+export func getlvstritem(linkvar,n)=
+if linkvar.ispointer and linkvar^.islist then
+	return tostr(linkvar^[n])
+else
+	return linkvar.getstritem(n)
+fi
+return 0
+end
+
+export proc gxtext16(w,s,n,x=0,y=0)=		!GXTEXT
+	gdi:=w.gdi
+
+	textoutw(gdi.hdc,x, y,&s,n)
+	if gdi.drawmode=dm_screenmemory then
+		textoutw(gdi.hdc2,x,y,&s,n)
+	fi
+end
+
+export func gxenable(w,flag)=
+if flag.isdef then
+	w.enable:=flag
+	gxupdate(w)
+fi
+return w.enable
+end
+
+export func gxclientarea(w)=
+!scan child windows of w, work out remaining client area after taking account of
+!framebars etc
+!return (pos, dim), each being a 2-element list
+
+aposx:=aposy:=0
+
+adimx:=w.dimx
+adimy:=w.dimy
+
+centx:=(aposx+adimx)%2
+centy:=(aposy+adimy)%2
+
+!for cw in w.childlist when cw.windclass in [statusbar_class,framebar_class] do
+for cw in w.childlist do
+
+	(posx,posy):=(cw.frameposx,cw.frameposy)
+	(dimx,dimy):=(cw.framedimx,cw.framedimy)
+
+!need to find out which of the four sides the bar is against, and set up side= L R T B
+	case cw.style.dir
+	when 'B' then				!bottom
+		if posy<(aposy+adimy) then
+			adimy-:=dimy
+		fi
+
+	when 'T' then				!top
+		if (posy+dimy)>aposy then		!
+			aposy+:=(posy+dimy)
+			adimy-:=(posy+dimy)
+		fi
+
+	when 'R' then				!right
+		if posx<(aposx+adimx) then
+			adimx-:=dimx
+		fi
+
+	when 'L' then				!LEFT
+		if (posx+dimx)>aposx then		!
+			aposx+:=(posx+dimx)
+			adimx-:=(posx+dimx)
+		fi
+	else
+
+		if dimx>dimy then			!assume hoz
+			if posy>centy then			!assume bottom
+				if posy<(aposy+adimy) then
+					adimy-:=dimy
+				fi
+
+			else					!top
+				if (posy+dimy)>aposy then		!
+					aposy+:=(posy+dimy)
+					adimy-:=(posy+dimy)
+				fi
+			fi
+		else					!assume vert
+			if posx>centx then			!assume right
+
+				if posx<(aposx+adimx) then
+					adimx-:=dimx
+				fi
+
+			else					!left
+
+				if (posx+dimx)>aposx then		!
+					aposx+:=(posx+dimx)
+					adimx-:=(posx+dimx)
+				fi
+
+			fi
+		fi
+	esac
+od
+
+return ((aposx,aposy), (adimx,adimy))
+END
+
+export func addwindow(w)=
+!w is a newly created window
+!add it to all windows
+n:=nil inx allwindows
+if not n.isfound then
+	n:=allwindows.len+1
+fi
+
+allwindows[n]:=w
+w.gindex:=n
+return n
+end
+
+export proc removewindow(w)=
+!remove w from all windows
+n:=w inx allwindows
+if n.isfound then
+	allwindows[n]:=nil
+fi
+end
+
+func process_wmmessage(msg)=
+!STATIC VAR CC=0
+!CPL "PROCESS/WMMESSAGE",++CC
+	x:=process_wmmessage2(msg)
+!CPL "RETURN X:",X
+!$SETDEBUG(1)
+	return x
+end
+
+func process_wmmessage2(msg)=
+!msg is a windows rmsg record
+!Called from MainWndProc callback func (via mechanisms for B code to call into MPL code)
+!this func processes some wm_ Windows messages and converts them
+!into mm_ messages as necessary
+!It returns:
+!	0 The wm_ message has been processed
+!	1 The wm_ message has not been processed, and the caller should call DefWindowProc.
+!	  Or, the DefWindowProc should also be called anyway.
+
+!CPL "PROCESSWMM2",MSG.MESSAGE, WINMESSAGENAMES{MSG.MESSAGE}
+
+hwnd:=msg.hwnd
+w:=getwindow(hwnd)
+
+message:=msg.message
+wparam:=msg.wparam
+lparam:=msg.lparam
+
+case msg.message
+when wm_command then
+	w:=getwindow(lparam)			!w was owner, use control window
+	i:=wparam iand 0xffff			!id
+	j:=wparam>>16				!notify code
+	m:=mm_command
+
+	if not w then
+		w:=wapplic
+	fi
+
+	postmess(w,m,i,j,0)
+
+	return 0
+
+when wm_activate then
+	if wparam then				!being activated
+	fi
+
+when wm_syskeydown,wm_syskeyup,wm_keydown,wm_keyup then
+
+STATIC VAR COUNT=0
+
+IF MSG.MESSAGE=WM_KEYDOWN THEN
+CPL "KEY",++COUNT
+FI
+
+	if dokeymessage(hwnd,message,wparam,lparam) then
+		return 0
+	fi
+
+when wm_char then
+	postmess((wfocus|wfocus|w),mm_char,wparam,lparam,0)
+
+when wm_close then
+	if w==wapplic then
+		postmess(w,mm_close,0,0,0)
+		return 0
+	else
+		postmess(w,mm_cancel,0,0,0)
+		return 0
+	fi
+
+when wm_timer then
+	if not background and not stationary then		!test for pausing of mouse
+		if gettickcount()-lastxytime>pausetime then
+			stationary:=1
+		fi
+	fi
+
+when wm_destroy then
+	if w and wapplic and w==wapplic then
+		killtimer(hwnd,1)
+!*		if tick then killtimer(hwnd,1) fi
+		postquitmessage(0)			!mm_quit message
+		return 0
+	else
+		return 1
+	fi
+
+!when wm_setcursor then
+!	postmess(w,mm_setcursor,wparam,lparam,0)
+
+when wm_mousemove then
+
+	buttonstate:=wparam iand (kb_lbutton ior kb_rbutton ior kb_mbutton)
+	mousepos.x:=lparam iand 65535
+	mousepos.y:=lparam>>16
+
+domousemove:
+	xyvalid:=1				!known again
+	setnewmousewindow(w)
+
+	wmouse:=w
+	postmess(wmouse,mm_move)
+
+	lastxy::=getscreencoords(wmouse,mousepos)
+	lastxytime:=gettickcount()
+	stationary:=0
+
+!do drag processing; states are:
+!pen up/recent pen down/first drag/subsequent drag
+!any drag messages are sent as well as mm_move messages
+!dragmode=1/2/3 indicates drag has started (reset by buttonswitching)
+
+	if buttonstate<>0 and lastmousewindow<>nil then		!switch pressed
+		pt:=getscreencoords(lastmousewindow,lastmousepos)
+		dx:=lastxy.x-pt.x
+		dy:=lastxy.y-pt.y
+
+		if dragmode then		!1st drag message already generated
+			postmess(lastmousewindow,mm_drag,dx,dy,-1)			!send latest drag coords
+
+		else				!test for drag enabling
+			if ((mousesw=1 and lastmousewindow.flags.[wa_leftdrag]<>0) or \
+							(mousesw=2 and lastmousewindow.flags.[wa_rightdrag]<>0) or \
+							(mousesw=3 and lastmousewindow.flags.[wa_middledrag]<>0)) and \
+						(abs(dx)>dragtol or abs(dy)>dragtol) then
+				dragmode:=mousesw
+				postmess(lastmousewindow,mm_startdrag,dx,dy,-1)		!send latest drag coords
+			fi
+
+		fi
+	else
+		if dragmode then
+			postmess(lastmousewindow,mm_enddrag,dx,dy,-1)	!send latest drag coords
+			dragmode:=0
+		fi
+	fi
+
+	return 0
+
+when wm_enteridle then		!enter idle
+	idlemode:=1
+	return 0
+
+when wm_paint then
+
+	if w<>nil then
+		ps:=new(ws_paintstruct)
+		rect:=new(ws_rect)
+		beginpaint(hwnd,&ps)
+		postmess(w,mm_restore,0,0,0)
+		endpaint(hwnd,&ps)
+		return 0
+	fi
+
+when wm_erasebkgnd then
+
+when wm_move then
+	if w<>nil then
+!*!		gxmovewindow(w,lparam iand 65535,lparam>>16)
+	fi
+
+when wm_size then
+	x:=lparam iand 0xffff
+	y:=lparam>>16
+	if w<>nil  and (w.dimx<>x or w.dimy<>y) then
+!*!		gxmplresize(w,x,y,wparam)
+		return 0
+	fi
+
+!when wm_killfocus,wm_setfocus then
+
+when wm_contextmenu then
+	sendmess(w,mm_rclick,wparam>>16,wparam iand 0xffff,0)
+	return 0
+
+when wm_mousewheel then
+	if not wmouse then wmouse:=w fi
+	postmess(wmouse,mm_wheel,int(wparam>>16),wparam iand 0xffff,0)
+	return 0
+
+when wm_nclbuttondown,wm_nclbuttondblclick then
+
+when wm_activateapp then
+	if wparam then
+		postmess(w,mm_activate,1,0,0)
+	fi
+
+else
+btnmessages:
+!check for sequential messages
+!CPL "FALLTHROUGH"
+	if message>=wm_lbuttondown and message<=wm_mbuttondblclk then
+		buttonmessages(hwnd,message,wparam,lparam)
+		return 0
+	fi
+esac
+!end
+!fall-through here to do default message processing instead of/in addition to local processing
+!CPL "HERE, RETURN 1"
+return 1	!defwindowproc(hwnd,imsg,wparam,lparam)
+end
+
+export proc mxinit=
+wmessagetable := [\
+	wm_lbuttondown:		mm_click,
+	wm_lbuttonup:		mm_clickup,
+	wm_lbuttondblclk:	mm_dblclick,
+
+	wm_rbuttondown:		mm_rclick,
+	wm_rbuttonup:		mm_rclickup,
+	wm_rbuttondblclk:	mm_rdblclick,
+
+	wm_mbuttondown:		mm_mclick,
+	wm_mbuttonup:		mm_mclickup,
+	wm_mbuttondblclk:	mm_mdblclick]
+
+!table gives button number 1,2,3 for Windows button message (always 0 for button up)
+buttontable	:= [\
+	wm_lbuttondown:		1,
+	wm_lbuttonup:		0,
+	wm_lbuttondblclk:	1,
+
+	wm_rbuttondown:		2,
+	wm_rbuttonup:		0,
+	wm_rbuttondblclk:	2,
+
+	wm_mbuttondown:		3,
+	wm_mbuttonup:		0,
+	wm_mbuttondblclk:	3]
+
+mousepos:=new(ws_point)
+
+setmesshandler(process_wmmessage)
+!CPL =PROCESS_WMMESSAGE
+!setmesshandler(bill)
+
+vktomesstable:=[\
+	vkleft:		mm_leftkey,
+	vkright:	mm_rightkey,
+	vkup:		mm_upkey,
+	vkdown:		mm_downkey,
+	vkpageup:	mm_pageupkey,
+	vkpagedown:	mm_pagedownkey,
+	vkhome:		mm_homekey,
+	vkend:		mm_endkey,
+	vktab:		mm_tabkey,
+	vkbackspace:	mm_bskey,
+	vkdelete:	mm_deletekey,
+	vkenter:	mm_enterkey,
+	vkinsert:	mm_insertkey,
+	vkescape:	mm_cancel
+]
+end
+
+export func postmess(w,mess,a=0,b=0,c=0)=
+!add message m to end of message queue
+!use mess+1000 to add message to start of queue rather than the end
+
+if w=nil then w:=wapplic fi
+if w=nil then
+ return 0 fi
+
+if w.flags.[wa_closed] then
+
+ return 0 fi
+
+if mess>=1000 then
+	headx:=1; mess-:=1000
+else
+	headx:=0
+fi
+
+!check if new message can be combined with an old message
+case mess
+when mm_sethozpos,mm_setvertpos,mm_draw,mm_restore,mm_update then
+	for i:=1 to nmessages do
+		m:=messagequeue[i].message
+		if m=mess and w==messagequeue[i].wind then				!use the old message but update any params
+			messagequeue[i].a:=a
+			messagequeue[i].b:=b
+			return 0
+		elsif mess=mm_draw and m=mm_update then		!convert update to draw
+			messagequeue[i].message:=mm_draw
+			return 0
+		fi
+	od
+esac
+
+if quitmess or nmessages>=maxqueuesize then
+	return 0
+fi
+
+postmsg(makemess(w,mess,a,b,c))
+
+return 0					!return zero for use in mainwndproc
+end
+
+export func postmsg(msg,headx=0)=
+!add complete message msg to end of message queue
+!use head=1 to add to start of queue rather than the end
+
+if quitmess or nmessages>=maxqueuesize then
+	return 0
+fi
+
+if msg.wind.flags.[wa_closed] then return 0 fi
+
+if headx then
+
+!avoid dupl paint messages
+	++nmessages
+	for i:=nmessages downto 2 do
+		messagequeue[i]:=messagequeue[i-1]
+	od
+	messagequeue[1]:=msg
+
+else
+	++nmessages
+	messagequeue[nmessages]:=msg
+fi
+
+return 0					!return zero for use in mainwndproc
+end
+
+export proc sendmess(w,mess,a=0,b=0,c=0)=
+!add message m to head of message queue
+!(may be 100% handled in q smlib)
+
+if w=nil then return fi
+if w.flags.[wa_closed] then return fi
+
+sendmsg(makemess(w,mess,a,b,c))
+end
+
+proc sendmsg(msg)=
+!call event handler for msg or add to head of queue
+if msg.wind.flags.[wa_closed] then return fi
+postmsg(msg,1)
+end
+
+export func makemess(w,mess,a=0,b=0,state=-1)=
+!turn params into a new messrec @nemm_ess
+!the q version makemess also accepts makemess(w,msg)
+
+if w=nil then w:=wapplic fi
+
+m:=new(rmessage,0)
+
+m.wind:=w
+
+m.message:=mess
+m.a:=a
+m.b:=b
+m.state:=state
+
+m.x:=mousepos.x
+m.y:=mousepos.y
+
+if m.state=-1 then m.state:=getshiftstate() fi
+
+return m
+end
+
+func dokeymessage(hwnd,msg,wparam,lparam)=
+!return 1 if message has been dealt with
+case msg
+when wm_syskeydown then
+	if wparam=vkf10 then msg:=wm_keydown; goto dokey fi
+
+when wm_syskeyup then
+	if wparam=vkf10 then msg:=wm_keyup; goto dokey fi
+
+when wm_keydown,wm_keyup then
+dokey:
+	case wparam
+	when vkshift,vkctrl,vkalt,vkcapslock then
+	else
+		w:=wfocus
+!		if not w then w:=wx_getw(hwnd) fi
+		if not w then w:=getwindow(hwnd) fi
+!CPL =GETSHIFTSTATE()
+!		postmess(w,(msg=wm_keydown|mm_key|mm_keyup),wparam,getshiftstate(),lparam)
+		postmess(w,(msg=wm_keydown|mm_key|mm_keyup),wparam,lparam,-1)
+		return 1
+	esac
+esac
+return 0
+end
+
+func getshiftstate=
+state:=0
+
+if getkeystate(vklshift) iand 0x8000 then state ior:=kb_shift fi
+if getkeystate(vklcontrol) iand 0x8000 then state ior:=kb_ctrl fi
+if getkeystate(vklalt) iand 0x8000 then state ior:=kb_alt fi
+
+if getkeystate(vkrshift) iand 0x8000 then state ior:=kb_rshift fi
+if getkeystate(vkrcontrol) iand 0x8000 then state ior:=kb_rctrl fi
+if getkeystate(vkralt) iand 0x8000 then
+	state ior:=kb_ralt
+	state iand:=(inot kb_ctrl)			!AltGr gives Lctrl+Ralt; return Ralt only
+fi
+if getkeystate(vkcapslock) iand 1 then state ior:=kb_capslock fi
+
+return state ior buttonstate
+END
+
+proc buttonmessages(hwnd,msg,wp,lp)=
+!process Windows mouse message <msg>
+
+!update button from wparam, excluding ctrl/shift (which are updated from key msgs)
+buttonstate:=wp iand (kb_lbutton ior kb_rbutton ior kb_mbutton)
+
+!update mouse position
+mousepos.x:=lp iand 0xffff
+mousepos.y:=int(lp)>>16
+wmouse:=getwindow(hwnd)
+
+!set mousesw to last pressed button (1,2,3) or 0 if one just released
+!(note other buttons may still be down, used for drag processing)
+mousesw:=buttontable{msg}
+
+if mousesw then			!down up on click or dblclick
+	lastbuttontime:=gettickcount()
+	lastmousepos::=mousepos
+	lastmousewindow:=wmouse
+else
+	mousesw:=0
+
+	if dragmode then
+		postmess(lastmousewindow,mm_enddrag,0,0,-1)
+		dragmode:=0
+	fi
+
+	lastbuttontime:=0
+	lastmousewindow:=nil
+fi
+
+newmess:=wmessagetable{msg}
+
+!filter double-click messages and convert to repeated click if not enabled
+case newmess
+when mm_dblclick then unless wmouse.flags.[wa_leftdbl] then newmess:=mm_click end
+when mm_rdblclick then unless wmouse.flags.[wa_rightdbl] then newmess:=mm_click end
+esac
+
+postmess(wmouse,newmess,wmouse.id,0,-1)
+END
+
+proc setnewmousewindow(w)=
+return when not currmousewindow
+unless w==currmousewindow then		!changed
+	if currmousewindow<>nil then
+		postmess(currmousewindow,mm_offwindow,0,0,0)
+	fi
+
+	currmousewindow:=w
+	postmess(w,mm_onwindow,0,0,0)
+end unless
+end
+
+proc frame2rect(f,r)=
+r^.x:=f^.x
+r^.y:=f^.y
+
+r^.dimx:=f^.x2-f^.x1+1
+r^.dimy:=f^.y2-f^.y1+1
+end
+
+export func mxwait_mm_message=
+#do windows dispatch loop
+#calling dispatchmessage() results in mainwndproc being called in interpreter,
+#which passes the Windows message params on to process_wmmessage() in this module
+#process_wmmessage() converts wm-messages to mpl mm-messages
+#return when at least one mm message is ready; (will return immediately if there
+#is already one in the queue)
+#return value is normall 1, or 0 when quitmess has been encountered
+
+if quitmess then				!quit message already seen
+	return 0
+fi
+
+windmsg:=new((iswin32|ws_msg32|ws_msg64))
+
+while nmessages<=0 do
+	if x:=getmessage(&windmsg,nil,0,0)<>0 then
+		w:=windmsg.hwnd
+		translatemessage(&windmsg)
+		dispatchmessage(&windmsg)
+	else
+		quitmess:=1
+		exit
+	fi
+od
+
+if not nmessages then			!assume quit message seen
+	return 0
+fi	
+
+currmess:=messagequeue[1]
+--nmessages
+
+xlatkeyboard()
+
+for i:=1 to nmessages do
+	messagequeue[i]:=messagequeue[i+1]
+od
+return 1
+end
+
+proc xlatkeyboard=
+!expand any mm_key messages to special key messages
+!uses and modified currmess
+m:=currmess.message
+
+if m=mm_key then
+
+	k:=currmess.a
+	if k>=vkf1 and k<=vkf12 then
+		newmsg:=currmess
+		currmess.message:=mm_functionkey
+		currmess.a:=k-vkf1+1
+	else
+		keymess:=vktomesstable{k,0}
+		if keymess then
+			currmess.message:=keymess
+		fi
+	fi
+fi
+end
+
+func getscreencoords(w,pos)=
+pt::=pos
+if not w then
+	PCERROR("GSC/W=0")
+fi
+
+clienttoscreen(w.gdi.hwnd,&pt)		!pos starts at 0,0
+return pt
+end
+
+export func getwindow(hwnd)=
+!convert hwnd to window
+!return nil if any problem
+if hwnd=0 then
+	return nil
+fi
+
+index:=wx_getw(hwnd)
+if index then
+	return allwindows[index]
+fi
+return nil
+end
+
+proc initmenuhandlers=
+ltcolour:=getrgb(ltgrey)
+dkcolour:=getrgb(dkgrey)
+end
+
+proc gxhandler_fixups=
+!do some manual fixups for various shared handlers
+!(the automatic fixup routine allows multiple window classes per message, but not
+! multiple message per window class)
+messhandlertable[mm_startdrag,scrollbar_class]:=mess_drag_scrollbar
+messhandlertable[mm_enddrag,scrollbar_class]:=mess_drag_scrollbar
+messhandlertable[mm_leftkey,scrollbar_class]:=mess_upkey_scrollbar
+end
+
+func mess_all_all(mess,w)=
+case mess.message
+when mm_startdrag,mm_drag,mm_enddrag then
+when mm_command then
+when mm_ok,mm_cancel then
+when mm_click then
+	case w.windclass
+	when label_class, group_class then
+		return skipmess
+	esac
+when mm_key then
+when mm_sethozpos,mm_setvertpos then
+when mm_pick,mm_lbchange then
+when mm_leftkey,mm_rightkey,mm_upkey,mm_downkey,mm_enterkey,mm_tabkey then
+when mm_pageupkey,mm_pagedownkey then
+when mm_homekey, mm_endkey then
+when mm_functionkey then
+when mm_wheel then
+else
+	return skipmess
+esac
+
+return thismess
+end
+
+func mess_restore_all(mess,w)=
+gxrestore(W)
+
+return skipmess
+end
+
+func mess_killfocus_all(mess,w)=
+!note: can be called from mess_setfocus_all, with a different mess, but correct w
+!assume w is same as wfocus
+
+drawcaret(0)
+wfocus:=nil
+
+return skipmess
+end
+
+func mess_setfocus_all(mess,w)=
+if wfocus then
+	mess_killfocus_all(mess,wfocus)
+fi
+
+wfocus:=w
+drawcaret(1)
+return skipmess
+end
+
+func mess_update_all(mess,w)=
+gxupdate(w)
+return skipmess
+end
+
+func mess_draw_all(mess,w)=
+gxdraw(w)
+return skipmess
+end
+
+func mess_click_select(mess,w)=
+if w.enable then
+	if not w.style.noupdate then
+		p:=w.linkvar
+		p^:=w.attrs.onvalue
+		for wc in w.owner.childlist do
+			if wc.windclass=select_class and wc.linkvar=p then
+				gxdraw(wc)
+			fi
+		od
+	fi
+	if w.style.returnmess then
+		postmess(w,mm_command,w.id)
+	fi
+fi
+return skipmess
+end
+
+func mess_click_toggle(mess,w)=
+if w.enable then
+	if not w.style.noupdate then
+		w.linkvar^:=not w.linkvar^
+		gxdraw(w)
+	fi
+	if w.style.returnmess then
+		postmess(w,mm_command,w.id)
+	fi
+fi
+return skipmess
+end
+
+func mess_click_button(mess,w)=
+
+if w.enable=0 then
+	beep1()
+	return skipmess
+fi
+
+if w.id in 0..199 then				!speficies an actual message number (but no params)
+	postmess(w,w.id)
+else
+	postmess(w,mm_command,w.id)
+fi
+return skipmess
+end
+
+func mess_click_editbox(mess,w)=
+if w.enable then
+	if not w.style.noupdate then
+		unless w==wfocus then
+			gxfocus(w)
+		end
+	fi
+	if w.style.returnmess then
+		postmess(w,mm_command,w.id)
+	fi
+fi
+
+return skipmess
+end
+
+func mess_click_arrow(mess,w)=
+
+case w.owner.windclass
+when scrollbar_class then
+	postmess(w.owner,dirtomess{w.style.dir},w.id,0,-1)
+else
+	mess.message:=dirtomess{w.style.dir}
+	mess.a:=w.id
+	return thismess
+esac
+return skipmess
+end
+
+func mess_click_mark(mess,w)=
+
+case w.owner.windclass
+when toggle_class,select_class then
+	postmess(w.owner,mess.message,w.id,0,-1)
+esac
+return skipmess
+end
+
+func mess_click_listbox(mess,w)=
+gxfocus(w)
+
+y:=max(w.attrs.offset,mess.y)
+
+pos:=(y-w.attrs.offset)%w.attrs.pitch+w.attrs.pagepos
+if pos<=getlvbounds(w.linkvar).len then
+	gxsetlbpos(w,pos)
+	postmess(w,mm_pick,pos)
+fi
+
+return skipmess
+end
+
+func mess_click_scrollbar(mess,w)=
+onthumb:=isonthumb(w,(w.style.dir='H'|mess.x|mess.y))
+step:=w.attrs.span
+a:=w.attrs.currpos
+
+case w.owner.windclass
+when listbox_class then
+	case onthumb
+	when -1 then
+		if a>w.attrs.limits.lwb then
+			a:=max(a-step,w.attrs.limits.lwb)
+			gxsetlbpage(w.owner,a)
+		fi
+	when 1 then
+		if a<w.attrs.limits.upb then
+			a:=min(a+step,w.attrs.limits.upb)
+			gxsetlbpage(w.owner,a)
+		fi
+	esac
+else
+	if not step then step:=10 fi
+
+	case onthumb
+	when -1 then
+		if a>w.attrs.limits.lwb then
+			a:=max(a-step,w.attrs.limits.lwb)
+			gxscrollpos(w,a,1)
+			postmess(w,mm_sethozpos,a)
+		fi
+	when 1 then
+		if a<w.attrs.limits.upb then
+			a:=min(a+step,w.attrs.limits.upb)
+			gxscrollpos(w,a,1)
+			postmess(w,mm_sethozpos,a)
+		fi
+	esac
+esac
+return skipmess
+end
+
+func mess_wheel_scrollbar(mess,w)=
+delta:=currmess.a
+n:=abs(currmess.a%120)
+to n do
+	case w.windclass
+	when scrollbar_class then
+doscroll:
+		postmess(w,(delta>0|mm_up|mm_down))
+	when listbox_class then
+		if w.childlist then
+			w:=w.childlist[1]
+			goto doscroll
+		fi
+		postmess(w,(delta>0|mm_upkey|mm_downkey))
+	esac
+od
+return skipmess
+end
+
+func mess_up_scrollbar(mess,w)=
+a:=w.attrs.currpos
+if a<=w.attrs.limits.lwb then
+	return skipmess
+fi
+case w.owner.windclass
+when listbox_class then
+	gxsetlbpage(w.owner,a-1)
+	return skipmess
+else
+	--a
+	gxscrollpos(w,a,1)
+	postmess(w,mm_setvertpos,a)
+esac
+return skipmess
+end
+
+func mess_left_scrollbar(mess,w)=
+
+case w.owner.windclass
+when listbox_class then
+	return skipmess
+else
+	a:=w.attrs.currpos
+	if a>w.attrs.limits.lwb then
+		--a
+		gxscrollpos(w,a,1)
+		postmess(w,mm_sethozpos,a)
+	fi
+esac
+return skipmess
+end
+
+func mess_right_scrollbar(mess,w)=
+
+case w.owner.windclass
+when listbox_class then
+	return skipmess
+else
+	a:=w.attrs.currpos
+	if a<w.attrs.limits.upb then
+		++a
+		gxscrollpos(w,a,1)
+		postmess(w,mm_sethozpos,a)
+	fi
+
+esac
+return skipmess
+end
+
+func mess_down_scrollbar(mess,w)=
+
+a:=w.attrs.currpos
+if a>=w.attrs.limits.upb then
+	return thismess
+fi
+case w.owner.windclass
+when listbox_class then
+	gxsetlbpage(w.owner,a+1)
+	return skipmess
+else
+	++a
+	gxscrollpos(w,a,1)
+	postmess(w,mm_setvertpos,a)
+
+esac
+return skipmess
+end
+
+func mess_drag_scrollbar(mess,w)=
+case mess.message
+when mm_startdrag then
+	if isonthumb(w,(w.style.dir='H'|mess.x|mess.y))=0 then
+		thumbdragmode:=1			!then treat as mm_drag
+		thumbstartpos:=w.attrs.thumbpos-arrowdim		!use thumb pos at start of drag
+	else							!dragging other part of scrollbar
+		return skipmess
+	fi
+when mm_enddrag then
+	thumbdragmode:=0
+	return skipmess
+elsif not thumbdragmode then
+	return skipmess
+esac
+
+offset:=(w.style.dir='H'|mess.a|mess.b)		!pixel offset from initial drag start pos
+newpos:=thumbstartpos+offset						!could outside thumb span range
+
+pos:=int(round((newpos/w.attrs.thumbspan)*(w.attrs.limits.len-1)+w.attrs.limits.lwb))
+pos:=clamp(pos,w.attrs.limits.lwb,w.attrs.limits.upb)
+
+case w.owner.windclass
+when listbox_class then
+	gxsetlbpage(w.owner,pos)
+else
+	gxscrollpos(w,pos,1)
+	postmess(w,(w.style.dir='H'|mm_sethozpos|mm_setvertpos),pos)
+esac
+return skipmess
+end
+
+func mess_move_button(mess,w)=
+return skipmess
+end
+
+func mess_move_all(mess,w)=
+return skipmess
+end
+
+func mess_char_editbox(mess,w)=
+	if mess.a not in 32..255 then
+		if wapplic then
+			postmess(wapplic,mm_key,mess.a,mess.b,mess.state)
+		fi
+		return skipmess
+	fi
+	if not w.enable or w.style.noupdate then return skipmess fi
+	s:=w.linkvar^
+	n:=w.attrs.currpos
+	c:=chr(mess.a)
+
+	if n>s.len then				!at end
+		s+:=c
+	elsif n=1 then				!at start
+		s:=c+s
+	else						!in middle
+		s:=leftstr(s,n-1)+c+rightstr(s,-(n-1))
+	fi
+
+	w.linkvar^:=s
+	++w.attrs.currpos
+	gxdraw(w)
+
+	return skipmess
+end
+
+func mess_key_editbox(mess,w)=
+!CPL "KEY/EDITBOX"
+
+postmess(wapplic,mm_key,mess.a,mess.b,mess.state)
+
+return skipmess
+end
+
+func mess_leftkey_editbox(mess,w)=
+if ctrlpressed() then
+	postmess(wapplic,mm_leftkey,mess.a,mess.b,mess.state)
+	return skipmess
+fi
+
+if w.attrs.currpos>1 then
+	drawcaret(0)
+	--w.attrs.currpos
+	drawcaret(1)
+fi
+return skipmess
+end
+
+func mess_rightkey_editbox(mess,w)=
+if ctrlpressed() then
+	postmess(wapplic,mm_rightkey,mess.a,mess.b,mess.state)
+	return skipmess
+fi
+
+if w.attrs.currpos<=w.linkvar^.len then
+	drawcaret(0)
+	++w.attrs.currpos
+	drawcaret(1)
+fi
+return skipmess
+end
+
+func mess_bskey_editbox(mess,w)=
+s:=w.linkvar^
+if not s then return skipmess fi
+n:=w.attrs.currpos
+if n=1 then return skipmess fi
+
+if n>s.len then				!at end
+	s:=leftstr(s,-1)
+else						!in middle
+	s:=leftstr(s,n-2)+rightstr(s,-(n-1))
+fi
+
+w.linkvar^:=s
+--w.attrs.currpos
+gxdraw(w)
+
+return skipmess
+end
+
+func mess_deletekey_editbox(mess,w)=
+s:=w.linkvar^
+if not s then return skipmess fi
+n:=w.attrs.currpos
+if n>s.len then return skipmess fi
+
+if n=1 then				!at start
+	s:=rightstr(s,-1)
+else						!in middle
+	s:=leftstr(s,n-1)+rightstr(s,-n)
+fi
+w.linkvar^:=s
+gxdraw(w)
+
+return skipmess
+end
+
+func mess_homekey_editbox(mess,w)=
+if ctrlpressed() then
+	postmess(wapplic,mm_homekey,mess.a,mess.b,mess.state)
+	return skipmess
+fi
+
+drawcaret(0)
+w.attrs.currpos:=1
+drawcaret(1)
+
+return skipmess
+end
+
+func mess_homekey_listbox(mess,w)=
+if w.attrs.currpos>1 then
+	gxsetlbpos(w,1)
+fi
+
+return skipmess
+end
+
+func mess_endkey_editbox(mess,w)=
+if ctrlpressed() then
+	postmess(wapplic,mm_endkey,mess.a,mess.b,mess.state)
+	return skipmess
+fi
+
+drawcaret(0)
+w.attrs.currpos:=w.linkvar^.len+1
+drawcaret(1)
+
+return skipmess
+end
+
+func mess_endkey_listbox(mess,w)=
+!if w.attrs.currpos<w.linkvar^.len then
+if w.attrs.currpos<getlvbounds(w.linkvar).len then
+!	gxsetlbpos(w,w.linkvar^.len)
+	gxsetlbpos(w,getlvbounds(w.linkvar).len)
+fi
+
+return skipmess
+end
+
+func mess_upkey_listbox(mess,w)=
+if w.attrs.currpos>1 then
+	gxsetlbpos(w,w.attrs.currpos-1)
+fi
+
+return skipmess
+end
+
+func mess_upkey_scrollbar(mess,w)=
+!assume that this is independent scrollbar
+!(linked scrollbar wouldn't get the focus)
+
+a:=w.attrs.currpos
+if a>w.attrs.limits.lwb then
+	--a
+	gxscrollpos(w,a,1)
+	postmess(w,mm_setvertpos,a)
+fi
+return skipmess
+end
+
+func mess_downkey_listbox(mess,w)=
+!if w.attrs.currpos<w.linkvar^.len then
+if w.attrs.currpos<getlvbounds(w.linkvar).len then
+	gxsetlbpos(w,w.attrs.currpos+1)
+fi
+
+return skipmess
+end
+
+func mess_pageupkey_listbox(mess,w)=
+if (a:=w.attrs.currpos)>1 then
+	a:=max(a-w.attrs.rows,1)
+	gxsetlbpos(w,a)
+fi
+
+return skipmess
+end
+
+func mess_pagedownkey_listbox(mess,w)=
+if (a:=w.attrs.currpos)<getlvbounds(w.linkvar).len then
+	a:=min(a+w.attrs.rows,getlvbounds(w.linkvar).len)
+	gxsetlbpos(w,a)
+fi
+
+return skipmess
+end
+
+func mess_enterkey_listbox(mess,w)=
+if w.attrs.currpos then
+	postmess(w,mm_pick,w.attrs.currpos)
+fi
+
+return skipmess
+end
+
+proc do_draw_all(w)=
+gxclear(w)
+drawborder(w)
+drawchildborders(w)
+end
+
+proc do_draw_button(w)=
+gxclear(w)
+
+gxtext_just(w,w.text,0,w.enable)
+
+drawborder(w)
+
+end
+
+proc do_draw_label(w)=
+do_draw_button(w)
+end
+
+proc do_draw_toggle(w)=
+gxclear(w)
+
+VALSTR:=""
+
+turnedon:=istrue w.linkvar^
+
+if w.style.marktype then
+	drawmark(w.childlist[1],turnedon,w.enable)
+
+	gxtext_just(w,w.text+valstr,markdim,w.enable)
+else
+!	case w.style.hilitetype
+!	when invert_hilite then
+		if turnedon then
+			gxclear(w,getrgb(green))
+		fi
+!	esac
+
+	gxtext_just(w,w.text+valstr)
+fi
+end
+
+proc do_draw_select(w)=
+gxclear(w)
+
+turnedon:=w.linkvar^=w.attrs.onvalue
+
+if w.style.marktype then
+	drawmark(w.childlist[1],turnedon,w.enable)
+	gxtext_just(w,w.text,markdim,w.enable)
+else
+	case w.style.hilitetype
+	when invert_hilite then
+		if turnedon then
+			gxclear(w,getrgb(white))
+		fi
+	esac
+		gxtext_just(w,w.text)
+fi
+end
+
+proc do_draw_editbox(w)=
+gxclear(w)
+
+gxtext_just(w,w.linkvar^,enable:w.enable)
+
+!Now, have to draw the cursor
+unless wfocus==w then			!only draw it when this window has the focus
+	return
+end
+
+caretdrawn:=0
+
+drawcaret(1)
+end
+
+proc do_draw_arrow(w)=
+gxclear(w)
+
+drawborder(w)
+drawarrow(w,w.enable)
+end
+
+proc do_draw_mark(w)=
+
+case w.owner.windclass
+when toggle_class, select_class then
+	return					!mark drawn by owner
+esac
+
+gxclear(w,getrgb(w.owner.style.windbgnd))
+
+drawborder(w)
+end
+
+proc do_draw_scrollbar(w)=
+gxclear(w)
+drawborder(w)
+gxdraw(w.childlist[1])			!arrows
+gxdraw(w.childlist[2])
+
+!now draw the thumb
+if w.attrs.thumbsize then
+	if w.style.dir='H' then
+		x:=w.attrs.thumbpos
+		dx:=w.attrs.thumbsize
+		drawthumb(w,x,0,dx,w.dimy)
+	else
+		y:=w.attrs.thumbpos
+		dy:=w.attrs.thumbsize
+		drawthumb(w,0,y,w.dimx,dy)
+	fi
+fi
+end
+
+proc do_draw_listbox(w)=
+gxclear(w)
+drawborder(w)
+if w.childlist then			!scrollbar
+	gxdraw(w.childlist[1])
+fi
+
+for i:=1 to w.attrs.rows do
+	k:=i+w.attrs.pagepos-1
+	if k<=getlvbounds(w.linkvar).len then
+		drawlbtext(w,i,getlvstritem(w.linkvar,k),0,k=w.attrs.currpos)
+	fi
+od
+end
+
+proc do_update_all(w)=
+gxdraw(w)
+end
+
+proc do_update_listbox(w)=
+gxdraw(w)
+end
+
+proc drawcaret(x)=
+!x=1: draw caret in wfocus window at current position
+!x=0: delete caret in wsfocus window
+!returns x-pixel position of caret
+
+if wfocus=nil then		!no window has focus
+	caretdrawn:=0
+	return
+fi
+
+case wfocus.windclass
+when editbox_class then
+	if x then			!new caret
+		if caretdrawn then return fi	!already drawn
+		xpos:=getcaretpos(wfocus.linkvar^,wfocus.attrs.currpos,0)
+		wfocus.attrs.caretpos:=xpos			!record position
+	else			!delete caret
+		if not caretdrawn then return fi	!already deleted
+		xpos:=wfocus.attrs.caretpos		!use stored value
+	fi
+
+	caretwidth:=2
+
+	gxhighlight(wfocus,xpos+wfocus.attrs.textpos[1],wfocus.attrs.textpos[2]-chd,caretwidth,20)
+
+	caretdrawn:=x
+esac
+end
+
+func getcaretpos(s,pos,offset)=
+!return pixel position of in front of pos'th character in string s
+!offset is no. of chars not shown, to left of string
+if pos=1 then return 0 fi
+
+return wx_gettextwidth(wfocus.gdi.hdc, leftstr(s,pos-1))
+end
+
+proc drawborder(w)=
+!do own-drawn borders
+!other kinds of borders are windows-drawn, no-border, and the main bs- style
+!borders which exist in the owner's client area
+!for own-drawn borders, the window should have been cleared first
+
+case bscat[w.style.border]
+when 0 then					!no border
+	return
+when 'W' then				!windows-drawn
+	return
+when 'X' then				!external (drawn in owner's client space
+	posx:=w.frameposx
+	posy:=w.frameposy
+	dimx:=w.framedimx
+	dimy:=w.framedimy
+	bs:=w.style.border
+
+	bs:=w.style.border
+	wo:=w.owner
+	case bs
+	when bs_simple then			!USUALLY BS_SIMPLE converts to BS_WINDOWS; must be override
+		gxcolour(wo,0)
+		gxrect(wo,posx,posy,dimx,dimy)
+	when bs_thick then
+	when bs_panel then
+		gxcolour(wo,ltcolour)
+		gxline(wo,posx+dimx-1,posy, posx,posy)
+		gxline(wo,posx,posy+dimy-1)
+		gxcolour(wo,dkcolour)
+		gxline(wo,posx+dimx-1,posy+dimy-1)
+		gxline(wo,posx+dimx-1,posy)
+	when bs_inset then
+		gxcolour(wo,dkcolour)
+		gxline(wo,posx+dimx-1,posy, posx,posy)
+		gxline(wo,posx,posy+dimy-1)
+		gxcolour(wo,ltcolour)
+		gxline(wo,posx+dimx-1,posy+dimy-1)
+		gxline(wo,posx+dimx-1,posy)
+	when bs_testext then
+		gxcolour(wo,0)
+		gxrect(wo,posx,posy,dimx,dimy)
+		gxrect(wo,posx+9,posy+9,dimx-18,dimy-18)
+	esac
+when 'I' then				!internal (drawn within window's client space
+	posx:=w.frameposx
+	posy:=w.frameposy
+	dimx:=w.dimx
+	dimy:=w.dimy
+
+	case w.style.border
+	when bs_ownpanel then
+		gxcolour(w,ltcolour)
+		gxline(w,w.framedimx-1,0,0,0)
+		gxline(w,0,w.framedimy-1)
+		gxcolour(w,dkcolour)
+		gxline(w,w.framedimx-1,w.framedimy-1)
+		gxline(w,w.framedimx-1,0)
+
+	when bs_owninset then
+		gxcolour(w,dkcolour)
+		gxline(w,w.framedimx-1,0,0,0)
+		gxline(w,0,w.framedimy-1)
+		gxcolour(w,ltcolour)
+		gxline(w,w.framedimx-1,w.framedimy-1)
+		gxline(w,w.framedimx-1,0)
+	when bs_ownsimple then
+		gxcolour(w,0)
+		gxrect(w,0,0,w.framedimx,w.framedimy)
+	when bs_testint then
+		gxcolour(w,0)
+		gxrect(w,0,0,dimx,dimy)
+		gxrect(w,7,7,dimx-14,dimy-14)
+	esac
+esac
+end
+
+proc drawchildborders(w)=
+if not w.childlist then
+	return
+fi
+for wc in w.childlist do
+	if wc.style.border in [bs_simple,bs_thick,bs_panel,bs_inset] then
+		drawborder(wc)
+	fi
+od
+end
+
+proc drawarrow(w,enable)=
+!w has already been cleared
+!e=1/omitted to enable, 0 to disable (shown grey)
+const factor=0.3
+
+gxsetpen(w,(enable|black|dkgrey))
+
+width:=w.dimx
+height:=w.dimy
+
+case w.style.dir
+when 'D' then
+	x:=int(round(width/2)-1)
+
+	wd:=0
+
+	h:=int(round(min(height,width)*factor))
+	if h<3 then h:=3 fi
+	y:=int((height+h)*0.5)-1
+
+	to h do
+		gxline(w,x,y,x+wd,y)
+		x-:=1
+		y-:=1
+		wd+:=2
+	od
+
+when 'U' then
+	x:=int(round(width/2)-1)
+	wd:=0
+
+	h:=int(round(min(height,width)*factor))
+	if h<3 then h:=3 fi
+	y:=int(round((height-h)*0.5))
+	to h do
+		gxline(w,x,y,x+wd,y)
+		x-:=1
+		y+:=1
+		wd+:=2
+	od
+
+when 'L' then
+	y:=height%2
+
+	ht:=0
+	wd:=y
+
+	wd:=int(round(min(height,width)*factor))
+	if wd<3 then wd:=3 fi
+	x:=int(round((width-wd)*0.5)-1)
+
+	to wd do
+		gxline(w,x,y,x,y+ht)
+		y-:=1
+		x+:=1
+		ht+:=2
+	od
+
+when 'R' then
+	y:=height%2
+	ht:=0
+
+	wd:=int(round(min(height,width)*factor))
+	if wd<3 then wd:=3 fi
+	x:=int(round((width+wd)*0.5)-1)
+
+	to wd do
+		gxline(w,x,y,x,y+ht)
+		y-:=1
+		x-:=1
+		ht+:=2
+	od
+esac
+end
+
+export proc gxtext_just(w,s,offset=0,enable=1)=
+	dimx:=w.dimx
+	dimy:=w.dimy
+	width:=wx_gettextwidth(w.gdi.hdc, s)
+	height:=chy				!assume basic font
+
+	case w.style.justify
+	when 'L' then	x:=smx
+	when 'R' then	x:=dimx-width-smx
+	else
+				x:=(dimx-width)%2
+	esac
+
+	case w.style.vjustify
+	when 'T' then	y:=smy
+	when 'B' then	y:=dimy-height-smy
+	else
+				y:=(dimy-height)%2!		-smy%2
+	esac
+
+	if not enable then
+		oldtextfgnd:=w.style.textfgnd
+		gxtextcolour(w,grey)
+	fi
+
+	gxtext(w,s,x+offset,y)
+
+	if not enable then
+		gxtextcolour(w,oldtextfgnd)
+	fi
+	if w.windclass=editbox_class then
+		w.attrs.textpos:=(x+offset,y)
+	fi
+end
+
+proc drawthumb(w,x,y,dx,dy)=
+!w is a scrollbar, vert or hoz
+!draw thumb within w, as a simple rectangle starting at x,y at top left of size dx,dy
+
+gxcolour(w,0)
+gxrect(w,x,y,dx,dy)
+gxfillrect(w,x+1,y+1,dx-2,dy-2,getrgb(grey))
+end
+
+func isonthumb(w,d)=
+!w is a scrollbar, d is a pixel position along it (0 being at left or top)
+!return:
+! -1	is before the thumb
+!  0	is on the thumb
+! +1	if after the thumb
+!d can specify a spot off the thumbar if being dragged
+
+a:=w.attrs.thumbpos
+b:=w.attrs.thumbsize
+
+if d<a then
+	return -1
+elsif d>(a+b) then
+	return 1
+else
+	return 0
+fi
+end
+
+proc drawmark(w,turnedon,enable)=
+!!w has already been cleared
+!draw checked check mark, tick, or radio button, according to whether
+!turnedon is 1 or 0
+!e=1 to enable, 0 to disable (shown grey)
+
+gxclear(w,getrgb(w.owner.style.windbgnd))
+gxsetpen(w,(enable|black|red))
+
+width:=w.dimx
+height:=w.dimy
+x:=y:=1
+wd:=width-2
+ht:=height-2
+gxrect(w,x,y,wd,ht)
+if not turnedon then return fi
+
+case w.style.marktype
+when radio_mark then
+
+	gxfillrect(w,x+3,y+3,wd-6,ht-6,getrgb(red))
+
+when check_mark then
+
+	gxline(w,x,y,x+wd-1,y+ht-1)
+	gxline(w,x+wd-1,y,x,y+ht-1)
+
+when tick_mark then
+
+	gxline(w,x+3,y+ht%2,x+wd%2,y+ht-4)
+	gxline(w,x+wd-3,y+2)
+
+esac
+end
+
+proc drawlbtext(w,row,text,clr=0,hilite=0)=
+!draw text inside given row of listbox w
+!clr=1 to clear the background first (not needed when entired lb has been cleared)
+!hilite=1 to highlight this row
+
+x:=0
+y:=(row-1)*w.attrs.pitch+w.attrs.offset
+
+if clr or hilite then
+	gxfillrect(w,x,y,w.dimx,w.attrs.pitch,(hilite|getrgb(grey)|getrgb(w.style.windbgnd)))
+fi
+
+if hilite then
+	oldtextcolour:=gxtextcolour(w)
+	gxtextcolour(w,white)
+fi
+!RETURN
+
+gxtext(w,text,x+smx,y+smy)
+if hilite then
+	gxtextcolour(w,oldtextcolour)
+fi
+end
+
+func readnextitem(a)=
+!return (level,value,labelx,options)
+!special values used for divider, new column, new menu
+!next line of file should already have been read
+
+if a="" then return list(0,0,0,0) fi
+
+level:=1
+tabs:=0
+options:=""
+
+while asc(a) in [9,' '] do tabs+:=1; a:=rightstr(a,-1) od
+
+if a="" then return list(0,0,0,0) fi
+
+case asc(a)
+when '!' then
+	return list(0,0,0,0)
+esac
+
+if tabs then
+	j:=0
+	for i:=1 to ntab do
+		if tabs=tabstack[i] then j:=i; exit fi
+	od
+
+	if j=0 then
+		if tabs>tabstack[ntab] then
+			ntab+:=1
+			tabstack[ntab]:=tabs
+		fi
+		level:=ntab
+	else
+		level:=j
+		if j<ntab then ntab:=j fi
+	fi
+fi
+
+if asc(a) in ['0'..'9'] then
+	value:=strtoval(a)
+	n:=" " inx a
+	if not n.isfound then
+		n:=chr(9) in a
+	fi
+	if n.isfound then
+		labelx:=rightstr(a,-n)
+	else
+		labelx:="?"
+	fi
+
+else			!no preceding number, maybe top-level menu
+
+	if "=" in a then	!command def for mpl
+		return (0,0,0,0)
+	fi
+
+	value:=k_menu
+	labelx:=a
+	case convlc(labelx)
+	when "hozbreak","divider" then
+		value:=kdivide
+	when "vertbreak" then
+		value:=kcolumn
+	when "filehistory" then
+		value:=kfilehistory
+	else
+		if leftstr(labelx)="-" then value:=kdivide fi
+	esac
+fi
+
+if labelx="" then			!maybe [cmd] only
+	return list(0,0,0,0)
+fi
+
+return (level,value,(labelx),options)
+end
+
+func readmenu(m,n,level)=
+!starting at index n in data, read all following items that are
+!at lower level (ie. higher level number) than given level
+!insert items into menu handle m
+!return index of next item in data, which is at <level> or higher
+!will stop at end of data, and return ndata+1
+
+restartx:
+for i:=n to ndata do
+	(l,value,labelx,options):=data[i]
+
+	if l<=level then		!end of this submenu
+		return i
+	fi
+
+	flags:=breakflag
+	enable:=1
+	if rightstr(labelx)="?" then
+		enable:=0
+		labelx:=leftstr(labelx,-1)
+	fi
+
+	if options<>"" then
+		if "H" in options then flags+:="h" fi
+		if "C" in options then flags+:="c" fi
+	fi
+
+	case value
+	when kdivide then
+		gxaddmb(m,style:"d")
+	when kcolumn then
+		breakflag:="v"
+	when k_menu then		!submenu
+		newm:=gxcreatemb()
+		n:=readmenu(newm,i+1,l)
+		gxaddmb(m,labelx,newm,"p"+flags,enable)
+		breakflag:=""
+		goto restartx
+	when kfilehistory then
+		nfiles:=8
+		gxaddmb(m,"filehistory",1060,breakflag)
+	else				!ordinary command
+normalcmd:
+		gxaddmb(m,labelx,value,flags,enable)
+		breakflag:=""
+	esac
+
+skip:
+od
+
+return ndata+1			!eod reached
+end
+
+func mbreaddata(a)=
+!a is a list of tab-indented strings for a menu bar
+!a can also be a text file containing the strings
+
+tabstack::=(0,)
+ntab:=1
+data::=()
+ndata:=0
+breakflag:=""
+
+if a.isstring then		!read from file
+	a:=readtextfile(a)
+	if a=0 then
+		a:=("CANTOPENFILE",)
+	fi
+fi
+
+for i:=1 to a.upb do
+	x:=readnextitem(a[i])
+
+	if x[1] then
+		++ndata
+		data[ndata]:=x
+	fi
+od
+
+m:=gxcreatemb()
+readmenu(m,1,0)
+return m
+end
+
+export func gxmenubar(w,?a)=
+!called as:
+!	gxmenubar(a):	create standalone menu; return handle
+!	gxmenubar(w,a):	add menu to windows w (returns 0)
+!a:
+!	string:			assume this is a filename containing menubar tabbed layout
+!	list:			a list of strings containing the data
+
+if a.defined then		!w,m: read menu into window w
+	m:=mbreaddata(a)
+
+	if not w.ispointer then
+		while w.owner<>nil do
+			w:=w.owner
+		od
+	fi
+
+	gxsetmb(w,m)
+	return 0
+else				!create standalone menu, return handle
+	return mbreaddata(w)
+fi
+end
+
+func gxcreatemb(?s)=
+if s.defined and s in "Pp" then
+	return createpopupmenu()
+else
+	return createmenu()
+fi
+end
+
+proc gxsetmb(w,m)=
+
+hwnd:=w.gdi.hwnd
+a:=getmenu(hwnd)
+s:=setmenu(hwnd,m)
+if a then destroymenu(a) fi
+end
+
+func gxaddmb(wm,caption="X",id=0,style="",enable=0)=
+
+if wm.ispointer then				!assume handle
+	hmenu:=wm
+	wm:=nil
+else
+	hmenu:=getmenu(wm.gdi.hwnd)
+fi
+
+flags:=mf_string ior mf_unchecked
+
+if not enable then flags ior:=mf_greyed fi
+
+foreach c in convuc(style) do
+	case c
+	when 0 then exit
+	when 'P' then flags ior:=mf_popup
+	when 'D' then flags ior:=mf_separator
+	when 'B' then flags ior:=mf_menubreak
+	when 'V' then flags ior:=mf_menubarbreak
+	when 'H' then flags ior:=mf_help
+	when 'C' then flags ior:=mf_checked
+	esac
+od
+
+if appendmenu(hmenu,flags,id,caption) then
+	if wm<>nil then drawmenubar(wm.gdi.hwnd) fi
+	return hmenu
+fi
+return 0
+end
+
+proc gxshowmb(wm,w,x,y)=
+!update menu associated with window; call this func if it has been updated
+!when wm is a menu handle, draw the popup on the screen at x,y
+!if wm.isint then
+if wm.ispointer then
+
+	if not y.defined then
+		x:=w
+		y:=x
+		w:=nil
+		hwnd:=wapplic.gdi.hwnd
+	else
+		hwnd:=w.gdi.hwnd
+	fi
+
+	pos:=ws_point(x,y)
+
+	if w<>nil then
+		clienttoscreen(w.gdi.hwnd,&pos)
+	fi
+
+	trackpopupmenu(wm,0,pos.x,pos.y,0,hwnd,0)
+else
+	drawmenubar(wm.gdi.hwnd)
+fi
+end
+
+func gxenablemb(wm,id,enable)=
+
+if wm.ispointer then				!assume handle
+	hmenu:=wm
+else
+	hmenu:=getmenu(wm.gdi.hwnd)
+fi
+
+if enable.defined then
+	return enablemenuitem(hmenu,id,(enable|0|mf_greyed)+mf_bycommand)
+else
+	return (getmenustate(hmenu,id,mf_bycommand) iand mf_greyed|0|1)
+fi
+end
+
+func gxcheckmb(wm,id,check)=
+if wm.ispointer then				!assume handle
+	hmenu:=wm
+else
+	hmenu:=getmenu(wm.gdi.hwnd)
+fi
+
+if check.defined then
+	return checkmenuitem(hmenu,id,(check|mf_checked|mf_unchecked)+mf_bycommand)
+else
+	return (getmenustate(hmenu,id,mf_bycommand) iand mf_checked|1|0)
+fi
+end
+
+proc gxclosemb(m)=
+destroymenu(m)
+end
+
+export func gxconfirm(m)=
+x:=gxmsgbox(m,"Confirm","byn")
+return x="yes"
+end
+
+func issubwindow(w,w2)=
+while w2 do
+	if w2==w then return 1 fi
+	w2:=w2.owner
+od
+return 0
+end
+
+export proc flushmessages=
+
+end
+=== bmlib.q 0 1 38/44 ===
+VAR DEBUG=0
+
+importdll imglib =
+    func imgload_rgb		(stringz, ref byte, ref byte, ref byte, int32)ref byte
+
+    func imgload_bgr		(stringz, ref int32, ref int32, ref int32, int32)ref byte
+
+!    func nanoloadjpeg		(stringz, ref int32, ref int32, ref int32)ref byte
+!    func loadjpegm			(stringz, ref int64, ref int64, ref int64)ref byte
+
+    proc          imgload_free		(ref byte)
+    func imgsave_jpeg_rgb	(stringz, ref byte, int32, int32, int32)int32
+    func imgsave_jpeg_bgr	(stringz, ref byte, int32, int32, int32)int32
+end
+
+importdll jpeg =
+    func loadjpegm			(stringz, ref int64, ref int64, ref int64)ref byte
+end
+
+type bmpheader = struct
+	ws_bitmapfileheader fh
+	ws_bitmapinfoheader bh
+end
+
+var	shifts=[2:1, 4:2, 8:3, 16:4, 32:5, 64:6]
+
+proc main=
+
+!	CPL "TESTING BMMAIN NEW"
+!	FILE:="C:/JPEG/girl.jpg"
+!	FILE:="C:/JPEG/girl.png"
+!	FILE:="C:/JPEG/fifteen.png"
+	FILE:="C:/JPEG/CARD2.jpg"
+!	FILE:="C:/JPEG/MONA.jpg"
+!
+	BM:=BMLOAD(FILE)
+!	CPL =BM.TYPE
+!	CPL =BM
+!	IF NOT BM THEN STOP FI
+!
+!	BMSAVE("freddy.jpg", BM)
+!
+
+!	w:=640
+!	h:=480
+!	w:=640
+!	h:=48
+!
+!	bm:=bmcreate(8,w,h)
+!!	gxclear(bm, 0xFF7FFF)
+!
+!	gxtext(bm,"Hello, World")
+!	for y:=0 to h-1 do
+!		for x:=0 to w-1 do
+!			c:=0x00'FF'00
+!!			gxpixel(bm,x,y,c<<16+c<<8+c)
+!			gxpixel(bm,x,y,c)
+!		od
+!	od
+!	
+
+!	bm2:=bmtopal(bm)
+!	bm2:=bmrgb24torgb32(bm)
+!	bm2:=bmtogrey(bm,8)
+!	bm2:=bmtogrey(bm,24)
+!	bm2:=bmdupl(bm)
+
+!BM2.PALTYPE:=COLOUR_PAL
+!BMRESETPALETTE(BM2)
+!CPL =BM2.PIXELBITS
+!	BMSAVE("PALA.PPM",BM2)
+!	BMSAVE("FRED.bmp",BM2)
+!	BMSAVE("PALB.PPM",BM2,1)
+
+
+!	CPL "LOADED"
+!	STOP
+
+	w:=GXCREATEWINDOW(DIM:(960,540),caption:"HI THERE")
+!	gxcopy(w,bm,scalex:0.25)
+!	gxcopy(w,bm,scalex:0.5)
+!	gxcopy(w,bm,scalex:5.0, x:100)
+!	gxcopy(w,bm,scalex:2.0, x:100)
+!	gxcopy(w,bm)
+	gxcopy(w,bm)
+	eventloop()
+
+end
+
+export func bmcreate(pixelbits,width,height)=
+!create new bitmap with given specs, return handle to bitmap (=rwindow ref)
+!when maskptr<>nil, set up mask values
+
+	bminfo:=new(ws_bitmapv5header)
+	bminfo.size:=ws_bitmapv5header.bytes
+	bminfo.width:=width
+	bminfo.height:=-height
+	bminfo.planes:=1
+	bminfo.bitcount:=pixelbits
+
+	pixelptr:=nil
+
+	if pixelbits not in [8,24,32] then
+		abort("bmcreate pixel size not supported:"+tostr(pixelbits))
+	fi
+
+!	hwnd:=createdibsection(screendc,&bminfo,0,&pixelptr,0,0)
+
+!CPL =BMINFO.BYTES
+!CPL =WS_BITMAPV5HEADER.BYTES
+!CPL =BMINFO.SIZE
+!CPL =BMINFO.WIDTH
+!CPL =BMINFO.HEIGHT
+!CPL =BMINFO.PLANES
+!CPL =BMINFO.BITCOUNT
+
+	hwnd:=createdibsection(nil,&bminfo,0,&pixelptr,nil,0)
+
+	pixelptr:=makeref(pixelptr,byte)
+
+	if hwnd=0 then
+		error:=getlasterror()
+		abort("bmcreate:CreateDIB failed:"+tostr(error))
+	fi
+
+!now create a bm record based around this handle
+
+	bm:=new(rwindow,0)
+	bm.windclass:=bitmap_class
+
+	bm.dimx:=width
+	bm.dimy:=abs(height)		!neg height used for top-down bitmaps
+
+	bm.style:=defstyle
+
+	bm.pixelbits:=pixelbits
+	bm.pixelptr:=pixelptr
+
+!set bytes per pixel
+	bm.pixelbytes:=pixelbits%8
+
+!set bytes per scanline
+	n:=bm.pixelbytes*width
+
+!n must be a multiple of 4 bytes
+	if (n iand 3)<>0 then	!make bytes a multiple of 4
+		n:=(n+4) iand 0xfffc
+	fi
+	bm.linebytes:=n
+	bm.framebytes:=bm.linebytes*bm.dimy
+
+!set palette colours, using winrgb order
+	if pixelbits=8 then
+		palette:=new(array,int32,0..255)
+		bm.paltype:=greyscale_pal
+		colour:=0
+		for i:=0 to 255 do
+			palette[i]:=colour
+			colour+:=0x10101
+		od
+	fi
+
+	setupgdi(bm,hwnd)
+
+	bm.gdi.hdc:=createcompatibledc(nil)
+	bm.gdi.drawmode:=dm_memory
+	bm.gdi.oldbmobj:=selectobject(bm.gdi.hdc,hwnd)	!should store original bitmap
+	setstretchbltmode(bm.gdi.hdc,4)			!average pixels for best result
+
+	bmputpalette(bm,palette)
+
+	return bm
+end
+
+export func bmgetpalette(bm)=
+!extract entire palette to p, in bmrgb order
+	if bm.paltype then
+		palette:=new(array,int32,0..256)
+		getdibcolortable(bm.gdi.hdc,0,256,&palette)
+		palette[256]:=bm.paltype
+		reversepalette(palette)
+	else
+		palette:=()
+	fi
+	return palette
+end
+
+export proc bmputpalette(bm,p,reverse=1)=
+!update entire palette from p, in bmrgb order
+	if bm.paltype then
+		if reverse then reversepalette(p) fi		!fix colours
+		setdibcolortable(bm.gdi.hdc,0,256,&p)	!store
+		if reverse then reversepalette(p) fi			!restore orignal palette
+		if p.upb=256 then
+			bm.paltype:=p[256]
+		fi
+	fi
+end
+
+export func bmcolour(bm,n,?colour)=
+!get/set palette info:
+!n=given:
+! colour given: update colour entry
+! colour omitted(-1): return colour value
+
+	if colour.isdef then		!set colour
+		colour:=revpixel(colour)
+		setdibcolortable(bm.gdi.hdc,n,1,&colour)
+		return colour
+	else				!get colour
+		colour:=0
+		getdibcolortable(bm.gdi.hdc,n,1,&colour)
+		return revpixel(colour)
+	fi
+end
+
+export proc reversepalette(&p)=
+!reverse values of 32-bit colour data at p
+	for i:=0 to 255 do
+		p[i]:=revpixel(p[i])
+	od
+end
+
+export func revpixel(a)=
+!change rgb to bgr
+!windows colours use red in lsb, bitmaps use blue in lsb, in 24-bit pixels and palette colours
+return (a iand 0x00ff00) ior (a>>16 iand 255) ior ((a iand 255)<<16)
+end
+
+export proc bmshow(bm)=
+	gxcopy(bm)
+end
+
+export proc bmfree(bm)=
+	return when bm=nil
+	if not deletedc(bm.gdi.hdc) then
+		pcerror("ERROR DELETING BM/HDC")
+	fi
+
+	if not deleteobject(bm.gdi.hwnd) then
+		pcerror("ERROR DELETING DIB")
+	fi
+end
+
+export func bmdupl(bm)=
+	newbm:=bmcreate(bm.pixelbits, bm.dimx, bm.dimy)
+	memcpy(newbm.pixelptr, bm.pixelptr, bm.linebytes*bm.dimy)
+
+	bmduplpalette(newbm,bm)
+
+	return newbm
+end
+
+export proc bmduplpalette(newbm,bm)=
+	if bm.paltype then
+		pal:=bmgetpalette(bm)
+		bmputpalette(newbm,pal)
+		newbm.paltype:=bm.paltype
+	fi
+end
+
+export func bmduplz(bm)=
+	newbm:=bmcreate(bm.pixelbits, bm.dimx, bm.dimy)
+	return newbm
+end
+
+export func bmgetptr(bm,x,y)=
+!return byte pointer to given pixel
+	return bm.pixelptr+(bm.linebytes*y+x*bm.pixelbytes)
+end
+
+export func bmgetrowptr(bm,y)=
+	return bm.pixelptr+y*bm.linebytes
+end
+
+func getcbbitmap(hwnd)=
+
+	p:=globallock(hwnd)
+	hsize:=ws_bitmapinfoheader.bytes
+	bm:=nil
+
+	if p then
+		p:=makeref(p,ws_bitmapinfoheader)
+		pb:=makeref(p,byte)
+
+		bm:=bmcreate(p^.bitcount,p^.width,p^.height)
+		offset:=(bm.paltype|1024|0)		!offset due to palette table
+
+		if offset then
+			setdibcolortable(bm.gdi.hdc,0,256,pb+hsize)
+		fi
+
+		pb:=pb+hsize+offset
+		for y:=0 to bm.dimy-1 do
+			q:=bmgetrowptr(bm,bm.dimy-y-1)
+			memcpy(q,pb,bm.linebytes)
+			pb:=pb+bm.linebytes
+		od
+
+	fi
+
+	globalunlock(hwnd)
+
+	return bm
+end
+
+export func bmgetclipboard=
+!get image from clipboard if one is there, otherwise return nil
+	if openclipboard(nil)=0 then
+		return nil
+	fi
+
+	hwnd:=getclipboarddata(cf_dib)
+
+	bm:=nil
+	if hwnd then
+		bm:=getcbbitmap(hwnd)
+	fi
+
+	closeclipboard()
+
+	return bm
+end
+
+export func bmputclipboard(bm)=
+	if openclipboard(0)=0 then
+		return nil
+	fi
+
+	emptyclipboard()
+
+	hwnd:=putcbbitmap(bm)
+	if hwnd then
+		setclipboarddata(cf_dib,hwnd)
+	fi
+
+	closeclipboard()
+	return 1
+end
+
+func putcbbitmap(bm)=
+	hsize:=ws_bitmapinfoheader.bytes
+	psize:=(bm.paltype|1024|0)
+	fsize:=bm.linebytes*bm.dimy
+
+	hmem:=globalalloc(0,hsize+psize+fsize)
+	mem:=makeref(globallock(hmem),byte)
+
+	hdr:=new(ws_bitmapinfoheader)
+	hdr.size:=hsize
+	hdr.width:=bm.dimx
+	hdr.height:=bm.dimy
+	hdr.bitcount:=bm.pixelbits
+	hdr.planes:=1
+	hdr.xpelspermetre:=11811
+	hdr.ypelspermetre:=11811
+	hdr.clrused:=0
+
+	memcpy(mem,&hdr,hsize)
+
+	if psize then
+		pal:=bmgetpalette(bm)
+		memcpy(mem+hsize,&pal,psize)
+	fi
+
+	mem:=mem+hsize+psize
+	for y:=0 to bm.dimy-1 do
+		p:=bmgetrowptr(bm,bm.dimy-1-y)
+		memcpy(mem, p, bm.linebytes)
+		mem:=mem+bm.linebytes
+	od
+!	memcpy(mem+hsize+psize,bm.pixelptr,fsize)
+	globalunlock(hmem)
+
+	return hmem
+end
+
+proc copy24to8(newbm,oldbm)=
+!both images are same size. Copy 1st plane of 24-bit oldbm to 8-bit newbm
+	for y:=0 to oldbm.dimy-1 do
+		p:=bmgetrowptr(newbm,y)
+		q:=bmgetrowptr(oldbm,y)
+		to oldbm.dimx do
+			p++^:=q^
+			q:=q+3
+		od
+	od
+end
+
+!proc copy8to24(newbm,oldbm)=
+!!both images are same size. Copy only plane of 8-bit oldbm to all planes of 24-bit newbm
+!	for y:=0 to oldbm.dimy-1 do
+!		p:=bmgetrowptr(newbm,y)
+!		q:=bmgetrowptr(oldbm,y)
+!		to oldbm.dimx do
+!			p++^:=q^
+!			q:=q+3
+!		od
+!	od
+!end
+
+export proc bmresetpalette(bm)=
+# set palette back to greyscale
+	pal:=new(array,int32,0..256)
+	colour:=0
+	for i:=0 to 255 do
+		pal[i]:=colour
+		colour+:=0x010101
+	od
+	bmputpalette(bm,pal)
+	bm.paltype:=greyscale_pal
+end
+
+func makescalemap(x)=
+!x=0..1; create 256-element lookup table to multiply 0..255 by x
+	map:=new(list,0..255)
+	for i:=0 to 255 do
+		map[i]:=clamp(int(round(i*x)),0,255)
+	od
+	return map
+end
+
+func bmunimpl(mess)=
+!ABORT("UNIMPLEMENTED: "+MESS)
+PRINTLN "UNIMPLEMENTED:",MESS
+PRINTLN "ABORTING"
+STOP
+return 0
+end
+
+!===========================================================================
+!========= HANDLERS
+!===========================================================================
+
+export func bmload(filename)=
+!CPL "BMLOAD:",FILENAME
+	case e:=convlc(extractext(filename))
+	when "jpg","jpeg" then
+		return bmloadjpg(filename)
+	when "bmp" then
+		return bmloadbmp(filename)
+!	when "pgm" then
+!		return bmloadpgm_p2p5(filename)
+	when "ppm","pgm" then
+		return bmloadppm_p3p6(filename)
+	when "png" then
+		return bmloadpng(filename)
+	when "" then				!try all
+		exts:=("jpg","bmp","pgm","ppm","png")
+		for ext in exts do
+			bm:=bmload(addext(filename,ext))
+			if bm then
+				return bm
+			fi
+		od
+		return nil
+	else
+		println "CAN'T LOAD",E,"IMAGE"
+		return nil
+	esac
+	return nil
+end
+
+func bmloadbmp(filename)=
+	f:=openfile(filename)
+	if not f then return nil fi
+
+	fileheader:=new(bmpheader)
+
+	readrandom(f,&fileheader,0,bmpheader.bytes)
+	filedimx:=fileheader.bh.width
+	filedimy:=fileheader.bh.height
+	invert:=1
+	if filedimy<0 then
+		filedimy:=abs(filedimy)
+		invert:=0
+	fi
+
+	if fileheader.fh.typex<>'BM' then
+		closefile(f)
+		return nil
+	fi
+
+	if fileheader.bh.compression<>0 then
+		closefile(f)
+		return nil
+	fi
+
+	bm:=bmcreate(fileheader.bh.bitcount,filedimx,filedimy)
+	framebytes:=bm.linebytes*filedimy
+
+	if bm.paltype then
+		palette:=new(array,int32,0..255)
+		readrandom(f,&palette,bmpheader.bytes,1024)
+		bmputpalette(bm,palette,0)
+		colour:=0
+		for i:=0 to 255 do
+			if palette[i]<>colour then
+				bm.paltype:=colour_pal
+				exit
+			fi
+			colour+:=0x010101
+		od
+
+	fi
+
+	readrandom(f,bm.pixelptr,fileheader.fh.offbits,framebytes)
+	closefile(f)
+
+
+	if invert then
+		n:=bm.linebytes
+		buffer:=makeref(malloc(n),byte)
+
+		for y:=0 to filedimy%2 do
+			p:=bmgetrowptr(bm,y)
+			q:=bmgetrowptr(bm,filedimy-1-y)
+!
+			memcpy(buffer,p,n)
+			memcpy(p,q,n)
+			memcpy(q,buffer,n)
+		od
+		free(buffer)
+	fi
+
+	return bm
+end
+
+export func bmloadjpg(filename)=
+	w:=h:=n:=0
+
+CPL "LOADJ1"
+!	p:=imgload_bgr(filename,&w,&h,&n,3)
+
+!	p:=imgload_bgr(filename,&w,&h,&n,3)
+	p:=loadjpegm(filename,&w,&h,&n);
+!	p:=nanoloadjpeg(filename,&w,&h,&n)
+
+
+!	p:=imgload_bgr(filename,&w,&h,&n)
+CPL "LOADJ2",=P, W,H,N
+	IF P=NIL THEN PCERROR("CAN'T LOAD JPG") FI
+
+	pixelbits:=n*8
+
+	if p=nil then
+		return nil
+	fi
+
+	q:=makeref(p,byte)
+
+	bm:=bmcreate(pixelbits,w,h)
+
+	nbytes:=w*h*n
+	dest:=makeref(bm.pixelptr,byte)
+
+	to h do
+		memcpy(dest,q,w*n)
+		dest:=dest+bm.linebytes
+		q:=q+w*n
+	od
+
+!	imgload_free(p)
+
+	return bm
+end
+
+func bmloadpbm_p1p4(filename)=
+CPL "CAN'T LOAD PBM"
+RETURN NIL
+!return bmunimpl("bmloadpbm")
+end
+
+func bmloadpgm_p2p5(filename)=
+
+CPL "LOAD PGM P25",FILENAME
+	f:=openfile(filename,"rb")
+	if f=0 then return nil fi
+
+	readln @f, sig:"s"
+
+!CPL =SIG
+	case sig
+	when "P5" then
+		binary:=1
+	when "P2" then
+		binary:=0
+	else
+		abort("Can't read pgm")
+		return nil
+	esac	
+
+	width:=readnextint(f)
+	height:=readnextint(f)
+	maxpix:=readnextint(f)
+
+	bm:=bmcreate(8,width,height)
+
+	linebytes:=width
+	dest:=makeref(bm.pixelptr,byte)
+
+CPL =WIDTH,=HEIGHT, LINEBYTES,=BM
+	to height do
+		if binary then
+			readbytes(f,dest,width)			!will be bgr
+		else
+			p:=dest
+			to linebytes do
+				p++^:=readffint(f)
+			od
+		fi
+
+		dest:=dest+bm.linebytes
+	od
+
+	closefile(f)
+
+	return bm
+end
+
+func bmloadppm_p3p6(filename)=
+!read p6 ppm which is binary 24-bit, but will also recognise other formats
+
+!CPL "P3P6"
+	f:=openfile(filename,"rb")
+	if f=0 then return nil fi
+
+	readln @f, sig:"s"
+
+!CPL =SIG
+	case sig
+	when "P6" then
+		binary:=1
+	when "P3" then
+		binary:=0
+	when "P5","P2" then
+		closefile(f)
+		return bmloadpgm_p2p5(filename)
+!	when "P4","P1" then
+!		closefile(f)
+!		return bmloadpbm_p1p4(filename)
+	else
+		abort("Can't read ppm:"+sig)
+		return nil
+	esac	
+
+!CPL "READING P6/P3 PPM"
+
+	width:=readnextint(f)
+	height:=readnextint(f)
+	maxpix:=readnextint(f)
+
+	bm:=bmcreate(24,width,height)
+
+	linebytes:=width*3
+	dest:=makeref(bm.pixelptr,byte)
+
+	to height do
+		if binary then
+			readbytes(f,dest,linebytes)			!will be bgr
+		else
+			p:=dest
+			to linebytes do
+				p++^:=readffint(f)
+			od
+		fi
+
+		p:=dest								!convert to rgb
+		to width do
+			swap(p^,(p+2)^)
+			p:=p+3
+		od
+
+		dest:=dest+bm.linebytes
+	od
+
+	closefile(f)
+
+	return bm
+end
+
+func readnextint(f)=
+	read x
+	while not x.isint and not eof(f) do
+		readln @f,x
+	od
+	if not x.isint then return 0 fi
+	return x
+end
+
+func readffint(f)=
+!read next free-format int from f
+	repeat
+		c:=inbyte(f)
+	until c in '0'..'9'
+
+	a:=c-'0'
+	do
+		c:=inbyte(f)
+		if c in '0'..'9' then
+			a:=a*10+c-'0'
+		else
+			exit
+		fi
+	od
+
+	return a
+end
+
+func bmloadpng(filename)=
+	w:=h:=n:=0
+
+CPL "LOADP1"
+!	p:=imgload_bgr(filename,&w,&h,&n,3)
+
+	p:=imgload_bgr(filename,&w,&h,&n,0)
+
+!	p:=nanoloadjpeg(filename,&w,&h,&n)
+
+
+
+!	p:=imgload_bgr(filename,&w,&h,&n)
+CPL "LOADP2",=P, W,H,N
+
+	pixelbits:=n*8
+
+	if p=nil then
+		return nil
+	fi
+
+	q:=makeref(p,byte)
+
+	bm:=bmcreate(pixelbits,w,h)
+
+	nbytes:=w*h*n
+	dest:=makeref(bm.pixelptr,byte)
+
+	to h do
+		memcpy(dest,q,w*n)
+		dest:=dest+bm.linebytes
+		q:=q+w*n
+	od
+
+	imgload_free(p)
+
+	return bm
+end
+
+export func bmsave(filename,bm,binary=0)=
+	case e:=convlc(extractext(filename))
+	when "jpg","jpeg" then
+		return bmsavejpg(filename,bm)
+	when "bmp" then
+		return bmsavebmp(filename,bm)
+	when "ppm","pgm" then
+		return bmsaveppm_p3p6(filename,bm,binary)
+	else
+		println "CAN'T SAVE",E,"IMAGE"
+		return nil
+	esac
+	return nil
+end
+
+func bmsavebmp(filename,bm)=
+	w:=bm.dimx
+	h:=bm.dimy
+	pixelbytes:=bm.pixelbytes
+	framebytes:=bm.linebytes*h
+	palettebytes:=(pixelbytes=1|1024|0)
+
+	bmfile:=createfile(filename)
+	if bmfile=nil then
+		return 0
+	fi
+
+	fileheader:=new(bmpheader)
+
+	fileheader.fh.typex:='BM'
+	fileheader.fh.offbits:=bmpheader.bytes+palettebytes
+	fileheader.fh.size:=fileheader.fh.offbits+framebytes
+	fileheader.bh.size:=ws_bitmapinfoheader.bytes
+	fileheader.bh.width:=bm.dimx
+	fileheader.bh.height:=-bm.dimy
+	fileheader.bh.bitcount:=bm.pixelbits
+	fileheader.bh.planes:=1
+	fileheader.bh.xpelspermetre:=11811		!300 dpi
+	fileheader.bh.ypelspermetre:=11811
+	fileheader.bh.clrused:=0
+
+	writerandom(bmfile,&fileheader,0,bmpheader.bytes)
+
+	if palettebytes then
+		palette:=bmgetpalette(bm)
+		reversepalette(palette)
+		writerandom(bmfile,&palette,bmpheader.bytes,palettebytes)
+	fi
+
+	writerandom(bmfile,bm.pixelptr,fileheader.fh.offbits,framebytes)
+
+	return closefile(bmfile)
+end
+
+func bmsavejpg(filename,bm)=
+	w:=bm.dimx
+	h:=bm.dimy
+	pixelbytes:=bm.pixelbytes
+	linebytes:=bm.linebytes
+
+	p:=q:=malloc(pixelbytes*w*h)
+
+	s:=makeref(bm.pixelptr,byte)
+
+	to h do
+		memcpy(q,s,w*pixelbytes)
+		q:=q+bm.linebytes
+		s:=s+w*pixelbytes
+	od
+
+	status:=imgsave_jpeg_bgr(filename,p,w,h,pixelbytes)
+
+	free(p)
+
+	return status
+end
+
+func bmsavepbm_p1p4(filename,bm,binary)=
+return bmunimpl("bmsaveppm-1bit")
+end
+
+func bmsavepgm_p2p5(filename,bm,binary)=
+	width:=bm.dimx
+	height:=bm.dimy
+
+	f:=createfile(filename)
+
+	CPL "WRITEPGM",filename
+
+	if not f then return 0 fi
+
+	println @f,(binary|"P5"|"P2")
+	println @f,width,height
+	println @f,"255"
+
+	buffer:=data
+
+	buffer:=malloc(bm.linebytes)
+	if buffer=nil then return 0 fi
+	buffer:=makeref(buffer,byte)
+
+	linebytes:=width			!also number of values per line when in text mode
+
+	for y:=0 to height-1 do
+		memcpy(buffer,bmgetrowptr(bm,y),linebytes)
+		if binary then
+			writebytes(f,buffer,linebytes)
+		else
+			p:=buffer
+			to linebytes do
+				print @f,p++^,," "
+			od
+			println @f
+		fi
+	od
+	closefile(f)
+	return 1
+end
+
+func bmsaveppm_p3p6(filename,bm,binary)=
+!	return bmunimpl("bmsaveppm")
+
+	case bm.pixelbits
+	when 24 then
+	when 8 then
+		return bmsavepgm_p2p5(filename,bm,binary)
+	else
+		return 0
+	esac
+
+	width:=bm.dimx
+	height:=bm.dimy
+
+	f:=createfile(filename)
+
+	CPL "WRITEPPM",filename
+
+	if not f then return 0 fi
+
+	println @f,(binary|"P6"|"P3")
+	println @f,width
+	println @f,height
+	println @f,"255"
+
+	buffer:=data
+
+	buffer:=malloc(bm.linebytes)
+	if buffer=nil then return 0 fi
+	buffer:=makeref(buffer,byte)
+
+	linebytes:=width*3			!also number of values per line when in text mode
+
+	for y:=0 to height-1 do
+		memcpy(buffer,bmgetrowptr(bm,y),linebytes)
+		p:=buffer					!convert to bgr
+		to width do
+			swap(p^,(p+2)^)
+			p:=p+3
+		od
+		if binary then
+			writebytes(f,buffer,linebytes)
+		else
+			p:=buffer
+			to linebytes do
+				print @f,p++^,," "
+			od
+			println @f
+		fi
+	od
+	closefile(f)
+	return 1
+end
+
+export func bmrotate(bm, angle)=
+	case angle
+	when 0 then return bmdupl(bm)
+	when -90 then return bmrotleft90(bm)
+	when +90 then return bmrotright90(bm)
+	when 180 then return rot180(bm)
+	esac
+	return bmunimpl("bmrotate by "+tostr(angle))
+end
+
+export func bmrotleft90(bm)=
+	case bm.pixelbits
+	when 8 then return rotleft90_8(bm)
+	when 24 then return rotleft90_24(bm)
+	when 32 then return bmunimpl("ROTLEFT90/32")
+	esac
+	return nil
+end
+
+export func bmrotright90(bm)=
+	case bm.pixelbits
+	when 8 then return rotright90_8(bm)
+	when 24 then return rotright90_24(bm)
+	when 32 then return bmunimpl("ROTRIGHT90/32")
+	esac
+	return nil
+end
+
+export func rot180(bm)=
+	newbm1:=bmfliphoz(bm)
+	newbm2:=bmflipvert(newbm1)
+	bmfree(newbm1)
+	return newbm2
+end
+
+func rotleft90_8(bm)=
+	w:=bm.dimx
+	h:=bm.dimy
+	linebytes:=bm.linebytes
+
+	newbm:=bmcreate(8,h,w)
+
+	for y:=0 to w-1 do
+		q:=bmgetptr(bm,w-y-1,0)
+		p:=bmgetrowptr(newbm,y)
+
+		to h do
+			p++^:=q^
+!			q:=q+w
+			q:=q+linebytes
+		od
+	od
+
+	bmduplpalette(newbm,bm)
+	return newbm
+end
+
+func rotright90_8(bm)=
+	w:=bm.dimx
+	h:=bm.dimy
+	linebytes:=bm.linebytes
+
+	newbm:=bmcreate(8,h,w)
+
+	for y:=0 to w-1 do
+		q:=bmgetptr(bm,y,h-1)
+		p:=bmgetrowptr(newbm,y)
+
+		to h do
+			p++^:=q^
+			q:=q-linebytes
+		od
+	od
+
+	bmduplpalette(newbm,bm)
+	return newbm
+end
+
+!function rotleft90_24(bm)=
+!	newbm:=bmcreate(24,bm.dimy,bm.dimx)
+!
+!	xform:=new(array,ws_point,3)
+!	xform[1].y:=bm.dimx
+!	xform[3].x:=bm.dimy
+!	xform[3].y:=bm.dimx
+!
+!	plgblt(newbm.gdi.hdc,&xform, bm.gdi.hdc,0,0,bm.dimx,bm.dimy, nil,0,0)
+!
+!	return newbm
+!end
+
+func rotleft90_24(bm)=
+	w:=bm.dimx
+	h:=bm.dimy
+
+	newbm:=bmcreate(24,h,w)
+
+	for y:=0 to w-1 do
+		q:=bmgetptr(bm,w-y-1,0)
+		p:=bmgetrowptr(newbm,y)
+
+		to h do
+			p++^:=q^
+			p++^:=(q+1)^
+			p++^:=(q+2)^
+			q:=q+bm.linebytes
+		od
+	od
+
+	return newbm
+end
+
+!function rotright90_24(bm)=
+!	newbm:=bmcreate(24,bm.dimy,bm.dimx)
+!
+!	xform:=new(array,ws_point,3)
+!	xform[1].X:=bm.dimy
+!	xform[2].x:=bm.dimy
+!	xform[2].y:=bm.dimx
+!
+!	plgblt(newbm.gdi.hdc,&xform, bm.gdi.hdc,0,0,bm.dimx,bm.dimy, nil,0,0)
+!
+!	return newbm
+!end
+
+func rotright90_24(bm)=
+	w:=bm.dimx
+	h:=bm.dimy
+
+	newbm:=bmcreate(24,h,w)
+
+	for y:=0 to w-1 do
+		q:=bmgetptr(bm,y,h-1)
+		p:=bmgetrowptr(newbm,y)
+
+		to h do
+			p++^:=q^
+			p++^:=(q+1)^
+			p++^:=(q+2)^
+			q:=q-bm.linebytes
+		od
+	od
+
+	return newbm
+end
+
+func rotate8(bm,angle)=
+return bmunimpl("rotate8")
+end
+
+export func bmfliphoz(bm)=
+	case bm.pixelbytes
+    when 1 then return fliphoz8(bm)
+    when 3 then return fliphoz24(bm)
+    when 4 then return fliphoz32(bm)
+	esac
+	return nil
+end
+
+func fliphoz8(bm)=
+	newbm:=bmdupl(bm)
+
+	w:=newbm.dimx
+	h:=newbm.dimy
+	buffer:=makeref(malloc(bm.linebytes),byte)
+
+	for y:=0 to h-1 do
+		p:=bmgetrowptr(newbm,y)
+		q:=p+w-1
+		for x:=0 to w%2 do
+			t:=p^
+			p^:=q^
+			q^:=t
+			++p; --q
+		od
+	od
+
+	return newbm
+end
+
+func fliphoz24(bm)=
+	newbm:=bmdupl(bm)
+
+	w:=newbm.dimx
+	h:=newbm.dimy
+	buffer:=makeref(malloc(bm.linebytes),byte)
+
+	for y:=0 to h-1 do
+		p:=bmgetrowptr(newbm,y)
+		memcpy(buffer,p,bm.linebytes)
+		q:=buffer+(w-1)*3
+
+		to w do
+			p++^:=q++^
+			p++^:=q++^
+			p++^:=q^
+
+			q:=q-5
+		od
+	od
+
+	return newbm
+end
+
+func fliphoz32(bm)=
+return bmunimpl("fliphoz_32")
+end
+
+export func bmflipvert(bm)=
+	newbm:=bmdupl(bm)
+
+	w:=newbm.dimx
+	h:=newbm.dimy
+	n:=bm.linebytes
+	buffer:=makeref(malloc(n),byte)
+
+	for y:=0 to h%2 do
+		p:=bmgetrowptr(newbm,y)
+		q:=bmgetrowptr(newbm,h-1-y)
+!
+		memcpy(buffer,p,n)
+		memcpy(p,q,n)
+		memcpy(q,buffer,n)
+	od
+	free(buffer)
+
+	return newbm
+end
+
+export func bmrepeat(bm,cols,rows)=
+	w:=bm.dimx
+	h:=bm.dimy
+	newbm:=bmcreate(bm.pixelbits, w*cols, h*rows)
+	linebytes:=bm.linebytes
+
+	for y:=0 to h-1 do
+		s:=bmgetrowptr(bm,y)
+		for r:=0 to rows-1 do
+			for c:=0 to cols-1 do
+				memcpy(bmgetptr(newbm,c*w,r*h+y),s,linebytes)
+			od
+		od
+	od
+
+	if bm.pixelbits=8 then
+		bmduplpalette(newbm,bm)
+	fi
+
+	return newbm
+end
+
+export func bmscale(bm, sx,?sy)=
+	if sy.isvoid then sy:=sx fi
+	case bm.pixelbits
+	when 8 then return scalex8(bm,sx,sy)
+	when 24,32 then return scalex24(bm,sx,sy)
+	esac
+	return nil
+end
+
+func scalex8(bm,sx,sy)=
+	w:=bm.dimx
+	h:=bm.dimy
+
+	neww:=int(round(w*sx))
+	newh:=int(round(h*sy))
+
+	newbm:=bmcreate(24, neww,newh)
+	return nil when not newbm
+
+	bm24:=bmtorgb(bm,24)
+
+	stretchblt(newbm.gdi.hdc,0,0,neww,newh,bm24.gdi.hdc,0,0,w,h, srccopy)
+
+	if bm.paltype=greyscale_pal then
+		newbm8:=bmgetplane(newbm,"R")
+	else
+		newbm8:=bmtopal(newbm)
+	fi
+	bmfree(newbm)
+
+	return newbm8
+end
+
+func scalex24(bm,sx,sy)=
+	w:=bm.dimx
+	h:=bm.dimy
+
+	neww:=int(round(w*sx))
+	newh:=int(round(h*sy))
+
+	if neww<8 or newh<8 then return nil fi
+
+	newbm:=bmcreate(bm.pixelbits, neww,newh)
+	if newbm then
+		stretchblt(newbm.gdi.hdc,0,0,neww,newh,bm.gdi.hdc,0,0,w,h, srccopy)
+	fi
+
+	return newbm
+end
+
+func bmscaleupi8(bm,sx,sy)=
+return bmunimpl("bmscaleupi8")
+end
+
+func bmscaleupi24(bm,sx,sy)=
+return bmunimpl("bmscaleupi24")
+end
+
+func bmscaleupi32(bm,sx,sy)=
+return bmunimpl("bmscaleupi32")
+end
+
+func bmscaledowni8(bm,sx,sy)=
+return bmunimpl("bmscaledowni8")
+end
+
+func bmscaledowni24(bm,sx,sy)=
+return bmunimpl("bmscaledowni24")
+end
+
+func bmscaledowni32(bm,sx,sy)=
+return bmunimpl("bmscaledowni32")
+end
+
+export func bmneg(bm)=
+	newbm:=bmdupl(bm)
+
+	dx:=newbm.dimx-1
+	dy:=newbm.dimy-1
+	n:=newbm.linebytes
+	do32:=0
+	if n rem 4=0 then
+		do32:=1
+		n:=n%4
+	fi
+
+	for y:=0 to dy do
+		if do32 then
+			p:=makeref(bmgetrowptr(newbm,y),int32)
+			to n do
+				p++^ := p^ ixor 0xFFFFFFFF
+			od
+		else
+			p:= bmgetrowptr(newbm,y)
+			to n do
+				p++^ := p^ ixor 255
+			od
+		fi
+	od
+	return newbm
+end
+
+export func bmmap(bm,map, channels="RGB")=
+	if channels="" then channels:="RGB" fi
+
+	case bm.pixelbits
+	when 8 then
+		return mapall(bm,map)
+	when 24 then
+		if channels="RGB" then
+			return mapall(bm,map)
+		fi
+		return mapchan_24(bm,map,channels,0)
+	when 32 then
+		if channels="RGBA" then
+			return mapall(bm,map)
+		fi
+		return mapchan_24(bm,map,channels,1)
+	esac
+
+	return nil
+end
+
+func mapall(bm,map)=
+	newbm:=bmdupl(bm)
+	p:=newbm.pixelptr
+	to newbm.framebytes do
+		p^:=map[p^]
+		++p
+	od
+	return newbm
+end
+
+func mapchan_24(bm,map,channels,alpha=0)=
+	dored:="R" in channels
+	dogreen:="G" in channels
+	doblue:="B" in channels
+	doalpha:="A" in channels
+
+	newbm:=bmdupl(bm)
+
+	for y:=0 to newbm.dimy-1 do
+		p:=bmgetrowptr(newbm,y)
+		to newbm.dimx do
+			if doblue then p^:=map[p^] fi
+			++p
+			if dogreen then p^:=map[p^] fi
+			++p
+			if dored then p^:=map[p^] fi
+			++p
+			if alpha then
+				if doalpha then p^:=map[p^] fi
+				++p
+			fi
+		od
+	od
+
+	return newbm
+end
+
+!function mapchan_32(bm,map,channels)=
+!return bmunimpl("mapchan_32")
+!end
+
+export func bmbright(bm,dx,channels="RGB")=
+	return bmunimpl("bmbright")
+end
+
+export func bmcont(bm,x,channels="RGB")=
+	return bmunimpl("bmcont")
+end
+
+export func bmgamma(bm,x,channels="RGB")=
+return bmunimpl("bmgamma")
+end
+
+export func bmtogrey(bm,destbits=24)=
+	if destbits=0 then destbits:=bm.pixelbits fi
+	case bm.pixelbits
+	when 8 then
+		case destbits
+		when 8 then
+			return pal8togrey8(bm)
+		when 24 then
+			cm:=pal8togrey8(bm)
+			newbm:=grey8torgb24(cm)
+			bmfree(cm)
+			return newbm
+		esac
+	when 24,32 then
+		case destbits
+		when 8 then
+			return rgb24togrey8(bm)
+		when 24 then
+			cm:=rgb24togrey8(bm)
+			newbm:=grey8torgb24(cm)
+			bmfree(cm)
+			return newbm
+		esac
+	esac
+CPL =BM.PIXELBITS, =DESTBITS
+	return bmunimpl("bmtogrey bad combos")
+
+end
+
+func pal8togrey8(bm)=
+	w:=bm.dimx
+	h:=bm.dimy
+
+	(rmap, gmap, bmap):=getlumtables()
+
+	newbm:=bmcreate(8,w,h)
+	pal:=bmgetpalette(bm)
+
+	for y:=0 to h-1 do
+		p:=bmgetrowptr(newbm,y)
+		q:=bmgetrowptr(bm,y)
+
+		to w do
+			colour:=pal[q++^]
+			r:=colour.[0..7]
+			g:=colour.[8..15]
+			b:=colour.[16..23]
+			p++^:=rmap[r]+gmap[g]+bmap[b]
+		od
+	od
+
+	return newbm
+end
+
+func pal8togrey24(bm)=
+return bmunimpl("pal8togrey24")
+end
+
+func rgb24togrey8(bm)=
+!does 24/32 bits
+	qincr:=(bm.pixelbits=32|1|0)
+	w:=bm.dimx
+	h:=bm.dimy
+
+	(rmap, gmap, bmap):=getlumtables()
+
+	newbm:=bmcreate(8,w,h)
+
+	for y:=0 to h-1 do
+		p:=bmgetrowptr(newbm,y)
+		q:=bmgetrowptr(bm,y)
+
+		to w do
+			b:=q++^; g:=q++^; r:=q++^
+			p++^:=rmap[r]+gmap[g]+bmap[b]
+			q:=q+qincr
+		od
+	od
+
+	return newbm
+end
+
+func rgb24togrey24(bm)=
+return bmunimpl("rgb24togrey24")
+end
+
+export func bmtorgb(bm,destbits=24)=
+	if destbits=0 then destbits:=24 fi
+	case bm.pixelbits
+	when destbits then
+		return bmdupl(bm)
+
+	when 8 then
+		case destbits
+		when 8 then
+			bmunimpl("8 to 8 bits rgb")
+		when 24 then
+			if bm.paltype=greyscale_pal then
+				return grey8torgb24(bm)
+			else
+				return paltorgb24(bm)
+			fi
+		esac
+	when 24 then
+		if destbits=32 then
+			return bmrgb24torgb32(bm)
+		fi
+	when 32 then
+		if destbits=24 then
+			return bmrgb32torgb24(bm)
+		fi
+	esac
+CPL =BM.PIXELBITS, =DESTBITS
+	return bmunimpl("bmtorgb bad combos")
+end
+
+func paltorgb24(bm)=
+	w:=bm.dimx
+	h:=bm.dimy
+
+	newbm:=bmcreate(24,w,h)
+	pal:=bmgetpalette(bm)
+
+	for y:=0 to h-1 do
+		p:=bmgetrowptr(newbm,y)
+		q:=bmgetrowptr(bm,y)
+
+		to w do
+			colour:=pal[q++^]
+			r:=colour.[0..7]
+			g:=colour.[8..15]
+			b:=colour.[16..23]
+
+			p++^:=b
+			p++^:=g
+			p++^:=r
+		od
+	od
+
+	return newbm
+end
+
+func grey8torgb24(bm)=
+	w:=bm.dimx
+	h:=bm.dimy
+
+	newbm:=bmcreate(24,w,h)
+
+	for y:=0 to h-1 do
+		p:=bmgetrowptr(newbm,y)
+		q:=bmgetrowptr(bm,y)
+
+		to w do
+			lum:=q++^
+			p++^:=lum
+			p++^:=lum
+			p++^:=lum
+		od
+	od
+
+	return newbm
+end
+
+export func bmrgb24torgb32(bm)=
+	w:=bm.dimx
+	h:=bm.dimy
+	newbm:=bmcreate(32,w,h)
+
+	for y:=0 to h-1 do
+		q:=bmgetrowptr(bm,y)
+		p:=bmgetrowptr(newbm,y)
+		to w do
+			p++^:=q++^
+			p++^:=q++^
+			p++^:=q++^
+			p++^:=128
+		od
+	od
+	return newbm
+end
+
+export func bmrgb32torgb24(bm)=
+	w:=bm.dimx
+	h:=bm.dimy
+	newbm:=bmcreate(24,w,h)
+
+	for y:=0 to h-1 do
+		q:=bmgetrowptr(bm,y)
+		p:=bmgetrowptr(newbm,y)
+		to w do
+			p++^:=q++^
+			p++^:=q++^
+			p++^:=q++^
+			q++
+		od
+	od
+	return newbm
+end
+
+export func bmtopal(bm)=
+	if bm.pixelbits=8 then return bmdupl(bm) fi
+	qincr:=(bm.pixelbits=32)
+	w:=bm.dimx
+	h:=bm.dimy
+
+	newbm:=bmcreate(8,w,h)
+
+	pal:=new(array,int32,0..255)
+
+!create special palette mapping for rrrgggbb
+	for r:=0 to 7 do
+		for g:=0 to 7 do
+			for b:=0 to 3 do
+				index:=r<<5+g<<2+b
+!				pal[index]:=r<<5+g<<13+b<<18
+				pal[index]:=r<<5+g<<13+b<<22
+			od
+		od
+	od
+	bmputpalette(newbm,pal)
+	bm.paltype:=colour_pal
+
+	for y:=0 to h-1 do
+		p:=bmgetrowptr(newbm,y)
+		q:=bmgetrowptr(bm,y)
+
+!noise:=-16..16
+!noise:=-8..8
+
+		to w do
+			b:=q++^; g:=q++^; r:=q++^
+
+!			r+:=clamp(random(noise),0,255)
+!			g+:=clamp(random(noise),0,255)
+!			b+:=clamp(random(noise),0,255)
+!
+			p++^:=r>>5<<5 + g>>5<<2 + b>>6
+			q:=q+qincr
+		od
+	od
+
+	return newbm
+
+end
+
+export func bmsplittorgb(bm,greydest=1)=
+# split 24-bit bitmap into three separate 8-bit planes
+# return 3 new bitmaps in the order red, green, blue
+# return () on error
+# dogreyscale=1 for each image to have a greyscale palette. Otherwise
+# the red image will be shades of red, etc
+
+	if bm.pixelbits<24 then
+		return ()
+	fi
+	channels:=bm.pixelbytes
+
+	w:=bm.dimx
+	h:=bm.dimy
+
+	pal:=new(array,int32,0..255)
+	images::=()
+
+	for offset:=channels-1 downto 0 do
+
+		newbm:=bmcreate(8,w,h)
+
+		for y:=0 to h-1 do
+			q:=bmgetrowptr(bm,y)+offset
+			p:=bmgetrowptr(newbm,y)
+			to w do
+				p++^:=q^
+				q:=q+channels
+			od
+		od
+
+		if not greydest then
+			colour:=0
+			incr:=(3-offset|0x00'00'01,0x00'01'00,0x01'00'00|0x01'01'01)
+			for i:=0 to 255 do
+				pal[i]:=colour
+				colour+:=incr
+			od
+			bmputpalette(newbm,pal)
+			newbm.paltype:=tinted_pal
+		fi
+
+		images append:=newbm
+	od
+
+!image order is r,g,b, or a,r,g,b
+	if images.len=4 then
+		return (images[2],images[3],images[4],images[1])
+	else
+		return images
+	fi
+end
+
+export func bmsplittoyuv(bm)=
+# split 24-bit bitmap into three separate 8-bit planes
+# return 3 new bitmaps in the order y, u, v
+# return () on error
+
+	needfree:=0
+	case bm.pixelbits
+	when 24 then
+	when 32 then
+		bm:=bmtorgb(bm,24)
+		needfree:=1
+	else
+		return nil
+	esac
+
+!get y plane first with existing routine
+	greybm:=bmtogrey(bm,8)
+
+	w:=bm.dimx
+	h:=bm.dimy
+
+!equations used are:
+! u:=int(round(0.492*(b-y)+128)
+! v:=int(round(0.702*(r-y)+128)
+!b-y and r-y will be in range +/- 255
+
+	umap:=new(list,-255..255)
+	vmap:=new(list,-255..255)
+	for i:=-255 to 255 do
+		umap[i]:=int(round(0.492*(i)+128))
+		vmap[i]:=int(round(0.702*(i)+128))
+	od
+
+	ubm:=bmcreate(8,w,h)
+	vbm:=bmcreate(8,w,h)
+	for c:=1 to 2 do
+		if c=1 then
+			offset:=0
+			map:=umap
+		else
+			offset:=2
+			map:=vmap
+		fi
+
+		for yy:=0 to h-1 do
+			py:=bmgetrowptr(greybm,yy)
+			p:=bmgetrowptr(bm,yy)			!point to bgr pixels in original
+
+			pu:=bmgetrowptr(ubm,yy)
+			pv:=bmgetrowptr(vbm,yy)
+			to w do
+				y:=py++^
+				r:=(p+2)^
+				b:=p^
+				pu++^:=umap[b-y]
+!CPL =B,=Y,=PV,=VMAP.TYPE
+				pv++^:=vmap[r-y]
+
+				p:=p+3
+			od
+		od
+	od
+
+!create special greyscale for u/v images, since point of zero colour
+!info has been offset to +128
+	pal:=new(array,int32,0..256)
+	colour:=0
+	pal[128]:=0
+	for i:=1 to 127 do
+		colour+:=0x020202
+		pal [i+128]:=colour
+		pal [128-i]:=colour
+	od
+	pal[256]:=uv_pal
+	bmputpalette(ubm,pal)
+	bmputpalette(vbm,pal)
+
+	if needfree then
+		bmfree(bm)
+	fi
+
+	return (greybm,ubm,vbm)
+end
+
+export func bmgetplane(bm,plane)=
+# plane is one of "R","G","B"
+# extract given plane of a 24-bit bitmaps into a single 8-bit greyscale image
+# Return new image
+
+	incr:=bm.pixelbytes
+	if plane.len<>1 or bm.pixelbytes<3 then
+		return nil
+	fi
+
+	case asc(plane)
+	when 'R' then offset:=2
+	when 'G' then offset:=1
+	when 'B' then offset:=0
+	when 'A' then offset:=3
+	else return nil
+	esac
+
+	w:=bm.dimx
+	h:=bm.dimy
+	newbm:=bmcreate(8,w,h)
+
+	for y:=0 to h-1 do
+		q:=bmgetrowptr(bm,y)+offset
+		p:=bmgetrowptr(newbm,y)
+		to w do
+			p++^:=q^
+			q:=q+incr
+		od
+	od
+
+	return newbm
+end
+
+export func bmjoinrgb(redbm,greenbm,bluebm,alphabm=nil)=
+
+	w:=redbm.dimx
+	h:=redbm.dimy
+
+	newbm:=bmcreate((alphabm|32|24),w,h)
+
+	for y:=0 to h-1 do
+		p:=bmgetrowptr(newbm,y)
+
+		r:=bmgetrowptr(redbm,y)
+		g:=bmgetrowptr(greenbm,y)
+		b:=bmgetrowptr(bluebm,y)
+
+		if alphabm then
+			a:=bmgetrowptr(alphabm,y)
+			to w do
+				p++^:=b++^
+				p++^:=g++^
+				p++^:=r++^
+				p++^:=a++^
+			od
+		else
+			to w do
+				p++^:=b++^
+				p++^:=g++^
+				p++^:=r++^
+			od
+		fi
+	od
+
+	return newbm
+end
+
+export func bmjoinyuv(ybm,ubm,vbm)=
+# combine y, u, v separations into a single rgb image
+# return new bitmap, or nil
+
+	if ybm.pixelbits<>8 then
+		return nil
+	fi
+
+	w:=ybm.dimx
+	h:=ybm.dimy
+
+	v1425map:=new(list,0..255)
+	v726map:=new(list,0..255)
+	u395map:=new(list,0..255)
+	u2032map:=new(list,0..255)
+
+	for i:=0 to 255 do
+		v1425map[i]:=int(round(1.425*(i-128)))
+		v726map[i]:=int(round(0.726*(i-128)))
+		u395map[i]:=int(round(0.395*(i-128)))
+		u2032map[i]:=int(round(2.032*(i-128)))
+	od
+
+	newbm:=bmcreate(24,w,h)
+
+	for yy:=0 to h-1 do
+		p:=bmgetrowptr(newbm,yy)
+		qy:=bmgetrowptr(ybm,yy)
+		qu:=bmgetrowptr(ubm,yy)
+		qv:=bmgetrowptr(vbm,yy)
+
+!		to w do
+		FOR X:=0 TO W-1 DO
+			y:=qy++^
+			r:=y+v1425map[qv^]
+			g:=y-u395map[qu^]-v726map[qv^]
+			b:=y+u2032map[qu^]
+			++qu
+			++qv
+			p++^:=clamp(b,0,255)
+			p++^:=clamp(g,0,255)
+			p++^:=clamp(r,0,255)
+		od
+	od
+	return newbm
+end
+
+export func bmblur(bm,n)=
+	case bm.pixelbits
+	when 8 then
+		return blur8(bm,n)
+	when 24 then
+		return blur24(bm,n)
+	when 32 then
+		return blur32(bm,n)
+	esac
+	return nil
+end
+
+func blur8(bm,n)=
+	shift:=shifts{n,1}
+
+	newbm:=bmdupl(bm)
+	iblurhoz8(newbm,n)
+
+	newbm2:=rotleft90_8(newbm)
+	iblurhoz8(newbm2,n)
+
+	newbm3:=rotright90_8(newbm2)
+	bmfree(newbm)
+	bmfree(newbm2)
+
+	bmduplpalette(newbm3,bm)
+	return newbm3
+end
+
+func blur24(bm,n)=
+	(r,g,b):=bmsplittorgb(bm)
+
+	r2:=bmblur(r,n)
+	g2:=bmblur(g,n)
+	b2:=bmblur(b,n)
+
+	newbm:=bmjoinrgb(r2,g2,b2)
+	bmfree(r2)
+	bmfree(g2)
+	bmfree(b2)
+
+	return newbm
+end
+
+func blur32(bm,n)=
+return bmunimpl("blur32")
+end
+
+proc iblurhoz8(bm,n)=
+	shift:=shifts{n,1}
+
+	w:=bm.dimx
+	h:=bm.dimy
+
+	for y:=0 to h-1 do
+		p:=bmgetrowptr(bm,y)
+		blurhelper(w-n-1, n, shift, p)
+
+!		to w-n-1 do
+!			sum:=0
+!			q:=p
+!			to n do
+!				sum+:=q++^
+!			od
+!			p++^:=sum>>shift
+!		od
+	od
+end
+
+proc blurhelper(m, n, shift, p)=
+	var sum
+	var q
+
+	to m do
+		sum:=0
+		q:=p
+		to n do
+			sum+:=q++^
+		od
+		p++^:=sum>>shift
+	od
+end
+
+func blurhoz24(bm,n)=
+return bmunimpl("blurhoz24")
+end
+
+func blurhoz32(bm,n)=
+return bmunimpl("blurhoz32")
+end
+
+export func bmsharpen(bm,n=0)=
+	case bm.pixelbits
+	when 8 then
+		return sharpen8(bm,n)
+	when 24 then
+		return sharpen24(bm,n)
+	when 32 then
+		return sharpen32(bm,n)
+	esac
+	return nil
+end
+
+export func sharpen8(bm,n)=
+!blur in-place horizontally by averaging each set of n pixels
+!n must be multiple of 2 from 2 to 64
+!return new modified image
+
+	w:=bm.dimx
+	h:=bm.dimy
+
+	newbm:=bmdupl(bm)
+
+	for y:=1 to h-2 do
+		p:=bmgetptr(newbm,1,y)
+
+		q:=bmgetptr(bm,1,y-1)
+		r:=bmgetptr(bm,1,y)
+		s:=bmgetptr(bm,1,y+1)
+
+		to w-2 do
+!			abcdefghij
+			a:=(q-1)^
+			b:=q^
+			c:=(q+1)^
+			d:=(r-1)^
+			e:=r^
+			f:=(r+1)^
+			g:=(s-1)^
+			h:=s^
+			i:=(s+1)^
+
+! a b c
+! d e f
+! g h i
+!			sum:=e*4-b-d-f-h
+!			p^:=clamp(p^+sum%4,0,255)
+
+			sum:=e*8-a-b-c-d-f-g-h-i
+			p^:=clamp(p^+sum%8,0,255)
+
+!			sum:=e*4+c+g+i-2*(b+d+f+h)
+!			p^:=clamp(p^+sum%4,0,255)
+
+			++p
+			++q
+			++r
+			++s
+		od
+	od
+
+	return newbm
+
+end
+
+export func sharpen24(bm,n)=
+	(r,g,b):=bmsplittorgb(bm)
+
+	r2:=bmsharpen(r,n)
+	g2:=bmsharpen(g,n)
+	b2:=bmsharpen(b,n)
+
+	newbm:=bmjoinrgb(r2,g2,b2)
+	bmfree(r2)
+	bmfree(g2)
+	bmfree(b2)
+
+	return newbm
+end
+
+export func sharpen32(bm,n)=
+return bmunimpl("bmsharpen32")
+end
+
+func getlumtables=
+	rmap:=makescalemap(0.299)
+	gmap:=makescalemap(0.587)
+	bmap:=makescalemap(0.111)
+	return (rmap, gmap, bmap)
+end
+=== console.q 0 1 39/44 ===
+import sys
+import clib
+
+import winconsts
+import winapi
+
+!!Virtual keycodes
+export const vklbutton=1		!note these are physical not logical buttons
+export const vkrbutton=2
+export const vkmbutton=4		!middle button is correct
+export const vkbackspace=8
+export const vktab=9
+export const vkclear=12
+export const vkenter=13
+export const vkshift=16
+export const vkctrl=17
+export const vkalt=18
+export const vkbreak=19
+export const vkcapslock=20
+!export const vkrshift=21
+export const vkrctrl=22
+!export const vkralt=23
+export const vkinslock=24
+export const vkescape=27
+export const vkspace=32
+export const vkpageup=33
+export const vkpagedown=34
+export const vkend=35
+export const vkhome=36
+export const vkleft=37
+export const vkup=38
+export const vkright=39
+export const vkdown=40
+export const vkinsert=45
+export const vkdelete=46
+export const vkhelp=47
+export const vk0='0'
+export const vka='A'
+export const vkwindows=91
+export const vkrightbutton=93
+export const vknumpad0=96		!96..105 = '0'..'9'
+export const vkmul=106
+export const vkadd=107
+export const vksub=109
+export const vkdecimal=110
+export const vkdiv=111
+export const vkf1=112
+export const vkf2=113
+export const vkf3=114
+export const vkf4=115
+export const vkf5=116
+export const vkf6=117
+export const vkf7=118
+export const vkf8=119
+export const vkf9=120
+export const vkf10=121
+export const vkf11=122
+export const vkf12=123
+!export const vklsq=128
+!export const vkrsq=129
+!export const vksemi=130
+!export const vkquote=131
+!export const vkstroke=132
+!export const vkdot=133
+!export const vkcomma=134
+!export const vkbackslash=135
+!export const vkquote2=136
+!export const vkequals=137
+!export const vkminus=138
+!export const vkhash=139
+export const vklshift=160
+export const vkrshift=161
+export const vklcontrol=162
+export const vkrcontrol=163
+export const vklalt=164
+export const vkralt=165
+
+!oem codes
+export const vkminus=189
+export const vkequals=187
+export const vklsq=219
+export const vkrsq=221
+export const vksemi=186
+export const vkquote=192
+export const vkhash=222
+export const vkcomma=188
+export const vkperiod=190
+export const vkslash=191
+export const vkbackslash=220
+export const vkbackquote=223
+
+export const con_black=0
+export const con_dkblue=1
+export const con_dkred=2
+export const con_dkmagenta=3
+export const con_dkgreen=4
+export const con_dkcyan=5
+export const con_dkyellow=6
+export const con_dkgrey=7
+export const con_grey=8
+export const con_blue=9
+export const con_red=10
+export const con_magenta=11
+export const con_green=12
+export const con_cyan=13
+export const con_yellow=14
+export const con_white=15
+
+
+export record winrec =
+	var posx,posy
+	var cols,rows
+	var fgnd,bgnd			!default text/background colour
+
+	var columns			!used when divided into columns
+	var itemcols			!width of each column
+	var pagesize			!columns*rows
+
+	var name
+
+	var hdata			!pointer to data record, or is nil
+end
+
+export var wconscreen
+export var screencols,screenrows
+
+export var chardata			!string these two represent row of the console
+export var attrdata			!string
+
+export var defscreenfgnd=con_black
+export var defscreenbgnd=con_grey
+export var rlkey=0		!set by readline, when special key has been input
+export var rlbuffer			!contents of readline buffer when special key pressed
+
+var cmdindex,ncmds
+var cmdhistory
+
+export const capsmask  = 0x8		!shift states as they are in .keyshift
+export const altmask   = 0x4
+export const ctrlmask  = 0x2
+export const shiftmask = 0x1
+
+export const capsbit=3
+export const altbit=2
+export const ctrlbit=1
+export const shiftbit=0
+
+var keypending=0
+var lastkey
+var pendkey
+export var hconsole, hconsolein
+var colourpalette
+
+!export var wscreencols,wscreenrows
+export var currbgnd=-1,currfgnd=-1
+
+!export var screencolour=con_dkred..con_grey
+
+!export var colourmap
+export VAR SUPPRESS=0
+
+VAR ALLCHARS
+
+proc START=
+!if iswindows() then
+!	CPL "WINCON INIT"
+		init()
+!fi
+	end
+
+proc main=
+	init()
+	settitle("New Title")
+
+!keyscreentest()
+
+!W:=MAKEWIN((1,20),(20,20))
+!CLEARWIN(W)
+
+!SHOWTEXT("^^^^^^^^^^^^^^^^^")
+
+a:=rkey(10,20,30)
+!	setpos(12, 10)
+!	print "***********hello"
+!	waitkey()
+end
+
+proc keyscreentest=
+	(cols,rows):=(screencols, screenrows)
+	CPL =COLS,=ROWS
+
+	row:=rows%2
+	col:=cols%2
+	ch:="X"
+
+	setcolour(6,1)
+
+	do
+		setpos(col,row)
+		cp ch
+		setpos(col,row)
+		k:=getkey().keycode
+		case k
+		when 27 then
+			exit
+		when vkleft then col:=max(1,col-1)
+		when vkright then col:=min(cols,col+1)
+		when vkup then row:=max(1,row-1)
+		when vkdown then row:=min(rows,row+1)
+		esac
+	od
+
+!waitkey()
+
+end
+
+export func makerspoint(x,y)=
+!combine x,y into 32-bit value (rspoint)
+	return y<<16 ior x
+end
+
+export proc setpos(col,row)=
+
+!!ROW+:=10
+!fprint "\s[{#};{#}H",row,col
+
+	setconsolecursorposition(hconsole,makerspoint(col-1,row-1))
+end
+
+export func getpos=
+	info:=new(ws_console)
+	getconsolescreenbufferinfo(hconsole,&info)
+	return (info.pos.x+1,info.pos.y+1)
+end
+
+export proc init(cols=100)=
+!static var setdimdone=0
+
+!CPL "CONSOLE INIT-----------"
+
+
+!	consolesw.init(cols)
+	cmdhistory::=()	!"one","two","three","four")
+	ncmds:=cmdhistory.upb
+	cmdindex:=0
+
+!screencols:=consolesw.wscreencols
+!screenrows:=consolesw.wscreenrows
+!
+
+	hconsole:=getstdhandle(-11)
+	hconsolein:=getstdhandle(-10)
+	lastkey:=new(ws_keyevent)
+	lastkey.repeatcount:=0
+	pendkey:=new(ws_keyevent)
+
+	setdims(cols,60)
+!	setdims(50,20)
+
+	getdims()
+
+!CPL =SCREENCOLS
+
+	wconscreen:=makewin((1,1),(screencols,screenrows),defscreencolour)
+
+	colourpalette:=new(ws_palette16)
+
+	setstdpalette()
+end
+
+export func setcursor(?visible)=
+	cursor:=new(ws_cursor)
+	getconsolecursorinfo(hconsole,&cursor)
+
+	if visible.defined then
+		cursor.visible:=visible
+		setconsolecursorinfo(hconsole,&cursor)
+	fi
+	return cursor.visible
+end
+
+export proc setcolour(fgnd,bgnd)=
+!call with as (fgnd,bgnd) or as (fgnd..bgnd)
+
+	if fgnd=currfgnd and bgnd=currbgnd then
+		return
+	fi
+
+	currfgnd:=fgnd
+	currbgnd:=bgnd
+
+!setconsoletextattribute(hconsole,(colourmap[bgnd]*16 + colourmap[fgnd]))
+	setconsoletextattribute(hconsole,(bgnd*16+fgnd))
+end
+
+export proc settitle(caption)=
+	setconsoletitle(caption)
+end
+
+export func getkeychar=
+!wait for any key, return single char code; as returned by C's getch()
+	return waitkey()
+end
+
+export func getkey2=
+!wait for any key, return keyrec
+!includes shift key presses as discrete keys
+!use getkey() to ignore these
+
+	return getchx()
+
+	k:=getchx()			!get keyrec, encoded as int
+
+	key:=new(rkey)			!convert to proper keyrec
+	key.charcode:=k iand 65535
+	key.shift:=k>>24
+	key.keycode:=k.[23..16]
+!CPL "GK2:",KEY
+
+	return key
+end
+
+export func getkey=
+!calls igetkey but doesn't return shift keys as discrete key presses
+	do
+		k:=getkey2()
+		case k.keycode
+		when vkshift,vkctrl,vkalt,vkcapslock then
+		else
+			exit
+		esac
+	od
+	return k
+end
+
+export func keyready=
+	return testkey()
+end
+
+export proc wshowtext(w,s,?col,?row)=
+	if col.defined then
+		showtext(s,w.posx+col-1,w.posy+row-1)
+	else
+		showtext(s)
+	fi
+end
+
+export proc showtext(s,?x,?y)=
+
+	if x.defined then
+		setpos(x,y)
+	fi
+
+	count:=0
+	if s then
+		if not suppress then
+			writeconsole(hconsole,s,s.len,&count,nil)
+		fi
+	fi
+end
+
+proc setwindowsize(cols,rows)=
+	r:=new(ws_srect)
+	r.leftx:=0
+	r.rightx:=cols-1
+	r.top:=0
+	r.bottom:=rows-1
+	if not setconsolewindowinfo(hconsole,1,&r) then
+!	CPL "WINDOW ERROR 1"
+!	abort("Window error 1")
+	fi
+end
+
+export proc setdims(cols,rows)=
+!set new size for console, by reinitialising
+
+	maxcol:=cols
+	maxrow:=rows
+
+	info:=new(ws_console)
+	oldscreenattributes:=info.attributes
+	oldscreensize:=info.size
+
+	oldcols:=info.window.rightx-info.window.leftx+1
+	oldrows:=info.window.bottom-info.window.top+1
+
+	IF OLDSCREENSIZE.X>COLS OR OLDSCREENSIZE.Y>ROWS THEN	!need to reduce window size first
+		setwindowsize(oldscreensize.x min cols, oldscreensize.y min rows)
+	fi
+
+!Set the new size of the entire (virtual) console window
+	if setconsolescreenbuffersize(hconsole,rows<<16+cols)=0 then
+!	abort("Buffer size error")
+	fi
+
+!now set the size of the displayed portion of it; in this case exactly the same
+!size as the buffer, with no scrollbars
+	setwindowsize(cols,rows)
+
+	wscreencols:=cols
+	wscreenrows:=rows
+
+!hide blinking cursor
+	cursor:=new(ws_cursor)
+	cursor.size:=10
+	cursor.visible:=1
+end
+
+export proc setpalette(index,colour)=
+!index is 0..15; colour is an rgb value bbggrr
+!updates local palette array
+!to update actual console, use writepalette
+	colourpalette[index]:=colour
+end
+
+export proc writepalette=
+	r:=new(ws_consoleex)
+	r.recsize:=ws_consoleex.bytes
+	X:=getconsolescreenbufferinfoex(hconsole,&r)
+
+	r.palette:=colourpalette
+
+	R.WINDOW.RIGHTX:=R.WINDOW.RIGHTX+1		!workaround off-by-one bug
+	R.WINDOW.BOTTOM:=R.WINDOW.BOTTOM+1
+
+	X:=setconsolescreenbufferinfoex(hconsole,&r)
+
+!export proc READPALETTE=
+!r:=new(rconsoleex)
+!r.recsize:=rconsoleex.bytes
+!x:=getconsolescreenbufferinfoex(hconsole,&r)
+!
+!CPL "GCSBI X=",X
+!FOR I:=0 TO 15 DO
+! CPL I,":",R.PALETTE[I]:"H"
+!OD
+!
+end
+
+proc setstdpalette=
+!export const con_black=0
+!export const con_dkblue=1
+!export const con_dkred=2
+!export const con_dkmagenta=3
+!export const con_dkgreen=4
+!export const con_dkcyan=5
+!export const con_dkyellow=6
+!export const con_grey=7
+!export const con_dkgrey=8
+!export const con_blue=9
+!export const con_red=10
+!export const con_magenta=11
+!export const con_green=12
+!export const con_cyan=13
+!export const con_yellow=14
+!export const con_white=15
+
+!R G B
+	cols:=(
+	(0,		0,		0),			!black
+	(0,		0,		128),		!dk blue
+	(128,	0,		0),			!dk red
+	(128,	0,		128),		!dk magenta
+	(0,		128,	0),			!dk green
+	(0,		128,	128),		!dk cyan
+	(128,	128,	0),			!dk yellow
+	(128,	128,	128),		!dk grey
+	(192,	192,	192),		!grey
+	(0,		0,		192),		!blue
+	(192,	0,		0),			!red
+	(192,	0,		192),		!magenta
+	(0,		192,	0),			!green
+	(0,		192,	192),		!cyan
+	(192,	192,	0),			!yellow
+	(255,	255,	255))		!white
+
+	for i,c in cols do
+		setpalette(i-1,c[3]<<16+c[2]<<8+c[1])
+	od
+!CPL "WRITEPAL"; WAITKEY()
+	writepalette()
+end
+
+proc getdims=
+	info:=new(ws_console)
+	getconsolescreenbufferinfo(hconsole,&info)
+
+	screencols:=info.window.rightx-info.window.leftx+1
+	screenrows:=info.window.bottom-info.window.top+1
+end
+
+export func getchx=
+	const rightaltmask	= 1				!masks used by .controlkeystate
+	const leftaltmask	= 2
+	const leftctrlmask	= 8
+	const rightctrlmask	= 4
+	const shiftmask		= 16
+	const capsmask		= 128
+	const scrollmask	= 64
+
+	const leftctrlbit	= 3		!for c.l.p
+	const rightctrlbit	= 2
+
+	if keypending then
+		lastkey:=pendkey
+		keypending:=0
+	else
+		if lastkey.repeatcount=0 then
+			repeat
+				count:=0
+				readconsoleinput(hconsolein,&lastkey,1,&count)
+			until lastkey.eventtype=1 and lastkey.keydown=1
+		fi
+	fi
+
+	altdown		:= (lastkey.controlkeystate iand (leftaltmask ior rightaltmask)|1|0)
+	ctrldown	:= (lastkey.controlkeystate iand (leftctrlmask ior rightctrlmask)|1|0)
+	shiftdown	:= (lastkey.controlkeystate iand shiftmask|1|0)
+	capslock	:= (lastkey.controlkeystate iand capsmask|1|0)
+
+	lastkey.repeatcount:=lastkey.repeatcount-1
+
+	charcode:=lastkey.asciichar
+	keycode:=lastkey.virtualkeycode iand 255
+
+!for keycodes in range 186 to 223, which are all stand-alone punctuation keys, I might
+!wish to set charcode to the appropriate printed char code (currently charcode will be
+!zero, and keyboard handlers need to detect keycodes such as vkequals)
+!
+	if altdown and ctrldown and charcode=166 then
+		altdown:=ctrldown:=0;
+	else
+		if altdown or ctrldown then
+			charcode:=0;
+			if keycode>='A' and keycode<= 'Z' then
+				charcode:=keycode-'@'
+			fi
+		fi
+	fi
+
+	keyshift:=capslock<<3 ior altdown<<2 ior ctrldown<<1 ior shiftdown
+
+	keyshift.[4]:=lastkey.controlkeystate.[leftctrlbit]		!for c.l.p
+	keyshift.[5]:=lastkey.controlkeystate.[rightctrlbit]
+
+!need to be more ruthless with how keycoded and charcodes are combined.
+!More combinations need to have only charcode or keycode set, and the other zero
+
+	switch charcode
+	when 'A'..'Z','a'..'z','0'..'9' then
+	when 8,9,13,27,' ','`' then
+	when 0 then				!already key-only event
+	else
+		keycode:=0
+	end switch
+
+	return rkey(charcode,keycode,keyshift)
+
+end
+
+export proc flushkeyboard=
+	flushconsoleinputbuffer(hconsolein)
+end
+
+export proc w_writeconsolerow(text, attributes, length, row)=
+	buffersize:=1<<16+length
+	coord:=0
+
+	box:=ws_srect(0,row-1,length-1,row-1)
+
+	buffer:=new(array,ws_charinfo,length)
+
+	for i:=1 to length do
+		x:=new(ws_charinfo)
+		x.asciichar  := text.[i]
+		x.attributes := attributes.[i]
+!	x.attributes := attributes.[1]
+		buffer[i]:=x
+	od
+!CPL "HELLO",text; WAITKEY()
+
+	writeconsoleoutputa(hconsole, &buffer,buffersize,coord,&box)
+end
+
+export func setclipboard(s)=
+!copy text to the Windows clipboard
+!return status 0 if no clipboard o/p was possible
+	const ghnd=2 + 0x40
+
+	if openclipboard(nil)=0 then
+		return 0
+	fi
+
+	emptyclipboard()
+
+	if s<>"" then
+		h:=globalalloc(ghnd,s.len+1)
+		p:=globallock(h)
+
+		memcpy(p,&s,s.len+1)
+	globalunlock(h)
+		setclipboarddata(cf_text,h)
+	fi
+
+	closeclipboard()
+
+	return 1
+end
+
+export func getclipboard=
+!copy text from Windows clipboard
+!return clipboard text, or "" when error or not text data available
+
+	if openclipboard(nil)=0 then
+		return ""
+	fi
+
+	htext:=getclipboarddata(cf_text)
+
+	if not htext then
+		return ""
+	fi
+
+	size:=globalsize(htext)		!should include zero terminator
+
+	p:=globallock(htext)
+	s:=makestr(p,size-1)		!assignment should copy the string data
+
+	globalunlock(htext)
+
+	closeclipboard()
+	return s
+end
+
+export func makewin(pos, dims, fgnd=con_black,bgnd=con_grey,name="Anon")=
+!export func makewin(pos, dims, ?colour)=
+
+	w:=new(winrec)
+	w.posx:=pos[1]
+	w.posy:=pos[2]
+	w.cols:=dims[1]
+	w.rows:=dims[2]
+	w.columns:=1
+	if dims.len>=3 then
+		w.columns:=dims[3]
+	fi
+
+!CPL =POS,=DIMS,=W.COLUMNS
+
+	w.itemcols:=w.cols%w.columns
+	w.pagesize:=w.rows*w.columns
+	w.hdata:=nil
+
+	w.fgnd:=fgnd
+	w.bgnd:=bgnd
+	w.name:=name
+
+	return w
+end
+
+export proc clearwin(w)=
+!clear region used by listbox
+!can clear multi-columns at once
+	spaces:=" "*w.cols
+
+	setcolour(w.fgnd,w.bgnd)
+	for i:=1 to w.rows do
+		showtext(spaces,w.posx,w.posy+i-1)
+	od
+	setpos(w.posx,w.posy)
+end
+
+export proc wsetpos(w,col,row)=
+	setpos(w.posx+col-1,w.posy+row-1)
+end
+
+export proc wshowtext_b(w,s,col,fgnd,bgnd)=
+!version of wshowtext that dumps into char/attr buffer.
+!w is used for absolute column number
+
+	length:=s.len
+	offset:=w.posx-1	!hoz offset
+
+	chardata.[(col+offset)..(col-1+length+offset)]:=s
+
+!	attr:=consolesw.colourmap[bgnd]<<4+consolesw.colourmap[fgnd]
+	attr:=bgnd<<4+fgnd
+
+	attrdata.[(col+offset)..(col-1+length+offset)]:=chr(attr)*length
+end
+
+export proc updateconsolerow(row)=
+!write out latest contents to chardata/attrdata to console
+!this represents an entire composite wlineno+wvgap+wedit row, for given row within wedit
+!etc
+	w_writeconsolerow(chardata,attrdata,screencols,row)
+end
+
+export func getkeyname(key)=
+	case key.keycode
+	when vkleft then name:="left"
+	when vkright then name:="right"
+	when vkup then name:="up"
+	when vkdown then name:="down"
+	when vkpageup then name:="pageup"
+	when vkpagedown then name:="pagedown"
+	when vkhome then name:="home"
+	when vkend then name:="end"
+	when vkinsert then name:="insert"
+	when vkdelete then name:="delete"
+	when vktab then name:="tab"
+	when vkescape then name:="escape"
+	when vkbackspace then name:="backspace"
+	when vkenter then name:="enter"
+	when vkf1..vkf12 then name:="f"+tostr(key.keycode-vkf1+1)
+	when vkspace then name:="space"
+	else
+		if key.charcode in [1..26] then	!ctrl code
+			name:=chr(key.charcode+'a'-1)
+		elsif key.charcode in ['!','"','£','$','%','^','&','*','(',')','-','_','+','=','[',']',
+		'{','}',':',';','\'','@','~','#','<','>',',','.','/','¬','¦','|','\\','?'] then
+			name:=chr(key.charcode)
+			key.shift iand:=inot shiftmask		!ignore any shift press needed to get char
+
+		elsif key.keycode in ['A'..'Z','0'..'9'] then
+			if (key.shift iand (ctrlmask ior altmask))=0 then
+				name:=chr(key.charcode)
+				key.shift iand:=inot shiftmask
+			else
+				name:=convlc(chr(key.keycode))
+			fi
+		elsif key.keycode in (186..223) then
+			case key.keycode
+			when vkminus then name:="-"
+			when vkequals then name:="="
+			when vklsq then name:="["
+			when vkrsq then name:="]"
+			when vksemi then name:=";"
+			when vkquote then name:="'"
+			when vkhash then name:="#"
+			when vkcomma then name:=","
+			when vkperiod then name:="."
+			when vkslash then name:="/"
+			when vkbackslash then name:="\\"
+			when vkbackquote then name:="`"
+			else
+				return "?"
+			esac
+		else
+			return "?"
+		fi
+	esac
+
+	prefix::="*"
+	if key.shift iand shiftmask then prefix+:="s" fi
+	if key.shift iand ctrlmask then prefix+:="c" fi
+	if key.shift iand altmask then prefix+:="a" fi
+	return prefix+name
+
+end
+
+export func keynametokey(name)=
+!given a key name in the format "*...", reconstruct an rkey record, and return that
+	charcode:=shift:=keycode:=0
+
+	name:=rightstr(name,-1)		!get rid of "*"
+
+	if name.len=1 then		!simple printable key, no shifts
+		charcode:=asc(name)
+		goto simplekey
+
+	else				!any letters s,c,a on left indicate a modifier
+		while name.len>1 do
+			case leftstr(name)
+			when "s" then
+				shift ior:=shiftmask
+				name:=rightstr(name,-1)
+			when "c" then
+				shift ior:=ctrlmask
+				name:=rightstr(name,-1)
+			when "a" then
+				shift ior:=altmask
+				name:=rightstr(name,-1)
+			else
+				exit
+			esac
+		od
+
+		case name
+		when "left" then keycode:=vkleft
+		when "right" then keycode:=vkright
+		when "up" then keycode:=vkup
+		when "down" then keycode:=vkdown
+		when "pageup" then keycode:=vkpageup
+		when "pagedown" then keycode:=vkpagedown
+		when "home" then keycode:=vkhome
+		when "end" then keycode:=vkend
+		when "insert" then keycode:=vkinsert
+		when "delete" then keycode:=vkdelete
+		when "tab" then keycode:=charcode:=vktab
+		when "escape" then keycode:=vkescape
+		when "backspace" then keycode:=charcode:=vkbackspace
+		when "enter" then keycode:=charcode:=vkenter
+		when "space" then keycode:=charcode:=vkspace
+		else
+			if name.len>=2 and leftstr(name)="f" then	!function key
+				keycode:=vkf1+strtoval(rightstr(name,-1))-1
+			elsif name.len=1 then				!ordinary key, but with shifts
+	simplekey:
+				c:=asc(name)
+				case c
+				when ['A'..'Z'] then
+					keycode:=c
+				when ['a'..'z'] then
+					keycode:=c-' '
+				when ['0'..'9'] then
+					keycode:=c
+				when '-','_' then keycode:=vkminus
+				when '=','+' then keycode:=vkequals
+				when '[','{' then keycode:=vklsq
+				when ']','}' then keycode:=vkrsq
+				when ';',':' then keycode:=vksemi
+				when '\'','@' then keycode:=vkquote
+				when ',','<' then keycode:=vkcomma
+				when '.','>' then keycode:=vkperiod
+				when '/','?' then keycode:=vkslash
+				when '\\','|' then keycode:=vkbackslash
+				when '`','¬' then keycode:=vkbackquote
+				when '#','~' then keycode:=vkhash
+				when '!' then keycode:='1'
+				when '"' then keycode:='2'
+				when '£' then keycode:='3'
+				when '$' then keycode:='4'
+				when '%' then keycode:='5'
+				when '^' then keycode:='6'
+				when '&' then keycode:='7'
+				when '*' then keycode:='8'
+				when '(' then keycode:='9'
+				when ')' then keycode:='0'
+				else
+					pcerror("keynametokey")
+				end
+			fi
+		esac
+	fi
+
+	if shift iand (altmask ior ctrlmask) then
+		charcode:=0
+		if keycode in 'A'..'Z' then
+			charcode:=keycode-'@'
+		fi
+	fi
+
+	key:=new(rkey)			!convert to proper keyrec
+	key.charcode:=charcode
+	key.shift:=shift
+	key.keycode:=keycode
+	return key
+end
+
+export proc clearscreen(?bgnd,?fgnd)=
+
+if bgnd.isvoid then bgnd:=defscreenbgnd fi
+if fgnd.isvoid then fgnd:=defscreenfgnd fi
+setcolour(fgnd,bgnd)
+
+for i:=1 to screenrows do
+	setpos(1,i)
+	showtext(" "*screencols)
+!	showtext("*"*screencols)
+od
+setpos(1,1)
+end
+
+export func readline(?cmdline,donewline=1)=
+!this func doesn't handle tabs properly
+!would need to maintain 2 buffers, one with tabs translated to spaces
+!or convert tabs to another char which is translated back to tabs on exit
+!return with input buffer set to the line, but also returns the complete line
+!newline=1 to end with a newline, 0 to leave it
+
+!readln
+!return
+
+	buffer:=""
+	nchars:=0
+!congetpos()
+
+!NOTE: getpos is dodgy using TERMCON; MAY NEED CALLER TO SPECIFY START POINT
+	(startx,starty):=(getpos())
+
+	pos:=0		!with nchars shown, pos can be 0 to nchars
+
+	reenter:
+	if cmdline.defined and cmdline<>"" then
+		buffer:=cmdline
+	reenter2:
+		pos:=nchars:=buffer.len
+	fi
+
+	do
+! print "_"
+		rlkey:=0			!normal input starts with "*" will expect rlkey to be a keyrec
+		setpos(startx,starty)
+		print buffer
+		setpos(startx+pos,starty)
+
+		key:=getkey()
+		keycode:=key.keycode
+		keyshift:=key.shift
+
+		case keycode
+		when vkpageup,vkpagedown,vkup,vkdown,vkinsert,vkf1..vkf12 then
+
+	dospecial:
+		rlbuffer:=buffer
+			oldbufferlen:=buffer.len		!to help erase old buffer
+			buffer:=getkeyname(key)
+			rlkey:=key				!allow caller to use key code rather than name
+			exit
+
+		when vkleft then
+			if buffer="" then goto dospecial fi
+			if (keyshift iand 7) then goto dospecial fi
+
+			if pos>0 then
+				--pos
+			fi
+
+		when vkhome then
+			if buffer="" then goto dospecial fi
+			if (keyshift iand 7) then goto dospecial fi
+			pos:=0
+
+		when vkend then
+			if buffer="" then goto dospecial fi
+			if (keyshift iand 7) then goto dospecial fi
+			pos:=nchars
+
+		when vkright then
+			if buffer="" then goto dospecial fi
+			if (keyshift iand 7) then goto dospecial fi
+			if pos<nchars then
+				++pos
+			fi
+
+		when vkenter then
+
+!  println
+			exit
+
+		when vkbackspace then
+
+			if (keyshift iand 7) then goto dospecial fi
+			if nchars then
+				setpos(startx,starty)
+				print " "*buffer.len
+
+				case pos
+				when 0 then			!not allowed
+				when nchars then		!at end
+					buffer:=leftstr(buffer,-1)
+					--nchars
+					--pos
+				else				!in middle
+					buffer:=leftstr(buffer,pos-1)+rightstr(buffer,-(pos))
+					--nchars
+					--pos
+				esac
+
+			fi
+
+		when vkdelete then
+			if (keyshift iand 7) then goto dospecial fi
+			if nchars and nchars=pos then
+				goto delline
+			fi
+			if nchars=0 then
+				goto dospecial
+			fi
+			if nchars then
+!CPL "\NNCHARS",=NCHARS,++CCC,=POS,"\N"
+				setpos(startx,starty)
+				print " "*buffer.len
+
+				case pos
+				when nchars then		!not allowed
+!			when 0 then			!at start
+!				buffer:=leftstr(buffer,-1)
+!				--nchars
+				else				!in middle
+					buffer:=leftstr(buffer,pos)+rightstr(buffer,-(pos+1))
+					--nchars
+!    --pos
+				esac
+
+			fi
+
+		when vkescape then
+			if nchars=0 then
+				goto dospecial
+!   oldbufferlen:=buffer.len
+!   buffer:="*esc"
+!   exit
+			fi
+	delline:
+			setpos(startx,starty)
+			print " "*buffer.len
+
+			buffer:=""
+			nchars:=pos:=0
+
+		when vktab then
+			goto normalkey
+
+		else
+	normalkey:
+			if (key.charcode>=' ' or key.charcode=9) then
+				if pos=0 then
+					buffer:=chr(key.charcode)+buffer
+				elsif pos=nchars then
+					buffer:=buffer+chr(key.charcode)
+				else
+					buffer:=leftstr(buffer,pos)+chr(key.charcode)+rightstr(buffer,-(pos))
+				fi
+				++nchars
+				++pos
+			else
+				GOTO DOSPECIAL
+				print "<",keycode,key.charcode,">"
+			fi
+
+		esac
+	od
+
+	case buffer
+	when "*cup","*cdown" then
+		if ncmds then
+			setpos(startx,starty)
+			print " "*oldbufferlen
+
+			if cmdindex=0 then		!get started on last
+				cmdline:=cmdhistory[ncmds]
+				cmdindex:=ncmds
+				goto reenter
+			fi
+
+			if buffer="*cup" and cmdindex>1 then
+				--cmdindex
+			elsif buffer="*cdown" and cmdindex<ncmds then
+				++cmdindex
+			fi
+			cmdline:=cmdhistory[cmdindex]
+			goto reenter
+		fi
+		buffer:=""
+		goto reenter2
+	esac
+
+	if buffer.len>1 and leftstr(buffer)<>"*" then
+		if ncmds=0 or cmdhistory[ncmds]<>buffer then
+			cmdhistory[++ncmds]:=buffer
+		fi
+		cmdindex:=0
+	fi
+
+	if donewline then println fi
+
+	return sreadln(buffer)
+end
+
+export proc wsetcolumns(w,columns)=
+	w.columns:=columns
+	w.itemcols:=w.cols%w.columns
+	w.pagesize:=w.rows*w.columns
+end
+
+=== winconsts.q 0 1 40/44 ===
+!Windows win32 constants
+
+global const driverversion =  0
+global const technology =  2
+global const horzsize =  4
+global const vertsize =  6
+global const horzres =  8
+global const vertres =  10
+global const bitspixel =  12
+global const bitplanes =  14
+global const numbrushes =  16
+global const numpens =  18
+global const nummarkers =  20
+global const numfonts =  22
+global const numcolours =  24
+global const pdevicesize =  26
+global const curvecaps =  28
+global const linecaps =  30
+global const polygonalcaps =  32
+global const textcaps =  34
+global const clipcaps =  36
+global const rastercaps =  38
+global const aspectx =  40
+global const aspecty =  42
+global const aspectxy =  44
+global const logpixelsx =  88
+global const logpixelsy =  90
+global const sizepalette =  104
+global const numreserved =  106
+global const colourres =  108
+global const physicalwidth =  110
+global const physicalheight =  111
+global const physicaloffsetx =  112
+global const physicaloffsety =  113
+global const scalingfactorx =  114
+global const scalingfactory =  115
+global const fw_dontcare =  0
+global const fw_thin =  100
+global const fw_extralight =  200
+global const fw_ultralight =  200
+global const fw_light =  300
+global const fw_normal =  400
+global const fw_regular =  400
+global const fw_medium =  500
+global const fw_semibold =  600
+global const fw_demibold =  600
+global const fw_bold =  700
+global const fw_extrabold =  800
+global const fw_ultrabold =  800
+global const fw_heavy =  900
+global const fw_black =  900
+global const cs_vredraw =  1
+global const cs_hredraw =  2
+global const cs_keycvtwindow =  4
+global const cs_dblclks =  8
+global const cs_owndc =  32
+global const cs_classdc =  64
+global const cs_parentdc =  128
+global const cs_nokeycvt =  256
+global const cs_noclose =  512
+global const cs_savebits =  2048
+global const cs_bytealignclient =  4096
+global const cs_bytealignwindow =  8192
+global const cs_publicclass =  16384
+global const sw_hide =  0
+global const sw_shownormal =  1
+global const sw_normal =  1
+global const sw_showminimized =  2
+global const sw_showmaximized =  3
+global const sw_maximize =  3
+global const sw_shownoactivate =  4
+global const sw_show =  5
+global const sw_minimize =  6
+global const sw_showminnoactive =  7
+global const sw_showna =  8
+global const sw_restore =  9
+global const sw_showdefault =  10
+global const sw_max =  10
+global const pm_noremove =  0
+global const pm_remove =  1
+global const pm_noyield =  2
+global const wm_null =  0
+global const wm_create =  1
+global const wm_destroy =  2
+global const wm_move =  3
+global const wm_size =  5
+global const wm_activate =  6
+global const wa_inactive =  0
+global const wa_active =  1
+global const wa_clickactive =  2
+global const wm_setfocus =  7
+global const wm_killfocus =  8
+global const wm_enable =  10
+global const wm_setredraw =  11
+global const wm_settext =  12
+global const wm_gettext =  13
+global const wm_gettextlength =  14
+global const wm_paint =  15
+global const wm_close =  16
+global const wm_queryendsession =  17
+global const wm_quit =  18
+global const wm_queryopen =  19
+global const wm_erasebkgnd =  20
+global const wm_syscolourchange =  21
+global const wm_endsession =  22
+global const wm_showwindow =  24
+global const wm_wininichange =  26
+global const wm_devmodechange =  27
+global const wm_activateapp =  28
+global const wm_fontchange =  29
+global const wm_timechange =  30
+global const wm_cancelmode =  31
+global const wm_setcursor =  32
+global const wm_mouseactivate =  33
+global const wm_childactivate =  34
+global const wm_queuesync =  35
+global const wm_getminmaxinfo =  36
+global const wm_drawitem =  43
+global const wm_notify =  78
+global const wm_contextmenu =  123
+global const wm_geticon =  127
+global const wm_seticon =  128
+global const wm_nchittest =  132
+
+global const wm_nclbuttondown	= 161
+global const wm_nclbuttonup	= 162
+global const wm_nclbuttondblclick	= 163
+
+global const wm_menurbuttonup	= 290
+
+global const wm_parentnotify =  528
+global const wm_dropfiles =  563
+global const wm_enteridle =  289
+global const wm_user =  1024
+global const wm_mdicreate =  544
+global const wm_mdidestroy =  545
+global const wm_mdiactivate =  546
+global const wm_mdirestore =  547
+global const wm_mdinext =  548
+global const wm_mdimaximize =  549
+global const wm_mditile =  550
+global const wm_mdicascade =  551
+global const wm_mdiiconarange =  552
+global const wm_mdigetactive =  553
+global const wm_mdisetmenu =  560
+global const wm_entersizemove =  561
+global const wm_exitsizemove =  562
+global const wm_mdirefrshmenu =  564
+global const wm_lbuttondblclk =  515
+global const wm_rbuttondblclk =  518
+global const wm_lbuttondown =  513
+global const wm_rbuttondown =  516
+global const wm_mbuttondown =  519
+global const wm_mousemove =  512
+global const wm_lbuttonup =  514
+global const wm_rbuttonup =  517
+global const wm_mbuttonup =  520
+global const wm_mbuttondblclk =  521
+global const wm_mousewheel =  522
+global const snd_filename =  131072
+global const snd_async =  1
+global const dt_singleline =  32
+global const dt_centre =  1
+global const dt_vcentre =  4
+global const ws_overlapped =  0
+global const ws_popup =  2147483648
+global const ws_child =  1073741824
+global const ws_minimize =  536870912
+global const ws_visible =  268435456
+global const ws_disabled =  134217728
+global const ws_clipsiblings =  67108864
+global const ws_clipchildren =  33554432
+global const ws_maximize =  16777216
+global const ws_caption =  12582912
+global const ws_border =  8388608
+global const ws_dlgframe =  4194304
+global const ws_hscroll =  1048576
+global const ws_vscroll =  2097152
+global const ws_sysmenu =  524288
+global const ws_thickframe =  262144
+global const ws_group =  131072
+global const ws_tabstop =  0
+global const ws_scrollbars =  3145728
+global const ws_minimizebox =  131072
+global const ws_maximizebox =  65536
+global const ws_tiled =  0
+global const ws_iconic =  536870912
+global const ws_sizebox =  262144
+global const ws_overlappedwindow =  13565952
+global const ws_tiledwindow =  13565952
+global const ws_popupwindow =  -2138570752
+global const ws_childwindow =  1073741824
+global const ws_ex_acceptfiles =  16
+global const ws_ex_appwindow =  262144
+global const ws_ex_clientedge =  512
+global const ws_ex_contexthelp =  1024
+global const ws_ex_controlparent =  65536
+global const ws_ex_dlgmodalframe =  1
+global const ws_ex_left =  0
+global const ws_ex_leftscrollbar =  16384
+global const ws_ex_ltrreading =  0
+global const ws_ex_mdichild =  64
+global const ws_ex_noparentnotify =  4
+global const ws_ex_overlappedwindow =  768
+global const ws_ex_palettewindow =  392
+global const ws_ex_right =  4096
+global const ws_ex_rightscrollbar =  0
+global const ws_ex_rtlreading =  8192
+global const ws_ex_staticedge =  131072
+global const ws_ex_toolwindow =  128
+global const ws_ex_topmost =  8
+global const ws_ex_transparent =  32
+global const ws_ex_windowedge =  256
+
+global const gw_hwndfirst =  0
+global const gw_hwndlast =  1
+global const gw_hwndnext =  2
+global const gw_hwndprev =  3
+global const gw_owner =  4
+global const gw_child =  5
+global const gw_enabledpopup =  6
+global const cb_geteditsel =  320
+global const cb_limittext =  321
+global const cb_seteditsel =  322
+global const cb_addstring =  323
+global const cb_deletestring =  324
+global const cb_dir =  325
+global const cb_getcount =  326
+global const cb_getcursel =  327
+global const cb_getlbtext =  328
+global const cb_getlbtextlen =  329
+global const cb_insertstring =  330
+global const cb_resetcontent =  331
+global const cb_findstring =  332
+global const cb_findstringexact =  344
+global const cb_selectstring =  333
+global const cb_setcursel =  334
+global const cb_showdropdown =  335
+global const cb_getitemdata =  336
+global const cb_setitemdata =  337
+global const cb_getdroppedcontrolrect =  338
+global const cb_setitemheight =  339
+global const cb_getitemheight =  340
+global const cb_setextendedui =  341
+global const cb_getextendedui =  342
+global const cb_getdroppedstate =  343
+global const cb_setlocale =  345
+global const cb_getlocale =  346
+global const cb_gettopindex =  347
+global const cb_settopindex =  348
+global const cb_gethorizontalextent =  349
+global const cb_sethorizontalextent =  350
+global const cb_getdroppedwidth =  351
+global const cb_setdroppedwidth =  352
+global const cb_initstorage =  353
+global const cb_multipleaddstring =  355
+global const bm_click =  245
+global const bm_getcheck =  240
+global const bm_getimage =  246
+global const bm_getstate =  242
+global const bm_setcheck =  241
+global const bm_setimage =  247
+global const bm_setstate =  243
+global const bm_setstyle =  244
+global const cf_bitmap =  2
+global const cf_dib =  8
+global const cf_palette =  9
+global const cf_enhmetafile =  14
+global const cf_metafilepict =  3
+global const cf_oemtext =  7
+global const cf_text =  1			!used in sys
+global const cf_unicodetext =  13
+global const cf_dif =  5
+global const cf_dspbitmap =  130
+global const cf_dspenhmetafile =  142
+global const cf_dspmetafilepict =  131
+global const cf_dsptext =  129
+global const cf_gdiobjfirst =  768
+global const cf_gdiobjlast =  1023
+global const cf_hdrop =  15
+global const cf_locale =  16
+global const cf_ownerdisplay =  128
+global const cf_pendata =  10
+global const cf_privatefirst =  512
+global const cf_privatelast =  767
+global const cf_riff =  11
+global const cf_sylk =  4
+global const cf_wave =  12
+global const cf_tiff =  6
+
+global const tcif_text =  1
+global const tcif_image =  2
+global const tcif_param =  8
+global const tcif_rtlreading =  4
+
+global const wm_keydown =  256
+global const wm_keyup =  257
+global const wm_char =  258
+global const wm_syschar =  262
+global const wm_sysdeadchar =  263
+global const wm_syskeydown =  260
+global const wm_syskeyup =  261
+global const mf_insert =  0
+global const mf_change =  128
+global const mf_append =  256
+global const mf_delete =  512
+global const mf_remove =  4096
+global const mf_bycommand =  0
+global const mf_byposition =  1024
+global const mf_separator =  2048
+global const mf_enabled =  0
+global const mf_grayed =  1
+global const mf_greyed =  1
+global const mf_disabled =  2
+global const mf_unchecked =  0
+global const mf_checked =  8
+global const mf_usecheckbitmaps =  512
+global const mf_string =  0
+global const mf_bitmap =  4
+global const mf_ownerdraw =  256
+global const mf_popup =  16
+global const mf_menubarbreak =  32
+global const mf_menubreak =  64
+global const mf_unhilite =  0
+global const mf_hilite =  128
+global const mf_sysmenu =  8192
+global const mf_help =  16384
+global const mf_mouseselect =  32768
+
+!global const bn_clicked =  0
+!global const bn_dblclk =  5
+!global const bn_disable =  4
+!global const bn_doubleclicked =  5
+!global const bn_hilite =  2
+!global const bn_killfocus =  7
+!global const bn_paint =  1
+!global const bn_pushed =  2
+!global const bn_setfocus =  6
+!global const bn_unhilite =  3
+!global const bn_unpushed =  3
+!global const en_setfocus =  256
+!global const en_killfocus =  512
+!global const en_change =  768
+!global const en_update =  1024
+!global const en_errspace =  1280
+!global const en_maxtext =  1281
+!global const en_hscroll =  1537
+!global const en_vscroll =  1538
+!global const lbn_errspace =  -2
+!global const lbn_selchange =  1
+!global const lbn_dblclk =  2
+!global const lbn_selcancel =  3
+!global const lbn_setfocus =  4
+!global const lbn_killfocus =  5
+!global const cbn_errspace =  -1
+!global const cbn_selchange =  1
+!global const cbn_dblclk =  2
+!global const cbn_setfocus =  3
+!global const cbn_killfocus =  4
+!global const cbn_editchange =  5
+!global const cbn_editupdate =  6
+!global const cbn_dropdown =  7
+!global const cbn_closeup =  8
+!global const cbn_selendok =  9
+!global const cbn_selendcancel =  10
+!
+!global const cbs_autohscroll =  64
+!global const cbs_disablenoscroll =  2048
+!global const cbs_dropdown =  2
+!global const cbs_dropdownlist =  3
+!global const cbs_hasstrings =  512
+!global const cbs_lowercase =  16384
+!global const cbs_nointegralheight =  1024
+!global const cbs_oemconvert =  128
+!global const cbs_ownerdrawfixed =  16
+!global const cbs_ownerdrawvariable =  32
+!global const cbs_simple =  1
+!global const cbs_sort =  256
+!global const cbs_uppercase =  8192
+
+global const wm_command =  273
+global const wm_menuselect =  287
+global const wm_cut =  768
+global const wm_copy =  769
+global const wm_paste =  770
+global const wm_clear =  771
+global const wm_undo =  772
+global const em_getsel =  176
+global const em_setsel =  177
+global const em_scroll =  181
+global const em_linescroll =  182
+global const em_scrollcaret =  183
+global const em_getmodify =  184
+global const em_setmodify =  185
+global const em_getlinecount =  186
+global const em_lineindex =  187
+global const em_sethandle =  188
+global const em_gethandle =  189
+global const em_getthumb =  190
+global const em_linelength =  193
+global const em_replacesel =  194
+global const em_getline =  196
+global const em_limittext =  197
+global const em_canundo =  198
+global const em_undo =  199
+global const em_fmtlines =  200
+global const em_linefromchar =  201
+global const em_settabstops =  203
+global const em_setpasswordchar =  204
+global const em_emptyundobuffer =  205
+global const em_getfirstvisibleline =  206
+global const em_setreadonly =  207
+global const em_setwordbreakproc =  208
+global const em_getwordbreakproc =  209
+global const em_getpasswordchar =  210
+global const em_setlimittext =  197
+global const em_getseltext =  1086
+global const em_setcharformat =  1092
+global const em_getcharformat =  1082
+global const em_settextmode =  1113
+global const em_gettextmode =  1114
+global const em_gettextex =  1118
+global const em_gettextlengthex =  1119
+global const tm_plaintext =  1
+global const tm_richtext =  2
+global const tm_singlelevelundo =  4
+global const tm_multilevelundo =  8
+global const tm_singlecodepage =  16
+global const tm_multicodepage =  32
+global const scf_word =  2
+global const scf_selection =  1
+global const sb_getborders =  1031
+global const sb_getparts =  1030
+global const sb_getrect =  1034
+global const sb_gettextw =  1037
+global const sb_gettextlengthw =  1036
+global const sb_settextw =  1035
+global const sb_gettexta =  1026
+global const sb_gettextlengtha =  1027
+global const sb_settexta =  1025
+global const sb_gettext =  1026
+global const sb_gettextlength =  1027
+global const sb_settext =  1025
+global const sb_setminheight =  1032
+global const sb_setparts =  1028
+global const sb_simple =  1033
+global const wm_setfont =  48
+global const wm_getfont =  49
+global const gm_advanced =  2
+global const transparent =  1
+global const opaque =  2
+global const mwt_identity =  1
+global const cw_usedefault =  0x8000'0000
+global const idc_arrow =  32512
+global const idc_ibeam =  32513
+global const idc_wait =  32514
+global const idc_cross =  32515
+global const idc_uparrow =  32516
+global const idc_sizenwse =  32642
+global const idc_sizenesw =  32643
+global const idc_sizewe =  32644
+global const idc_sizens =  32645
+global const idc_sizeall =  32646
+global const idc_no =  32648
+global const idc_appstarting =  32650
+global const idc_help =  32651
+global const idi_application =  32512
+global const idi_hand =  32513
+global const idi_question =  32514
+global const idi_exclamation =  32515
+global const idi_asterisk =  32516
+global const idi_winlogo =  32517
+global const idc_size =  32640
+global const idc_icon =  32641
+global const arrowpointer =  32512
+global const ibeampointer =  32513
+global const waitpointer =  32514
+global const crosspointer =  32515
+global const uparrowpointer =  32516
+global const sizenwsepointer =  32642
+global const sizeneswpointer =  32643
+global const sizewepointer =  32644
+global const sizenspointer =  32645
+global const sizeallpointer =  32646
+global const nopointer =  32648
+global const appstartingpointer =  32650
+global const helpicon =  32651
+global const applicationicon =  32512
+global const handicon =  32513
+global const questionicon =  32514
+global const exclamationicon =  32515
+global const asteriskicon =  32516
+global const winlogoicon =  32517
+global const sizepointer =  32640
+global const iconicon =  32641
+global const sm_cymin =  29
+global const sm_cxmin =  28
+global const sm_arrange =  56
+global const sm_cleanboot =  67
+global const sm_cmetrics =  76
+global const sm_cmousebuttons =  43
+global const sm_cxborder =  5
+global const sm_cyborder =  6
+global const sm_cxcursor =  13
+global const sm_cycursor =  14
+global const sm_cxdlgframe =  7
+global const sm_cydlgframe =  8
+global const sm_cxdoubleclk =  36
+global const sm_cydoubleclk =  37
+global const sm_cxdrag =  68
+global const sm_cydrag =  69
+global const sm_cxedge =  45
+global const sm_cyedge =  46
+global const sm_cxfixedframe =  7
+global const sm_cyfixedframe =  8
+global const sm_cxframe =  32
+global const sm_cyframe =  33
+global const sm_cxfullscreen =  16
+global const sm_cyfullscreen =  17
+global const sm_cxhscroll =  21
+global const sm_cyhscroll =  3
+global const sm_cxhthumb =  10
+global const sm_cxicon =  11
+global const sm_cyicon =  12
+global const sm_cxiconspacing =  38
+global const sm_cyiconspacing =  39
+global const sm_cxmaximized =  61
+global const sm_cymaximized =  62
+global const sm_cxmaxtrack =  59
+global const sm_cymaxtrack =  60
+global const sm_cxmenucheck =  71
+global const sm_cymenucheck =  72
+global const sm_cxmenusize =  54
+global const sm_cymenusize =  55
+global const sm_cxminimized =  57
+global const sm_cyminimized =  58
+global const sm_cxminspacing =  47
+global const sm_cyminspacing =  48
+global const sm_cxmintrack =  34
+global const sm_cymintrack =  35
+global const sm_cxscreen =  0
+global const sm_cyscreen =  1
+global const sm_cxsize =  30
+global const sm_cysize =  31
+global const sm_cxsizeframe =  32
+global const sm_cysizeframe =  33
+global const sm_cxsmicon =  49
+global const sm_cysmicon =  50
+global const sm_cxsmsize =  52
+global const sm_cysmsize =  53
+global const sm_cxvscroll =  2
+global const sm_cyvscroll =  20
+global const sm_cyvthumb =  9
+global const sm_cycaption =  4
+global const sm_cykanjiwindow =  18
+global const sm_cymenu =  15
+global const sm_cysmcaption =  51
+global const sm_dbcsenabled =  42
+global const sm_debug =  22
+global const sm_menudropalignment =  40
+global const sm_mideastenabled =  74
+global const sm_mousepresent =  19
+global const sm_mousewheelpresent =  75
+global const sm_network =  63
+global const sm_penwindows =  41
+global const sm_reserved1 =  24
+global const sm_reserved2 =  25
+global const sm_reserved3 =  26
+global const sm_reserved4 =  27
+global const sm_secure =  44
+global const sm_showsounds =  70
+global const sm_slowmachine =  73
+global const sm_swapbutton =  23
+global const arw_bottomleft =  0
+global const arw_bottomright =  1
+global const arw_hide =  8
+global const arw_topleft =  2
+global const arw_topright =  3
+global const arw_down =  4
+global const arw_left =  0
+global const arw_right =  0
+global const arw_up =  4
+global const white_brush =  0
+global const ltgray_brush =  1
+global const gray_brush =  2
+global const dkgray_brush =  3
+global const black_brush =  4
+global const null_brush =  5
+global const hollow_brush =  5
+global const white_pen =  6
+global const black_pen =  7
+global const null_pen =  8
+global const oem_fixed_font =  10
+global const ansi_fixed_font =  11
+global const ansi_var_font =  12
+global const system_font =  13
+global const device_default_font =  14
+global const default_palette =  15
+global const system_fixed_font =  16
+global const stock_last =  16
+
+!global const sbm_setpos =  224
+!global const sbm_getpos =  225
+!global const sbm_setrange =  226
+!global const sbm_setrangeredraw =  230
+!global const sbm_getrange =  227
+!global const sbm_enable_arrows =  228
+!global const sbs_horz =  0
+!global const sbs_vert =  1
+!global const sbs_topalign =  2
+!global const sbs_leftalign =  2
+!global const sbs_bottomalign =  4
+!global const sbs_rightalign =  4
+!global const sbs_sizeboxtopleftalign =  2
+!global const sbs_sizeboxbottomrightalign =  4
+!global const sbs_sizebox =  8
+
+global const wm_hscroll =  276
+global const wm_vscroll =  277
+
+!global const sb_horz =  0
+!global const sb_hoz =  0
+!global const sb_vert =  1
+!global const sb_ctl =  2
+!global const sb_both =  3
+!global const sb_lineup =  0
+!global const sb_lineleft =  0
+!global const sb_linedown =  1
+!global const sb_lineright =  1
+!global const sb_pageup =  2
+!global const sb_pageleft =  2
+!global const sb_pagedown =  3
+!global const sb_pageright =  3
+!global const sb_thumbposition =  4
+!global const sb_thumbtrack =  5
+!global const sb_top =  6
+!global const sb_left =  6
+!global const sb_bottom =  7
+!global const sb_right =  7
+!global const sb_endscroll =  8
+!global const sif_disablenoscroll =  8
+!global const sif_page =  2
+!global const sif_pos =  4
+!global const sif_range =  1
+!global const sif_trackpos =  16
+!global const sif_all =  23
+
+global const wm_ctlcolourmsgbox =  306
+global const wm_ctlcolouredit =  307
+global const wm_ctlcolourlistbox =  308
+global const wm_ctlcolourbtn =  309
+global const wm_ctlcolourdlg =  310
+global const wm_ctlcolourscrollbar =  311
+global const wm_ctlcolourstatic =  312
+global const wm_timer =  275
+
+global const srccopy =  13369376
+global const srcpaint =  15597702
+global const srcand =  8913094
+global const srcinvert =  6684742
+global const srcerase =  4457256
+
+global const notsrccopy =  3342344
+global const notsrcerase =  1114278
+global const mergecopy =  12583114
+global const mergepaint =  12255782
+global const patcopy =  15728673
+global const patpaint =  16452105
+global const patinvert =  5898313
+global const dstinvert =  5570569
+global const blackness =  66
+global const whiteness =  16711778
+
+global const r2_black =  1
+global const r2_notmergepen =  2
+global const r2_masknotpen =  3
+global const r2_notcopypen =  4
+global const r2_maskpennot =  5
+global const r2_not =  6
+global const r2_xorpen =  7
+global const r2_notmaskpen =  8
+global const r2_maskpen =  9
+global const r2_notxorpen =  10
+global const r2_nop =  11
+global const r2_mergenotpen =  12
+global const r2_copypen =  13
+global const r2_mergepennot =  14
+global const r2_mergepen =  15
+global const r2_white =  16
+global const r2_last =  16
+
+global const gdi_error =  4294967295
+global const hgdi_error =  4294967295
+global const clr_invalid =  4278190080
+global const clr_default =  4278190080
+global const clr_none =  4294967295
+global const ofn_readonly =  1
+global const ofn_overwriteprompt =  2
+global const ofn_hidereadonly =  4
+global const ofn_nochangedir =  8
+global const ofn_showhelp =  16
+global const ofn_enablehook =  32
+global const ofn_enabletemplate =  64
+global const ofn_enabletemplatehandle =  128
+global const ofn_novalidate =  256
+global const ofn_allowmultiselect =  512
+global const ofn_extensiondifferent =  1024
+global const ofn_pathmustexist =  2048
+global const ofn_filemustexist =  4096
+global const ofn_createprompt =  8192
+global const ofn_shareaware =  16384
+global const ofn_noreadonlyreturn =  32768
+global const ofn_notestfilecreate =  65536
+global const ofn_nonetworkbutton =  131072
+global const ofn_nolongnames =  262144
+global const ofn_explorer =  524288
+global const ofn_nodereferencelinks =  1048576
+global const ofn_longnames =  2097152
+global const ofn_sharefallthrough =  2
+global const ofn_sharenowarn =  1
+global const ofn_sharewarn =  0
+!global const gmem_fixed =  0
+!global const gmem_moveable =  2
+!global const gmem_nocompact =  16
+!global const gmem_nodiscard =  32
+!global const gmem_zeroinit =  64
+!global const gmem_modify =  128
+!global const gmem_discardable =  256
+!global const gmem_not_banked =  4096
+!global const gmem_share =  8192
+!global const gmem_ddeshare =  8192
+!global const gmem_notify =  16384
+!global const gmem_lower =  4096
+!global const gmem_valid_flags =  32626
+!global const gmem_invalid_handle =  32768
+!global const gmem_clipboard =  8194
+!global const ghnd =  66
+!global const gptr =  64
+!global const pd_allpages =  0
+!global const pd_collate =  16
+!global const pd_disableprinttofile =  524288
+!global const pd_enableprinthook =  4096
+!global const pd_enableprinttemplate =  16384
+!global const pd_enableprinttemplatehandle =  65536
+!global const pd_enablesetuphook =  8192
+!global const pd_enablesetuptemplate =  32768
+!global const pd_enablesetuptemplatehandle =  131072
+!global const pd_hideprinttofile =  1048576
+!global const pd_nopagenums =  8
+!global const pd_noselection =  4
+!global const pd_nowarning =  128
+!global const pd_pagenums =  2
+!global const pd_printsetup =  64
+!global const pd_printtofile =  32
+!global const pd_returndc =  256
+!global const pd_returndefault =  1024
+!global const pd_returnic =  512
+!global const pd_selection =  1
+!global const pd_showhelp =  2048
+!global const pd_usedevmodecopies =  262144
+!global const pd_usedevmodecopiesandcollate =  262144
+global const dib_rgb_colours =  0
+global const dib_pal_colours =  1
+global const dib_pal_indices =  2
+global const dib_pal_physindices =  2
+global const dib_pal_logindices =  4
+global const stm_seticon =  368
+global const stm_setimage =  370
+global const lr_loadfromfile =  16
+global const image_bitmap =  0
+global const image_icon =  1
+global const lr_copydeleteorg =  8
+global const lr_copyreturnorg =  4
+global const lr_monochrome =  1
+global const lr_createdibsection =  8192
+global const lr_defaultsize =  64
+global const ss_icon =  3
+global const ss_bitmap =  14
+global const gcl_menuname =  -8
+global const gcl_hbrbackground =  -10
+global const gcl_hcursor =  -12
+global const gcl_hicon =  -14
+global const gcl_hmodule =  -16
+global const gcl_cbwndextra =  -18
+global const gcl_cbclsextra =  -20
+global const gcl_wndproc =  -24
+global const gcl_style =  -26
+global const gcw_atom =  -32
+global const colour_scrollbar =  0
+global const colour_background =  1
+global const colour_desktop =  1
+global const colour_activecaption =  2
+global const colour_inactivecaption =  3
+global const colour_menu =  4
+global const colour_window =  5
+global const colour_windowframe =  6
+global const colour_menutext =  7
+global const colour_windowtext =  8
+global const colour_captiontext =  9
+global const colour_activeborder =  10
+global const colour_inactiveborder =  11
+global const colour_appworkspace =  12
+global const colour_highlight =  13
+global const colour_highlighttext =  14
+global const colour_btnface =  15
+global const colour_3dface =  15
+global const colour_btnshadow =  16
+global const colour_3dshadow =  16
+global const colour_graytext =  17
+global const colour_btntext =  18
+global const colour_inactivecaptiontext =  19
+global const colour_btnhighlight =  20
+global const colour_3dhilight =  20
+global const colour_3ddkshadow =  21
+global const colour_3dlight =  22
+global const colour_infotext =  23
+global const colour_infobk =  24
+global const colour_tooltipbk =  24
+global const mk_lbutton =  1
+global const mk_rbutton =  2
+global const mk_shift =  4
+global const mk_control =  8
+global const mk_mbutton =  16
+global const cbm_createdib =  2
+global const cbm_init =  4
+global const cc_enablehook =  16
+global const cc_enabletemplate =  32
+global const cc_enabletemplatehandle =  64
+global const cc_fullopen =  2
+global const cc_preventfullopen =  4
+global const cc_rgbinit =  1
+global const cc_showhelp =  8
+global const cc_solidcolour =  128
+global const cf_screenfonts =  1
+global const cf_printerfonts =  2
+global const cf_effects =  256
+global const size_restored =  0
+global const size_minimized =  1
+global const size_maximized =  2
+global const size_maxshow =  3
+global const size_maxhide =  4
+!global const gwl_wndproc =  -4
+!global const gwl_hinstance =  -6
+!global const gwl_hwndparent =  -8
+!global const gwl_style =  -16
+!global const gwl_exstyle =  -20
+global const gwl_userdata =  -21
+global const gwl_id =  -12
+global const ta_top =  0
+global const ta_left =  0
+global const ta_noupdatecp =  0
+global const ta_updatecp =  1
+global const ta_right =  2
+global const ta_centre =  6
+global const vta_centre =  6
+global const ta_bottom =  8
+global const ta_baseline =  24
+global const vta_baseline =  24
+global const ta_rtlreading =  256
+global const aligntop =  0
+global const alignbottom =  8
+global const alignbaseline =  24
+global const aligncentre =  6
+global const alignleft =  0
+global const alignright =  2
+
+global const em_exgetsel =  1076
+global const em_exlimittext =  1077
+global const em_exlinefromchar =  1078
+global const em_exsetsel =  1079
+global const em_getparaformat =  1085
+global const em_setparaformat =  1095
+global const em_streamin =  1097
+global const em_streamout =  1098
+global const em_gettextrange =  1099
+global const em_findtext =  1080
+global const em_findtextex =  1103
+
+!global const ttf_idishwnd =  1
+!global const ttf_centretip =  2
+!global const ttf_rtlreading =  4
+!global const ttf_subclass =  16
+!global const ttf_track =  32
+!global const ttf_absolute =  128
+!global const ttf_transparent =  256
+!global const ttf_di_setitem =  32768
+
+global const hwnd_top =  0
+global const hwnd_bottom =  1
+global const hwnd_topmost =  -1
+global const hwnd_notopmost =  -2
+
+global const normalwind =  0
+global const modalwind =  -1
+global const dialogwind =  -2
+global const minimize =  2
+global const maximize =  3
+global const shiftmask =  1
+global const controlmask =  2
+global const altmask =  4
+global const windowcolour =  15
+global const ps_geometric =  65536
+global const ps_cosmetic =  0
+global const ps_alternate =  8
+global const ps_solid =  0
+global const ps_dash =  1
+global const ps_dot =  2
+global const ps_dashdot =  3
+global const ps_dashdotdot =  4
+global const ps_null =  5
+global const ps_insideframe =  6
+global const ps_userstyle =  7
+global const ps_endcap_round =  0
+global const ps_endcap_square =  256
+global const ps_endcap_flat =  512
+global const ps_join_bevel =  4096
+global const ps_join_miter =  8192
+global const ps_join_round =  0
+global const ps_style_mask =  15
+global const ps_endcap_mask =  3840
+global const ps_type_mask =  983040
+global const bs_solid =  0
+global const bs_hollow =  1
+global const bs_null =  1
+global const bs_hatched =  2
+global const bs_pattern =  3
+global const bs_dibpattern =  5
+global const bs_dibpatternpt =  6
+global const bs_pattern8x8 =  7
+global const bs_dibpattern8x8 =  8
+global const hs_horizontal =  0
+global const hs_vertical =  1
+global const hs_fdiagonal =  2
+global const hs_bdiagonal =  3
+global const hs_cross =  4
+global const hs_diagcross =  5
+
+!global const gl_points =  0
+!global const gl_lines =  1
+!global const gl_line_loop =  2
+!global const gl_line_strip =  3
+!global const gl_triangles =  4
+!global const gl_triangle_strip =  5
+!global const gl_triangle_fan =  6
+!global const gl_quads =  7
+!global const gl_quad_strip =  8
+!global const gl_polygon =  9
+
+global const spi_getworkarea =  48
+
+proc start=
+end
+
+=== wingxlib.q 0 1 41/44 ===
+!import winmessages
+!import winconsts
+!import gxmisc
+!import winapi
+
+!module winapi
+
+export var hwapplic=nil
+export var hwchild=nil
+export var iswin32
+export var screendc
+
+export var nglobalfonts=0
+export var fonttable::=()			![]font handles
+export var fontdimtable::=()		![]rpoint (width,total line height)
+export var fontvdimtable::=()		![]rpoint (ascenders, descenders) 
+
+proc start	=
+	initdata()
+end
+
+proc initdata=
+!CPL "---------WINGXLIB"
+	iswin32:=(getos()="W32")
+	screendc:=getdc(nil)
+
+	fonttable:=(0,)*20
+	fontdimtable:=(0,)*20
+	fontvdimtable:=(0,)*20
+
+	fonttable[1]:=getstockobject(17)	!default gui
+	fonttable[2]:=getstockobject(13)	!system font
+	fonttable[3]:=getstockobject(16)	!system fixed
+	fonttable[4]:=getstockobject(10)	!oem fixed
+	for i:=1 to 4 do
+		fontdimtable[i]::=ws_point(0,0)
+		fontvdimtable[i]::=ws_point(0,0)
+	od
+	nglobalfonts:=4
+end
+
+func checkoption(optionnames,optionvalues,name,default=-1)=
+!search for option with given name
+!return value of option, or -1 if not present
+!options (which can be void) will be a list of (name,value) list pairs
+
+	n:=name in optionnames
+	if not n then return default fi
+	return optionvalues[n]
+end
+
+global proc wx_waitmess=
+	windmsg:=new((iswin32|ws_msg32|ws_msg64))
+
+	do
+		if getmessage(&windmsg,nil,0,0)<>0 then
+			w:=windmsg.hwnd
+			if windmsg.message=wm_keydown and windmsg.wparam=27 then exit fi
+			if windmsg.message=wm_timer then CPL "TIMER!!" fi
+			translatemessage(&windmsg)
+			dispatchmessage(&windmsg)
+			if windmsg.message=wm_close then exit fi
+		else
+			exit
+		fi
+	od
+end
+
+global func wx_getw(hwnd)=
+!return allwindow-index of window that has been stored into it
+	n:=getwindowlongptr(hwnd, gwl_userdata)
+	return n
+end
+
+global proc wx_setw(hwnd,index)=
+!store mm window handle into win32 window
+!index is .gindex (index into allwindows)
+	setwindowlongptr(hwnd, gwl_userdata, index)
+end
+
+global func wx_gettextwidth(hdc,s)=
+	size:=new(ws_point)
+	gettextextentpoint32(hdc,s,s.len,&size)
+	return size.x
+end
+
+global func wx_createpopup(?caption,?pos,?dim,?options,owner=nil)=
+!wrapper around win32 createwindow
+!return win32 handle to newly created window
+	const gap=40
+	const smallestwidth=150
+
+	if options.isvoid then
+ options:=[wf_caption:1,wf_border:wbs_resize]
+	fi
+
+	posx:=posy:=-1
+	dimx:=640
+	dimy:=480
+	fcentre:=0
+	fautopos:=0
+	fmax:=fdesktop:=0
+
+	if caption.isvoid then caption:="<No Caption>" fi
+
+	if dim.defined then
+		if dim.isstring and dim="max" then
+			fmax:=1
+		elsif dim.isstring and dim="desktop" then
+			fdesktop:=1
+		else
+			dimx:=dim[1]
+			dimy:=dim[2]
+		fi
+	fi
+
+	if pos.isvoid or pos="cent" then
+		fcentre:=1
+	elsif pos="auto" then
+		fautopos:=1
+	elsif pos.defined and not pos.isstring then
+		posx:=pos[1]
+		posy:=pos[2]
+	else				!check options?
+		abort("gxcw bad pos")
+	fi
+
+	bstyle:=bxstyle:=0
+	nocap:=0			!whether to suppress caption
+
+	framex:=framey:=0
+
+	case options{wf_border,wbs_resize}
+	when wbs_none then		!no border
+		nocap:=1
+		framex:=0
+		framey:=0
+	when wbs_simple then		!single line
+		nocap:=1
+		bstyle:=ws_border
+		framex:=1
+		framey:=1
+	when wbs_thick then		!thick line
+		bstyle:=ws_dlgframe
+		fixedframe:=0
+		framex:=getsystemmetrics(sm_cxfixedframe)
+		framey:=getsystemmetrics(sm_cyfixedframe)
+	when wbs_resize then
+		bstyle:=ws_sizebox
+		framex:=getsystemmetrics(sm_cxsizeframe)
+		framey:=getsystemmetrics(sm_cysizeframe)
+	when wbs_sunken,wbs_sunken2 then		!sunken
+		bstyle:=ws_dlgframe
+		bxstyle:=ws_ex_clientedge
+		framex:=5
+		framey:=5
+	when wbs_sunkenrs then
+		bstyle:=ws_sizebox
+		bxstyle:=ws_ex_clientedge
+		framex:=6
+		framey:=6
+	esac
+
+	capheight:=getsystemmetrics(sm_cycaption)
+	mbheight:=getsystemmetrics(sm_cymenu)
+
+	style:=0
+	exstyle:=0
+
+	if options{wf_show,1} then
+		style ior:=ws_visible
+	fi
+
+	mxleft:=framex
+	mxright:=framey
+	mytop:=framey+capheight
+	mybottom:=framey
+	showstyle:=sw_shownormal
+
+	hcwmenu:=nil
+	if options{wf_menu,0}=1 then
+		mytop+:=mbheight
+		hcwmenu:=createmenu()
+		appendmenu(hcwmenu,0,998,"fred")
+	fi
+
+	style ior:=ws_clipchildren
+
+	if nocap or options{wf_caption,1}=0 then
+		mytop-:=capheight
+		style ior:=ws_popup
+	fi
+
+	if options{wf_iframe,0}=0 then
+		if not fautopos then
+			posx-:=mxleft
+			posy-:=mytop
+		fi
+		dimx+:=mxleft+mxright
+		dimy+:=mytop+mybottom
+	fi
+
+	if fcentre or options{wf_cent,0}=1 then
+		fautopos:=0
+		box:=new(ws_rect)
+		systemparametersinfoa(spi_getworkarea,0,&box,0)
+		posx:=box.rightx%2-dimx%2
+		posy:=(box.bottom-box.top)%2-dimy%2+box.top
+	fi
+
+	if fmax or options{wf_max,0} then
+		showstyle:=sw_maximize
+		style ior:=ws_maximize
+	fi
+
+
+	if options{wf_minmax,1}=1 then
+		style ior:=(ws_maximizebox ior ws_minimizebox)
+
+	fi
+
+	if options{wf_sysmenu,1}=1 then
+		style ior:=ws_sysmenu
+	fi
+
+	if fautopos=0 and options{wf_clip,0}=1 then
+		box:=new(ws_rect)
+		systemparametersinfoa(spi_getworkarea,0,&box,0)
+
+		if posx<box.leftx+gap then posx:=box.leftx+gap fi
+
+		if posy<box.top+gap then posy:=box.top+gap fi
+		dimxmin:=dimx max smallestwidth
+		if posx+dimxmin>=box.rightx+gap then posx:=box.rightx-gap-dimxmin fi
+		if posy+dimy>=box.bottom+gap then posy:=box.bottom-gap-dimy fi
+	elsif fautopos then
+		posx:=posy:=cw_usedefault
+	fi
+
+	if fdesktop or options{wf_desktop,0}=1 then
+		box:=new(ws_rect)
+		systemparametersinfoa(spi_getworkarea,0,&box,0)
+		posx:=box.leftx
+		posy:=box.top
+		dimx:=box.rightx-box.leftx
+		dimy:=box.bottom-box.top
+	fi
+
+	if options{wf_toolwind,0}=1 then
+		exstyle ior:=ws_ex_toolwindow
+	fi
+
+	classname:="pcc001"
+
+	STYLE IOR:=WS_VISIBLE
+
+	style ior:=bstyle
+	exstyle ior:=bxstyle
+
+	hwnd:=createwindowex(
+		exstyle,
+		classname,
+		caption,
+		style,
+		posx,posy,			!initial position and size
+		dimx,dimy,
+		owner,			!will be 0 for 1st window, other popups use hwapplic as owner
+		hcwmenu,			!menu handle
+		nil,	!proginstance,		!instance handle
+		nil)			!creation params
+
+	if hwnd=nil then
+		e:=getlasterror()
+		abort("wx:Can't create popup window "+tostr(e))
+	fi
+	return hwnd
+end
+
+global func wx_createcontrol(?pos,?dim,border=wbs_simple,owner)=
+!wrapper around win32 createwindow
+!return win32 handle to newly created window
+	const gap=40
+	const smallestwidth=150
+
+	posx:=posy:=0
+	dimx:=160
+	dimy:=120
+
+	if dim.defined then
+		dimx:=dim[1]
+		dimy:=dim[2]
+	fi
+
+	if pos.defined then
+		posx:=pos[1]
+		posy:=pos[2]
+	fi
+
+	bstyle:=bxstyle:=0
+
+	case border
+	when wbs_none then			!no border
+	when wbs_simple then		!single line
+		bstyle:=ws_border
+	else
+		pcerror("createcontrol/bad border "+wbsnames[border])
+	esac
+
+	style:=0
+	exstyle:=0
+
+	style ior:=ws_clipchildren
+
+	classname:="pcc001"
+
+	style ior:=ws_child
+	style ior:=ws_visible
+
+	style ior:=bstyle
+	exstyle ior:=bxstyle
+
+	hwnd:=createwindowex(
+		exstyle,
+		classname,
+		nil,
+		style,
+		posx,posy,			!initial position and size
+		dimx,dimy,
+		owner,				!will be 0 for 1st window, other popups use hwapplic as owner
+		nil,				!menu handle
+		nil,
+		nil)				!creation params
+
+	if hwnd=0 then
+		e:=getlasterror()
+		abort("wx:Can't create child window "+tostr(e))
+	fi
+
+	return hwnd
+end
+
+=== winmessages.q 0 1 42/44 ===
+export var winmessagenames=[
+	(0:"wm_null"),
+	(1:"wm_create"),
+	(2:"wm_destroy"),
+	(3:"wm_move"),
+	(4:"pgk_menu"),
+	(5:"wm_size"),
+	(6:"wm_activate"),
+	(7:"wm_setfocus"),
+	(8:"wm_killfocus"),
+	(9:"cbn_selendok"),
+	(10:"wm_enable"),
+	(11:"wm_setredraw"),
+	(12:"wm_settext"),
+	(13:"wm_gettext"),
+	(14:"wm_gettextlength"),
+	(15:"wm_paint"),
+	(16:"wm_close"),
+	(17:"wm_queryendsession"),
+	(18:"wm_quit"),
+	(19:"wm_queryopen"),
+	(20:"wm_erasebkgnd"),
+	(21:"wm_syscolorchange"),
+	(22:"wm_endsession"),
+	(24:"wm_showwindow"),
+	(26:"wm_wininichange"),
+	(27:"wm_devmodechange"),
+	(28:"wm_activateapp"),
+	(29:"wm_fontchange"),
+	(30:"wm_timechange"),
+	(31:"wm_cancelmode"),
+	(32:"wm_setcursor"),
+	(33:"wm_mouseactivate"),
+	(34:"wm_childactivate"),
+	(35:"wm_queuesync"),
+	(36:"wm_getminmaxinfo"),
+	(38:"wm_painticon"),
+	(39:"wm_iconerasebkgnd"),
+	(40:"wm_nextdlgctl"),
+	(42:"wm_spoolerstatus"),
+	(43:"wm_drawitem"),
+	(44:"wm_measureitem"),
+	(45:"wm_deleteitem"),
+	(46:"wm_vkeytoitem"),
+	(47:"wm_chartoitem"),
+	(48:"wm_setfont"),
+	(49:"wm_getfont"),
+	(50:"wm_sethotkey"),
+	(51:"wm_gethotkey"),
+	(55:"wm_querydragicon"),
+	(57:"wm_compareitem"),
+	(64:"tbif_size"),
+	(65:"wm_compacting"),
+	(70:"wm_windowposchanging"),
+	(71:"wm_windowposchanged"),
+	(72:"wm_power"),
+	(74:"wm_copydata"),
+	(75:"wm_canceljournal"),
+	(78:"wm_notify"),
+	(80:"wm_inputlangchangerequest"),
+	(81:"wm_inputlangchange"),
+	(82:"wm_tcard"),
+	(83:"wm_help"),
+	(84:"wm_userchanged"),
+	(85:"wm_notifyformat"),
+	(123:"wm_contextmenu"),
+	(124:"wm_stylechanging"),
+	(125:"wm_stylechanged"),
+	(126:"wm_displaychange"),
+	(127:"wm_geticon"),
+	(128:"wm_seticon"),
+	(129:"wm_nccreate"),
+	(130:"wm_ncdestroy"),
+	(131:"wm_nccalcsize"),
+	(132:"wm_nchittest"),
+	(133:"wm_ncpaint"),
+	(134:"wm_ncactivate"),
+	(135:"wm_getdlgcode"),
+	(160:"wm_ncmousemove"),
+	(161:"wm_nclbuttondown"),
+	(162:"wm_nclbuttonup"),
+	(163:"wm_nclbuttondblclk"),
+	(164:"wm_ncrbuttondown"),
+	(165:"wm_ncrbuttonup"),
+	(166:"wm_ncrbuttondblclk"),
+	(167:"wm_ncmbuttondown"),
+	(168:"wm_ncmbuttonup"),
+	(169:"wm_ncmbuttondblclk"),
+	(176:"em_getsel"),
+	(177:"em_setsel"),
+	(178:"em_getrect"),
+	(179:"em_setrect"),
+	(180:"em_setrectnp"),
+	(181:"em_scroll"),
+	(182:"em_linescroll"),
+	(183:"em_scrollcaret"),
+	(184:"em_getmodify"),
+	(185:"em_setmodify"),
+	(186:"em_getlinecount"),
+	(187:"em_lineindex"),
+	(188:"em_sethandle"),
+	(189:"em_gethandle"),
+	(190:"em_getthumb"),
+	(193:"em_linelength"),
+	(194:"em_replacesel"),
+	(196:"em_getline"),
+	(197:"em_setlimittext"),
+	(198:"em_canundo"),
+	(199:"em_undo"),
+	(200:"em_fmtlines"),
+	(201:"em_linefromchar"),
+	(203:"em_settabstops"),
+	(204:"em_setpasswordchar"),
+	(205:"em_emptyundobuffer"),
+	(206:"em_getfirstvisibleline"),
+	(207:"em_setreadonly"),
+	(208:"em_setwordbreakproc"),
+	(209:"em_getwordbreakproc"),
+	(210:"em_getpasswordchar"),
+	(211:"em_setmargins"),
+	(212:"em_getmargins"),
+	(213:"em_getlimittext"),
+	(214:"em_posfromchar"),
+	(215:"em_charfrompos"),
+	(224:"sbm_setpos"),
+	(225:"sbm_getpos"),
+	(226:"sbm_setrange"),
+	(227:"sbm_getrange"),
+	(228:"sbm_enable_arrows"),
+	(230:"sbm_setrangeredraw"),
+	(233:"sbm_setscrollinfo"),
+	(234:"sbm_getscrollinfo"),
+	(240:"bm_getcheck"),
+	(241:"bm_setcheck"),
+	(242:"bm_getstate"),
+	(243:"bm_setstate"),
+	(244:"bm_setstyle"),
+	(245:"bm_click"),
+	(246:"bm_getimage"),
+	(247:"bm_setimage"),
+	(255:"wm_input"),
+	(256:"wm_keydown"),
+	(257:"wm_keyup"),
+	(258:"wm_char"),
+	(259:"wm_deadchar"),
+	(260:"wm_syskeydown"),
+	(261:"wm_syskeyup"),
+	(262:"wm_syschar"),
+	(263:"wm_sysdeadchar"),
+	(269:"wm_ime_startcomposition"),
+	(270:"wm_ime_endcomposition"),
+	(271:"wm_ime_composition"),
+	(272:"wm_initdialog"),
+	(273:"wm_command"),
+	(274:"wm_syscommand"),
+	(275:"wm_timer"),
+	(276:"wm_hscroll"),
+	(277:"wm_vscroll"),
+	(278:"wm_initmenu"),
+	(279:"wm_initmenupopup"),
+	(287:"wm_menuselect"),
+	(288:"wm_menuchar"),
+	(289:"wm_enteridle"),
+	(290:"wm_menurbuttonup"),
+	(295:"wm_changeuistate"),
+	(296:"wm_updateuistate"),
+	(297:"wm_queryuistate"),
+	(306:"wm_ctlcolormsgbox"),
+	(307:"wm_ctlcoloredit"),
+	(308:"wm_ctlcolorlistbox"),
+	(309:"wm_ctlcolorbtn"),
+	(310:"wm_ctlcolordlg"),
+	(311:"wm_ctlcolorscrollbar"),
+	(312:"wm_ctlcolorstatic"),
+	(320:"cb_geteditsel"),
+	(321:"cb_limittext"),
+	(322:"cb_seteditsel"),
+	(323:"cb_addstring"),
+	(324:"cbem_deleteitem"),
+	(325:"cb_dir"),
+	(326:"cb_getcount"),
+	(327:"cb_getcursel"),
+	(328:"cb_getlbtext"),
+	(329:"cb_getlbtextlen"),
+	(330:"cb_insertstring"),
+	(331:"cb_resetcontent"),
+	(332:"cb_findstring"),
+	(333:"cb_selectstring"),
+	(334:"cb_setcursel"),
+	(335:"cb_showdropdown"),
+	(336:"cb_getitemdata"),
+	(337:"cb_setitemdata"),
+	(338:"cb_getdroppedcontrolrect"),
+	(339:"cb_setitemheight"),
+	(340:"cb_getitemheight"),
+	(341:"cb_setextendedui"),
+	(342:"cb_getextendedui"),
+	(343:"cb_getdroppedstate"),
+	(344:"cb_findstringexact"),
+	(345:"cb_setlocale"),
+	(346:"cb_getlocale"),
+	(347:"cb_gettopindex"),
+	(348:"cb_settopindex"),
+	(349:"cb_gethorizontalextent"),
+	(350:"cb_sethorizontalextent"),
+	(351:"cb_getdroppedwidth"),
+	(352:"cb_setdroppedwidth"),
+	(353:"cb_initstorage"),
+	(368:"stm_seticon"),
+	(369:"stm_geticon"),
+	(370:"stm_setimage"),
+	(371:"stm_getimage"),
+	(384:"lb_addstring"),
+	(385:"lb_insertstring"),
+	(386:"lb_deletestring"),
+	(387:"lb_selitemrangeex"),
+	(388:"lb_resetcontent"),
+	(389:"lb_setsel"),
+	(390:"lb_setcursel"),
+	(391:"lb_getsel"),
+	(392:"lb_getcursel"),
+	(393:"lb_gettext"),
+	(394:"lb_gettextlen"),
+	(395:"lb_getcount"),
+	(396:"lb_selectstring"),
+	(397:"lb_dir"),
+	(398:"lb_gettopindex"),
+	(399:"lb_findstring"),
+	(400:"lb_getselcount"),
+	(401:"lb_getselitems"),
+	(402:"lb_settabstops"),
+	(403:"lb_gethorizontalextent"),
+	(404:"lb_sethorizontalextent"),
+	(405:"lb_setcolumnwidth"),
+	(406:"lb_addfile"),
+	(407:"lb_settopindex"),
+	(408:"lb_getitemrect"),
+	(409:"lb_getitemdata"),
+	(410:"lb_setitemdata"),
+	(411:"lb_selitemrange"),
+	(412:"lb_setanchorindex"),
+	(413:"lb_getanchorindex"),
+	(414:"lb_setcaretindex"),
+	(415:"lb_getcaretindex"),
+	(416:"lb_setitemheight"),
+	(417:"lb_getitemheight"),
+	(418:"lb_findstringexact"),
+	(421:"lb_setlocale"),
+	(422:"lb_getlocale"),
+	(423:"lb_setcount"),
+	(424:"lb_initstorage"),
+	(425:"lb_itemfrompoint"),
+	(512:"wm_mousemove"),
+	(513:"wm_lbuttondown"),
+	(514:"wm_lbuttonup"),
+	(515:"wm_lbuttondblclk"),
+	(516:"wm_rbuttondown"),
+	(517:"wm_rbuttonup"),
+	(518:"wm_rbuttondblclk"),
+	(519:"wm_mbuttondown"),
+	(520:"wm_mbuttonup"),
+	(521:"wm_mbuttondblclk"),
+	(522:"wm_mousewheel"),
+	(523:"wm_xbuttondown"),
+	(524:"wm_xbuttonup"),
+	(525:"wm_xbuttondblclk"),
+	(528:"wm_parentnotify"),
+	(529:"wm_entermenuloop"),
+	(530:"wm_exitmenuloop"),
+	(531:"wm_nextmenu"),
+	(532:"wm_sizing"),
+	(533:"wm_capturechanged"),
+	(534:"wm_moving"),
+	(536:"wm_powerbroadcast"),
+	(537:"wm_devicechange"),
+	(544:"wm_mdicreate"),
+	(545:"wm_mdidestroy"),
+	(546:"wm_mdiactivate"),
+	(547:"wm_mdirestore"),
+	(548:"wm_mdinext"),
+	(549:"wm_mdimaximize"),
+	(550:"wm_mditile"),
+	(551:"wm_mdicascade"),
+	(552:"wm_mdiiconarrange"),
+	(553:"wm_mdigetactive"),
+	(560:"wm_mdisetmenu"),
+	(561:"wm_entersizemove"),
+	(562:"wm_exitsizemove"),
+	(563:"wm_dropfiles"),
+	(564:"wm_mdirefreshmenu"),
+	(641:"wm_ime_setcontext"),
+	(642:"wm_ime_notify"),
+	(643:"wm_ime_control"),
+	(644:"wm_ime_compositionfull"),
+	(645:"wm_ime_select"),
+	(646:"wm_ime_char"),
+	(656:"wm_ime_keydown"),
+	(657:"wm_ime_keyup"),
+	(673:"wm_mousehover"),
+	(675:"wm_mouseleave"),
+	(689:"wm_wtssession_change"),
+	(768:"wm_cut"),
+	(769:"wm_copy"),
+	(770:"wm_paste"),
+	(771:"wm_clear"),
+	(772:"wm_undo"),
+	(773:"wm_renderformat"),
+	(774:"wm_renderallformats"),
+	(775:"wm_destroyclipboard"),
+	(776:"wm_drawclipboard"),
+	(777:"wm_paintclipboard"),
+	(778:"wm_vscrollclipboard"),
+	(779:"wm_sizeclipboard"),
+	(780:"wm_askcbformatname"),
+	(781:"wm_changecbchain"),
+	(782:"wm_hscrollclipboard"),
+	(783:"wm_querynewpalette"),
+	(784:"wm_paletteischanging"),
+	(785:"wm_palettechanged"),
+	(786:"wm_hotkey"),
+	(791:"wm_print"),
+	(792:"wm_printclient"),
+	(896:"wm_penwinirst"),
+	(911:"wm_penwinlast"),
+	(1024:"infotipsize"),
+	(1025:"cbem_insertitema"),
+	(1026:"cbem_setimagelist"),
+	(1027:"cbem_getimagelist"),
+	(1028:"cbem_getitema"),
+	(1029:"cbem_setitema"),
+	(1030:"cbem_getcombocontrol"),
+	(1031:"cbem_geteditcontrol"),
+	(1032:"cbem_setexstyle"),
+	(1033:"cbem_getextendedstyle"),
+	(1034:"cbem_haseditchanged"),
+	(1035:"cbem_insertitemw"),
+	(1036:"cbem_setitemw"),
+	(1037:"cbem_getitemw"),
+	(1038:"cbem_setextendedstyle"),
+	(1039:"ttm_getcurrenttoola"),
+	(1040:"ttm_windowfrompoint"),
+	(1041:"ttm_trackactivate"),
+	(1042:"ttm_trackposition"),
+	(1043:"ttm_settipbkcolor"),
+	(1044:"ttm_settiptextcolor"),
+	(1045:"ttm_getdelaytime"),
+	(1046:"ttm_gettipbkcolor"),
+	(1047:"ttm_gettiptextcolor"),
+	(1048:"ttm_setmaxtipwidth"),
+	(1049:"ttm_getmaxtipwidth"),
+	(1050:"ttm_setmargin"),
+	(1051:"ttm_getmargin"),
+	(1052:"ttm_pop"),
+	(1053:"tb_getitemrect"),
+	(1054:"tb_buttonstructsize"),
+	(1055:"tb_setbuttonsize"),
+	(1056:"tb_setbitmapsize"),
+	(1057:"tb_autosize"),
+	(1059:"tb_gettooltips"),
+	(1060:"tb_settooltips"),
+	(1061:"tb_setparent"),
+	(1063:"tb_setrows"),
+	(1064:"tb_getrows"),
+	(1065:"tb_getbitmapflags"),
+	(1066:"tb_setcmdid"),
+	(1067:"tb_changebitmap"),
+	(1068:"tb_getbitmap"),
+	(1069:"tb_getbuttontexta"),
+	(1070:"tb_replacebitmap"),
+	(1071:"tb_setindent"),
+	(1072:"tb_setimagelist"),
+	(1073:"tb_getimagelist"),
+	(1074:"ttm_addtoolw"),
+	(1075:"ttm_deltoolw"),
+	(1076:"ttm_newtoolrectw"),
+	(1077:"ttm_gettoolinfow"),
+	(1078:"ttm_settoolinfow"),
+	(1079:"ttm_hittestw"),
+	(1080:"ttm_gettextw"),
+	(1081:"ttm_updatetiptextw"),
+	(1082:"ttm_enumtoolsw"),
+	(1083:"ttm_getcurrenttoolw"),
+	(1084:"tb_setmaxtextrows"),
+	(1085:"tb_gettextrows"),
+	(1086:"em_getseltext"),
+	(1087:"em_hideselection"),
+	(1088:"em_pastespecial"),
+	(1089:"em_requestresize"),
+	(1090:"em_selectiontype"),
+	(1091:"tb_insertbuttonw"),
+	(1092:"tb_addbuttonsw"),
+	(1093:"tb_hittest"),
+	(1094:"em_setolecallback"),
+	(1095:"em_setparaformat"),
+	(1096:"em_settargetdevice"),
+	(1097:"em_streamin"),
+	(1098:"em_streamout"),
+	(1099:"tb_getbuttontextw"),
+	(1100:"tb_saverestorew"),
+	(1101:"tb_addstringw"),
+	(1102:"em_getoptions"),
+	(1103:"tb_getinsertmark"),
+	(1104:"tb_setinsertmark"),
+	(1105:"tb_insertmarkhittest"),
+	(1106:"tb_movebutton"),
+	(1107:"tb_getmaxsize"),
+	(1108:"tb_setextendedstyle"),
+	(1109:"tb_getextendedstyle"),
+	(1110:"tb_getpadding"),
+	(1111:"tb_setpadding"),
+	(1112:"tb_setinsertmarkcolor"),
+	(1113:"tb_getinsertmarkcolor"),
+	(1114:"tb_mapacceleratorw"),
+	(1124:"em_setpunctuation"),
+	(1125:"wm_choosefont_setlogfont"),
+	(1126:"wm_choosefont_setflags"),
+	(1127:"udm_setpos"),
+	(1128:"udm_getpos"),
+	(1129:"udm_setbuddy"),
+	(1130:"udm_getbuddy"),
+	(1131:"udm_setaccel"),
+	(1132:"udm_getaccel"),
+	(1133:"udm_setbase"),
+	(1134:"udm_getbase"),
+	(1135:"psm_settitlea"),
+	(1136:"psm_setwizbuttons"),
+	(1137:"psm_pressbutton"),
+	(1138:"psm_setcurselid"),
+	(1139:"psm_setfinishtexta"),
+	(1140:"psm_gettabcontrol"),
+	(1141:"psm_isdialogmessage"),
+	(1142:"psm_getcurrentpagehwnd"),
+	(1144:"psm_settitlew"),
+	(1145:"psm_setfinishtextw"),
+	(1157:"dl_begindrag"),
+	(1158:"dl_dragging"),
+	(1159:"dl_dropped"),
+	(1160:"dl_canceldrag"),
+	(1280:"en_errspace"),
+	(1281:"en_maxtext"),
+	(1537:"en_hscroll"),
+	(1538:"en_vscroll"),
+	(1792:"en_msgfilter"),
+	(1793:"en_requestresize"),
+	(1794:"en_selchange"),
+	(1795:"en_dropfiles"),
+	(1796:"en_protected"),
+	(1797:"en_correcttext"),
+	(1798:"en_stopnoundo"),
+	(1799:"en_imechange"),
+	(1800:"en_saveclipboard"),
+	(1801:"en_oleopfailed"),
+	(4096:"lvm_getbkcolor"),
+	(4097:"lvm_setbkcolor"),
+	(4098:"lvm_getimagelist"),
+	(4099:"lvm_setimagelist"),
+	(4100:"lvm_getitemcount"),
+	(4101:"lvm_getitema"),
+	(4102:"lvm_setitema"),
+	(4103:"lvm_insertitema"),
+	(4104:"lvm_deleteitem"),
+	(4105:"lvm_deleteallitems"),
+	(4106:"lvm_getcallbackmask"),
+	(4107:"lvm_setcallbackmask"),
+	(4108:"lvm_getnextitem"),
+	(4109:"lvm_finditema"),
+	(4110:"lvm_getitemrect"),
+	(4111:"lvm_setitemposition"),
+	(4112:"lvm_getitemposition"),
+	(4113:"lvm_getstringwidtha"),
+	(4114:"lvm_hittest"),
+	(4115:"lvm_ensurevisible"),
+	(4116:"lvm_scroll"),
+	(4117:"lvm_redrawitems"),
+	(4118:"lvm_arrange"),
+	(4119:"lvm_editlabela"),
+	(4120:"lvm_geteditcontrol"),
+	(4121:"lvm_getcolumna"),
+	(4122:"lvm_setcolumna"),
+	(4123:"lvm_insertcolumna"),
+	(4124:"lvm_deletecolumn"),
+	(4125:"lvm_getcolumnwidth"),
+	(4126:"lvm_setcolumnwidth"),
+	(4129:"lvm_createdragimage"),
+	(4130:"lvm_getviewrect"),
+	(4131:"lvm_gettextcolor"),
+	(4132:"lvm_settextcolor"),
+	(4133:"lvm_gettextbkcolor"),
+	(4134:"lvm_settextbkcolor"),
+	(4135:"lvm_gettopindex"),
+	(4136:"lvm_getcountperpage"),
+	(4137:"lvm_getorigin"),
+	(4138:"lvm_update"),
+	(4139:"lvm_setitemstate"),
+	(4140:"lvm_getitemstate"),
+	(4141:"lvm_getitemtexta"),
+	(4142:"lvm_setitemtexta"),
+	(4143:"lvm_setitemcount"),
+	(4144:"lvm_sortitems"),
+	(4145:"lvm_setitemposition32"),
+	(4146:"lvm_getselectedcount"),
+	(4147:"lvm_getitemspacing"),
+	(4148:"lvm_getisearchstringa"),
+	(4171:"lvm_getitemw"),
+	(4172:"lvm_setitemw"),
+	(4173:"lvm_insertitemw"),
+	(4179:"lvm_finditemw"),
+	(4183:"lvm_getstringwidthw"),
+	(4191:"lvm_getcolumnw"),
+	(4192:"lvm_setcolumnw"),
+	(4193:"lvm_insertcolumnw"),
+	(4211:"lvm_getitemtextw"),
+	(4212:"lvm_setitemtextw"),
+	(4213:"lvm_getisearchstringw"),
+	(4214:"lvm_editlabelw"),
+	(4352:"tvm_insertitema"),
+	(4353:"tvm_deleteitem"),
+	(4354:"tvm_expand"),
+	(4356:"tvm_getitemrect"),
+	(4357:"tvm_getcount"),
+	(4358:"tvm_getindent"),
+	(4359:"tvm_setindent"),
+	(4360:"tvm_getimagelist"),
+	(4361:"tvm_setimagelist"),
+	(4362:"tvm_getnextitem"),
+	(4363:"tvm_selectitem"),
+	(4364:"tvm_getitema"),
+	(4365:"tvm_setitema"),
+	(4366:"tvm_editlabela"),
+	(4367:"tvm_geteditcontrol"),
+	(4368:"tvm_getvisiblecount"),
+	(4369:"tvm_hittest"),
+	(4370:"tvm_createdragimage"),
+	(4371:"tvm_sortchildren"),
+	(4372:"tvm_ensurevisible"),
+	(4373:"tvm_sortchildrencb"),
+	(4374:"tvm_endeditlabelnow"),
+	(4375:"tvm_getisearchstringa"),
+	(4402:"tvm_insertitemw"),
+	(4414:"tvm_getitemw"),
+	(4415:"tvm_setitemw"),
+	(4416:"tvm_getisearchstringw"),
+	(4417:"tvm_editlabelw"),
+	(4608:"hdm_getitemcount"),
+	(4609:"hdm_insertitema"),
+	(4610:"hdm_deleteitem"),
+	(4611:"hdm_getitema"),
+	(4612:"hdm_setitema"),
+	(4613:"hdm_layout"),
+	(4614:"hdm_hittest"),
+	(4618:"hdm_insertitemw"),
+	(4619:"hdm_getitemw"),
+	(4620:"hdm_setitemw"),
+	(4864:"tcm_first"),
+	(4866:"tcm_getimagelist"),
+	(4867:"tcm_setimagelist"),
+	(4868:"tcm_getitemcount"),
+	(4869:"tcm_getitema"),
+	(4870:"tcm_setitema"),
+	(4871:"tcm_insertitema"),
+	(4872:"tcm_deleteitem"),
+	(4873:"tcm_deleteallitems"),
+	(4874:"tcm_getitemrect"),
+	(4875:"tcm_getcursel"),
+	(4876:"tcm_setcursel"),
+	(4877:"tcm_hittest"),
+	(4878:"tcm_setitemextra"),
+	(4904:"tcm_adjustrect"),
+	(4905:"tcm_setitemsize"),
+	(4906:"tcm_removeimage"),
+	(4907:"tcm_setpadding"),
+	(4908:"tcm_getrowcount"),
+	(4909:"tcm_gettooltips"),
+	(4910:"tcm_settooltips"),
+	(4911:"tcm_getcurfocus"),
+	(4912:"tcm_setcurfocus"),
+	(4924:"tcm_getitemw"),
+	(4925:"tcm_setitemw"),
+	(4926:"tcm_insertitemw"),
+	(5120:"pgm_first"),
+	(8192:"ccm_first")]
+
+proc start=
+end
+=== gxmisc.q 0 1 43/44 ===
+export enumdata optionnames =
+	(wf_border,		$),		! wbs_simple
+	(wf_resize,		$),		! 0
+	(wf_hscroll,	$),		! 0
+	(wf_vscroll,	$),		! 0
+	(wf_menu,		$),		! 0
+	(wf_caption,	$),		! 1
+	(wf_max,		$),		! 0
+	(wf_minmax,		$),		! 1
+	(wf_sysmenu,	$),		! 1
+	(wf_desktop,	$),		! 0
+	(wf_clip,		$),		! 0
+	(wf_show,		$),		!
+	(wf_iframe,		$),		! 1
+	(wf_cent,		$),		!
+	(wf_toolwind,	$)		!
+end
+
+!Windows border styles, used for pop-up windows. Could also be used for
+!some child windows
+export enumdata wbsnames=
+	(wbs_none=0,$),
+	(wbs_simple,$),
+	(wbs_thick,$),
+	(wbs_resize,$),
+	(wbs_sunken,$),
+	(wbs_sunken2,$),
+	(wbs_sunkenrs,$),
+	(wbs_dummy,$)
+end
+=== dates.q 0 1 44/44 ===
+
+export var daynames=("Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday")
+
+export var Monthnames=("January","February","March","April","May","June","July",
+		"August","September","October","November","December")
+
+export var days=(31,28,31, 30,31,30, 31,31,30, 31,30,31)
+
+export record rdate=
+	var day,month,year
+end
+
+export record rdatetime = 
+	var	day
+	var	month
+	var	year
+	var	hour
+	var	minute
+	var	second
+	var	milliseconds
+	var	dayofweek
+end
+
+!proc start=
+!end
+!
+!proc main=
+!end
+
+export func makedatetime(d,m,y, h=0, minute=0, s=0)=
+
+	d:=rdatetime(d,m,y, h,minute,s,0,0)
+	d.dayofweek:=getdow(d)
+	return d
+end
+
+export proc setdow(&d)=
+	d.dayofweek:=getdow(d)
+end
+
+export func strdate(d,sep="-")=
+!return leftstr(daynames[d.dayofweek],3)+" "+tostr(d.day)+sep+leftstr(monthnames[d.month],3)+sep+tostr(d.year)
+	return tostr(d.day)+sep+leftstr(monthnames[d.month],3)+sep+tostr(d.year)
+end
+
+export func strtime(d,sep=":")=
+	return tostr(d.hour)+sep+tostr(d.minute,"z2")+sep+tostr(d.second,"z2")
+end
+
+export func strdow(d,n=0)=
+	if n then
+		return leftstr(daynames[d.dayofweek],n)
+	else
+		return daynames[d.dayofweek]
+	fi
+end
+
+export func strdatetime(d,dsep="-",tsep=":")=
+	return strdate(d,dsep)+" "+strtime(d,tsep)
+end
+
+export func parsedate(s,defdate)=
+!parse string s into a new date record
+!def = default date to work from, eg. for missing year
+!return date record obtained, or 0 if error
+
+	day:=defdate.day
+	month:=defdate.month
+	year:=defdate.year
+	if s.[1]=" " then s:=rightstr(s,-1) fi
+
+	sepset:=[' ', '-', '/', '.']
+
+	seppos:=0
+	for i:=1 to s.len do if s.[i] in sepset then seppos:=i; exit fi od
+
+	if not seppos then		!day only
+		day:=strtoval(s)
+		goto gotday
+	fi
+	day:=strtoval(leftstr(s,seppos-1))
+
+	s:=rightstr(s,-seppos)		!month and possible year
+	seppos:=0
+	for i:=1 to s.len do if s.[i] in sepset then seppos:=i; exit fi od
+
+	if seppos then
+		monthstr:=leftstr(s,seppos-1)
+		yearstr:=rightstr(s,s.len-seppos)
+	else
+		monthstr:=s
+		yearstr:=""
+	fi
+
+	if asc(leftstr(monthstr)) in ['0'..'9'] then	!numeric month
+		month:=strtoval(monthstr)
+		if month<1 or month>12 then
+			return 0
+		fi
+	else
+		month:=0
+		for i:=1 to 12 do
+			if convlc(leftstr(monthnames[i],3))=convlc(leftstr(monthstr,3)) then
+				month:=i
+				exit
+			fi
+		od
+		if not month then
+			return 0
+		fi
+	fi
+
+	if yearstr<>"" then
+		year:=strtoval(yearstr)
+		if year<200 then
+			if year in [00..89] then
+				year+:=2000
+			else
+				year+:=1900
+			fi
+		fi
+	fi
+
+gotday:
+!check the date, rather than correct using addday(d,0)
+	dd:=days[month] 
+	if leapyear(year) and month=2 then dd+:=1 fi
+	if day<1 or day>dd then return 0 fi
+	if year<1990 or year>2089 then return 0 fi
+	return makedatetime(day,month,year)
+end
+
+export func leapyear(y)=
+!return true if y (eg. 1994) is a leap year
+	return (y-1900) rem 4=0
+end
+
+export func getdow(d)=
+!return day of week for given date, returning 1..7 (monday..sunday)
+	return ((getday(d)-1) rem 7)+1
+end
+
+export func getday(d)=
+!return day number for date d, measured from 1.1.90
+	day:=0
+	for i:=1990 to d.year-1 do
+		day+:=(leapyear(i)|366|365)
+	od
+
+	for i:=1 to d.month-1 do
+		day+:=(i=2|(leapyear(d.year)|29|28)|days[i])
+	od
+	day+:=d.day
+	return day
+end
+
+export func getdays(m,y)=
+!return no. of days in month m, for year y
+	if leapyear(y) and m=2 then return 29 fi
+	return days[m]
+end
+
+export func getmonthname(m,?n)=
+	if not m.isint then
+		m:=m.month
+	fi
+	m:=monthnames[m]
+	if n.defined then m:=leftstr(m,n) fi
+	return m
+end
+
+export func getdayname(d,?n)=
+	if not d.isint then
+		d:=getdow(d)
+	fi
+	d:=daynames[d]
+	if n.defined then d:=leftstr(d,n) fi
+	return d
+end
+
+export func addday(d0,i)=
+	d:=d0
+	if i>0 then
+		to i do
+			++d.day
+			if d.day>getdays(d.month,d.year) then
+				d.day:=1
+				++d.month
+				if d.month>12 then
+					d.month:=1
+					++d.year
+				fi
+			fi
+		od
+	else
+		to -i do
+			--d.day
+			if d.day<1 then
+				--d.month
+				if d.month<1 then
+					d.month:=12
+					--d.year
+				fi
+				d.day:=getdays(d.month,d.year)
+			fi
+		od
+	fi
+
+!do checking
+	if d.year<1990 then d:=makedatetime(1,1,1990) fi
+	if d.year>2089 then d:=makedatetime(31,12,2089) fi
+
+	dd:=getdays(d.month,d.year)
+	if leapyear(d.year) and d.month=2 then dd+:=1 fi
+	if d.day<1 then d.day:=1 fi
+	if d.day>dd then d.day:=dd fi
+	setdow(d)
+	return d
+end
+
+export func getdatetime=
+	tm:=getsystime()
+
+	return rdatetime(tm.day,tm.month,tm.year,
+			tm.hour, tm.minute, tm.second, tm.milliseconds,tm.dayofweek)
+end
+
+export func getsystime=
+	tm:=new(ws_systemtime)
+	getsystemtime(&tm)
+
+	if tm.dayofweek=0 then
+		tm.dayofweek:=7
+	fi
+
+	return tm
+end
 === END ===
 1 qq.m
 2 qq_cli.m
@@ -31564,7 +43981,20 @@ end
 25 qq_resolve.m
 26 qq_sets.m
 27 qq_strings.m
-28 qq_syslibsdummy.m
+28 qq_syslibs.m
 29 qq_tables.m
 30 qq_show.m
 31 qq_vars.m
+32 qlib.q
+33 sysp.q
+34 clibp.q
+35 smlib.q
+36 winapi.q
+37 gxlib.q
+38 bmlib.q
+39 console.q
+40 winconsts.q
+41 wingxlib.q
+42 winmessages.q
+43 gxmisc.q
+44 dates.q
