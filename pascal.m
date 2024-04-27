@@ -224,12 +224,20 @@ restart:
 
         sym:=ident
 
-        for s:=beginsym to procsym when wordlengths[s]=k do
-            if eqstring(words[s], id) then
-                sym:=s
-                exit
-            fi
-        od
+!Check for a keywords, which all have at least 2 letters
+!(Note: this may seem a slightly unfair optimisation since my a:=b+c*d benchmark
+!consists of one-letter variables. But having a fast path for single-letter/single-digit
+!names and numbers is something I often do. I would also have a proper lookup
+!routine for keywords not a linear search!
+
+        if k>=2 then
+            for s:=beginsym to procsym when wordlengths[s]=k do
+                if eqstring(words[s], id) then
+                    sym:=s
+                    exit
+                fi
+            od
+        fi
 
     when '0'..'9' then
         num:=0; sym:=number
