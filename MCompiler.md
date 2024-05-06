@@ -11,9 +11,9 @@ The name of the compiler is `MM` or `mm.exe`. It is a whole-program compiler, wr
     Source Files  ─┬─> AST1 ─> AST2 ─┬─> AST3 ─┬─> PCL ─> MCL ─┬─> SS ─┴─┬─> EXE Image ──┬────> EXE File
     Include Files ─┘                 │         │               │         │               ├────> DLL/EXP Files
     Strinclude    ───>───────────────┘         │               │         │               └────> OBJ File (via AA)
-                                               │               │         └─> MCU ─┬─> MCB ─┬──> ML/EXP Files
+                                               │               │         └─> MCU ─┬─> MCB ─┬──> ML/EXP Files (via AA)
                                                │               │                  │        │
-                                               │               │                  │        └──> MX File
+                                               │               │                  │        └──> MX File (via AA)
                                                │               │                  └─> MCX ────> (Run)
                                                │               └──────────────────────────────> ASM File
                                                ├──────────────────────────────────────────────> MA File
@@ -99,6 +99,8 @@ It translates M source code to binary at speeds of at least 500K lines per secon
 
 #### ML and MX Files
 
-These were a by-product of problems I'd had with generating DLL files. They have been dropped from direct support in the compiler (chart not updated), and are available only via the assembler. Their future is uncertain.
+These were a by-product of problems I'd had with generating DLL files. They have been dropped from direct support in the compiler, and are available only via the assembler. Their future is uncertain.
 
+#### 'Via AA'
 
+Means not supported directly by the compiler. It will write out an ASM file, then invoke my assembler AA on that file with suitable options. The process is transparent but it needs `aa.exe` as well as `mm.exe`. The assembler is approx 100KB.
