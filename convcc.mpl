@@ -9,7 +9,6 @@ var lineno
 var errcount
 
 proc start=
-
     if ncmdparams>=1 then
         file:=convlc(cmdparams(1))
     else
@@ -55,7 +54,6 @@ proc start=
     closefile(g)
 
     println "Output is in: ",outfile
-
 
     f:=createfile(changeext(outfile,"cl"))
     forall x in locals do
@@ -153,7 +151,6 @@ function getword(x)=
 end
 
 function convertline(x)=
-
     if x="" then return x fi
     if left(x,2)="//" then return x fi
     if left(x)="!" then return "//"+right(x,-1) fi
@@ -204,7 +201,6 @@ function convertline(x)=
     fi
 
 !fix = and == problems; original will use := and =
-
     oldc:=x.[1]
     s:=oldc
     for i:=2 to x.len-1 do      !assume = can't be at bol or eol
@@ -246,14 +242,16 @@ function convertline(x)=
         return spaces+left(x,n-1)+"{"+right(x,-(n+3))
 
     when "elsesw" then
-        return spaces+"break; default:"+xrest
+        return spaces+"break; default:"+xres
+
     when "else" then
         if tos()='I' then
             return spaces+"} else {"+xrest
         else
             return spaces+"break; default:"+xrest
         fi
-    when "elsif" then
+
+when "elsif" then
         if tos()<>'I' then serror("Bad elsif") fi
         x:=xrest
         n:="then" in x
@@ -316,24 +314,28 @@ function convertline(x)=
         s+:="case "+cases+":"
 
         return spaces+"break; "+s+" "+rest
+
     when "for" then
         push('L')
         x:=replacestr(x,"do","{",1)
         return spaces+x
+
     when "while" then
         push('L')
         x:=replacestr(x,"do","{",1)
         return spaces+x
+
     when "to" then
         push('L')
         x:=replacestr(x,"do","{",1)
         return spaces+x
+
     when "od" then
         if tos()<>'L' then serror("Bad od:"+chr(tos())); fi
         pop();
         return spaces+"}"+xrest
 
-    when "cpl" then
+    when "cpl" then         ! (debugging println)
         if "," in xrest then        !assume printf
             to 4 do
                 xrest:=replacestr_cs(xrest,"%D","%d",0)
