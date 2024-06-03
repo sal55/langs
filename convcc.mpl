@@ -251,7 +251,7 @@ function convertline(x)=
             return spaces+"break; default:"+xrest
         fi
 
-when "elsif" then
+    when "elsif" then
         if tos()<>'I' then serror("Bad elsif") fi
         x:=xrest
         n:="then" in x
@@ -298,6 +298,7 @@ when "elsif" then
             if n then x:=left(x,n)+" {"+right(x,-n) fi
         fi
         return spaces+x
+
     when "when" then
         if tos()<>'S' then serror("Bad when") fi
         n:="then" in x
