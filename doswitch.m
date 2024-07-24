@@ -1,36 +1,36 @@
-global proc lexreadtoken=
-    int c,hsum
+global proc lexreadtoken = 
+    int c, hsum
     ref char sptr, lxsvalue
     int commentseen
     
-    nextlx.subcode:=0
+    nextlx.subcode := 0
 
-    doswitch lxstart:=lxsptr; lxsptr++^
-    when 'a'..'z','_','$' then
-        lxsvalue:=lxsptr-1
+    doswitch lxstart := lxsptr; lxsptr++^
+    when 'a'..'z', '_', '$' then
+        lxsvalue := lxsptr-1
     doname:
-        hsum:=lxsvalue^
+        hsum := lxsvalue^
 
-        sptr:=lxsptr
+        sptr := lxsptr
 
-        docase namemap[c:=sptr++^]
+        docase namemap[c := sptr++^]
         when 1 then
-            hsum:=hsum<<4-hsum+c
+            hsum := hsum<<4-hsum+c
         when 2 then
-            (sptr-1)^:=c+' '
-            hsum:=hsum<<4-hsum+c+' '
+            (sptr-1)^ := c + ' '
+            hsum := hsum<<4 - hsum + c + ' '
         else
-            lxsptr:=sptr-1
+            lxsptr := sptr-1
             exit
         end docase
 
-        if c='"' then
-            if lxsvalue+1=ref char(lxsptr) then
-                case c:=toupper(lxsvalue^)
-                when  'F','R' then 
+        if c = '"' then
+            if lxsvalue+1 = ref char(lxsptr) then
+                case c := toupper(lxsvalue^)
+                when  'F', 'R' then 
                     readrawstring()         # raw string like F"..."
                     return
-                when  'S','B' then          # data string S"...." (zero-term) or B"..." (binary)
+                when  'S', 'B' then          # data string S"...." (zero-term) or B"..." (binary)
                     readarraystring(c)
                     return
                 esac
@@ -42,18 +42,18 @@ global proc lexreadtoken=
         return
 
     when 'A'..'Z' then
-        lxsvalue:=lxsptr-1
-        lxsvalue^+:=32
+        lxsvalue := lxsptr-1
+        lxsvalue^ +:= 32
         goto doname
 
     when '0'..'9' then
-        lxstart:=lxsptr-1
+        lxstart := lxsptr-1
         case lxsptr^
-        when ')',cr,',',' ' then        !assume single digit decimal
-            nextlx.symbol:=intconstsym
-            nextlx.subcode:=tint
-            nextlx.value:=lxstart^-'0'
-        when 'x','X' then
+        when ')', cr, ',', ' ' then        !assume single digit decimal
+            nextlx.symbol := intconstsym
+            nextlx.subcode := tint
+            nextlx.value := lxstart^-'0'
+        when 'x', 'X' then
             case lxstart^
             when '0' then       !0x
                 ++lxsptr
@@ -71,7 +71,7 @@ global proc lexreadtoken=
         return
 
     when '!' then           !comment to eol
-        docase c:=lxsptr++^
+        docase c := lxsptr++^
         when cr then
             ++lxsptr
             exit
@@ -81,11 +81,11 @@ global proc lexreadtoken=
             --lxsptr
             exit
         end
-        nextlx.symbol:=eolsym
+        nextlx.symbol := eolsym
         return
 
     when '#' then
-        nextlx.symbol:=hashsym
+        nextlx.symbol := hashsym
         return
 
     when '\\' then          !line continuation
@@ -93,7 +93,7 @@ global proc lexreadtoken=
 !two stages:
 ! 1: read chars until any eol chars (unless further '\' seen)
 ! 2: read until non-white space
-        commentseen:=0
+        commentseen := 0
         docase lxsptr++^            !read until end of this line
         when cr then
 !           ++nextlx.pos
@@ -103,12 +103,12 @@ global proc lexreadtoken=
 !           ++nextlx.pos
             exit
         when 0 then
-            nextlx.symbol:=eofsym
+            nextlx.symbol := eofsym
             --lxsptr
             return
-        when ' ',tab then
+        when ' ', tab then
         when '!' then
-            commentseen:=1
+            commentseen := 1
         else
             if not commentseen then
                 lxerror("\\ not followed by eol")
@@ -120,193 +120,193 @@ global proc lexreadtoken=
         when cr then
             ++lxsptr                !skip lf
         when lf then
-        when ' ',tab then
+        when ' ', tab then
         else
             --lxsptr
             exit
         end docase
 
     when '{' then
-        nextlx.symbol:=lcurlysym
+        nextlx.symbol := lcurlysym
         return
 
     when '}' then
-        nextlx.symbol:=rcurlysym
+        nextlx.symbol := rcurlysym
         return
 
     when '.' then
         case lxsptr^
         when '.' then               !.. or ...
             ++lxsptr
-            if lxsptr^='.' then
+            if lxsptr^ = '.' then
                 ++lxsptr
-                nextlx.symbol:=ellipsissym
+                nextlx.symbol := ellipsissym
             else
-                nextlx.symbol:=rangesym
-                nextlx.subcode:=jmakerange      !helps treat as opsym which all have k-code as subcode
+                nextlx.symbol := rangesym
+                nextlx.subcode := jmakerange      !helps treat as opsym which all have k-code as subcode
             fi
             return
         elsif lxsptr^ in '0'..'9' then          !real const: deal with this after the switch
             --lxsptr
 LXERROR(".123 not done")
-!           readrealnumber(nil,0,10)
+!           readrealnumber(nil, 0, 10)
             return
         else
-            nextlx.symbol:=dotsym
+            nextlx.symbol := dotsym
             return
         esac
 
     when ',' then
-        nextlx.symbol:=commasym
+        nextlx.symbol := commasym
         return
 
     when ';' then
-        nextlx.symbol:=semisym
+        nextlx.symbol := semisym
         return
 
     when ':' then
         case lxsptr^
-        when '=' then
+        when ' = ' then
             ++lxsptr
-            nextlx.symbol:=assignsym
-            nextlx.subcode:=jassign     !helps treat as opsym which all have k-code as subcode
+            nextlx.symbol := assignsym
+            nextlx.subcode := jassign     !helps treat as opsym which all have k-code as subcode
         else
-            nextlx.symbol:=colonsym
+            nextlx.symbol := colonsym
         esac
         return
 
     when '(' then
-        nextlx.symbol:=lbracksym
+        nextlx.symbol := lbracksym
         return
 
     when ')' then
-        nextlx.symbol:=rbracksym
+        nextlx.symbol := rbracksym
         return
 
     when '[' then
-        nextlx.symbol:=lsqsym
+        nextlx.symbol := lsqsym
         return
 
     when ']' then
-        nextlx.symbol:=rsqsym
+        nextlx.symbol := rsqsym
         return
 
     when '|' then
-!       if lxsptr^='|' then
+!       if lxsptr^ = '|' then
 !           ++lxsptr
-!           nextlx.symbol:=dbarsym
+!           nextlx.symbol := dbarsym
 !       else
-            nextlx.symbol:=barsym
+            nextlx.symbol := barsym
 !       fi
         return
 
     when '^' then
-        nextlx.symbol:=ptrsym
+        nextlx.symbol := ptrsym
         return
 
     when '@' then
-!       if lxsptr^='@' then
+!       if lxsptr^ = '@' then
 !           ++lxsptr
-!           nextlx.symbol:=datsym
+!           nextlx.symbol := datsym
 !       else
-            nextlx.symbol:=atsym
+            nextlx.symbol := atsym
 !       fi
         return
 
     when '?' then
-        nextlx.symbol:=questionsym
+        nextlx.symbol := questionsym
         return
 
 !   when '~' then
-!       nextlx.symbol:=curlsym
+!       nextlx.symbol := curlsym
 !       return
 
     when '+' then
-        nextlx.symbol:=addsym
-        if lxsptr^='+' then
+        nextlx.symbol := addsym
+        if lxsptr^ = '+' then
             ++lxsptr
-            nextlx.symbol:=incrsym
-            nextlx.subcode:=kincr
+            nextlx.symbol := incrsym
+            nextlx.subcode := kincr
             return
         fi
         return
 
     when '-' then
-        nextlx.symbol:=subsym
+        nextlx.symbol := subsym
         case lxsptr^
         when '-' then
             ++lxsptr
-            nextlx.symbol:=incrsym
-            nextlx.subcode:=kdecr
+            nextlx.symbol := incrsym
+            nextlx.subcode := kdecr
             return
         when '>' then
             ++lxsptr
-            nextlx.symbol:=pipesym
+            nextlx.symbol := pipesym
             return
         esac
         return
 
     when '*' then
-        if lxsptr^='*' then
+        if lxsptr^ = '*' then
             ++lxsptr
-            nextlx.symbol:=powersym
+            nextlx.symbol := powersym
         else
-            nextlx.symbol:=mulsym
+            nextlx.symbol := mulsym
         fi
         return
 
     when '/' then
-        nextlx.symbol:=divsym
+        nextlx.symbol := divsym
         return
 
     when '%' then
-        nextlx.symbol:=idivsym
+        nextlx.symbol := idivsym
         return
 
-    when '=' then
+    when ' = ' then
         case lxsptr^
         when '>' then
-            nextlx.symbol:=sendtosym
+            nextlx.symbol := sendtosym
             ++lxsptr
-        when '=' then
+        when ' = ' then
             ++lxsptr
-            nextlx.symbol:=samesym
+            nextlx.symbol := samesym
         else
-            nextlx.symbol:=eqsym
-            nextlx.subcode:=keq
+            nextlx.symbol := eqsym
+            nextlx.subcode := keq
         esac
         return
 
     when '<' then
-        nextlx.symbol:=cmpsym
+        nextlx.symbol := cmpsym
         case lxsptr^
-        when '=' then
+        when ' = ' then
             ++lxsptr
-            nextlx.subcode:=kle
+            nextlx.subcode := kle
         when '>' then
             ++lxsptr
-            nextlx.subcode:=kne
+            nextlx.subcode := kne
         when '<' then
             ++lxsptr
-            nextlx.symbol:=shlsym
+            nextlx.symbol := shlsym
         else
-            nextlx.subcode:=klt
+            nextlx.subcode := klt
         esac
         return
 
     when '>' then
-        nextlx.symbol:=cmpsym
+        nextlx.symbol := cmpsym
         case lxsptr^
-        when '=' then
+        when ' = ' then
             ++lxsptr
-            nextlx.symbol:=cmpsym
-            nextlx.subcode:=kge
+            nextlx.symbol := cmpsym
+            nextlx.subcode := kge
         when '>' then
             ++lxsptr
-            nextlx.symbol:=shrsym
+            nextlx.symbol := shrsym
         else
-            nextlx.symbol:=cmpsym
-            nextlx.subcode:=kgt
+            nextlx.symbol := cmpsym
+            nextlx.subcode := kgt
         esac
         return
 
@@ -314,15 +314,15 @@ LXERROR(".123 not done")
         case lxsptr^
             when '&' then
             ++lxsptr
-            nextlx.symbol:=daddrsym
-            nextlx.subcode:=jdaddrvv
+            nextlx.symbol := daddrsym
+            nextlx.subcode := jdaddrvv
         when '.' then
             ++lxsptr
-            nextlx.symbol:=anddotsym
-            nextlx.subcode:=0
+            nextlx.symbol := anddotsym
+            nextlx.subcode := 0
         else
-            nextlx.symbol:=addrsym
-            nextlx.subcode:=jaddrof
+            nextlx.symbol := addrsym
+            nextlx.subcode := jaddrof
         esac
         return
 
@@ -338,15 +338,15 @@ LXERROR(".123 not done")
         readrawxname()
         return
 
-    when ' ',tab then
+    when ' ', tab then
 
     when cr then
         ++lxsptr                !skip lf
-        nextlx.symbol:=eolsym
+        nextlx.symbol := eolsym
         return
 
     when lf then            !only lfs not preceded by cr
-        nextlx.symbol:=eolsym
+        nextlx.symbol := eolsym
         return
 
     when 0 then
@@ -354,14 +354,14 @@ LXERROR(".123 not done")
             unstacksource()
             RETURN
         else
-            nextlx.symbol:=eofsym
+            nextlx.symbol := eofsym
             --lxsptr
             return
         fi
 
     else
         lxerror("Unknown char")
-!       nextlx.symbol:=errorsym
+!       nextlx.symbol := errorsym
         return
 
     end doswitch
