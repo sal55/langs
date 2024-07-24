@@ -28,9 +28,9 @@ global proc lexreadtoken=
             if lxsvalue+1=ref char(lxsptr) then
                 case c:=toupper(lxsvalue^)
                 when  'F','R' then 
-                    readrawstring()
+                    readrawstring()         # raw string like F"..."
                     return
-                when  'S','B' then 
+                when  'S','B' then          # data string S"...." (zero-term) or B"..." (binary)
                     readarraystring(c)
                     return
                 esac
@@ -71,7 +71,6 @@ global proc lexreadtoken=
         return
 
     when '!' then           !comment to eol
-docomment:
         docase c:=lxsptr++^
         when 13 then
             ++lxsptr
