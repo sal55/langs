@@ -72,10 +72,10 @@ global proc lexreadtoken=
 
     when '!' then           !comment to eol
         docase c:=lxsptr++^
-        when 13 then
+        when cr then
             ++lxsptr
             exit
-        when 10 then
+        when lf then
             exit
         when 0 then
             --lxsptr
@@ -344,6 +344,7 @@ LXERROR(".123 not done")
         ++lxsptr                !skip lf
         nextlx.symbol:=eolsym
         return
+
     when lf then            !only lfs not preceded by cr
         nextlx.symbol:=eolsym
         return
