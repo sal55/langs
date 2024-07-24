@@ -1,10 +1,8 @@
 global proc lexreadtoken=
     int c,hsum
     ref char sptr, lxsvalue
-    int length,commentseen
-    ref char p
-    byte instr
-
+    int commentseen
+    
     nextlx.subcode:=0
 
     doswitch lxstart:=lxsptr; lxsptr++^
