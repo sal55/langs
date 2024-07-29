@@ -52,13 +52,13 @@ So you might see some bolted-on code (controlled by a `highmem` option, which mu
 
 #### Base Relocations
 
-The stuff in `aa_writeexe` to do with base-relocations is only needed for writing DLLs. This can be ignored for EXEs. The idea was to allow DLL libraries to be moved, if the prefered load address was not available (for example, if two DLLs both with a load address at 0x10000000, they can't be both be loaded to this address). This was a solution devised before RIP and PIC; I think it is still needed.
+The stuff in `aa_writeexe` to do with base-relocations is only needed for writing DLLs. This can be ignored for EXEs. The idea was to allow DLL libraries to be moved, if the prefered load address was not available (for example, if two DLLs both have a load address at 0x10000000, they can't be both be loaded to this address). This was a solution devised before RIP and PIC; I think it is still needed.
 
 #### Resolving DLL Imports
 
-I think I forgot add the LIBFILES data in `aa_decls`. This is a list of DLL files that the EXE relies on. The names in `ss_symboltable` that are imported, must exist in some external DLL. But which DLL is not specified.
+I think I forgot add the LIBFILES data in `aa_decls`. This is a list of DLL files that the EXE relies on. The names in `ss_symboltable` that are imported, must exist in some external DLL. But which DLL is not specified per-symbol.
 
-A separate LIBFILES array gives the DLLs that are used. For each imported symbol, it looks through all the libraries to find out which one it lives in. This info is necessary to build the import table of the EXE. If you depend an EXE file, it will show a list of imported DLLs, and the symbols imported from each.
+A separate LIBFILES array gives the DLLs that are used. For each imported symbol, it looks through all the libraries to find out which one it lives in. This info is necessary to build the import table of the EXE. If you dump an EXE file, it will show a list of imported DLLs, and the symbols imported from each.
 
 There had been an attempt to encode the library name as part of the symbol, so `msvcrt.puts` means `puts` should be checked inside `msvcrt.dll`; there are remnants of this. But I never used that capabililty in earlier parts of the assembler.
 
