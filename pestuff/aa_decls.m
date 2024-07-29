@@ -1,11 +1,14 @@
 !Selected declarations
 
 global int ss_zdatalen
+
 global ref dbuffer ss_zdata         !used for error checking only (should be empty at end)
 global ref dbuffer ss_idata
 global ref dbuffer ss_code
+
 global ref relocrec ss_idatarelocs
 global ref relocrec ss_coderelocs
+
 global int ss_nidatarelocs
 global int ss_ncoderelocs
 
