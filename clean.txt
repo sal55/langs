@@ -44,3 +44,4 @@ int main(void) {
 # --------------------------------------
 
 # Examples show versions and differences between packed/unpacked, and to switch from the default in each language (mine defaults to packed, C to padded)
+# Outputs in both cases is 9 16 (sizes) and 1 8 (offsets of .b)
