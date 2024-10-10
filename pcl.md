@@ -22,7 +22,7 @@ PCL only understands the primitive types shown below.
 
     block           Fixed-size data block of N bytes (represents all aggregate types)
 
-    vector          Placeholder for machine vector types)
+    vector          (Placeholder for machine vector types)
 
     addr            Machine address (alias for u64 etc)
 ````
@@ -229,7 +229,7 @@ kendprog     0 - 0               End-of-program marker.
 
 #### Key
 
-`Z` is the top of stack; elements below are `Y`, `X` and `W`. It notionally grows left to right.
+`Z` is the top of stack; elements below are `Y`, `X` and `W`. It notionally grows left to right. `t u` are types (most have one type; conversion ops usually have two).
 
 ### Number of Opcodes
 
