@@ -1,5 +1,5 @@
-=== MA 41 ===
-=== mm.m 0 0 1/41 ===
+=== MA 47 ===
+=== mm.m 0 0 1/47 ===
 !project =
 	module mm_cli
 
@@ -20,10 +20,10 @@
 	module mm_lex
 	module mm_lib
 
-	MODULE MM_LIBPCL
+	module mm_libpcl
 
-!	module mm_libsources
-	module mm_libsources_dummy
+	module mm_libsources
+!	module mm_libsources_dummy
 
 	module mm_modules
 	module mm_name
@@ -41,7 +41,7 @@ proc main=
 	main2()
 end
 
-=== pc_api.m 0 0 2/41 ===
+=== pc_api.m 0 0 2/47 ===
 project =
 	module pc_decls
 	module pc_diags
@@ -64,8 +64,6 @@ project =
 	module mc_WriteEXE
 	module mc_WriteOBJ
 
-!	module mc_WriteSS
-!	module mc_disasm
 	module mx_decls
 	module mx_run
 	module mx_lib
@@ -83,7 +81,7 @@ end
 !
 !
 !
-=== pc_decls.m 0 0 3/41 ===
+=== pc_decls.m 0 0 3/47 ===
 !decls
 
 export type psymbol = ref pstrec
@@ -167,6 +165,7 @@ global record pstrec = $caligned
 !	byte equals			!for vars/params: 1/2/3 means =/:=/::= used
 
 	byte nparams
+	byte variadic		!local function that used ... variadic params (for C)
 	i16 nlocals
 	i16 impindex
 	i16 expindex
@@ -243,6 +242,14 @@ global record pclrec =
 !	[2]byte spare2
 end
 
+global record fwdrec =
+	ref fwdrec nextfwd
+	int32 offset
+	int16 reltype
+	int16 seg
+end
+
+
 !* LOCALS: all that have been USED
 !* PARAMS: all including not used ones (but need the USED flag)
 !* HIGHPARAM max param (of 0..4) that has been used, to determine
@@ -308,7 +315,12 @@ export ref func (int pos, ichar &filename, &sourceline)int igetmsourceinfo
 global byte pcldone, mcldone, ssdone
 
 global byte pverbose
-=== pc_diags.m 0 0 4/41 ===
+
+export int assemtype='AA'
+=== pc_diags.m 0 0 4/47 ===
+!const fshowppseqno=1
+const fshowppseqno=0
+
 int currlineno
 int currfileno
 
@@ -316,70 +328,13 @@ strbuffer sbuffer
 ref strbuffer dest=&sbuffer
 int destlinestart
 
-!const tab1="  "
-!const tab2="    "
-const tab1="\t"
-const tab2="\t\t"
+const tab1="    "
+const tab2="        "
+!const tab1="\t"
+!const tab2="\t\t"
 
 !const fshowsymbols=1
 const fshowsymbols=0
-
-global proc pshowlogfile=
-	[256]char str
-	filehandle logdev
-	int size
-	ref strbuffer ss
-
-!	if not debugmode then return fi
-!
-!	logdev:=fopen(logfile,"w")
-!
-!!
-!!CPL "PRESS KEY..."; if OS_GETCH()=27 then stop fi
-!
-!	if fshowmodules then showprojectinfo(logdev) fi
-!
-!	if fshowasm and dpasslevel>=dmcl_pass then
-!		println @logdev,"PROC ASSEMBLY"
-!		addtolog(changeext(outfile, "asm"),logdev)
-!	fi
-!!CPL "PRESS KEY2..."; OS_GETCH()
-!
-!	if fshowpcl and dpasslevel>=dpcl_pass then
-!		addtolog(changeext(outfile, "pcl"),logdev)
-!	fi
-!	if fshowast3 and dpasslevel>=dtype_pass then addtolog("AST3", logdev) fi
-!	if fshowast2 and dpasslevel>=dname_pass then addtolog("AST2", logdev) fi
-!	if fshowast1 and dpasslevel>=dparse_pass then addtolog("AST1", logdev) fi
-!
-!	if fshowst then
-!		showsttree("SYMBOL TABLE",logdev)
-!	fi
-!	if fshowstflat then
-!		showstflat("FLAT SYMBOL TABLE",logdev)
-!	fi
-!!
-!	if fshowtypes then
-!		printmodelist(logdev)
-!	fi
-!!
-!	size:=getfilesize(logdev)
-!	fclose(logdev)
-!
-!	if size then
-!CPL "PRESS KEY..."; if OS_GETCH()=27 then stop fi
-!!		print @&.str,"\\m\\ed.bat -w ",logfile
-!		print @&.str,"\\m\\ed.bat ",logfile
-!
-!!		if checkfile(langname+langname+".m") then
-!		if checkfile("mm.m") then
-!!			os_execwait(&.str,1,nil)
-!			os_execwait(&.str,0,nil)
-!		else
-!			println "Diagnostic outputs written to",logfile
-!		fi
-!	fi
-end
 
 global proc strpcl(pcl p)=
 	[256]char pmodestr
@@ -392,13 +347,17 @@ global proc strpcl(pcl p)=
 
 	opcode:=p.opcode
 
-!PSSTR(STRINT(P.SEQNO,"Z5"))
-!PSSTR(" ")
+	if fshowppseqno then
+		psstr(strint(p.seqno,"z5"))
+		psstr("  ")
+	fi
+!RETURN
+
 !PSSTR(STRINT(P.pos,"8ZH"))
 !PSSTR(" ")
 
 !CPL PCLNAMES[OPCODE], P.SEQNO
-
+!STOP WHEN OS_GETCH()=27
 !psstr(strint(getlineno(p.pos),"4"))
 !psstr(" ")
 
@@ -457,6 +416,7 @@ global proc strpcl(pcl p)=
 		e:=d.nextlocal
 !CPL =E
 		while e, e:=e.nextlocal do
+			if fshowppseqno then psstr("       ") fi
 			psstr(tab1)
 			psstr(strpmode(e.mode, e.size))
 			psstr(" ")
@@ -526,6 +486,7 @@ global proc strpcl(pcl p)=
 	psstr(tab1)
 skiptab:
 
+
 	case opcode
 	when kjumpcc then
 		strcpy(str, "jump")
@@ -542,6 +503,7 @@ skiptab:
 	gs_leftstr(dest,str,9)
 
 
+!CPL =OPNDNAMES[P.OPNDTYPE]
 	if p.opndtype<>no_opnd then
 		psstr(" ")
 		psstr(stropnd(p))
@@ -617,7 +579,7 @@ global func stropnd(pcl p)ichar=
 
 	when real32_opnd then
 !		print @str,p.xvalue32:"e16.16"
-		print p.xvalue
+		print @str, p.xvalue
 
 	when realimm_opnd, realimm32_opnd THEN
 		print @str,p.xvalue,"IMM"
@@ -650,7 +612,10 @@ RETURN "<LONGSTR>"
 
 	when mem_opnd then
 		d:=p.def
-
+!CPL =D
+!IF D=NIL THEN
+!	STRCAT(STR, "<NULL DEF>")
+!ELSE
 		strcat(str, getfullname(p.def))
 		if p.opcode in [kistatic, kzstatic] then
 			strcat(str,":")
@@ -658,6 +623,8 @@ RETURN "<LONGSTR>"
 				strcat(str,":")
 			fi
 		fi
+!FI
+
 
 	when memaddr_opnd then
 		strcpy(str, "&")
@@ -701,10 +668,10 @@ end
 
 global proc writepcl(pcl p)=
 
-	CASE P.OPCODE
-	WHEN KSETARG, KSETCALL THEN
-		RETURN
-	ESAC
+!	CASE P.OPCODE
+!	WHEN KSETARG, KSETCALL THEN
+!		RETURN
+!	ESAC
 
 	strpcl(p)
 	case p.opcode
@@ -726,14 +693,17 @@ global func writeallpcl:ref strbuffer=
 	pcl p
 	psymbol d,e
 
+!CPL "ALLPCL"
+
 	gs_init(dest)
 	destlinestart:=dest.length
 
-	gs_strln(dest, "PROC PCL")
+!	gs_strln(dest, "PROC PCL")
 
 	p:=pcstart
 
 	while p<=pccurr do
+!CPL =P, PCLNAMES[P.OPCODE]
 		writepcl(p)
 
 		destlinestart:=dest.length
@@ -912,7 +882,7 @@ export proc pcl_writepst=
 		if d.imported then print @f," Imp" fi
 		if d.isthreaded then print @f," TC" fi
 
-		print @f, " Seg:",segmentnames[d.segment]
+!		print @f, " Seg:",segmentnames[d.segment]
 
 		println @f
 	od
@@ -921,7 +891,7 @@ export proc pcl_writepst=
 	fclose(f)
 
 end
-=== pc_exp.m 0 0 5/41 ===
+=== pc_exp.m 0 0 5/47 ===
 export func pcl_writepcl(ichar filename=nil)ichar=
 	ref strbuffer d
 
@@ -950,7 +920,6 @@ export func pcl_writeasm(ichar filename=nil, int atype='AA')ichar=
 	filehandle f
 
 	genmcl()
-	genss()
 
 	asmstr:=getassemstr()
 
@@ -982,31 +951,41 @@ export proc pcl_writedll(ichar filename)=
 end
 
 export proc pcl_writeexe(ichar filename)=
-	genmcl()
+!	genmcl()
+
+
+INT TT:=CLOCK()
+		genmcl()
+TT:=CLOCK()-TT
+CPL "MCL TIME IS", TT
+
 	genss()
 	genexe(nil, filename, 0)
 	writeexe(filename, 0)
 end
 
 export proc pcl_writemx(ichar filename)=
+!PCLERROR("NO WRITEMCX")
 	genmcl()
 	genss()
 	writemcx(filename)
 end
 
 export proc pcl_exec(int cmdskip)=
+!PCLERROR("NO RUN")
 	genmcl()
 	genss()
 	runlibfile("dummy", cmdskip)
 end
 
-export proc pcl_setflags(int highmem=-1, verbose=-1)=
+export proc pcl_setflags(int highmem=-1, verbose=-1, shortnames=-1)=
 	if highmem>=0 then phighmem:=highmem fi
 	if verbose>=0 then pverbose:=verbose fi
+	if shortnames>=0 then fpshortnames:=shortnames fi
 end
-=== pc_lib.m 0 0 6/41 ===
-!CONST REDUCE=0
-CONST REDUCE=1
+=== pc_lib.m 0 0 6/47 ===
+CONST REDUCE=0
+!CONST REDUCE=1
 
 INT PCLSEQNO
 
@@ -1132,18 +1111,22 @@ export proc pc_genix(int opcode, scale=1, offset=0) =
 	pcl p
 	int n
 
-!CPL "GENPCIX",=SCALE
-
+!CPL "GENPCIX NEW", PCLNAMES[OPCODE], "CURR:", PCLNAMES[(PCCURR).OPCODE],"PREV:", PCLNAMES[(PCCURR-1).OPCODE]
+!
 	if REDUCE AND pccurr.opcode=kload and pccurr.opndtype=int_opnd then
+!CPL "HERE1", PCLNAMES[(PCCURR-1).OPCODE]
 
 		if opcode=ksubpx then
 			-:=pccurr.value
 			opcode:=kaddpx
+!CPL "CHANGE SUBPX TO ADDPX"
 		fi
 
 		if (pccurr-1).opcode=kaddpx then
 			p:=pccurr-1
+!CPL "HERE2"
 			p.extra+:=pccurr.value*scale + offset
+!CPL "ADDPX INCORPORATES LOAD IMM"
 
 			p.opcode:=opcode			!addpx/loadimm/xxx => xxx
 			clear pccurr^
@@ -1295,7 +1278,7 @@ export func genassem(ref void code)pcl p=
 	return p
 end
 
-global func strpmode(int mode, size=0)ichar=
+EXPORT func strpmode(int mode, size=0)ichar=
 	static [32]char str
 !	int dprec@signed
 
@@ -1411,15 +1394,17 @@ export func pc_makesymbol(ichar s, int id=0)psymbol d=
 	d
 end
 
-global func getfullname(psymbol d)ichar=
+global func getfullname(psymbol d, int backtick=0)ichar=
 !create fully qualified name into caller's dest buffer
 	static [256]char str
 	[16]psymbol chain
 	int n:=0
 	psymbol e:=d
 
+	if fpshortnames then return d.name fi
+
 	if d.imported then
-		if assemtype='AA' then
+		if backtick then
 			strcpy(str, "`")
 			strcat(str, d.name)
 			strcat(str, "*")
@@ -1434,7 +1419,12 @@ global func getfullname(psymbol d)ichar=
 		e:=e.owner
 	until e=nil !or e.id=program_id
 
-	strcpy(str,chain[n].name)
+	if backtick then
+		strcpy(str, "`")
+	else
+		str[1]:=0
+	fi
+	strcat(str,chain[n].name)
 	for i:=n-1 downto 1 do
 		strcat(str,".")
 		strcat(str,chain[i].name)
@@ -1479,6 +1469,8 @@ export proc pc_addparam(psymbol d)=
 		while q.nextparam do q:=q.nextparam od		!look for last
 		q.nextparam:=d
 	fi
+	++currfunc.nparams
+
 end
 
 export proc pc_addlocal(psymbol d)=
@@ -1494,6 +1486,7 @@ export proc pc_addlocal(psymbol d)=
 		while q.nextlocal do q:=q.nextlocal od		!look for last
 		q.nextlocal:=d
 	fi
+	++currfunc.nlocals
 end
 
 export proc pc_endproc=
@@ -1501,7 +1494,14 @@ export proc pc_endproc=
 	pc_gen(kendproc)
 	currfunc:=nil
 end
-=== pc_tables.m 0 0 7/41 ===
+
+export func addstr(ichar s, t)ichar=
+static [256]char str
+	strcpy(str, s)
+	strcat(str, t)
+	str
+end
+=== pc_tables.m 0 0 7/47 ===
 !type system
 
 export enumdata \
@@ -1509,28 +1509,29 @@ export enumdata \
 		[0:]byte psize,
 		[0:]byte psigned,
 		[0:]byte pfloat,
-		[0:]byte ploadop =
+		[0:]byte pmin =						!promoted type when min width applies
 
-!    type         name    bits SZ   S F  	Loadop
-	(tpvoid=0,    "void",    	0,	0,0, 	m_nop),
+	(tpvoid=0,    "void",    	0,	0,0,	tpvoid),
 
-	(tpr32,       "r32",    	4,	0,1, 	m_movd),
-	(tpr64,       "r64",    	8,	0,1, 	m_movq),
+	(tpr32,       "r32",    	4,	0,1,	tpr32),
+	(tpr64,       "r64",    	8,	0,1,	tpr64),
 
-	(tpu8,        "u8",      	1,	0,0, 	m_movzx),
-	(tpu16,       "u16",    	2,	0,0, 	m_movzx),
-	(tpu32,       "u32",    	4,	0,0, 	m_movzx),
-	(tpu64,       "u64",    	8,	0,0, 	m_mov),
+	(tpu8,        "u8",      	1,	0,0,	tpu32),
+	(tpu16,       "u16",    	2,	0,0,	tpu32),
+	(tpu32,       "u32",    	4,	0,0,	tpu32),
+	(tpu64,       "u64",    	8,	0,0,	tpu64),
 
-	(tpi8,        "i8",      	1,	1,0, 	m_movsx),
-	(tpi16,       "i16",    	2,	1,0, 	m_movsx),
-	(tpi32,       "i32",    	4,	1,0, 	m_movsx),
-	(tpi64,       "i64",    	8,	1,0, 	m_mov),
+	(tpi8,        "i8",      	1,	1,0,	tpi32),
+	(tpi16,       "i16",    	2,	1,0,	tpi32),
+	(tpi32,       "i32",    	4,	1,0,	tpi32),
+	(tpi64,       "i64",    	8,	1,0,	tpi64),
 
-	(tpblock,     "block",   	0,	0,0, 	m_nop),
-	(tpvector,    "vector",   	0,	0,0, 	m_nop),
+	(tpblock,     "block",   	0,	0,0,	tpblock),
+	(tpvector,    "vector",   	0,	0,0,	tpvector),
 
-	(tplast,      "$last",   	0,	0,0, 	m_nop),
+	(tplast,      "$last",   	0,	0,0,	0),
+
+
 end
 
 global const tpref = tpu64
@@ -1591,10 +1592,7 @@ end
 ! b is the number of new stack elements that will be pushed
 ! Something like (1 1) can mean the same element stays in place
 
-export enumdata [0:]ichar pclnames,
-			[0:]byte pclhastype,
-			[0:]byte pclextra =
-
+export enumdata [0:]ichar pclnames, [0:]byte pclhastype, [0:]byte pclextra =
 !                       t  x      (a  b)
 	(knop=0,       $+1, 0, 0),  ! (0 - 0) (          ) ?
 
@@ -1604,11 +1602,11 @@ export enumdata [0:]ichar pclnames,
 
 	(kstore,       $+1, 1, 0),  ! (1 - 0) (M t       ) M := Z
 	(kistore,      $+1, 1, 0),  ! (2 - 0) (t         ) Z^ := Y
-	(kistorex,     $+1, 1, 2),  ! (3 - 0) (t s d    ) (Y + Z*s + d)^ := X
+	(kistorex,     $+1, 1, 2),  ! (3 - 0) (t s d     ) (Y + Z*s + d)^ := X
 
 	(kdupl,        $+1, 0, 0),  ! (1 - 2) (          ) Z' := Y' := Z
-	(kdouble,      $+1, 0, 0),  ! (1 - 2) (          ) Count extra instance of Z (only works for top stack item)
-	(kswapstk,     $+1, 0, 0),  ! (2 - 2) (          ) (Z', Y') := (Z, Y)
+	(kdouble,      $+1, 0, 0),  ! (1 - 2) (          ) Count extra instance of Z
+	(kswapstk,     $+1, 0, 2),  ! (2 - 2) (a b       ) Swap(stack(a), stack(b)); 1/2/3/4 = Z/Y/X/W
 	(kunload,      $+1, 1, 0),  ! (1 - 0) (t         ) Pop stack
 
 	(kopnd,        $+1, 1, 0),  ! (0 - 0) (M L C t   ) Define auxiliary operand M or L
@@ -1676,8 +1674,8 @@ export enumdata [0:]ichar pclnames,
 	(kabs,         $+1, 1, 0),  ! (1 - 1) (t         ) Z' := abs Z
 	(kbitnot,      $+1, 1, 0),  ! (1 - 1) (t         ) Z' := inot Z
 	(knot,         $+1, 1, 0),  ! (1 - 1) (t         ) Z' := not Z
-	(ktoboolt,     $+1, 1, 0),  ! (1 - 1) (t         ) Z' := istrue Z
-	(ktoboolf,     $+1, 1, 0),  ! (1 - 1) (t         ) Z' := not istrue Z
+	(ktoboolt,     $+1, 2, 0),  ! (1 - 1) (t u       ) Z' := istrue Z; u is of type u; result is type t
+	(ktoboolf,     $+1, 2, 0),  ! (1 - 1) (t u       ) Z' := not istrue Z
 	(ksqr,         $+1, 1, 0),  ! (1 - 1) (t         ) Z' := sqr Z
 
 	(ksqrt,        $+1, 1, 0),  ! (1 - 1) (t         ) Z' := sqrt Z
@@ -1736,14 +1734,14 @@ export enumdata [0:]ichar pclnames,
 	(kfwiden,      $+1, 2, 0),  ! (1 - 1) (t u       ) Z' := cast(Z,t) r32 to r64
 	(kfnarrow,     $+1, 2, 0),  ! (1 - 1) (t u       ) Z' := cast(Z,t) r64 to r32
 
-	(kstartmx,     $+1, 0, 1),  ! (0 - 0) (x         ) -
-	(kresetmx,     $+1, 0, 1),  ! (0 - 0) (x         ) -
-	(kendmx,       $+1, 0, 1),  ! (0 - 0) (x         ) -
+	(kstartmx,     $+1, 0, 1),  ! (0 - 0) (          ) -
+	(kresetmx,     $+1, 1, 1),  ! (0 - 0) (t         ) -
+	(kendmx,       $+1, 1, 1),  ! (0 - 0) (t         ) -
 
 	(kdefproc,     $+1, 0, 0),  ! (0 - 0) (M         ) ?
 	(ktcproc,      $+1, 0, 0),  ! (0 - 0) (M         ) ?
 	(kendproc,     $+1, 0, 0),  ! (0 - 0) (          ) ?
-	(kistatic,     $+1, 1, 0),  ! (0 - 0) (M t       ) Define idata label (must be followed by correct db etc ops)
+	(kistatic,     $+1, 1, 0),  ! (0 - 0) (M t       ) Define idata label (must be followed by correct DATA ops)
 	(kzstatic,     $+1, 1, 0),  ! (0 - 0) (M t       ) Define zdata label and reserve sufficient space
 	(kdata,        $+1, 1, 0),  ! (0 - 0) (M L C t   ) Constant data. For block types, there can be multiple C values
 
@@ -1791,7 +1789,7 @@ export enumdata [0:]ichar idnames
 	(label_id,		"Label"),		!Used in assembly
 end
 
-=== mc_auxmcl.m 0 0 8/41 ===
+=== mc_auxmcl.m 0 0 8/47 ===
 !Auxially routines called by genmcl's PX handlers
 
 global proc initpass(psymbol d)=
@@ -1974,13 +1972,29 @@ end
 proc spillparams=
 	psymbol d
 	mclopnd ax
-	int offset:=16, regoffset:=0
+	int offset:=16, regoffset:=0, firstoffset
 
 	regoffset:=0
 
 	d:=currfunc.nextparam
+
+!CPL "SPILLPARAMS", CURRFUNC.NAME, CURRFUNC.NPARAMS, =currFUNC.VARIADIC
+!IF CURRFUNC.NPARAMS THEN
+!	CPL =CURRFUNC.NEXTPARAM.OFFSET
+!FI
+	if currfunc.variadic then				!C proc def using ...
+		firstoffset:=d.offset				!param offsets may be pushed up
+
+		for i:=currfunc.nparams to 3 do				!0-based; if nparams=2, loops over 2..3 as 0..1 are normal
+			ax:=mgenindex(areg:rframe, size:8, offset:i*8+firstoffset)
+			genmc(m_mov, ax, mgenreg(i+r10))
+		od
+	fi
+
+
 	while d, d:=d.nextparam do
 		if regoffset>3 then exit fi
+
 		if d.used  then
 			if not d.reg then
 				ax:=mgenindex(areg:rframe, size:8, offset:d.offset)
@@ -2009,16 +2023,20 @@ proc spillparams=
 end
 
 global proc do_jumptruefalse(pcl p, int cond)=
-	mclopnd ax
+	mclopnd ax, bx
 
 	ax:=loadopnd(zz, pmode)
 
 	if ispint(pmode) then
 		genmc(m_test, ax,ax)
-		genmc_cond(m_jmpcc, cond, mgenlabel(p.labelno))
+
 	else
-		merror("jumpt/f real?")
+		bx:=getworkregm(pmode)
+		genmc(m_xorps+ispwide(pmode), bx, bx)
+		genmc(m_comiss+ispwide(pmode), ax, bx)
 	fi
+
+	genmc_cond(m_jmpcc, cond, mgenlabel(p.labelno))
 
 	poppcl()
 end
@@ -2082,7 +2100,7 @@ global proc do_pushlowargs(int nargs, nvariadics=0, isptr=0)=
 ! Normal/non-variadic:
 !   float:  load to X register
 !   other:  load to D register
-
+	mclopnd ax
 	int j,k, nextireg, nextxreg, mode, imode, blockret
 	psymbol dblock
 
@@ -2110,7 +2128,13 @@ global proc do_pushlowargs(int nargs, nvariadics=0, isptr=0)=
 
 			mode:=pclmode[j]
 
-			if ispfloat(mode) then
+			case mode
+			when tpblock then
+!CPL "PUSH LOW/BLOCK", CALLARGSIZE[NCALLDEPTH,K]
+				ax:=loadparam(j, mode, nextireg)
+				copyblockarg(ax, callargsize[ncalldepth,k], k)
+
+			when tpr64, tpr32 then
 				loadparam(j, mode, nextxreg)
 				if nvariadics and k>=nvariadics then			!variadic floats go to both regs
 
@@ -2119,8 +2143,9 @@ global proc do_pushlowargs(int nargs, nvariadics=0, isptr=0)=
 					genmc(m_mov, mgenreg(nextireg, imode), mgenreg(nextxreg, mode))
 				fi
 			else
+doint:
 				loadparam(j, mode, nextireg)
-			fi
+			esac
 		fi
 
 		++nextireg
@@ -2128,7 +2153,7 @@ global proc do_pushlowargs(int nargs, nvariadics=0, isptr=0)=
 	od
 end
 
-global proc do_getretvalue*(pcl p)=
+global proc do_getretvalue(pcl p)=
 	int reg,xreg,i,n, m
 	[10]int modes
 
@@ -2195,13 +2220,20 @@ end
 global proc do_loadincr(pcl p, int incrop, addop)=
 	mclopnd ax,mx
 
+!CPL "LOADINCR", STRPMODE(PMODE)
+!MCOMM("LDI1")
 	mx:=getopnd_ind(zz, pmode)
+!CPL =MSTROPND(MX), MX.SIZE, =STRPMODE(PMODE)
+!MCOMM("LDI2")
 
-!	pushpcl_reg(getworkireg(), tpu64)
-	pushpcl_reg(tpu64)
-	ax:=getopnd(zz, tpu64)
+!!	pushpcl_reg(getworkireg(), tpu64)
+	pushpcl_reg(pmode)			!to hold loaded value
+!MCOMM("LDI3")
+	ax:=getopnd(zz, pmode)
+!MCOMM("LDI4")
 
 	genmc(m_mov, ax, mx)
+!MCOMM("LDI5")
 
 	if p.stepx=1 then
 		genmc(incrop, mx)
@@ -2320,10 +2352,16 @@ global func do_addrmode*(pcl p)mclopnd px =
 	mclopnd ax,bx
 	int scale, extra,offset, reg,regix
 	psymbol d
+	pcl q
 
 	scale:=p.scale
 	extra:=p.extra
-!*!	offset:=pca.value*scale+extra	!for imm offset
+
+!Q:=NIL
+	q:=isimmload(zz)
+	if q then
+		offset:=q.value*scale+extra	!for imm offset
+	fi
 
 	px:=nil
 
@@ -2339,58 +2377,66 @@ global func do_addrmode*(pcl p)mclopnd px =
 !			scale:=scaleindex(bx:=loadopnd(zz),scale)
 !			px:=mgenindex(areg:pcb.reg, ireg:bx.reg, scale:scale, offset:extra)
 !		fi
-!	elsif ismemaddr(yy) then
-!		d:=pcb.def
-!		if d.nameid=staticid and highmem=2 then skip fi
+!GOTO SKIP
+
+	if ismemaddr(yy) then
+		d:=pclopnd[yy].def
+!CPL "ISMEMADDR------------", D.MODE, STRPMODE(d.MODE)
+		if d.id=static_id and phighmem=2 or D.ID=PARAM_ID AND D.MODE=TPBLOCK  then skip fi
+!		if d.id=static_id and phighmem=2 then skip fi
 !		if isregvaropnd(zz) then			!memaddr/regvar
 !			reg:=pca.reg
 !			regix:=scaleregvar(reg,scale,zz)
 !			px:=mgenindex(ireg:regix, def:d, offset:extra, scale:scale)
 !
-!		elsif isimm64(zz) then			!memaddr/imm
-!			px:=mgenindex(def:d, offset:offset)
-!		else							!memaddr/any
-!			scale:=scaleindex(bx:=loadopnd(zz),scale)
-!			px:=mgenindex(ireg:bx.reg, def:d, offset:extra, scale:scale)
-!		fi
-!	else								!
-!skip:
+		if q then			!memaddr/imm
+!SKIP
+!CPL "AM1"
+			px:=mgenindex(def:d, offset:offset)
+		else							!memaddr/any
+!CPL "AM2"
+!SKIP
+			scale:=scaleindex(bx:=loadopnd(zz, tpi64),scale)
+			px:=mgenindex(ireg:bx.reg, def:d, offset:extra, scale:scale)
+		fi
+	else								!
+skip:
 		ax:=loadopnd(yy, tpu64)
 
 !		if isregvaropnd(zz) then			!any/regvar
 !			reg:=pca.reg
 !			regix:=scaleregvar(reg,scale,zz)
 !			px:=mgenindex(areg:ax.reg, ireg:regix, offset:extra, scale:scale)
-!		elsif isimm64(zz) then			!any/imm
-!			px:=mgenindex(areg:ax.reg, offset:offset)
-!		else
+		if q then						!any/imm	
+			px:=mgenindex(areg:ax.reg, offset:offset)
+		else
 			scale:=scaleindex(bx:=loadopnd(zz, tpu64),scale)
 			px:=mgenindex(areg:ax.reg, ireg:bx.reg, scale:scale, offset:extra)
-
-!		fi
-!	fi
+		fi
+	fi
 
 	px.size:=psize[p.mode]
+!CPL "AMX", =PX.SIZE
+
 	return px
 end
 
 global proc dolea(mclopnd ax, px)=
 !do 'lea ax, px`, but suppress in cases like 'lea d0,[d0]'
+!CPL "DOLEA", MSTROPND(AX), MSTROPND(PX)
 	unless px.regix=px.valtype=px.offset=0 and px.reg=ax.reg then
+
 		genmc(m_lea, ax, px)
 	end
 end
 
 global proc do_binto(pcl p, int opc, fopc)=
 	mclopnd ax,bx,rx
-	int reg,size
 
 	if ispfloat(pmode) then
 		do_binto_float(p, fopc)
 		return
 	fi
-
-	size:=p.size
 
 !	if size=8 and ismemaddr(yy) then
 !		ax:=mgenmem(pcb.def)
@@ -2403,6 +2449,7 @@ global proc do_binto(pcl p, int opc, fopc)=
 !		freeireg(reg)
 !	else
 		ax:=getopnd_ind(zz, p.mode)
+!CPL =STRPMODE(P.MODE)
 		bx:=loadopnd(yy, p.mode)
 
 		genmc(opc,ax,bx)
@@ -2469,7 +2516,7 @@ global proc do_divrem(pcl p, int issigned, isdiv)=
 		ax:=loadopnd(locyy, pmode)
 		fdivto:=1
 !		swap(locyy, loczz)
-		genmc(m_push, ax)
+		genmc(m_push, changeopndsize(ax,8))
 		px:=makeopndind(ax, pmode)
 		ax:=mgenreg(ax.reg, pmode)
 
@@ -2505,7 +2552,15 @@ global proc do_divrem(pcl p, int issigned, isdiv)=
 	bx:=loadopnd(loczz, pmode)			!in case regs have changed
 
 	if issigned then
-		genmc(m_cqo)
+		opc:=
+			case psize[pmode]
+			when 8 then	m_cqo
+			when 4 then	m_cdq
+			when 2 then	m_cwd
+			else merror("div/u8"); 0
+			esac
+		genmc(opc)
+
 		opc:=m_idiv
 	else
 		genmc(m_xorx, mgenreg(r11),mgenreg(r11))
@@ -2740,9 +2795,15 @@ global proc copyblock(mclopnd ax,bx, int n, savedest=1)=
 
 	offset:=0
 
+!CPL =MSTROPND(AX)
+!CPL =MSTROPND(BX)
+
 	if 1<=nwords<=4 then		!use unrolled code (no loop)
 		ax:=changeopndsize(ax, targetsize)
 		bx:=changeopndsize(bx, targetsize)
+
+
+
 
 		to nwords do
 			genmc(m_mov, rx, applyoffset(bx, offset))
@@ -2916,7 +2977,9 @@ global proc genrealtable=
 end
 
 global proc genabsneg=
-	setsegment('I',16)
+	if lababs32+lababs64+labneg32+labneg64 then
+		setsegment('I',16)
+	fi
 
 	if lababs32 then
 		mgencomment("lababs32")
@@ -2960,8 +3023,15 @@ global proc genabsneg=
 end
 
 global proc do_maths(pcl p, ichar opname, int nargs=1)=
+	do_callrts(p, opname, nil, nargs)
+end
+
+global proc do_host(pcl p, psymbol d, int nargs=1)=
+	do_callrts(p, nil, d, nargs)
+end
+
+global proc do_callrts(pcl p, ichar opname, psymbol d, int nargs)=
 	int slots
-	int isext:=(opname+strlen(opname)-1)^='*'
 
 	saveopnds(nargs)
 	slots:=0
@@ -2981,11 +3051,10 @@ global proc do_maths(pcl p, ichar opname, int nargs=1)=
 		localshadow:=1
 	fi
 
-	if isext then
+	if opname then
 		genmc(m_call, mgenextname(opname))
 	else
-!CPL "DOMATHS/INT",OPNAME
-		genmc(m_call, mgenname(opname))
+		genmc(m_call, mgenmemaddr(d))
 	fi
 
 	to nargs do
@@ -2996,7 +3065,7 @@ global proc do_maths(pcl p, ichar opname, int nargs=1)=
 		popslots(slots)
 	fi
 
-	if p then do_getretvalue(p) fi
+	do_getretvalue(p)
 end
 
 global proc do_max_int(int cond)=
@@ -3188,7 +3257,6 @@ global proc do_storebf(pcl p) =
 	q:=isimmload(yy)
 	r:=isimmload(zz)
 
-
 	if q=r=nil then
 		merror("storebf not imm")
 	fi
@@ -3233,7 +3301,56 @@ global func gethostfn(int opc)psymbol d =
 	fi
 	d
 end
-=== mc_genmcl.m 0 0 9/41 ===
+
+global proc copyblockarg(mclopnd px, int size, ARGNO)=
+!px refers to a block in a parameter register
+!if px is nil, then called for block in zz that will be pushed
+
+!copy the block to a block temp, and change px's register to
+!refer to that new block
+
+	psymbol dblock
+	mclopnd ax, bx, axi, bxi
+
+!RETURN
+	IF PX=NIL THEN
+		println "High block arg not copied in", currfunc.name,,"()"
+		return
+!MERROR("COPY HIGH BLOCKARG NOT READY")
+	FI
+
+
+!CPL "COPY BLOCK ARG", ARGNO, SIZE
+!	MCOMM(ADDSTR("COPY BLOCK ARG TO TEMP ", STRINT(SIZE)))
+	dblock:=newblocktemp(size)
+	dblock.used:=1
+
+
+	if px then
+		bx:=getworkregm(tpref)			!copy of px
+		genmc(m_mov, bx, px)
+	else
+		bx:=loadopnd(zz, tpblock)
+	fi
+	ax:=getworkregm(tpref)			!refer to temp block
+
+	genmc(m_lea, ax, mgenmem(dblock))
+
+	copyblock(mgenireg(ax.reg), mgenireg(bx.reg), size)
+
+	if px then
+		genmc(m_lea, px, mgenmem(dblock))		!param points to temp
+!	else
+!		gen
+	fi
+
+!note: this is needed since there may be other blocks passed before the end
+!of a CALL op, as those ax/bx regs would be tied up
+!caller should ensure no workregs are in use
+
+	freeworkregs(nil)
+end
+=== mc_genmcl.m 0 0 9/47 ===
 !const fshowpcl=1
 !const fshowopndstack=1
 const fshowpcl=0
@@ -3254,6 +3371,8 @@ GLOBAL INT PPSEQNO
 global proc genmcl=
 
 	return when mcldone
+
+	IF FSHOWPCL OR FSHOWOPNDSTACK THEN CPL "********* ASM HAS PCL INFO *********" FI
 
 	inithandlers()
 	mclinit()
@@ -3276,7 +3395,7 @@ global proc genmcl=
 	genabsneg()
 	genstringtable()
 
-	genmc(m_nop)
+!	genmc(m_nop)
 	mcldone:=1
 end
 
@@ -3426,8 +3545,6 @@ end
 
 proc px_comment*(pcl p) =
 ! Comment C (a string)
-GENCOMMENT(P.SVALUE)
-
 !	unimpl(p)
 end
 
@@ -3448,7 +3565,7 @@ proc px_defproc*(pcl p) =
 
 	setsegment('C',1)
 
-!CPL "PROC:",CURRPROC.NAME, =CURRPROC
+!CPL "FUNC:",CURRFUNC.NAME, =CURRFUNC, =CURRFUNC.NPARAMS, =CURRFUNC.NLOCALS
 
 	genmc(m_procstart,mgenmemaddr(currfunc))
 	genmc(m_labelname,mgenmemaddr(currfunc))
@@ -3546,6 +3663,7 @@ end
 
 proc px_load*(pcl p) =
 ! Z' := M &M L &L 123 4.5 "abc"
+
 	pushpcl(p)
 end
 
@@ -3553,6 +3671,7 @@ proc px_store*(pcl p) =
 ! M := Z
 	mclopnd ax, bx
 
+!CPL "STORE LOAD", STRPMODE(P.MODE)
 	bx:=loadopnd(zz, p.mode)
 
 	if p.mode<>tpblock then
@@ -3617,6 +3736,7 @@ end
 proc px_eval*(pcl p) =
 ! Evaluate Z [load to an actual register], then pop
 
+
 	loadopnd(zz, p.mode)
 
 	poppcl()
@@ -3626,8 +3746,14 @@ proc px_widen*(pcl p) =
 ! Z' := cast(Z,t) Mask to width of u, but type is widened to t
 	mclopnd ax, bx
 
-	bx:=loadopnd(zz, p.mode2)
-	ax:=mgenregi(bx.reg, pmode)
+	bx:=getopnd(zz, p.mode2)
+	if bx.mode=a_mem then
+		ax:=getworkregm(pmode)
+	else
+		bx:=loadopnd(zz, p.mode2)
+		ax:=mgenregi(bx.reg, pmode)
+
+	fi
 
 	genmc((psigned[p.mode2]|m_movsx|m_movzx), ax, bx)
 	setnewzz(ax.reg, pmode)
@@ -3699,11 +3825,27 @@ end
 
 proc px_toboolt*(pcl p) =
 ! Z' := istrue Z
-	mclopnd ax, bx
-	ax:=loadopnd(zz, pmode)
-	genmc(m_test, ax,ax)
-	genmc_cond(m_setcc, (p.opcode=ktoboolt|ne_cond|eq_cond), bx:=changeopndsize(ax,1))
-	genmc(m_movzx, changeopndsize(ax,4),bx)
+	mclopnd ax, bx, cx
+	byte pmode2:=p.mode2
+
+	ax:=loadopnd(zz, pmode2)
+
+	if ispfloat(pmode2) then
+		bx:=getworkregm(pmode2)
+		cx:=getworkregm(tpu8)
+		genmc(m_xorps+ispwide(pmode2), bx, bx)
+		genmc(m_comiss+ispwide(pmode2), ax, bx)
+
+		genmc_cond(m_setcc, (p.opcode=ktoboolt|ne_cond|eq_cond), cx)
+		genmc(m_movzx, changeopndsize(cx,4),cx)		!4 works for u32/u64
+		setnewzz(cx.reg, pmode)
+
+	else
+		genmc(m_test, ax,ax)
+		genmc_cond(m_setcc, (p.opcode=ktoboolt|ne_cond|eq_cond), bx:=changeopndsize(ax,1))
+		genmc(m_movzx, changeopndsize(ax,4),bx)
+		pclmode[xx]:=pmode
+	fi
 end
 
 proc px_sqr*(pcl p) =
@@ -3812,11 +3954,13 @@ proc px_retfn*(pcl p) =
 ! Return from func with Z=retval
 	mclopnd ax,bx
 
-	if pmode=tpblock then
-		bx:=mgenreg(r0)								!r0 points to local block value
-		regset[r0]:=1
-		ax:=makesimpleaddr(mgenmem(blockretname))		!ax is implicit block ref param
 
+	if pmode=tpblock then
+		bx:=mgenireg(r0)								!r0 points to local block value
+		regset[r0]:=1
+		ax:=getworkregm(tpref)
+		genmc(m_mov, ax, mgenmem(blockretname))
+		ax:=mgenireg(ax.reg)
 		copyblock(ax, bx, p.blocksize)
 		genmc(m_mov, mgenreg(r0), mgenmem(blockretname))
 	fi
@@ -3855,7 +3999,13 @@ proc px_setarg*(pcl p) =
 
 !	if p.x>4 then
 	if n>4 then
+!IF PMODE=TPBLOCK THEN CPL "PUSH HIGH/BLOCK", P.SIZE FI
+		if pmode=tpblock then
+			copyblockarg(nil, p.size, n)
+		fi
 		pushopnd(zz, pmode)
+	elsif pmode=tpblock then			!need to record its size
+		callargsize[ncalldepth, n]:=p.size
 	fi
 end
 
@@ -3944,9 +4094,9 @@ end
 
 proc px_resetmx*(pcl p) =
 ! -
-	if ispfloat(pmode) then
-		merror("RESETMULT/XREG")
-	fi
+!	if ispfloat(pmode) then
+!		merror("RESETMULT/XREG")
+!	fi
 
 	movetoreg(r0)
 
@@ -4019,20 +4169,35 @@ end
 proc px_iload*(pcl p) =
 ! Z' := Z^
 	mclopnd ax, px
+	pcl nextpcl
+
+!CPL "ILOAD", STRPMODE(PMODE)
 
 	if pmode<>tpblock then
 		px:=getopnd_ind(zz, pmode)
+!CPL =MSTROPND(PX)
 		if p.opcode<>kiload then
 			px:=applyoffset(px, pxoffset)
 		fi
 
-		ax:=getworkreg_rm(0, pmode)
-		genmc(m_mov, ax, px)
-		setnewzz(ax.reg, pmode)
+		nextpcl:=currpcl+1
+
+		if nextpcl.opcode=kwiden then
+			ax:=getworkreg_rm(0, nextpcl.mode)
+			genmc(ploadop[nextpcl.mode2], ax, px)
+			setnewzz(ax.reg, nextpcl.mode)
+			currpcl:=nextpcl
+		else
+			ax:=getworkreg_rm(0, pmode)
+			genmc(m_mov, ax, px)
+			setnewzz(ax.reg, pmode)
+		fi
 
 	else
 
 		px:=getopnd_ind_simp(zz, pmode)
+
+
 		if p.opcode<>kiload then
 			px:=applyoffset(px, pxoffset)
 		fi
@@ -4045,7 +4210,7 @@ end
 
 proc px_iloadx*(pcl p) =
 ! Z' := (Y + Z*s + d)^
-	pcl z
+	pcl z, nextpcl
 	mclopnd ax, bx, px, fx
 
 	if z:=isimmload(zz) then
@@ -4063,10 +4228,20 @@ proc px_iloadx*(pcl p) =
 		setnewzz(ax.reg, tpu64)
 
 	else
-		ax:=getworkreg_rm(0, pmode)
-		genmc(m_mov, ax, px)
-		poppcl()
-		setnewzz(ax.reg, pmode)
+		nextpcl:=currpcl+1
+
+		if nextpcl.opcode=kwiden then
+			ax:=getworkreg_rm(0, nextpcl.mode)
+			genmc(ploadop[nextpcl.mode2], ax, px)
+			poppcl()
+			setnewzz(ax.reg, nextpcl.mode)
+			currpcl:=nextpcl
+		else
+			ax:=getworkreg_rm(0, pmode)
+			genmc(m_mov, ax, px)
+			poppcl()
+			setnewzz(ax.reg, pmode)
+		fi
 
 	fi
 end
@@ -4130,7 +4305,10 @@ proc px_addpx*(pcl p) =
 ! Z' := Y + Z*s + d
 	mclopnd ax,cx
 
+!P.MODE:=PMODE:=TPU64
+
 	cx:=do_addrmode(p)
+
 	ax:=getworkreg_rm(cx.reg, tpu64)
 
 	dolea(ax, cx)
@@ -4205,7 +4383,8 @@ end
 
 proc px_swapstk*(pcl p) =
 ! (Z', Y') := (Z, Y)
-	swapopnds(yy,zz)
+!	swapopnds(yy,zz)
+	swapopnds(noperands-p.x+1, noperands-p.y+1)
 end
 
 proc px_labeldef*(pcl p) =
@@ -4294,9 +4473,18 @@ proc px_fix*(pcl p) =
 	fx:=loadopnd(zz, p.mode2)
 	pushpcl_reg(pmode)
 
-	ax:=getopnd(zz, pmode)
+	ax:=getopnd(zz, pmin[pmode])
 	genmc(m_cvttss2si+ispwide(p.mode2), ax, fx)
+!CPL =STROPNDSTACK()
+!CPL =STRPMODE(PMODE)
+
+	swapopnds(yy,zz)
+	poppcl()
+
+
 	setnewzz(ax.reg, pmode)
+!!CPL =STROPNDSTACK()
+!	poppcl()
 end
 
 proc px_float*(pcl p) =
@@ -4309,7 +4497,7 @@ proc px_float*(pcl p) =
 
 	ax:=loadopnd(zz, pmode2)
 
-	if psize[pmode2]<8 then merror("float/short") fi
+	if psize[pmode2]<4 then merror("float/short") fi
 
 	if psigned[pmode2] then
 		pushpcl_reg(pmode)
@@ -4318,17 +4506,17 @@ proc px_float*(pcl p) =
 		genmc(m_cvtsi2ss+ispwide(pmode), fx, ax)
 		swapopnds(yy,zz)
 
-	else												!to u64
-		if pmode<>tpr64 then merror("float/u64/r32") fi
-		pushpcl_reg(tpr64)
+	elsif pmode2=tpu64 then								!u64 to r32/r64
+		pushpcl_reg(tpr64)								!convert to r64 in all cases
 
 		fx:=getopnd(zz, tpr64)
-!
+
 		lab:=mcreatefwdlabel()
 		lab2:=mcreatefwdlabel()
-		genmc(m_cmp, ax, mgenint(0))
+
+		genmc(m_cmp, ax, mgenint(0))					!range of +ve i64?
 		genmc_cond(m_jmpcc, lt_cond, mgenlabel(lab))
-		genmc(m_cvtsi2sd, fx, ax)
+		genmc(m_cvtsi2sd, fx, ax)						!number is +ve i64
 		genmc(m_jmp, mgenlabel(lab2))
 
 		mdefinefwdlabel(lab)
@@ -4336,11 +4524,28 @@ proc px_float*(pcl p) =
 			labmask63:=++mlabelno
 			laboffset64:=++mlabelno
 		fi
-		genmc(m_andx,ax, mgenlabelmem(labmask63))
-		genmc(m_cvtsi2sd, fx, ax)
-		genmc(m_addsd, fx, mgenlabelmem(laboffset64))
-		mdefinefwdlabel(lab2)
-		swapopnds(yy,zz)
+		genmc(m_andx,ax, mgenlabelmem(labmask63))		!clear top bit of u64 (subtract 2**63)
+		genmc(m_cvtsi2sd, fx, ax)						!now in +ve i64 range
+		genmc(m_addsd, fx, mgenlabelmem(laboffset64))	!add back 2**63 as float
+
+		mdefinefwdlabel(lab2)							!done conv to r64
+reduce:
+		if pmode=tpr32 then								!for r64, reduce down
+			genmc(m_cvtsd2ss, changeopndsize(fx, 4), fx)
+			pclmode[zz]:=tpr32
+		fi
+
+		swapopnds(yy,zz)								!bring old int value to top
+	else												!u32 to r32/r64
+		pushpcl_reg(tpr64)								!convert to r64 in all cases
+
+		fx:=getopnd(zz, tpr64)
+		ax:=changeopndsize(ax, 8)						!eg A0 to D0
+
+		genmc(m_cvtsi2sd, fx, ax)						!u64 (always in range) to r64
+
+		goto reduce
+
 	fi
 
 	poppcl()
@@ -4478,19 +4683,21 @@ proc px_fnarrow*(pcl p) =
 ! Z' := cast(Z,t) r64 to r32
 	mclopnd fx
 	fx:=loadopnd(zz,p.mode2)
-	genmc(m_cvtss2sd, changeopndsize(fx,4), fx)
+	genmc(m_cvtsd2ss, changeopndsize(fx,4), fx)
 	pclmode[zz]:=tpr32
 end
 
 proc px_truncate*(pcl p) =
 ! Z' := cast(Z,u) Mask to width of u, but type is widened to t
 	mclopnd ax
+	byte pmode2:=p.mode2
 
-	if p.size<8 then merror("trunc32") FI
+!	if p.size<8 then merror("trunc32") FI
 
-	ax:=loadopnd(zz, pmode)
-
-	genmc(ploadop[p.mode2], ax, changeopndsize(ax, psize[p.mode2]))
+	ax:=loadopnd(zz, pmode2)
+	if p.size<>psize[pmode2] then
+		genmc(ploadop[pmode2], changeopndsize(ax, psize[pmode]), ax)
+	fi
 end
 
 proc px_typepun*(pcl p) =
@@ -4681,7 +4888,7 @@ proc px_power*(pcl p) =
 	if ispint(pmode) then
 		d:=gethostfn(kpower)
 		swapopnds(yy,zz)
-		do_maths(p, getdispname(d), 2)
+		do_host(p, d, 2)
 	else
 		swapopnds(yy,zz)
 		do_maths(p,"pow*",2)
@@ -4926,7 +5133,69 @@ end
 proc px_loadall*(pcl p) =
 	checkallloaded()
 end
-=== mc_genss.m 0 0 10/41 ===
+
+proc px_setjmp*(pcl p)=
+	mclopnd ax,bx
+	int lab:=mcreatefwdlabel()
+
+	bx:=getopnd_ind(zz, tpref)
+
+!	addreg_d64()
+	pushpcl_reg(tpref)
+
+	ax:=getopnd(zz, tpref)
+	genmc(m_mov, ax, mgenlabel(lab))
+	genmc(m_mov, bx, ax)
+	genmc(m_mov, applyoffset(bx,8), dstackopnd)
+	genmc(m_mov, applyoffset(bx,16), dframeopnd)
+	swapopnds(yy,zz)
+	poppcl()
+	genmc(m_xorx, ax, ax)
+
+!since this is the of this op anway, free any workregs in advance (freeing
+!will be done again by convertpcl)
+	freeworkregs(p)
+	movetoreg(r0)
+	mdefinefwdlabel(lab)
+
+end
+
+proc px_longjmp*(pcl p)=
+	mclopnd ax,bx,cx
+
+!CPL "LONG JUMP"
+
+!	checkallloaded()
+!MCOMM("LONGJ")
+
+	bx:=loadopnd(zz, tpref)		!ret value
+	ax:=getopnd_ind(yy, tpref)	!buffer
+
+	genmc(m_mov, dstackopnd, applyoffset(ax,8))
+	genmc(m_mov, dframeopnd, applyoffset(ax,16))
+
+!	addreg_d64()
+	pushpcl_reg(tpref)
+
+	cx:=getopnd(zz, tpref)
+
+	genmc(m_mov, cx, ax)		!load stored return address
+	swapopnds(xx, zz)
+	poppcl()					!addr of buffer
+
+!CPL STROPNDSTACK()
+!CPL =PCLREG[YY]
+!CPL =PCLREG[ZZ]
+!freeworkregs(p)
+!CPL STROPNDSTACK()
+!CPL =PCLREG[ZZ], LOCNAMES[PCLLOC[ZZ]]
+
+	swapopndregs(r0)			!move ret value to r0
+	genmc(m_jmp, cx)			!
+	swapopnds(yy, zz)
+	poppcl()					!get rid of dest addr; leave ret value in r0
+end
+=== mc_genss.m 0 0 10/47 ===
 const wmask = 2x1000				!1 means 64-bit operand size
 const rmask = 2x0100				!extends mod/rm reg field
 const xmask = 2x0010				!extends sib index field
@@ -4988,7 +5257,7 @@ global proc genss(int obj=0)=
 
 	switchseg(code_seg)
 
-	alineno:=9999
+	aaseqno:=9999
 	extraparam:=nil
 
 !	fixregvar()
@@ -5039,7 +5308,7 @@ proc doinstr(ref mclrec m,int index)=
 	b:=m.b
 
 	++instrno
-	alineno:=m.seqno
+	aaseqno:=m.seqno
 	ripentry:=nil
 	CURRMCL:=M
 
@@ -5357,7 +5626,7 @@ proc doinstr(ref mclrec m,int index)=
 	when m_comment then
 	when m_blank then
 	else
-		println "*** Can't do opcode",mclnames[m.opcode],"line",alineno,=M.OPCODE,=M_HALT
+		println "*** Can't do opcode",mclnames[m.opcode],"line",aaseqno,=M.OPCODE,=M_HALT
 	CPL
 	CPL
 	AXERROR("STOPPING")
@@ -6387,7 +6656,7 @@ func genrm(int reg, opc, mclopnd b, int isxreg=0)amoderec=
 	if am.dispsize=4 and ismem then
 		if reg or regix then
 			if phighmem=2 AND ISMEM=2 then
-				CPL "Addr32 can't use RIP, line",alineno,STRMCLSTR(CURRMCL)
+				CPL "Addr32 can't use RIP, line",aaseqno,STRMCLSTR(CURRMCL)
 !				axerror("Addr32 can't use RIP")
 			fi
 		elsif phighmem then
@@ -6467,8 +6736,8 @@ proc do_arith(mclopnd a,b,int code)=
 		esac
 
 	else
-	cpl opndnames_ma[code]
-		axerror("Can't add to this opnd")
+	cpl opndnames_ma[code],=CODE
+		axerror("1:Can't add to this opnd")
 	esac
 end
 
@@ -7067,7 +7336,7 @@ proc do_dshift(mclopnd a, b, int c, opc)=
 	genbyte(c)
 end
 
-=== mc_libmcl.m 0 0 11/41 ===
+=== mc_libmcl.m 0 0 11/47 ===
 const fuseregtable=1
 !const fuseregtable=0
 
@@ -7541,7 +7810,7 @@ global func mgentemp(int n, mode)mclopnd a=
 	int reg, size
 
 	if pcltempflags[n] then			!already in use
-		return pcltempopnds[n]
+		return changeopndsize(pcltempopnds[n], psize[mode])
 	fi
 
 	a:=newmclopnd()
@@ -7582,7 +7851,7 @@ EXPORT proc merror(ichar mess,ichar param="")=
 	fi
 
 
-	fprintln "MCL Error: # (#) on Line: # in #",mess,param, lineno, filename
+	fprintln "MCL Error: # (#) on Line: # in #, PCL:#",mess,param, lineno, filename,ppseqno
 
 	pcerrorstop(filename, lineno)
 end
@@ -7877,7 +8146,7 @@ global func ispoweroftwo(int64 x)int=
 end
 
 global proc axerror(ichar mess)=
-	CPL "AX ERROR:", mess
+	CPL "AX ERROR:", mess, "AASEQ:", aaseqno
 	CPL
 	STOP 1
 
@@ -7892,13 +8161,14 @@ global func newblocktemp(int size)psymbol=
 	fi
 	++nblocktemps
 
-	fprint @str,"$T#",nblocktemps
+	fprint @str,"$B#",nblocktemps
 	d:=pc_makesymbol(str)
 	d.mode:=tpblock
 	d.size:=size
 	d.used:=1
 	d.id:=local_id
 	d.nextlocal:=currfunc.nextlocal
+ 	d.owner:=currfunc
 	currfunc.nextlocal:=d
 
 	blockdefs[nblocktemps]:=d
@@ -7923,7 +8193,7 @@ global proc addnamesym(psymbol d)=
 		nametable[++nnametable]:=d
 	fi
 end
-=== mc_decls.m 0 0 12/41 ===
+=== mc_decls.m 0 0 12/47 ===
 export type mclopnd = ref mclopndrec
 
 export record mclopndrec =
@@ -8610,9 +8880,9 @@ global int noperands						!number of pcl operands, including wide
 global int mstackdepth						!hw stack size (pcl operands, + extra for wide, + padding)
 
 global enumdata [0:]ichar locnames =
-	(pcl_loc=0,	$),					!operand still in pcl instruction
-	(reg_loc,	$),					!is in register (look at mode)
-	(temp_loc,	$),					!overflow to temporary
+	(pcl_loc=0,	"pend"),				!operand still in pcl instruction
+	(reg_loc,	"reg"),					!is in register (look at mode)
+	(temp_loc,	"temp"),				!overflow to temporary
 end
 
 !global const regmax=r9				!can use r0 to regmax inclusive; only those regs
@@ -8734,7 +9004,8 @@ end
 global const maxcalldepth=16
 global [maxcalldepth]byte callalign		!pending 1-slot alignment for syscalls
 global [maxcalldepth]byte callblockret	!1 if fnc returns a block
-global [maxcalldepth]u32 callblocksize	!size of any block
+global [maxcalldepth]u32 callblocksize	!size of any returned block
+global [maxcalldepth,4]u32 callargsize	!size of any block pushed in low args
 global int ncalldepth
 
 !global const maxparams=32
@@ -8825,7 +9096,7 @@ global int ss_symboltablesize
 
 global ref[]psymbol labeldeftable
 
-global int alineno
+global int aaseqno
 
 !export enumdata []ichar segmentnames =
 !	(code_seg,		"code"),
@@ -8863,12 +9134,12 @@ global record riprec =
 	i32 immsize			!0,1,4 bytes of trailing imm field
 end
 
-global record fwdrec =
-	ref fwdrec nextfwd
-	int32 offset
-	int16 reltype
-	int16 seg
-end
+!global record fwdrec =
+!	ref fwdrec nextfwd
+!	int32 offset
+!	int16 reltype
+!	int16 seg
+!end
 
 global ref riprec riplist
 
@@ -8882,7 +9153,42 @@ global int nblocktemps
 global []int multregs=(r0,r1,r2,r10,r11,r12)
 global []int multxregs=(r0,r1,r2,r3,r4,r5)
 
-=== mc_objdecls.m 0 0 13/41 ===
+
+global [pstdnames.bounds]byte ploadopx
+
+!proc start=
+!	for i in ploadopx.bounds do ploadopx[i]:=m_nop od
+!
+!	ploadopx[tpu8]:=ploadopx[tpu16]:=ploadopx[tpu32]:=m_movzx
+!	ploadopx[tpi8]:=ploadopx[tpi16]:=ploadopx[tpi32]:=m_movsx
+!	ploadopx[tpr32]:=m_movd
+!	ploadopx[tpr64]:=m_movq
+!	ploadopx[tpu64]:=ploadopx[tpi64]:=m_mov
+!
+!!CPL "DONE MC_DECLS/START",PLOADOPX.LWB,PLOADOPX.UPB
+!!FOR I IN PLOADOP.BOUNDS DO
+!!	CPL I, PSTDNAMES[I],MCLNAMES[PLOADOP[I]], MCLNAMES[PLOADOPX[I]]
+!!OD
+!end
+
+global [pstdnames.bounds]byte ploadop
+
+proc start=
+	for i in ploadop.bounds do ploadop[i]:=m_nop od
+
+	ploadop[tpu8]:=ploadop[tpu16]:=ploadop[tpu32]:=m_movzx
+	ploadop[tpi8]:=ploadop[tpi16]:=ploadop[tpi32]:=m_movsx
+	ploadop[tpr32]:=m_movd
+	ploadop[tpr64]:=m_movq
+	ploadop[tpu64]:=ploadop[tpi64]:=m_mov
+
+!CPL "DONE MC_DECLS/START",PLOADOPX.LWB,PLOADOPX.UPB
+!FOR I IN PLOADOP.BOUNDS DO
+!	CPL I, PSTDNAMES[I],MCLNAMES[PLOADOP[I]], MCLNAMES[PLOADOPX[I]]
+!OD
+end
+
+=== mc_objdecls.m 0 0 13/47 ===
 global record imagefileheader =
 	word16	machine
 	word16	nsections
@@ -9063,7 +9369,7 @@ global record exportdirrec =
 	word32 namepointerrva
 	word32 ordtablerva
 end
-=== mc_optim.m 0 0 14/41 ===
+=== mc_optim.m 0 0 14/47 ===
 global proc peephole(ref mclrec m)=
 	ref mclrec m2,m3,mtarget,lastmcl
 	int lab1,lab2
@@ -9227,7 +9533,7 @@ func sameregopnd(mclopnd a,b)int=
 	return a.reg=b.reg
 end
 
-=== mc_stackmcl.m 0 0 15/41 ===
+=== mc_stackmcl.m 0 0 15/47 ===
 !'PCS' Support - PCL Operand Stack 
 
 global func getopnd(int n, mode, reg=rnone)mclopnd ax =
@@ -9236,8 +9542,6 @@ global func getopnd(int n, mode, reg=rnone)mclopnd ax =
 	pcl a
 	psymbol d
 
-!MCOMM("GETOP1")
-
 	a:=pclopnd[n]
 
 	case pclloc[n]
@@ -9245,7 +9549,9 @@ global func getopnd(int n, mode, reg=rnone)mclopnd ax =
 		return mgenreg(pclreg[n], mode)
 
 	when temp_loc then
-		return mgentemp(n, mode)
+		bx:=mgentemp(n, mode)
+		return bx
+!		return mgentemp(n, mode)
 	esac
 
 !In PCL rec
@@ -9270,8 +9576,19 @@ global func getopnd(int n, mode, reg=rnone)mclopnd ax =
 		fi
 
 	when int_opnd then
-		bx:=mgenint(a.value, psize[mode])
+!		bx:=mgenint(a.value, psize[mode])
+
+		CASE PSIZE[PMODE]
+		WHEN 2 THEN
+			A.VALUE IAND:=0xFFFF
+		WHEN 4 THEN
+			A.VALUE IAND:=0xFFFF'FFFF
+		ESAC
+
+		bx:=mgenint(a.value, mode)
+!CPL "GETOPND", =MSTROPND(BX), BX.SIZE, =PSIZE[MODE], =BX.VALUE
 		if a.value in i32.bounds then			!keep as immediate
+!CPL "HERE", =BX.SIZE, STRPMODE(MODE), =PSIZE[MODE]
 			ax:=bx
 		else
 			ax:=getworkreg_rm(reg, mode)
@@ -9291,7 +9608,6 @@ global func getopnd(int n, mode, reg=rnone)mclopnd ax =
 error:
 		merror("getopnd", opndnames[a.opndtype])
 	esac
-!MCOMM("GETOPX")
 
 	ax
 end
@@ -9337,6 +9653,8 @@ global proc pushopnd(int n, mode)=
 
 	mclopnd ax, bx
 	pcl p:=pclopnd[n]			!in case it is mem/int etc
+
+	if mode=tpvoid then mode:=pclmode[n] fi
 
 !First look for operands that can be directly pushed without using a register
 
@@ -9390,7 +9708,8 @@ global func loadtoreg(mclopnd ax, int mode, reg)mclopnd=
 
 	bx:=getworkreg_rm(reg, mode)
 
-	genmc(m_mov, bx, ax)
+	loadtoreg_common(bx, ax)
+
 	bx
 end
 
@@ -9404,9 +9723,23 @@ global func loadtoreg_m(mclopnd ax, int mode, reg)mclopnd=
 
 !need loading/moving to given reg
 	bx:=mgenreg(reg, mode)
-	genmc(m_mov, bx, ax)
+
+	loadtoreg_common(bx, ax)
+!	genmc(m_mov, bx, ax)
 	bx
 end
+
+proc loadtoreg_common(mclopnd bx, ax)=
+	if ax.mode=a_imm and ax.valtype=intimm_val and ax.value=0 then
+		bx:=changeopndsize(bx,4)
+		genmc(m_xorx, bx, bx)
+	
+	else
+		genmc(m_mov, bx, ax)
+	fi
+
+end
+
 
 global proc pushpcl(pcl p)=
 !Push a inline operand from pcl code to pcs
@@ -9461,13 +9794,6 @@ global proc poppcl=
 		--pclcount[n]
 		return
 	fi
-
-!	if pclloc[n]=reg_loc then					!means in register
-!CPL "BEFORE", STROPNDSTACK()
-!
-!		freereg(pclreg[n], pclmode[n])
-!CPL "AFTER", STROPNDSTACK()
-!	fi
 
 	--noperands
 end
@@ -9526,7 +9852,8 @@ global func getworkreg_rm(int reg, mode)mclopnd=
 !return an mcl operand for a specific reg if provided, or
 !it will allocate a work reg is not (ie. reg=rnone)
 
-	if reg=rnone then
+!	if reg=rnone then
+	if reg in [rnone, rframe] then
 		return getworkregm(mode)
 	fi
 
@@ -9581,13 +9908,11 @@ global proc saveopnd(int n, allregs=1)=
 	if ispint(mode) then
 		if allregs or reg not in r3..r9 then
 			genmc(m_mov, mgentemp(n,mode), mgenreg(reg,mode))
-!			freeireg(reg)
 		fi
 
 	else
 		if allregs or reg in r0..r5 then
 			genmc(m_mov, mgentemp(n, mode), mgenxreg(reg, mode))
-!			freexreg(reg)
 		fi
 	fi
 
@@ -9630,8 +9955,9 @@ global proc movetoreg(int newreg)=
 !move top of stack (assumed to be in reg) to newreg
 !assumes integer reg
 	int oldreg
+	int mode:=pclmode[zz]
 
-	loadopnd(zz, pclmode[zz])
+	loadopnd(zz, mode)
 	oldreg:=pclreg[zz]
 
 	if oldreg=newreg then
@@ -9642,13 +9968,17 @@ global proc movetoreg(int newreg)=
 		merror("movereg/reg in use")
 	fi
 
-	genmc(m_mov, mgenreg(newreg), mgenreg(oldreg))
+	genmc(m_mov, mgenreg(newreg,mode), mgenreg(oldreg,mode))
 
-!	freeireg(oldreg)
 	pclreg[zz]:=newreg
-	regset[newreg]:=1
 
-	if newreg>=r10 then highreg max:=newreg fi
+	if ispfloat(mode) then
+		xregset[newreg]:=1
+		if newreg>=xr3 then highxreg max:=newreg fi
+	else
+		regset[newreg]:=1
+		if newreg>=r10 then highreg max:=newreg fi
+	fi
 end
 
 global func getopnd_ind(int n=noperands, mode=tpi64)mclopnd=
@@ -9706,67 +10036,47 @@ global proc setnewzz(int reg, mode)=
 !create replace pcl[zz] with that new operand
 !assume pclcount was 1 and stays at 1
 
-!	if pclreg[zz] then		!zz already using a register
-!		freereg(reg, mode)
-!	fi
-
 	pclloc[zz]:=reg_loc
 	pclopnd[zz]:=nil
 	pclreg[zz]:=reg
 	pclmode[zz]:=mode
 
-!	if ispfloat(mode) then		!in case was same one freed above
-!		xregset[reg]:=1
-!	else
-!		regset[reg]:=1
-!	fi
 end
 
-global proc freeworkregs(PCL P)=
+global proc freeworkregs(pcl p)=
+	int reg
 
 !Clear everything first
 
+!(Code is a copy of that used inline in convertpcl)
 	clear regset
 	clear xregset
 
 !Then set the regs still in use as pcl opnds:
 
-	for i to noperands when pclreg[i] do
-		if ispfloat(pclmode[i]) then
-			xregset[i]:=1
-		else
-			xregset[i]:=1
+	for i to noperands do
+		reg:=pclreg[i]
+		if pclreg[i] then
+			if ispfloat(pclmode[i]) then
+				xregset[reg]:=1
+			else
+				regset[reg]:=1
+			fi
 		fi
 	od
 
-!And ones use for regvars:
-!......TBD........
-
-
 end
-
-!global proc showregs(ichar mess, PCL P)=
-!
-!CP MESS,":",PCLNAMES[P.OPCODE]," FREEWORKREGS: "
-!FOR I:=R0 TO R5 DO
-!	PRINT REGSET[I],$
-!OD
-!FPRINT "// PCL(#):",NOPERANDS
-!FOR I TO NOPERANDS DO
-!	IF PCLREG[I] THEN
-!		PRINT "R",,PCLREG[I]-1,$
-!	ELSE
-!		PRINT "-"
-!	FI
-!OD
-!CPL
-!END
-
-!global proc checkloaded(
 
 global proc swapopndregs(int reg2)=
 !top operand is in a register. Need to switch its reg with whatever is occupying
 !reg2
+!Note that swapondregs is best assumed to invalidate all existing mclopnds that
+!refer to registers, as stuff if moved aound
+!Also invalided are workregs that might use reg2, even if no mclopnd exists for it
+
+	if not ispint(pclmode[zz]) then merror("SOR1") fi
+
+!assume int regs
 
 	int reg1:=pclreg[zz]
 
@@ -9774,12 +10084,16 @@ global proc swapopndregs(int reg2)=
 
 	for i:=noperands-1 downto 1 do
 		if pclloc[i]=reg_loc and pclreg[i]=reg2 then
-			swap(pclreg[zz], pclreg[yy])
+			swap(pclreg[zz], pclreg[i])
 			return
 		fi
 	else
-		CPL CURRFUNC.NAME
-		merror("swapopndregs/reg not found")
+!pcl op not found that occupies reg2, so it is assumed to be a work register
+!that is no longer needed. If it /is/ needed
+
+		regset[reg1]:=0				!make available (although done for next pcl op anyway)
+		pclreg[zz]:=reg2
+!		merror("swapopndregs/reg not found")
 	od
 end
 
@@ -9795,16 +10109,26 @@ end
 
 global func makesimpleaddr(mclopnd ax)mclopnd bx=
 !assume ax is an ireg, but need a simple one with areg set but not ireg
-	int newreg, reg
+	int newreg, reg, regix
 
 	reg:=ax.reg
+	regix:=ax.regix
 	if reg=rframe then reg:=rnone fi
 
-	if reg and not ax.regix then return ax fi
-	newreg:=(reg | reg | (ax.regix | ax.regix | getworkireg()))
+	if ax.mode<>a_mem then merror("MSA") fi
+
+	if reg=rnone and regix=rnone then
+		newreg:=getworkireg()
+	elsif reg then				![reg] only; already simple
+		return ax
+	elsif regix then			![regix] only; may be scaled; use lea anyway
+		newreg:=regix
+	else						![reg+regix]
+		newreg:=regix
+	fi
+
 	bx:=mgenireg(newreg)
 
-!CPL "MS2", MSTROPND(BX), 
 	genmc(m_lea, mgenreg(newreg), ax)
 	return bx
 end
@@ -9815,15 +10139,15 @@ global func stropndstack(int indent=0)ichar=
 	ichar s:=&.str, t
 
 	if indent then
-		fprint @s, "                                     #:(", NOPERANDS
+		fprint @s, "="*40 + "#:(", NOPERANDS
 	else
 		fprint @s, "#:(", NOPERANDS
 	fi
 
 	for i to noperands do
-STRCAT(S,"<")
-STRCAT(S,LOCNAMES[PCLLOC[I]])
-STRCAT(S,">")
+
+		strcat(s, (noperands-i+1|"Z:", "Y:", "X:", "W:"|""))
+
 		case pclloc[i]
 		when reg_loc then				!loaded
 			if ispfloat(pclmode[i]) then
@@ -9837,29 +10161,32 @@ STRCAT(S,">")
 
 		else
 			strcat(s, "(")
+int fs:=fpshortnames
+fpshortnames:=1
 			strcat(s, stropnd(pclopnd[i]))
+fpshortnames:=fs
 			strcat(s, ")")
 		esac
+		if pclcount[i]>1 then strcat(s, "+") fi
+!		strcat(s, "@")
+!		strcat(s, locnames[pclloc[i]])
+		strcat(s, "<")
+		strcat(s, pstdnames[pclmode[i]])
+		strcat(s, ">")
 
-		IF PCLCOUNT[I]>1 THEN STRCAT(S, "+") FI
-
-		if i<noperands then strcat(s,",") fi
+		if i<noperands then strcat(s,", ") fi
 	od
+	strcat(s,") ")
 
-	strcat(s,") D:(")
+	ipadstr(str, 50)
+
+	strcat(s,"R:(")
 	for r:=r0 to regmax do
 		strcat(s,(regset[r]|"1 "|"0 "))
 	od
 	strcat(s,") ")
 
-	strcat(s,"<")
-	for i to noperands do
-		strcat(s, pstdnames[pclmode[i]])
-		strcat(s," ")
-	od
-	strcat(s,">")
-
-	strcat(s,"X:(")
+	strcat(s,"XR:(")
 	for r:=r0 to xregmax do
 		strcat(s,(xregset[r]|"1 "|"0 "))
 	od
@@ -9870,8 +10197,6 @@ STRCAT(S,">")
 	strcat(s,strint(noperands))
 	strcat(s," ncalldepth:")
 	strcat(s,strint(ncalldepth))
-!	strcat(s," callslots[]:")
-!	strcat(s,strint(callslots[ncalldepth]))
 	return s
 end
 
@@ -9887,8 +10212,8 @@ global proc checkallloaded=
 	od
 end
 
-=== mc_writeasm.m 0 0 16/41 ===
-export int assemtype='AA'
+=== mc_writeasm.m 0 0 16/47 ===
+!export int assemtype='AA'
 
 const fasmformat=1
 !const fasmformat=0
@@ -9961,7 +10286,7 @@ global proc strmcl(ref mclrec mcl)=
 		asmstr(":")
 
 		if d.exported then
-			asmstr("\n")
+			asmstr("\n`")
 			asmstr(d.name)
 			asmstr("::")
 		fi
@@ -10073,7 +10398,7 @@ global proc strmcl(ref mclrec mcl)=
 		fi
 	fi
 
-!ASMSTR("	#"); ASMSTR(STRINT(MCL.SEQNO))
+ASMSTR("	#"); ASMSTR(STRINT(MCL.SEQNO))
 
 DOCOMMENTS:
 
@@ -10114,6 +10439,7 @@ global func mstropnd(mclopnd a,int sizeprefix=0,opcode=0)ichar=
 		fi
 
 	when a_mem then
+!RETURN "<MEM>"
 		case a.valtype
 		when intimm_val then
 			strcpy(&.str,strint(a.value))
@@ -10171,6 +10497,7 @@ global func strvalue(mclopnd a)ichar=
 	int64 value,offset,length
 	ichar ss
 
+!RETURN "<STRVAL>"
 	def:=a.def
 	value:=a.value
 
@@ -10203,6 +10530,7 @@ global func strvalue(mclopnd a)ichar=
 
 	when name_val then
 		strcat(&.str,a.svalue)
+!		strcat(&.str,"!name")
 
 	when label_val then
 		strcat(&.str,"L")
@@ -10210,12 +10538,16 @@ global func strvalue(mclopnd a)ichar=
 		goto addoffset
 
 	when temp_val then
+!CPL =CURRASMPROC
+!RETURN "<TEMP>"
+
 		return gettempname(currasmproc,a.tempno)
 
 	else
 		merror("Stropnd?")
 	esac
 
+!STRCAT(STR, VALTYPENAMES[A.VALTYPE])
 	return &.str
 
 end
@@ -10284,14 +10616,14 @@ global func getdispname(psymbol d)ichar=
 		return d.name
 	fi
 
-	return getfullname(d)
+	return getfullname(d,backtick:1)
 
 end 
 
 global func gettempname(psymbol d, int n)ichar=
 	static [128]char str
 
-	if fpshortnames then
+	if fpshortnames or d=nil then
 		print @str,"T",,n
 	else
 		fprint @str,"#.$T#",getdispname(d),n
@@ -10389,7 +10721,7 @@ func checkregvar(int reg, ispfloat)psymbol d=
 	RETURN NIL
 end
 
-=== mc_writeexe.m 0 0 17/41 ===
+=== mc_writeexe.m 0 0 17/47 ===
 !Create .exe file from SS-data (code, data, reloc and psymbol tables)
 !Call order:
 ! initsectiontable()
@@ -10428,10 +10760,6 @@ const filealign = 512
 const sectionalign = 4096
 const exe_imagebase = 0x40'0000
 const dll_imagebase = 0x1000'0000
-!const dll_imagebase = 0x40'0000
-!const dll_imagebase = 0x41'0000
-!const dll_imagebase = 0x23'0000'0000
-!const dll_imagebase = 0x24'0000'0000
 
 global int imagebase
 
@@ -10482,8 +10810,6 @@ global proc writeexe(ichar outfile, int dodll)=
 	optionalheader optheader
 	int offset,i
 	int64 aa
-
-!CPL "WRITEEXE",=OUTFILE
 
 	dllfilename:=extractfile(outfile)
 
@@ -10540,19 +10866,13 @@ global proc genexe(ichar entrypoint, outfile, int dodll)=
 
 	if phighmem then
 !println "Doing RIP relocs..."
-
 		ref riprec pr
 
 		pr:=riplist
 		while pr, pr:=pr.next do
 			offsetptr:=ref u32(codeaddr+pr.offset)
-!			PRINTLN "====", =CODEADDR:"H", =PR.OFFSET:"H", =OFFSETPTR:"H"
-!			PRINTLN "**********  RIP:",=OFFSETPTR^:"H",=IMAGEBASE:"h",=PR.IMMSIZE
 			offset:=getripoffset(pr.offset, offsetptr^-imagebase, pr.immsize)
-
-!CPL "RIP RELOC LOOP:",OFFSETPTR^,OFFSET
-			offsetptr^:=offset
-	
+			offsetptr^:=offset	
 		od
 	fi
 end
@@ -10563,8 +10883,6 @@ proc loadlibs=
 	int64 hinst
 	ichar file
 	[300]char filename
-
-!	for i to nplibfiles when plibtypes[i]='D' do
 
 	for i to nplibfiles when plibfiles[i]^<>'$' do
 		strcpy(&.filename, plibfiles[i])
@@ -10775,7 +11093,7 @@ proc relocdata(ref sectionrec s)=
 				when idata_seg then u:=&sectiontable[dsect]
 				when code_seg then u:=&sectiontable[csect]
 				else
-					CPL D.NAME,D.SEGMENT
+					PRINTLN D.NAME,D.SEGMENT
 					AXERROR("RELOCDATA/SEG?")
 
 				esac
@@ -10821,7 +11139,7 @@ proc getbaserelocs(ref sectionrec s)=
 !				esac
 
 IF R.RELOCTYPE=ADDR32_REL THEN
-!CPL "??BASE RELOC",(D.SEGMENT=CODE_SEG|"CODE"|"DATA"),(R.RELOCTYPE=ADDR32_REL|"ADDR32"|"ADDR64")
+!PRINTLN "??BASE RELOC",(D.SEGMENT=CODE_SEG|"CODE"|"DATA"),(R.RELOCTYPE=ADDR32_REL|"ADDR32"|"ADDR64")
 ELSE
 				newbasereloc(s.virtoffset+r.offset, r.reloctype)
 FI
@@ -10886,7 +11204,6 @@ proc writefileheader=
 	if isdll then
 		header.characteristics:=0x22E ior 0x2000
 	fi
-
 
 	writerecordx(&header,header.bytes)
 end
@@ -11164,10 +11481,7 @@ proc writebasereloctable(ref byte pstart)=
 
 	p32:=cast(pstart)
 
-!RETURN
 	for i to nbaseblocks when blockcounts[i] do
-!	for i to nbaseblocks do
-!CPL "BASERELOC",I,=BASETABLESIZE,ref byte(P32)-PSTART,=PSTART, =P32
 		p32^:=blockbases[i]
 		++p32
 		p32^:=blockbytes[i]
@@ -11294,7 +11608,6 @@ proc getoffsets=
 		diroffset+:=(dlltable[i].nprocs+1)*8
 	od
 	fileiatoffset:=diroffset
-!CPL =DIROFFSET
 	for i to ndlls do
 		dlltable[i].addrtableoffset:=diroffset				!data will be filled in later
 		diroffset+:=(dlltable[i].nprocs+1)*8
@@ -11449,14 +11762,11 @@ func getripoffset(int addr, dest, int extra=0)int=
 !dest is offset within image, relative to imagebase
 !extra is 0/1/2/4 bytes of imm data that some instructions will have
 
-!CPL =DEST:"H"
 	addr+:=sectiontable[csect].virtoffset		!now is offset rel to imagebase
-!CPL =ADDR:"H"
-
 	dest-(addr+4)-extra
 end
 
-=== mc_writeobj.m 0 0 18/41 ===
+=== mc_writeobj.m 0 0 18/47 ===
 !NEEDS REVISING TO MATCH UNLIMITED SS_SYMBOLTABLE size used for EXE
 !and also unlimited strings
 
@@ -11815,7 +12125,7 @@ func getqualname(psymbol d)ichar=
 	return pcm_copyheapstring(str)
 end
 
-=== mx_decls.m 0 0 19/41 ===
+=== mx_decls.m 0 0 19/47 ===
 !Declarations for M-Code scheme
 !Terms:
 ! MCU		MCode Unit, binary code/data/imports/relocs for whole program (LIBREC)
@@ -11990,7 +12300,7 @@ global [maxsymbols]byte		symboldllindex	! DLL index of library where found
 global int nsymbols
 
 export int nsymimports=0, nsymexports=0
-=== mx_run.m 0 0 20/41 ===
+=== mx_run.m 0 0 20/47 ===
 !Translate SS data directly into MCU block, then try and run that
 
 global func writememlib(ichar filename)ref librec plib=
@@ -12185,7 +12495,7 @@ global proc runlibfile(ichar filename, int cmdskip)=
 !	fi
 end
 
-=== mx_lib.m 0 0 21/41 ===
+=== mx_lib.m 0 0 21/47 ===
 !subprog libmx
 !module mx_lib
 !module mx_show
@@ -12766,7 +13076,7 @@ global func loadmemmcb(ichar filename, ref byte p)ref librec plib=
 	return plib
 end
 
-=== mx_write.m 0 0 22/41 ===
+=== mx_write.m 0 0 22/47 ===
 !Translate SS data directly into MCB block, then write as mx/ml file
 
 ref dbuffer dest
@@ -12978,7 +13288,7 @@ proc genblock(ref void p, int length)=
 	memcpy(dest.pcurr, p, length)
 	dest.pcurr+:=length
 end
-=== mm_cli.m 0 0 23/41 ===
+=== mm_cli.m 0 0 23/47 ===
 
 global ichar syslibname=""
 
@@ -13148,6 +13458,7 @@ proc debug_compiler=
 	pcl_genss() when dpasslevel>=dss_pass
 
 	showtimings() when fshowtiming
+
 	showlogfile()
 
 end
@@ -13167,8 +13478,8 @@ proc production_compiler=
 
 ! Special outputs can be done at this point (some could be done earlier)
 
-	do_writema(inputfile)	when fwritema			! terminates
-	do_getinfo(inputfile)	when fgetst				! terminates
+	do_writema(inputfile)	when passlevel=ma_pass			! terminates
+	do_getinfo(inputfile)	when passlevel in [getst_pass, getproj_pass]		! terminates
 	do_writeexports()		when passlevel=dll_pass
 
 ! Deal with chosen output kind
@@ -13197,7 +13508,7 @@ proc production_compiler=
 		esac
 	fi
 
-CPL "PCL:",PCCURR-PCSTART
+!CPL "PCL:",PCCURR-PCSTART
 
 	showtimings() when fshowtiming
 end
@@ -13277,10 +13588,10 @@ proc do_genpcl(int flog=0)=
 !CPL "GENPCL",=FLOG, =FSHOWPCL
 
 	if flog then
-!		if fshowpcl then
+		if fshowpcl then
 !CPL "WRITEPCL", OUTFILE
 			pcl_writepcl(changeext(outfile, "pcl"))
-!		fi
+		fi
 
 		if fshowpst then
 			pcl_writepst()
@@ -13417,9 +13728,9 @@ proc getinputoptions=
 	else
 !default output
 		outfile:=pcm_copyheapstring(inputfile)
-		if fwritema then
-			outext:="ma"
-		fi
+!		if fwritema then
+!			outext:="ma"
+!		fi
 
 		if destfilename then
 			outfile:=destfilename
@@ -13443,9 +13754,7 @@ proc getinputoptions=
 		println "New dest=",outfile
 	fi
 
-	pcl_setflags(highmem:highmem, verbose:fverbose=3)
-
-
+	pcl_setflags(highmem:highmem, verbose:fverbose>=2, shortnames:fshortnames)
 
 end
 
@@ -13646,7 +13955,7 @@ func addstartproc(symbol owner, ichar name, int scope,moduleno)symbol stproc=
 	return stproc
 end
 
-=== mm_blockpcl.m 0 0 24/41 ===
+=== mm_blockpcl.m 0 0 24/47 ===
 const dodotchains=1
 !const dodotchains=0
 
@@ -14003,7 +14312,7 @@ proc genjumpcond(int opc,unit p,int lab)=
 			while r do
 				evalunit(r)
 				if r.nextunit then
-					pc_gen(kswapstk)
+					pc_genxy(kswapstk, 1,2)
 
 					pc_gencond(kjumpcc, reversecond_order(reversecond(p.cmpgenop[i])), genlabel(lab))
 
@@ -14023,7 +14332,7 @@ proc genjumpcond(int opc,unit p,int lab)=
 			while r do
 				evalunit(r)
 				if r.nextunit then
-					pc_gen(kswapstk)
+					pc_genxy(kswapstk,1,2)
 					pc_gencond(kjumpcc, reversecond_order(reversecond(p.cmpgenop[i])), genlabel(lab2))
 					pccurr.popone:=1
 				else
@@ -14190,8 +14499,10 @@ proc do_istruel(unit p,a) =
 !	if a.mode=tbool then
 !		return
 !	fi
+!CPL "ISTR", STRMODE(P.MODE), STRMODE(A.MODE)
 	pc_gen(ktoboolt)
-	setmode_u(a)
+	setmode_u(p)
+	setmode2(a.mode)
 end
 
 proc do_isfalsel(unit p,a) =
@@ -14199,8 +14510,10 @@ proc do_isfalsel(unit p,a) =
 !	if a.mode=tbool then
 !		return
 !	fi
+!CPL "ISFA", STRMODE(P.MODE), STRMODE(A.MODE)
 	pc_gen(ktoboolf)
-	setmode_u(a)
+	setmode_u(p)
+	setmode2(a.mode)
 end
 
 proc do_typepun(unit p, a) =
@@ -14338,7 +14651,7 @@ proc do_setccchain(unit p,q) =
 		evalunit(r)
 		cond:=reversecond(p.cmpgenop[i])
 		if r.nextunit then
-			pc_gen(kswapstk)
+			pc_genxy(kswapstk,1,2)
 			cond:=reversecond_order(cond)
 		fi
 
@@ -15578,11 +15891,14 @@ end
 
 proc do_syscall(unit p,a)=
 
-	if pnprocs=nil then
-		pnprocs:=pc_makesymbol("$nprocs")
-		pprocname:=pc_makesymbol("$procname")
-		pprocaddr:=pc_makesymbol("$procaddr")
-	fi
+!CPL "DO_SYSCALL"
+
+	setfunctab()
+!	if pnprocs=nil then
+!		pnprocs:=pc_makesymbol("$nprocs")
+!		pprocname:=pc_makesymbol("$procname")
+!		pprocaddr:=pc_makesymbol("$procaddr")
+!	fi
 
 	case p.fnindex
 	when sf_getnprocs then
@@ -15846,7 +16162,7 @@ end
 proc do_typeconst(unit p)=
 	genpushint(p.value)
 end
-=== mm_assem.m 0 0 25/41 ===
+=== mm_assem.m 0 0 25/47 ===
 global func readassemline:unit=
 	lex()
 	return assembleline(1)
@@ -16228,7 +16544,7 @@ func fixasmlabel(psymbol d)int=
 	return d.labelno
 end
 
-=== mm_decls.m 0 0 26/41 ===
+=== mm_decls.m 0 0 26/47 ===
 global const maxmodule=200
 global const maxsubprog=30
 global const maxlibfile=50
@@ -16643,7 +16959,7 @@ global byte mvarlib=0		!0/1 = none/yes
 global byte fvarnames=0		!display of names in asm/mcl
 
 !global byte freadma			!1 when .ma file is being compiled
-global byte fwritema
+!global byte fwritema
 
 global byte fshowtiming
 global byte fshowss
@@ -16709,6 +17025,7 @@ global symbol extendtypelist
 global int nunits
 global int nunitsmem
 GLOBAL INT NUNITS1
+!GLOBAL INT NGLOBALS
 
 !global const langnameuc		= "M"
 !global const langname		= "m"
@@ -16724,7 +17041,9 @@ global const langhomedir	= "C:/bx/"
 !global const langhomedir	= "C:/mxp/"
 !global const langhomedir	= "./"
 global const langhelpfile	= "mm_help.txt"
-=== mm_diags.m 0 0 27/41 ===
+
+
+=== mm_diags.m 0 0 27/47 ===
 int currlineno
 int currfileno
 
@@ -17615,12 +17934,12 @@ global proc showtimings=
 	showtime("Total:",		compiletime)
 end
 
-=== mm_export_dummy.m 0 0 28/41 ===
+=== mm_export_dummy.m 0 0 28/47 ===
 !hello
 
 global proc writeexports(ichar basefile, modulename)=
 end
-=== mm_genpcl.m 0 0 29/41 ===
+=== mm_genpcl.m 0 0 29/47 ===
 global int retindex
 global int initstaticsindex
 
@@ -17664,6 +17983,7 @@ global proc codegen_pcl=
 	scanprocs()
 
 	pcl_end()
+
 end
 
 proc genprocdef (symbol p) =
@@ -18179,6 +18499,10 @@ proc scanprocs=
 		goto finish
 	fi
 
+	setfunctab()
+
+!CPL "SCANP", =PNPROCS, =PPROCADDR
+
 	pc_gen(kistatic, genmem(pprocaddr))
 	pccurr.mode:=tpblock
 	pccurr.size:=8
@@ -18200,12 +18524,23 @@ proc scanprocs=
 	od
 
 finish:
+!IF NPROCS THEN
 	pc_gen(kistatic, genmem(pnprocs))
 	setmode(ti64)
 	pc_gen(kdata, genint(nprocs))
 	setmode(ti64)
+!FI
+
 end
-=== mm_lex.m 0 0 30/41 ===
+
+global proc setfunctab=
+	if pnprocs=nil then
+		pnprocs:=pc_makesymbol("$nprocs")
+		pprocname:=pc_makesymbol("$procname")
+		pprocaddr:=pc_makesymbol("$procaddr")
+	fi
+end
+=== mm_lex.m 0 0 30/47 ===
 macro hashc(hsum,c)=hsum<<4-hsum+c
 !macro hashw(hsum)=(hsum<<5-hsum)
 macro hashw(hsum)=hsum
@@ -19539,7 +19874,7 @@ proc start=
 	od
 end
 
-=== mm_lib.m 0 0 31/41 ===
+=== mm_lib.m 0 0 31/47 ===
 int autotypeno=0
 global int nextavindex=0
 int nextsvindex=0
@@ -20930,13 +21265,7 @@ end
 !	return addconst(creal32list,cast@(x,int))
 !end
 
-global func addstr(ichar s, t)ichar=
-static [256]char str
-	strcpy(str, s)
-	strcat(str, t)
-	str
-end
-=== mm_libpcl.m 0 0 32/41 ===
+=== mm_libpcl.m 0 0 32/47 ===
 global function getpsymbol(symbol d)psymbol p=
 	symbol e
 
@@ -21001,12 +21330,58 @@ func getequivdef(symbol d)symbol=
 		nil
 	esac
 end
-=== mm_libsources_dummy.m 0 0 33/41 ===
-global const fsyslibs = 0
+=== mm_libsources.m 0 0 33/47 ===
+global const fsyslibs = 1
+
+global tabledata []ichar syslibnames, []ichar syslibtext =
+	("msyslib.m",		strinclude "msyslib.m"),
+	("msys.m",			strinclude "msys.m"),
+	("mlib.m",			strinclude "mlib.m"),
+	("mclib.m",			strinclude "mclib.m"),
+	("mwindows.m",		strinclude "mwindows.m"),
+	("mwindll.m",		strinclude "mwindll.m"),
+end
 
 global proc loadbuiltins=
+!load built-in libs to sources[] list
+	ifile pf
+	ichar filename
+
+	for i to syslibnames.len do
+		filename:=syslibnames[i]
+!CPL "PRELOADING SYSLIB",FILENAME
+		pf:=newsourcefile()
+
+		sources[nsourcefiles].name:=pcm_copyheapstring(extractbasefile(filename))
+		sources[nsourcefiles].filename:=filename
+		sources[nsourcefiles].text:=syslibtext[i]
+!		sources[nsourcefiles].text:=pcm_copyheapstring(syslibtext[i])
+
+!These files should not be part of .ma file, however check what happens
+!if syslib file is part of strinclude: it may discover this one, and it
+!needs to be duplicated! Unless syslib/support must match
+!		if fwritema then
+!			sources[nsourcefiles].dupl:=pcm_copyheapstring(syslibtext[i])
+!		fi
+
+!if i=4 then CPL SYSLIBTEXT[I] FI
+
+		sources[nsourcefiles].size:=strlen(syslibtext[i])
+!		sources[nsourcefiles].path:="<Builtins>"
+		sources[nsourcefiles].path:=""
+		sources[nsourcefiles].filespec:=filename
+		sources[nsourcefiles].issyslib:=1
+		sources[nsourcefiles].issupport:=0
+!CPL "LOADED BI",=SOURCES[NSOURCEFILES].FILENAME
+!CPL "LOADED BI",=SOURCES[NSOURCEFILES].FILESPEC
+	od
+
+!FOR I TO 5 DO
+!	CPL I,=SOURCES[I].SIZE
+!OD
+
 end
-=== mm_modules.m 0 0 34/41 ===
+=== mm_modules.m 0 0 34/47 ===
 ichar fileext="m"
 
 global func loadsp(ichar filename, int mainsub=0)isubprog sp=
@@ -21248,7 +21623,7 @@ global func loadsourcefile(ichar filespec, int issyslib=0)ifile pf=
 	pf.text:=s
 	pf.size:=rfsize
 
-	if fwritema then
+	if passlevel=ma_pass then
 		pf.dupl:=pcm_copyheapstring(s)
 	fi
 
@@ -21458,7 +21833,7 @@ proc loadmafile(ichar filespec, ichar builtinstr=nil)=
 end
 
 
-=== mm_name.m 0 0 35/41 ===
+=== mm_name.m 0 0 35/47 ===
 symbol currstproc
 int allowmodname=0
 int noexpand, noassem
@@ -22311,7 +22686,7 @@ proc do_baseclass(symbol p)=
 		d:=d.nextdef
 	od
 end
-=== mm_parse.m 0 0 36/41 ===
+=== mm_parse.m 0 0 36/47 ===
 !M Language Parser
 
 int intabledata=0		!1 means reading table data line; $ gives tabledataname
@@ -22608,8 +22983,8 @@ error:
 !now, should be semi, or possibly kwd1/2
 	if lx.symbol in [endkwd1, endkwd2] then
 		lex()
-	elsif lx.symbol<>semisym then
-		error
+!	elsif lx.symbol<>semisym then
+!		error
 	fi
 end
 
@@ -26192,7 +26567,7 @@ CPL "REALLOC",CURRALLOC,N
 	p
 end
 
-=== mm_support.m 0 0 37/41 ===
+=== mm_support.m 0 0 37/47 ===
 global [0:]byte bytemasks=(1,2,4,8,16,32,64,128)
 
 global func newsourcefile:ifile pf=
@@ -26604,9 +26979,7 @@ global proc do_writema(ichar inpfile)=
 	filehandle f
 	int offset, nfiles, fileno
 
-	if not fwritema then
-		return
-	fi
+	return unless passlevel=ma_pass
 
 CPL "WRITEMA"
 
@@ -26664,18 +27037,18 @@ global proc do_getinfo(ichar filename)=
 	ichar fs
 	imodule pm
 
-	if fgetst then
+!	return unless passlevel=getst_pass
 
-CPL "GETST"
-
+	if passlevel=getst_pass then
 		f:=fopen(fs:=changeext(filename,"list"),"wb")
 		if f then
 			println "Writing",fs
-!F:=NIL
 			getst(f,stprogram)
 			fclose(f)
 		fi
-	elsif fgetproj then
+	fi
+
+	if passlevel=getproj_pass then
 		f:=fopen(fs:=changeext(filename,"proj"),"wb")
 		if f then
 			println "Writing",fs
@@ -26774,7 +27147,7 @@ proc getstrec(filehandle f, symbol d)=
 !PRINTLN"DUMP:",D.OWNER.NAME:"13JL",D.NAME:"16JL", NAMENAMES[D.NAMEID]
 
 end
-=== mm_tables.m 0 0 38/41 ===
+=== mm_tables.m 0 0 38/47 ===
 include "mm_types.m"
 
 global enumdata []ichar sysfnnames, []byte sysfnparams, []byte sysfnres =
@@ -27545,7 +27918,7 @@ proc start=
 	isbooltag[jinset]:=1
 end
 
-=== mm_type.m 0 0 39/41 ===
+=== mm_type.m 0 0 39/47 ===
 const nolv=0
 const needlv=1
 
@@ -31269,7 +31642,7 @@ func tx_in(unit p,a,b)int=
 	fi
 	return 1
 end
-=== mm_types.m 0 1 40/41 ===
+=== mm_types.m 0 1 40/47 ===
 global enumdata  [0:]ichar stdnames,
         [0:]byte stdsize,
         [0:]byte stdpcl =
@@ -31337,7 +31710,7 @@ global const maxtuplesize = 4
 
 global int trefproc
 global int treflabel
-=== mm_help.txt 0 1 41/41 ===
+=== mm_help.txt 0 1 41/47 ===
 M Compiler Generating x64 native code - Windows Version
 
 Whole-program compiler builds entire program from the lead module
@@ -31363,6 +31736,3438 @@ Options:
 
 
 
+=== msyslib.m 0 1 42/47 ===
+module msys
+module mlib
+module mclib
+module mwindows
+module mwindll
+=== msys.m 0 1 43/47 ===
+global record procinforec=
+	word16		fnindex
+	byte		rettype
+	byte		nparams
+	[12]byte	paramlist
+end
+
+!for print/read routines
+!------------------------------------------
+export record fmtrec=	! (default)
+	byte	minwidth	! n (0)   min field width (0 if not used or don't care)
+	i8		precision	! .n (0)   number of decimals/significant figures/max width
+	byte	base		! B,H or Xn (10)  2 to 16
+
+	char	quotechar	! Qc (0)   0 or '"' or c
+	char	padchar		! Pc, Z (' ')
+	char	realfmt		! E,F,G ('f') 'e' or 'f' or 'g'
+
+	char	plus		! (0)   0 or '+'
+	char	sepchar		! Sc (0)   0 or ',' or c placed every 3 (base=10) or 4 digits
+	char	lettercase	! A,a ('A') 'A' or 'a'
+	char	justify		! JL, JR, JC ('R') 'L' or 'R' or 'C'?
+	char	suffix		! Tc (0)   0 or 'B' or 'H' or c
+	char	usigned		! W (0)   0 or 'W' force unsigned o/p for ints (eg. for hex display)
+	char	charmode	! C,M (0)  0 or 'C' or 'M'	o/p int as int or single char or multi-char
+	char	heapmode	! D (0)  'D' for str-functions, return ptr to heap string
+	char	param		! Use int value for <fmtparam>
+	byte	spare : (showtype:1, newline:1)
+end
+
+int fmtparam			!as set with :'V'
+
+enumdata =
+	std_io,file_io,str_io
+end
+
+const comma = ','
+
+export int $cmdskip			!0 unless set by READMCX/etc
+
+export int needgap			= 0
+int outdev			= std_io
+filehandle outchan	= nil
+ref char fmtstr 	= nil
+
+const maxiostack=10
+[maxiostack]filehandle	outchan_stack
+[maxiostack]int			outdev_stack
+[maxiostack]ref char	fmtstr_stack
+[maxiostack]byte		needgap_stack
+
+[maxiostack]ref char	ptr_stack		!this one doesn't need pushing, as each is pointed to from outchan
+int niostack=0
+
+[0:]char digits=A"0123456789ABCDEF"
+const onesixty=360
+fmtrec defaultfmt = (0,0, 10, 0,' ','f', 0,0,0,'R',0,0, 0,0,0,0)
+
+!Read buffer vars
+export const rd_buffersize = 16384	!total capacity of line buffer
+
+export ref char rd_buffer		! point to start of read buffer
+export int rd_length			! length of this line (as read by readln)
+export ref char rd_pos			! current position it's up to (next read starts here)
+export ref char rd_lastpos		! set by sread() just before reading used for reread()
+
+int termchar			! terminator char set by readxxx()
+int itemerror			!	set by some read functions, eg for reals
+
+[4096]char printbuffer
+ichar printptr
+int printlen
+
+!------------------------------------------
+
+const maxparam=128
+export int nsysparams
+export int ncmdparams
+export int nenvstrings
+export [maxparam]ichar sysparams
+!export ref[]ichar cmdparams
+export ref[0:]ichar cmdparams
+export ref[]ichar envstrings
+!export [maxparam]ichar envstrings
+
+const maxcallback=8
+[0..maxcallback,8]word64 callbackstack
+int ncallbacks=0
+
+proc start=
+	int32 nargs
+	int nargs64
+	ref[]ichar args
+	static [128]byte startupinfo			! 68 or 104 bytes
+	int res
+
+!CPL "MSYS START"
+
+	res:=__getmainargs(&nargs,cast(&args),cast(&envstrings),0,cast(&startupinfo))
+	
+	nsysparams:=nargs
+
+	if nsysparams>maxparam then
+		printf("Too many params\n")
+		stop 50
+	fi
+
+	nargs64:=nargs			!bug when using 32-bit limit when compiled with mm
+	for i:=1 to nargs64 do
+		sysparams[i]:=args[i]
+	od
+	
+!assume nsysparams is >=1, since first is always the program name
+	ncmdparams:=nsysparams-($cmdskip+1)
+	cmdparams:=cast(&sysparams[$cmdskip+1])
+
+	int j:=1
+	nenvstrings:=0
+	while envstrings[j] do
+		++nenvstrings
+		++j
+	od
+end
+
+proc pushio=
+	if niostack>=maxiostack then
+		printf("Too many io levels\n")
+		stop 53
+	fi
+	++niostack
+	outchan_stack[niostack]	:= outchan
+	outdev_stack[niostack]	:= outdev
+	fmtstr_stack[niostack]	:= fmtstr
+	needgap_stack[niostack]	:= needgap
+	needgap:=0
+	fmtstr:=nil
+	outchan:=nil
+end
+
+export proc m$print_startfile(ref void dev)=
+	pushio()
+	outchan:=cast(dev)
+	if dev then
+		outdev:=file_io
+	else
+		outdev:=std_io
+	fi
+	resetprintbuffer()
+end
+
+export proc m$print_startstr(ref char s)=
+	ref ref char p
+	pushio()
+
+	ptr_stack[niostack]:=s
+	p:=&ptr_stack[niostack]
+
+	outchan:=cast(p)
+	outdev:=str_io
+end
+
+export proc m$print_startptr(ref ref char p)=
+	pushio()
+
+	outchan:=cast(p)
+	outdev:=str_io
+end
+
+export proc m$print_startcon=
+	pushio()
+	outdev:=std_io
+	resetprintbuffer()
+end
+
+export proc m$print_setfmt(ref char format)=
+	fmtstr:=format
+end
+
+export proc m$print_end=
+	needgap:=0
+	nextfmtchars(1)
+	if niostack=1 and outdev in [std_io,file_io] then
+		dumpprintbuffer()
+	fi
+
+	if niostack=0 then return fi
+	outchan	:= outchan_stack[niostack]
+	outdev	:= outdev_stack[niostack]
+	fmtstr	:= fmtstr_stack[niostack]
+	needgap	:= needgap_stack[niostack]
+
+	--niostack
+end
+
+export proc m$print_ptr(u64 a,ichar fmtstyle=nil)=
+	[20]char s
+
+	if fmtstyle=nil then
+		fmtstyle:="z8H"
+	fi
+	m$print_u64(a,fmtstyle)
+end
+
+export proc m$print_ptr_nf(u64 a)=
+	m$print_ptr(a)
+end
+
+export proc m$print_i64(int64 a,ichar fmtstyle=nil)=
+	[40]char s
+	fmtrec fmt
+	int n
+
+	nextfmtchars()
+	if fmtstyle=nil then
+		if a>=0 then
+			n:=u64tostr(a,&.s,10,0)
+		elsif a=i64.min then
+			fmt:=defaultfmt
+			dofmt
+
+		else
+			s[1]:='-'
+			n:=u64tostr(-a,&s[2],10,0)+1
+		fi
+
+		printstr_n(&.s,n)
+
+	else
+
+		strtofmt(fmtstyle,-1,&fmt)
+		if fmt.param='V' then
+			fmtparam:=a
+			needgap:=0
+		else
+dofmt:
+			tostr_i64(a,&fmt)
+		fi
+	fi
+	needgap:=1
+end
+
+export proc m$print_i64_nf(int64 a)=
+	m$print_i64(a)
+end
+
+export proc m$print_bool(int64 a, ichar fmtstyle=nil)=
+	if a then
+		m$print_str("True",fmtstyle)
+	else
+		m$print_str("False",fmtstyle)
+	fi
+end
+
+export proc m$print_u64(word64 a,ichar fmtstyle=nil)=
+	[40]char s
+	fmtrec fmt
+
+	nextfmtchars()
+	if fmtstyle=nil then
+		sprintf(&.s,"%llu",a)
+		printstr(&.s)
+	else
+		strtofmt(fmtstyle,-1,&fmt)
+		tostr_u64(a,&fmt)
+	fi
+	needgap:=1
+end
+
+export proc m$print_r64(real x,ichar fmtstyle=nil)=
+	[360]char s
+	fmtrec fmt
+
+	nextfmtchars()
+	if fmtstyle=nil then
+		sprintf(&.s,"%f",x)
+		printstr(&.s)
+	else
+		strtofmt(fmtstyle,-1,&fmt)
+		tostr_r64(x,&fmt)
+	fi
+
+	needgap:=1
+end
+
+export proc m$print_r32(real32 x,ichar fmtstyle=nil)=
+	m$print_r64(x,fmtstyle)
+end
+
+global proc m$print_c8(int64 a,ichar fmtstyle=nil)=
+	[16]char s
+	int cc@s
+	fmtrec fmt
+	int n
+
+	nextfmtchars()
+
+	cc:=a	
+	s[9]:=0
+
+	n:=getutfsize(s)			!isolate size of next char
+
+	printstr_n(s,n)
+!	printstr(s)
+	needgap:=1
+end
+
+export proc m$print_str(ichar s, fmtstyle=nil)=
+	nextfmtchars()
+
+	if s=nil then
+		printstr("<null>")
+		return
+	fi
+
+	fmtrec fmt
+	if fmtstyle=nil then
+		printstr(s)
+	else
+		strtofmt(fmtstyle,-1,&fmt)
+		tostr_str(s,-1,&fmt)
+	fi
+	needgap:=1
+end
+
+export proc m$print_strn(ichar s, int length, ichar fmtstyle=nil)=
+	nextfmtchars()
+
+	if s=nil then
+		printstr("<null>")
+		return
+	fi
+
+	fmtrec fmt
+	if fmtstyle=nil then
+		printstr_n(s,length)
+	else
+		strtofmt(fmtstyle,-1,&fmt)
+		tostr_str(s,length,&fmt)
+	fi
+	needgap:=1
+end
+
+export proc m$print_str_nf(ichar s)=
+	m$print_str(s)
+end
+
+export proc m$print_strsl(slice[]char s, ichar fmtstyle=nil)=
+	nextfmtchars()
+!	fmtrec fmt
+
+	if fmtstyle=nil then
+		printstr_n(cast(s.sliceptr),s.len)
+!		printstr_n(cast(ss.str),ss.length)
+	else
+		abortprogram("FORMATED PRINT SLICE NOT READY")
+!		strtofmt(fmtstyle,-1,&fmt)
+!		tostr_str(s,s.len,&fmt)
+	fi
+	needgap:=1
+end
+
+export proc m$print_newline=
+	needgap:=0
+	nextfmtchars(1)
+	printstr("\w")
+end
+
+export proc m$print_nogap=
+	needgap:=0
+end
+
+export proc m$print_space=
+	needgap:=0
+	printstr(" ")
+end
+
+export proc printstr(ichar s)=
+	printstr_n(s,strlen(s))
+end
+
+export proc printstr_n(ichar s,int n)=
+	ref ref char p
+
+!	return when n=0
+
+	if niostack=1 and outdev in [std_io,file_io] then
+!puts("ADDTO BUFF")
+		addtobuffer(s,n)
+	else
+!printf("DUMPSTR %lld\n", n)
+		dumpstr(s,n)
+	fi
+end
+
+export proc printstrn_app(ichar s, int length, filehandle f=nil)=
+if length then
+	if f=nil then
+		printf("%.*s",length,s)
+	else
+		fprintf(f,"%.*s",length,s)
+	fi
+fi
+end
+
+proc printchar(int ch)=
+	[4]char str
+
+	str[1]:=ch
+	str[2]:=0
+	printstr_n(str,1)
+end
+
+global proc nextfmtchars(int lastx=0)=
+	char c
+	ref char pstart
+	int n
+	if not fmtstr then			!format not in use
+		if needgap then
+			printchar(' ')
+		fi
+		needgap:=0
+		return
+	fi
+
+	pstart:=fmtstr
+	n:=0
+
+	do
+		c:=fmtstr^
+		case c
+		when '#' then
+			if lastx then
+				goto skip
+			fi
+			++fmtstr
+			if n then
+				printstr_n(pstart,n)
+			fi
+			return
+		when 0 then
+			if n then
+				printstr_n(pstart,n)
+			elsif not lastx then
+				printstr_n("|",1)
+			fi
+			return
+		when '~' then
+			if n then
+				printstr_n(pstart,n)
+				n:=0
+			fi
+			++fmtstr
+			c:=fmtstr^
+			if c then
+				++fmtstr
+				printchar(c)
+			fi
+			pstart:=fmtstr
+		else
+	skip:
+			++n
+			++fmtstr
+		esac
+	od
+end
+
+export proc strtofmt(ref char s,int slen,ref fmtrec fmt) =		!PC_STRTOFMT
+!convert format code string in s, to fmtrec at fmt^
+!Format code is a string containing the following char codes (upper or lower when mostly)
+!n	Width
+!.n	Max width/precision
+!A	Convert to upper case
+!a	Convert to lower case
+!B	Binary
+!C	Show int as single n-bit (unicode) character
+!D	Duplicate string returned via STRINT etc on heap
+!E,F,G	Specify format for double (corresponds to C format codes)
+!F
+!G
+!H	Hex
+!JC	Justify centre
+!JL	Justify left
+!JR	Justify right
+!M	Show int as multi-bit (unicode) character
+!M	HEAPMODE???
+!O	Octal
+!Pc	Use padding char c
+!Q	Add double quotes around string (and deal with embedded quotes)
+!'	Add single quotes around string (and deal with embedded quotes)
+!Sc	Use separator char c between every 3 or 4 digits
+!Tc	Use terminator char c (typically B or H)
+!U	Show ints as unsigned
+!V	For ints, don't display: store value as parameter for subsequent '*'
+!W	Unsigned
+!Xn	Use base n (n is hex 0 to F)
+!Z	Use "0" padding
+!+	Always have + or - in front of integers
+!~	Quote char is ~
+!*	Same as n but uses parameter set with :'V' on previous int
+
+	int c, base
+	byte wset
+	int n
+	[0:100]char str
+
+	fmt^:=defaultfmt
+
+	if s=nil then return fi
+
+	if slen=-1 then slen:=strlen(s) fi
+
+	memcpy(&.str,s,slen)		!convert s/slen to zero-terminated string
+	str[slen]:=0
+	s:=&.str
+
+	wset:=0
+	while s^ do
+		c:=s^
+		++s
+		if c='A' then fmt.lettercase:='A'
+		elsif c='a' then fmt.lettercase:='a'
+		elseswitch toupper(c)
+		when 'B' then fmt.base:=2
+		when 'H' then fmt.base:=16
+		when 'O' then fmt.base:=8
+		when 'X' then
+			base:=0
+			do
+				c:=s^
+				if c in '0'..'9' then
+					base:=base*10+c-'0'
+					++s
+				else
+					exit
+				fi
+			od
+			if base in 2..16 then
+				fmt.base:=base
+			fi
+
+		when 'Q' then fmt.quotechar:='"'
+		when 'J' then
+			fmt.justify:=toupper(s^)
+			if s^ then
+				++s
+			fi
+		when 'Z' then fmt.padchar:='0'
+		when 'S' then
+			fmt.sepchar:=s^
+			if s^ then
+				++s
+			fi
+		when 'P' then
+			fmt.padchar:=s^
+			if s^ then
+				++s
+			fi
+		when 'T' then
+			fmt.suffix:=s^
+			if s^ then
+				++s
+			fi
+		when 'U' then fmt.usigned:='W'
+		when 'E' then fmt.realfmt:='e'
+		when 'F' then fmt.realfmt:='f'
+		when 'G' then fmt.realfmt:='g'
+		when 'D' then fmt.heapmode:='D'
+		when 'C' then fmt.charmode:='C'
+		when 'M' then fmt.charmode:='M'
+		when 'V' then fmt.param:='V'
+		when 'Y' then fmt.showtype:=1
+		when 'N' then fmt.newline:=1
+		elsecase c
+		when '.' then
+			wset:=1
+		when comma,'_' then fmt.sepchar:=c
+		when '+' then fmt.plus:='+'
+		when '~' then fmt.quotechar:='~'
+		when '*' then
+			n:=fmtparam
+			goto gotwidth
+		else
+			if c>='0' and c<='9' then
+				n:=c-'0'
+				do
+					c:=s^
+					if s^=0 then
+						exit
+					fi
+					if c>='0' and c<='9' then
+						++s
+						n:=n*10+c-'0'
+					else
+						exit
+					fi
+				od
+gotwidth:
+				if not wset then
+					fmt.minwidth:=n
+					wset:=1
+				else
+					fmt.precision:=n
+				fi
+			fi
+		fi
+	od
+end
+
+function domultichar (ref char p,int n,ref char dest,ref fmtrec fmt)int =
+!there are n (4 or 8) chars at p.!
+!There could be 0 to 4 or 8 printable chars converted to string at dest
+	[0:20]char str
+	ref char q
+	int i,nchars
+
+	q:=&.str
+
+	nchars:=n
+
+	to n do
+		if p^=0 then exit fi
+		q^:=p^
+		++q
+		++p
+	od
+	q^:=0
+
+	return expandstr(&.str,dest,strlen(&.str),fmt)
+end
+
+export function expandstr(ref char s,ref char t,int n,ref fmtrec fmt)int =		!EXPANDSTR
+!s contains a partly stringified value.
+!widen s if necessary, according to fmt, and copy result to t
+!n is current length of s
+!note) = for non-numeric strings, fmt.base should be set to 0, to avoid moving
+!a leading +/- when right-justifying with '0' padding.
+!t MUST be big enough for the expanded string; caller must take care of this
+!result will be zero-terminated, for use in this module
+
+	int i,w,m
+
+!check to see if result is acceptable as it is
+	w:=fmt.minwidth
+	if w=0 or w<=n then		! allow str to be longer than minwidth
+		strncpy(t,s,n)
+		(t+n)^:=0
+		return n
+	fi
+
+	if fmt.justify='L' then	! left-justify
+		strncpy(t,s,n)
+		t+:=n
+		for i:=1 to w-n do
+			t^:=fmt.padchar
+			++t
+		od
+		t^:=0
+	elsif fmt.justify='R' then
+		if fmt.padchar='0' and fmt.base and (s^='-' or s^='+') then ! need to move sign outside 
+			t^:=s^
+			++t
+			to w-n do
+				t^:=fmt.padchar
+				++t
+			od
+			strncpy(t,s+1,n-1)
+			(t+n-1)^:=0
+		else
+			to w-n do
+				t^:=fmt.padchar
+				++t
+			od
+			strncpy(t,s,n)
+			(t+n)^:=0
+		fi
+
+	else				! centre-justify?
+
+		m:=(w-n+1)/2
+		to m do
+			t^:=fmt.padchar
+			++t
+		od
+		strncpy(t,s,n)
+		t+:=n
+		to w-n-m do
+			t^:=fmt.padchar
+			++t
+		od
+		t^:=0
+
+	fi
+	return w
+end
+
+export function u64tostr(u64 aa,ref char s,word base,int sep)int =		!U64TOSTR
+!convert 64-bit int a to string in s^
+!base is number base, usually 10 but can be 2 or 16. Other bases allowed
+!result when a=minint (will give "<minint>")
+	[0:onesixty]char t
+	u64 dd
+	int i,j,k,g
+	int cc
+	int dummy
+	ref char s0
+
+	i:=0
+	k:=0
+	g:=(base=10|3|4)
+
+	repeat
+!		if base=10 then			!BUGGY FOR AA OVER I64.MAX
+!			assem
+!				mov		rcx, [aa]
+!				mov		rax, rcx
+!				mov		rdx, 7378697629483820647
+!				imul	rdx
+!				mov		rax, rdx
+!				mov		rdx, rcx
+!				sar		rdx, 63
+!				sar		rax, 2
+!				sub		rax, rdx
+!				lea		rdx, [rax+rax*4]
+!				add		rdx, rdx
+!				sub		rcx, rdx
+!				mov		[dd], rcx
+!				mov		[aa], rax
+!			end
+!		else
+			dd:=aa rem base
+			aa:=aa/base
+!		fi
+
+		t[++i]:=digits[dd]
+
+!BUG in separator logic, doesn't work when leading zeros used, eg. printing
+!out a full length binary
+!so perhaps move this out to expandstr
+		++k
+		if sep and aa<>0 and k=g then
+			t[++i]:=sep
+			k:=0
+		fi
+	until aa=0
+
+	j:=i
+	s0:=s
+	while i do
+		s^:=t[i--]
+		++s
+	od
+	s^:=0
+
+	return j
+end
+
+export function i64tostrfmt(i64 aa,ref char s,ref fmtrec fmt)int =
+!a is signed 64-bit int/long, fmt is a ref to a filled-in fmtrec
+!convert a to a string in s, according to fmt
+!a basic conversion is done first,: the field manipulation is done
+!signed=1 for int, 0 for u32 (fmt.unsigned forces ints to be treated as longs)
+!returns length of s
+	[0:onesixty]char str				! allow for binary with separators!
+	int i,j,k,n,w,usigned
+	const i64 mindint=0x8000'0000'0000'0000
+
+	usigned:=0
+	if fmt.usigned then
+		usigned:=1
+	fi
+	if aa=mindint and not usigned then		! minint
+
+		str[0]:='-'
+		n:=i64mintostr(&str[1],fmt.base,fmt.sepchar)+1
+
+	else
+		if (not usigned and aa<0) or fmt.plus then
+			if aa<0 then
+				aa:=-aa
+				str[0]:='-'
+			else
+				str[0]:='+'
+			fi
+			n:=u64tostr(aa,&str[1],fmt.base,fmt.sepchar)+1
+		else
+			n:=u64tostr(aa,&.str,fmt.base,fmt.sepchar)
+		fi
+	fi
+
+	if fmt.suffix then
+		str[n]:=fmt.suffix
+		str[++n]:=0
+	fi
+
+!str uses upper cases for hex/etc see if lc needed
+	if (fmt.base>10 or fmt.suffix) and fmt.lettercase='a'	then	! need lower when
+		convlcstring(&.str)
+	fi
+
+!at this point, n is the str length including signs and suffix
+	return expandstr(&.str,s,n,fmt)
+end
+
+export function u64tostrfmt(i64 aa,ref char s,ref fmtrec fmt)int =		!U64TOSTRFMT
+!see i64tostrfmt
+	[0:onesixty]char str				! allow for binary with separators!
+	int i,j,k,n,w
+
+	n:=u64tostr(aa,&.str,fmt.base,fmt.sepchar)
+
+	if fmt.suffix then
+		str[n]:=fmt.suffix
+		str[++n]:=0
+	fi
+
+!str uses upper cases for hex/etc see if lc needed
+	if fmt.base>10 or fmt.suffix and fmt.lettercase='a'	then	! need lower when
+!		convlcstring(&.str)
+	fi
+
+!at this point, n is the str length including signs and suffix
+	return expandstr(&.str,s,n,fmt)
+end
+
+export function i64mintostr(ref char s,int base,int sep)int =		!I64MINTOSTR
+!convert minint to string in s do not include minus sign
+!return number of chars in string
+	[0:onesixty]char t
+	int i,j,k,g,neg
+
+	case base
+	when 10 then
+		strcpy(&t[0],"9223372036854775808")
+		j:=3
+	when 16 then
+		strcpy(&t[0],"8000000000000000")
+		j:=1
+	when 2 then
+		strcpy(&t[0],"1000000000000000000000000000000000000000000000000000000000000000")
+		j:=7
+	else
+		strcpy(&t[0],"<mindint>")
+	esac
+
+	i:=strlen(&t[0])
+	s+:=i
+	if sep then
+		s+:=j
+	fi
+	s^:=0
+
+	k:=0
+	g:=(base=10|3|4)
+
+	while i do
+		--s
+		s^:=t[i-- -1]
+		if sep and i and ++k=g then
+			--s
+			s^:=sep
+			k:=0
+		fi
+	od
+	return strlen(s)
+end
+
+export function strtostrfmt(ref char s,ref char t,int n,ref fmtrec fmt)int =
+!s is a string process according to fmtrec fmt^, and return result in t
+!caller should check whether any changes are required to s (now it can just use s), but this
+!check is done here anyway (with a simple copy to t)
+!n is current length of s
+!return length of t
+!Three processing stages:
+!1 Basic input string s
+!2 Additions or mods: quotes, suffix, when conversion
+!3 Width adjustment
+!1 is detected here, 2 is done here, 3 is done by expandstr
+	ref char u,v
+	[256]char str
+	int w,nheap		! whether any heap storage is used  bytes allocated
+
+	nheap:=0
+
+	if fmt.quotechar or fmt.lettercase then		! need local copy
+		if n<256 then
+			u:=&.str
+		else
+			nheap:=n+3					! allow for quotes+terminator
+			u:=pcm_alloc(nheap)
+		fi
+		if fmt.quotechar then
+			v:=u
+			v^:=fmt.quotechar
+			++v
+			if n then
+				strcpy(v,s)
+				v+:=n
+			fi
+			v^:=fmt.quotechar
+			++v
+			v^:=0
+			n+:=2
+		else
+			memcpy(u,s,n)
+		fi
+		case fmt.lettercase
+		when 'a' then	! need lower when
+			convlcstring(u)
+		when 'A' then
+			convucstring(u)
+		esac
+		s:=u
+	fi
+
+	w:=fmt.minwidth
+	if w>n then
+		n:=expandstr(s,t,n,fmt)
+	else
+		memcpy(t,s,n)
+	fi
+	if nheap then
+		pcm_free(u,nheap)
+	fi
+	return n
+end
+
+proc tostr_i64(int64 a, ref fmtrec fmt)=
+	[360]char str
+	int n
+
+	case fmt.charmode
+	when 0 then
+		n:=i64tostrfmt(a,&.str,fmt)
+	when 'M' then
+		n:=domultichar(ref char(&a),8,&.str,fmt)
+
+	else						!assume 'C'
+		m$print_c8(a, nil)
+!		printchar(a)			!no other formatting allowed
+		return
+	esac
+
+	printstr_n(&.str,n)
+end
+
+proc tostr_u64(word64 a, ref fmtrec fmt)=
+	[360]char str
+	int n
+
+	case fmt.charmode
+	when 'M' then
+		n:=domultichar(ref char(&a),8,&.str,fmt)
+
+	when 'C' then
+		m$print_c8(a, nil)
+!		printchar(a)			!no other formatting allowed
+		return
+
+	else
+		n:=u64tostrfmt(a,&.str,fmt)
+	esac
+
+	printstr_n(&.str,n)
+end
+
+proc tostr_r64(real x,ref fmtrec fmt) =
+	[360]char str,str2
+	[0:10]char cfmt
+	int n
+
+	cfmt[0]:='%'
+
+	if fmt.precision then
+		cfmt[1]:='.'
+		cfmt[2]:='*'
+		cfmt[3]:=fmt.realfmt
+		cfmt[4]:=0
+		sprintf(&.str,&.cfmt,fmt.precision,x)
+	else
+		cfmt[1]:=fmt.realfmt
+		cfmt[2]:=0
+		sprintf(&.str,&.cfmt,x)
+	fi
+
+!at this point, n is the str length including signs and suffix
+
+	n:=strlen(&.str)		! current length
+
+	if n<fmt.minwidth then
+		n:=expandstr(&.str,&.str2,n,fmt)
+		strcpy(&.str,&.str2)
+	fi
+
+	printstr_n(&.str,n)
+end
+
+proc tostr_str(ref char s, int oldlen, ref fmtrec fmt) =
+	int newlen,n
+	ref char t
+
+!try and work out size of formatted string
+	if oldlen=-1 then
+		oldlen:=strlen(s)
+	fi
+	newlen:=oldlen
+
+	if fmt.quotechar or fmt.minwidth>newlen or fmt.lettercase or fmt.precision then
+		if fmt.quotechar then
+			newlen+:=2
+		fi
+		if fmt.minwidth>newlen then
+			newlen:=fmt.minwidth
+		fi
+		t:=pcm_alloc(newlen+1)
+		n:=strtostrfmt(s,t,oldlen,fmt)
+		if fmt.precision then
+			n min:=fmt.precision
+		fi
+
+		printstr_n(t,n)
+		pcm_free(t,newlen+1)
+	else
+		printstr_n(s,oldlen)
+	fi
+end
+
+function getfmt(ichar fmtstyle)ref fmtrec=
+	static fmtrec fmt
+	if fmtstyle then
+		strtofmt(fmtstyle,-1,&fmt)
+		return &fmt
+	else
+		return &defaultfmt
+	fi
+end
+
+export function strint(int64 a, ichar fmtstyle=nil)ichar=
+	static [100]char str
+	ref fmtrec fmt
+
+	m$print_startstr(&.str)
+	tostr_i64(a,fmt:=getfmt(fmtstyle))
+	m$print_end()
+	return getstr(&.str,fmt)
+end
+
+export proc getstrint(int64 a, ichar dest)=
+	m$print_startstr(dest)
+	tostr_i64(a,getfmt(nil))
+	m$print_end()
+end
+
+export function strword(word64 a, ichar fmtstyle=nil)ichar=
+	static [100]char str
+	ref fmtrec fmt
+
+	m$print_startstr(&.str)
+	tostr_u64(a,fmt:=getfmt(fmtstyle))
+	m$print_end()
+	return getstr(&.str,fmt)
+end
+
+export function strreal(real a, ichar fmtstyle=nil)ichar=
+	static [320]char str
+	ref fmtrec fmt
+
+	m$print_startstr(&.str)
+	tostr_r64(a,fmt:=getfmt(fmtstyle))
+	m$print_end()
+	return getstr(&.str,fmt)
+end
+
+export function getstr(ichar s, ref fmtrec fmt)ichar=
+	if fmt.heapmode then
+		return pcm_copyheapstring(s)
+	else
+		return s
+	fi
+end
+
+proc initreadbuffer=
+	if rd_buffer then return fi
+	rd_buffer:=pcm_alloc(rd_buffersize)
+	rd_buffer^:=0
+	rd_pos:=rd_lastpos:=rd_buffer
+end
+
+global proc m$read_conline=
+	initreadbuffer()
+
+	readlinen(nil,rd_buffer,rd_buffersize)
+
+	rd_length:=strlen(rd_buffer)
+	rd_pos:=rd_buffer
+	rd_lastpos:=nil
+end
+
+global proc m$read_fileline(filehandle f)=
+	ichar p
+	initreadbuffer()
+
+	if f=filehandle(1) then
+ABORTPROGRAM("READ CMDLINE")
+!		rd_buffer^:=0
+!		p:=getcommandlinea()
+!		repeat
+!			++p
+!		until p^ in [' ','\t',0]
+!		strcpy(rd_buffer, p)
+!		rd_length:=strlen(rd_buffer)
+!		rd_pos:=rd_buffer
+!		rd_lastpos:=nil
+		return
+	fi
+
+	readlinen(f,rd_buffer,rd_buffersize)
+
+	rd_length:=strlen(rd_buffer)
+	rd_pos:=rd_buffer
+	rd_lastpos:=nil
+end
+
+global proc m$read_strline(ichar s)=
+	int n
+
+	initreadbuffer()
+	n:=strlen(s)
+
+	if n<rd_buffersize then
+		strcpy(rd_buffer,s)
+	else
+		memcpy(rd_buffer,s,rd_buffersize-1)
+		(rd_buffer+rd_buffersize-1)^:=0
+	fi
+	rd_length:=n
+	rd_pos:=rd_buffer
+	rd_lastpos:=nil
+end
+
+function readitem(int &itemlength)ref char =
+!read next item from rd_buffer
+!identify a substring that can contain a name, int, real, string or filename
+!return updated position of s that points past the item and past the immediate
+!terminator 
+!information about the read item is returned in itemstr, which points to
+!the start of the item, and in itemlength. Item excludes any surrounding whitespace
+!Item can be quoted, then the item points inside the quotes
+!Any embedded quotes are removed, and the characters moved up. The item will
+!be that reduced subsequence
+!NOTE THAT THIS IS DESTRUCTIVE. On reread, the input will be different.
+!I can mitigate this by adding spaces between the end of the item, and the next item,
+!overwriting also the terminator. But this won't restore the line if one of the next
+!reads is literal, using 'L' or 'C' codes.
+	ref char p,s,itemstr
+	char quotechar, c
+
+	unless rd_buffer then 
+		initreadbuffer()
+	end unless
+
+	s:=rd_pos
+
+!scan string, eliminating leading white space
+	while s^=' ' or s^=9 do
+		++s
+	od
+
+	itemstr:=s
+	rd_lastpos:=rd_pos:=s
+
+	if s^=0 then
+		termchar:=0
+		itemlength:=0
+		return s
+	fi
+
+	quotechar:=0
+	if s^='"' then
+		quotechar:='"'
+		++s
+	elsif s^='\'' then
+		quotechar:='\''
+		++s
+	fi
+
+!loop reading characters until separator or end reached
+	p:=itemstr:=s
+
+	while s^ do
+		c:=s++^
+		case c
+		when ' ', 9, comma, '=' then		! separator
+			if quotechar or p=s then			!can be considered part of name if inside quotes, or is only char
+				goto normalchar
+			fi
+			termchar:=c
+			exit
+		else
+	normalchar:
+			if c=quotechar then
+				if s^=quotechar then	! embedded quote
+					p^:=c
+					++s
+					++p
+				else					! end of name
+					termchar:=s^
+					if termchar in [',', '='] then
+						++s
+						termchar:=s^
+					fi
+					exit
+				fi
+			else
+				p^:=c
+				++p
+			fi
+		esac
+	od
+
+	if s^=0 then
+		termchar:=0
+	fi
+	itemlength:=p-itemstr				! actual length of token
+	rd_pos:=s
+
+	return itemstr
+end
+
+export function strtoint(ichar s,int length=-1, word base=10)int64=
+!return point to next char after terminator (which can be just off length of string)
+	byte signd
+	word64 aa
+	word c,d
+
+	itemerror:=0
+
+	if length=-1 then
+		length:=strlen(s)
+	fi
+!check for sign
+	signd:=0
+	if length and s^='-' then
+		signd:=1; ++s; --length
+	elsif length and s^='+' then
+		++s; --length
+	fi
+
+	aa:=0
+	while length do
+		c:=s++^
+		--length
+		if c in 'A'..'F' then d:=c-'A'+10
+		elsif c in 'a'..'f' then d:=c-'a'+10
+		elsif c in '0'..'9' then d:=c-'0'
+		elsif c in ['_', '\''] then
+			nextloop
+		else
+			itemerror:=1
+			exit
+		fi
+
+		if d>=base then
+			itemerror:=1
+			exit
+		fi
+		aa:=aa*base+d
+	od
+
+	if signd then
+		return -aa
+	else
+		return aa
+	fi
+end
+
+global function m$read_i64(int fmt=0)int64=
+	ref char s
+	int length,c
+	int64 aa
+
+	fmt:=toupper(fmt)
+
+	case fmt
+	when 'C' then
+		rd_lastpos:=rd_pos
+		if rd_pos^ then
+			return rd_pos++^
+		else
+			return 0
+		fi
+	when 'T' then
+		return termchar
+	when 'E' then
+		return itemerror
+	esac
+
+	s:=readitem(length)
+
+	case fmt
+	when 0,'I' then
+		return strtoint(s,length)
+	when 'B' then
+		return strtoint(s,length,2)
+	when 'H' then
+		return strtoint(s,length,16)
+	esac
+	return 0
+end
+
+global function m$read_r64(int fmt=0)real=
+	[512]char str
+	ref char s
+	int length
+	int32 numlength
+	real x
+
+	s:=readitem(length)
+
+	if length=0 or length>=str.len then		!assume not a real
+		return 0.0
+	fi
+	memcpy(&.str,s,length)
+	str[length+1]:=0
+
+	itemerror:=0
+
+	if sscanf(&.str,"%lf%n", &x, &numlength)=0 or numlength<>length then
+		x:=0.0
+		itemerror:=1
+	fi
+
+	return x
+end
+
+global proc m$read_str(ref char dest, int destlen=0,fmt=0)=
+	ref char s
+	int length,numlength
+	real x
+
+	itemerror:=0
+	if fmt in ['L','l'] then
+		s:=rd_pos
+		length:=rd_buffer+rd_length-rd_pos
+
+	else
+		s:=readitem(length)
+
+		if fmt in ['N','n'] then
+			iconvlcn(s,length)
+		fi
+	fi
+
+	if destlen>0 then
+		if length>=destlen then
+			length:=destlen-1
+			itemerror:=1
+		fi
+	fi
+	memcpy(dest,s,length)
+	(dest+length)^:=0
+end
+
+export proc readstr(ref char dest, int fmt=0,destlen=0)=
+	m$read_str(dest,destlen,fmt)
+end
+
+export proc rereadln=
+	rd_pos:=rd_buffer
+	rd_lastpos:=rd_pos
+end
+
+export proc reread=
+	rd_pos:=rd_lastpos
+end
+
+export function valint(ichar s, int fmt=0)int64=
+	ref char old_pos, old_lastpos
+	int64 aa
+
+	initreadbuffer()
+	old_pos:=rd_pos
+	old_lastpos:=rd_lastpos
+
+	rd_pos:=s
+	aa:=m$read_i64(fmt)
+	rd_pos:=old_pos
+	rd_lastpos:=old_lastpos
+	return aa
+end
+
+export function valreal(ichar s)real=
+	ref char old_pos, old_lastpos
+	real x
+
+	initreadbuffer()
+	old_pos:=rd_pos
+	old_lastpos:=rd_lastpos
+
+	rd_pos:=s
+	x:=m$read_r64()
+	rd_pos:=old_pos
+	rd_lastpos:=old_lastpos
+	return x
+end
+
+proc mclunimpl(ichar mess)=
+	printf("MCL-UNIMPL: %s\n",mess)
+	stop 1
+end
+
+proc dumpstr(ichar s, int n, fbuffer=0)=
+!fbuffer=1 when outputting contents of buffer
+
+	ref ref char p
+
+	if outdev=str_io then
+		p:=cast(outchan)
+		if n then
+			memcpy(p^,s,n)
+			p^+:=n
+		fi
+		p^^:=0
+		return
+	fi
+
+	return when n=0
+	if fbuffer and n>=2 and outdev=std_io then
+		--printptr				!point to last char
+		if printptr^=10 then
+			if (printptr-1)^=13 then		!crlf
+				(printptr-1)^:=0
+			else							!lf only
+				printptr^:=0
+			fi
+			puts(printbuffer)
+			return
+		fi
+	fi
+
+	case outdev
+	when std_io then
+		printf("%.*s",n,s)
+	when file_io then
+		fprintf(outchan,"%.*s",n,s)
+	esac
+end
+
+proc dumpprintbuffer=
+	if printlen then
+		dumpstr(&.printbuffer,printlen,1)
+	fi
+
+	resetprintbuffer()
+end
+
+proc resetprintbuffer=
+	printptr:=&.printbuffer
+	printlen:=0
+end
+
+proc addtobuffer(ichar s, int n)=
+	if printlen+n>=(printbuffer.len-8) then
+		dumpprintbuffer()
+	fi
+
+	if n<printbuffer.len then
+		memcpy(printptr,s,n)
+		printptr+:=n
+		printlen+:=n
+		return
+	fi
+
+	dumpstr(s, n)			!don't bother with buffer
+end
+
+global function m$power_i64(int64 a,n)int64=
+	if n<0 then
+		return 0
+	elsif n=0 then
+		return 1
+	elsif n=1 then
+		return a
+	elsif (n iand 1)=0 then
+		return m$power_i64(sqr a,n/2)
+	else			!assume odd
+		return m$power_i64(sqr a,(n-1)/2)*a
+	fi
+end
+
+func getutfsize(ref char s)int =
+!work out the size in bytes of the ascii or utf8 character that s points to
+	int a
+
+	a:=s++^
+
+	if a=0 then						!end of string
+		0
+	elsif a.[7]=0 then				!ascii
+		1
+	elsif a.[7..5]=2x110 then
+		2
+	elsif a.[7..4]=2x1110 then
+		3
+	elsif a.[7..3]=2x11110 then
+		4
+	else							!error: just assume a byte of random binary
+		1
+	fi
+end
+
+!export fun `fract(real x)real = fmod(x,1.0)
+export fun fraction(real x)real = fmod(x,1.0)
+
+export fun m$sign_i64(int a)int = (a<0|-1| (a>0|1|0))
+export func m$sign_r64(real x)real =
+	if x<0 then return -1 fi
+	if x>0 then return 1 fi
+	0
+end
+=== mlib.m 0 1 44/47 ===
+!const mem_check=1
+const mem_check=0
+
+global [0..300]u64 allocupper
+global int alloccode				!set by heapalloc
+export int allocbytes				!set by heapalloc
+export int fdebug=0
+export int rfsize
+
+const threshold=1<<25
+const alloc_step=1<<25
+word maxmemory
+int  maxalloccode
+
+!GLOBAL REF VOID ALLOCBASE
+
+byte pcm_setup=0
+
+int show=0
+
+global int memtotal=0
+export int64 smallmemtotal=0
+global int smallmemobjs=0
+global int maxmemtotal=0
+
+!store all allocated pointers
+const int maxmemalloc=(mem_check|500000|2)
+[maxmemalloc+1]ref int32 memalloctable
+[maxmemalloc+1]int32 memallocsize
+
+const pcheapsize=1048576*2
+ref byte pcheapstart
+ref byte pcheapend			!points to first address past heap
+ref byte pcheapptr
+
+const int maxblockindex = 8 		!2048
+export const int maxblocksize = 2048
+export const int $maxblocksizexx = 2048
+
+[0:maxblocksize+1]byte sizeindextable	!convert byte size to block index 1..maxblockindex
+
+const int size16   = 1			!the various index codes
+const int size32   = 2
+const int size64   = 3
+const int size128  = 4
+const int size256  = 5
+const int size512  = 6
+const int size1024 = 7
+const int size2048 = 8
+
+export [0:9]ref word freelist
+
+export record strbuffer =
+	ichar strptr
+	int32 length
+	int32 allocated
+end
+
+export enumdata [0:]ichar pmnames=
+	(pm_end=0,		$),
+	(pm_option,		$),
+	(pm_sourcefile,	$),
+	(pm_libfile,	$),
+	(pm_colon,		$),
+	(pm_extra,		$),
+end
+
+[2]int seed = (0x2989'8811'1111'1272',0x1673'2673'7335'8264)
+
+!PROC START=
+!CPL "MLIB START"
+!END
+
+
+export function pcm_alloc(int n)ref void =
+	ref byte p
+
+
+	if not pcm_setup then
+		pcm_init()
+	fi
+
+!GOTO DOLARGE
+
+	if n>maxblocksize then			!large block allocation
+!DOLARGE:
+		alloccode:=pcm_getac(n)
+		allocbytes:=allocupper[alloccode]
+
+		p:=allocmem(allocbytes)
+		if not p then
+			abortprogram("pcm_alloc failure")
+		fi
+
+		return p
+	fi
+
+!CPL "DOSMALL"
+
+	alloccode:=sizeindextable[n]		!Size code := 0,1,2 etc for 0, 16, 32 etc
+	allocbytes:=allocupper[alloccode]
+	smallmemtotal+:=allocbytes
+
+	if p:=ref byte(freelist[alloccode]) then		!Items of this block size available
+		freelist[alloccode]:=ref word(int((freelist[alloccode])^))
+
+		return p
+	fi
+
+!No items in freelists: allocate new space in this heap block
+	p:=pcheapptr				!Create item at start of remaining pool in heap block
+	pcheapptr+:=allocbytes			!Shrink remaining pool
+
+	if pcheapptr>=pcheapend then		!Overflows?
+		p:=pcm_newblock(allocbytes)		!Create new heap block, and allocate from start of that
+		return p
+	fi
+
+	return p
+end
+
+export proc pcm_free(ref void p,int n) =
+!n can be the actual size requested it does not need to be the allocated size
+	int acode
+
+	if n=0 then return fi
+
+!GOTO DOLARGE
+
+	if n>maxblocksize then		!large block
+!DOLARGE:
+!CPL "DOL"
+		free(p)
+		return
+	fi
+
+!CPL "DOSMALL"
+	if p then
+		acode:=sizeindextable[n]		!Size code := 0,1,2 etc for 0, 16, 32 etc
+
+		smallmemtotal-:=allocupper[acode]
+!
+		cast(p,ref word)^:=word(int(freelist[acode]))
+		freelist[acode]:=p
+	fi
+end
+
+export proc pcm_freeac(ref void p,int alloc) =
+	pcm_free(p,allocupper[alloc])
+end
+
+export proc pcm_clearmem(ref void p,int n) =
+	memset(p,0,n)
+end
+
+export proc pcm_init =
+!set up sizeindextable too
+	int j,k,k1,k2
+	int64 size
+	const limit=1<<33
+
+	alloccode:=0
+	if pcm_setup then
+		return
+	fi
+
+	pcm_newblock(0)
+
+	for i to maxblocksize do	!table converts eg. 78 to 4 (4th of 16,32,64,128)
+		j:=1
+		k:=16
+		while i>k do
+			k:=k<<1
+			++j
+		od
+		sizeindextable[i]:=j
+	od
+
+	allocupper[1]:=16
+	size:=16
+
+	for i:=2 to 27 do
+		size*:=2
+		allocupper[i]:=size
+		if size>=threshold then
+				k:=i
+			exit
+		fi
+	od
+
+	for i:=k+1 to allocupper.upb do
+		size+:=alloc_step
+		if size<limit then
+			allocupper[i]:=size
+			maxmemory:=size
+		else
+			maxalloccode:=i-1
+			exit
+		fi
+		
+	od
+	pcm_setup:=1
+end
+
+export function pcm_getac(int size)int =
+! convert linear blocksize from 0..approx 2GB to 8-bit allocation code
+
+!sizeindextable scales values from 0 to 2048 to allocation code 0 to 9
+
+	if size<=maxblocksize then
+		return sizeindextable[size]		!size 0 to 2KB
+	fi
+
+	size:=(size+255)>>8					!scale by 256
+
+!now same sizetable can be used for 2KB to 512KB (288 to 2KB)
+
+	if size<=maxblocksize then
+		return sizeindextable[size]+8
+	fi
+
+!sizetable now used for 512KB to 128MB (to 2KB)
+	size:=(size+63)>>6					!scale by 256
+
+	if size<=maxblocksize then
+		return sizeindextable[size]+14
+	fi
+
+!size>2048, which means it had been over 128MB.
+	size:=(size-2048+2047)/2048+22
+	return size
+end
+
+export function pcm_newblock(int itemsize)ref void=
+!create new heap block (can be first)
+!also optionally allocate small item at start
+!return pointer to this item (and to the heap block)
+	static int totalheapsize
+	ref byte p
+
+	totalheapsize+:=pcheapsize
+	alloccode:=0
+	p:=allocmem(pcheapsize)	!can't free this block until appl terminates
+	if p=nil then
+		abortprogram("Can't alloc pc heap")
+	fi
+	memset(p,0,pcheapsize)
+
+	pcheapptr:=p
+	pcheapend:=p+pcheapsize
+
+	if pcheapstart=nil then		!this is first block
+		pcheapstart:=p
+	fi
+	pcheapptr+:=itemsize
+	return ref u32(p)
+end
+
+export function pcm_round(int n)int =
+!for any size n, return actual number of bytes that would be allocated
+	static [0:maxblockindex+1]int32 allocbytes=(0,16,32,64,128,256,512,1024,2048)
+
+	if n>maxblocksize then
+		return n
+	else
+		return allocbytes[sizeindextable[n]]
+	fi
+end
+
+export function pcm_allocz(int n)ref void =
+	ref void p
+	p:=pcm_alloc(n)
+
+	memset(p,0,n)
+	return p
+end
+
+export function pcm_copyheapstring(ref char s)ref char =
+!allocate enough bytes for string s: copy s to the heap
+!return pointer to new string
+	ref char q
+	int n
+	if s=nil then return nil fi
+
+	n:=strlen(s)+1
+	q:=pcm_alloc(n)
+	memcpy(q,s,n)
+	return q
+end
+
+export function pcm_copyheapstringn(ref char s,int n)ref char =
+	ref char q
+	if s=nil then return nil fi
+
+	q:=pcm_alloc(n+1)
+	memcpy(q,s,n)
+	(q+n)^:=0
+	return q
+end
+
+export function pcm_copyheapblock(ref char s, int length)ref char =
+!allocate enough bytes for string s: copy s to the heap
+!return pointer to new string
+	ref char q
+	if length=0 then return nil fi
+
+	q:=pcm_alloc(length)
+	memcpy(q,s,length)
+	return q
+end
+
+export function allocmem(int n)ref void =
+	ref void p
+
+	p:=malloc(n)
+	if p then
+		return p
+	fi
+	println n,memtotal
+	abortprogram("Alloc mem failure")
+	return nil
+end
+
+global function reallocmem(ref void p,int n)ref void =
+	p:=realloc(p,n)
+	return p when p
+	println n
+	abortprogram("Realloc mem failure")
+	return nil
+end
+
+export proc abortprogram(ref char s) =
+	println s
+	print   "ABORTING: Press key..."
+!os_getch()
+	stop 5
+end
+
+export function getfilesize(filehandle handlex)int=
+	word32 p,size
+
+	p:=ftell(handlex)		!current position
+	fseek(handlex,0,2)		!get to eof
+	size:=ftell(handlex)		!size in bytes
+	fseek(handlex,p,seek_set)	!restore position
+	return size
+end
+
+export proc readrandom(filehandle handlex, ref byte mem, int offset, size) =
+	int a
+	fseek(handlex,offset,seek_set)
+	a:=fread(mem,1,size,handlex)			!assign so as to remove gcc warning
+end
+
+export function writerandom(filehandle handlex, ref byte mem, int offset,size)int =
+	fseek(handlex,offset,seek_set)
+	return fwrite(mem,1,size,handlex)
+end
+
+export function setfilepos(filehandle file,int offset)int=
+	return fseek(file,offset,0)
+end
+
+export function getfilepos(filehandle file)int=
+	return ftell(file)
+end
+
+export function readfile(ref char filename)ref byte =
+	filehandle f
+	int size
+	ref byte m,p
+
+	f:=fopen(filename,"rb")
+	if f=nil then
+		return nil
+	fi
+	rfsize:=size:=getfilesize(f)
+
+	m:=malloc(size+2)		!allow space for etx/zeof etc
+
+	if m=nil then
+		return nil
+	fi
+
+	readrandom(f,m,0,size)
+	p:=m+size			!point to following byte
+	(ref u16(p)^:=0)	!add two zero bytes
+
+	fclose(f)
+	return m
+end
+
+export function writefile(ref char filename,ref byte data,int size)int =
+	filehandle f
+	int n
+
+	f:=fopen(filename,"wb")
+	if f=nil then
+		return 0
+	fi
+
+	n:=writerandom(f,data,0,size)
+	fclose(f)
+	return n
+end
+
+export function checkfile(ref char file)int=
+	filehandle f
+	if f:=fopen(file,"rb") then
+		fclose(f)
+		return 1
+	fi
+	return 0
+end
+
+export proc readlinen(filehandle handlex,ref char buffer,int size) =
+!size>2
+	int ch
+	ref char p
+	int n
+	[0:100]char buff
+	byte crseen
+
+	if handlex=nil then
+		handlex:=filehandle(os_getstdin())
+	fi
+	if handlex=nil then
+		n:=0
+		p:=buffer
+		do
+			ch:=getchar()
+			if ch=13 or ch=10 or ch=-1 then
+				p^:=0
+				return
+			fi
+			p++^:=ch
+			++n
+			if n>=(size-2) then
+				p^:=0
+				return
+			fi
+		od
+	fi
+
+	buffer^:=0
+	if fgets(buffer,size-2,handlex)=nil then
+		return
+	fi
+
+	n:=strlen(buffer)
+	if n=0 then
+		return
+	fi
+
+	p:=buffer+n-1		!point to last char
+	crseen:=0
+	while (p>=buffer and (p^=13 or p^=10)) do
+		if p^=13 or p^=10 then crseen:=1 fi
+		p--^ :=0
+	od
+
+!NOTE: this check doesn't work when a line simply doesn't end with cr-lf
+
+	if not crseen and (n+4>size) then
+		cpl size,n
+		abortprogram("line too long")
+	fi
+end
+
+export proc iconvlcn(ref char s,int n) =
+	to n do
+		s^:=tolower(s^)
+		++s
+	od
+end
+
+export proc iconvucn(ref char s,int n) =
+	to n do
+		s^:=toupper(s^)
+		++s
+	od
+end
+
+export function convlcstring(ref char s)ichar s0=
+	s0:=s
+	while (s^) do
+		s^:=tolower(s^)
+		++s
+	od
+	s0
+end
+
+export function convucstring(ref char s)ichar s0=
+	s0:=s
+	while (s^) do
+		s^:=toupper(s^)
+		++s
+	od
+	s0
+end
+
+export function changeext(ref char s,newext)ichar=
+!whether filespec has an extension or not, change it to newext
+!newext should start with "."
+!return new string (locally stored static string, so must be used before calling again)
+	static [260]char newfile
+	[32]char newext2
+	ref char sext
+	int n
+
+	strcpy(&newfile[1],s)
+
+	case newext^
+	when 0 then
+		newext2[1]:=0
+		newext2[2]:=0
+	when '.' then
+		strcpy(&newext2[1],newext)
+	else
+		strcpy(&newext2[1],".")
+		strcat(&newext2[1],newext)
+	esac
+
+
+	sext:=extractext(s,1)			!include "." when it is only extension
+
+	case sext^
+	when 0 then						!no extension not even "."
+		strcat(&newfile[1],&newext2[1])
+	when '.' then						!no extension not even "."
+		strcat(&newfile[1],&newext2[2])
+	else							!has extension
+		n:=sext-s-2			!n is number of chars before the "."
+		strcpy(&newfile[1]+n+1,&newext2[1])
+	esac
+
+	return &newfile[1]
+end
+
+export function extractext(ref char s,int period=0)ichar=
+!if filespec s has an extension, then return pointer to it otherwise return ""
+!if s ends with ".", then returns "."
+	ref char t,u
+
+	t:=extractfile(s)
+
+	if t^=0 then			!s contains no filename
+		return ""
+	fi
+
+!t contains filename+ext
+	u:=t+strlen(t)-1		!u points to last char of t
+
+	while u>=t do
+		if u^='.' then		!start extension found
+			if (u+1)^=0 then		!null extension
+				return (period|"."|"")
+			fi
+			return u+1			!return last part of filename as extension exclude the dot
+		fi
+		--u
+	od
+	return ""			!no extension seen
+end
+
+export function extractpath(ref char s)ichar=
+	static [0:260]char str
+	ref char t
+	int n
+
+	t:=s+strlen(s)-1		!t points to last char
+
+	while (t>=s) do
+		case t^
+		when '\\','/',':' then		!path separator or drive letter terminator assume no extension
+			n:=t-s+1			!n is number of chars in path, which includes rightmost / or \ or :
+			memcpy(&.str,s,n)
+			str[n]:=0
+			return &.str
+		esac
+		--t
+	od
+	return ""			!no path found
+end
+
+export function extractfile(ref char s)ichar=
+	ref char t
+
+	t:=extractpath(s)
+
+	if t^=0 then			!s contains no path
+		return s
+	fi
+
+	return s+strlen(t)		!point to last part of s that contains the file
+	end
+
+export function extractbasefile(ref char s)ichar=
+	static [0:100]char str
+	ref char f,e
+	int n,flen
+
+	f:=extractfile(s)
+	flen:=strlen(f)
+	if flen=0 then		!s contains no path
+		return ""
+	fi
+	e:=extractext(f,0)
+
+	if e^ then			!not null extension
+		n:=flen-strlen(e)-1
+		memcpy(&str,f,n)
+		str[n]:=0
+		return &.str
+	fi
+	if (f+flen-1)^='.' then
+		memcpy(&str,f,flen-1)
+		str[flen-1]:=0
+		return &.str
+	fi
+	return f
+end
+
+export function addext(ref char s,ref char newext)ichar=
+!when filespec has no extension of its own, add newext
+	ref char sext
+
+	sext:=extractext(s,1)
+
+	if sext^=0 then						!no extension not even "."
+		return changeext(s,newext)
+	fi
+
+	return s							!has own extension; use that
+end
+
+export function pcm_alloc32:ref void =
+	ref byte p
+
+	allocbytes:=32
+	smallmemtotal+:=32
+
+	if p:=ref byte(freelist[2]) then		!Items of this block size available
+		freelist[2]:=ref word(int((freelist[2])^))
+		return p
+	fi
+
+!No items in freelists: allocate new space in this heap block
+	return pcm_alloc(32)
+end
+
+export proc pcm_free32(ref void p) =
+!n can be the actual size requested it does not need to be the allocated size
+
+	smallmemtotal-:=32
+
+	cast(p,ref word)^:=word(int(freelist[2]))
+	freelist[2]:=p
+end
+
+export proc outbyte(filehandle f,int x)=
+	fwrite(&x,1,1,f)
+end
+
+export proc outword16(filehandle f,word x)=
+	fwrite(&x,2,1,f)
+end
+
+export proc outword32(filehandle f,word x)=
+	fwrite(&x,4,1,f)
+end
+
+export proc outword64(filehandle f,word64 x)=
+	fwrite(&x,8,1,f)
+end
+
+export proc outstring(filehandle f, ichar s)=
+	fwrite(s,strlen(s)+1,1,f)
+end
+
+export proc outblock(filehandle f, ref void p, int n)=
+	fwrite(p,n,1,f)
+end
+
+export function myeof(filehandle f)int=
+	int c
+
+	c:=fgetc(f)
+	if c=c_eof then return 1 fi
+	ungetc(c,f)
+	return 0;
+end
+
+export proc strbuffer_add(ref strbuffer dest, ichar s, int n=-1)=
+	int newlen,oldlen
+	ichar newptr
+
+!	IF N=0 THEN CPL "N=0" FI
+
+	if n=-1 then
+		n:=strlen(s)
+	fi
+
+	oldlen:=dest.length
+
+	if oldlen=0 then				!first string
+		dest.strptr:=pcm_alloc(n+1)
+		dest.allocated:=allocbytes
+		dest.length:=n				!length always excludes terminator
+		memcpy(dest.strptr,s,n)
+		(dest.strptr+n)^:=0
+		return
+	fi
+
+	newlen:=oldlen+n
+	if newlen+1>dest.allocated then
+		newptr:=pcm_alloc(newlen+1)
+		memcpy(newptr,dest.strptr,oldlen)
+		dest.strptr:=newptr
+		dest.allocated:=allocbytes
+	fi
+
+	memcpy(dest.strptr+oldlen,s,n)
+	(dest.strptr+newlen)^:=0
+
+	dest.length:=newlen
+end
+
+export proc gs_init(ref strbuffer dest)=
+	pcm_clearmem(dest,strbuffer.bytes)
+end
+
+export proc gs_free(ref strbuffer dest)=
+	if dest.allocated then
+		pcm_free(dest.strptr,dest.allocated)
+	fi
+end
+
+export proc gs_str(ref strbuffer dest,ichar s)=
+	strbuffer_add(dest,s)
+end
+
+export proc gs_char(ref strbuffer dest,int c)=
+	[16]char s
+
+	s[1]:=c
+	s[2]:=0
+
+	strbuffer_add(dest,&.s,1)
+end
+
+export proc gs_strn(ref strbuffer dest,ichar s,int length)=
+	strbuffer_add(dest,s,length)
+end
+
+export proc gs_strvar(ref strbuffer dest,s)=
+	strbuffer_add(dest,s.strptr)
+end
+
+export proc gs_strint(ref strbuffer dest,int64 a)=
+	strbuffer_add(dest,strint(a))
+end
+
+export proc gs_strln(ref strbuffer dest,ichar s)=
+	gs_str(dest,s)
+	gs_line(dest)
+end
+
+export proc gs_strsp(ref strbuffer dest,ichar s)=
+	gs_str(dest,s)
+	gs_str(dest," ")
+end
+
+export proc gs_line(ref strbuffer dest)=
+	strbuffer_add(dest,"\w")
+end
+
+export function gs_getcol(ref strbuffer dest)int=
+	return dest.length
+end
+
+export proc gs_leftstr(ref strbuffer dest, ichar s, int w, padch=' ')=
+	int col,i,n,slen
+	[2560]char str
+	col:=dest.length
+	strcpy(&.str,s)
+	slen:=strlen(s)
+	n:=w-slen
+	if n>0 then
+		for i:=1 to n do
+			str[slen+i]:=padch
+		od
+		str[slen+n+1]:=0
+	fi
+	gs_str(dest,&.str)
+end
+
+export proc gs_leftint(ref strbuffer dest, int a, int w, padch=' ')=
+	gs_leftstr(dest,strint(a),w,padch)
+end
+
+export proc gs_padto(ref strbuffer dest,int col, ch=' ')=
+	int n
+	[2560]char str
+
+	n:=col-dest.length
+	if n<=0 then return fi
+	for i:=1 to n do
+		str[i]:=ch
+	od
+	str[n+1]:=0
+	gs_str(dest,&.str)
+end
+
+export proc gs_println(ref strbuffer dest,filehandle f=nil)=
+	if dest.length=0 then return fi
+	(dest.strptr+dest.length)^:=0
+
+	if f=nil then
+		println dest.strptr,,"\c"
+	else
+		println @f,dest.strptr,,"\c"
+	fi
+end
+
+export function nextcmdparamnew(int &paramno, ichar &name, &value, ichar defext=nil)int=
+	static int infile=0
+	static ichar filestart=nil
+	static ichar fileptr=nil
+	static byte colonseen=0
+	ref char q
+	ichar item,fileext
+	ichar rest
+	int length
+	static [300]char str
+
+	reenter:
+	value:=nil
+	name:=nil
+
+	if infile then
+		if readnextfileitem(fileptr,item)=0 then		!eof
+			free(filestart)								!file allocated via malloc
+			infile:=0
+			goto reenter
+		fi
+	else
+		if paramno>ncmdparams then
+			return pm_end
+		fi
+		item:=cmdparams[paramno]
+		++paramno
+
+		length:=strlen(item)
+
+		if item^='@' then		!@ file
+			filestart:=fileptr:=readfile(item+1)
+			if filestart=nil then
+				println "Can't open",item
+				stop 7
+			fi
+			infile:=1
+			goto reenter
+		fi
+
+		if item^=':' then
+			colonseen:=1
+			return pm_colon
+		fi
+	fi
+
+	value:=nil
+	if item^='-' then
+		name:=item+(colonseen|0|1)
+		q:=strchr(item,':')
+		if not q then
+			q:=strchr(item,'=')
+		fi
+		if q then
+			value:=q+1
+			q^:=0
+		fi
+		return (colonseen|pm_extra|pm_option)
+	fi
+
+	fileext:=extractext(item,0)
+	name:=item
+
+	if fileext^=0 then							!no extension
+		strcpy(&.str,name)
+		if defext and not colonseen then
+			name:=addext(&.str,defext)				!try .c
+		fi
+!	elsif eqstring(fileext,"dll") then
+	elsif eqstring(fileext,"dll") or eqstring(fileext,"mcx") then
+		return (colonseen|pm_extra|pm_libfile)
+	fi
+	return (colonseen|pm_extra|pm_sourcefile)
+end
+
+function readnextfileitem(ichar &fileptr,&item)int=
+	ref char p,pstart,pend
+	int n
+	static [256]char str
+
+	p:=fileptr
+
+	reenter:
+	do
+		case p^
+		when ' ','\t',13,10 then	!skip white space
+			++p
+		when 26,0 then				!eof
+			return 0
+		else
+			exit
+		esac
+	od
+
+	case p^
+	when '!', '#' then			!comment
+		++p
+		docase p++^
+		when 10 then
+			goto reenter
+		when 26,0 then
+			fileptr:=p-1
+			return 0
+		else
+
+		end docase
+	esac
+
+
+	case p^
+	when '"' then				!read until closing "
+		pstart:=++p
+		do
+			case p^
+			when 0,26 then
+				println "Unexpected EOF in @file"
+				stop 8
+			when '"' then
+				pend:=p++
+				if p^=',' then ++p fi
+				exit
+			esac
+			++p
+		od
+	else
+		pstart:=p
+		do
+			case p^
+			when 0,26 then
+				pend:=p
+				exit
+			when ' ','\t',',',13,10 then
+				pend:=p++
+				exit
+			esac
+			++p
+		od
+	esac
+
+	n:=pend-pstart
+	if n>=str.len then
+		println "@file item too long"
+		stop 9
+	fi
+	memcpy(&.str,pstart,n)
+	str[n+1]:=0
+	item:=&.str
+	fileptr:=p
+
+	return 1
+end
+
+export proc ipadstr(ref char s,int width,ref char padchar=" ")=
+	int n
+
+	n:=strlen(s)
+	to width-n do
+		strcat(s,padchar)
+	od
+end
+
+export function padstr(ref char s,int width,ref char padchar=" ")ichar=
+	static [256]char str
+
+	strcpy(&.str,s)
+	ipadstr(&.str,width,padchar)
+	return &.str
+end
+
+export function chr(int c)ichar=
+	static [8]char str
+
+	str[1]:=c
+	str[2]:=0
+	return &.str
+end
+
+export function cmpstring(ichar s,t)int=
+	int res
+	if (res:=strcmp(s,t))<0 then
+		return -1
+	elsif res>0 then
+		return 1
+	else
+		return 0
+	fi
+end
+
+export function cmpstringn(ichar s,t,int n)int=
+	int res
+	if (res:=strncmp(s,t,n))<0 then
+		return -1
+	elsif res>0 then
+		return 1
+	else
+		return 0
+	fi
+end
+
+export function eqstring(ichar s,t)int=
+	return strcmp(s,t)=0
+end
+
+export function cmpbytes(ref void p,q,int n)int=
+	int res
+	if (res:=memcmp(p,q,n))<0 then
+		return -1
+	elsif res>0 then
+		return 1
+	else
+		return 0
+	fi
+end
+
+export function eqbytes(ref void p,q,int n)int=
+	return memcmp(p,q,n)=0
+end
+
+export proc mseed(word64 a,b=0)=
+	seed[1]:=a
+	if b then
+		seed[2]:=b
+	else
+		seed[2] ixor:=a
+	fi
+end
+
+export function mrandom:word =
+!return pure 64-bit word value, 0 to 2**64-1
+!(cast result for signed value)
+!	word64 x,y
+	int x,y
+	x:=seed[1]
+	y:=seed[2]
+	seed[1]:=y
+	x ixor:=(x<<23)
+	seed[2]:= x ixor y ixor (x>>17) ixor (y>>26)
+	return seed[2]+y
+end
+
+export function mrandomp:int =
+!pure 64-bit int value, positive only, 0 to 2**63-1
+	return mrandom() iand 0x7FFF'FFFF'FFFF'FFFF
+end
+
+export function mrandomint(int n)int=
+!positive random int value from 0 to n-1
+	return mrandomp() rem n
+end
+
+export function mrandomrange(int a,b)int=
+!random int value from a to b inclusive
+!span extent must be 1 to 2**63-1
+	int span
+	span:=b-a+1
+	if span<=0 then
+		return 0
+	fi
+	return (mrandomp() rem span)+a
+end
+
+export function mrandomreal:real x=
+!positive random real value from 0 to just under (but not including) 1.0
+	repeat x:=mrandomp()/9223372036854775808.0 until x<>1.0
+	return x
+end
+
+export function mrandomreal1:real=
+!positive random real value from 0 to 1.0 inclusive
+	return mrandomp()/9223372036854775807
+end
+
+export function readline:ichar=
+	readln
+	return rd_buffer
+end
+
+export function findfunction(ichar name)ref void=
+	for i to $getnprocs() do
+		if eqstring($getprocname(i),name) then
+			return $getprocaddr(i)
+		fi
+	od
+	return nil
+end
+
+export function roundtoblock(int n,align)int=
+!round up n until it is a multiple of filealign (which is a power of two)
+!return aligned value. Returns original if already aligned
+	if n iand (align-1)=0 then return n fi
+	return n+(align-(n iand (align-1)))
+end
+
+export function pcm_allocnfz(int n)ref void =
+!non-freeing allocator for small objects
+!n should be a multiple of 8 bytes, but is rounded up here if needed
+	ref byte p
+
+!make n a multiple of 8
+	if n iand 7 then
+		n:=n+(8-(n iand 7))
+	fi
+
+	p:=pcheapptr					!Create item at start of remaining pool in heap block
+	pcheapptr+:=n					!Shrink remaining pool
+
+	if pcheapptr>=pcheapend then	!Overflows?
+		p:=pcm_newblock(n)			!Create new heap block, and allocate from start of that
+	fi
+
+	return p
+end
+
+!export proc freddy=
+!	PRINTLN "FREDDY"
+!end
+=== mclib.m 0 1 45/47 ===
+export type filehandle=ref void
+
+importdll $cstd=
+	func malloc		(word64)ref void
+	func realloc	(ref void, word)ref void
+	proc free		(ref void)
+	proc memset		(ref void, int32, word)
+	proc memcpy		(ref void, ref void, word)
+	proc memmove		(ref void, ref void, word)
+	func clock		:int32
+	func ftell		(filehandle)int32
+	func fseek		(filehandle, int32, int32)int32
+	func fread		(ref void, word, word, filehandle)word
+	func fwrite		(ref void, word, word, filehandle)word
+	func getc		(filehandle)int32
+	func ungetc		(int32, filehandle)int32
+	func fopen		(ichar a, b="rb")filehandle
+	func fclose		(filehandle)int32
+	func fgets		(ichar, int, filehandle)ichar
+	func remove		(ichar)int32
+	func rename		(ichar, ichar)int32
+	func getchar	:int32
+	proc putchar	(int32)
+	proc setbuf		(filehandle, ref byte)
+
+	func strlen		(ichar)int
+	func strcpy		(ichar, ichar)ichar
+	func strcmp		(ichar, ichar)int32
+	func strncmp	(ichar, ichar, word)int32
+	func strncpy	(ichar, ichar, word)word
+	func memcmp		(ref void, ref void, word)int32
+	func strcat		(ichar, ichar)ichar
+	func tolower	(int32)int32
+	func toupper	(int32)int32
+	func isalpha	(int32)int32
+	func isupper	(int32)int32
+	func islower	(int32)int32
+	func isalnum	(int32)int32
+	func isspace	(int32)int32
+	func strstr		(ichar, ichar)ichar
+	func atol		(ichar)int
+	func atoi		(ichar)int32
+	func strtod		(ichar,ref ref char)real64
+	func _strdup	(ichar)ichar
+
+	func puts		(ichar)int32
+	func printf		(ichar, ...)int32
+
+	func sprintf	(ichar, ichar, ...)int32
+
+	func sscanf		(ichar, ichar, ...)int32
+	func scanf		(ichar, ...)int32
+
+	func rand		:int32
+	proc srand		(word32)
+	func system		(ichar)int32
+
+	func fgetc		(filehandle)int32
+	func fputc		(int32,  filehandle)int32
+	func fprintf	(filehandle, ichar, ...)int32
+	func fputs		(ichar,  filehandle)int32
+	func feof		(filehandle)int32
+	func getch		:int32
+	func _getch		:int32
+	func kbhit		:int32
+	func _mkdir		(ichar)int32
+	func mkdir		(ichar)int32
+	func strchr		(ichar,int32)ichar
+
+	func _setmode	(int32,int32)int32
+
+	proc _exit		(int32)
+	proc "exit"		(int32)
+!	proc `exit		(int32)
+	func pow		(real,real)real
+
+	func `sin 		(real)real
+	func `cos		(real)real
+	func `tan		(real)real
+	func `asin		(real)real
+	func `acos		(real)real
+	func `atan 		(real)real
+	func `log		(real)real
+	func `log10		(real)real
+	func `exp		(real)real
+	func `floor		(real)real
+	func `ceil		(real)real
+
+	proc  qsort   	(ref void, word64, word64, ref proc)
+
+end
+
+export macro strdup=_strdup
+
+importdll $cstdextra=
+	func __getmainargs	(ref int32, ref void, ref void, int, ref void)int32
+end
+
+export const c_eof		=-1
+export const seek_set	= 0
+export const seek_curr	= 1
+export const seek_end	= 2
+=== mwindows.m 0 1 46/47 ===
+const wm_destroy=2
+
+export type wt_word	= word16
+export type wt_wordpm	= word32
+export type wt_bool	= word32
+export type wt_dword	= word32
+export type wt_wchar	= word16
+export type wt_wcharpm	= word32
+export type wt_char	= byte
+export type wt_ichar	= ref char
+export type wt_ptr		= ref void
+export type wt_wndproc	= ref proc
+export type wt_handle	= ref void
+export type wt_int		= int32
+export type wt_uint	= word32
+export type wt_long	= int32
+export type wt_wparam	= word
+export type wt_lparam	= word
+export type wt_point	= rpoint
+
+export record rsystemtime =
+	wt_word year
+	wt_word month
+	wt_word dayofweek
+	wt_word day
+	wt_word hour
+	wt_word minute
+	wt_word second
+	wt_word milliseconds
+end
+
+importdll $windowsdlls=
+!	func "VirtualAlloc"(wt_ptr, dint,wt_dword,wt_dword)wt_ptr
+	func "GetStdHandle"(wt_dword)wt_handle
+	func "GetConsoleScreenBufferInfo"(wt_handle,wt_ptr)int
+	func "SetConsoleCtrlHandler"(wt_wndproc,int)int
+	func "SetConsoleMode"(wt_handle,wt_dword)int
+	func "CreateProcessA"(wt_ichar,wt_ichar,wt_ptr,wt_ptr, int,
+						wt_dword, wt_ptr,wt_ichar,wt_ptr,wt_ptr)int
+	func "GetLastError":wt_dword
+	func "WaitForSingleObject"(wt_handle,wt_dword)wt_dword
+	func "GetExitCodeProcess"(wt_handle,wt_ptr)int
+	func "CloseHandle"(wt_handle)int
+	func "GetNumberOfConsoleInputEvents"(wt_handle,wt_ptr)int
+	func "FlushConsoleInputBuffer"(wt_handle)int
+	func "LoadLibraryA"(wt_ichar)wt_handle
+!	func "GetProcAddress"(wt_handle,wt_ichar)wt_wndproc
+	func "GetProcAddress"(wt_handle,wt_ichar)ref void
+	func "LoadCursorA"(wt_handle,wt_ichar)wt_handle
+	func "RegisterClassExA"(wt_ptr)wt_wordpm
+	func "DefWindowProcA"(wt_handle,wt_uint,wt_wparam,wt_lparam)int
+	func "ReadConsoleInputA"(wt_handle,wt_ptr,wt_dword,wt_ptr)int
+	proc "Sleep"(wt_dword)
+	func "GetModuleFileNameA"(wt_handle,wt_ichar,wt_dword)wt_dword
+
+	proc "ExitProcess"(wt_uint)
+	proc "PostQuitMessage"(wt_int)
+
+	proc "MessageBoxA"(wt_int x=0,wt_ichar message, caption="Caption",wt_int y=0)
+
+	func "QueryPerformanceCounter"(ref int64)wt_bool
+	func "QueryPerformanceFrequency"(ref int64)wt_bool
+
+	func "CreateFileA"(wt_ichar,wt_dword,wt_dword,wt_ptr,wt_dword,wt_dword,wt_handle)wt_handle
+	func "GetFileTime"(wt_handle,wt_ptr,wt_ptr,wt_ptr)wt_bool
+
+	proc "GetSystemTime"(ref rsystemtime)
+	proc "GetLocalTime"(ref rsystemtime)
+
+	func "GetTickCount64":u64
+	func "PeekMessageA"		(ref void, ref wt_handle, wt_uint,wt_uint,wt_uint)wt_bool
+
+	func "GetCommandLineA":ichar
+
+	func "VirtualAlloc" (ref void, wt_dword, wt_dword, wt_dword)ref void
+	func "VirtualProtect" (ref void, wt_dword, wt_dword, ref wt_dword)wt_bool
+
+	func "WriteConsoleA" (ref void, ref void, i32, ref i32, ref void)wt_bool
+
+	func "FindFirstFileA" (wt_ichar,ref rfinddata)wt_handle
+	func "FindNextFileA"  (wt_handle, ref rfinddata)wt_bool
+	func "FindClose"      (wt_handle)wt_bool
+end
+
+record input_record = $caligned
+	wt_word	eventtype
+!	word16	padding
+		wt_bool	keydown			!key event record (was inside 'Event' union in win32)
+		wt_word	repeatcount
+		wt_word	virtualkeycode
+		wt_word	virtualscancode
+		union
+			wt_word unicodechar
+			wt_char asciichar
+		end
+		wt_dword controlkeystate
+end
+
+record rspoint=(int16 x,y)
+
+record rsrect=
+	int16 leftx,top,rightx,bottom
+end
+
+global record rpoint =
+	wt_long x,y
+end
+
+record rconsole=
+	rspoint size,pos
+	word16 attributes
+	rsrect window
+	rspoint maxwindowsize
+end
+
+record rstartupinfo =
+	wt_dword	size
+	word32 dummy1
+	wt_ichar	reserved
+	wt_ichar	desktop
+	wt_ichar	title
+	wt_dword	x
+	wt_dword	y
+	wt_dword	xsize
+	wt_dword	ysize
+	wt_dword	xcountchars
+	wt_dword	ycountchars
+	wt_dword	fillattribute
+	wt_dword	flags
+	wt_word		showwindow
+	wt_word		reserved2
+	word32 dummy2
+	wt_ptr		reserved4
+	wt_handle	stdinput
+	wt_handle	stdoutput
+	wt_handle	stderror
+end
+
+record rprocess_information =
+	wt_handle process
+	wt_handle thread
+	wt_dword processid
+	wt_dword threadid
+end
+
+record rwndclassex =
+	wt_uint		size
+	wt_uint		style
+	wt_wndproc	wndproc
+	wt_int		clsextra
+	wt_int		wndextra
+	wt_handle	instance
+	wt_handle	icon
+	wt_handle	cursor
+	wt_handle	background
+	wt_ichar	menuname
+	wt_ichar	classname
+	wt_handle	iconsm
+end
+
+global record rmsg =
+	wt_handle	hwnd
+	wt_uint		message
+	word32		dummy1
+	wt_wparam	wParam
+	wt_lparam	lParam
+	wt_dword	time
+	word32		dummy2
+	wt_point	pt
+end
+
+record rfiletime =
+	wt_dword lowdatetime
+	wt_dword highdatetime
+end
+
+record rfinddata =
+	wt_dword	fileattributes
+	rfiletime	creationtime
+	rfiletime	lastaccesstime
+	rfiletime	lastwritetime
+	wt_dword	filesizehigh
+	wt_dword	filesizelow
+	wt_dword	reserved0
+	wt_dword	reserved1
+	[260]char	filename
+	[14]char		altfilename
+	wt_dword	obs1, obs2
+	wt_word		obs3
+end
+
+const NORMAL_PRIORITY_CLASS=32
+const CREATE_NEW_CONSOLE=16
+const DETACHED_PROCESS=16
+
+const MEM_COMMIT				= 4096
+const MEM_RESERVE				= 8192
+const PAGE_EXECUTE				= 16
+const PAGE_EXECUTE_READ			= 32
+const PAGE_EXECUTE_READWRITE	= 64
+const PAGE_NOACCESS				= 1
+
+
+export wt_handle hconsole, hconsolein
+
+input_record lastkey, pendkey
+int keypending			!whether pendkey contains a new key event detected by flushkbd
+
+ref func (ref void)int wndproc_callbackfn=nil	!windows call-back: address of handler
+
+int init_flag=0
+
+export proc os_init=
+	int i,count
+	rconsole info
+
+!general initialisation
+	hconsole:=GetStdHandle(u32(-11))
+	hconsolein:=GetStdHandle(u32(-10))
+
+	lastkey.repeatcount:=0
+	keypending:=0
+
+	SetConsoleCtrlHandler(nil,1)
+
+	SetConsoleMode(hconsole,1 ior 2)
+
+	init_flag:=1
+
+end
+
+export func os_execwait(ichar cmdline,int newconsole=0,ichar workdir=nil)int =
+	wt_dword exitcode
+	int status
+	int cflags:=0
+
+	rstartupinfo si
+	rprocess_information xpi
+
+	clear si
+	clear xpi
+
+	case newconsole
+	when 0 then cflags := NORMAL_PRIORITY_CLASS
+	when 1 then cflags := NORMAL_PRIORITY_CLASS ior CREATE_NEW_CONSOLE
+	when 2 then cflags := NORMAL_PRIORITY_CLASS ior DETACHED_PROCESS
+	esac
+
+	si.size := rstartupinfo.bytes
+
+	status:=CreateProcessA(
+		nil,
+		cmdline,
+		nil,
+
+		nil,
+		1,
+		cflags,
+
+		nil,
+		nil,
+		&si,
+		&xpi )
+
+	if status=0 then		!fails
+		status:=GetLastError()
+		printf("Winexec error: %lld\n",status)
+		return -1
+	fi
+
+	WaitForSingleObject(xpi.process, 0xFFFF'FFFF)
+	GetExitCodeProcess(xpi.process,&exitcode)
+
+	CloseHandle(xpi.process)
+	CloseHandle(xpi.thread)
+
+	return exitcode
+end
+
+export func os_execcmd(ichar cmdline, int newconsole=0)int =
+	wt_dword exitcode
+	int i,j,k
+
+	rstartupinfo si
+	rprocess_information xpi
+
+	clear si
+	clear xpi
+
+	si.size := rstartupinfo.bytes
+
+	CreateProcessA( nil,
+		cmdline,
+		nil,
+		nil,
+		1,
+		NORMAL_PRIORITY_CLASS ior (newconsole|CREATE_NEW_CONSOLE|0),
+		nil,
+		nil,
+		&si,
+		&xpi )
+
+	CloseHandle(xpi.process)
+	CloseHandle(xpi.thread)
+
+	return 1
+end
+
+export func os_getch:int=
+	int k
+
+	k:=os_getchx() iand 255
+
+	return k
+end
+
+export func os_kbhit:int=
+	wt_dword count
+
+	unless init_flag then os_init() end
+
+	GetNumberOfConsoleInputEvents(hconsolein,&count)
+	return count>1
+end
+
+export func os_getdllinst(ichar name)u64=
+	wt_handle hinst
+
+	hinst:=LoadLibraryA(name)
+	return cast(hinst)
+end
+
+export func os_getdllprocaddr(int hinst,ichar name)ref void=
+	return GetProcAddress(cast(hinst),name)
+end
+
+export proc os_initwindows=
+	os_init()
+	os_gxregisterclass("pcc001")
+end
+
+export proc os_gxregisterclass(ichar classname)=
+	const idcarrow=32512
+	rwndclassex r
+	static byte registered
+
+	if registered then
+		return
+	fi
+
+	clear r
+
+	r.size:=r.bytes
+	r.style:=8 ior 32
+	r.wndproc:=cast(&mainwndproc)
+	r.instance:=nil
+
+	r.icon:=nil
+	r.cursor:=LoadCursorA(nil,ref void(idcarrow))
+	r.background:=cast(15+1)
+	r.menuname:=nil
+	r.classname:=classname
+	r.iconsm:=nil
+
+	if RegisterClassExA(&r)=0 then
+		printf("Regclass error: %lld %lld\n",classname,GetLastError())
+		stop 1
+	end
+	registered:=1
+end
+
+global function mainwndproc (
+		wt_handle hwnd, wt_uint message, wt_wparam wParam, wt_lparam lParam)int=
+	rmsg m
+	int i,result
+	int l
+	static int count=0
+
+	m.hwnd:=hwnd
+	m.message:=message
+	m.wParam:=wParam
+	m.lParam:=lParam
+	m.pt.x:=0
+	m.pt.y:=0
+	
+	if (wndproc_callbackfn) then
+		result:=(wndproc_callbackfn^)(&m)
+	else
+		result:=0
+	fi
+
+	if m.message=wm_destroy then
+		return 0
+	fi
+
+	if not result then
+		return DefWindowProcA(hwnd,message,wParam,lParam)
+	else
+		return 0
+	fi
+end
+
+export proc os_setmesshandler(ref void addr)=
+	wndproc_callbackfn:=addr
+end
+
+export func os_getchx:int=
+!Q! function  os_getchx_c:int
+!return a 32-bit value containing:
+! 15..B0:	char code
+! 23..16	virtual keycode
+! 31..24	shift flags (.[24]=shift, .[25]=ctrl, .[26]=alt, .[27]=capslock)
+	const rightaltmask	= 1
+	const leftaltmask	= 2
+	const leftctrlmask	= 8
+	const rightctrlmask	= 4
+	const shiftmask		= 16
+	const capsmask		= 128
+	const scrollmask	= 64
+	int count
+	int charcode,keyshift,keycode
+	int altdown,ctrldown,shiftdown,capslock
+
+!os_init() unless init_flag
+	unless init_flag then os_init() end
+
+	if keypending then
+		lastkey:=pendkey
+		keypending:=0
+	else
+		if lastkey.repeatcount=0 then
+			repeat
+				count:=0
+				ReadConsoleInputA(hconsolein,&lastkey,1,&count)
+			until (lastkey.eventtype=1 and lastkey.keydown=1)
+		fi
+	fi
+
+!set shift flags
+
+	altdown		:= ((lastkey.controlkeystate iand (leftaltmask ior rightaltmask))|1|0)
+	ctrldown	:= ((lastkey.controlkeystate iand (leftctrlmask ior rightctrlmask))|1|0)
+	shiftdown	:= ((lastkey.controlkeystate iand shiftmask)|1|0)
+	capslock	:= ((lastkey.controlkeystate iand capsmask)|1|0)
+
+	--lastkey.repeatcount		!count this key out
+
+	charcode:=lastkey.asciichar
+	keycode:=lastkey.virtualkeycode iand 255
+
+	if charcode<0 then
+		if charcode<-128 then
+			charcode:=0
+		else
+			charcode+:=256
+		fi
+	fi
+
+!for keycodes in range 186 to 223, which are all stand-alone punctuation keys, I might
+!wish to set charcode to the appropriate printed char code (currently charcode will be
+!zero, and keyboard handlers need to detect keycodes such as vkequals)
+!....
+
+	if altdown and ctrldown and charcode=166 then
+		altdown:=ctrldown:=0
+	else
+		if altdown or ctrldown then
+			charcode:=0
+			if keycode>='A' and keycode<= 'Z' then
+				charcode:=keycode-'@'
+			fi
+		fi
+	fi
+
+	keyshift:=capslock<<3 ior altdown<<2 ior ctrldown<<1 ior shiftdown
+
+	return keyshift<<24 ior keycode<<16 ior charcode
+end
+
+export func os_getos=>ichar=
+	return "W64"
+end
+
+export func os_gethostsize=>int=
+	return 64
+end
+
+export func os_shellexec(ichar opc, file)int=
+	return system(file)
+end
+
+export proc os_sleep(int a)=
+	Sleep(a)
+end
+
+export func os_getstdin:filehandle =
+	return fopen("con","rb")
+end
+
+export func os_getstdout:filehandle =
+	return fopen("con","wb")
+end
+
+export func os_gethostname:ichar=
+	static [300]char name
+	static int n
+
+	GetModuleFileNameA(nil,&.name,name.bytes)
+	return &.name
+end
+
+export func os_getmpath:ichar=
+	return F"C:\m\"
+end
+
+export func os_clock:int64=
+	return clock()
+end
+
+export func os_ticks:int64=
+	return GetTickCount64()
+end
+
+export func os_iswindows:int=
+	return 1
+end
+
+export proc os_getsystime(ref rsystemtime tm)=
+	GetLocalTime(tm)
+end
+
+export proc os_peek=
+	int ticks
+	static int lastticks
+	[100]byte m
+	ticks:=GetTickCount64()
+	if ticks-lastticks>=1000 then
+		lastticks:=ticks
+		PeekMessageA(&m,nil,0,0,0)
+	fi
+end
+
+export func os_allocexecmem(int n)ref byte=
+	ref byte p
+	u32 oldprot
+	int status
+
+	p := VirtualAlloc(nil, n, MEM_RESERVE ior MEM_COMMIT, PAGE_NOACCESS);
+	if p = nil then return nil fi
+
+	status := VirtualProtect(p, n, PAGE_EXECUTE_READWRITE, &oldprot);
+	if status = 0 then return nil fi
+
+	return p
+end
+
+export func dirlist(ichar filespec, ref[]ichar dest, int capacity, t=1)int=
+!filespec is a filename (eg. "*.dwg") with possible drive/path; scan
+!directory for all matching files:
+! Store each file in dest array up to capacity
+! Return:
+!  -1:	capacity exceeded
+!   N:  number of files found including 0 for no matching files
+
+!t has this value
+! +1  Include normal files only, no sub-directory names
+! +2  Include directories
+! +3  (+1 +2) Include all files including directories
+! +4  Convert to lower case
+	ref void hfind
+	rfinddata file
+	int nfiles:=0
+	[300]char path
+	[300]char fullfilename
+
+	strcpy(path, extractpath(filespec))
+
+
+	if (hfind:=findfirstfilea(filespec,&file))<>ref void(-1) then	!at least one file
+		repeat
+			if (file.fileattributes iand 16) then		!this is a directory
+				if (t iand 2)=0 then nextloop fi		!no directories
+			else						!this is a file
+				if (t iand 1)=0 then nextloop fi
+			fi
+			if nfiles>=capacity then
+				nfiles:=-1
+				exit
+			fi
+
+			if (t iand 4) then				!to lower case
+				convlcstring(file.filename)
+!				convlcstring(&.file.filename)
+			fi
+			strcpy(fullfilename, path)
+			strcat(fullfilename, file.filename)
+
+			dest[++nfiles]:=pcm_copyheapstring(fullfilename)
+
+		until not findnextfilea(hfind,&file)
+		findclose(hfind)
+	fi
+	return nfiles
+end
+=== mwindll.m 0 1 47/47 ===
+export function os_calldllfunction(
+	ref proc fnaddr,
+	int retcode, nargs,
+	ref[]i64 args,
+	ref[]byte argcodes)u64 =
+
+	u64 a
+	r64 x
+	int nextra := 0, pushedbytes
+
+!Stack is 16-byte aligned at this point
+
+	if nargs<4 then
+		nextra:=4-nargs			!need at least 4 slots for shadow space
+	elsif nargs.odd then		!need one more for a 16-byte-aligned stack
+		nextra:=1
+	fi
+
+	pushedbytes:=(nextra+nargs)*8
+
+	to nextra do
+		asm push 0
+	od
+
+	for i:=nargs downto 1 do
+		a:=args[i]				!get generic 64-bit value to push
+		asm push u64 [a]
+	od
+
+! blindly load first 4 args to both int/float regs, whether used or not,
+! and assuming calling a variadic function whether it is or not
+
+	assem
+		mov D10,   [Dstack]
+		movq XMM0, [Dstack]
+		mov D11,   [Dstack+8]
+		movq XMM1, [Dstack+8]
+		mov D12,   [Dstack+16]
+		movq XMM2, [Dstack+16]
+		mov D13,   [Dstack+24]
+		movq XMM3, [Dstack+24]
+	end
+
+	if retcode='I' then
+		a:=(ref func:int64(fnaddr))^()
+		asm add Dstack,[pushedbytes]
+		return a
+
+	else
+		x:=(ref func:r64(fnaddr))^()
+		asm add Dstack,[pushedbytes]
+		return u64@(x)			!(type-punning cast)
+
+	fi
+end	
 === END ===
 1 mm.m
 2 pc_api.m
@@ -31396,7 +35201,7 @@ Options:
 30 mm_lex.m
 31 mm_lib.m
 32 mm_libpcl.m
-33 mm_libsources_dummy.m
+33 mm_libsources.m
 34 mm_modules.m
 35 mm_name.m
 36 mm_parse.m
@@ -31405,3 +35210,9 @@ Options:
 39 mm_type.m
 40 mm_types.m
 41 mm_help.txt
+42 msyslib.m
+43 msys.m
+44 mlib.m
+45 mclib.m
+46 mwindows.m
+47 mwindll.m
