@@ -1,8 +1,24 @@
-                                   
-M Compiler  ──>──┐
-                 ├──>─ PCL ──>──┬─── PCL text (dump)
-C Compiler  ──>──┘ 
+````                                   
+M Compiler  ──>──┐                ┌───>─
+                 │                │
+C Compiler  ──>──┼──>─ PCL ──>────┼─ PCL text (dump)
+                 │
+Other ───────>───┘
+M Compiler  ──>──┐                ┌──>── PCL Text (Dump) 
+C Compiler  ──>──┼──>── PCL ──>───┼──>── PCI (Interpret PCL)
+Other ────────>──┘                ├──>── Win-x64 ────>── EXE/DLL/OBJ/MX/ASM/NASM/RUN
+                                  ├──>── Lin-x64 ────>── NASM/MX/RUN
+                                  ├──>── Lin-ARM64 ──>── AT&T-ASM
+                                  ├──>── Z80 ────────>── ZASM
+                                  └──>── (Linear C)
 
+
+┼
+│
+─┘
+┤
+
+````
     Inputs             Intermediates                                                            Outputs
 
     Ext Libs      ───>─────────────────────────────────────────────────┐
