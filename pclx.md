@@ -1,14 +1,14 @@
 ````
 Front-ends             IR/IL             Back-ends             
 
-M Compiler  ──>──┐                ┌──>── PCL (Text Dump)
-C Compiler  ──>──┼──>── PCL ──>───┼──>── PCI (Interpret PCL)
-Other ────────>──┘                ├──>── Windows-x64 ──>── EXE/DLL/OBJ/MX/ASM/NASM/RUN
-                                  ├──>── Linux-x64 ────>── NASM/MX/RUN
-                                  ├──>── Linux-ARM64 ──>── AT&T-ASM
-                                  ├──>── Z80 8-bit ────>── ZASM
-                                  ├──>── (32-bit targets)
-                                  └──>── (Linear C)
+M Compiler  ──>──┐                ┌────> PCL (Text Dump)
+C Compiler  ──>──┼────> PCL ──>───┼────> PCI (Interpret PCL)
+(PCL text) ───>──┤                ├────> Windows-x64 ────> EXE/DLL/OBJ/MX/ASM/NASM/RUN
+(Other) ──────>──┘                ├────> (Linux-x64 ──────> NASM/MX/RUN)
+                                  ├────> (Linux-ARM64 ────> AT&T-ASM)
+                                  ├────> (Z80 8-bit ──────> ZASM)
+                                  ├────> (32-bit targets)
+                                  └────> (Linear C)
 Key:
  EXE/DLL/OBJ  Windows' PE-format binaries
  MX           My private, portable (and simple) binary format. This
