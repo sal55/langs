@@ -42,9 +42,9 @@ Includes:
 * Choice of type names (eg `i64` and `int64`)
 * Choice of block endings (eg. `fi esac od` can be used in place of `end` or `end if` etc)
 * Operators that tend to be written as symbols in some languages (eg. `iand` in place of `&`)
-* Mathematical functions
+* Mathematical functions (eg. `sqrt`)
 * Statements usually handled by libraries (eg. `print`)
-* 
+
 
 Any reserved word can be used an identifier via a backtick prefix:
 ````
