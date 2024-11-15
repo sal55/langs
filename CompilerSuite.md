@@ -7,12 +7,12 @@ All tools run on and for x64 with Windows.
 .m/.ma ────┬─> [mm.exe] ─┬────> .exe/.dll Files (+ M/Q Interface module for DLL/ML)
 .ml/.dll ──┘             ├────> .ml/.mx Files
                          ├────> .obj File
-                         ├────> Run native code in memory
-                         ├────> .asm File
-                         ├────> .nasm File
+                         ├────> Run (native code in memory)
+                         ├────> .asm File (syntax for my AA assembler)
+                         ├────> .nasm File (NASM syntax)
                          ├────> .pcl IL File
-                         ├────> Runp interpret IL code
-                         ├────> .ma File
+                         ├────> Runp (interpret IL code)
+                         ├────> .ma File (create single amalgamated source file)
                          └────> .list/.proj Files (info for my IDE)
 ````
 **'PC' PCL Processor**
@@ -47,14 +47,14 @@ All tools run on and for x64 with Windows.
 
 **'QQ' Q Interpreter**
 ````
-.q/.qa ───> [qq.exe] ──┬────> Run
-              ↑	       └────> .qa File
+.q/.qa ───> [qq.exe] ──┬────> Run (compile to internal bytecode and immediately interpret)
+              ↑	       └────> .qa File (create single amalgamated source file)
 .ml/.dll ─────┘ 
 
 ````
 **'RUNMX' Launch MX Programs**
 ````
-.mx ───────┬─> [runmx.exe] ───> Run
+.mx ───────┬─> [runmx.exe] ───> Run (Load, fixup, and executed the MX-format executable)
 .ml/.dll ──┘
  ````
 
@@ -62,20 +62,17 @@ All tools run on and for x64 with Windows.
 
 All the above programs are single-file, self-contained executables, and all are under 1MB. The current set of programs are:
 ````
-mm.exe        385 KB
-aa.exe         96 KB
-mcc.exe       279 KB
-qq.exe        574 KB
-runmx.exe      13 KB
-mmp.exe       318 KB
-pci.exe        90 KB
-mc.exe        319 KB
+mm.exe        394 KB           Includes std library sources
+aa.exe        120 KB
+cc.exe        295 KB           Includes std headers (windows.h is separate)
+qq.exe        578 KB           Includes std lib sources
+pc.exe        180 KB           Fully loaded (smaller configurations can be done, eg. interpret only)
+runmx.exe      60 KB
 ````
-
 
 ### Implementation
 
 All products are written in my M language and built with **MM**. Single-file source amalgamations (MA files) can be generated for any project.
 
-Building all of the above executables from source takes under 0.6 seconds.
+Building all of the above executables from source takes under 0.4 seconds (just over 0.3 seconds if I optimise the M compiler via C).
 
