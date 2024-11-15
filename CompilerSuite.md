@@ -4,40 +4,51 @@ All tools run on and for x64 with Windows.
 
 **'MM' M Systems Compiler**
 ````
-.m/.ma ────┬─> [mm.exe] ─┬────> EXE/DLL File (+ M/Q Interface module for DLL/ML)
-.ml/.dll ──┘             ├────> ML/MX Files
-                         ├────> OBJ File
+.m/.ma ────┬─> [mm.exe] ─┬────> .exe/.dll Files (+ M/Q Interface module for DLL/ML)
+.ml/.dll ──┘             ├────> .ml/.mx Files
+                         ├────> .obj File
                          ├────> Run native code in memory
-                         ├────> ASM File
-                         ├────> NASM File
-                         ├────> PCL IL File
-                         ├────> Interpret IL code
-                         ├────> MA File
-                         └────> LIST/PROJ Files (info for my IDE)
+                         ├────> .asm File
+                         ├────> .nasm File
+                         ├────> .pcl IL File
+                         ├────> Runp interpret IL code
+                         ├────> .ma File
+                         └────> .list/.proj Files (info for my IDE)
+````
+**'PC' PCL Processor
+````
+.pcl ──────┬─> [pc.exe] ─┬────> .exe/.dll Files
+.ml/.dll ──┘             ├────> .ml/.mx Files
+                         ├────> .obj File
+                         ├────> Run native code in memory
+                         ├────> .asm File
+                         ├────> .nasm File
+                         ├────> .pcl IL File
+                         └────> Runp interpret IL code                      
 ````
 **'AA' x64 Assembler/linker**
 ````
-.asm ──────┬─> [aa.exe] ─┬────> EXE/DLL Files
-.ml/.dll ──┘             ├────> ML/MX Files
-                         └────> OBJ File
+.asm ──────┬─> [aa.exe] ─┬────> .exe/.dll Files
+.ml/.dll ──┘             ├────> .ml/.mx Files
+                         └────> .obj File
 ````
 **'CC' C Subset Compiler (One Module only)**
 ````
-.c/.h ────┬─> [cc.exe] ──┬────> EXE/DLL File
-.ml/.dll ──┘             ├────> ML/MX Files
-                         ├────> OBJ File
+.c/.h ────┬─> [cc.exe] ──┬────> .exe/.dll File
+.ml/.dll ──┘             ├────> .ml/.mx Files
+                         ├────> .obj File
                          ├────> Run native code in memory
-                         ├────> ASM File
-                         ├────> NASM File
-                         ├────> PCL IL File
-                         └────> Interpret IL code
+                         ├────> .asm File
+                         ├────> .nasm File
+                         ├────> .pcl IL File
+                         └────> Runp interpret IL code
 ````
 (For conventional multi-module C programs, a driver program BCC is used, which invokes CC with ASM output for each module, and submits all to AA to produce EXE etc.)
 
 **'QQ' Q Interpreter**
 ````
 .q/.qa ───> [qq.exe] ──┬────> Run
-              ↑	       └────> QA File
+              ↑	       └────> .qa File
 .ml/.dll ─────┘ 
 
 ````
