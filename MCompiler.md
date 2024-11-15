@@ -7,17 +7,17 @@ The name of the compiler is `MM` or `mm.exe`. It is a whole-program compiler, wr
 ````
     Inputs             Intermediates                                                            Outputs
 
-    Ext Libs      ───>─────────────────────────────────────────────────┐
-    Source Files  ─┬─> AST1 ─> AST2 ─┬─> AST3 ─┬─> PCL ─> MCL ─┬─> SS ─┴─┬─> EXE Image ──┬────> EXE File
-    Include Files ─┘                 │         │               │         │               ├────> DLL/EXP Files
-    Strinclude    ───>───────────────┘         │               │         │               └────> OBJ File (via AA)
-                                               │               │         └─> MCU ─┬─> MCB ─┬──> ML/EXP Files (via AA)
-                                               │               │                  │        │
-                                               │               │                  │        └──> MX File (via AA)
-                                               │               │                  └─> MCX ────> (Run)
-                                               │               └──────────────────────────────> ASM File
-                                               ├──────────────────────────────────────────────> MA File
-                                               └──────────────────────────────────────────────> LIST/PROJ Files
+    Ext Libs      ───>───────────────────────────────────────────────────┐
+    Source Files  ─┬─> AST1 ─> AST2 ─┬─> AST3 ─┬─> PCL ─┬─> MCL ─┬─> SS ─┴─┬─> EXE Image ──┬────> EXE File
+    Include Files ─┘                 │         │        │        │         │               ├────> DLL File
+    Strinclude    ───>───────────────┘         │        │        │         │               └────> OBJ File
+                                               │        │        │         └─> MCU ─┬─> MCB ────> ML/MX Files
+                                               │        │        │                  └─> MCX ────> (RUN native code) 
+                                               │        │        └──────────────────────────────> ASM File
+                                               │        ├───────────────────────────────────────> (RUNP Interpret PCL)
+                                               │        └───────────────────────────────────────> PCL Source File
+                                               ├────────────────────────────────────────────────> MA File
+                                               └────────────────────────────────────────────────> LIST/PROJ Files
 ````
 
 #### Inputs
@@ -41,7 +41,8 @@ AST2          Has all name references resolved (language allows out of order def
 
 AST3          Has type info filled in, any conversions applied, and constant expressions reduced
 
-PCL           The generated IL (sometimes called IR) instructions from the AST
+PCL           The generated IL (sometimes called IR) instructions from the AST. PCL used a separate library that provides
+              an API to generate internal PCL representation, which can then be processed in multiple different ways.
 
 MCL           A representation of the generated native code, in this case it is for x64.
 
@@ -80,8 +81,12 @@ MA            A single-file amalgamation of all source and support files needed 
 OBJ           The single OBJ file produced represents the whole program. OBJ files allow M code to be statically linked with other
               languages, but require an external linker.
 
-RUN           Not an output, the program is run immediately without generating any executable file. This allows M to be used
+RUN           Not an output, the program is run immediately in memory without generating any executable file. This allows M to be used
               like a scripting language, running programs directly from source code.
+
+RUNP          This interprets the PCL intermediate representation in memory without translation to native code.
+
+PCL           A dump of the IL as textual source code. This can be processed by the separate PC application.
 
 LIST          A dump of the top-level symbols (functions, variables, types, macros, enums) used across the project. These and
               the PROJ option are used by my IDE
@@ -99,7 +104,3 @@ It translates M source code to binary at speeds of at least 500K lines per secon
 #### ML and MX Files
 
 These were a by-product of problems I'd had with generating DLL files. They have been dropped from direct support in the compiler, and are available only via the assembler. Their future is uncertain.
-
-#### 'Via AA'
-
-Means not supported directly by the compiler. It will write out an ASM file, then invoke my assembler AA on that file with suitable options. The process is transparent but it needs `aa.exe` as well as `mm.exe`. The assembler is approx 100KB.
