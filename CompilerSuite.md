@@ -5,12 +5,15 @@ All tools run on and for x64 with Windows.
 **'MM' M Systems Compiler**
 ````
 .m/.ma ────┬─> [mm.exe] ─┬────> EXE/DLL File (+ M/Q Interface module for DLL/ML)
-.ml/.dll ──┘             ├────> [via aa.exe] ──> ML/MX Files
-                         ├────> [via aa.exe] ──> OBJ File
+.ml/.dll ──┘             ├────> ML/MX Files
+                         ├────> OBJ File
+                         ├────> Run native code in memory
                          ├────> ASM File
+                         ├────> NASM File
+                         ├────> PCL IL File
+                         ├────> Interpret IL code
                          ├────> MA File
-                         ├────> LIST/PROJ Files (info for my IDE)
-                         └────> Run (immediately from memory)
+                         └────> LIST/PROJ Files (info for my IDE)
 ````
 **'AA' x64 Assembler/linker**
 ````
@@ -18,15 +21,19 @@ All tools run on and for x64 with Windows.
 .ml/.dll ──┘             ├────> ML/MX Files
                          └────> OBJ File
 ````
-**'MCC' C Subset Compiler**
+**'CC' C Subset Compiler (One Module only)**
 ````
-.c/.h ─────┬─> [mcc.exe] ──┬──> [via aa.exe] ───┬────> EXE/DLL Files
-.dll ──────┘               │                    ├────> ML/MX Files
-                           │                    └────> OBJ File
-                           ├─────────────────────────> ASM File
-                           ├─────────────────────────> I File (preprocessed)
-                           └─────────────────────────> M/Q Interface modules (from .h files)
+.c/.h ────┬─> [cc.exe] ──┬────> EXE/DLL File
+.ml/.dll ──┘             ├────> ML/MX Files
+                         ├────> OBJ File
+                         ├────> Run native code in memory
+                         ├────> ASM File
+                         ├────> NASM File
+                         ├────> PCL IL File
+                         └────> Interpret IL code
 ````
+(For conventional multi-module C programs, a driver program BCC is used, which invokes CC with ASM output for each module, and submits all to AA to produce EXE etc.)
+
 **'QQ' Q Interpreter**
 ````
 .q/.qa ───> [qq.exe] ──┬────> Run
@@ -39,16 +46,6 @@ All tools run on and for x64 with Windows.
 .mx ───────┬─> [runmx.exe] ───> Run
 .ml/.dll ──┘
  ````
-**'MMP' M Compiler to IL and Interpreter (Experimental)**
-````
-.m/.ma ───> [mmp.exe] ──────> PCL File
-
-.pcl ─────> [pci.exe] ──────> Run
-````
-**'MC' M Compiler to C (Deprecated)**
-````
-.m/.ma ───> [mc.exe] ──────> C File
-````
 
 ### Packaging
 
