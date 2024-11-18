@@ -108,4 +108,4 @@ The smallest M compiler, minus std library, and with only an IL interpreter is a
 
 #### ML and MX Files
 
-These were a by-product of problems I'd had with generating DLL files. They have been dropped from direct support in the compiler, and are available only via the assembler. Their future is uncertain.
+These were a by-product of problems I'd had with generating DLL files. They were due to be dropped but are being kept on as they have some interesting properties that could turn out to be useful. Basically they are much simpler (and I believe portable) versions of DLL and EXE files.
