@@ -7,18 +7,19 @@ The name of the compiler is `MM` or `mm.exe`. It is a whole-program compiler, wr
     Inputs             Intermediates                                                              Outputs
 
     Ext Libs      ───>───────────────────────────┐
-    Source File   ─┬─> AST1 ─> AST2 ─┬─> AST3 ─┬─┴──> PCL ─┬─> MCL ─┬─> SS ──┬─> EXE Image ──┬────> EXE File
-    Include Files ─┘                 │         │           │        │        │               └────> DLL File
-    Strinclude    ───>───────────────┘         │           │        │        ├────────────────────> OBJ File
-                                               │           │        │        └─> MCU ─┬─> MCB ────> ML/MX Files
-                                               │           │        │                 └─> MCX ────> (RUN native code) 
-                                               │           │        ├─────────────────────────────> ASM File
-                                               │           │        └─────────────────────────────> NASM File
-                                               │           ├──────────────────────────────────────> (RUNP Interpret PCL)
-                                               │           └──────────────────────────────────────> PCL Source File
-                                               ├──────────────────────────────────────────────────> MA File
-                                               └──────────────────────────────────────────────────> LIST/PROJ Files
+    Source File   ─┬─> AST1 ─> AST2 ─┬─> AST3 ─┬─┴──> PCL ─┬─> MCL ─┬─> SS ─┬─> EXE Image ──┬───> EXE File
+    Include Files ─┘                 │         │           │        │       │               └───> DLL File
+    Strinclude    ───>───────────────┘         │           │        │       ├───────────────────> OBJ File
+                                               │           │        │       └─> MCU ─┬─> MCB ───> ML/MX Files
+                                               │           │        │                └─> MCX ───> (RUN native code) 
+                                               │           │        ├───────────────────────────> ASM File
+                                               │           │        └───────────────────────────> NASM File
+                                               │           ├────────────────────────────────────> (RUNP Interpret PCL)
+                                               │           └────────────────────────────────────> PCL Source File
+                                               ├────────────────────────────────────────────────> MA File
+                                               └────────────────────────────────────────────────> LIST/PROJ Files
 ````
+
 #### Inputs
 ````
 Source Files:     There is only ever one `.m` source file submitted to MM. This will usually be the lead module,
