@@ -14,3 +14,4 @@
                                                ├────────────────────────────────────────────────> MA File
                                                └────────────────────────────────────────────────> LIST/PROJ Files
 ````
+(This is slightly out of date. Those external libs need to enter the process just before PCL, to allow for IL to be interpreted. Otherwise they are not needed after after SS as shown above.)
