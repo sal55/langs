@@ -2,16 +2,16 @@
 
 All tools run on and for x64 with Windows.
 
-**'MM' M Systems Compiler**
+**'MM' M Systems Compiler (MM7)**
 ````
 .m/.ma ────┬─> [mm.exe] ─┬────> .exe/.dll Files (+ M/Q Interface module for DLL/ML)
 .ml/.dll ──┘             ├────> .ml/.mx Files
                          ├────> .obj File
-                         ├────> Run (native code in memory)
+                         ├────>  Run (native code in memory)
                          ├────> .asm File (syntax for my AA assembler)
                          ├────> .nasm File (NASM syntax)
                          ├────> .pcl IL File
-                         ├────> Runp (interpret IL code)
+                         ├────>  Interpret (IL code in memory)
                          ├────> .ma File (create single amalgamated source file)
                          └────> .list/.proj Files (info for my IDE)
 ````
@@ -20,30 +20,33 @@ All tools run on and for x64 with Windows.
 .pcl ──────┬─> [pc.exe] ─┬────> .exe/.dll Files
 .ml/.dll ──┘             ├────> .ml/.mx Files
                          ├────> .obj File
-                         ├────> Run native code in memory
+                         ├────>  Run native code in memory
                          ├────> .asm File
                          ├────> .nasm File
-                         ├────> .pcl IL File
-                         └────> Runp interpret IL code                      
+                         ├────> .pcl IL File (uses .pct extension)
+                         └────>  Interpret IL code                      
 ````
-**'AA' x64 Assembler/linker**
+**'AA' x64 Assembler/linker (AA7)**
 ````
 .asm ──────┬─> [aa.exe] ─┬────> .exe/.dll Files
 .ml/.dll ──┘             ├────> .ml/.mx Files
-                         └────> .obj File
+                         ├────> .obj File
+                         ├────>  Run (native code in memory)
+                         ├────> .asm File (syntax for my AA assembler) (uses .aa extension)
+                         └────> .nasm File (NASM syntax)                      
 ````
 **'CC' C Subset Compiler (One Module only)**
 ````
 .c/.h ────┬─> [cc.exe] ──┬────> .exe/.dll File
 .ml/.dll ──┘             ├────> .ml/.mx Files
                          ├────> .obj File
-                         ├────> Run native code in memory
+                         ├────>  Run native code in memory
                          ├────> .asm File
                          ├────> .nasm File
                          ├────> .pcl IL File
-                         └────> Runp interpret IL code
+                         └────>  Interpret IL code
 ````
-(For conventional multi-module C programs, a driver program BCC is used, which invokes CC with ASM output for each module, and submits all to AA to produce EXE etc.)
+(For conventional multi-module C programs, a driver script is used, which invokes CC with ASM output for each module, and submits all to AA6 to produce EXE etc. AA7, the version described above, accepts one module only. Alternatively multiple OBJ files can be generated, old-style.)
 
 **'QQ' Q Interpreter**
 ````
@@ -54,7 +57,7 @@ All tools run on and for x64 with Windows.
 ````
 **'RUNMX' Launch MX Programs**
 ````
-.mx ───────┬─> [runmx.exe] ───> Run (Load, fixup, and executed the MX-format executable)
+.mx ───────┬─> [runmx.exe] ───> Run (Load, fix up, and execute the MX-format executable)
 .ml/.dll ──┘
  ````
 
@@ -69,6 +72,7 @@ qq.exe        578 KB           Includes std lib sources
 pc.exe        180 KB           Fully loaded (smaller configurations can be done, eg. interpret only)
 runmx.exe      60 KB
 ````
+The above are built with MM6; MM7 described above doesn't have the small optimising step that reduces the code size, so they might be 10% bigger.
 
 ### Implementation
 
