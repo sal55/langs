@@ -67,7 +67,7 @@ All the above programs are single-file, self-contained executables, and all are 
 ````
 mm.exe        394 KB           Includes std library sources
 aa.exe        120 KB
-cc.exe        295 KB           Includes std headers (windows.h is separate)
+cc.exe        333 KB           Includes std headers (windows.h is separate)
 qq.exe        578 KB           Includes std lib sources
 pc.exe        180 KB           Fully loaded (smaller configurations can be done, eg. interpret only)
 runmx.exe      60 KB
