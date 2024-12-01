@@ -15,6 +15,19 @@ All tools run on and for x64 with Windows.
                          ├────> .ma File (create single amalgamated source file)
                          └────> .list/.proj Files (info for my IDE)
 ````
+**'CC' C Subset Compiler (One Module only)**
+````
+.c/.h ────┬─> [cc.exe] ──┬────> .exe/.dll File
+.ml/.dll ──┘             ├────> .ml/.mx Files
+                         ├────> .obj File
+                         ├────>  Run native code in memory
+                         ├────> .asm File
+                         ├────> .nasm File
+                         ├────> .pcl IL File
+                         └────>  Interpret IL code
+````
+(For conventional multi-module C programs, a driver script is used, which invokes CC with ASM output for each module, and submits all to AA6 to produce EXE etc. AA7, the version described below, accepts one module only.)
+
 **'PC' PCL Processor**
 ````
 .pcl ──────┬─> [pc.exe] ─┬────> .exe/.dll Files
@@ -35,18 +48,6 @@ All tools run on and for x64 with Windows.
                          ├────> .asm File (syntax for my AA assembler) (uses .aa extension)
                          └────> .nasm File (NASM syntax)                      
 ````
-**'CC' C Subset Compiler (One Module only)**
-````
-.c/.h ────┬─> [cc.exe] ──┬────> .exe/.dll File
-.ml/.dll ──┘             ├────> .ml/.mx Files
-                         ├────> .obj File
-                         ├────>  Run native code in memory
-                         ├────> .asm File
-                         ├────> .nasm File
-                         ├────> .pcl IL File
-                         └────>  Interpret IL code
-````
-(For conventional multi-module C programs, a driver script is used, which invokes CC with ASM output for each module, and submits all to AA6 to produce EXE etc. AA7, the version described above, accepts one module only. Alternatively multiple OBJ files can be generated, old-style.)
 
 **'QQ' Q Interpreter**
 ````
