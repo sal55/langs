@@ -3,20 +3,19 @@
 'M' is my lower level systems language.
 
 The name of the compiler is `MM` or `mm.exe`. It is a whole-program compiler, written in M, that converts M programs to x64 native code running under Windows ABI.
-
 ````
     Inputs             Intermediates                                                              Outputs
 
-    Ext Libs      ───>───────────────────────────────────────────────────┐
-    Source File   ─┬─> AST1 ─> AST2 ─┬─> AST3 ─┬─> PCL ─┬─> MCL ─┬─> SS ─┴─┬─> EXE Image ──┬────> EXE File
-    Include Files ─┘                 │         │        │        │         │               ├────> DLL File
-    Strinclude    ───>───────────────┘         │        │        │         │               └────> OBJ File
-                                               │        │        │         └─> MCU ─┬─> MCB ────> ML/MX Files
-                                               │        │        │                  └─> MCX ────> (RUN native code) 
-                                               │        │        ├──────────────────────────────> ASM File
-                                               │        │        └──────────────────────────────> NASM File
-                                               │        ├───────────────────────────────────────> (RUNP Interpret PCL)
-                                               │        └───────────────────────────────────────> PCL Source File
+    Ext Libs      ───>───────────────────────────┐
+    Source File   ─┬─> AST1 ─> AST2 ─┬─> AST3 ─┬─┴──> PCL ─┬─> MCL ─┬─> SS ─┬─> EXE Image ──┬───> EXE File
+    Include Files ─┘                 │         │           │        │       │               └───> DLL File
+    Strinclude    ───>───────────────┘         │           │        │       ├───────────────────> OBJ File
+                                               │           │        │       └─> MCU ─┬─> MCB ───> ML/MX Files
+                                               │           │        │                └─> MCX ───> (RUN native code) 
+                                               │           │        ├───────────────────────────> ASM File
+                                               │           │        └───────────────────────────> NASM File
+                                               │           ├────────────────────────────────────> (RUNP Interpret PCL)
+                                               │           └────────────────────────────────────> PCL Source File
                                                ├────────────────────────────────────────────────> MA File
                                                └────────────────────────────────────────────────> LIST/PROJ Files
 ````
