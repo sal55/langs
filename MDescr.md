@@ -1,6 +1,6 @@
 ## M Language and Compiler Reference
 
-This summaries the 2024/6.4 version of of my 'M' systems language.
+This summaries the 2024/7.0 version of of my 'M' systems language.
 
 It is a collection of lists, tables, facts, examples and speculation on possible new ideas.
 
@@ -12,18 +12,18 @@ So they will either be fixed, or they will work subject to limitations, or remov
 
 
 ### Overview
-The language has been volatile recently as I try different ideas. This summarises 6.4:
+The language has been volatile recently as I try different ideas. This summarises 7.0:
 ````
 - Expression-based rather than Statement-based
 - Targets x64 processor running Windows using the Win64 ABI
 - 64-bit default floats, ints, pointers
-- Uses 'PCL' stack-based intermediate language
+- Uses 'PCL' stack-based intermediate language, via a discrete backend that is also used by 3 other products
 - Simplified 2024 Module scheme
-- Supports EXE DLL directly, and OBJ, MX/ML via ASM and AA assembler
+- Supports EXE, DLL, OBJ, MX/ML binary outputs directly
+- Can run programs from source as native code
+- Can interpret programs from source as IL
 - Can generate high-loading and relocatable code for DLL/OBJ targets
-- Has `-regs` and `-peep` 'optimiser' settings (however there is no real optimiser)
-- Can export to either M or Q import modules for DLL, but both need more work
-- Can run from source
+- Currently missing an optimiser, to be ported from 6.x
 ````
 
 ### Hello, World
@@ -37,7 +37,7 @@ Build the `hello.m` program using:
 mm hello
 ````
 This produces a 27KB binary (which includes the standard library, needed to
-support `println`). For a cut-down binary, use `mm -minsys hello` to leave out most of the
+support `println`). For a cut-down binary, use `mm -min hello` to leave out most of the
 library (a basic `println` is still supported), then the binary is 2.5KB.
 
 ### Whole program compiler
