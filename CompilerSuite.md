@@ -18,7 +18,7 @@ All tools run on and for x64 with Windows.
 **'CC' C Subset Compiler (One Module only)**
 ````
 .c/.h ────┬─> [cc.exe] ──┬────> .exe/.dll File
-.ml/.dll ──┘             ├────> .ml/.mx Files
+.ml/.dll ─┘              ├────> .ml/.mx Files
                          ├────> .obj File
                          ├────>  Run native code in memory
                          ├────> .asm File
@@ -73,11 +73,11 @@ qq.exe        578 KB           Includes std lib sources
 pc.exe        180 KB           Fully loaded (smaller configurations can be done, eg. interpret only)
 runmx.exe      60 KB
 ````
-The above are built with MM6; MM7 described above doesn't have the small optimising step that reduces the code size, so they might be 10% bigger.
+The above are built with MM6; MM7 described above doesn't yet have the small optimising step that reduces the code size, so they might be 10% bigger.
 
 ### Implementation
 
 All products are written in my M language and built with **MM**. Single-file source amalgamations (MA files) can be generated for any project.
 
-Building all of the above executables from source takes under 0.4 seconds (just over 0.3 seconds if I optimise the M compiler via C).
+Building all of the above executables from source takes under 0.4 seconds.
 
