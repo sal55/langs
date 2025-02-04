@@ -15,9 +15,9 @@ All tools run on and for x64 with Windows.
                          ├────> .ma File (create single amalgamated source file)
                          └────> .list/.proj Files (info for my IDE)
 ````
-**'CC' C Subset Compiler (One Module only)**
+**'BCC' C Subset Compiler (One Module only)**
 ````
-.c/.h ────┬─> [cc.exe] ──┬────> .exe/.dll File
+.c/.h ────┬─> [bcc.exe] ─┬────> .exe/.dll File
 .ml/.dll ─┘              ├────> .ml/.mx Files
                          ├────> .obj File
                          ├────>  Run native code in memory
@@ -26,7 +26,7 @@ All tools run on and for x64 with Windows.
                          ├────> .pcl IL File
                          └────>  Interpret IL code
 ````
-(For conventional multi-module C programs, a driver script is used, which invokes CC with ASM output for each module, and submits all to AA6 to produce EXE etc. AA7, the version described below, accepts one module only.)
+(For conventional multi-module C programs, a driver script is used, which invokes BCC with ASM output for each module, and submits all to AA6 to produce EXE etc. AA7, the version described below, accepts one module only.)
 
 **'PC' PCL Processor**
 ````
@@ -66,18 +66,22 @@ All tools run on and for x64 with Windows.
 
 All the above programs are single-file, self-contained executables, and all are under 1MB. The current set of programs are:
 ````
-mm.exe        394 KB           Includes std library sources
-aa.exe        120 KB
-cc.exe        333 KB           Includes std headers (windows.h is separate)
-qq.exe        578 KB           Includes std lib sources
+mm.exe        390 KB           Includes std library sources
+aa.exe        121 KB
+bcc.exe       323 KB           Includes std headers (windows.h is separate)
+qq.exe        554 KB           Includes std lib sources
 pc.exe        180 KB           Fully loaded (smaller configurations can be done, eg. interpret only)
-runmx.exe      60 KB
+runmx.exe      57 KB           (Includes diagnostic display)
 ````
-The above are built with MM6; MM7 described above doesn't yet have the small optimising step that reduces the code size, so they might be 10% bigger.
+The above are built with MM7 -opt, which can now match the small optimising step of MM6.
+
+For mm/aa/cc/pc, only the ASM output is configured. Support for NASM needs building with a different module enabled. Interpret-only versions of mm/bcc could be built: an interpreted bcc version with external headers would be about 180KB, and similar for mm would be 210KB.
+
+The four main tools (mm, aa, bcc, qq) would fit on a 1.44MB floppy disk, uncompressed. With UPX compression, all 6 programs would occupy under 0.6MB.
 
 ### Implementation
 
 All products are written in my M language and built with **MM**. Single-file source amalgamations (MA files) can be generated for any project.
 
-Building all of the above executables from source takes under 0.4 seconds.
+Building all of the above executables from source takes under 0.4 seconds in total.
 
