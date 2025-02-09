@@ -2,12 +2,12 @@
 
 ````
 MM   ──┬─/─> IL/API ──┬───────────────────────> IL Source (Input to PC)
-BCC ───┤              ├───────────────────────> IL Interpreter
+BCC ───┤              ├───────────────────────> Run from source via interpreter
 PC ────┘              └──┬─/──> Win/x64 ──┬───> EXE/DLL
 AA ───────>──────────────┘                ├───> OBJ (Input to external linker)
                                           ├───> ASM (Input to AA)
                                           ├───> NASM (Input to NASM)
                                           ├───> MX/ML (Input to RUNMX)
-                                          └───> Run
+                                          └───> Run from source
 ````
 
