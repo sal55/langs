@@ -1048,14 +1048,10 @@ end
 
 proc setspecialglobals(int cmdskip)=
 !adjust cmdparams visible to application by setting $cmdskip flag
-!CPL "SSG"
 !	for i to nsymbols when symbolnametable[i]^='$' do
 	for i to nsymbols do
-!CPL "TRY", SYMBOLNAMETABLE[I]
 		if eqstring(symbolnametable[i],"msys.$cmdskip") or
 			eqstring(symbolnametable[i],"$cmdskip") then
-!		if eqstring(getbasename(symbolnametable[i]),"$cmdskip") then
-!CPL "2:FOUND $CMDSKIP",CMDSKIP,SYMBOLNAMETABLE[I]
 
 			(ref byte(symboladdress[i])^:=cmdskip)
 !			(ref byte(symboladdress[i])^:=0)

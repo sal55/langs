@@ -709,7 +709,6 @@ EXPORT proc merror(ichar mess,ichar param="")=
 		filename:="?"
 	fi
 
-!CPL "MERROR????"
 	println "Proc:", currfunc.name
 
 	fprintln "MCL Error: # (#) on Line: # in #, PCL:#",mess,param, lineno, filename,ppseqno
@@ -2462,7 +2461,6 @@ export proc pcl_runpcl=
 !	int tt:=clock()
 	int stopcode
 
-!CPL "RUNPCL"
 	loadlibs()
 
 	fixuppcl()
@@ -3163,7 +3161,6 @@ global proc genmcl=
 end
 
 FUNC CHECKFPUSED(MCLOPND A)int=
-!CPL "CHECK", 
 	RETURN 0 WHEN A=NIL
 	if a.reg=rframe or a.regix=rframe then return 1 fi
 	0
@@ -3175,7 +3172,6 @@ proc convertpcl(pcl p)=
 !CPL "    CONV",PCLNAMES[P.OPCODE],debug,P.SEQNO, =noperands
 
 	doshowpcl(p) when fshowpcl
-!	doshowpcl(p)
 
 PCLFLAGS[P.OPCODE]++
 
@@ -3883,8 +3879,6 @@ proc px_jumpretm*(pcl p) =
 ! goto L, common return point; deal with any ret value on stack
 	int n, reg
 
-!	CPL =P.NARGS
-
 	n:=zz-p.nargs+1
 	to p.nargs do
 		loadopnd(n, pclmode[n])
@@ -4045,10 +4039,6 @@ proc px_iloadx*(pcl p) =
 		nextpcl:=currpcl+1
 
 		if nextpcl.opcode=kwiden then
-
-!			ax:=getworkreg_rm(0, nextpcl.mode)
-!CPL "ILOADX/WIDEN"
-!			ax:=getworkreg_rm(0, nextpcl.mode)
 			ax:=getworkreg_rm(getsharereg(px, nextpcl.mode), nextpcl.mode)
 
 			genmc(ploadop[nextpcl.mode2], ax, px)
@@ -4057,7 +4047,6 @@ proc px_iloadx*(pcl p) =
 			currpcl:=nextpcl
 		else
 
-!			ax:=getworkreg_rm(0, pmode)
 			ax:=getworkreg_rm(getsharereg(px, pmode), pmode)
 
 			genmc(m_mov, ax, px)
@@ -4978,13 +4967,6 @@ proc px_longjmp*(pcl p)=
 	genmc(m_mov, cx, ax)		!load stored return address
 	swapopnds(xx, zz)
 	poppcl()					!addr of buffer
-
-!CPL STROPNDSTACK()
-!CPL =PCLREG[YY]
-!CPL =PCLREG[ZZ]
-!freeworkregs(p)
-!CPL STROPNDSTACK()
-!CPL =PCLREG[ZZ], LOCNAMES[PCLLOC[ZZ]]
 
 	swapopndregs(r0)			!move ret value to r0
 	genmc(m_jmp, cx)			!
@@ -5921,7 +5903,6 @@ function scaleregvar(int reg, &scale, n)int=
 		scale:=8
 
 	ELSE
-!CPL "SCALE VAR"
 		genmc(m_mov,ax, mgenreg(reg))
 		mulimm(ax,scale)
 		scale:=1
@@ -6165,9 +6146,7 @@ global proc clearblock(mclopnd ax, int n)=
 	nwords:=n/8				!number of word64s (ie. octobytes)
 
 	rx:=getworkregm(tpu64)
-!CPL "XB",RX.SIZE
 	clearreg(rx)
-!	genmc(m_xorx, rx, rx)
 
 	offset:=0
 
@@ -7417,8 +7396,6 @@ global func mgenextname(ichar s)mclopnd=
 	static [20]psymbol table
 	static int ntable
 
-!CPL "GENEXTNAME", S
-
 	strcpy(&.str,s)
 	str[strlen(s)]:=0			!lose final *
 
@@ -7668,7 +7645,6 @@ global func getopnd(int n, mode, reg=rnone)mclopnd ax =
 		ESAC
 
 		bx:=mgenint(a.value, mode)
-!CPL "GETOPND", =MSTROPND(BX), BX.SIZE, =PSIZE[MODE], =BX.VALUE
 		if a.value in i32.bounds then			!keep as immediate
 			ax:=bx
 		else
@@ -8337,16 +8313,11 @@ global proc peephole=
 
 	if not fpeephole then return fi
 
-!CPL "PEEPHOLE"
-INT JJ:=0
-
 	m:=mccode.nextmcl
 
 	while m, m:=m.nextmcl do 
 		m2:=m.nextmcl
 		m3:=m2.nextmcl
-
-!CPL =M, M2, M3, MCLNAMES[M.OPCODE]
 
 		case m.opcode
 		when m_endx then
@@ -8384,7 +8355,6 @@ INT JJ:=0
 					m.opcode:=m_lea
 					m.b:=mgenindex(areg:m.b.reg, offset: (m2.opcode=m_add|m2.b.value|-m2.b.value))
 					deletemcl(m2)
-!CPL "MOV/ADD/SUB NN",++AA
 				fi
 			esac
 
@@ -9780,7 +9750,6 @@ func getregcode(int reg, int mask, isxreg=0)int regcode=
 end
 
 proc checkimmrange(int value, size)=
-!CPL =VALUE, =SIZE
 	case size
 	when 1 then
 		unless -128<=value<=255 then axerror("exceeding byte value") end
@@ -14408,14 +14377,10 @@ end
 
 proc setspecialglobals(int cmdskip)=
 !adjust cmdparams visible to application by setting $cmdskip flag
-!CPL "SSG"
 !	for i to nsymbols when symbolnametable[i]^='$' do
 	for i to nsymbols do
-!CPL "TRY", SYMBOLNAMETABLE[I]
 		if eqstring(symbolnametable[i],"msys.$cmdskip") or
 			eqstring(symbolnametable[i],"$cmdskip") then
-!		if eqstring(getbasename(symbolnametable[i]),"$cmdskip") then
-!CPL "2:FOUND $CMDSKIP",CMDSKIP,SYMBOLNAMETABLE[I]
 
 			(ref byte(symboladdress[i])^:=cmdskip)
 !			(ref byte(symboladdress[i])^:=0)
@@ -14774,20 +14739,13 @@ proc main=
 
 	source:=loadsourcefile(inputfile)
 
-!	println "Got source file",=strlen(source)
-
-INT TT:=CLOCK()
 	parsefile(source)				!parse to internal PCL
 
 	if checkundefined() then
 		println "Errors seen"
 	fi
-TT:=CLOCK()-TT
-!CPL "PARSE TIME=",TT
 
 	pcl_cmdskip(cmdskip)
-
-!CPL PASSNAMES[PASSLEVEL], =OUTPUTFILE
 
 	case passlevel
 	when pcl_pass then pcl_writepcl(outputfile)
@@ -14811,10 +14769,6 @@ proc showpcl(ichar outputfile)=
 	[256]char str
 	ichar filename, ss
 	filehandle f
-
-!CPL =FSHOWPCL
-!CPL =FSHOWASM
-!CPL =FSHOWPST
 
 	return when fshowpcl+fshowpst+fshowasm+fshowc+fshowss=0
 
@@ -14948,43 +14902,12 @@ proc do_option(int sw, ichar value, int paramno=0)=
 	fi	
 
 	case sw
-!	when ast1_sw then fshowast1:=1
-!	when ast2_sw then fshowast2:=1
-!	when ast3_sw then fshowast3:=1
 	when showpcl_sw then fshowpcl:=1
 	when showasm_sw then fshowasm:=1
 	when showc_sw then fshowc:=1
 	when pst_sw then fshowpst:=1
 	when showss_sw then fshowss:=1
-!	when showmodules_sw then fshowmodules:=1
-!
-!	when opt_sw then fpeephole:=1; fregoptim:=1
-!	when peephole_sw then fpeephole:=1
-!	when regoptim_sw then fregoptim:=1
-!
-!	when time_sw then fshowtiming:=1
-!	when v_sw, vv_sw, quiet_sw then fverbose:=optionvalues[sw]
-!
-!	when help_sw, help2_sw then showhelp(); stop
-!	when ext_sw then dointlibs:=0
-!
-!	when out_sw then
-!		if outpathused then loaderror("mixed out/path") fi
-!		destfilename:=pcm_copyheapstring(value)
-!		outused:=1
-!
-!	when outpath_sw then
-!		if outused then loaderror("mixed out/path") fi
-!		if (value+strlen(value)-1)^ not in ['\\','/'] then
-!			loaderror("Path needs to end with \\ or /")
-!		fi
-!		destfilepath:=pcm_copyheapstring(value)
-!		outpathused:=1
-!
-!	when unused_sw then fcheckunusedlocals:=1
-!
-!	when shortnames_sw then fshortnames:=1
-!
+
 	when rip_sw, himem_sw then highmem:=optionvalues[sw]
 !
 	end case
@@ -15101,7 +15024,6 @@ global proc lex=
 
 	IF LX.SYMBOL=EOLSYM THEN ++LX.LINENO FI
 
-!CPL "//LEX",LXSPTR
 	lx.value:=0
 
 	doswitch lxstart:=lxsptr; c:=lxsptr++^
@@ -15145,7 +15067,6 @@ global proc lex=
 		if c=0 then --lxsptr fi
 
 		lx.symbol:=eolsym
-!		++lx.lineno
 		return
 
 	when '#','%' then					!label
@@ -15174,7 +15095,6 @@ global proc lex=
 
 	when lf then
 		lx.symbol:=eolsym
-!		++lx.lineno
 		return
 
 	when 0 then		!eof
@@ -15185,8 +15105,6 @@ global proc lex=
 	else
 CPL =C
 		lxerror("Bad token")
-!		lx.symbol:=errorsym
-!		return
 
 	end doswitch
 
@@ -15231,8 +15149,6 @@ end
 
 global proc addreservedword(ichar name, int ksymbol, subcode) =
 
-!CPL "ADD",NAME
-
 	if lookup(name, gethashvaluez(name)) then
 		lxerror(addstr("PCI:Dupl name:",name))
 	fi
@@ -15256,9 +15172,6 @@ func lookup(ref char name, int hashindex0)int=
 
 	j:=hashindex0 iand hstmask
 
-!CPL =HASHINDEX0, =J, =HSTMASK
-!CPL "LOOKUP",NAME
-
 	d:=hashtable[j]
 	wrapped:=0
 
@@ -15268,8 +15181,6 @@ func lookup(ref char name, int hashindex0)int=
 		if strcmp(d.name, name)=0 then	!match
 			lx.symptr:=d
 			lx.ksymbol:=d.ksymbol
-!			lx.opcode:=d.opcode
-!			lx.mode:=d.mode				!for std types
 			return 1
 		fi
 
@@ -15289,11 +15200,8 @@ func lookup(ref char name, int hashindex0)int=
 	pc_addsymbol(d)
 	hashtable[j]:=d
 
-!	lx.svalue:=d.name
 	lx.symptr:=d
 	lx.ksymbol:=0
-!	d.subcode:=0
-!CPL "LOOKUP FAILS", D.NAME, LX.SYMPTR.NAME,"//"
 
 	return 0
 end
@@ -15470,11 +15378,7 @@ proc start=
 		fi
 	od
 
-!CPL "SETTING UP HASHTABLE:"
-
-
 	inithashtable()
-
 !	printhashtable()
 
 end
@@ -15666,9 +15570,7 @@ global proc parsefile(ichar source)=
 			pc_gen(klabel, genlabel(lx.value))
 			lex()
 			checkcolon(1)
-!		when loclabelsym then
-!CPL LX.LINENO,"LOCLAB"
-!SKIPTOEOL()
+
 		when eofsym then
 			exit
 		else
@@ -15740,9 +15642,6 @@ skipmode:
 skip:
 	fi
 
-!CPL "BEFORE OPND", PCLNAMES[OPCODE], SYMBOLNAMES[LX.SYMBOL]
-
-
 	if isdirective[opcode] then
 		dodirective(opcode, mode, size, x, y)
 		return
@@ -15751,12 +15650,10 @@ skip:
 	if needopnd then				!needs operand
 
 		opndtype:=symtoopnd[lx.symbol]
-!PRINTLX()
 
 		case opndtype
 		when 0 then
 			serror("Missing or bad operand")
-!		when any_opnd then
 		when mem_opnd, label_opnd, string_opnd, memaddr_opnd then
 			if needopnd not in [opndtype, any_opnd] then
 				serror("Incorrect operand type")
@@ -15770,7 +15667,6 @@ skip:
 				q:=r:=pcm_alloc(size)
 				for i to size do
 					checksymbol(intsym)
-!CPL =LX.VALUE, =SIZE
 					r++^:=lx.value
 					lex() when i<size
 				od
@@ -15795,7 +15691,6 @@ skip:
 
 		when labelsym then
 			p:=genlabel(lx.value)
-!		when loclabelsym then
 		else
 			serror("Bad opnd type")
 		esac
@@ -15887,9 +15782,7 @@ func checkcolon(int n)int m=
 end
 
 func lookuplocal(psymbol d)psymbol=
-!RETURN D
 
-!	if currfunc=nil or d.id<>null_id then return d fi
 	if currfunc=nil then return d fi
 
 !Look up any as yet undefined symbol in local list
@@ -16007,10 +15900,8 @@ proc dodirective(int opcode, mode, size, x, y)=
 			e.id:=local_id
 			pc_addlocal(e)
 		fi
-!CPL =D.NAME, STRPMODE(MODE1)
 		e.mode:=mode
 		e.size:=size
-!E.NAME:="NEWNAME"
 
 	else
 		if currfunc then serror("Not allowed in proc") fi

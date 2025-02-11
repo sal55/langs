@@ -704,7 +704,6 @@ EXPORT proc merror(ichar mess,ichar param="")=
 		filename:="?"
 	fi
 
-!CPL "MERROR????"
 	println "Proc:", currfunc.name
 
 	fprintln "MCL Error: # (#) on Line: # in #, PCL:#",mess,param, lineno, filename,ppseqno
@@ -1849,8 +1848,6 @@ global func mgenextname(ichar s)mclopnd=
 	psymbol d
 	static [20]psymbol table
 	static int ntable
-
-!CPL "GENEXTNAME", S
 
 	strcpy(&.str,s)
 	str[strlen(s)]:=0			!lose final *
@@ -3333,7 +3330,6 @@ func getregcode(int reg, int mask, isxreg=0)int regcode=
 end
 
 proc checkimmrange(int value, size)=
-!CPL =VALUE, =SIZE
 	case size
 	when 1 then
 		unless -128<=value<=255 then axerror("exceeding byte value") end
@@ -7961,14 +7957,10 @@ end
 
 proc setspecialglobals(int cmdskip)=
 !adjust cmdparams visible to application by setting $cmdskip flag
-!CPL "SSG"
 !	for i to nsymbols when symbolnametable[i]^='$' do
 	for i to nsymbols do
-!CPL "TRY", SYMBOLNAMETABLE[I]
 		if eqstring(symbolnametable[i],"msys.$cmdskip") or
 			eqstring(symbolnametable[i],"$cmdskip") then
-!		if eqstring(getbasename(symbolnametable[i]),"$cmdskip") then
-!CPL "2:FOUND $CMDSKIP",CMDSKIP,SYMBOLNAMETABLE[I]
 
 			(ref byte(symboladdress[i])^:=cmdskip)
 !			(ref byte(symboladdress[i])^:=0)

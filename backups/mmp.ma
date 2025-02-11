@@ -742,7 +742,6 @@ EXPORT proc merror(ichar mess,ichar param="")=
 		filename:="?"
 	fi
 
-!CPL "MERROR????"
 	println "Proc:", currfunc.name
 
 	fprintln "MCL Error: # (#) on Line: # in #, PCL:#",mess,param, lineno, filename,ppseqno
@@ -2495,7 +2494,6 @@ export proc pcl_runpcl=
 !	int tt:=clock()
 	int stopcode
 
-!CPL "RUNPCL"
 	loadlibs()
 
 	fixuppcl()
@@ -3196,7 +3194,6 @@ global proc genmcl=
 end
 
 FUNC CHECKFPUSED(MCLOPND A)int=
-!CPL "CHECK", 
 	RETURN 0 WHEN A=NIL
 	if a.reg=rframe or a.regix=rframe then return 1 fi
 	0
@@ -3208,7 +3205,6 @@ proc convertpcl(pcl p)=
 !CPL "    CONV",PCLNAMES[P.OPCODE],debug,P.SEQNO, =noperands
 
 	doshowpcl(p) when fshowpcl
-!	doshowpcl(p)
 
 PCLFLAGS[P.OPCODE]++
 
@@ -3916,8 +3912,6 @@ proc px_jumpretm*(pcl p) =
 ! goto L, common return point; deal with any ret value on stack
 	int n, reg
 
-!	CPL =P.NARGS
-
 	n:=zz-p.nargs+1
 	to p.nargs do
 		loadopnd(n, pclmode[n])
@@ -4078,10 +4072,6 @@ proc px_iloadx*(pcl p) =
 		nextpcl:=currpcl+1
 
 		if nextpcl.opcode=kwiden then
-
-!			ax:=getworkreg_rm(0, nextpcl.mode)
-!CPL "ILOADX/WIDEN"
-!			ax:=getworkreg_rm(0, nextpcl.mode)
 			ax:=getworkreg_rm(getsharereg(px, nextpcl.mode), nextpcl.mode)
 
 			genmc(ploadop[nextpcl.mode2], ax, px)
@@ -4090,7 +4080,6 @@ proc px_iloadx*(pcl p) =
 			currpcl:=nextpcl
 		else
 
-!			ax:=getworkreg_rm(0, pmode)
 			ax:=getworkreg_rm(getsharereg(px, pmode), pmode)
 
 			genmc(m_mov, ax, px)
@@ -5011,13 +5000,6 @@ proc px_longjmp*(pcl p)=
 	genmc(m_mov, cx, ax)		!load stored return address
 	swapopnds(xx, zz)
 	poppcl()					!addr of buffer
-
-!CPL STROPNDSTACK()
-!CPL =PCLREG[YY]
-!CPL =PCLREG[ZZ]
-!freeworkregs(p)
-!CPL STROPNDSTACK()
-!CPL =PCLREG[ZZ], LOCNAMES[PCLLOC[ZZ]]
 
 	swapopndregs(r0)			!move ret value to r0
 	genmc(m_jmp, cx)			!
@@ -5954,7 +5936,6 @@ function scaleregvar(int reg, &scale, n)int=
 		scale:=8
 
 	ELSE
-!CPL "SCALE VAR"
 		genmc(m_mov,ax, mgenreg(reg))
 		mulimm(ax,scale)
 		scale:=1
@@ -6198,9 +6179,7 @@ global proc clearblock(mclopnd ax, int n)=
 	nwords:=n/8				!number of word64s (ie. octobytes)
 
 	rx:=getworkregm(tpu64)
-!CPL "XB",RX.SIZE
 	clearreg(rx)
-!	genmc(m_xorx, rx, rx)
 
 	offset:=0
 
@@ -7450,8 +7429,6 @@ global func mgenextname(ichar s)mclopnd=
 	static [20]psymbol table
 	static int ntable
 
-!CPL "GENEXTNAME", S
-
 	strcpy(&.str,s)
 	str[strlen(s)]:=0			!lose final *
 
@@ -7701,7 +7678,6 @@ global func getopnd(int n, mode, reg=rnone)mclopnd ax =
 		ESAC
 
 		bx:=mgenint(a.value, mode)
-!CPL "GETOPND", =MSTROPND(BX), BX.SIZE, =PSIZE[MODE], =BX.VALUE
 		if a.value in i32.bounds then			!keep as immediate
 			ax:=bx
 		else
@@ -8370,16 +8346,11 @@ global proc peephole=
 
 	if not fpeephole then return fi
 
-!CPL "PEEPHOLE"
-INT JJ:=0
-
 	m:=mccode.nextmcl
 
 	while m, m:=m.nextmcl do 
 		m2:=m.nextmcl
 		m3:=m2.nextmcl
-
-!CPL =M, M2, M3, MCLNAMES[M.OPCODE]
 
 		case m.opcode
 		when m_endx then
@@ -8417,7 +8388,6 @@ INT JJ:=0
 					m.opcode:=m_lea
 					m.b:=mgenindex(areg:m.b.reg, offset: (m2.opcode=m_add|m2.b.value|-m2.b.value))
 					deletemcl(m2)
-!CPL "MOV/ADD/SUB NN",++AA
 				fi
 			esac
 
@@ -9813,7 +9783,6 @@ func getregcode(int reg, int mask, isxreg=0)int regcode=
 end
 
 proc checkimmrange(int value, size)=
-!CPL =VALUE, =SIZE
 	case size
 	when 1 then
 		unless -128<=value<=255 then axerror("exceeding byte value") end
@@ -14441,14 +14410,10 @@ end
 
 proc setspecialglobals(int cmdskip)=
 !adjust cmdparams visible to application by setting $cmdskip flag
-!CPL "SSG"
 !	for i to nsymbols when symbolnametable[i]^='$' do
 	for i to nsymbols do
-!CPL "TRY", SYMBOLNAMETABLE[I]
 		if eqstring(symbolnametable[i],"msys.$cmdskip") or
 			eqstring(symbolnametable[i],"$cmdskip") then
-!		if eqstring(getbasename(symbolnametable[i]),"$cmdskip") then
-!CPL "2:FOUND $CMDSKIP",CMDSKIP,SYMBOLNAMETABLE[I]
 
 			(ref byte(symboladdress[i])^:=cmdskip)
 !			(ref byte(symboladdress[i])^:=0)
