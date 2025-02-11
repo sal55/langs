@@ -788,12 +788,6 @@ global proc fixuplib(ref librec lib)=
 !do second fixup pass, which is done across global symbols, but then 
 !all relocs are done for all libs which are not yet relocated
 
-!	alloclibdata(lib)
-!	donewlib(lib)					!update global tables
-
-!global fixups
-!	loadimports()
-
 	loaddlls()				!global
 	checksymbols()			!global
 	dorelocations()			!all libs
@@ -921,7 +915,6 @@ proc reloclib(ref librec lib)=
 
 		when impabs32_rel then
 			index:=lib.importxreftable[r.stindex]			!global index
-!			(ref u32(p)^+:=cast(symboladdress[index],u32))
 			(ref u32(p)^+:=cast(symboladdress[index],u64))
 
 		when imprel32_rel then
@@ -1062,7 +1055,7 @@ proc setspecialglobals(int cmdskip)=
 		if eqstring(symbolnametable[i],"msys.$cmdskip") or
 			eqstring(symbolnametable[i],"$cmdskip") then
 !		if eqstring(getbasename(symbolnametable[i]),"$cmdskip") then
-CPL "2:FOUND $CMDSKIP",CMDSKIP,SYMBOLNAMETABLE[I]
+!CPL "2:FOUND $CMDSKIP",CMDSKIP,SYMBOLNAMETABLE[I]
 
 			(ref byte(symboladdress[i])^:=cmdskip)
 !			(ref byte(symboladdress[i])^:=0)

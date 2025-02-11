@@ -1,5 +1,5 @@
 === MA 29 ===
-=== aa.m 0 0 1/29 ===
+=== aap.m 0 0 1/29 ===
 project =
 	module aa_cli
 
@@ -15,54 +15,21 @@ project =
 !	module mc_objdecls
 
 !	import pcl
-	import pclax
+	import pclaxp
 end
-=== pclax.m 0 0 2/29 ===
-!project =
-!	module pc_api
-!	module pc_decls
-!
-!!	module pc_diags
-!	module pc_diags_dummy
-!
-!	module pc_run
-!	module pc_runaux
-!
-!	module pc_tables
-!
-!	module mc_GenMCL_dummy
-!	module mc_GenSS_dummy
-!	module mc_Decls
-!	module mc_OBJdecls
-!	module mc_WriteASM_dummy
-!	module mc_WriteEXE_dummy
-!	module mc_WriteOBJ_dummy
-!	module mx_run_dummy
-!
-!end
-!
-!export byte pc_userunpcl=1			!ask host to default to -runpcl option
-!
+=== pclaxp.m 0 0 2/29 ===
 project =
 	module pc_api
 	module pc_decls
 
 	module pc_diags_dummy
 
-!	module pc_run
-!	module pc_runaux
 	module pc_run_dummy
 
 	module pc_tables
 
-!	module pc_genc
-!	module pc_auxc
-!	module pc_libc
-
 	module mc_GenMCL_dummy
-!	module mc_AuxMCL
 	module mc_LibMCL
-!	module mc_StackMCL
 
 	module mc_GenSS
 
@@ -74,9 +41,9 @@ project =
 	module mc_WriteEXE
 	module mc_WriteOBJ
 
-	module mc_writess
-	module mc_disasm
-!	module mc_writess_dummy
+!	module mc_writess
+!	module mc_disasm
+	module mc_writess_dummy
 
 	module mx_decls
 	module mx_run
@@ -86,11 +53,6 @@ project =
 end
 
 export byte pc_userunpcl=0
-
-!proc main=
-!end
-
-
 === pc_api.m 0 0 3/29 ===
 INT PCLSEQNO
 int STSEQNO
@@ -116,14 +78,7 @@ export func pcl_start(ichar name=nil, int nunits=0)psymbol=
 !tangible to pass back to the caller of the API. There is no mechanism
 !to allow multiple, active sets of pcltables
 
-INT NN:=0X12345601
-
 	if pcldone then pclerror("PCL start?") fi
-
-!CPL "PCLAPI", =PCLREC.BYTES
-!CPL "PCLAPI", =PSTREC.BYTES
-
-
 
 	if name then
 		currprog:=pc_makesymbol(name, program_id)
@@ -230,7 +185,6 @@ export func pcl_writeasm(ichar filename=nil, int atype='AA')ichar=
 		phighmem:=2
 	fi
 
-!CPL "PCL/WASM", =MCLDONE
 	genmcl()
 
 	asmstr:=getassemstr()
@@ -251,7 +205,6 @@ end
 
 export proc pcl_writeobj(ichar filename)=
 	phighmem:=2
-!CPL "WRITEOBJ", =PHIGHMEM
 	genmcl()
 	genss(1)
 
@@ -290,7 +243,6 @@ end
 !end
 
 export proc pcl_exec=
-!PCLERROR("NO RUN")
 !	pcmdskip:=cmdskip
 	genmcl()
 	genss()
@@ -298,16 +250,11 @@ export proc pcl_exec=
 end
 
 export proc pcl_setflags(int highmem=-1, verbose=-1, shortnames=-1) =
-!export proc pcl_setflags(int highmem=-1, verbose=-1, shortnames=-1,
-!	hostcmdskip=-1)=
-
-!CPL "SETFLAGS", =HOSTCMDSKIP
 
 	if highmem>=0 then phighmem:=highmem fi
 
 	if verbose>=0 then pverbose:=verbose fi
 	if shortnames>=0 then fpshortnames:=shortnames fi
-!	if hostcmdskip>=0 then pcmdskip:=hostcmdskip fi
 end
 
 proc extendpclblock=
@@ -349,15 +296,6 @@ export proc pc_gen(int opcode, pcl p=nil) =
 		p:=newpcl()
 	fi
 
-!++NALLPCL
-!
-!IF OPCODE IN [KJUMP, KJUMPT, KJUMPF, KJUMPCC] THEN
-!	++NJUMPS
-!FI
-!	case opcode
-!	when ksetcall then p.simple:=1
-!	esac
-!
 	p.opcode:=opcode
 end
 
@@ -366,29 +304,6 @@ export proc pc_genix(int opcode, scale=1, offset=0) =
 !previous ones, but that has now been dropped.
 !Instead any such reductions will be done in a separate pass, much simpler
 	pcl p
-
-!	int n
-!
-!!CPL "GENPCIX NEW", PCLNAMES[OPCODE], "CURR:", PCLNAMES[(PCCURR).OPCODE],"PREV:", PCLNAMES[(PCCURR-1).OPCODE]
-!!
-!	if REDUCE AND pccurr.opcode=kload and pccurr.opndtype=int_opnd then
-!		if opcode=ksubpx then
-!			-:=pccurr.value
-!			opcode:=kaddpx
-!!CPL "CHANGE SUBPX TO ADDPX"
-!		fi
-!
-!		if (pccurr-1).opcode=kaddpx then
-!			p:=pccurr-1
-!			p.extra+:=pccurr.value*scale + offset
-!!CPL "ADDPX INCORPORATES LOAD IMM"
-!
-!			p.opcode:=opcode			!addpx/loadimm/xxx => xxx
-!			clear pccurr^
-!			pccurr:=p					!lose loadimm
-!			return
-!		fi
-!	fi
 
 	p:=newpcl()
 
@@ -475,20 +390,8 @@ MLABELNO MAX:=A
 end
 
 export func genmem(psymbol d)pcl p=
-!	unit q
 
 	p:=newpcl()
-!	if d.atvar and d.equivvar then
-!		q:=d.equivvar
-!		case q.tag
-!		when jname then
-!			d:=q.def
-!		when jconvert then
-!			d:=q.a.def			!assume points to name
-!		else
-!			pclerror("genmen@")
-!		esac
-!	fi
 
 	p.def:=d
 
@@ -498,9 +401,6 @@ end
 
 export func genmemaddr(psymbol d)pcl p=
 	p:=newpcl()
-!	if d.atvar and d.equivvar then
-!		d:=d.equivvar.def
-!	fi
 	p.def:=d
 
 	p.opndtype:=memaddr_opnd
@@ -539,7 +439,6 @@ end
 
 EXPORT func strpmode(int mode, size=0)ichar=
 	static [32]char str
-!	int dprec@signed
 
 	strcpy(str, "")
 
@@ -650,7 +549,6 @@ export func pc_makesymbol(ichar s, int id)psymbol d=
 !all others become part of main ST
 !Only local/param have .owner set to currfunc
 
-!CPL "MAKESYM", S,IDNAMES[ID]
 	d:=pcm_allocnfz(pstrec.bytes)
 	d.name:=pcm_copyheapstring(s)
 	d.seqno:=++stseqno
@@ -711,45 +609,6 @@ global func getfullname(psymbol d, int backtick=0)ichar=
 	fi
 end
 
-!global func getfullname(psymbol d, int backtick=0)ichar=
-!!create fully qualified name into caller's dest buffer
-!	static [256]char str
-!	[16]psymbol chain
-!	int n:=0
-!	psymbol e:=d
-!
-!	if fpshortnames then return d.name fi
-!
-!	if d.imported then
-!		if backtick then
-!			strcpy(str, "`")
-!			strcat(str, d.name)
-!			strcat(str, "*")
-!		else
-!			strcpy(str, d.name)
-!		fi
-!		return str
-!	fi
-!
-!	repeat
-!		chain[++n]:=e
-!		e:=e.owner
-!	until e=nil !or e.id=program_id
-!
-!	if backtick then
-!		strcpy(str, "`")
-!	else
-!		str[1]:=0
-!	fi
-!	strcat(str,chain[n].name)
-!	for i:=n-1 downto 1 do
-!		strcat(str,".")
-!		strcat(str,chain[i].name)
-!	od
-!
-!	return str
-!end
-
 global proc pcerrorstop(ichar filename,int lineno)=
 	filehandle f
 	f:=fopen("$error.tmp","w")
@@ -761,7 +620,7 @@ end
 
 export proc pc_addplib(ichar name)=
 	if nplibfiles>=maxplibfile then perror("Too many libs") fi
-	plibfiles[++nplibfiles]:=name
+	plibfiles[++nplibfiles]:=pcm_copyheapstring(name)
 end
 
 export proc pc_defproc(psymbol d, int mode=tpvoid, isentry=0, threaded=0)=
@@ -837,7 +696,7 @@ EXPORT proc merror(ichar mess,ichar param="")=
 	ichar filename, sourceline
 
 	if igetmsourceinfo then
-		lineno:=igetmsourceinfo(mmpos, &filename, &sourceline)
+		lineno:=igetmsourceinfo(mmpos, filename, sourceline)
 		CPL =LINENO
 		CPL =FILENAME
 	else
@@ -846,6 +705,7 @@ EXPORT proc merror(ichar mess,ichar param="")=
 	fi
 
 !CPL "MERROR????"
+	println "Proc:", currfunc.name
 
 	fprintln "MCL Error: # (#) on Line: # in #, PCL:#",mess,param, lineno, filename,ppseqno
 
@@ -866,18 +726,58 @@ export proc pcl_cmdskip(int cmdskip, psymbol dcmdskip=nil)=
 	pcmdskip:=cmdskip
 end
 
-!export proc pcl_$cmdskip(psymbol dcmdskip=nil)=
-!CPL "PCL/$CMDSKIP", DCMDSKIP
-!	pdcmdskip:=dcmdskip
-!end
-!
+export func convertstring(ichar s, t)int=
+!convert string s, that can contain control characters, into escaped form
+!return new string in t, so that ABC"DEF is returned as ABC\"DEF
+!returns length of t
+	int c
+	ichar t0:=t
+	[16]char str
+
+	while c:=s++^ do
+		case c
+		when '"' then
+			t++^:='\\'
+			t++^:='"'
+		when 10 then
+			t++^:='\\'
+			t++^:='n'
+		when 13 then
+			t++^:='\\'
+			t++^:='c'
+		when 9 then
+			t++^:='\\'
+			t++^:='t'
+		when '\\' then
+			t++^:='\\'
+			t++^:='\\'
+		when 7,8,26,27 then
+			t++^:='<'
+			t++^:=c/10+'0'
+			t++^:=(c rem 10)+'0'
+			t++^:='>'
+		elsif c in 32..126 then
+			t++^:=c
+		else
+			t++^:='\\'
+			t++^:='x'
+			print @str,c:"z2h"
+			t++^:=str[1]
+			t++^:=str[2]
+		esac
+	od
+	t^:=0
+
+	return t-t0
+end
+
 === pc_decls.m 0 0 4/29 ===
 !decls
 
 export type psymbol = ref pstrec
 
-!global record pstrec = $caligned
-global record pstrec =
+global record pstrec = $caligned
+!global record pstrec =
 	ichar name
 	psymbol next
 	psymbol nextparam
@@ -886,8 +786,6 @@ global record pstrec =
 	psymbol generic				!locals/params: version in global ST
 
 	ref procinforec info		!procs: info to help codegen	
-
-!	psymbol generic				!locals/params: version in global GT
 
 	union
 		pcl pcaddr				!for procs: entry point to function
@@ -913,7 +811,7 @@ global record pstrec =
 	byte nrefs
 	byte reg
 	byte atvar
-	byte used
+	byte used					!0, or 1 to 255 (capped at 255)
 	byte reftype
 	byte segment
 	byte hasdot
@@ -996,6 +894,7 @@ EXPORT record pclrec =
 				int32 align
 				int32 popone			! (x) jumpcc: leave X on stack
 				int32 slicelwb			! (x) for .upb
+				int32 inplace			! (x) for load, means &A operand is for inplace update
 
 			end
 		end
@@ -1005,7 +904,6 @@ EXPORT record pclrec =
 	i32 dummy:(mode2:8, seqno:24)
 end
 
-!global record fwdrec =
 export record fwdrec =
 	ref fwdrec nextfwd
 	int32 offset
@@ -1023,34 +921,10 @@ export record procinforec =
 	byte nmaxargs			!0, or maxargs of any call (may be capped at 4)
 	byte assemused			!1 if inline assembly used (can't optimise)
 	byte mcldone			!
-
-!* Whether this is a leaf function
-!* Maximum args in call
-!* Number of params
-!* Number of locals
-!* Whether a local/param has & applied. This can be tricky: it can be used
-!  for INCR or ADDTO, but a regvar wouldn't need &. Perhaps have a flag
-!  for LOAD &MEM to say whether it is for such ops.
-
-
-
+	byte hasblocks			!whether block modes are used (that means copyblock etc)
 end
 
 global procinfo pinfo
-
-
-!* LOCALS: all that have been USED
-!* PARAMS: all including not used ones (but need the USED flag)
-!* HIGHPARAM max param (of 0..4) that has been used, to determine
-!  if any spare PREG exists
-!* NCALLS all calls including those hidden inside POWER etc
-!* HIGHARG max argument (of 0..4) of any calls.
-!* ASSEMUSED
-!* LEAFPROC
-!* Need ADDROF flags for each LOCAL and PARAM
-!* MAXREGVARS how many locals would qualify as regvars
-!* MAXXREGVARS how many locals would qualify as xregvars
-!* R3USED (see below)
 
 global int frameoffset
 global int paramoffset
@@ -1066,7 +940,7 @@ global const maxlocals=256
 !global int highreg				!highest D-reg used
 !global int highxreg				!highest X-reg used
 global int bspill, bxspill		!no. to spill
-global int bxspilloffset		!base frame offset of bxreg spill area
+!global int bxspilloffset		!base frame offset of bxreg spill area
 
 global byte r10used				!these may be set in pass2 when occupied by params
 global byte r11used
@@ -1097,7 +971,7 @@ export ref func (int pos, ichar &filename, &sourceline)int igetmsourceinfo
 
 global byte pcldone, mcldone, ssdone, objdone, exedone
 
-global byte pverbose
+export byte pverbose
 global int pcmdskip
 !global psymbol pdcmdskip			!reference to $cmdskip symbol
 
@@ -1108,17 +982,18 @@ GLOBAL INT PPSEQNO
 !GLOBAL CONST DOREDUCE=1
 GLOBAL CONST DOREDUCE=0
 
-!GLOBAL CONST REDUCELABELS=1
-GLOBAL CONST REDUCELABELS=0
+GLOBAL CONST REDUCELABELS=1
+!GLOBAL CONST REDUCELABELS=0
 
-global byte dopreg			!set to 1 during span of setcall with simple=1, to call op
-global byte currpreg		!if dopreg, sey callpreg to r10..r13 at setcall or from setarg 5
-
-export byte fdevmode		!1 to enable reduce/optimise developments
+export byte fpeephole = 1
+export byte fregoptim = 1 
 
 export int mcltime, sstime, objtime, exetime
 
-EXPORT INT NALLPCL, NJUMPS
+EXPORT ICHAR $PMODULENAME
+
+EXPORT [PCLNAMES.BOUNDS]INT PCLFLAGS
+
 === pc_diags_dummy.m 0 0 5/29 ===
 global proc pshowlogfile=
 end
@@ -1130,7 +1005,7 @@ global func stropnd(pcl p)ichar=
 	return nil
 end
 
-global func strpclstr(pcl p)ichar=
+global func strpclstr(pcl p, int buffsize)ichar=
 	nil
 end
 
@@ -1163,30 +1038,34 @@ end
 export enumdata \
 		[0:]ichar pstdnames,
 		[0:]byte psize,
+
 		[0:]byte psigned,
+
+		[0:]byte pint,
 		[0:]byte pfloat,
+
 		[0:]byte pmin,						!promoted type when min width applies
 		[0:]byte piwrb =					!int/word/real/block
 
-	(tpvoid=0,    "void",    	0,	0,0,	tpvoid,		tpvoid),
+	(tpvoid=0,    "void",    	0,	0, 0,0,	tpvoid,		tpvoid),
 
-	(tpr32,       "r32",    	4,	0,1,	tpr32,		tpr32),
-	(tpr64,       "r64",    	8,	0,1,	tpr64,		tpr64),
+	(tpr32,       "r32",    	4,	0, 0,1,	tpr32,		tpr32),
+	(tpr64,       "r64",    	8,	0, 0,1,	tpr64,		tpr64),
 
-	(tpu8,        "u8",      	1,	0,0,	tpu32,		tpu64),
-	(tpu16,       "u16",    	2,	0,0,	tpu32,		tpu64),
-	(tpu32,       "u32",    	4,	0,0,	tpu32,		tpu64),
-	(tpu64,       "u64",    	8,	0,0,	tpu64,		tpu64),
+	(tpu8,        "u8",      	1,	0, 1,0,	tpu32,		tpu64),
+	(tpu16,       "u16",    	2,	0, 1,0,	tpu32,		tpu64),
+	(tpu32,       "u32",    	4,	0, 1,0,	tpu32,		tpu64),
+	(tpu64,       "u64",    	8,	0, 1,0,	tpu64,		tpu64),
 
-	(tpi8,        "i8",      	1,	1,0,	tpi32,		tpi64),
-	(tpi16,       "i16",    	2,	1,0,	tpi32,		tpi64),
-	(tpi32,       "i32",    	4,	1,0,	tpi32,		tpi64),
-	(tpi64,       "i64",    	8,	1,0,	tpi64,		tpi64),
+	(tpi8,        "i8",      	1,	1, 1,0,	tpi32,		tpi64),
+	(tpi16,       "i16",    	2,	1, 1,0,	tpi32,		tpi64),
+	(tpi32,       "i32",    	4,	1, 1,0,	tpi32,		tpi64),
+	(tpi64,       "i64",    	8,	1, 1,0,	tpi64,		tpi64),
 
-	(tpblock,     "mem",   	0,	0,0,	tpblock,	tpvoid),
-	(tpvector,    "vec",   	0,	0,0,	tpvector,	tpvoid),
+	(tpblock,     "mem",   		0,	0, 0,0,	tpblock,	tpvoid),
+	(tpvector,    "vec",   		0,	0, 0,0,	tpvector,	tpvoid),
 
-	(tplast,      "$last",   	0,	0,0,	0,			0),
+	(tplast,      "$last",   	0,	0, 0,0,	0,			0),
 
 
 end
@@ -1265,13 +1144,14 @@ export enumdata [0:]ichar pclnames,
 !                       t  x op args    (a  b)
 	(knop=0,       $+1, 0, 0, 0, 0),  ! (0 - 0) (          ) ?
 
-	(kload,        $+1, 1, 0, A, 0),  ! (0 - 1) (M L t     ) Z' := M &M L &L 123 4.5 "abc"
+	(kload,        $+1, 1, 1, A, 0),  ! (0 - 1) (M L t i   ) Z' := M &M L &L 123 4.5 "abc"; i=1 for in-place ref
 	(kiload,       $+1, 1, 0, 0, 0),  ! (1 - 1) (t         ) Z' := Z^
 	(kiloadx,      $+1, 1, 2, 0, 0),  ! (2 - 1) (t d       ) Z' := (Y + Z*s + d)^
 
 	(kstore,       $+1, 1, 0, M, 0),  ! (1 - 0) (M t       ) M := Z
 	(kistore,      $+1, 1, 0, 0, 0),  ! (2 - 0) (t         ) Z^ := Y
 	(kistorex,     $+1, 1, 2, 0, 0),  ! (3 - 0) (t s d     ) (Y + Z*s + d)^ := X
+	(kstorem,      $+1, 1, 0, 0, 0),  ! (2 - 1) (t         ) Z' :=(Y, Z) for mem:16
 
 	(kdupl,        $+1, 0, 0, 0, 0),  ! (1 - 2) (          ) Z' := Y' := Z
 	(kdouble,      $+1, 0, 0, 0, 0),  ! (1 - 2) (          ) Count extra instance of Z
@@ -1413,12 +1293,6 @@ export enumdata [0:]ichar pclnames,
 	(kistatic,     $+1, 1, 0, M, 0),  ! (0 - 0) (M t       ) Define idata label (must be followed by correct DATA ops)
 	(kzstatic,     $+1, 1, 0, M, 0),  ! (0 - 0) (M t       ) Define zdata label and reserve sufficient space
 	(kdata,        $+1, 1, 0, A, 0),  ! (0 - 0) (M L C t   ) Constant data. For block types, there can be multiple C values
-	(kparam,       $+1, 1, 0, M, 0),  ! (0 - 0) (M t       ) Define param
-	(klocal,       $+1, 1, 0, M, 0),  ! (0 - 0) (M t       ) Define local
-	(krettype,     $+1, 1, 0, 0, 0),  ! (0 - 0) (t         ) Define return type
-	(kvariadic,    $+1, 0, 0, 0, 0),  ! (0 - 0) (          ) Variadic C function
-	(kaddlib,      $+1, 0, 0, S, 0),  ! (0 - 0) (S         ) Define import library
-	(kextproc,     $+1, 0, 0, M, 0),  ! (0 - 0) (M         ) Define imported proc
 
 	(klabel,       $+1, 0, 0, L, 0),  ! (0 - 0) (          ) ?
 	(klabeldef,    $+1, 0, 0,MA, 0),  ! (0 - 0) (          ) ?
@@ -1426,7 +1300,6 @@ export enumdata [0:]ichar pclnames,
 	(klongjmp,     $+1, 0, 0, 0, 0),  ! (1 - 1) (          ) For C
 
 	(ksetcall,     $+1, 0, 2, 0, 0),  ! (0 - 0) (n s       ) n=args, s=1 for simple call
-!	(ksetcall,     $+1, 0, 1, A, 0),  ! (0 - 0) (n         ) ?
 
 	(ksetarg,      $+1, 0, 1, 0, 0),  ! (0 - 0) (n         ) ?
 	(kloadall,     $+1, 0, 0, 0, 0),  ! (0 - 0) (          ) ?
@@ -1435,11 +1308,14 @@ export enumdata [0:]ichar pclnames,
 	(kcomment,     $+1, 0, 0, 0, 0),  ! (0 - 0) (C         ) Comment C (a string)
 	(kendprog,     $+1, 0, 0, 0, 0),  ! (0 - 0) (          ) End-of-program marker.
 !------------------------- -
-	(kstoresl,     $+1, 1, 0, M, 0),  ! (2 - 0) (M t       ) M := slice(Y, Z)
-	(kstoresld,    $+1, 1, 0, M, 0),  ! (2 - 1) (M t       ) M := slice(Y, Z); leave Y on stack
-	(ksliceupb,    $+1, 1, 0, 0, 0),  ! (2 - 1) (M t       ) Z' := Z.upb
-	(kslicelen,    $+1, 1, 0, 0, 0),  ! (2 - 1) (M t       ) Z' := Z.len
-	(ksliceptr,    $+1, 1, 0, 0, 0),  ! (1 - 1) (t         ) Z' := Z.sliceptr
+!these are only used in textual PCL code
+
+	(kparam,       $+1, 1, 0, M, 0),  ! (0 - 0) (M t       ) Define param
+	(klocal,       $+1, 1, 0, M, 0),  ! (0 - 0) (M t       ) Define local
+	(krettype,     $+1, 1, 0, 0, 0),  ! (0 - 0) (t         ) Define return type
+	(kvariadic,    $+1, 0, 0, 0, 0),  ! (0 - 0) (          ) Variadic C function
+	(kaddlib,      $+1, 0, 0, S, 0),  ! (0 - 0) (S         ) Define import library
+	(kextproc,     $+1, 0, 0, M, 0),  ! (0 - 0) (M         ) Define imported proc
 end
 
 global const kerror = knop
@@ -1456,7 +1332,6 @@ end
 
 export enumdata [0:]ichar idnames
 	(null_id=0,		"--"),			!Not set (used for overall program name)
-!	(kwd_id=0,		"Kwd"),			!Is a keyword
 	(import_id,		"Import"),		!Imported symbol (proc or static)
 	(proc_id,		"Proc"),		!Local proc
 	(static_id,		"Static"),		!Local static
@@ -1477,7 +1352,7 @@ const fuseregtable=1
 
 global const targetsize=8
 
-int mclseqno
+global int mclseqno
 
 [-1..10]mclopnd smallinttable
 [20]psymbol nametable
@@ -1493,7 +1368,6 @@ export proc mclinit(int bypass=0)=
 
 	if mclrec.bytes>64 then ABORTPROGRAM("MCLREC>64B") fi
 
-!CPL "MCLINIT"
 	for r:=r0 to r15 do
 		regtable[r,1]:=mgenreg0(r,1)
 		regtable[r,2]:=mgenreg0(r,2)
@@ -1563,15 +1437,10 @@ EXPORT proc genmc(int opcode, mclopnd a=nil,b=nil)=		!used in do_mcl/assem in ho
 		if a.mode=a_xreg or (b and b.mode=a_xreg) then
 			m.opcode:=(a.size=8|m_movq|m_movd)
 		fi
-
-!IF A.SIZE<>B.SIZE and b.size THEN
-!cpl =a.size, =b.size
-!merror("MOV/SIZE MISMATCH")
-!FI
-
 	esac
 
 	if mccode then
+		m.lastmcl:=mccodex
 		mccodex.nextmcl:=m
 		mccodex:=m
 	else
@@ -1613,6 +1482,8 @@ EXPORT func mgenindex(int areg=0,ireg=0,scale=1,offset=0,size=0, labno=0, psymbo
 	a.mode:=a_mem
 	a.reg:=areg
 
+	if areg=rframe or ireg=rframe then usedregs[rframe]:=1 fi
+
 	a.regix:=ireg
 	a.scale:=scale
 	a.size:=size
@@ -1628,6 +1499,7 @@ EXPORT func mgenindex(int areg=0,ireg=0,scale=1,offset=0,size=0, labno=0, psymbo
 		a.valtype:=def_val
 		if isframex(def) then
 			a.reg:=rframe
+			usedregs[rframe]:=1
 		fi
 	fi
 
@@ -1636,11 +1508,11 @@ end
 
 global proc mgencomment(ichar s)=
 !if not debugmode then return fi
-	if s=nil or s^=0 then
-		genmc(m_blank)
-	else
+!	if s=nil or s^=0 then
+!		genmc(m_blank)
+!	else
 		genmc_str(m_comment,s)
-	fi
+!	fi
 end
 
 export func mgenstring(ichar s,int length=-1)mclopnd=
@@ -1824,6 +1696,8 @@ export func mgenmem(psymbol d, int mode=tpu64)mclopnd a=
 !		fi
 
 		reg:=rframe
+		usedregs[rframe]:=1
+
 	fi
 
 	a:=newmclopnd()
@@ -1890,11 +1764,15 @@ EXPORT func mgenreg(int reg, mode=tpi64)mclopnd a =
 		a:=newmclopnd()
 		a.mode:=a_xreg
 		a.reg:=reg
+		usedxregs[reg]:=1
 		a.size:=psize[mode]
 		a
 	else
 		if size=0 then size:=8 fi
 		usedregs[reg]:=1
+
+IF REG IN R10..R13 THEN REGSET[REG]:=1 FI
+
 		if fuseregtable then
 			return regtable[reg,size]
 		fi
@@ -1909,15 +1787,6 @@ global func mgenregi(int reg, mode=tpi64)mclopnd a =
 	return mgenreg0(reg, psize[mode])
 end
 
-
-!global func mgenreg(int reg, mode=tpi64)mclopnd a=
-!	a:=newmclopnd()
-!	a.mode:=a_reg
-!	a.reg:=reg
-!	a.size:=size
-!	return a
-!end
-!
 global func mgenireg(int reg, mode=tpi64, offset=0)mclopnd=
 	mclopnd a
 
@@ -1943,6 +1812,7 @@ global func mgentemp(int n, mode)mclopnd a=
 	a:=newmclopnd()
 	a.mode:=a_mem
 	a.reg:=rframe
+	usedregs[rframe]:=1
 	a.valtype:=temp_val
 	a.size:=psize[mode]
 	a.tempno:=n
@@ -1958,26 +1828,6 @@ global func roundsizetg(int size)int=
 	if size iand 7=0 then return size fi
 	return size+(8-(size iand 7))
 end
-
-!EXPORT proc merror(ichar mess,ichar param="")=
-!	int lineno
-!	ichar filename, sourceline
-!
-!	if igetmsourceinfo then
-!		lineno:=igetmsourceinfo(mmpos, &filename, &sourceline)
-!		CPL =LINENO
-!		CPL =FILENAME
-!	else
-!		lineno:=0
-!		filename:="?"
-!	fi
-!
-!!CPL "MERROR????"
-!
-!	fprintln "MCL Error: # (#) on Line: # in #, PCL:#",mess,param, lineno, filename,ppseqno
-!
-!	pcerrorstop(filename, lineno)
-!end
 
 global proc merroropnd(ichar mess,int opndtype)=
 	fprintln "MCL Opnd not supported: # (#) [#]",mess,opndnames[opndtype]
@@ -2021,7 +1871,7 @@ end
 
 global func mgenregvar(psymbol d, int mode)mclopnd a=
 	a:=mgenreg(d.reg, mode)
-	isregvar[d.reg]:=1
+!	isregvar[d.reg]:=1
 
 	return a
 end
@@ -2104,7 +1954,6 @@ global func addconst(ref constrec &clist, int value)int=
 	ref constrec p
 	p:=pcm_allocnfz(constrec.bytes)
 	p.value:=value
-!CPL "ADDCONST",MLABELNO+1
 	p.labelno:=++mlabelno
 	p.nextconst:=clist
 	clist:=p
@@ -2182,13 +2031,26 @@ end
 global proc addnamesym(psymbol d)=
 !add new name symbol, which should be unique
 
-!CPL "ADDNAMESYM", D.NAME
-
 	if nnametable<nametable.len then
 		nametable[++nnametable]:=d
 	else
 		merror("Ext nametab overflow")
 	fi
+end
+
+export proc callproc(ichar cpname, name, int lineno)=
+RETURN
+end
+
+func mgenstringx(ichar s)mclopnd=
+	mgenlabelmem(getstringindex(s))
+end
+
+global proc clearreg(mclopnd ax)=
+	if ax.size=8 then
+		ax:=changeopndsize(ax,4)
+	fi
+	genmc(m_xorx, ax, ax)
 end
 === mc_genss.m 0 0 10/29 ===
 const wmask = 2x1000				!1 means 64-bit operand size
@@ -2235,8 +2097,6 @@ global proc genss(int obj=0)=
 	int index
 	ref mclrec m
 
-!CPL "////////////////GENSS"
-!	if ssdone then axerror("genss?") fi
 	return when ssdone
 
 	sstime:=clock()
@@ -2277,11 +2137,9 @@ global proc genss(int obj=0)=
 		ref u32 offsetptr
 
 		codeaddr:=bufferelemptr(ss_code, 0)
-!CPL =CODEADDR
 			pr:=riplist
 			while pr, pr:=pr.next do
 				offsetptr:=ref u32(codeaddr+pr.offset)
-!			PRINTLN "**********  RIP:",PR.OFFSET, OFFSETPTR^
 				offsetptr^-:=pr.immsize
 		od
 	fi
@@ -2296,7 +2154,6 @@ proc doinstr(ref mclrec m,int index)=
 	psymbol d,e
 	int x,offset,shortjmp,n
 
-!	while currdata.pend-currdata.pcurr<1024 do
 	if currdata.pend-currdata.pcurr<1024 then
 		bufferexpand(currdata)
 	fi
@@ -2310,18 +2167,14 @@ proc doinstr(ref mclrec m,int index)=
 	ripentry:=nil
 	CURRMCL:=M
 
-!CPL "INSTR",MCLNAMES[M.OPCODE]
-
 	switch m.opcode
 	when m_procstart then
 		CURRASMPROC:=M.A.DEF
-!CPL "PROC",CURRASMPROC.NAME, AASEQNO
 
 	when m_procend then
 	when m_define then
 
 	when m_definereg then
-	when m_deleted then
 
 	when m_labelname then
 		case a.valtype
@@ -2329,7 +2182,6 @@ proc doinstr(ref mclrec m,int index)=
 		when def_val then
 			d:=a.def
 			d.reftype:=back_ref
-!CPL "SETSEG1", D.NAME, CURRSEG
 			d.segment:=currseg
 			d.offset:=getcurrdatalen(6)
 
@@ -2342,20 +2194,15 @@ proc doinstr(ref mclrec m,int index)=
 
 	when m_labelx then
 
-!CPL VALTYPENAMES[A.VALTYPE]
 		if a.valtype=def_val then			!named label (probably from assembler)
 			d:=a.def
 		else
 			d:=labeldeftable[a.labelno]
 		fi
 	
-!CPL =D.NAME
 		d.reftype:=back_ref
-!CPL "SETSEG2",D.NAME, CURRSEG
 		d.segment:=currseg
 		d.offset:=getcurrdatalen(6)
-
-!CPL =D.NAME, =D.EXPORTED, =IDNAMES[D.ID]
 
 		if d.exported then
 			getstindex(d)
@@ -2401,9 +2248,6 @@ proc doinstr(ref mclrec m,int index)=
 		genopnd(a,4)
 	when m_dq then
 		genopnd(a,8)
-
-!	when m_segment then
-!		switchseg(a.value)
 
 	when m_csegment then
 		switchseg(code_seg)
@@ -2545,8 +2389,8 @@ proc doinstr(ref mclrec m,int index)=
 	when m_comiss then
 		do_arithxmm(a,b,0,0x2F)
 
-	when m_comisd then
-		do_arithxmm(a,b,0x66,0x2F)
+	when m_comisd, m_ucomisd then
+		do_arithxmm(a,b,0x66,mclcodes[m.opcode])
 
 	when m_cvtss2sd then
 		do_convertfloat(a,b,0xF3)
@@ -2635,8 +2479,7 @@ proc doinstr(ref mclrec m,int index)=
 	when m_shld, m_shrd then
 		do_dshift(a, b, m.c, mclcodes[m.opcode])
 
-	when m_comment then
-	when m_blank then
+	when m_comment, m_endx then
 	else
 		println "*** Can't do opcode",mclnames[m.opcode],"line",aaseqno,=M.OPCODE,=M_HALT
 	CPL
@@ -2646,10 +2489,6 @@ proc doinstr(ref mclrec m,int index)=
 	end
 
 end
-
-!proc genbyte(int x)=
-!	currdata.pcurr++^:=x
-!end
 
 proc start=
 	ishighreg[r3]:=0x40
@@ -2774,13 +2613,11 @@ func getstindex(psymbol d)int=
 			extendsymboltable()
 		fi
 		d.stindex:=++ss_nsymbols
-!CPL "GETSTINDEX",D.NAME,D
 
 		ss_symboltable[d.stindex]:=d
 
 		if d.segment=0 then
 			if d.imported then
-!CPL "SETSEG3",D.NAME,CODE_SEG
 				d.segment:=code_seg
 			fi
 		fi
@@ -2854,7 +2691,6 @@ proc genabs32(mclopnd a)=
 
 	when fwd_ref then
 		d.fwdrefs:=addfwdref(d.fwdrefs,getcurrdatalen(4),addr32_rel,currseg)
-!CPL "NEW1",D.FWDREFS, D.NAME,D
 		if d.id in [local_id, param_id] then
 			gendword(d.offset+a.offset)
 		else
@@ -2974,14 +2810,8 @@ func isdwordsized(int64 x)int=
 end
 
 proc genamode(mclopnd a, amoderec am)=
-!	int sib,mode,dispsize,offset
 	psymbol d
 	ref riprec pr
-
-!	sib:=am>>16
-!
-!	mode:=(am>>8)iand 255
-!	dispsize:=am iand 255
 
 	genbyte(am.modrm)
 
@@ -2999,8 +2829,6 @@ proc genamode(mclopnd a, amoderec am)=
 			pr.next:=riplist
 			pr.offset:=currdata.pcurr-currdata.pstart
 			ripentry:=riplist:=pr
-!CPL "CREATING RIP ENTRY",PR.OFFSET
-!OS_GETCH()
 		fi
 		case a.mode
 		when a_mem then
@@ -3251,8 +3079,9 @@ func checkshortjump(ref mclrec m,psymbol d)int=
 				if a.def=d then return 1 fi
 			esac
 
-!		when m_comment, m_blank then
-		when m_comment, m_blank, m_deleted then
+		when m_comment, m_endx then
+		when m_resb then
+			return 0
 		else
 			++n
 		esac
@@ -3352,12 +3181,9 @@ global proc initlib(int nlabels)=
 	ss_nsymbols:=0
 	labeldeftable:=pcm_alloc(nlabels*ref void.bytes)
 
-!CPL "INITLIB",=NLABELS
 	for i to nlabels do
-!		labeldeftable[i]:=pcm_allocz(strec.bytes)
 		d:=labeldeftable[i]:=pcm_allocnfz(pstrec.bytes)
 		d.labelno:=i
-!		fprint @&.str,"(L#)",i
 		fprint @&.str,"l#",i
 		d.name:=pcm_copyheapstring(&.str)
 		d.reftype:=fwd_ref
@@ -3427,7 +3253,6 @@ end
 proc genxrm(int opcode, code, mclopnd b)=
 !deal with /d instructions, where code = 0..7
 	amoderec am
-!	[0..7]byte opbytes @opcode
 
 	setopsize(b)
 
@@ -3470,6 +3295,7 @@ proc genrrm(int opcode, mclopnd a, b)=
 
 !	checkhighreg(a)
 	if a.mode=a_reg then rex ior:=ishighreg[a.reg] fi
+
 	setopsize(a)
 
 	if usesizeb then				!wmask comes from b
@@ -3478,11 +3304,6 @@ proc genrrm(int opcode, mclopnd a, b)=
 	fi
 
 	am:=genrm(a.reg, 0, b, a.mode=a_xreg)
-
-!	genrex()
-
-!	if opbytes[1] then genbyte(opbytes[1]) fi
-!	if opbytes[2] then genbyte(opbytes[2]) fi		!extra opcodes will not be 0
 
 	if opcode.[16..23] then genbyte(opcode.[16..24]) fi
 	genrex()
@@ -3582,6 +3403,7 @@ func genrm(int reg, opc, mclopnd b, int isxreg=0)amoderec=
 		am.dispsize:=4
 
 	elsif b.scale<=1 and regix=0 then			!simple address mode (no sib)
+SIMPLE:
 		am.dispsize:=getdispsize(b, am.offset)
 		if am.dispsize then
 			mode:=(am.dispsize=1|1|2)
@@ -3600,6 +3422,12 @@ func genrm(int reg, opc, mclopnd b, int isxreg=0)amoderec=
 
 		fi
 	elsif regix and reg=0 then
+
+IF B.SCALE<=1 THEN					!try and avoid sib
+		SWAP(REG, REGIX)
+		GOTO SIMPLE
+FI
+
 		am.dispsize:=4
 		mode:=0
 		rm:=4
@@ -3616,6 +3444,7 @@ func genrm(int reg, opc, mclopnd b, int isxreg=0)amoderec=
 		rm:=4
 
 		scale:=(b.scale|b.scale|1)
+!CP "SCAD"
 		if reg=0 then
 			base:=5
 		else
@@ -3645,7 +3474,6 @@ func genrm(int reg, opc, mclopnd b, int isxreg=0)amoderec=
 		if reg or regix then
 			if phighmem=2 AND ISMEM=2 then
 				CPL "Addr32 can't use RIP, line",aaseqno,STRMCLSTR(CURRMCL)
-!				axerror("Addr32 can't use RIP")
 			fi
 		elsif phighmem then
 			am.usesib:=-1
@@ -3734,16 +3562,13 @@ proc do_mov(mclopnd a,b)=
 	int64 value
 	psymbol d:=getdef(b)
 
-!RETURN
 	case a.mode
 	when a_reg then
 		case b.mode
 		when a_reg, a_mem then
 			if a.size<>b.size and b.size then axerror("2:Opnd size mismatch") fi
 
-!CPL "MOV R/M"
 			genrrm((a.size=1|0x8A|0x8B), a, b)
-!			genrrm((a.size=1|0x8A|0x8B), a, b)
 
 		when a_imm then
 			value:=b.value
@@ -3751,6 +3576,8 @@ proc do_mov(mclopnd a,b)=
 			regcode:=getregcode(a.reg, bmask)
 			setopsize(a)
 			if d and a.size<=2 then axerror("mov imm?") fi
+
+			CHECKHIGHREG(A)
 
 			case a.size
 			when 1 then
@@ -3931,7 +3758,6 @@ proc do_lea(mclopnd a,b)=
 	end
 
 	if a.size<4 then axerror("LEA size error") fi
-
 	genrrm(0x8D, a, b)
 end
 
@@ -4307,9 +4133,6 @@ proc do_movdqx(mclopnd a, b, int prefix)=
 	if a.size=0 then a.size:=16 fi
 	if b.size=0 then b.size:=16 fi
 
-!	if a.size=0 then a.size:=8 fi
-!	if b.size=0 then b.size:=8 fi
-
 	if a.mode=a_mem then
 		genrrm(prefix+0x7F, b, a)
 	else
@@ -4342,54 +4165,32 @@ export record mclopndrec =
 		int tempno
 	end
 
-!	byte size			!byte size of operand: usually 1,2,4,8,16
-!	byte mode			!a_reg etc, low level operand details
-!	byte reg			!0, or main register
-!	byte regix			!0, or index register
-!
-!	byte valtype		!interpretation of def/code/value/svalue
-!	byte scale			!1, or scale factor for regix
-!	int32 offset		!extra offset to label for mem/imm modes
-
 	u16 misc: (			! bitfields
 		size:5,		! one of 1 2 4 8
 		scale:4,		! one of 1 2 4 8
 		mode:3,			! R, X, imm, [mem]
 		valtype:4)
 
-!	BYTE MODE
-!	BYTE SIZE
-!	BYTE SCALE
-!	BYTE VALTYPE
-
 	byte reg			!0, or main register
 	byte regix			!0, or index register
 	i32 offset			!additional offset to memory operands
-!	
-
 end
 
-export record mclrec =
-	ref mclrec nextmcl
+export record mclrec = !$caligned
+	ref mclrec lastmcl, nextmcl
 	mclopnd a,b
-	byte opcode
-	union
-		byte cond
-		byte isglobal
-		byte sysindex
-	end
-!	byte fileno
 	byte c
-!	byte spare1, spare2
-	int seqno
+	byte opcode
+	byte cond
+	byte spare1
+	u32 seqno
 	union
 		u32 mpos
 		u32 lineno				!used by aa assembler
 	end
+	u32 spare2
 
-!	int xxpos:(sourceoffset:24, fileno:8)
-!	ichar xcomment
-	[r0..r15]byte regend		!1 indicates register freed.
+	[r0..r15]byte regfreed		!1 indicates work-register freed after this instr
 end
 
 export enumdata [0:]ichar valtypenames =
@@ -4411,11 +4212,13 @@ export enumdata []ichar mclnames, []byte mclnopnds, []byte mclcodes =
 	(m_procstart,		$,		0,		0),		!
 	(m_procend,			$,		0,		0),		!
 	(m_comment,			$,		0,		0),		!
-	(m_blank,			$,		0,		0),		!
-	(m_deleted,			$,		0,		0),		!
+!	(m_blank,			$,		0,		0),		!
+!	(m_deleted,			$,		0,		0),		!
 	(m_labelname,		$,		0,		0),		!
 	(m_define,			$,		0,		0),		!
 	(m_definereg,		$,		0,		0),		!
+	(m_trace,			$,		0,		0),		!
+	(m_endx,			$,		0,		0),		!
 
 	(m_labelx,			$,		1,		0),		!
 	(m_nop,				$,		0,		0x90),		!
@@ -4506,7 +4309,8 @@ export enumdata []ichar mclnames, []byte mclnopnds, []byte mclcodes =
 	(m_divsd,			$,		2,		0x5E),	!
 
 	(m_comiss,			$,		2,		0),		!
-	(m_comisd,			$,		2,		0),		!
+	(m_comisd,			$,		2,		0x2F),	!
+	(m_ucomisd,			$,		2,		0x2E),	!
 
 	(m_xorps,			$,		2,		0x57),	!
 	(m_xorpd,			$,		2,		0x57),	!
@@ -4606,6 +4410,7 @@ export enumdata []ichar mclnames, []byte mclnopnds, []byte mclcodes =
 
 	(m_cpuid,			$,		0,		0),		!
 
+	(m_xxxx,			$,		0,		0xF4),	!
 	(m_halt,			$,		0,		0xF4),	!
 end
 
@@ -4876,33 +4681,6 @@ export []ichar mregnames = (
 	"mmx6",
 	"mmx7")
 
-!global enumdata [0:]ichar condnames =
-!
-!	(ov_cond	= 0,	"o"),
-!	(nov_cond	= 1,	"no"),
-!
-!	(ltu_cond	= 2,	"b"),
-!	(geu_cond	= 3,	"ae"),
-!
-!	(eq_cond	= 4,	"z"),
-!	(ne_cond	= 5,	"nz"),
-!
-!	(leu_cond	= 6,	"be"),
-!	(gtu_cond	= 7,	"a"),
-!
-!	(s_cond		= 8,	"s"),
-!	(ns_cond	= 9,	"ns"),
-!
-!	(p_cond		= 10,	"p"),
-!	(np_cond	= 11,	"np"),
-!
-!	(lt_cond	= 12,	"l"),
-!	(ge_cond	= 13,	"ge"),
-!
-!	(le_cond	= 14,	"le"),
-!	(gt_cond	= 15,	"g"),
-!end
-
 export tabledata []ichar jmpccnames, []byte jmpcccodes =
 	("jo",		ov_cond),
 	("jno",		nov_cond),
@@ -5025,12 +4803,11 @@ global enumdata [0:]ichar locnames =
 end
 
 global [r0..r15]byte workregs, workxregs		!1 indicates available work regs
+global int nworkregs, nworkxregs				!no. workregs assigned
 global int nregvars, nxregvars					!no. reg vars allocated (consec regs)
 global int maxregvars, maxxregvars				!no. reg vars available
 
-global int regmax, xregmax
-
-!global [r0..r15]byte spillregs, spillxregs		!1 means register has been written to
+global int xregmax
 
 global [r0..r15]byte regset			!register in-use flags: 0/1: free/in-use
 global [r0..r15]byte xregset		!same for xregs
@@ -5039,6 +4816,7 @@ global [r0..r15]byte isregvar
 global [r0..r15]byte isxregvar
 
 global [r0..r15]byte usedregs		!1 means used during proc
+global [r0..r15]byte usedxregs		!1 means used during proc
 
 global byte noxorclear		!1 to suppress xor optimisation
 
@@ -5153,14 +4931,6 @@ global ref[]psymbol labeldeftable
 
 global int aaseqno
 
-!export enumdata []ichar segmentnames =
-!	(code_seg,		"code"),
-!	(idata_seg,		"idata"),
-!	(zdata_seg,		"zdata"),
-!	(rodata_seg,	"rodata"),
-!	(impdata_seg,	$),
-!end
-
 !The following are highly dependent on the ordering of the base types being:
 ! r32 r64 ints... block ..., with r32 having value 1
 !They assume mode is not void, and for ispfloat, is not a block
@@ -5175,10 +4945,9 @@ global byte pmode
 global pcl currpcl
 
 global ref mclrec mclprocentry
-global ref mclrec mce_oldmccodex, mce_nextmcl		!used by reset/setmclentry
+global ref mclrec mce_oldmccodex, mce_lastmcl, mce_nextmcl		!used by reset/setmclentry
+global ref mclrec mcf_oldmccodex, mcf_lastmcl, mcf_nextmcl		!used by reset/setmclentry for frame setup
 
-global byte fppeephole
-global byte fpregoptim
 global byte fpshortnames
 global byte fpcheckunusedlocals
 export byte phighmem
@@ -5212,21 +4981,6 @@ global []int multxregs=(r0,r1,r2,r3,r4,r5)
 
 global [pstdnames.bounds]byte ploadopx
 
-!proc start=
-!	for i in ploadopx.bounds do ploadopx[i]:=m_nop od
-!
-!	ploadopx[tpu8]:=ploadopx[tpu16]:=ploadopx[tpu32]:=m_movzx
-!	ploadopx[tpi8]:=ploadopx[tpi16]:=ploadopx[tpi32]:=m_movsx
-!	ploadopx[tpr32]:=m_movd
-!	ploadopx[tpr64]:=m_movq
-!	ploadopx[tpu64]:=ploadopx[tpi64]:=m_mov
-!
-!!CPL "DONE MC_DECLS/START",PLOADOPX.LWB,PLOADOPX.UPB
-!!FOR I IN PLOADOP.BOUNDS DO
-!!	CPL I, PSTDNAMES[I],MCLNAMES[PLOADOP[I]], MCLNAMES[PLOADOPX[I]]
-!!OD
-!end
-
 global [pstdnames.bounds]byte ploadop
 
 proc start=
@@ -5237,15 +4991,6 @@ proc start=
 	ploadop[tpr32]:=m_movd
 	ploadop[tpr64]:=m_movq
 	ploadop[tpu64]:=ploadop[tpi64]:=m_mov
-
-
-!CPL "MCDECLS:START", =PSTREC.BYTES
-
-
-!CPL "DONE MC_DECLS/START",PLOADOPX.LWB,PLOADOPX.UPB
-!FOR I IN PLOADOP.BOUNDS DO
-!	CPL I, PSTDNAMES[I],MCLNAMES[PLOADOP[I]], MCLNAMES[PLOADOPX[I]]
-!OD
 end
 
 === mc_objdecls.m 0 0 12/29 ===
@@ -5441,18 +5186,24 @@ const useintelregs=0
 !const showsizes=1
 const showsizes=0
 
+const showfreed=1
+!const showfreed=0
+
 [8, r0..r15]ichar nregnames
 
 [r0..r15]psymbol regvars		!nil, or strec when it uses that reg
+[r0..r15]psymbol xregvars
 
 proc writemcl(int index,ref mclrec mcl)=
 
-	case mcl.opcode
-	when m_deleted then
+!	case mcl.opcode
+	
+	if mcl.opcode=m_comment and mcl.a.svalue^='?' then
 	else
 		strmcl(mcl)
 		gs_line(pdest)
-	esac
+	fi
+!	esac
 end
 
 global proc strmcl(ref mclrec mcl)=
@@ -5469,43 +5220,33 @@ global proc strmcl(ref mclrec mcl)=
 	cond:=mcl.cond
 	a:=mcl.a
 	b:=mcl.b
-!CPL "STRMCL",MCLNAMES[OPCODE],A,B
 	comment:=nil
 
-!IF A THEN
-!	CPL"###", MCLNAMES[OPCODE], VALTYPENAMES[A.VALTYPE]
-!FI
-!
 	case opcode
 	when m_procstart then
 		asmstr(";Proc ")
 		asmstr(a.def.name)
 		currasmproc:=a.def
 		clear regvars
+		clear xregvars
 
 		return
 
 	when m_procend then
-		asmstr(";End ")
+		asmstr(";End\n")
 		currasmproc:=nil
 
 		return
 
-	when m_blank then
-		return
 	when m_comment then
 		asmchar(';')
 		asmstr(a.svalue)
-		GOTO DOCOMMENTS
 		return
-	when m_deleted then
-		asmstr("; <deleted>")
-		GOTO DOCOMMENTS
+	when m_endx then
 		return
 
 	when m_labelname then				!label name will be complete and will have colon(s)
 		d:=a.def
-
 		case a.valtype
 		when def_val then
 			asmstr(getdispname(d))
@@ -5527,10 +5268,11 @@ global proc strmcl(ref mclrec mcl)=
 				asmstr("::")
 			fi
 		fi
+
+
 		return
 
 	when m_labelx then
-!CPL "LAB: ", =VALTYPENAMES[A.VALTYPE]
 		if a.valtype=label_val then
 			fprint @str,"L#:",a.value
 		else
@@ -5540,7 +5282,7 @@ global proc strmcl(ref mclrec mcl)=
 		return
 
 	when m_define then
-		asmstr("          ")
+		asmstr("    ")
 		asmstr(a.svalue)
 		asmstr(" = ")
 		asmopnd(b)
@@ -5550,7 +5292,11 @@ global proc strmcl(ref mclrec mcl)=
 		d:=a.def
 		asmstr("    ")
 		asmstr(getdispname(d))
-		regvars[d.reg]:=d
+		if ispfloat(d.mode) then
+			xregvars[d.reg]:=d
+		else
+			regvars[d.reg]:=d
+		fi
 
 !		asmstr(a.svalue)
 		asmstr(" = ")
@@ -5564,6 +5310,11 @@ global proc strmcl(ref mclrec mcl)=
 		esac
 		return
 
+	WHEN M_TRACE THEN
+		ASMSTR(SINCLUDE("c:\\cx\\trace.aa"))
+
+		RETURN
+
 	esac
 
 	case opcode
@@ -5576,8 +5327,6 @@ global proc strmcl(ref mclrec mcl)=
 	when m_cmovcc then
 		print @&.opcname,"cmov",,asmcondnames[cond]
 
-!	when m_call then
-!		strcpy(&.opcname,"call")
 	when m_andx then
 		strcpy(&.opcname,"and")
 	when m_orx then
@@ -5594,18 +5343,13 @@ global proc strmcl(ref mclrec mcl)=
 		strcpy(&.opcname,mclnames[opcode]+2)
 	esac
 
-!	ipadstr(&.opcname,10," ")
 	ipadstr(&.opcname,(opcode=m_dq|4|10)," ")
 
-
-
-!	ipadstr(&.str,10)
 	ipadstr(&.str,4)
 
 	strcat(&.str,&.opcname)
 
 	asmstr(&.str)
-!RETURN
 
 	if a and b then		!2 operands
 		sizepref:=needsizeprefix(opcode,a,b)
@@ -5638,10 +5382,23 @@ global proc strmcl(ref mclrec mcl)=
 		fi
 	fi
 
+IF SHOWFREED THEN
+BYTE FIRST:=1
+	FOR R IN R0..R15 WHEN MCL.REGFREED[R] DO
+		IF FIRST THEN
+			FIRST:=0
+			ASMSTR(" #======<")
+		ELSE
+			ASMSTR(" ")
+		FI
+		ASMSTR(GETREGNAME(R))
+	OD
+	IF NOT FIRST THEN
+		ASMSTR(">")
+	FI
+FI
+
 IF FSHOWSEQ THEN ASMSTR("	#"); ASMSTR(STRINT(MCL.SEQNO)) FI
-
-DOCOMMENTS:
-
 end
 
 global func strmclstr(ref mclrec m)ichar=
@@ -5657,10 +5414,6 @@ global func mstropnd(mclopnd a,int sizeprefix=0,opcode=0)ichar=
 	int offset,tc
 
 	str[1]:=0
-
-!RETURN "<OPND>"
-!
-!CHECKOPND(A)
 
 	case a.mode
 	when a_reg then
@@ -5679,7 +5432,6 @@ global func mstropnd(mclopnd a,int sizeprefix=0,opcode=0)ichar=
 		fi
 
 	when a_mem then
-!RETURN "<MEM>"
 		case a.valtype
 		when intimm_val then
 			strcpy(&.str,strint(a.value))
@@ -5737,7 +5489,6 @@ global func strvalue(mclopnd a)ichar=
 	int64 value,offset,length
 	ichar ss
 
-!RETURN "<STRVAL>"
 	def:=a.def
 	value:=a.value
 
@@ -5770,18 +5521,13 @@ global func strvalue(mclopnd a)ichar=
 
 	when name_val then
 		strcat(&.str,a.svalue)
-!		strcat(&.str,"!name")
 
 	when label_val then
-!CPL "VALUE:", =VALTYPENAMES[A.VALTYPE]
 		strcat(&.str,"L")
 		strcat(&.str,strint(a.labelno))
 		goto addoffset
 
 	when temp_val then
-!CPL =CURRASMPROC
-!RETURN "<TEMP>"
-
 		return gettempname(currasmproc,a.tempno)
 
 	else
@@ -5847,12 +5593,13 @@ global func getdispname(psymbol d)ichar=
 	static [256]char str
 
 	if d.reg then
-!		fprint @str,"#.#",(d.ispfloat|"X"|"R"), name
-		fprint @str,"R.#", (fpshortnames|d.name|getfullname(d))
+
+		fprint @str,"##R.#", (fpshortnames|""|"`"),(pfloat[d.mode]|"X"|""), (fpshortnames|d.name|getfullname(d))
+!		fprint @str,"##R.#.#", (fpshortnames|""|"`"),(pfloat[d.mode]|"X"|""), $PMODULENAME,(fpshortnames|d.name|getfullname(d))
+
 		return str
 	fi
 
-!	if fpshortnames or d.imported then
 	if fpshortnames then
 		return d.name
 	else
@@ -5875,30 +5622,24 @@ end
 func strreg(int reg, size=8)ichar=
 	psymbol d
 
-
 	d:=regvars[reg]
+!D:=NIL
 
 	if d and psize[d.mode]=size then
-!	if d then
-!CPL "STR/D", =SIZE, =PSIZE[D.MODE]
-!RETURN "<STRREG/D>"
 		return getdispname(d)
-	else
-		getregname(reg,size)
 	fi
+	getregname(reg,size)
 end
 
 func strxreg(int reg, size=8)ichar=
 	psymbol d
 
-!	d:=checkregvar(reg,1)
-!	d:=xregvars[reg]
-	D:=NIL
+	d:=xregvars[reg]
 
 	if size=8 and d then
-		return getdispname(d)
+		getdispname(d)
 	else
-		return getxregname(reg,size)
+		getxregname(reg,size)
 	fi
 end
 
@@ -5911,13 +5652,6 @@ export func getassemstr:ref strbuffer=
 	int i
 
 	gs_init(pdest)
-
-!	for i to nlibfiles when libfiles[i]^<>'$' do
-!		asmstr("          ")
-!		asmstr("importdll ")
-!		asmstr(libfiles[i])
-!		gs_line(pdest)
-!	od
 !
 	case phighmem
 	when 1 then asmstr("    $userip\n")
@@ -6053,7 +5787,6 @@ global int nexports
 ichar dllfilename
 int isdll
 
-!global const maxlibs = 50
 const maxlibs = 50
 global [maxlibs]dllrec dlltable
 global int ndlls
@@ -6104,7 +5837,6 @@ global proc genexe1(ichar entrypoint, outfile, int dodll)=
 	codeaddr:=bufferelemptr(sectiontable[csect].data, 0)
 
 	if phighmem then
-!println "Doing RIP relocs..."
 		ref riprec pr
 
 		pr:=riplist
@@ -6141,7 +5873,7 @@ global proc genexe2(ichar outfile, int dodll)=
 		writesectiondata(&sectiontable[i])
 	od
 
-	if pverbose then
+	if pverbose=2 then
 		println "EXE size:  ", dataptr-datastart:"10s,jr"
 		println
 	fi
@@ -6181,9 +5913,11 @@ global proc initsectiontable=
 
 	if pverbose then
 		println "Code size: ", bufferlength(ss_code):"10s,jr","bytes"
-		println "Idata size:", bufferlength(ss_idata):"10s,jr"
-		println "Code+Idata:", bufferlength(ss_code)+bufferlength(ss_idata):"10s,jr"
-		println "Zdata size:", ss_zdatalen:"10s,jr"
+		if pverbose=2 then
+			println "Idata size:", bufferlength(ss_idata):"10s,jr"
+			println "Code+Idata:", bufferlength(ss_code)+bufferlength(ss_idata):"10s,jr"
+			println "Zdata size:", ss_zdatalen:"10s,jr"
+		fi
 	fi
 
 	if bufferlength(ss_idata)=0 then
@@ -6205,7 +5939,6 @@ global proc initsectiontable=
 
 	sectiontable[zsect].name:=".bss"
 	sectiontable[zsect].segtype:=zdata_seg
-!	sectiontable[zsect].rawsize:=roundtoblock(ss_zdatalen,filealign)
 	sectiontable[zsect].virtsize:=ss_zdatalen
 
 
@@ -6302,11 +6035,8 @@ proc scanst=
 	psymbol d
 	ichar name, libname, basename
 
-!CPL "SCANST", SS_NSYMBOLS
-
 	for i:=1 to ss_nsymbols do
 		d:=ss_symboltable[i]
-!CPL =D.NAME, =D.IMPORTED, =D.EXPORTED
 		if d.imported then
 			if nimports>=maximports then axerror("genexe: Too many imports") fi
 			++nimports
@@ -6317,7 +6047,6 @@ proc scanst=
 
 			d.importindex:=nimports
 		elsif d.exported then
-!CPL "SCANST/EXPORTED", USERENTRYPOINT
 			basename:=getbasename(d.name)
 			if userentrypoint then
 				if eqstring(basename,userentrypoint) then
@@ -6364,9 +6093,6 @@ proc relocdata(ref sectionrec s)=
 			(ref word32(p+r.offset)^:=thunkoffset-r.offset-4)
 !
 		when addr32_rel, addr64_rel then				!for addr64, just leave top half zero
-!IF R.RELOCTYPE=ADDR32_REL THEN
-!CPL "///ADDR32 REL"
-!FI
 			if d.imported then
 				(ref word32(p+r.offset)^:=imagebase+thunkoffset+sectiontable[csect].virtoffset)
 			else
@@ -6415,11 +6141,6 @@ proc getbaserelocs(ref sectionrec s)=
 		when addr32_rel, addr64_rel then				!for addr64, just leave top half zero
 			if d.imported then
 			else
-!				case d.segment
-!				when zdata_seg then u:=&sectiontable[zsect]
-!				when idata_seg then u:=&sectiontable[dsect]
-!				when code_seg then u:=&sectiontable[csect]
-!				esac
 
 IF R.RELOCTYPE=ADDR32_REL THEN
 !PRINTLN "??BASE RELOC",(D.SEGMENT=CODE_SEG|"CODE"|"DATA"),(R.RELOCTYPE=ADDR32_REL|"ADDR32"|"ADDR64")
@@ -6506,8 +6227,6 @@ proc writeoptheader=
 	if stentrypoint=nil then
 		stentrypoint:=stentrypoint2
 	fi
-
-!CPL =STENTRYPOINT
 
 	if stentrypoint=nil then
 		if userentrypoint then
@@ -7163,7 +6882,6 @@ global proc writecoff(ichar outfile)=
 	fi
 	writefile(outfile,datastart,dataptr-datastart)
 
-!CPL "OBJ/PRESS KEY"; STOP 1 WHEN OS_GETCH()=27
 	objdone:=1
 
 end
@@ -7252,11 +6970,7 @@ function makesymbol(ichar name, int value=0, sectionno=0,symtype=0,storage=0,nau
 	static imagesymbol r
 	int length, namelen
 
-!CPL "MS",NAME, =SECTIONNO
-
 	namelen:=strlen(name)
-
-!CPL =NAMELEN
 
 	if namelen<8 then
 		strcpy(&r.shortname[1],name)
@@ -7279,7 +6993,6 @@ proc addsymbol(ref imagesymbol r)=
 		axerror("as:Too many symbols")
 	fi
 	memcpy(&symboltable[++nsymbols],r,imagesymbol.bytes)
-!CPL "ADDSYM",  =NSYMBOLS, =R.SHORTX,=R.LONGX
 
 end
 
@@ -7345,7 +7058,6 @@ function addstringentry(ichar s, int length)int=
 	if nstrings>maxstring then
 		axerror("W:too many strings")
 	fi
-!	stringtable[++nstrings]:=s
 	stringtable[++nstrings]:=pcm_copyheapstring(s)
 
 	stringlengths[nstrings]:=length
@@ -7368,7 +7080,6 @@ proc convertsymboltable=
 
 	for i to ss_nsymbols do
 		s:=ss_symboltable^[i]
-!CPL "SS",I,S.NAME,SS_NSYMBOLS
 
 		name:=s.name
 
@@ -7388,1569 +7099,21 @@ proc convertsymboltable=
 			scope:=3
 		fi
 
-!IF S.EXPORTED THEN
-!CPL "EXPORTED:",S.NAME
-!FI
 		if s.exported then
 			name:=getbasename(name)
 !		else
 !			name:=getfullname(s)
 		fi
 
-!CPL "CST",I,S.NAME, NAME
-
-
-!		addsymbol(makesymbol(s.name, sectionno:sect, storage:scope, value:s.offset))
-!CPL =GETFULLNAME(S)
 		addsymbol(makesymbol(name, sectionno:sect, storage:scope, value:s.offset))
-!		addsymbol(makesymbol(getfullname(s), sectionno:sect, storage:scope, value:s.offset))
-!		addsymbol(makesymbol(getqualname(s), sectionno:sect, storage:scope, value:s.offset))
 
 	od
 end
-=== mc_writess.m 0 0 16/29 ===
-
+=== mc_writess_dummy.m 0 0 16/29 ===
 export function writessdata(int fexe)ref strbuffer=
-	gs_init(pdest)
-GS_STRLN(PDEST,"HELLO/SS")
-	showssdata(fexe)
-
-	gs_line(pdest)
-	return pdest
+	nil
 end
-
-proc showssdata(int fexe)=
-!CPL $LINENO, =FEXE
-
-	pclerror("SS not done") when not ssdone
-
-	gs_strln(pdest,(fexe|"EXE FORMAT"|"AFTER GENSS"))
-
-!CPL $LINENO
-!	showsections()
-
-	gs_line(pdest)
-
-!	showsectionrelocs2("Idata",ss_idatarelocs,ss_nidatarelocs)
-!	showsectionrelocs2("Code",ss_coderelocs,ss_ncoderelocs)
-
-	gs_str(pdest,"proc Section Zdata: ")
-	gs_strint(pdest,ss_zdatalen)
-	gs_line(pdest)
-!CPL $LINENO
-
-	showsectiondata(&sectiontable[dsect])
-!CPL $LINENO
-	showsectioncode(&sectiontable[csect])
-!CPL $LINENO
-	if fexe then
-		showsectiondata(&sectiontable[isect])
-	fi
-!CPL $LINENO
-
-	showsymboltable2()
-!CPL $LINENO
-	showimporttable()
-!CPL $LINENO
-	gs_strln(pdest,"END OF GENSS")
-
-end
-
-proc showsectiondata(ref sectionrec d)=
-int i,k,length,bb
-	[128]char str,str2
-	ref byte p
-
-	gs_str(pdest,"proc Section ")
-	gs_str(pdest,d.name)
-	gs_str(pdest," Size:")
-	gs_strint(pdest,d.virtsize)
-	gs_line(pdest)
-	gs_line(pdest)
-
-	k:=0
-	if d.segtype<>impdata_seg then
-		p:=bufferelemptr(d.data,0)
-	else
-		p:=d.bytedata
-	fi
-	length:=d.virtsize
-
-	str[1]:=0
-
-	ref byte baseaddr:=cast(imagebase+d.virtoffset)
-
-	print @&.str2,baseaddr:"Z8H",,": "
-
-	gs_str(pdest,&.str2)
-
-	for i:=1 to length do
-		bb:=p++^
-		print @&.str2,bb:"z2H",," "
-		gs_str(pdest,&.str2)
-
-		if 32<=bb<=127 then
-			str2[1]:=bb
-			str2[2]:=0
-			strcat(&.str,&.str2)
-		else
-			strcat(&.str,".")
-		fi
-		if ++k=16 or i=length then
-			if k<16 then
-				to 16-k do
-					gs_str(pdest,"   ")
-					strcat(&.str," ")
-				od
-			fi
-			gs_str(pdest,"	[")
-			gs_str(pdest,&.str)
-			gs_strln(pdest,"]")
-			k:=0
-			str[1]:=0
-			baseaddr+:=16
-			print @&.str2,baseaddr:"z8h",,": "
-			gs_str(pdest,&.str2)
-		fi
-	od
-	if k=0 then
-		gs_line(pdest)
-	fi
-
-	gs_line(pdest)
-	if k then gs_line(pdest) fi
-end
-
-proc showsectioncode(ref sectionrec p)=
-ref byte codeptr,codeend,codestart
-	int length,offset
-	ichar s
-	[16]char str
-
-	gs_strln(pdest, "proc Section Code")
-
-	length:=p.virtsize
-	codestart:=codeptr:=bufferelemptr(p.data,0)
-	codeend:=codeptr+length
-
-	ref byte baseaddr:=cast(imagebase+p.virtoffset)
-
-	while codeptr<codeend do
-		offset:=codeptr-codestart
-		s:=decodeinstr(codeptr,baseaddr+offset)
-		exit when s=nil
-
-		print @&.str,offset:"4",," "
-		gs_str(pdest,&.str)
-
-		gs_strln(pdest,s)
-	od
-
-	gs_line(pdest)
-end
-
-proc showsectionrelocs2(ichar caption,ref relocrec relocs, int nrelocs)=
-	ref relocrec r
-
-	gs_str(pdest,"proc Section Relocs: ")
-	gs_str(pdest,caption)
-	gs_str(pdest," ")
-	gs_strint(pdest,nrelocs)
-	gs_line(pdest)
-
-	r:=relocs
-
-	while r do
-
-		gs_str(pdest,"Reloc: ")
-		gs_str(pdest,relocnames[r.reloctype])
-		gs_str(pdest," Offset: ")
-		gs_strint(pdest,r.offset)
-		gs_str(pdest," ST Index: ")
-		gs_strint(pdest,r.stindex)
-		gs_str(pdest," ")
-		gs_str(pdest,ss_symboltable[r.stindex].name)
-		gs_line(pdest)
-
-		r:=r.nextreloc
-	od
-	gs_line(pdest)
-
-end
-
-proc gs_value(ichar caption, int64 value)=
-	[256]char str
-
-	strcpy(&.str,caption)
-	strcat(&.str,":")
-	ipadstr(&.str,20)
-	gs_str(pdest,&.str)
-
-	fprint @&.str,"0x# #",value:"H",value
-	gs_strln(pdest,&.str)
-end
-
-proc showsymboltable2=
-
-	gs_strln(pdest,"Proc Symbol Table")
-	int i
-	for i:=1 to ss_nsymbols do
-		gs_strint(pdest,i)
-		gs_str(pdest,": ")
-		gs_strln(pdest,ss_symboltable[i].name)
-	od
-	gs_line(pdest)
-end
-
-proc showimporttable=
-	[256]char str
-	dllrec d
-	importrec p
-
-
-	gs_strln(pdest,"Proc Dll List")
-	int i
-	for i:=1 to ndlls do
-		gs_strint(pdest,i)
-		gs_str(pdest,": ")
-		gs_str(pdest,dlltable[i].name)
-		gs_str(pdest," ")
-		gs_strint(pdest,dlltable[i].nprocs)
-		gs_line(pdest)
-		gs_value("		Name Table Offset",dlltable[i].nametableoffset)
-		gs_value("		Addr Table Offset",dlltable[i].addrtableoffset)
-		gs_value("		DLL Name Offset  ",dlltable[i].dllnameoffset)
-	od
-	gs_line(pdest)
-	gs_strln(pdest,"Proc Import List")
-
-	for i:=1 to nimports do
-		p:=importtable[i]
-
-		gs_strint(pdest,i)
-		gs_str(pdest,": ")
-		if p.libno then
-			strcpy(&.str,p.name)
-			ipadstr(&.str,16)
-			gs_str(pdest,&.str)
-			gs_str(pdest," (")
-			gs_str(pdest,dlltable[p.libno].name)
-			gs_strln(pdest,")")
-
-			gs_value("	IAT Offset        ",p.iatoffset)
-			gs_value("	Thunk Offset      ",p.thunkoffset)
-			gs_value("	Hint/Name Offset  ",p.hintnameoffset)
-
-		else
-			strcpy(&.str,p.name)
-			ipadstr(&.str,20)
-			gs_str(pdest,&.str)
-			gs_strln(pdest," (---)")
-		fi
-	od
-	gs_line(pdest)
-end
-
-proc showsections=
-	sectionrec s
-	int i
-
-	gs_strln(pdest,"proc Section Headersxxx")
-	gs_line(pdest)
-
-	for i:=1 to nsections do
-		s:=sectiontable[i]
-
-		gs_str(pdest,"Section ")
-		gs_strint(pdest,i)
-		gs_str(pdest,": ")
-		gs_str(pdest,s.name)
-		gs_str(pdest,"  (")
-		gs_str(pdest,segmentnames[s.segtype])
-		gs_strln(pdest,")")
-
-		gs_value("    Raw Offset",s.rawoffset)
-		gs_value("    Raw Size",s.rawsize)
-		gs_value("    Virtual Offset",s.virtoffset)
-		gs_value("    Virtual Size",s.virtsize)
-		gs_value("    Nrelocs",s.nrelocs)
-		gs_value("    Data",int(s.data))
-		gs_line(pdest)
-
-	od
-end
-
-=== mc_disasm.m 0 0 17/29 ===
-
-!const showmregs=1
-const showmregs=0
-
-const halt=0xF4
-
-int nmodules
-int xfchsmask_pd
-
-enumdata [0:]ichar opnames =
-	(add_op=0,	"add"),
-	(or_op,		"or"),
-	(adc_op,	"adc"),
-	(sbb_op,	"sbb"),
-	(and_op,	"and"),
-	(sub_op,	"sub"),
-	(xor_op,	"xor"),
-	(cmp_op,	"cmp")
-end
-
-[0:]ichar condnames = 
-("o", "no", "b","ae","z","nz","be","a","s","ns","p","np",
- "l","ge","le","g")
-
-enumdata []ichar addrmodenames=		! rm modes
-	(amreg,			$),				! R
-	(ammem,			$),				! [R+d]
-	(amrel,			$)				! [RIP+d]
-end
-
-const wmask = 2x1000
-const rmask = 2x0100
-const xmask = 2x0010
-const bmask = 2x0001
-
-const rstack=5						!1-base register codes
-const rframe=6
-
-int rex
-
-int addrmode						!amreg/ammem/amrel
-int rmreg							!0, or 1..16; adjusted middle value of modrm byte
-int rmopc							!0 to 7; middle value of modrm byte 
-int ripmode							!1 for rip-relative
-int basereg							!0, or 1..16
-int indexreg						!0, or 1..16
-int scale							!1,2,4
-int opsize							!1,2,4,8
-int offset
-int offsetsize						!1 or 4
-int sizeoverride					!32=>16 switch
-int addroverride					!32=>16 switch
-int f2override						!xmm regs
-int f3override						!xmm regs
-
-[256]char deststr
-ichar destptr
-
-ref byte codeptr
-
-global function decodeinstr(ref byte &cptr,baseaddr=nil)ichar=
-!decode next instruction at codeptr
-!return 1 if decoded, with codeptr stepped to start of next instruction
-!return 0 when end-of-code seen (nop or 0x90)
-	int n,w
-	int opc,reg,op,xxx,oldopsize,dispsize
-	ref byte pstart
-	static [256]char str
-	[128]char str2
-	const maxinstrlen=14
-	ichar s
-
-	deststr[1]:=0
-
-	pstart:=codeptr:=cptr
-
-	rex:=0
-	opsize:=1
-	f2override:=f3override:=sizeoverride:=addroverride:=0
-	basereg:=indexreg:=offset:=0
-
-	retry:						!back here after prefix byte seen
-
-	switch opc:=codeptr++^
-	when 0x00,0x1, 0x08,0x9, 0x10,0x11, 0x18,0x19,
-						0x20,0x21, 0x28,0x29, 0x30,0x31, 0x38,0x39 then	!arith R/M, R
-		op:=opc>>3
-		decodeaddr(opc iand 1)
-		getsilx(basereg)
-		getsil(rmreg)
-		genstr(opnames[op])
-		printaddrmode()
-		genstr(", ")
-		genstr(strreg(rmreg,opsize))
-
-	when 0x02,0x3, 0x0A,0xB, 0x12,0x13, 0x1A,0x1B,
-						0x22,0x23, 0x2A,0x2B, 0x32,0x33, 0x3A,0x3B then	!arith R,R/M
-		op:=opc>>3
-		decodeaddr(opc iand 1)
-		genstr(opnames[op])
-		genstr(" ")
-		getsil(rmreg)
-		genstr(strreg(rmreg,opsize))
-		genstr(", ")
-		printaddrmode()
-
-	when 0x04,0x5, 0x0C,0xD, 0x14,0x15, 0x1C,0x1D,
-						0x24,0x25, 0x2C,0x2D, 0x34,0x35, 0x3C,0x3D then	!arith rAX,imm
-		genstr(opnames[opc>>3])
-		genstr(" ")
-		if opc iand 1 then
-			opsize:=4
-			if sizeoverride then opsize:=2 fi
-			if rex iand wmask then opsize:=8 fi
-		fi
-		genstr(strreg(1,opsize))
-		genstr(", ")
-		genintd(readimm())
-
-	when 0x0F then
-		decodetwobyteinstr()
-
-	when 0x40 .. 0x4F then
-		rex:=opc
-!	if rex iand wmask then wopsize:=8 fi
-
-		goto retry
-
-	when 0x50 .. 0x57 then
-		reg:=getreg(opc iand 7,rex iand bmask)
-		genstr("push ")
-		genstr(strreg(reg,8))
-
-	when 0x58 .. 0x5F then
-		reg:=getreg(opc iand 7,rex iand bmask)
-		genstr("pop ")
-		genstr(strreg(reg,8))
-
-	when 0x63 then
-		decodeaddr(1)
-		genstr("movsxd ")
-		genstr(strreg(rmreg,opsize))
-		genstr(", ")
-		opsize:=4
-		printaddrmode()
-
-	when 0x66 then
-		sizeoverride:=1
-		goto retry
-
-	when 0x67 then
-		addroverride:=1
-		goto retry
-
-	when 0x68 then
-		genstr("push ")
-		if sizeoverride then
-			genintd(readint16())
-		else
-			genintd(readint32())
-		fi
-
-	when 0x6A then
-		genstr("push ")
-		genintd(readsbyte())
-
-	when 0x69, 0x6B then
-		decodeaddr(1)
-		if basereg<>rmreg then
-			genstr("imul3")
-			genstr(" ")
-			genstr(strreg(rmreg,opsize))
-			genstr(", ")
-		else
-			genstr("imul2")
-		fi
-		printaddrmode()
-		genstr(", ")
-		opsize:=(opc iand 2|1|opsize)
-		genintd(readimm())
-
-	when 0x70..0x7F then
-		genstr("j")
-		genstr(condnames[opc iand 15])
-		genstr(" ")
-		genintd(readsbyte())
-
-	when 0x80..0x83 then			!arith r/m,imm
-		decodeaddr(opc iand 1)
-		genstr(opnames[rmopc])
-		getsilx(basereg)
-		printaddrmode()
-		genstr(", ")
-		if opc<>0x83 then
-			genintd(readimm())
-		else
-			genintd(readsbyte())
-		fi
-
-	when 0x84, 0x85 then			!test reg,reg/mem
-		decodeaddr(opc iand 1)
-		getsilx(basereg)
-		getsil(rmreg)
-		genstr("test ")
-		printaddrmode()
-		genstr(", ")
-		genstr(strreg(rmreg,opsize))
-
-	when 0x86,0x87 then				!complex excg
-		decodeaddr(opc iand 1)
-		genstr("exch2 ")
-		getsilx(basereg)
-		getsil(rmreg)
-		genstr(strreg(rmreg,opsize))
-		genstr(",")
-		printaddrmode()
-
-	when 0x88, 0x89 then			!mov r/m,reg
-		decodeaddr(opc iand 1)
-		genstr("mov")
-		getsilx(basereg)
-		getsil(rmreg)
-
-		printaddrmode()
-		genstr(", ")
-		genstr(strreg(rmreg,opsize))
-
-	when 0x8A, 0x8B then			!mov reg,r/m
-		decodeaddr(opc iand 1)
-		genstr("mov ")
-		getsilx(basereg)
-		getsil(rmreg)
-		genstr(strreg(rmreg,opsize))
-		genstr(", ")
-		printaddrmode()
-
-	when 0x8D then
-		decodeaddr(1)
-		genstr("lea ")
-		genstr(strreg(rmreg,opsize))
-		genstr(", ")
-		printaddrmode()
-
-	when 0x8F then
-		decodeaddr(1)
-		opsize:=1
-		genstr("pop")
-		printaddrmode()
-
-	when 0x90 then
-		if rex then goto doexch fi
-		genstr("nop")
-
-	when 0x91..0x97 then			!exch eax/reg
-	doexch:
-		reg:=(opc iand 7)+1
-		if rex iand bmask then reg+:=8 fi
-		opsize:=(sizeoverride|2|4)
-		if rex iand wmask then opsize:=8 fi
-		genstr("xchg ")
-		genstr(strreg(1,opsize))
-		genstr(", ")
-		genstr(strreg(reg,opsize))
-
-	when 0x98 then
-		if sizeoverride then
-			genstr("cbw")
-		else
-			genstr("cbw???")
-		fi
-	when 0x99 then
-		if sizeoverride then
-			genstr("cwd")
-		elsif rex iand wmask then
-			genstr("cqo")
-		else
-			genstr("cdq")
-		fi
-	when 0x9B then genstr("wait")
-
-	when 0x9C then genstr("pushf")
-	when 0x9D then genstr("popf")
-	when 0x9E then genstr("sahf")
-	when 0x9F then genstr("lahf")
-
-	when 0xA4..0xA7, 0xAA..0xAF then
-		genstr((opc>>1 iand 7|"?","movs","cmps","?","stos","lods","scas"|"?"))
-		if opc iand 1=0 then
-			genstr("b")
-		else
-			if rex iand wmask then
-				genstr("q")
-			elsif sizeoverride then
-				genstr("w")
-			else
-				genstr("d")
-			fi
-		fi
-
-	when 0xA8, 0xA9 then				!test r0,imm
-		genstr("test ")
-		if opc iand 1 then
-			opsize:=(sizeoverride |2|4)
-			if rex iand wmask then opsize:=8 fi
-		fi
-		genstr(strreg(1,opsize))
-		genstr(", ")
-		genintd(readimm())
-
-	when 0xB0..0xBF then			!mov reg,imm
-		reg:=(opc iand 7)+1
-		if rex iand bmask then reg+:=8 fi
-		if (opc iand 2x1000) then
-			opsize:=(sizeoverride |2|4)
-			if rex iand wmask then opsize:=8 fi
-		fi
-		genstr("mov ")
-!CPL "DIS",=REG
-		getsil(reg)
-
-		genstr(strreg(reg,opsize))
-		genstr(", ")
-		genintd(readimm8())
-
-	when 0xC0, 0xC1, 0xD0..0xD3 then
-		decodeaddr(opc iand 1)
-		getsilx(basereg)
-		genstr((rmopc+1|"rol","ror","rcl","rcr","shl","shr","?","sar"|"?"))
-		printaddrmode()
-		if opc<=0xC1 then
-			genstr(", ")
-			genintd(readbyte())
-		else
-			genstr((opc iand 2|", cl"|", 1"))
-		fi
-
-	when 0xC2 then
-		genstr("retn ")
-		genintd(readword16())
-
-	when 0xC3 then
-		genstr("ret")
-
-	when 0xC6,0xC7 then
-		decodeaddr(opc iand 1)
-		genstr("mov")
-		printaddrmode()
-		genstr(", ")
-		genintd(readimm())
-
-	when 0xD7 then genstr("xlat")
-
-	when 0xD8..0xDF then
-		decode8087(opc iand 7)
-
-	when 0xE0 then genstr("loopnz "); genintd(readsbyte())
-	when 0xE1 then genstr("loopz "); genintd(readsbyte())
-	when 0xE2 then genstr("loop "); genintd(readsbyte())
-
-	when 0xE3 then
-		if addroverride then
-			genstr("jecxz ")
-		else
-			genstr("jrcxz ")
-		fi
-		genintd(readsbyte())
-
-	when 0xE8 then
-		genstr("call ")
-		genintd(readint32())
-
-	when 0xE9 then
-		genstr("[4] jmp ")
-		genintd(readint32())
-
-	when 0xEB then
-		genstr("jmp ")
-		genintd(readsbyte())
-
-	when 0xF2 then
-		if codeptr^<>0x0F and (codeptr^<0x40 and codeptr^>0x4F) then
-			genstr("repne")
-		else
-			f2override:=1
-			goto retry
-		fi
-	when 0xF3 then
-		if codeptr^<>0x0F and (codeptr^<0x40 and codeptr^>0x4F) then
-			genstr("repe")
-		else
-			f3override:=1
-			goto retry
-		fi
-
-	when 0xF4 then
-!		println "	end of code [halt]"
-!		return nil
-
-	when 0xF6,0xF7 then
-		decodeaddr(opc iand 1)
-		getsilx(basereg)
-		genstr((rmopc+1|"test","?","not","neg","mul","imul","div","idiv"|"?"))
-		printaddrmode()
-		if rmopc=0 then
-			if opsize=8 then opsize:=4 fi
-			genstr(", ")
-			genintd(readimm())
-		fi
-
-	when 0xFE then
-		w:=0
-		goto doff
-
-	when 0xFF then			!various
-		w:=1
-	doff:
-		decodeaddr(w)
-		case rmopc
-		when 2x_000 then	!inc
-			getsilx(basereg)
-			genstr("inc")
-		when 2x_001 then	!dec
-			getsilx(basereg)
-			genstr("dec")
-		when 2x_010 then	!call
-			opsize:=8
-			genstr("icall")
-		when 2x_100 then	!jmp
-			opsize:=8
-			genstr("jmp")
-		when 2x_110 then	!push
-			opsize:=8
-			genstr("push")
-		else
-			println "FFxx?"
-		esac
-		printaddrmode()
-
-	else
-		genstr("Unknown opcode: ")
-    genhex(opc)
-	end switch
-
-!at this point, deststr contains the decoded instruction
-!need to put in address, bytes etc
-
-!	if baseaddr then
-		print @&.str,baseaddr:"z6h",,": "
-!	else
-!		print @&.str,pstart:"z6h",,": "
-!	fi
-
-	n:=codeptr-pstart
-	to n do
-		print @&.str2,int(pstart++^):"z2H",," "
-
-		strcat(&.str,&.str2)
-	od
-	to maxinstrlen-n do
-		strcat(&.str,"-- ")
-	od
-	strcat(&.str,&.deststr)
-
-	cptr:=codeptr
-
-	return &.str
-end
-
-proc decodetwobyteinstr=
-!0F has been decoded
-	int opc,rhssize,third,imm
-	ichar opcstr
-
-	switch opc:=codeptr++^
-	when 0x2A then					!cvtsi2ss/sd XMM, REG/MEM
-		decodeaddr(1)
-		if f3override then
-			genstr("cvtsi2ss ")
-		else
-			genstr("cvtsi2sd ")
-		fi
-		genstr(strxmm(rmreg))
-		genstr(", ")
-		printaddrmode(0)
-		
-	when 0x2C then					!cvt2ss/sd2si XMM, REG/MEM
-		decodeaddr(1)
-		if f3override then
-			genstr("cvttss2si ")
-			rhssize:=4
-		else
-			genstr("cvttsd2si ")
-			rhssize:=8
-		fi
-		if rex iand wmask then
-			genstr(strreg(rmreg,8))
-		else
-			genstr(strreg(rmreg,4))
-		fi
-		genstr(", ")
-		opsize:=rhssize
-		printaddrmode(1)
-
-	when 0x2D then					!cvt2ss/sd2si XMM, REG/MEM
-		decodeaddr(1)
-		if f3override then
-			genstr("cvtss2si ")
-			rhssize:=4
-		else
-			genstr("cvtsd2si ")
-			rhssize:=8
-		fi
-		if rex iand wmask then
-			genstr(strreg(rmreg,8))
-		else
-			genstr(strreg(rmreg,4))
-		fi
-		genstr(", ")
-		opsize:=rhssize
-		printaddrmode(1)
-
-	when 0x2F then					!comiss/comisd XMM, REG/MEM
-		decodeaddr(1)
-		if sizeoverride then
-			opsize:=8
-			genstr("comisd ")
-		else
-			opsize:=4
-			genstr("comiss ")
-		fi
-		genstr(strxmm(rmreg))
-		genstr(", ")
-		printaddrmode(1)
-
-	when 0x3A then					!possible pcmpistri
-		third:=codeptr++^
-
-		case third
-		when 0x63 then
-			genstr("pcmpistri ")
-		when 0x62 then
-			genstr("pcmpistrm ")
-		else
-			genstr("Unknown opcode 2-byte opcode: 0F ")
-		    genhex(opc)
-			return
-		esac
-
-		decodeaddr(1)
-		genstr(strxmm(rmreg))
-		genstr(", ")
-		printaddrmode(1)
-		genstr(", ")
-		imm:=codeptr++^
-		genintd(imm)
-
-	when 0x40..0x4F then
-		decodeaddr(1)
-		genstr("cmov")
-		genstr(condnames[opc iand 15])
-		genstr(" ")
-		genstr(strreg(rmreg,opsize))
-		genstr(", ")
-		printaddrmode()
-
-	when 0x51 then					!sqrtss/sd
-		decodeaddr(1)
-		opsize:=(f3override|4|8)
-		genstr((opsize=4|"sqrtss "|"sqrtsd "))
-		genstr(strxmm(rmreg))
-		genstr(", ")
-		printaddrmode(1)
-
-	when 0x54 then					!ANDPD
-		decodeaddr(1)
-		genstr((sizeoverride|"andpd "|"andps "))
-		genstr(strxmm(rmreg))
-		genstr(", ")
-		opsize:=(sizeoverride|8|4)
-		printaddrmode(1)
-
-	when 0x57 then					!XORPD
-		decodeaddr(1)
-		genstr((sizeoverride|"xorpd "|"xorps "))
-		genstr(strxmm(rmreg))
-		genstr(", ")
-		opsize:=(sizeoverride|8|4)
-		printaddrmode(1)
-
-	when 0x58 then					!addss/addsd
-		opcstr:="adds"
-	doarith:
-		genstr(opcstr)
-		decodeaddr(1)
-		if f2override then
-			opsize:=8
-			genstr("d ")
-		else
-			opsize:=4
-			genstr("s ")
-		fi
-		genstr(strxmm(rmreg))
-		genstr(", ")
-		printaddrmode(1)
-
-	when 0x59 then					!mulss/mulsd
-		opcstr:="muls"
-		goto doarith
-
-	when 0x5A then					!cvtss2sd/cvtsd2ss
-		decodeaddr(1)
-		if f3override then
-			genstr("cvtss2sd ")
-			rhssize:=4
-		else
-			genstr("cvtsd2ss ")
-			rhssize:=8
-		fi
-		genstr(strxmm(rmreg))
-		genstr(", ")
-		opsize:=rhssize
-		printaddrmode(1)
-
-	when 0x5C then					!subss/subsd
-		opcstr:="subs"
-		goto doarith
-
-	when 0x5D then
-		opcstr:="mins"
-		goto doarith
-
-	when 0x5E then					!divss/divsd
-		opcstr:="divs"
-		goto doarith
-
-	when 0x5F then
-		opcstr:="maxs"
-		goto doarith
-
-
-	when 0x6E then					!mov X/MM, REG/MEM
-		decodeaddr(1)
-		opsize:=(rex iand wmask|8|4)
-		genstr((opsize=4|"movd "|"movq "))
-		if sizeoverride then		!xmm
-			genstr(strxmm(rmreg))
-		else
-			genstr(strmmx(rmreg))
-		fi
-		genstr(", ")
-		printaddrmode()
-
-	when 0x6F then					!movdqa/dqu, X/MEM, X/X
-		decodeaddr(1)
-		opsize:=16
-		if sizeoverride then		!66
-			genstr("movdqa ")
-		elsif f3override then		!F3
-			genstr("movdqu ")
-		else
-			genstr("No 66/F3 ")
-		fi
-		genstr(strxmm(rmreg))
-		genstr(", ")
-		printaddrmode(1)
-
-	when 0x7E then					!mov REG/MEM, X/MM
-		decodeaddr(1)
-		if f3override then
-			opsize:=8
-			genstr("movq ")
-			genstr(strxmm(rmreg))
-			genstr(", ")
-			printaddrmode(1)
-		elsif rex iand wmask then
-			opsize:=8
-			genstr("movq ")
-			printaddrmode()
-			genstr(", ")
-			genstr(strxmm(rmreg))
-		else
-			opsize:=4
-			genstr("movd ")
-			printaddrmode()
-			genstr(", ")
-			if sizeoverride then		!xmm
-				genstr(strxmm(rmreg))
-			else
-				genstr(strmmx(rmreg))
-			fi
-		fi
-
-	when 0x7F then					!movdqa/dqu, MEM/X
-		decodeaddr(1)
-		opsize:=16
-		if sizeoverride then		!66
-			genstr("movdqa ")
-		elsif f3override then		!F3
-			genstr("movdqu ")
-		else
-			genstr("No 66/F3 ")
-		fi
-		printaddrmode(1)
-		genstr(", ")
-		genstr(strxmm(rmreg))
-
-	when 0x80..0x8F then			!long rel jumps
-		genstr("[long] j")
-		genstr(condnames[opc iand 15])
-		genstr(" ")
-		if sizeoverride then
-			genintd(readint16())
-		else
-			genintd(readint32())
-		fi
-
-	when 0x90..0x9F then
-		decodeaddr(0)
-		genstr("set")
-		genstr(condnames[opc iand 15])
-		genstr(" ")
-		getsilx(basereg)
-		printaddrmode()
-
-	when 0xAF then
-		decodeaddr(1)
-		genstr("imul ")
-		genstr(strreg(rmreg,opsize))
-		genstr(", ")
-		printaddrmode()
-
-	when 0xB6, 0xB7, 0xBE, 0xBF then
-		decodeaddr(1)
-!	opsize:=4
-		genstr((opc<0xBE|"movzx "|"movsx "))
-		genstr(strreg(rmreg,opsize))
-		genstr(", ")
-		opsize:=(opc iand 1|2|1)
-		printaddrmode()
-
-	when 0xB8 then
-		decodeaddr(1)
-		genstr("popcnt ")
-		genstr(strreg(rmreg,opsize))
-		genstr(", ")
-		printaddrmode()
-
-	when 0xBC, 0xBD then
-		decodeaddr(1)
-		genstr((opc=0xBC|"bsf "|"bsr "))
-		genstr(strreg(rmreg,opsize))
-		genstr(", ")
-		printaddrmode()
-
-	when 0xD6 then
-		decodeaddr(1)
-		opsize:=8
-		genstr("movq ")
-		printaddrmode(1)
-		genstr(",")
-		genstr(strxmm(rmreg))	
-
-	when 0xDB then					!PAND
-		decodeaddr(1)
-		genstr("pand ")
-		genstr(strxmm(rmreg))
-		genstr(", ")
-		opsize:=8	!(sizeoverride|8|4)
-		printaddrmode(1)
-
-	when 0xEF then					!PXOR
-		decodeaddr(1)
-		genstr("pxor ")
-		genstr(strxmm(rmreg))
-		genstr(", ")
-		opsize:=8	!(sizeoverride|8|4)
-		printaddrmode(1)
-
-
-	else
-	error:
-		genstr("Unknown opcode 2-byte opcode: 0F ")
-    genhex(opc)
-	end switch
-end
-
-proc decodeaddr(int w=0)=
-!codeptr points to modrm byte, with possible sib and/or disp following
-!decode modrm, sib and disp
-!store result in amode:
-! basereg		0 when not used
-! indexreg
-! scale			1,2,4,8 factor for indexreg
-! offset		0, or any offset or abs address
-! addrmode		rm-code
-!the function returns the xxx value (middle part of modrm byte)
-	int modrm,xxx,mode,sib,rm
-
-	basereg:=indexreg:=0
-	scale:=1
-	offset:=0
-	ripmode:=0
-
-	if w then
-		opsize:=(sizeoverride|2|4)
-		if rex iand wmask then opsize:=8 fi
-	else
-		opsize:=1
-	fi
-
-	modrm:=codeptr++^
-
-	mode:=modrm>>6
-	xxx:=(modrm>>3) iand 7
-	rm:=modrm iand 7
-
-	if mode=3 then		!plain register access
-		basereg:=rm+1
-		addrmode:=amreg
-	elsif rm<>4 then				!not esp; no sib
-		if mode=0 and rm=5 then		![ebp] is actually [rip+disp]
-			offset:=readint32()		!
-!CPL "RIP?"
-			ripmode:=1
-			addrmode:=ammem
-
-		else
-			basereg:=rm+1
-			addrmode:=ammem
-			case mode
-			when 1 then
-				offset:=readsbyte()
-			when 2 then
-				offset:=readint32()
-			esac
-		fi
-	else			!sib follows
-		addrmode:=ammem
-		sib:=readbyte()
-		indexreg:=((sib>>3) iand 7)+1
-		basereg:=(sib iand 7)+1
-		scale:=(sib>>6+1|1,2,4,8|0)
-
-		if mode=0 and basereg=rframe and indexreg=rstack then	!no base/index regs, only d32 disp
-			indexreg:=basereg:=0
-			offset:=readint32()
-
-		elsif mode=0 and basereg=rframe  then	!no base/index regs, only d32 disp
-			basereg:=0
-			offset:=readint32()
-
-		elsif mode=0 and indexreg=rstack then	!no index register, only base; no disp
-			indexreg:=0
-
-		else
-			case mode
-			when 1 then
-				offset:=readsbyte()
-			when 2 then
-				offset:=readint32()
-			esac
-			if indexreg=rstack then				!stack means no index reg
-				indexreg:=0
-			fi
-		fi
-
-	fi
-
-	if basereg and rex iand bmask then basereg+:=8 fi
-	if indexreg and rex iand xmask then indexreg+:=8 fi
-
-	rmreg:=xxx+1
-	if rex iand rmask then rmreg+:=8 fi
-	rmopc:=xxx
-end
-
-function readbyte:int=
-	return codeptr++^
-end
-
-function readsbyte:int=
-	return (ref int8(codeptr++))^
-end
-
-function readword16:word=
-	word a
-	a:=ref word16(codeptr)^
-	codeptr+:=2
-	return a
-end
-
-function readint16:int=
-	int a
-	a:=ref int16(codeptr)^
-	codeptr+:=2
-	return a
-end
-
-function readword32:word=
-	word a
-	a:=ref word32(codeptr)^
-	codeptr+:=4
-	return a
-END
-
-function readint32:int=
-	int a
-	a:=ref int32(codeptr)^
-	codeptr+:=4
-	return a
-END
-
-function readint64:int64=
-	int64 a
-	a:=ref int64(codeptr)^
-	codeptr+:=8
-	return a
-END
-
-function getreg(int regcode,upper)int=
-	if upper then
-		return regcode+8+1
-	fi
-	return regcode+1
-end
-
-global function strreg(int reg,opsize)ichar=
-static []ichar regnames8=("al","cl","dl","bl","spl","bpl","sil","dil",
-						"r8b","r9b","r10b","r11b","r12b","r13b","r14b","r15b",
-				"ah","bh","ch","dh")
-
-static []ichar regnames16=("ax","cx","dx","bx","sp","bp","si","di",
-						"r8w","r9w","r10w","r11w","r12w","r13w","r14w","r15w")
-
-static []ichar regnames32=("eax","ecx","edx","ebx","esp","ebp","esi","edi",
-						"r8d","r9d","r10d","r11d","r12d","r13d","r14d","r15d")
-
-static []ichar regnames64=("rax","rcx","rdx","rbx","rsp","rbp","rsi","rdi",
-						"r8","r9","r10","r11","r12","r13","r14","r15")
-
-static []ichar mregnames8=("B0","B10","B11","B4","B15","B14","B5","B3",
-						"B12","B13","B1","B2","B6","B7","B8","B9",
-					"B16","B18","B19","B17")
-
-static []ichar mregnames16=("W0","W10","W11","W4","Wsp","Wbp","W5","W3",
-						"W12","W13","W1","W2","W6","W7","W8","W9")
-
-static []ichar mregnames32=("A0","A10","A11","A4","Astack","Aframe","A5","A3",
-						"A12","A13","A1","A2","A6","A7","A8","A9")
-
-static []ichar mregnames64=("D0","D10","D11","D4","Dstack","Dframe","D5","D3",
-						"D12","D13","D1","D2","D6","D7","D8","D9")
-
-	if reg=0 then return "<>" fi
-
-	if showmregs then
-		case opsize
-		when 1 then return mregnames8[reg]
-		when 2 then return mregnames16[reg]
-		when 4 then return mregnames32[reg]
-		when 8 then return mregnames64[reg]
-		esac
-	else
-		case opsize
-		when 1 then return regnames8[reg]
-		when 2 then return regnames16[reg]
-		when 4 then return regnames32[reg]
-		when 8 then return regnames64[reg]
-		esac
-	fi
-	return ""
-end
-
-function strfreg(int freg)ichar=
-!freg is 0-based
-	static []ichar fregnames=("st0","st1","st2","st3","st4","st5","st6","st7")
-	return fregnames[freg]
-end
-
-proc printaddrmode(int xmm=0)=
-	static [100]char str
-	ichar plus
-	int addrsize
-
-	genstr(" ")
-
-	case addrmode
-	when amreg then
-		if xmm then
-			genstr(strxmm(basereg))
-		else
-			getsilx(basereg)
-			genstr(strreg(basereg,opsize))
-		fi
-		return
-	esac
-
-	case opsize
-	when 1 then genstr("byte ")
-	when 2 then genstr("word ")
-	when 4 then genstr("dword ")
-	when 8 then genstr("qword ")
-	when 10 then genstr("tword ")
-	when 16 then genstr("oword ")
-	else
-	CPL "///OPSIZE",opsize
-	esac
-
-	if ripmode then
-		genstr("rip:")
-	fi
-	genstr("[")
-	plus:=""
-	addrsize:=(addroverride|4|8)
-
-	if basereg then
-		genstr(strreg(basereg,addrsize))
-		plus:="+"
-	fi
-	if indexreg then
-		genstr(plus)
-		genstr(strreg(indexreg,addrsize))
-GENSTR("<INDEX>")
-		if scale>1 then
-			genstr("*")
-			genintd(scale)
-		fi
-		plus:="+"
-	fi
-
-	if offset or (basereg=0 and indexreg=0) then
-!	print plus,,offset,"<",ref void(offset),,">"
-		if basereg=0 and indexreg=0 then
-			genhex(offset)
-		else
-			if offset>0 then genstr(plus) fi
-			genintd(offset)
-		fi
-	fi
-	genstr("]")
-!	if addrmode=amrel then genstr("+RIP") fi
-end
-
-proc genstr(ichar s)=
-	strcat(&.deststr,s)
-end
-
-proc genintd(int64 a)=
-	genstr(strint(a))
-end
-
-proc genhex(int64 a)=
-	genstr(strint(a,"h"))
-end
-
-function readimm:int=
-!read signed offset according to opsize
-
-	case opsize
-	when 1 then return readsbyte()
-	when 2 then return readint16()
-	when 4,8 then return readint32()			!64-bit uses 32-bit immediate
-	esac
-	return 0
-end
-
-function readimm8:int64=
-!like readimm but can 8 bytes too
-	if opsize<8 then return readimm() fi
-	return readint64()
-end
-
-function strxmm(int reg)ichar=
-	static [32]char str
-	print @&.str,"xmm",,reg-1
-	return &.str
-end
-
-function strmmx(int reg)ichar=
-	static [32]char str
-
-	print @&.str,"mmx",,reg-1
-	return &.str
-end
-
-proc decode8087(int ttt)=
-	byte bb
-	int longopc,freg,shortopc,code
-
-	bb:=codeptr++^			!following byte
-
-	longopc:=ttt<<8+bb		!bottom 11 bits of 2-bytes opcode
-	freg:=(bb iand 7)+1		!where bb specifies a register in bottom 3 bits
-
-!first look at all dedicated opcodes before treating bb as modrm byte
-
-	case longopc
-	when 2x'110'1101'1001 then genstr("fcompp")
-	when 2x'001'1110'0100 then genstr("ftst")
-	when 2x'001'1110'0101 then genstr("fxam")
-	when 2x'001'1110'1110 then genstr("fldz")
-	when 2x'001'1110'1000 then genstr("fld1")
-	when 2x'001'1110'1011 then genstr("fldpi")
-	when 2x'001'1110'1001 then genstr("fldl2t")
-	when 2x'001'1110'1010 then genstr("fldl2e")
-	when 2x'001'1110'1100 then genstr("fldlg2")
-	when 2x'001'1110'1101 then genstr("fldln2")
-
-	when 2x'001'1111'1010 then genstr("fsqrt")
-	when 2x'001'1111'1110 then genstr("fsin")
-	when 2x'001'1111'1111 then genstr("fcos")
-	when 2x'001'1111'1011 then genstr("fsincos")
-	when 2x'001'1111'1101 then genstr("fscale")
-	when 2x'001'1111'1000 then genstr("fprem")
-	when 2x'001'1111'1100 then genstr("frndint")
-	when 2x'001'1111'0100 then genstr("fxtract")
-	when 2x'001'1110'0001 then genstr("fabs")
-	when 2x'001'1110'0000 then genstr("fchs")
-
-	when 2x'001'1111'0010 then genstr("fptan")
-	when 2x'001'1111'0011 then genstr("fpatan")
-	when 2x'001'1111'0000 then genstr("f2xm1")
-	when 2x'001'1111'0001 then genstr("fyl2x")
-	when 2x'001'1111'1001 then genstr("fyl2xp1")
-
-	when 2x'011'1110'0011 then genstr("finit")
-	when 2x'011'1110'0000 then genstr("feni")
-	when 2x'011'1110'0001 then genstr("fdisi")
-
-	when 2x'011'1110'0010 then genstr("fclex")
-
-	when 2x'001'1111'0111 then genstr("fincstp")
-	when 2x'001'1111'0110 then genstr("fdecstp")
-	when 2x'001'1101'0000 then genstr("fnop")
-
-	elsecase longopc iand 2x'111'11111'000			!ignore bottom 3 bits
-
-	when 2x'001'11000'000 then genstr("fld "); genstr(strfreg(freg))
-	when 2x'101'11010'000 then genstr("fst "); genstr(strfreg(freg))
-	when 2x'101'11011'000 then genstr("fstp "); genstr(strfreg(freg))
-	when 2x'001'11001'000 then genstr("fxch "); genstr(strfreg(freg))
-	when 2x'000'11010'000 then genstr("fcom "); genstr(strfreg(freg))
-	when 2x'000'11011'000 then genstr("fcomp "); genstr(strfreg(freg))
-	when 2x'101'11000'000 then genstr("ffree "); genstr(strfreg(freg))
-
-	elsecase longopc iand 2x'001'11111'000			!ignore bottom 3 bits and top 2
-
-	when 2x'000'11000'000 then do87arith("fadd",ttt,freg)
-
-	when 2x'000'11100'000 then do87arith("fsub",ttt,freg)
-	when 2x'000'11101'000 then do87arith("fsubr",ttt,freg)
-
-	when 2x'000'11001'000 then do87arith("fmul",ttt,freg)
-
-	when 2x'000'11110'000 then do87arith("fdiv",ttt,freg)
-	when 2x'000'11111'000 then do87arith("fdivr",ttt,freg)
-
-	else	!finally, have to deal with modrm etc
-		--codeptr					!put back modrm byte
-		decodeaddr(0)			!code is middle bits
-		shortopc:=ttt<<3 + rmopc
-
-		case shortopc				!look at combination of ttt and code (middle bits of modrm)
-		when 2x'111'101 then do87mem("fld",4)
-		when 2x'011'101 then do87mem("fld",5)
-		when 2x'111'100 then do87mem("fldbcd")
-
-		when 2x'111'111 then do87mem("fstp",4)
-		when 2x'011'111 then do87mem("fstp",5)
-		when 2x'111'110 then do87mem("fstpbcd")
-
-		when 2x'001'101 then do87mem("fldcw")
-		when 2x'001'111 then do87mem("fstcw")
-		when 2x'101'111 then do87mem("fstsw")
-
-		when 2x'001'110 then do87mem("fstenv")
-		when 2x'001'100 then do87mem("fldenv")
-		when 2x'101'110 then do87mem("fsave")
-		when 2x'101'100 then do87mem("frstor")
-
-		elsecase shortopc iand 2x001'111		!ignore top two bits (mf code)
-
-		when 2x'001'000 then do87mem("fld",ttt>>1)
-		when 2x'001'010 then do87mem("fst",ttt>>1)
-		when 2x'001'011 then do87mem("fstp",ttt>>1)
-		when 2x'000'010 then do87mem("fcom",ttt>>1)
-		when 2x'000'011 then do87mem("fcomp",ttt>>1)
-		when 2x'000'000 then do87mem("fadd",ttt>>1)
-		when 2x'000'100 then do87mem("fsub",ttt>>1)
-		when 2x'000'101 then do87mem("fsubr",ttt>>1)
-		when 2x'000'001 then do87mem("fmul",ttt>>1)
-		when 2x'000'110 then do87mem("fdiv",ttt>>1)
-		when 2x'000'111 then do87mem("fdivr",ttt>>1)
-
-		else
-			genstr("UNKNOWN x87 OPCODE")
-		esac
-	esac
-
-end
-
-proc do87arith(ichar opcstr, int ttt,freg)=
-	int d, p
-
-	d:=ttt iand 2x100		!d=0:  to st0; d<>0: to freg
-	p:=ttt iand 2x010		!p<>0: pop after operation
-
-	genstr(opcstr)
-	if p then
-		genstr("p")
-	fi
-	genstr(" ")
-
-	if d=0 then
-		genstr("st0, ")
-    genstr(strfreg(freg))
-	else
-    genstr(strfreg(freg))
-		genstr(", st0")
-	fi
-end
-
-proc do87mem(ichar opcstr,int mf=-1)=
-!mf has values 0,1,2,4 for type and width, when used; but also 4 for i64
-	genstr("f")
-
-	case mf
-	when 2x'00 then opsize:=4
-	when 2x'01 then genstr("i"); opsize:=4
-	when 2x'10 then opsize:=8
-	when 2x'11 then genstr("i"); opsize:=2
-	when 4 then genstr("i"); opsize:=8
-	when 5 then opsize:=10
-	esac
-	genstr(opcstr+1)
-
-	genstr(" ")
-	printaddrmode()
-end
-
-proc getsil(int &reg)=
-!for certain byte-reg combinations, convert regs ah,ch,dh,bh to spl,bpl,sil,dil
-	if opsize=1 and not rex and reg>=5 and reg<=8 then
-		case reg
-		when 5 then reg:=17
-		when 6 then reg:=19
-		when 7 then reg:=20
-		when 8 then reg:=18
-		esac
-
-!		reg+:=12				!5..8 => 17..20
-
-
-	fi
-end
-
-proc getsilx(int &reg)=
-!as getsil but used for basereg, which must have addrmode=amreg
-	if addrmode=amreg and opsize=1 and rex=0 and reg>=5 and reg<=8 then
-		case reg
-		when 5 then reg:=17
-		when 6 then reg:=19
-		when 7 then reg:=20
-		when 8 then reg:=18
-		esac
-
-!		reg+:=12				!5..8 => 17..20
-	fi
-end
-=== mx_decls.m 0 0 18/29 ===
+=== mx_decls.m 0 0 17/29 ===
 !Declarations for M-Code scheme
 !Terms:
 ! MCU		MCode Unit, binary code/data/imports/relocs for whole program (LIBREC)
@@ -9125,7 +7288,7 @@ global [maxsymbols]byte		symboldllindex	! DLL index of library where found
 global int nsymbols
 
 export int nsymimports=0, nsymexports=0
-=== mx_run.m 0 0 19/29 ===
+=== mx_run.m 0 0 18/29 ===
 !Translate SS data directly into MCU block, then try and run that
 
 global func writememlib(ichar filename)ref librec plib=
@@ -9275,10 +7438,7 @@ proc addsymbols(ref librec lib)=
 	for i to ss_nsymbols do
 		d:=ss_symboltable[i]
 		if d.expindex then
-!			if eqstring(d.name, "main") then
-!			if eqstring(getbasename(d.name), "main") then
 			if d.isentry then
-!CPL "FOUND MAIN"
 				stentry:=d
 			fi
 			lib.exports[++k]:=d.name
@@ -9324,7 +7484,7 @@ global proc runlibfile(ichar filename, int cmdskip)=
 !	fi
 end
 
-=== mx_lib.m 0 0 20/29 ===
+=== mx_lib.m 0 0 19/29 ===
 global enumdata [0:]ichar rsegmentnames =
 	(no_seg=0,		$),
 	(code_rseg,		$),
@@ -9541,12 +7701,6 @@ global proc fixuplib(ref librec lib)=
 !do second fixup pass, which is done across global symbols, but then 
 !all relocs are done for all libs which are not yet relocated
 
-!	alloclibdata(lib)
-!	donewlib(lib)					!update global tables
-
-!global fixups
-!	loadimports()
-
 	loaddlls()				!global
 	checksymbols()			!global
 	dorelocations()			!all libs
@@ -9674,7 +7828,6 @@ proc reloclib(ref librec lib)=
 
 		when impabs32_rel then
 			index:=lib.importxreftable[r.stindex]			!global index
-!			(ref u32(p)^+:=cast(symboladdress[index],u32))
 			(ref u32(p)^+:=cast(symboladdress[index],u64))
 
 		when imprel32_rel then
@@ -9900,7 +8053,7 @@ global func loadmemmcb(ichar filename, ref byte p)ref librec plib=
 	return plib
 end
 
-=== mx_write.m 0 0 21/29 ===
+=== mx_write.m 0 0 20/29 ===
 !Translate SS data directly into MCB block, then write as mx/ml file
 
 ref dbuffer dest
@@ -9949,17 +8102,9 @@ global proc writemcx(ichar filename)=
 		genstring(plibfiles[i])
 	od
 
-!	genbyte(libs_dir)
-!	genword32(nlibs)
-!	for i to nlibfiles when libfiles[i]^<>'$' and libtypes[i]='L' do
-!		genstring(libfiles[i])
-!	od
-
 	writesymbols()
 
 	genbyte(end_dir)
-
-!CPL "WRITE MX FILE",FILENAME, =DEST.PSTART,DEST.PCURR-DEST.PSTART
 
 	writefile(filename, dest.pstart, dest.pcurr-dest.pstart)
 end
@@ -9988,7 +8133,6 @@ global proc writerelocs=
 			newr.segment:=(i=code_seg|idata_seg|code_seg)
 
 			d:=ss_symboltable[oldr.stindex]
-!CPL "WRITERELOCS",D.NAME,=D.ISIMPORT
 
 			case oldr.reloctype
 			when rel32_rel then
@@ -10020,18 +8164,8 @@ global proc writerelocs=
 	od
 end
 
-!global proc countsymbols=
-!	symbol d
-!	for i:=1 to ss_nsymbols do
-!		d:=ss_symboltable[i]
-!		if d.scope=export_scope then d.expindex:=++nsymexports fi
-!		if d.isimport then d.impindex:=++nsymimports fi
-!	od
-!end
-
 proc writesymbols=
 	psymbol d
-!	u64 epoffset:=-1
 	int n
 	ichar name
 
@@ -10113,7 +8247,7 @@ proc genblock(ref void p, int length)=
 	memcpy(dest.pcurr, p, length)
 	dest.pcurr+:=length
 end
-=== aa_cli.m 0 0 22/29 ===
+=== aa_cli.m 0 0 21/29 ===
 byte fshowasm
 byte fshowss					!early ss
 byte fshowsx					!late ss (I think)
@@ -10146,7 +8280,7 @@ global enumdata []ichar optionnames=
 	(v_sw,			"v"),
 	(q_sw,			"q"),
 	(help_sw,		"help"),
-	(out_sw,		"out"),
+	(out_sw,		"o"),
 
 	(rip_sw,		"rip"),
 	(himem_sw,		"himem"),
@@ -10169,16 +8303,6 @@ proc main=
 
 	getinputoptions()
 
-!	PRINTLN =INPUTFILE
-!	PRINTLN =OUTPUTFILE
-!	PRINTLN =OUTEXT
-!	PRINTLN =OPTIONNAMES[AXLEVEL]
-!	PRINTLN =FSHOWASM
-!	PRINTLN =FSHOWSS
-!	PRINTLN =FSHOWSX
-!	PRINTLN =FSHOWST
-!	PRINTLN =FSHOWPST
-
 	if fverbose then showcaption() fi
 	if not fquiet then println "Assembling",inputfile,"to",outputfile fi
 
@@ -10193,9 +8317,7 @@ proc main=
 
 	parsefile()
 
-!CPL =CMDSKIP
 	pcl_cmdskip(cmdskip)
-!OS_GETCH()
 
 	case axlevel
 	when asm_sw then
@@ -10241,10 +8363,8 @@ PRINTLN "PRESS KEY..."; STOP WHEN OS_GETCH()=27
 	if fshowasm and axlevel>=parse_sw then
 		println @f, "\nPROC ASM File:"
 		s:=pcl_writeasm()
-!PRINTLN "PRESS KEY2..."; STOP WHEN OS_GETCH()=27
 
 		println @f, s
-!		println @f, pcl_writeasm()
 	fi
 
 	if fshowss and axlevel>=gen_sw then
@@ -10276,7 +8396,6 @@ proc parsefile=
 !		stop 1
 !	fi
 !
-!	scanglobals()			!fixup any globals and imports
 end
 
 proc initall=
@@ -10359,6 +8478,7 @@ proc getinputoptions=
 	pc_addplib("gdi32")
 	pc_addplib("user32")
 	pc_addplib("kernel32")
+
 end
 
 proc do_option(int sw, ichar value, int paramno)=
@@ -10410,7 +8530,7 @@ proc loaderror_s(ichar mess,s)=
 	print @str, mess, s
 	loaderror(str)
 end
-=== aa_decls.m 0 0 23/29 ===
+=== aa_decls.m 0 0 22/29 ===
 !AA/PCL Assembler Global Decls
 
 global type symbol = ref strec
@@ -10448,17 +8568,7 @@ export [maximportlibs]ichar importlibs
 export int nsearchlibs
 export int nimportlibs
 
-!export int nsymimports=0, nsymexports=0
-
-!global const hstsize=32768
-global const hstsize=65536
-!global const hstsize=131072
-!global const hstsize=65536*4
-!global const hstsize=1048576
-!global const hstsize=1048576*2
-!global const hstsize=1048576*4
-!global const hstsize=1048576*8
-!global const hstsize=1048576*16
+global const hstsize=1048576
 
 global const hstmask=hstsize-1
 global [0:hstsize]symbol lexhashtable
@@ -10494,7 +8604,7 @@ global ref stlistrec globalimportlist		!all global vars and imports across all m
 
 global byte highmem						!0/1/2 = lowmem+norip/lowmem+rip/himem+rip
 
-=== aa_lex.m 0 0 24/29 ===
+=== aa_lex.m 0 0 23/29 ===
 !Tokeniser Module
 macro testmode=0
 
@@ -10529,8 +8639,6 @@ global proc lex=
 
 	lxsubcode:=0
 	ss:=lxsptr
-
-!CPL "LEX1", REF VOID(LXSPTR)
 
 !	doswitchu c:=ss++^
 	doswitch c:=ss++^
@@ -10581,14 +8689,12 @@ global proc lex=
 	when 'A'..'Z' then
 		pstart:=ss-1
 		hsum:=pstart^:=c+32
-!		pstart^:=pstart^+32
 		goto doname
 
 	when '0'..'9' then
 		LXSPTR:=SS
 		readnumber(c)
 		RETURN
-!		exit
 
 	when '`' then
 		pstart:=ss		!point to start of name in source buffer
@@ -10608,6 +8714,7 @@ global proc lex=
 
 		if lookuplex(cast(pstart),lxlength) then
 			lxsymbol:=lxsymptr.symbol			!can't be a keyword
+			lxsubcode:=lxsymptr.subcode
 			if lxsymbol=0 then					!assume was a keyword; use as name
 				lxsymbol:=lxsymptr.symbol:=namesym
 			fi
@@ -11051,9 +9158,6 @@ LXSYMPTR.ISCOND:=1
 	od
 
 	for i to segmentnames.len do
-!		strcpy(&.str,segmentnames[i])
-!		str[strlen(&.str)-3]:=0
-!		addreservedword(pcm_copyheapstring(&.str),ksegnamesym,i)
 		addreservedword(segmentnames[i],ksegnamesym,i)
 	od
 
@@ -11143,9 +9247,6 @@ function lookuplex(ichar name,int length=0)int=
 	lxsymptr.name:=name
 	lxsymptr.symbol:=namesym
 	lxsymptr.ksymbol:=0
-!	lxsymptr.htindex:=j
-!!CPL "SET HTFIRST",NAME
-!	lxsymptr.htfirstindex:=firstj
 	return 0
 end
 
@@ -11205,54 +9306,22 @@ function makestring(ichar p,int length)ref char=
 	(s+length)^:=0
 	return s
 end
-=== aa_lib.m 0 0 25/29 ===
+=== aa_lib.m 0 0 24/29 ===
 const ptrsize=8
 
 global int currsegment=0		!
 
-!global opndrec dstackopnd
-!global opndrec dframeopnd
-
 global int labelno=0
 global mclopnd zero_opnd=nil
 
-!global ref mclrec mccode, mccodex
-
-!strbuffer destv
-!global ref strbuffer dest=&destv
-
-!global [r0..r19, 1..8]mclopnd regtable
-
 global proc initlib=
 	zero_opnd:=mgenint(0)
-
-!	int reg,size
-!
-!	for reg:=r0 to r15 do
-!		for size:=1 to 8 do
-!			case size
-!			when 1,2,4,8 then
-!				regtable[reg,size]:=genreg0(reg,size)
-!			esac
-!		od
-!	od
-!	for reg:=r16 to r19 do
-!		regtable[reg,1]:=genreg0(reg,1)
-!	od
 
 	ss_symboltable:=pcm_alloc(init_ss_symbols*ref void.bytes)
 	ss_symboltablesize:=init_ss_symbols
 	ss_nsymbols:=0
 
 end
-
-!global function xgetregname(int reg)ichar=
-!	static [16]char str
-!
-!	print @&.str,"xmm",,reg-r0
-!
-!	return &.str
-!end
 
 export proc addsymbol(symbol d)=
 	if symboltable=nil then
@@ -11263,24 +9332,9 @@ export proc addsymbol(symbol d)=
 	fi
 end
 
-!global proc adddef(symbol d)=
-!	d.nextdef:=modulenamelist
-!	modulenamelist:=d
-!end
-!
-!global proc addimport(symbol d)=
-!	ref stlistrec p
-!
-!	p:=pcm_alloc(stlistrec.bytes)
-!	p.def:=d
-!	p.nextitem:=globalimportlist
-!	globalimportlist:=p
-!end
-
 global proc createlabel(symbol symptr,int sym)=
 !symptr is a generic st entry
 	symptr.symbol:=sym
-!	symptr.stindex:=0
 	addsymbol(symptr)
 end
 
@@ -11339,74 +9393,6 @@ function realtostr(real a)ichar=
 	return &.str
 end
 
-!global function buffercreate(int size=1024)ref dbuffer=
-!	ref dbuffer a
-!
-!	a:=pcm_alloc(dbuffer.bytes)
-!
-!	a.alloc:=size
-!	a.pstart:=a.pcurr:=pcm_alloc(a.alloc)
-!	a.pend:=a.pstart+a.alloc
-!	return a
-!end
-
-!proc bufferexpand(ref dbuffer a)=
-!	int newalloc,usedbytes
-!	ref byte p
-!
-!	newalloc:=a.alloc*2
-!	usedbytes:=a.pcurr-a.pstart
-!
-!	if usedbytes>a.alloc then
-!		println "dbuffer error"
-!		cpl
-!		cpl
-!		cpl
-!		stop
-!	fi
-!
-!	p:=pcm_alloc(newalloc)
-!	memcpy(p,a.pstart,usedbytes)
-!	a.pstart:=p
-!	a.pcurr:=p+usedbytes
-!	a.alloc:=newalloc
-!	a.pend:=p+newalloc
-!end
-!
-!global proc buffercheck(ref dbuffer a,int n=1024)=
-!	while a.pend-a.pcurr<n do
-!		bufferexpand(a)
-!	od
-!end
-
-!global function bufferlength(ref dbuffer a)int=
-!	return a.pcurr-a.pstart
-!end
-!
-!global function bufferelemptr(ref dbuffer a, int offset)ref void=
-!	return a.pstart+offset
-!end
-!
-!global proc addbyte(ref dbuffer a, int x)=
-!	a.pcurr^:=x
-!	++a.pcurr
-!end
-!
-!global proc addword(ref dbuffer a, int x)=
-!	a.pcurr16^:=x
-!	++a.pcurr16
-!end
-!
-!global proc adddword(ref dbuffer a, int x)=
-!	a.pcurr32^:=x
-!	++a.pcurr32
-!end
-!
-!global proc addqword(ref dbuffer a, int64 x)=
-!	a.pcurr64^:=x
-!	++a.pcurr64
-!end
-
 global func getpsymbol(symbol d)psymbol p =
 	byte id
 
@@ -11431,7 +9417,7 @@ global func getpsymbol(symbol d)psymbol p =
 
 	p
 end
-=== aa_parse.m 0 0 26/29 ===
+=== aa_parse.m 0 0 25/29 ===
 !Globals that describe expression. Syntax is:
 ! name [+/- immexpr]
 !      [+/- immexpr]
@@ -11445,9 +9431,7 @@ global proc readmodule(ichar source)=
 	psymbol ps
 	int sym
 
-!CPL "RM1"
 	initsourcefile(source)
-!CPL "RM2"
 	mclinit(bypass:1)				!so pcl-fns don't call genmcl on non-existent pcl code
 
 	lxsymbol:=eolsym
@@ -11458,11 +9442,9 @@ global proc readmodule(ichar source)=
 		mmpos:=lxlineno
 	fi
 
-!CPL "RM3"
 	while lxsymbol=eolsym do
 
 		lex()
-!CPL "RM4",symbolnames[lxsymbol]
 
 		switch lxsymbol
 		when kopcodesym then
@@ -11658,9 +9640,6 @@ proc readinstr=
 			fi
 		fi 
 
-!IF A THEN
-!CPL =A, =VALTYPENAMES[A.VALTYPE], =A.DEF
-!FI
 		if mclnopnds[opcode]<n then
 			serror("Missing operand")
 		elsif mclnopnds[opcode]>n then
@@ -11740,10 +9719,6 @@ proc readcondinstr(int opc)=
 		n:=2
 	fi
 
-
-!	nopnds:=(a=nil|0|(b=nil|1|2))
-!	if nopnds=2 and opc in [m_pcmpistri,m_pcmpistrm] then nopnds:=3 fi
-
 	if n<mclnopnds[opc] then
 		serror("C:Too few mclopnds")
 	elsif n>mclnopnds[opc] then
@@ -11807,16 +9782,12 @@ proc readexpression =
 	exprvalue:=0
 	exprvaltype:=intimm_val
 
-!PS("RX1")
 	readexprdef()					!optional name
 
-!PS("RX2")
 	if exprlabeldef then
 		case lxsymbol
 		when intconstsym, realconstsym, namedconstsym then
 			operror
-!		when addsym then op:='+'; lex()
-!		when subsym then op:='-'
 		esac
 	else							!no name, start from nothing
 		if lxsymbol=addsym then lex(); op:='+'
@@ -11826,7 +9797,6 @@ proc readexpression =
 
 	fi
 
-!PS("RX3")
 	docase lxsymbol
 	when addsym then
 		if op then
@@ -12032,13 +10002,12 @@ function readaddrmode(int size)mclopnd=
 
 	return p
 end
-=== aa_show.m 0 0 27/29 ===
+=== aa_show.m 0 0 26/29 ===
 global proc showst(filehandle f)=
 	symbol d
 
 	println @f, "AA Symbol Table"
 
-!PRINTHASHTABLE(F)
 	d:=symboltable
 	while d, d:=d.next do
 		print @f, d.name:"12jl", symbolnames[d.symbol]
@@ -12062,18 +10031,15 @@ global proc printhashtable(filehandle f)=
 		r:=lexhashtable[i]
 		if R AND r.name then
 			count+:=1
-!			if not r.ksymbol or eqstring(r.name, "push") then
-!			if not r.ksymbol then
-IF R.ISCOND THEN
+			IF R.ISCOND THEN
 				println @f,r.name, R.ksymbol, CONDNAMES[r.subcode]
-		fi
+			fi
 		fi
 	od
-!CPL
 println @f, count," items in table",hstsize
 end
 
-=== aa_tables.m 0 0 28/29 ===
+=== aa_tables.m 0 0 27/29 ===
 !x64 Assembler Tables
 
 global enumdata []ichar symbolnames=
@@ -12147,6 +10113,69 @@ global tabledata []ichar prefixnames, []byte prefixsizes =
 	("word128",	16),
 	("u128",	16)
 end
+=== trace.aa 0 1 28/29 ===
+!D1 Contains str arg
+!D0 May contain return value
+!D3..D9 are non-vols that need to preserved
+
+$tracemess:
+	push D3
+	push D4
+	push D5
+	push D6
+
+	push D7
+	push D8
+	push D9
+	push D10			!leaf procs may use these
+	push D11
+	push D12
+	push D13
+
+	push D0
+
+	movq D0, xmm0
+	push D0
+	movq D0, xmm1
+	push D0
+	movq D0, xmm2
+	push D0
+	movq D0, xmm3
+	push D0
+
+	sub Dstack, 40		!align stack and create shadow space
+
+	mov D10, D1
+	call puts*
+
+	add Dstack, 40
+
+	pop D0
+	movq xmm3, d0
+	pop D0
+	movq xmm2, d0
+	pop D0
+	movq xmm1, d0
+	pop D0
+	movq xmm0, d0
+
+	pop D0
+
+	pop D13
+	pop D12
+	pop D11
+	pop D10
+
+	pop D9
+	pop D8
+	pop D7
+
+	pop D6
+	pop D5
+	pop D4
+	pop D3
+
+	ret
 === aa_help.txt 0 1 29/29 ===
 'AA' Assembler-Linker for Win64
 
@@ -12181,8 +10210,8 @@ DLLs msvcrt.dll, user32.dll, gdi32.dll, user32.dll are automatically included.
 Others can be specified in the ASM file using 'importdll' directives, or on
 the command line.
 === END ===
-1 aa.m
-2 pclax.m
+1 aap.m
+2 pclaxp.m
 3 pc_api.m
 4 pc_decls.m
 5 pc_diags_dummy.m
@@ -12196,17 +10225,17 @@ the command line.
 13 mc_writeasm.m
 14 mc_writeexe.m
 15 mc_writeobj.m
-16 mc_writess.m
-17 mc_disasm.m
-18 mx_decls.m
-19 mx_run.m
-20 mx_lib.m
-21 mx_write.m
-22 aa_cli.m
-23 aa_decls.m
-24 aa_lex.m
-25 aa_lib.m
-26 aa_parse.m
-27 aa_show.m
-28 aa_tables.m
+16 mc_writess_dummy.m
+17 mx_decls.m
+18 mx_run.m
+19 mx_lib.m
+20 mx_write.m
+21 aa_cli.m
+22 aa_decls.m
+23 aa_lex.m
+24 aa_lib.m
+25 aa_parse.m
+26 aa_show.m
+27 aa_tables.m
+28 trace.aa
 29 aa_help.txt
