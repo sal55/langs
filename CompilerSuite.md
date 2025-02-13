@@ -61,23 +61,24 @@ All tools run on and for x64 with Windows.
 .mx ───────┬─> [runmx.exe] ───> Run (Load, fix up, and execute the MX-format executable)
 .ml/.dll ──┘
  ````
+**MM6** Previous M Compiler
+
+**AA6** Previous x64 Assembler
+
+This version is retained because it can process multiple ASM input files into one output (so performs a link function) which is needed when BCC needs to built multi-module projects.
 
 ### Packaging
 
 All the above programs are single-file, self-contained executables, and all are under 1MB. The current set of programs are:
 ````
-mm.exe        390 KB           Includes std library sources
+mm.exe        388 KB           Includes std library sources
 aa.exe        121 KB
-bcc.exe       323 KB           Includes std headers (windows.h is separate)
-qq.exe        554 KB           Includes std lib sources
-pc.exe        180 KB           Fully loaded (smaller configurations can be done, eg. interpret only)
+bcc.exe       321 KB           Includes std headers (windows.h is separate)
+qq.exe        553 KB           Includes std lib sources
+pc.exe        183 KB           Fully loaded (smaller configurations can be done, eg. interpret only)
 runmx.exe      57 KB           (Includes diagnostic display)
 ````
-The above are built with MM7 -opt, which can now match the small optimising step of MM6.
-
-For mm/aa/cc/pc, only the ASM output is configured. Support for NASM needs building with a different module enabled. Interpret-only versions of mm/bcc could be built: an interpreted bcc version with external headers would be about 180KB, and similar for mm would be 210KB.
-
-The four main tools (mm, aa, bcc, qq) would fit on a 1.44MB floppy disk, uncompressed. With UPX compression, all 6 programs would occupy under 0.6MB.
+The above are built with MM7, which can now match MM6 in code quality.
 
 ### Implementation
 
