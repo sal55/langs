@@ -4,7 +4,7 @@ This is about measuring the build speed of my systems language compiler: how fas
 
 That's particularly important here as it's a whole-program compiler; it doesn't have independent or incremental compilation.
 
-It is in fact quite fast, this not about boasting about its performance. My first compiler was probably 1000 times slower: most of the current speed is due to advances in hardware many years. A lot is because my compilers remain unsophisticated: there's little for them to spend much time doing! And the language remains primitive.
+It is in fact quite fast, but this not to do with boasting about its performance. My first compiler was probably 1000 times slower: most of the current speed is due to advances in hardware many years. A lot is because my compilers remain unsophisticated: there's little for them to spend much time doing! And the language remains primitive.
 
 But also, I try to keep on the ball: ensuring it doesn't get slower rather than actively making it faster.
 
@@ -25,7 +25,7 @@ Three ways have been considered, all timed using C's `clock()` function:
 * **3** Measuring directly inside the compiler, by calling 'clock' on entry and again
 just before terminating.
 
-The problem with **1** is that compiling a 3-line 'hello-world' can take 0.04 seconds, so is not accurate for determining  (lines-per-second); most of my programs build in under 0.1 seconds.
+The problem with **1** is that compiling a 3-line 'hello-world' can take 0.04 seconds, so is not accurate for determining LPS; most of my programs build in under 0.1 seconds.
 
 Actually, I mostly run the compiler from my IDE, which uses **2**. **3** tells me the time my compiler actually spends compiling, which is all I have control over. I believe this is the true LPS , which is also the observed elapsed time when the compiler is a resident library, or is embedded (but I don't do that right now).
 
@@ -44,11 +44,11 @@ In any case, whole-program compilers don't parallelise easily. At best you can b
 
 **Implementation Language**
 
-My compiler is self-hosted, but since it doesn't do optimisations, that puts it at a disadvantage when comparing LPS figures with other products that use fully optimised languages.
+My compiler is self-hosted, and since it doesn't do optimisations, that puts it at a disadvantage when comparing LPS figures with other products that use fully optimised languages.
 
 I can apply optimisations if I take the trouble to transpile to C and then use an optimisation compiler. At present that only works for an older version, where it speeds up build times by about 30%. This is mentioned below.
 
-**Test Cases**
+**Test Inputs**
 ````
 Project    LOC  Modules   EXE Size
 
@@ -78,7 +78,7 @@ Tests were run with all user-apps shut down.
 ````
 I tested also on machines PC1 (an old laptop) and PC3 (a borrowed laptop):
 
-Machine  Rating  Cores    Relative to B
+Machine  Rating  Cores    Relative to PC2
 
 PC1         555    1      ~3   x slower
 PC2        1760    2       1.0
@@ -97,7 +97,7 @@ Otherwise there are easier methods:
 * Using a faster computer, for example PC3 would be 70% faster than my current machine
 
 * Getting it transpiled to C then using an optimising compiler; this could add 30%. Combined, these
-could yield 120% improvements in LPS.
+could yield a 120% improvement in LPS.
 
 * If the edit-run cycle is an issue, then I can use the compiler's interpreter feature where I compile as far as IL only, then run that. Compilation to IL is then 50% faster (so just manages 1Mlps on PC2).
 
@@ -105,7 +105,7 @@ However, my own projects clearly aren't really in need of the extra speed. This 
 
 **The Compiler**
 
-This is not about how it works, but to give some context, it does multiple passes, which can be illustrated with this annotated report from the 'fann4' project:
+This is not about how it works, but to give some context, it's internal passes can be illustrated with this annotated report from the 'fann4' project:
 ````
 c:\mx\big>tim mm -time fann4
 Compiling fann4.m to fann4.exe
@@ -121,4 +121,4 @@ EXE:             0 ms   0.0 %             Create and write EXE file image
 Total:         894 ms 100.0 %
 TM: 0.969
 ````
-(The 969 is timing **2**, and 894 is timing **3**.)
+(The 969 is timing **2**, and 894 is timing **3**. Since this is run from the commnd line, a **1** timing is more accurate here, and would be about 1.01. The zero figures for Load and for writing output, are related my comments about caching.)
