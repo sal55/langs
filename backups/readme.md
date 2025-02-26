@@ -29,4 +29,4 @@ I happened to prepare this diagram the other day which shows the organisation:
 
 https://github.com/sal55/langs/blob/master/pclchart.md
 
-The middle part are the pp-files; the Win64 backend are the mc/mx files; the rest relate to the four front-ends shown. When all four are built, it produces the four self-contained binaries 'mm.exe bcc.exe (after renaming) pc.exe and aa.exe'.
+The middle part are the pc-files; the Win64 backend are the mc/mx files; the rest relate to the four front-ends shown. When all four are built, it produces the four self-contained binaries 'mm.exe bcc.exe (after renaming) pc.exe and aa.exe'.
