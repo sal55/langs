@@ -7,7 +7,7 @@ The following discusses a bunch of interesting features, often relative to the C
 It is not a formal language reference, or a standard, or tutorial. There is little discussion of semantics
 or undefined behaviours or finer points of grammar.
 
--- Bart C.
+-- Bart
 
 ### Overview
 
