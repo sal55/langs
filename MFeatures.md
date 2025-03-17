@@ -379,7 +379,7 @@ There can also be pointers to things that are either not types by themselves, or
 
 The `ref char` type is recognised as special, and also has the `ichar` alias. String literals for example will have `ref char/ichar` type.
 
-#### Null Pointer
+#### Null Pointer Constant
 
 This is the special value `nil`, with type `ref void`. Zero can't be used as in C.
 
@@ -420,7 +420,7 @@ Arrays can be passed and return by value to functions, a least notionally. Excep
 
 In my implementaton, my back end is responsible for doing the implicit copying to enable that (or will do when it gets around to it).
 
-In practice, arrays are passed as pointers (define a parameter type `ref[]int X`), or using pass-by-reference (paremeter type is `[]int &X`).
+In practice, arrays are passed as pointers (define a parameter type `ref[]int X`), or using pass-by-reference (parameter type is `[]int &X`).
 
 An alternative to passing arrays, which usually need an accompanying length, is using slices, described below.
 
@@ -570,12 +570,15 @@ Various property-yielding operators are available:
 ````
 X.bytes        # size of of type in bytes (sizeof in C)
 X.bitwidth     # width in bits of primitive type (CHAR_BIT * sizeof in C)
-X.len          # Length of an array whose size of known
+X.len          # Length of an array whose size is known
 X.lwb          # Lower bound
 X.upb          # Upper bound
 X.bounds       # X.lwb..X.upb
 ````
 When X is an expression, then its type is used.
+
+X.bounds does not yield a value (a range is not a type in M, only in Q), but this can be used in the places range synyax can be.
+
 
 Slices are a little different:
 * .bytes refers to the slice descriptor not the slice itself
@@ -1024,28 +1027,28 @@ which explicitly asks for remaining elements to be zeroed. But I haven't tried i
 
 For zeroing all elements of an aggregate type, then it's done using 'clear': `clear A`.
 
-### Operator Precedences
-There are fewer level than in C, despite there being more operators (Level 1 is highest with tightest binding):
+### Operator and Precedences
+There are fewer levels than in C, despite there being more operators (Level 1 is highest with tightest binding):
 ````
 Level   Operators at that level
 
-1       ** (right to left)
+1       **                               #  (right to left)
 2       * / % rem << >>
-3       + - iand ior ixor min max
+3       + - iand ior ixor min max        # (bitwise and/or/xor)
 
 5       = <> < <= >= > in
 
-6       and
+6       and                              # (logical and/or)
 7       or
 
-(8      := (right to left))
+(8      :=                               # (right to left))
 ````
 * Three main groups are shown:
-  * First includes are the arithmetic ops taught in schools
+  * First includes the arithmetic ops taught in schools
   * Second are comparions
   * Third are logical operators
 
-* `min max` normally use function-like syntax
+* `min max` normally use function-like syntax rather than infix; but `max(x, y)` and `x max y` will both work
 * The "." in `a.b` is not a operator; it has syntax that binds more tightly than even unary operators
 * Level 4, not shown, is for ".." which constructs ranges. It is syntax more than operator.
 
@@ -1160,7 +1163,7 @@ Function nesting is not fully supported. They can be written, but you can't acce
 
 
 ### Pass-by-reference
-Reference parameters used `&` in front of the parameter name. This means address-of is applied automatically to arguements, and dereferencing is done automatically to the parameter within the function.
+Reference parameters use `&` in front of the parameter name. This means address-of is applied automatically to arguements, and dereferencing is done automatically to the parameter within the function.
 
 This shows 3 ways of updating a variable in the caller:
 ````
@@ -1628,7 +1631,7 @@ Assembly blocks can return values; if written where some value is expected, then
 
 Assembly syntax is pretty much that of my AA assembler. I will not be documenting that.
 
-Although there is no proper optimiser in the main compiler, some register allocation of variables goes on. But that is disabled when inline assembly is used within a function (as I won't know whether variable X is in a register or in memory, or I could clobber registers used for variables.
+Although there is no proper optimiser in the main compiler, some register allocation of variables goes on. But that is disabled when inline assembly is used within a function (as I won't know whether variable X is in a register or in memory, or I could clobber registers used for variables).
 
 But I believe I can fix that (variables accessed in assembly have the address modes adjusted as needed, and I can avoid using non-volatile registers).
 
@@ -1728,7 +1731,7 @@ Compiling mm.m to mm.(run)
 Compiling hello.m to hello.(run)
 Hello World! 10:55:56
 ````
-By copying the lead module `mm.m` to `ms.m` and compiling to `ms.exe`, that will apply `-r` and `-q` (for less verbose) automatically. Now it is possible test self-hosting properly:
+By copying the lead module `mm.m` to `ms.m` and compiling to `ms.exe`, that will apply `-r` and `-q` (for less verbose) automatically. Now it is possible to test self-hosting properly:
 ````
 c:\mx>tim ms ms ms ms ms ms ms ms ms ms ms ms ms ms ms ms hello
 Hello World!
