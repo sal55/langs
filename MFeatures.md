@@ -191,7 +191,7 @@ I use 'unit' to refer to an individual expression or statement. While 'sunit' is
 
 In the bits of syntax described later, `u` indicates a single unit is allowed, while `s` allows a sequence of them, which can be empty, for example, here are simplified IF and REPEAT statements:
 ````
-  if s then e [else s] end
+  if s then s [else s] end
   repeat s until u
 ````
 
