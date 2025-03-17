@@ -62,11 +62,11 @@ Demonstrates:
 * One form of `for` loop, which here starts from 1 if not specified
 * `For`-loop indices can be automatically declared (if so, they are also read-only)
 * `sqrt` is a built-in, and is an operator, hence parentheses are optional
-* Automatic conversion from float to integer
+* Automatic conversion from integer to float
 * `println` is built-in, and needs no format strings or codes
 * It will add spaces between print items (`,,` will suppress them)
 * The `od` shows the Algol68 influence, but `end`, `end do` or `end for` will all work too
-* Since there no declarations, both these examples are also valid programs in my Q scripting language
+* Since there are no declarations, both these examples are also valid programs in my Q scripting language
 
 ### Case-insensitive
 
@@ -78,7 +78,7 @@ For imports of case-sensitive external functions there are two possibilities:
 ````
    func "MessageBoxA"(...)
 ````
-Use a string literal for the name, then choice capitalisation style can be subsequently used. Or:
+Use a string literal for the name, then any choice of capitalisation style can be subsequently used. Or:
 
 ````
    func `MessageBoxA(..)
