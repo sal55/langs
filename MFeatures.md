@@ -1781,3 +1781,15 @@ At the call-site, it would need extra parentheses, so not quite as sweet.
 * **New C23 Features**
 
 I don't know what most of them are. I have deliberately kept M at a certain level, certainly regarding its type system. For anything higher level, I use my next language up.
+
+### Miscellaneous
+
+Although I did say this is not a formal reference, there are a few facts that could do with being listed, necessary if someone wants to try writing code:
+
+* To call a function with args needs to be `F()`, like C, not `F` (which similarly yields a reference)
+* C's `const` does not exist in the language. My `let` was a weak attempt at it. M's `const` defines names with a compile-time expression only
+* If a variable is initialised like this at any point in a function `int a := 0`, the scope of `a` is function-wide, but the assignment happens right here. `a` can also be assigned to before the declaration!
+* Bitwise logic ops are called `iand ior ixor inot`; the binary ones have the same precedence as `+ -`
+* Logic ops are called `and or not istrue`
+
+This will be added to as needed...
