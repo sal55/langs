@@ -27,7 +27,6 @@ macro copyvar_v(x, y) = x^:=y
 !macro jumpnext = goto jumptable[pc.opcode]
 macro jumpnext = goto pc.labaddr
 
-!byte dofixup
 byte getjt
 
 global ref[0:]ref label jumptable
@@ -36,18 +35,6 @@ global proc disploop =
 	pcl pc
 	variant sp
 	ref byte fp
-!	variant x
-!		int index @ x
-!		variant dest @ x
-!		variant px @ x
-!	variant y
-!		symbol d @ y
-!		int nloc @ y
-!	variant z	
-!		int n @ z
-!		pcl pz @ z
-!		object pp @ z
-!		object q @ z
 
 	variant x
 	variant y
@@ -305,7 +292,6 @@ jdupl: ! (Z',Y'):= (share(Z), Z)
 
 jcopy: ! Z':= deepcopy(Z)
 	if sp.hasref then
-!			vx:=sp^
 		copyvarv(vx, sp)
 		save
 		var_duplu(sp)
@@ -767,7 +753,6 @@ jcallproc: ! Call &A; n is no. args
 
 	if --count=0 then
 		count:=countinterval
-!CPL "OS:PEEK---------------------"
 		os_peek()
 	fi
 
@@ -2048,7 +2033,6 @@ proc start=
 !set up jumptable
 	getjt:=1
 	disploop()
-
 	getjt:=0
 end
 

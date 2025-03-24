@@ -688,11 +688,10 @@ doforff:
 		const countinterval=100
 		static int count=countinterval
 
-!		if --count=0 then
-!			count:=countinterval
-!CPL "OS:PEEK---------------------"
-!			os_peek()
-!		fi
+		if --count=0 then
+			count:=countinterval
+			os_peek()
+		fi
 
 		if sp>=stacklimit then
 			pclerror("Stack Overflow")
