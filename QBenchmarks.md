@@ -17,7 +17,7 @@ clex            Simple C Lexer, input is 980Kloc/22MB fike
 collatz         Work out steps for N up to 300K
 cray            Simple ray-tracing (64x64 greyscale image, write PGM)
 fann            Fannkuch benchmark (N=9, twice)
-fib             Fibonacci for N in 1..36
+fib             Fibonacci for N in 1..34
 for             Empty for-loop (N=400M)
 jpeg            JPEG decoder; input is 84KB/0.5Mpixel
 kiss64          PRNG test
@@ -96,7 +96,7 @@ bitops      3.0
 bubble      3.3
 clex        9.5   (100Klps, best of several versions; B2 managed 1700Klps)
 fann        2.3
-fib         6.6
+fib         2.5
 for         6.6
 jpeg        1.7
 manboy      5.1
@@ -115,7 +115,7 @@ binary      4.8   seconds
 clex/alex  14.7   (66Klps; two versions exist)
 clex/slex  22.3   (44Klps)
 fann        0.6
-fib         3.3
+fib         1.3
 manboy      3.0
 nbody       0.5
 nsieve      1.9
