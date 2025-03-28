@@ -2,17 +2,9 @@
 
 ## Comparing C with 'M'
 
-...
-
-
-### Links:
-(Out of date links removed)
-
 ### A Selection of Differences from C
 
-**1** M is case-insensitive (put that in early so some people can stop reading now). I find that
-makes for a coding style that is easier on the eye, and gives some useful advantages that have been discussed
-at length elsewhere.
+**1** M is case-insensitive. I find that makes for a coding style that is easier on the eye, and gives some useful advantages that have been discussed at length elsewhere.
 
 **2** It doesn't use brace syntax for block delimiting; it uses Algol-68 style syntax. (See Examples link)
 
@@ -49,10 +41,9 @@ M's line comments start with "!", and have no such issues.
 will support `0b1011` format, it is not standard C, and `-Wpedantic` will report a warning
 
 **11** In C, use a leading 0 as in `0100`, and the number is assumed to be octal, so this
-has the value 64. In M, it has the value 100. Octal numbers are written as `8x100`.
+has the value 64. In M, it has the value 100 (it no longer has octals, which used to be written as `8x100`).
 
-**12** M actually allows numbers in any base from 2 to 16 using the same scheme: `4x100` is in base 4 (16)
-`12x100` is in base 12 (144). Hex can be written as `0x100` like C, or as `16x100`.
+**12** (M not longer allows arbitrary number bases from 2 to 16, only 2, 10, 16 now.)
 
 **13** M allows numeric separators `'` and `_`, for example `1'000'000` or `2x1011_1110_0001`.
 
@@ -65,11 +56,10 @@ In M they are well defined (and on little-endian sytems, laid out so that in mem
 same as the string `"ABCD"`).
 
 **17** C character constants are also limited to the same size as `int`, so usually 4 characters.
-M has 64-bit types so they can go up to `'ABCDEFGH'`, or additionally up to 'ABCDEFGHIJKLMNOP' for 128-bit int.
+M has 64-bit types so they can go up to `'ABCDEFGH'`.
 
 **18** C uses suffixes such as `-U`, `-L` and `-LL` to control the types of integer literals (but see below
-about long/long long). M's literals have `i64` type unless their magnitude makes them `u64`, `i128` or `u128`.
-There are no suffixes; to force a particular type, a cast is used.
+about long/long long). M's literals have `i64` type unless their magnitude makes them `u64`. There are no suffixes; to force a particular type, a cast is used.
 
 **19** Those `-LL` suffixes will anyway not work with types like `int64_t` (since that is usually implemented on top of either `long` or `long long`); special macros are needed. M has no such needs.
 
@@ -89,22 +79,26 @@ in any order, with parts missing: `long unsigned long`.
 
 **25** Additionally, plain char on most systems is a signed type, which is most inconvenient, and at odds which most other langauges.
 
-**26** So here are the M enhancements: M has a very simple and logical type system with these integer types
+**26** So here are the M enhancements: M has a logical type scheme with these integer types
 ````
-   i8 i16 i32 i64 i128        signed (also written as int8 int16 etc)
-   u8 u16 u32 u64 u128        unsigned (also word8, word32 etc)
-   byte                       (alias for u8)
-   int                        (alias for i64)
-   word                       (alias for u64)
-   char                       (loose wrapping of 'byte' used for strings)
+   i8 i16 i32 i64        signed          (also int8 .. int64)
+   u8 u16 u32 u64        unsigned        (also word8 .. word64)
+   c8 c64				 char		     (also char8, char64)
+   bool8 bool64          boolean			
+
+   byte                  (alias for u8)
+   int                   (alias for i64)
+   word                  (alias for u64)
+   char                  (alias for c8)
+   bool					 (alias for bool8)
 
 ````
-Each is written as one token only. Each is exactly defined. char is effectively unsigned.
+Each is written as one token only. Each is exactly defined. char is a thin wrapper around u8
 
-**27** M includes a 128-bit type, written a shown in #26. Some C extensions might have a version
-written as `__int128` or some such name.
+**27** (M no longer supports 128-bit types. They may be reintroduced as part of a set of
+vector types)
 
-**28** M has 128-bit literals and can print 128-bit values (not present in C even with `__int128` support)
+**28** --
 
 **29** C's printf: where do you even start? If A is `int`, B is `long long int`, C is a `char*`, D is a pointer, E is a `uint64_t`, then
 you might print those using:
@@ -116,7 +110,6 @@ for Linux64 (you need to use a macro like `PRId64`). In M it is just:
 ````
     print a,b,c,d,e
 ````
-Could it be any simpler?
 
 **30** On the same topic, try printing the result of an expression that involves `int32_t`, `clock_t` and `size_t`; what
 format code to use? Even when you figure it out; you later change a declaraton or tweak the expression, and
@@ -147,27 +140,34 @@ you can write it as `sizeof(A)/sizeof(A)[0]` - I think. In M it is `A.len`, with
 
 **40** Perform an operation between two integer types, and there will be a wildering set of rules that will determine whether the operation is done as signed or unsigned, and what signedness the result will be:
 ````
-       u8  u16 u32 u64  i8  i16 i32 i64
+       i8  i16 i32 i64  u8  u16 u32 u64
 
-   u8   S   S   U   U    S   S   S   S
-  u16   S   S   U   U    S   S   S   S
-  u32   U   U   U   U    U   U   U   S
-  u64   U   U   U   U    U   U   U   U
+   i8   S   S   S   S    S   S   u   u
+  i16   S   S   S   S    S   S   u   u
+  i32   S   S   S   S    S   S   u   u
+  i64   S   S   S   S    S   S   S   u
 
-   i8   S   S   U   U    S   S   S   S
-  i16   S   S   U   U    S   S   S   S
-  i32   S   S   U   U    S   S   S   S
-  i64   S   S   S   U    S   S   S   S
+   u8   S   S   S   S    S   S   u   u
+  u16   S   S   S   S    S   S   u   u
+  u32   u   u   u   S    u   u   u   u
+  u64   u   u   u   u    u   u   u   u
 ````
 Notice that adding two unsigned bytes is done as signed! In M, it's a bit simpler:
 ````
-           Unsigned  Signed
+       i8  i16 i32 i64  u8  u16 u32 u64
 
-Unsigned   U         S
-  Signed   S         S 
+   i8   S   S   S   S    S   S   S   S
+  i16   S   S   S   S    S   S   S   S
+  i32   S   S   S   S    S   S   S   S
+  i64   S   S   S   S    S   S   S   S
+
+   u8   S   S   S   S    S   S   S   S
+  u16   S   S   S   S    S   S   S   S
+  u32   S   S   S   S    S   S   S   S
+  u64   S   S   S   S    S   S   S   u
 ````
 
-**41** C multiple array indexing is the horrible-to-type `A[i][j[k]`. In M it's the more fluid `A[i,j,k]`. Although C-style will still work.
+**41** C multi-dim array indexing is the horrible-to-type `A[i][j[k]`. In M it's the more fluid `A[i,j,k]`. Although C-style will still work.
 
 **42** BTW C's comma operator `a,b,c` is the reason you can't use `A[i,j,k]`, as it would just mean `i; j; A[k]`. The comma operator is also responsible for a lot of bad C code, like trying to avoid braces in examples like `if (c) a=i, b=j;`
 
@@ -181,7 +181,7 @@ In M the nearest equivalent to C's a, b, c is `(a; b; c)`, with mandatory parent
 
 **46** M includes `A.lwb` and `A.upb` for array bounds, as well as `A.len` for their length. Most of the time `A.lwb` is 1, and `A.upb=A.len`.
 
-**47** C can't manipulate arrays by value; given `int A[10\], B[10];` then `A=B` is not allowed. M allows `A:=B`.
+**47** C can't manipulate arrays by value; given `int A[10], B[10];` then `A=B` is not allowed. M allows `A:=B`.
 
 **48** Further, M can pass arrays to functions and return them (although restricted by ABIs), and can compare them (here some ops are not implemented, but the language itself allows value arrays anywhere)
 
@@ -251,11 +251,7 @@ Now imagine what more complex one might look like. This example is a pointer to 
 ref proc
 ref proc P
 ````
-'ref' means 'pointer to', but for fun I added 'pointer' as an alias for 'ref', and allowed an optional 'to', so you can write:
-````
-pointer to proc P
-````
-(If I can make it any clearer, please tell me!)
+'ref' means 'pointer to'.
 
 **64** M's functions can have default values:
 ````
@@ -306,17 +302,17 @@ M doesn't need headers (or 'imports') for features that are built-in a language 
 
 M doesn't have any of this. C's use of headers is replace by a module system. Where M does retain textual includes, the it is a straight file name following simpler rules.
 
-**75** As well as `include` that M rarely still uses (eg. to incorporate generated code), M has `strinclude`. 
+**75** As well as `include` that M rarely still uses (eg. to incorporate generated code), M has `sinclude`. 
 This incorporates any text file into a program, as though it was a string constant. This is used, for example, to bundle library sources into my compilers. If this program is called test.m, then this prints itself:
 ````
-proc start=
-    println strinclude "test.m"
+proc main =
+    println sinclude("test.m")
 end
 ````
 
-**76** There is also `bininclude` to incorporate small binary files; the result is suitable for initialising a byte array:
+**76** There is also `binclude` to incorporate binary files; the result is suitable for initialising a byte array:
 ````
-[]byte data = bininclude "zip.exe"
+[]byte data = binclude("zip.exe")
 ````
 
 **77** M has a full module import system. Imported modules can be imported in any order, and circular and mutual imports are allowed.
@@ -449,9 +445,9 @@ do ... end
 ````
 **104** M's for-loops have an 'else' portion like Python. It is executed on normal termination (eg. when search fails) and not on a break.
 
-**105** C uses break and continue for an early exit from or (I assume) to proceed to the next iteration. M uses 'exit' and 'next' for those. However, in C it is not possible to break out of a loop, if currently inside switch statement inside the loop.
+**105** C uses break and continue for an early exit from or (I assume) to proceed to the next iteration. M uses 'exit' and 'nextloop' for those. However, in C it is not possible to break out of a loop, if currently inside switch statement inside the loop.
 
-**106** M additionally has a `redo` loop control, to rerun the current iteration
+**106** M additionally has a `redoloop` control, to rerun the current iteration
 
 **107** All of M's loop controls work with nested loops. You need to specify the loop number, 1 (or omitted) being the current level. Most of the time however, they will use, for example, 'exit' for the innermost loop, or 'exit all' (same as 'exit 0') for the outermost.
 
@@ -516,6 +512,13 @@ end
 It's a plug-in replacement for Switch, but X can be any type for which '=' is defined. And when-expressions can be runtime expressions. This version is implemented with sequential testing.
 
 **120** Both M's `Switch` and `Case` expressions have looping versions: `Doswitch` and `Docase`. Here it is necessary to exit the loop using `exit, goto, return or stop`.
+
+**120A** `doswitch` also comes as `doswitchu`, which uses more efficient multi-site dispatching which helps with branch prediction.
+
+**120A** There is also `doswitchx(table)`, which does away with the extra indexing operation, as `table` is set up to point to its jumptable
+
+The alternate for 120A/B is to use explicit label pointers and 'computed goto', only in gnu C.
+
 
 **121** M has a 'long' form of if-statement written as:
 ````
@@ -653,7 +656,7 @@ M has only 5 levels for the same operators, grouped into these categories
 
 **141** Another special constant is `nil`, which has type 'ref void', used to initialise pointers. Unlike C, pointers cannot be initialised with zero.
 
-**142** A big feature of M is named constants. C either used `#define` (very crude; no scoping; need to reevaluate each instance); or `enums` (limited to int32 types); or `const int` (don't count as compile-time expressions). In M:
+**142** A big feature of M is named constants. C either used `#define` (very crude; no scoping; need to reevaluate each instance); or `enums` (limited to int32 types); or `const int` (not counted as compile-time expressions). In M:
 ````
 const a     = 100          # type is infered
 const int b = 200
@@ -790,11 +793,13 @@ char S[] = "ABC";
 char* T  = "ABC";
 ````
 S and T are different types, yet the RHS is the same type; how is that possible? Well, M is stricter and it is not possible. `"ABC"` has type `char* (ref char)`
-not `char[]` or `[]char`. S needs to be initialised in M as follows:
+not `char[]` or `[]char`. S can be initialised in M as either:
 ````
-[]char S = a"ABC"        # equivalent to ('A','B','C')
-[]char S = z"ABC"        # equivalent to ('A','B','C',0)
+[]char S = s"ABC"        # equivalent to ('A','B','C')
+[]char S = b"ABC"        # equivalent to ('A','B','C',0)
 ````
+
+A normal `(...)` expression can still be used, but would be more laborious.
 
 **166** C has some very quirky behaviour initialising complex data of nested structs and arrays. Normally you'd write the data
 organised with `{...}` into nested lists that match the type of the data. If you have too many {,}, it will complain. But if you have too few, it doesn't! Actually no matter how complex, how deeply tested T is here, this initialisation will always work:
@@ -811,7 +816,7 @@ T A = empty   # these all do the same (new feature so allowing alternate possibi
 A := empty
 clear A
 ````
-
+(`empty` has now been removed, only `clear` remains.
 **168** My systems languages have always had inline assembly; M is no exception. Some C compilers have it, but they tend to use the gcc approach, which is very complicated and very ugly (I think you also need to enter the assembly code as strings or something). In M it's more like:
 ````
 assem
@@ -821,6 +826,8 @@ assem
 end
 ````
 No problems with stepping on the compiler's toes regarding register usage, as optimisation (such as it is) is turned off for functions that use inline assembly. (Usually, the whole body of a function will be assembly anyway.)
+
+(I'm working on a scheme to to allow inline assembler to work with 'optimised', that is, work with its register allocator)
 
 **169** M can extract the types of variables, print them out, compare them etc. Example:
 ````
@@ -834,61 +841,52 @@ No problems with stepping on the compiler's toes regarding register usage, as op
     println x.type = i64.type  Shows 0
 ````
 
-**170** Since #171 uses `{,}`, I need to explain what M uses braces for. They were reserved to enclose deferred code, code which is executed later rather than when encountered. For example, lambda functions, but I never got round to that. However, a function body is also deferred code (not executed until called), so `{...}` is sometimes used in one-line functions.
+**170** Since #171 uses `{,}`, I need to explain what M uses braces for. They were reserved to enclose deferred code, code which is executed later rather than when encountered. For example, lambda functions, but I never got round to that.
+(But that syntax *is* used the companion Q language.)
 
-**171** M has an extra attribute called 'exportq'. This also exports functions from a program, but here it is to the companion scripting language. If I wrote a function in M like this (a real one would be something that would benefit from native code):
-````
-exportq function add(int x,y) = {x+y} 
-````
-The in dynamic, interpreted code, I can call this native code function as one of:
-````
-c := host.add(a,b)
-# or:
-add := host.add
-c := add(a,b)
-````
-The compiler will generate all the type and interface info needed for the interpreter to pick up and do all the checks and conversions needed.
-
-Nothing much to do with C, except that with *my* language, I can do this stuff; with C, I can't.
+**171** M has an extra attribute called 'exportq'. (Feature has been dropped.)
 
 **172** M has an incredibly useful feature that I call Tabledata. Normally used to define a set of enums, and parallel arrays of data at the same time. Or sometimes just parallel arrays. The nearest C might have is the very ugly x-macros.
 
 A good example is the [ax_tables.m](Examples/ax_tables.m). The "$" you see there is a device that picks up the last
 enum name as a string literal.
 
+(The feature has been split into `enumdata` (enumerations + parallel arrays) and `tabledata` (parallel arrays only).
+
 **173** C is designed for separate compilation: compile all the modules, then use a linker. And actually, most projects use a makefile, or Cmake, or any of a set of increasingly bigger and more complex tools.
 
 M is very different: the only tool is the compiler, and the only input it needs is one file: the name of the lead module. No build system needed. This is how the current M compiler (bb.exe) builds itself:
 ````
-C:\bx>\m\bb bb
-Compiling bb.m---------- to bb.exe
+C:\bx>\m\mm mm
+Compiling mm.m to mm.exe
 ````
-Even on my slowish PC, this takes 0.1 seconds (or 0.11 seconds if I want it optimised). This is for 35 modules, 42Kloc, generating a 500KB executable.
+Even on my slowish PC, this takes under 0.1 seconds. This is for 35+ modules, 30+Kloc, generating a 400KB executable.
 
 **174** The M compiler also has an option to combine all sources of a project, and any support files, into a single .ma source file. This format is handy to upload to Github for example, as backup. Unlike ZIP, it is not binary, and bb.exe can build it directly in that format:
 ````
-C:\bx>\m\bb -ma bb
-Compiling bb.m---------- to bb.ma         # create the 1-file version
+C:\bx>\m\mm -ma mm
+Compiling mm.m mm.ma         # create the 1-file version
 
-C:\bx>\m\bb bb.ma                         # compile that version
-Compiling bb.m---------- to bb.exe
+C:\bx>\m\mm mm.ma            # compile that version
+Compiling mm.m---------- to mm.exe
 ````
 
 **175** For generating DLL shared libraries from a project, bb.exe uses the -dll option:
 ````
-C:\bx>\m\bb -dll bignum
+C:\bx>\m\mm -dll bignum
 Compiling bignum.m------ to bignum.dll
-Writing exports file to bignum.exp
+Writing exports file to bignum_lib.m
 ````
 This also writes an exports file, which is an M module specifying bindings, that I'd have to write manually for other languages.
 To use this library in a project, I write:
 ````
-importx bignum
+module bignum_lib
 ````
-This picks up bignum.exp (otherwise 'import bignum' would simply import bignum.m, incorporating the implementation directly instead
-of using it as an external library).
+This picks up bignum_lib.m (otherwise 'module bignum' would simply import bignum.m itself, incorporating the implementation directly instead of using it as an external library).
 
 **176** M has a form of Doc-strings, but it needs finishing off. Doc-strings are special comments that start with "#" rather than "!", just before and within any function. With the -docs option, all functions with doc-strings are output to a text file. This lists all the function signatures and all the doc-string comments.
+
+(Temporarily removed)
 
 **177** M has a form of runtime, dynamic library interface (what C programs might use the complex LIBFF for). I had intended to create special language features for it, but at the moment it exists as a standard library 'osdll', and implemented with inline ASM.
 
@@ -938,7 +936,8 @@ So everything is conveniently the same size.
 **183** C has a preprocessor that allows conditional compilation of code. M has no conditional code except at the module
 level; there is a scheme to map one module to another depending on certain flags.
 
-Mapping is used internally anyway, so with 'import oslib', 'oslib' is mapped to either mwindows.m or mlinux.m depending on target. (At the moment I'm concentrating on Windows.) But this is available to user programs too via a directive.
+(This is dropped. Different configurations of programs either use a different lead module with alternate
+lists of modules, or modules can be commented in or out.)
 
 This means a freedom from sourcecode plastered with #if and #ifdef blocks.
 
@@ -951,15 +950,14 @@ can write (s1; s2; s3), they can be as big as needed. But macro bodies cannot de
 inline assembler)
 
 **185** M has a companion scripting language called 'Q'. It is dynamically typed and interpreted. Its syntax is pretty much
-the same as M's syntax. It is currently being reimplemented to be better suited for embedding. Both have special features
-for them to work closely together (eg. 'exportq' mentioned earlier)
+the same as M's syntax. It is currently being reimplemented to be better suited for embedding.
 
 Usually such pairings of languages are very different: C and Lua; C and Python, with interfacing between them more awkward.
 Partly because C has no knowledge of their needs.
 
 **186** M uses the `$` symbol for odd jobs; currently it has about 3 meanings depending on context. Not a very elegant feature, I'd prefer to keep quiet about it, but...
 ````
-$ used in tabledata blocks will turn the last defined enum name into a string literal
+$ used in enumdata blocks will turn the last defined enum name into a string literal
 $ inside an array index expression like A\[$\] is equivalent A\[A.upb\]; it's the index of the last element.
 $ inside list of print items (most usefully at one end) emits a space (using " " would interact with the logic that
 automatically spaces items out)
@@ -968,15 +966,15 @@ I guess it's a little like 'static' in C.
 
 **187** One more thing about $ is that M allows it in identifiers. It is a far better choices for reserved or internal identifiers as it is more visible than _ or __ favoured by C. Many C compilers accept $, but some don't (tcc) or only in certain parts of an identifier (lccwin).
 
-**188** C programs use a main() entry point; M normally uses start() or also main(), which never take parameters:
+**188** C programs use a main() entry point; M normally does the same but it never take parameters:
 ````
-proc start =
+proc main =
     println "Hello, World!"
 end
 ````
-Command line parameters are accessed via globals 'nsysparams' and 'sysparams'. (main() was useful when the compiler generated C source, then C compilers didn't understand 'start').
+Command line parameters are accessed via globals 'nsysparams' and 'sysparams'.
 
-**189** If an M module includes a function with the name $init, then it is automatically called from the program start-up code. (However, module order is often indeterminate, so you don't know which is called first.)
+**189** If an M module includes a function with the name `start`, then it is automatically called from the program start-up code.
 
 **190** M has primitive OO features in form of encapsulation: records can contain, not just members, but also named constants, types and functions:
 ````
@@ -995,31 +993,40 @@ d.printd("-")
 
 **192** There is a special **istrue** operator, where istrue X is equivalent to !!X in C.
 
-**193** There is a `sign` operator, applied to numeric expressions, which returns -1, 0, or 1. Sometimes called the spaceship operator in other languages. Here it is written as sign(x), and its type matches x (either int or float). (Correction, the 'spaceship' operator appears to take two operands, as in: a <=> b. In M the equivalent would be sign(a-b).)
+**193** There is a `sign` operator, applied to numeric expressions, which returns -1, 0, or 1.
 
 **194** Enums in M are usually 'open' names as in C. So that the two 'green' enums for example in:
 ````
 enum {red, green, blue};
 enum {red, amber, green};
 ````
-will clash. In M, enums can be defined under an umbrella type:
+will clash. In M, enums can be defined under an umbrella record type:
 ````
-type rgb = enum(red, green, blue)
-type lights = enum (red, amber, green)
+record rgb =
+	enumdata =
+		red, green, blue
+	end
+end
+
+record lights =
+	enumdata =
+		red, amber, green
+	end
+end
 ````
-But now, you need to write rgb.green or lights.green to disambiguate (the type system really is not so sophisticated as it can work this out from context).
+But now, you need to write `rgb.green` or `lights.green` to disambiguate (the type system really is not so sophisticated as it can work this out from context).
 
 **194** There is a 'clamp' operator, used as `clamp(x, a,b)` which returns `x` but adjusted to be within the range `a..b` inclusive.
 
 **195** In C, you can legally write like this:
 ````
-a+b;
-a==b;
+a + b;
+a == b;
 ````
 A compiler may or may not warn. M doen't allow this. In order to evaluate such an expression (for the purpose of checking an expression, or to get it loaded into a register, or any other purpose) you have to write them as:
 ````
-eval a+b
-eval a=b
+eval a + b
+eval a = b
 ````
 
 **196** Both languages allows hex floating constants (M also in binary and other bases). But C does it in a peculiar way:
@@ -1031,6 +1038,9 @@ Why the difference? In M, this means `0x100*(16**0x10)`, or `256*(16**16)` as yo
 
 But in C, it means `0x100*(2**10)`, or `256*1024`. So although it supposedly in hex, the exponent is decimal, and represents a power of two!
 
+(M now longer allows non-decimal float constants. But the point remains that 3 different bases are involved
+in C's version.)
+
 **197** C has reserved words like most languages, and like M, which cannot be used as identifiers. But M has a special escape for such names:
 ````
 int `int, `for, `if;
@@ -1038,13 +1048,11 @@ int `int, `for, `if;
 ````
 (The \` prefix wil also preserve case, allowing `abc`, `Abc` and `ABC` to be distinct identifiers just like C. This is sometimes used for external interfaces. It is also used for automatic translators from C into M.)
 
-**198** #173 stated that the M only needs one input file to build, which is only most true. In the case of external libraries (it can only dynamically link to DLLs) it needs the names of the DLL files. If those names directly appear as in a 'importdll raylib' block that declares the imported functions, then raylib.dll, as it is here, will be used.
+**198** #173 stated that the M only needs one input file to build. It used to need also the names of external
+DLL libraries, but those are not brought inside the program, and are declared with the project info in
+the lead module.
 
-But in a more complex situation, the name used in 'importdll' can be a dummy one, and any DLLs are specified elsewhere. This can be with this special declaration:
-````
-cclib opengl32,glu32,glut32
-````
-(Or, failing all that, DLLs can simply be listed on the compiler command line. Nearly always however, building a program is 'mm file'.)
+Even this is optional if the DLLs needed can be infered from the `importdll` blocks.
 
 **199** This one may seem rather trivial, but I find it incredibly handy and miss it with other languages. In #198 I used the example:
 ````
@@ -1066,13 +1074,3 @@ which just return true or false. Very easy. Sure you can trivially emulate these
 # define STREQ(s1, s2) ((strcmp (s1, s2) == 0))
 ````
 Seems to me that someone else thinks this is a good idea!
-
-### Update
-
-Since the above was written, some M features have been dropped or have changed. They include:
-
-* 128-bit support
-* Arbitrary number bases for integer and float literals. I still have base 2 and 16, and arbitrary bases 2-16 can still be used for printing
-* Regarding (40), mixing signed and unsigned, M has changed, arguably becoming even simpler: *all* combinations are evaluated as `i64` except for `u64 op u64` which is done as `u64`.
-
-### So, Does C Do Anything Better?
