@@ -1,6 +1,8 @@
 ## Q Interpreter Benchmarks
 
-This is testing old and new versions of my Q interpreter ('A' and 'B' in the Reddit post).
+(Benchmark results need updating as the 'B' has now evolved.)
+
+This is testing old and new versions of my Q interpreter 'A' and 'B':
 
 ### The Benchmarks
 
