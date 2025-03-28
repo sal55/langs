@@ -1074,5 +1074,4 @@ Since the above was written, some M features have been dropped or have changed. 
 * 128-bit support
 * Arbitrary number bases for integer and float literals. I still have base 2 and 16, and arbitrary bases 2-16 can still be used for printing
 * Regarding (40), mixing signed and unsigned, M has changed, arguably becoming even simpler: *all* combinations are evaluated as `i64` except for `u64 op u64` which is done as `u64`.
-
-### So, Does C Do Anything Better?
+ 
