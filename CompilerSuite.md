@@ -49,7 +49,7 @@ All tools run on and for x64 with Windows.
                          └────> .nasm File (NASM syntax)                      
 ````
 
-**'QQ' Q Interpreter**
+**'QQ' Q Interpreter (QQ7)**
 ````
 .q/.qa ───> [qq.exe] ──┬────> Run (compile to internal bytecode and immediately interpret)
               ↑	       └────> .qa File (create single amalgamated source file)
@@ -71,11 +71,11 @@ This version is retained because it can process multiple ASM input files into on
 
 All the above programs are single-file, self-contained executables, and all are under 1MB. The current set of programs are:
 ````
-mm.exe        388 KB           Includes std library sources
+mm.exe        403 KB           Includes std library sources
 aa.exe        121 KB
 bcc.exe       321 KB           Includes std headers (windows.h is separate)
-qq.exe        553 KB           Includes std lib sources
-pc.exe        183 KB           Fully loaded (smaller configurations can be done, eg. interpret only)
+qq.exe        508 KB           Includes std lib sources
+pc.exe        184 KB           Fully loaded (smaller configurations can be done, eg. interpret only)
 runmx.exe      57 KB           (Includes diagnostic display)
 ````
 The above are built with MM7, which can now match MM6 in code quality.
@@ -86,3 +86,6 @@ All products are written in my M language and built with **MM**. Single-file sou
 
 Building all of the above executables from source takes under 0.4 seconds in total.
 
+### Versions
+
+All products will share the same major version number 7. This ensures that can all work together.
