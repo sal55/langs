@@ -14,16 +14,18 @@ basic           Simple BASIC interpreter running a loop
 bigint          Simple big-integer library (implemented in Q; not built-in bignums)
 binary          Binary trees (N=15)
 bitops          Count '1' bits in 256 bit-patterns, 10.5K times
+blur            Blurring 1x20Mpix linear greyscale image (adapted from image library)
 bubble          Bubble sort (N=25, 50K times)
 clex            Simple C Lexer, input is 980Kloc/22MB fike
 collatz         Work out steps for N up to 300K
+comments        Strip comments from 8MB C file and write out result
 cray            Simple ray-tracing (64x64 greyscale image, write PGM)
 fann            Fannkuch benchmark (N=9, twice)
 fib             Fibonacci for N in 1..34
 for             Empty for-loop (N=400M)
 jpeg            JPEG decoder; input is 84KB/0.5Mpixel
 kiss64          PRNG test
-manboy          Man-or-boy test (N=0 to 13, 200 times)
+manboy          'Man-or-boy' closure emulation test (N=0 to 13, 200 times)
 mandelbrot      Create fractal over 250x400 greyscale image, write PGM
 nbody           NBody test (N=128K)
 nsieve          Sieve benchmark (for larger N=3M)
@@ -33,11 +35,14 @@ poly            ?
 pythag          Find Pythagorean triplets up to N=400
 queens          ?
 readx           (Dump/disassemble EXE file to text file; input is 400KB file)
+rubik           Represent Rubik's cube and apply 1M 90-deg rotations of one face
+runint          Interpret Pascal P-code program evaluating Fibonacci for N=1..27
 search          ?
 shell           Shell sort
 sieve           Sieve benchmark (small N of 10000, times 1000)
 spectral        'Spectral' benchmark
 sqrt            ?
+sud             Solve Sudoku puzzle (200 times)
 to              Empty to-loop (N=300M)
 while           While-loop (N=500M)
 ````
@@ -45,48 +50,102 @@ while           While-loop (N=500M)
 
 ### Results
 
-(Note the ordering of A2/A3 columns is reversed to how they are shown in Reddit post.)
+The tests are done somewhat differently than before:
 
-````
-Runtimes are in milliseconds:                    Relative to A1 (bigger is faster):
+* AA represents the old Q interpreter usng the fastest -asmopt ASM-assisted dispatcher
+* BB is the new interpreter with 100% HLL code and using new 'doswitchx' statement (built with my MM compiler)
+* DD is the same code, transpiled to C, and compiled with gcc-O3
 
-              A1     A3     A2     B1     B2       A1     A3     A2     B1     B2
-           ----------------------------------------------------------------------
-ack         2835   2601    382    538    460 |   1.00   1.09   7.42   5.27   6.16
-basic       1522   1039    944    991    663 |   1.00   1.46   1.61   1.54   2.30
-bigint      1507   1085    491    585    445 |   1.00   1.39   3.07   2.58   3.39
-binary      1569   1241    632    882    570 |   1.00   1.26   2.48   1.78   2.75
-bitops      1648   1382    444    569    601 |   1.00   1.19   3.71   2.90   2.74
-bubble      3413   2288    585   1085    695 |   1.00   1.49   5.83   3.15   4.91
-clex        2131   1617    647    851    600 |   1.00   1.32   3.29   2.50   3.55
-collatz     2694   2039    866    819    773 |   1.00   1.32   3.11   3.29   3.49
-cray         600    507    445    397    273 |   1.00   1.18   1.35   1.51   2.20
-fann        1803   1304    507    741    445 |   1.00   1.38   3.56   2.43   4.05
-fib         2241   1585    475    648    601 |   1.00   1.41   4.72   3.46   3.73
-for         1803   1601    866    882   1101 |   1.00   1.13   2.08   2.04   1.64
-jpeg        1210    898    397    491    398 |   1.00   1.35   3.05   2.46   3.04
-kiss64      2600   1757    460    757    679 |   1.00   1.48   5.65   3.43   3.83
-manboy      1100    898    741    632    491 |   1.00   1.22   1.48   1.74   2.24
-mandelbrot  1538   1164    381    539    350 |   1.00   1.32   4.04   2.85   4.39
-nbody       1304    976    694    819    538 |   1.00   1.34   1.88   1.59   2.42
-nsieve      1007    820    413    444    398 |   1.00   1.23   2.44   2.27   2.53
-neg          460    272     70    194    210 |   1.00   1.69   6.57   2.37   2.19
-nums        1241    929    397    554    382 |   1.00   1.34   3.13   2.24   3.25
-poly        1210    866    429    538    398 |   1.00   1.40   2.82   2.25   3.04
-pythag      2975   2648    491    710    523 |   1.00   1.12   6.06   4.19   5.69
-queens      1506   1148    257    366    335 |   1.00   1.31   5.86   4.11   4.50
-readx        554    382    382    381    289 |   1.00   1.45   1.45   1.45   1.92
-search      1319   1038    210    398    335 |   1.00   1.27   6.28   3.31   3.94
-shell       1881   2320    475    617    444 |   1.00   0.81   3.96   3.05   4.24
-sieve       2522   1507    585    788    617 |   1.00   1.67   4.31   3.20   4.09
-spectral    1350    898    257    428    288 |   1.00   1.50   5.25   3.15   4.69
-sqrt        1367    975   1007    991    914 |   1.00   1.40   1.36   1.38   1.50
-to          1335   1225    710    679    632 |   1.00   1.09   1.88   1.97   2.11
-while       1929   1600    273    319    273 |   1.00   1.21   7.07   6.05   7.07
-           ----------------------------------------------------------------------
-Totals:    52174  40610  15913  19633  15721
-Averages:                                        1.00   1.32   3.77   2.76   3.47
+BB and DD are tested separately against AA. Raw runtimes in msec are shown, then AA result is normalised to 1.0, and the BB/DD result is shown relative to that; bigger is faster:
 ````
+                       AA     BB       AA     BB
+Running: ack          382    413 |   1.00   0.92
+Running: basic        898    991 |   1.00   0.91
+Running: bigint       491    601 |   1.00   0.82
+Running: binary       632    960 |   1.00   0.66
+Running: bitops       428    539 |   1.00   0.79
+Running: blur        1381   1351 |   1.00   1.02
+Running: bubble       585   1148 |   1.00   0.51
+Running: clex         694    694 |   1.00   1.00
+Running: collatz      882    804 |   1.00   1.10
+Running: comments     569    632 |   1.00   0.90
+Running: cray         445    413 |   1.00   1.08
+Running: fann         522    741 |   1.00   0.70
+Running: fib          476    491 |   1.00   0.97
+Running: for          835    867 |   1.00   0.96
+Running: kiss64       428    679 |   1.00   0.63
+Running: manboy       710    694 |   1.00   1.02
+Running: mandelbrot   398    522 |   1.00   0.76
+Running: nbody        648    726 |   1.00   0.89
+Running: nsieve       381    429 |   1.00   0.89
+Running: neg           70    194 |   1.00   0.36
+Running: nums         429    538 |   1.00   0.80
+Running: poly         460    475 |   1.00   0.97
+Running: pythag       445    663 |   1.00   0.67
+Running: queens       288    335 |   1.00   0.86
+Running: readx        351    382 |   1.00   0.92
+Running: rubik       1288   1538 |   1.00   0.84
+Running: runint       772   1070 |   1.00   0.72
+Running: search       194    460 |   1.00   0.42
+Running: shell        429    616 |   1.00   0.70
+Running: showg        413    445 |   1.00   0.93
+Running: sieve        569    726 |   1.00   0.78
+Running: spectral     288    382 |   1.00   0.75
+Running: sqrt         975    851 |   1.00   1.15
+Running: sud         1507   1757 |   1.00   0.86
+Running: to           678    679 |   1.00   1.00
+Running: while        257    319 |   1.00   0.81
+
+Totals:             21198  25125
+
+Averages:                            1.00   0.84
+````
+
+Now for DD:
+````
+                       AA     DD       AA     DD
+Running: ack          398    366 |   1.00   1.09
+Running: basic        913    647 |   1.00   1.41
+Running: bigint       460    414 |   1.00   1.11
+Running: binary       616    538 |   1.00   1.14
+Running: bitops       476    600 |   1.00   0.79
+Running: blur        1429   1069 |   1.00   1.34
+Running: bubble       585    726 |   1.00   0.81
+Running: clex         694    616 |   1.00   1.13
+Running: collatz      835    788 |   1.00   1.06
+Running: comments     585    398 |   1.00   1.47
+Running: cray         460    257 |   1.00   1.79
+Running: fann         475    460 |   1.00   1.03
+Running: fib          492    428 |   1.00   1.15
+Running: for          882   1038 |   1.00   0.85
+Running: kiss64       429    616 |   1.00   0.70
+Running: manboy       695    413 |   1.00   1.68
+Running: mandelbrot   397    320 |   1.00   1.24
+Running: nbody        663    492 |   1.00   1.35
+Running: nsieve       366    397 |   1.00   0.92
+Running: neg           54    179 |   1.00   0.30
+Running: nums         397    351 |   1.00   1.13
+Running: poly         444    382 |   1.00   1.16
+Running: pythag       444    554 |   1.00   0.80
+Running: queens       273    288 |   1.00   0.95
+Running: readx        366    288 |   1.00   1.27
+Running: rubik       1288    882 |   1.00   1.46
+Running: runint       757    757 |   1.00   1.00
+Running: search       225    289 |   1.00   0.78
+Running: shell        475    429 |   1.00   1.11
+Running: showg        397    335 |   1.00   1.19
+Running: sieve        523    772 |   1.00   0.68
+Running: spectral     288    226 |   1.00   1.27
+Running: sqrt         960    835 |   1.00   1.15
+Running: sud         1507   1585 |   1.00   0.95
+Running: to           679    679 |   1.00   1.00
+Running: while        257    272 |   1.00   0.94
+
+Totals:             21184  19686
+
+Averages:                            1.00   1.09
+````
+
 ### Comparisons with CPython 3.14 and Lua 5.41
 
 The following were also tested under CPython 3.14 with the same parameters:
@@ -127,30 +186,4 @@ while       2.9
 ### Test Environment
 * Windows 11
 * AMD Ryzen 3 x64 processor
-
-### Some of the benchmarks:
-````
-# to-loop
-proc main=
-    for i in 1..400 million do
-    end
-end
-
-# for-loop
-proc main =
-    to 300'000'000 do
-    od
-end
-
-# while-loop
-proc main=
-    i:=0
-    while i<100'000'000 do
-        ++i
-    end
-    println i
-end
-````
-
-(Q uses dedicated bytecodes for `to` and `for` loops, each needs only a single instruction per iteration. `while`, as written, uses 4 instructions, but the last three are optimised into a single compound instruction.)
 
