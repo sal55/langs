@@ -59,7 +59,7 @@ end
 
 export byte pc_userunpcl=0
 === pc_api.m 0 0 3/30 ===
-INT PCLSEQNO
+EXPORT INT PCLSEQNO
 int STSEQNO
 
 export pcl pcstart			!start of pcl block
@@ -209,22 +209,26 @@ export func pcl_writeasm(ichar filename=nil, int atype='AA')ichar=
 end
 
 export proc pcl_writeobj(ichar filename)=
-	phighmem:=2
+!	phighmem:=2
+
 	genmcl()
 	genss(1)
 
-	int tt:=clock()
+PHIGHMEM:=0
+CPL =PHIGHMEM
+
+	int tt:=os_clock()
 	writecoff(filename)
-	objtime:=clock()-tt
+	objtime:=os_clock()-tt
 end
 
 export proc pcl_writedll(ichar filename)=
 	phighmem:=2
 	genmcl()
 	genss()
-	int tt:=clock()
+	int tt:=os_clock()
 	writeexe(filename, 1)
-	exetime:=clock()-tt
+	exetime:=os_clock()-tt
 end
 
 export proc pcl_writeexe(ichar filename)=
@@ -232,9 +236,9 @@ export proc pcl_writeexe(ichar filename)=
 	genmcl()
 
 	genss()
-	int tt:=clock()
+	int tt:=os_clock()
 	writeexe(filename, 0)
-	exetime:=clock()-tt
+	exetime:=os_clock()-tt
 end
 
 export proc pcl_writemx(ichar filename)=
@@ -388,8 +392,6 @@ export func genlabel(int a)pcl p=
 	p:=newpcl()
 	p.labelno:=a
 
-MLABELNO MAX:=A
-
 	p.opndtype:=label_opnd
 	return p
 end
@@ -423,7 +425,10 @@ export func gendata(ref byte s, int length)pcl p=
 end
 
 export proc gencomment(ichar s)=
-	RETURN WHEN DOREDUCE			!comments suppressed as they get in the way
+	return when fregoptim or fpeephole		!will get skipped anyway
+!	RETURN WHEN DOREDUCE			!comments suppressed as they get in the way
+!STATIC INT CCC
+!CPL "COMMENT",++CCC
 	pc_gen(kcomment,genpcstrimm(s))
 end
 
@@ -625,7 +630,11 @@ end
 
 export proc pc_addplib(ichar name)=
 	if nplibfiles>=maxplibfile then perror("Too many libs") fi
-	plibfiles[++nplibfiles]:=pcm_copyheapstring(name)
+
+!CPL "ADDPLIB",NAME
+
+!	plibfiles[++nplibfiles]:=pcm_copyheapstring(name)
+	plibfiles[++nplibfiles]:=pcm_copyheapstring(changeext(name,""))
 end
 
 export proc pc_defproc(psymbol d, int mode=tpvoid, isentry=0, threaded=0)=
@@ -983,8 +992,8 @@ export int assemtype='AA'
 
 GLOBAL INT PPSEQNO
 
-!GLOBAL CONST DOREDUCE=1
-GLOBAL CONST DOREDUCE=0
+!!GLOBAL CONST DOREDUCE=1
+!GLOBAL CONST DOREDUCE=0
 
 GLOBAL CONST REDUCELABELS=1
 !GLOBAL CONST REDUCELABELS=0
@@ -998,6 +1007,7 @@ EXPORT ICHAR $PMODULENAME
 
 EXPORT [PCLNAMES.BOUNDS]INT PCLFLAGS
 
+EXPORT INT PSTARTCLOCK
 === pc_diags_dummy.m 0 0 5/30 ===
 global proc pshowlogfile=
 end
@@ -1045,9 +1055,12 @@ export proc pcl_reducetest=
 
 	nn:=pccurr-pcstart+1
 
-	labelmap:=pcm_allocz(mlabelno*u16.bytes)
+!CPL =REDUCELABELS
+	goto skip unless reducelabels
 
 	pc:=pcstart
+	labelmap:=pcm_allocz(mlabelno*u16.bytes)
+
 	while pc<=pccurr, ++pc do
 		case pc.opcode
 		when klabel then				!don't include these
@@ -1067,6 +1080,7 @@ export proc pcl_reducetest=
 		esac
 	od
 
+skip:
 	pc:=pcstart
 	newpc:=pcstart-1			!point to last copied instr (none to start)
 	seqno:=0
@@ -1081,13 +1095,14 @@ export proc pcl_reducetest=
 			pinfo.nmaxargs := max(pinfo.nmaxargs, nargs)
 		fi
 
-		if pc.mode=tpblock and pinfo then pinfo.hasblocks:=1 fi
+!		if pc.mode=tpblock and pinfo then pinfo.hasblocks:=1 fi
+		if pc.mode=tpblock and pinfo and pc.size<>16 then pinfo.hasblocks:=1 fi
 
 		case pc.opcode
 		when kcomment then
 
 		when klabel then
-			IF NOT REDUCELABELS THEN RECASE ELSE FI
+			if not reducelabels then recase else fi
 			if labelmap[pc.labelno] then
 				recase else
 			fi			!else skipped
@@ -1183,12 +1198,12 @@ export proc pcl_reducetest=
 			fi
 
 		esac
-skip:
+!skip:
 		++pc
 	od
 
 	pccurr:=newpc
-	pcm_free(labelmap, mlabelno)
+	pcm_free(labelmap, mlabelno) when reducelabels
 end
 
 === pc_run.m 0 0 7/30 ===
@@ -1232,7 +1247,7 @@ macro getswmax       = pc.maxlab
 macro isfloat        = ispfloat(getmode)
 macro issigned       = psigned[getmode]
 
-ref[]pcl labeltable
+global ref[]pcl labeltable
 
 global macro pcerror(a) = pcerrorx(pc, a)
 global macro pcerror2(a,b) = pcerrorx(pc, a,b)
@@ -1640,8 +1655,7 @@ IF PTR=NIL THEN PCERROR("ICALLF NIL PTR") FI
 		pc:=getlabel
 
 	when kijump    then
-		unimpl
-		steppc
+		pc:=pstack[sp--]
 
 	when kjumpcc   then
 		if ispfloat(getmode) then
@@ -2083,7 +2097,7 @@ IF PTR=NIL THEN PCERROR("ICALLF NIL PTR") FI
 		pci_storeptr(ptr, a, getmode)
 		steppc
 
-	when kdivto    then
+	when kdivto, kidivto    then
 		ptr:=pstack[sp--]
 		a:=pci_loadptr(ptr, getmode)
 		b:=stack[sp--]
@@ -2097,9 +2111,6 @@ IF PTR=NIL THEN PCERROR("ICALLF NIL PTR") FI
 		pci_storeptr(ptr, a, getmode)
 		steppc
 
-	when kidivto   then
-		unimpl
-		steppc
 
 	when kiremto   then
 		unimpl
@@ -2458,13 +2469,14 @@ PCERRORX(P,"FIX/DATA/MEM")
 end
 
 export proc pcl_runpcl=
-!	int tt:=clock()
+!	int tt:=os_clock()
 	int stopcode
 
 	loadlibs()
 
 	fixuppcl()
 
+CPL "COMPILE TO PCL:", OS_CLOCK()-PSTARTCLOCK
 	if entryproc=nil then
 		pcerrorx(pcstart,"No 'main' entry point")
 	fi
@@ -2553,6 +2565,9 @@ global func pci_getopnd(pcl p, ref i64 locals)i64 a =
 
 	when real_opnd, real32_opnd then
 		a:=int@(p.xvalue)
+
+	when label_opnd then
+		a:=cast(labeltable[p.labelno])
 
 	else
 		pcusopnd(p)
@@ -3126,7 +3141,7 @@ global proc genmcl=
 
 	IF FSHOWPCL OR FSHOWOPNDSTACK THEN CPL "********* ASM HAS PCL INFO *********" FI
 
-	int tt:=clock()
+	int tt:=os_clock()
 	inithandlers()
 	mclinit()
 
@@ -3156,16 +3171,16 @@ global proc genmcl=
 
 	mcldone:=1
 
-	mcltime:=clock()-tt
+	mcltime:=os_clock()-tt
 
 end
 
-FUNC CHECKFPUSED(MCLOPND A)int=
-	RETURN 0 WHEN A=NIL
-	if a.reg=rframe or a.regix=rframe then return 1 fi
-	0
-END
-
+!FUNC CHECKFPUSED(MCLOPND A)int=
+!	RETURN 0 WHEN A=NIL
+!	if a.reg=rframe or a.regix=rframe then return 1 fi
+!	0
+!END
+!
 proc convertpcl(pcl p)=
 
 !RETURN WHEN P.OPCODE IN [KCOMMENT]
@@ -3173,7 +3188,7 @@ proc convertpcl(pcl p)=
 
 	doshowpcl(p) when fshowpcl
 
-PCLFLAGS[P.OPCODE]++
+!PCLFLAGS[P.OPCODE]++
 
 	pmode:=p.mode
 	currpcl:=p
@@ -3184,6 +3199,7 @@ PCLFLAGS[P.OPCODE]++
 	px_handlertable[p.opcode]^(p)
 
 	[r0..r15]byte OLDREGSET
+	pair oldregsetpr @ oldregset
 	OLDREGSET:=REGSET
 	clear regset
 	clear xregset
@@ -3201,11 +3217,37 @@ PCLFLAGS[P.OPCODE]++
 		fi
 	od
 
-FOR R IN R0..R13 DO
-	IF OLDREGSET[R] AND NOT REGSET[R] AND NOT ISREGVAR[R] THEN
-		MCCODEX.REGFREED[R]:=1
-	FI
-OD
+	mccodex.regfreedpr.low ior:=oldregsetpr.low iand ((regsetpr.low ior isregvarpr.low) ixor invertbytes)
+	mccodex.regfreedpr.high ior:=oldregsetpr.high iand ((regsetpr.high ior isregvarpr.high) ixor invertbytes)
+!U64 A:=MC.REGFREEDPR.LOW
+
+
+!CP "//",MC.REGFREEDPR.LOW:"Z16H","..."
+
+!FOR R IN R0..R13 DO
+!	IF OLDREGSET[R] AND NOT REGSET[R] AND NOT ISREGVAR[R] THEN
+!!		MCCODEX.REGFREED[R]:=1
+!		MC.REGFREED[R]:=1
+!	FI
+!OD
+!FOR R IN R0..R13 DO
+!IF MC.REGFREEDPR.LOW<>0 OR MC.REGFREEDPR.HIGH<>0 THEN CPL "REGFREED NOT ZERO"
+!!MC.REGFREEDPR.LOW:"H"
+! FI
+!FOR R IN R0..r7 DO
+!MC.REGFREED[R]:=0
+!	IF OLDREGSET[R] AND NOT REGSET[R] AND NOT ISREGVAR[R] THEN
+!		MC.REGFREED[R]:=1
+!		MC.REGFREED[R]:=oldregset[r] iand ((regset[r] ior isregvar[r]) ixor 1)
+!		MC.REGFREED[R] IOR:=oldregset[r] iand ((regset[r] ior isregvar[r]) ixor 1)
+!		MC.REGFREED[R]:=oldregset[r] iand inot regset[r] iand inot isregvar[r]
+!	FI
+!OD
+!U64 B:=MC.REGFREEDPR.LOW
+!IF A<>B THEN
+!CPL "MISMATCH",A,B
+!FI
+!CPL A,B,A=B
 end
 
 proc inithandlers=
@@ -3465,9 +3507,22 @@ proc px_add*(pcl p) =
 ! Z' := Y + Z
 	mclopnd ax, bx
 
+!	ax:=loadopnd(yy, p.mode)
+!	bx:=getopnd(zz, p.mode)
+!	genmc((ispfloat(p.mode)|m_addss+ispwide(p.mode)|m_add), ax, bx)
+
 	ax:=loadopnd(yy, p.mode)
-	bx:=getopnd(zz, p.mode)
-	genmc((ispfloat(p.mode)|m_addss+ispwide(p.mode)|m_add), ax, bx)
+	if ispint(p.mode) then
+		if isimmload(zz) and pclopnd[zz].value=1 then
+			genmc(m_inc, ax)
+		else
+			bx:=getopnd(zz, p.mode)
+			genmc(m_add, ax, bx)
+		fi
+	else
+		bx:=getopnd(zz, p.mode)
+		genmc(m_addss+ispwide(p.mode), ax, bx)
+	fi
 
 	poppcl()
 end
@@ -3568,6 +3623,11 @@ proc px_jump*(pcl p) =
 	esac
 
 	genmc(m_jmp, mgenlabel(labno))
+end
+
+proc px_ijump*(pcl p)=
+	genmc(m_jmp, getopnd(zz, tpu64))
+	poppcl()
 end
 
 proc px_neg*(pcl p) =
@@ -4463,14 +4523,12 @@ end
 
 proc px_switchu*(pcl p) =
 ! L=jumptab; B=elselab; x/y=min/max values
-	int minlab, maxlab, jumplab, elselab, reg
+	int minlab, maxlab, jumplab, reg
 	mclopnd ax, bx
 
 	minlab:=p.minlab
 	maxlab:=p.maxlab
 	jumplab:=p.labelno
-	currpcl:=p+1
-	elselab:=currpcl.labelno
 
 	ax:=loadopnd(zz, pmode)
 
@@ -6267,6 +6325,9 @@ global proc copyblock(mclopnd ax,bx, int n, savedest=1)=
 		genmc(m_movdqu, rx, bx)
 		genmc(m_movdqu, ax, rx)
 
+!		genmc(m_movdqa, rx, bx)
+!		genmc(m_movdqa, ax, rx)
+
 		return
 	fi
 
@@ -6898,7 +6959,9 @@ const fuseregtable=1
 
 global const targetsize=8
 
-global int mclseqno
+!global int mclseqno
+EXPORT int mclseqno
+EXPORT int NMCLOPND
 
 [-1..10]mclopnd smallinttable
 [20]psymbol nametable
@@ -7008,7 +7071,7 @@ func newmclopnd:mclopnd a=
 !	a:=pcm_allocz(mclopndrec.bytes)
 	a:=pcm_allocnfz(mclopndrec.bytes)
 
-!++NMCLOPND
+++NMCLOPND
 	return a
 end
 
@@ -7659,6 +7722,11 @@ global func getopnd(int n, mode, reg=rnone)mclopnd ax =
 		ax:=getworkreg_rm(reg, mode)
 
 		genmc(m_lea, ax, mgenlabelmem(getstringindex(a.svalue)))
+
+	when label_opnd then
+		ax:=getworkreg_rm(reg, mode)
+
+		genmc(m_lea, ax, mgenlabelmem(a.labelno))
 
 	else
 error:
@@ -8356,6 +8424,19 @@ global proc peephole=
 					m.b:=mgenindex(areg:m.b.reg, offset: (m2.opcode=m_add|m2.b.value|-m2.b.value))
 					deletemcl(m2)
 				fi
+			when m_inc, m_dec then
+				if isreg(m.a) and m.a=m2.a and isreg(m.b) then
+					m.opcode:=m_lea
+					m.b:=mgenindex(areg:m.b.reg, offset: (m2.opcode=m_inc|1|-1))
+					deletemcl(m2)
+				fi
+			when m_jmp then
+				if isreg0(m.a) and isreg0(m2.a) then
+					m.opcode:=m_jmp
+					m.a:=m.b
+					m.b:=nil
+					deletemcl(m2)
+				fi
 			esac
 
 		when m_andx then
@@ -8516,7 +8597,7 @@ global proc genss(int obj=0)=
 
 	return when ssdone
 
-	sstime:=clock()
+	sstime:=os_clock()
 	initlib(mlabelno)
 
 	ss_zdatalen:=0
@@ -8562,7 +8643,7 @@ global proc genss(int obj=0)=
 	fi
 
 	ssdone:=1
-	sstime:=clock()-sstime
+	sstime:=os_clock()-sstime
 
 end
 
@@ -10606,7 +10687,10 @@ export record mclrec = !$caligned
 	end
 	u32 spare2
 
-	[r0..r15]byte regfreed		!1 indicates work-register freed after this instr
+	union
+		[r0..r15]byte regfreed		!1 indicates work-register freed after this instr
+		pair regfreedpr
+	end
 end
 
 export enumdata [0:]ichar valtypenames =
@@ -11225,11 +11309,20 @@ global int maxregvars, maxxregvars				!no. reg vars available
 
 global int xregmax
 
+
 global [r0..r15]byte regset			!register in-use flags: 0/1: free/in-use
 global [r0..r15]byte xregset		!same for xregs
 
 global [r0..r15]byte isregvar
 global [r0..r15]byte isxregvar
+
+global record pair =
+	u64 low, high
+end
+
+global pair regsetpr @ regset
+global pair isregvarpr @ isregvar
+global const u64 invertbytes = 0x0101'0101'0101'0101
 
 global [r0..r15]byte usedregs		!1 means used during proc
 global [r0..r15]byte usedxregs		!1 means used during proc
@@ -11602,8 +11695,11 @@ const useintelregs=0
 !const showsizes=1
 const showsizes=0
 
-const showfreed=1
-!const showfreed=0
+!const showfreed=1
+const showfreed=0
+
+!const fextendednames=1			!include module name in qualified names
+const fextendednames=0
 
 [8, r0..r15]ichar nregnames
 
@@ -11727,7 +11823,7 @@ global proc strmcl(ref mclrec mcl)=
 		return
 
 	WHEN M_TRACE THEN
-		ASMSTR(SINCLUDE("c:\\cx\\trace.aa"))
+		ASMSTR(SINCLUDE("c:\\px\\trace.aa"))
 
 		RETURN
 
@@ -12010,8 +12106,11 @@ global func getdispname(psymbol d)ichar=
 
 	if d.reg then
 
-		fprint @str,"##R.#", (fpshortnames|""|"`"),(pfloat[d.mode]|"X"|""), (fpshortnames|d.name|getfullname(d))
-!		fprint @str,"##R.#.#", (fpshortnames|""|"`"),(pfloat[d.mode]|"X"|""), $PMODULENAME,(fpshortnames|d.name|getfullname(d))
+		IF FEXTENDEDNAMES THEN
+			fprint @str,"##R.#.#", (fpshortnames|""|"`"),(pfloat[d.mode]|"X"|""), $PMODULENAME,(fpshortnames|d.name|getfullname(d))
+		else
+			fprint @str,"##R.#", (fpshortnames|""|"`"),(pfloat[d.mode]|"X"|""), (fpshortnames|d.name|getfullname(d))
+		fi
 
 		return str
 	fi
@@ -12668,6 +12767,7 @@ proc writeoptheader=
 	header.imagesize:=imagesize
 	header.headerssize:=sectiontable[1].rawoffset
 	header.subsystem:=3
+!	header.subsystem:=2
 
 	header.stackreserve:=4194304
 	header.stackcommit:=2097152
@@ -14039,6 +14139,8 @@ global proc alloclibdata(ref librec lib)=
 	ref byte p
 
 	lib.zdataptr:=pcm_allocz(lib.zdatasize)
+!CPL "RUN/MX: NO ALLOCZ"
+!	lib.zdataptr:=pcm_alloc(lib.zdatasize)
 
 	tablesize:=lib.nimports*16			!add in thunk table+address table
 	n:=lib.codesize
@@ -14733,6 +14835,7 @@ int nlocals
 proc main=
 	ichar source
 
+CPL "HI THERE"
 	getinputoptions()
 
 	println "Processing", inputfile, "to", outputfile

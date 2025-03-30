@@ -710,6 +710,8 @@ global proc alloclibdata(ref librec lib)=
 	ref byte p
 
 	lib.zdataptr:=pcm_allocz(lib.zdatasize)
+!CPL "RUN/MX: NO ALLOCZ"
+!	lib.zdataptr:=pcm_alloc(lib.zdatasize)
 
 	tablesize:=lib.nimports*16			!add in thunk table+address table
 	n:=lib.codesize

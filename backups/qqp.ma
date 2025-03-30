@@ -2,22 +2,14 @@
 === qqp.m 0 0 1/44 ===
 !project =
 	module qq_cli
-!	module qq_embed
-	module qq_api
-!	module qq_cli
+
 	module qq_arrays
 	module qq_bits
 	module qq_calldll
-
-	module qq_decimal
-
 	module qq_decls
+	module qq_decimal
 	module qq_dicts
 
-	module qq_jhandlers
-!	module qq_jhandlers_hll
-!
-	module qq_khandlers
 	module qq_host
 	module qq_lex
 	module qq_lib
@@ -25,20 +17,21 @@
 	module qq_modules
 	module qq_names
 
-	module qq_optim
-!	module qq_optimdummy
-
 	module qq_packed
 	module qq_parse
-	module qq_print
+	module qq_PCLTABS
 	module qq_pclgen
 	module qq_pcllib
+	module qq_print
 	module qq_records
 	module qq_resolve
+
+	module qq_runx
+
+	module qq_runaux
+
 	module qq_sets
 	module qq_strings
-
-!	module qq_switch
 
 	module qq_syslibs
 !	module qq_syslibsdummy
@@ -47,10 +40,50 @@
 
 !	module qq_show
 	module qq_dummyshow
+
+!	module qq_showpcl
+	module qq_showpcldummy
 !
 	module qq_vars
 !end
 === qq_cli.m 0 0 2/44 ===
+GLOBAL INT NALLDOT
+GLOBAL INT NALLDOT1FIELD
+
+global const syslibname="sysp"
+!global const syslibname="minsys"
+
+global enumdata []ichar runnames =
+	(load_cc,		$),
+	(parse_cc,		$),
+	(names_cc,		$),
+	(gencode_cc,	$),
+	(fixup_cc,		$),
+	(run_cc,		$),
+end
+
+global byte fshowpcl1
+global byte fshowpcl2
+!global byte fshowpcl3
+global byte fshowast1
+global byte fshowast2
+global byte fshowst
+global byte fshowstflat
+global byte fshowtypes
+global byte foptimise=1
+global byte fwriteqa			!0, 1 or 2
+global byte fshowmodules
+global byte fallsp
+
+global byte runcode  = run_cc
+
+global ichar sourcestr
+
+global ichar inputfile
+
+global symbol allprocdefs, allstaticdefs
+
+ref strbuffer pclstr
 
 int cmdstartindex
 
@@ -63,12 +96,7 @@ proc main=
 
 	getinputoptions()
 
-!	if fverbose then
-!		println dispatchnames[dispatchtype],"Opt:",foptimise
-!	fi
-
 	readqabundle()
-INT TT:=CLOCK()
 	loadsyslib()
 
 	compile_sp(inputfile)
@@ -76,19 +104,16 @@ INT TT:=CLOCK()
 	if fallsp then
 		if fshowast1 and runcode=parse_cc then showast(nil, "AST1") fi
 		if fshowast2 and runcode>parse_cc then showast(nil, "AST2") fi
-		if (fshowpcl1 or fshowpcl2) and runcode=gencode_cc then showpcl(nil, 1) fi
-		if fshowpcl3 and runcode=fixup_cc then showpcl(nil, 3) fi
-	fi
+!		if fshowpcl2 and runcode=fixup_cc then showpcl(nil, 2) fi
+fi
 
 !run the stack of sps (laters sps will be run as they are compiled)
 
 	writeqafile()
 
-!	for i to nsubprogs do
-!		stopcode:=runprogram(subprogs[i])
-!	od
-	stopcode:=runqprogram(subprogs[nsubprogs])
-TT:=CLOCK()
+	for i to nsubprogs do
+		stopcode:=runqprogram(subprogs[i], i=nsubprogs)
+	od
 
 	showlogfile()
 
@@ -136,16 +161,10 @@ LOADERROR("DO BUILT-IN")
 
 !		dobuiltin_app(appstr)
 	elsif not inputfile then
-		println "Q5.2 Interpreter"
+		println "Q7.0 Interpreter"
 		println "Usage:"
 		println "	",,sysparams[1],"filename[.q]"
 		stop
-	fi
-
-	if dispatchtype in [debug_dispatch,fdebug_dispatch] then
-		hasbytecodes:=1
-	else
-		hasbytecodes:=0
 	fi
 
 	cmdstartindex:=paramno
@@ -162,66 +181,13 @@ proc do_option(int sw, ichar value)=
 		return
 	fi
 
-	case sw
-	when asmopt_sw then
-		foptimise:=1
-		dispatchtype:=asm_dispatch
-	esac
-
 end
-
-=== qq_api.m 0 0 3/44 ===
-global const syslibname="sysp"
-!global const syslibname="minsys"
-
-global enumdata []ichar runnames =
-	(load_cc,		$),
-	(parse_cc,		$),
-	(names_cc,		$),
-	(gencode_cc,	$),
-!	(optim_cc,		$),
-	(fixup_cc,		$),
-	(run_cc,		$),
-end
-
-global byte fshowpcl1
-global byte fshowpcl2
-global byte fshowpcl3
-global byte fshowast1
-global byte fshowast2
-global byte fshowst
-global byte fshowstflat
-global byte fshowtypes
-global byte foptimise=0
-global byte fwriteqa			!0, 1 or 2
-global byte fshowmodules
-global byte fallsp
-
-global byte runcode  = run_cc
-
-global ichar sourcestr
-
-global ichar inputfile
-
-global const maxstatic=11000
-global [maxstatic]variant statictable
-global [maxstatic]symbol staticdefs
-global int nstatics
-
-global const maxproc=11000				!used for fixups
-!global const maxproc=50000
-global [maxproc]ref int proctable
-global [maxproc]symbol procdefs
-global int nprocs
-
-ref strbuffer pclstr
 
 global proc compile_sp(ichar filename, source=nil)=
 	ichar qafile
 	isubprog sp
 	int a, b
 
-INT TT:=CLOCK()
 	sp:=loadsp(filename, source)
 
 	if runcode<parse_cc then return fi
@@ -252,35 +218,20 @@ INT TT:=CLOCK()
 
 	if fshowpcl1 and not fallsp then showpcl(sp,1) fi
 
-	if foptimise and dispatchtype=asm_dispatch then
-		for m in a..b do
-			optimise_module(m)
-		od
-		if fshowpcl2 and not fallsp then showpcl(sp,2) fi
-	fi
-
 	fixup_sp(sp)
+
+	if fshowpcl2 and runcode=fixup_cc and not fallsp then showpcl(sp,2) fi
 
 	resetcompiler()
 end
 
-global proc setcli(ref []ichar cmds, int ncmds)=
+proc setcli(ref []ichar cmds, int ncmds)=
 	for i to ncmds do
 		setcmdparam(i,cmds[i])
 	od
 end
 
-proc fixup_sp(isubprog sp)=
-	return when runcode<fixup_cc
-
-	for i:=sp.firstmodule to sp.lastmodule do
-		fixupmodule(modules[i])
-	od
-
-!	if fshowpcl3 and not fallsp then showpcl(sp,3) fi
-end
-
-global proc writeqafile=
+proc writeqafile=
 	[300]char filename
 	[maxmodule]ifile sflist
 	filehandle f
@@ -338,296 +289,35 @@ global proc writeqafile=
 	stop
 end
 
-global proc initdata=
+proc initdata=
 	lexinit()
 !	inithostlib()
 
 	stprogram:=createdupldef(nil,addnamestr("$prog"),programid)
 
 	os_initwindows()
-	if dispatchtype=asm_dispatch then
-		initjhandlers()
-	fi
 
 	firstusertype:=tlast+1
 
 	deletetempfiles()
 
+	fnosys:=not os_iswindows()
 end
 
-proc fixproc(symbol d)=
-	ref int z
-	variant p
+proc loadsyslib=
+	[300]char str
 
-	if not d.procfixed then
-		if nprocs>=maxproc then gerror("Too many procs") fi
-		z:=modules[d.moduleno].pcstart+d.labelno
-		p:=pcm_alloc(varsize)
-		proctable[++nprocs]:=z
-		procdefs[nprocs]:=d
-		d.pcaddress:=z
-		d.procfixed:=1
-	fi
+	if fnosys then return fi
 
-end
+	if not fsyslibs then usebundled:=0 fi
 
-proc fixupmodule(ifile pm)=
-	ref int pc,pcstart,z
-	int cmd,y
-	symbol d
-	variant p
-
-	pc := pcstart := pm.pcstart
-
-	repeat
-		cmd:=pc^
-
-		pc^:=cast(cmdmap[cmd])			!convert cmd index to labeladdr/functionaddr/same index
-
-		++pc
-
-		case cmd
-		when kprocdef then
-			fixproc(cast(pc^))
-		esac
-
-		for i to pclnopnds[cmd] do
-			case pclfmt[cmd,i]
-			when cproc then
-				d:=cast(pc^)
-				fixproc(d)
-				pc^:=cast(d.pcaddress)
-			when cmemory then
-				d:=cast(pc^)
-				if d.varptr=nil then
-					if nstatics>=maxstatic then gerror("Too many statics") fi
-					p:=pcm_alloc(varsize)
-					statictable[++nstatics]:=p
-					staticdefs[nstatics]:=d
-					d.varptr:=p
-				fi
-				pc^:=cast(d.varptr)
-			when cframe then
-				d:=cast(pc^)
-				pc^:=d.index*16
-			when cgenfield then
-				pc^:=symbol(pc^).genfieldindex
-			when cstring then
-				ref stringrec ps:=cast(pc^)
-				pc^:=cast(obj_make_stringn(ps.svalue,ps.length,0))
-
-			when clabel then
-				y:=int(pcstart+pc^)
-				pc^:=y
-
-			end
-			++pc
-		od
-	until cmd=kendmodule
-end
-
-global function runqprogram(isubprog sp)int=
-	ref proc fnptr
-	int cmd,SS
-	ref int pcstart
-
-	return 0 when runcode<run_cc
-
-	if fverbose then
-		println dispatchnames[dispatchtype],"Opt:",foptimise
-	fi
-
-	sptr:=&varstack[1]
-	stacklimit:=&varstack[stacksize-100]
-	pcstart:=pcptr:=modules[sp.firstmodule].pcstart
-	pcerrorpos:=0
-	stopped:=0
-
-	disploop()
-
-	return sptr.value
-end
-
-proc disploop=
-
-	case dispatchtype
-	when fn_dispatch then
-		disploop_fn()
-
-	when debug_dispatch then
-		disploop_deb(0)
-
-	when fdebug_dispatch then
-		disploop_deb(1)
-
-	when asm_dispatch then
-		disploop_asm()
-
-!	when sw_dispatch then
-!		disploop_sw()
-
+	if usebundled then				!bundled sys files
+		compile_sp(syslibname+".q")
 	else
-		loaderror("Dispatch not supported: ##",dispatchnames[dispatchtype])
-	esac
-end
-
-proc disploop_fn=
-	type fnptr = ref proc
-
-    repeat
-        (fnptr(pcptr^))^()
-    until stopped
-end
-
-proc disploop_deb(int fdeb)=
-	locrec loc
-
-	fdebug:=fdeb	
-
-	repeat
-		if fdebug then
-			loc:=getpcerrorpos(pcptr)
-			print loc.pm.name:"13jl",loc.lineno:"6",$
-			println pclnames[pcptr^],=pcptr,=SPTR,TTNAME[SPTR.TAG]
-		fi
-		++pclcounts[pcptr^]
-
-		pclhandlers[pcptr^]^()
-
-	until stopped
-end
-
-global proc setcmdmap=
-	if dispatchtype=asm_dispatch and not asmavailable() then
-		dispatchtype:=fn_dispatch
+		strcpy(str, devdir)
+		strcat(str, syslibname+".q")
+		compile_sp(str)
 	fi
-
-	for i:=1 to klastpcl do
-		case dispatchtype
-		when fn_dispatch then
-			cmdmap[i]:=pclhandlers[i]
-		when debug_dispatch, fdebug_dispatch, sw_dispatch then
-			cmdmap[i]:=cast(i)
-		when asm_dispatch then
-			cmdmap[i]:=jhandlertable[i]
-		esac
-	od
-end
-
-global function runproc_m(ref void amsg)int=
-	varrec a,b,dest
-	static int rmsg_typeno
-	int i,result
-	objrec obj
-
-	if rmsg_typeno=0 then
-		for i to ntypes do
-			if eqstring(ttname[i],"ws_msg64") then
-				rmsg_typeno:=i
-				exit
-			fi
-		od
-	fi
-	if rmsg_typeno=0 then
-		abortprogram("mainwndproc: can't find rmsg")
-	fi
-
-	memset(&obj,0,objrec.bytes)
-	obj.refcount:=99
-	obj.ptr:=ref byte(amsg)
-	obj.usertag:=rmsg_typeno
-
-	a.tagx:=tstruct ior hasrefmask
-	a.objptr:=&obj
-
-	runproc(pcl_callbackfn,&a,nil,&dest)
-	result:=dest.value
-
-	result:=0			!WTF? BUT QX HAS THIS TOO, AND IT WORKS!
-
-	return result
-end
-
-global proc runproc(ref void fnptr,variant a,b,dest) =
-!Directly call a pcl function by supplying it's pc-address
-!sptr/frameptr etc should already have been set up (any start proc should have been called)
-!Allows 0, 1, or 2 params: (), (a), or (a,b)
-!Note: param data is not freed here caller should take care of that
-!Return values are stored in dest (any non-int or void result is returned as 0)
-!Use of the stack:
-! The stack as it was at the time of the callext call (or via a callback from Windows)
-! is entirely unaffected. However some things will be pushed onto it here:
-! * Push void which is used for any return value of the function that is called
-! * Push 0, 1 or 2 parameters (as supplied in a and b; a is pushed first)
-! * The interpreter is then started, at the function call pc address supplied
-! * This involves pushes a retaddr value. Since this is not a conventional call,
-!   The return address is contrived to point to a STOP0 pc opcode
-! * After the return from the function, STOP0 is executed, which pushes a zero
-!   value to the stack.
-! * If the called function eventually returns, it will execute STOP0, but
-!   there is no Retaddr value left on the stack, and it will know to use the
-!	actual return value (0 is used of the called function did not return a value)
-! * If STOP is explicitly used, then a Retaddr value stays on the stack (for this
-!	function, or any nested one), and the Stop value is used instead
-
-	variant oldsptr
-	ref byte oldframeptr
-	ref int oldpcptr
-	byte oldstopped
-	int nparams
-
-	dest.tagx:=tint
-	dest.value:=0
-
-	oldstopped:=stopped		!not really need, as it can be assumed stopped=0
-	oldpcptr:=pcptr
-	oldsptr:=sptr
-	oldframeptr:=frameptr
-
-	(++sptr).tagx:=999				!put in marker (this location might be checked later)
-
-	if b and b.tag then			!must stack in reverse order: (b,a) or (a)
-		nparams:=2
-		(++sptr)^:=a^
-		(++sptr)^:=b^
-	elsif a and a.tag then
-		nparams:=1
-		(++sptr)^:=a^
-	else
-		nparams:=0
-	fi
-	(++sptr).tagx:=tretaddr
-
-	sptr.retaddr:=stopseq
-
-	sptr.frameptr_low:=int(frameptr)
-	frameptr:=cast(sptr)
-	pcptr:=fnptr
-
-	disploop()
-
-
-!stack will either point to a stop-value, with a retaddr before it,
-!or to the first param (or to the proc return value).
-	if (sptr-11).tag=tretaddr then		!probably stop used
-		dest^:=sptr^
-	else								!assume normal return used
-	--SPTR
-		dest^:=sptr^					!pick up return value
-
-		if dest.tag=tvoid then		!no value; return 0
-			dest.tagx:=tint
-			dest.value:=0
-		fi
-	fi
-
-	pcptr:=oldpcptr
-	stopped:=oldstopped
-
-!NOTE: could do with freeing items on the stack between oldsptr and current sptr
-	sptr:=oldsptr			!need to reset these, as stop could have been executed anywhere
-	frameptr:=oldframeptr	! and these could have arbitrary values
-	stopped:=oldstopped
 end
 
 proc resetcompiler=
@@ -642,28 +332,362 @@ proc resetcompiler=
 	firstusertype:=ntypes+1
 end
 
-global proc loadsyslib=
-	[300]char str
-
-	setcmdmap()
-
-	if fnosys then return fi
-
-	if not fsyslibs then usebundled:=0 fi
-
-	if usebundled then				!bundled sys files
-		compile_sp(syslibname+".q")
-	else
-		strcpy(str, devdir)
-		strcat(str, syslibname+".q")
-		compile_sp(str)
-	fi
-
-	if runcode=run_cc and not fwriteqa then
-		runqprogram(subprogs[1])
+proc setcmdparam(int index, ichar s)=
+!build cmd params for pc program, or set size (usually smaller) when s is nil
+	if s=nil then
+		nqparams:=index
+	elsif index<=maxqparam then
+		qparamtable[index]:=pcm_copyheapstring(s)
+		nqparams max:=index
 	fi
 end
-=== qq_arrays.m 0 0 4/44 ===
+
+proc fixup_sp(isubprog sp)=
+	return when runcode<fixup_cc
+
+	for i:=sp.firstmodule to sp.lastmodule do
+		fixupmodule(modules[i])
+		if foptimise then
+			optimise_module(modules[i])
+		fi
+		fixupcode(modules[i])
+	od
+end
+
+proc fixproc(symbol d)=
+	variant p
+
+	if not d.procfixed then
+		d.nextproc:=allprocdefs
+		allprocdefs:=d
+		d.procfixed:=1
+	fi
+end
+
+proc fixupmodule(ifile pm)=
+	pcl pc,pcstart
+	int cmd,y
+	symbol d
+	variant p
+
+	pc := pcstart := pm.pcstart
+
+	repeat
+		cmd:=pc.opcode
+
+		case cmd
+		when kprocdef then
+			fixproc(pc.def)
+		esac
+
+		case pclopnd[cmd]
+		when cproc then
+			fixproc(d:=pc.def)
+			pc.labelref:=d.labelref
+
+		when cstatic then
+			d:=pc.def
+			if d.isframe then
+				pc.offset:=d.index*varsize
+				++pc.opcode								!kpushm->kpushf etc
+			else
+				if d.varptr=nil then
+					d.nextstatic:=allstaticdefs
+					allstaticdefs:=d
+					d.varptr:=pcm_allocz(varsize)		!sets to tvoid
+				fi
+				pc.varptr:=d.varptr
+			fi
+
+		when cgenfield then
+			pc.index:=pc.def.genfieldindex
+
+		when cstring then
+			pc.objptr:=obj_make_string(pc.svalue, 0)
+
+		end
+
+		++pc
+	until cmd=kendmod
+end
+
+proc optimise_module(ifile pm)=
+	pcl pc
+
+!CPL "OPTIMISE MODULE", PM.NAME
+
+	pc:=pm.pcstart
+
+	do
+		exit when pc.opcode=kendmod
+		pc:=optim(pc)
+	od
+
+!Do static counts
+	pc:=pm.pcstart
+	while pc.opcode<>kendmod, ++pc do
+		++pclcounts[pc.opcode]
+	od
+
+end
+
+func optim(pcl pc)pcl=
+	int skip, INDEX
+	ref genfieldrec g
+	pcl pcdest
+	byte cmd, abc, aux
+	macro pcb = (pc+1)
+	macro pcc = (pc+2)
+	macro pcd = (pc+3)
+
+
+	cmd:=pc.opcode
+!CPL PCLNAMES[CMD], PC-PCSTART
+
+	skip:=0					!extra ops to skip tp next instruction
+
+	if cmd=kjump or cmd in kjumpeq..kjumpgt or cmd in [kjumpt, kjumpf] then
+		pcdest:=pc.labelref
+		if pcdest.opcode=kjump then
+			repeat
+				pcdest:=pcdest.labelref
+			until pcdest.opcode<>kjump
+			pc.labelref:=pcdest
+		fi
+	fi
+
+	if pcb.haslabel then return pcb fi		!label on B
+	abc:=1									!assume ops ABC are condidates
+	if pcc.haslabel then abc:=0 fi			!AB only
+
+	case cmd
+	when kpushf then
+		case pcb.opcode			!opcode that follows
+		when kpushf then			!pushf pushf
+			if not abc then dopushff fi
+			case pcc.opcode
+			when kpushf then
+				pc.opcode:=kpushfff
+				skip:=2
+
+			when kadd then
+				pc.opcode:=kaddff
+				skip:=2
+!
+			when ksub then
+				skip:=2
+
+
+			when kjumpeq then
+				pc.opcode:=kjmpeqff
+				skip:=2
+			when kjumpne then
+				pc.opcode:=kjmpneff
+				skip:=2
+			when kjumplt then
+				pc.opcode:=kjmpltff
+				skip:=2
+			when kjumple then
+				pc.opcode:=kjmpleff
+				skip:=2
+			when kjumpge then
+				pc.opcode:=kjmpgeff
+				skip:=2
+			when kjumpgt then
+				pc.opcode:=kjmpgtff
+				skip:=2
+			when kindex then
+				pc.opcode:=kindexff
+				skip:=2
+			else
+dopushff:
+				pc.opcode:=kpushff
+				skip:=1
+			end
+		when kpushm then			!pushf pushm
+!!				++pclcounts[kpushfm]
+!!			skip:=1
+		when kpushci then			!pushf pushci
+			if not abc then dopushfci fi
+			case pcc.opcode
+			when kadd then
+				pc.opcode:=kaddfci
+				skip:=2
+			when ksub then
+				pc.opcode:=ksubfci
+				skip:=2
+			when kjumplt then
+				pc.opcode:=kjmpltfci
+				skip:=2
+			when kjumple then
+				pc.opcode:=kjmplefci
+				skip:=2
+			when kjumpge then
+				pc.opcode:=kjmpgefci
+				skip:=2
+			when kjumpgt then
+				pc.opcode:=kjmpgtfci
+				skip:=2
+			when kjumpeq then
+				pc.opcode:=kjmpeqfci
+				skip:=2
+			when kjumpne then
+				pc.opcode:=kjmpnefci
+				skip:=2
+			else					!just pushfci
+dopushfci:
+				pc.opcode:=kpushfci
+				skip:=1
+
+			end
+
+		when kpopm then				!pushf popm
+			skip:=1
+		when kpopf then				!pushf popf
+			pc.opcode:=kmoveff
+			skip:=1
+		when kzpopf then			!pushf zpopf
+			skip:=1
+		when kswitch then			!pushf case
+			skip:=1
+
+		when klen then				!pushf len
+			skip:=1
+		when kupb then				!pushf upb
+			skip:=1
+		when kpushptr then			!pushf pushptr
+			pc.opcode:=kpushptrf
+			skip:=1
+		end
+
+	when kpushm then
+		case pcb.opcode
+!		when kpushm then			!pushm pushm
+!			++pclcounts[kpushmm]
+!			skip:=1
+		when kpushf then			!pushm pushm
+			if abc and pcc.opcode=kindex then
+				pc.opcode:=kindexmf
+				skip:=2
+			else
+!				++pclcounts[kpushmf]
+				skip:=1
+			fi
+		when kpopm then				!pushm popm
+!			++pclcounts[kmovemm]
+			skip:=1
+		when kpopf then				!pushm popf
+!			++pclcounts[kmovefm]
+			skip:=1
+		when kpushci then
+			pc.opcode:=kpushmci
+			skip:=1
+		esac
+
+	when kpushci then
+!CPL "PUSHCI", PCLNAMES[PCB.OPCODE]
+
+		case pcb.opcode
+		when kpopm then				!pushci popm
+!			++pclcounts[kmovemci]
+			skip:=1
+		when kpopf then				!pushci popf
+!CPL "PUSHCI/POPF"
+			pc.opcode:=kmovefci
+!			++pclcounts[kmovefci]
+			skip:=1
+		when kzpopf then			!pushci zpopf
+!			++pclcounts[kzmovefci]
+			skip:=1
+		when kadd then
+			pc.opcode:=kaddci
+			skip:=1
+
+		when ksub then
+			pc.opcode:=ksubci
+			skip:=1
+
+		when kiand then
+			pc.opcode:=kiandci
+			skip:=1
+
+		when kshl then
+			pc.opcode:=kshlci
+			skip:=1
+
+		when kshr then
+			pc.opcode:=kshrci
+			skip:=1
+!
+		when kwheneq then
+			pc.opcode:=kwheneqci
+			skip:=1
+		when kwhenne then
+			pc.opcode:=kwhenneci
+			skip:=1
+
+!		elsif a=0 and b not in [kraise,kstop] then
+!			pc^:=kpushci0
+		esac
+
+	when kpushvoid then
+		case pcb.opcode
+		when kpushvoid then			!pushvoid pushvoid
+			if abc and pcc.opcode=kpushvoid then
+!				++pclcounts[kpushv3]
+				skip:=2
+			else
+!				++pclcounts[kpushv2]
+				skip:=1
+			fi
+		esac
+	when kpushfref then
+		case pcb.opcode
+		when kloadincr then
+			if abc then
+				case pcc.opcode
+				when kpushptr then		!loadincr pushptr
+					pc.opcode:=kpushipf
+					skip:=2
+				when kpopptr then		!loadincr popptr
+					pc.opcode:=kpopipf
+					skip:=2
+				esac
+			fi
+		when kbinto then
+			pc.opcode:=kbintof
+			skip:=1
+		esac
+
+	when kpushmref then
+		case pcb.opcode
+		when kloadincr then
+			if abc then
+				case pcc.opcode
+				when kpushptr then		!loadincr pushptr
+					pc.opcode:=kpushipm
+					skip:=2
+				when kpopptr then		!loadincr popptr
+					pc.opcode:=kpopipm
+					skip:=2
+				esac
+			fi
+		esac
+	end
+
+finish:
+	if skip then
+		aux:=pc.opcode<>cmd			!an update has been done
+		for i to skip do
+			++pc
+			pc.isaux:=aux
+		od
+	fi
+
+	pc+1
+end
+
+=== qq_arrays.m 0 0 3/44 ===
 global proc var_empty_array(int tag, elemtype, lower, variant dest)=
 	dest.objptr:=obj_newarray(elemtype,lower, 0)
 	dest.tagx:=tag ior hasrefmask
@@ -1196,7 +1220,7 @@ global proc var_expand_array(variant p, dest, int m)=
 		--dest
 	od
 end
-=== qq_bits.m 0 0 5/44 ===
+=== qq_bits.m 0 0 4/44 ===
 global proc obj_free_bits(object p, int tag)=
 	if p.length then
 		pcm_free(p.ptr, getbitssize(p.alloc64, p.elemtag))
@@ -1453,7 +1477,7 @@ global proc var_concatto_bits(variant a,b)=
 	variant v
 	object pa,pb
 
-PCERROR_S("VAR/BITS/NOT READY",$FUNCTION)
+	PCERROR("VAR/BITS/NOT READY",$FUNCTION)
 	pa:=a.objptr
 	pb:=b.objptr
 
@@ -1537,7 +1561,7 @@ global function getbitssize(int n, t)int=
 	int nbits:=n*ttbitwidth[t]
 	return ((nbits-1)/64+1)*8			!bytes required in 64-bit blocks
 end
-=== qq_calldll.m 0 0 6/44 ===
+=== qq_calldll.m 0 0 5/44 ===
 global proc calldll(symbol d, variant args, result, int nargs)=
 	symbol e
 	const maxparams=100
@@ -1546,6 +1570,8 @@ global proc calldll(symbol d, variant args, result, int nargs)=
 	word dllinst
 	ref proc fnaddr
 	ichar name
+
+!CPL "CALLDLL",D.NAME
 
 	if nargs>maxparams then pcerror("Too many dll args") fi
 
@@ -1708,7 +1734,7 @@ proc packedtovar(word retval, int t, variant dest)=
 		fi
 
 	else
-		pcerror_s("Rettype not supported:",ttname[t])
+		pcerror("Rettype not supported:",ttname[t])
 	esac
 end
 
@@ -1728,7 +1754,7 @@ function loaddllfunction(symbol d)ref proc=
 	if dllinst=0 then
 		dllinst:=os_getdllinst(libtable[libindex].name)
 		if dllinst=0 then
-			pcerror_s("Can't load DLL:",libtable[libindex].name)
+			pcerror("Can't load DLL:",libtable[libindex].name)
 		fi
 		dllinsttable[libindex]:=dllinst
 	fi
@@ -1737,13 +1763,546 @@ function loaddllfunction(symbol d)ref proc=
 	fnaddr:=os_getdllprocaddr(dllinst,name)
 
 	if fnaddr=nil then
-		pcerror_s("Can't find DLL func:",name)
+		pcerror("Can't find DLL func:",name)
 	fi
 	dllprocaddr[fnindex]:=fnaddr
 
 	return fnaddr
 end
 
+=== qq_decls.m 0 0 6/44 ===
+!global const fixbytecodes=1		!convert bytecodes to handler addresses
+
+global type unit      	= ref unitrec
+global type object    	= ref objrec
+global type symbol    	= ref strec
+!global type strobject 	= ref stringobjrec
+global type variant   	= ref varrec
+global type ifile   	= ref filerec
+global type isubprog  	= ref subprogrec
+
+global macro pr(a,b)	= (a<<16 ior b)
+
+global const hasrefmask = 0x100
+
+global const varsize    = varrec.bytes
+
+!global record packfieldrec =
+!	object structobj			!owner record
+!	ichar name
+!	int32 packmode				!index into tables
+!	int32 offset				!byte offset
+!	int32 size					!size
+!	int32 length
+!end
+
+global record procrec =			!used as linked list
+	symbol def
+	ref procrec nextproc
+end
+
+global record userxrec =
+	symbol owner
+	ref int16 pmode
+	ref userxrec nextmode
+end
+
+global record strec =
+	ichar name				! name (likely shared pointer with generic entry)
+	symbol	owner
+	symbol	deflist			! first child name
+	symbol	deflistx		! points to last child
+
+	symbol	nextdef			! next name in this list
+	symbol	nextdupl		! next instance that shares the same name
+	symbol	firstdupl		! first or generic name entry
+!	union
+		symbol alias		! used for aliasid
+!		symbol captured		! localid: captured local in containing scope
+!	end
+
+	symbol nextstatic		! link all statics and procs
+	symbol nextproc
+
+	union
+		u64 a
+		pcl labelref			!procs/labels
+		variant varptr			!statics
+		ichar truename			!dll procs
+		symbol atfield			!fields
+		int labelno				!proc/label label# before fixup
+	end
+	union
+		u64 b
+		unit code				!proc body/initdata
+		ref symbol topfieldlist		!structs; point to block of ttlength[mode] top fields
+	end
+	union
+		u64 c
+		struct
+			int32 index			!frame/param/dllproc/enum/(const)
+			int32 capindex		!localid index
+		end
+	end
+	union
+		u64 d
+		struct
+			int16 nparams		!procs/dllprocs
+			int16 nlocals		!procs
+!			int16 ncaptured		!anonprocs
+		end
+		struct
+			int16 nfields		!records/structs
+			int16 maxalign		!structs
+!			int32 fieldoffset
+			int16 fieldoffset
+			int16 baseclassindex		!into baseclass tables
+		end
+		int genfieldindex		!generic
+	end
+
+	word16	subcode
+	byte	moduleno
+	byte	subprogno
+	int16	mode
+	int16	hint				!0/tvoid, or hinted mode when .mode=tvar
+	u16		flags: (isglobal:2, isimport:1, mstatic:1, misfunc:1, mbyref:1,
+							menumx:1,
+							moptional:1,  mvarparams:1, isframe:1,
+							iscaligned:1,initcode:2)
+	byte	forindex		!1 when var is a for-loop index
+
+	byte	symbolcode
+	byte	nameid			! generic/static/proc etc
+
+	byte	mutable			! will be 1 for variables; 0 for modules procs, label etc
+	byte	namelen			! helps makes lookups faster
+	byte	procfixed		! 1 when procs have been fixedup
+end
+
+global record lexrec =		!should be 32-byte record
+	union
+		int64 value				!64-bit int
+		real xvalue				!64-bit float
+		word64 uvalue			!64-bit word
+		ichar svalue			!pointer to string or charconst (not terminated)
+		ref strec symptr			!pointer to symbol table entry for name
+	end
+
+	int32 pos: (lineno:24, moduleno:8)
+
+	byte symbol
+	byte subcode
+	word16 slength
+end
+
+global record uflagsrec =
+	[7]byte	codes
+	byte	ulength
+end
+
+global record fieldrec =
+	ichar name
+	int16 recordtype
+	int16 fieldtype
+	int32 fieldoffset
+end
+
+global record unitrec =
+	union
+		struct
+			byte tag
+			union
+				byte elemtype			!for array constructors
+				byte flag				! for incr/in/assign/for etc (see jtag docs)
+				byte condcode			! for jcmp
+				byte mathsop			! for jmaths/2
+				byte pclop				! for junary/jbin/junaryto/jbinto
+				byte loopcode			! loop_exit etc for exit/redo/next
+				byte jsubcode			! access all above via one field
+			end
+			[2]byte spare
+			int32 pos: (sourceoffset:24, moduleno:8)
+		end
+		ref void word1
+	end
+
+	unit nextunit
+
+	union
+		unit a
+		symbol def
+		symbol labeldef
+		int64 value
+		word64 uvalue
+		real64 xvalue
+		ichar svalue
+		int64 range_lower
+	end
+
+	union
+		unit b
+		int64 range_upper
+		int64 slength
+		int16 mode
+		[4]byte cmpconds				!for jcmpchain
+		struct
+			int32 length
+			int32 lower
+		end
+		int64 index		!of enum name; or host index; or could be expr
+	end
+end
+
+global lexrec nextlx
+global lexrec lx
+!global const targetbits=64
+
+!global const maxsearchdirs=10
+!global [maxsearchdirs]ichar searchdirs
+!global int nsearchdirs=0
+
+!global [5]ichar hostdirs
+!global int nhostdirs
+
+global int qpos
+global int pcerrorpos
+global ref filerec pcerrormodule
+
+global const stacksize=70000
+global [stacksize]varrec varstack
+global variant sptr
+global variant stacklimit
+global ref byte frameptr
+
+global pcl pcptr
+
+global int stopped
+
+global symbol stprogram			!root of global symbol table
+global symbol stmodule			!main module
+global symbol stsubprog
+global symbol stcurrmodule		!current module during parse, name resolve, code gen
+global symbol stcurrproc		!current proc during parse, rx/cocde, or
+								! set to stcurrmodule when outside a proc
+global ifile currmodule			!set via stcurrmodule.moduleno
+
+global int debug
+
+global int inproc
+
+!Errors
+!global [256]char errorline,errorpointer
+
+global record locrec=
+	isubprog sp             !owner sp
+	ifile pm                !owner module
+	symbol def				!if not nil, then containing proc, module etc
+	ichar startline			!point to start of line in source
+	int lineno              !line number within module
+	int column				!if not zero, then column number
+end
+
+!Genfield Tables
+
+global record genfieldrec=
+	symbol def
+	ref genfieldrec nextdef
+end
+
+global const maxgenfield=1000
+global [maxgenfield]ref genfieldrec genfieldtable
+global int ngenfields
+
+global const maxlibfile=50
+global const maxdllproc=2000
+
+global int nlibfiles
+global [maxlibfile]symbol libtable
+global [maxlibfile]byte libtypes
+global [maxlibfile]u64 dllinsttable		!instance table
+
+global int ndllprocs
+global [maxdllproc]symbol dllproctable
+global [maxdllproc]byte dllproclibindex				!lib that dll proc belongs to
+global [maxdllproc]ref void dllprocaddr			!pointer to external dll proc
+
+global byte usebundled	 = 1			!whether to use internal libs
+
+global enumdata []ichar dispatchnames=
+	(lab_dispatch,		"-lab"),
+	(sw_dispatch,		"-sw"),
+	(fn_dispatch,		"-fn"),
+	(debug_dispatch,	"-debug"),
+	(fdebug_dispatch,	"-fdebug"),
+	(asm_dispatch,		"-asm"),
+end
+
+global const int maxqparam=32
+global int nqparams
+global [maxqparam]ichar qparamtable
+
+!global ichar err_message
+!global varrec err_var1, err_var2
+!global ref int err_pcptr
+
+!global ref int stopseq		!point to a 'stop 0' sequence
+!global ref int raiseseq		!point to a sequence of several 'raise' cmdcodes
+
+global ref procrec proclist, proclistx
+global int nproclist
+
+global ref proc pcl_callbackfn=nil	!address of *PCL* function (pcdata address)
+
+global [0..255]object chrtable		!remember single-character objects
+
+global byte fnosys
+global byte fverbose
+
+global [0:256]int16 baseclasstable
+global [0:256]ref strec baseclassdef
+global int nbaseclasses
+
+global int lastretindex
+
+global const maxsubprog=30
+global const maxmodule=200
+
+global record filerec=
+	ichar	name				!module name and base filename ("<str>" is anon)
+	ichar	path				!path where file resides
+	ichar	filespec			!full file path
+	ichar	text				!pointer to source text, 0-terminated
+	int		size				!source file size includes terminator
+
+	byte	isstring			!1 if a string rather than a file
+	byte	issyslib			!1 if a system module
+	byte	issupport			!1 if a support file (strinclude); MAY BE STORED ELSEWHERE
+	byte	compiled			!1 if compiled
+
+!	int16	subprogno
+	byte	subprogno
+	byte	islead				!1 if lead module in sp
+	union
+		int16	moduleno			!useful if using pointer to a source rec
+		int16	fileno
+	end
+
+	unit	ast					!ast for module-level code
+
+	pcl		pcstart				!nil, or points to generated bytecode for whole module
+	pcl		pcend				!points to last allocated pcl rec
+	int		pcsize				!pcl size as number of allocated ints (some spare)
+	ref i32	pcsourcestart		!each entry is source-pos info (char offset into org source)
+
+	union
+		symbol	stmodule
+		symbol	def
+	end
+
+	symbol	stsubprog
+!	symbol	stmacro
+
+	symbol	startfn				!nil, or st entry of start()
+	symbol	mainfn				!nil, or st entry of main()
+end
+
+global record subprogrec =
+	ichar name
+	ichar path
+	ichar filespec
+	int16 firstmodule			!1st is lead module
+	int16 lastmodule			!always first..lastmodule
+	int16 compiled				!1 if compiled
+	byte issyslib
+	byte subprogno
+end
+
+global [0..maxmodule]ifile	modules
+global [maxsubprog]isubprog	subprogs
+
+global int nmodules
+global int nsubprogs
+
+global record varrec =
+	union
+		struct
+			union
+				struct
+					byte	tag
+					byte	hasref
+					byte	bitoffset
+					union
+						byte	bitlength		!for refbit/tbit: 0=1 bit, N=bitfield
+						byte	exceptiontype
+						byte	genmarker		!1 means is a generator used as a marker
+					end
+				end
+				word32		tagx
+			end
+			union
+				word32 		elemtag
+				word32 		frameptr_low
+				struct
+					i16		frameoffset
+					i16		nexceptions
+				end
+			end
+		end
+		i64 dummy: (skip:16, range_lower:48)
+	end
+	union
+		int64		value
+		real64		xvalue
+		word64		uvalue
+		word64		range_upper
+		object		objptr				!objects where hasref=1
+		variant		varptr				!for refvar
+		ref byte	ptr					!for refproc etc
+		symbol		def					!for tsymbol
+		pcl			retaddr
+	end
+end
+
+global record objrec =
+!1st 8 bytes
+	word32 refcount
+	struct
+		byte flags: (lower:1, mutable:1, bittag:2)
+		byte objtype
+		union
+			u16 elemtag
+			u16 usertag
+			u16 itertag
+			struct
+				byte bitoffset
+				byte indexoffset
+			end
+			i16 lower16
+!			i16 iterended		!0/1 = running/ended
+		end
+	end
+
+!second 8 bytes (and end of short objects)
+	union
+		struct
+			union
+				int64		value
+				real64		xvalue
+				word64		uvalue
+				ichar		strptr
+				variant		varptr
+				variant		genstack
+				ref byte	ptr
+				ref[0:]elemtype num
+				word64 b
+				ref int		retaddr
+			end
+
+!3rd 8 bytes
+			union
+				int64 length
+				int64 lower64
+				struct
+					word32 rows
+					word32 columns
+				end
+				word64 c
+				ref byte frameptr
+!				symbol		stgen
+				struct
+					int32 iterpos
+					int32 iterupper
+				end
+			end
+
+!4th 8 bytes (and end of long objects)
+			union
+				int64 alloc64				!object/item counts, not bytes
+				object objptr2
+				struct
+					int16 neg
+					int16 numtype
+					int32 expon
+				end
+				struct
+					word32 alloc32
+					word32 dictitems
+				end
+				struct
+					u16		genstacksize		!in varrecs
+					byte	ngenparams			!params to gen func
+				end
+				word64 d
+			end
+		end
+		[24]byte bignumdescr
+	end
+end
+
+global int nalllines
+
+!global const devdir = "c:/qx/"
+!global const devdir = "c:/bx/"
+global const devdir = "c:/qx/"
+
+!QA files
+global const maxqafile=100
+global [maxqafile]ichar qafilenames
+global [maxqafile]ichar qatext
+global [maxqafile]int qasize
+global int nqafiles					!non-0 means qa directory in use.
+
+global enumdata []ichar optionnames, []ref byte optionvars, []byte optionvalues =
+	(load_sw,		"load",			&runcode,			load_cc),
+	(parse_sw,		"parse",		&runcode,			parse_cc),
+	(names_sw,		"names",		&runcode,			names_cc),
+	(gen_sw,		"gen",			&runcode,			gencode_cc),
+	(fixup_sw,		"fixup",		&runcode,			fixup_cc),
+	(run_sw,		"run",			&runcode,			run_cc),
+
+	(ast1_sw,		"ast1",			&fshowast1,			1),
+	(ast2_sw,		"ast2",			&fshowast2,			1),
+
+	(pcl1_sw,		"pcl1",			&fshowpcl1,			1),
+	(pcl2_sw,		"pcl2",			&fshowpcl2,			1),
+
+	(allsp_sw,		"allsp",		&fallsp,			1),
+
+	(st_sw,			"st",			&fshowst,			1),
+	(stflat_sw,		"stflat",		&fshowstflat,		1),
+	(types_sw,		"types",		&fshowtypes,		1),
+	(showmodules_sw,"modules",		&fshowmodules,		1),
+
+	(opt_sw,		"opt",			&foptimise,			1),
+	(noopt_sw,		"no",			&foptimise,			0),
+
+	(ext_sw,		"ext",			&usebundled,		0),
+	(qa_sw,			"qa",			&fwriteqa,			1),
+	(qas_sw,		"qas",			&fwriteqa,			2),
+
+	(verbose_sw,	"v",			&fverbose,			1),
+!	(time_sw,		"time",			&fshowtime,			1),
+
+	(nosys_sw,		"nosys",		&fnosys,			1),
+	(sys_sw,		"sys",			&fnosys,			0),
+end
+
+!GLOBAL INT NUNITS
+!GLOBAL INT NPCL
+
+global pcl stopseq		!point to a 'stop 0' sequence
+global pcl raiseseq		!point to a sequence of several 'raise' cmdcodes
+
+
+!temporarily moved from pclgen etc
+
+global int nproclocals			!no. of locals
+global pcl pproclocals			!pointer to kprocent pcl op (for updating locals for avs)
+
+global [pclnames.lwb..pclnames.upb]int pclcounts
+
+GLOBAL INT NALLPCL
 === qq_decimal.m 0 0 7/44 ===
 const digitwidth   = 9
 const digitbase	= 1000000000
@@ -3461,539 +4020,7 @@ function bn_toint(object a)int64=
 	fi
 end
 
-=== qq_decls.m 0 0 8/44 ===
-!global const fixbytecodes=1		!convert bytecodes to handler addresses
-
-!global int dispatchtype=fn_dispatch
-global byte dispatchtype=asm_dispatch
-global int hasbytecodes=1			!depends on dispatchcode
-
-global type unit      	= ref unitrec
-global type object    	= ref objrec
-global type symbol    	= ref strec
-!global type strobject 	= ref stringobjrec
-global type variant   	= ref varrec
-global type ifile   	= ref filerec
-global type isubprog  	= ref subprogrec
-
-global macro pr(a,b)	= (a<<16 ior b)
-
-global const hasrefmask = 0x100
-global const varsize    = varrec.bytes
-
-global record packfieldrec =
-	object structobj			!owner record
-	ichar name
-	int32 packmode				!index into tables
-	int32 offset				!byte offset
-	int32 size					!size
-	int32 length
-end
-
-global record procrec =			!used as linked list
-	symbol def
-	ref procrec nextproc
-end
-
-global record userxrec =
-	symbol owner
-	ref int16 pmode
-	ref userxrec nextmode
-end
-
-global record strec =
-	ichar name				! name (likely shared pointer with generic entry)
-	symbol	owner
-	symbol	deflist			! first child name
-	symbol	deflistx		! points to last child
-
-	symbol	nextdef			! next name in this list
-	symbol	nextdupl		! next instance that shares the same name
-	symbol	firstdupl		! first or generic name entry
-!	union
-		symbol alias		! used for aliasid
-!		symbol captured		! localid: captured local in containing scope
-!	end
-
-	union
-		u64 a
-		ref int pcaddress		!procs/labels
-		variant varptr			!statics
-		ichar truename			!dll procs
-		symbol atfield			!fields
-		int labelno				!proc/label label# before fixup
-	end
-	union
-		u64 b
-		unit code				!proc body/initdata
-		ref symbol topfieldlist		!structs; point to block of ttlength[mode] top fields
-	end
-	union
-		u64 c
-		struct
-			int32 index			!frame/param/dllproc/enum/(const)
-			int32 capindex		!localid index
-		end
-	end
-	union
-		u64 d
-		struct
-			int16 nparams		!procs/dllprocs
-			int16 nlocals		!procs
-!			int16 ncaptured		!anonprocs
-		end
-		struct
-			int16 nfields		!records/structs
-			int16 maxalign		!structs
-!			int32 fieldoffset
-			int16 fieldoffset
-			int16 baseclassindex		!into baseclass tables
-		end
-		int genfieldindex		!generic
-	end
-
-	word16	subcode
-	byte	moduleno
-	byte	subprogno
-	int16	mode
-	int16	hint				!0/tvoid, or hinted mode when .mode=tvar
-	u16		flags: (isglobal:2, isimport:1, mstatic:1, misfunc:1, mbyref:1,
-							menumx:1,
-							moptional:1,  mvarparams:1, isframe:1,
-							iscaligned:1,initcode:2)
-	byte	forindex		!1 when var is a for-loop index
-
-	byte	symbolcode
-	byte	nameid			! generic/static/proc etc
-
-	byte	mutable			! will be 1 for variables; 0 for modules procs, label etc
-	byte	namelen			! helps makes lookups faster
-	byte	procfixed		! 1 when procs have been fixedup
-end
-
-global record lexrec =		!should be 32-byte record
-	union
-		int64 value				!64-bit int
-		real xvalue				!64-bit float
-		word64 uvalue			!64-bit word
-		ichar svalue			!pointer to string or charconst (not terminated)
-		ref strec symptr			!pointer to symbol table entry for name
-	end
-
-	int32 pos: (sourceoffset:24, moduleno:8)
-
-	byte symbol
-	byte subcode
-	word16 slength
-end
-
-global record uflagsrec =
-	[7]byte	codes
-	byte	ulength
-end
-
-global record fieldrec =
-	ichar name
-	int16 recordtype
-	int16 fieldtype
-	int32 fieldoffset
-end
-
-global record unitrec =
-	union
-		struct
-			int16 tag
-			union
-				byte elemtype			!for array constructors
-			end
-			union
-				byte nparams
-				byte enumindex
-			end
-			int32 pos: (sourceoffset:24, moduleno:8)
-		end
-		ref void word1
-	end
-
-	unit nextunit
-
-	union
-		unit a
-		symbol def
-		symbol labeldef
-		int64 value
-		word64 uvalue
-		real64 xvalue
-		ichar svalue
-		int64 range_lower
-		int pclopcode
-	end
-
-	union
-		unit b
-		int64 range_upper
-		int64 slength
-		int16 mode
-		[4]byte cmpgenop
-		struct
-			int32 length
-			int32 lower
-		end
-		int64 index		!of enum name; or host index; or could be expr
-	end
-end
-
-global lexrec nextlx
-global lexrec lx
-!global const targetbits=64
-
-!global const maxsearchdirs=10
-!global [maxsearchdirs]ichar searchdirs
-!global int nsearchdirs=0
-
-!global [5]ichar hostdirs
-!global int nhostdirs
-
-global int qpos
-global int pcerrorpos
-global ref filerec pcerrormodule
-
-global const stacksize=10000
-!global const stacksize=10000
-!global const stacksize=51'000'000
-!global const stacksize=40'000'000
-global [stacksize]varrec varstack
-global variant sptr
-global variant stacklimit
-global ref byte frameptr
-
-global ref int pcptr
-
-global int stopped
-
-global symbol stprogram			!root of global symbol table
-global symbol stmodule			!main module
-global symbol stsubprog
-global symbol stcurrmodule		!current module during parse, name resolve, code gen
-global symbol stcurrproc		!current proc during parse, rx/cocde, or
-								! set to stcurrmodule when outside a proc
-global ifile currmodule			!set via stcurrmodule.moduleno
-
-global int debug
-
-global int inproc
-
-!Errors
-!global [256]char errorline,errorpointer
-
-global record locrec=
-	isubprog sp             !owner sp
-	ifile pm                !owner module
-	symbol def				!if not nil, then containing proc, module etc
-	ichar startline			!point to start of line in source
-	int lineno              !line number within module
-	int column				!if not zero, then column number
-end
-
-!Genfield Tables
-
-global record genfieldrec=
-	symbol def
-	ref genfieldrec nextdef
-end
-
-global const maxgenfield=1000
-global [maxgenfield]ref genfieldrec genfieldtable
-global int ngenfields
-
-global const maxlibfile=50
-global const maxdllproc=2000
-
-global int nlibfiles
-global [maxlibfile]symbol libtable
-global [maxlibfile]byte libtypes
-global [maxlibfile]u64 dllinsttable		!instance table
-
-global int ndllprocs
-global [maxdllproc]symbol dllproctable
-global [maxdllproc]byte dllproclibindex				!lib that dll proc belongs to
-global [maxdllproc]ref void dllprocaddr			!pointer to external dll proc
-
-global byte usebundled	 = 1			!whether to use internal libs
-
-global enumdata []ichar dispatchnames=
-	(lab_dispatch,		"-lab"),
-	(sw_dispatch,		"-sw"),
-	(fn_dispatch,		"-fn"),
-	(debug_dispatch,	"-debug"),
-	(fdebug_dispatch,	"-fdebug"),
-	(asm_dispatch,		"-asm"),
-end
-
-global const int maxqparam=32
-global int nqparams
-global [maxqparam]ichar qparamtable
-
-global ichar err_message
-global varrec err_var1, err_var2
-global ref int err_pcptr
-
-global ref int stopseq		!point to a 'stop 0' sequence
-global ref int raiseseq		!point to a sequence of several 'raise' cmdcodes
-
-global ref procrec proclist, proclistx
-global int nproclist
-
-global ref proc pcl_callbackfn=nil	!address of *PCL* function (pcdata address)
-
-global [0..255]object chrtable		!remember single-character objects
-
-global byte fnosys
-global byte fverbose
-
-global [0:256]int16 baseclasstable
-global [0:256]ref strec baseclassdef
-global int nbaseclasses
-
-global int lastretindex
-
-global const maxsubprog=30
-global const maxmodule=200
-
-global record filerec=
-	ichar	name				!module name and base filename ("<str>" is anon)
-	ichar	path				!path where file resides
-	ichar	filespec			!full file path
-	ichar	text				!pointer to source text, 0-terminated
-	int		size				!source file size includes terminator
-
-	byte	isstring			!1 if a string rather than a file
-	byte	issyslib			!1 if a system module
-	byte	issupport			!1 if a support file (strinclude); MAY BE STORED ELSEWHERE
-	byte	compiled			!1 if compiled
-
-!	int16	subprogno
-	byte	subprogno
-	byte	islead				!1 if lead module in sp
-	union
-		int16	moduleno			!useful if using pointer to a source rec
-		int16	fileno
-	end
-
-	unit	ast					!ast for module-level code
-
-	ref int	pcstart				!nil, or points to generated bytecode for whole module
-	ref int	pcend				!points to last allocated int
-	int		pcsize				!pcl size as number of allocated ints (some spare)
-	ref i32	pcsrcstart			!each entry is source-pos info (char offset into org source)
-
-	union
-		symbol	stmodule
-		symbol	def
-	end
-
-	symbol	stsubprog
-!	symbol	stmacro
-
-	symbol	startfn				!nil, or st entry of start()
-	symbol	mainfn				!nil, or st entry of main()
-end
-
-global record subprogrec =
-	ichar name
-	ichar path
-	ichar filespec
-	int16 firstmodule			!1st is lead module
-	int16 lastmodule			!always first..lastmodule
-	int16 compiled				!1 if compiled
-	byte issyslib
-	byte subprogno
-end
-
-global [0..maxmodule]ifile	modules
-global [maxsubprog]isubprog	subprogs
-
-global int nmodules
-global int nsubprogs
-
-global record varrec =
-	union
-		struct
-			union
-				struct
-					byte	tag
-					byte	hasref
-					byte	bitoffset
-					union
-						byte	bitlength		!for refbit/tbit: 0=1 bit, N=bitfield
-						byte	exceptiontype
-						byte	genmarker		!1 means is a generator used as a marker
-					end
-				end
-				word32		tagx
-			end
-			union
-				word32 		elemtag
-				word32 		frameptr_low
-				struct
-					i16		frameoffset
-					i16		nexceptions
-				end
-			end
-		end
-		i64 dummy: (skip:16, range_lower:48)
-	end
-	union
-		int64		value
-		real64		xvalue
-		word64		uvalue
-		word64		range_upper
-		object		objptr				!objects where hasref=1
-		variant		varptr				!for refvar
-		ref byte	ptr					!for refproc etc
-		symbol		def					!for tsymbol
-		ref int		retaddr
-	end
-end
-
-export record objrec =
-!1st 8 bytes
-	word32 refcount
-	struct
-		byte flags: (lower:1, mutable:1, bittag:2)
-		byte objtype
-		union
-			u16 elemtag
-			u16 usertag
-			u16 itertag
-			struct
-				byte bitoffset
-				byte indexoffset
-			end
-			i16 lower16
-!			i16 iterended		!0/1 = running/ended
-		end
-	end
-
-!second 8 bytes (and end of short objects)
-	union
-		struct
-			union
-				int64		value
-				real64		xvalue
-				word64		uvalue
-				ichar		strptr
-				variant		varptr
-				variant		genstack
-				ref byte	ptr
-				ref[0:]elemtype num
-				word64 b
-				ref int		retaddr
-			end
-
-!3rd 8 bytes
-			union
-				int64 length
-				int64 lower64
-				struct
-					word32 rows
-					word32 columns
-				end
-				word64 c
-				ref byte frameptr
-!				symbol		stgen
-				struct
-					int32 iterpos
-					int32 iterupper
-				end
-			end
-
-!4th 8 bytes (and end of long objects)
-			union
-				int64 alloc64				!object/item counts, not bytes
-				object objptr2
-				struct
-					int16 neg
-					int16 numtype
-					int32 expon
-				end
-				struct
-					word32 alloc32
-					word32 dictitems
-				end
-				struct
-					u16		genstacksize		!in varrecs
-					byte	ngenparams			!params to gen func
-				end
-				word64 d
-			end
-		end
-		[24]byte bignumdescr
-	end
-end
-
-global [pclnames.lwb..pclnames.upb]int pclcounts
-
-global record stringrec=
-	ichar svalue
-	int length
-end
-
-global int nalllines
-
-global const devdir = "c:/qx/"
-
-!QA files
-global const maxqafile=100
-global [maxqafile]ichar qafilenames
-global [maxqafile]ichar qatext
-global [maxqafile]int qasize
-global int nqafiles					!non-0 means qa directory in use.
-
-global enumdata []ichar optionnames, []ref byte optionvars, []byte optionvalues =
-	(load_sw,		"load",			&runcode,			load_cc),
-	(parse_sw,		"parse",		&runcode,			parse_cc),
-	(names_sw,		"names",		&runcode,			names_cc),
-	(gen_sw,		"gen",			&runcode,			gencode_cc),
-	(fixup_sw,		"fixup",		&runcode,			fixup_cc),
-	(run_sw,		"run",			&runcode,			run_cc),
-
-	(ast1_sw,		"ast1",			&fshowast1,			1),
-	(ast2_sw,		"ast2",			&fshowast2,			1),
-
-	(pcl1_sw,		"pcl1",			&fshowpcl1,			1),
-	(pcl2_sw,		"pcl2",			&fshowpcl2,			1),
-	(pcl3_sw,		"pcl3",			&fshowpcl3,			1),
-
-	(allsp_sw,		"allsp",		&fallsp,			1),
-
-	(st_sw,			"st",			&fshowst,			1),
-	(stflat_sw,		"stflat",		&fshowstflat,		1),
-	(types_sw,		"types",		&fshowtypes,		1),
-	(showmodules_sw,"modules",		&fshowmodules,		1),
-
-	(fn_sw,			"fn",			&dispatchtype,		fn_dispatch),
-	(asm_sw,		"asm",			&dispatchtype,		asm_dispatch),
-	(debug_sw,		"debug",		&dispatchtype,		debug_dispatch),
-	(fdebug_sw,		"fdebug",		&dispatchtype,		fdebug_dispatch),
-	(sw_sw,			"sw",			&dispatchtype,		sw_dispatch),
-
-	(opt_sw,		"opt",			&foptimise,			1),
-	(asmopt_sw,		"asmopt",		nil,				0),
-
-	(ext_sw,		"ext",			&usebundled,		0),
-	(qa_sw,			"qa",			&fwriteqa,			1),
-	(qas_sw,		"qas",			&fwriteqa,			2),
-
-	(verbose_sw,	"v",			&fverbose,			1),
-!	(time_sw,		"time",			&fshowtime,			1),
-
-	(nosys_sw,		"nosys",		&fnosys,			1),
-end
-
-!GLOBAL INT NUNITS
-!GLOBAL INT NPCL
-=== qq_dicts.m 0 0 9/44 ===
+=== qq_dicts.m 0 0 8/44 ===
 global proc var_make_dict(variant a, dest, int n) =
 !create a list of n vars starting from a in reverse order (a is the last)
 !put the result in dest (note this will be the last/first of the n vars)
@@ -4257,7743 +4284,7 @@ proc adddictitem(variant d, p, q)=
 	var_unshare(r)			!overwrite any existing value
 	r^:=q^
 end
-=== qq_jhandlers.m 0 0 10/44 ===
-!ASM bytecode handlers
-
-!int showasmflag=1
-int showasmflag=2
-!int showasmflag=0
-
-const kopnda	= 8
-const kopndb	= 16
-const kopndc	= 24
-const kopndd	= 32
-
-const ktag			= varrec.tag
-const khasref		= varrec.hasref
-const krefelemtag	= varrec.elemtag
-const kelemtag		= varrec.elemtag
-const kvarptr		= varrec.varptr
-const kobjptr		= varrec.objptr
-const kptr			= varrec.ptr
-const kvalue		= varrec.value
-const kxvalue		= varrec.xvalue
-const kretaddr		= varrec.retaddr
-const kframeptr_low	= varrec.frameptr_low
-!const krange_low	= varrec.range_lower
-!const krange_high	= varrec.range_upper
-
-const jrefcount		= objrec.refcount
-const jmutable		= objrec.flags			!byte flags; bit 0=mutable flag
-const jusertag		= objrec.usertag
-const jvarptr		= objrec.varptr
-const jlength		= objrec.length
-const jlower16		= objrec.lower16
-const jobjptr2		= objrec.objptr2
-
-const gdef			= genfieldrec.def
-const gnextdef		= genfieldrec.nextdef
-const sowner		= strec.owner
-const smode			= strec.mode
-const snameid		= strec.nameid
-const soffset		= strec.fieldoffset
-
-const varshift		= 4
-
-!offsets from the top of the stack, of x, x/y, or x/y/z operands
-!the x operand is first pushed, so has a variable offset
-!the a suffix means top of stack; b is next; c is last
-
-const xa		= 0				! one operand x
-
-const xb		= -varsize		! two operands x y
-const ya		= 0
-
-const xc		= -varsize*2	! three operands x y z
-const yb		= -varsize
-const za		= 0
-
-
-const intpsize	= 8
-
-const intpsize2	= intpsize*2
-const intpsize4	= intpsize*4
-const intpsize6	= intpsize*6
-
-macro jumpnext = asm jmp [Dprog]
-
-!macro jumpnext   =
-!	assem
-!		*saveregs
-!		call showasmcmd
-!		*loadregs
-!
-!		jmp [Dprog]
-!	end
-!
-macro saveregs   =
-	assem
-		mov [pcptr],Dprog
-		mov [sptr],Dsptr
-		mov [frameptr],Dframe
-	end
-
-!macro saveregs   =
-!	assem
-!		mov [pcptr],Dprog
-!		mov [sptr],Dsptr
-!		mov [frameptr],Dframe
-!		call showasmcmd
-!	end
-
-macro loadregs   =
-	assem
-		mov Dprog,[pcptr]
-		mov Dsptr,[sptr]
-		mov Dframe,[frameptr]
-	end
-
-macro pushvar    = asm add Dsptr, varsize
-
-macro popvar     = asm sub Dsptr, varsize
-
-macro pushvar2   = asm add Dsptr, varsize+varsize
-macro popvar2    = asm sub Dsptr, varsize+varsize
-
-macro pushvar3   = asm add Dsptr, varsize+varsize+varsize
-macro popvar3    = asm sub Dsptr, varsize+varsize+varsize
-
-macro jumpskip1  =
-	assem
-		add Dprog,8
-		*jumpnext
-	end
-
-macro jumpskip2  =
-	assem
-		add Dprog,16
-		*jumpnext
-	end
-
-macro jumpskip3  =
-	assem
-		add Dprog,24
-		*jumpnext
-	end
-
-macro jumpskip4  =
-	assem
-		add Dprog,32
-		*jumpnext
-	end
-
-macro jumpskip5  =
-	assem
-		add Dprog,40
-		*jumpnext
-	end
-
-macro jumpskip6  =
-	assem
-		add Dprog,48
-		*jumpnext
-	end
-
-macro loadskip1  =
-	assem
-		mov Dsptr,[sptr]
-		mov Dframe,[frameptr]
-		mov Dprog,[pcptr]
-		add Dprog,8
-		*jumpnext
-	end
-
-macro loadskip2  =
-	assem
-		mov Dsptr,[sptr]
-		mov Dframe,[frameptr]
-		mov Dprog,[pcptr]
-		add Dprog,16
-		*jumpnext
-	end
-
-macro callunshareu_d4    =
-	assem
-		mov D10,D4
-		*saveregs
-		call var_unshareu
-		*loadregs
-	end
-
-macro callunshareu_dsptr =
-	assem
-		mov D10, Dsptr
-		*saveregs
-		call var_unshareu
-		*loadregs
-	end
-
-macro callunshareu =
-	assem
-		*saveregs
-		call var_unshareu
-		*loadregs
-	end
-
-macro callduplu_dsptr =
-	assem
-		mov D10, Dsptr
-		*saveregs
-		call var_duplu
-		*loadregs
-	end
-
-macro callvarfree =
-	assem
-		*saveregs
-		call var_free
-		*loadregs
-	end
-
-global [0..pclnames.upb]ref proc jhandlertable
-
-proc showasmcmd=
-	if showasmflag<2 then return fi
-	println "showasmcmd",showasmflag,strpcptr(), pcptr, sptr, ttname[sptr.tag]
-end
-
-global proc initjhandlers=
-	ichar name
-	static int handlersdone=0
-
-	if handlersdone then return fi
-
-	for i to $getnprocs() do
-		name:=$getprocname(i)
-		if eqbytes(name,"j_",2) then
-			for k:=0 to pclnames.upb do
-				if eqstring(name+2,pclnames[k]+1) then		!skip "j_" and "k"
-					jhandlertable[k]:=$getprocaddr(i)
-					exit
-				fi
-			else
-				pcerror_s("Unknown j-handler",name)
-			od
-		fi
-	od
-
-	for i in jhandlertable.bounds when jhandlertable[i]=nil do
-		jhandlertable[i]:=cast(junimpl)
-	od
-
-	handlersdone:=1
-end
-
-global function asmavailable:int =
-	 1
-end
-
-function strpcptr:ichar=
-	for i in jhandlertable.bounds do
-		if jhandlertable[i]=cast(pcptr^,ref proc) then
-			return pclnames[i]
-		fi
-	od
-	return "<not found>"
-end
-
-global function disploop_asm:ref int =
-	disploop()
-	return nil
-end
-
-threadedproc disploop*=
-!Note: this is reentrant
-
-	assem
-		push D9
-		push D8
-		push D7
-		push D6
-
-		push D5
-		push D4
-		push D3
-		push Dframe
-
-		sub dstack,40
-
-		*loadregs
-!MOV DFRAME,[FRAMEPTR]
-		*jumpnext
-	end
-
-stoplabel:
-
-	assem
-		add dstack, 40
-
-		pop Dframe
-		pop D3
-		pop D4
-		pop D5
-
-		pop D6
-		pop D7
-		pop D8
-		pop D9
-	end
-end
-
-threadedproc junimpl*=
-	pcerror("-asm Unimplemented (use -debug to see opcode)")
-end
-
-threadedproc j_comment*=
-
-
-	saveregs
-!CPL "COMMENT"
-
-!	skip(1)
-	pcptr+:=2
-
-	loadregs
-	jumpnext
-end
-
-threadedproc j_nop*=
-!	jumpnext
-	saveregs
-	k_nop()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_procentry*=
-	assem
-		mov A3,[Dprog+kopnda]
-loop1:
-		*pushvar
-		mov word32 [Dsptr+ktag],tvoid
-!		mov word64 [Dsptr+kvalue],0
-		dec A3
-		jnz loop1
-		*jumpskip2
-	end
-
-	saveregs
-	k_procentry()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_pushm*=
-	assem
-		mov D4,[Dprog+kopnda]
-		*pushvar
-		mov D0,[D4+ktag]
-		mov [Dsptr+ktag],D0
-		mov D1,[D4+kvalue]
-		mov [Dsptr+kvalue],D1
-		and A0,hasrefmask
-		jz L2
-		inc word32 [D1+jrefcount]
-	L2:
-		*jumpskip2
-	end
-	saveregs
-	k_pushm()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_pushf*=
-	assem
-		mov D4,[Dprog+kopnda]
-		add D4,Dframe
-		*pushvar
-		mov D0,[D4+ktag]
-		mov [Dsptr+ktag],D0
-		mov D1,[D4+kvalue]
-		mov [Dsptr+kvalue],D1
-		and A0,hasrefmask
-		jz L2
-		inc word32 [D1+jrefcount]
-	L2:
-		*jumpskip2
-	end
-
-	saveregs
-	k_pushf()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_pushmref*=
-	assem
-		*pushvar
-		mov word32 [Dsptr+ktag],trefvar
-		mov D4,[Dprog+kopnda]
-		mov [Dsptr+kvarptr],D4
-		*jumpskip2
-	end
-	saveregs
-	k_pushmref()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_pushfref*=
-	assem
-		*pushvar
-		mov word32 [Dsptr+ktag],trefvar
-		mov D4,[Dprog+kopnda]
-		lea D0,[D4+Dframe]
-		mov [Dsptr+kvarptr],D0
-		*jumpskip2
-	end
-
-	saveregs
-	k_pushfref()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_popm*=
-	assem
-		mov D4,[Dprog+kopnda]
-
-		cmp byte [D4+khasref],1
-		jnz L2
-
-		*callunshareu_d4
-		mov D4,[Dprog+kopnda]
-
-L2:
-		mov D0,[Dsptr+ktag]
-		mov [D4+ktag],D0
-		mov D1,[Dsptr+kvalue]
-		mov [D4+kvalue],D1
-
-		*popvar
-		*jumpskip2
-	end
-
-	saveregs
-	k_popm()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_storem*=
-	assem
-		cmp byte [Dsptr+khasref],1
-		jnz L1
-		mov D0,[Dsptr+kobjptr]
-		inc word32 [D0+jrefcount]
-L1:
-		mov D4,[Dprog+kopnda]
-
-		cmp byte [D4+khasref],1
-		jnz L2
-
-		*callunshareu_d4
-		mov D4,[Dprog+kopnda]
-
-L2:
-		mov D0,[Dsptr+ktag]
-		mov [D4+ktag],D0
-		mov D1,[Dsptr+kvalue]
-		mov [D4+kvalue],D1
-
-		*jumpskip2
-	end
-
-	saveregs
-	k_storem()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_popf*=
-	assem
-		mov D4,[Dprog+kopnda]
-		add D4,Dframe
-
-		cmp byte [D4+khasref],1
-		jnz L2
-		*callunshareu_d4
-
-L2:
-		mov D0,[Dsptr+ktag]
-		mov [D4+ktag],D0
-		mov D1,[Dsptr+kvalue]
-		mov [D4+kvalue],D1
-
-		*popvar
-		*jumpskip2
-	end
-
-	saveregs
-	k_popf()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_storef*=
-	assem
-		cmp byte [Dsptr+khasref],1
-		jnz L1
-		mov D0,[Dsptr+kobjptr]
-		inc word32 [D0+jrefcount]
-L1:
-		mov D4,[Dprog+kopnda]
-		add D4,Dframe
-
-		cmp byte [D4+khasref],1
-		jnz L2
-		*callunshareu_d4
-
-L2:
-		mov D0,[Dsptr+ktag]
-		mov [D4+ktag],D0
-		mov D1,[Dsptr+kvalue]
-		mov [D4+kvalue],D1
-
-		*jumpskip2
-	end
-
-	saveregs
-	k_storef()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_pushci*=
-	assem
-		*pushvar
-		mov word32 [Dsptr+ktag],tint
-		mov D0,[Dprog+kopnda]
-		mov [Dsptr+kvalue],D0
-		*jumpskip2
-	end
-
-	saveregs
-	k_pushci()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_pushvoid*=
-	assem
-		*pushvar
-		mov word32 [Dsptr+ktag],tvoid
-		*jumpskip1
-	end
-
-	saveregs
-	k_pushvoid()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_pushnil*=
-	assem
-		*pushvar
-		mov word32 [Dsptr+ktag],trefpack
-		mov word32 [Dsptr+krefelemtag],tvoid
-		mov word64 [Dsptr+kptr],0
-		*jumpskip1
-	end
-
-	saveregs
-	k_pushnil()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_pushcr*=
-	assem
-		*pushvar
-		mov word32 [Dsptr+ktag],treal
-		mov D0,[Dprog+kopnda]
-		mov [Dsptr+kvalue],D0
-		*jumpskip2
-	end
-
-	saveregs
-	k_pushcr()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_pushcs*=
-	assem
-		*pushvar
-		mov word32 [Dsptr+ktag],tstring ior hasrefmask
-		mov D0,[Dprog+kopnda]
-		mov [Dsptr+kobjptr],D0
-		inc word32 [D0+jrefcount]
-		*jumpskip2
-	end
-
-	saveregs
-	k_pushcs()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_pusht*=
-	saveregs
-	k_pusht()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_pushsymbol*=
-	saveregs
-	k_pushsymbol()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_pushptr*=
-	assem
-		cmp byte [Dsptr+ktag],trefvar
-		jnz L1
-		mov D4,[Dsptr+kvarptr]
-
-		mov D0,[D4+ktag]
-		mov [Dsptr+ktag],D0
-		mov D1,[D4+kvalue]
-		mov [Dsptr+kvalue],D1
-		and A0,hasrefmask
-		jz L12
-		inc word32 [D1+jrefcount]
-L12:
-		*jumpskip1
-
-L1:
-		cmp byte [Dsptr+ktag],trefpack
-		jnz L2
-		mov D4,[Dsptr+kptr]
-		movzx A0,word16 [Dsptr+krefelemtag]
-		cmp A0,ti32
-		jnz L10
-		mov word32 [Dsptr+ktag],tint
-		mov A0,[D4]
-		movsxd D0,A0
-		mov [Dsptr+kvalue],D0
-		*jumpskip1
-L10:
-		cmp A0,tu8
-		jnz L11
-		mov word32 [Dsptr+ktag],tint
-		movzx A0,byte [D4]
-		mov [Dsptr+kvalue],D0
-		*jumpskip1
-L11:
-
-L2:
-L99:
-	end
-	saveregs
-	k_pushptr()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_popptr*=
-	saveregs
-	k_popptr()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_zpopm*=
-	saveregs
-	k_zpopm()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_zpopf*=
-	assem
-		mov D4,[Dprog+kopnda]
-		add D4,Dframe
-		mov D0,[Dsptr+ktag]
-		mov [D4+ktag],D0
-		mov D1,[Dsptr+kvalue]
-		mov [D4+kvalue],D1
-
-		*popvar
-		*jumpskip2
-	end
-
-	saveregs
-	k_zpopf()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_dupl*=
-	assem
-		*pushvar
-		mov D0,[Dsptr+xb]			!D0 = tag etc
-		mov [Dsptr+ya],D0
-		mov D1,[Dsptr+xb+kvalue]	!D1 = value/objptr etc
-		mov [Dsptr+ya+kvalue],D1
-
-		and A0,hasrefmask
-		jz L1
-		inc word32 [D1+jrefcount]
-L1:
-
-		*jumpskip1
-	end
-
-	saveregs
-	k_dupl()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_copy*=
-	static varrec x
-
-	assem
-		cmp byte [dsptr+khasref],1
-		jnz L1
-
-		mov D0,[Dsptr]
-		mov [x],D0
-		mov D0,[Dsptr+kvalue]
-		mov [x+kvalue],D0
-
-		*callduplu_dsptr
-		lea D10,[x]
-		*callunshareu
-
-L1:		*jumpskip1
-	end
-
-	saveregs
-	k_copy()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_swap*=
-	saveregs
-	k_swap()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_convrefpack*=
-	saveregs
-	k_convrefpack()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_jump*=
-	assem
-		mov Dprog,[Dprog+kopnda]
-		*jumpnext
-	end
-end
-
-threadedproc j_jumpptr*=
-	saveregs
-	k_jumpptr()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_jumptrue*=
-	assem
-		cmp byte [Dsptr+xa+ktag],tint
-		jnz L1
-
-		mov D0,[Dsptr+xa+kvalue]
-		and D0,D0
-		jz L2
-		mov Dprog,[Dprog+kopnda]
-		*popvar
-		*jumpnext
-L2:
-		*popvar
-		*jumpskip2
-L1:
-	end
-	saveregs
-	k_jumptrue()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_jumpfalse*=
-	assem
-		cmp byte [Dsptr+xa+ktag],tint
-		jnz L1
-
-		mov D0,[Dsptr+xa+kvalue]
-		and D0,D0
-		jnz L2
-		mov Dprog,[Dprog+kopnda]
-		*popvar
-		*jumpnext
-L2:
-		*popvar
-		*jumpskip2
-L1:
-	end
-
-	saveregs
-	k_jumpfalse()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_jumpeq*=
-	assem
-		mov B0,[Dsptr+xb+ktag]
-		mov B1,[Dsptr+ya+ktag]
-		cmp B0,B1
-		jnz L99
-
-		cmp B0,tint
-		jnz L1
-
-		mov D0,[Dsptr+xb+kvalue]
-		cmp D0,[Dsptr+ya+kvalue]
-		jz Ltrue
-		*popvar2
-		*jumpskip2
-
-Ltrue:
-		*popvar2
-		mov Dprog,[Dprog+kopnda]
-		*jumpnext
-L1:
-		cmp B0,treal
-		jnz L3
-
-		movq XMM0,[Dsptr+xb+kvalue]
-		comisd XMM0,[Dsptr+ya+kvalue]
-		jz Ltrue
-		*popvar2
-		*jumpskip2
-
-L3:
-L99:
-	end
-
-	saveregs
-	k_jumpeq()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_jumpne*=
-	assem
-		mov B0,[Dsptr+xb+ktag]
-		mov B1,[Dsptr+ya+ktag]
-		cmp B0,B1
-		jnz L99
-
-		cmp B0,tint
-		jnz L1
-
-		mov D0,[Dsptr+xb+kvalue]
-		cmp D0,[Dsptr+ya+kvalue]
-		jnz Ltrue
-		*popvar2
-		*jumpskip2
-
-Ltrue:
-		*popvar2
-		mov Dprog,[Dprog+kopnda]
-		*jumpnext
-L1:
-		cmp B0,treal
-		jnz L3
-
-		movq XMM0,[Dsptr+xb+kvalue]
-		comisd XMM0,[Dsptr+ya+kvalue]
-		jnz Ltrue
-		*popvar2
-		*jumpskip2
-
-L3:
-L99:
-	end
-
-	saveregs
-	k_jumpne()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_jumplt*=
-	assem
-		mov B0,[Dsptr+xb+ktag]
-		mov B1,[Dsptr+ya+ktag]
-		cmp B0,B1
-		jnz L99
-
-		cmp B0,tint
-		jnz L1
-
-		mov D0,[Dsptr+xb+kvalue]
-		cmp D0,[Dsptr+ya+kvalue]
-		jl Ltrue
-		*popvar2
-		*jumpskip2
-
-Ltrue:
-		*popvar2
-		mov Dprog,[Dprog+kopnda]
-		*jumpnext
-L1:
-		cmp B0,treal
-		jnz L3
-
-		movq XMM0,[Dsptr+xb+kvalue]
-		comisd XMM0,[Dsptr+ya+kvalue]
-		jb Ltrue
-		*popvar2
-		*jumpskip2
-
-L3:
-L99:
-	end
-
-	saveregs
-	k_jumplt()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_jumple*=
-	assem
-		mov B0,[Dsptr+xb+ktag]
-		mov B1,[Dsptr+ya+ktag]
-		cmp B0,B1
-		jnz L99
-
-		cmp B0,tint
-		jnz L1
-
-		mov D0,[Dsptr+xb+kvalue]
-		cmp D0,[Dsptr+ya+kvalue]
-		jle Ltrue
-		*popvar2
-		*jumpskip2
-
-Ltrue:
-		*popvar2
-		mov Dprog,[Dprog+kopnda]
-		*jumpnext
-L1:
-		cmp B0,treal
-		jnz L3
-
-		movq XMM0,[Dsptr+xb+kvalue]
-		comisd XMM0,[Dsptr+ya+kvalue]
-		jbe Ltrue
-		*popvar2
-		*jumpskip2
-
-L3:
-L99:
-	end
-
-	saveregs
-	k_jumple()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_jumpge*=
-	assem
-		mov B0,[Dsptr+xb+ktag]
-		mov B1,[Dsptr+ya+ktag]
-		cmp B0,B1
-		jnz L99
-
-		cmp B0,tint
-		jnz L1
-
-		mov D0,[Dsptr+xb+kvalue]
-		cmp D0,[Dsptr+ya+kvalue]
-		jge Ltrue
-		*popvar2
-		*jumpskip2
-
-Ltrue:
-		*popvar2
-		mov Dprog,[Dprog+kopnda]
-		*jumpnext
-L1:
-		cmp B0,treal
-		jnz L3
-
-		movq XMM0,[Dsptr+xb+kvalue]
-		comisd XMM0,[Dsptr+ya+kvalue]
-		jae Ltrue
-		*popvar2
-		*jumpskip2
-
-L3:
-L99:
-	end
-
-	saveregs
-	k_jumpge()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_jumpgt*=
-	assem
-		mov B0,[Dsptr+xb+ktag]
-		mov B1,[Dsptr+ya+ktag]
-		cmp B0,B1
-		jnz L99
-
-		cmp B0,tint
-		jnz L1
-
-		mov D0,[Dsptr+xb+kvalue]
-		cmp D0,[Dsptr+ya+kvalue]
-		jg Ltrue
-		*popvar2
-		*jumpskip2
-
-Ltrue:
-		*popvar2
-		mov Dprog,[Dprog+kopnda]
-		*jumpnext
-L1:
-		cmp B0,treal
-		jnz L3
-
-		movq XMM0,[Dsptr+xb+kvalue]
-		comisd XMM0,[Dsptr+ya+kvalue]
-		ja Ltrue
-		*popvar2
-		*jumpskip2
-
-L3:
-L99:
-	end
-
-	saveregs
-	k_jumpgt()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_jumptesteq*=
-	assem
-		cmp word16 [Dsptr+ya+ktag],tint
-		jnz L99
-		cmp word16 [Dsptr+xb+ktag],tint
-		jnz L99
-		mov D0,[Dsptr+ya+kvalue]
-		cmp D0,[Dsptr+xb+kvalue]
-		jnz L2
-!equal, so pop both and jump
-		*popvar2
-		mov Dprog,[Dprog+kopnda]
-		*jumpnext
-!not equal: keep x on stack
-L2:
-		*popvar
-		*jumpskip2
-
-L99:
-	end
-
-	saveregs
-	k_jumptesteq()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_jumptestne*=
-	assem
-		cmp word16 [Dsptr+ya+ktag],tint
-		jnz L1
-		cmp word16 [Dsptr+xb+ktag],tint
-		jnz L1
-		mov D0,[Dsptr+ya+kvalue]
-		cmp D0,[Dsptr+xb+kvalue]
-		jz L2
-!not equal, so pop y and jump
-		*popvar
-		mov Dprog,[Dprog+kopnda]
-		*jumpnext
-L2:
-		*popvar2
-		*jumpskip2
-
-L1:
-	end
-
-	saveregs
-	k_jumptestne()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_switch*=
-	assem
-		cmp word16 [Dsptr+ktag],tint
-		jnz L1						!get M to deal with errors
-		mov D4,[Dsptr+kvalue]		!switch index
-		*popvar
-		sub D4,[Dprog+kopndb]		!index-lower; now 0-based index
-		cmp D4,[Dprog+kopnda]		!index0>=n?
-		jae L2						!out of range
-!in range
-		shl D4,1
-		mov Dprog,[Dprog+D4*8+intpsize4]
-		*jumpnext
-!out of range
-L2:
-		mov D5,[Dprog+kopnda]
-		shl D5,1
-		mov Dprog,[Dprog+D5*8+intpsize4]
-		*jumpnext
-
-L1:
-	end
-
-	saveregs
-	k_switch()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_tom*=
-	assem
-		mov D4,[Dprog+kopnda]
-		mov D5,[Dprog+kopndb]
-		dec word64 [D5+kvalue]
-		jz L1
-		mov Dprog,D4
-		*jumpnext
-L1:
-		*jumpskip3
-	end
-
-	saveregs
-	k_tom()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_tof*=
-	assem
-		mov D4,[Dprog+kopnda]
-		mov D5,[Dprog+kopndb]
-		dec word64 [Dframe+D5+kvalue]
-		jz L1
-		mov Dprog,D4
-		*jumpnext
-L1:
-		*jumpskip3
-	end
-
-	saveregs
-	k_tof()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_formci*=
-	saveregs
-	k_formci()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_forfci*=
-	assem
-		mov D4,[Dprog+kopnda]		!label
-		mov D0,[Dprog+kopndb]		!a
-		inc word64 [Dframe+D0+kvalue]	!++a
-		mov D0,[Dframe+D0+kvalue]
-		cmp A0,[Dprog+kopndc]
-		jg L1
-		mov Dprog,D4
-		*jumpnext
-	L1:
-		*jumpskip4
-	end
-
-	saveregs
-	k_forfci()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_formm*=
-	saveregs
-	k_formm()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_forff*=
-	assem
-		mov D0,[Dprog+kopndb]		!b
-		mov D5,[Dprog+kopndc]		!c
-		mov D4,[Dprog+kopnda]		!label
-
-		inc word64 [Dframe+D0+kvalue]
-		mov D0,[Dframe+D0+kvalue]
-		cmp D0,[Dframe+D5+kvalue]
-
-		jg L1
-		mov Dprog,D4
-		*jumpnext
-	L1:
-		*jumpskip4
-	end
-
-	saveregs
-	k_forff()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_fordmci*=
-	saveregs
-	k_fordmci()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_fordfci*=
-	saveregs
-	k_fordfci()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_fordmm*=
-	saveregs
-	k_fordmm()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_fordff*=
-	saveregs
-	k_fordff()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_callproc*=
-	const countinterval=100
-	static int count=countinterval
-
-	assem
-		dec word32 [count]
-		jz L99
-
-		*pushvar
-		mov word32 [Dsptr+ktag],tretaddr
-		lea D0,[Dprog+24]		! return address
-		mov [Dsptr+kretaddr],D0
-		mov [Dsptr+kframeptr_low],Aframe
-		mov Dframe,Dsptr
-		mov [frameptr],Dframe
-		mov Dprog,[Dprog+kopnda]
-		*jumpnext
-
-L99:
-		mov word32 [count],countinterval
-	end
-
-	saveregs
-	k_callproc()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_callptr*=
-	saveregs
-	k_callptr()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_return0*=
-	assem
-		mov Dprog,[Dsptr+kretaddr]
-
-!		mov Aframe,[Dsptr+kframeptr_low]
-		mov D0, [Dsptr+kframeptr_low-4]		!load 8 bytes including previous 4
-		shr Dframe, 32						!FP top in low word
-		shld Dframe, D0, 32					!Back in high word and pull in new low word
-
-		*popvar
-		*jumpnext
-	end
-
-	saveregs
-	k_return0()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_return*=
-
-	assem
-		mov D5,[Dprog+kopnda]		!nargs
-
-		mov Dprog,[Dsptr+kretaddr]
-
-!		mov Aframe,[Dsptr+kframeptr_low]
-		mov D0, [Dsptr+kframeptr_low-4]		!load 8 bytes including previous 4
-		shr Dframe, 32						!FP top in low word
-		shld Dframe, D0, 32					!Back in high word and pull in new low word
-
-
-		*popvar
-
-		and D5,D5
-		jz L2				!no args
-L1:		cmp byte [Dsptr+khasref],1
-		jnz L11
-		*callunshareu_dsptr
-
-L11:	*popvar
-		dec D5
-		jnz L1
-
-L2:
-		*jumpnext
-	end
-
-	saveregs
-	k_return()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_popretval*=
-	assem
-		mov D4,[Dprog+kopnda]
-		mov D0,[Dsptr+ktag]
-		mov [Dframe+D4+ktag],D0
-		mov D1,[Dsptr+kvalue]
-		mov [Dframe+D4+kvalue],D1
-		*popvar
-		*jumpskip2
-	end
-
-	saveregs
-	k_popretval()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_modulecall*=
-	saveregs
-	k_modulecall()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_modulereturn*=
-	saveregs
-	k_modulereturn()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_calldll*=
-	saveregs
-	k_calldll()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_callhost*=
-	saveregs
-	k_callhost()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_unshare*=
-	assem
-		mov D5,[Dprog+kopnda]		!assume > 0
-
-L1:		cmp byte [Dsptr+khasref],1
-		jnz L2
-		*callunshareu_dsptr
-L2:		*popvar
-		dec D5
-		jnz L1
-		*jumpskip2
-	end
-
-	saveregs
-	k_unshare()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_stop*=
-	saveregs
-
-	asm jmp disploop.stoplabel
-end
-
-threadedproc j_stoprunproc*=
-	saveregs
-	asm jmp disploop.stoplabel
-end
-
-threadedproc j_makelist*=
-	saveregs
-	k_makelist()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_makerecord*=
-	saveregs
-	k_makerecord()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_makearray*=
-	saveregs
-	k_makearray()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_makebits*=
-	saveregs
-	k_makebits()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_makestruct*=
-	saveregs
-	k_makestruct()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_makeset*=
-	saveregs
-	k_makeset()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_makerange*=
-	saveregs
-	k_makerange()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_makerangelen*=
-	saveregs
-	k_makerangelen()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_makedict*=
-	saveregs
-	k_makedict()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_makedecimal*=
-	saveregs
-	k_makedecimal()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_incrptr*=
-	assem
-		cmp byte [Dsptr+ktag],trefvar
-		jnz L99
-		mov D4,[Dsptr+kvarptr]
-		mov B0,[D4+ktag]
-		cmp B0,tint
-		jnz L1
-		inc word64 [D4+kvalue]
-		*popvar
-		*jumpskip1
-
-L1:
-!		cmp B0,trefpack
-!		jnz L2
-!		movzx A3,word16 [Dsptr+krefelemtag]
-!		mov D3,[D3*8+ttsize]
-!		add [D4+kptr],D3
-!		*popvar
-!		*jumpskip1
-
-L2:
-
-L99:
-	end
-
-	saveregs
-	k_incrptr()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_incrtom*=
-	assem
-		mov D4,[Dprog+kopnda]
-		cmp byte [D4+ktag],tint
-		jnz L1
-		inc word64 [D4+kvalue]
-		*jumpskip2
-
-	L1:
-		cmp byte [D4+ktag],trefpack
-		jnz L2
-		movzx A0,word16 [D4+krefelemtag]
-!		mov A0,[D0*8+ttsize]
-		lea D1,[ttsize]
-		mov A0,[D1+D0*8]
-		add [D4+kvarptr],D0
-		*jumpskip2
-
-L2:
-	end
-
-	saveregs
-	k_incrtom()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_incrtof*=
-	assem
-		mov D4,[Dprog+kopnda]
-		add D4,Dframe
-		cmp byte [D4+ktag],tint
-		jnz L1
-		inc word64 [D4+kvalue]
-		*jumpskip2
-
-	L1:
-		cmp byte [D4+ktag],trefpack
-		jnz L2
-		movzx A0,word16 [D4+krefelemtag]
-!		mov A0,[D0*8+ttsize]
-		lea D1,[ttsize]
-		mov A0,[D1+D0*8]
-		add [D4+kvarptr],D0
-		*jumpskip2
-
-L2:
-	end
-
-	saveregs
-	k_incrtof()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_loadincr*=
-	assem
-		cmp byte [Dsptr+ktag],trefvar
-		jnz L99
-		mov D4,[Dsptr+kvarptr]
-
-		mov B0,[D4+ktag]
-		cmp B0,tint
-		jnz L1
-!refvar int
-		mov D0,[D4+kvalue]
-		inc word64 [D4+kvalue]
-		mov word32 [Dsptr+ktag],tint
-		mov [Dsptr+kvalue],D0
-		*jumpskip1
-
-L1:
-		cmp B0,trefpack
-		jnz L2
-!		cmp word16 [D4+krefelemtag],tu8
-		cmp word32 [D4+krefelemtag],tu8
-		jnz L2
-
-!refvar refpack u8
-		mov D0,[D4+kptr]
-		inc word64 [D4+kptr]
-
-		mov word32 [Dsptr+ktag],trefpack
-!		mov word16 [Dsptr+krefelemtag],tu8
-		mov word32 [Dsptr+krefelemtag],tu8
-		mov [Dsptr+kptr],D0
-		*jumpskip1
-
-L2:
-
-L99:
-	end
-!
-	saveregs
-	k_loadincr()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_incrload*=
-	assem
-		cmp byte [Dsptr+ktag],trefvar
-		jnz L99
-		mov D4,[Dsptr+kvarptr]
-
-		mov B0,[D4+ktag]
-		cmp B0,tint
-		jnz L1
-!refvar int
-		inc word64 [D4+kvalue]
-		mov D0,[D4+kvalue]
-		mov word32 [Dsptr+ktag],tint
-		mov [Dsptr+kvalue],D0
-		*jumpskip1
-
-L1:
-		cmp B0,trefpack
-		jnz L2
-!		cmp word16 [D4+krefelemtag],tu8
-		cmp word32 [D4+krefelemtag],tu8
-		jnz L2
-
-!refvar refpack u8
-		inc word64 [D4+kptr]
-		mov D0,[D4+kptr]
-		mov word32 [Dsptr+ktag],trefpack
-!		mov word16 [Dsptr+krefelemtag],tu8
-		mov word32 [Dsptr+krefelemtag],tu8
-		mov [Dsptr+kptr],D0
-		*jumpskip1
-
-L2:
-
-L99:
-	end
-
-	saveregs
-!CPL "J:CAN'T DO INCRLOAD",TTNAME[SPTR.TAG]
-	k_incrload()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_decrptr*=
-	saveregs
-	k_decrptr()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_decrtom*=
-	assem
-		mov D4,[Dprog+kopnda]
-		cmp byte [D4+ktag],tint
-		jnz L1
-		dec word64 [D4+kvalue]
-		*jumpskip2
-
-	L1:
-		cmp byte [D4+ktag],trefpack
-		jnz L2
-		movzx A0,word16 [D4+krefelemtag]
-!		mov A0,[D0*8+ttsize]
-		lea D1,[ttsize]
-		mov A0,[D1+D0*8]
-		sub [D4+kvarptr],D0
-		*jumpskip2
-
-L2:
-	end
-
-	saveregs
-	k_decrtom()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_decrtof*=
-	assem
-		mov D4,[Dprog+kopnda]
-		cmp byte [Dframe+D4+ktag],tint
-		jnz L1
-		dec word64 [Dframe+D4+kvalue]
-		*jumpskip2
-
-	L1:
-		cmp byte [Dframe+D4+ktag],trefpack
-		jnz L2
-		movzx A0,word16 [Dframe+D4+krefelemtag]
-!		mov A0,[D0*8+ttsize]
-		lea D1,[ttsize]
-		mov A0,[D1+D0*8]
-		sub [Dframe+D4+kvarptr],D0
-		*jumpskip2
-
-L2:
-	end
-
-	saveregs
-	k_decrtof()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_loaddecr*=
-	saveregs
-	k_loaddecr()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_decrload*=
-	saveregs
-	k_decrload()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_incr*=
-	saveregs
-	k_incr()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_decr*=
-	saveregs
-	k_decr()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_neg*=
-	saveregs
-	k_neg()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_abs*=
-	saveregs
-	k_abs()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_notl*=
-	saveregs
-	k_notl()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_inot*=
-	assem
-		cmp byte [Dsptr+ktag],tint
-		jnz L1
-
-		not word64 [dsptr+kvalue]
-!		mov D0,[dsptr+kvalue]
-!		not D0
-!		mov [dsptr+kvalue],D0
-		*jumpskip1
-L1:
-	end
-
-	saveregs
-	k_inot()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_istruel*=
-	saveregs
-	k_istruel()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_asc*=
-	saveregs
-	k_asc()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_chr*=
-	assem
-		cmp byte [Dsptr+ktag],tint
-		jnz L99						!not int; B deals with the error
-		mov D0,[Dsptr+kvalue]
-		cmp D0,255
-		ja L99						!not in range
-		lea D1,[chrtable]
-		mov D0,[D1+D0*8]
-!		mov D0,[D0*8+chrtable]
-		and D0,D0
-		jz L99						!value not cached; B will fill it in
-		mov word32 [Dsptr+ktag],tstring+hasrefmask
-		mov [Dsptr+kvalue],D0				!point to object
-		inc word32 [D0+jrefcount]
-		*jumpskip1
-L99:
-	end
-
-	saveregs
-	k_chr()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_sqrt*=
-	assem
-		cmp word16 [Dsptr+ktag],tint
-		jnz L1
-		fild word32 [Dsptr+kvalue]
-		fsqrt
-		mov word32 [Dsptr+ktag],treal
-		fstp word64 [Dsptr+kvalue]
-		*jumpskip1
-L1:
-		cmp word16 [Dsptr+ktag],treal
-		jnz L2
-
-		movq xmm0,[Dsptr+kvalue]
-		sqrtsd xmm0,xmm0
-		movq [Dsptr+kvalue],xmm0
-
-		*jumpskip1
-L2:
-	end
-
-	saveregs
-	k_sqrt()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_sqr*=
-	assem
-		cmp word16 [Dsptr+ktag],tint
-		jnz L1
-		mov D0,[Dsptr+kvalue]
-		imul2 D0,D0
-		mov [Dsptr+kvalue],D0
-		*jumpskip1
-L1:
-		cmp word16 [Dsptr+ktag],treal
-		cmp word16 [Dsptr+ktag],treal
-		jnz L2
-
-		movq xmm0,[Dsptr+kvalue]
-		mulsd xmm0,xmm0
-		movq [Dsptr+kvalue],xmm0
-
-		*jumpskip1
-L2:
-	end
-
-	saveregs
-	k_sqr()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_sin*=
-	saveregs
-	k_sin()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_cos*=
-	saveregs
-	k_cos()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_tan*=
-	saveregs
-	k_tan()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_asin*=
-	saveregs
-	k_asin()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_acos*=
-	saveregs
-	k_acos()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_atan*=
-	saveregs
-	k_atan()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_sign*=
-	saveregs
-	k_sign()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_log*=
-	saveregs
-	k_log()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_log10*=
-	saveregs
-	k_log10()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_exp*=
-	saveregs
-	k_exp()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_round*=
-	saveregs
-	k_round()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_floor*=
-	saveregs
-	k_floor()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_ceil*=
-	saveregs
-	k_ceil()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_fract*=
-	saveregs
-	k_fract()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_fmod*=
-	saveregs
-	k_fmod()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_negto*=
-	saveregs
-	k_negto()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_absto*=
-	saveregs
-	k_absto()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_inotto*=
-	saveregs
-	k_inotto()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_notlto*=
-	saveregs
-	k_notlto()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_len*=
-	assem
-		mov W0, [Dsptr+ktag]
-		cmp B0,tlist
-		jz L1
-		cmp B0,tstring
-		jz L1
-		cmp B0,tarray
-		jnz L99
-L1:
-		mov D1,[Dsptr+kobjptr]
-		mov D3, [D1+jlength]
-
-!		and W0,hasrefmask
-!		jz L2
-		*callunshareu_dsptr
-!L2:
-		mov word32 [Dsptr+ktag],tint
-		mov [Dsptr+kvalue],D3
-		*jumpskip1
-L99:
-	end
-
-	saveregs
-	k_len()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_lwb*=
-	saveregs
-	k_lwb()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_upb*=
-	assem
-		mov W0, [Dsptr+ktag]
-		cmp B0,tlist
-		jnz L99
-L1:
-		mov D1,[Dsptr+kobjptr]
-		mov D3, [D1+jlength]
-		movsx D4, word16 [D1+jlower16]
-		lea D3,[D3+D4-1]	
-
-		*callunshareu_dsptr
-!L2:
-		mov word32 [Dsptr+ktag],tint
-		mov [Dsptr+kvalue],D3
-		*jumpskip1
-L99:
-	end
-
-	saveregs
-	k_upb()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_bounds*=
-	saveregs
-	k_bounds()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_boundsx*=
-	saveregs
-	k_boundsx()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_bitwidth*=
-	saveregs
-	k_bitwidth()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_bytesize*=
-	saveregs
-	k_bytesize()
-	loadregs
-	jumpnext
-end
-
-!threadedproc j_type*=
-!	saveregs
-!	k_type()
-!	loadregs
-!	jumpnext
-!end
-
-threadedproc j_elemtype*=
-	saveregs
-	k_elemtype()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_basetype*=
-	saveregs
-	k_basetype()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_type*=
-	saveregs
-	k_type()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_dictitems*=
-	saveregs
-	k_dictitems()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_minvalue*=
-	saveregs
-	k_minvalue()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_maxvalue*=
-	saveregs
-	k_maxvalue()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_isint*=
-	assem
-		mov W0,[Dsptr+ktag]
-		cmp B0,tint
-		setz B3
-		movzx D3,B3
-		and W0,hasrefmask
-		jz L1
-		*callunshareu_dsptr
-L1:		mov word32 [Dsptr],tint
-		mov [Dsptr+kvalue],D3
-		*jumpskip1
-	end
-
-	saveregs
-	k_isint()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_isreal*=
-	saveregs
-	k_isreal()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_isstring*=
-	saveregs
-	k_isstring()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_isrange*=
-	saveregs
-	k_isrange()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_isnumber*=
-	saveregs
-	k_isnumber()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_islist*=
-	assem
-		mov W0,[Dsptr+ktag]
-		cmp B0,tlist
-		setz B3
-		movzx D3,B3
-		and W0,hasrefmask
-		jz L1
-		*callunshareu_dsptr
-L1:		mov word32 [Dsptr],tint
-		mov [Dsptr+kvalue],D3
-		*jumpskip1
-	end
-
-	saveregs
-	k_islist()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_isrecord*=
-	saveregs
-	k_isrecord()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_ispointer*=
-	saveregs
-	k_ispointer()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_isarray*=
-	saveregs
-	k_isarray()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_ismutable*=
-	saveregs
-	k_ismutable()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_isset*=
-	saveregs
-	k_isset()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_isvoid*=
-	saveregs
-	k_isvoid()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_isdef*=
-	assem
-		cmp byte [Dsptr+ktag],tvoid
-		jnz L1
-		mov D3,0
-		jmp L2
-L1:		mov D3,1
-L2:
-		cmp byte [Dsptr+khasref],1
-		jnz L3
-		*callunshareu_dsptr
-L3:
-		mov word32 [Dsptr+ktag],tint
-		mov [Dsptr+kvalue],D3
-		*jumpskip1
-	end
-
-	saveregs
-	k_isdef()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_isequal*=
-	saveregs
-	k_isequal()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_convert*=
-	saveregs
-	k_convert()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_typepun*=
-	saveregs
-	k_typepun()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_add*=
-	assem
-		mov B0, [Dsptr+xb+ktag]
-		mov B1, [Dsptr+ya+ktag]
-		cmp B0,B1
-		jnz L99
-		cmp B0,tint
-		jnz L1
-		mov D0,[Dsptr+ya+kvalue]
-		add [Dsptr+xb+kvalue],D0
-		*popvar
-		*jumpskip1
-L1:
-		cmp B0,treal
-		jnz L2
-
-		fld word64 [Dsptr+xb+kvalue]
-		fld word64 [Dsptr+ya+kvalue]
-		fadd
-		fstp word64 [Dsptr+xb+kvalue]
-
-		*popvar
-		*jumpskip1
-L2:
-
-
-L99:
-	end
-
-	saveregs
-	k_add()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_sub*=
-	assem
-		mov B0, [Dsptr+xb+ktag]
-		mov B1, [Dsptr+ya+ktag]
-		cmp B0,B1
-		jnz L99
-
-		cmp B0,tint
-		jnz L1
-		mov D0,[Dsptr+ya+kvalue]
-		sub [Dsptr+xb+kvalue],D0
-		*popvar
-		*jumpskip1
-L1:
-		cmp B0,treal
-		jnz L2
-
-		fld word64 [Dsptr+xb+kvalue]
-		fld word64 [Dsptr+ya+kvalue]
-		fsub
-		fstp word64 [Dsptr+xb+kvalue]
-
-		*popvar
-		*jumpskip1
-L2:
-L99:
-	end
-
-	saveregs
-	k_sub()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_mul*=
-	assem
-		mov B0, [Dsptr+xb+ktag]
-		mov B1, [Dsptr+ya+ktag]
-		cmp B0,B1
-		jnz L99
-		cmp B0,tint
-		jnz L1
-
-		mov D0,[Dsptr+xb+kvalue]
-		imul word64 [Dsptr+ya+kvalue]
-		mov [Dsptr+xb+kvalue],D0
-		*popvar
-		*jumpskip1
-L1:
-		cmp B0, treal
-		jnz L2
-
-		fld word64 [Dsptr+xb+kvalue]
-		fld word64 [Dsptr+ya+kvalue]
-		fmul
-		fstp word64 [Dsptr+xb+kvalue]
-
-		*popvar
-		*jumpskip1
-
-L2:
-L99:
-	end
-
-	saveregs
-	k_mul()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_div*=
-	assem
-		mov B0, [Dsptr+xb+ktag]
-		mov B1, [Dsptr+ya+ktag]
-		cmp B0,B1
-		jnz L99
-	
-		cmp B0, treal
-		jnz L2
-
-		fld word64 [Dsptr+xb+kvalue]
-		fld word64 [Dsptr+ya+kvalue]
-		fdiv
-		fstp word64 [Dsptr+xb+kvalue]
-
-		*popvar
-		*jumpskip1
-
-L2:
-L99:
-	end
-
-	saveregs
-	k_div()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_idiv*=
-	assem
-		cmp byte [Dsptr+xb+ktag],tint
-		jnz L1
-		cmp byte [Dsptr+ya+ktag],tint
-		jnz L1
-		mov D0,[Dsptr+xb+kvalue]
-		cqo
-		mov D1, [Dsptr+ya+kvalue]
-		and D1,D1
-		jz L1
-		idiv D1
-		mov [Dsptr+xb+kvalue],D0
-		*popvar
-		*jumpskip1
-L1:
-	end
-
-	saveregs
-
-	k_idiv()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_irem*=
-	assem
-		cmp byte [Dsptr+xb+ktag],tint
-		jnz L1
-		cmp byte [Dsptr+ya+ktag],tint
-		jnz L1
-		mov D0,[Dsptr+xb+kvalue]
-		cqo
-		idiv word64 [Dsptr+ya+kvalue]
-		mov [Dsptr+xb+kvalue],D11
-		*popvar
-		*jumpskip1
-L1:
-	end
-	saveregs
-	k_irem()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_idivrem*=
-	saveregs
-	k_idivrem()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_iand*=
-	assem
-		cmp byte [Dsptr+xb+ktag],tint
-		jnz L1
-		cmp byte [Dsptr+ya+ktag],tint
-		jnz L1
-		mov D0,[Dsptr+ya+kvalue]
-		and [Dsptr+xb+kvalue],D0
-		*popvar
-		*jumpskip1
-L1:
-	end
-
-	saveregs
-	k_iand()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_ior*=
-	assem
-		cmp byte [Dsptr+xb+ktag],tint
-		jnz L1
-		cmp byte [Dsptr+ya+ktag],tint
-		jnz L1
-		mov D0,[Dsptr+ya+kvalue]
-		or [Dsptr+xb+kvalue],D0
-		*popvar
-		*jumpskip1
-L1:
-	end
-	saveregs
-	k_ior()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_ixor*=
-	assem
-		cmp byte [Dsptr+xb+ktag],tint
-		jnz L1
-		cmp byte [Dsptr+ya+ktag],tint
-		jnz L1
-		mov D0,[Dsptr+ya+kvalue]
-		xor [Dsptr+xb+kvalue],D0
-		*popvar
-		*jumpskip1
-L1:
-	end
-	saveregs
-	k_ixor()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_shl*=
-	assem
-		cmp byte [Dsptr+xb+ktag],tint
-		jnz L1
-		cmp byte [Dsptr+ya+ktag],tint
-		jnz L1
-		mov rdx,Dsptr
-		mov cl,[Dsptr+ya+kvalue]
-		shl word64 [rdx+xb+kvalue],cl
-		mov Dsptr,rdx
-		*popvar
-		*jumpskip1
-L1:
-	end
-
-	saveregs
-	k_shl()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_shr*=
-	assem
-		cmp byte [Dsptr+xb+ktag],tint
-		jnz L1
-		cmp byte [Dsptr+ya+ktag],tint
-		jnz L1
-		mov rdx,Dsptr
-		mov cl,[Dsptr+ya+kvalue]
-		sar word64 [rdx+xb+kvalue],cl
-		mov Dsptr,rdx
-		*popvar
-		*jumpskip1
-L1:
-	end
-	saveregs
-	k_shr()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_in*=
-	saveregs
-	k_in()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_notin*=
-	saveregs
-	k_notin()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_inx*=
-	saveregs
-	k_inx()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_eq*=
-	saveregs
-	k_eq()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_ne*=
-	saveregs
-	k_ne()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_lt*=
-	saveregs
-	k_lt()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_le*=
-	saveregs
-	k_le()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_ge*=
-	saveregs
-	k_ge()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_gt*=
-	saveregs
-	k_gt()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_min*=
-	saveregs
-	k_min()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_max*=
-	saveregs
-	k_max()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_concat*=
-	saveregs
-	k_concat()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_append*=
-	saveregs
-	k_append()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_power*=
-	saveregs
-	k_power()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_atan2*=
-	saveregs
-	k_atan2()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_addto*=
-	assem
-		mov D4,[Dsptr+xb+kvarptr]
-		cmp byte [Dsptr+xb+ktag],trefvar	!lhs is ref var?
-		jnz L99
-		cmp byte [Dsptr+ya+ktag],tint		!rhs is int
-		jnz L1
-		cmp byte [D4+ktag],tint			!lhs is ref var:int?
-		jnz L99
-		mov D1,[Dsptr+kvalue]
-		mov D0,[D4+kvalue]
-		add D0,D1
-		mov [D4+kvalue],D0
-		*popvar2
-		*jumpskip1
-
-L1:
-		cmp byte [Dsptr+ya+ktag],treal		!rhs is real
-		jnz L2
-		cmp byte [D4+ktag],treal			!lhs is ref var:real?
-		jnz L99								!mixed
-
-		movq xmm0,[D4+kvalue]
-		addsd xmm0,[Dsptr+kvalue]
-		movq [D4+kvalue],xmm0
-		*popvar2
-		*jumpskip1
-L2:
-L99:
-	end
-
-	saveregs
-	k_addto()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_subto*=
-	assem
-		mov D4,[Dsptr+xb+kvarptr]
-		cmp byte [Dsptr+xb+ktag],trefvar	!lhs is ref var?
-		jnz L99
-		cmp byte [Dsptr+ya+ktag],tint		!rhs is int
-		jnz L1
-		cmp byte [D4+ktag],tint			!lhs is ref var:int?
-		jnz L99
-		mov D1,[Dsptr+kvalue]
-		mov D0,[D4+kvalue]
-		sub D0,D1
-		mov [D4+kvalue],D0
-		*popvar2
-		*jumpskip1
-L1:
-		cmp byte [Dsptr+ya+ktag],treal		!rhs is real
-		jnz L2
-		cmp byte [D4+ktag],treal			!lhs is ref var:real?
-		jnz L99								!mixed
-
-		movq xmm0,[D4+kvalue]
-		subsd xmm0,[Dsptr+kvalue]
-		movq [D4+kvalue],xmm0
-		*popvar2
-		*jumpskip1
-L2:
-L99:
-	end
-
-	saveregs
-	k_subto()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_multo*=
-	saveregs
-	k_multo()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_divto*=
-	saveregs
-	k_divto()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_idivto*=
-	saveregs
-	k_idivto()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_andlto*=
-	saveregs
-	k_andlto()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_orlto*=
-	saveregs
-	k_orlto()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_iandto*=
-	assem
-		cmp byte [Dsptr+xb+ktag],trefvar	!lhs is ref var?
-		jnz L1
-		cmp byte [Dsptr+ya+ktag],tint		!rhs is int
-		jnz L1
-		mov D4,[Dsptr+xb+kvarptr]
-		cmp byte [D4+ktag],tint			!lhs is ref var:int?
-		jnz L1
-		mov D1,[Dsptr+kvalue]
-		mov D0,[D4+kvalue]
-		and D0,D1
-		mov [D4+kvalue],D0
-		*popvar2
-		*jumpskip1
-L1:
-	end
-
-	saveregs
-	k_iandto()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_iorto*=
-	assem
-		cmp byte [Dsptr+xb+ktag],trefvar	!lhs is ref var?
-		jnz L1
-		cmp byte [Dsptr+ya+ktag],tint		!rhs is int
-		jnz L1
-		mov D4,[Dsptr+xb+kvarptr]
-		cmp byte [D4+ktag],tint			!lhs is ref var:int?
-		jnz L1
-		mov D1,[Dsptr+kvalue]
-		mov D0,[D4+kvalue]
-		or D0,D1
-		mov [D4+kvalue],D0
-		*popvar2
-		*jumpskip1
-L1:
-	end
-
-	saveregs
-	k_iorto()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_ixorto*=
-	assem
-		cmp byte [Dsptr+xb+ktag],trefvar	!lhs is ref var?
-		jnz L1
-		cmp byte [Dsptr+ya+ktag],tint		!rhs is int
-		jnz L1
-		mov D4,[Dsptr+xb+kvarptr]
-		cmp byte [D4+ktag],tint			!lhs is ref var:int?
-		jnz L1
-		mov D1,[Dsptr+kvalue]
-		mov D0,[D4+kvalue]
-		xor D0,D1
-		mov [D4+kvalue],D0
-		*popvar2
-		*jumpskip1
-L1:
-	end
-
-	saveregs
-	k_ixorto()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_shlto*=
-	assem
-		cmp byte [Dsptr+xb+ktag],trefvar	!lhs is ref var?
-		jnz L1
-		cmp byte [Dsptr+ya+ktag],tint		!rhs is int
-		jnz L1
-		mov D4,[Dsptr+xb+kvarptr]
-		cmp byte [D4+ktag],tint			!lhs is ref var:int?
-		jnz L1
-		mov cl,[Dsptr+kvalue]
-!	shl word64 [D4+kvalue],cl
-		mov D0,[D4+kvalue]
-		shl D0,cl
-		mov [D4+kvalue],D0
-		*popvar2
-		*jumpskip1
-L1:
-	end
-
-	saveregs
-	k_shlto()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_shrto*=
-	saveregs
-	k_shrto()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_minto*=
-	saveregs
-	k_minto()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_maxto*=
-	saveregs
-	k_maxto()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_concatto*=
-	saveregs
-	k_concatto()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_appendto*=
-	saveregs
-	k_appendto()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_dot*=
-
-	assem
-JMP L99
-!		cmp byte [Dsptr+ktag],trecord
-!		jnz L99
-!		movzx D3, word16 [Dsptr+kusertag]		!rectype: actual record type
-!		mov D5, [Dprog+kopnda]			!index: (genfieldindex)
-!		and D5,D5
-!		jz L99							!'not a field' error?
-!
-!		mov D4, [D5*8+genfieldtable-8]	!g: pointer to genfieldrec
-!
-!L1:		and D4,D4
-!		jz L99							!no more entries
-!		mov D0,[D4+gdef]				!d: g.def
-!		mov D1,[D0+sowner]				!d.owner
-!		cmp W3,[D1+smode]				!rectype=d.owner.mode
-!		jz L3							!found 
-!		mov D4,[D4+gnextdef]
-!		jmp L1							!next genfield
-!!found possible field in d in D0
-!L3:		cmp byte [D0+snameid],fieldid
-!		jnz L99							!not a field; don't handle that here
-!!got a regular field; now find the offset in the record
-!		mov D3,[Dsptr+kobjptr]
-!		mov D3,[D3+jvarptr]				!point to record fields
-!
-!		movzx D0,word16 [D0+soffset]
-!		add D3,D0
-!
-!		mov D0,[D3]
-!		mov D1,[D3+kvalue]
-!		test W0,hasrefmask
-!		jz L4
-!		inc word32 [D1+jrefcount]
-!L4:
-!		push D0
-!		push D1
-!		*callunshareu_dsptr				!unshare the record
-!		pop D1
-!		pop D0
-!		mov [Dsptr],D0
-!		mov [Dsptr+kvalue],D1
-!		*jumpskip2
-	end
-L99:
-
-	saveregs
-	k_dot()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_index*=
-	static varrec v
-
-	assem
-JMP L99
-		cmp byte [Dsptr+ya+ktag],tint
-		jnz L99
-
-!int index:
-		mov D6,[Dsptr+xb+ktag]
-		cmp B6,tlist
-		jnz L2
-
-!list[int]
-		mov D5,[Dsptr+xb+kobjptr]
-
-		mov D4,[Dsptr+ya+kvalue]	!index
-		movsx D3,word16[D5+jlower16]
-		sub D4,D3					!0-base
-		cmp D4,[D5+jlength]
-		jae L99						!bounds error: let M deal with it
-
-		shl A4,varshift				!index*varsize
-		add D4,[D5+jvarptr]			!point to element
-
-		*popvar						!pop list, stack contains list descriptor
-
-		mov D0,[D4+ktag]
-		mov [Dsptr+ktag],D0			!replace index by list element
-
-		mov D1,[D4+kvalue]
-		mov [Dsptr+kvalue],D1
-
-		and A0,hasrefmask
-		jz L11
-		inc word32 [D1+jrefcount]
-L11:
-		dec word32 [D5+jrefcount]	!dec count of original list
-		jnz L12
-		mov [v+ktag],D6
-		mov [v+kobjptr],D5
-		lea D10,[v]
-		*callvarfree
-L12:
-		*jumpskip1
-
-L2:
-L3:
-L99:
-	end
-
-
-	saveregs
-	k_index()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_dotindex*=
-	saveregs
-	k_dotindex()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_keyindex*=
-	saveregs
-	k_keyindex()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_dotref*=
-	saveregs
-	k_dotref()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_indexref*=
-	static varrec v
-
-	assem
-!JMP L99
-		cmp byte [Dsptr+ya+ktag],tint
-		jnz L99
-
-!int index:
-		mov D6,[Dsptr+xb+ktag]
-		cmp B6,tlist
-		jnz L2
-
-!list[int]
-		mov D5,[Dsptr+xb+kobjptr]
-
-		mov D4,[Dsptr+ya+kvalue]	!index
-		movsx D3, word16[D5+jlower16]
-		sub D4,D3					!0-base
-		cmp D4,[D5+jlength]
-		jae L99						!bounds error: let M deal with it
-
-		shl A4,varshift				!index*varsize
-		add D4,[D5+jvarptr]			!point to element
-
-		*popvar						!pop list, stack contains list descriptor
-
-		dec word32 [D5+jrefcount]	!dec count of original list
-		jnz L12
-		mov D10,Dsptr
-		*callvarfree
-L12:
-		mov word32 [Dsptr+ktag],trefvar
-		mov [Dsptr+kobjptr],D4
-
-		*jumpskip1
-
-L2:
-L3:
-L99:
-	end
-
-	saveregs
-	k_indexref()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_dotindexref*=
-	saveregs
-	k_dotindexref()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_keyindexref*=
-	saveregs
-	k_keyindexref()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_popdot*=
-	assem
-JMP L99
-!		cmp byte [Dsptr+ktag],trecord
-!		jnz L99
-!
-!		movzx D3, word16 [Dsptr+kusertag]		!rectype: actual record type
-!		mov D5, [Dprog+kopnda]			!index: (genfieldindex)
-!		and D5,D5
-!		jz L99							!'not a field' error?
-!
-!		mov D4,[Dsptr+kobjptr]
-!		mov B0,[D4+jmutable]
-!		and B0,1
-!		jz L99						!not mutable
-!
-!		mov D4, [D5*8+genfieldtable-8]	!g: pointer to genfieldrec
-!
-!L1:		and D4,D4
-!		jz L99							!no more entries
-!		mov D0,[D4+gdef]				!d: g.def
-!		mov D1,[D0+sowner]				!d.owner
-!		cmp W3,[D1+smode]				!rectype=d.owner.mode
-!		jz L3							!found 
-!		mov D4,[D4+gnextdef]
-!		jmp L1							!next genfield
-!!found possible field in d in D0
-!L3:		cmp byte [D0+snameid],fieldid
-!		jnz L99							!not a field; don't handle that here
-!
-!!got a regular field; now find the offset in the record
-!		mov D3,[Dsptr+kobjptr]
-!		mov D3,[D3+jvarptr]				!point to record fields
-!
-!		movzx D0,word16 [D0+soffset]
-!		add D3,D0
-!!D3 points to dest field; need to unshare first
-!		cmp byte [D3+khasref],1
-!		jnz L5
-!		mov D10,D3
-!		*callunshareu
-!L5:
-!		mov D0,[Dsptr+xb]				!get value next below stack
-!		mov D1,[Dsptr+xb+kvalue]
-!		test W0,hasrefmask
-!		jz L4
-!		inc word32 [D1+jrefcount]
-!L4:
-!		push D0
-!		push D1
-!		*callunshareu_dsptr				!unshare the record
-!		pop D1
-!		pop D0
-!		*popvar2						!lose record, and value that is now in D0/D1
-!		mov [D3],D0
-!		mov [D3+kvalue],D1
-!		*jumpskip2
-	end
-L99:
-
-	saveregs
-	k_popdot()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_popindex*=
-	static varrec v
-	assem
-JMP L99
-
-		cmp byte [Dsptr+za+ktag],tint
-		jnz L99
-
-!int index:
-		mov D6,[Dsptr+yb+ktag]
-		cmp B6,tlist
-		jnz L99
-
-!list[int]
-		mov D5,[Dsptr+yb+kobjptr]
-		mov B0,[D5+jmutable]
-		and B0,1
-		jz L99						!not mutable
-
-		mov D4,[Dsptr+ya+kvalue]	!index
-		movsx D3,word16[D5+jlower16]
-		sub D4,D3		!0-base
-		cmp D4,[D5+jlength]
-		jae L99						!bounds error or extend: let M deal with it
-
-		shl A4,varshift				!index*varsize
-		add D4,[D5+jvarptr]			!point to element
-
-		mov D0,[Dsptr+xc]			!xfer ref count
-		mov D1,[Dsptr+xc+kvalue]
-		mov [D4],D0
-		mov [D4+kvalue],D1
-
-		dec word32 [D5+jrefcount]	!dec count of original list
-		jnz L12
-		mov [v+ktag],D6
-		mov [v+kobjptr],D5
-		lea D10,[v]
-		*callvarfree
-L12:
-		*popvar3
-		*jumpskip1
-
-L99:
-
-	end
-
-	saveregs
-	k_popindex()
-	loadregs
-	jumpnext
-
-L34:
-
-end
-
-threadedproc j_popdotindex*=
-	saveregs
-	k_popdotindex()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_popkeyindex*=
-	saveregs
-	k_popkeyindex()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_expand*=
-	saveregs
-	k_expand()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_pushtry*=
-	saveregs
-	k_pushtry()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_raise*=
-	saveregs
-	k_raise()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_pushoperator*=
-	saveregs
-	k_pushoperator()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_maps*=
-	saveregs
-	k_maps()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_mapss*=
-	saveregs
-	k_mapss()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_addsp*=
-	saveregs
-	k_addsp()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_pushff*=
-	assem
-		*pushvar2
-		mov D4,[Dprog+kopnda]
-		mov D0,[Dframe+D4+ktag]
-		mov [Dsptr+xb+ktag],D0
-		mov D1,[Dframe+D4+kvalue]
-		mov [Dsptr+xb+kvalue],D1
-		and A0,hasrefmask
-		jz L2
-		inc word32 [D1+jrefcount]
-L2:
-		mov D4,[Dprog+kopndb]
-		mov D0,[Dframe+D4+ktag]
-		mov [Dsptr+ya+ktag],D0
-		mov D1,[Dframe+D4+kvalue]
-		mov [Dsptr+ya+kvalue],D1
-		and A0,hasrefmask
-		jz L3
-		inc word32 [D1+jrefcount]
-L3:
-		*jumpskip4
-	end
-end
-
-threadedproc j_pushmm*=
-	assem
-		*pushvar2
-		mov D4,[Dprog+kopnda]
-		mov D0,[D4+ktag]
-		mov [Dsptr+xb+ktag],D0
-		mov D1,[D4+kvalue]
-		mov [Dsptr+xb+kvalue],D1
-		and A0,hasrefmask
-		jz L2
-		inc word32 [D1+jrefcount]
-L2:
-		mov D4,[Dprog+kopndb]
-		mov D0,[D4+ktag]
-		mov [Dsptr+ya+ktag],D0
-		mov D1,[D4+kvalue]
-		mov [Dsptr+ya+kvalue],D1
-		and A0,hasrefmask
-		jz L3
-		inc word32 [D1+jrefcount]
-L3:
-		*jumpskip4
-	end
-end
-
-threadedproc j_pushfm*=
-	assem
-		*pushvar2
-		mov D4,[Dprog+kopnda]
-		mov D0,[Dframe+D4+ktag]
-		mov [Dsptr+xb+ktag],D0
-		mov D1,[Dframe+D4+kvalue]
-		mov [Dsptr+xb+kvalue],D1
-		and A0,hasrefmask
-		jz L2
-		inc word32 [D1+jrefcount]
-L2:
-		mov D4,[Dprog+kopndb]
-		mov D0,[D4+ktag]
-		mov [Dsptr+ya+ktag],D0
-		mov D1,[D4+kvalue]
-		mov [Dsptr+ya+kvalue],D1
-		and A0,hasrefmask
-		jz L3
-		inc word32 [D1+jrefcount]
-L3:
-		*jumpskip4
-	end
-end
-
-threadedproc j_pushmf*=
-	assem
-		*pushvar2
-		mov D4,[Dprog+kopnda]
-		mov D0,[D4+ktag]
-		mov [Dsptr+xb+ktag],D0
-		mov D1,[D4+kvalue]
-		mov [Dsptr+xb+kvalue],D1
-		and A0,hasrefmask
-		jz L2
-		inc word32 [D1+jrefcount]
-L2:
-		mov D4,[Dprog+kopndb]
-		mov D0,[Dframe+D4+ktag]
-		mov [Dsptr+ya+ktag],D0
-		mov D1,[Dframe+D4+kvalue]
-		mov [Dsptr+ya+kvalue],D1
-		and A0,hasrefmask
-		jz L3
-		inc word32 [D1+jrefcount]
-L3:
-		*jumpskip4
-	end
-end
-
-threadedproc j_pushfff*=
-	assem
-		*pushvar3
-		mov D4,[Dprog+kopnda]
-		mov D0,[Dframe+D4+ktag]
-		mov [Dsptr+xc+ktag],D0
-		mov D1,[Dframe+D4+kvalue]
-		mov [Dsptr+xc+kvalue],D1
-		and A0,hasrefmask
-		jz L2
-		inc word32 [D1+jrefcount]
-L2:
-		mov D4,[Dprog+kopndb]
-		mov D0,[Dframe+D4+ktag]
-		mov [Dsptr+yb+ktag],D0
-		mov D1,[Dframe+D4+kvalue]
-		mov [Dsptr+yb+kvalue],D1
-		and A0,hasrefmask
-		jz L3
-		inc word32 [D1+jrefcount]
-L3:
-		mov D4,[Dprog+kopndc]
-		mov D0,[Dframe+D4+ktag]
-		mov [Dsptr+za+ktag],D0
-		mov D1,[Dframe+D4+kvalue]
-		mov [Dsptr+za+kvalue],D1
-		and A0,hasrefmask
-		jz L4
-		inc word32 [D1+jrefcount]
-L4:
-		*jumpskip6
-	end
-end
-
-
-threadedproc j_nop2*=
-	jumpskip2
-end
-
-threadedproc j_skip*=
-	jumpskip1
-end
-
-threadedproc j_pushci0*=
-	assem
-		*pushvar
-		mov word32 [Dsptr+ktag],tint
-		xor D0,D0
-		mov [Dsptr+kvalue],D0
-		*jumpskip2
-	end
-end
-
-threadedproc j_moveff*=
-	assem
-		mov D5,[Dprog+kopndb]
-		cmp byte [Dframe+D5+khasref],1
-		jnz L1
-		mov D1,[Dframe+D5+kobjptr]
-		inc word32 [D1+jrefcount]		!increment before freeing (in case of a:=a)
-	L1:
-		mov D4,[Dprog+kopnda]
-		add D4,Dframe
-		cmp byte [D4+khasref],1
-		jnz L2
-		*callunshareu_d4
-	L2:
-		mov D5,[Dprog+kopndb]
-		mov D0,[Dframe+D5+ktag]
-		mov [D4+ktag],D0
-		mov D1,[Dframe+D5+kvalue]
-		mov [D4+kvalue],D1
-
-		*jumpskip4
-	end
-end
-
-threadedproc j_zmoveff*=
-	assem
-		mov D5,[Dprog+kopndb]
-		cmp byte [Dframe+D5+khasref],1
-		jnz L1
-		mov D1,[Dframe+D5+kobjptr]
-		inc word32 [D1+jrefcount]		!increment before freeing (in case of a:=a)
-	L1:
-		mov D4,[Dprog+kopnda]
-		add D4,Dframe
-		mov D5,[Dprog+kopndb]
-		mov D0,[Dframe+D5+ktag]
-		mov [D4+ktag],D0
-		mov D1,[Dframe+D5+kvalue]
-		mov [D4+kvalue],D1
-
-		*jumpskip4
-	end
-end
-
-threadedproc j_movefm*=
-	assem
-		mov D5,[Dprog+kopndb]
-		cmp byte [D5+khasref],1
-		jnz L1
-		mov D1,[D5+kobjptr]
-		inc word32 [D1+jrefcount]
-	L1:
-		mov D4,[Dprog+kopnda]
-		add D4,Dframe
-		cmp byte [D4+khasref],1
-		jnz L2
-		*callunshareu_d4
-	L2:
-		mov D5,[Dprog+kopndb]
-		mov D0,[D5+ktag]
-		mov [D4+ktag],D0
-		mov D1,[D5+kvalue]
-		mov [D4+kvalue],D1
-
-		*jumpskip4
-	end
-end
-
-threadedproc j_movemf*=
-	assem
-		mov D5,[Dprog+kopndb]
-		cmp byte [Dframe+D5+khasref],1
-		jnz L1
-		mov D1,[Dframe+D5+kobjptr]
-		inc word32 [D1+jrefcount]
-	L1:
-		mov D4,[Dprog+kopnda]
-		cmp byte [D4+khasref],1
-		jnz L2
-		*callunshareu_d4
-	L2:
-		mov D5,[Dprog+kopndb]
-		mov D0,[Dframe+D5+ktag]
-		mov [D4+ktag],D0
-		mov D1,[Dframe+D5+kvalue]
-		mov [D4+kvalue],D1
-
-		*jumpskip4
-	end
-end
-
-threadedproc j_movemm*=
-	assem
-		mov D5,[Dprog+kopndb]
-		cmp byte [D5+khasref],1
-		jnz L1
-		mov D1,[D5+kobjptr]
-		inc word32 [D1+jrefcount]
-	L1:
-		mov D4,[Dprog+kopnda]
-		cmp byte [D4+khasref],1
-		jnz L2
-		*callunshareu_d4
-	L2:
-		mov D5,[Dprog+kopndb]
-		mov D0,[D5+ktag]
-		mov [D4+ktag],D0
-		mov D1,[D5+kvalue]
-		mov [D4+kvalue],D1
-
-		*jumpskip4
-	end
-end
-
-threadedproc j_movefci*=
-	assem
-		mov D4,[Dprog+kopnda]
-		add D4,Dframe
-		cmp byte [D4+khasref],1
-		jnz L1
-		*callunshareu_d4
-	L1:
-		mov word32 [D4+ktag],tint
-		mov D0,[Dprog+kopndb]
-		mov [D4+kvalue],D0
-		*jumpskip4
-	end
-end
-
-threadedproc j_zmovefci*=
-	assem
-		mov D4,[Dprog+kopnda]
-		add D4,Dframe
-	L1:
-		mov word32 [D4+ktag],tint
-		mov D0,[Dprog+kopndb]
-		mov [D4+kvalue],D0
-		*jumpskip4
-	end
-end
-
-threadedproc j_movemci*=
-	assem
-		mov D4,[Dprog+kopnda]
-		cmp byte [D4+khasref],1
-		jnz L1
-		*callunshareu_d4
-	L1:
-		mov word32 [D4+ktag],tint
-		mov D0,[Dprog+kopndb]
-		mov [D4+kvalue],D0
-		*jumpskip4
-	end
-end
-
-threadedproc j_pushvoid2*=
-	assem
-		*pushvar2
-		mov word32 [Dsptr+ya+ktag],tvoid
-		mov word32 [Dsptr+xb+ktag],tvoid
-		*jumpskip2
-	end
-end
-
-threadedproc j_pushvoid3*=
-	assem
-		*pushvar3
-		mov word32 [Dsptr+za+ktag],tvoid
-		mov word32 [Dsptr+yb+ktag],tvoid
-		mov word32 [Dsptr+xc+ktag],tvoid
-		*jumpskip3
-	end
-end
-
-threadedproc j_unshare1*=
-	assem
-		cmp byte [Dsptr+khasref],1
-		jnz L1
-		*callunshareu_dsptr
-L1:		*popvar
-		*jumpskip2
-	end
-end
-
-threadedproc j_unshare2*=
-	assem
-		cmp byte [Dsptr+ya+khasref],1
-		jnz L1
-		*callunshareu_dsptr
-L1:
-		cmp byte [Dsptr+xb+khasref],1
-		jnz L2
-		lea D10,[Dsptr+xb]
-		*callunshareu
-L2:		*popvar2
-
-		*jumpskip2
-	end
-end
-
-threadedproc j_unshare3*=
-	assem
-		cmp byte [Dsptr+za+khasref],1
-		jnz L1
-		*callunshareu_dsptr
-L1:
-		cmp byte [Dsptr+yb+khasref],1
-		jnz L2
-		lea D10,[Dsptr+yb]
-		*callunshareu
-L2:
-		cmp byte [Dsptr+xc+khasref],1
-		jnz L3
-		lea D10,[Dsptr+xc]
-		*callunshareu
-L3:		*popvar3
-
-		*jumpskip2
-	end
-end
-
-threadedproc j_procentry1*=
-	assem
-		*pushvar
-		mov word32 [Dsptr+ktag],tvoid
-		*jumpskip2
-	end
-end
-
-threadedproc j_procentry2*=
-	assem
-		*pushvar2
-		mov word32 [Dsptr+ya+ktag],tvoid
-		mov word32 [Dsptr+xb+ktag],tvoid
-		*jumpskip2
-	end
-end
-
-threadedproc j_jumpeqfci*=
-	assem
-		mov D4,[Dprog+kopndb]
-		mov D5,[Dprog+kopndc]
-		cmp byte [D4+Dframe+ktag],tint
-		jnz L99
-
-		mov D0,[Dframe+D4+kvalue]
-		cmp D0,D5
-		jnz Lfalse
-		mov Dprog,[Dprog+kopnda]
-		*jumpnext
-Lfalse:
-		*jumpskip6
-L99:
-		*pushvar2
-		mov D0,[Dframe+D4+ktag]
-		mov [Dsptr+xb+ktag],D0
-		mov D1,[Dframe+D4+kvalue]
-		mov [Dsptr+xb+kvalue],D1
-		and A0,hasrefmask
-		jz L2
-		inc word32 [D1+jrefcount]
-L2:
-		mov word32 [Dsptr+ya+ktag],tint
-		mov [Dsptr+ya+kvalue],D5
-
-		add Dprog,intpsize4
-		jmp j_jumpeq
-!		*jumpnext
-	end
-end
-
-threadedproc j_jumpnefci*=
-	assem
-		mov D4,[Dprog+kopndb]
-		mov D5,[Dprog+kopndc]
-		cmp byte [D4+Dframe+ktag],tint
-		jnz L99
-
-		mov D0,[Dframe+D4+kvalue]
-		cmp D0,D5
-		jz Lfalse
-		mov Dprog,[Dprog+kopnda]
-		*jumpnext
-Lfalse:
-		*jumpskip6
-L99:
-		*pushvar2
-		mov D0,[Dframe+D4+ktag]
-		mov [Dsptr+xb+ktag],D0
-		mov D1,[Dframe+D4+kvalue]
-		mov [Dsptr+xb+kvalue],D1
-		and A0,hasrefmask
-		jz L2
-		inc word32 [D1+jrefcount]
-L2:
-		mov word32 [Dsptr+ya+ktag],tint
-		mov [Dsptr+ya+kvalue],D5
-
-		add Dprog,intpsize4
-		jmp j_jumpne
-!		*jumpnext
-	end
-end
-
-threadedproc j_jumpltfci*=
-	assem
-		mov D4,[Dprog+kopndb]
-		mov D5,[Dprog+kopndc]
-		cmp byte [D4+Dframe+ktag],tint
-		jnz L99
-
-		mov D0,[Dframe+D4+kvalue]
-		cmp D0,D5
-		jge Lfalse
-		mov Dprog,[Dprog+kopnda]
-		*jumpnext
-Lfalse:
-		*jumpskip6
-L99:
-		*pushvar2
-		mov D0,[Dframe+D4+ktag]
-		mov [Dsptr+xb+ktag],D0
-		mov D1,[Dframe+D4+kvalue]
-		mov [Dsptr+xb+kvalue],D1
-		and A0,hasrefmask
-		jz L2
-		inc word32 [D1+jrefcount]
-L2:
-		mov word32 [Dsptr+ya+ktag],tint
-		mov [Dsptr+ya+kvalue],D5
-
-		add Dprog,intpsize4
-		jmp j_jumplt
-!		*jumpnext
-	end
-end
-
-threadedproc j_jumplefci*=
-	assem
-		mov D4,[Dprog+kopndb]
-		mov D5,[Dprog+kopndc]
-		cmp byte [D4+Dframe+ktag],tint
-		jnz L99
-
-		mov D0,[Dframe+D4+kvalue]
-		cmp D0,D5
-		jg Lfalse
-		mov Dprog,[Dprog+kopnda]
-		*jumpnext
-Lfalse:
-		*jumpskip6
-L99:
-		*pushvar2
-		mov D0,[Dframe+D4+ktag]
-		mov [Dsptr+xb+ktag],D0
-		mov D1,[Dframe+D4+kvalue]
-		mov [Dsptr+xb+kvalue],D1
-		and A0,hasrefmask
-		jz L2
-		inc word32 [D1+jrefcount]
-L2:
-		mov word32 [Dsptr+ya+ktag],tint
-		mov [Dsptr+ya+kvalue],D5
-
-		add Dprog,intpsize4
-		jmp j_jumple
-!		*jumpnext
-	end
-end
-
-threadedproc j_jumpgefci*=
-	assem
-		mov D4,[Dprog+kopndb]
-		mov D5,[Dprog+kopndc]
-		cmp byte [D4+Dframe+ktag],tint
-		jnz L99
-
-		mov D0,[Dframe+D4+kvalue]
-		cmp D0,D5
-		jl Lfalse
-		mov Dprog,[Dprog+kopnda]
-		*jumpnext
-Lfalse:
-		*jumpskip6
-L99:
-		*pushvar2
-		mov D0,[Dframe+D4+ktag]
-		mov [Dsptr+xb+ktag],D0
-		mov D1,[Dframe+D4+kvalue]
-		mov [Dsptr+xb+kvalue],D1
-		and A0,hasrefmask
-		jz L2
-		inc word32 [D1+jrefcount]
-L2:
-		mov word32 [Dsptr+ya+ktag],tint
-		mov [Dsptr+ya+kvalue],D5
-
-		add Dprog,intpsize4
-		jmp j_jumpge
-!		*jumpnext
-	end
-end
-
-threadedproc j_jumpgtfci*=
-	assem
-		mov D4,[Dprog+kopndb]
-		mov D5,[Dprog+kopndc]
-		cmp byte [D4+Dframe+ktag],tint
-		jnz L99
-
-		mov D0,[Dframe+D4+kvalue]
-		cmp D0,D5
-		jle Lfalse
-		mov Dprog,[Dprog+kopnda]
-		*jumpnext
-Lfalse:
-		*jumpskip6
-L99:
-		*pushvar2
-		mov D0,[Dframe+D4+ktag]
-		mov [Dsptr+xb+ktag],D0
-		mov D1,[Dframe+D4+kvalue]
-		mov [Dsptr+xb+kvalue],D1
-		and A0,hasrefmask
-		jz L2
-		inc word32 [D1+jrefcount]
-L2:
-		mov word32 [Dsptr+ya+ktag],tint
-		mov [Dsptr+ya+kvalue],D5
-
-		add Dprog,intpsize4
-		jmp j_jumpgt
-!		*jumpnext
-	end
-end
-
-threadedproc j_switchf*=
-	assem
-		mov D3,[Dprog+kopnda]
-		cmp word16 [D3+Dframe+ktag],tint
-		jnz L99							!get M deal with errors
-		mov D4,[D3+Dframe+kvalue]		!switch index
-		sub D4,[Dprog+kopndc]			!index-lower! now 0-based index
-		cmp D4,[Dprog+kopndb]			!index0>=n?
-		jae L2							!out of range
-!in range
-		shl D4,1
-		mov Dprog,[Dprog+D4*8+intpsize6]
-		*jumpnext
-!out of range
-	L2:
-		mov D5,[Dprog+kopndb]
-		shl D5,1
-		mov Dprog,[Dprog+D5*8+intpsize6]
-		*jumpnext
-
-	L99:
-	end
-	pcerror("jswitchf/not int")
-end
-
-threadedproc j_addfci*=
-	assem
-		mov D4,[Dprog+kopnda]
-		mov D5,[Dprog+kopndb]
-		cmp byte [D4+Dframe+ktag],tint
-		jnz L1
-		*pushvar
-		mov word32 [Dsptr+ktag],tint
-		mov D0,[Dframe+D4+kvalue]
-		add D0,D5
-		mov [Dsptr+kvalue],D0
-		*jumpskip5
-L1:
-		*pushvar2
-
-		mov D0,[Dframe+D4+ktag]
-		mov [Dsptr+xb+ktag],D0
-		mov D1,[Dframe+D4+kvalue]
-		mov [Dsptr+xb+kvalue],D1
-		and A0,hasrefmask
-		jz L2
-		inc word32 [D1+jrefcount]
-L2:
-
-		mov word32 [Dsptr+ya+ktag],tint
-		mov [Dsptr+ya+kvalue],D5
-		add Dprog,intpsize4
-		jmp j_add
-!		*jumpnext
-	end
-end
-
-threadedproc j_subfci*=
-	assem
-		mov D4,[Dprog+kopnda]
-		mov D5,[Dprog+kopndb]
-		cmp byte [D4+Dframe+ktag],tint
-		jnz L1
-		*pushvar
-		mov word32 [Dsptr+ktag],tint
-		mov D0,[Dframe+D4+kvalue]
-		sub D0,D5
-		mov [Dsptr+kvalue],D0
-		*jumpskip5
-L1:
-		*pushvar2
-
-		mov D0,[Dframe+D4+ktag]
-		mov [Dsptr+xb+ktag],D0
-		mov D1,[Dframe+D4+kvalue]
-		mov [Dsptr+xb+kvalue],D1
-		and A0,hasrefmask
-		jz L2
-		inc word32 [D1+jrefcount]
-L2:
-
-		mov word32 [Dsptr+ya+ktag],tint
-		mov [Dsptr+ya+kvalue],D5
-		add Dprog,intpsize4
-		jmp j_sub
-!		*jumpnext
-	end
-end
-
-threadedproc j_indexff*=
-	assem
-		mov D2,[Dprog+kopnda]
-		mov D3,[Dprog+kopndb]
-!JMP L99
-		cmp byte [D2+Dframe+ktag],tlist
-		jnz L99
-		cmp byte [D3+Dframe+ktag],tint
-		jnz L99
-
-!list[int]
-		mov D6,[D2+Dframe+ktag]
-
-		mov D5,[D2+Dframe+kobjptr]
-		mov D4,[D3+Dframe+kvalue]		!index
-		movsx D6,word16[D5+jlower16]
-		sub D4,D6						!0-base
-		cmp D4,[D5+jlength]
-		jae L99					!bounds error: let B deal with it
-
-!jmp L99
-		shl A4,varshift				!index*varsize
-		add D4,[D5+jvarptr]			!point to element
-
-		*pushvar
-		mov D0,[D4+ktag]
-		mov [Dsptr+ktag],D0			!replace index by list element
-		mov D1,[D4+kvalue]
-		mov [Dsptr+kvalue],D1
-		and A0,hasrefmask
-		jz L1
-		inc word32 [D1+jrefcount]
-L1:
-		*jumpskip5
-
-L99:
-		*pushvar2
-		mov D0,[Dframe+D2+ktag]
-		mov [Dsptr+xb+ktag],D0
-		mov D1,[Dframe+D2+kvalue]
-		mov [Dsptr+xb+kvalue],D1
-		and A0,hasrefmask
-		jz L12
-		inc word32 [D1+jrefcount]
-L12:
-		mov D0,[Dframe+D3+ktag]
-		mov [Dsptr+ya+ktag],D0
-		mov D1,[Dframe+D3+kvalue]
-		mov [Dsptr+ya+kvalue],D1
-!		and A0,hasrefmask				!not needed for int/range index
-!		jz L13
-!		inc word32 [D1+jrefcount]
-L13:
-
-		add Dprog,intpsize4
-		jmp j_index
-!		*jumpnext
-	end
-
-end
-
-threadedproc j_addff*=
-	assem
-		mov D4,[Dprog+kopnda]
-		mov D5,[Dprog+kopndb]
-		cmp byte [D4+Dframe+ktag],tint
-		jnz L1
-		cmp byte [D5+Dframe+ktag],tint
-		jnz L1
-		*pushvar
-		mov word32 [Dsptr+xa+ktag],tint
-		mov D0,[Dframe+D4+kvalue]
-		add D0,[Dframe+D5+kvalue]
-		mov [Dsptr+kvalue],D0
-		*jumpskip5
-
-L1:
-		*pushvar2
-		mov D0,[Dframe+D4+ktag]
-		mov [Dsptr+xb+ktag],D0
-		mov D1,[Dframe+D4+kvalue]
-		mov [Dsptr+xb+kvalue],D1
-		and A0,hasrefmask
-		jz L2
-		inc word32 [D1+jrefcount]
-L2:
-		mov D0,[Dframe+D5+ktag]
-		mov [Dsptr+ya+ktag],D0
-		mov D1,[Dframe+D5+kvalue]
-		mov [Dsptr+ya+kvalue],D1
-		and A0,hasrefmask
-		jz L3
-		inc word32 [D1+jrefcount]
-L3:
-
-		add Dprog,intpsize4
-		jmp j_add
-	end
-end
-
-threadedproc j_subff*=
-	assem
-		mov D4,[Dprog+kopnda]
-		mov D5,[Dprog+kopndb]
-		cmp byte [D4+Dframe+ktag],tint
-		jnz L1
-		cmp byte [D5+Dframe+ktag],tint
-		jnz L1
-		*pushvar
-		mov word32 [Dsptr+xa+ktag],tint
-		mov D0,[Dframe+D4+kvalue]
-		sub D0,[Dframe+D5+kvalue]
-		mov [Dsptr+kvalue],D0
-		*jumpskip5
-
-L1:
-		*pushvar2
-		mov D0,[Dframe+D4+ktag]
-		mov [Dsptr+xb+ktag],D0
-		mov D1,[Dframe+D4+kvalue]
-		mov [Dsptr+xb+kvalue],D1
-		and A0,hasrefmask
-		jz L2
-		inc word32 [D1+jrefcount]
-L2:
-		mov D0,[Dframe+D5+ktag]
-		mov [Dsptr+ya+ktag],D0
-		mov D1,[Dframe+D5+kvalue]
-		mov [Dsptr+ya+kvalue],D1
-		and A0,hasrefmask
-		jz L3
-		inc word32 [D1+jrefcount]
-L3:
-
-		add Dprog,intpsize4
-		jmp j_sub
-	end
-end
-
-threadedproc j_pushincrptrm *=
-	assem
-		mov D2,[Dprog+kopnda]
-		jmp j_pushincrptrf.L0
-	end
-end
-
-threadedproc j_pushincrptrf *=
-!do pushf/loadincr/pushptr, optimised for byte-pointers
-!used in the rvalue: p++^ 
-
-	assem
-		mov D2,[Dprog+kopnda]
-		add D2,Dframe
-!JMP L99
-L0:
-		cmp byte [D2+ktag],trefpack
-		jnz L99							!not pointer to packed type
-		cmp byte [D2+krefelemtag],tu8
-		jnz L99
-
-!pointer to byte
-		mov D5,[D2+kptr]
-		inc word64 [D2+kptr]
-		movzx A0,byte [D5]
-
-		*pushvar
-		mov word32 [Dsptr+ktag],tint
-		mov [Dsptr+kvalue],D0
-		*jumpskip4
-
-L99:
-		*pushvar
-		mov word32 [Dsptr+ktag],trefvar
-		mov [Dsptr+kvarptr],D2
-		add Dprog,intpsize2			!point at loadincr (with pushptr next)
-		jmp j_loadincr
-	end
-end
-
-threadedproc j_popincrptrm *=
-	assem
-		mov D2,[Dprog+kopnda]
-		jmp j_popincrptrf.L0
-	end
-end
-
-threadedproc j_popincrptrf *=
-	assem
-		mov D2,[Dprog+kopnda]
-		add D2,Dframe
-L0:
-!JMP L99
-		cmp byte [D2+ktag],trefpack
-		jnz L99							!not pointer to packed type
-		cmp byte [Dsptr+ktag],tint
-		jnz L99							!let M deal with conversions or errors
-
-		cmp byte [D2+krefelemtag],tu8
-		jnz L2
-
-!pointer to byte
-		mov D5,[D2+kptr]
-		inc word64 [D2+kptr]
-
-		mov D0,[Dsptr+kvalue]
-		mov [D5],B0
-		*popvar
-		*jumpskip4
-
-L2:
-!		cmp word16 [D2+krefelemtag],ti32
-		cmp word32 [D2+krefelemtag],ti32
-		jnz L3
-
-!pointer to int32
-		mov D5,[D2+kptr]
-		add word64 [D2+kptr],4
-
-		mov D0,[Dsptr+kvalue]
-		mov [D5],A0
-		*popvar
-		*jumpskip4
-L3:
-L99:
-		*pushvar
-		mov word32 [Dsptr+ktag],trefvar
-		lea D0,[D2]
-		mov [Dsptr+kvarptr],D0
-		add Dprog,intpsize2			!point at loadincr (with pushptr next)
-		jmp j_loadincr
-	end
-
-end
-
-threadedproc j_jumpltff*=
-	assem
-		mov D4,[Dprog+kopndb]
-		mov D5,[Dprog+kopndc]
-		cmp byte [D4+Dframe+ktag],tint
-		jnz L99
-		cmp byte [D5+Dframe+ktag],tint
-		jnz L99
-
-		mov D0,[Dframe+D4+kvalue]
-		cmp D0,[Dframe+D5+kvalue]
-		jge Lfalse
-		mov Dprog,[Dprog+kopnda]
-		*jumpnext
-Lfalse:
-		*jumpskip6
-L99:
-		*pushvar2
-		mov D0,[Dframe+D4+ktag]
-		mov [Dsptr+xb+ktag],D0
-		mov D1,[Dframe+D4+kvalue]
-		mov [Dsptr+xb+kvalue],D1
-		and A0,hasrefmask
-		jz L2
-		inc word32 [D1+jrefcount]
-L2:
-		mov D0,[Dframe+D5+ktag]
-		mov [Dsptr+ya+ktag],D0
-		mov D1,[Dframe+D5+kvalue]
-		mov [Dsptr+ya+kvalue],D1
-		and A0,hasrefmask
-		jz L3
-		inc word32 [D1+jrefcount]
-L3:
-		add Dprog,intpsize4
-		jmp j_jumplt
-	end
-end
-
-threadedproc j_jumpleff*=
-	assem
-		mov D4,[Dprog+kopndb]
-		mov D5,[Dprog+kopndc]
-		cmp byte [D4+Dframe+ktag],tint
-		jnz L99
-		cmp byte [D5+Dframe+ktag],tint
-		jnz L99
-
-		mov D0,[Dframe+D4+kvalue]
-		cmp D0,[Dframe+D5+kvalue]
-		jg Lfalse
-		mov Dprog,[Dprog+kopnda]
-		*jumpnext
-Lfalse:
-		*jumpskip6
-L99:
-		*pushvar2
-		mov D0,[Dframe+D4+ktag]
-		mov [Dsptr+xb+ktag],D0
-		mov D1,[Dframe+D4+kvalue]
-		mov [Dsptr+xb+kvalue],D1
-		and A0,hasrefmask
-		jz L2
-		inc word32 [D1+jrefcount]
-L2:
-		mov D0,[Dframe+D5+ktag]
-		mov [Dsptr+ya+ktag],D0
-		mov D1,[Dframe+D5+kvalue]
-		mov [Dsptr+ya+kvalue],D1
-		and A0,hasrefmask
-		jz L3
-		inc word32 [D1+jrefcount]
-L3:
-		add Dprog,intpsize4
-		jmp j_jumple
-	end
-end
-
-threadedproc j_jumpgeff*=
-	assem
-		mov D4,[Dprog+kopndb]
-		mov D5,[Dprog+kopndc]
-		cmp byte [D4+Dframe+ktag],tint
-		jnz L99
-		cmp byte [D5+Dframe+ktag],tint
-		jnz L99
-
-		mov D0,[Dframe+D4+kvalue]
-		cmp D0,[Dframe+D5+kvalue]
-		jl Lfalse
-		mov Dprog,[Dprog+kopnda]
-		*jumpnext
-Lfalse:
-		*jumpskip6
-L99:
-		*pushvar2
-		mov D0,[Dframe+D4+ktag]
-		mov [Dsptr+xb+ktag],D0
-		mov D1,[Dframe+D4+kvalue]
-		mov [Dsptr+xb+kvalue],D1
-		and A0,hasrefmask
-		jz L2
-		inc word32 [D1+jrefcount]
-L2:
-		mov D0,[Dframe+D5+ktag]
-		mov [Dsptr+ya+ktag],D0
-		mov D1,[Dframe+D5+kvalue]
-		mov [Dsptr+ya+kvalue],D1
-		and A0,hasrefmask
-		jz L3
-		inc word32 [D1+jrefcount]
-L3:
-		add Dprog,intpsize4
-		jmp j_jumpge
-	end
-end
-
-threadedproc j_jumpgtff*=
-	assem
-		mov D4,[Dprog+kopndb]
-		mov D5,[Dprog+kopndc]
-		cmp byte [D4+Dframe+ktag],tint
-		jnz L99
-		cmp byte [D5+Dframe+ktag],tint
-		jnz L99
-
-		mov D0,[Dframe+D4+kvalue]
-		cmp D0,[Dframe+D5+kvalue]
-		jle Lfalse
-		mov Dprog,[Dprog+kopnda]
-		*jumpnext
-Lfalse:
-		*jumpskip6
-L99:
-		*pushvar2
-		mov D0,[Dframe+D4+ktag]
-		mov [Dsptr+xb+ktag],D0
-		mov D1,[Dframe+D4+kvalue]
-		mov [Dsptr+xb+kvalue],D1
-		and A0,hasrefmask
-		jz L2
-		inc word32 [D1+jrefcount]
-L2:
-		mov D0,[Dframe+D5+ktag]
-		mov [Dsptr+ya+ktag],D0
-		mov D1,[Dframe+D5+kvalue]
-		mov [Dsptr+ya+kvalue],D1
-		and A0,hasrefmask
-		jz L3
-		inc word32 [D1+jrefcount]
-L3:
-		add Dprog,intpsize4
-		jmp j_jumpgt
-	end
-end
-
-threadedproc j_jumpeqff*=
-	assem
-		mov D4,[Dprog+kopndb]
-		mov D5,[Dprog+kopndc]
-		cmp byte [D4+Dframe+ktag],tint
-		jnz L99
-		cmp byte [D5+Dframe+ktag],tint
-		jnz L99
-
-		mov D0,[Dframe+D4+kvalue]
-		cmp D0,[Dframe+D5+kvalue]
-		jnz Lfalse
-		mov Dprog,[Dprog+kopnda]
-		*jumpnext
-Lfalse:
-		*jumpskip6
-L99:
-		*pushvar2
-		mov D0,[Dframe+D4+ktag]
-		mov [Dsptr+xb+ktag],D0
-		mov D1,[Dframe+D4+kvalue]
-		mov [Dsptr+xb+kvalue],D1
-		and A0,hasrefmask
-		jz L2
-		inc word32 [D1+jrefcount]
-L2:
-		mov D0,[Dframe+D5+ktag]
-		mov [Dsptr+ya+ktag],D0
-		mov D1,[Dframe+D5+kvalue]
-		mov [Dsptr+ya+kvalue],D1
-		and A0,hasrefmask
-		jz L3
-		inc word32 [D1+jrefcount]
-L3:
-		add Dprog,intpsize4
-		jmp j_jumpeq
-	end
-end
-
-threadedproc j_jumpneff*=
-	assem
-		mov D4,[Dprog+kopndb]
-		mov D5,[Dprog+kopndc]
-		cmp byte [D4+Dframe+ktag],tint
-		jnz L99
-		cmp byte [D5+Dframe+ktag],tint
-		jnz L99
-
-		mov D0,[Dframe+D4+kvalue]
-		cmp D0,[Dframe+D5+kvalue]
-		jz Lfalse
-		mov Dprog,[Dprog+kopnda]
-		*jumpnext
-Lfalse:
-		*jumpskip6
-L99:
-		*pushvar2
-		mov D0,[Dframe+D4+ktag]
-		mov [Dsptr+xb+ktag],D0
-		mov D1,[Dframe+D4+kvalue]
-		mov [Dsptr+xb+kvalue],D1
-		and A0,hasrefmask
-		jz L2
-		inc word32 [D1+jrefcount]
-L2:
-		mov D0,[Dframe+D5+ktag]
-		mov [Dsptr+ya+ktag],D0
-		mov D1,[Dframe+D5+kvalue]
-		mov [Dsptr+ya+kvalue],D1
-		and A0,hasrefmask
-		jz L3
-		inc word32 [D1+jrefcount]
-L3:
-		add Dprog,intpsize4
-		jmp j_jumpne
-	end
-end
-
-threadedproc j_pushptrf*=
-	assem
-		*pushvar
-		mov D2,[Dprog+kopnda]
-		add D2,Dframe
-!JMP L99
-		cmp byte [D2+ktag],trefvar
-		jnz L1
-		mov D4,[D2+kvarptr]
-
-		mov D0,[D4+ktag]
-		mov [Dsptr+ktag],D0
-		mov D1,[D4+kvalue]
-		mov [Dsptr+kvalue],D1
-		and A0,hasrefmask
-		jz L0
-		inc word32 [D1+jrefcount]
-L0:
-		*jumpskip3
-
-L1:
-		cmp byte [D2+ktag],trefpack
-		jnz L2
-
-		mov D4,[D2+kptr]
-		movzx A0,word16 [D2+krefelemtag]
-
-		cmp A0,tu8
-		jnz L10
-		mov word32 [Dsptr+ktag],tint
-		movzx A0,byte [D4]
-		mov [Dsptr+kvalue],D0
-		*jumpskip3
-L10:
-		cmp A0,ti32
-		jnz L11
-		mov word32 [Dsptr+ktag],tint
-		mov A0,[D4]
-		movsxd D0,A0
-		mov [Dsptr+kvalue],D0
-		*jumpskip3
-L11:
-L2:
-L99:
-		mov D0,[D2+ktag]
-		mov [Dsptr+xa+ktag],D0
-		mov D1,[D2+kvalue]
-		mov [Dsptr+xa+kvalue],D1			!assume pointer is not a heap object
-		add Dprog, intpsize2
-		jmp j_pushptr
-	end
-end
-
-threadedproc j_lenf*=
-	assem
-		mov D4,[Dprog+kopnda]
-		add D4,Dframe
-!JMP L99
-		mov W0, [D4+ktag]
-		cmp B0,tlist
-		jz L1
-		cmp B0,tstring
-		jz L1
-		cmp B0,tarray
-		jnz L99
-L1:
-		mov D1,[D4+kobjptr]
-		mov D3, [D1+jlength]
-
-		*pushvar
-		mov word32 [Dsptr+ktag],tint
-		mov [Dsptr+kvalue],D3
-		*jumpskip3
-L99:
-		*pushvar
-		mov D0,[D4+ktag]
-		mov [Dsptr+ktag],D0
-		mov D1,[D4+kvalue]
-		mov [Dsptr+kvalue],D1
-		and A0,hasrefmask
-		jz L3
-		inc word32 [D1+jrefcount]
-L3:	
-		add Dprog,intpsize2
-		jmp j_len
-	end
-
-
-end
-
-threadedproc j_even*=
-	saveregs
-	k_even()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_odd*=
-!	assem
-!		cmp byte [Dsptr+ktag],tint
-!		jnz L1
-!
-!	
-!		mov rax, [dsptr+kvalue]
-!		and rax, 1
-!		mov [dsptr+kvalue], rax
-!		*jumpskip1
-!L1:
-!	end
-
-	saveregs
-	k_odd()
-	loadregs
-	jumpnext
-end
-
-threadedproc j_isfound*=
-	saveregs
-	k_isfound()
-	loadregs
-	jumpnext
-end
-
-=== qq_khandlers.m 0 0 11/44 ===
-!HLL bytecode handlers
-
-global macro getopnda = (pcptr+1)^
-global macro getopndb = (pcptr+2)^
-global macro getopndc = (pcptr+3)^
-global macro getopndd = (pcptr+4)^
-
-!step pcptr to next bytecode, skipping n operands
-
-global macro skip(n) = pcptr:=pcptr+(n+1)
-!global macro skip(n) = pcptr:=cast(int(pcptr)+(n+1)*8)
-!global macro skip(n) = pcptr+:=(n+1)
-
-
-!const doretcheck=1
-const doretcheck=0
-
-global proc kunimpl=
-	if hasbytecodes then
-		pcerror_s("Unimplemented:",pclnames[pcptr^])
-	else
-		pcerror("Unimplemented (use -fdebug to see opcode)")
-	fi
-end
-
-global proc k_pushci=
-	++sptr
-	sptr.tagx:=tint
-	sptr.value:=getopnda
-	skip(1)
-end
-
-global proc k_pushnil=
-	++sptr
-	sptr.tagx:=trefpack
-	sptr.elemtag:=tvoid
-	sptr.ptr:=nil
-	++pcptr
-end
-
-global proc k_pushcs=
-	++sptr
-
-	sptr.tagx:=tstring ior hasrefmask
-	sptr.objptr:=cast(getopnda)
-	++sptr.objptr.refcount
-	skip(1)
-end
-
-global proc k_pushcr=
-	++sptr
-	sptr.tagx:=treal
-
-	sptr.xvalue:=real@(getopnda)
-	skip(1)
-end
-
-global proc k_stop=
-	stopped:=1
-end
-
-global proc k_stoprunproc=
-	stopped:=1
-end
-
-global proc k_pushm=
-	++sptr
-	sptr^:=variant(getopnda)^
-	var_share(sptr)
-
-	skip(1)
-end
-
-global proc k_pushf=
-	++sptr
-	sptr^:=variant(frameptr+getopnda)^
-	var_share(sptr)
-
-	skip(1)
-end
-
-global proc k_pushff=
-	sptr+:=2
-	(sptr-1)^:=variant(frameptr+getopnda)^
-	var_share(sptr-1)
-
-	sptr^:=variant(frameptr+getopndb)^
-	var_share(sptr)
-
-	skip(3)
-end
-
-global proc k_pushmref=
-	++sptr
-	sptr.tagx:=trefvar
-	sptr.varptr:=variant(getopnda)
-
-	skip(1)
-end
-
-global proc k_pushfref=
-	++sptr
-	sptr.tagx:=trefvar
-	sptr.varptr:=variant(frameptr+getopnda)
-
-	skip(1)
-end
-
-global proc k_popm=
-	variant p
-
-	p:=variant(getopnda)
-	var_unshare(p)
-	p^:=sptr^				!transfer reference
-	--sptr
-
-	skip(1)
-end
-
-global proc k_storem=
-	variant p
-
-	p:=variant(getopnda)
-	var_share(sptr)
-	var_unshare(p)
-	p^:=sptr^				!transfer reference
-
-	skip(1)
-end
-
-global proc k_zpopm=
-	(variant(getopnda))^:=sptr^				!transfer reference
-
-	--sptr
-	skip(1)
-end
-
-global proc k_popf=
-	variant p
-
-	p:=variant(frameptr+getopnda)
-	var_unshare(p)
-	p^:=sptr^				!transfer reference
-	--sptr
-
-	skip(1)
-end
-
-global proc k_storef=
-	variant p
-
-	p:=variant(frameptr+getopnda)
-	var_share(sptr)
-	var_unshare(p)
-	p^:=sptr^				!transfer reference
-
-	skip(1)
-end
-
-global proc k_zpopf=
-	variant p
-
-	p:=variant(frameptr+getopnda)
-	p^:=sptr^				!transfer reference
-	--sptr
-
-	skip(1)
-end
-
-global proc k_popretval=
-	variant p
-
-	p:=variant(frameptr+getopnda)
-	p^:=sptr^				!transfer reference
-	--sptr
-
-	skip(1)
-end
-
-global proc k_tom=
-	variant p
-
-	p:=cast(getopndb)
-
-	--p.value
-
-	if p.value then
-		pcptr:=cast(getopnda)
-	else
-		skip(2)
-	fi
-end
-
-global proc k_tof=
-	variant p
-
-	p:=cast(frameptr+getopndb)
-
-	--p.value
-
-	if p.value then
-		pcptr:=cast(getopnda)
-	else
-		skip(2)
-	fi
-end
-
-global proc k_add=
-	variant y:=sptr--
-	varrec x:=sptr^
-
-	var_add(sptr,y)
-
-	var_unshare(&x)
-	var_unshare(y)
-
-	++pcptr
-end
-
-global proc k_sub=
-	variant y:=sptr--
-	varrec x:=sptr^
-
-	var_sub(sptr,y)
-
-	var_unshare(&x)
-	var_unshare(y)
-
-	++pcptr
-end
-
-global proc k_mul=
-	variant y:=sptr--
-	varrec x:=sptr^
-
-	var_mul(sptr,y)
-
-	var_unshare(&x)
-	var_unshare(y)
-
-	++pcptr
-end
-
-global proc k_div=
-	variant y:=sptr--
-	varrec x:=sptr^
-
-	var_div(sptr,y)
-
-	var_unshare(&x)
-	var_unshare(y)
-
-	++pcptr
-end
-
-global proc k_idiv=
-	variant y:=sptr--
-	varrec x:=sptr^
-
-	var_idiv(sptr,y)
-
-	var_unshare(&x)
-	var_unshare(y)
-
-	++pcptr
-end
-
-global proc k_irem=
-	variant y:=sptr--
-	varrec x:=sptr^
-
-	var_irem(sptr,y)
-
-	var_unshare(&x)
-	var_unshare(y)
-
-	++pcptr
-end
-
-global proc k_iand=
-	variant y:=sptr--
-	varrec x:=sptr^
-
-	var_iand(sptr,y)
-
-	var_unshare(&x)
-	var_unshare(y)
-
-	++pcptr
-end
-
-global proc k_ior=
-	variant y:=sptr--
-	varrec x:=sptr^
-
-	var_ior(sptr,y)
-
-	var_unshare(&x)
-	var_unshare(y)
-
-	++pcptr
-end
-
-global proc k_ixor=
-	variant y:=sptr--
-	varrec x:=sptr^
-
-	var_ixor(sptr,y)
-
-	var_unshare(&x)
-	var_unshare(y)
-
-	++pcptr
-end
-
-global proc k_shl=
-	variant y:=sptr--
-	varrec x:=sptr^
-
-	var_shl(sptr,y)
-
-	var_unshare(&x)
-	var_unshare(y)
-
-	++pcptr
-end
-
-global proc k_shr=
-	variant y:=sptr--
-	varrec x:=sptr^
-
-	var_shr(sptr,y)
-
-	var_unshare(&x)
-	var_unshare(y)
-
-	++pcptr
-end
-
-global proc k_sqr=
-	case sptr.tag
-	when tint then
-		sptr.value:=sqr(sptr.value)
-	when treal then
-		sptr.xvalue:=sqr(sptr.xvalue)
-	else
-		pcustype("Sqr",sptr)
-	esac
-
-	++pcptr
-end
-
-global proc k_sign=
-	case sptr.tag
-	when tint then
-		sptr.value:=(sptr.value<0|-1|(sptr.value>0|1|0))
-	when treal then
-		sptr.tag:=tint
-		sptr.value:=(sptr.xvalue<0|-1|(sptr.xvalue>0|1|0))
-!	when tdecimal then
-	else
-		pcustype("Sign",sptr)
-	esac
-
-	++pcptr
-end
-
-global proc k_sqrt=
-	domaths(ksqrt)
-end
-
-global proc k_sin=
-	domaths(ksin)
-end
-
-global proc k_cos=
-	domaths(kcos)
-end
-
-global proc k_tan=
-	domaths(ktan)
-end
-
-global proc k_asin=		
-	domaths(kasin)
-end
-
-global proc k_acos=		
-	domaths(kacos)
-end
-
-global proc k_atan=		
-	domaths(katan)
-end
-
-global proc k_log=		
-	domaths(klog)
-end
-
-global proc k_log10=	
-	domaths(klog10)
-end
-
-global proc k_exp=		
-	domaths(kexp)
-end
-
-global proc k_round=	
-	domaths(kround)
-end
-
-global proc k_floor=	
-	domaths(kfloor)
-end
-
-global proc k_ceil=		
-	domaths(kceil)
-end
-
-global proc k_fract=	
-	domaths(kfract)
-end
-
-global proc k_neg=
-	varrec x:=sptr^
-
-	var_neg(sptr)
-	var_unshare(&x)
-
-	++pcptr
-end
-
-global proc k_negto=
-	variant px:=sptr--
-
-!	if not var_negto(px) then
-		var_inplace_unary(px, cast(var_neg))
-!	end
-
-	++pcptr
-end
-
-global proc k_absto=
-	variant px:=sptr--
-
-!	if not var_absto(px) then
-		var_inplace_unary(px, cast(var_abs))
-!	end
-
-	++pcptr
-end
-
-global proc k_inotto=
-	variant px:=sptr--
-
-!	if not var_inotto(px) then
-		var_inplace_unary(px, cast(var_inot))
-!	end
-
-	++pcptr
-end
-
-global proc k_atan2=
-	pcerror("ATAN2 NOT READY")
-end
-
-global proc k_fmod=
-	pcerror("FMOD NOT READY")
-end
-
-
-global proc k_abs=
-	varrec x:=sptr^
-
-	var_abs(sptr)
-	var_unshare(&x)
-
-	++pcptr
-end
-
-global proc k_inot=
-	varrec x:=sptr^
-
-	var_inot(sptr)
-	var_unshare(&x)
-
-	++pcptr
-end
-
-global proc k_istruel=
-	int res
-
-	res:=var_istruel(sptr)
-	var_unshare(sptr)
-	sptr.tagx:=tint
-	sptr.value:=res
-
-	++pcptr
-end
-
-global proc k_notl=
-	int res
-
-	res:=not var_istruel(sptr)
-	var_unshare(sptr)
-	sptr.tagx:=tint
-	sptr.value:=res
-
-	++pcptr
-end
-
-global proc k_jumpeq=
-	variant y:=sptr--
-	variant x:=sptr--
-
-	if var_equal(x,y) then
-		pcptr:=cast(getopnda)
-	else
-		skip(1)
-	fi
-	var_unshare(x)
-	var_unshare(y)
-end
-
-global proc k_jumpne=
-	variant x,y
-
-	y:=sptr--
-	x:=sptr--
-
-	if not var_equal(x,y) then
-		pcptr:=cast(getopnda)
-	else
-		skip(1)
-	fi
-	var_unshare(x)
-	var_unshare(y)
-end
-
-global proc k_jumplt=
-	variant x,y
-
-	y:=sptr
-	x:=sptr-1
-
-	sptr-:=2
-
-	if var_compare(x,y)<0 then
-		pcptr:=cast(getopnda)
-	else
-		skip(1)
-	fi
-	var_unshare(x)
-	var_unshare(y)
-end
-
-global proc k_jumple=
-	variant x,y
-
-	y:=sptr--
-	x:=sptr--
-
-	if var_compare(x,y)<=0 then
-		pcptr:=cast(getopnda)
-	else
-		skip(1)
-	fi
-	var_unshare(x)
-	var_unshare(y)
-end
-
-global proc k_jumpge=
-	variant x,y
-
-	y:=sptr
-	x:=sptr-1
-
-	sptr-:=2
-	if var_compare(x,y)>=0 then
-		pcptr:=cast(getopnda)
-	else
-		skip(1)
-	fi
-	var_unshare(x)
-	var_unshare(y)
-end
-
-global proc k_jumpgt=
-	variant x,y
-
-	y:=sptr--
-	x:=sptr--
-
-	if var_compare(x,y)>0 then
-		pcptr:=cast(getopnda)
-	else
-		skip(1)
-	fi
-	var_unshare(x)
-	var_unshare(y)
-end
-
-global proc k_jumpfalse=
-	variant x:=sptr--
-
-	if not var_istruel(x) then
-		pcptr:=cast(getopnda)
-	else
-		skip(1)
-	fi
-	var_unshare(x)
-
-end
-
-global proc k_jumptrue=
-	variant x:=sptr--
-
-	if var_istruel(x) then
-		pcptr:=cast(getopnda)
-	else
-		skip(1)
-	fi
-	var_unshare(x)
-end
-
-global proc k_incrtom=
-	variant p
-!
-	p:=variant(getopnda)
-	case p.tag
-	when tint then
-		++p.value
-  	when trefvar then
-		++p.varptr
-	when trefpack then
-		p.ptr+:=ttsize[p.elemtag]
-	when treal then
-		p.xvalue+:=1
-
-	else
-		pcustype("incrtom",p)
-	end
-	skip(1)
-end
-
-global proc k_incrtof=
-	variant p
-
-	p:=variant(frameptr+getopnda)
-	case p.tag
-	when tint then
-		++p.value
-  	when trefvar then
-		++p.varptr
-	when trefpack then
-		p.ptr+:=ttsize[p.elemtag]
-	when treal then
-		p.xvalue+:=1
-	else
-		pcustype("incrtof",p)
-	esac
-	skip(1)
-end
-
-global proc k_decrtom=
-	variant p
-
-	p:=variant(getopnda)
-	case p.tag
-	when tint then
-		--p.value
-  	when trefvar then
-		--p.varptr
-	when trefpack then
-		p.value-:=ttsize[p.elemtag]
-	when treal then
-		p.xvalue-:=1
-	else
-		pcustype("decrtom",p)
-	esac
-	skip(1)
-end
-
-global proc k_decrtof=
-	variant p
-
-	p:=variant(frameptr+getopnda)
-	case p.tag
-	when tint then
-		--p.value
-	when treal then
-		p.xvalue-:=1
-  	when trefvar then
-		--p.varptr
-	when trefpack then
-		p.ptr-:=ttsize[p.elemtag]
-  	else
-		pcustype("decrtof",p)
-	esac
-	skip(1)
-end
-
-global proc k_incrload=
-	varrec v
-
-	v:=sptr^
-	k_incrptr()
-	var_loadptr(&v,++sptr)
-end
-
-global proc k_loadincr=
-	varrec v
-
-	v:=sptr^
-	var_loadptr(sptr,sptr)
-	++sptr
-	sptr^:=v
-
-	k_incrptr()
-end
-
-global proc k_decrload=
-	varrec v
-
-	v:=sptr^
-	k_decrptr()
-	var_loadptr(&v,++sptr)
-end
-
-global proc k_loaddecr=
-	varrec v
-
-	v:=sptr^
-	var_loadptr(sptr,sptr)
-	++sptr
-	sptr^:=v
-
-	k_decrptr()
-end
-
-global proc k_incrptr=
-	variant p
-
-	p:=sptr--
-
-	case p.tag
-	when trefvar then			!increment what ptr points to
-		p:=p.varptr
-		case p.tag
-		when tint then
-			++p.value
-		when trefvar then			!incr the pointer
-			++p.varptr
-		when trefpack then			!incr the pointer
-			p.ptr+:=ttsize[p.elemtag]
-		when treal then
-			p.xvalue+:=1
-		else
-			pcustype("incrptr/refvar",p)
-		end
-	when trefpack then			!incr the packed type pointed to
-		case p.elemtag
-		when tu8,ti8 then
-			++(p.ptr)^
-		when tu16,ti16 then
-			++ref u16(p.ptr)^
-		else
-			pcustype_t("incrptr/ref",p.elemtag)
-		end
-
-	else
-		pcustype("incrptr",p)
-	end
-	++pcptr
-end
-
-global proc k_decrptr=
-	variant p
-
-	p:=sptr--
-
-	case p.tag
-	when trefvar then			!increment what ptr points to
-		p:=p.varptr
-		case p.tag
-		when tint then
-			--p.value
-		when trefvar then			!incr the pointer
-			--p.varptr
-		when trefpack then			!incr the pointer
-			p.ptr-:=ttsize[p.elemtag]
-		when treal then
-			p.xvalue-:=1
-		else
-			pcustype("incrptr/refvar",p)
-		end
-	when trefpack then			!incr the packed type pointed to
-		case p.elemtag
-		when tu8,ti8 then
-			--(p.ptr)^
-		when tu16,ti16 then
-			--ref u16 (p.ptr)^
-		else
-			pcustype_t("incrptr/ref",p.elemtag)
-		end
-
-	else
-		pcustype("incrptr",p)
-	end
-	++pcptr
-end
-
-global proc k_pushvoid=
-	++sptr
-	sptr.tagx:=tvoid
-	++pcptr
-end
-
-global proc k_callproc=
-	const countinterval=100
-	static int count=countinterval
-
-!	if --count=0 then
-!		count:=countinterval
-!		os_peek()
-!	fi
-
-	if sptr>=stacklimit then
-		pcerror("Stack Overflow")
-	fi
-
-	++sptr
-	sptr.tagx:=tretaddr
-	sptr.retaddr := pcptr+3
-
-	sptr.frameptr_low := word(frameptr)
-	frameptr:=cast(sptr)
-
-	pcptr:=cast(getopnda)
-
-end
-
-global proc k_callptr=
-	symbol d
-
-	if sptr.tag<>tsymbol then
-		pcerror("Probably undefined function")
-	fi
-	d:=sptr.def
-	if d.nameid=linkid then
-		d:=d.alias
-	fi
-
-!CPL "CALLPTR",D.NAME
-
-!check. no. of params
-	if d.nparams<>getopnda then
-		pcerror_s("Callptr: wrong # params; need:",strint(d.nparams))
-	fi
-
-	sptr.tagx:=tretaddr
-	sptr.retaddr := pcptr+3
-
-	sptr.frameptr_low := word(frameptr)
-	frameptr:=cast(sptr)
-
-	pcptr:=cast(d.pcaddress)
-end
-
-global proc k_procentry=
-	to getopnda do
-		++sptr
-		sptr.tagx:=tvoid
-	od
-	skip(1)
-end
-
-global proc k_return=
-	int nargs
-
-	if doretcheck then
-		if sptr.tag<>tretaddr then
-			pcerror_s("Not tretaddr:",ttname[sptr.tag])
-		fi
-	fi
-
-	nargs:=getopnda
-
-	pcptr:=sptr.retaddr
-
-	(ref int32(&frameptr))^:=sptr.frameptr_low
-
-	--sptr
-
-	to nargs do
-		var_unshare(sptr)
-		--sptr
-	od
-end
-
-global proc k_return0=
-	int nargs
-
-	if doretcheck then
-		if sptr.tag<>tretaddr then
-			pcerror_s("Not tretaddr:",ttname[sptr.tag])
-		fi
-	fi
-
-	pcptr:=sptr.retaddr
-
-	(ref int32(&frameptr))^:=sptr.frameptr_low
-
-	--sptr
-end
-
-global proc k_unshare=
-	to getopnda do
-		var_unshare(sptr)
-		--sptr
-	od
-	skip(1)
-end
-
-global proc k_unshare1=
-	var_unshare(sptr)
-	--sptr
-	++pcptr
-end
-
-global proc k_formci=
-	variant p
-
-	p:=cast(getopndb)
-
-	++p.value
-
-	if p.value<=getopndc then
-		pcptr:=cast(getopnda)
-	else
-		skip(3)
-	fi
-end
-
-global proc k_forfci=
-	variant p
-
-	p:=cast(frameptr+getopndb)
-
-	++p.value
-
-	if p.value<=getopndc then
-		pcptr:=cast(getopnda)
-	else
-		skip(3)
-	fi
-
-!	FORFCI(SPTR, PCPTR, FRAMEPTR)
-
-end
-
-!global proc FORFCI(variant sp, ref int pc, ref byte fp)=
-!	variant p
-!
-!RESTART:
-!	p:=cast(fp+(pc+2)^)
-!
-!	if ++p.value <= (pc+3)^ then
-!		pc:=cast((pc+1)^)
-!		GOTO RESTART
-!	else
-!		SPTR:=SP
-!		PCPTR:=PC+4
-!		FRAMEPTR:=FP
-!	fi
-!end
-
-global proc k_fordmci=
-	variant p
-
-	p:=cast(getopndb)
-
-	--p.value
-
-	if p.value>=getopndc then
-		pcptr:=cast(getopnda)
-	else
-		skip(3)
-	fi
-end
-
-global proc k_fordfci=
-	variant p
-
-	p:=cast(frameptr+getopndb)
-
-	--p.value
-
-	if p.value>=getopndc then
-		pcptr:=cast(getopnda)
-	else
-		skip(3)
-	fi
-end
-
-global proc k_formm=
-	variant p,q
-
-	p:=cast(getopndb)
-	q:=cast(getopndc)
-
-	++p.value
-
-	if p.value<=q.value then
-		pcptr:=cast(getopnda)
-	else
-		skip(3)
-	fi
-end
-
-global proc k_fordmm=
-	variant p,q
-
-	p:=cast(getopndb)
-	q:=cast(getopndc)
-
-	--p.value
-
-	if p.value>=q.value then
-		pcptr:=cast(getopnda)
-	else
-		skip(3)
-	fi
-end
-
-global proc k_forff=
-	variant p,q
-
-	p:=cast(frameptr+getopndb)
-	q:=cast(frameptr+getopndc)
-
-	++p.value
-
-	if p.value<=q.value then
-		pcptr:=cast(getopnda)
-	else
-		skip(3)
-	fi
-end
-
-global proc k_fordff=
-	variant p,q
-
-	p:=cast(frameptr+getopndb)
-	q:=cast(frameptr+getopndc)
-
-	--p.value
-
-	if p.value>=q.value then
-		pcptr:=cast(getopnda)
-	else
-		skip(3)
-	fi
-end
-
-global proc k_comment=
-	skip(1)
-end
-
-global proc k_makelist=
-	variant x,y
-	int n
-
-	n:=getopnda
-
-	x:=sptr-n+1			!start of data
-	sptr:=x
-
-	var_make_list(x,sptr,n,getopndb)
-	sptr.objptr.mutable:=0
-
-	skip(2)
-end
-
-global proc k_makedict=
-	variant x
-	int n
-
-	n:=getopnda
-
-	x:=sptr-n*2+1			!start of data
-
-	var_make_dict(x,x,n)
-	sptr:=x
-
-	skip(1)
-end
-
-global proc k_makeset=
-	variant x
-	int n
-
-	n:=getopnda
-
-	x:=sptr-n+1			!start of data
-
-	var_make_set(x,x,n)
-	sptr:=x
-	sptr.objptr.mutable:=0
-
-	skip(1)
-end
-
-global proc k_makerecord=
-	variant x,y
-	int n
-
-	n:=getopnda
-
-	x:=sptr-n+1				!start of data
-
-	var_make_record(x,x,n,getopndb)
-	sptr:=x
-	sptr.objptr.mutable:=0
-
-	skip(2)
-end
-
-global proc k_makestruct=
-	variant x,y
-	int n
-
-	n:=getopnda
-
-	x:=sptr-n+1				!start of data
-
-	var_make_struct(x,x,n,getopndb)
-	sptr:=x
-	sptr.objptr.mutable:=0
-
-	skip(2)
-end
-
-global proc k_makearray=
-	variant x
-	int n
-
-	n:=getopndb
-
-	x:=sptr-n+1				!start of data
-
-	var_make_array(x,x,getopnda, n, getopndc, getopndd)
-	sptr:=x
-	sptr.objptr.mutable:=0
-
-	skip(4)
-end
-
-global proc k_makebits=
-	variant x
-	int n
-
-	n:=getopndb
-
-	x:=sptr-n+1				!start of data
-
-	var_make_bits(x,x,getopnda, n, getopndc, getopndd)
-	sptr:=x
-	sptr.objptr.mutable:=0
-
-	skip(4)
-end
-
-global proc k_index=
-!x[y]
-	variant y,z
-	varrec x
-
-	y:=sptr--
-	x:=sptr^
-
-	case y.tag
-	when tint then
-		var_getix(sptr,y.value)
-	when trange then
-		var_getslice(sptr,y.range_lower,y.range_upper)
-	else
-		pcmxtypes("Index",&x,y)
-	esac
-
-	var_unshare(&x)
-
-	++pcptr
-end
-
-global proc k_popindex=
-!y[z]:=x
-	variant x,y,z
-
-	z:=sptr--		!index
-	y:=sptr--		!list etc
-	x:=sptr--		!value to store
-
-	case z.tag
-	when tint then
-		var_putix(y, z.value, x)
-		var_unshare(y)
-	when trange then
-		var_putslice(y, z.range_lower, z.range_upper, x)
-		var_unshare(x)
-		var_unshare(y)
-	else
-		pcmxtypes("Popindex",y,z)
-	esac
-
-	++pcptr
-end
-
-global proc k_indexref=
-!&x[y]
-	variant y,p
-	varrec x
-
-	y:=sptr--
-	x:=sptr^
-
-	case y.tag
-	when tint then
-		var_getixref(sptr, y.value)
-	else
-		pcmxtypes("Indexref",sptr,y)
-	esac
-
-	var_unshare(&x)
-	++pcptr
-end
-
-global proc k_keyindex=
-!x{y}
-	variant d,k,p,def
-
-	def:=sptr--			!def is any default value to be used
-	k:=sptr--			!k is the key
-	d:=sptr				!d is the dict
-
-	if d.tag<>tdict then
-		pcustype("dict{}",d)
-	fi
-
-	p:=var_finddictitem(d,k,0)
-	var_unshare(d)
-	var_unshare(k)
-
-	if p then			!found
-		sptr^:=p^
-		var_unshare(def)
-	else
-		sptr^:=def^			!use given default value when not found
-	fi
-	++pcptr
-end
-
-global proc k_popkeyindex=
-!y[z]:=x
-	variant d,k,p,x
-
-	k:=sptr--			!k is the key
-	d:=sptr--			!d is the dict
-	x:=sptr--			!value to pop
-
-	if d.tag<>tdict then
-		pcustype("dict{}:=",d)
-	fi
-
-	p:=var_finddictitem(d,k,1)
-
-	if p.tag<>tvoid then
-		var_unshare(p)
-	fi
-	p^:=x^
-
-	var_unshare(d)
-	var_unshare(k)
-
-	++pcptr
-end
-
-global proc k_keyindexref=
-!y[z]:=x
-	variant d,k,p,x
-
-	k:=sptr--			!k is the key
-	d:=sptr				!d is the dict
-
-	if d.tag<>tdict then
-		pcustype("&dict{}",d)
-	fi
-
-	p:=var_finddictitem(d,k,0)
-	if p=nil then
-		pcerror("&dict{} not found")
-	fi
-	var_share(p)
-	var_unshare(k)
-	var_unshare(d)
-
-	sptr.tagx:=trefvar
-	sptr.varptr:=p
-
-	++pcptr
-end
-
-global proc k_dot=
-	symbol d
-	variant p, sp
-	ref byte q
-	int rectype
-	varrec v
-
-!CPL "DOT",TTNAME[SPTR.TAG]
-
-	sp:=sptr
-
-restart:
-	case sp.tag
-!	when trecord, tstruct, tstruct then
-	when trecord, tstruct then
-	when trefvar then
-		sp:=sp.varptr
-		restart
-	else
-		pcustype("1:dot/not record",sp)
-	esac
-	rectype:=sp.objptr.usertag
-
-	d:=resolvefield(getopnda, rectype)
-
-	case d.nameid
-	when fieldid then
-		p:=sp.objptr.varptr+d.fieldoffset/varsize
-		var_share(p)
-		var_unshare(sptr)
-		sptr^:=p^
-
-	when structfieldid then
-		var_loadpacked(sp.objptr.ptr+d.fieldoffset, d.mode, &v, nil)
-		var_unshare(sptr)
-		sptr^:=v
-
-    when procid then
-		sptr.tagx:=tsymbol
-		sptr.def:=d
-
-    when linkid then
-		sptr.tagx:=tsymbol
-		sptr.def:=d.alias
-
-	else
-		pcerror_s("DOT: can't do this fieldtype:",namenames[d.nameid])
-	esac
-
-	skip(1)
-end
-
-global proc k_dotref=
-	symbol d
-	variant p, sp
-	ref byte q
-	int rectype
-
-	sp:=sptr
-
-restart:
-	case sp.tag
-	when trecord, tstruct then
-	when trefvar then
-		sp:=sp.varptr
-		restart
-	else
-		pcustype("2:dot/not record",sptr)
-	esac
-	rectype:=sp.objptr.usertag
-
-	d:=resolvefield(getopnda, rectype)
-
-	case d.nameid
-	when fieldid then
-		p:=sp.objptr.varptr+d.fieldoffset/varsize
-!Possible bug when sptr is a transient value which is now freed
-!But you wouldn't normally use as an lvalue
-		var_unshare(sptr)
-
-		sptr.tagx:=trefvar
-		sptr.varptr:=P
-
-	when structfieldid then
-		q:=sp.objptr.ptr+d.fieldoffset
-		var_unshare(sptr)
-		sptr.tagx:=trefpack
-		sptr.ptr:=q
-		sptr.elemtag:=d.mode
-
-	else
-		pcerror_s("DOTREF: can't do this fieldtype:",namenames[d.nameid])
-	esac
-
-	skip(1)
-end
-
-global proc k_popdot=
-	symbol d
-	variant p,x,y
-
-	x:=sptr--
-	y:=sptr--
-
-	case x.tag
-!	when trecord, tstruct then
-	when trecord, tstruct then
-	else
-!		pcerror("popdot/not record")
-		pcustype("3:dot/not record",x)
-	esac
-
-	d:=resolvefield(getopnda, x.objptr.usertag)
-
-	IF NOT X.HASREF THEN PCERROR("POPDOT") FI
-
-	if not x.objptr.mutable then
-		pcnotmut()
-	fi
-
-	case d.nameid
-	when fieldid then
-		p:=x.objptr.varptr+d.fieldoffset/varsize
-		var_unshare(p)
-		p^:=y^				!transfer
-		var_unshare(x)
-
-	when structfieldid then
-!		var_loadpacked(sptr.objptr.ptr+d.fieldoffset, d.mode, &v, nil)
-		var_storepacked(x.objptr.ptr+d.fieldoffset, y, d.mode)
-		var_unshare(x)
-
-	else
-		pcerror_s("POPDOT: can't do this fieldtype:",namenames[d.nameid])
-	esac
-
-	skip(1)
-end
-
-global proc k_dotindex=
-!x.[y]
-	variant y,z
-	varrec x
-
-
-	y:=sptr--
-	x:=sptr^
-
-	case y.tag
-	when tint then
-		var_getdotix(sptr,y.value)
-	when trange then
-		var_getdotslice(sptr,y.range_lower,y.range_upper)
-	else
-		pcmxtypes("Dotindex",&x,y)
-	esac
-
-	var_unshare(&x)
-
-	++pcptr
-end
-
-global proc k_dotindexref=
-!x.[y]
-	variant y,p
-	varrec x
-
-	y:=sptr--
-	x:=sptr^
-
-	case y.tag
-	when tint then
-		var_getdotixref(sptr, y.value)
-	when trange then
-		var_getdotsliceref(sptr, y.range_lower,y.range_upper)
-	else
-		pcmxtypes("Dotindexref",sptr,y)
-	esac
-
-	var_unshare(&x)
-	++pcptr
-end
-
-global proc k_popdotindex=
-!y[z]:=x
-	variant x,y,z,py
-
-	z:=sptr--		!index
-	y:=sptr--		!ref to int, string etc
-	x:=sptr--		!value to store
-
-	case z.tag
-	when tint then
-		var_putdotix(y, z.value, x)
-		var_unshare(y)
-	when trange then
-		var_putdotslice(y, z.range_lower, z.range_upper, x)
-		var_unshare(x)
-		var_unshare(y)
-	else
-		pcmxtypes("Popdotindex",y,z)
-	esac
-
-
-	++pcptr
-end
-
-global proc k_len=
-	variant x:=sptr
-	object p:=x.objptr
-	int n, t
-
-	case x.tag
-	when tlist,tarray,tdict,tbits then
-		n:=p.length
-	when tstring then
-		n:=p.length
-	when trecord, tvector, tstruct then
-		n:=ttlength[p.usertag]
-	when tset then
-		n:=p.length
-	when trange then
-		n:=x.range_upper-x.range_lower+1
-	when tdecimal then
-		n:=obj_len_dec(p)
-	when ttype then
-		t:=sptr.value
-		case ttbasetype[t]
-		when trecord, tvector, tstruct then
-			n:=ttlength[t]
-		else
-			n:=ttlength[t]
-		esac
-
-	else
-		pcustype("Len",x)
-	esac
-
-	var_unshare(sptr)
-	sptr.tagx:=tint
-	sptr.value:=n
-
-	++pcptr
-end
-
-global proc k_upb=
-	variant x:=sptr
-	object p:=x.objptr
-	int n, t
-
-	case x.tag
-	when tlist then
-		n:=p.length+p.lower16-1
-	when tstring, tdict then
-		n:=p.length
-	when tarray, tbits then
-		n:=p.length+p.lower-1
-	when trecord, tstruct then
-		n:=ttlength[p.usertag]
-
-	when tvector then
-		t:=p.usertag
-		goto dotype
-
-	when tset then
-		n:=p.length-1
-	when trange then
-		n:=x.range_upper
-!	when tenum then
-!		t:=x.elemtag
-!		goto dotype
-	when ttype then
-		t:=sptr.value
-dotype:
-		case ttbasetype[t]
-		when tvector then
-!		when tvector then
-			n:=ttlength[t]+ttlower[t]-1
-		else
-			pcustype("t.upb",x)
-		esac
-
-	else
-		pcustype("Upb",x)
-	esac
-
-	var_unshare(sptr)
-	sptr.tagx:=tint
-	sptr.value:=n
-
-	++pcptr
-end
-
-global proc k_lwb=
-	variant x:=sptr
-	object p:=x.objptr
-	int n, t
-
-	case x.tag
-	when tlist then
-		n:=p.lower16
-	when tstring,tdict then
-		n:=1
-	when tarray, tbits then
-		n:=p.lower
-	when trecord,tstruct then
-		n:=1
-	when tvector then
-		n:=ttlower[p.usertag]
-	when tset then
-		n:=0
-	when trange then
-		n:=x.range_lower
-!	when tenum then
-!		n:=ttlower[x.elemtag]
-!	when ttype then
-!		t:=sptr.value
-!dotype:
-!		case ttbasetype[t]
-!		when tenum then
-!			n:=ttlower[t]
-!		else
-!			pcustype("t.lwb",x)
-!		esac
-
-	else
-		pcustype("Lwb",x)
-	esac
-
-	var_unshare(sptr)
-	sptr.tagx:=tint
-	sptr.value:=n
-
-	++pcptr
-end
-
-global proc k_bounds=
-	do_bounds(0)
-	++pcptr
-end
-
-global proc k_boundsx=
-	do_bounds(1)
-	++pcptr
-end
-
-proc do_bounds(int sx)=
-	int a,b,m, t
-	object p
-
-	m:=sptr.tag
-	p:=sptr.objptr
-
-	case m
-	when tlist then
-		a:=p.lower16
-		b:=p.length+a-1
-	when tarray, tbits then
-		a:=p.lower
-		b:=p.length+a-1
-	when tstring, tdict then
-		a:=1
-		b:=p.length
-	when trange then
-		a:=sptr.range_lower
-		b:=sptr.range_upper
-	when tstruct,trecord then
-		a:=1
-		b:=ttlength[p.usertag]
-	when tvector then
-		t:=p.usertag
-		goto dotype
-
-	when tset then
-		a:=0
-		b:=p.length-1
-!	when tenum then
-!		t:=sptr.elemtag
-!		goto dotype
-
-	when ttype then
-		t:=sptr.value
-dotype:
-		case ttbasetype[t]
-		when tvector, tstruct then
-!		when tvector, tstruct then
-			a:=ttlower[t]
-			b:=ttlength[t]+a-1
-		else
-			pcustype("t.bounds",sptr)
-		esac
-
-	else
-		pcustype("Bounds",sptr)
-	esac
-
-	if sx then
-		var_unshare(sptr)
-		sptr.tagx:=tint
-		sptr.value:=a
-		++sptr
-		sptr.tagx:=tint
-		sptr.value:=b
-
-	else
-		var_unshare(sptr)
-		sptr.tagx:=trange
-		sptr.range_lower:=a
-		sptr.range_upper:=b
-	fi
-end
-
-
-global proc k_dictitems=
-	int n
-
-	case sptr.tag
-	when tdict then
-		n:=sptr.objptr.dictitems
-	when tdecimal then
-		n:=sptr.objptr.length
-	else
-		pcustype("Dictitems/digits",sptr)
-	esac
-	var_unshare(sptr)
-	sptr.tagx:=tint
-	sptr.value:=n
-
-	++pcptr
-end
-
-global proc k_isfound=
-	int n
-
-	if sptr.tag<>tint then pcerror("isfound") fi
-	sptr.value:=sptr.value<>i64.min
-
-	++pcptr
-end
-
-global proc k_append=
-	variant y:=sptr--
-	varrec x:=sptr^
-
-	var_append(sptr,y)
-	var_unshare(&x)
-
-	++pcptr
-end
-
-global proc k_concat=
-	variant y:=sptr--
-	varrec x:=sptr^
-
-	var_concat(sptr,y)
-
-	var_unshare(&x)
-	var_unshare(y)
-
-	++pcptr
-end
-
-global proc k_appendto=
-!x append:= y
-	variant px,x,y
-
-	y:=sptr--
-	px:=sptr--
-
-	case px.tag
-	when trefvar then
-		var_appendto(px.varptr,y)
-	else
-		pcustype("Appendto",px)
-	esac
-	++pcptr
-end
-
-global proc k_concatto=
-!x append:= y
-	variant px,x,y
-
-	y:=sptr--
-	px:=sptr--
-
-	case px.tag
-	when trefvar then
-		var_concatto(px.varptr,y)
-		var_unshare(y)
-	else
-		pcustype("Concatto",px)
-	esac
-	++pcptr
-end
-
-global proc k_addto=
-!x +:= y
-	variant y:=sptr--
-	variant px:=sptr--
-
-	if not var_addto(px, y) then
-		var_inplace(px,y, cast(var_add), cast(var_addmixed))
-	fi
-
-	var_unshare(y)
-	++pcptr
-end
-
-global proc k_subto=
-!x -:= y
-	variant y:=sptr--
-	variant px:=sptr--
-
-!	if not var_subto(px, y) then
-		var_inplace(px,y, cast(var_sub))
-!	end
-
-	var_unshare(y)
-	++pcptr
-end
-
-global proc k_multo=
-!x *:= y
-	variant y:=sptr--
-	variant px:=sptr--
-
-!	if not var_multo(px, y) then
-		var_inplace(px,y, cast(var_mul))
-!	end
-
-	var_unshare(y)
-	++pcptr
-end
-
-global proc k_divto=
-!x /:= y
-	variant y:=sptr--
-	variant px:=sptr--
-
-!	if not var_divto(px, y) then
-		var_inplace(px,y, cast(var_div))
-!	end
-
-	var_unshare(y)
-	++pcptr
-end
-
-global proc k_idivto=
-!px^ %:= y
-	variant y:=sptr--
-	variant px:=sptr--
-
-!	if not var_idivto(px, y) then
-		var_inplace(px,y, cast(var_idiv))
-!	end
-
-	var_unshare(y)
-	++pcptr
-end
-
-global proc k_iandto=
-!px^ iand:= y
-	variant y:=sptr--
-	variant px:=sptr--
-
-!	if not var_iandto(px, y) then
-		var_inplace(px,y, cast(var_iand))
-!	end
-
-	var_unshare(y)
-	++pcptr
-end
-
-global proc k_iorto=
-!px^ ior:= y
-	variant y:=sptr--
-	variant px:=sptr--
-
-!	if not var_iorto(px, y) then
-		var_inplace(px,y, cast(var_ior))
-!	end
-
-	var_unshare(y)
-	++pcptr
-end
-
-global proc k_ixorto=
-!px^ ixor:= y
-	variant y:=sptr--
-	variant px:=sptr--
-
-!	if not var_ixorto(px, y) then
-		var_inplace(px,y, cast(var_ixor))
-!	end
-
-	var_unshare(y)
-	++pcptr
-end
-
-global proc k_shlto=
-!x <<:= y
-	variant y:=sptr--
-	variant px:=sptr--
-
-!	if not var_shlto(px, y) then
-		var_inplace(px,y, cast(var_shl))
-!	end
-
-	var_unshare(y)
-	++pcptr
-end
-
-global proc k_shrto=
-!x >>:= y
-	variant y:=sptr--
-	variant px:=sptr--
-
-!	if not var_shrto(px, y) then
-		var_inplace(px,y, cast(var_shr))
-!	end
-
-	var_unshare(y)
-	++pcptr
-end
-
-global proc k_copy=
-	varrec x
-
-	if sptr.hasref then
-		x:=sptr^
-		var_duplu(sptr)
-		var_unshareu(&x)
-	fi
-
-	++pcptr
-end
-
-global proc k_dupl=
-	++sptr
-	sptr^:=(sptr-1)^
-	var_share(sptr)
-	++pcptr
-end
-
-global proc k_makerange=
-	variant x,y
-
-	y:=sptr--
-	x:=sptr
-
-	int lower, upper
-
-	if x.tag<>tint or y.tag<>tint then
-		pcerror("makerange/not int")
-	fi
-
-	sptr.tagx:=trange
-	lower:=x.value
-	upper:=y.value
-
-	if lower not in -(2**48)..2**48-1 then
-CPL =LOWER
-		pcerror("Range lwb bounds")
-	end
-
-	sptr.range_upper:=upper
-	sptr.range_lower:=lower
-
-	++pcptr
-end
-
-global proc k_makerangelen=
-	variant x,y
-
-	y:=sptr--
-	x:=sptr
-
-	if x.tag<>tint or y.tag<>tint then
-		pcerror("makerangelen/not int")
-	fi
-
-	sptr.tagx:=trange
-	sptr.range_upper:=x.value+y.value-1
-	sptr.range_lower:=x.value
-
-	++pcptr
-end
-
-global proc k_makedecimal=
-	varrec x
-	object p
-
-	x:=sptr^
-
-	if x.tag<>tstring then pcerror("Not str") fi
-	p:=x.objptr
-	if p.length=0 then pcerror("Null str") fi
-
-	var_make_dec_str(p.strptr, p.length, sptr)
-
-	var_unshare(&x)
-
-	++pcptr
-end
-
-global proc k_makeclosure=
-	PCERROR("MK CLOSURE NOT READY")
-
-	++pcptr
-end
-
-function resolvefield(int index, rectype)symbol d=
-!index is a start point in the genfieldtable
-!scan the linked list looking for a field/structfield/method etc whose
-!owner type matches rectype
-	ref genfieldrec g
-
-	if index=0 then pcerror("Not a field") fi
-
-	g:=genfieldtable[index]
-
-	while g do
-		d:=g.def
-		if d.owner.mode=rectype then return d fi
-		g:=g.nextdef
-	od
-
-	pcerror_s("Can't resolve field:",d.name)
-	return nil
-end
-
-global proc k_pushptr=
-	variant p
-
-	p:=sptr
-
-	case p.tag
-	when trefvar then
-		if not p.varptr then pcerror("Nil^") fi
-		sptr^:=p.varptr^
-
-	when trefpack then
-		if not p.ptr then pcerror("Nil^") fi
-		var_loadpacked(p.ptr,p.elemtag, sptr, nil)
-
-	when trefbit then
-		var_loadbit(p.ptr, p.bitoffset, p.elemtag, p.bitlength, sptr)
-
-!	when tsymbol then
-
-	else
-		pcustype("Pushptr",p)
-	esac
-
-	var_share(sptr)
-
-	++pcptr	
-end
-
-global proc k_popptr=
-	variant p,x,y
-
-	p:=sptr--
-	x:=sptr--
-
-	case p.tag
-	when trefvar then
-		var_unshare(p.varptr)
-		p.varptr^:=x^
-	when trefpack then
-		var_storepacked(p.ptr,x,p.elemtag)
-	when trefbit then
-		var_storebit(p.ptr, p.bitoffset, x, p.elemtag, p.bitlength)
-
-	else
-		pcustype("Popptr",p)
-	esac
-
-	++pcptr	
-end
-!
-global proc k_islist=
-	istype(tlist)
-end
-
-global proc k_isarray=
-	istype(tarray)
-end
-
-global proc k_isstring=
-	istype(tstring)
-end
-
-global proc k_isrecord=
-	istype(trecord)
-end
-
-global proc k_swap=
-	[1024]byte tempbuffer
-	variant x,y
-	varrec v
-	int xt,yt,s,t,n
-	ref byte p,q
-	int a
-
-	x:=sptr--
-	y:=sptr--
-
-	if x.tag<>y.tag then
-		pcerror("Swap mismatch")
-	fi
-
-	case x.tag
-	when trefvar then
-		v:=x.varptr^
-		x.varptr^:=y.varptr^
-		y.varptr^:=v
-	when trefpack then
-		s:=x.elemtag
-		t:=y.elemtag
-		if s<>t then goto swaperror fi
-		n:=ttsize[s]
-		case n
-		when 1 then
-			p:=x.ptr
-			q:=y.ptr
-			a:=p^
-			p^:=q^
-			q^:=a
-		elsif ttsize[s]<=tempbuffer.bytes then
-			memcpy(&tempbuffer,x.ptr,n)
-			memcpy(x.ptr,y.ptr,n)
-			memcpy(y.ptr,&tempbuffer,n)
-		else
-			goto swaperror
-		esac
-
-	else
-swaperror:
-		pcmxtypes("Swap",x,y)
-	esac
-
-	++pcptr
-end
-
-global proc k_jumptesteq=
-!jump to L when x=y
-! x<>y: keep x on the stack, skip
-! x=y:  pop both jump
-	variant x,y
-	int xt,yt,res
-
-	y:=sptr--
-	x:=sptr
-	xt:=x.tag
-	yt:=y.tag
-
-	if xt<>yt then
-		case pr(xt,yt)
-		when pr(tint,trange) then
-			if x.value not in y.range_lower..y.range_upper then
-				skip(1)
-				return
-			fi
-		when pr(tint,tset), pr(ttype,tset) then
-			if not var_in_set(x,y) then
-				skip(1)
-				return
-			fi
-		esac
-		var_unshare(x)
-		var_unshare(y)
-		--sptr
-		pcptr:=cast(getopnda)
-		return
-	fi
-
-	res:=var_equal(x,y)
-	var_unshare(y)
-	if res then
-		var_unshare(x)
-		--sptr
-		pcptr:=cast(getopnda)
-		return
-	fi
-
-	skip(1)
-end
-
-global proc k_jumptestne=
-!jump to L when x=y
-! x<>y: keep x on the stack, skip
-! x=y:  pop both jump
-	variant x,y
-	int xt,yt,res
-
-	y:=sptr--
-	x:=sptr
-	xt:=x.tag
-	yt:=y.tag
-
-	if xt<>yt then
-		case pr(xt,yt)
-		when pr(tint,trange) then
-			if x.value in y.range_lower..y.range_upper then
-				--sptr
-				skip(1)
-				return
-			fi
-		when pr(tint,tset), pr(ttype,tset) then
-			if var_in_set(x,y) then
-				--sptr
-				skip(1)
-				return
-			fi
-		esac
-
-		var_unshare(y)
-!		--sptr
-		pcptr:=cast(getopnda)
-		return
-
-	fi
-
-	res:=var_equal(x,y)
-	var_unshare(y)
-	if not res then
-		pcptr:=cast(getopnda)
-		return
-	fi
-	var_unshare(x)
-	--sptr
-
-	skip(1)
-end
-
-global proc k_jump=
-	pcptr:=cast(getopnda)
-end
-
-global proc k_jumpptr=
-	symbol d
-
-	if sptr.tag<>tsymbol then
-		pcerror("symbol expected")
-	fi
-	d:=cast(sptr.def)
-	++sptr
-	if d.nameid<>labelid then
-		pcerror("label expected")
-	fi
-	if not d.procfixed then
-		d.pcaddress:=modules[d.moduleno].pcstart+d.labelno
-		d.procfixed:=1
-	fi
-
-	pcptr:=d.pcaddress
-end
-
-global proc k_incr=
-	case sptr.tag
-	when tint then
-		++sptr.value
-	else
-		pcustype("incr",sptr)
-	esac
-
-	++pcptr
-end
-
-global proc k_decr=
-	case sptr.tag
-	when tint then
-		--sptr.value
-	else
-		pcustype("decr",sptr)
-	esac
-
-	++pcptr
-end
-
-global proc k_chr=
-	[8]char str
-
-	if sptr.tag=tint then
-		var_makechar(sptr.value,sptr)
-!!		if sptr.uvalue>=128 then pcerror("chr:not ASCII") fi
-!		if sptr.uvalue>255 then pcerror("chr:not ASCII") fi
-!		str[1]:=sptr.value
-!		str[2]:=0
-!		var_make_stringn(&.str,1,sptr,1)
-	else
-		pcustype("CHR",sptr)
-	fi
-	++pcptr
-end
-
-global proc k_asc=
-	int c
-
-	case sptr.tag
-	when tstring then
-		if sptr.objptr.length then
-			c:=sptr.objptr.strptr^
-		else
-			c:=0
-		fi
-		var_unshareu(sptr)
-		sptr.tagx:=tint
-		sptr.value:=c
-	else
-		pcustype("ASC",sptr)
-	esac
-
-	++pcptr
-end
-
-global proc k_pusht=
-	++sptr
-	sptr.tagx:=ttype
-	sptr.value:=getopnda
-	skip(1)
-end
-
-!global proc k_type=
-!	int t:=sptr.tag
-!	var_unshare(sptr)
-!	sptr.tagx:=ttype
-!	sptr.value:=t
-!	++pcptr
-!end
-!
-global proc k_basetype=
-	int t:=sptr.tag
-
-	case t
-	when trecord, tstruct, tvector then
-		t:=ttbasetype[sptr.objptr.usertag]
-!	when tenum then
-!		t:=ttbasetype[sptr.elemtag]
-	esac
-
-	var_unshare(sptr)
-	sptr.tagx:=ttype
-	sptr.value:=t
-	++pcptr
-end
-
-global proc k_type=
-	int t:=sptr.tag			!same as .type when no usertype
-
-	case t
-	when trecord, tstruct, tvector then
-		t:=sptr.objptr.usertag
-!	when tenum then
-!		t:=sptr.elemtag
-	esac
-
-	var_unshare(sptr)
-	sptr.tagx:=ttype
-	sptr.value:=t
-	++pcptr
-end
-
-global proc k_elemtype=
-	int t:=sptr.tag
-
-	case t
-	when tarray,tbits then
-		t:=sptr.objptr.elemtag
-	when trefpack, trefvar, trefbit then
-		t:=sptr.elemtag
-	when tset then
-		t:=tu1
-	when tvector then
-		t:=tttarget[sptr.objptr.usertag]
-	else
-		pcustype_t("elemtype",t)
-	esac
-
-	var_unshare(sptr)
-	sptr.tagx:=ttype
-	sptr.value:=t
-	++pcptr
-end
-
-global proc k_nop=
-	++pcptr
-end
-
-global proc k_modulecall=
-	symbol d:=cast(getopnda)
-	int moduleno:=d.moduleno
-
-	++sptr
-	sptr.tagx:=tretaddr
-	sptr.retaddr := pcptr+2
-
-	pcptr:=modules[moduleno].pcstart
-end
-
-global proc k_modulereturn=
-	pcptr:=sptr.retaddr
-	--sptr
-end
-
-global proc k_maxvalue=
-	int64 a
-
-	if sptr.tag=ttype then sptr.tag:=sptr.value fi
-
-	case sptr.tag
-	when tu8 then a:=255
-	when tu16 then a:=65536
-	when tu32 then a:=0xFFFF'FFFF
-	when tu64 then a:=0xFFFF'FFFF'FFFF'FFFF
-	when ti8 then a:=127
-	when ti16 then a:=32767
-	when ti32 then a:=0x7FFF'FFFF
-	when ti64,tint then a:=0x7FFF'FFFF'FFFF'FFFF
-	else
-		pcustype("MAXVALUE",sptr)
-	esac
-	sptr.tagx:=tint
-	sptr.value:=a
-
-	++pcptr
-
-end
-
-global proc k_minvalue=
-	int64 a
-
-	if sptr.tag=ttype then sptr.tag:=sptr.value fi
-
-	case sptr.tag
-!	when tword,tu8,tu16,tu32,tu64 then a:=0
-	when tu8,tu16,tu32,tu64 then a:=0
-	when ti8 then a:=-128
-	when ti16 then a:=-32768
-	when ti32 then a:=-0x8000'0000
-	when tint,ti64 then a:=-0x8000'0000'0000'0000
-!	when tbignum then a:=-0x8000'0000'0000'0000
-	else
-		pcustype("MINVALUE",sptr)
-	esac
-	sptr.tagx:=tint
-	sptr.value:=a
-
-	++pcptr
-end
-
-global proc k_callhost=
-	int n:=getopnda
-
-	callhostfunction(n)
-	skip(1)
-end
-
-global proc k_expand=
-	variant dest
-	int n
-	
-	n:=getopnda
-	dest:=sptr+n-1
-
-	var_expand(sptr,dest,n)
-	sptr:=dest
-
-	skip(1)
-end
-
-global proc k_pushsymbol=
-	symbol d:=cast(getopnda)
-	++sptr
-	sptr.tagx:=tsymbol
-	sptr.def:=cast(getopnda)
-
-	skip(1)
-end
-
-global proc k_eq=
-	variant x,y
-	int res
-
-	y:=sptr
-	x:=--sptr
-
-	res:=var_equal(x,y)
-	var_unshare(x)
-	var_unshare(y)
-
-	sptr.tagx:=tint
-	sptr.value:=res
-
-	++pcptr
-end
-
-global proc k_ne=
-	variant x,y
-	int res
-
-	y:=sptr
-	x:=--sptr
-
-	res:=not var_equal(x,y)
-	var_unshare(x)
-	var_unshare(y)
-
-	sptr.tagx:=tint
-	sptr.value:=res
-
-	++pcptr
-end
-
-global proc k_lt=
-	do_cmp(klt)
-end
-
-global proc k_le=
-	do_cmp(kle)
-end
-
-global proc k_ge=
-	do_cmp(kge)
-end
-
-global proc k_gt=
-	do_cmp(kgt)
-end
-
-proc do_cmp(int opc)=
-	variant x,y
-	int res
-
-	y:=sptr
-	x:=--sptr
-
-	res:=var_compare(x,y)
-	var_unshare(x)
-	var_unshare(y)
-
-	sptr.tagx:=tint
-
-	case opc
-	when klt then sptr.value:=res<0
-	when kle then sptr.value:=res<=0
-	when kge then sptr.value:=res>=0
-	else sptr.value:=res>0
-	esac
-
-	++pcptr
-end
-
-global proc k_calldll=
-	symbol d:=cast(getopnda)
-	int nargs:=getopndb
-	variant p
-
-	calldll(d, sptr-nargs+1, sptr-nargs, nargs)
-
-	sptr-:=nargs
-	skip(2)
-end
-
-global proc k_in=
-	variant x,y
-	int n
-
-	y:=sptr
-	x:=--sptr
-
-	n:=var_in(x,y)
-	var_unshare(x)
-	var_unshare(y)
-
-	sptr.tagx:=tint
-	sptr.value:=n
-
-	++pcptr
-end
-
-global proc k_notin=
-	variant x,y
-	int n
-
-	y:=sptr
-	x:=--sptr
-
-	n:=not var_in(x,y)
-	var_unshare(x)
-	var_unshare(y)
-
-	sptr.tagx:=tint
-	sptr.value:=n
-
-	++pcptr
-end
-
-global proc k_inx=
-	variant x,y
-	int n
-
-	y:=sptr
-	x:=--sptr
-
-	n:=var_inx(x,y)
-	var_unshare(x)
-	var_unshare(y)
-
-	sptr.tagx:=tint
-	sptr.value:=n
-
-	++pcptr
-end
-
-global proc k_convrefpack =
-	variant a
-	int tag,elemtype
-	ref void p
-	object pa
-
-	case sptr.tag
-	when trefvar then
-		a:=sptr.varptr
-
-		pa:=a.objptr
-		case a.tag
-		when tint,trefpack then
-			p:=&a.value
-			elemtype:=ti64
-		when treal then
-			p:=&a.value
-			elemtype:=tr64
-		when tarray then
-			p:=pa.ptr
-			elemtype:=pa.elemtag
-		when tbits then
-			sptr.ptr:=pa.ptr
-			sptr.bitoffset:=pa.indexoffset*ttbitwidth[pa.elemtag]
-			sptr.bitlength:=0
-			sptr.tagx:=trefbit
-			sptr.elemtag:=pa.elemtag
-			++pcptr
-			return
-
-		when tset then
-			sptr.ptr:=pa.ptr
-			sptr.bitoffset:=0
-			sptr.bitlength:=0
-			sptr.tagx:=trefbit
-			sptr.elemtag:=tu1
-			++pcptr
-			return
-
-		when tstring then
-			p:=pa.strptr
-			elemtype:=tu8
-			if p=nil then
-				p:=""
-			fi
-		when tstruct then
-			p:=pa.ptr
-			elemtype:=pa.usertag
-		when tvector then
-			p:=pa.ptr
-			elemtype:=pa.usertag
-		when tdecimal then
-			p:=pa.num
-			elemtype:=ti32
-
-		else
-			pcustype("Getrefpack1",a)
-		end
-	when trefpack,trefbit then
-		++pcptr
-		return
-
-	else
-		pcustype("Getrefpack2",sptr)
-	end
-done:
-
-	sptr.tagx:=trefpack
-	sptr.ptr:=p
-	sptr.elemtag:=elemtype
-
-	++pcptr
-end
-
-global proc k_isdef=
-	int res:=sptr.tag<>tvoid
-	var_unshare(sptr)
-	sptr.tagx:=tint
-	sptr.value:=res
-	++pcptr
-end
-
-global proc k_isvoid=
-	int res:=sptr.tag=tvoid
-	var_unshare(sptr)
-	sptr.tagx:=tint
-	sptr.value:=res
-	++pcptr
-end
-
-global proc k_isint=
-	istype(tint)
-end
-
-global proc k_isnumber=
-	int res
-
-	if sptr.tag in [tint,treal,tdecimal] then
-		res:=1
-	else
-		res:=0
-	fi
-	var_unshare(sptr)
-	sptr.tagx:=tint
-	sptr.value:=res
-	++pcptr
-end
-
-global proc k_ismutable=
-	int res
-
-	if sptr.hasref then
-		res:=sptr.objptr.mutable
-!	elsif sptr.tag=symbol then
-!		res
-!		res:=1
-	else
-		res:=1
-	fi
-	var_unshare(sptr)
-	sptr.tagx:=tint
-	sptr.value:=res
-	++pcptr
-end
-
-global proc k_isreal=
-	istype(treal)
-end
-
-global proc k_isrange=
-	istype(trange)
-end
-
-global proc k_isset=
-	istype(tset)
-end
-
-global proc k_ispointer=
-	istype(trefvar,trefpack)
-end
-
-proc istype(int t1, t2=tvoid)=
-!replace tos with 1 when tos has type t1 or, when t2 is not 0, t2; else tos:=0
-	int res, t:=sptr.tag
-
-	res:=t=t1
-	if not res and t2 then
-		res:=t=t2
-	fi
-	var_unshare(sptr)
-	sptr.tagx:=tint
-	sptr.value:=res
-	++pcptr
-end
-
-global proc k_convert=
-	varrec x
-	int t
-
-	t:=getopnda
-
-	if sptr.tag<>t then
-		x:=sptr^
-		var_convert(&x,t,sptr)
-		var_unshare(&x)
-	fi
-
-	skip(1)
-end
-
-global proc k_switch=
-	int index,n,lower
-
-	n:=getopnda
-	lower:=getopndb
-
-	case sptr.tag
-	when tint,ttype then
-	else
-		pcerror_s("switch not int",ttname[sptr.tag])
-	esac
-
-	index:=sptr.value-lower		!now 0-based index
-
-	--sptr
-
-	if u64(index)>=u64(n) then			!out of range
-		pcptr:=ref int((pcptr+n*2+4)^)
-	else					!in range
-		pcptr:=ref int((pcptr+index*2+4)^) 	!+3 for sw cmd + 1 to label part of (kjumptable,label) pair
-	fi
-end
-
-global proc k_bytesize=
-	int n,t,usert
-	object p:=sptr.objptr
-
-	t:=sptr.tag
-
-	case t
-	when ttype then
-		t:=sptr.value
-	when tstruct, trecord, tvector then
-		t:=sptr.objptr.usertag
-	esac
-
-!t is usertag for structs etc, or base tag
-	case t
-	when tarray then
-		n:=p.length*ttsize[p.elemtag]
-	when tset then
-		n:=getbitssize(p.length,tu1)
-	when tstring then
-		n:=p.length
-	when tbits then
-		n:=bits_bytesize(p)
-	when tlist,tdict then
-		n:=p.length*varsize
-	when trecord, tstruct, tvector then
-		n:=ttsize[t]	
-	when tdecimal then
-		n:=p.length
-		if n then
-			n:=n*decelemsize
-		fi
-	else
-		n:=ttsize[t]
-	esac
-
-	var_unshare(sptr)
-	sptr.tagx:=tint
-	sptr.value:=n
-
-	++pcptr
-end
-
-global proc k_bitwidth=
-	if sptr.tag=ttype then
-		sptr.value:=ttbitwidth[sptr.value]
-	elsif ttbitwidth[sptr.tag] then
-		sptr.value:=ttbitwidth[sptr.tag]
-	else
-		pcerror("bitwidth")
-	fi
-
-	sptr.tagx:=tint
-
-	++pcptr
-end
-
-global proc k_min=
-	variant x,y
-
-	y:=sptr--
-	x:=sptr
-
-!	if x.tag=y.tag=tint then
-!		if y.value<x.value then
-!			sptr.value:=y.value
-!		fi
-!	elsif var_compare(x,y)<0 then		!x is smaller
-	if var_compare(x,y)<0 then		!x is smaller
-		var_unshare(y)
-	else
-		var_unshare(x)
-		sptr^:=y^
-	fi
-
-	++pcptr
-end
-
-
-global proc k_max=
-	variant x,y
-
-	y:=sptr--
-	x:=sptr
-
-	if var_compare(x,y)>=0 then		!x is bigger
-		var_unshare(y)
-	else
-		var_unshare(x)
-		sptr^:=y^
-	fi
-
-	++pcptr
-end
-
-global proc k_addsp=
-	sptr-:=getopnda
-	skip(1)
-end
-
-global proc k_pushtry=
-	(++sptr).tagx:=texception
-	sptr.ptr:=ref byte(getopnda)
-	sptr.frameoffset:=frameptr-ref byte(sptr)		!byte offset
-	sptr.exceptiontype:=getopndb
-	sptr.nexceptions:=getopndc
-	skip(3)
-end
-
-global proc k_raise=
-	if sptr.tag<>tint then
-		pcerror("Raise: not Int on stack [not proceeding direct to RAISE]")
-	fi
-	pcptr:=raiseexception(sptr.value)				!will unwind stack and set pcptr to address of exception code
-end
-
-global proc k_isequal=
-	variant x,y
-	int res
-
-	y:=sptr--
-	x:=sptr
-
-	if x.hasref and y.hasref and x.objptr=y.objptr then
-		res:=1
-	else
-		res:=0
-	fi
-
-	var_unshare(x)
-	var_unshare(y)
-	sptr.tagx:=tint
-	sptr.value:=res
-
-	++pcptr
-end
-
-global proc k_minto=
-!x min:= y
-	variant y:=sptr--
-	variant px:=sptr--
-
-!	if not var_minto(px, y) then
-		var_inplace(px,y, cast(var_min))
-!	end
-
-	var_unshare(y)
-	++pcptr
-end
-
-global proc k_maxto=
-!x max:= y
-	variant y:=sptr--
-	variant px:=sptr--
-
-!	if not var_maxto(px, y) then
-		var_inplace(px,y, cast(var_max))
-!	end
-
-	var_unshare(y)
-	++pcptr
-end
-
-global proc k_power=
-	variant y:=sptr--
-	varrec x:=sptr^
-
-	var_power(sptr,y)
-
-	var_unshare(&x)
-	var_unshare(y)
-
-	++pcptr
-end
-
-proc domaths(int opcode)=
-	case sptr.tag
-	when tint then
-		sptr.tagx:=treal
-		sptr.xvalue:=getmaths(opcode,sptr.value)
-
-	when treal then
-		sptr.xvalue:=getmaths(opcode,sptr.xvalue)
-
-	else
-		pcustype("Maths:",sptr)
-	end
-	++pcptr
-end
-
-function getmaths(int opcode, real x)real=
-	case opcode
-	when ksqrt then return sqrt(x)
-	when ksin then return sin(x)
-	when kcos then return cos(x)
-	when ktan then return tan(x)
-	when kasin then return asin(x)
-	when kacos then return acos(x)
-	when katan then return atan(x)
-	when klog then return log(x)
-	when klog10 then return log10(x)
-!	when klg then return lg(x)
-	when kexp then return exp(x)
-	when kround then
-		if x>=0.0 then
-			return floor(x+0.5)
-		else
-			return ceil(x-0.5)
-		fi
-
-	when kfloor then
-		return floor(x)
-	when kceil then
-		x:=ceil(x)
-		if x=0.0 then x:=0.0 FI
-		return ceil(x)
-
-!
-!	when kfract then return fract(x)
-	else
-		pcerror_s("Maths",pclnames[opcode])
-	end
-	return 0.0
-end
-
-global proc k_typepun=
-	sptr.tagx:=getopnda
-	skip(1)
-end
-
-global proc k_andlto=
-!px^ iand:= y
-	variant y:=sptr--
-	variant px:=sptr--
-	variant x:=px.varptr
-
-	if px.tag<>trefvar or x.tag<>tint then pcerror("andlto") fi
-
-	x.value iand:=var_istruel(y)
-	var_unshare(y)
-
-	++pcptr
-end
-
-global proc k_orlto=
-!px^ iand:= y
-	variant y:=sptr--
-	variant px:=sptr--
-	variant x:=px.varptr
-
-	if px.tag<>trefvar or x.tag<>tint then pcerror("orlto") fi
-
-	x.value ior:=var_istruel(y)
-	var_unshare(y)
-
-	++pcptr
-end
-
-global proc k_notlto=
-!px^ iand:= y
-	variant px:=sptr--
-	variant x:=px.varptr
-
-	if px.tag<>trefvar or x.tag<>tint then pcerror("notlto") fi
-
-	x.value ixor:=1
-
-	++pcptr
-end
-
-global proc k_pushoperator=
-	++sptr
-	sptr.tagx:=toperator
-	sptr.value:=getopnda
-	skip(1)
-end
-
-global proc k_maps=
-	k_mapss()
-end
-
-global proc k_mapss=
-	static [10]int codeseq
-
-	int nargs
-
-	case sptr.tag
-	when toperator then
-		codeseq[1]:=cast(cmdmap[sptr.value])
-		--sptr
-		codeseq[2]:=(pcptr+1)^			!copy jump lab which follows the applyop
-		codeseq[3]:=(pcptr+2)^			!include the dest label
-	when tsymbol then
-		nargs:=(pcptr^=int(cmdmap[kmaps]) |1|2)
-
-!I need to push 2-3 stack entries down to make room a return value slot
-		for i:=0 downto -(nargs+1) do				!0/1 or 0/1/2
-			(sptr+i+1)^:=(sptr+i)^
-		od
-		(sptr-nargs).tagx:=tvoid
-		++sptr
-
-		codeseq[1]:=cast(cmdmap[kcallptr])
-		codeseq[2]:=nargs
-		codeseq[3]:=0
-		codeseq[4]:=(pcptr+1)^			!copy jump lab which follows the applyop
-		codeseq[5]:=(pcptr+2)^			!include the dest label
-
-	else
-		pcerror("Apply:no op")
-	esac
-	pcptr:=&codeseq[1]				!pass control this short sequence
-end
-
-global proc k_idivrem=
-	PCERROR("IDIVREM")
-end
-
-global proc k_odd=
-	case sptr.tag
-	when tint then
-		sptr.value:=sptr.value.odd
-	else
-		pcustype("Odd",sptr)
-	esac
-!	sptr.tagx:=tint
-	++pcptr
-end
-
-global proc k_even=
-	case sptr.tag
-	when tint then
-		sptr.value:=sptr.value.even
-	else
-		pcustype("Even",sptr)
-	esac
-	sptr.tagx:=tint
-	++pcptr
-end
-
-=== qq_host.m 0 0 12/44 ===
+=== qq_host.m 0 0 9/44 ===
 
 record dimrec=(int lbound, upper, length)
 
@@ -12018,9 +4309,7 @@ ref[]symbol procrefs				!linear arrays set up from proclists
 const noparamtag=tvoid
 const nodefault=-999999
 
-!global [0..hostfnnames.upb]ref proc hosttable
-
-global proc callhostfunction(int hostfn) =
+global func callhostfunction(int hostfn, variant sp)variant =
 	ref proc fnaddr
 	int nparams,isfn
 	object p
@@ -12033,51 +4322,33 @@ global proc callhostfunction(int hostfn) =
 !CPL "CALL HOST",HOSTFNNAMES[HOSTFN]
 
 	if fnaddr=nil then
-		pcerror_s("Hostfn not implemented:",hostfnnames[hostfn])
+		pcerror("Hostfn not implemented:",hostfnnames[hostfn])
 	fi
 
 	case nparams+isfn
 	when 0 then
 		hostproc0(fnaddr)^()
 	when 1 then
-		hostproc1(fnaddr)^(sptr)
+		hostproc1(fnaddr)^(sp)
 	when 2 then
-		hostproc2(fnaddr)^(sptr,sptr-1)
+		hostproc2(fnaddr)^(sp,sp-1)
 	when 3 then
-		hostproc3(fnaddr)^(sptr,sptr-1,sptr-2)
+		hostproc3(fnaddr)^(sp,sp-1,sp-2)
 	when 4 then
-		hostproc4(fnaddr)^(sptr,sptr-1,sptr-2,sptr-3)
+		hostproc4(fnaddr)^(sp,sp-1,sp-2,sp-3)
 	when 5 then
-		hostproc5(fnaddr)^(sptr,sptr-1,sptr-2,sptr-3,sptr-4)
+		hostproc5(fnaddr)^(sp,sp-1,sp-2,sp-3,sp-4)
 	else
 		pcerror("callhost/proc")
 	esac
 
 	to nparams do
-		var_unshare(sptr) when sptr.hasref
-		--sptr
+		var_unshare(sp) when sp.hasref
+		--sp
 	od
-end
 
-!global proc inithostlib=
-!
-!	ichar name
-!	int n:=$getnprocs()
-!
-!	for i to n do
-!		name:=$getprocname(i)
-!		if eqbytes(name,"pch_",4) then		!(should be OK with v short fn names)
-!			for k:=0 to hostfnnames.upb do
-!				if eqstring(name+4,hostfnnames[k]+2) then		!skip "pch_" and "h_"
-!					hosttable[k]:=$getprocaddr(i)
-!					exit
-!				fi
-!			else
-!				loaderror("Unknown hostfn",name)
-!			od
-!		fi
-!	od
-!end
+	return sp
+end
 
 global proc pch_leftstr(variant a, b, c, result)=
 	int n,length,padchar
@@ -12734,10 +5005,11 @@ global proc pch_getprogname(variant result) =
 end
 
 global proc pch_$test(variant a, b, c, result)=
-!OBJECT P
-!P:=A.OBJPTR
+OBJECT P
 
-!CPL "$TEST:",=A, =A.OBJPTR
+!PPVAR:=A.VARPTR
+
+CPL "$TEST:",TTNAME[a.TAG]
 !!
 RESULT.TAGX:=TINT
 RESULT.VALUE:=A.VALUE+B.VALUE+C.VALUE
@@ -12772,7 +5044,9 @@ global proc pch_setmesshandler(variant fn)=
 	if fn.tag<>tsymbol or fn.def.nameid<>procid then
 		pcerror("Not proc ref")
 	fi
-	pcl_callbackfn:=cast(fn.def.pcaddress)
+!CPL "SETMESSHANDLER NOT READY"
+	pcl_callbackfn:=cast(fn.def.labelref)
+!PCERROR("SETMESSHANDLER")
 	os_setmesshandler(&runproc_m)
 end
 
@@ -12915,7 +5189,7 @@ global proc pch_$procref(variant a, result)=
 	result.tagx:=tsymbol
 	result.def:=cast(procrefs[n])
 end
-=== qq_lex.m 0 0 13/44 ===
+=== qq_lex.m 0 0 10/44 ===
 const etx	= 26
 const cr	= 13
 const lf	= 10
@@ -12926,7 +5200,7 @@ ref char lxstart		!start of this token
 ref char lxsptr
 int lxifcond
 int longsuffix			!for real nos
-int lxfileno
+int lxlineno
 
 const hstsize	= 32768
 !const hstsize	= 65536
@@ -13019,8 +5293,10 @@ ref char pstart,pnext,p,ss
 		docase c:=lxsptr++^
 		when 13 then
 			++lxsptr
+			++lxlineno
 			exit
 		when 10 then
+			++lxlineno
 			exit
 		when etx,0 then
 			--lxsptr
@@ -13038,11 +5314,11 @@ ref char pstart,pnext,p,ss
 		docase lxsptr++^			!read until end of this line
 		when cr then
 			++lxsptr				!skip lf
-			++nalllines
+			++lxlineno
 			exit
 		when lf then
 !		++nextlx.pos
-			++nalllines
+			++lxlineno
 			exit
 		when etx,0 then
 			nextlx.symbol:=eofsym
@@ -13061,9 +5337,9 @@ ref char pstart,pnext,p,ss
 		docase lxsptr++^
 		when cr then
 			++lxsptr				!skip lf
-			++nalllines
+			++lxlineno
 		when lf then
-			++nalllines
+			++lxlineno
 		when ' ',tab then
 		else
 			--lxsptr
@@ -13112,16 +5388,15 @@ ref char pstart,pnext,p,ss
 		when '=' then
 			++lxsptr
 			nextlx.symbol:=assignsym
-			nextlx.subcode:=jassign			!helps treat as opsym which all have k-code as subcode
 		when ':' then
 			++lxsptr
 			case lxsptr^
 			when '=' then
 				++lxsptr
-				nextlx.symbol:=deepcopysym
-				nextlx.subcode:=jdeepcopy
+				nextlx.symbol:=assignsym
+				nextlx.subcode:=1			!deep copy
 			else
-				nextlx.symbol:=dcolonsym
+				error
 			esac
 		else
 			nextlx.symbol:=colonsym
@@ -13150,7 +5425,8 @@ ref char pstart,pnext,p,ss
 
 	when '^' then
 		nextlx.symbol:=ptrsym
-		nextlx.subcode:=jptrto
+		nextlx.subcode:=1				!when used as ^x
+!		nextlx.subcode:=jptrto
 		return
 
 	when '@' then
@@ -13167,51 +5443,47 @@ ref char pstart,pnext,p,ss
 
 	when '+' then
 		nextlx.symbol:=addsym
+		nextlx.subcode:=kadd
 		if lxsptr^='+' then
 			++lxsptr
 			nextlx.symbol:=incrsym
-			nextlx.subcode:=jincrload
-			return
-		else
-			nextlx.subcode:=jadd
+			nextlx.subcode:=0
 		fi
+
 		return
 
 	when '-' then
 		nextlx.symbol:=subsym
+		nextlx.subcode:=ksub
 		case lxsptr^
 		when '-' then
 			++lxsptr
 			nextlx.symbol:=incrsym
-			nextlx.subcode:=jdecrload
-			return
+			nextlx.subcode:=1
 		when '>' then
 			++lxsptr
 			nextlx.symbol:=pipesym
-		else
-			nextlx.subcode:=jsub
 		esac
 		return
 
 	when '*' then
 		nextlx.symbol:=mulsym
+		nextlx.subcode:=kmul
 		if lxsptr^='*' then
 			++lxsptr
 			nextlx.symbol:=powersym
-			nextlx.subcode:=jpower
-		else
-			nextlx.subcode:=jmul
+			nextlx.subcode:=kpower
 		fi
 		return
 
 	when '/' then
 		nextlx.symbol:=divsym
-		nextlx.subcode:=jdiv
+		nextlx.subcode:=kdiv
 		return
 
 	when '%' then
 		nextlx.symbol:=idivsym
-		nextlx.subcode:=jidiv
+		nextlx.subcode:=kidiv
 		return
 
 	when '=' then
@@ -13220,13 +5492,12 @@ ref char pstart,pnext,p,ss
 			nextlx.symbol:=sendtosym
 			++lxsptr
 		when '=' then
-			nextlx.symbol:=isequalsym
-			nextlx.subcode:=jisequal
-
+			nextlx.symbol:=samesym
+			nextlx.subcode:=ksame
 			++lxsptr
 		else
 			nextlx.symbol:=eqsym
-			nextlx.subcode:=jeq
+			nextlx.subcode:=eq_cc
 		esac
 		return
 
@@ -13235,18 +5506,18 @@ ref char pstart,pnext,p,ss
 		when '=' then
 			++lxsptr
 			nextlx.symbol:=lesym
-			nextlx.subcode:=jle
+			nextlx.subcode:=le_cc
 		when '>' then
 			++lxsptr
 			nextlx.symbol:=nesym
-			nextlx.subcode:=jne
+			nextlx.subcode:=ne_cc
 		when '<' then
 			++lxsptr
 			nextlx.symbol:=shlsym
-			nextlx.subcode:=jshl
+			nextlx.subcode:=kshl
 		else
 			nextlx.symbol:=ltsym
-			nextlx.subcode:=jlt
+			nextlx.subcode:=lt_cc
 		esac
 		return
 
@@ -13255,14 +5526,14 @@ ref char pstart,pnext,p,ss
 		when '=' then
 			++lxsptr
 			nextlx.symbol:=gesym
-			nextlx.subcode:=jge
+			nextlx.subcode:=ge_cc
 		when '>' then
 			++lxsptr
 			nextlx.symbol:=shrsym
-			nextlx.subcode:=jshr
+			nextlx.subcode:=kshr
 		else
 			nextlx.symbol:=gtsym
-			nextlx.subcode:=jgt
+			nextlx.subcode:=gt_cc
 		esac
 		return
 
@@ -13270,11 +5541,11 @@ ref char pstart,pnext,p,ss
 		case lxsptr^
 		when '&' then
 			++lxsptr
-			nextlx.symbol:=daddrsym
-			nextlx.subcode:=jconcat
+			nextlx.symbol:=concatsym
+			nextlx.subcode:=kconcat
 		else
 			nextlx.symbol:=addrsym
-			nextlx.subcode:=jaddrof
+			nextlx.subcode:=0
 		esac
 		return
 
@@ -13294,12 +5565,12 @@ ref char pstart,pnext,p,ss
 
 	when cr then
 		++lxsptr				!skip lf
-		++nalllines
+		++lxlineno
 		nextlx.symbol:=eolsym
 		return
 	when lf then			!only lfs not preceded by cr
 		nextlx.symbol:=eolsym
-		++nalllines
+		++lxlineno
 		return
 
 	when etx,0 then
@@ -13312,15 +5583,14 @@ ref char pstart,pnext,p,ss
 		if c=0xE2 and lxsptr^=0x88 and (lxsptr+1)^=0x9A then
 			lxsptr+:=2
 			nextlx.symbol:=mathssym
-			nextlx.subcode:=jsqrt
+			nextlx.subcode:=mm_sqrt
 			return
 		fi
-
-
 
 		if c>=128 then		!assume utf8
 			goto doname
 		fi
+error:
 		nextlx.symbol:=errorsym
 		nextlx.value:=c
 		return
@@ -13330,152 +5600,6 @@ ref char pstart,pnext,p,ss
 !od
 
 end
-
-!proc OLDlxreadstring(int termchar)=
-!!read string inplace: new string, with expanded control characters,
-!!is stored on top of original string in the source
-!!new string is same length or shorter
-!!on entry, lxsptr points to char after " or '
-!
-!	ichar dest,pstart
-!	int c,d,length,hasescape
-!	[8]char str
-!
-!	if termchar='"' then
-!		nextlx.symbol:=stringconstsym
-!	else
-!		nextlx.symbol:=charconstsym
-!		nextlx.subcode:=tint
-!	fi
-!
-!	pstart:=lxsptr
-!
-!	length:=0
-!	hasescape:=0
-!
-!	docase c:=lxsptr++^
-!	when '\\' then			!escape char
-!		c:=lxsptr^
-!		if c in 'A'..'Z' then c+:=' ' fi
-!		++lxsptr
-!		hasescape:=1
-!
-!		case c
-!		when 'w' then
-!			length+:=2
-!		when 'x' then	!2-digit hex code follows
-!			lxsptr+:=2
-!			++length
-!		else				!assume valid escape (bad ones detected in next pass)
-!			++length
-!		esac
-!
-!	when '"','\'' then		!possible terminators
-!		if c=termchar then		!terminator char
-!			if lxsptr^=c then		!repeated, assume embedded term char
-!				hasescape:=1
-!				++lxsptr
-!				++length
-!			else			!was end of string
-!				exit
-!			fi
-!		else
-!			++length
-!		fi
-!	when cr,lf,0 then
-!		lxerror("String not terminated")
-!	else
-!		++length
-!	end docase
-!
-!	nextlxlength:=length
-!
-!	if length=0 then
-!		nextlx.svalue:=""
-!		return
-!	elsif not hasescape then
-!		nextlx.svalue:=pcm_copyheapstringn(pstart,length)
-!		return
-!	fi
-!
-!	nextlx.svalue:=dest:=pcm_alloc(length+1)
-!
-!	do
-!		case c:=pstart++^
-!		when '\\' then			!escape char
-!			c:=pstart^
-!			if c>='A'  and c<='Z' then c+:=' ' fi
-!			++pstart
-!			switch c
-!			when 'a' then			!bell ('alert')
-!				c:=7
-!			when 'b' then			!backspace
-!				c:=8
-!			when 'c','r' then		!carriage return
-!					c:=cr
-!			when 'e' then			!end-of-text
-!CPL "<E> ETX SEEN"
-!				c:=26
-!			when 'f' then			!formfeed
-!				c:=12
-!			when 'l','n' then		!linefeed, or linux/c-style newline
-!				c:=lf
-!			when 's' then			!eScape
-!				c:=27
-!			when 't' then			!tab
-!				c:=9
-!!			when 'u' then			!reserved for unicode, like \x but with 4 hex digits
-!			when 'v' then			!vertical tab
-!				c:=11
-!			when 'w' then			!windows-style cr-lf
-!				dest++^:=cr
-!				c:=lf
-!			when 'x' then	!2-digit hex code follows
-!				c:=0
-!				to 2 do
-!					if (d:=pstart++^) in 'A'..'F' then
-!						c:=c*16+d-'A'+10
-!					elsif d in 'a'..'f' then
-!						c:=c*16+d-'a'+10
-!					elsif d in '0'..'9' then
-!						c:=c*16+d-'0'
-!					else
-!						lxerror("Bad \\x code")
-!					fi
-!				od
-!			when 'y' then			!CCI/SM backwards tab
-!				c:=16
-!			when 'z' then		!null (not fully supported in code)
-!				c:=0
-!			elsecase c
-!			when '"','Q' then		!embedded double quote
-!				c:='"'
-!			when '\\' then
-!				c:='\\'
-!			when '\'' then			!embedded single quote
-!				c:='\''
-!			when '0' then
-!				c:=0
-!			else
-!				str[1]:=c; str[2]:=0
-!				lxerror_s("Unknown string escape: \\%s",&.str)
-!			end
-!		when '"','\'' then		!possible terminators
-!			if c=termchar then		!terminator char
-!				if pstart^=c then		!repeated, assume embedded term char
-!					++pstart
-!				else			!was end of string
-!					exit
-!				fi
-!			fi
-!		when cr,lf,etx,0 then
-!			lxerror("String not terminated")
-!		esac
-!
-!		dest++^:=c
-!	od
-!	(nextlx.svalue+nextlxlength)^:=0
-!end
 
 proc lxreadstring(int termchar)=
 !start from char just after " or ' (termchar will be " or ')
@@ -13815,11 +5939,10 @@ global proc startlex(ifile pm)=
 !	else
 		lxsource:=lxsptr:=pcm_copyheapstring(pm.text)
 !	fi
-	lxfileno:=pm.moduleno
-
 	nextlx.symbol:=semisym
 	nextlx.subcode:=0
 	nextlx.moduleno:=pm.moduleno
+	lxlineno:=1
 end
 
 global function addnamestr(ichar name)symbol=
@@ -13857,9 +5980,9 @@ global proc lex=
 	symbol symptr
 
 	lx:=nextlx				!grab that already read basic token
+	lx.lineno:=lxlineno
 
 	lxlength:=nextlxlength
-	lx.sourceoffset:=lxstart-lxsource
 
 	reenter:
 
@@ -13922,7 +6045,7 @@ global proc lex=
 			goto reenter2
 
 			goto reenter
-		elsif binopset[lx.symbol] and 	lx.symbol not in [maxsym, minsym] then
+		elsif binopset[lx.symbol] and 	lx.symbol <>minmaxsym then
 			lexreadtoken()
 			goto reenter2
 
@@ -13931,8 +6054,8 @@ global proc lex=
 
 	when insym then
 		if lx.symbol=notlsym then
-			lx.symbol:=notinsym
-			lx.subcode:=jnotin
+			lx.symbol:=insym
+			lx.subcode:=1
 			goto reenter
 		fi
 	esac
@@ -14250,7 +6373,7 @@ proc readrawxname=
 
 	return
 end
-=== qq_lib.m 0 0 14/44 ===
+=== qq_lib.m 0 0 11/44 ===
 int currlineno
 global int nextavindex=0
 
@@ -14288,7 +6411,7 @@ global func geterrorinfo(word pos, symbol currproc=nil)locrec=
 	locrec loc
 
 	clear loc
-	soffset:=pos.[0..23]
+	loc.lineno:=pos.[0..23]
 	moduleno:=pos.[24..31]
 
 !CPL =SOFFSET
@@ -14305,32 +6428,7 @@ global func geterrorinfo(word pos, symbol currproc=nil)locrec=
 	loc.sp:=subprogs[loc.pm.subprogno]	
 	loc.def:=currproc
 
-!CPL "GEIX"
-!	loc.lineno:=getlineno(loc.p.text, soffset, loc.loc.column)
-	setlineno(&loc, soffset)
-
 	return loc
-end
-
-!global function getlineno(ichar source, int offset, ichar startline, int &column)int=
-global proc setlineno(ref locrec loc, int offset)=
-!loc contains sp/pm, fill in startline/lineno/column given char offset within module
-	ichar sline, s, source:=loc.pm.text
-	
-
-	sline:=source+offset
-
-	while sline>source and sline^<>10 do --sline od
-	if sline^=10 then ++sline fi
-	loc.startline:=sline
-	loc.column:=source+offset-sline
-
-	s:=sline
-	loc.lineno:=1
-	while s>source do
-		if s^=10 then ++loc.lineno fi
-		--s
-	od
 end
 
 proc showerrorsource(locrec loc)=
@@ -14341,14 +6439,14 @@ proc showerrorsource(locrec loc)=
 		println "In function:",loc.def.name
 	fi
 
-!CPL "///STARTLINE",LOC.STARTLINE
-	print " |"
-	s:=loc.startline
-	while s^ not in [13,10,26,0] do
-		print s^
-		++s
-	od
-	println "|"
+!!CPL "///STARTLINE",LOC.STARTLINE
+!	print " |"
+!	s:=loc.startline
+!	while s^ not in [13,10,26,0] do
+!		print s^
+!		++s
+!	od
+!	println "|"
 	
 
 !	println " |",errorline
@@ -14368,10 +6466,6 @@ global proc stopcompiler(locrec loc)=
 
 	stop 1
 end
-
-!global proc prterror(ichar mess)=
-!	reportcterror("Print",mess,qpos)
-!end
 
 global proc gerror(ichar mess,unit p=nil)=
 !CPL "G1"
@@ -14415,107 +6509,6 @@ global proc lxerror(ichar mess)=
 	reportcterror("Lex",mess,lx.pos,stcurrproc)
 end
 
-global proc pcnotmut=
-	pcerror("Not mutable")
-end
-
-global proc pcerror(ichar mess)=
-	errormess:=mess
-	reportpcerror(mess,pcptr)
-end
-
-global proc pcerror_s(ichar mess, param)=
-	[300]char str
-	errormess:=mess
-	strcpy(&.str,mess)
-	strcat(&.str," ")
-	strcat(&.str,param)
-	reportpcerror(str,pcptr)
-end
-
-global proc reportpcerror(ichar mess, ref int pcptr)=
-	variant s,send
-	ref int pc
-	int count
-	ifile pm
-	locrec loc, loc2
-
-!CPL $LINENO
-	loc:=getpcerrorpos(pcptr)
-!CPL $LINENO
-	pm:=loc.pm		!remember first error (written to $error.tmp)
-
-!CPL $LINENO
-	println
-!	println "*********************************************************"
-	println " ":"80p*"
-	println "PC Error:"
-	println "    ",,mess
-	println
-
-!CPL $LINENO
-	showerrorsource(loc)
-!CPL $LINENO
-
-	s:=sptr
-	send:=&varstack[1]
-!CPL $LINENO
-
-	count:=0
-	while s>=send and count<5 do
-		if s.tag=tretaddr then
-			pc:=s.retaddr-3		!go back three to get to start of kcall/kcallptr instr
-			loc2:=getpcerrorpos(pc)
-			println "Called from line",loc2.lineno,"in",loc2.pm.name
-			++count
-		fi
-		--s
-	od
-!CPL $LINENO
-
-	stopcompiler(loc)
-end
-
-global func getpcerrorpos(ref int pc)locrec =
-!given pcptr, set up pcerrorpos, the lsw of the source pointer
-!and set up pcerrormodule
-	int offset, pos, soffset, moduleno
-	ref int pcstart
-	ref int32 pcsrcstart
-	ifile pm
-	locrec loc
-
-	clear loc
-	pm:=modules[findmodulefrompc(pc)]
-
-	pcstart:=pm.pcstart
-	pcsrcstart:=pm.pcsrcstart
-
-	offset:=pc-pcstart
-	pos:=(pcsrcstart+offset)^
-
-	soffset:=pos.[0..23]
-	moduleno:=pos.[24..31]
-
-	if moduleno=0 then
-MODULENO:=1; SOFFSET:=0
-!		ABORTPROGRAM("GETPCPOS: no module")
-	fi
-!	if currproc=nil then
-!		ABORTPROGRAM("GETPCPOS: no currproc")
-!	fi
-
-	loc.pm:=modules[moduleno]
-	loc.sp:=subprogs[pm.subprogno]	
-!	loc.def:=currproc
-	loc.def:=nil
-
-	setlineno(&loc, soffset)
-
-	return loc
-end
-
-!global proc loaderror(ichar mess,mess2="",mess3="")=
 global proc loaderror(ichar mess,mess2="")=
 	[512]char str
 	if strchr(mess,'#') then
@@ -14530,52 +6523,11 @@ global proc loaderror(ichar mess,mess2="")=
 	stop 1
 end
 
-function findmodulefrompc(ref int pc)int=
-!given pcptr, find which module it's currently executing
-	for i to nmodules do
-		if pc>=modules[i].pcstart and pc<modules[i].pcend then
-			return i
-		fi
-	od
-	println "Can't find pcptr module",pc
-!RETURN 1
-	if errormess then
-		fprintln "(#)",errormess
-	fi
-	stop 1
-	return 0
-end
-
 global proc prterror(ichar mess)=
 	println "Print error:",mess
 	os_getch()
 	stop 1
 end
-
-global proc pcustype(ichar mess, variant x) =
-	pcustype_t(mess, x.tag)
-end
-
-global proc pcustype_t(ichar mess, int t) =
-	[256]char str
-
-	fprint @str,"Type not supported: # : #",mess, ttname[t]
-	reportpcerror(str,pcptr)
-end
-
-global proc pcmxtypes(ichar mess, variant x,y) =
-	pcmxtypestt(mess,x.tag,y.tag)
-end
-
-global proc pcmxtypestt(ichar mess, int t,u) =
-	[256]char str
-
-	fprint @str, "Types not supported: # : #/#",
-			mess,ttname[t],ttname[u]
-	reportpcerror(str,pcptr)
-end
-
-!macro allocunit(u) = (u:=pcm_allocnfz(unitrec.bytes); u.pos:=lx.pos)
 
 function allocunitrec:unit p=
 !	p:=pcm_alloc(unitrec.bytes)
@@ -14792,7 +6744,7 @@ proc jeval(unit p)=
 
 !	switch p.tag
 	case p.tag
-	when jintconst then
+	when jintconst,JOPERATOR then
 		additem(strint(p.value))
 
 	when jrealconst then
@@ -14898,8 +6850,8 @@ proc jeval(unit p)=
 
 		for i to 4 do
 			q:=q.nextunit
-			if p.cmpgenop[i]=0 then exit fi
-			additem(jtagnames[p.cmpgenop[i]])
+			if p.cmpconds[i]=0 then exit fi
+			additem(jtagnames[p.cmpconds[i]])
 			jeval(q)
 		od
 
@@ -14974,24 +6926,7 @@ global function getopcname(int opc)ichar=
 !op is a kcode representing an operator
 !return the name as it might appear in J code
 !caller must check for differences specific to the target
-!	[16]char str
-!	u64 a @ str
-	static [2]u64 a
-!	ichar s
-
-	a[2]:=0
-
-	a[1]:=jshortnames[opc]
-	if a[1]=0 then
-		return jtagnames[opc]+1
-	else
-		return cast(&a)
-	fi
-!	s:=jshortnames[opc]
-!	if s=nil then
-!		s:=jtagnames[opc]+1
-!	fi
-!	return s
+	jtagnames[opc]
 end
 
 global proc convertstring(ichar s, t)=
@@ -15040,7 +6975,10 @@ global function createavnamex(symbol owner)unit p=
 	if d.nameid=frameid then
 		++nproclocals
 		d.index:=nproclocals
-		pproclocals^:=nproclocals
+!GERROR("CREATEAV/PROCLOCALS")
+!CPL("CREATEAV/PROCLOCALS")
+
+		pprocentry.n:=nproclocals
 	fi							!else created at module level
 
 	return p
@@ -15074,44 +7012,6 @@ global function nextpoweroftwo(int x)int=
 		a<<:=1
 	od
 	return a
-end
-
-global function raiseexception(int exceptno)ref int =
-	variant stackend,oldsptr
-
-	stackend:=&varstack[1]
-	oldsptr:=sptr
-	do
-		if sptr<=stackend then
-			sptr:=oldsptr
-			PCERROR("DEFAULT EXCEPTION")
-!			default_exception(exceptno)
-		fi
-		if sptr.tag=texception and (exceptno=0 or sptr.exceptiontype=exceptno) then
-			exit
-		fi
-		var_unshare(sptr)
-		--sptr
-	od
-
-!found exception entry on stack; keep it there
-	frameptr:=ref byte(sptr)+sptr.frameoffset
-	return cast(sptr.ptr)
-end
-
-global proc raise_error(int error_no)=
-!exception raised internally (not in user code)
-!caller may not be able to manipulate pcptr
-!here, push the error number, and set pcptr to point to a
-!block of several kraise opcodes, as it is not how the byte-code
-!handler, when it proceeds, will step pcptr
-
-	(++sptr).tagx:=tint
-	sptr.value:=error_no
-
-	err_pcptr:=pcptr
-
-	pcptr:=raiseseq
 end
 
 global function testelem(ref[0:]byte p,int n)int =
@@ -15218,7 +7118,14 @@ global proc skipsymbol(int symbol)=
 	lex()
 end
 
-=== qq_lists.m 0 0 15/44 ===
+global proc pcnotmut=
+	pcerror("Not mutable")
+end
+
+global func getpcloffset(pcl p, q)int=
+	(ref byte(p)-ref byte(q))/pclrec.bytes
+end
+=== qq_lists.m 0 0 12/44 ===
 global object emptylist
 
 proc start=
@@ -15672,7 +7579,7 @@ global function var_inx_list(variant a,b)int =
 	od
 	return i64.min
 end
-=== qq_modules.m 0 0 16/44 ===
+=== qq_modules.m 0 0 13/44 ===
 
 global func loadsp(ichar filename, source=nil)isubprog sp=
 !source = nil:  load lead module and dependencies from given sourcefile
@@ -15995,7 +7902,7 @@ global proc readqabundle=
 		(qatext[i]+qasize[i])^:=0	
 	od
 end
-=== qq_names.m 0 0 17/44 ===
+=== qq_names.m 0 0 14/44 ===
 !Symbol table handling
 
 int sdsize, sdoffset
@@ -16148,7 +8055,7 @@ global proc addgenfield(symbol d)=
 
 	if index=0 then			!first field with this name
 		if ngenfields>=maxgenfield then
-			pcerror("Too many genfields")
+		gerror("Too many genfields")
 		fi
 		dgen.genfieldindex:=index:=++ngenfields
 	fi
@@ -16217,25 +8124,6 @@ global function makeaxtype(int target, unit plower, plength)int=
 	return newtype
 end
 
-global function makeslicetype(int target)int=
-	int newtype,length
-
-	newtype:=addanontype()
-
-
-
-	ttbasetype[newtype]:=tslice
-	storemode(stcurrproc, target, &tttarget[newtype])
-
-	ttlower[newtype]:=1
-	ttsize[newtype]:=16
-
-!CPL "SLICE",=STRMODE(TTBASETYPE[NEWTYPE])
-
-	return newtype
-end
-
-!global function makestrtype(int m, width)int=
 global function makestrtype(int m, unit pwidth)int=
 	int newtype
 
@@ -16255,7 +8143,7 @@ global function addanontype:int=
 !but now create the actual type
 	[32]char str
 
-	if ntypes>=maxtype then pcerror("Too many types") fi
+	if ntypes>=maxtype then gerror("Too many types") fi
 
 	++ntypes
 !CPL "ADDANONTYPE",NTYPES
@@ -16308,7 +8196,7 @@ global function getalignment(int m)int=
 		return a
 	esac
 	cpl ttname[m],a
-	pcerror("Getalign not 1248")
+	gerror("Getalign not 1248")
 
 	return 0
 end
@@ -16382,407 +8270,7 @@ global function createdupldef(symbol owner,symptr, int id)symbol=
 
 	return p
 end
-=== qq_optim.m 0 0 18/44 ===
-ref int pc, pcstart
-
-macro getopnda = (pc+1)^
-macro getopndb = (pc+2)^
-macro getopndc = (pc+3)^
-macro getopndd = (pc+4)^
-macro getopnde = (pc+5)^
-
-macro putopnda(x) = (pc+1)^:=x
-macro putopndb(x) = (pc+2)^:=x
-macro putopndc(x) = (pc+3)^:=x
-macro putopndd(x) = (pc+4)^:=x
-macro putopnde(x) = (pc+5)^:=x
-
-ref[0:]int labelmap
-
-global proc optimise_module(int n)=
-	int cmd, nopnds, size:=0, x
-	pc := pcstart := modules[n].pcstart
-
-!CPL "OPTIM",N
-
-	size:=modules[n].pcsize+1
-	labelmap:=pcm_allocz(size*int.bytes)
-
-	repeat
-		cmd:=pc^
-		nopnds:=pclnopnds[cmd]
-
-		for i to nopnds do
-			case pclfmt[cmd,i]
-			when cnone then
-				exit
-			when clabel then
-				x:=(pc+i)^
-				labelmap^[x]:=1		!allow up to 4 labels at this loc
-			esac
-
-		od
-		pc+:=nopnds+1
-	until cmd in [kzero,kendmodule]
-
-	pc:=pcstart
-	repeat
-!CPL =PC
-		cmd:=pc^
-!		optimise_op(cmd)
-
-		case cmd
-		when kendmodule then
-		else
-			optimise_op(cmd)
-		esac
-
-
-	until cmd=kendmodule
-
-!CPL "DONE",SIZE
-	if size then pcm_free(labelmap,size) fi
-end
-
-proc putnops(int offset,n)=
-	to n do
-		(pc+offset++)^:=kskip
-!		(pc+offset++)^:=knop
-	od
-end
-
-proc optimise_op(int cmd)=
-!optimise a pcl op 'cmd' at pc^ (pc needs to be global)
-!If not optimised, leaves it unchanged and sets pc to the following opcode
-!When optimised, 1 or more opcodes are modified (usually into one op, with possible
-!passing using nops) and sets pc to the next opcode following that sequence
-	int skip, offset, secondlab, cmd2, skip2, x,y,z
-	int a,b, thisloc, thislab, destcmd, destlab
-
-	skip:=pclnopnds[cmd]+1			!default offset to next instruction
-	a:=getopnda
-	b:=getopndb
-	offset:=pc-pcstart				!offset of this opcode
-
-!CPL "OPTIM",PC,PCLNAMES[CMD],=SKIP
-
-!	PC+:=SKIP
-!	RETURN
-
-!check single opcode optimisations first (free/procentry etc)
-!otherwise they will not be done if followed by a label
-	case cmd
-	when kunshare then
-		case a
-		when 1,2,3 then
-			pc^:=(a|kunshare1,kunshare2,kunshare3|0)
-			putnops(1,1)
-			skip:=2
-			return
-		esac
-
-	when kprocentry then
-		case a
-		when 1,2 then
-			pc^:=(a|kprocentry1,kprocentry2|0)
-			putnops(1,1)
-			skip:=2
-			return
-		esac
-	when kjump,kjumpeq,kjumpne,kjumplt,kjumple,kjumpge,kjumpgt then
-!						kjumptesteq,kjumptestne then
-			thisloc:=offset
-			thislab:=a
-			if cmd=kjump and thisloc+2=thislab then
-				pc^:=knop2
-				putopnda(0)
-				pc+:=skip
-				return
-			elsif destcmd=kjump then
-				destcmd:=(pcstart+thislab)^
-				destlab:=(pcstart+thislab+1)^
-!				CPL thisloc,,": JUMP TO JUMP",thislab,PCLNAMES[CMD],=destlab
-				putopnda(destlab)
-				pc+:=skip
-				return
-			fi
-	esac
-
-	if labelmap[offset+skip] then	!followed by a label; don't bother
-		pc+:=skip					!with 2/3-opcode optimising
-		return
-	fi
-
-	secondlab:=0
-	cmd2:=(pc+skip)^
-	skip2:=pclnopnds[cmd2]+1
-	if labelmap[offset+skip+skip2] then
-		secondlab:=1
-!		CPL "TWO LABELS"
-	fi
-	
-!CPL "OPTIM3"
-
-	switch cmd
-	when kpushf then
-		switch b				!opcode that follows
-		when kpushf then			!pushf pushf
-			if secondlab then dopushff fi
-			switch getopndd
-			when kpushf then
-				pc^:=kpushfff
-				putopndb(getopndc)
-				putopndc(getopnde)
-				putnops(4,2)
-				skip:=6
-
-			when kadd then
-				pc^:=kaddff
-				putopndb(getopndc)
-				putnops(3,1)		!leave final opc
-				skip:=5
-			when ksub then
-				pc^:=ksubff
-				putopndb(getopndc)
-				putnops(3,1)
-				skip:=5
-
-			when kjumpeq then
-				pc^:=kjumpeqff
-				dojumpxxff
-			when kjumpne then
-				pc^:=kjumpneff
-				dojumpxxff
-			when kjumplt then
-				pc^:=kjumpltff
-dojumpxxff:
-				x:=getopnda
-				y:=getopndc
-				z:=getopnde
-				putopnda(z)
-				putopndb(x)
-				putopndc(y)
-!NOTE: these nops will overwrite the original LAB of the Jumpge opcode.
-!Necessary when jumpgeff has to revert back to normal jumpge
-!The Nops are not needed anyway because both outcomes, when the optimised
-!jumpgeff is used, will skip these bytes, either by jumping to LAB, or skipping +6
-!				putopndd(knop)
-!				putopnde(knop)
-
-				skip:=6
-			when kjumple then
-				pc^:=kjumpleff
-				dojumpxxff
-			when kjumpge then
-				pc^:=kjumpgeff
-				dojumpxxff
-			when kjumpgt then
-				pc^:=kjumpgtff
-				dojumpxxff
-			when kindex then
-				pc^:=kindexff
-				putopndb(getopndc)
-				putnops(3,1)		!leave final opc
-				skip:=5
-
-			else
-dopushff:
-				pc^:=kpushff
-				putopndb(getopndc)
-				putnops(3,1)
-				skip:=4
-			end
-		when kpushm then			!pushf pushm
-!CPL "PUSHF PUSHM"
-				pc^:=kpushfm
-				putopndb(getopndc)
-				putnops(3,1)
-				skip:=4
-		when kpushci then			!pushf pushci
-!CPL "PUSHF/PUSHCI"
-			if secondlab then finish fi
-			switch getopndd
-			when kadd then
-				pc^:=kaddfci
-				putopndb(getopndc)
-				putnops(3,1)		!leave final opc
-				skip:=5
-			when ksub then
-				pc^:=ksubfci
-				putopndb(getopndc)
-				putnops(3,1)
-				skip:=5
-
-			when kjumplt then
-				pc^:=kjumpltfci
-dojumpxxfci:
-				x:=getopnda
-				y:=getopndc
-				z:=getopnde
-				putopnda(z)
-				putopndb(x)
-				putopndc(y)
-!				putopndd(knop)
-!				putopnde(knop)
-				skip:=6
-			when kjumple then
-				pc^:=kjumplefci
-				dojumpxxfci
-			when kjumpge then
-				pc^:=kjumpgefci
-				dojumpxxfci
-			when kjumpgt then
-				pc^:=kjumpgtfci
-				dojumpxxfci
-			when kjumpeq then
-				pc^:=kjumpeqfci
-				dojumpxxfci
-			when kjumpne then
-				pc^:=kjumpnefci
-				dojumpxxfci
-			end
-!
-		when kpopm then				!pushf popm
-!CPL "PUSHM POPM"
-			pc^:=kmovemf
-			domoveff
-		when kpopf then				!pushf popf
-			pc^:=kmoveff
-domoveff:
-			x:=a
-			putopnda(getopndc)
-			putopndb(x)
-			putnops(3,1)
-			skip:=4
-		when kzpopf then			!pushf zpopf
-!CPL "PUSHF ZPOPF"
-			pc^:=kzmoveff
-			domoveff
-
-		when kswitch then			!pushf switch
-			pc^:=kswitchf
-			putopndb(getopndc)
-			putopndc(getopndd)
-			putnops(4,1)
-			skip:=5
-	
-		when klen then				!pushf len
-!CPL "PUSHF LEN"
-			pc^:=klenf
-			putnops(2,1)
-			skip:=3
-		when kpushptr then			!pushf pushptr
-			pc^:=kpushptrf
-			putnops(2,1)
-			skip:=3
-		end
-	when kpushm then
-		case b
-		when kpushm then			!pushm pushm
-!CPL "PUSHM PUSHM"
-			pc^:=kpushmm
-			putopndb(getopndc)
-			putnops(3,1)
-			skip:=4
-		when kpushf then			!pushm pushm
-!CPL "PUSHM PUSHF"
-			pc^:=kpushmf
-			putopndb(getopndc)
-			putnops(3,1)
-			skip:=4
-		when kpopm then				!pushm popm
-!CPL "PUSHM POPM"
-			pc^:=kmovemm
-			domoveff
-		when kpopf then				!pushm popf
-!CPL "PUSHM POPF"
-			pc^:=kmovefm
-			domoveff
-		esac
-!
-	when kpushci then
-		case b
-		when kpopm then				!pushci popm
-!CPL "PUSHCI POPM"
-			pc^:=kmovemci
-			domoveff
-		when kpopf then				!pushci popf
-			pc^:=kmovefci
-			domoveff
-		when kzpopf then			!pushci zpopf
-!CPL "PUSHCI ZPOPF"
-			pc^:=kzmovefci
-			domoveff
-		elsif a=0 and b not in [kraise,kstop] then
-			pc^:=kpushci0
-		esac
-
-	when kpushvoid then
-		case a
-		when kpushvoid then			!pushvoid pushvoid
-			if not secondlab and b=kpushvoid then
-				pc^:=kpushvoid3
-				putnops(1,2)
-				skip:=3
-			else
-				pc^:=kpushvoid2
-				putnops(1,1)
-				skip:=2
-			fi
-		esac
-	when kpushfref then
-		case b
-!		when kpushf then			!pushfref pushf
-!		when kpushci then			!pushfref pushci
-		when kloadincr then
-			if not secondlab then
-				case getopndc
-				when kpushptr then		!loadincr pushptr
-					pc^:=kpushincrptrf
-					putnops(2,1)		!loadincr=>skip, but keep the pushptr
-					skip:=4
-				when kpopptr then		!loadincr popptr
-					pc^:=kpopincrptrf
-					putnops(2,1)		!loadincr=>skip, but keep the pushptr
-					skip:=4
-				esac
-			fi
-		esac
-
-	when kpushmref then
-		case b
-		when kloadincr then
-			if not secondlab then
-				case getopndc
-				when kpushptr then		!loadincr pushptr
-					pc^:=kpushincrptrm
-					putnops(2,1)		!loadincr=>skip, but keep the pushptr
-					skip:=4
-				when kpopptr then		!loadincr popptr
-					pc^:=kpopincrptrm
-					putnops(2,1)		!loadincr=>skip, but keep the pushptr
-					skip:=4
-				esac
-			fi
-		esac
-
-!	when kpopretval then
-!		if getopndb not in [kreturn0, kreturn] then
-!			CPL "POPRETVAL NOT FOLLOWED BY RET:",PCLNAMES[GETOPNDB]
-!		FI
-!
-!	when kisint, kislist then
-!		case a
-!		when kjumptrue then			!isint/etc jumptrue
-!		when kjumpfalse then		!isint/etc jumpfalse
-!		esac
-	end
-
-finish:
-	pc+:=skip
-end
-
-=== qq_packed.m 0 0 19/44 ===
+=== qq_packed.m 0 0 15/44 ===
 global proc var_loadpacked(ref void p,int t,variant dest, object ownerobj=nil) =
 ! p is a direct pointer to a packed type of type t.
 ! Extract target and store in varrec dest, which should have been freed.
@@ -17156,7 +8644,7 @@ global proc var_getix_struct(variant a, int index)=
 
 	var_loadpacked(p.ptr+r.fieldoffset, r.mode, a)
 end
-=== qq_parse.m 0 0 20/44 ===
+=== qq_parse.m 0 0 16/44 ===
 !Parser
 
 int intabledata
@@ -17188,7 +8676,7 @@ global proc parsemodule(ifile pm)=
 
 	startlex(currmodule)
 
-!CPL "PARSE",PM.NAME
+!CPL "PARSE", PM.NAME
 
 	lex()
 	lex()
@@ -17199,7 +8687,7 @@ global proc parsemodule(ifile pm)=
 !++NN
 !UNTIL LX.SYMBOL=EOFSYM
 !TT:=CLOCK()-TT
-!CPL "LEX TIME",TT
+!CPL "LEX TIME", TT
 !CPL =NN
 !STOP
 
@@ -17228,7 +8716,7 @@ function readexpression:unit p=
 
 	if exprendset[lx.symbol] then return p fi
 
-	if lx.symbol in [assignsym, deepcopysym] then
+	if lx.symbol = assignsym then
 		return readassignment(p)
 	else
 		return readorterms(p)
@@ -17236,19 +8724,21 @@ function readexpression:unit p=
 end
 
 function readassignment(unit p)unit=
-	int pos,opc
-	unit q,r
+	int pos, isdeep
+	unit q, r
 
 	if exprendset[lx.symbol] then return p fi
 
 	p:=readorterms(p)
 
-	if lx.symbol in [assignsym,deepcopysym] then
-		opc:=lx.subcode
+	if lx.symbol = assignsym then
+		isdeep:=lx.subcode
 		pos:=lx.pos
 		lex()
-		p:=createunit2(opc,p,readassignment(readterm2()))
+		p:=createunit2(jassign, p, readassignment(readterm2()))
+		p.flag:=isdeep
 		p.pos:=pos
+
 	fi
 	return p
 end
@@ -17267,12 +8757,12 @@ function readorterms(unit p)unit =
 
 		if lx.symbol=assignsym then
 			lex()
-			p:=createunit2(jorlto,p,readunit())
+			p:=createunit2(jorlto, p, readunit())
 			p.pos:=pos
 			exit
 		fi
 
-		p:=createunit2(jorl,p,readandterms(readterm2()))
+		p:=createunit2(jorl, p, readandterms(readterm2()))
 		p.pos:=pos
 	od
 
@@ -17304,12 +8794,12 @@ function readandterms(unit p)unit =
 
 		if lx.symbol=assignsym then
 			lex()
-			p:=createunit2(jandlto,p,readunit())
+			p:=createunit2(jandlto, p, readunit())
 			p.pos:=pos
 			exit
 		fi
 
-		p:=createunit2(jandl,p,readcmpterms(readterm2()))
+		p:=createunit2(jandl, p, readcmpterms(readterm2()))
 		p.pos:=pos
 	od
 
@@ -17317,9 +8807,10 @@ function readandterms(unit p)unit =
 end
 
 function readcmpterms(unit p)unit =
-	int pos,n
-	unit px,q
-	[4]byte genops
+!creates either jcmp unit (simple 2-operand cmp), or jcmpchain (3/4 operands)
+	int pos, n
+	unit px, q
+	[4]byte conds
 
 	p:=readinterms(p)
 
@@ -17327,16 +8818,16 @@ function readcmpterms(unit p)unit =
 		return p
 	fi
 
-	clear genops
+	clear conds
 	px:=p
-	p:=createunit1(jcmpchain,p)
+	p:=createunit1(jcmpchain, p)
 	n:=0				!n counts operand after the first
 
 	while cmpopset[lx.symbol] do
 		++n
-		if n>genops.len then serror("cmpchain: Too many items") fi
-		genops[n]:=lx.subcode
-	
+		if n>conds.len then serror("cmpchain: Too many items") fi
+		conds[n]:=lx.subcode
+
 		pos:=lx.pos
 		lex()
 
@@ -17346,32 +8837,35 @@ function readcmpterms(unit p)unit =
 
 		q.pos:=pos
 	od
-!
+
 	if n=1 then
-		p.tag:=genops[1]
+		p.tag:=jcmp
+		p.condcode:=conds[1]
 		q:=p.a
 		p.b:=q.nextunit
 		q.nextunit:=nil
 	else
-		p.cmpgenop:=genops
+		p.cmpconds:=conds
 	fi	
 
 	return p
 end
 
 function readinterms(unit p)unit =
-	int pos,opc
+	int pos, tag, flag
 
 	p:=readrangeterm(p)
 
 	docase lx.symbol
-	when insym, notinsym, inxsym then
-		opc:=lx.subcode
+	when insym, inxsym then
+		tag:=(lx.symbol=insym|jin|jinx)
+		flag:=lx.subcode			!in/1 means not in
 
 		pos:=lx.pos
 		lex()
 
-		p:=createunit2(opc,p,readrangeterm(readterm2()))
+		p:=createunit2(tag, p, readrangeterm(readterm2()))
+		p.flag:=flag
 		p.pos:=pos
 	else
 		exit
@@ -17388,7 +8882,7 @@ function readrangeterm(unit p)unit =
 	if lx.symbol=rangesym then
 		pos:=lx.pos
 		lex()
-		p:=createunit2(jmakerange,p,readaddterms(readterm2()))
+		p:=createunit2(jmakerange, p, readaddterms(readterm2()))
 		p.pos:=pos
 	fi
 
@@ -17396,28 +8890,38 @@ function readrangeterm(unit p)unit =
 end
 
 function readaddterms(unit p)unit =
-	int pos,opc,a,b
+	int pos, opc, a, b, tag
 	unit q
 
 	p:=readmulterms(p)
 	while addopset[lx.symbol] do
-		case opc:=lx.subcode
-		when jaddrof then opc:=jappend
-!		when jdaddrof then opc:=jconcat
-		esac
+		opc:=lx.subcode
+		if lx.symbol=addrsym then
+			opc:=kappend
+		fi
 
 		pos:=lx.pos
 		lex()
 
 		if lx.symbol=assignsym then
 			lex()
-			p:=createunit2(jtocodes[opc],p,readassignment(readterm2()))
+!CPL "RAT:="
+			if opc=kappend then
+				tag:=jappendto
+			elsif opc=kconcat then
+				tag:=jconcatto
+			else
+				tag:=jbinto
+			fi
+			p:=createunit2(tag, p, readassignment(readterm2()))
+			p.pclop:=opc
 			p.pos:=pos
 			exit
 		fi
 
 		q:=readmulterms(readterm2())
-		p:=createunit2(opc,p,q)
+		p:=createunit2(jbin, p, q)
+		p.pclop:=opc
 		p.pos:=pos
 	od
 
@@ -17425,7 +8929,7 @@ function readaddterms(unit p)unit =
 end
 
 function readmulterms(unit p)unit =
-	int pos,opc,a,b
+	int pos, opc, a, b
 	unit q
 
 	p:=readpowerterms(p)
@@ -17437,12 +8941,15 @@ function readmulterms(unit p)unit =
 
 		if lx.symbol=assignsym then
 			lex()
-			p:=createunit2(jtocodes[opc],p,readassignment(readterm2()))
+			p:=createunit2(jbinto, p, readassignment(readterm2()))
+			p.pclop:=opc
+
 			p.pos:=pos
 			exit
 		fi
 
-		p:=createunit2(opc,p,readpowerterms(readterm2()))
+		p:=createunit2(jbin, p, readpowerterms(readterm2()))
+		p.pclop:=opc
 		p.pos:=pos
 	od
 
@@ -17455,7 +8962,8 @@ function readpowerterms(unit p)unit =
 	while lx.symbol=powersym do
 		pos:=lx.pos
 		lex()
-		p:=createunit2(jpower,p,readpowerterms(readterm2()))
+		p:=createunit2(jbin, p, readpowerterms(readterm2()))
+		p.pclop:=kpower
 		p.pos:=pos
 	od
 
@@ -17467,31 +8975,31 @@ function readterm2:unit p=
 
 	pos:=lx.pos
 	p:=readterm()
-	p:=readtermsuffix(p,pos)
+	p:=readtermsuffix(p, pos)
 	return p
 end
 
 function readtermsuffix(unit p, int pos)unit=
-	unit q,r
+	unit q, r
 	ref char pbyte
 	word64 a
-	int opc,oldipl,shift,t,nparams
+	int opc, oldipl, shift, t, nparams
 
 	docase lx.symbol
 	when lbracksym then
 		lex()
-		q:=readslist(nparams,1)
+		q:=readslist(nparams, 1)
 
 		skipsymbol(rbracksym)
-		p:=createunit2(jcall,p,q)
+		p:=createunit2(jcall, p, q)
 		p:=readcondsuffix(p)
 
 	when ptrsym then
-		p:=createunit1(jptr,p)
+		p:=createunit1(jptr, p)
 		lex()
 
 	when lsqsym then
-		p:=readindex(p,0)
+		p:=readindex(p, 0)
 
 	when dotsym then
 		p:=readdotsuffix(p)
@@ -17503,21 +9011,18 @@ function readtermsuffix(unit p, int pos)unit=
 		case listtype
 		when 'PARAM' then
 			lex()
-			p:=createunit2(jkeyword,p,readunit())
+			p:=createunit2(jkeyword, p, readunit())
 		when 'DICT' then
 			lex()
-			p:=createunit2(jkeyvalue,p,readunit())
+			p:=createunit2(jkeyvalue, p, readunit())
 		else
 			exit
 		esac
 
 	when incrsym then
-		case lx.subcode
-		when jincrload then opc:=jloadincr
-		when jdecrload then opc:=jloaddecr
-		esac
+		p:=createunit1(jloadincr, p)
+		p.flag:=lx.subcode
 		lex()
-		p:=createunit1(opc,p)
 
 	else
 		exit
@@ -17529,10 +9034,11 @@ function readtermsuffix(unit p, int pos)unit=
 end
 
 function readterm:unit=
-	unit p,q,r
+	unit p, q, r
 	ref char pbyte
 	word64 a
-	int oldipl,opc,oldinrp,pos,shift,t,nparams,length
+	int oldipl, opc, oldinrp, pos, shift, t, nparams, length
+	byte flag
 	ichar s
 
 	record dummy=
@@ -17576,7 +9082,7 @@ function readterm:unit=
 		if length>8 then
 			serror("char const too long")
 		fi
-		memcpy(&.ustr.str,lx.svalue,length)
+		memcpy(&.ustr.str, lx.svalue, length)
 		p:=createintunit(ustr.sa)
 		lex()
 
@@ -17592,7 +9098,7 @@ function readterm:unit=
 				p:=createunit0(jtypeconst)
 				p.mode:=tvoid
 			else
-				p:=createunit0(jnull)
+				p:=createunit0(jvoid)
 			fi
 		else
 			p:=readcast()
@@ -17611,36 +9117,65 @@ function readterm:unit=
 		if not p then
 			lex()
 			if lx.symbol=assignsym then
-				opc:=jneg
-				goto dounary
+				opc:=kneg
+				dounaryto
 			fi
 			p:=readterm2()
 			if p.tag=jintconst then
 				p.value:=-p.value
 			else
-				p:=createunit1(jneg, p)
+				p:=createunit1(junary, p)
+				p.pclop:=kneg
 			fi
 		fi
 
-	when notlsym, istruelsym, inotsym, abssym, sqrsym, signsym,ascsym, chrsym,
-			incrsym, decrsym, mathssym, maths2sym  then
+	when inotsym, abssym, ascsym, chrsym then
 		p:=checkoperator()
 		if not p then
 			opc:=lx.subcode
 			lex()
 			if lx.symbol=assignsym then
-dounary:
+dounaryto:
 				lex()
-				p:=createunit1(jtocodes[opc],readterm2())
+				p:=createunit1(junaryto, readterm2())
+				p.pclop:=opc
 			else
-				p:=createunit1(opc, readterm2())
+				p:=createunit1(junary, readterm2())
+				p.pclop:=opc
 			fi
 		fi
 
-	when mulsym, divsym, idivsym, iremsym, andlsym, orlsym,
-		iandsym, iorsym, ixorsym, shlsym, shrsym, insym, notinsym, inxsym,
-		eqsym,nesym,ltsym, lesym,gesym,gtsym,powersym, appendsym,
-		concatsym,  daddrsym, propsym, isequalsym, specialopsym then
+	when notlsym, istruelsym then
+		p:=checkoperator()
+		if not p then
+			opc:=lx.subcode
+			lex()
+			if lx.symbol=assignsym then
+				opc:=(opc=jnotl | jnotlto | jistruelto)
+				lex()
+			fi
+			p:=createunit1(opc, readterm2())
+		fi
+
+	when incrsym  then
+		p:=checkoperator()
+		if not p then
+			opc:=lx.subcode
+			lex()
+			p:=createunit1(jincrload, readterm2())
+			p.flag:=opc
+		fi
+
+	when mathssym  then
+		opc:=lx.subcode
+		lex()
+		p:=createunit1(jmaths, readterm2())
+		p.pclop:=opc
+
+	when mulsym, divsym, idivsym, iremsym, idivremsym, andlsym, orlsym, 
+		iandsym, iorsym, ixorsym, shlsym, shrsym, insym, inxsym, 
+		eqsym, nesym, ltsym, lesym, gesym, gtsym, powersym, appendsym, 
+		concatsym, propsym, specialopsym then
 		unless p:=checkoperator() then
 			serror("Operator?")
 		end
@@ -17648,22 +9183,29 @@ dounary:
 	when lsqsym then
 		p:=readset()
 
-	when minsym, maxsym then
+	when minmaxsym then
 		if p:=checkoperator() then
 		else
-			p:=readpair(lx.subcode)
+			p:=readpair(jbin, lx.subcode)
+		fi
+
+	when maths2sym then
+		if p:=checkoperator() then
+		else
+			p:=readpair(jmaths2, lx.subcode)
 		fi
 
 	when ksprintsym then
 		p:=readsprint()
 
-	when ksreadsym,ksreadlnsym then
-		p:=readsread()
-
-	when addrsym,ptrsym then
-		opc:=lx.subcode
+!	when ksreadsym then
+!		p:=readsread()
+!
+	when addrsym, ptrsym then
+		flag:=lx.subcode
 		lex()
-		p:=createunit1(opc,readterm2())
+		p:=createunit1(jaddrof, readterm2())
+		p.flag:=flag
 		if p.a.tag=jcall then
 			if p.a.b then
 				serror("Params not allowed")
@@ -17685,16 +9227,17 @@ dounary:
 				checksymbol(intconstsym)
 				s+:=lx.value
 			fi
-			p:=createstringunit(s,-1)
+			p:=createstringunit(s, -1)
 		else
 			if ndollar<=0 then
 				serror("[$] No array")
 			fi
-			p:=createunit1(jupb,dollarstack[ndollar])
+			p:=createunit1(jproperty, dollarstack[ndollar])
+			p.pclop:=kupb
 		fi
 		lex()
 
-	when dotsym,kglobalsym then
+	when dotsym, kglobalsym then
 		lexchecksymbol(namesym)
 		p:=createname(lx.symptr)
 		p.pos:=lx.pos
@@ -17720,8 +9263,10 @@ dounary:
 		fi
 		lex()
 
-		q:=createunit2(jmax,p,q)
-		p:=createunit2(jmin,q,r)
+		q:=createunit2(jbin, p, q)
+		q.pclop:=kmax
+		p:=createunit2(jbin, q, r)
+		p.pclop:=kmin
 
 	when kgotosym then
 		p:=readgoto()
@@ -17732,7 +9277,7 @@ dounary:
 	when kunlesssym then
 		p:=readunless()
 
-	when kcasesym,kdocasesym,kswitchsym,kdoswitchsym then
+	when kcasesym, kswitchsym then
 		p:=readswitchcase()
 
 	when kforsym then
@@ -17770,13 +9315,13 @@ dounary:
 !
 	when kraisesym then	!todo
 		lex()
-		p:=createunit1(jraise,readunit())
+		p:=createunit1(jraise, readunit())
 
 	when kswapsym then			!swap using function syntax
 		p:=readpair(jswap)
 !
 	when khostfnsym then
-		p:=readhostparams(nil,1)
+		p:=readhostparams(nil, 1)
 
 	when knilsym then
 !		p:=createunit0((lx.subcode=1|jpnil|jnil))
@@ -17785,11 +9330,11 @@ dounary:
 
 	when kstrincludesym then
 		lex()
-		p:=createunit1(jstrinclude,readterm2())
+		p:=createunit1(jstrinclude, readterm2())
 
 	when kevalsym then
 		lex()
-		p:=createunit1(jeval,readunit())
+		p:=createunit1(jeval, readunit())
 
 
 	when lcurlysym then
@@ -17807,8 +9352,8 @@ error:
 end
 
 function readsunit(int inwhile=0)unit=
-	int lineno,m,globalflag,staticflag
-	unit ulist,ulistx,p,q,r
+	int lineno, m, globalflag, staticflag
+	unit ulist, ulistx, p, q, r
 	symbol stname
 
 	lineno:=lx.pos
@@ -17833,16 +9378,16 @@ function readsunit(int inwhile=0)unit=
 			lex()
 			redoloop
 
-		when kprocsym,kfunctionsym then
+		when kprocsym, kfunctionsym then
 			readprocdef(globalflag)
 			globalflag:=local_scope
 
 		when kvarsym then
-			q:=readvardef(globalflag,staticflag)
+			q:=readvardef(globalflag, staticflag)
 			while q do								!initialised decls involve code
 				r:=q.nextunit						!unlink from this block first
 				q.nextunit:=nil
-				addlistunit(ulist,ulistx,q)			!add one by-one
+				addlistunit(ulist, ulistx, q)			!add one by-one
 				q:=r
 			od
 
@@ -17876,18 +9421,18 @@ function readsunit(int inwhile=0)unit=
 			exit
 
 !these are needed to check for an empty sunit preceding
-		when rbracksym,kthensym,kelsifsym,kelsesym,kuntilsym,kwhensym,sendtosym,
-				kelsecasesym,kelseswitchsym,kexceptsym,kendsym,rcurlysym then
+		when rbracksym, kthensym, kelsifsym, kelsesym, kuntilsym, kwhensym, sendtosym, 
+				kelsecasesym, kelseswitchsym, kexceptsym, kendsym, rcurlysym then
 			exit
 
 		when namesym then
 			case nextlx.symbol
-!		when dcolonsym,colonsym then
+!		when dcolonsym, colonsym then
 			when colonsym then
-				p:=createunit1(jlabeldef,createname(addsymbol(stcurrproc, lx.symptr, labelid, 0)))
+				p:=createunit1(jlabeldef, createname(addsymbol(stcurrproc, lx.symptr, labelid, 0)))
 				lex()
 				lx.symbol:=semisym
-				addlistunit(ulist,ulistx,p)
+				addlistunit(ulist, ulistx, p)
 !		when namesym then
 !			goto dovar
 			else
@@ -17918,7 +9463,7 @@ function readsunit(int inwhile=0)unit=
 			if p.tag=jname and lx.symbol=namesym then
 				serror("Possibly var/let needed")
 			fi
-			addlistunit(ulist,ulistx,p)
+			addlistunit(ulist, ulistx, p)
 			if lx.symbol=kdosym then
 				exit
 			fi
@@ -17928,15 +9473,15 @@ function readsunit(int inwhile=0)unit=
 	until lx.symbol<>semisym
 
 	case lx.symbol
-	when rbracksym,kthensym,kelsifsym,kelsesym,kuntilsym,kwhensym,kdosym,sendtosym,
-		kelsecasesym,kelseswitchsym,kexceptsym,kendsym,rcurlysym,commasym,
-		barsym,eofsym then
+	when rbracksym, kthensym, kelsifsym, kelsesym, kuntilsym, kwhensym, kdosym, sendtosym, 
+		kelsecasesym, kelseswitchsym, kexceptsym, kendsym, rcurlysym, commasym, 
+		barsym, eofsym then
 	else
 		serror("Readsunit: "";"" expected, or bad unit starter")
 	esac
 
 	if ulist=nil or ulist.nextunit then			!empty or multiple => block
-		return createunit1(jblock,ulist)
+		return createunit1(jblock, ulist)
 	else
 		return ulist							!single => one unit
 	fi
@@ -17949,13 +9494,13 @@ proc checkequals=
 	fi
 end
 
-function readindex(unit p,int dot)unit=
+function readindex(unit p, int dot)unit=
 !at '['; dot=0/1 for a[]/a.[]
 !syntax is:
-![x] or [x,...]			!single or multiple indexing (can also use [x][x].. for multiple)
+![x] or [x, ...]			!single or multiple indexing (can also use [x][x].. for multiple)
 !I don't need to allow indexing and section select within the same [...]
 !exit with symbol just after closing ]
-	unit q,plower,pupper
+	unit q, plower, pupper
 
 	lex()
 
@@ -17967,7 +9512,7 @@ function readindex(unit p,int dot)unit=
 		q:=readunit()
 		--ndollar
 
-		p:=createunit2((dot|jdotindex|jindex),p,q)
+		p:=createunit2((dot|jdotindex|jindex), p, q)
 
 		exit when lx.symbol<>commasym
 		lex()
@@ -17982,40 +9527,60 @@ function readdotsuffix(unit p)unit=
 !multiple .terms can be present
 	unit q
 	int t
+	byte flag
 
 	while lx.symbol=dotsym do
 		lex()
 		case lx.symbol
 		when lsqsym then
-			p:=readindex(p,1)
+			p:=readindex(p, 1)
 		when namesym then
-			p:=createunit2(jdot,p,createname(lx.symptr))
+			p:=createunit2(jdot, p, createname(lx.symptr))
 			lex()
 		when  propsym then			!ought to check whether op is allowed in this form
 doprop:
-!CPL "DOT PROP",JTAGNAMES[LX.SUBCODE]
-			p:=createunit1(lx.subcode,p)
+!CPL "DOT PROP", JTAGNAMES[LX.SUBCODE]
+			p:=createunit1(jproperty, p)
+			p.pclop:=lx.subcode
 			lex()
 
 		when ktypesym then
 			if p.tag<>jtypeconst then
-				p:=createunit1(jtype,p)
+				flag:=1
+dogettype:
+				p:=createunit1(jgettype, p)
+				p.pclop:=flag
 			fi
 			lex()
 
-		when maxsym then
-			lx.subcode:=jmaxvalue
-			goto doprop
+		when minmaxsym then
+			lx.subcode:=(lx.subcode=kmin|kminval|kmaxval)
+			doprop
 
-		when minsym then
-			lx.subcode:=jminvalue
-			lx.symbol:=propsym
-			goto doprop
+!		when minsym then
+!			lx.subcode:=kminval
+!			doprop
+
+		when miscpropsym then
+			case lx.subcode
+			when 'b' then flag:=0; dogettype
+			when 'e' then flag:=2; dogettype
+			else
+				p:=createunit1(jisvoid, p)
+				p.flag:=lx.subcode<>'v'			!0/1 = isvoid/isdef
+				lex()
+			esac
+
+		when istypesym then
+			p:=createunit1(jistype, p)
+			p.mode:=lx.subcode
+			lex()
+
 		when dollarsym then
-			if p.tag not in [jname,jdot] then
+			if p.tag not in [jname, jdot] then
 				serror("...name.$ needed")
 			fi
-			p:=createunit1(jsymbol,p)
+			p:=createunit1(jsymbol, p)
 			lex()
 
 		else
@@ -18035,9 +9600,9 @@ function readslist(int &nparams, ftrailing=0)unit=
 !return with symbol at terminating symbol: 1st non comma and is that a unit starter
 !iscall=1 when called to read a function-call parameter list; then key:value pairs
 !are treated as keyword arguments
-!eg: (a,b,c	)
+!eg: (a, b, c	)
 !eg: (a		!
-	unit ulist,ulistx
+	unit ulist, ulistx
 	int oldinparamlist
 
 	ulist:=ulistx:=nil
@@ -18060,7 +9625,7 @@ int donulls:=1
 		when rbracksym then
 			exit
 		else
-			addlistunit(ulist,ulistx,readunit())
+			addlistunit(ulist, ulistx, readunit())
 			++nparams
 			if lx.symbol=commasym then
 				lex()
@@ -18094,10 +9659,10 @@ function readcondsuffix(unit p)unit=
 	case lx.symbol
 	when kwhensym then
 		lex()
-		return createunit2(jif,readunit(),createunit1(jblock,p))
+		return createunit2(jif, readunit(), createunit1(jblock, p))
 	when kunlesssym then
 		lex()
-		return createunit2(jif, createunit1(jnotl,readunit()),createunit1(jblock,p))
+		return createunit2(jif, createunit1(jnotl, readunit()), createunit1(jblock, p))
 	else
 		return p
 	esac
@@ -18106,7 +9671,7 @@ end
 function readkeyindex(unit p)unit=
 !at '{'
 !syntax is:
-![x] or [x,...]			!single or multiple indexing (can also use [x][x].. for multiple)
+![x] or [x, ...]			!single or multiple indexing (can also use [x][x].. for multiple)
 !I don't need to allow indexing and section select within the same [...]
 !exit with symbol just after closing ]
 	unit q
@@ -18120,7 +9685,7 @@ function readkeyindex(unit p)unit=
 		q.nextunit:=readunit()
 	fi
 	
-	p:=createunit2(jkeyindex,p,q)
+	p:=createunit2(jkeyindex, p, q)
 
 	skipsymbol(rcurlysym)
 	return p
@@ -18132,15 +9697,15 @@ function readlbrack:unit=
 !read one of the following:
 ! (x)		simple expression
 ! ()		list with no elements
-! (x,)		list with one element
-! (x,x,...)		list
+! (x, )		list with one element
+! (x, x, ...)		list
 ! (x|x|x])		if then else fi
-! (x|x,... |x])	select then else end
+! (x|x, ... |x])	select then else end
 
 ! (s||s|s)	!list comp [SYNTAX TO BE REVISED]
 !return positioned at symbol following closing ")"
-	unit ulist,ulistx, p,q,r
-	int oldirp,length,lower,lowerseen,elemtype,opc
+	unit ulist, ulistx, p, q, r
+	int oldirp, length, lower, lowerseen, elemtype, opc
 
 	lex()					!first symbol of first expression
 	ulist:=ulistx:=nil
@@ -18173,38 +9738,35 @@ function readlbrack:unit=
 		p.lower:=lower
 		p.elemtype:=elemtype
 		return p
+
 	elsif (binopset[lx.symbol] or unaryopset[lx.symbol] or lx.symbol=propsym) and
 			nextlx.symbol=rbracksym then
-		opc:=jpclcodes[lx.subcode]
-		if lx.symbol=addrsym then opc:=kappend fi
+		if lx.symbol=addrsym then
+			opc:=kappend
+		else
+			opc:=lx.subcode
+		fi
 doopc:
-		if opc=kzero then pcerror("Bad op") fi
-
 		p:=createunit0(joperator)
-		p.pclopcode:=opc
+		p.pclop:=opc
 		lex()
 !		lex()
 		skipsymbol(rbracksym)
 		return p
+
 	elsecase lx.symbol
 	when specialopsym then
 		case lx.subcode
 		when '-' then opc:=kneg
 		when '[]' then opc:=kindex
-		else opc:=kzero
+		else opc:=knop
 		esac
 		doopc
 	when insym then
 		opc:=kin
 		doopc
-	when notinsym then
-		opc:=knotin
-		doopc
 	when inxsym then
 		opc:=kinx
-		doopc
-	when daddrsym then
-		opc:=kconcat
 		doopc
 
 	else					!assume normal expression follows
@@ -18216,7 +9778,7 @@ doopc:
 	when rbracksym then			!simple (x) expression
 		lex()
 		if lowerseen then
-			p:=createunit2(jkeyvalue,createintunit(lower), p)
+			p:=createunit2(jkeyvalue, createintunit(lower), p)
 		fi
 
 		return p
@@ -18226,7 +9788,7 @@ doopc:
 		if nextlx.symbol=rbracksym then		!means one-element list
 			lex()
 			lex()
-			p:=createunit1(jmakelist,p)
+			p:=createunit1(jmakelist, p)
 			p.length:=length
 			p.lower:=lower
 			p.elemtype:=elemtype
@@ -18237,18 +9799,18 @@ doopc:
 		ulist:=ulistx:=p
 		repeat
 			lex()							!skip comma
-			if lx.symbol=rbracksym then		!allow ,) to end list
+			if lx.symbol=rbracksym then		!allow , ) to end list
 				exit
 			fi
 			if lx.symbol=commasym then
-				serror(",, null expr not allowed")
+				serror(", , null expr not allowed")
 			fi
-			addlistunit(ulist,ulistx,readxunit())
+			addlistunit(ulist, ulistx, readxunit())
 			++length
-			skipsemi()						!allow a,b,c;) (works better with a,b,c\ followed by comment on next line followed by ")")
+			skipsemi()						!allow a, b, c;) (works better with a, b, c\ followed by comment on next line followed by ")")
 		until lx.symbol<>commasym
 		skipsymbol(rbracksym)
-		p:=createunit1(jmakelist,ulist)
+		p:=createunit1(jmakelist, ulist)
 		p.length:=length
 		p.lower:=lower
 		p.elemtype:=elemtype
@@ -18263,20 +9825,20 @@ doopc:
 			r:=readsunit()
 			skipsymbol(rbracksym)
 			q.nextunit:=r
-			return createunit2(jif,p,q)
+			return createunit2(jif, p, q)
 		when rbracksym then
 			lex()
-			return createunit2(jif,p,q)
+			return createunit2(jif, p, q)
 
 		esac
 
 !assume selectx expression
-		addlistunit(ulist,ulistx,q)	!start with one-element list
+		addlistunit(ulist, ulistx, q)	!start with one-element list
 		checksymbol(commasym)
-		if nextlx.symbol<>barsym then		!(n|a,| using one-element list; not useful but allow it...
+		if nextlx.symbol<>barsym then		!(n|a, | using one-element list; not useful but allow it...
 			repeat
 				lex()				!skip comma
-				addlistunit(ulist,ulistx,readxunit())
+				addlistunit(ulist, ulistx, readxunit())
 			until lx.symbol<>commasym
 			checksymbol(barsym)
 		else
@@ -18286,7 +9848,7 @@ doopc:
 		r:=readxunit()
 		skipsymbol(rbracksym)
 		p.nextunit:=r
-		return createunit2(jselect,p,ulist)
+		return createunit2(jselect, p, ulist)
 
 	when semisym then
 		ulist:=ulistx:=p
@@ -18295,7 +9857,7 @@ doopc:
 			if lx.symbol=rbracksym then
 				exit
 			fi
-			addlistunit(ulist,ulistx,readunit())
+			addlistunit(ulist, ulistx, readunit())
 		until lx.symbol<>semisym
 		skipsymbol(rbracksym)
 		return makeblock(ulist)
@@ -18310,7 +9872,7 @@ end
 function readif:unit=
 !at 'if'
 	int line, kwd, lineno
-	unit pthen,pcond, plist,plistx, pelse, p, pelsif
+	unit pthen, pcond, plist, plistx, pelse, p, pelsif
 
 	line:=lx.pos
 
@@ -18334,7 +9896,7 @@ function readif:unit=
 		pelse:=readsunit()
 		checkend(kwd)
 !		lex()
-	when kelsecasesym,kelseswitchsym then
+	when kelsecasesym, kelseswitchsym then
 		lx.symbol:=kwd
 !	SERROR("ELSECASE NOT READY")
 		pelse:=makeblock(readswitchcase())
@@ -18345,7 +9907,7 @@ function readif:unit=
 	esac
 
 	pthen.nextunit:=pelse
-	p:=createunit2(jif,pcond,pthen)
+	p:=createunit2(jif, pcond, pthen)
 	p.pos:=line
 
 	return p
@@ -18370,9 +9932,9 @@ proc checkend(int endkwd1, endkwd2=0, startline=0)=
 			return
 		else
 error:
-			strcpy(str,"Mismatched end ")
+			strcpy(str, "Mismatched end ")
 			if startline then
-				fprint @(&.str+strlen(&.str))," (from line #)",startline
+				fprint @(&.str+strlen(&.str)), " (from line #)", startline
 			fi
 			serror(&.str)
 		fi
@@ -18408,7 +9970,7 @@ function readunless:unit=
 	checkend(kunlesssym)
 !	lex()
 	pthen.nextunit:=pelse
-	p:=createunit2(jif,createunit1(jnotl,pcond),pthen)
+	p:=createunit2(jif, createunit1(jnotl, pcond), pthen)
 	p.pos:=line
 	return p
 end
@@ -18430,10 +9992,10 @@ function readwhile:unit=
 	skipsymbol(kdosym)
 	pbody:=readsunit()
 
-	checkend(kwhilesym,kdosym)
+	checkend(kwhilesym, kdosym)
 !	lex()
 
-	p:=createunit2(jwhile,pcond,pbody)
+	p:=createunit2(jwhile, pcond, pbody)
 	p.pos:=pos
 	return p
 end
@@ -18447,7 +10009,7 @@ function readrepeat:unit=
 	pbody:=readsunit()
 	skipsymbol(kuntilsym)
 	pcond:=readunit()
-	p:=createunit2(jrepeat,pbody,pcond)
+	p:=createunit2(jrepeat, pbody, pcond)
 	p.pos:=pos
 	return p
 end
@@ -18458,7 +10020,7 @@ function readfor:unit=
 ! for term in/inrev expr [when expr] do stmts [else stmts] end/od
 
 	int line, opc, down, isforeach
-	unit pstep, pvar, pcond, pfrom, pto, pelse, pbody, p, plist,pvar2
+	unit pstep, pvar, pcond, pfrom, pto, pelse, pbody, p, plist, pvar2
 
 	line:=lx.pos
 	isforeach:=lx.subcode
@@ -18471,29 +10033,28 @@ function readfor:unit=
 		pvar.def.forindex:=1
 	fi
 
-	opc:=jforup
+	opc:=jfor
 	pstep:=nil
 	pcond:=nil
 	pvar2:=nil
+	down:=0
 
 	if lx.symbol=commasym then			!double index
 		lex()
 		pvar2:=readterm2()
 	fi
 
-	if lx.symbol in [insym,inrevsym] then	!assume in/inrev
-		down:=lx.symbol=inrevsym
+	if lx.symbol=insym then	!assume in/inrev
 		lex()
 		plist:=readunit()
 
 		case plist.tag
 		when jmakerange then		!in a..b: simple iteration
-			opc:=jforup
 			pfrom:=plist.a
 			pto:=plist.b
 		when jbounds then			!
-			plist.tag:=jboundsx
-			opc:=jforupx
+			plist.flag:=1
+			opc:=jforx
 		else
 			opc:=jforall
 		esac
@@ -18506,7 +10067,6 @@ function readfor:unit=
 		fi
 		checksymbol(ktosym)
 		down:=lx.subcode=1
-		opc:=jforup
 		lex()
 		pto:=readunit()
 
@@ -18534,7 +10094,7 @@ function readfor:unit=
 	pbody:=readsunit()
 
 	if pcond<>nil then
-		pbody:=makeblock(createunit2(jif,pcond,pbody))
+		pbody:=makeblock(createunit2(jif, pcond, pbody))
 	fi
 	if lx.symbol=kelsesym then
 		lex()
@@ -18543,7 +10103,7 @@ function readfor:unit=
 	else
 		pelse:=nil
 	fi
-	checkend(kforsym,kdosym)
+	checkend(kforsym, kdosym)
 !	lex()
 
 
@@ -18551,17 +10111,18 @@ function readfor:unit=
 	when jforall then
 		pvar.nextunit:=plist
 		plist.nextunit:=pvar2
-		p:=createunit2((down|jforallrev|jforall),pvar,pbody)
+		p:=createunit2(opc, pvar, pbody)
 
-	when jforupx then
+	when jforx then
 		pvar.nextunit:=plist
-		p:=createunit2((down|jfordownx|jforupx),pvar,pbody)
+		p:=createunit2(opc, pvar, pbody)
 	else
 		pvar.nextunit:=pfrom
 		pfrom.nextunit:=pto
 		pto.nextunit:=pstep
-		p:=createunit2((down|jfordown|jforup),pvar,pbody)
+		p:=createunit2(opc, pvar, pbody)
 	esac
+	p.flag:=down
 
 	if isforeach then
 		if p.tag=jforall then
@@ -18573,8 +10134,8 @@ function readfor:unit=
 
 	p.pos:=line
 
-	if pvar2 and opc not in [jforall, jforallrev] then
-		serror("for i,j not allowed")
+	if pvar2 and opc<>jforall then
+		serror("for i, j not allowed")
 	fi
 
 	return p
@@ -18588,13 +10149,13 @@ function readdo:unit=
 	lex()
 	p:=readsunit()
 	checkend(kdosym)
-	p:=createunit1(jdo,p)
+	p:=createunit1(jdo, p)
 	p.pos:=line
 	return p
 end
 
 function readto:unit=
-	int line,id
+	int line, id
 	unit p, pcount, pbody
 
 	line:=lx.pos
@@ -18604,23 +10165,23 @@ function readto:unit=
 
 	skipsymbol(kdosym)
 	pbody:=readsunit()
-	checkend(ktosym,kdosym)
+	checkend(ktosym, kdosym)
 !	lex()
 
 	pcount.nextunit:=createavname()
 
-	p:=createunit2(jto,pcount,pbody)
+	p:=createunit2(jto, pcount, pbody)
 	p.pos:=line
 	return p
 end
 
 function makeblock(unit p)unit=
-	return createunit1(jblock,p)
+	return createunit1(jblock, p)
 end
 
 function readvardef(int isglobal=0, isstatic=0)unit=
 !positioned at 'var' 'let'
-	int nvars,varid, opc
+	int nvars, varid, opc
 	symbol d
 	unit ulist, ulistx, p
 
@@ -18629,7 +10190,7 @@ function readvardef(int isglobal=0, isstatic=0)unit=
 !	M:=TVAR
 
 !	if stcurrproc.nameid=procid then
-	if stcurrproc.nameid in [procid,anonprocid] then
+	if stcurrproc.nameid in [procid, anonprocid] then
 		varid:=(isstatic|staticid|frameid)
 	else
 		varid:=staticid
@@ -18641,24 +10202,27 @@ function readvardef(int isglobal=0, isstatic=0)unit=
 		++nvars
 
 		d:=addsymbol(stcurrproc, lx.symptr, varid, isglobal)
-!		storemode(stcurrproc,m,&d.mode)
 
 		lex()
 
 		case lx.symbol
-		when assignsym,deepcopysym then
+		when assignsym then
 			opc:=lx.subcode
 			if varid=staticid then
 !				if stcurrproc.nameid=procid then
-				if stcurrproc.nameid in [procid,anonprocid] then
+				if stcurrproc.nameid in [procid, anonprocid] then
 					serror("Need '=' for static in proc")
 				fi
 			fi
-			d.initcode:=(lx.symbol=assignsym|2|3)
+
+!			d.initcode:=(lx.symbol=assignsym|2|3)
+			d.initcode:=opc+2		!0/1 => 2/3
+
 			lex()
 			d.code:=readunit()
 			if varid=frameid then
-				p:=createunit2(opc,createname(d),d.code)
+				p:=createunit2(jassign, createname(d), d.code)
+				p.flag:=opc
 				addlistunit(ulist, ulistx, p)
 			fi
 
@@ -18711,7 +10275,7 @@ proc readconstdef(int isglobal=0)=
 end
 
 function readreturn:unit=
-	unit p,q,r
+	unit p, q, r
 
 	lex()
 	q:=nil
@@ -18725,26 +10289,22 @@ function readreturn:unit=
 end
 
 function readprint:unit=
-	int opc, isfprint, fshowname, length
-	unit pformat, pdev, printlist,printlistx, p,q
+	int opc, flags, fshowname, length
+	unit pformat, pdev, printlist, printlistx, p, q
 	ref strbuffer expr
 
 	ichar s
 
 	pushlisttype('PRINT')
 
-	if lx.symbol=questionsym then
-		opc:=jprintln
-	else
-		opc:=lx.subcode
-	fi
+	opc:=jprint
+	flags:=lx.subcode
 
-	case opc
-	when jfprint,jfprintln then
-		isfprint:=1
-	else
-		isfprint:=0
-	esac
+	if lx.symbol=questionsym then
+		flags:=pr_newline
+	elsif flags iand pr_format then
+		opc:=jfprint
+	fi
 
 	lex()
 
@@ -18756,7 +10316,7 @@ function readprint:unit=
 		pdev:=readunit()
 		if lx.symbol=commasym then lex() else goto finish fi
 	fi
-	if isfprint then
+	if opc=jfprint then
 		pformat:=readunit()
 		if lx.symbol=commasym then lex() else goto finish fi
 	fi
@@ -18769,9 +10329,9 @@ function readprint:unit=
 	do
 		case lx.symbol
 		when commasym then		!assume extra comma, meaning nogap
-			addlistunit(printlist,printlistx, createunit0(jnogap))
+			addlistunit(printlist, printlistx, createunit0(jnogap))
 		when dollarsym then
-			addlistunit(printlist,printlistx, createunit0(jspace))
+			addlistunit(printlist, printlistx, createunit0(jspace))
 			lex()
 		else
 
@@ -18784,34 +10344,34 @@ function readprint:unit=
 			p:=readunit()
 			if lx.symbol=colonsym then
 				lex()
-				p:=createunit2(jfmtitem,p,readunit())
+				p:=createunit2(jfmtitem, p, readunit())
 			fi
 
 			if fshowname then
 				expr:=strexpr(p)
-				strbuffer_add(expr,"=")
+				strbuffer_add(expr, "=")
 				s:=expr.strptr
 
-				iconvucn(expr.strptr,expr.length)
+				iconvucn(expr.strptr, expr.length)
 
-				addlistunit(printlist,printlistx,q:=createstringunit(s,expr.length))
+				addlistunit(printlist, printlistx, q:=createstringunit(s, expr.length))
 			fi
-			addlistunit(printlist,printlistx,p)
+			addlistunit(printlist, printlistx, p)
 		esac
 		if lx.symbol<>commasym then exit fi
 		lex()
 	od
 
 	finish:
-	if opc=jprint and printlist=nil then
-		serror("No print items")
-	fi
-	if opc=jfprint and printlist=nil and pformat=nil then
-		serror("No print items")
-	fi
+	unless flags iand pr_newline then
+		if opc=jprint and printlist=nil or opc=jfprint and printlist=nil and pformat=nil then
+			serror("No print items")
+		fi
+	end
 
 	poplisttype()
-	if isfprint then
+
+	if opc=jfprint then
 		if pformat=nil then
 			serror("No fmt str")
 		fi
@@ -18819,21 +10379,21 @@ function readprint:unit=
 			pformat:=makeblock(pformat)
 		fi
 		pformat.nextunit:=printlist
-		return createunit2(opc,pdev,pformat)
-		return pformat
+		p:=createunit2(opc, pdev, pformat)
 	else
-
-		return createunit2(opc,pdev,printlist)
+		p:=createunit2(opc, pdev, printlist)
 	fi
 
+	p.flag:=flags
+	return p
 end
 
 function readread:unit=
-	int opc
+	int opc, flags
 	unit pformat, pdev, readlist, readlistx, p
 
 	pushlisttype('PRINT')
-	opc:=lx.subcode
+	flags:=lx.subcode
 	lex()
 
 	readlist:=readlistx:=nil
@@ -18856,9 +10416,9 @@ function readread:unit=
 		p:=readunit()
 		if lx.symbol=colonsym then
 			lex()
-			p:=createunit2(jfmtitem,p,readunit())
+			p:=createunit2(jfmtitem, p, readunit())
 		fi
-		addlistunit(readlist,readlistx,p)
+		addlistunit(readlist, readlistx, p)
 		if lx.symbol<>commasym then exit fi
 		lex()
 	od
@@ -18869,7 +10429,9 @@ function readread:unit=
 	fi
 
 	poplisttype()
-	return createunit2(opc,pdev,readlist)
+	p:=createunit2(jread, pdev, readlist)
+	p.flag:=flags
+	return p
 end
 
 function readloopcontrol:unit=
@@ -18878,15 +10440,17 @@ function readloopcontrol:unit=
 
 	opc:=lx.subcode
 	lex()
-	if lx.symbol=namesym and eqstring(lx.symptr.name,"all") then
+	if lx.symbol=namesym and eqstring(lx.symptr.name, "all") then
 		lex()
-		p:=createunit1(opc,createintunit(0))
+		p:=createunit1(jloop, createintunit(0))
 
 	elsif exprstarterset[lx.symbol] then
-		p:=createunit1(opc,readintunit())
+		p:=createunit1(jloop, readintunit())
 	else
-		p:=createunit1(opc,createintunit(1))
+		p:=createunit1(jloop, createintunit(1))
 	fi
+	p.loopcode:=opc
+
 	return readcondsuffix(p)
 end
 
@@ -18899,12 +10463,16 @@ function readintunit:unit p=
 end
 
 function readswitchcase:unit=
-	int pos, kwd, opc, lineno,rangeused, nwhen
-	unit pexpr,pwhenlist,pwhenlistx,pwhen,pwhenx,pelse,p,pthen,pwhenthen,q
+	int pos, kwd, opc, lineno, rangeused, nwhen
+	unit pexpr, pwhenlist, pwhenlistx, pwhen, pwhenx, pelse, p, pthen, pwhenthen, q
 
 	pos:=lx.pos
 	kwd:=lx.symbol			!remember kcasesym etc
-	opc:=lx.subcode			!pick up tag: kcase etc
+	if kwd=kcasesym then
+		opc:=(lx.subcode|jdocase|jcase)
+	else
+		opc:=(lx.subcode|jdoswitch|jswitch)
+	fi
 
 	lex()
 
@@ -18932,16 +10500,16 @@ function readswitchcase:unit=
 			++nwhen
 			p.pos:=pos
 			if p.tag=jmakerange then rangeused:=1 fi
-			addlistunit(pwhen,pwhenx,p)
+			addlistunit(pwhen, pwhenx, p)
 			if lx.symbol<>commasym then exit fi
 			lex()
 		od
 		if lx.symbol<>kthensym then checksymbol(sendtosym) fi
 		lex()
 		pthen:=readsunit()
-		pwhenthen:=createunit2(jwhenthen,pwhen,pthen)
+		pwhenthen:=createunit2(jwhenthen, pwhen, pthen)
 		pwhenthen.pos:=pos
-		addlistunit(pwhenlist,pwhenlistx,pwhenthen)
+		addlistunit(pwhenlist, pwhenlistx, pwhenthen)
 	od
 
 	case lx.symbol
@@ -18966,7 +10534,7 @@ function readswitchcase:unit=
 
 	pexpr.nextunit:=pelse
 
-	p:=createunit2(opc,pexpr,pwhenlist)
+	p:=createunit2(opc, pexpr, pwhenlist)
 	p.pos:=pos
 	return p
 end
@@ -18974,7 +10542,7 @@ end
 function readgoto:unit=
 	lex()
 
-	return readcondsuffix(createunit1(jgoto,readunit()))
+	return readcondsuffix(createunit1(jgoto, readunit()))
 end
 
 function readstop:unit=
@@ -18982,16 +10550,16 @@ function readstop:unit=
 	int i
 	lex()
 	if exprstarterset[lx.symbol] then
-		p:=createunit1(jstop,readunit())
+		p:=createunit1(jstop, readunit())
 	else
-		p:=createunit1(jstop,createintunit(0))
+		p:=createunit1(jstop, createintunit(0))
 	fi
 	return readcondsuffix(p)
 end
 
 function readcast:unit p=
 !just seem basic type name
-	int t,opc
+	int t, opc, pclop
 
 	t:=lx.subcode
 	lex()
@@ -18999,8 +10567,9 @@ function readcast:unit p=
 	if t=trange and lx.symbol=lbracksym then
 		lex()
 		p:=readunit()
-		if p.tag in [jkeyvalue,jkeyword] then
-			p.tag:=jmakerangelen
+		if p.tag in [jkeyvalue, jkeyword] then
+SERROR("MAKERANGELEN")
+!			p.tag:=jmakerangelen
 		elsif p.tag=jmakerange then
 		else
 			serror("need a..b or a:n")
@@ -19012,7 +10581,7 @@ function readcast:unit p=
 
 !check for standalone value
 	case lx.symbol
-	when atsym,lbracksym then
+	when atsym, lbracksym then
 
 	else						!convert to typeconst
 		p:=createunit0(jtypeconst)
@@ -19023,32 +10592,35 @@ function readcast:unit p=
 	if lx.symbol=atsym then
 		lex()
 		opc:=jtypepun
+		pclop:=ktypepun
 	else
 		opc:=jconvert
+		pclop:=kconvert
 	fi
 	checksymbol(lbracksym)
 	p:=readterm()
 
-	p:=createunit1(opc,p)
-	storemode(stcurrproc,t,&p.mode)
+	p:=createunit1(opc, p)
+	p.pclop:=pclop
+	storemode(stcurrproc, t, &p.mode)
 	return p
 end
 
 function readset:unit=
 !positioned at "["
-	int length,nkeyvalues,oldinparamlist
-	unit p,ulist,ulistx
+	int length, nkeyvalues, oldinparamlist
+	unit p, ulist, ulistx
 
 	lex()					!first symbol of first expression
 
 	case lx.symbol
 	when rsqsym then		!empty set, same as 0
 		lex()
-		return createunit1(jmakeset,nil)
+		return createunit1(jmakeset, nil)
 	when colonsym then
 		lexchecksymbol(rsqsym)
 		lex()
-		return createunit1(jmakedict,nil)
+		return createunit1(jmakedict, nil)
 	esac
 
 	pushlisttype('DICT')
@@ -19063,20 +10635,20 @@ function readset:unit=
 	while lx.symbol=commasym do
 		lex()
 		if lx.symbol=rsqsym then exit fi		!allow trailing comma
-		addlistunit(ulist,ulistx,p:=readunit())
+		addlistunit(ulist, ulistx, p:=readunit())
 		if p.tag=jkeyvalue then ++nkeyvalues fi
 
 		++length
-		skipsemi()						!allow a,b,c;]
+		skipsemi()						!allow a, b, c;]
 	od
 
 	skipsymbol(rsqsym)
 
 	if nkeyvalues then
 		if length>nkeyvalues then serror("dict: mixed elements") fi
-		p:=createunit1(jmakedict,ulist)
+		p:=createunit1(jmakedict, ulist)
 	else
-		p:=createunit1(jmakeset,ulist)
+		p:=createunit1(jmakeset, ulist)
 	fi
 	p.length:=length
 	poplisttype()
@@ -19085,13 +10657,13 @@ end
 
 global proc readtabledef(int isglobal=0)=
 !at 'tabledata' symbol
-	int i,ncols,nrows,enums,nextenumvalue,startline, firstvalue
-	int ltype,lower
+	int i, ncols, nrows, enums, nextenumvalue, startline, firstvalue
+	int ltype, lower
 	byte commas:=0, semis:=0
-	unit ulist,ulistx, plower, p
+	unit ulist, ulistx, plower, p
 	const maxcols=20
 	[maxcols]symbol varnames
-	[maxcols]unit plist,plistx
+	[maxcols]unit plist, plistx
 	symbol d, nameptr
 
 	const maxrows=500
@@ -19145,7 +10717,7 @@ global proc readtabledef(int isglobal=0)=
 		if enums then
 			checksymbol(namesym)
 
-			d:=addsymbol(stcurrproc,lx.symptr,enumid, isglobal)
+			d:=addsymbol(stcurrproc, lx.symptr, enumid, isglobal)
 			lex()
 
 			case lx.symbol
@@ -19170,7 +10742,7 @@ global proc readtabledef(int isglobal=0)=
 		fi
 
 		for i:=1 to ncols do
-			addlistunit(plist[i],plistx[i],readunit())
+			addlistunit(plist[i], plistx[i], readunit())
 			if i=ncols then
 				skipsymbol(rbracksym)
 			else
@@ -19199,7 +10771,7 @@ global proc readtabledef(int isglobal=0)=
 	intabledata:=0
 
 	skipsemi()
-	checkend(ktabledatasym,startline:startline)
+	checkend(ktabledatasym, startline:startline)
 
 !enum				1 means enum 0th column present, 0 means not
 !ncols				0, or number of actual expression columns
@@ -19221,16 +10793,16 @@ global proc readtabledef(int isglobal=0)=
 !
 	for i:=1 to ncols do
 !
-		d:=addsymbol(stcurrproc,varnames[i],staticid,isglobal)
+		d:=addsymbol(stcurrproc, varnames[i], staticid, isglobal)
 
-		p:=d.code:=createunit1(jmakelist,plist[i])
+		p:=d.code:=createunit1(jmakelist, plist[i])
 		p.length:=nrows
 		p.lower:=firstvalue
 	od
 end
 
 function readtry:unit=
-	unit ptry, pexceptlist, pexceptlistx, px, q, exlist,exlistx
+	unit ptry, pexceptlist, pexceptlistx, px, q, exlist, exlistx
 	lex()
 
 	ptry:=readsunit()
@@ -19240,35 +10812,36 @@ function readtry:unit=
 		lex()
 		exlist:=exlistx:=nil				!list of exception codes for this 'except'
 		do
-			addlistunit(exlist,exlistx,readunit())
+			addlistunit(exlist, exlistx, readunit())
 			if lx.symbol<>commasym then exit fi
 			lex()
 		od
 		skipsymbol(kthensym)
 		px:=readsunit()
-		addlistunit(pexceptlist,pexceptlistx,createunit2(jexcept,exlist,px))
+		addlistunit(pexceptlist, pexceptlistx, createunit2(jexcept, exlist, px))
 	od
 	checkend(ktrysym)
 !	lex()
 
-	return createunit2(jtry,ptry,pexceptlist)
+	return createunit2(jtry, ptry, pexceptlist)
 end
 
 function readsprint:unit=
-	int opc,isfprint
+	int opc, flags, isfprint
 	unit pformat, pdev, printlist, printlistx, p
 
 	pushlisttype('PRINT')
-	opc:=lx.subcode
+	opc:=jprint
+	flags:=lx.subcode
+
 	lexchecksymbol(lbracksym)
 	lex()
 
-	case opc
-	when jsfprint then
-		isfprint:=1
-	else
-		isfprint:=0
-	esac
+	isfprint:=flags iand pr_format
+
+	if flags iand pr_format then
+		opc:=jfprint
+	fi
 
 	printlist:=printlistx:=nil
 	pformat:=pdev:=nil
@@ -19278,6 +10851,7 @@ function readsprint:unit=
 		pdev:=readunit()
 		if lx.symbol=commasym then lex() else goto finish fi
 	fi
+
 	if isfprint then
 		pformat:=readunit()
 		if lx.symbol=commasym then lex() else goto finish fi
@@ -19289,14 +10863,14 @@ function readsprint:unit=
 
 	do
 		if lx.symbol=commasym then		!assume extra comma, meaning nogap
-			addlistunit(printlist,printlistx,createunit0(jnogap))
+			addlistunit(printlist, printlistx, createunit0(jnogap))
 		else
 			p:=readunit()
 			if lx.symbol=colonsym then
 				lex()
-				p:=createunit2(jfmtitem,p,readunit())
+				p:=createunit2(jfmtitem, p, readunit())
 			fi
-			addlistunit(printlist,printlistx,p)
+			addlistunit(printlist, printlistx, p)
 		fi
 		if lx.symbol<>commasym then exit fi
 		lex()
@@ -19316,11 +10890,12 @@ finish:
 			serror("No fmt str")
 		fi
 		pformat.nextunit:=printlist
-		return createunit2(opc,pdev,pformat)
+		p:=createunit2(opc, pdev, pformat)
 	else
-		return createunit2(opc,pdev,printlist)
+		p:=createunit2(opc, pdev, printlist)
 	fi
-
+	p.flag:=flags
+	return p
 end
 
 function readsread:unit=
@@ -19328,7 +10903,9 @@ function readsread:unit=
 ! a:=sread([fmt])
 ! b:=sreadln([dev])	returns entire input line, but keeps line for subsequent sread/read
 	int opc
-	unit pformat,pdev,p, readlist,readlistx
+	unit pformat, pdev, p, readlist, readlistx
+
+CPL "SREAD"
 
 	pushlisttype('PRINT')
 	opc:=lx.subcode
@@ -19355,9 +10932,9 @@ function readsread:unit=
 		p:=readunit()
 		if lx.symbol=colonsym then
 			lex()
-			p:=createunit2(jfmtitem,p,readunit())
+			p:=createunit2(jfmtitem, p, readunit())
 		fi
-		addlistunit(readlist,readlistx,p)
+		addlistunit(readlist, readlistx, p)
 		if lx.symbol<>commasym then exit fi
 		lex()
 	od
@@ -19372,13 +10949,13 @@ function readsread:unit=
 
 	poplisttype()
 
-	return createunit2(opc,pdev,readlist)
+	return createunit2(opc, pdev, readlist)
 end
 
 proc readimportdll=
 !at 'importdll'
 	[256]char str
-	symbol stproc,d, stname
+	symbol stproc, d, stname
 	int startpos, isfunc, isnew, libtype
 
 	libtype:=lx.subcode
@@ -19410,8 +10987,8 @@ proc readimportdll=
 	od
 
 	if isnew then			!new
-!		stname:=addsymbol(stprogram,stname,dllmoduleid,0)
-		stname:=addsymbol(nil,stname,dllmoduleid,0)
+!		stname:=addsymbol(stprogram, stname, dllmoduleid, 0)
+		stname:=addsymbol(nil, stname, dllmoduleid, 0)
 		if nlibfiles>=maxlibfile then
 			serror("Too many DLL libs")
 		fi
@@ -19429,9 +11006,7 @@ proc readimportdll=
 		skipsemi()
 
 		case lx.symbol
-		when kfflangsym then
-			lex()
-		when kprocsym,kfunctionsym then
+		when kprocsym, kfunctionsym then
 			isfunc:=lx.symbol=kfunctionsym
 			lex()
 			case lx.symbol
@@ -19439,7 +11014,7 @@ proc readimportdll=
 				stproc:=addsymbol(stcurrproc, lx.symptr, dllprocid, 1)
 
 			when stringconstsym then
-				strcpy(str,lx.svalue)
+				strcpy(str, lx.svalue)
 				convlcstring(str)
 				stproc:=addsymbol(stcurrproc, addglobalname(str), dllprocid, 1)
 				stproc.truename:=pcm_copyheapstring(lx.svalue)
@@ -19459,7 +11034,7 @@ proc readimportdll=
 
 			lex()
 
-			if lx.symbol=namesym and eqstring(lx.symptr.name,"as") then
+			if lx.symbol=namesym and eqstring(lx.symptr.name, "as") then
 				lexchecksymbol(namesym)
 
 				d:=addsymbol(stproc.owner, lx.symptr, aliasid, 1)
@@ -19485,7 +11060,7 @@ proc readffiparams(symbol stproc)=
 !at first symbol after func name
 !return list of units with dllparam defs (can be empty)
 !if there is a result type, then head of list will be a return def type
-	int pret,ptype
+	int pret, ptype
 
 	if lx.symbol=lbracksym then
 		lex()
@@ -19493,15 +11068,15 @@ proc readffiparams(symbol stproc)=
 			lex()
 		else
 			ptype:=readtypespec()
-			if lx.symbol in [commasym,rbracksym] then		!types only
-				readtypeparams(stproc,ptype)
+			if lx.symbol in [commasym, rbracksym] then		!types only
+				readtypeparams(stproc, ptype)
 			else
-				readtypenameparams(stproc,ptype)
+				readtypenameparams(stproc, ptype)
 			fi
 		fi
 	fi
 
-	if lx.symbol in [colonsym,sendtosym] then
+	if lx.symbol in [colonsym, sendtosym] then
 		if not stproc.misfunc then serror("Return type for proc?") fi
 		lex()
 	fi
@@ -19512,7 +11087,7 @@ proc readffiparams(symbol stproc)=
 		pret:=readtypespec()
 	fi
 
-	storemode(stproc.owner,pret, &stproc.mode)
+	storemode(stproc.owner, pret, &stproc.mode)
 end
 
 proc readtypeparams(symbol stproc, int ptype)=
@@ -19526,10 +11101,10 @@ proc readtypeparams(symbol stproc, int ptype)=
 
 	do
 		++nparams
-		print @str,"$",,nparams
+		print @str, "$", ,nparams
 
 		stname:=addsymbol(stproc, addglobalname(str), dllparamid, 0)
-		storemode(stproc,ptype,&stname.mode)
+		storemode(stproc, ptype, &stname.mode)
 		++stproc.nparams
 
 		if lx.symbol=commasym then
@@ -19552,8 +11127,8 @@ proc readtypenameparams(symbol stproc, int ptype)=
 	symbol stname
 
 	checksymbol(namesym)
-	stname:=addsymbol(stproc, lx.symptr, dllparamid,0)
-	storemode(stproc,ptype,&stname.mode)
+	stname:=addsymbol(stproc, lx.symptr, dllparamid, 0)
+	storemode(stproc, ptype, &stname.mode)
 	++stproc.nparams
 	lex()
 
@@ -19578,8 +11153,8 @@ proc readtypenameparams(symbol stproc, int ptype)=
 				ptype:=readtypespec()
 			fi
 			checksymbol(namesym)
-			stname:=addsymbol(stproc, lx.symptr, dllparamid,0)
-			storemode(stproc,ptype,&stname.mode)
+			stname:=addsymbol(stproc, lx.symptr, dllparamid, 0)
+			storemode(stproc, ptype, &stname.mode)
 			++stproc.nparams
 			lex()
 		else
@@ -19626,7 +11201,7 @@ global proc readrecorddef(int isglobal, symbol d)=
 				serror("Too many base classes")
 		fi
 		++nbaseclasses
-		storemode(stcurrproc,baseclass,&baseclasstable[nbaseclasses])
+		storemode(stcurrproc, baseclass, &baseclasstable[nbaseclasses])
 		d.baseclassindex:=nbaseclasses
 		baseclassdef[nbaseclasses]:=d
 	fi
@@ -19641,19 +11216,19 @@ gotname:
 		m:=readrecordbody(d)
 	else
 		caligned:=0
-		m:=readstructbody(d,caligned)
+		m:=readstructbody(d, caligned)
 	fi
 
 	if lbopening then
 		checksymbol(rbracksym)
 		lex()
 	else
-		checkend(krecordsym,startline:startline)
+		checkend(krecordsym, startline:startline)
 	fi
 end
 
 function readrecordbody(symbol owner)int=
-!at first symbol of a class or record body (after 'type T=record',
+!at first symbol of a class or record body (after 'type T=record', 
 ! or after 'record T ='
 !read fields, constants, types, methods.
 !create initially anonymous record type, and return type code
@@ -19673,7 +11248,7 @@ function readrecordbody(symbol owner)int=
 		readconstdef(0)
 	when kvarsym then
 		readrecordfields(owner)
-	when kfunctionsym,kprocsym then
+	when kfunctionsym, kprocsym then
 		readprocdef(0)
 
 	when krecordsym then
@@ -19681,7 +11256,7 @@ function readrecordbody(symbol owner)int=
 	when ktypesym then
 		lex()
 		serror("CLASS TYPE")
-	when kendsym,rbracksym,rcurlysym then
+	when kendsym, rbracksym, rcurlysym then
 		exit
 	when eofsym then
 		serror("Class eof?")
@@ -19727,7 +11302,7 @@ end
 
 proc readrecordfields(symbol owner)=
 !positioned at 'var'; read one line of var defs for a record
-	int nvars,offset,index
+	int nvars, offset, index
 	symbol d
 
 !	m:=readtypespec(1)
@@ -19793,12 +11368,12 @@ function readstructbody(symbol owner, int caligned)int=
 		when kstructsym then
 			++ngroups
 			lex()
-			addstructflag(owner,structblockid)
+			addstructflag(owner, structblockid)
 
 		when kunionsym then
 			++ngroups
 			lex()
-			addstructflag(owner,unionblockid)
+			addstructflag(owner, unionblockid)
 
 		when kendsym then
 			if nextlx.symbol in [kstructsym, kunionsym] then lex() fi
@@ -19806,7 +11381,7 @@ doend:
 			if ngroups then
 				--ngroups
 				lex()
-				addstructflag(owner,endblockid)
+				addstructflag(owner, endblockid)
 			else
 				exit
 			fi
@@ -19823,8 +11398,8 @@ doend:
 !			nvars:=0
 !			while lx.symbol=namesym do
 !				++nvars
-!				d:=addsymbol(owner, lx.symptr,structfieldid, 0)
-!				storemode(owner,t,&d.mode)
+!				d:=addsymbol(owner, lx.symptr, structfieldid, 0)
+!				storemode(owner, t, &d.mode)
 !				lex()
 !
 !				if lx.symbol<>commasym then
@@ -19864,14 +11439,14 @@ proc addstructflag(symbol owner, int id)=
 	static int structseqno
 	[32]char str
 
-	fprint @str,"$$#",++structseqno
+	fprint @str, "$$#", ++structseqno
 
-	addsymbol(owner, addglobalname(str),id, 0)
+	addsymbol(owner, addglobalname(str), id, 0)
 end
 
 proc readprocdef(int isglobal)=
 !at 'proc' etc symbol; read proc def or declaration
-	int kwd,startline, nparams, shortfun
+	int kwd, startline, nparams, shortfun
 	unit pcode
 	symbol d, oldstcurrproc
 	[256]char str
@@ -19880,12 +11455,12 @@ proc readprocdef(int isglobal)=
 	shortfun:=lx.subcode
 	lexchecksymbol(namesym)
 !
-	if stcurrproc.nameid in [procid,anonprocid] then
+	if stcurrproc.nameid in [procid, anonprocid] then
 		serror("Nested proc")
 	fi
 
 	oldstcurrproc:=stcurrproc			!usually module, but could be a record
-	stcurrproc:=d:=addsymbol(stcurrproc,lx.symptr,procid,isglobal)
+	stcurrproc:=d:=addsymbol(stcurrproc, lx.symptr, procid, isglobal)
 
 	addproc(d)
 
@@ -19909,16 +11484,16 @@ proc readprocdef(int isglobal)=
 
 	if not shortfun then
 		d.code:=readsunit()
-		checkend(kwd,startline:startline)
+		checkend(kwd, startline:startline)
 	else
 		d.code:=readunit()
 		checksymbol(semisym)
 !		lex()
 	fi
 
-	if eqstring(d.name,"start") then
+	if eqstring(d.name, "start") then
 		currmodule.startfn:=d
-	elsif eqstring(d.name,"main") then
+	elsif eqstring(d.name, "main") then
 		currmodule.mainfn:=d
 	fi
 
@@ -19930,7 +11505,7 @@ end
 function readatfield:symbol=
 !reading a class or struct body, where owner is that class/struct entry
 !positioned at symbol following '@', should be name of an existing field
-	symbol p,d
+	symbol p, d
 
 	checksymbol(namesym)
 	d:=lx.symptr
@@ -19938,19 +11513,19 @@ function readatfield:symbol=
 
 	p:=stcurrproc.deflist
 	while p do
-		if eqstring(p.name,d.name) then
+		if eqstring(p.name, d.name) then
 			return p
 		fi
 
 		p:=p.nextdef
 	od
-	serror_s("Can't find @ field",d.name)
+	serror_s("Can't find @ field", d.name)
 	return nil
 end
 
 function istypestarter:int=
 	case lx.symbol
-	when stdtypesym, krefsym, kvarsym, kslicesym, lsqsym then
+	when stdtypesym, krefsym, kvarsym, lsqsym then
 		return 1
 	elsif lx.symbol=namesym then
 		if nextlx.symbol=namesym then
@@ -19979,7 +11554,7 @@ proc readmacrodef(int isglobal)=
 			do
 				case lx.symbol
 				when namesym then
-					stname:=addsymbol(owner,lx.symptr,macroparamid,0)
+					stname:=addsymbol(owner, lx.symptr, macroparamid, 0)
 					stname.firstdupl:=lx.symptr
 
 					lex()
@@ -20000,12 +11575,12 @@ proc readmacrodef(int isglobal)=
 	stmacro.code:=readunit()
 end
 
-function readhostparams(unit lhs,int isfn)unit=
+function readhostparams(unit lhs, int isfn)unit=
 !hostfn name has been read
 !lhs is not null when lhs.hostfn(...) has been used
 !currently at hostfn symbol
 	int fnindex, nargs
-	unit p,q
+	unit p, q
 
 	fnindex:=lx.subcode
 	lexchecksymbol(lbracksym)
@@ -20020,7 +11595,7 @@ function readhostparams(unit lhs,int isfn)unit=
 		q:=lhs
 	fi
 
-	p:=createunit1(jcallhost,q)
+	p:=createunit1(jcallhost, q)
 	p.index:=fnindex
 
 !	poplisttype()
@@ -20043,36 +11618,31 @@ end
 function readcompilervar:unit=
 	[100]char str
 	rsystemtime tm
-	static []ichar monthnames=("Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec")
-	locrec loc
+	static []ichar monthnames=("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
 
 	case lx.subcode
-	when jcvlineno then
-		loc.pm:=currmodule
-		setlineno(&loc, lx.sourceoffset)
-		return createintunit(loc.lineno)
+	when cv_lineno then
+		return createintunit(lx.lineno)
 
-	when jcvstrlineno then
-		loc.pm:=currmodule
-		setlineno(&loc, lx.sourceoffset)
-		strcpy(str, strint(loc.lineno))
+	when cv_strlineno then
+		strcpy(str, strint(lx.lineno))
 
-	when jcvmodulename then
-		strcpy(&.str,currmodule.name)
+	when cv_modulename then
+		strcpy(&.str, currmodule.name)
 
-	when jcvfilename then
-!		strcpy(&.str,modules[currmoduleno].filename)
-!		strcpy(&.str,currmodule.name)
-		strcpy(&.str,currmodule.filespec)
-	when jcvfunction then
-		strcpy(&.str,(stcurrproc|stcurrproc.name|"<none>"))
-	when jcvdate then
+	when cv_filename then
+!		strcpy(&.str, modules[currmoduleno].filename)
+!		strcpy(&.str, currmodule.name)
+		strcpy(&.str, currmodule.filespec)
+	when cv_function then
+		strcpy(&.str, (stcurrproc|stcurrproc.name|"<none>"))
+	when cv_date then
 		os_getsystime(&tm)
-		fprint @&.str,"#-#-#",tm.day,monthnames[tm.month],tm.year:"4"
+		fprint @&.str, "#-#-#", tm.day, monthnames[tm.month], tm.year:"4"
 !
-	when jcvtime then
+	when cv_time then
 		os_getsystime(&tm)
-		fprint @&.str,"#:#:#",tm.hour:"2",tm.minute:"z2",tm.second:"z2"
+		fprint @&.str, "#:#:#", tm.hour:"2", tm.minute:"z2", tm.second:"z2"
 
 !	when jcvversion then x:=compilerversion
 !	when jcvpclversion then x:=pclversion
@@ -20083,11 +11653,11 @@ function readcompilervar:unit=
 	return createstringunit(pcm_copyheapstring(&.str))
 end
 
-function readpair(int opc)unit=
+function readpair(int tag, pclop=knop)unit p=
 !should be at '(', but check
-!read (a,b) and produce (opc, a, b ) unit
+!read (a, b) and produce (opc, a, b ) unit
 
-	ref unitrec a,b
+	ref unitrec a, b
 
 	lexchecksymbol(lbracksym)
 	lex()
@@ -20095,12 +11665,14 @@ function readpair(int opc)unit=
 	skipsymbol(commasym)
 	b:=readexpression()
 
-	if lx.symbol=commasym and opc=jmap then			!allow 3rd item
+	if lx.symbol=commasym and tag=jmap then			!allow 3rd item
 		lex()
 		b.nextunit:=readexpression()
 	fi
 	skipsymbol(rbracksym)
-	return createunit2(opc, a,b)
+	p:=createunit2(tag, a, b)
+	p.pclop:=pclop
+	return p
 end
 
 global proc lexchecksymbol(int symbol)=
@@ -20128,7 +11700,7 @@ proc readtypedef(int isglobal)=
 
 	ptype:=readtypespec(owner:d)
 
-!CPL "USERTYPE",PTYPE,D.NAME,=NTYPES,STRMODE(PTYPE),STRMODE(NTYPES)
+!CPL "USERTYPE", PTYPE, D.NAME, =NTYPES, STRMODE(PTYPE), STRMODE(NTYPES)
 
 	createusertype(d, ptype)
 end
@@ -20137,12 +11709,12 @@ function readtypespec(int allowvar=0, symbol owner=nil)int=
 !full=1 to allow structdefs
 
 	int flags, arraycode, oldipl
-	int a,b,t, startline, caligned
+	int a, b, t, startline, caligned
 	symbol d
 	const maxdim=10
-	[maxdim]unit lowerdims,lengthdims
+	[maxdim]unit lowerdims, lengthdims
 	int ndims
-	unit x,lowerx, upperx, lengthx
+	unit x, lowerx, upperx, lengthx
 
 	case lx.symbol
 	when lsqsym then
@@ -20161,12 +11733,14 @@ dolsq:
 					if lowerx.tag=jintconst and upperx.tag=jintconst then
 						lengthx:=createintunit(upperx.value-lowerx.value+1)
 					else
-						lengthx:=createunit2(jsub,upperx,lowerx)
-						lengthx:=createunit2(jadd,lengthx,createintunit(1))
+						lengthx:=createunit2(jbin, upperx, lowerx)
+						lengthx.pclop:=ksub
+						lengthx:=createunit2(jbin, lengthx, createintunit(1))
+						lengthx.pclop:=kadd
 					fi
 				else
 					case lx.symbol
-					when rsqsym,commasym then			![n]
+					when rsqsym, commasym then			![n]
 						lengthx:=x
 					when colonsym then				!a:n
 						lowerx:=x
@@ -20187,7 +11761,7 @@ dolsq:
 		t:=readtypespec()
 
 		for i:=ndims downto 1 do
-			t:=makeaxtype(t,lowerdims[i],lengthdims[i])
+			t:=makeaxtype(t, lowerdims[i], lengthdims[i])
 		od
 		return t
 
@@ -20196,9 +11770,9 @@ dolsq:
 
 		if lx.symbol=stdtypesym and lx.subcode=tvoid then
 			lex()
-			return makereftype(tvoid,owner)
+			return makereftype(tvoid, owner)
 		else
-			return makereftype(readtypespec(),owner)
+			return makereftype(readtypespec(), owner)
 		fi
 
 	when namesym then
@@ -20206,7 +11780,7 @@ dolsq:
 		lex()
 		if lx.symbol=dotsym then
 			lexchecksymbol(namesym)
-			t:=newusertypex(d,lx.symptr)
+			t:=newusertypex(d, lx.symptr)
 			lex()
 			return t
 		else
@@ -20227,7 +11801,7 @@ dolsq:
 		when tpackstrc then
 			lexchecksymbol(mulsym)
 			lex()
-			return makestrtype(tpackstrc,readunit())
+			return makestrtype(tpackstrc, readunit())
 
 		when tarray then
 			lexchecksymbol(lsqsym)
@@ -20250,7 +11824,7 @@ dolsq:
 		startline:=lx.pos
 		t:=readrecordbody(owner)
 
-		checkend(krecordsym,startline:startline)
+		checkend(krecordsym, startline:startline)
 		return t
 
 	when kstructsym then
@@ -20263,9 +11837,9 @@ dolsq:
 		fi
 
 		startline:=lx.pos
-		t:=readstructbody(owner,caligned)
+		t:=readstructbody(owner, caligned)
 
-		checkend(kstructsym,startline:startline)
+		checkend(kstructsym, startline:startline)
 		return t
 
 !	when kvarsym then
@@ -20278,12 +11852,6 @@ dolsq:
 !			return readtypespec(0)
 !		fi
 !		return tvar
-	when kslicesym then
-		lexchecksymbol(lsqsym)
-		lexchecksymbol(rsqsym)
-		lex()
-		t:=makeslicetype(readtypespec(0))
-
 	else
 		serror("Type expected")
 	esac
@@ -20293,7 +11861,7 @@ end
 
 proc readparams(symbol stproc)=
 !just after '('
-	int isbyref,isoptional
+	int isbyref, isoptional
 	symbol d
 
 !CPL "READPARAMS_NAMES"
@@ -20311,7 +11879,7 @@ proc readparams(symbol stproc)=
 			lex()
 		fi
 		checksymbol(namesym)
-		d:=addsymbol(stproc, lx.symptr, paramid,0)
+		d:=addsymbol(stproc, lx.symptr, paramid, 0)
 !		d.mode:=tvar
 		++stproc.nparams
 
@@ -20356,11 +11924,14 @@ func checkoperator:unit p=
 			case lx.subcode
 			when '-' then opc:=kneg
 			when '[]' then opc:=kindex
-			else opc:=kzero
+			else opc:=knop
 			esac
-			p.pclopcode:=opc
+			p.pclop:=opc
+		elsif cmpopset[lx.symbol] then
+SERROR("(CMP OP) NOT READY")
 		else
-			p.pclopcode:=jpclcodes[lx.subcode]
+
+			p.pclop:=lx.subcode
 		fi
 		lex()
 		return p
@@ -20385,7 +11956,7 @@ func readlambda:unit p=
 
 	oldstcurrproc:=stcurrproc
 
-	print @str,"$F",,++nextlambdaindex
+	print @str, "$F", ,++nextlambdaindex
 	stproc:=addsymbol(stcurrproc, addnamestr(str), anonprocid, 0)
 	stcurrproc:=stproc
 	addproc(stproc)
@@ -20419,7 +11990,7 @@ func readlambda:unit p=
 
 !CPL =NPARAMS
 !
-!CPL "READ LAMBDA",STPROC.NAME, STPROC.MISFUNC
+!CPL "READ LAMBDA", STPROC.NAME, STPROC.MISFUNC
 
 !*!	stproc.isfunc:=1
 !*!	getparamoffsets(&params, nparams)
@@ -20445,8 +12016,8 @@ proc readpackvars(symbol owner, int id)=
 	nvars:=0
 	while lx.symbol=namesym do
 		++nvars
-		d:=addsymbol(owner, lx.symptr,id, 0)
-		storemode(owner,t,&d.mode)
+		d:=addsymbol(owner, lx.symptr, id, 0)
+		storemode(owner, t, &d.mode)
 		lex()
 
 		if lx.symbol<>commasym then
@@ -20456,7 +12027,3327 @@ proc readpackvars(symbol owner, int id)=
 	od
 	if nvars=0 then serror("bad decl?") fi
 end
-=== qq_print.m 0 0 21/44 ===
+=== qq_pcltabs.m 0 0 17/44 ===
+global enumdata [0:]ichar opndnames=
+							!   PCL1		PCL2
+	(cnone=0,	$),
+	(cstatic,	$),			! m Symbol		varptr = address of static variable
+	(cframe,	$),			! f Symbol		offset = offset of stack frame var
+	(cproc,		$),			! p Symbol		labelref = address of kprocent instr for proc
+	(cdllproc,	$),			! x Int			index = index into dllproc table
+
+	(cgenfield,	$),			! g Symbol		index = index into genfieldtable
+
+	(clabel,	$),			! l labelref*	labelref = addr of pcl instr, displayed as pc index
+!											(* will be label index until end of codegen)
+	(cint,		$),			! i
+	(creal,		$),			! r
+	(cstring,	$),			! s Stringz		objptr = address of static Object with string
+	(cstringz,	$),			! z Stringz
+	(ctype,		$),			! t Int			Typecode
+	(csymbol,	$),			! d Symbol		Symbol
+	(coperator,	$),			! o Int			Operator
+	(cmaths,	$),			! m Int			Mathsop
+	(chost,		$),			! h Int			Host index
+	(cbinto,	$),			! b Int	pclop	Index into bintotable
+
+	(clast,		"?")
+end
+
+!these aliases are used so that the enum table is tidier
+const p = cproc
+const m = cstatic
+const f = cframe
+const l = clabel
+const x = cdllproc
+const g = cgenfield
+const i = cint
+const r = creal
+const s = cstring
+const z = cstringz
+const t = ctype
+const d = csymbol
+const o = coperator
+const b = cbinto
+const y = cmaths
+const h = chost
+
+global type pcl = ref pclrec
+
+!global record pclrec =
+!	byte opcode
+!	byte n						! n		nargs/etc
+!	byte mode					! t		0/void, or optional type annotation info, or pushas code
+!!	byte haslabel				!       1 when this instr is referenced as a table
+!	byte flags:(haslabel:1,		!       1 when this instr is referenced as a table
+!				isaux:1)		!		1 when part of a compound bytecode seq
+!	union
+!		struct
+!			i16 x, y					! x y	Misc
+!		end
+!		i32 xy
+!	end
+!
+!	union						! Main operand codes
+!		symbol	def				! d v p
+!		i64		value			! i
+!		u64		uvalue			! w
+!		r64		xvalue			! r
+!		ichar	svalue			! s
+!		int		labelno			! l
+!		int		index			! g
+!		pcl		labelref		! l
+!		i64		offset			!
+!		object	objptr			! z
+!		i64		typecode		! z
+!		byte	mathscode		! m		for kmaths/2: mm_sqrt etc
+!		byte	pclop			! o		for (+) etc
+!		byte	bintoindex		! b		index into bintotable
+!		i64		hostindex		! x		
+!		variant	varptr			!
+!		struct
+!			i32	usertag			! u		!these attributes overlap main operand
+!			i32	usertag2		! v
+!		end
+!		ref label LABADDR			! dummy field; not used
+!	end
+!end
+
+global record pclrec =
+	ref label labaddr
+	byte opcode
+	byte n						! n		nargs/etc
+	byte mode					! t		0/void, or optional type annotation info, or pushas code
+	byte flags:(haslabel:1,		!       1 when this instr is referenced as a table
+				isaux:1)		!		1 when part of a compound bytecode seq
+	union
+		struct
+			i16 x, y					! x y	Misc
+		end
+		i32 xy
+	end
+
+	union						! Main operand codes
+		symbol	def				! d v p
+		i64		value			! i
+		u64		uvalue			! w
+		r64		xvalue			! r
+		ichar	svalue			! s
+		int		labelno			! l
+		int		index			! g
+		pcl		labelref		! l
+		i64		offset			!
+		object	objptr			! z
+		i64		typecode		! z
+		byte	mathscode		! m		for kmaths/2: mm_sqrt etc
+		byte	pclop			! o		for (+) etc
+		byte	bintoindex		! b		index into bintotable
+		i64		hostindex		! x		
+		variant	varptr			!
+		struct
+			i32	usertag			! u		!these attributes overlap main operand
+			i32	usertag2		! v
+		end
+	end
+	int dummy
+end
+
+global enumdata  [0:]ichar pclnames, [0:]byte pclopnd, [0:]u32 pclattrs =
+	(knop = 0,  $,  0, '    '),   ! simple nop
+	(kskip,     $,  0, '    '),   ! ignore on pcl listing
+
+	(kprocdef,  $,  d, '    '),   ! 
+	(kprocent,  $,  0, 'n   '),   ! n=number of locals; 
+	(kprocend,  $,  0, '    '),  
+	(kendmod,   $,  0, '    '),
+	(kcomment,  $,  0, '    '),
+                                   
+	(kpushm,    $,  m, '    '),   ! Push v
+	(kpushf,    $,  f, '    '),   ! Push v
+	(kpushmref, $,  m, '    '),   ! push &v
+	(kpushfref, $,  f, '    '),   ! push &v
+	(kpopm,     $,  m, '    '),   ! v := Z
+	(kpopf,     $,  f, '    '),   ! v := Z
+
+	(kpushci,   $,  i, '    '),   ! Push i
+	(kpushvoid, $,  0, '    '),   ! Push void 
+	(kpushnil,  $,  0, '    '),   ! Push nil (ref void)
+	(kpushcr,   $,  r, '    '),   ! Push r
+
+	(kpushcs,   $,  s, '    '),   ! Push constant string object
+
+	(kpushtype, $,  t, '    '),   ! Push type constant
+	(kpushopc,  $,  o, '    '),   ! Push operator constant
+	(kpushsym,  $,  d, '    '),   ! Push symbol reference
+
+	(kpushptr,  $,  0, '    '),   ! Z' := Z^
+	(kpopptr,   $,  0, '    '),   ! Z^ := Y
+
+	(kzpopm,    $,  m, '    '),   ! v := Z; don't free v first (static should be zeroed)
+	(kzpopf,    $,  f, '    '),   ! v := Z; don't free v first
+
+	(kdupl,     $,  0, '    '),   ! (Z',Y') := (share(Z), Z)
+	(kcopy,     $,  0, '    '),   ! Z' := deepcopy(Z)
+	(kswap,     $,  0, '    '),   ! swap(Z^, Y^)
+
+	(kconvrefp, $,  0, '    '),   ! Change ref in Z to refpacked
+
+	(kjump,     $,  l, '    '),   ! Jump to L
+	(kjumpptr,  $,  0, '    '),   ! Jump to Z
+
+	(kjumpt,    $,  l, '    '),   ! Jump to L when Z is true
+	(kjumpf,    $,  l, '    '),   ! Jump to L when Z is false
+
+	(kjumpeq,   $,  l, '    '),   ! Jump to L when Y = Z
+	(kjumpne,   $,  l, '    '),   ! Jump to L when Y <> Z
+	(kjumplt,   $,  l, '    '),   ! Jump to L when Y < Z
+	(kjumple,   $,  l, '    '),   ! Jump to L when Y <= Z
+	(kjumpge,   $,  l, '    '),   ! Jump to L when Y >= Z
+	(kjumpgt,   $,  l, '    '),   ! Jump to L when Y > Z
+
+!	(kjmpltfci, $,  l, '    '),   ! Jump to L when B < C (B/C in next two ops)
+
+	(kwheneq,   $,  l, '    '),   ! Y = Z:  pop both, jump to L
+								  ! Y <> Z: pop Z only, step to next
+
+	(kwhenne,   $,  l, '    '),	  ! Y <> Z:  pop Z only, jump to L
+								  ! Y = Z:   pop both, step to next
+
+	(kjumplab,  $,  l, '    '),   ! Jumptable entry
+
+!	(kswitch,   $,  l, 'xy  '),   ! Jumptable has y-x+1 entries
+	(kswitch,   $,  0, 'xy  '),   ! Jumptable has y-x+1 entries
+
+	(ktom,      $,  l, '    '),   ! --v; jump to l when v<>0 in next op
+	(ktof,      $,  l, '    '),   ! --v; jump to l when v<>0 in next op
+
+	(kformci,   $,  l, '    '),   ! ++v; jump to l when v<=i in next 2 ops: pushm/pushci
+	(kforfci,   $,  l, '    '),   ! ++v; jump to l when v<=i in next 2 ops: pushm/pushci
+
+	(kformm,    $,  l, '    '),   ! ++v; jump to l when v<=v in next 2 ops
+	(kforff,    $,  l, '    '),   ! ++v; jump to l when v<=v in next 2 ops
+
+	(kcallproc, $,  p, 'n   '),   ! Call &A; n is no. args
+	(kcallptr,  $,  0, 'n   '),   ! Call X^; n is no. of params supplied; x is stack adjust
+	(kretproc,  $,  0, 'nx  '),   ! n/x are params/locls to free; Return from proc
+	(kretfn,    $,  0, 'nxy '),   ! n/x are params/locals to free; y=retval offset in caller; ret from fn
+!	(kpopret,   $,  i, '    '),   ! pop stack to caller's return slot; i = offset
+
+	(kmodcall,  $,  d, '    '),   ! 
+	(kmodret,   $,  0, '    '),   ! 
+
+	(kcalldll,  $,  x, 'n   '),   ! Call dll function d (sysmbol); n=nargs
+
+	(kcallhost, $,  h, '    '),   ! Call Q host function h (Host index)
+
+	(kunshare,  $,  0, 'n   '),   ! Unshare and pop A var values on stack
+	(kaddsp,    $,  0, 'n   '),   ! SP+:=A; note: positive A will push, negative will pop (reverse of the hardware)
+
+	(kstop,     $,  0, 'n   '),   ! Stop program with stopcode Z; n=1 to stop runproc instead
+
+	(kmakelist, $,  0, 'xy  '),   ! x items on stack; make list with lwb y
+	(kmakevrec, $,  0, 'xu  '),   ! x items on stack; make record of type u
+	(kmakeax,   $,  0, 'xyuv'),   ! x items on stack; make array with lwb y, type u and elemtype v
+	(kmakebits, $,  0, 'xyuv'),   ! x items on stack; make bits with lwb y, type u and elemtype v
+	(kmaketrec, $,  0, 'xu  '),   ! x items on stack; make struct with type u
+	(kmakeset,  $,  0, 'x   '),   ! x items on stack; make set
+	(kmakerang, $,  0, '    '),   ! 2 items on stack; make range
+	(kmakedict, $,  0, 'x   '),   ! x*2 items on stack (x key:val items); make dict
+	(kmakedec,  $,  0, '    '),   ! Turn string on stack to decimal number
+
+	(kincrptr,  $,  0, 'x   '),   ! Z^ +:= x
+	(kincrtom,  $,  m, 'x   '),   ! v +:= x
+	(kincrtof,  $,  f, 'x   '),   ! v +:= x
+	(kloadincr, $,  0, 'x   '),   ! T := Z^; Z^ +:= x; Z' := T
+	(kincrload, $,  0, 'x   '),   ! Z^ +:= x; Z' := Z^
+
+	(kneg,      $,  0, '    '),   ! Z':= -Z
+	(kabs,      $,  0, '    '),   ! Z' := abs Z
+	(knotl,     $,  0, '    '),   ! Z' := not Z
+	(kinot,     $,  0, '    '),   ! Z' := inot Z
+	(kistruel,  $,  0, '    '),   ! Z' := istrue Z
+	(kasc,      $,  0, '    '),   ! Z' := asc(Z)
+	(kchr,      $,  0, '    '),   ! Z' := chr(Z)
+	(ksqr,      $,  0, '    '),   ! Z' := Z*Z
+
+	(kmaths,    $,  y, '    '),   ! Z' := op(Z)
+	(kmaths2,   $,  y, '    '),   ! Z' := op(Y, Z)
+
+	(kunaryto,  $,  o, '    '),   ! Z^ op:= Z
+	(knotlto,   $,  0, '    '),   ! Z^ not:= Z
+
+	(klen,      $,  0, '    '),   ! Z' := Z.len
+	(klwb,      $,  0, '    '),   ! Z' := Z.lwb
+	(kupb,      $,  0, '    '),   ! Z' := Z.upb
+	(kbounds,   $,  0, 'n   '),   ! Z' := Z.bounds; n=1: one range value; n=2: two dims
+	(kbytesize, $,  0, '    '),   ! Z' := Z.bytesize
+
+	(ktype,     $,  0, 'n   '),   ! Z' := n=0/1/2 = basetype/elemtype
+	(kdictsize, $,  0, '    '),   ! Z' := Z.dictsize
+	(kisfound,  $,  0, '    '),   ! Z' := Z.isfound
+	(kminval, 	$,  0, '    '),   ! Z' := Z.minvalue
+	(kmaxval, 	$,  0, '    '),   ! Z' := Z.maxvalue
+
+	(kistype,   $,  t, '    '),   ! Z' := Z.type/etc = t
+	(kisvoid,   $,  0, 'n   '),   ! Z' := Z.isvoid (n=0) or not Z.isdef (n=1)
+	(kconvert,  $,  t, '    '),   ! Z' := t(Z)
+	(ktypepun,  $,  t, '    '),   ! Z' := t@(Z)
+
+	(kadd,      $,  0, '    '),   ! Z' := Y + Z
+	(ksub,      $,  0, '    '),   ! Z' := Y - Z
+	(kmul,      $,  0, '    '),   ! Z' := Y * Z
+	(kdiv,      $,  0, '    '),   ! Z' := Y / Z
+	(kidiv,     $,  0, '    '),   ! Z' := Y % Z
+	(kirem,     $,  0, '    '),   ! Z' := Y rem Z
+	(kidivrem,  $,  0, '    '),   ! (Y', Z') := Y divrem Z
+	(kiand,     $,  0, '    '),   ! Z' := Y iand Z
+	(kior,      $,  0, '    '),   ! Z' := Y ior Z
+	(kixor,     $,  0, '    '),   ! Z' := Y ixor Z
+	(kshl,      $,  0, '    '),   ! Z' := Y << Z
+	(kshr,      $,  0, '    '),   ! Z' := Y >> Z
+	(kin,       $,  0, 'n   '),   ! Z' := Y in Z (n=0) or Y not in Z (n=1)
+	(kinx,      $,  0, '    '),   ! Z' := Y inx Z
+	(kcmp,      $,  0, 'c   '),   ! Z' := Y c Z
+	(kmin,      $,  0, '    '),   ! Z' := min(Y, Z)
+	(kmax,      $,  0, '    '),   ! Z' := max(Y, Z)
+	(kconcat,   $,  0, '    '),   ! Z' := concat(Y, Z) or Y && Z
+	(kappend,   $,  0, '    '),   ! Z' := append(Y, Z) or Y & Z
+	(ksame,     $,  0, '    '),   ! Z' := Y == Z
+
+	(kpower,    $,  0, '    '),   ! Z' := Y ** Z
+
+!	(kbinto,    $,  b, '    '),   ! Y^ op:= Z
+	(kbinto,    $,  b, '    '),   ! Z^ op:= Y
+
+	(kandlto,   $,  0, '    '),   ! Y^ and:= Z
+	(korlto,    $,  0, '    '),   ! Y^ or:= Z
+	(kconcatto, $,  0, '    '),   ! Y^ concat:= Z or Y^ &&:= Z
+	(kappendto, $,  0, '    '),   ! Y^ append:= Z or Y^ &:= Z
+
+	(kdot,      $,  g, '    '),   ! Z' := Z.g
+	(kpopdot,   $,  g, '    '),   ! Z.g := Y
+	(kdotref,   $,  g, '    '),   ! Z' := &Z.g
+
+	(kindex,    $,  0, '    '),   ! Z' := Y[Z]
+	(kpopix,    $,  0, '    '),   ! Z' := Y[Z]:=X
+	(kindexref, $,  0, '    '),   ! Z' := &Y[Z]
+
+	(kkeyindex, $,  0, '    '),   ! Z' := X{Y, Z}
+	(kpopkeyix, $,  0, '    '),   ! Y{Z} := X
+	(kkeyixref, $,  0, '    '),   ! Z' := &X{Y, Z}
+
+	(kdotix,    $,  0, '    '),   ! Z' := Y.[Z]
+	(kpopdotix, $,  0, '    '),   ! Y.[Z] := X
+	(kdotixref, $,  0, '    '),   ! Z' := &Y.[Z]
+
+	(kexpand,   $,  0, 'n   '),   ! Z' := Expand Z into n objects are needed
+
+	(kpushtry,  $,  l, 'xy  '),   ! Push try/except into; label/except code/no. exceptions
+	(kraise,    $,  0, 'x   '),   ! Raise exception Z
+	(kmap,      $,  0, '    '),   ! Z' := map(Y, Z)
+
+!Special combination codes
+
+	(kpushfff,  $,  f, '    '),   ! 
+	(kpushff,   $,  f, '    '),   ! 
+	(kpushmm,   $,  0, '    '),   ! 
+	(kpushfm,   $,  0, '    '),   ! 
+	(kpushmf,   $,  0, '    '),   ! 
+
+	(kpushmci,  $,  0, '    '),   ! 
+	(kpushfci,  $,  0, '    '),   ! 
+
+	(kmoveff,   $,  0, '    '),   ! 
+	(kmovemm,   $,  0, '    '),   ! 
+	(kmovefm,   $,  0, '    '),   ! 
+	(kmovemf,   $,  0, '    '),   ! 
+	(kzmoveff,  $,  0, '    '),   ! 
+
+	(kmovefci,  $,  0, '    '),   ! 
+	(kmovemci,  $,  0, '    '),   ! 
+	(kzmovefci, $,  0, '    '),   ! 
+
+	(kpushv2,   $,  0, '    '),   ! 
+	(kpushv3,   $,  0, '    '),   ! 
+
+	(kjmpeqfci, $,  0, '    '),   ! 
+	(kjmpnefci, $,  0, '    '),   ! 
+	(kjmpltfci, $,  0, '    '),   ! 
+	(kjmplefci, $,  0, '    '),   ! 
+	(kjmpgefci, $,  0, '    '),   ! 
+	(kjmpgtfci, $,  0, '    '),   ! 
+
+	(kjmpeqff,  $,  0, '    '),   ! 
+	(kjmpneff,  $,  0, '    '),   ! 
+	(kjmpltff,  $,  0, '    '),   ! 
+	(kjmpleff,  $,  0, '    '),   ! 
+	(kjmpgeff,  $,  0, '    '),   ! 
+	(kjmpgtff,  $,  0, '    '),   ! 
+
+	(kaddfci,   $,  0, '    '),   ! 
+	(ksubfci,   $,  0, '    '),   ! 
+	(kaddff,    $,  f, '    '),   ! 
+	(ksubff,    $,  0, '    '),   ! 
+
+	(kaddci,    $,  0, '    '),   ! 
+	(ksubci,    $,  0, '    '),   ! 
+
+	(kiandci,   $,  0, '    '),   ! 
+	(kshlci,    $,  0, '    '),   ! 
+	(kshrci,    $,  0, '    '),   ! 
+
+	(kbintof,   $,  f, '    '),   ! 
+
+	(kindexmf,  $,  0, '    '),   ! 
+	(kindexff,  $,  0, '    '),   ! 
+	(kswitchf,  $,  0, '    '),   ! 
+	(kpushptrf, $,  0, '    '),   ! 
+
+	(kpushipm,  $,  0, '    '),   ! 
+	(kpushipf,  $,  0, '    '),   ! 
+	(kpopipm,   $,  0, '    '),   ! 
+	(kpopipf,   $,  0, '    '),   ! 
+
+	(kupbm,     $,  0, '    '),   ! 
+	(kupbf,     $,  0, '    '),   ! 
+	(klenf,     $,  0, '    '),   ! 
+
+	(kstoref,   $,  0, '    '),   ! 
+
+	(kwheneqci, $,  i, '    '),   ! 
+	(kwhenneci, $,  i, '    '),   ! 
+
+	(klastpcl,  $,  0, '    ')
+end
+
+global const kfirst=kpushfff
+global const klast=kwhenneci
+
+record bintorec=
+	int pclop
+	ref proc fnadd
+	ref proc fnaddmixed
+end
+
+global[]bintorec bintotable = (
+	(kadd,		cast(var_add),		cast(var_addmixed)),
+	(ksub,		cast(var_sub),		cast(var_submixed)),
+	(kmul,		cast(var_mul),		cast(var_mulmixed)),
+	(kdiv,		cast(var_div),		cast(var_divmixed)),
+	(kiand,		cast(var_iand),		nil),
+	(kior,		cast(var_ior),		nil),
+	(kixor,		cast(var_ixor),		nil),
+	(kmin,		cast(var_min),		nil),
+	(kmax,		cast(var_max),		nil),
+	(kshl,		cast(var_shl),		nil),
+	(kshr,		cast(var_shr),		nil),
+)
+
+=== qq_pclgen.m 0 0 18/44 ===
+!not opcodes, just used internally here for conditional jump logic
+!const kjumpt = 1
+!const kjumpf = 0
+
+!loop stack data reused by GENMPL
+const maxloopindex=20
+[maxloopindex, 4]int loopstack
+[maxloopindex]int trylevelstack
+global int loopindex=0
+int looptrylevel			!return by findlooplabel
+
+const maxswitchrange=512
+const maxlocals=300
+const maxparams=100
+
+const maxunits=400					!for constructors
+int trylevel=0
+!int currfunction=0				!0/1/2 = not a function/proc/function
+
+!vars within curr procdef
+int retindex						!common return point; label no
+int retvaloffset					!offset of return value for procs (as stack slots)
+int nprocparams						!no. of params
+!global int nproclocals				!no. of locals
+global pcl pprocentry				!pointer to PROCENT op; for updating locals due to AVs
+const retaddrslots = 1				!+1 or +2, added to param indices (depends on return info size)
+int procskiplabel
+
+global proc evalunit(unit p, int res=1)=
+!p is a single executable unitrec; not a list or const
+!should be called via execblock() to executate a code item in a unitrec
+!note: sometimes res can be 2, (passing on a res=2 from an outer stmt)
+!that should be treated here same as 1 (res=2 has special meaning from pclhasvalue[] only)
+	unit a, b
+	symbol d
+	int procflag, index
+
+!CPL "EVALUNIT", JTAGNAMES[P.TAG]
+
+	qpos:=p.pos
+
+	a:=p.a
+	b:=p.b
+
+	switch p.tag
+	when jintconst then
+		genpc_int(kpushci, p.value)
+
+	when jrealconst then
+		genpc_real(kpushcr, p.xvalue)
+
+!	when jenumconstthen
+!		genpc_int2(kpushenum, p.value, p.mode)
+
+	when jnone then
+
+	when jstringconst then
+		pushstring(p.svalue)
+
+	when jname then
+		d:=p.def
+!CPL "NAME",D.NAME,NAMENAMES[D.NAMEID]
+		case d.nameid
+		when paramid then
+			genpc_name(kpushm, d)
+			if d.mbyref then
+				genpc(kpushptr)
+			fi
+
+		when frameid, staticid then
+			genpc_name(kpushm, d)
+
+		when labelid then
+			if not res then
+				if d.labelno=0 then
+					d.labelno:=createfwdlabel()
+				fi
+				genpc_lab(kjump, d.labelno)
+				return
+			else
+				genpc_name(kpushsym, d)
+			fi
+
+!		when dllvarid then
+!			genpc_name(kpushx, d)
+
+		else
+			genpc_name(kpushsym, d)
+		esac
+
+	when jsymbol then			!assume a is jname
+		if a.tag=jname then
+			genpc_name(kpushsym, a.def)
+		else
+			gerror(".$ name expected")
+		fi
+
+	when jblock then
+		if a then
+			while a and a.nextunit do
+				evalunit(a, 0)
+				a:=a.nextunit
+			od
+			if a then
+				evalunit(a, res)
+			fi
+		else
+!			gerror("empty block")
+		fi
+
+	when jdecimal then
+		pushstring(p.svalue)
+		genpc(kmakedec)
+
+	when jcall then
+		do_call(p, a, b, res, procflag)
+	when jreturn then
+		do_return(p, a, res)
+	when jcallhost then
+		do_callhost(p, a, res)
+
+	when jassign then
+		do_assign(a, b, res, p.flag)
+	when jto then
+		do_to(p, a, b)
+	when jif then
+		do_if(p, a, b, b.nextunit, res)
+	when jfor		then
+		do_for(p, a, b
+)
+	when jforx then
+		do_forx(p, a, b)
+
+	when jforall, jforeach then
+		do_forall(p, a, b)
+
+	when jwhile then
+		do_while(p, a, b)
+
+	when jrepeat then
+		do_repeat(p, a, b)
+
+	when jgoto then
+		if a.tag=jname and a.def.nameid=labelid then
+			d:=a.def
+			if d.labelno=0 then
+				d.labelno:=createfwdlabel()
+			fi
+			genpc_lab(kjump, d.labelno)
+		else
+			evalunit(a)
+			genpc(kjumpptr)
+		fi
+
+	when jlabeldef then
+		d:=a.def
+GENCOMMENT(D.NAME)
+		if d.labelno=0 then
+			d.labelno:=definelabel()
+		else
+			index:=d.labelno
+			definefwdlabel(index)
+		fi
+
+	when jloop then
+		do_loop(p)
+
+	when jdo then
+		do_do(p, a)
+	when jcase, jdocase then
+		do_case(p, a, b, res)
+	when jswitch, jdoswitch then
+		do_switch(p, a, b, res)
+	when jswap then
+		evalref(a)
+		evalref(b)
+		genpc(kswap)
+
+	when jselect then
+		do_select(a, b, res)
+	when jprint then
+		do_print(p, a, b)
+	when jfprint then
+		do_fprint(p, a, b, b.nextunit)
+	when jread then
+		do_read(p, a, b)
+
+	when jstop then
+		if a then
+			evalunit(a)
+		else
+			genpc_int(kpushci, 0)
+		fi
+		genpc(kstop)
+
+	when jtry then
+		do_try(p, a, b)
+
+	when jandl then
+		do_andl(a, b)
+	when jorl then
+		do_orl(a, b)
+	when jmakelist then
+		do_pushlist(a, p.length)
+		genpc_xy(kmakelist, p.length, p.lower)
+
+	when jmakeset then
+		do_pushlist(a, p.length)
+		genpc_xy(kmakeset, p.length)
+
+	when jmakedict then
+		do_makedict(a, p.length)
+
+	when jmakerange then
+		evalunit(a)
+		evalunit(b)
+		genpc(kmakerang)
+
+	when jkeyvalue then
+		evalunit(a)
+		evalunit(b)
+
+	when jmap then
+		do_map(p, a, b)
+
+	when jbin then
+		case p.pclop
+		when kidiv then
+		do_idiv(a, b)
+		when kirem then
+		do_irem(a, b)
+		else
+			evalunit(a)
+			evalunit(b)
+			genpc(p.pclop)
+		esac
+
+	when jbinto then
+		evalunit(b)
+		evalref(a)
+		genpc(kbinto)
+		for i to bintotable.len do
+			if bintotable[i].pclop=p.pclop then
+				pccurr.bintoindex:=i
+				exit
+			fi
+		else
+			gerror("No binto entry")
+		od
+
+!		pccurr.bintocode:=p.pclop
+
+	when junary, jproperty then
+		evalunit(a)
+		genpc(p.pclop)
+		if p.pclop=kbounds then pccurr.n:=1 fi
+
+	when junaryto then
+		evalref(a)
+		genpc(kunaryto)
+		pccurr.pclop:=p.pclop
+
+	when jappendto, jconcatto then
+		evalunit(b)
+		evalref(a)
+		genpc((p.tag=jappendto|kappendto|kconcatto))
+
+	when jnotl then
+		evalunit(a)
+		genpc(knotl)
+
+	when jistruel then
+		evalunit(a)
+		genpc(kistruel)
+
+	when jistype then
+		evalunit(a)
+		genpc(kistype)
+		pccurr.usertag:=p.mode
+
+	when jisvoid then
+		evalunit(a)
+		genpc(kisvoid)
+		pccurr.n:=p.flag
+
+	when jdot then! do_bin(a, b, kdot)
+		evalunit(a)
+		genpc_name(kdot, b.def)
+
+	when jindex then
+		do_bin(a, b, kindex)
+
+	when jdotindex then
+		do_bin(a, b, kdotix)
+
+	when jkeyindex then
+		evalunit(a)
+		evalunit(b)
+		if b.nextunit then
+			evalunit(b.nextunit)
+		else
+			genpc(kpushvoid)
+		fi
+		genpc(kkeyindex)
+
+	when jptr then
+		evalunit(a)
+		genpc(kpushptr)
+
+	when jaddrof then
+		if p.flag=1 then			! ^x
+			if a.tag=jptr then			!^a^ cancel out (a might be byref param)
+				evalunit(a.a)
+			else
+				evalref(a)
+			fi
+		else
+			evalref(a)
+			genpc(kconvrefp)
+		fi
+
+	when jconvert then
+		do_convert(p)
+
+	when jtypepun then
+		evalunit(a)
+		genpc_int(ktypepun, p.mode)
+
+	when jtypeconst then
+		genpc_int(kpushtype, p.mode)
+
+	when joperator then
+		genpc_int(kpushopc, p.pclop)
+
+	when jincrload, jloadincr then
+		do_incr(p, a, res)
+
+	when jnil then
+		genpc(kpushnil)
+
+	when jraise then
+		evalunit(a)
+		genpc(kraise)
+
+	when jvoid then
+		genpc(kpushvoid)
+
+	when jeval then
+		evalunit(a)
+		genpc_n(kunshare, 1)
+
+	when jgettype then
+		evalunit(a)
+		genpc_n(ktype, p.flag)
+
+	when jin then
+		evalunit(a)
+		evalunit(b)
+		genpc(kin)
+		pccurr.n:=p.flag
+
+	when jinx then
+		evalunit(a)
+		evalunit(b)
+		genpc(kinx)
+		pccurr.n:=p.flag
+
+	when jcmp then
+		evalunit(a)
+		evalunit(b)
+		genpc_n(kcmp, p.condcode)
+
+	when jmaths then
+		evalunit(a)
+		if p.mathsop=mm_sqr then
+			genpc(ksqr)
+		else
+			genpc(kmaths)
+			pccurr.mathscode:=p.mathsop
+		fi
+
+	when jmaths2 then
+		evalunit(a)
+		evalunit(b)
+		genpc(kmaths2)
+		pccurr.mathscode:=p.mathsop
+
+	else
+		gerror_s("UNSUPPORTED TAG:", JTAGNAMES[P.TAG], p)
+	end switch
+
+	case jhasvalue[p.tag]
+	when 0 then
+		if res then
+			unless p.tag in [jprint, jfprint] and p.flag iand pr_sprint then
+				gerror_s("Value expected:", jtagnames[p.tag])
+			end
+		fi
+	when 1 then
+		if not res then
+			if p.tag=jcall and procflag=1 then		!procs have no ret value
+			elsif p.tag in [jincrload, jloadincr] then
+			elsif p.tag=jcallhost and hostisfn[p.index]=0 then
+			else
+				genpc_n(kunshare, 1)
+			fi
+		fi
+	esac						!else ignore when 2, as already dealt with
+end
+
+global proc gencodemodule(isubprog sp, int moduleno)=
+	const maxanonprocs=100
+	[maxanonprocs]symbol anonprocs
+	int nanonprocs:=0
+
+	symbol d, e
+	int lab
+	int a:=sp.firstmodule
+	int b:=sp.lastmodule
+	ifile pm:=modules[moduleno]
+	pcl pc, pctarget
+	ref[]byte labelmap
+
+	currmodule:=pm
+	stcurrproc:=stcurrmodule:=currmodule.def
+
+!CPL "GENCODE", SP.NAME, PM.NAME
+
+	resetpcl(pm.size)
+
+!GOTO FINISH
+
+	gencomment("Module data init code:")
+!SKIP
+
+	qpos:=0
+	qpos.[24..31]:=moduleno
+
+!CPL "///////////////", QPOS
+
+!jump around stop/raise block needed for reentry
+!	if n=1 then
+!CPL $LINENO
+	if moduleno=a then
+		lab:=createfwdlabel()
+		genpc_lab(kjump, lab)
+		genpc_n(kstop, 1)
+		stopseq:=pccurr
+
+		raiseseq:=pccurr+1
+		genpc_int(kpushci, 0)
+		genpc(kraise)
+		definefwdlabel(lab)
+	fi
+
+!CPL $LINENO
+	d:=stcurrmodule.deflist
+	while d do
+		if d.nameid=staticid and d.code then
+			evalunit(d.code)
+!CPL =D.INITCODE, D.NAME
+			if d.initcode=3 then
+				genpc(kcopy)
+			fi
+			genpc_name(kzpopm, d)
+		elsif d.nameid=procid then
+			e:=d.deflist
+			while e do
+				if e.nameid=staticid and e.code then
+					evalunit(e.code)
+					genpc_name(kzpopm, e)
+				elsif e.nameid=anonprocid then
+					if nanonprocs>=maxanonprocs then gerror("Too many anons") fi
+					anonprocs[++nanonprocs]:=e
+				fi
+				e:=e.nextdef
+			od
+		fi
+		d:=d.nextdef
+	od	
+!CPL $LINENO
+
+	if moduleno=a then
+		for i:=b downto a+1 do
+			genpc_name(kmodcall, modules[i].def)
+		od
+		for i:=b downto a+1 do
+			if modules[i].startfn then
+				genpc_name(kcallproc, modules[i].startfn)
+!				genopnd_int(0)
+			fi
+		od
+
+		if currmodule.startfn then
+			genpc_name(kcallproc, currmodule.startfn)
+!			genopnd_int(0)
+		fi
+
+		if currmodule.mainfn then
+			genpc_name(kcallproc, currmodule.mainfn)
+!!			genopnd_int(0)
+		fi
+
+		evalunit(stcurrmodule.code, 0)
+		genpc_int(kpushci, 0)
+		genpc(kstop)
+	else
+		evalunit(stcurrmodule.code, 0)
+		genpc(kmodret)
+	fi
+!CPL $LINENO
+
+	gencomment("Procs:")
+	d:=stcurrmodule.deflist
+	while d do
+		switch d.nameid
+		when procid, anonprocid then
+			do_procdef(d)
+		when staticid then
+!		when typeid then
+		when recordid then
+			e:=d.deflist
+			while e, e:=e.nextdef do
+				if e.nameid=procid then
+					do_procdef(e)
+				fi
+			od
+
+		when constid then
+		when enumid then
+		when labelid then
+		when typeid then
+		when dllprocid then
+		when aliasid then
+		when macroid then
+		when dllvarid then
+		else
+			gerror_s("?Module def:", namenames[d.nameid])
+		end switch
+
+		d:=d.nextdef
+	od	
+!CPL $LINENO
+
+	for i to nanonprocs do
+		do_procdef(anonprocs[i])
+	od
+
+	genpc(kendmod)
+
+!scan pcl operands and convert label operands to pcl ref
+	labelmap:=pcm_allocz(nextlabelno)
+
+	pc:=pcstart
+	while pc<=pccurr, ++pc do
+		if pclopnd[pc.opcode]=clabel then
+			lab:=pc.labelno
+			pctarget:=labelpctable[lab]
+!CPL "LABEL FIXUP:", LAB,"=>", PCTARGET
+			if pctarget=nil then
+				gerror_s("Lab undef:",strint(lab))
+			fi
+			labelmap[lab]:=1				!indicate has been referenced
+			pc.labelref:=pctarget			!update from 1-NLABEL to 1-NPCL
+		fi
+	od
+
+!use labelmap to unset those labeled pcl ops that have not been used
+	for i to nextlabelno do
+		if labelmap[i] then
+			labelpctable[i].haslabel:=1
+		fi
+	od
+
+	pcm_free(labelmap, nextlabelno)
+
+	pm.pcstart:=pcstart
+!	pm.pcend:=pcend
+	pm.pcend:=pccurr
+!	pm.pcsize:=pccurr-pcstart+1
+	pm.pcsize:=getpcloffset(pccurr,pcstart)+1
+	pm.pcsourcestart:=pcsourcestart
+!CPL $LINENO
+
+!CPL "------DONE GENPCL", PCLSTART, PCLNEXT-PCLSTART, PCLNAMES[PCLSTART^]
+
+end
+
+proc do_procdef(symbol p) =
+	int nfreevars, nnofreevars
+	int isfunc
+	symbol oldcurrproc
+
+	oldcurrproc:=stcurrproc			!might be a method
+
+	stcurrproc:=p
+
+	retindex:=createfwdlabel()
+	isfunc:=p.misfunc
+
+	genprocentry(p, nfreevars, nnofreevars)
+
+	if p.code=nil then
+		gerror_s("Empty proc body", p.name)
+	else
+		evalunit(p.code, isfunc)
+
+		if isfunc then
+!CPL "CHECK BODY", JTAGNAMES[P.CODE.TAG]
+			if not checkblockreturn(p.code) then
+				gerror("Func: return value missing")
+			fi
+		fi
+
+	fi
+
+	definefwdlabel(retindex)			!common return point
+	genprocexit(nfreevars, nnofreevars, isfunc)
+	genpc(kprocend)
+
+
+
+	if pprocentry.n=0 then			!skip past procentry instr
+		++pprocentry
+!		++p.labelref
+	fi
+	p.labelref:=pprocentry
+!CPL "PROCDEF", =PCLNAMES[PPROCENTRY.OPCODE], =P.LABELREF
+
+	stcurrproc:=oldcurrproc
+end
+
+proc genprocentry(symbol p, int &nfreevars, &nnofreevars) =		!GENPROCENTRY
+	[200]char str
+	int n
+	symbol d
+
+	genpc_name(kprocdef, p)
+
+	nprocparams:=nproclocals:=0
+
+	d:=p.deflist
+	while d do
+		case d.nameid
+		when frameid then
+			++nproclocals
+			d.index:=nproclocals
+		when paramid then
+			++nprocparams
+		esac
+
+		d:=d.nextdef
+	od
+
+	d:=p.deflist
+	n:=nprocparams
+
+	while d, d:=d.nextdef do
+		case d.nameid
+		when paramid then
+			--n
+			d.index:=-(n+retaddrslots)
+		esac
+
+	od
+
+	retvaloffset:=-(nprocparams+retaddrslots)
+
+!	p.labelno:=definelabel()
+!CPL "GENPROCENTRY",P.LABELNO, p.labelref
+	genpc_n(kprocent, nproclocals)
+
+	pprocentry:=pccurr
+
+	d:=p.deflist
+	while d do
+		case d.nameid
+		when frameid then
+			if d.code then
+				evalunit(d.code)
+				if d.initcode=3 then
+					genpc(kcopy)
+				fi
+				genpc_name(kzpopm, d)
+			fi
+		esac
+
+		d:=d.nextdef
+	od
+end
+
+proc genprocexit(int nfree, nnofree, isfunc)=		!GENPROCEXIT
+	int offset
+
+	if isfunc then
+		offset:=-(nprocparams+1)*varsize
+		genpc_xy(kretfn, nproclocals, offset)
+		pccurr.n:=nprocparams
+	else
+		genpc_n(kretproc, nprocparams)
+		pccurr.x:=nproclocals
+	fi
+
+
+!	if isfunc then
+!		offset:=-(nprocparams+1)*varsize
+!		genpc_int(kpopret, offset)
+!	fi
+!	if nproclocals then
+!		genpc_n(kunshare, nproclocals)
+!	fi
+!
+!	genpc_n(kreturn, nprocparams)
+end
+
+proc evalref(unit p)=
+	unit a, b, c
+	symbol d
+	int lab1, lab2
+	a:=p.a
+	b:=p.b
+
+	switch p.tag
+	when jname then
+		d:=p.def
+		if d.nameid in [procid, dllprocid] then
+			gerror("^ not allowed")
+		fi	
+
+		if d.nameid=paramid and d.mbyref then
+			genpc_name(kpushm, d)
+		else
+			genpc_name(kpushmref, d)
+		fi
+
+	when jdot then! do_binref(a, b, kdotref)
+		evalunit(a)
+		genpc_name(kdotref, b.def)
+	when jindex then! do_binref(a, b, kindexref)
+		evalunit(a)
+		evalunit(b)
+		genpc(kindexref)
+
+	when jdotindex then! do_binref(a, b, kdotindexref)
+!		evalunit(a)
+		evalref(a)
+		evalunit(b)
+		genpc(kdotixref)
+
+	when jkeyindex then! do_binref(a, b, kkeyindexref)
+		evalunit(a)
+		evalunit(b)
+		if b.nextunit then gerror("Def val not allowed") fi
+		genpc(kkeyixref)
+
+	when jptr then
+		evalunit(a)
+
+	when jif then
+		lab1:=createfwdlabel()				!dest label of main condition (to end of if, or start if else)
+		lab2:=createfwdlabel()
+
+		genjumpcond(kjumpf, p.a, lab1)
+		evalref(p.b)
+		genjumpl(lab2)
+		definefwdlabel(lab1)
+		evalref(p.b.nextunit)
+		definefwdlabel(lab2)
+	else
+!		case p.tag
+!		when jif then
+!			do_if(p, a, b, c, 1)
+!		when jlongif then
+!			do_longif(p, a, b, 1)
+!		when jselect then
+!			do_select(p, a, b, c, 1)
+!		when jswitch then
+!			do_switch(p, a, b, c, 0, 1)
+!		when jcase then
+!			do_case(p, a, b, c, 0, 1)
+!		else
+!			PRINTUNIT(P)
+			gerror_s("evalref", jtagnames[p.tag])
+!		esac
+	end switch
+end
+
+proc genjumpcond(int opc, unit p, int lab)=
+!p is some conditional expression of arbitrary complexity
+!opc is kjumpf or kjumpt
+!evaluate and generate jumps as needed
+	unit q, r, s
+	int oldpos, lab2, i
+
+	q:=p.a
+	r:=p.b
+
+	switch p.tag
+	when jandl then
+		case opc
+		when kjumpf then
+			genjumpcond(kjumpf, q, lab)
+			genjumpcond(kjumpf, r, lab)
+		when kjumpt then
+			lab2:=createfwdlabel()
+			genjumpcond(kjumpf, q, lab2)
+			genjumpcond(kjumpt, r, lab)
+			definefwdlabel(lab2)
+		esac
+
+	when jorl then
+		case opc
+		when kjumpf then
+			lab2:=createfwdlabel()
+			genjumpcond(kjumpt, q, lab2)
+			genjumpcond(kjumpf, r, lab)
+			definefwdlabel(lab2)
+		when kjumpt then
+			genjumpcond(kjumpt, q, lab)
+			genjumpcond(kjumpt, r, lab)
+		esac
+
+	when jnotl then
+		case opc
+		when kjumpf then
+			genjumpcond(kjumpt, q, lab)
+		when kjumpt then
+			genjumpcond(kjumpf, q, lab)
+		esac
+
+	when jistruel then
+		genjumpcond(opc, q, lab)
+
+	when jblock then
+		while q and q.nextunit do
+			evalunit(q)
+			q:=q.nextunit
+		od
+		genjumpcond(opc, q, lab)
+
+	when jcmp then
+		evalunit(q)
+		evalunit(r)
+		gcomparejump(opc, p.condcode, lab)
+
+	when jcmpchain then
+		r:=q.nextunit
+		i:=1
+		if opc=kjumpf then
+			while r do
+				evalunit(q)
+				evalunit(r)
+				gcomparejump(kjumpt, revconds[p.cmpconds[i]], lab)
+				++i
+				q:=r
+				r:=r.nextunit
+			od
+		
+		else
+			lab2:=createfwdlabel()
+			while r do
+				evalunit(q)
+				evalunit(r)
+				if r.nextunit then
+					gcomparejump(kjumpt, revconds[p.cmpconds[i]], lab2)
+				else
+					gcomparejump(kjumpt, p.cmpconds[i], lab)
+				fi
+				++i
+				q:=r
+				r:=r.nextunit
+			od
+			definefwdlabel(lab2)
+		fi
+	else
+		evalunit(p)
+		genpc_lab(opc, lab)
+	end switch
+	qpos:=oldpos
+
+end
+
+proc gcomparejump(int opc, cond, lab)=
+!jumpopc is the base cmdcode needed: kjumpt or kjumpt
+!p is the eq/compare unit
+!convert into jumpcc cmdcode
+
+	if opc=kjumpf then				!need to reverse condition
+		cond:=revconds[cond]		!eq_cc => ne_cc, etc
+	fi
+
+	genpc_lab(kjumpeq+cond, lab)
+end
+
+proc genjumpl(int lab)=
+!generate unconditional jump to label
+	genpc_lab(kjump, lab)
+end
+
+global proc stacklooplabels(int a, b, c)=
+!list of labels associated with a loop: a/b/c are redo/next/exit
+	if loopindex>=maxloopindex then
+		gerror("Too many nested loops")
+	fi
+
+	++loopindex
+	loopstack[loopindex, 1]:=a
+	loopstack[loopindex, 2]:=b
+	loopstack[loopindex, 3]:=c
+end
+
+global proc unstacklooplabels=
+	--loopindex
+end
+
+global function findlooplabel(int k, n)int=
+!k is 1, 2, 3, 4 for label A, B, C, D
+!n is a 1, 2, 3, etc, according to loop nesting index
+	int i
+
+	if n=0 then			!outermost loop
+		i:=1
+	else
+		i:=loopindex-(n-1)		!point to entry
+	fi
+
+	if i<1 or i>loopindex then
+		gerror("Bad loop index")
+	fi
+
+	looptrylevel:=trylevelstack[i]
+	return loopstack[i, k]
+end
+
+proc do_assign(unit a, b, int res, deepcopy=0)=
+	unit q
+	int n
+
+	if a.tag=b.tag=jmakelist then
+		if res then gerror("mult/ass::=") fi
+!		if deepcopy then gerror("mult/ass::=") fi
+		do_multassign(a, b, deepcopy, res)
+		return
+	fi
+
+	evalunit(b)
+	if deepcopy then
+		genpc(kcopy)
+	fi
+
+	do_store(a, res)
+end
+
+proc do_bin(unit a, b, int opc)=
+	evalunit(a)
+	evalunit(b)
+	genpc(opc)
+end
+
+proc do_binref(unit a, b, int opc)=
+	evalref(a)
+	evalunit(b)
+	genpc(opc)
+end
+
+proc do_unary(unit a, int opc)=
+	evalunit(a)
+	genpc(opc)
+end
+
+proc do_unaryref(unit a, int opc)=
+	evalref(a)
+	genpc(opc)
+end
+
+proc do_pushlist(unit a, int n)=
+	while a, a:=a.nextunit do
+		evalunit(a)
+	od
+end
+
+proc do_makedict(unit a, int n)=
+	to n do
+		if a.tag=jkeyvalue then
+			evalunit(a.a)
+			evalunit(a.b)
+		else
+			gerror("dict not key:val")
+		fi
+		a:=a.nextunit
+	od
+	genpc_xy(kmakedict, n)
+end
+
+proc do_call(unit p, a, b, int res, &procflag)=
+	int nargs, nsimple, isfunc, kwdindex
+	symbol d
+	unit c
+	[maxparams]unit arglist
+
+	isfunc:=1
+	nargs:=nsimple:=0
+	kwdindex:=0
+	c:=b
+
+	while c do
+		arglist[++nargs]:=c
+		if c.tag in [jintconst, jrealconst] then ++nsimple fi
+		if c.tag=jkeyword then
+			if kwdindex=0 then kwdindex:=nargs fi
+		elsif kwdindex then
+			gerror("Non-kwd follows kwd arg")
+		fi
+		c:=c.nextunit
+	od
+
+	case a.tag
+	when jname then
+		d:=a.def
+retry:
+		case d.nameid
+		when procid, anonprocid then
+			if d.misfunc then
+				genpc(kpushvoid)
+				nargs:=pushparams(d, arglist, nargs, kwdindex)
+!				genpc_name(kcallfn, d)
+				genpc_name(kcallproc, d)
+			else					!proc call
+				isfunc:=0
+				nargs:=pushparams(d, arglist, nargs, kwdindex)
+				genpc_name(kcallproc, d)
+			fi
+			pccurr.n:=nargs
+
+		when dllprocid then
+			if not d.misfunc then
+				isfunc:=0
+			else
+				genpc(kpushvoid)
+			fi
+			nargs:=pushparams(d, arglist, nargs, kwdindex)
+			genpc_name(kcalldll, d)
+			pccurr.n:=nargs
+
+		when aliasid then
+			d:=d.alias
+			goto retry
+		when staticid, frameid, paramid then
+			goto docallptr
+!
+		else
+			gerror_s("CAN'T CALL:", namenames[d.nameid])
+		esac
+	when jdot then
+		if kwdindex then docallptr fi		!share error
+		genpc(kpushvoid)
+		evalref(a.a)					!push &self arg
+		for i to nargs do				!any extra ones
+			evalunit(arglist[i])
+		od
+		evalunit(a)						!push lhs again, this time for dot
+		genpc_n(kcallptr, ++nargs)
+
+	else
+docallptr:
+		if kwdindex then gerror("Kwd params not allowed for fnptr") fi
+		genpc(kpushvoid)
+		for i to nargs do
+			evalunit(arglist[i])
+		od
+		evalunit(a)
+		genpc_n(kcallptr, nargs)
+	esac
+
+	if res and not isfunc then
+		gerror("Func ret value expected")
+	fi
+
+	procflag:=not isfunc
+end
+
+function pushparams(symbol d, []unit &arglist, int nargs, kwdindex)int=
+!push args for a known, named function
+!will deal with missing/optional args, default values, and keyword params
+!should work also for dll procs
+!In all cases, first nparams items in d.deflist will be parameter names, 
+!For dlls with no named params, the entries will be $1 etc.
+
+	int nparams, extra, n
+	[maxparams]symbol paramlist
+	[maxparams]byte byreflist
+	symbol e, p
+
+	nparams:=d.nparams
+	e:=d.deflist
+	n:=0
+	while e do
+		++n
+		paramlist[n]:=e
+		byreflist[n]:=e.mbyref
+		e:=e.nextdef
+	od
+
+	if kwdindex then
+		pushkwdparams(d, arglist, nargs, kwdindex)
+		return d.nparams
+	fi
+
+	extra:=0
+
+	if nargs=nparams then
+		for i to nargs do
+			evalparam(arglist[i], byreflist[i])
+		od
+		return nargs
+	elsif nargs<nparams then	!trailing args missing
+		for i to nargs do
+			evalparam(arglist[i], byreflist[i])
+		od
+
+		for i:=nargs+1 to nparams do
+			p:=paramlist[i]
+			if not p.code and not p.moptional then
+				gerror_s("Param not optional:", strint(i))
+			fi
+			if p.code then
+				if byreflist[i] then gerror("byref with default val") fi
+				evalunit(p.code)
+			else
+				genpc(kpushvoid)
+			fi
+		od
+		return nparams
+	else						!nargs>nparams: variadic
+		for i to nparams do
+			evalparam(arglist[i], byreflist[i])
+		od
+
+		if not d.mvarparams then
+			gerror("Too many args")
+		fi
+		for i:=nparams+1 to nargs do
+			evalunit(arglist[i])			!o/p variadic args
+		od
+		return nargs
+	fi
+end
+
+proc evalparam(unit a, int byref)=
+	if byref then
+		evalref(a)
+	else
+		evalunit(a)
+	fi
+end
+
+
+proc pushkwdparams(symbol d, []unit &arglist, int nargs, kwdindex)=
+	int nparams, i, j, k
+	[maxparams]symbol paramlist
+	[maxparams]byte byreflist
+	[maxparams]unit keyunits
+	unit p, q
+	symbol e
+
+	nparams:=d.nparams
+
+	e:=d.deflist
+	for i to nparams do
+		paramlist[i]:=e
+		byreflist[i]:=e.mbyref
+		e:=e.nextdef
+	od
+
+	if nargs>nparams then
+		gerror("Too many args")
+	fi
+
+	for i:=kwdindex to nparams do
+		keyunits[i]:=nil			!indicate param not set
+	od
+
+	for i to kwdindex-1 do			!do positional params
+		evalparam(arglist[i], byreflist[i])
+	od
+
+	for i:=kwdindex to nargs do
+		p:=arglist[i]
+		q:=p.a
+		if q.tag<>jname then gerror("kwd not a name") fi
+		e:=q.def
+		k:=0
+		for j:=1 to nparams do
+			if eqstring(e.name, paramlist[j].name) then
+				k:=j
+				exit
+			fi
+		od
+
+		if k=0 then gerror_s("Can't find kwd param:", e.name) fi
+		if k<kwdindex then gerror_s("Kwd arg already positional:", e.name) fi
+		if keyunits[k] then gerror_s("Repeating kwd arg:", e.name) fi
+
+		keyunits[k]:=p.b
+	od
+
+	for i:=kwdindex to nparams do
+		if keyunits[i]=nil then
+			q:=paramlist[i].code
+			if q=nil and not paramlist[i].moptional then
+				gerror_s("Param not optional:", strint(i))
+			fi
+			keyunits[i]:=q			!q is nil when default value not set
+		fi
+	od
+
+!	for i:=nparams downto kwdindex do
+	for i:=kwdindex to nparams do
+		if keyunits[i] then
+			evalparam(keyunits[i], byreflist[i])
+		elsif byreflist[i] then
+			gerror("byref param not optional")
+		else
+			genpc(kpushvoid)
+		fi
+	od
+end
+
+proc do_if(unit p, a, b, pelse, int res)=
+	int lab1, lab2
+
+	lab1:=createfwdlabel()				!dest label of main condition (to end of if, or start if else)
+
+	if pelse or res then lab2:=createfwdlabel() fi	!label past else part
+
+	genjumpcond(kjumpf, a, lab1)
+
+	evalunit(b, res)
+
+	if pelse or res then
+		genjumpl(lab2)
+		definefwdlabel(lab1)
+		if pelse then
+			evalunit(pelse, res)
+		else
+			genpc(kpushvoid)
+		fi
+		definefwdlabel(lab2)
+	else
+		definefwdlabel(lab1)
+	fi
+end
+
+proc do_do(unit p, a)=
+	int lab_abc, lab_d, lab_test
+	lab_abc:=definelabel()
+	lab_d:=createfwdlabel()
+
+	stacklooplabels(lab_abc, lab_abc, lab_d)
+
+	evalunit(a, 0)
+
+	genjumpl(lab_abc)
+	definefwdlabel(lab_d)
+	unstacklooplabels()
+end
+
+proc do_loop(unit p) =
+	int n, index
+
+	index:=p.a.value
+	if index=0 then index:=loopindex fi
+
+	n:=findlooplabel(p.loopcode, index)
+	if n=0 then
+CPL "BAD LOOP"
+!		gerror("Bad exit/loop index", p)
+	else
+		genjumpl(n)
+	fi
+end
+
+proc do_to(unit p, pcount, pbody)=
+	int lab_b, lab_c, lab_d
+	symbol temp
+	unit pav
+
+	pav:=pcount.nextunit
+	temp:=pav.def
+
+	evalunit(pcount)
+	genpc_name(kzpopm, temp)
+
+	lab_b:=createfwdlabel()
+	lab_c:=createfwdlabel()
+	lab_d:=createfwdlabel()
+	stacklooplabels(lab_b, lab_c, lab_d)
+
+!check for count being nonzero
+	if pcount.tag<>jintconst then			!assume const limit is non-zero
+		genpc_name(kpushm, temp)
+		genpc_int(kpushci, 0)
+		genpc_lab(kjumple, lab_d)
+
+	elsif pcount.value<=0 then		!const <=0, skip body
+		genpc_lab(kjump, lab_d)
+	fi
+
+	definefwdlabel(lab_b)
+	evalunit(pbody, 0)
+	definefwdlabel(lab_c)
+
+	genpc_lab(ktom+temp.isframe, lab_b)
+	genpc_name(kpushm, temp)
+
+	definefwdlabel(lab_d)
+	unstacklooplabels()
+end
+
+proc do_while(unit p, pcond, pbody) =
+	int lab_b, lab_c, lab_d, lab_incr
+	unit pincr:=pcond.nextunit
+
+	lab_b:=createfwdlabel()
+	lab_c:=createfwdlabel()
+	lab_d:=createfwdlabel()
+
+	if pincr then
+		lab_incr:=createfwdlabel()
+	else
+		lab_incr:=lab_c
+	fi
+
+	stacklooplabels(lab_b, lab_c, lab_d)
+
+	genjumpl(lab_incr)		!direct to condition code which is at the end
+
+	definefwdlabel(lab_b)
+
+	evalunit(pbody, 0)
+
+	definefwdlabel(lab_c)
+
+	if pincr then
+		evalunit(pincr)
+		definefwdlabel(lab_incr)
+	fi
+
+	genjumpcond(kjumpt, pcond, lab_b)
+	definefwdlabel(lab_d)
+	--loopindex
+end
+
+proc do_repeat(unit p, a, b) =
+	int lab_b, lab_c, lab_d
+
+	lab_b:=definelabel()
+	lab_c:=createfwdlabel()
+	lab_d:=createfwdlabel()
+
+	stacklooplabels(lab_b, lab_c, lab_d)
+
+	evalunit(a, 0)
+
+	definefwdlabel(lab_c)
+
+	unless b.tag=jintconst and b.value=0 then
+		genjumpcond(kjumpf, b, lab_b)
+	end
+
+	definefwdlabel(lab_d)
+	--loopindex
+end
+
+proc do_for(unit p, pvar, pbody)=
+! a = pvar, pfrom, pto, [pstep]
+! b = pbody [pelse]
+	unit pfrom, pto, pstep, pelse, plimit, pautovar
+	symbol dvar, limitvar
+	int lab_b, lab_c, lab_d, lab_e, opc, oldqpos
+	int step, fromval, limit, jumpinto
+
+!CPL "FOR"
+	pfrom:=pvar.nextunit
+	pto:=pfrom.nextunit
+	pstep:=pto.nextunit
+	pautovar:=nil
+	if pstep then
+		gerror("By N not implem")
+	fi
+
+	pelse:=pbody.nextunit
+
+	dvar:=pvar.def
+
+	if pto.tag not in [jintconst, jname] or
+		 pto.tag=jname and pto.def.isframe<>dvar.isframe then
+		pautovar:=createavnamex(stcurrproc)
+	fi
+
+	if p.flag then
+		step:=-1
+	else
+		step:=1
+	fi
+
+	jumpinto:=1			!assume jumping straight into increment
+
+!now start generating code
+	lab_b:=createfwdlabel()
+	lab_c:=createfwdlabel()
+	lab_d:=createfwdlabel()
+	lab_e:=(pelse|createfwdlabel()|lab_d)
+	stacklooplabels(lab_b, lab_c, lab_d)
+
+	if pfrom.tag=jintconst then		!can incr/decr directly
+		fromval:=pfrom.value
+!see if limit is known
+		if pto.tag=jintconst then
+			limit:=pto.value
+			if (step=-1 and fromval>=limit) or (step=1 and fromval<=limit) then 	!at least 1 iteration
+				jumpinto:=0
+			fi
+		fi
+		if jumpinto then
+			if step<0 then
+				++fromval
+			else
+				--fromval
+			fi
+			pfrom.value:=fromval
+		fi
+		genpc_int(kpushci, pfrom.value)
+
+		genpc_name(kpopm, dvar)
+	else
+		evalunit(pfrom)
+		genpc_name(kpopm, dvar)
+
+		genpc_name(kincrtom, dvar)
+		pccurr.x:=-step
+
+	fi
+
+	if pautovar then
+		evalunit(pto)
+		limitvar:=pautovar.def
+		genpc_name(kzpopm, limitvar)
+		pto:=pautovar
+	else
+		limitvar:=pto.def
+	fi
+
+	if jumpinto then
+		genjumpl(lab_c)			!jump straight into incr/jump Kfor cmdcode at C:
+	fi
+	definefwdlabel(lab_b)
+
+	evalunit(pbody, 0)				!do loop body
+
+	definefwdlabel(lab_c)
+
+	if step>0 then
+
+		if pto.tag=jintconst then
+			opc:=kformci+dvar.isframe
+		elsif dvar.isframe=limitvar.isframe then
+			opc:=kformm+dvar.isframe
+		else
+			gerror("for:mixed m/f vars")
+		fi
+
+		oldqpos:=qpos
+		qpos:=p.pos
+		genpc_lab(opc, lab_b)
+		qpos:=oldqpos
+
+		genpc_name(kpushm, dvar)
+
+		if pto.tag=jintconst then
+			genpc_int(kpushci, pto.value)
+		else
+			genpc_name(kpushm, limitvar)
+		fi
+	else
+		genpc_name(kincrtom, dvar)
+		pccurr.x:=-1
+		genpc_name(kpushm, dvar)
+		if pto.tag=jintconst then
+			genpc_int(kpushci, pto.value)
+		else
+			genpc_name(kpushm, limitvar)
+		fi
+		genpc_lab(kjumpge, lab_b)
+	fi
+
+	if pelse then
+		definefwdlabel(lab_e)
+		evalunit(pelse, 0)			!any else part
+	fi
+
+	definefwdlabel(lab_d)
+	unstacklooplabels()
+end
+
+proc do_forx(unit p, pvar, pbody)=
+! a = pvar, pbounds
+! b = pbody [pelse]
+	unit pbounds, pelse, plimit, pautovar
+	symbol dvar, limitvar
+	int lab_b, lab_c, lab_d, lab_e, opc
+
+CPL "FORX"
+
+	pbounds:=pvar.nextunit
+
+	pautovar:=createavnamex(stcurrproc)
+
+	pelse:=pbody.nextunit
+	dvar:=pvar.def
+
+!now start generating code
+	lab_b:=createfwdlabel()
+	lab_c:=createfwdlabel()
+	lab_d:=createfwdlabel()
+	lab_e:=(pelse|createfwdlabel()|lab_d)
+	stacklooplabels(lab_b, lab_c, lab_d)
+
+	evalunit(pbounds)				!stack has lwb, upb
+	limitvar:=pautovar.def
+	genpc_name(kzpopm, limitvar)
+
+	genpc_int(kpushci, 1)
+	genpc(ksub)
+	genpc_name(kpopm, dvar)		!from value
+
+	genjumpl(lab_c)			!jump straight into incr/jump Kfor cmdcode at C:
+	definefwdlabel(lab_b)
+
+	evalunit(pbody, 0)				!do loop body
+
+	definefwdlabel(lab_c)
+	if dvar.isframe=limitvar.isframe then
+		genpc_lab(kformm+dvar.isframe, lab_b)
+	else
+		gerror("forx:mixed m/f")
+	fi
+	genpc_name(kpushm, dvar)
+	genpc_name(kpushm, limitvar)
+
+	if pelse then
+		definefwdlabel(lab_e)
+		evalunit(pelse, 0)			!any else part
+	fi
+
+	definefwdlabel(lab_d)
+	unstacklooplabels()
+end
+
+proc do_print(unit p, a, b)=
+	int issprint
+	unit x
+
+	issprint:=p.flag iand pr_sprint
+
+!global const pr_newline = 1
+!global const pr_format = 2
+!global const pr_sprint = 4
+
+
+	if issprint then
+		callhostfn(h_strstartprint)
+	else
+		if a then
+			evalunit(a)
+			callhostfn(h_startprint)
+		else
+			callhostfn(h_startprintcon)
+		fi
+	fi
+
+	x:=b
+
+	while x do
+		case x.tag
+		when jfmtitem then
+			evalunit(x.b)
+			evalunit(x.a)
+			callhostfn(h_print)
+		when jnogap then
+			callhostfn(h_printnogap)
+		when jspace then
+			callhostfn(h_printspace)
+		else
+			evalunit(x)
+			callhostfn(h_print_nf)
+		esac
+		x:=x.nextunit
+	od
+
+	if p.flag iand pr_newline then
+		callhostfn(h_println)
+	fi
+	if issprint then
+		genpc(kpushvoid)
+		callhostfn(h_strendprint)
+	else
+		callhostfn(h_endprint)
+	fi
+end
+
+proc do_fprint(unit p, a, b, c)=
+	int issfprint
+	unit x
+
+	issfprint:=p.flag iand pr_sprint
+
+	if issfprint then
+		callhostfn(h_strstartprint)
+	else
+		if a then
+			evalunit(a)
+			callhostfn(h_startprint)
+		else
+			callhostfn(h_startprintcon)
+		fi
+	fi
+
+	evalunit(b)					!format string
+	callhostfn(h_setformat)
+
+	x:=c
+	while x do
+		case x.tag
+		when jfmtitem then
+			evalunit(x.b)
+			evalunit(x.a)
+			callhostfn(h_print)
+		when jnogap then
+			callhostfn(h_printnogap)
+		else
+			genpc(kpushvoid)
+			evalunit(x)
+			callhostfn(h_print)
+		esac
+		x:=x.nextunit
+	od
+
+	if p.flag iand pr_newline then
+		callhostfn(h_println)
+	fi
+	if issfprint then
+		genpc(kpushvoid)
+		callhostfn(h_strendprint)
+	else
+		callhostfn(h_endprint)
+	fi
+
+end
+
+proc do_read(unit p, a, b)=
+unit x, xloop
+
+if p.flag iand pr_newline then
+	if a then
+		evalunit(a)
+		callhostfn(h_readln)
+	else
+		genpc(kpushvoid)
+		callhostfn(h_readln)
+	fi
+fi
+
+xloop:=b
+while xloop do
+	x:=xloop
+	genpc(kpushvoid)
+	if x.tag=jfmtitem then
+		evalunit(x.b)
+		callhostfn(h_sread)
+		x:=x.a
+	else
+		genpc(kpushvoid)
+		callhostfn(h_sread)
+	fi
+	if x.tag=jname then
+		genpc_name(kpopm, x.def)
+	else
+		evalref(x)
+		genpc(kpopptr)
+	fi
+	xloop:=xloop.nextunit
+od
+end
+
+proc do_forall(unit p, pindex, pbody)=
+!I think form pvar/prange into blocks, then those can be stored together
+! a = pindex, plist, pvar
+! b = pbody, [pelse]
+
+	int lab_b, lab_c, lab_d, lab_e
+	unit ploopvar, plist, pelse, plimitvar, plistvar
+	symbol indexvar, limitvar, loopvar, listvar
+
+!CPL "FORALL"
+	plist:=pindex.nextunit
+	ploopvar:=plist.nextunit
+
+	if ploopvar=nil then			!no discrete index var
+		ploopvar:=pindex
+
+		pindex:=createavnamex(stcurrproc)
+
+	fi
+	loopvar:=ploopvar.def
+
+	plimitvar:=createavnamex(stcurrproc)
+
+	limitvar:=plimitvar.def
+	indexvar:=pindex.def
+
+	if plist.tag<>jname or plist.def.isframe<>loopvar.isframe then			!complex list
+
+		plistvar:=createavnamex(stcurrproc)
+
+		listvar:=plistvar.def
+		evalunit(plist)
+		genpc_name(kzpopm, listvar)
+	else
+		plistvar:=plist
+		listvar:=plistvar.def
+	fi
+
+	unless indexvar.isframe=loopvar.isframe=listvar.isframe then
+		gerror("forall: mixed vars")
+	end
+
+	pelse:=pbody.nextunit
+
+!set up initial loop var
+	lab_b:=createfwdlabel()
+	lab_c:=createfwdlabel()
+	lab_d:=createfwdlabel()
+	lab_e:=(pelse|createfwdlabel()|lab_d)
+	stacklooplabels(lab_b, lab_c, lab_d)
+
+!assume plist is a var where bounds are not known
+!(can be optimised for a const range or a const list)
+	genpc_name(kpushm, listvar)			!load the list
+	genpc_n(kbounds, 2)				!extract bounds as (lower, upper); upper is tos
+
+	genpc_name(kzpopm, limitvar)		!limit:=upb
+	genpc_int(kpushci, 1)
+	genpc(ksub)
+	genpc_name(kzpopm, indexvar)		!index:=lwb-1 (will incr first thing)
+
+	genjumpl(lab_c)			!jump straight into incr/jump Kfor cmdcode at C:
+
+	definefwdlabel(lab_b)
+
+!start of iteration, set up next loop variable
+	genpc_name(kpushm, listvar)
+	evalunit(pindex)
+
+	genpc((p.tag=jforall|kindex|kdotix))
+	genpc_name(kpopm, loopvar)
+
+	evalunit(pbody, 0)			!do loop body
+
+	definefwdlabel(lab_c)
+
+	if indexvar.isframe=limitvar.isframe then
+		genpc_lab(kformm+indexvar.isframe, lab_b)
+	else
+		gerror("forall:mixed m/f")
+	fi
+	genpc_name(kpushm, indexvar)
+	genpc_name(kpushm, limitvar)
+
+	if pelse then
+		definefwdlabel(lab_e)
+		evalunit(pelse, 0)			!any else part
+	fi
+
+	definefwdlabel(lab_d)
+	unstacklooplabels()
+end
+
+proc do_case(unit p, pindex, pwhenthen, int res) =
+!also temporarily deal wit switch/doswitch
+
+	int lab_a, lab_d
+	int loopsw, labnextwhen, labstmtstart, fmult
+	unit w, wt, pelse
+
+	if pindex.tag=jnone then
+		do_case_nc(p, pindex, pwhenthen, res)
+		return
+	fi
+
+	loopsw:=p.tag=jdocase or p.tag=jdoswitch
+	pelse:=pindex.nextunit
+
+	if loopsw then
+		lab_a:=definelabel()
+		lab_d:=createfwdlabel()
+		stacklooplabels(lab_a, lab_a, lab_d)
+	else
+		lab_d:=createfwdlabel()
+	fi
+
+	evalunit(pindex)			!load test expr p to t
+
+	wt:=pwhenthen
+	while wt do
+		w:=wt.a
+		fmult:=w.nextunit<>nil
+
+		labnextwhen:=createfwdlabel()
+
+		if fmult then
+			labstmtstart:=createfwdlabel()
+		fi
+
+		while w do
+			evalunit(w)
+			w:=w.nextunit
+			if w then					!not last
+				genpc_lab(kwheneq, labstmtstart)
+			else
+				genpc_lab(kwhenne, labnextwhen)
+			fi
+		od
+		if fmult then
+			definefwdlabel(labstmtstart)
+		fi
+		evalunit(wt.b, res)
+
+		if not loopsw then
+			genjumpl(lab_d)
+		else
+			genjumpl(lab_a)
+		fi
+		definefwdlabel(labnextwhen)
+		wt:=wt.nextunit
+	od
+
+!at else part
+	genpc_n(kunshare, 1)
+
+	if pelse then
+		evalunit(pelse, res)
+	elsif res then
+		genpc(kpushvoid)
+	fi
+	if loopsw then
+		genjumpl(lab_a)
+		definefwdlabel(lab_d)
+		unstacklooplabels()
+	else
+		definefwdlabel(lab_d)
+	fi
+end
+
+proc do_case_nc(unit p, pindex, pwhenthen, int res) =
+!when no control expression
+
+	int lab_a, lab_d
+	int labnextwhen, labstmtstart, fmult
+	unit w, wt, pelse
+
+	if p.tag<>jcase then gerror("case-nc") fi
+
+	pelse:=pindex.nextunit
+
+	lab_d:=createfwdlabel()
+
+	wt:=pwhenthen
+	while wt do
+		w:=wt.a
+		fmult:=w.nextunit<>nil
+
+		labnextwhen:=createfwdlabel()
+
+		if fmult then
+			labstmtstart:=createfwdlabel()
+		fi
+
+		while w do
+			evalunit(w)
+			w:=w.nextunit
+			if w then					!not last
+				genpc_lab(kjumpt, labstmtstart)
+			else
+				genpc_lab(kjumpt, labnextwhen)
+			fi
+		od
+		if fmult then
+			definefwdlabel(labstmtstart)
+		fi
+		evalunit(wt.b, res)
+
+		genjumpl(lab_d)
+		definefwdlabel(labnextwhen)
+		wt:=wt.nextunit
+	od
+
+!at else part
+	if pelse then
+		evalunit(pelse, res)
+	elsif res then
+		gerror("Needs Else branch")
+!		genpc(kpushvoid)
+	fi
+
+	definefwdlabel(lab_d)
+end
+
+proc do_try(unit p, a, b) =
+	int labend, labx
+	unit ptry, x, pexcept, pexcode
+
+	++trylevel
+	labend:=createfwdlabel()
+	ptry:=a
+	labx:=createfwdlabel()
+
+	pexcept:=b
+
+	if pexcept=nil then
+		gerror("try: no except")
+	elsif pexcept.nextunit then
+		gerror("Try:multiple except block not implemented")
+	fi
+
+	while pexcept do
+		pexcode:=pexcept.a
+		if pexcode=nil or pexcode.nextunit then
+			gerror("Try:multiple except codes not implemented")
+		fi
+		genpc_lab(kpushtry, labx)
+		genxy(getconstvalue(pexcode), 1)
+
+		evalunit(ptry, 0)
+		genjumpl(labend)
+		definefwdlabel(labx)
+		evalunit(pexcept.b, 0)
+		definefwdlabel(labend)
+		pexcept:=pexcept.nextunit
+	od
+
+	genpc_n(kaddsp, 1)
+	--trylevel
+end
+
+function unitstoarray(unit p, ref[]unit plist, int maxunits)int=
+!convert a linked list of units to a linear list
+!return number of units
+	int n
+
+	n:=0
+	while p do
+		if n>=maxunits then
+			gerror("UTA Too many units")
+		fi
+		plist^[++n]:=p
+		p:=p.nextunit
+	od
+	
+	return n
+end
+
+proc do_select(unit pindex, pplist, int res)=
+!generate selectx expression
+	int n, labend, i, lab, elselab
+	unit x, pelse
+
+	[maxswitchrange]unit plist
+	[maxswitchrange+1]pcl labels
+
+	pelse:=pindex.nextunit
+
+	n:=unitstoarray(pplist, &plist, maxswitchrange)
+
+	if n>maxswitchrange then
+		gerror("Selectx too complex")
+	fi
+
+	labend:=createfwdlabel()
+
+	evalunit(pindex)
+!	genpc_int2(kselect, n, 1)
+	genpc_xy(kswitch, 1, n)
+
+	for i:=1 to n do
+		genpc_lab(kjumplab, 0)
+		labels[i]:=pccurr
+	od
+	genpc_lab(kjumplab, 0)
+	labels[n+1]:=pccurr
+
+!scan when statements again, o/p statements
+	i:=1
+	for i:=1 to n do
+		x:=plist[i]
+		lab:=definelabel()
+
+		labels[i].labelno:=lab
+		evalunit(x, res)
+
+		genjumpl(labend)	!break to end of statement
+	od
+
+	elselab:=definelabel()
+
+	labels[n+1].labelno:=elselab
+
+	if pelse then
+		evalunit(pelse, res)
+	elsif res then
+		genpc(kpushvoid)
+	fi
+
+	genpc(knop)
+
+	definefwdlabel(labend)
+end
+
+proc do_andl(unit x, y)=
+	int a, b
+
+	a:=createfwdlabel()
+	b:=createfwdlabel()
+
+	genjumpcond(kjumpf, x, a)
+	genjumpcond(kjumpf, y, a)
+
+	genpc_int(kpushci, 1)
+	genjumpl(b)
+	definefwdlabel(a)
+	genpc_int(kpushci, 0)
+	genpc(knop)
+	definefwdlabel(b)
+end
+
+proc do_orl(unit x, y)=
+	int a, b
+	a:=createfwdlabel()
+	b:=createfwdlabel()
+
+	genjumpcond(kjumpt, x, a)
+	genjumpcond(kjumpt, y, a)
+	genpc_int(kpushci, 0)
+	genjumpl(b)
+	definefwdlabel(a)
+	genpc_int(kpushci, 1)
+	genpc(knop)
+	definefwdlabel(b)
+end
+
+proc do_incr(unit p, a, int res)=
+	symbol d
+	int opc
+
+	opc:=(p.tag=jincrload|kincrload|kloadincr)
+
+	if res then
+		do_unaryref(a, opc)
+
+	elsif a.tag=jname then
+		d:=a.def
+		if d.nameid=paramid and d.mbyref then
+			do_unaryref(a, kincrptr)
+		else
+			genpc_name(kincrtom, a.def)
+		fi
+	else
+		do_unaryref(a, kincrptr)
+	fi
+
+	pccurr.x:=(p.flag|-1|1)
+end
+
+proc do_callhost(unit p, a, int res)=
+	int index:=p.index
+	int isfunc:=hostisfn[index]
+	int nargs, nparams, fparams
+	[10]unit plist
+	unit q
+
+
+	if res and not isfunc then
+		gerror("Host proc not a function")
+	fi
+
+	if isfunc then
+		genpc(kpushvoid)
+	fi
+
+	nargs:=0
+	q:=a
+
+	while q do
+		if nargs>plist.upb then
+			gerror("Too many host args")
+		fi
+		plist[++nargs]:=q
+
+		q:=q.nextunit
+	od
+
+!	if index=h_allparams and a=nil then
+!		nparams:=1
+!	else
+		nparams:=nargs
+!	fi
+
+	if nparams=0 and hostlvset[index] then
+		gerror("LV hostfn: needs 1+ params")
+	fi
+	fparams:=hostnparams[index]
+	if nparams>fparams then
+		gerror("Hostfn too many params")
+	fi
+
+	to fparams-nparams do
+		genpc(kpushvoid)
+	od
+
+!Finally, push all the params, which need to be done in reverse order
+	for i:=nparams downto 1 do
+		if i=1 and hostlvset[index] then
+			evalref(plist[i])
+!		elsif i=1 and index=h_allparams and nargs=0 then
+!			genpc_name(kpushmref, stcurrproc)
+		else
+			evalunit(plist[i])
+		fi
+	od  
+
+	callhostfn(index, res)
+end
+
+proc callhostfn(int fnindex, calledasfn=0)=
+!assume caller has verified that fn is a function when calledasfn is true
+!called should have pushed retval as needed, and <aparams> params
+
+	genpc_int(kcallhost, fnindex)
+end
+
+proc genfree(int n)=
+	genpc_n(kunshare, n)
+end
+
+proc do_return(unit p, a, int res)=
+!CPL "RETURN", NAMENAMES[STCURRPROC.NAMEID], STRMODE(STCURRPROC.MODE), STCURRPROC.MISFUNC
+
+!CPL "RETURN", =RES
+
+	if a then
+		if not stcurrproc.misfunc then gerror("Proc can't return a value") fi
+		evalunit(a)
+	else
+		if stcurrproc.misfunc then gerror("Func needs return value") fi
+
+!	elsif currfunction=2 then
+!		gerror("function needs return value")
+	fi
+
+	if not res then
+		genjumpl(retindex)
+	fi
+end
+
+proc do_multassign(unit a, b, int deepcopy, res)=
+	unit p, q
+	[100]unit plist
+	int n
+
+	p:=a.a
+	q:=b.a
+	n:=0
+
+	while p do
+		if q=nil then gerror("Too few RHS elems") fi
+		evalunit(q)
+		if n>=plist.len then gerror("Too many elems") fi
+		plist[++n]:=p
+
+		p:=p.nextunit
+		q:=q.nextunit
+	od
+
+	if q then gerror("Too few LHS elems") fi
+
+	for i:=n downto 1 do
+		if deepcopy then
+			genpc(kcopy)
+		fi
+
+		do_store(plist[i])
+	od
+end
+
+proc do_store(unit a, int res=0)=
+!store stack value to a
+	symbol d
+	unit p
+	[100]unit plist
+	int n
+
+	if res and a.tag<>jname then
+		genpc(kdupl)
+	fi
+
+	case a.tag
+	when jname then
+		d:=a.def
+		if d.nameid=paramid and d.mbyref then
+			if res then genpc(kdupl) fi
+			genpc_name(kpushm, d)
+			genpc(kpopptr)
+		elsif res then
+			genpc(kdupl)
+			genpc_name(kpopm, d)
+		elsif d.nameid in [procid, dllprocid] then
+			gerror("Not lvalue")
+
+!		elsif d.nameid=dllvarid then
+!			genpc_name(kpopx, d)
+
+		else
+			genpc_name(kpopm, d)
+		fi
+
+	when jdot then
+		evalunit(a.a)
+		genpc_name(kpopdot, a.b.def)
+
+	when jindex then
+		do_bin(a.a, a.b, kpopix)
+
+	when jdotindex then
+
+		evalref(a.a)
+		evalunit(a.b)
+		genpc(kpopdotix)
+	when jptr then
+		evalunit(a.a)
+		genpc(kpopptr)
+
+	when jkeyindex then
+		do_bin(a.a, a.b, kpopkeyix)
+
+	when jmakelist then			!assign to multiple destinations
+		n:=0
+		p:=a.a
+		while p do
+			if n>=plist.len then gerror("Too many elems") fi
+			plist[++n]:=p
+			p:=p.nextunit
+		od
+		if n=0 then gerror("Empty lhs list") fi
+
+		genpc_n(kexpand, n)
+!		for i:=n downto 1 do
+		for i:=1 to n do
+			do_store(plist[i])
+		od
+
+	when jif then
+		evalref(a)
+		genpc(kpopptr)
+
+	else
+		gerror_s("Can't store to this unit yet:", jtagnames[a.tag], a)
+	esac
+end
+
+function getconstvalue(unit p)int =
+	if p and p.tag=jintconst then
+		return p.value
+	fi
+	gerror("gcv Not const")
+	return 0
+end
+
+proc do_convert(unit pconv)=
+!apply type-conversion t on expression p
+
+!also do constructors
+	int n, elemmode, i, lowerx, lbound, m, mbase, nfields
+	[maxunits]unit plist
+	unit p
+
+	m:=pconv.mode
+	p:=pconv.a
+	mbase:=ttbasetype[m]
+
+!p.length is no. of elements, but it not used here(unitstoarray will count
+!anyway). But a value of -1 (rather than 1) means a trailing comma was used.
+
+	if p.tag<>jmakelist  OR MBASE=TREFPACK then		!assume regular type conversion
+			if p.tag=jmakelist then
+				deleteunit(p, p.a)
+			fi
+			evalunit(p)
+			genpc_int(kconvert, m)
+			return
+!		fi
+	fi
+
+!a is a usertype
+	n:=unitstoarray(p.a, &plist, maxunits)
+
+	if n and plist[1].tag=jkeyvalue then
+		case mbase
+		when trecord, tstruct then
+			do_makerecordkv(m, n, plist)
+		else
+			gerror("key:value not allowed")
+		esac
+		return
+	fi
+
+	for i:=1 to n do		!any elements need to be pushed
+		evalunit(plist[i])
+	od
+
+	case mbase
+	when trecord, tstruct then
+		nfields:=ttlength[m]
+		if n then
+			checkelems(n, nfields, p)
+		else				!allow 0 fields; use defaults of 0
+			to nfields do
+				genpc_int(kpushci, 0)
+			od
+			n:=nfields
+		fi
+		genpc_xy((mbase=trecord|kmakevrec|kmaketrec), n)
+		pccurr.usertag:=m
+
+	when tlist then		!probably just a list prefix used
+		lowerx:=p.lower
+		genpc_xy(kmakelist, n, lowerx)
+
+	when tarray then
+		genpc_xy(kmakeax, n, p.lower)
+		pccurr.usertag:=tarray
+		pccurr.usertag2:=p.elemtype
+
+!	when tvector then
+	when tvector then
+		elemmode:=tttarget[m]
+		lowerx:=ttlower[m]
+
+		checkelems(n, ttlength[m], p)
+		genpc_xy(kmakeax, lowerx, n)
+		pccurr.usertag:=m
+		pccurr.usertag2:=elemmode
+
+	when tbits then
+		if m=tbits then			!not user-defined
+			genpc_xy(kmakebits, n, p.lower)
+			pccurr.usertag:=tbits
+			pccurr.usertag2:=(p.elemtype=tvoid|tu1|p.elemtype)
+		else
+			gerror("user-define bit array not ready")
+		fi
+
+	when tset then
+		genpc_xy(kmakeset, n)
+
+	else
+		gerror_s("Convert list", strmode(mbase))
+	esac
+end
+
+!proc do_case(unit p, pindex, pwhenthen, int res) =
+proc checkelems(int n, length, unit p)=
+	if n<length then
+		gerror("Too few elements")
+	elsif n>length then
+		gerror("Too many elements")
+	fi
+end
+
+proc do_switch(unit p, pindex, pwhenthen, int res) =
+	int minlab, maxlab, x, y, i, n
+	unit w, wt, pelse
+
+	pelse:=pindex.nextunit
+!first a first scan over the when expressions; work out range and whether simple or complex
+	minlab:=1000000
+	maxlab:=-1000000			!highest index seen
+
+	n:=0				!no. different values
+	wt:=pwhenthen
+
+	while wt do
+		w:=wt.a
+		while w do
+			case w.tag
+			when jmakerange then
+				x:=getconstvalue(w.a)
+				y:=getconstvalue(w.b)
+dorange:
+				for i:=x to y do
+					minlab :=min(minlab, i)
+					maxlab :=max(maxlab, i)
+				od
+			when jintconst then
+				x:=y:=w.value
+				goto dorange
+			when jtypeconst then
+				x:=y:=w.mode
+				goto dorange
+			else
+				gerror_s("Switch when2: not const", strexpr(w).strptr)
+			esac
+			w:=w.nextunit
+		od
+		wt:=wt.nextunit
+	od
+
+	if maxlab-minlab<=maxswitchrange then
+		do_simpleswitch(p, pindex, pwhenthen, pelse, minlab, maxlab, res)
+		return
+	fi
+
+	gerror("COMPLEX SWITCH/NOT COMPLETE")
+end
+
+proc do_simpleswitch(unit p, pindex, pwhenthen, pelse, int a, b, res) =
+!a..b is the range of values of the switch which have been checked to
+!be in range in terms of span. But the actual values can be anything.
+!For example, 1000000 to 10000250 is valid. So, an offset needs to be
+!used to bring the range down to 0 to 250
+
+	unit w, wt, q
+	int loopsw, n, offset, x, y, x0, i, labstmt, elselab
+	[1..maxswitchrange+1]pcl labels
+	int lab_a, lab_b, lab_c, lab_d
+
+	loopsw:=p.tag=jdoswitch
+
+	n:=b-a+1
+	offset:=a-1		!a..b becomes 1..n
+
+	if loopsw then
+		lab_a:=definelabel()
+		lab_d:=createfwdlabel()
+		stacklooplabels(lab_a, lab_a, lab_d)
+	else
+		lab_d:=createfwdlabel()
+	fi
+	elselab:=createfwdlabel()
+
+	evalunit(pindex)
+
+	genpc_xy(kswitch, a, b)
+
+	for i:=1 to n do
+		genpc_lab(kjumplab, 0)
+		labels[i]:=pccurr
+	od
+
+	genpc_lab(kjumplab, 0)			!else label
+	labels[n+1]:=pccurr
+
+!scan when statements again, o/p statements
+
+	wt:=pwhenthen
+	while wt do
+		labstmt:=definelabel()
+		w:=wt.a
+		while w do
+			case w.tag
+			when jmakerange then
+				x0:=getconstvalue(w.a)
+				y:=getconstvalue(w.b)
+
+			when jintconst then
+				x0:=y:=w.value
+			when jtypeconst then
+				x0:=y:=w.mode
+			esac
+
+			for x:=x0 to y do
+				i:=x-offset
+				if labels[i].labelno then			!should have been zero
+					println x, char(x)
+					gerror("Dupl switch value")
+				fi
+				labels[i].labelno:=labstmt
+			od
+			w:=w.nextunit
+		od
+
+		evalunit(wt.b, res)
+
+		if not loopsw then
+			genjumpl(lab_d)
+		else
+			genjumpl(lab_a)
+		fi
+		wt:=wt.nextunit
+	od
+
+!fill in zero entries with else
+	definefwdlabel(elselab)
+	if pelse then		!do else part
+		evalunit(pelse, res)
+	fi	
+
+	if loopsw then
+		genjumpl(lab_a)
+		definefwdlabel(lab_d)
+		unstacklooplabels()
+	else
+		definefwdlabel(lab_d)
+	fi
+
+	for i:=1 to n do
+		if labels[i].labelno=0 then
+			labels[i].labelno:=elselab
+		fi
+	od
+	labels[n+1].labelno:=elselab
+end
+
+proc do_makerecordkv(int m, nkeyvals, []unit &kvlist)=
+	unit p
+	[maxunits]unit plist
+	int nfields, index
+	symbol d:=ttnamedef[m], e, f, k
+
+	e:=d.deflist
+	nfields:=0
+
+	while e, e:=e.nextdef do
+		if e.nameid in [fieldid, structfieldid] and e.atfield=nil then
+			++nfields
+			plist[nfields]:=nil
+		fi
+	od
+
+	for i to nkeyvals do
+		k:=kvlist[i].a.def
+		p:=kvlist[i].b
+
+		e:=d.deflist
+		f:=nil
+		while e, e:=e.nextdef do
+			if e.nameid in [fieldid, structfieldid] and e.firstdupl=k then
+				f:=e
+				exit
+			fi
+		od
+
+		if not f then
+			gerror_s("Can't find field:", k.name)
+		fi
+		index:=f.index
+		if plist[index] then
+			gerror_s("Dupl key:", k.name)
+		fi
+		plist[index]:=p
+	od
+
+	for i to nfields do
+		if plist[i] then
+			evalunit(plist[i])
+		else
+			genpc_int(kpushci, 0)
+		fi
+	od
+
+	genpc_xy(kmakevrec, nfields)
+	pccurr.usertag:=m
+end
+
+proc do_idiv(unit a, b)=
+	int n
+
+	evalunit(a)
+	if b.tag=jintconst and (n:=ispoweroftwo(b.value)) then
+		genpc_int(kpushci, n)
+		genpc(kshr)
+	else
+		evalunit(b)
+		genpc(kidiv)
+	fi
+end
+
+proc do_irem(unit a, b)=
+	int n
+	word m
+
+	evalunit(a)
+	if b.tag=jintconst and (n:=ispoweroftwo(b.value)) then
+		m:=inot(0xFFFF'FFFF'FFFF'FFFF << n)
+		genpc_int(kpushci, M)
+		genpc(kiand)
+	else
+		evalunit(b)
+		genpc(kirem)
+	fi
+end
+
+proc do_map(unit p, popcode, x)=
+	evalunit(x)
+	if x.nextunit then
+		evalunit(x.nextunit)
+	fi
+	evalunit(popcode)
+	genpc(kmap)
+
+	int lab:=createfwdlabel()
+	genpc_lab(kjump, lab)		!dummy jump to be moved to runtime-generated code
+	genpc(knop)					!stop jump being optimised out
+	definefwdlabel(lab)
+end
+
+proc pushstring(ichar s)=
+	genpc(kpushcs)
+	genopnd_strz(s)
+end
+
+function checkblockreturn(unit p)int=
+!p should be a block unit
+!check that the last statement is a return; return 1/0 for return/not return
+!just allow or check for return/if/longif for now
+	ref unitrec q, r
+
+	if p=nil then return 0 fi
+!	if p.tag<>jblock then gerror("CBR?") fi
+!
+!	q:=p.a
+!	if q=nil then return 0 fi		!empty block
+
+!	while r:=q.nextunit do			!get q=last stmt in block
+!		q:=r
+!	od
+
+	case jhasvalue[p.tag]
+	when 0 then return 0
+	when 1 then return 1				!assume simple value
+	esac								!else 2
+
+!assume complex unit
+
+	case p.tag
+	when jblock then
+		q:=p.a
+		if q=nil then return 0 fi		!empty block
+		while r:=q.nextunit do			!get q=last stmt in block
+			q:=r
+		od
+		return checkblockreturn(q)
+
+!	when jreturn then			!that's an easy one...
+!		return 1
+
+	when jif then
+		return checkblockreturn(p.b) and checkblockreturn(p.b.nextunit)		!all branches must have a return
+
+	else								!assume yes
+		return 1
+
+
+	esac
+	return 0
+end
+
+=== qq_pcllib.m 0 0 19/44 ===
+const pclinitalloc=128
+
+global pcl pcstart				!point to start of current pcl block
+global pcl pccurr				!point to last create pcl rec
+global pcl pcend				!point to last allocated int (with enough margin for on extra instr)
+global int pcalloc				!ints allocated
+
+global ref int32 pcsourcestart
+global ref int32 pcsourcecurr
+
+global int pclcurrlineno			!current line number
+const pclelemsize=pclrec.bytes
+const pcsrcelemsize=int32.bytes
+
+global const labelinitalloc=8192
+global ref[]pcl labelpctable		!labelpctable[L] refers to target instr of label L
+global int labelalloc
+global int nextlabelno
+
+!global [0..pclnames.upb]byte pclnopnds
+
+proc start=
+	int nn
+
+	pcm_init()
+
+!label/block tables are not needed after the pcl sequence has been
+!generated. But they are not freed; they can be reused, with their
+!current sizes, for the next module. (Might be inefficient if there is one
+!very large module, then mainly small ones.)
+
+	labelalloc:=labelinitalloc
+	labelpctable:=pcm_alloc(pcl.bytes*labelalloc)
+end
+
+global proc resetpcl(int sourcesize)=
+	int pclsize
+
+	qpos:=0
+	nextlabelno:=0
+	pclcurrlineno:=0
+
+!pcl dest is reallocated for each module
+!Any current pcl data is presumably retained so that it can be run.
+
+	pclsize:=sourcesize			!estimated num of pcl bytecode elements
+
+	pcalloc:=1024					!min
+	while pcalloc<pclsize do
+		pcalloc<<:=1
+	od
+
+	pcstart:=pcm_allocz(pcalloc*pclelemsize)
+	pccurr:=pcstart-1
+	pcend:=pcstart+pcalloc-8			!allow margin
+
+	pcsourcestart:=pcm_alloc(pcalloc*pcsrcelemsize)
+	pcsourcecurr:=pcsourcestart
+
+	pcm_clearmem(labelpctable, pcl.bytes*labelalloc)
+
+end
+
+global proc genpc(int opc)=
+
+	++pccurr
+
+	if pccurr>=pcend then
+		extendpcldata()
+	fi
+
+!only do overflow check at start of an instruction
+	pccurr.opcode:=opc
+!IF LABELFLAG THEN CPL "GENPC", PCLNAMES[OPC], =LABELFLAG FI
+
+	++pcsourcecurr
+	pcsourcecurr^:=qpos
+
+end
+
+!global proc genopnd_int(int64 x)=
+!!no pcindex overflow check needed, as the genpc() check will be sufficient as
+!!it would allow for enough operands
+!	pccurr.value:=x
+!end
+!
+!global proc genopnd_name(ref strec d)=
+!	pccurr.def:=d
+!end
+
+global proc genpc_int(int opc, int64 a)=
+	genpc(opc)
+	pccurr.value:=a
+end
+
+global proc genpc_n(int opc, n)=
+	genpc(opc)
+	pccurr.n:=n
+end
+
+global proc genpc_xy(int opc, x, y=0)=
+	genpc(opc)
+	pccurr.x:=x
+	pccurr.y:=y
+end
+
+global proc genpc_name(int opc, ref strec d)=
+	genpc(opc)
+	pccurr.def:=d
+end
+
+global proc genopnd_strz(ichar s)=
+!s must be a heap string, be a constant, or otherwise be persistent
+	pccurr.svalue:=s
+end
+
+global proc genopnd_str(object s)=
+!s must be a heap string, be a constant, or otherwise be persistent
+	pccurr.objptr:=s
+end
+
+global proc genopnd_obj(object p)=
+	pccurr.objptr:=p
+end
+
+global proc genpc_real(int opc, real x)=
+	genpc(opc)
+	pccurr.xvalue:=x
+end
+
+global proc genpc_lab(int opc, int lab)=
+	genpc(opc)
+	pccurr.labelno:=lab
+end
+
+!global proc genopnd_lab(int a)=
+!	pccurr.labelno:=a
+!end
+
+global proc gencomment(ichar s)=
+	genpc(kcomment)
+	genopnd_strz(pcm_copyheapstring(s))
+end
+
+proc extendpcldata=
+	int newpcalloc
+	pcl newpcstart
+	ref int32 newpcsourcestart
+
+	newpcalloc:=pcalloc*2
+
+!CPL "EXTENDING PCL TABLE TO",=PCLSTART
+
+	newpcstart:=pcm_alloc(pclelemsize*newpcalloc)
+	newpcsourcestart:=pcm_alloc(pcsrcelemsize*newpcalloc)
+
+	memcpy(newpcstart,pcstart, getpcloffset(pccurr,pcstart)*pclelemsize)
+	memcpy(newpcsourcestart,pcsourcestart, getpcloffset(pccurr,pcstart)*pcsrcelemsize)
+
+	pccurr:=newpcstart+getpcloffset(pccurr,pcstart)
+	pcend:=newpcstart+newpcalloc-10
+	pcsourcecurr:=newpcsourcestart+(pcsourcecurr-pcsourcestart)
+
+	pcm_free(pcstart,pcalloc*pclelemsize)
+	pcm_free(pcsourcestart,pcalloc*pcsrcelemsize)
+
+	pcstart:=newpcstart
+	pcalloc:=newpcalloc
+	pcsourcestart:=newpcsourcestart
+end
+
+global proc extendlabeltable=
+	int newlabelalloc
+	ref[]pcl newlabeltable
+
+	newlabelalloc:=labelalloc*2
+
+	newlabeltable:=pcm_alloc(pcl.bytes*newlabelalloc)
+
+	memcpy(newlabeltable,labelpctable, labelalloc*pcl.bytes)
+
+	pcm_free(labelpctable,labelalloc*pcl.bytes)
+
+	labelpctable:=newlabeltable
+	labelalloc:=newlabelalloc
+end
+
+global function definelabel:int=
+	if nextlabelno>=labelalloc then extendlabeltable() fi
+	++nextlabelno
+!CPL "DEF LABEL",NEXTLABELNO
+	labelpctable[nextlabelno]:=pccurr+1
+	return nextlabelno
+end
+
+global function createfwdlabel:int=
+	if nextlabelno>=labelalloc then extendlabeltable() fi
+	++nextlabelno
+!CPL "FWD LABEL",NEXTLABELNO
+	labelpctable[nextlabelno]:=nil
+	return nextlabelno
+end
+
+global proc definefwdlabel(int lab)=
+	if labelpctable[lab] then serror("dupl label?") fi
+
+!IF PCCURR.OPCODE=KJUMP AND PCCURR.LABELNO=LAB THEN
+!CPL "JUMP NEXT???"
+!FI
+!
+	labelpctable[lab]:=pccurr+1
+end
+
+global proc genxy(int x, y=0)=
+	pccurr.x:=x
+	pccurr.y:=y
+end
+
+!GLOBAL PROC SHOWLABS(ICHAR CAPTION)=
+!	PRINT "    ",CAPTION,,": ("
+!	FOR I TO NEXTLABELNO DO
+!		CP LABELPCTABLE[I],$
+!	OD
+!	CPL ")",NEXTLABELNO
+!END
+!
+=== qq_print.m 0 0 20/44 ===
 !Vars for i/o
 !Makes use of stdio/fileio/strio/windio as used by Q system
 global  int mindev		!one of stdio/fileio/strio/windio
@@ -22069,2859 +16960,7 @@ proc tostr_list(variant p, ref fmtrec fmt, object dest) =
 	r.refcount:=-r.refcount
 	--listdepth
 end
-=== qq_pclgen.m 0 0 22/44 ===
-!not opcodes, just used internally here for conditional jump logic
-const kjumpt = 1
-const kjumpf = 0
-
-!loop stack data reused by GENMPL
-const maxloopindex=20
-[maxloopindex,4]ref int loopstack
-[maxloopindex]int trylevelstack
-global int loopindex=0
-int looptrylevel			!return by findlooplabel
-
-const maxswitchrange=512
-const maxlocals=300
-const maxparams=100
-
-const maxunits=400					!for constructors
-int trylevel=0
-!int currfunction=0				!0/1/2 = not a function/proc/function
-
-!vars within curr procdef
-int retindex						!common return point; label no
-int retvaloffset					!offset of return value for procs (as stack slots)
-int nprocparams						!no. of params
-global int nproclocals				!no. of locals
-global ref int pproclocals			!pointer to pcl operand of kprocentry; may need updating
-const retaddrslots = 1				!+1 or +2, added to param indices (depends on return info size)
-int procskiplabel
-
-global proc evalunit(unit p,int res=1)=
-!p is a single executable unitrec; not a list or const
-!should be called via execblock() to executate a code item in a unitrec
-!note: sometimes res can be 2, (passing on a res=2 from an outer stmt)
-!that should be treated here same as 1 (res=2 has special meaning from pclhasvalue[] only)
-	unit a,b
-	symbol d
-	object ss
-	int procflag,index
-
-	qpos:=p.pos
-
-	a:=p.a
-	b:=p.b
-
-	switch p.tag
-	when jintconst      then
-		genpc_int(kpushci,p.value)
-
-	when jrealconst     then
-		genpc_real(kpushcr,p.xvalue)
-
-!	when jenumconst      then
-!		genpc_int2(kpushenum, p.value, p.mode)
-
-	when jnone then
-
-	when jstringconst   then
-		pushstring(p.svalue, p.length)
-
-	when jname          then
-		d:=p.def
-		case d.nameid
-		when frameid then
-			genpc_name(kpushf,d)
-		when paramid then
-			genpc_name(kpushf,d)
-			if d.mbyref then
-				genpc(kpushptr)
-			fi
-		when staticid then
-			genpc_name(kpushm,d)
-		when labelid then
-			if not res then
-				if d.labelno=0 then
-					d.labelno:=createfwdlabel()
-				fi
-				genpc_lab(kjump,d.labelno)
-				return
-			else
-				genpc_name(kpushsymbol,d)
-			fi
-
-		when dllvarid then
-			genpc_name(kpushx, d)
-
-		else
-			genpc_name(kpushsymbol,d)
-		esac
-
-	when jsymbol        then			!assume a is jname
-		if a.tag=jname then
-			genpc_name(kpushsymbol,a.def)
-		else
-			gerror(".$ name expected")
-		fi
-
-	when jblock         then
-		if a then
-			while a and a.nextunit do
-				evalunit(a,0)
-				a:=a.nextunit
-			od
-			if a then
-				evalunit(a,res)
-			fi
-		else
-!			gerror("empty block")
-		fi
-
-	when jdecimal then
-		pushstring(p.svalue, p.length)
-		genpc(kmakedecimal)
-
-	when jcall          then do_call(p,a,b,res,procflag)
-	when jreturn        then do_return(p,a)
-	when jcallhost      then do_callhost(p,a,res)
-
-	when jassign        then do_assign(a,b,res)
-	when jdeepcopy      then do_assign(a,b,res,1)
-	when jto            then do_to(p,a,b)
-	when jif            then do_if(p,a,b,b.nextunit, res)
-	when jforup,jfordown    then do_for(p,a,b)
-	when jforupx,jfordownx  then do_forx(p,a,b)
-	when jforall,jforallrev then do_forall(p,a,b)
-	when jforeach       then do_forall(p,a,b)
-	when jwhile         then do_while(p,a,b)
-	when jrepeat        then do_repeat(p,a,b)
-	when jgoto          then
-		if a.tag=jname and a.def.nameid=labelid then
-			d:=a.def
-			if d.labelno=0 then
-				d.labelno:=createfwdlabel()
-			fi
-			genpc_lab(kjump,d.labelno)
-		else
-			evalunit(a)
-			genpc(kjumpptr)
-		fi
-
-	when jlabeldef      then
-		d:=a.def
-		if d.labelno=0 then
-			d.labelno:=definelabel()
-		else
-			index:=d.labelno
-			definefwdlabel(index)
-		fi
-
-	when jredo          then do_exit(p,1)
-	when jnext          then do_exit(p,2)
-	when jexit          then do_exit(p,3)
-	when jdo 			then do_do(p,a)
-	when jcase,jdocase then do_case(p,a,b,res)
-	when jswitch, jdoswitch then do_switch(p,a,b,res)
-	when jswap          then
-		evalref(a)
-		evalref(b)
-		genpc(kswap)
-
-	when jselect        then do_select(a,b,res)
-	when jprint,jprintln,jsprint    then do_print(p,a,b)
-	when jfprint,jfprintln,jsfprint then do_fprint(p,a,b,b.nextunit)
-	when jread,jreadln  then do_read(p,a,b)
-!	when jnew           then do_new(p)
-
-	when jstop          then
-		if a then
-			evalunit(a)
-		else
-			genpc_int(kpushci,0)
-		fi
-		genpc(kstop)
-
-	when jtry           then do_try(p,a,b)
-
-	when jandl          then do_andl(a,b)
-	when jorl          then do_orl(a,b)
-	when jmakelist then
-		do_pushlist(a,p.length)
-		genpc_int2(kmakelist,p.length,p.lower)
-
-	when jmakeset then
-		do_pushlist(a,p.length)
-		genpc_int(kmakeset,p.length)
-
-	when jmakedict then do_makedict(a,p.length)
-
-!	when jmakeclosure then do_makeclosure(a)
-
-	when jkeyvalue      then
-		evalunit(a)
-		evalunit(b)
-	when jmap           then do_map(p,a,b)
-
-	when jadd, jsub, jmul, jdiv, jidivrem, jiand, jior, jixor,
-		 jshl, jshr, jin, jnotin, jinx, jmin, jmax, jmakerange, jmakerangelen,
-		 jeq, jne, jlt, jle, jge, jgt, jpower,
-		 jconcat, jappend,jisequal then
-		evalunit(a)
-		evalunit(b)
-		genpc(jpclcodes[p.tag])
-
-	when jaddto, jsubto, jmulto, jdivto, jidivto, jiandto, jiorto, jixorto,
-		 jshlto, jshrto, jminto, jmaxto, jconcatto, jappendto,
-		 jandlto, jorlto then
-		evalref(a)
-		evalunit(b)
-		genpc(jpclcodes[p.tag])
-
-	when jidiv then
-		do_idiv(p,a,b)
-
-	when jirem then
-		do_irem(p,a,b)
-
-	when jneg, jabs, jlwb, jupb, jlen, jbounds, jnotl, jinot,jisarray,
-		 jisint, jisreal, jbytesize, jisdef, jround, jisvoid, jbitwidth,
-		 jistruel, jsqr, jsqrt, jislist, jasc,jchr, jisstring, jisset,
-		 jbasetype, jtype, jelemtype, jispointer, jisrange, jisrecord,
-		 jfloor, jceil, jboundsx, jisnumber, jismutable, jsign,
-		 jsin,jcos,jtan, jasin, jacos, jatan, jexp, jlog, jlog10,
-		 jminvalue, jmaxvalue, jdictitems, jodd, jeven, jisfound then
-		do_unary(a,jpclcodes[p.tag])
-
-	when jnegto, jabsto, jinotto, jnotlto then
-		evalref(a)
-		genpc(jpclcodes[p.tag])
-
-	when jdot           then! do_bin(a,b,kdot)
-		evalunit(a)
-		genpc_name(kdot,b.def)
-
-	when jindex         then do_bin(a,b,kindex)
-	when jdotindex      then do_bin(a,b,kdotindex)
-	when jkeyindex      then
-		evalunit(a)
-		evalunit(b)
-		if b.nextunit then
-			evalunit(b.nextunit)
-		else
-			genpc(kpushvoid)
-		fi
-		genpc(kkeyindex)
-
-	when jptr           then do_unary(a,kpushptr)
-	when jptrto then
-		if a.tag=jptr then			!^a^ cancel out (a might be byref param)
-			evalunit(a.a)
-		else
-			evalref(a)
-		fi
-
-	when jaddrof        then
-		evalref(a)
-		genpc(kconvrefpack)
-
-	when jconvert       then
-		do_convert(p)
-
-	when jtypepun       then
-		evalunit(a)
-		genpc_int(ktypepun,p.mode)
-
-	when jtypeconst     then
-		genpc_int(kpusht,p.mode)
-	when joperator      then
-		genpc_int(kpushoperator,p.pclopcode)
-
-
-	when jincrload, jdecrload, jloadincr, jloaddecr then
-		do_incr(p,a,res)
-!
-	when jnil           then
-		genpc(kpushnil)
-
-	when jraise         then do_unary(a,kraise)
-
-	when jnull then
-		genpc(kpushvoid)
-
-	when jeval then
-		evalunit(a)
-		genpc_int(kunshare,1)
-
-	else
-		gerror_s("UNSUPPORTED TAG:",JTAGNAMES[P.TAG],p)
-	end switch
-
-	case jhasvalue[p.tag]
-	when 0 then
-		if res then
-			gerror_s("Value expected:",jtagnames[p.tag])
-		fi
-	when 1 then
-		if not res then
-			if p.tag=jcall and procflag=1 then		!procs have no ret value
-			elsif p.tag in [jincrload,jdecrload,jloadincr,jloaddecr] then
-			elsif p.tag=jcallhost and hostisfn[p.index]=0 then
-			else
-				genpc_int(kunshare,1)
-			fi
-		fi
-	esac						!else ignore when 2, as already dealt with
-end
-
-global proc gencodemodule(isubprog sp, int moduleno)=
-	const maxanonprocs=100
-	[maxanonprocs]symbol anonprocs
-	int nanonprocs:=0
-
-	symbol d,e
-	int lab
-	int a:=sp.firstmodule
-	int b:=sp.lastmodule
-	ifile pm:=modules[moduleno]
-
-	currmodule:=pm
-	stcurrproc:=stcurrmodule:=currmodule.def
-
-!CPL "GENCODE",SP.NAME,PM.NAME
-
-	resetpcl(pm.size)
-
-!GOTO FINISH
-
-	gencomment("Module data init code:")
-
-	qpos:=0
-	qpos.[24..31]:=moduleno
-
-!CPL "///////////////",QPOS
-
-!jump around stop/raise block needed for reentry
-!	if n=1 then
-	if moduleno=a then
-		lab:=createfwdlabel()
-		genpc_lab(kjump,lab)
-		genpc(kstoprunproc)
-		stopseq:=pcllast
-
-		raiseseq:=pcllast+1
-		genpc_int(kpushci,0)
-		genpc(kraise)
-		definefwdlabel(lab)
-	fi
-
-	d:=stcurrmodule.deflist
-	while d do
-		if d.nameid=staticid and d.code then
-			evalunit(d.code)
-			if d.initcode=3 then
-				genpc(kcopy)
-			fi
-			genpc_name(kzpopm,d)
-		elsif d.nameid=procid then
-			e:=d.deflist
-			while e do
-				if e.nameid=staticid and e.code then
-					evalunit(e.code)
-					genpc_name(kzpopm,e)
-				elsif e.nameid=anonprocid then
-					if nanonprocs>=maxanonprocs then gerror("Too many anons") fi
-					anonprocs[++nanonprocs]:=e
-				fi
-				e:=e.nextdef
-			od
-		fi
-		d:=d.nextdef
-	od	
-
-	if moduleno=a then
-		for i:=b downto a+1 do
-			genpc_name(kmodulecall, modules[i].def)
-		od
-		for i:=b downto a+1 do
-			if modules[i].startfn then
-				genpc_name(kcallproc, modules[i].startfn)
-				genopnd_int(0)
-			fi
-		od
-
-		if currmodule.startfn then
-			genpc_name(kcallproc, currmodule.startfn)
-			genopnd_int(0)
-		fi
-
-		if currmodule.mainfn then
-			genpc_name(kcallproc, currmodule.mainfn)
-			genopnd_int(0)
-		fi
-
-		evalunit(stcurrmodule.code,0)
-		genpc_int(kpushci,0)
-		genpc(kstop)
-	else
-		evalunit(stcurrmodule.code,0)
-		genpc(kmodulereturn)
-	fi
-
-	gencomment("Procs:")
-	d:=stcurrmodule.deflist
-	while d do
-		switch d.nameid
-		when procid,anonprocid then
-			do_procdef(d)
-		when staticid then
-!		when typeid then
-		when recordid then
-			e:=d.deflist
-			while e, e:=e.nextdef do
-				if e.nameid=procid then
-					do_procdef(e)
-				fi
-			od
-
-		when constid then
-		when enumid then
-		when labelid then
-		when typeid then
-		when dllprocid then
-		when aliasid then
-		when macroid then
-		when dllvarid then
-		else
-			gerror_s("?Module def:",namenames[d.nameid])
-		end switch
-
-		d:=d.nextdef
-	od	
-
-	for i to nanonprocs do
-		do_procdef(anonprocs[i])
-	od
-
-	genpc(kendmodule)
-
-FINISH:
-	pm.pcstart:=pclstart
-	pm.pcend:=pclend
-	pm.pcsize:=pclend-pclstart
-	pm.pcsrcstart:=pclsrcstart
-
-!CPL "------DONE GENPCL",PCLSTART,PCLNEXT-PCLSTART, PCLNAMES[PCLSTART^]
-
-end
-
-proc do_procdef(symbol p) =
-	int nfreevars,nnofreevars
-	int isfunc
-	symbol oldcurrproc
-
-	oldcurrproc:=stcurrproc			!might be a method
-
-	stcurrproc:=p
-
-	retindex:=createfwdlabel()
-	isfunc:=p.misfunc
-
-	genprocentry(p,nfreevars,nnofreevars)
-
-	if p.code=nil then
-		gerror_s("Empty proc body",p.name)
-	else
-		evalunit(p.code, isfunc)
-
-		if isfunc then
-!CPL "CHECK BODY", JTAGNAMES[P.CODE.TAG]
-			if not checkblockreturn(p.code) then
-				gerror("Func: return value missing")
-			fi
-		fi
-
-	fi
-
-	definefwdlabel(retindex)			!common return point
-	genprocexit(nfreevars,nnofreevars,isfunc)
-	genpc(kprocend)
-
-
-
-
-	if pproclocals^=0 then
-		p.labelno:=procskiplabel
-	fi
-	stcurrproc:=oldcurrproc
-end
-
-proc genprocentry(symbol p, int &nfreevars,&nnofreevars) =		!GENPROCENTRY
-	[200]char str
-	int n
-	symbol d
-
-	genpc_name(kprocdef, p)
-
-	nprocparams:=nproclocals:=0
-
-	d:=p.deflist
-	while d do
-		case d.nameid
-		when frameid then
-			++nproclocals
-			d.index:=nproclocals
-		when paramid then
-			++nprocparams
-		esac
-
-		d:=d.nextdef
-	od
-
-	d:=p.deflist
-	n:=nprocparams
-
-	while d, d:=d.nextdef do
-		case d.nameid
-		when paramid then
-			--n
-			d.index:=-(n+retaddrslots)
-		esac
-
-	od
-
-	retvaloffset:=-(nprocparams+retaddrslots)
-!
-	p.labelno:=definelabel()
-	genpc_int(kprocentry, nproclocals)
-	procskiplabel:=definelabel()
-
-	pproclocals:=pclnext-1
-
-	d:=p.deflist
-	while d do
-		case d.nameid
-		when frameid then
-			if d.code then
-				evalunit(d.code)
-				if d.initcode=3 then
-					genpc(kcopy)
-				fi
-				genpc_name(kzpopf, d)
-			fi
-		esac
-
-		d:=d.nextdef
-	od
-end
-
-proc genprocexit(int nfree,nnofree,isfunc)=		!GENPROCEXIT
-	int offset
-
-	if isfunc then
-		offset:=-(nprocparams+1)*varsize
-		genpc_int(kpopretval,offset)
-	fi
-	if nproclocals then
-		genpc_int(kunshare,nproclocals)
-	fi
-
-	if nprocparams=0 then
-		genpc(kreturn0)
-	else
-		genpc_int(kreturn,nprocparams)
-	fi
-end
-
-proc evalref(unit p)=
-	unit a,b,c
-	symbol d
-	int lab1,lab2
-	a:=p.a
-	b:=p.b
-
-	switch p.tag
-	when jname then
-		d:=p.def
-		if d.nameid in [procid,dllprocid] then
-			gerror("^ not allowed")
-		fi	
-
-		if d.nameid=paramid and d.mbyref then
-			genpc_name(kpushf,d)
-		else
-			genpc_name(kpushmref+d.isframe,d)
-		fi
-
-	when jdot then! do_binref(a,b,kdotref)
-		evalunit(a)
-		genpc_name(kdotref,b.def)
-	when jindex then! do_binref(a,b,kindexref)
-		evalunit(a)
-		evalunit(b)
-		genpc(kindexref)
-
-	when jdotindex then! do_binref(a,b,kdotindexref)
-!		evalunit(a)
-		evalref(a)
-		evalunit(b)
-		genpc(kdotindexref)
-
-	when jkeyindex then! do_binref(a,b,kkeyindexref)
-		evalunit(a)
-		evalunit(b)
-		if b.nextunit then gerror("Def val not allowed") fi
-		genpc(kkeyindexref)
-
-	when jptr then
-		evalunit(a)
-
-	when jif then
-		lab1:=createfwdlabel()				!dest label of main condition (to end of if, or start if else)
-		lab2:=createfwdlabel()
-
-		genjumpcond(kjumpf,p.a,lab1)
-		evalref(p.b)
-		genjumpl(lab2)
-		definefwdlabel(lab1)
-		evalref(p.b.nextunit)
-		definefwdlabel(lab2)
-	else
-!		case p.tag
-!		when jif then
-!			do_if(p,a,b,c,1)
-!		when jlongif then
-!			do_longif(p,a,b,1)
-!		when jselect then
-!			do_select(p,a,b,c,1)
-!		when jswitch then
-!			do_switch(p,a,b,c,0,1)
-!		when jcase then
-!			do_case(p,a,b,c,0,1)
-!		else
-!			PRINTUNIT(P)
-			gerror_s("evalref",jtagnames[p.tag])
-!		esac
-	end switch
-end
-
-proc genjumpcond(int opc,unit p,int lab)=
-!p is some conditional expression of arbitrary complexity
-!opc is kjumpf or kjumpt
-!evaluate and generate jumps as needed
-	unit q,r,s
-	int oldpos, lab2, i
-
-	q:=p.a
-	r:=p.b
-
-	switch p.tag
-	when jandl then
-		case opc
-		when kjumpf then
-			genjumpcond(kjumpf,q,lab)
-			genjumpcond(kjumpf,r,lab)
-		when kjumpt then
-			lab2:=createfwdlabel()
-			genjumpcond(kjumpf,q,lab2)
-			genjumpcond(kjumpt,r,lab)
-			definefwdlabel(lab2)
-		esac
-
-	when jorl then
-		case opc
-		when kjumpf then
-			lab2:=createfwdlabel()
-			genjumpcond(kjumpt,q,lab2)
-			genjumpcond(kjumpf,r,lab)
-			definefwdlabel(lab2)
-		when kjumpt then
-			genjumpcond(kjumpt,q,lab)
-			genjumpcond(kjumpt,r,lab)
-		esac
-
-	when jnotl then
-		case opc
-		when kjumpf then
-			genjumpcond(kjumpt,q,lab)
-		when kjumpt then
-			genjumpcond(kjumpf,q,lab)
-		esac
-
-	when jistruel then
-		genjumpcond(opc,q,lab)
-
-	when jblock then
-		while q and q.nextunit do
-			evalunit(q)
-			q:=q.nextunit
-		od
-		genjumpcond(opc,q,lab)
-
-	when jeq,jne,jlt,jle,jge,jgt then
-		evalunit(q)
-		evalunit(r)
-		gcomparejump(opc,p.tag,lab)
-
-	when jcmpchain then
-		r:=q.nextunit
-		i:=1
-		if opc=kjumpf then
-			while r do
-				evalunit(q)
-				evalunit(r)
-				gcomparejump(kjumpt,reversecond(p.cmpgenop[i]),lab)
-				++i
-				q:=r
-				r:=r.nextunit
-			od
-		
-		else
-			lab2:=createfwdlabel()
-			while r do
-				evalunit(q)
-				evalunit(r)
-				if r.nextunit then
-					gcomparejump(kjumpt,reversecond(p.cmpgenop[i]),lab2)
-				else
-					gcomparejump(kjumpt,p.cmpgenop[i],lab)
-				fi
-				++i
-				q:=r
-				r:=r.nextunit
-			od
-			definefwdlabel(lab2)
-		fi
-	else
-		evalunit(p)
-		genpc_lab((opc=kjumpt|kjumptrue|kjumpfalse),lab)
-	end switch
-	qpos:=oldpos
-
-end
-
-proc gcomparejump(int jumpopc,int cond, lab)=
-!jumpopc is the base cmdcode needed: kjumpt or kjumpt
-!p is the eq/compare unit
-!convert into jumpcc cmdcode
-	int opc
-
-!	cond:=p.tag				!eqop,neop, etc
-
-	if jumpopc=kjumpf then			!need to reverse condition
-		cond:=reversecond(cond)		!eqop => neop, etc
-	fi
-
-	case cond
-	when jeq then opc:=kjumpeq
-	when jne then opc:=kjumpne
-	when jlt then opc:=kjumplt
-	when jle then opc:=kjumple
-	when jge then opc:=kjumpge
-	when jgt then opc:=kjumpgt
-	else
-		gerror("GCOMP: no cond")
-	esac
-
-	genpc_lab(opc,lab)
-end
-
-proc genjumpl(int lab)=
-!generate unconditional jump to label
-	genpc_lab(kjump,lab)
-end
-
-function reversecond(int op)int=
-!reverse conditional operator
-
-	case op
-	when jeq then return jne
-	when jne then return jeq
-	when jlt then return jge
-	when jle then return jgt
-	when jge then return jlt
-	when jgt then return jle
-	esac
-	return 0
-end
-
-global proc stacklooplabels(ref int a,b,c)=
-!a is a list of labels associated with a loop, usually 4 in order A,B,C,D
-	if loopindex>=maxloopindex then
-		gerror("Too many nested loops")
-	fi
-	++loopindex
-	loopstack[loopindex,1]:=a
-	loopstack[loopindex,2]:=b
-	loopstack[loopindex,3]:=c
-!	loopstack[loopindex,4]:=d
-!	trylevelstack[loopindex]:=trylevel
-end
-
-global proc unstacklooplabels=
-	--loopindex
-end
-
-global function findlooplabel(int k,n)int=
-!k is 1,2,3,4 for label A,B,C,D
-!n is a 1,2,3, etc, according to loop nesting index
-	int i
-
-	if n=0 then			!outermost loop
-		i:=1
-	else
-		i:=loopindex-(n-1)		!point to entry
-	fi
-
-	if i<1 or i>loopindex then
-		gerror("Bad loop index")
-	fi
-
-	looptrylevel:=trylevelstack[i]
-	return loopstack[i,k]^
-end
-
-proc do_assign(unit a,b, int res,deepcopy=0)=
-	unit q
-	int n
-
-	if a.tag=b.tag=jmakelist then
-		if res then gerror("mult/ass::=") fi
-!		if deepcopy then gerror("mult/ass::=") fi
-		do_multassign(a,b, deepcopy, res)
-		return
-	fi
-
-	evalunit(b)
-	if deepcopy then
-		genpc(kcopy)
-	fi
-
-	do_store(a,res)
-end
-
-proc do_bin(unit a,b, int opc)=
-	evalunit(a)
-	evalunit(b)
-	genpc(opc)
-end
-
-proc do_binref(unit a,b, int opc)=
-	evalref(a)
-	evalunit(b)
-	genpc(opc)
-end
-
-proc do_unary(unit a, int opc)=
-	evalunit(a)
-	genpc(opc)
-end
-
-proc do_unaryref(unit a, int opc)=
-	evalref(a)
-	genpc(opc)
-end
-
-proc do_pushlist(unit a, int n)=
-	while a, a:=a.nextunit do
-		evalunit(a)
-	od
-end
-
-proc do_makedict(unit a, int n)=
-	to n do
-		if a.tag=jkeyvalue then
-			evalunit(a.a)
-			evalunit(a.b)
-		else
-			gerror("dict not key:val")
-		fi
-		a:=a.nextunit
-	od
-	genpc_int(kmakedict,n)
-end
-
-proc do_call(unit p,a,b,int res, &procflag)=
-	int nargs, nsimple, isfunc, kwdindex
-	symbol d
-	unit c
-	[maxparams]unit arglist
-
-	isfunc:=1
-	nargs:=nsimple:=0
-	kwdindex:=0
-	c:=b
-
-	while c do
-		arglist[++nargs]:=c
-		if c.tag in [jintconst, jrealconst] then ++nsimple fi
-		if c.tag=jkeyword then
-			if kwdindex=0 then kwdindex:=nargs fi
-		elsif kwdindex then
-			gerror("Non-kwd follows kwd arg")
-		fi
-		c:=c.nextunit
-	od
-
-	case a.tag
-	when jname then
-		d:=a.def
-retry:
-		case d.nameid
-		when procid, anonprocid then
-			if d.misfunc then
-				genpc(kpushvoid)
-				nargs:=pushparams(d, arglist, nargs, kwdindex)
-!				genpc_name(kcallfn,d)
-				genpc_name(kcallproc,d)
-			else					!proc call
-				isfunc:=0
-				nargs:=pushparams(d, arglist, nargs, kwdindex)
-				genpc_name(kcallproc,d)
-			fi
-			genopnd_int(nargs)
-
-		when dllprocid then
-			if not d.misfunc then
-				isfunc:=0
-			else
-				genpc(kpushvoid)
-			fi
-			nargs:=pushparams(d, arglist, nargs, kwdindex)
-			genpc_name(kcalldll,d)
-			genopnd_int(nargs)
-!			genopnd_int(d.mode)
-		when aliasid then
-			d:=d.alias
-			goto retry
-		when staticid, frameid, paramid then
-			goto docallptr
-!
-		else
-			gerror_s("CAN'T CALL:",namenames[d.nameid])
-		esac
-	when jdot then
-		if kwdindex then docallptr fi		!share error
-		genpc(kpushvoid)
-		evalref(a.a)					!push &self arg
-		for i to nargs do				!any extra ones
-			evalunit(arglist[i])
-		od
-		evalunit(a)						!push lhs again, this time for dot
-		genpc(kcallptr)
-		++nargs
-		genopnd_int(nargs)
-		genopnd_int(0)
-
-	else
-docallptr:
-		if kwdindex then gerror("Kwd params not allowed for fnptr") fi
-		genpc(kpushvoid)
-		for i to nargs do
-			evalunit(arglist[i])
-		od
-		evalunit(a)
-		genpc(kcallptr)
-		genopnd_int(nargs)
-		genopnd_int(0)
-	esac
-
-	if res and not isfunc then
-		gerror("Func ret value expected")
-	fi
-
-	procflag:=not isfunc
-end
-
-function pushparams(symbol d, []unit &arglist, int nargs, kwdindex)int=
-!push args for a known, named function
-!will deal with missing/optional args, default values, and keyword params
-!should work also for dll procs
-!In all cases, first nparams items in d.deflist will be parameter names,
-!For dlls with no named params, the entries will be $1 etc.
-
-	int nparams, extra,n
-	[maxparams]symbol paramlist
-	[maxparams]byte byreflist
-	symbol e, p
-
-	nparams:=d.nparams
-	e:=d.deflist
-	n:=0
-	while e do
-		++n
-		paramlist[n]:=e
-		byreflist[n]:=e.mbyref
-		e:=e.nextdef
-	od
-
-	if kwdindex then
-		pushkwdparams(d, arglist, nargs, kwdindex)
-		return d.nparams
-	fi
-
-	extra:=0
-
-	if nargs=nparams then
-		for i to nargs do
-			evalparam(arglist[i],byreflist[i])
-		od
-		return nargs
-	elsif nargs<nparams then	!trailing args missing
-		for i to nargs do
-			evalparam(arglist[i],byreflist[i])
-		od
-
-		for i:=nargs+1 to nparams do
-			p:=paramlist[i]
-			if not p.code and not p.moptional then
-				gerror_s("Param not optional:",strint(i))
-			fi
-			if p.code then
-				if byreflist[i] then gerror("byref with default val") fi
-				evalunit(p.code)
-			else
-				genpc(kpushvoid)
-			fi
-		od
-		return nparams
-	else						!nargs>nparams: variadic
-		for i to nparams do
-			evalparam(arglist[i],byreflist[i])
-		od
-
-		if not d.mvarparams then
-			gerror("Too many args")
-		fi
-		for i:=nparams+1 to nargs do
-			evalunit(arglist[i])			!o/p variadic args
-		od
-		return nargs
-	fi
-end
-
-proc evalparam(unit a, int byref)=
-	if byref then
-		evalref(a)
-	else
-		evalunit(a)
-	fi
-end
-
-
-proc pushkwdparams(symbol d, []unit &arglist, int nargs, kwdindex)=
-	int nparams, i,j,k
-	[maxparams]symbol paramlist
-	[maxparams]byte byreflist
-	[maxparams]unit keyunits
-	unit p,q
-	symbol e
-
-	nparams:=d.nparams
-
-	e:=d.deflist
-	for i to nparams do
-		paramlist[i]:=e
-		byreflist[i]:=e.mbyref
-		e:=e.nextdef
-	od
-
-	if nargs>nparams then
-		gerror("Too many args")
-	fi
-
-	for i:=kwdindex to nparams do
-		keyunits[i]:=nil			!indicate param not set
-	od
-
-	for i to kwdindex-1 do			!do positional params
-		evalparam(arglist[i],byreflist[i])
-	od
-
-	for i:=kwdindex to nargs do
-		p:=arglist[i]
-		q:=p.a
-		if q.tag<>jname then gerror("kwd not a name") fi
-		e:=q.def
-		k:=0
-		for j:=1 to nparams do
-			if eqstring(e.name, paramlist[j].name) then
-				k:=j
-				exit
-			fi
-		od
-
-		if k=0 then gerror_s("Can't find kwd param:",e.name) fi
-		if k<kwdindex then gerror_s("Kwd arg already positional:",e.name) fi
-		if keyunits[k] then gerror_s("Repeating kwd arg:",e.name) fi
-
-		keyunits[k]:=p.b
-	od
-
-	for i:=kwdindex to nparams do
-		if keyunits[i]=nil then
-			q:=paramlist[i].code
-			if q=nil and not paramlist[i].moptional then
-				gerror_s("Param not optional:",strint(i))
-			fi
-			keyunits[i]:=q			!q is nil when default value not set
-		fi
-	od
-
-!	for i:=nparams downto kwdindex do
-	for i:=kwdindex to nparams do
-		if keyunits[i] then
-			evalparam(keyunits[i],byreflist[i])
-		elsif byreflist[i] then
-			gerror("byref param not optional")
-		else
-			genpc(kpushvoid)
-		fi
-	od
-end
-
-proc do_if(unit p,a,b,pelse, int res)=
-	int lab1,lab2
-
-	lab1:=createfwdlabel()				!dest label of main condition (to end of if, or start if else)
-
-	if pelse or res then lab2:=createfwdlabel() fi	!label past else part
-
-	genjumpcond(kjumpf,a,lab1)
-
-	evalunit(b,res)
-
-	if pelse or res then
-		genjumpl(lab2)
-		definefwdlabel(lab1)
-		if pelse then
-			evalunit(pelse,res)
-		else
-			genpc(kpushvoid)
-		fi
-		definefwdlabel(lab2)
-	else
-		definefwdlabel(lab1)
-	fi
-end
-
-proc do_do(unit p,a)=
-	int lab_abc,lab_d,lab_test
-	lab_abc:=definelabel()
-	lab_d:=createfwdlabel()
-
-	stacklooplabels(&lab_abc, &lab_abc, &lab_d)
-
-	evalunit(a,0)
-
-	genjumpl(lab_abc)
-	definefwdlabel(lab_d)
-	unstacklooplabels()
-end
-
-proc do_exit(unit p,int k) =
-	int n,index
-
-	index:=p.a.value
-	if index=0 then index:=loopindex fi
-
-	n:=findlooplabel(k,index)
-	if n=0 then
-CPL "BAD LOOP"
-!		gerror("Bad exit/loop index",p)
-	else
-		genjumpl(n)
-	fi
-end
-
-proc do_to(unit p,pcount,pbody)=
-	int lab_b,lab_c,lab_d
-	symbol temp
-	unit pav
-
-	pav:=pcount.nextunit
-	temp:=pav.def
-
-	evalunit(pcount)
-	genpc_name(kzpopm+temp.isframe,temp)
-
-	lab_b:=createfwdlabel()
-	lab_c:=createfwdlabel()
-	lab_d:=createfwdlabel()
-	stacklooplabels(&lab_b,&lab_c,&lab_d)
-
-!check for count being nonzero
-	if pcount.tag<>jintconst then			!assume const limit is non-zero
-		genpc_name(kpushm+temp.isframe,temp)
-		genpc_int(kpushci,0)
-		genpc_lab(kjumple,lab_d)
-
-	elsif pcount.value<=0 then		!const <=0, skip body
-		genpc_lab(kjump,lab_d)
-	fi
-
-	definefwdlabel(lab_b)
-	evalunit(pbody,0)
-	definefwdlabel(lab_c)
-
-	genpc_lab(ktom+temp.isframe,lab_b)
-	genopnd_name(temp)
-
-
-	definefwdlabel(lab_d)
-	unstacklooplabels()
-end
-
-proc do_while(unit p,pcond,pbody) =
-	int lab_b,lab_c,lab_d,lab_incr
-	unit pincr:=pcond.nextunit
-
-	lab_b:=createfwdlabel()
-	lab_c:=createfwdlabel()
-	lab_d:=createfwdlabel()
-
-	if pincr then
-		lab_incr:=createfwdlabel()
-	else
-		lab_incr:=lab_c
-	fi
-
-	stacklooplabels(&lab_b, &lab_c, &lab_d)
-
-	genjumpl(lab_incr)		!direct to condition code which is at the end
-
-	definefwdlabel(lab_b)
-
-	evalunit(pbody,0)
-
-	definefwdlabel(lab_c)
-
-	if pincr then
-		evalunit(pincr)
-		definefwdlabel(lab_incr)
-	fi
-
-	genjumpcond(kjumpt,pcond,lab_b)
-	definefwdlabel(lab_d)
-	--loopindex
-end
-
-proc do_repeat(unit p,a,b) =
-	int lab_b, lab_c, lab_d
-
-	lab_b:=definelabel()
-	lab_c:=createfwdlabel()
-	lab_d:=createfwdlabel()
-
-	stacklooplabels(&lab_b, &lab_c, &lab_d)
-
-	evalunit(a,0)
-
-	definefwdlabel(lab_c)
-
-	unless b.tag=jintconst and b.value=0 then
-		genjumpcond(kjumpf,b,lab_b)
-	end
-
-	definefwdlabel(lab_d)
-	--loopindex
-end
-
-proc do_for(unit p,pvar,pbody)=
-! a = pvar, pfrom, pto, [pstep]
-! b = pbody [pelse]
-	unit pfrom, pto, pstep, pelse,plimit,pautovar
-	symbol dvar, limitvar
-	int lab_b,lab_c,lab_d,lab_e,opc,oldqpos
-	int step, fromval, limit, jumpinto
-
-	pfrom:=pvar.nextunit
-	pto:=pfrom.nextunit
-	pstep:=pto.nextunit
-	pautovar:=nil
-	if pstep then
-		gerror("By N not implem")
-	fi
-
-	pelse:=pbody.nextunit
-
-	dvar:=pvar.def
-
-	if pto.tag not in [jintconst,jname] or
-		 pto.tag=jname and pto.def.isframe<>dvar.isframe then
-		pautovar:=createavnamex(stcurrproc)
-	fi
-
-	case p.tag
-	when jforup then
-		step:=1
-
-	when jfordown then
-		step:=-1
-	esac
-
-	jumpinto:=1			!assume jumping straight into increment
-
-!now start generating code
-	lab_b:=createfwdlabel()
-	lab_c:=createfwdlabel()
-	lab_d:=createfwdlabel()
-	lab_e:=(pelse|createfwdlabel()|lab_d)
-	stacklooplabels(&lab_b,&lab_c,&lab_d)
-
-	if pfrom.tag=jintconst then		!can incr/decr directly
-		fromval:=pfrom.value
-!see if limit is known
-		if pto.tag=jintconst then
-			limit:=pto.value
-			if (step=-1 and fromval>=limit) or (step=1 and fromval<=limit) then 	!at least 1 iteration
-				jumpinto:=0
-			fi
-		fi
-		if jumpinto then
-			if step<0 then
-				++fromval
-			else
-				--fromval
-			fi
-			pfrom.value:=fromval
-		fi
-		genpc_int(kpushci,pfrom.value)
-
-		genpc_name(kpopm+dvar.isframe,dvar)
-	else
-		evalunit(pfrom)
-		genpc_name(kpopm+dvar.isframe,dvar)
-
-		genpc_name((step<0|kincrtom|kdecrtom)+dvar.isframe,dvar)
-	fi
-
-	if pautovar then
-		evalunit(pto)
-		limitvar:=pautovar.def
-		genpc_name(kzpopm+limitvar.isframe,limitvar)
-		pto:=pautovar
-	else
-		limitvar:=pto.def
-	fi
-
-	if jumpinto then
-		genjumpl(lab_c)			!jump straight into incr/jump Kfor cmdcode at C:
-	fi
-	definefwdlabel(lab_b)
-
-	evalunit(pbody,0)				!do loop body
-
-	definefwdlabel(lab_c)
-
-	if pto.tag=jintconst then
-		opc:=(step<0|kfordmci|kformci)+dvar.isframe
-	elsif dvar.isframe=limitvar.isframe then
-		opc:=(step<0|kfordmm|kformm)+dvar.isframe
-	else
-		gerror("for:mixed m/f vars")
-	fi
-
-	oldqpos:=qpos
-	qpos:=p.pos
-	genpc_lab(opc,lab_b)
-	qpos:=oldqpos
-	genopnd_name(dvar)
-
-	if pto.tag=jintconst then
-		genopnd_int(pto.value)
-	else
-		genopnd_name(limitvar)
-	fi
-
-	if pelse then
-		definefwdlabel(lab_e)
-		evalunit(pelse,0)			!any else part
-	fi
-
-	definefwdlabel(lab_d)
-	unstacklooplabels()
-end
-
-proc do_forx(unit p,pvar,pbody)=
-! a = pvar, pbounds
-! b = pbody [pelse]
-	unit pbounds, pelse,plimit,pautovar
-	symbol dvar, limitvar
-	int lab_b,lab_c,lab_d,lab_e,opc
-
-	pbounds:=pvar.nextunit
-
-	pautovar:=createavnamex(stcurrproc)
-
-	pelse:=pbody.nextunit
-	dvar:=pvar.def
-
-	if p.tag=jfordownx then
-		gerror("Can't down inrev yet")
-	fi
-
-!now start generating code
-	lab_b:=createfwdlabel()
-	lab_c:=createfwdlabel()
-	lab_d:=createfwdlabel()
-	lab_e:=(pelse|createfwdlabel()|lab_d)
-	stacklooplabels(&lab_b,&lab_c,&lab_d)
-
-	evalunit(pbounds)				!stack has lwb, upb
-	limitvar:=pautovar.def
-	genpc_name(kzpopm+limitvar.isframe,limitvar)
-
-	genpc(kdecr)
-	genpc_name(kpopm+dvar.isframe,dvar)		!from value
-
-	genjumpl(lab_c)			!jump straight into incr/jump Kfor cmdcode at C:
-	definefwdlabel(lab_b)
-
-	evalunit(pbody,0)				!do loop body
-
-	definefwdlabel(lab_c)
-
-	if dvar.isframe=limitvar.isframe then
-		genpc_lab(kformm+dvar.isframe,lab_b)
-	else
-		gerror("forx:mixed m/f")
-	fi
-	genopnd_name(dvar)
-	genopnd_name(limitvar)
-
-	if pelse then
-		definefwdlabel(lab_e)
-		evalunit(pelse,0)			!any else part
-	fi
-
-	definefwdlabel(lab_d)
-	unstacklooplabels()
-end
-
-proc do_print(unit p,a,b)=
-	int issprint
-	unit x
-
-	issprint:=p.tag=jsprint
-
-	if issprint then
-CPL "//////ISSPRINT"
-		callhostfn(h_strstartprint)
-	else
-		if a then
-			evalunit(a)
-			callhostfn(h_startprint)
-		else
-			callhostfn(h_startprintcon)
-		fi
-	fi
-
-	x:=b
-
-	while x do
-		case x.tag
-		when jfmtitem then
-			evalunit(x.b)
-			evalunit(x.a)
-			callhostfn(h_print)
-		when jnogap then
-			callhostfn(h_printnogap)
-		when jspace then
-			callhostfn(h_printspace)
-		else
-			evalunit(x)
-			callhostfn(h_print_nf)
-		esac
-		x:=x.nextunit
-	od
-
-	if p.tag=jprintln then
-		callhostfn(h_println)
-	fi
-	if issprint then
-		genpc(kpushvoid)
-		callhostfn(h_strendprint)
-	else
-		callhostfn(h_endprint)
-	fi
-end
-
-proc do_fprint(unit p,a,b,c)=
-	int issfprint
-	unit x
-
-	issfprint:=p.tag=jsfprint
-
-	if issfprint then
-		callhostfn(h_strstartprint)
-	else
-		if a then
-			evalunit(a)
-			callhostfn(h_startprint)
-		else
-			callhostfn(h_startprintcon)
-		fi
-	fi
-
-	evalunit(b)					!format string
-	callhostfn(h_setformat)
-
-	x:=c
-	while x do
-		case x.tag
-		when jfmtitem then
-			evalunit(x.b)
-			evalunit(x.a)
-			callhostfn(h_print)
-		when jnogap then
-			callhostfn(h_printnogap)
-		else
-			genpc(kpushvoid)
-			evalunit(x)
-			callhostfn(h_print)
-		esac
-		x:=x.nextunit
-	od
-
-	if p.tag=jfprintln then
-		callhostfn(h_println)
-	fi
-	if issfprint then
-		genpc(kpushvoid)
-		callhostfn(h_strendprint)
-	else
-		callhostfn(h_endprint)
-	fi
-
-end
-
-proc do_read(unit p,a,b)=
-unit x,xloop
-
-if p.tag=jreadln then
-	if a then
-		evalunit(a)
-		callhostfn(h_readln)
-	else
-		genpc(kpushvoid)
-		callhostfn(h_readln)
-	fi
-fi
-
-xloop:=b
-while xloop do
-	x:=xloop
-	genpc(kpushvoid)
-	if x.tag=jfmtitem then
-		evalunit(x.b)
-		callhostfn(h_sread)
-		x:=x.a
-	else
-		genpc(kpushvoid)
-		callhostfn(h_sread)
-	fi
-	if x.tag=jname then
-		genpc_name(kpopm+x.def.isframe,x.def)
-	else
-		evalref(x)
-		genpc(kpopptr)
-	fi
-	xloop:=xloop.nextunit
-od
-end
-
-proc do_forall(unit p,pindex,pbody)=
-!I think form pvar/prange into blocks, then those can be stored together
-! a = pindex, plist, pvar
-! b = pbody, [pelse]
-
-	int lab_b,lab_c,lab_d,lab_e
-	unit ploopvar, plist, pelse, plimitvar, plistvar
-	symbol indexvar,limitvar,loopvar, listvar
-
-	plist:=pindex.nextunit
-	ploopvar:=plist.nextunit
-
-	if ploopvar=nil then			!no discrete index var
-		ploopvar:=pindex
-
-		pindex:=createavnamex(stcurrproc)
-
-	fi
-	loopvar:=ploopvar.def
-
-	plimitvar:=createavnamex(stcurrproc)
-
-	limitvar:=plimitvar.def
-	indexvar:=pindex.def
-
-	if plist.tag<>jname or plist.def.isframe<>loopvar.isframe then			!complex list
-
-		plistvar:=createavnamex(stcurrproc)
-
-		listvar:=plistvar.def
-		evalunit(plist)
-		genpc_name(kzpopm+listvar.isframe,listvar)
-	else
-		plistvar:=plist
-		listvar:=plistvar.def
-	fi
-
-	unless indexvar.isframe=loopvar.isframe=listvar.isframe then
-		gerror("forall: mixed vars")
-	end
-
-	pelse:=pbody.nextunit
-
-	if p.tag=jforallrev then
-		gerror("Forall/rev not ready")
-	fi
-
-!set up initial loop var
-	lab_b:=createfwdlabel()
-	lab_c:=createfwdlabel()
-	lab_d:=createfwdlabel()
-	lab_e:=(pelse|createfwdlabel()|lab_d)
-	stacklooplabels(&lab_b,&lab_c,&lab_d)
-
-!assume plist is a var where bounds are not known
-!(can be optimised for a const range or a const list)
-	genpc_name(kpushm+listvar.isframe, listvar)			!load the list
-	genpc(kboundsx)			!extract bounds as (lower, upper); upper is tos
-
-	genpc_name(kzpopm+listvar.isframe,limitvar)		!limit:=upb
-	genpc(kdecr)
-	genpc_name(kzpopm+indexvar.isframe,indexvar)		!index:=lwb-1 (will incr first thing)
-
-	genjumpl(lab_c)			!jump straight into incr/jump Kfor cmdcode at C:
-
-	definefwdlabel(lab_b)
-
-!start of iteration, set up next loop variable
-	genpc_name(kpushm+listvar.isframe,listvar)
-	evalunit(pindex)
-
-	if p.tag in [jforall,jforallrev] then
-		genpc(kindex)
-	else
-		genpc(kdotindex)
-	fi
-	genpc_name(kpopm+loopvar.isframe,loopvar)
-
-	evalunit(pbody,0)			!do loop body
-
-	definefwdlabel(lab_c)
-
-	if indexvar.isframe=limitvar.isframe then
-		genpc_lab(kformm+indexvar.isframe,lab_b)
-	else
-		gerror("forall:mixed m/f")
-	fi
-	genopnd_name(indexvar)
-	genopnd_name(limitvar)
-
-	if pelse then
-		definefwdlabel(lab_e)
-		evalunit(pelse,0)			!any else part
-	fi
-
-	definefwdlabel(lab_d)
-	unstacklooplabels()
-end
-
-proc do_case(unit p,pindex,pwhenthen,int res) =
-!also temporarily deal wit switch/doswitch
-
-	int lab_a,lab_d
-	int loopsw,labnextwhen,labstmtstart,fmult
-	unit w,wt,pelse
-
-	if pindex.tag=jnone then
-		do_case_nc(p,pindex,pwhenthen,res)
-		return
-	fi
-
-	loopsw:=p.tag=jdocase or p.tag=jdoswitch
-	pelse:=pindex.nextunit
-
-	if loopsw then
-		lab_a:=definelabel()
-		lab_d:=createfwdlabel()
-		stacklooplabels(&lab_a,&lab_a,&lab_d)
-	else
-		lab_d:=createfwdlabel()
-	fi
-
-	evalunit(pindex)			!load test expr p to t
-
-	wt:=pwhenthen
-	while wt do
-		w:=wt.a
-		fmult:=w.nextunit<>nil
-
-		labnextwhen:=createfwdlabel()
-
-		if fmult then
-			labstmtstart:=createfwdlabel()
-		fi
-
-		while w do
-			evalunit(w)
-			w:=w.nextunit
-			if w then					!not last
-				genpc_lab(kjumptesteq,labstmtstart)
-			else
-				genpc_lab(kjumptestne,labnextwhen)
-			fi
-		od
-		if fmult then
-			definefwdlabel(labstmtstart)
-		fi
-		evalunit(wt.b,res)
-
-		if not loopsw then
-			genjumpl(lab_d)
-		else
-			genjumpl(lab_a)
-		fi
-		definefwdlabel(labnextwhen)
-		wt:=wt.nextunit
-	od
-
-!at else part
-	genpc_int(kunshare,1)
-
-	if pelse then
-		evalunit(pelse,res)
-	elsif res then
-		genpc(kpushvoid)
-	fi
-	if loopsw then
-		genjumpl(lab_a)
-		definefwdlabel(lab_d)
-		unstacklooplabels()
-	else
-		definefwdlabel(lab_d)
-	fi
-end
-
-proc do_case_nc(unit p,pindex,pwhenthen,int res) =
-!when no control expression
-
-	int lab_a,lab_d
-	int labnextwhen,labstmtstart,fmult
-	unit w,wt,pelse
-
-	if p.tag<>jcase then gerror("case-nc") fi
-
-	pelse:=pindex.nextunit
-
-	lab_d:=createfwdlabel()
-
-	wt:=pwhenthen
-	while wt do
-		w:=wt.a
-		fmult:=w.nextunit<>nil
-
-		labnextwhen:=createfwdlabel()
-
-		if fmult then
-			labstmtstart:=createfwdlabel()
-		fi
-
-		while w do
-			evalunit(w)
-			w:=w.nextunit
-			if w then					!not last
-				genpc_lab(kjumptrue,labstmtstart)
-			else
-				genpc_lab(kjumpfalse,labnextwhen)
-			fi
-		od
-		if fmult then
-			definefwdlabel(labstmtstart)
-		fi
-		evalunit(wt.b,res)
-
-		genjumpl(lab_d)
-		definefwdlabel(labnextwhen)
-		wt:=wt.nextunit
-	od
-
-!at else part
-	if pelse then
-		evalunit(pelse,res)
-	elsif res then
-		gerror("Needs Else branch")
-!		genpc(kpushvoid)
-	fi
-
-	definefwdlabel(lab_d)
-end
-
-proc do_try(unit p,a,b) =
-	int labend,labx
-	unit ptry,x,pexcept,pexcode
-
-	++trylevel
-	labend:=createfwdlabel()
-	ptry:=a
-	labx:=createfwdlabel()
-
-	pexcept:=b
-
-	if pexcept=nil then
-		gerror("try: no except")
-	elsif pexcept.nextunit then
-		gerror("Try:multiple except block not implemented")
-	fi
-
-	while pexcept do
-		pexcode:=pexcept.a
-		if pexcode=nil or pexcode.nextunit then
-			gerror("Try:multiple except codes not implemented")
-		fi
-		genpc_lab(kpushtry,labx)
-		genopnd_int(getconstvalue(pexcode))
-		genopnd_int(1)
-		evalunit(ptry,0)
-		genjumpl(labend)
-		definefwdlabel(labx)
-		evalunit(pexcept.b,0)
-		definefwdlabel(labend)
-		pexcept:=pexcept.nextunit
-	od
-
-	genpc_int(kaddsp,1)
-	--trylevel
-end
-
-function unitstoarray(unit p, ref[]unit plist, int maxunits)int=
-!convert a linked list of units to a linear list
-!return number of units
-	int n
-
-	n:=0
-	while p do
-		if n>=maxunits then
-			gerror("UTA Too many units")
-		fi
-		plist^[++n]:=p
-		p:=p.nextunit
-	od
-	
-	return n
-end
-
-proc do_select(unit pindex,pplist,int res)=
-!generate selectx expression
-	int n,labend,i,lab,elselab
-	unit x,pelse
-
-	[maxswitchrange]unit plist
-	[maxswitchrange+1]int labels
-
-	pelse:=pindex.nextunit
-
-	n:=unitstoarray(pplist,&plist,maxswitchrange)
-
-	if n>maxswitchrange then
-		gerror("Selectx too complex")
-	fi
-
-	labend:=createfwdlabel()
-
-	evalunit(pindex)
-!	genpc_int2(kselect,n,1)
-	genpc_int2(kswitch,n,1)
-
-	for i:=1 to n do
-		labels[i]:=pclnext-pclstart		!store destination code index
-		genpc_lab(kjumplabel,0)
-	od
-	labels[n+1]:=pclnext-pclstart
-	genpc_lab(kjumplabel,0)
-
-!scan when statements again, o/p statements
-	i:=1
-	for i:=1 to n do
-		x:=plist[i]
-		lab:=definelabel()
-
-		(pclstart+labels[i]+1)^:=lab
-		evalunit(x,res)
-
-		genjumpl(labend)	!break to end of statement
-	od
-
-	elselab:=definelabel()
-
-	(pclstart+labels[n+1]+1)^:=elselab
-
-	if pelse then
-		evalunit(pelse,res)
-	elsif res then
-		genpc(kpushvoid)
-	fi
-
-	genpc(knop)
-
-	definefwdlabel(labend)
-end
-
-proc do_andl(unit x,y)=
-	int a,b
-
-	a:=createfwdlabel()
-	b:=createfwdlabel()
-
-	genjumpcond(kjumpf,x,a)
-	genjumpcond(kjumpf,y,a)
-
-	genpc_int(kpushci,1)
-	genjumpl(b)
-	definefwdlabel(a)
-	genpc_int(kpushci,0)
-	genpc(knop)
-	definefwdlabel(b)
-end
-
-proc do_orl(unit x,y)=
-	int a,b
-	a:=createfwdlabel()
-	b:=createfwdlabel()
-
-	genjumpcond(kjumpt,x,a)
-	genjumpcond(kjumpt,y,a)
-	genpc_int(kpushci,0)
-	genjumpl(b)
-	definefwdlabel(a)
-	genpc_int(kpushci,1)
-	genpc(knop)
-	definefwdlabel(b)
-end
-
-proc do_incr(unit p,a, int res)=
-	symbol d
-	if res then
-		do_unaryref(a,jpclcodes[p.tag])
-	elsif a.tag=jname then
-		d:=a.def
-		if d.nameid=paramid and d.mbyref then
-			goto dounary
-		else
-			genpc_name((p.tag in [jincrload,jloadincr]|kincrtom|kdecrtom)+a.def.isframe,a.def)
-		fi
-	else
-dounary:
-		do_unaryref(a,(p.tag in [jincrload,jloadincr]|kincrptr|kdecrptr))
-	fi
-end
-
-proc do_new(unit p)=
-	int n
-	unit q
-
-	n:=p.nparams
-	if n<1 or n>3 then gerror("new args") fi
-
-	q:=p.a
-
-	genpc(kpushvoid)
-	to n do
-		evalunit(q)
-		q:=q.nextunit
-	od
-	to 3-n do
-		genpc(kpushvoid)
-	od
-
-	callhostfn(h_new)
-
-end
-
-proc do_callhost(unit p, a, int res)=
-	int index:=p.index
-	int isfunc:=hostisfn[index]
-	int nargs, nparams, fparams
-	[10]unit plist
-	unit q
-
-
-	if res and not isfunc then
-		gerror("Host proc not a function")
-	fi
-
-	if isfunc then
-		genpc(kpushvoid)
-	fi
-
-	nargs:=0
-	q:=a
-
-	while q do
-		if nargs>plist.upb then
-			gerror("Too many host args")
-		fi
-		plist[++nargs]:=q
-
-		q:=q.nextunit
-	od
-
-!	if index=h_allparams and a=nil then
-!		nparams:=1
-!	else
-		nparams:=nargs
-!	fi
-
-	if nparams=0 and hostlvset[index] then
-		gerror("LV hostfn: needs 1+ params")
-	fi
-	fparams:=hostnparams[index]
-	if nparams>fparams then
-		gerror("Hostfn too many params")
-	fi
-
-	to fparams-nparams do
-		genpc(kpushvoid)
-	od
-
-!Finally, push all the params, which need to be done in reverse order
-	for i:=nparams downto 1 do
-		if i=1 and hostlvset[index] then
-			evalref(plist[i])
-!		elsif i=1 and index=h_allparams and nargs=0 then
-!			genpc_name(kpushmref,stcurrproc)
-		else
-			evalunit(plist[i])
-		fi
-	od  
-
-	callhostfn(index,res)
-end
-
-proc callhostfn(int fnindex,calledasfn=0)=
-!assume caller has verified that fn is a function when calledasfn is true
-!called should have pushed retval as needed, and <aparams> params
-
-	genpc_int(kcallhost,fnindex)
-end
-
-proc genfree(int n)=
-	genpc_int(kunshare,n)
-end
-
-proc do_return(unit p,a)=
-!CPL "RETURN", NAMENAMES[STCURRPROC.NAMEID], STRMODE(STCURRPROC.MODE), STCURRPROC.MISFUNC
-	if a then
-		if not stcurrproc.misfunc then gerror("Proc can't return a value") fi
-		evalunit(a)
-	else
-		if stcurrproc.misfunc then gerror("Func needs return value") fi
-
-!	elsif currfunction=2 then
-!		gerror("function needs return value")
-	fi
-
-	genjumpl(retindex)
-end
-
-proc do_multassign(unit a,b, int deepcopy, res)=
-	unit p,q
-	[100]unit plist
-	int n
-
-	p:=a.a
-	q:=b.a
-	n:=0
-
-	while p do
-		if q=nil then gerror("Too few RHS elems") fi
-		evalunit(q)
-		if n>=plist.len then gerror("Too many elems") fi
-		plist[++n]:=p
-
-		p:=p.nextunit
-		q:=q.nextunit
-	od
-
-	if q then gerror("Too few LHS elems") fi
-
-	for i:=n downto 1 do
-		if deepcopy then
-			genpc(kcopy)
-		fi
-
-		do_store(plist[i])
-	od
-end
-
-proc do_store(unit a,int res=0)=
-!store stack value to a
-	symbol d
-	unit p
-	[100]unit plist
-	int n
-
-	if res and a.tag<>jname then
-		genpc(kdupl)
-	fi
-
-	case a.tag
-	when jname then
-		d:=a.def
-		if d.nameid=paramid and d.mbyref then
-			if res then genpc(kdupl) fi
-			genpc_name(kpushf,d)
-			genpc(kpopptr)
-		elsif res then
-			genpc_name(kstorem+d.isframe,d)
-		elsif d.nameid=dllvarid then
-			genpc_name(kpopx,d)
-
-		else
-			genpc_name(kpopm+d.isframe,d)
-		fi
-
-	when jdot then
-		evalunit(a.a)
-		genpc_name(kpopdot,a.b.def)
-
-	when jindex then
-		do_bin(a.a, a.b, kpopindex)
-	when jdotindex then
-
-		evalref(a.a)
-		evalunit(a.b)
-		genpc(kpopdotindex)
-	when jptr then
-		evalunit(a.a)
-		genpc(kpopptr)
-
-	when jkeyindex then
-		do_bin(a.a, a.b, kpopkeyindex)
-
-	when jmakelist then			!assign to multiple destinations
-		n:=0
-		p:=a.a
-		while p do
-			if n>=plist.len then gerror("Too many elems") fi
-			plist[++n]:=p
-			p:=p.nextunit
-		od
-		if n=0 then gerror("Empty lhs list") fi
-
-		genpc_int(kexpand,n)
-!		for i:=n downto 1 do
-		for i:=1 to n do
-			do_store(plist[i])
-		od
-
-	when jif then
-		evalref(a)
-		genpc(kpopptr)
-
-	else
-		gerror_s("Can't store to this unit yet:",jtagnames[a.tag], a)
-	esac
-end
-
-function getconstvalue(unit p)int =
-	if p and p.tag=jintconst then
-		return p.value
-	fi
-	gerror("gcv Not const")
-	return 0
-end
-
-proc do_convert(unit pconv)=
-!apply type-conversion t on expression p
-
-!also do constructors
-	int n,elemmode,i,lowerx,lbound,m,mbase,nfields
-	[maxunits]unit plist
-	unit p
-
-	m:=pconv.mode
-	p:=pconv.a
-	mbase:=ttbasetype[m]
-
-!p.length is no. of elements, but it not used here(unitstoarray will count
-!anyway). But a value of -1 (rather than 1) means a trailing comma was used.
-
-	if p.tag<>jmakelist  OR MBASE=TREFPACK then		!assume regular type conversion
-			if p.tag=jmakelist then
-				deleteunit(p,p.a)
-			fi
-			evalunit(p)
-			genpc_int(kconvert,m)
-			return
-!		fi
-	fi
-
-!a is a usertype
-	n:=unitstoarray(p.a,&plist,maxunits)
-
-	if n and plist[1].tag=jkeyvalue then
-		case mbase
-		when trecord, tstruct then
-			do_makerecordkv(m,n,plist)
-		else
-			gerror("key:value not allowed")
-		esac
-		return
-	fi
-
-	for i:=1 to n do		!any elements need to be pushed
-		evalunit(plist[i])
-	od
-
-	case mbase
-	when trecord, tstruct then
-		nfields:=ttlength[m]
-		if n then
-			checkelems(n,nfields,p)
-		else				!allow 0 fields; use defaults of 0
-			to nfields do
-				genpc_int(kpushci,0)
-			od
-			n:=nfields
-		fi
-		genpc_int2((mbase=trecord|kmakerecord|kmakestruct),n,m)
-
-	when tlist then		!probably just a list prefix used
-		lowerx:=p.lower
-		genpc_int2(kmakelist,n,lowerx)
-
-	when tarray then
-		genpc_int4(kmakearray,p.lower,n,tarray,p.elemtype)
-
-!	when tvector then
-	when tvector then
-		elemmode:=tttarget[m]
-		lowerx:=ttlower[m]
-
-		checkelems(n,ttlength[m],p)
-		genpc_int4(kmakearray,lowerx,n,m,elemmode)
-
-	when tbits then
-		if m=tbits then			!not user-defined
-			genpc_int4(kmakebits,p.lower,n,tbits,(p.elemtype=tvoid|tu1|p.elemtype))
-		else
-			gerror("user-define bit array not ready")
-		fi
-
-	when tset then
-		genpc_int(kmakeset,n)
-
-	else
-		gerror_s("Convert list",strmode(mbase))
-	esac
-end
-
-!proc do_case(unit p,pindex,pwhenthen,int res) =
-proc checkelems(int n,length, unit p)=
-	if n<length then
-		gerror("Too few elements")
-	elsif n>length then
-		gerror("Too many elements")
-	fi
-end
-
-proc do_switch(unit p,pindex,pwhenthen, int res) =
-	int minlab,maxlab,x,y,i,n
-	unit w,wt, pelse
-
-	pelse:=pindex.nextunit
-!first a first scan over the when expressions; work out range and whether simple or complex
-	minlab:=1000000
-	maxlab:=-1000000			!highest index seen
-
-	n:=0				!no. different values
-	wt:=pwhenthen
-
-	while wt do
-		w:=wt.a
-		while w do
-			case w.tag
-			when jmakerange then
-				x:=getconstvalue(w.a)
-				y:=getconstvalue(w.b)
-dorange:
-				for i:=x to y do
-					minlab :=min(minlab,i)
-					maxlab :=max(maxlab,i)
-				od
-			when jintconst then
-				x:=y:=w.value
-				goto dorange
-			when jtypeconst then
-				x:=y:=w.mode
-				goto dorange
-			else
-				gerror_s("Switch when2: not const",strexpr(w).strptr)
-			esac
-			w:=w.nextunit
-		od
-		wt:=wt.nextunit
-	od
-
-	if maxlab-minlab<=maxswitchrange then
-		do_simpleswitch(p,pindex,pwhenthen,pelse, minlab,maxlab, res)
-		return
-	fi
-
-	gerror("COMPLEX SWITCH/NOT COMPLETE")
-end
-
-proc do_simpleswitch(unit p,pindex,pwhenthen,pelse, int a,b, res) =
-!a..b is the range of values of the switch which have been checked to
-!be in range in terms of span. But the actual values can be anything.
-!For example, 1000000 to 10000250 is valid. So, an offset needs to be
-!used to bring the range down to 0 to 250
-
-	unit w,wt,q
-	int loopsw,n,offset,x,y,x0,i,labstmt,elselab
-	[1..maxswitchrange+1]ref int labels
-	int lab_a,lab_b,lab_c,lab_d
-
-	loopsw:=p.tag=jdoswitch
-
-	n:=b-a+1
-	offset:=a-1		!a..b becomes 1..n
-
-	if loopsw then
-		lab_a:=definelabel()
-		lab_d:=createfwdlabel()
-		stacklooplabels(&lab_a,&lab_a,&lab_d)
-	else
-		lab_d:=createfwdlabel()
-	fi
-	elselab:=createfwdlabel()
-
-	evalunit(pindex)
-
-	genpc_int2(kswitch,n,a)
-
-	for i:=1 to n do
-		genpc_lab(kjumplabel,0)
-		labels[i]:=pcllast+1		!for now, store destination code index
-	od
-
-	genpc_lab(kjumplabel,0)			!else label
-	labels[n+1]:=pcllast+1
-
-!scan when statements again, o/p statements
-
-	wt:=pwhenthen
-	while wt do
-		labstmt:=definelabel()
-		w:=wt.a
-		while w do
-			case w.tag
-			when jmakerange then
-				x0:=getconstvalue(w.a)
-				y:=getconstvalue(w.b)
-
-			when jintconst then
-				x0:=y:=w.value
-			when jtypeconst then
-				x0:=y:=w.mode
-			esac
-
-			for x:=x0 to y do
-				i:=x-offset
-				if labels[i]^ then			!should have been zero
-					cpl x,char(x)
-					gerror("Dupl switch value")
-				fi
-				labels[i]^:=labstmt
-			od
-			w:=w.nextunit
-		od
-
-		evalunit(wt.b, res)
-
-		if not loopsw then
-			genjumpl(lab_d)
-		else
-			genjumpl(lab_a)
-		fi
-		wt:=wt.nextunit
-	od
-
-!fill in zero entries with else
-	definefwdlabel(elselab)
-	if pelse then		!do else part
-		evalunit(pelse,res)
-	fi	
-
-	if loopsw then
-		genjumpl(lab_a)
-		definefwdlabel(lab_d)
-		unstacklooplabels()
-	else
-		definefwdlabel(lab_d)
-	fi
-
-	for i:=1 to n do
-		if labels[i]^=0 then
-			labels[i]^:=elselab
-		fi
-	od
-	labels[n+1]^:=elselab
-end
-
-proc do_makerecordkv(int m,nkeyvals, []unit &kvlist)=
-	unit p
-	[maxunits]unit plist
-	int nfields, index
-	symbol d:=ttnamedef[m], e, f, k
-
-	e:=d.deflist
-	nfields:=0
-
-	while e,e:=e.nextdef do
-		if e.nameid in [fieldid,structfieldid] and e.atfield=nil then
-			++nfields
-			plist[nfields]:=nil
-		fi
-	od
-
-	for i to nkeyvals do
-		k:=kvlist[i].a.def
-		p:=kvlist[i].b
-
-		e:=d.deflist
-		f:=nil
-		while e,e:=e.nextdef do
-			if e.nameid in [fieldid,structfieldid] and e.firstdupl=k then
-				f:=e
-				exit
-			fi
-		od
-
-		if not f then
-			gerror_s("Can't find field:",k.name)
-		fi
-		index:=f.index
-		if plist[index] then
-			gerror_s("Dupl key:",k.name)
-		fi
-		plist[index]:=p
-	od
-
-	for i to nfields do
-		if plist[i] then
-			evalunit(plist[i])
-		else
-			genpc_int(kpushci,0)
-		fi
-	od
-
-	genpc_int2(kmakerecord,nfields,m)
-end
-
-proc do_idiv(unit p,a,b)=
-	int n
-
-	evalunit(a)
-	if b.tag=jintconst and (n:=ispoweroftwo(b.value)) then
-		genpc_int(kpushci,n)
-		genpc(kshr)
-	else
-		evalunit(b)
-		genpc(kidiv)
-	fi
-end
-
-proc do_irem(unit p,a,b)=
-	int n
-	word m
-
-	evalunit(a)
-	if b.tag=jintconst and (n:=ispoweroftwo(b.value)) then
-		m:=inot(0xFFFF'FFFF'FFFF'FFFF << n)
-		genpc_int(kpushci,M)
-		genpc(kiand)
-	else
-		evalunit(b)
-		genpc(kirem)
-	fi
-end
-
-proc do_map(unit p,popcode,x)=
-	evalunit(x)
-	if x.nextunit then
-		evalunit(x.nextunit)
-	fi
-	evalunit(popcode)
-	genpc((x.nextunit|kmapss|kmaps))
-
-	int lab:=createfwdlabel()
-	genpc_lab(kjump,lab)		!dummy jump to be moved to runtime-generated code
-	genpc(knop)					!stop jump being optimised out
-	definefwdlabel(lab)
-end
-
-proc pushstring(ichar s, int length)=
-	genpc(kpushcs)
-	ref stringrec ps:=pcm_alloc(stringrec.bytes)
-	ps.svalue:=s
-	ps.length:=length
-	genopnd_int(cast(ps))
-end
-
-function checkblockreturn(unit p)int=
-!p should be a block unit
-!check that the last statement is a return; return 1/0 for return/not return
-!just allow or check for return/if/longif for now
-	ref unitrec q,r
-
-	if p=nil then return 0 fi
-!	if p.tag<>jblock then gerror("CBR?") fi
-!
-!	q:=p.a
-!	if q=nil then return 0 fi		!empty block
-
-!	while r:=q.nextunit do			!get q=last stmt in block
-!		q:=r
-!	od
-
-	case jhasvalue[p.tag]
-	when 0 then return 0
-	when 1 then return 1				!assume simple value
-	esac								!else 2
-
-!assume complex unit
-
-	case p.tag
-	when jblock then
-		q:=p.a
-		if q=nil then return 0 fi		!empty block
-		while r:=q.nextunit do			!get q=last stmt in block
-			q:=r
-		od
-		return checkblockreturn(q)
-
-!	when jreturn then			!that's an easy one...
-!		return 1
-
-	when jif then
-		return checkblockreturn(p.b) and checkblockreturn(p.b.nextunit)		!all branches must have a return
-
-	else								!assume yes
-		return 1
-
-
-	esac
-	return 0
-end
-
-=== qq_pcllib.m 0 0 23/44 ===
-const pclinitalloc=128
-
-global ref int pclstart				!point to start of current pcl block
-global ref int pclnext				!point to next available int in pcl block
-global ref int pclend				!point to last allocated int (with enough margin for on extra instr)
-global ref int pcllast				!points to start of last pcl instruction in pcl block
-global int pclalloc					!ints allocated
-
-global ref int32 pclsrcstart
-global ref int32 pclsrcnext
-
-global int pclcurrlineno			!current line number
-const pclelemsize=int.bytes
-const pclsrcelemsize=int32.bytes
-
-global const labelinitalloc=8192
-global ref[]int labeloffsettable
-global int labelalloc
-global int nextlabelno
-int labelflag
-
-global [0..pclnames.upb]byte pclnopnds
-
-proc start=
-	int nn
-
-	for i:=1 to klastpcl do
-		nn:=0
-		for j:=1 to 4 do
-			if pclfmt[i,j]=0 then exit fi
-			++nn
-		od
-		pclnopnds[i]:=nn
-	od
-
-	pcm_init()
-
-!label/block tables are not needed after the pcl sequence has been
-!generated. But they are not freed; they can be reused, with their
-!current sizes, for the next module. (Might be inefficient if there is one
-!very large module, then mainly small ones.)
-
-	labelalloc:=labelinitalloc
-	labeloffsettable:=pcm_alloc(int.bytes*labelalloc)
-end
-
-global proc resetpcl(int sourcesize)=
-	int pclsize
-
-	qpos:=0
-	nextlabelno:=0
-	pclcurrlineno:=0
-
-!pcl dest is reallocated for each module
-!Any current pcl data is presumably retained so that it can be run.
-
-	pclsize:=sourcesize			!estimated num of pcl bytecode elements
-
-	pclalloc:=1024					!min
-	while pclalloc<pclsize do
-		pclalloc<<:=1
-	od
-
-	pclstart:=pcm_alloc(pclalloc*pclelemsize)
-	pclnext:=pclstart
-	pclend:=pclstart+pclalloc-16			!allow margin for 1-2 pcl ops
-	pcllast:=nil
-
-	pclsrcstart:=pcm_alloc(pclalloc*pclsrcelemsize)
-	pclsrcnext:=pclsrcstart
-
-
-end
-
-global proc genpc(int opc)=
-!	if opc=0 then
-!		GERROR("ZERO PCL OP?")
-!	fi
-!IF OPC>PCLNAMES.LEN THEN
-!GERROR("GENPC:BAD OPC")
-!FI
-
-	if pclnext>=pclend then
-		extendpcldata()
-	fi
-
-!only do overflow check at start of an instruction
-	pclnext^:=opc
-	pcllast:=pclnext
-
-!IF QPOS=0 THEN
-!	CPL "STORE QPOS",QPOS, PCLNAMES[OPC]
-!FI
-	pclsrcnext^:=qpos
-
-!++NPCL
-
-	++pclnext
-	++pclsrcnext
-	labelflag:=0
-end
-
-global proc genopnd_int(int64 x)=
-!no pcindex overflow check needed, as the genpc() check will be sufficient as
-!it would allow for enough operands
-	pclnext++^:=x
-	++pclsrcnext
-end
-
-global proc genopnd_name(ref strec d)=
-!	pclnext++^:=int@(d)
-	pclnext++^:=int(d)
-	++pclsrcnext
-end
-
-global proc genpc_int(int opc, int64 a)=
-	genpc(opc)
-	pclnext++^:=a
-	++pclsrcnext
-end
-
-global proc genpc_int2(int opc, int64 a,b)=
-	genpc(opc)
-	pclnext++^:=a
-	pclnext++^:=b
-	pclsrcnext+:=2
-
-end
-
-global proc genpc_int4(int opc, int64 a,b,c,d)=
-	genpc(opc)
-	pclnext++^:=a
-	pclnext++^:=b
-	pclnext++^:=c
-	pclnext++^:=d
-	pclsrcnext+:=4
-end
-
-global proc genpc_name(int opc, ref strec d)=
-!	if pcllast^=kpopf and opc=kpushf and not labelflag and (pcllast+1)^=int64@(d) then
-	if pcllast^=kpopf and opc=kpushf and not labelflag and (pcllast+1)^=int64(d) then
-		pcllast^:=kstoref
-		return
-	fi
-
-	genpc(opc)
-!	pclnext++^:=int64@(d)
-	pclnext++^:=int64(d)
-	++pclsrcnext
-end
-
-global proc genopnd_strz(ichar s)=
-!s must be a heap string, be a constant, or otherwise be persistent
-!	pclnext++^:=int64@(s)
-	pclnext++^:=int64(s)
-	++pclsrcnext
-end
-
-global proc genopnd_str(object s)=
-!s must be a heap string, be a constant, or otherwise be persistent
-!	pclnext++^:=int64@(s)
-	pclnext++^:=int64(s)
-	++pclsrcnext
-end
-
-global proc genopnd_obj(object p)=
-!	pclnext++^:=int64@(p)
-	pclnext++^:=int64(p)
-	++pclsrcnext
-end
-
-global proc genpc_real(int opc, real x)=
-	genpc(opc)
-	pclnext++^:=int64@(x)
-!	pclnext++^:=int64(x)
-	++pclsrcnext
-end
-
-global proc genpc_lab(int opc, int a)=
-	int lastpc
-	genpc(opc)
-	genopnd_lab(a)
-end
-
-global proc genopnd_lab(int a)=
-	int lastpc
-
-	if a>=0 then				!normal, defined label
-		pclnext++^:=a
-!CPL "GENLAB",=A
-		++pclsrcnext
-		return
-	fi
-
-!a<0 means fwd label index
-	a:=-a					!make positive
-	lastpc:=labeloffsettable^[a]		!will be 0 (if first ref) or pc index of last ref
-	labeloffsettable^[a]:=pclnext-pclstart
-	pclnext++^:=lastpc
-	++pclsrcnext
-end
-
-global proc gencomment(ichar s)=
-	genpc(kcomment)
-	genopnd_strz(pcm_copyheapstring(s))
-end
-
-!global function getdottedname(ref strec p)ichar=
-!!build full dotted name for st item p
-!	static [256]char str
-!	[256]char str2
-!	ref strec owner
-!
-!	strcpy(&.str,p.name)
-!	return &.str
-!end
-!
-proc extendpcldata=
-	int newpclalloc
-	ref int newpclstart
-	ref int32 newpclsrcstart
-
-	newpclalloc:=pclalloc*2
-
-!CPL "EXTENDING PCL TABLE TO",=PCLSTART
-
-	newpclstart:=pcm_alloc(pclelemsize*newpclalloc)
-	newpclsrcstart:=pcm_alloc(pclsrcelemsize*newpclalloc)
-
-	memcpy(newpclstart,pclstart, (pclnext-pclstart)*pclelemsize)
-	memcpy(newpclsrcstart,pclsrcstart, (pclnext-pclstart)*pclsrcelemsize)
-
-	pclnext:=newpclstart+(pclnext-pclstart)
-	pclend:=newpclstart+newpclalloc-10
-	pcllast:=newpclstart+(pcllast-pclstart)
-	pclsrcnext:=newpclsrcstart+(pclsrcnext-pclsrcstart)
-
-	pcm_free(pclstart,pclalloc*pclelemsize)
-	pcm_free(pclsrcstart,pclalloc*pclsrcelemsize)
-
-	pclstart:=newpclstart
-	pclalloc:=newpclalloc
-	pclsrcstart:=newpclsrcstart
-end
-
-global proc extendlabeltable=
-	int newlabelalloc
-	ref[]int newlabeltable
-
-	newlabelalloc:=labelalloc*2
-
-	newlabeltable:=pcm_alloc(int.bytes*newlabelalloc)
-
-	memcpy(newlabeltable,labeloffsettable, labelalloc*int.bytes)
-
-	pcm_free(labeloffsettable,labelalloc*int.bytes)
-
-	labeloffsettable:=newlabeltable
-	labelalloc:=newlabelalloc
-end
-
-global function definelabel:int=
-	if nextlabelno>=labelalloc then extendlabeltable() fi
-	++nextlabelno
-	labeloffsettable^[nextlabelno]:=pclnext-pclstart
-	labelflag:=1
-	return pclnext-pclstart
-end
-
-global function createfwdlabel:int=
-	if nextlabelno>=labelalloc then extendlabeltable() fi
-	++nextlabelno
-	labeloffsettable^[nextlabelno]:=0
-	return -nextlabelno
-end
-
-global proc definefwdlabel(int &lab)=
-!oldlab should be negative
-	int newlab,index,laboffset,pc,nextpc
-
-	index:=lab
-	if index>=0 then gerror("deffwdlabel?") fi
-	index:=-index
-
-	laboffset:=pclnext-pclstart
-
-	pc:=labeloffsettable^[index]			!start of fwd ref chain
-	while pc do						!pc is next pc-index of last label ref
-		nextpc:=(pclstart+pc)^
-		(pclstart+pc)^:=laboffset
-		pc:=nextpc
-	od
-	labeloffsettable^[index]:=laboffset
-
-	lab:=laboffset
-	labelflag:=1
-end
-
-!global function isstatic(symbol d)int=
-!	return d.nameid=staticid
-!end
-=== qq_records.m 0 0 24/44 ===
+=== qq_records.m 0 0 21/44 ===
 global proc var_make_record(variant a, dest, int n, rectype) =
 !create a list of n vars starting from a in reverse order (a is the last)
 !put the result in dest (note this will be the last the n vars)
@@ -25120,7 +17159,7 @@ global proc var_getixref_record(variant a, int index, variant dest)=
 	dest.varptr:=p
 end
 
-=== qq_resolve.m 0 0 25/44 ===
+=== qq_resolve.m 0 0 22/44 ===
 int nprocs
 
 int noexpand
@@ -25245,6 +17284,8 @@ global proc rx_unit(symbol owner, unit p)=
 			p.b:=nil
 			p.mode:=a.mode
 
+!CPL "CALL TO CONVERT"
+
 !			if ttbasetype[a.mode]=tenum then
 !			else
 				nk:=0
@@ -25271,18 +17312,17 @@ global proc rx_unit(symbol owner, unit p)=
 			--macrolevels
 		fi
 
-	when jadd, jsub, jmul, jdiv, jidiv, jirem, jiand, jior, jixor,
-		jshl, jshr, jmakerange then
+	when jbin, jmakerange then
 		rx_unit(owner,a)
 		if not b then rxerror("Binop missing opnd") fi
 		rx_unit(owner,b)
 		evalbinop(p,a,b)
 
-	when jneg, jabs,jlen, jlwb, jupb,jbytesize,jsqrt then
+	when junary, jproperty then
 		rx_unit(owner,a)
 		evalmonop(p)
 
-	when jforup,jfordown then			!a will be jname unit
+	when jfor then			!a will be jname unit
 		resolvename(owner,a,tint)
 		a:=a.nextunit
 		goto doabc
@@ -25358,19 +17398,19 @@ proc evalmonop(unit p)=
 	real x,z
 
 	case p.tag
-	when jbytesize then
-		if p.a.tag=jtypeconst then
-			c:=ttsize[p.a.mode]
-			newint
-		fi
-	
+!	when jbytesize then
+!		if p.a.tag=jtypeconst then
+!			c:=ttsize[p.a.mode]
+!			newint
+!		fi
+
 	elsecase p.a.tag
 	when jintconst then
 		a:=p.a.value
 
-		case p.tag
-		when jneg then c:=-a
-		when jabs then c:=abs(a)
+		case p.pclop
+		when kneg then c:=-a
+		when kabs then c:=abs(a)
 		else
 			return
 		esac
@@ -25381,9 +17421,9 @@ newint:
 	when jrealconst then
 		x:=p.a.xvalue
 
-		case p.tag
-		when jneg then z:=-x
-		when jabs then z:=abs(x)
+		case p.pclop
+		when kneg then z:=-x
+		when kabs then z:=abs(x)
 		else
 			return
 		esac
@@ -25398,18 +17438,21 @@ proc evalbinop(unit p,lhs,rhs)=
 	int a,b,c
 	real x,y,z
 
+!CPL "EVALBIN", JTAGNAMES[P.TAG],pclnames[p.pclop]
+
 	case pr(lhs.tag,rhs.tag)
 	when pr(jintconst, jintconst) then
 		a:=lhs.value
 		b:=rhs.value
 
-		case p.tag
-		when jadd then c:=a+b
-		when jsub then c:=a-b
-		when jmul then c:=a*b
-		when jidiv then
+		case p.pclop
+		when kadd then c:=a+b
+		when ksub then c:=a-b
+		when kmul then c:=a*b
+		when kidiv then
 			if b=0 then rxerror("x/0") fi
 			c:=a/b
+		when kpower then c:=a**b
 		else
 			return
 		esac
@@ -25420,11 +17463,11 @@ proc evalbinop(unit p,lhs,rhs)=
 		x:=lhs.xvalue
 		y:=rhs.xvalue
 
-		case p.tag
-		when jadd then z:=x+y
-		when jsub then z:=x-y
-		when jmul then z:=x*y
-		when jdiv then z:=x/y
+		case p.pclop
+		when kadd then z:=x+y
+		when ksub then z:=x-y
+		when kmul then z:=x*y
+		when kdiv then z:=x/y
 		else
 			return
 		esac
@@ -26272,7 +18315,2979 @@ proc dobaseclass(int baseclassindex)=
 		d:=d.nextdef
 	od
 end
-=== qq_sets.m 0 0 26/44 ===
+=== qq_runx.m 0 0 23/44 ===
+!const doretcheck=1
+const doretcheck=0
+
+macro steppc = ++pc
+macro skip1 = pc+:=2
+macro skip2 = pc+:=3
+
+macro zz = sp
+macro yy = sp-1
+
+!macro save = pcptr:=pc
+macro save = (pcptr:=pc; sptr:=sp)
+
+macro pclerror(x) = (pcptr:=pc; pcerror(x))
+macro pclerror2(x,y) = (pcptr:=pc; pcerror(x,y))
+macro pclustype(x,t) = (pcptr:=pc; pcustype(x,t))
+macro pclmxtypes(x,t,u) = (pcptr:=pc; pcmxtypes(x,t,u))
+
+!macro copyvar(x, y) = x^:=y^
+!macro copyvarv(x, y) = x:=y^
+!macro copyvar_v(x, y) = x^:=y
+
+macro copyvar(x, y) = (x.dummy:=y.dummy; x.value:=y.value)
+macro copyvarv(x, y) = (x.dummy:=y.dummy; x.value:=y.value)
+macro copyvar_v(x, y) = (x.dummy:=y.dummy; x.value:=y.value)
+
+global ref[0:]ref label jumptable		!stays nil here
+byte getjt
+
+global proc disploop =
+	pcl pc
+	variant sp
+	ref byte fp
+
+!	variant x
+!		int index @ x
+!		variant dest @ x
+!		variant px @ x
+!	variant y
+!		symbol d @ y
+!		int nloc @ y
+!	variant z	
+!		int n @ z
+!		pcl pz @ z
+!		object pp @ z
+!		object q @ z
+!		ref genfieldrec g
+
+	variant x
+	variant y
+	variant z	
+		int n
+		int index
+		variant dest
+		variant px
+		symbol d
+		int nloc
+		pcl pz
+		object pp
+		object q
+		ref genfieldrec g
+
+	int xt,yt, res, lower, upper, moduleno, offset
+	variant newsp
+	symbol e
+	ref[0:]ref label localjumptable
+
+	varrec vx
+
+	if getjt then
+		jumptable:=localjumptable
+		return
+	fi
+
+	sp:=sptr
+	pc:=pcptr
+	fp:=frameptr
+
+	doswitchx(localjumptable) pc.labaddr
+!	doswitchu pc.opcode
+!	doswitch pc.opcode
+!
+	when knop      then   ! simple nop
+!		unimpl
+		steppc
+
+	when kskip     then   ! ignore on pcl listing
+		unimpl
+		steppc
+
+	when kprocdef  then   ! 
+		unimpl
+		steppc
+
+	when kprocent  then   ! n=number of locals; 
+		to pc.n do
+			++sp
+			sp.tagx:=tvoid
+		od
+		steppc
+
+	when kprocend  then 
+		unimpl
+		steppc
+
+	when kendmod   then 
+		unimpl
+		steppc
+
+	when kcomment  then 
+!		unimpl
+		steppc
+
+	when kpushm    then   ! Push v
+		++sp
+		copyvar(sp, pc.varptr)
+		var_share(sp)
+		steppc
+
+	when kpushf    then   ! Push v
+jpushf:
+		++sp
+		x:=cast(fp+pc.offset)
+!		sp^:=x^
+		copyvar(sp, x)
+
+		var_share(sp)
+freddy:
+		steppc
+
+	when kpushmref then   ! push &v
+jpushmref:
+		++sp
+		sp.tagx:=trefvar
+		sp.varptr:=pc.varptr
+		steppc
+
+	when kpushfref then   ! push &v
+jpushfref:
+		++sp
+		sp.tagx:=trefvar
+		sp.varptr:=cast(fp+pc.offset)
+		steppc
+
+	when kpopm     then   ! v := Z
+		x:=pc.varptr
+		var_unshare(x)
+!		x^:=sp^
+		copyvar(x, sp)
+		--sp
+		steppc
+
+	when kpopf     then   ! v := Z
+		x:=cast(fp+pc.offset)
+		var_unshare(x)
+		copyvar(x, sp)
+		--sp
+		steppc
+
+	when kpushci   then   ! Push i
+jpushci:
+		++sp
+		sp.tagx:=tint
+		sp.value:=pc.value
+		steppc
+jpushcix:
+
+	when kpushvoid then   ! Push void 
+		++sp
+		sp.tagx:=tvoid
+		steppc
+
+	when kpushnil  then   ! Push nil (ref void)
+		++sp
+		sp.tagx:=trefpack
+		sp.elemtag:=tvoid
+		sp.ptr:=nil
+		steppc
+
+	when kpushcr   then   ! Push r
+		++sp
+		sp.tagx:=treal
+		sp.xvalue:=pc.xvalue
+		steppc
+
+	when kpushcs   then   ! Push constant string object
+		++sp
+		sp.tagx:=tstring ior hasrefmask
+		sp.objptr:=pc.objptr
+		++sp.objptr.refcount
+		steppc
+
+	when kpushtype then   ! Push type constant
+		++sp
+		sp.tagx:=ttype
+		sp.value:=pc.typecode
+		steppc
+
+	when kpushopc  then   ! Push operator constant
+		++sp
+		sp.tagx:=toperator
+		sp.value:=pc.pclop
+		steppc
+
+	when kpushsym  then   ! Push symbol reference
+		++sp
+		sp.tagx:=tsymbol
+		sp.def:=pc.def
+
+		steppc
+
+	when kpushptr  then   ! Z' := Z^
+		x:=sp
+jpushptr:
+		case x.tag
+		when trefvar then
+			sp^:=x.varptr^
+
+		when trefpack then
+			case x.elemtag
+			when tu8 then
+				sp.tagx:=tint
+				sp.value:=x.ptr^
+				goto refpackend
+			else
+				save
+				var_loadpacked(x.ptr, x.elemtag, sp, nil)
+			esac
+
+		when trefbit then
+			save
+			var_loadbit(x.ptr, x.bitoffset, x.elemtag, x.bitlength, sp)
+
+		else
+			pclustype("Pushptr",x)
+		esac
+
+		var_share(sp)
+refpackend:
+		steppc
+
+	when kpushptrf then
+		x:=cast(fp+pc.offset)
+		++sp
+		++pc
+		goto jpushptr
+
+	when kpopptr   then   ! Z^ := Y
+		y:=sp--
+		x:=sp--
+
+		case y.tag
+		when trefvar then
+			var_unshare(y.varptr)
+			y.varptr^:=x^
+		when trefpack then
+			save
+			var_storepacked(y.ptr,x, y.elemtag)
+		when trefbit then
+			save
+			var_storebit(y.ptr, y.bitoffset, x, y.elemtag, y.bitlength)
+
+		else
+			pclustype("Popptr",y)
+		esac
+
+		steppc
+
+	when kzpopm    then   ! v := Z; don't free v first
+		copyvar(pc.varptr, sp)
+		--sp
+		steppc
+
+	when kzpopf    then   ! v := Z; don't free v first
+		x:=cast(fp+pc.offset)
+		copyvar(x, sp)
+		--sp
+		steppc
+
+	when kdupl     then   ! (Z',Y') := (share(Z), Z)
+		++sp
+		copyvar(sp, sp-1)
+		var_share(sp)
+		steppc
+
+	when kcopy     then   ! Z' := deepcopy(Z)
+		if sp.hasref then
+			copyvarv(vx, sp)
+			save
+			var_duplu(sp)
+			var_unshareu(&vx)
+		fi
+		steppc
+
+	when kswap     then   ! swap(Z^, Y^)
+		x:=sp--
+		y:=sp--
+
+		if x.tag=y.tag=trefvar then
+
+			copyvar(&vx, x.varptr)
+			copyvar(x.varptr, y.varptr)
+			copyvar(y.varptr, &vx)
+!!			x:=x.varptr
+!!			y:=y.varptr
+!
+!			swap(x.varptr.dummy, y.varptr.dummy)
+!			swap(x.varptr.value, y.varptr.value)
+
+		else
+			save
+			k_swap(x,y)
+		fi
+		steppc
+
+	when kconvrefp then   ! Change ref in Z to refpacked
+		save
+		k_convrefpack(sp)
+		steppc
+
+	when kjump     then   ! Jump to L
+		pc:=pc.labelref
+
+	when kjumpptr  then   ! Jump to Z
+		unimpl
+		steppc
+
+	when kjumpt    then   ! Jump to L when Z is true
+		x:=sp--
+
+		if x.tag=tint then
+			if x.value then
+				pc:=pc.labelref
+			else
+				steppc
+			fi
+		else
+			save
+			if var_istruel(x) then
+				pc:=pc.labelref
+			else
+				steppc
+			fi
+			var_unshare(x)
+		fi
+
+	when kjumpf    then   ! Jump to L when Z is false
+		x:=sp--
+
+		if x.tag=tint then
+			if not x.value then
+				pc:=pc.labelref
+			else
+				steppc
+			fi
+		else
+			save
+			if not var_istruel(x) then
+				pc:=pc.labelref
+			else
+				steppc
+			fi
+			var_unshare(x)
+		fi
+
+	when kjumpeq   then   ! Jump to L when Y = Z
+		y:=sp--
+		x:=sp--
+
+		if x.tag=y.tag=tint then
+			if x.value=y.value then
+				pc:=pc.labelref
+			else
+				steppc
+			fi
+		else
+			save
+			if var_equal(x, y) then
+				pc:=pc.labelref
+			else
+				steppc
+			fi
+		fi
+
+	when kjumpne   then   ! Jump to L when Y<>= Z
+		y:=sp--
+		x:=sp--
+
+		if x.tag=y.tag=tint then
+			if x.value<>y.value then
+				pc:=pc.labelref
+			else
+				steppc
+			fi
+		else
+			save
+			if not var_equal(x, y) then
+				pc:=pc.labelref
+			else
+				steppc
+			fi
+		fi
+
+	when kjumplt   then   ! Jump to L when Y < Z
+		y:=sp--
+		x:=sp--
+
+		if x.tag=y.tag=tint then
+			if x.value<y.value then
+				pc:=pc.labelref
+			else
+				steppc
+			fi
+		elsif x.tag=y.tag=treal then
+			if x.xvalue<y.xvalue then
+				pc:=pc.labelref
+			else
+				steppc
+			fi
+		else
+			save
+			if var_compare(x,y)<0 then
+				pc:=pc.labelref
+			else
+				steppc
+			fi
+		fi
+
+	when kjumple   then   ! Jump to L when Y <= Z
+		y:=sp--
+		x:=sp--
+
+		if x.tag=y.tag=tint then
+			if x.value<=y.value then
+				pc:=pc.labelref
+			else
+				steppc
+			fi
+		else
+			save
+			if var_compare(x,y)<=0 then
+				pc:=pc.labelref
+			else
+				steppc
+			fi
+		fi
+
+	when kjumpge   then   ! Jump to L when Y >= Z
+		y:=sp--
+		x:=sp--
+
+		if x.tag=y.tag=tint then
+			if x.value>=y.value then
+				pc:=pc.labelref
+			else
+				steppc
+			fi
+		else
+			save
+			if var_compare(x,y)>=0 then
+				pc:=pc.labelref
+			else
+				steppc
+			fi
+		fi
+
+	when kjumpgt   then   ! Jump to L when Y > Z
+		y:=sp--
+		x:=sp--
+
+		if x.tag=y.tag=tint then
+			if x.value>y.value then
+				pc:=pc.labelref
+			else
+				steppc
+			fi
+		else
+			save
+			if var_compare(x,y)>0 then
+				pc:=pc.labelref
+			else
+				steppc
+			fi
+		fi
+
+	when kjmpeqfci   then   ! Jump to L when B = C
+		x:=cast(fp+pc.offset)
+		if x.tag<>tint then goto jpushf fi
+		if x.value=(pc+1).value then
+			pc:=(pc+2).labelref
+		else
+			skip2
+		fi
+
+	when kjmpnefci   then   ! Jump to L when B <> C
+		x:=cast(fp+pc.offset)
+		if x.tag<>tint then goto jpushf fi
+		if x.value<>(pc+1).value then
+			pc:=(pc+2).labelref
+		else
+			skip2
+		fi
+
+	when kjmpltfci   then   ! Jump to L when B < C
+		x:=cast(fp+pc.offset)
+		if x.tag<>tint then goto jpushf fi
+		if x.value<(pc+1).value then
+			pc:=(pc+2).labelref
+		else
+			skip2
+		fi
+
+	when kjmplefci   then   ! Jump to L when B <= C
+		x:=cast(fp+pc.offset)
+		if x.tag<>tint then goto jpushf fi
+		if x.value<=(pc+1).value then
+			pc:=(pc+2).labelref
+		else
+			skip2
+		fi
+
+	when kjmpgefci   then   ! Jump to L when B >= C
+		x:=cast(fp+pc.offset)
+		if x.tag<>tint then goto jpushf fi
+		if x.value>=(pc+1).value then
+			pc:=(pc+2).labelref
+		else
+			skip2
+		fi
+
+	when kjmpgtfci   then   ! Jump to L when B > C
+		x:=cast(fp+pc.offset)
+		if x.tag<>tint then goto jpushf fi
+		if x.value>(pc+1).value then
+			pc:=(pc+2).labelref
+		else
+			skip2
+		fi
+
+	when kjmpeqff   then   ! Jump to L when B = C
+		x:=cast(fp+pc.offset)
+		if x.tag<>tint then goto jpushf fi
+		y:=cast(fp+(pc+1).offset)
+		if x.value=y.value then
+			pc:=(pc+2).labelref
+		else
+			skip2
+		fi
+
+	when kjmpneff   then   ! Jump to L when B <> C
+		x:=cast(fp+pc.offset)
+		if x.tag<>tint then goto jpushf fi
+		y:=cast(fp+(pc+1).offset)
+		if x.value<>y.value then
+			pc:=(pc+2).labelref
+		else
+			skip2
+		fi
+
+	when kjmpltff   then   ! Jump to L when B < C
+		x:=cast(fp+pc.offset)
+		if x.tag<>tint then goto jpushf fi
+		y:=cast(fp+(pc+1).offset)
+		if x.value<y.value then
+			pc:=(pc+2).labelref
+		else
+			skip2
+		fi
+
+	when kjmpleff   then   ! Jump to L when B <= C
+		x:=cast(fp+pc.offset)
+		if x.tag<>tint then goto jpushf fi
+		y:=cast(fp+(pc+1).offset)
+		if x.value<=y.value then
+			pc:=(pc+2).labelref
+		else
+			skip2
+		fi
+
+	when kjmpgeff   then   ! Jump to L when B >= C
+		x:=cast(fp+pc.offset)
+		if x.tag<>tint then goto jpushf fi
+		y:=cast(fp+(pc+1).offset)
+		if x.value>=y.value then
+			pc:=(pc+2).labelref
+		else
+			skip2
+		fi
+
+	when kjmpgtff   then   ! Jump to L when B > C
+		x:=cast(fp+pc.offset)
+		if x.tag<>tint then goto jpushf fi
+		y:=cast(fp+(pc+1).offset)
+		if x.value>y.value then
+			pc:=(pc+2).labelref
+		else
+			skip2
+		fi
+
+	when kwheneq   then   ! Y = Z:  pop both, jump to L
+						  ! Y <> Z: pop Z only; don't jump
+		y:=sp--
+		x:=sp
+
+		if x.tag=y.tag=tint then
+			if x.value=y.value then
+				--sp
+				pc:=pc.labelref
+			else
+				steppc
+			fi
+		else
+			save
+			res:=k_when(x, y)
+			var_unshare(y)
+			if res then
+				var_unshare(x)
+				--sp
+				pc:=pc.labelref
+			else
+				steppc
+			fi
+		fi
+
+	when kwhenne   then   ! Y <> Z:  pop Z only, jump to L
+						  ! Y = Z:   pop both, step to next
+jwhenne:
+		y:=sp--
+		x:=sp
+
+		if x.tag=y.tag=tint then
+			if x.value<>y.value then
+				pc:=pc.labelref
+			else
+				--sp
+				steppc
+			fi
+		else
+			save
+			res:=k_when(x, y)
+			var_unshare(y)
+			if not res then
+				pc:=pc.labelref
+			else
+				var_unshare(x)
+				--sp
+				steppc
+			fi
+		fi
+
+	when kjumplab  then   ! Jumptable entry
+		unimpl
+		steppc
+
+	when kswitch   then   ! Jumptable has y-x+1 entries
+		if sp.tag not in [tint, ttype] then
+			pclerror2("switch not int",ttname[sp.tag])
+		fi
+
+		n:=sp.value
+
+		if n in pc.x..pc.y then
+			pc:=(pc+n-pc.x+1).labelref
+		else
+			pc:=(pc+pc.y-pc.x+1).labelref
+		fi
+		--sp
+
+	when ktom      then   ! --v; jump to l when v<>0 in next op
+		x:=(pc+1).varptr
+		doto
+
+	when ktof      then   ! --v; jump to l when v<>0 in next op
+		x:=cast(fp+(pc+1).offset)
+doto:
+		if --x.value then
+			pc:=pc.labelref
+		else
+			skip1
+		fi
+
+	when kformci   then   ! ++v; jump to l when v<=i in next 2 ops: pushm/pushci
+		x:=(pc+1).varptr
+		doforfci
+
+	when kforfci   then   ! ++v; jump to l when v<=i in next 2 ops: pushm/pushci
+		x:=cast(fp+(pc+1).offset)
+doforfci:
+		++x.value
+		if x.value<=(pc+2).value then
+			pc:=pc.labelref
+		else
+			skip2
+		fi
+
+	when kformm    then   ! ++v; jump to l when v<=v in next 2 ops
+		x:=(pc+1).varptr
+		y:=(pc+2).varptr
+		doforff
+
+	when kforff    then   ! ++v; jump to l when v<=v in next 2 ops
+		x:=cast(fp+(pc+1).offset)
+		y:=cast(fp+(pc+2).offset)
+doforff:
+		++x.value
+
+		if x.value<=y.value then
+			pc:=pc.labelref
+		else
+			skip2
+		fi
+
+	when kcallproc then   ! Call &A; n is no. args
+		const countinterval=100
+		static int count=countinterval
+
+!		if --count=0 then
+!			count:=countinterval
+!			os_peek()
+!		fi
+
+!		if sp>=stacklimit then
+!			pclerror("Stack Overflow")
+!		fi
+
+		++sp
+		sp.tagx:=tretaddr
+		sp.retaddr := pc+1
+
+		sp.frameptr_low := u64(fp)
+		fp:=cast(sp)
+
+		pc:=pc.labelref
+
+	when kcallptr  then   ! Call X^; n is no. of params supplied; x is stack adjust
+		if sp.tag<>tsymbol then
+			pclerror("Probably undefined function")
+		fi
+
+		d:=sp.def
+		if d.nameid=linkid then d:=d.alias fi
+
+		if d.nparams<>pc.n then
+			pclerror2("Callptr: wrong # params; need:",strint(d.nparams))
+		fi
+
+		sp.tagx:=tretaddr
+		sp.retaddr := pc+1
+
+		sp.frameptr_low := word(fp)
+		fp:=cast(sp)
+
+		pc:=cast(d.labelref)
+
+	when kretproc  then
+doretproc:
+		to pc.x do
+			var_unshare(sp)
+			--sp
+		od
+
+		n:=pc.n
+		pc:=sp.retaddr
+		fp:= cast(u64(fp) iand (0xFFFF'FFFF'0000'0000) ior sp.frameptr_low)
+		--sp
+
+		to n do
+			var_unshare(sp)
+			--sp
+		od
+
+	when kretfn  then
+		x:=variant(fp+pc.y)
+		copyvar(x, sp)		!transfer reference
+		--sp
+		doretproc
+
+	when kmodcall  then   ! 
+		d:=pc.def
+		moduleno:=d.moduleno
+
+		++sp
+		sp.tagx:=tretaddr
+		sp.retaddr := pc+1
+		pc:=modules[moduleno].pcstart
+
+	when kmodret   then   ! 
+		pc:=sp.retaddr
+
+	when kcalldll  then   ! Call dll function d (sysmbol); n=nargs
+		n:=pc.n
+		save
+		SPTR:=SP
+
+		calldll(pc.def, sp-n+1, sp-n, n)
+		sp-:=n
+
+		steppc
+
+	when kcallhost then   ! Call Q host function h (Host index)
+		save
+		sp:=callhostfunction(pc.hostindex, sp)
+		steppc
+
+	when kunshare  then   ! Unshare and pop A var values on stack
+		to pc.n do
+			var_unshare(sp)
+			--sp
+		od
+		steppc
+
+	when kstop     then   ! Stop program with stopcode Z; n=1 to stop runproc instead
+		stopped:=1
+		sptr:=sp
+		exit
+
+	when kmakelist then   ! x items on stack; make list with lwb y
+		save
+		sp:=k_makelist(sp, pc.y, pc.x)
+		steppc
+
+	when kmakevrec then   ! x items on stack; make record of type u
+		n:=pc.x
+		x:=sp-pc.x+1				!start of data
+
+		save
+		var_make_record(x, x, pc.x, pc.usertag)
+		sp:=x
+		sp.objptr.mutable:=0
+		steppc
+
+	when kmakeax   then   ! x items on stack; make array with lwb y, type u and elemtype v
+		unimpl
+		steppc
+
+	when kmakebits then   ! x items on stack; make bits with lwb y, type u and elemtype v
+		unimpl
+		steppc
+
+	when kmaketrec then   ! x items on stack; make struct with type u
+		n:=pc.x
+		x:=sp-n+1				!start of data
+
+		save
+		var_make_struct(x, x, n, pc.usertag)
+		sp:=x
+		sp.objptr.mutable:=0
+		steppc
+
+	when kmakeset  then   ! x items on stack; make set
+		n:=pc.x
+
+		x:=sp-n+1			!start of data
+
+		save
+		var_make_set(x, x, n)
+		sp:=x
+		sp.objptr.mutable:=0
+
+		steppc
+
+	when kmakerang then   ! 2 items on stack; make range
+		y:=sp--
+		x:=sp
+
+		unless x.tag=y.tag=tint then
+			pclerror("makerange/not int")
+		end
+
+		sp.tagx:=trange
+		lower:=x.value
+		upper:=y.value
+
+		if lower not in -(2**48)..2**48-1 then
+			pclerror("Range lwb bounds")
+		end
+
+		sp.range_upper:=upper
+		sp.range_lower:=lower
+
+		steppc
+
+	when kmakedict then   ! x*2 items on stack (x key:val items); make dict
+		n:=pc.x
+		x:=sp-n*2+1			!start of data
+
+		save
+		var_make_dict(x, x, n)
+		sp:=x
+		steppc
+
+	when kmakedec  then   ! Turn string on stack to decimal number
+!		vx:=sp^
+		copyvarv(vx, sp)
+
+		if vx.tag<>tstring then pclerror("Not str") fi
+		pp:=vx.objptr
+		if pp.length=0 then pclerror("Null str") fi
+
+		save
+		var_make_dec_str(pp.strptr, pp.length, sp)
+
+		var_unshare(&vx)
+
+		steppc
+
+	when kincrptr  then   ! Z^ +:= x
+		save
+		k_incrptr(sp, pc.x)
+		--sp
+		steppc
+
+	when kincrtom  then   ! v +:= x
+		x:=pc.varptr
+		doincrto
+
+	when kincrtof  then   ! v +:= x
+jincrtof:
+		x:=cast(fp+pc.offset)
+doincrto:
+		case x.tag
+		when tint then
+			x.value+:=pc.x
+		when trefvar then
+			x.varptr+:=pc.x
+		when trefpack then
+			x.ptr+:=ttsize[x.elemtag]*pc.x
+		when treal then
+			x.xvalue+:=pc.x
+		else
+			pclustype("incrto",x)
+		end
+		steppc
+jincrtofx:
+
+	when kloadincr then   ! T := Z^; Z^ +:= x; Z' := T
+		copyvarv(vx, sp)
+!		vx:=sp^
+		save
+		var_loadptr(sp,sp)
+		++sp
+!		sp^:=vx
+		copyvar_v(sp, vx)
+		k_incrptr(sp, pc.x)
+		--sp
+		steppc
+
+	when kincrload then   ! Z^ +:= x; Z' := Z^
+!		vx:=sp^
+		copyvarv(vx, sp)
+		save
+		k_incrptr(sp, pc.x)
+		--sp
+		var_loadptr(&vx, ++sp)
+		steppc
+
+	when kneg      then   ! Z':= -Z
+!		vx:=sp^
+
+		copyvarv(vx, sp)
+		save
+		var_neg(sp)
+		var_unshare(&vx)
+		steppc
+
+	when kabs      then   ! Z' := abs Z
+!		vx:=sp^
+		copyvarv(vx, sp)
+
+		save
+		var_abs(sp)
+		var_unshare(&vx)
+
+		steppc
+
+	when knotl     then   ! Z' := not Z
+		save
+		res:=not var_istruel(sp)
+		var_unshare(sp)
+		sp.tagx:=tint
+		sp.value:=res
+		steppc
+
+	when kinot     then   ! Z' := inot Z
+		if sp.tag=tint then
+			sp.value:=inot sp.value
+		else
+			copyvarv(vx, sp)
+			save
+			var_inot(sp)
+			var_unshare(&vx)
+		fi
+
+		steppc
+
+	when kistruel  then   ! Z' := istrue Z
+		save
+		n:=var_istruel(sp)
+		var_unshare(sp)
+		sp.tagx:=tint
+		sp.value:=n
+
+		steppc
+
+	when kasc      then   ! Z' := asc(Z)
+		case sp.tag
+		when tstring then
+			if sp.objptr.length then
+				n:=sp.objptr.strptr^
+			else
+				n:=0
+			fi
+			var_unshareu(sp)
+			sp.tagx:=tint
+			sp.value:=n
+		else
+			pcustype("ASC",sp)
+		esac
+		steppc
+
+	when kchr      then   ! Z' := chr(Z)
+		if sp.tag=tint then
+			save
+			var_makechar(sp.value, sp)
+		else
+			pclustype("CHR",sp)
+		fi
+		steppc
+
+	when ksqr    then   ! Z' := op(Z)
+		case sp.tag
+		when tint then
+			sp.value:=sqr(sp.value)
+		when treal then
+			sp.xvalue:=sqr(sp.xvalue)
+		else
+			pclustype("sqr", sp)
+		esac
+		steppc
+
+	when kmaths    then   ! Z' := op(Z)
+		save
+		k_maths(sp, pc.mathscode)
+		steppc
+
+	when kmaths2   then   ! Z' := op(Y, Z)
+		unimpl
+		steppc
+
+	when kunaryto  then   ! Z^ op:= Z
+		unimpl
+		steppc
+
+	when knotlto   then   ! Z^ not:= Z
+		unimpl
+		steppc
+
+	when klen      then   ! Z' := Z.len
+		save
+		k_len(sp)
+		steppc
+
+	when klwb      then   ! Z' := Z.lwb
+		save
+		k_lwb(sp)
+		steppc
+
+	when kupb      then   ! Z' := Z.upb
+jupb:
+		save
+		k_upb(sp)
+		steppc
+
+	when kbounds   then   ! Z' := Z.bounds; n=1: one range value; n=2: two dims
+		save
+		k_bounds(sp, lower, upper)
+
+		if pc.n=2 then				!push as 2 value
+			var_unshare(sp)
+			sp.tagx:=tint
+			sp.value:=lower
+			++sp
+			sp.tagx:=tint
+			sp.value:=upper
+
+		else						!push as 1 range value
+			var_unshare(sp)
+			sp.tagx:=trange
+			sp.range_lower:=lower
+			sp.range_upper:=upper
+		fi
+
+		steppc
+
+	when kbytesize then   ! Z' := Z.bytesize
+		save
+		res:=k_bytesize(sp)
+		var_unshare(sp)
+		sp.tagx:=tint
+		sp.value:=res
+		steppc
+
+	when ktype     then   ! Z' := n=0/1/2 = basetype/tag/elemtype
+		save
+		n:=k_type(sp, pc.n)
+		var_unshare(sp)
+		sp.tagx:=ttype
+		sp.value:=n
+
+		steppc
+
+	when kdictsize then   ! Z' := Z.dictsize
+		unimpl
+		steppc
+
+	when kisfound  then   ! Z' := Z.isfound
+		if sp.tag<>tint then pclerror("isfound") fi
+		sp.value:=sp.value<>i64.min
+		steppc
+
+	when kminval   then   ! Z' := Z.minvalue
+		unimpl
+		steppc
+
+	when kmaxval   then   ! Z' := Z.maxvalue
+		unimpl
+		steppc
+
+	when kistype   then   ! Z' := Z.type/etc = t
+		n:=0
+		if pc.typecode=trefvar then
+			if sp.tag in [trefvar, trefpack, trefbit] then n:=1 fi
+		else
+			if pc.typecode=sp.tag then n:=1 fi
+		fi
+		var_unshare(sp)
+		sp.tagx:=tint
+		sp.value:=n
+		steppc
+
+	when kisvoid   then   ! Z' := Z.isvoid (n=0) or not Z.isdef (n=1)
+		res:=sp.tag=tvoid
+		var_unshare(sp)
+		sp.tagx:=tint
+		sp.value:=res ixor pc.n
+		steppc
+
+	when kconvert  then   ! Z' := t(Z)
+		if sp.tag<>pc.usertag then
+!			vx:=sp^
+			copyvarv(vx, sp)
+			save
+			var_convert(&vx, pc.usertag, sp)
+			var_unshare(&vx)
+		fi
+
+		steppc
+
+	when ktypepun  then   ! Z' := t@(Z)
+		unimpl
+		steppc
+
+	when kadd      then   ! Z' := Y + Z
+jadd:
+		y:=sp--
+
+		if sp.tag=y.tag=tint then
+			sp.value+:=y.value
+		elsif sp.tag=y.tag=treal then
+			sp.xvalue+:=y.xvalue
+		else
+!			vx:=sp^
+			copyvarv(vx, sp)
+
+			save
+			var_add(sp, y)
+
+			var_unshare(&vx)
+			var_unshare(y)
+		fi
+		steppc
+
+	when ksub      then   ! Z' := Y - Z
+		y:=sp--
+
+		if sp.tag=y.tag=tint then
+			sp.value-:=y.value
+		elsif sp.tag=y.tag=treal then
+			sp.xvalue-:=y.xvalue
+		else
+			copyvarv(vx, sp)
+
+			save
+			var_sub(sp, y)
+
+			var_unshare(&vx)
+			var_unshare(y)
+		fi
+		steppc
+
+	when kmul      then   ! Z' := Y * Z
+		y:=sp--
+
+		if sp.tag=y.tag=tint then
+			sp.value*:=y.value
+		elsif sp.tag=y.tag=treal then
+			sp.xvalue*:=y.xvalue
+		else
+!			vx:=sp^
+			copyvarv(vx, sp)
+
+			save
+			var_mul(sp,y)
+
+			var_unshare(&vx)
+			var_unshare(y)
+		fi
+
+		steppc
+
+	when kdiv      then   ! Z' := Y / Z
+		y:=sp--
+		copyvarv(vx, sp)
+
+		if sp.tag=y.tag=treal then
+			sp.xvalue/:=y.xvalue
+		else	
+			save
+			var_div(sp,y)
+
+			var_unshare(&vx)
+			var_unshare(y)
+		fi
+
+		steppc
+
+	when kidiv     then   ! Z' := Y % Z
+		y:=sp--
+		copyvarv(vx, sp)
+
+		if sp.tag=y.tag=tint then
+			sp.value/:=y.value
+		else	
+			save
+			var_idiv(sp, y)
+
+			var_unshare(&vx)
+			var_unshare(y)
+		fi
+
+
+		steppc
+
+	when kirem     then   ! Z' := Y rem Z
+		y:=sp--
+		copyvarv(vx, sp)
+
+		save
+		var_irem(sp,y)
+
+		var_unshare(&vx)
+		var_unshare(y)
+
+		steppc
+
+	when kidivrem  then   ! (Y', Z') := Y divrem Z
+		unimpl
+		steppc
+
+	when kiand     then   ! Z' := Y iand Z
+		y:=sp--
+
+		if sp.tag=y.tag=tint then
+			sp.value iand:=y.value
+		else
+			copyvarv(vx, sp)
+			save
+			var_iand(sp,y)
+
+			var_unshare(&vx)
+			var_unshare(y)
+		fi
+		steppc
+
+	when kior      then   ! Z' := Y ior Z
+		y:=sp--
+
+		if sp.tag=y.tag=tint then
+			sp.value ior:=y.value
+		else
+			copyvarv(vx, sp)
+			save
+			var_ior(sp,y)
+
+			var_unshare(&vx)
+			var_unshare(y)
+		fi
+		steppc
+
+	when kixor     then   ! Z' := Y ixor Z
+		y:=sp--
+		if sp.tag=y.tag=tint then
+			sp.value ixor:=y.value
+		else
+			copyvarv(vx, sp)
+
+			save
+			var_ixor(sp,y)
+
+			var_unshare(&vx)
+			var_unshare(y)
+		fi
+		steppc
+
+	when kshl      then   ! Z' := Y << Z
+		y:=sp--
+
+		if sp.tag=y.tag=tint then
+			sp.value <<:=y.value
+		else
+			copyvarv(vx, sp)
+
+			save
+			var_shl(sp,y)
+
+			var_unshare(&vx)
+			var_unshare(y)
+		fi
+		steppc
+
+	when kshr      then   ! Z' := Y >> Z
+		y:=sp--
+
+		if sp.tag=y.tag=tint then
+			sp.value >>:=y.value
+		else
+			copyvarv(vx, sp)
+
+			save
+			var_shr(sp,y)
+
+			var_unshare(&vx)
+			var_unshare(y)
+		fi
+		steppc
+
+	when kin       then   ! Z' := Y in Z (n=0) or Y not in Z (n=1)
+		y:=sp
+		x:=--sp
+
+		save
+		n:=var_in(x,y) ixor pc.n
+		var_unshare(x)
+		var_unshare(y)
+
+		sp.tagx:=tint
+		sp.value:=n
+		steppc
+
+	when kinx      then   ! Z' := Y inx Z
+		y:=sp
+		x:=--sp
+
+		save
+		n:=var_inx(x,y)
+		var_unshare(x)
+		var_unshare(y)
+
+		sp.tagx:=tint
+		sp.value:=n
+
+		steppc
+
+	when kcmp      then   ! Z' := Y c Z
+		y:=sp
+		x:=--sp
+
+		save
+		res:=k_cmp(pc.n, x, y)
+		var_unshare(x)
+		var_unshare(y)
+
+		sp.tagx:=tint
+		sp.value:=res
+		steppc
+
+	when kmin      then   ! Z' := min(Y, Z)
+		y:=sp--
+		x:=sp
+
+		save
+		if var_compare(x,y)<0 then		!x is smaller
+			var_unshare(y)
+		else
+			var_unshare(x)
+			sp^:=y^
+		fi
+
+		steppc
+
+	when kmax      then   ! Z' := max(Y, Z)
+		y:=sp--
+		x:=sp
+
+		save
+		if var_compare(x,y)>=0 then		!x is bigger
+			var_unshare(y)
+		else
+			var_unshare(x)
+			sp^:=y^
+		fi
+		steppc
+
+	when kconcat   then   ! Z' := concat(Y, Z) or Y && Z
+		unimpl
+		steppc
+
+	when kappend   then   ! Z' := append(Y, Z) or Y & Z
+		unimpl
+		steppc
+
+	when ksame     then   ! Z' := Y == Z
+		y:=sp--
+		x:=sp
+
+		if x.hasref and y.hasref and x.objptr=y.objptr then
+			res:=1
+		else
+			res:=0
+		fi
+
+		var_unshare(x)
+		var_unshare(y)
+		sp.tagx:=tint
+		sp.value:=res
+
+		steppc
+
+	when kpower    then   ! Z' := Y ** Z
+		y:=sp--
+		copyvarv(vx, sp)
+
+		save
+		var_power(sp, y)
+
+		var_unshare(&vx)
+		var_unshare(y)
+		steppc
+
+	when kbinto    then   ! Z^ op:= Y
+		x:=sp--
+		y:=sp--
+
+		z:=x.varptr
+		if pc.bintoindex=1 and x.tag=trefvar and z.tag=y.tag=tint then
+			z.value+:=y.value
+		else
+			save
+			var_inplace(pc.bintoindex, x, y)
+			var_unshare(y)
+		fi
+		steppc
+
+	when kbintof    then   ! A op:= Y
+		y:=sp--
+		z:=cast(fp+pc.offset)
+
+		if (pc+1).bintoindex=1 and z.tag=y.tag=tint then
+			z.value+:=y.value
+		else
+			save
+			vx.tagx:=trefvar
+			vx.varptr:=z
+			var_inplace((pc+1).bintoindex, &vx, y)
+			var_unshare(y)
+		fi
+		skip1
+
+	when kandlto   then   ! Y^ and:= Z
+		unimpl
+		steppc
+
+	when korlto    then   ! Y^ or:= Z
+		unimpl
+		steppc
+
+	when kappendto then   ! Y^ append:= Z or Y^ &:= Z
+		px:=sp--
+		y:=sp--
+
+		case px.tag
+		when trefvar then
+			save
+			var_appendto(px.varptr, y)
+		else
+			pclustype("Appendto", px)
+		esac
+		steppc
+
+	when kconcatto then   ! Y^ concat:= Z or Y^ &&:= Z
+		px:=sp--
+		y:=sp--
+
+		case px.tag
+		when trefvar then
+			save
+			var_concatto(px.varptr, y)
+		else
+			pclustype("Concatto", px)
+		esac
+		steppc
+
+	when kdot      then   ! Z' := Z.g
+
+		g:=genfieldtable[pc.index]
+
+		if g.nextdef=nil and g.def.nameid=fieldid then			!streamline it
+			d:=genfieldtable[pc.index].def
+
+			if sp.objptr.usertag<>d.owner.mode then pclerror("Dot1: wrong type") fi
+			x:=sp.objptr.varptr+d.fieldoffset/varsize
+			var_share(x)
+			var_unshare(sp)
+			copyvar(sp, x)
+
+		else
+			save
+			k_dot(sp, g)
+		fi
+		steppc
+
+	when kpopdot   then   ! Z.g := Y
+		g:=genfieldtable[pc.index]
+
+		if g.nextdef=nil and g.def.nameid=fieldid then			!streamline it
+			x:=sp--
+			y:=sp--
+
+			if x.tag<>trecord then pclerror("Popdot1: not rec") fi
+			if not x.objptr.mutable then
+				save
+				pcnotmut()
+			fi
+
+			e:=g.def
+
+			if x.objptr.usertag<>e.owner.mode then pclerror("Popdot1: wrong type") fi
+			z:=x.objptr.varptr+e.fieldoffset/varsize
+
+			var_unshare(z)
+			copyvar(z, y)
+			var_unshare(x)
+		else
+			save
+			sp:=k_popdot(sp, g)
+		fi
+		steppc
+
+	when kdotref   then   ! Z' := &Z.g
+		save
+		k_dotref(sp, genfieldtable[pc.index])
+		steppc
+
+	when kindex    then   ! Z' := Y[Z]
+		y:=sp--
+		copyvarv(vx, sp)
+
+		save
+		case y.tag
+		when tint then
+			var_getix(sp,y.value)
+		when trange then
+			var_getslice(sp,y.range_lower,y.range_upper)
+		else
+			pclmxtypes("Index",&vx,y)
+		esac
+
+		var_unshare(&vx)
+
+		steppc
+
+	when kpopix    then   ! Z' := Y[Z]:=X
+		z:=sp--		!index
+		y:=sp--		!list etc
+		x:=sp--		!value to store
+
+		save
+		case z.tag
+		when tint then
+			var_putix(y, z.value, x)
+			var_unshare(y)
+		when trange then
+			var_putslice(y, z.range_lower, z.range_upper, x)
+			var_unshare(x)
+			var_unshare(y)
+		else
+			pclmxtypes("Popix",y,z)
+		esac
+
+		steppc
+
+	when kindexref then   ! Z' := &Y[Z]
+		y:=sp--
+		copyvarv(vx, sp)
+
+		save
+		case y.tag
+		when tint then
+			var_getixref(sp, y.value)
+		else
+			pclmxtypes("Indexref",sp,y)
+		esac
+
+		var_unshare(&vx)
+		steppc
+
+	when kkeyindex then   ! Z' := X{Y, Z}
+		save
+		sp:=k_keyindex(sp)
+		steppc
+
+	when kpopkeyix then   ! Y{Z} := X
+		save
+		sp:=k_popkeyindex(sp)
+		steppc
+
+	when kkeyixref then   ! Z' := &X{Y, Z}
+		save
+		sp:=k_keyindexref(sp)
+		steppc
+
+	when kdotix    then   ! Z' := Y.[Z]
+		y:=sp--
+		copyvarv(vx, sp)
+
+		save
+		case y.tag
+		when tint then
+			var_getdotix(sp, y.value)
+		when trange then
+			var_getdotslice(sp, y.range_lower, y.range_upper)
+		else
+			pcmxtypes("Dotindex", &vx, y)
+		esac
+
+		var_unshare(&vx)
+
+		steppc
+
+	when kpopdotix then   ! Y.[Z] := X
+		z:=sp--		!index
+		y:=sp--		!ref to int, string etc
+		x:=sp--		!value to store
+
+		save
+		case z.tag
+		when tint then
+			var_putdotix(y, z.value, x)
+			var_unshare(y)
+		when trange then
+			var_putdotslice(y, z.range_lower, z.range_upper, x)
+			var_unshare(x)
+			var_unshare(y)
+		else
+			pclmxtypes("Popdotindex",y,z)
+		esac
+		
+		steppc
+
+	when kdotixref then   ! Z' := &Y.[Z]
+		unimpl
+		steppc
+
+	when kexpand   then   ! Z' := Expand Z into n objects are needed
+		x:=sp+pc.n-1
+		save
+		var_expand(sp, x, pc.n)
+		sp:=x
+
+		steppc
+
+	when kpushtry  then   ! Push try/except into; label/except code/no. exceptions
+		(++sp).tagx:=texception
+		sp.ptr:=cast(pc.labelref)
+
+		sp.frameoffset:=fp-ref byte(sp)		!byte offset
+		sp.exceptiontype:=pc.x
+		sp.nexceptions:=pc.y
+		steppc
+
+	when kraise    then   ! Raise exception Z
+		if sp.tag<>tint then
+			pcerror("Raise: not Int")
+		fi
+		
+		save
+		frameptr:=fp
+		pc:=raiseexception(sp.value)		!will unwind stack and set pc to address of exception code
+		sp:=sptr
+		fp:=frameptr
+
+	when kmap      then   ! Z' := map(Y, Z)
+		save
+		pc:=k_map(sp, pc, newsp)
+		sp:=newsp
+
+	when kaddsp    then   ! SP+:=A; note: positive A will push, negative will pop (reverse of the hardware)
+		sp-:=pc.n
+		steppc
+
+
+	when kpushff    then   ! Push f/f
+		++sp
+		sp^:=cast(fp+pc.offset, variant)^
+		var_share(sp)
+		++sp
+		sp^:=cast(fp+(pc+1).offset, variant)^
+		var_share(sp)
+		skip1
+
+	when kpushfff    then   ! Push f/f/f
+		++sp
+		copyvar(sp, cast(fp+pc.offset, variant))
+		var_share(sp)
+		++sp
+		copyvar(sp, cast(fp+(pc+1).offset, variant))
+		var_share(sp)
+		++sp
+		copyvar(sp, cast(fp+(pc+2).offset, variant))
+		var_share(sp)
+		skip2
+
+	when kpushmci then
+		++sp
+		copyvar(sp, pc.varptr)
+		var_share(sp)
+		++sp
+		sp.tagx:=tint
+		sp.value:=(pc+1).value
+		skip1
+
+	when kpushfci then
+		++sp
+		copyvar(sp, cast(fp+pc.offset, variant))
+		var_share(sp)
+		++sp
+		sp.tagx:=tint
+		sp.value:=(pc+1).value
+		skip1
+
+	when kaddff    then   !
+		x:=cast(fp+pc.offset, variant)
+		y:=cast(fp+(pc+1).offset, variant)
+
+		if x.tag=y.tag=tint then
+			++sp
+			sp.tagx:=tint
+			sp.value:=x.value+y.value
+			skip2
+		else
+			goto jpushf
+		fi
+
+	when kaddfci    then   !
+		x:=cast(fp+pc.offset, variant)
+
+		if x.tag=tint then
+			++sp
+			sp.tagx:=tint
+			sp.value:=x.value+(pc+1).value
+			skip2
+		else
+			goto jpushf
+		fi
+
+	when ksubfci    then   !
+		x:=cast(fp+pc.offset, variant)
+
+		if x.tag=tint then
+			++sp
+			sp.tagx:=tint
+			sp.value:=x.value-(pc+1).value
+			skip2
+		else
+			goto jpushf
+		fi
+
+	when kaddci then
+		if sp.tag=tint then
+			sp.value+:=pc.value
+			skip1
+		else
+			goto jpushci
+		fi
+
+	when ksubci then
+		if sp.tag=tint then
+			sp.value-:=pc.value
+			skip1
+		else
+			goto jpushci
+		fi
+
+	when kiandci then
+		if sp.tag=tint then
+			sp.value iand:=pc.value
+			skip1
+		else
+			goto jpushci
+		fi
+
+	when kshlci then
+		if sp.tag=tint then
+			sp.value <<:=pc.value
+			skip1
+		else
+			goto jpushci
+		fi
+
+	when kshrci then
+		if sp.tag=tint then
+			sp.value >>:=pc.value
+			skip1
+		else
+			goto jpushci
+		fi
+
+	when kmovefci then
+		x:=cast(fp+(pc+1).offset)
+		var_unshare(x)
+		x.tagx:=tint
+		x.value:=pc.value
+		skip1
+
+	when kmoveff then
+		x:=cast(fp+(pc+1).offset)
+		y:=cast(fp+pc.offset)
+		var_share(y)
+		var_unshare(x)
+		copyvar(x, y)
+		skip1
+
+	when kindexff then
+		x:=cast(fp+pc.offset)
+doindexff:
+		y:=cast(fp+(pc+1).offset)
+		++sp
+		copyvar(sp, x)
+
+		save
+		case y.tag
+		when tint then
+			var_getix(sp, y.value)
+		when trange then
+			var_getslice(sp, y.range_lower, y.range_upper)
+		else
+			pclmxtypes("Indexff",x,y)
+		esac
+		skip2
+
+	when kindexmf then
+		x:=pc.varptr
+		goto doindexff
+
+	when kwheneqci then
+		x:=sp
+		if x.tag=tint then
+			if x.value=pc.value then
+				--sp
+				pc:=(pc+1).labelref
+			else
+				skip1
+			fi
+		else
+			goto jpushci
+		fi
+
+	when kwhenneci then   ! Y <> Z:  pop Z only, jump to L
+						  ! Y = Z:   pop both, step to next
+		x:=sp
+
+		if x.tag=tint then
+			if x.value<>pc.value then
+				pc:=(pc+1).labelref
+			else
+				--sp
+				skip1
+			fi
+		else
+			goto jpushci
+		fi
+
+	when kupbm then
+		++sp
+		copyvar(sp, pc.varptr)
+		var_share(sp)
+		save
+		k_upb(sp)
+		skip1
+
+	when kpushipm then
+		x:=pc.varptr
+		if x.tag<>trefpack or x.elemtag<>tu8 then goto jpushmref fi
+		goto dopushipf
+
+	when kpushipf then
+		x:=cast(fp+pc.offset)
+		if x.tag<>trefpack or x.elemtag<>tu8 then goto jpushfref fi
+dopushipf:
+		++sp
+		sp.tagx:=tint
+		case x.elemtag
+		when tu8 then
+			sp.value:=x.ptr^
+			x.ptr+:=(pc+1).x
+		esac
+		skip2
+
+	when kpopipm then
+		x:=pc.varptr
+		if x.tag<>trefpack or x.elemtag<>tu8 or sp.tag<>tint then goto jpushmref fi
+		goto dopopipf
+
+	when kpopipf then
+		x:=cast(fp+pc.offset)
+		if x.tag<>trefpack or x.elemtag<>tu8 or sp.tag<>tint then goto jpushfref fi
+dopopipf:
+		case x.elemtag
+		when tu8 then
+			x.ptr^:=sp.value
+			x.ptr+:=(pc+1).x
+		esac
+		--sp
+		skip2
+
+	when klastpcl  then		! needed for switchu when to trap unimpl extended ops
+		unimpl
+	else
+unimpl:
+		pclerror2("Unimpl op:", pclnames[pc.opcode])
+		stop 1
+	end
+end
+
+proc start=
+!set up jumptable
+	getjt:=1
+	disploop()
+	getjt:=0
+end
+
+global proc fixupcode(ifile pm)=
+	pcl pc
+	return when jumptable=nil
+
+	pc:=pm.pcstart
+
+	while pc.opcode<>kendmod, ++pc do
+		pc.labaddr:=jumptable[pc.opcode]
+	od
+end
+
+global function runqprogram(isubprog sp, int ismain)int=
+	
+	return 0 when runcode<run_cc
+
+	sptr:=&varstack[1]
+	stacklimit:=&varstack[stacksize-100]
+	pcptr:=modules[sp.firstmodule].pcstart
+	stopped:=0
+!
+	int tt:=clock()
+
+	disploop()
+!
+	tt:=clock()-tt
+
+	println "Time:",TT
+	println
+
+	return sptr.value
+end
+
+=== qq_runaux.m 0 0 24/44 ===
+!comment
+
+!GLOBAL INT NRESOLVE, NRFLOOPS, NRFSINGLE, NRFONEINST
+
+global proc pcerror(ichar mess, param="")=
+	reportpcerror(pcptr, mess, param)
+end
+
+global proc pcustype(ichar mess, variant x) =
+	pcustype_t(mess, x.tag)
+end
+
+global proc pcustype_t(ichar mess, int t) =
+	[256]char str
+
+	fprint @str,"Type not supported: # : #",mess, ttname[t]
+	reportpcerror(pcptr, str)
+end
+
+global proc pcmxtypes(ichar mess, variant x,y) =
+	pcmxtypestt(mess,x.tag,y.tag)
+end
+
+global proc pcmxtypestt(ichar mess, int t,u) =
+	[256]char str
+
+	fprint @str, "Types not supported: # : #/#",
+			mess,ttname[t],ttname[u]
+	reportpcerror(pcptr, str)
+end
+
+global proc reportpcerror(pcl pcptr, ichar mess, param="")=
+	variant s,send
+	pcl pc
+	int count
+	ifile pm
+	locrec loc, loc2
+
+!CPL $LINENO
+	loc:=getpcerrorpos(pcptr)
+!CPL $LINENO
+	pm:=loc.pm		!remember first error (written to $error.tmp)
+
+!CPL $LINENO
+	println
+!	println "*********************************************************"
+	println " ":"80p*"
+	println "PC Error:"
+	println "    ",,mess,,param
+	println
+
+	println "Line:",loc.lineno,"in Module",loc.pm.name,,".q:"
+
+	if loc.def then
+		println "In function:",loc.def.name
+	fi
+
+	s:=sptr
+	send:=&varstack[1]
+!CPL $LINENO
+
+	count:=0
+	while s>=send and count<5 do
+		if s.tag=tretaddr then
+			pc:=s.retaddr-1		!go back three to get to start of kcall/kcallptr instr
+			loc2:=getpcerrorpos(pc)
+			println "Called from line",loc2.lineno,"in",loc2.pm.name
+			++count
+		fi
+		--s
+	od
+
+	stopcompiler(loc)
+end
+
+
+func getpcerrorpos(pcl pc)locrec =
+!given pcptr, set up pcerrorpos, the lsw of the source pointer
+!and set up pcerrormodule
+	int offset, pos, soffset, moduleno
+	pcl pcstart
+	ref int32 pcsrcstart
+	ifile pm
+	locrec loc
+
+	clear loc
+	pm:=modules[findmodulefrompc(pc)]
+
+	pcstart:=pm.pcstart
+	pcsrcstart:=pm.pcsourcestart
+
+	offset:=getpcloffset(pc,pcstart)
+	pos:=(pcsrcstart+offset)^
+
+	loc.lineno:=pos.[0..23]
+	moduleno:=pos.[24..31]
+
+	if moduleno=0 then
+		MODULENO:=1; SOFFSET:=0
+!		ABORTPROGRAM("GETPCPOS: no module")
+	fi
+
+	loc.pm:=modules[moduleno]
+	loc.sp:=subprogs[pm.subprogno]	
+	loc.def:=nil
+
+	return loc
+end
+
+function findmodulefrompc(pcl pc)int=
+!given pcptr, find which module it's currently executing
+	for i to nmodules do
+		if pc>=modules[i].pcstart and pc<modules[i].pcend then
+			return i
+		fi
+	od
+	println "Can't find pcptr module", pc
+	cpl
+	stop 1
+	return 0
+end
+
+
+global func k_makelist(variant sp, int lower, n)variant=
+	variant x,y
+
+	x:=sp-n+1			!start of data
+	sp:=x
+
+	var_make_list(x, sp, n, lower)
+	sp.objptr.mutable:=0
+
+	sp
+end
+
+global proc k_len(variant sp)=
+	object p:=sp.objptr
+	int n, t
+
+	case sp.tag
+	when tlist,tarray,tdict,tbits then
+		n:=p.length
+	when tstring then
+		n:=p.length
+	when trecord, tvector, tstruct then
+		n:=ttlength[p.usertag]
+	when tset then
+		n:=p.length
+	when trange then
+		n:=sp.range_upper-sp.range_lower+1
+	when tdecimal then
+		n:=obj_len_dec(p)
+	when ttype then
+		t:=sp.value
+		case ttbasetype[t]
+		when trecord, tvector, tstruct then
+			n:=ttlength[t]
+		else
+			n:=ttlength[t]
+		esac
+
+	else
+		pcustype("Len",sp)
+	esac
+
+	var_unshare(sp)
+	sp.tagx:=tint
+	sp.value:=n
+end
+
+global proc k_maths(variant sp, int opc)=
+	real x
+
+	x:=sp.xvalue
+
+	case sp.tag
+	when tint then
+		if opc=mm_sqr then
+			sp.value:=sqr(sp.value)
+			return
+		fi
+		sp.tagx:=treal
+		x:=sp.value
+	when treal then
+	else
+		pcustype("Maths:", sp)
+	esac
+
+	case opc
+	when mm_sqr then x:=sqr(x)
+	when mm_sqrt then x:=sqrt(x)
+	when mm_sin then x:=sin(x)
+	when mm_cos then x:=cos(x)
+	when mm_round then
+		if x>=0.0 then
+			x:=floor(x+0.5)
+		else
+			x:=ceil(x-0.5)
+		fi
+	when mm_floor then
+		x:=floor(x)
+	else
+		pcerror("Maths op:", mathsnames[opc])
+	esac
+
+	sp.xvalue:=x
+end
+
+global proc k_lwb(variant sp)=
+	object p:=sp.objptr
+	int n, t
+
+	case sp.tag
+	when tlist then
+		n:=p.lower16
+	when tstring,tdict then
+		n:=1
+	when tarray, tbits then
+		n:=p.lower
+	when trecord,tstruct then
+		n:=1
+	when tvector then
+		n:=ttlower[p.usertag]
+	when tset then
+		n:=0
+	when trange then
+		n:=sp.range_lower
+	else
+		pcustype("Lwb", sp)
+	esac
+
+	var_unshare(sp)
+	sp.tagx:=tint
+	sp.value:=n
+end
+
+global proc k_upb(variant sp)=
+	object p:=sp.objptr
+	int n, t
+
+	case sp.tag
+	when tlist then
+		n:=p.length+p.lower16-1
+	when tstring, tdict then
+		n:=p.length
+	when tarray, tbits then
+		n:=p.length+p.lower-1
+	when trecord, tstruct then
+		n:=ttlength[p.usertag]
+
+	when tvector then
+		t:=p.usertag
+		goto dotype
+
+	when tset then
+		n:=p.length-1
+	when trange then
+		n:=sp.range_upper
+	when ttype then
+		t:=sp.value
+dotype:
+		case ttbasetype[t]
+		when tvector then
+!		when tvector then
+			n:=ttlength[t]+ttlower[t]-1
+		else
+			pcustype("t.upb",sp)
+		esac
+
+	else
+		pcustype("Upb",sp)
+	esac
+
+	var_unshare(sp)
+	sp.tagx:=tint
+	sp.value:=n
+
+end
+
+global proc k_swap(variant x, y)=
+	[1024]byte tempbuffer
+	varrec v
+	int s,t,n
+	ref byte p,q
+	int a
+
+	if x.tag<>y.tag then
+		pcerror("Swap mismatch")
+	fi
+
+	case x.tag
+	when trefvar then
+		v:=x.varptr^
+		x.varptr^:=y.varptr^
+		y.varptr^:=v
+	when trefpack then
+		s:=x.elemtag
+		t:=y.elemtag
+		if s<>t then goto swaperror fi
+		n:=ttsize[s]
+		case n
+		when 1 then
+			p:=x.ptr
+			q:=y.ptr
+			a:=p^
+			p^:=q^
+			q^:=a
+		elsif ttsize[s]<=tempbuffer.bytes then
+			memcpy(&tempbuffer,x.ptr,n)
+			memcpy(x.ptr,y.ptr,n)
+			memcpy(y.ptr,&tempbuffer,n)
+		else
+			goto swaperror
+		esac
+
+	else
+swaperror:
+		pcmxtypes("Swap",x,y)
+	esac
+end
+
+global proc k_bounds(variant sp, int &lower, &upper)=
+	int a, b, m, t
+	object p
+
+	m:=sp.tag
+	p:=sp.objptr
+
+	case m
+	when tlist then
+		a:=p.lower16
+		b:=p.length+a-1
+	when tarray, tbits then
+		a:=p.lower
+		b:=p.length+a-1
+	when tstring, tdict then
+		a:=1
+		b:=p.length
+	when trange then
+		a:=sp.range_lower
+		b:=sp.range_upper
+	when tstruct,trecord then
+		a:=1
+		b:=ttlength[p.usertag]
+	when tvector then
+		t:=p.usertag
+		goto dotype
+
+	when tset then
+		a:=0
+		b:=p.length-1
+
+	when ttype then
+		t:=sp.value
+dotype:
+		case ttbasetype[t]
+		when tvector, tstruct then
+!		when tvector, tstruct then
+			a:=ttlower[t]
+			b:=ttlength[t]+a-1
+		else
+			pcustype("t.bounds",sp)
+		esac
+
+	else
+		pcustype("Bounds",sp)
+	esac
+
+	lower:=a
+	upper:=b
+end
+
+global func k_type(variant sp, int n)int =
+	int t:=sp.tag
+
+	case n
+	when 0 then					!base type, eg record
+	when 1 then					!user type, eg date
+		case t
+		when trecord, tstruct, tvector then
+			t:=sp.objptr.usertag
+		esac
+	else						!elemtype for array/vector/pointer
+		case t
+		when tarray,tbits then
+			t:=sp.objptr.elemtag
+		when trefpack, trefvar, trefbit then
+			t:=sp.elemtag
+		when tset then
+			t:=tu1
+		when tvector then
+			t:=tttarget[sp.objptr.usertag]
+		else
+			t:=tvoid
+!			pcustype_t("elemtype",t)
+		esac
+	esac	
+
+	return t
+end
+
+global proc k_dot(variant sp, ref genfieldrec g)=
+	symbol d
+	variant p
+	ref byte q
+	int rectype
+	varrec v
+
+restart:
+	case sp.tag
+!	when trecord, tstruct, tstruct then
+	when trecord, tstruct then
+	when trefvar then
+!CPL "DOT REFVAR"
+!PCERROR("DOT REFVAR")
+		sp:=sp.varptr
+		restart
+	else
+		pcustype("1:dot/not record",sp)
+	esac
+	rectype:=sp.objptr.usertag
+
+	d:=resolvefield(g, rectype)
+
+	case d.nameid
+	when fieldid then
+		p:=sp.objptr.varptr+d.fieldoffset/varsize
+		var_share(p)
+		var_unshare(sp)
+		sp^:=p^
+
+	when structfieldid then
+		var_loadpacked(sp.objptr.ptr+d.fieldoffset, d.mode, &v, nil)
+		var_unshare(sp)
+		sp^:=v
+
+    when procid then
+		sp.tagx:=tsymbol
+		sp.def:=d
+
+    when linkid then
+		sp.tagx:=tsymbol
+		sp.def:=d.alias
+
+	else
+		pcerror("DOT: can't do this fieldtype:",namenames[d.nameid])
+	esac
+end
+
+global proc k_dotref(variant sp, ref genfieldrec g)=
+	symbol d
+	variant p
+	ref byte q
+	int rectype
+
+restart:
+	case sp.tag
+	when trecord, tstruct then
+	when trefvar then
+		sp:=sp.varptr
+		restart
+	else
+		pcustype("2:dot/not record",sp)
+	esac
+	rectype:=sp.objptr.usertag
+
+	d:=resolvefield(g, rectype)
+
+	case d.nameid
+	when fieldid then
+		p:=sp.objptr.varptr+d.fieldoffset/varsize
+!Possible bug when sp is a transient value which is now freed
+!But you wouldn't normally use as an lvalue
+		var_unshare(sp)
+
+		sp.tagx:=trefvar
+		sp.varptr:=p
+
+	when structfieldid then
+		q:=sp.objptr.ptr+d.fieldoffset
+		var_unshare(sp)
+		sp.tagx:=trefpack
+		sp.ptr:=q
+		sp.elemtag:=d.mode
+
+	else
+		pcerror("DOTREF: can't do this fieldtype:",namenames[d.nameid])
+	esac
+end
+
+global func k_popdot(variant sp, ref genfieldrec g)variant =
+	symbol d
+	variant p,x,y
+
+	x:=sp--
+	y:=sp--
+
+	case x.tag
+	when trecord, tstruct then
+	else
+		pcustype("3:dot/not record",x)
+	esac
+
+	d:=resolvefield(g, x.objptr.usertag)
+
+	IF NOT X.HASREF THEN PCERROR("POPDOT") FI
+
+	if not x.objptr.mutable then
+		pcnotmut()
+	fi
+
+	case d.nameid
+	when fieldid then
+		p:=x.objptr.varptr+d.fieldoffset/varsize
+		var_unshare(p)
+		p^:=y^				!transfer
+		var_unshare(x)
+
+	when structfieldid then
+		var_storepacked(x.objptr.ptr+d.fieldoffset, y, d.mode)
+		var_unshare(x)
+
+	else
+		pcerror("POPDOT: can't do this fieldtype:",namenames[d.nameid])
+	esac
+
+	return sp
+end
+
+function resolvefield(ref genfieldrec g, int rectype)symbol d=
+!index is a start point in the genfieldtable
+!scan the linked list looking for a field/structfield/method etc whose
+!owner type matches rectype
+
+	while g do
+		d:=g.def
+		if d.owner.mode=rectype then return d fi
+		g:=g.nextdef
+	od
+
+	pcerror("Can't resolve field:",d.name)
+	return nil
+end
+
+global proc k_convrefpack(variant sp)=
+	variant a
+	int tag,elemtype
+	ref void p
+	object pa
+
+	case sp.tag
+	when trefvar then
+		a:=sp.varptr
+
+		pa:=a.objptr
+		case a.tag
+		when tint,trefpack then
+			p:=&a.value
+			elemtype:=ti64
+		when treal then
+			p:=&a.value
+			elemtype:=tr64
+		when tarray then
+			p:=pa.ptr
+			elemtype:=pa.elemtag
+		when tbits then
+			sp.ptr:=pa.ptr
+			sp.bitoffset:=pa.indexoffset*ttbitwidth[pa.elemtag]
+			sp.bitlength:=0
+			sp.tagx:=trefbit
+			sp.elemtag:=pa.elemtag
+			return
+
+		when tset then
+			sp.ptr:=pa.ptr
+			sp.bitoffset:=0
+			sp.bitlength:=0
+			sp.tagx:=trefbit
+			sp.elemtag:=tu1
+			return
+
+		when tstring then
+			p:=pa.strptr
+			elemtype:=tu8
+			if p=nil then
+				p:=""
+			fi
+		when tstruct then
+			p:=pa.ptr
+			elemtype:=pa.usertag
+		when tvector then
+			p:=pa.ptr
+			elemtype:=pa.usertag
+		when tdecimal then
+			p:=pa.num
+			elemtype:=ti32
+
+		else
+			pcustype("Getrefpack1",a)
+		end
+	when trefpack,trefbit then
+		return
+
+	else
+		pcustype("Getrefpack2",sp)
+	end
+done:
+
+	sp.tagx:=trefpack
+	sp.ptr:=p
+	sp.elemtag:=elemtype
+end
+
+global proc k_incrptr(variant p, int step)=
+
+	case p.tag
+	when trefvar then			!increment what ptr points to
+		p:=p.varptr
+		case p.tag
+		when tint then
+			p.value+:=step
+		when trefvar then			!incr the pointer
+			p.varptr+:=step
+		when trefpack then			!incr the pointer
+			p.ptr+:=ttsize[p.elemtag]*step
+		when treal then
+			p.xvalue+:=step
+		else
+			pcustype("incrptr/refvar",p)
+		end
+	when trefpack then			!incr the packed type pointed to
+		case p.elemtag
+		when tu8,ti8 then
+			p.ptr^+:=step
+		when tu16,ti16 then
+			(ref u16(p.ptr))^+:=step
+		else
+			pcustype_t("incrptr/ref",p.elemtag)
+		end
+
+	else
+		pcustype("incrptr",p)
+	end
+end
+
+global func k_cmp(int cc, variant x, y)int res =
+	case cc
+	when eq_cc then
+		var_equal(x, y)
+	when ne_cc then
+		not var_equal(x, y)
+	else
+		res:=var_compare(x, y)
+		case cc
+		when lt_cc then
+			res<0
+		when le_cc then
+			res<=0
+		when ge_cc then
+			res>=0
+		else
+			res>0
+		esac
+	esac
+end
+
+global func k_bytesize(variant sp)int=
+	int t
+	object p:=sp.objptr
+
+	t:=sp.tag
+
+	case t
+	when ttype then
+		t:=sp.value
+	when tstruct, trecord, tvector then
+		t:=sp.objptr.usertag
+	esac
+
+!t is usertag for structs etc, or base tag
+	case t
+	when tarray then
+		p.length*ttsize[p.elemtag]
+	when tset then
+		getbitssize(p.length,tu1)
+	when tstring then
+		p.length
+	when tbits then
+		bits_bytesize(p)
+	when tlist,tdict then
+		p.length*varsize
+	when trecord, tstruct, tvector then
+		ttsize[t]	
+	when tdecimal then
+		p.length*decelemsize
+	else
+		ttsize[t]
+	esac
+end
+
+global func k_when(variant x, y)int =
+!	int xt:=x.tag, yt:=y.tag
+
+	case pr(x.tag, y.tag)
+	when pr(tint, trange) then
+		if x.value in y.range_lower..y.range_upper then
+			1
+		else
+			0
+		fi
+	when pr(tint,tset), pr(ttype,tset) then
+		var_in_set(x, y)
+	else
+		var_equal(x, y)
+	esac
+end
+
+global function raiseexception(int exceptno)pcl =
+	variant stackend, oldsptr
+
+	stackend:=&varstack[1]
+	oldsptr:=sptr
+	do
+
+		if sptr<=stackend then
+			sptr:=oldsptr
+			PCERROR("DEFAULT EXCEPTION")
+!			default_exception(exceptno)
+		fi
+		if sptr.tag=texception and (exceptno=0 or sptr.exceptiontype=exceptno) then
+			exit
+		fi
+		var_unshare(sptr)
+		--sptr
+	od
+
+!found exception entry on stack; keep it there
+	frameptr:=ref byte(sptr)+sptr.frameoffset
+	return cast(sptr.ptr)
+end
+
+global function runproc_m(ref void amsg)int=
+	varrec a,b,dest
+	static int rmsg_typeno
+	int i,result
+	objrec obj
+
+!CPL "RUNPROC/M"
+!TESTPPVAR("RUNPROC/M")
+	if rmsg_typeno=0 then
+		for i to ntypes do
+			if eqstring(ttname[i],"ws_msg64") then
+				rmsg_typeno:=i
+				exit
+			fi
+		od
+	fi
+	if rmsg_typeno=0 then
+		abortprogram("mainwndproc: can't find rmsg")
+	fi
+
+!TESTPPVAR("RUNPROC/M2")
+	memset(&obj,0,objrec.bytes)
+	obj.refcount:=99
+	obj.ptr:=ref byte(amsg)
+	obj.usertag:=rmsg_typeno
+
+	a.tagx:=tstruct ior hasrefmask
+	a.objptr:=&obj
+
+!TESTPPVAR("RUNPROC/M3")
+	runproc(pcl_callbackfn,&a,nil,&dest)
+!TESTPPVAR("RUNPROC/M4")
+	result:=dest.value
+
+	result:=0			!WTF? BUT QX HAS THIS TOO, AND IT WORKS!
+
+	return result
+end
+
+global proc runproc(ref void fnptr,variant a,b,dest) =
+!Directly call a pcl function by supplying it's pc-address
+!sptr/frameptr etc should already have been set up (any start proc should have been called)
+!Allows 0, 1, or 2 params: (), (a), or (a,b)
+!Note: param data is not freed here caller should take care of that
+!Return values are stored in dest (any non-int or void result is returned as 0)
+!Use of the stack:
+! The stack as it was at the time of the callext call (or via a callback from Windows)
+! is entirely unaffected. However some things will be pushed onto it here:
+! * Push void which is used for any return value of the function that is called
+! * Push 0, 1 or 2 parameters (as supplied in a and b; a is pushed first)
+! * The interpreter is then started, at the function call pc address supplied
+! * This involves pushes a retaddr value. Since this is not a conventional call,
+!   The return address is contrived to point to a STOP0 pc opcode
+! * After the return from the function, STOP0 is executed, which pushes a zero
+!   value to the stack.
+! * If the called function eventually returns, it will execute STOP0, but
+!   there is no Retaddr value left on the stack, and it will know to use the
+!	actual return value (0 is used of the called function did not return a value)
+! * If STOP is explicitly used, then a Retaddr value stays on the stack (for this
+!	function, or any nested one), and the Stop value is used instead
+
+	variant oldsptr
+	ref byte oldframeptr
+	pcl oldpcptr
+	byte oldstopped
+	int nparams
+
+!STATIC INT RPLEVEL
+!++RPLEVEL
+
+
+!CPL "RUNPROC"
+	dest.tagx:=tint
+	dest.value:=0
+
+	oldstopped:=stopped		!not really need, as it can be assumed stopped=0
+	oldpcptr:=pcptr
+	oldsptr:=sptr
+	oldframeptr:=frameptr
+
+	(++sptr).tagx:=999				!put in marker (this location might be checked later)
+
+	if b and b.tag then			!must stack in reverse order: (b,a) or (a)
+		nparams:=2
+		(++sptr)^:=a^
+		(++sptr)^:=b^
+	elsif a and a.tag then
+		nparams:=1
+		(++sptr)^:=a^
+	else
+		nparams:=0
+	fi
+	(++sptr).tagx:=tretaddr
+
+	sptr.retaddr:=stopseq
+
+	sptr.frameptr_low:=int(frameptr)
+	frameptr:=cast(sptr)
+	pcptr:=fnptr
+
+!CPL "**********EXEC DISPLOOP:", RPLEVEL
+!IF RPLEVEL>1 THEN CPL "@"*90; OS_GETCH(); STOP FI
+	disploop()
+!CPL "**********DONE exec disploop", RPLEVEL
+!--RPLEVEL
+
+!stack will either point to a stop-value, with a retaddr before it,
+!or to the first param (or to the proc return value).
+	if (sptr-11).tag=tretaddr then		!probably stop used
+		dest^:=sptr^
+	else								!assume normal return used
+	--SPTR
+		dest^:=sptr^					!pick up return value
+
+		if dest.tag=tvoid then		!no value; return 0
+			dest.tagx:=tint
+			dest.value:=0
+		fi
+	fi
+
+	pcptr:=oldpcptr
+	stopped:=oldstopped
+
+!NOTE: could do with freeing items on the stack between oldsptr and current sptr
+	sptr:=oldsptr			!need to reset these, as stop could have been executed anywhere
+	frameptr:=oldframeptr	! and these could have arbitrary values
+	stopped:=oldstopped
+end
+
+global func k_keyindex(variant sp)variant=
+!x{y}
+	variant d,k,p,def
+
+	def:=sp--			!def is any default value to be used
+	k:=sp--			!k is the key
+	d:=sp				!d is the dict
+
+	if d.tag<>tdict then
+		pcustype("dict{}",d)
+	fi
+
+	p:=var_finddictitem(d,k,0)
+	var_unshare(d)
+	var_unshare(k)
+
+	if p then			!found
+		sp^:=p^
+		var_unshare(def)
+	else
+		sp^:=def^			!use given default value when not found
+	fi
+	return sp
+end
+
+global func k_popkeyindex(variant sp)variant=
+!y[z]:=x
+	variant d,k,p,x
+
+	k:=sp--			!k is the key
+	d:=sp--			!d is the dict
+	x:=sp--			!value to pop
+
+	if d.tag<>tdict then
+		pcustype("dict{}:=",d)
+	fi
+
+	p:=var_finddictitem(d,k,1)
+
+	if p.tag<>tvoid then
+		var_unshare(p)
+	fi
+	p^:=x^
+
+	var_unshare(d)
+	var_unshare(k)
+
+	return sp
+end
+
+global func k_keyindexref(variant sp)variant=
+!y[z]:=x
+	variant d,k,p,x
+
+	k:=sp--			!k is the key
+	d:=sp				!d is the dict
+
+	if d.tag<>tdict then
+		pcustype("&dict{}",d)
+	fi
+
+	p:=var_finddictitem(d,k,0)
+	if p=nil then
+		pcerror("&dict{} not found")
+	fi
+	var_share(p)
+	var_unshare(k)
+	var_unshare(d)
+
+	sp.tagx:=trefvar
+	sp.varptr:=p
+
+	return sp
+end
+
+global func k_map(variant sp, pcl pc, variant &newsp)pcl=
+
+	static [10]pclrec codeseq
+
+	int nargs
+
+	case sp.tag
+	when toperator then
+		if jumptable=nil then
+			codeseq[1].opcode:=sp.value
+		else
+!PCERROR("MAP")
+			codeseq[1].labaddr:=jumptable[sp.value]
+		fi
+
+		--sp
+		codeseq[2]:=(pc+1)^			!copy jump lab which follows the map op
+
+!	when tsymbol then
+!		nargs:=(pc^=int(cmdmap[kmaps]) |1|2)
+!
+!!I need to push 2-3 stack entries down to make room a return value slot
+!		for i:=0 downto -(nargs+1) do				!0/1 or 0/1/2
+!			(sp+i+1)^:=(sp+i)^
+!		od
+!		(sp-nargs).tagx:=tvoid
+!		++sp
+!
+!		codeseq[1]:=cast(cmdmap[kcallptr])
+!		codeseq[2]:=nargs
+!		codeseq[3]:=0
+!		codeseq[4]:=(pc+1)^			!copy jump lab which follows the applyop
+!		codeseq[5]:=(pc+2)^			!include the dest label
+!
+	else
+		pcerror("Apply:no op")
+	esac
+
+	newsp:=sp
+	return &codeseq[1]				!pass control this short sequence
+end
+
+=== qq_sets.m 0 0 25/44 ===
 global proc obj_free_set(object p)=
 	if p.length then
 		pcm_free(p.ptr, getbitssize(p.alloc64, tu1))
@@ -26679,7 +21694,7 @@ global proc var_inotto_set(variant x) =
 	fi
 end
 
-=== qq_strings.m 0 0 27/44 ===
+=== qq_strings.m 0 0 26/44 ===
 global object emptystring
 
 proc start=
@@ -27357,7 +22372,7 @@ global proc var_makechar(int ch,variant dest)=
 	dest.tagx:=tstring ior hasrefmask
 	dest.objptr:=p
 end
-=== qq_syslibs.m 0 0 28/44 ===
+=== qq_syslibs.m 0 0 27/44 ===
 global const fsyslibs = 1
 !global const fsyslibs = 0
 
@@ -27408,7 +22423,7 @@ global func loadsysmodule(ifile pm)int=
 		return 0
 	fi
 end
-=== qq_tables.m 0 0 29/44 ===
+=== qq_tables.m 0 0 28/44 ===
 !!---
 global enumdata	[0:]ichar stdtypenames,
 					[0:]byte stdtypewidths =
@@ -27445,6 +22460,7 @@ global enumdata	[0:]ichar stdtypenames,
 	(toperator,		"operator",		64),	! - Represents an operator (as a bytecode op)
 	(tretaddr,		"retaddr",		0),		! - Return address descriptor, only on stack 
 	(texception,	"except",		0),		! - Exception descriptor, only on stack
+	(tnumber,		"number",		0),		! - Only used with .istype
 
 
 ! T Pack Types
@@ -27477,607 +22493,134 @@ global const tlast=stdtypenames.upb
 
 global const tlastvartag	= trefbit
 
+!these codes are used in the comments
+! o		pcl opcode for jbin, jbinto, junary, jproperty etc
+! m		mm-code for jmaths/2
+! n		for incr-ops, 0/1 means incr/decr
+! n		for jisvoid/jin, normally 0, but 1 reverses to 'not isvoid/in'
+! n		for FOR, 0/1 means up/down
+! cc	for cmp, is a condition code, eq_cc/lt_cc etc
+! cv	for jcvattr, is a compiler-var code
+
 global enumdata [0:]ichar jtagnames,			! "jadd" etc
-					[0:]u32 jshortnames,		! "+" etc, used in jeval()
 					[0:]byte jflags,			! 0/1/2 = 0, 1 or 2 subtrees
-					[0:]int16 jpclcodes,		! for arith, corresponding pcl opc
-					[0:]byte jtocodes,	 		! for arith, corresponding jaddto op etc
 					[0:]byte jhasvalue = 		! whether yields a value (0, 1 or 2=special)
-	(jnone=0,			$,		0,		0,		0,			0,	0),	
-	(jlabeldef,			$,		0,		1,		0,			0,	0),
-	(jassign,			$,		0,		2,		0,			0,	2),
-	(jdeepcopy,			$,		0,		2,		0,			0,	2),
-	(jkeyword,			$,		0,		2,		0,			0,	1),
-	(jkeyvalue,			$,		0,		2,		0,			0,	1),
-	(joperator,			$,		0,		0,		0,			0,	1),
-	(jblock,			$,		0,		1,		0,			0,	2),
-	(jif,				$,		0,		2,		0,			0,	2),
-	(jselect,			$,		0,		2,		0,			0,	2),
-	(jwhenthen,			$,		0,		2,		0,			0,	0),
-	(jcase,				$,		0,		2,		0,			0,	2),
-	(jdocase,			$,		0,		2,		0,			0,	0),
-	(jswitch,			$,		0,		2,		0,			0,	2),
-	(jdoswitch,			$,		0,		2,		0,			0,	0),
-	(jrecase,			$,		0,		1,		0,			0,	0),
-	(jforup,			$,		0,		2,		0,			0,	0),
-	(jforupx,			$,		0,		2,		0,			0,	0),
-	(jfordown,			$,		0,		2,		0,			0,	0),
-	(jfordownx,			$,		0,		2,		0,			0,	0),
-	(jforall,			$,		0,		2,		0,			0,	0),
-	(jforallrev,		$,		0,		2,		0,			0,	0),
-	(jforeach,			$,		0,		2,		0,			0,	0),
-	(jdo,				$,		0,		1,		0,			0,	0),
-	(jto,				$,		0,		2,		0,			0,	0),
-	(jwhile,			$,		0,		2,		0,			0,	0),
-	(jrepeat,			$,		0,		2,		0,			0,	0),
-	(jtry,				$,		0,		2,		0,			0,	0),
-	(jexcept,			$,		0,		2,		0,			0,	0),
-	(jraise,			$,		0,		1,		0,			0,	0),
-	(jcall,				$,		0,		2,		0,			0,	1),
-	(jcallhost,			$,		0,		1,		0,			0,	1),
-	(jnil,				$,		0,		0,		0,			0,	1),
-	(jswap,				$,		0,		2,		0,			0,	0),
-	(jgoto,				$,		0,		1,		0,			0,	0),
-	(jstop,				$,		0,		1,		0,			0,	0),
-	(jreturn,			$,		0,		1,		0,			0,	2),
-	(jtypeconst,		$,		0,		0,		0,			0,	1),
-	(jeval,				$,		0,		1,		0,			0,	0),
 
-	(jconvert,			$,		0,		1,		0,			0,	1),
-	(jtypepun,			$,		0,		1,		0,			0,	1),
-	(jmap,				$,		0,		2,		kmaps,		0,	1),
+	(jnone = 0,		$,	0,	0),
 
-	(jcmpchain,			$,		0,		1,		0,			0,	1),
-	(jname,				$,		0,		0,		0,			0,	1),
-	(jsymbol,			$,		0,		1,		0,			0,	1),
-	(jintconst,			$,		0,		0,		0,			0,	1),
-	(jrealconst,		$,		0,		0,		0,			0,	1),
-	(jstringconst,		$,		0,		0,		0,			0,	1),
-	(jstrinclude,		$,		0,		1,		0,			0,	1),
-	(jdot,				$,		0,		2,		0,			0,	1),
-	(jindex,			$,		0,		2,		0,			0,	1),
-	(jdotindex,			$,		0,		2,		0,			0,	1),
-	(jkeyindex,			$,		0,		2,		0,			0,	1),
-	(jredo,				$,		0,		2,		0,			0,	0),
-	(jnext,				$,		0,		2,		0,			0,	0),
-	(jexit,				$,		0,		2,		0,			0,	0),
-	(jptr,				$,		0,		1,		0,			0,	1),
-	(jaddrof,			$,		0,		1,		0,			0,	1),
-	(jptrto,			$,		0,		1,		0,			0,	1),
-!	(jdaddrof,			$,		0,		1,		0,			0,	1),
-	(jnull,				$,		0,		0,		0,			0,	1),
-	(jprint,			$,		0,		2,		0,			0,	0),
-	(jprintln,			$,		0,		2,		0,			0,	0),
-	(jfprint,			$,		0,		2,		0,			0,	0),
-	(jfprintln,			$,		0,		2,		0,			0,	0),
-	(jsprint,			$,		0,		2,		0,			0,	1),
-	(jsfprint,			$,		0,		2,		0,			0,	1),
-	(jnogap,			$,		0,		0,		0,			0,	0),
-	(jspace,			$,		0,		0,		0,			0,	0),
-	(jfmtitem,			$,		0,		2,		0,			0,	0),
-	(jread,				$,		0,		2,		0,			0,	0),
-	(jreadln,			$,		0,		2,		0,			0,	0),
-	(jdecimal,			$,		0,		0,		0,			0,	1),
-	(jincr,				$,		'++',		1,		0,			0,	1),
-	(jdecr,				$,		'--',		1,		0,			0,	1),
-	(jincrload,			$,		0,		1,		kincrload,	0,	1),
-	(jdecrload,			$,		0,		1,		kdecrload,	0,	1),
-	(jloadincr,			$,		0,		1,		kloadincr,	0,	1),
-	(jloaddecr,			$,		0,		1,		kloaddecr,	0,	1),
-	(jneg,				$,		'-',		1,		kneg,		jnegto,	1),
-	(jabs,				$,		'abs',		1,		kabs,		jabsto,	1),
-	(jnotl,				$,		'not',		1,		knotl,		jnotlto,	1),
-	(jinot,				$,		'inot',		1,		kinot,		jinotto,	1),
-	(jistruel,			$,		'isT',		1,		kistruel,	0,	1),
-	(jasc,				$,		0,		1,		kasc,		0,	1),
-	(jchr,				$,		0,		1,		kchr,		0,	1),
-	(jsqrt,				$,		0,		1,		ksqrt,		0,	1),
-	(jsqr,				$,		0,		1,		ksqr,		0,	1),
-	(jsin,				$,		0,		1,		ksin,		0,	1),
-	(jcos,				$,		0,		1,		kcos,		0,	1),
-	(jtan,				$,		0,		1,		ktan,		0,	1),
-	(jasin,				$,		0,		1,		kasin,		0,	1),
-	(jacos,				$,		0,		1,		kacos,		0,	1),
-	(jatan,				$,		0,		1,		katan,		0,	1),
-	(jlog,				$,		0,		1,		klog,		0,	1),
-	(jlog10,			$,		0,		1,		klog10,		0,	1),
-	(jexp,				$,		0,		1,		kexp,		0,	1),
-	(jround,			$,		0,		1,		kround,		0,	1),
-	(jfloor,			$,		0,		1,		kfloor,		0,	1),
-	(jceil,				$,		0,		1,		kceil,		0,	1),
-	(jfract,			$,		0,		2,		kfract,		0,	1),
-	(jfmod,				$,		0,		2,		kfmod,		0,	1),
-	(jsign,				$,		0,		1,		ksign,		0,	1),
-	(jnegto,			$,		0,		1,		knegto,		0,	0),
-	(jabsto,			$,		0,		1,		kabsto,		0,	0),
-	(jnotlto,			$,		0,		1,		knotlto,	0,	0),
-	(jinotto,			$,		0,		1,		kinotto,	0,	0),
-	(jlen,				$,		0,		1,		klen,		0,	1),
-	(jlwb,				$,		0,		1,		klwb,		0,	1),
-	(jupb,				$,		0,		1,		kupb,		0,	1),
-	(jbounds,			$,		0,		1,		kbounds,	0,	1),
-	(jboundsx,			$,		0,		1,		kboundsx,	0,	1),
-	(jbitwidth,			$,		0,		1,		kbitwidth,	0,	1),
-	(jbytesize,			$,		0,		1,		kbytesize,	0,	1),
-!	(jtype,				$,		0,		1,		ktype,		0,	1),
-	(jelemtype,			$,		0,		1,		kelemtype,	0,	1),
-	(jbasetype,			$,		0,		1,		kbasetype,	0,	1),
-	(jtype,				$,		0,		1,		ktype,		0,	1),
-	(jdictitems,		$,		0,		1,		kdictitems,	0,	1),
-	(jisfound,			$,		0,		1,		kisfound,	0,	1),
-	(jminvalue,			$,		0,		1,		kminvalue,	0,	1),
-	(jmaxvalue,			$,		0,		1,		kmaxvalue,	0,	1),
-	(jisint,			$,		0,		1,		kisint,		0,	1),
-	(jisreal,			$,		0,		1,		kisreal,	0,	1),
-	(jisstring,			$,		0,		1,		kisstring,	0,	1),
-	(jisrange,			$,		0,		1,		kisrange,	0,	1),
-	(jisnumber,			$,		0,		1,		kisnumber,	0,	1),
-	(jislist,			$,		0,		1,		kislist,	0,	1),
-	(jisrecord,			$,		0,		1,		kisrecord,	0,	1),
-	(jispointer,		$,		0,		1,		kispointer,	0,	1),
-	(jisarray,			$,		0,		1,		kisarray,	0,	1),
-	(jismutable,		$,		0,		1,		kismutable,	0,	1),
-	(jisset,			$,		0,		1,		kisset,		0,	1),
-	(jisvoid,			$,		0,		1,		kisvoid,	0,	1),
-	(jisdef,			$,		0,		1,		kisdef,		0,	1),
-	(jisequal,			$,		0,		2,		kisequal,	0,	1),
-	(jodd,				$,		0,		2,		kodd,		0,	1),
-	(jeven,				$,		0,		2,		keven,		0,	1),
-	(jadd,				$,		'+',		2,		kadd,		jaddto,	1),
-	(jsub,				$,		'-',		2,		ksub,		jsubto,	1),
-	(jmul,				$,		'*',		2,		kmul,		jmulto,	1),
-	(jdiv,				$,		'/',		2,		kdiv,		jdivto,	1),
-	(jidiv,				$,		'%',		2,		kidiv,		jidivto,	1),
-	(jirem,				$,		'rem',		2,		kirem,		0,	1),
-	(jidivrem,			$,		0,		2,		kidivrem,	0,	1),
-	(jiand,				$,		'iand',		2,		kiand,		jiandto,	1),
-	(jior,				$,		'ior',		2,		kior,		jiorto,	1),
-	(jixor,				$,		'ixor',		2,		kixor,		jixorto,	1),
-	(jshl,				$,		'<<',		2,		kshl,		jshlto,	1),
-	(jshr,				$,		'>>',		2,		kshr,		jshrto,	1),
-	(jin,				$,		'in',		2,		kin,		0,	1),
-	(jnotin,			$,		'~in',	2,		knotin,		0,	1),
-	(jinx,				$,		'inx',		2,		kinx,		0,	1),
-	(jinrev,			$,		0,		2,		0,			0,	0),
-	(jandl,				$,		'and',		2,		0,		jandlto,	1),
-	(jorl,				$,		'or',		2,		0,		jorlto,	1),
-	(jeq,				$,		'=',		2,		keq,		0,	1),
-	(jne,				$,		'<>',		2,		kne,		0,	1),
-	(jlt,				$,		'<',		2,		klt,		0,	1),
-	(jle,				$,		'<=',		2,		kle,		0,	1),
-	(jge,				$,		'>=',		2,		kge,		0,	1),
-	(jgt,				$,		'>',		2,		kgt,		0,	1),
-	(jmin,				$,		'min',		2,		kmin,		jminto,	1),
-	(jmax,				$,		'max',		2,		kmax,		jmaxto,	1),
-	(jconcat,			$,		0,		2,		kconcat,	jconcatto,	1),
-	(jappend,			$,		0,		2,		kappend,	jappendto,	1),
-	(jpower,			$,		'**',		2,		kpower,		0,	1),
-	(jatan2,			$,		0,		2,		katan2,		0,	1),
-	(jaddto,			$,		0,		2,		kaddto,		0,	0),
-	(jsubto,			$,		0,		2,		ksubto,		0,	0),
-	(jmulto,			$,		0,		2,		kmulto,		0,	0),
-	(jdivto,			$,		0,		2,		kdivto,		0,	0),
-	(jidivto,			$,		0,		2,		kidivto,	0,	0),
-	(jandlto,			$,		0,		2,		kandlto,	0,	0),
-	(jorlto,			$,		0,		2,		korlto,		0,	0),
-	(jiandto,			$,		0,		2,		kiandto,	0,	0),
-	(jiorto,			$,		0,		2,		kiorto,		0,	0),
-	(jixorto,			$,		0,		2,		kixorto,	0,	0),
-	(jshlto,			$,		0,		2,		kshlto,		0,	0),
-	(jshrto,			$,		0,		2,		kshrto,		0,	0),
-	(jminto,			$,		0,		2,		kminto,		0,	0),
-	(jmaxto,			$,		0,		2,		kmaxto,		0,	0),
-	(jconcatto,			$,		0,		2,		kconcatto,	0,	0),
-	(jappendto,			$,		0,		2,		kappendto,	0,	0),
+	(jlabeldef,		$,	1,	0),
 
-	(jmakerange,		$,		0,		2,		kmakerange,	0,	1),
-	(jmakerangelen,		$,		0,		2,		kmakerangelen,	0,	1),
-	(jmakelist,			$,		0,		1,		kmakelist,	0,	1),
-	(jmakeset,			$,		0,		1,		kmakeset,	0,	1),
-	(jmakedict,			$,		0,		1,		kmakedict,	0,	1),
+	(jassign,		$,	2,	2),			!n=0/1 for assign/deepcopy
+	(jkeyword,		$,	2,	1),
+	(jkeyvalue,		$,	2,	1),
+	(joperator,		$,	0,	1),
 
-	(jcvlineno,			$,		0,		0,		0,	0,	1),
-	(jcvstrlineno,		$,		0,		0,		0,	0,	1),
-	(jcvmodulename,		$,		0,		0,		0,	0,	1),
-	(jcvfilename,		$,		0,		0,		0,	0,	1),
-	(jcvfunction,		$,		0,		0,		0,	0,	1),
-	(jcvdate,			$,		0,		0,		0,	0,	1),
-	(jcvtime,			$,		0,		0,		0,	0,	1),
-	(jcvversion,		$,		0,		0,		0,	0,	1),
-	(jcvpclversion,		$,		0,		0,		0,	0,	1),
+	(jblock,		$,	1,	2),
+	(jif,			$,	2,	2),
+	(jselect,		$,	2,	2),
+	(jwhenthen,		$,	2,	0),
+	(jcase,			$,	2,	2),
+	(jdocase,		$,	2,	0),
+	(jswitch,		$,	2,	2),
+	(jdoswitch,		$,	2,	0),
+	(jrecase,		$,	1,	0),
+	(jfor,			$,	2,	0),		! n=0/1 for up/down
+	(jforx,			$,	2,	0),		! n=0/1
+	(jforall,		$,	2,	0),
+	(jforeach,		$,	2,	0),
+	(jdo,			$,	1,	0),
+	(jto,			$,	2,	0),
+	(jwhile,		$,	2,	0),
+	(jrepeat,		$,	2,	0),
+	(jtry,			$,	2,	0),
+	(jexcept,		$,	2,	0),
+	(jraise,		$,	1,	0),
+	(jcall,			$,	2,	1),
+	(jcallhost,		$,	1,	1),
+	(jnil,			$,	0,	1),
+	(jswap,			$,	2,	0),
+	(jgoto,			$,	1,	0),
+	(jstop,			$,	1,	0),
+	(jreturn,		$,	1,	2),
+	(jeval,			$,	1,	0),
+
+	(jtypeconst,	$,	0,	1),
+	(jconvert,		$,	1,	1),
+	(jtypepun,		$,	1,	1),
+	(jmap,			$,	2,	1),
+	(jcmpchain,		$,	1,	1),
+	(jname,			$,	0,	1),
+	(jsymbol,		$,	1,	1),
+
+	(jintconst,		$,	0,	1),
+	(jrealconst,	$,	0,	1),
+	(jstringconst,	$,	0,	1),
+	(jdecimal,		$,	0,	1),
+
+	(jstrinclude,	$,	1,	1),
+	(jdot,			$,	2,	1),
+	(jindex,		$,	2,	1),
+	(jdotindex,		$,	2,	1),
+	(jkeyindex,		$,	2,	1),
+	(jloop,			$,	2,	0),		!loopcode = loop_exit etc
+	(jptr,			$,	1,	1),
+	(jaddrof,		$,	1,	1),		!n=0/1 for &/^
+	(jvoid,			$,	0,	1),		!value of 'void'
+
+	(jprint,		$,	2,	0),		!n = set of pr_newline etc
+	(jfprint,		$,	2,	0),
+	(jnogap,		$,	0,	0),
+	(jspace,		$,	0,	0),
+	(jfmtitem,		$,	2,	0),
+	(jread,			$,	2,	0),
+
+	(jincrload,		$,	1,	1),		!n=0/1 for incr/decr
+	(jloadincr,		$,	1,	1),		!n=0/1
+
+	(junary,		$,	1,	1),		!opc is pcl op
+	(jbin,			$,	2,	1),		!opc is pcl op
+
+	(jmaths,		$,	1,	1),		!m is maths op
+	(jmaths2,		$,	2,	1),		!m is maths op
+	(jproperty,		$,	1,	1),		!opc is pcl op
+
+	(jbounds,		$,	1,	1),		!n is 0/1 for range/2-vals
+
+	(jgettype,		$,	1,	1),		!n is 0/1/2 for basetype/type/elemtype
+	(jistype,		$,	1,	1),		!t is typecode to match
+	(jisvoid,		$,	1,	1),		!n=0/1 for isvoid/isdef
+
+	(jcmp,			$,	2,	1),		!cc is condcode
+	(jandl,			$,	2,	1),
+	(jorl,			$,	2,	1),
+	(jnotl,			$,	1,	1),
+	(jistruel,		$,	1,	1),
+	(jin,			$,	2,	1),		!n=0/1 for in/not in
+	(jinx,			$,	2,	1),
+	(junaryto,		$,	1,	1),		!opc is pcl opl (kneg etc)
+	(jbinto,		$,	2,	0),		!opc is pcl opl (kadd etc)
+	(jandlto,		$,	2,	0),
+	(jorlto,		$,	2,	0),
+	(jnotlto,		$,	1,	0),
+	(jistruelto,	$,	1,	0),
+	(jappendto,		$,	2,	0),
+	(jconcatto,		$,	2,	0),
+	(jidivrem,		$,	0,	2),
+	(jmakerange,	$,	2,	1),
+	(jmakelist,		$,	1,	1),
+	(jmakeset,		$,	1,	1),
+	(jmakedict,		$,	1,	1),
+	(jcvattr,		$,	0,	1),		!cv is compiler var code
 end
-
-global type qd=[4]byte
-
-global enumdata [0:]ichar opndnames=
-							!PCL1			PCL2
-	(cnone=0,	$),
-	(cmemory,	$),			!m Symbol		Address of static object
-	(cframe,	$),			!f Symbol		Byte offset from Dframe
-	(cproc,		$),			!p Symbol		Address of pccode entry point
-	(cdllproc,	$),			!x Int			Int Index into dllproc table
-
-	(cgenfield,	$),			!g Symbol		Index into genfieldtable
-
-	(clabel,	$),			!l Label no		Address of pccode instruction
-	(cint,		$),			!i
-	(cword,		$),			!u
-	(creal,		$),			!r
-	(crange,	$),			!n
-	(cstring,	$),			!s Stringz		Address of static Object with string
-	(cstringz,	$),			!z Stringz
-	(ctype,		$),			!t Typeno		Typeno
-	(csymbol,	$),			!d Symbol		Symbol
-	(coperator,	$),			!o Operator		Operator
-
-	(clast,		"?")
-end
-
-!these aliases are used so that the cmdfmt table is tidier
-const p = cproc
-const m = cmemory
-const f = cframe
-const l = clabel
-const x = cdllproc
-const g = cgenfield
-const i = cint
-const u = cword
-const r = creal
-const n = crange
-const s = cstring
-const z = cstringz
-const t = ctype
-const d = csymbol
-const o = coperator
-
-!Stack operands labeled X,Y,Z:
-!X		X is top of the stack (1 operand)
-!X,Y	Y is top of the stack (2 operands)
-!X,Y,Z	Z is top of the stack (3 operands)
-!suffixes a,b,c help indicate which operand goes where:
-!a		always top of the second
-!b		always second from the top
-!c		always third from the top
-!So Xb and Ya when there are two operands; Y is on top
-!flags abcB uses a '1' bit to indicate that .a, .b or .c contains a unit list
-
-!! ----
-
-global enumdata  [0:]ichar pclnames, [0:]qd pclfmt, [0:]REF PROC pclhandlers =
-	(kzero=0,		$,	(0,0,0,0),	cast(kunimpl        )),
-	(knop,			$,	(0,0,0,0),	cast(k_nop          )),		!simple nop
-	(kskip,			$,	(0,0,0,0),	cast(kunimpl        )),		!ignore on pcl listing
-
-	(kprocdef,		$,	(d,0,0,0),	cast(kunimpl        )),		!
-	(kprocentry,	$,	(i,0,0,0),	cast(k_procentry    )),		!A=number of locals; 
-	(kprocend,		$,	(0,0,0,0),	cast(kunimpl        )),
-	(kendmodule,	$,	(0,0,0,0),	cast(kunimpl        )),		!Last 'executable' opcode
-	(kcomment,		$,	(z,0,0,0),	cast(k_comment      )),
-
-	(klabeldef,		"",	(d,0,0,0),	cast(kunimpl        )),		!
-
-	(kpushm,		$,	(m,0,0,0),	cast(k_pushm        )),		!Push [A]
-	(kpushf,		$,	(f,0,0,0),	cast(k_pushf        )),		!Push [A]
-	(kpushmref,		$,	(m,0,0,0),	cast(k_pushmref     )),		!push &A
-	(kpushfref,		$,	(f,0,0,0),	cast(k_pushfref     )),		!push &A
-	(kpopm,			$,	(m,0,0,0),	cast(k_popm         )),		!A:=Xa
-	(kpopf,			$,	(f,0,0,0),	cast(k_popf         )),		!A:=Xa
-	(kstorem,		$,	(m,0,0,0),	cast(k_storem       )),		!A:=Xa
-	(kstoref,		$,	(f,0,0,0),	cast(k_storef       )),		!A:=Xa
-	(kpushx,		$,	(d,0,0,0),	cast(kunimpl        )),		!Push [A]	DLL VARs
-	(kpopx,			$,	(d,0,0,0),	cast(kunimpl        )),		!Pop [A]
-
-	(kpushci,		$,	(i,0,0,0),	cast(k_pushci       )),		!Push constant signed int
-	(kpushvoid,		$,	(0,0,0,0),	cast(k_pushvoid     )),		!
-	(kpushnil,		$,	(0,0,0,0),	cast(k_pushnil      )),		!
-	(kpushcr,		$,	(r,0,0,0),	cast(k_pushcr       )),		!Push constant real
-	(kpushcn,		$,	(n,0,0,0),	cast(kunimpl        )),		!Push range
-
-	(kpushcs,		$,	(s,0,0,0),	cast(k_pushcs       )),		!Push constant string object
-
-	(kpusht,		$,	(t,0,0,0),	cast(k_pusht        )),		!Push type constant
-	(kpushsymbol,	$,	(d,0,0,0),	cast(k_pushsymbol   )),		!Push symbol reference
-	(kpushoperator,	$,	(o,0,0,0),	cast(k_pushoperator )),		!Push operator code (pcl code)
-
-	(kpushptr,		$,	(0,0,0,0),	cast(k_pushptr      )),		!Push Xa^
-	(kpopptr,		$,	(0,0,0,0),	cast(k_popptr       )),		!Ya^:=Xb; then pop both
-
-	(kzpopm,		$,	(m,0,0,0),	cast(k_zpopm        )),		!Pop A; do not free A first
-	(kzpopf,		$,	(f,0,0,0),	cast(k_zpopf        )),		!Pop A; do not free A first
-
-	(kdupl,			$,	(0,0,0,0),	cast(k_dupl         )),		!Xa:=share(Xa), keep original on stack
-	(kcopy,			$,	(0,0,0,0),	cast(k_copy         )),		!Xa:=deepcopy(Xa)
-	(kswap,			$,	(0,0,0,0),	cast(k_swap         )),		!Yb^:=:Xa^; Xa^:=:A; A:=:B
-
-	(kconvrefpack,	$,	(0,0,0,0),	cast(k_convrefpack  )),		!Change ref in X to refpacked
-
-	(kjump,			$,	(l,0,0,0),	cast(k_jump         )),		!Jump to L
-	(kjumpptr,		$,	(0,0,0,0),	cast(k_jumpptr      )),		!Jump to Xa^
-
-	(kjumptrue,		$,	(l,0,0,0),	cast(k_jumptrue     )),		!Jump to L when Xa is true
-	(kjumpfalse,	$,	(l,0,0,0),	cast(k_jumpfalse    )),		!Jump to L when Xa is false
-
-	(kjumpeq,		$,	(l,0,0,0),	cast(k_jumpeq       )),		!Jump to L when Xb=Ya, Xa=A, A=B; (X,Y popped)
-	(kjumpne,		$,	(l,0,0,0),	cast(k_jumpne       )),		!Jump to L when Xb<>Ya
-	(kjumplt,		$,	(l,0,0,0),	cast(k_jumplt       )),		!Jump to L when Xb<Ya
-	(kjumple,		$,	(l,0,0,0),	cast(k_jumple       )),		!Jump to L when Xb<=Ya
-	(kjumpge,		$,	(l,0,0,0),	cast(k_jumpge       )),		!Jump to L when Xb>=Ya
-	(kjumpgt,		$,	(l,0,0,0),	cast(k_jumpgt       )),		!Jump to L when Xb>Ya
-
-	(kjumptesteq,	$,	(l,0,0,0),	cast(k_jumptesteq   )),		!Jump to L when Xb=Ya (Ya popped), or Xa=A; int/set and int/range use 'in' to compare
-	(kjumptestne,	$,	(l,0,0,0),	cast(k_jumptestne   )),		!Jump to L when Xb<>Ya
-
-	(kjumplabel,	$,	(l,0,0,0),	cast(kunimpl        )),		!Jumptable entry
-
-	(kswitch,		$,	(i,i,0,0),	cast(k_switch       )),		!Jumptable has n entries, ci is lower bound. Jump indexed by Xa
-
-	(ktom,			$,	(l,m,0,0),	cast(k_tom          )),		!
-	(ktof,			$,	(l,f,0,0),	cast(k_tof          )),		!
-
-	(kformci,		$,	(l,m,i,0),	cast(k_formci       )),		!
-	(kforfci,		$,	(l,f,i,0),	cast(k_forfci       )),		!
-	(kformm,		$,	(l,m,m,0),	cast(k_formm        )),		!
-	(kforff,		$,	(l,f,f,0),	cast(k_forff        )),		!
-
-	(kfordmci,		$,	(l,m,i,0),	cast(k_fordmci      )),		!
-	(kfordfci,		$,	(l,f,i,0),	cast(k_fordfci      )),		!
-	(kfordmm,		$,	(l,m,m,0),	cast(k_fordmm       )),		!
-	(kfordff,		$,	(l,f,f,0),	cast(k_fordff       )),		!
-
-	(kcallproc,		$,	(p,i,0,0),	cast(k_callproc     )),		!Call &A; A is cmemoryref; B is no. args
-	(kcallptr,		$,	(i,i,0,0),	cast(k_callptr      )),		!Call X^; A is no. of params supplied; B is stack adjust
-	(kreturn0,		$,	(0,0,0,0),	cast(k_return0      )),		!A is no. params to free; Return from function, with optional value in caller's retval slot
-	(kreturn,		$,	(i,0,0,0),	cast(k_return       )),		!A is no. params to free; Return from function, with optional value in caller's retval slot
-	(kpopretval,	$,	(i,0,0,0),	cast(k_popretval    )),		!pop stack to caller's return slot; i=offset
-
-	(kmodulecall,	$,	(d,0,0,0),	cast(k_modulecall   )),		!
-	(kmodulereturn,	$,	(0,0,0,0),	cast(k_modulereturn )),		!
-
-	(kcalldll,		$,	(x,i,0,0),	cast(k_calldll      )),		!Call dll function A (sysmbol); B=nargs
-
-	(kcallhost,		$,	(i,0,0,0),	cast(k_callhost     )),		!Call Q host function A (Host index)
-
-	(kunshare,		$,	(i,0,0,0),	cast(k_unshare      )),		!Unshare and pop A var values on stack
-	(kaddsp,		$,	(i,0,0,0),	cast(k_addsp        )),		!SP+:=A; note: positive A will push, negative will pop (reverse of the hardware)
-
-	(kstop,			$,	(0,0,0,0),	cast(k_stop         )),		!Stop program and return value X to any calling program
-	(kstoprunproc,	$,	(0,0,0,0),	cast(k_stoprunproc  )),		!Used for reentrant callback calls
-
-	(kmakelist,		$,	(i,i,0,0),	cast(k_makelist     )),		!A items on stack; make list with lwb B
-	(kmakerecord,	$,	(i,t,0,0),	cast(k_makerecord   )),		!A items on stack; make record of type B
-	(kmakearray,	$,	(i,i,t,t),	cast(k_makearray    )),		!A items on stack; make array with lwb B, type C and elemtype D
-	(kmakebits,		$,	(i,i,t,t),	cast(k_makebits     )),		!A items on stack; make bits with lwb B, type C and elemtype D
-	(kmakestruct,	$,	(i,t,0,0),	cast(k_makestruct   )),		!A items on stack; make struct with type B
-	(kmakeset,		$,	(i,0,0,0),	cast(k_makeset      )),		!A items on stack; make set
-	(kmakerange,	$,	(0,0,0,0),	cast(k_makerange    )),		!2 items on stack; make range
-	(kmakerangelen,	$,	(0,0,0,0),	cast(k_makerangelen )),		!2 items on stack; make range; 2nd is length
-	(kmakedict,		$,	(i,0,0,0),	cast(k_makedict     )),		!A*2 items on stack (A key:val items); make dict
-	(kmakedecimal,	$,	(0,0,0,0),	cast(k_makedecimal  )),		!Turn string on stack to decimal number
-
-	(kincrptr,		$,	(0,0,0,0),	cast(k_incrptr      )),		!++Xa^
-	(kincrtom,		$,	(m,0,0,0),	cast(k_incrtom      )),		!++A
-	(kincrtof,		$,	(f,0,0,0),	cast(k_incrtof      )),		!++A
-	(kloadincr,		$,	(0,0,0,0),	cast(k_loadincr     )),		!T:=Xa^++
-	(kincrload,		$,	(0,0,0,0),	cast(k_incrload     )),		!T:=--Xa^
-
-	(kdecrptr,		$,	(0,0,0,0),	cast(k_decrptr      )),		!--Xa^; pop X
-	(kdecrtom,		$,	(m,0,0,0),	cast(k_decrtom      )),		!--A
-	(kdecrtof,		$,	(f,0,0,0),	cast(k_decrtof      )),		!--A
-	(kloaddecr,		$,	(0,0,0,0),	cast(k_loaddecr     )),		!T:=Xa^--
-	(kdecrload,		$,	(0,0,0,0),	cast(k_decrload     )),		!T:=--Xa^
-
-	(kincr,			$,	(0,0,0,0),	cast(k_incr         )),		!T:=++T
-	(kdecr,			$,	(0,0,0,0),	cast(k_decr         )),		!T:=--T
-
-	(kneg,			$,	(0,0,0,0),	cast(k_neg          )),		!T:=-Xa; T:=-A
-	(kabs,			$,	(0,0,0,0),	cast(k_abs          )),		!abs Xa
-	(knotl,			$,	(0,0,0,0),	cast(k_notl         )),		!not Xa
-	(kinot,			$,	(0,0,0,0),	cast(k_inot         )),		!inot Xa
-	(kistruel,		$,	(0,0,0,0),	cast(k_istruel      )),		!istrue Xa
-	(kasc,			$,	(0,0,0,0),	cast(k_asc          )),		!asc Xa
-	(kchr,			$,	(0,0,0,0),	cast(k_chr          )),		!chr Xa
-
-	(ksqrt,			$,	(0,0,0,0),	cast(k_sqrt         )),		!sqrt Xa
-	(ksqr,			$,	(0,0,0,0),	cast(k_sqr          )),		!sqr Xa
-	(ksin,			$,	(0,0,0,0),	cast(k_sin          )),		!sin Xa
-	(kcos,			$,	(0,0,0,0),	cast(k_cos          )),		!cos Xa
-	(ktan,			$,	(0,0,0,0),	cast(k_tan          )),		!tan Xa
-	(kasin,			$,	(0,0,0,0),	cast(k_asin         )),		!asin Xa
-	(kacos,			$,	(0,0,0,0),	cast(k_acos         )),		!acos Xa
-	(katan,			$,	(0,0,0,0),	cast(k_atan         )),		!atan Xa
-	(ksign,			$,	(0,0,0,0),	cast(k_sign         )),		!sign Xa
-	(klog,			$,	(0,0,0,0),	cast(k_log           )),	!log Xa
-	(klog10,		$,	(0,0,0,0),	cast(k_log10         )),	!log10 Xa
-	(kexp,			$,	(0,0,0,0),	cast(k_exp          )),		!exp Xa
-	(kround,		$,	(0,0,0,0),	cast(k_round        )),		!round Xa
-	(kfloor,		$,	(0,0,0,0),	cast(k_floor        )),		!floor Xa
-	(kceil,			$,	(0,0,0,0),	cast(k_ceil         )),		!ceil Xa
-	(kfract,		$,	(0,0,0,0),	cast(k_fract        )),		!fract Xa
-	(kfmod,			$,	(0,0,0,0),	cast(k_fmod         )),		!fmod(Xb, Ya)
-
-	(knegto,		$,	(0,0,0,0),	cast(k_negto        )),		!-:=Xa^; -:=A
-	(kabsto,		$,	(0,0,0,0),	cast(k_absto        )),		!abs:=^Xa; pop Xa
-	(kinotto,		$,	(0,0,0,0),	cast(k_inotto       )),		!inot:=Xa^; pop Xa
-	(knotlto,		$,	(0,0,0,0),	cast(k_notlto       )),		!not:=Xa^; pop Xa
-
-	(klen,			$,	(0,0,0,0),	cast(k_len          )),		!T:=Xa.len
-	(klwb,			$,	(0,0,0,0),	cast(k_lwb          )),		!Xa.lwb
-	(kupb,			$,	(0,0,0,0),	cast(k_upb          )),		!Xa.upb
-	(kbounds,		$,	(0,0,0,0),	cast(k_bounds       )),		!Xa.bounds (as one range value)
-	(kboundsx,		$,	(0,0,0,0),	cast(k_boundsx      )),		!Xa.bounds (as two ints)
-	(kbitwidth,		$,	(0,0,0,0),	cast(k_bitwidth     )),		!Xa.bitwidth
-	(kbytesize,		$,	(0,0,0,0),	cast(k_bytesize     )),		!Xa.bytesize
-!	(ktype,			$,	(0,0,0,0),	cast(k_type         )),		!Xa.type
-	(ktype,			$,	(0,0,0,0),	cast(k_type 	    )),		!Xa.type
-	(kbasetype,		$,	(0,0,0,0),	cast(k_basetype     )),		!Xa.basetype
-	(kelemtype,		$,	(0,0,0,0),	cast(k_elemtype     )),		!Xa.elemtag
-	(kdictitems,	$,	(0,0,0,0),	cast(k_dictitems    )),		!Xa.dictitems
-	(kisfound,		$,	(0,0,0,0),	cast(k_isfound      )),		!Xa.isfound
-	(kminvalue,		$,	(0,0,0,0),	cast(k_minvalue     )),		!Xa.minvalue
-	(kmaxvalue,		$,	(0,0,0,0),	cast(k_maxvalue     )),		!Xa.maxvalue
-	(kisint,		$,	(0,0,0,0),	cast(k_isint        )),		!Xa.isint
-	(kisreal,		$,	(0,0,0,0),	cast(k_isreal       )),		!Xa.isreal
-	(kisstring,		$,	(0,0,0,0),	cast(k_isstring     )),		!Xa.isstring
-	(kisrange,		$,	(0,0,0,0),	cast(k_isrange      )),		!Xa.isrange
-	(kisnumber,		$,	(0,0,0,0),	cast(k_isnumber     )),		!Xa.isnumber
-	(kislist,		$,	(0,0,0,0),	cast(k_islist       )),		!Xa.isarray
-	(kisrecord,		$,	(0,0,0,0),	cast(k_isrecord     )),		!Xa.isrecord
-	(kispointer,	$,	(0,0,0,0),	cast(k_ispointer    )),		!Xa.ispointer
-	(kisarray,		$,	(0,0,0,0),	cast(k_isarray      )),		!Xa.isarray
-	(kismutable,	$,	(0,0,0,0),	cast(k_ismutable    )),		!Xa.ismutable
-	(kisset,		$,	(0,0,0,0),	cast(k_isset        )),		!Xa.isset
-	(kisvoid,		$,	(0,0,0,0),	cast(k_isvoid       )),		!Xa.isvoid
-	(kisdef,		$,	(0,0,0,0),	cast(k_isdef        )),		!Xa.isdef
-	(kisequal,		$,	(0,0,0,0),	cast(k_isequal      )),		!Xb==Ya
-	(kconvert,		$,	(t,0,0,0),	cast(k_convert      )),		!Xa==A(Xa)
-	(ktypepun,		$,	(t,0,0,0),	cast(k_typepun      )),		!Xa==A@(Xa)
-	(kodd,			$,	(0,0,0,0),	cast(k_odd          )),		!Xa==Xa.odd
-	(keven,			$,	(0,0,0,0),	cast(k_even         )),		!Xa==Xa.even
-
-	(kadd,			$,	(0,0,0,0),	cast(k_add          )),		!T:=Xb+Ya
-	(ksub,			$,	(0,0,0,0),	cast(k_sub          )),		!Xb-Ya
-	(kmul,			$,	(0,0,0,0),	cast(k_mul          )),		!Xb*Ya
-	(kdiv,			$,	(0,0,0,0),	cast(k_div          )),		!Xb/Ya
-	(kidiv,			$,	(0,0,0,0),	cast(k_idiv         )),		!Xb%Ya
-	(kirem,			$,	(0,0,0,0),	cast(k_irem         )),		!Xb rem Ya
-	(kidivrem,		$,	(0,0,0,0),	cast(k_idivrem      )),		!Xb divrem Ya
-	(kiand,			$,	(0,0,0,0),	cast(k_iand         )),		!Xb iand Ya
-	(kior,			$,	(0,0,0,0),	cast(k_ior          )),		!Xb ior Ya
-	(kixor,			$,	(0,0,0,0),	cast(k_ixor         )),		!Xb ixor Ya
-	(kshl,			$,	(0,0,0,0),	cast(k_shl          )),		!Xb shl Ya
-	(kshr,			$,	(0,0,0,0),	cast(k_shr          )),		!Xb shr Ya
-	(kin,			$,	(0,0,0,0),	cast(k_in           )),		!Xb in Ya
-	(knotin,		$,	(0,0,0,0),	cast(k_notin        )),		!Xb notin Ya
-	(kinx,			$,	(0,0,0,0),	cast(k_inx          )),		!Xb inx Ya
-	(keq,			$,	(0,0,0,0),	cast(k_eq           )),		!Xb=Ya
-	(kne,			$,	(0,0,0,0),	cast(k_ne           )),		!Xb<>Ya
-	(klt,			$,	(0,0,0,0),	cast(k_lt           )),		!Xb<Ya
-	(kle,			$,	(0,0,0,0),	cast(k_le           )),		!Xb<=Ya
-	(kge,			$,	(0,0,0,0),	cast(k_ge           )),		!Xb>=Ya
-	(kgt,			$,	(0,0,0,0),	cast(k_gt           )),		!Xb>Ya
-	(kmin,			$,	(0,0,0,0),	cast(k_min          )),		!Xb min Ya
-	(kmax,			$,	(0,0,0,0),	cast(k_max          )),		!Xb max Ya
-	(kconcat,		$,	(0,0,0,0),	cast(k_concat       )),		!Xb concat Ya
-	(kappend,		$,	(0,0,0,0),	cast(k_append       )),		!Xb append Ya
-
-	(kpower,		$,	(0,0,0,0),	cast(k_power        )),		!Xb power Ya
-	(katan2,		$,	(0,0,0,0),	cast(k_atan2        )),		!Xb atan2 Ya
-
-	(kaddto,		$,	(0,0,0,0),	cast(k_addto        )),		!Xb^+:=Y or Xa^+:=A or A+:=B
-	(ksubto,		$,	(0,0,0,0),	cast(k_subto        )),		!Xb^-:=Ya
-	(kmulto,		$,	(0,0,0,0),	cast(k_multo        )),		!Xb^*:=Ya
-	(kdivto,		$,	(0,0,0,0),	cast(k_divto        )),		!Xb^/:=Ya
-	(kidivto,		$,	(0,0,0,0),	cast(k_idivto       )),		!Xb^%:=Ya
-
-	(kandlto,		$,	(0,0,0,0),	cast(k_andlto       )),		!Xb^ and:=Ya
-	(korlto,		$,	(0,0,0,0),	cast(k_orlto        )),		!Xb^ or:=Ya
-	(kiandto,		$,	(0,0,0,0),	cast(k_iandto       )),		!Xb^ iand:=Ya
-	(kiorto,		$,	(0,0,0,0),	cast(k_iorto        )),		!Xb^ ior:=Ya
-	(kixorto,		$,	(0,0,0,0),	cast(k_ixorto       )),		!Xb^ ixor:=Ya
-	(kshlto,		$,	(0,0,0,0),	cast(k_shlto        )),		!Xb^ shl:=Ya
-	(kshrto,		$,	(0,0,0,0),	cast(k_shrto        )),		!Xb^ shr:=Ya
-	(kminto,		$,	(0,0,0,0),	cast(k_minto        )),		!Xb^ min:=Ya
-	(kmaxto,		$,	(0,0,0,0),	cast(k_maxto        )),		!Xb^ max:=Ya
-	(kconcatto,		$,	(0,0,0,0),	cast(k_concatto     )),		!Xb^ concat:=Ya
-	(kappendto,		$,	(0,0,0,0),	cast(k_appendto     )),		!Xb^ concat:=Ya
-
-	(kdot,			$,	(g,0,0,0),	cast(k_dot          )),		!T:=Xa.A
-	(kindex,		$,	(0,0,0,0),	cast(k_index        )),		!T:=Xb[Ya]
-	(kdotindex,		$,	(0,0,0,0),	cast(k_dotindex     )),		!T:=Xb.[Ya]
-	(kkeyindex,		$,	(0,0,0,0),	cast(k_keyindex     )),		!T:=Xc{Yb,Za}
-
-	(kdotref,		$,	(g,0,0,0),	cast(k_dotref       )),		!T:=&Xa.A
-	(kindexref,		$,	(0,0,0,0),	cast(k_indexref     )),		!T:=&Xb[Ya]
-	(kdotindexref,	$,	(0,0,0,0),	cast(k_dotindexref  )),		!T:=&Xb.[Ya]
-	(kkeyindexref,	$,	(0,0,0,0),	cast(k_keyindexref  )),		!T:=&Xc{Ya,Za}
-
-	(kpopdot,		$,	(g,0,0,0),	cast(k_popdot       )),		!Ya.A:=Xb
-	(kpopindex,		$,	(0,0,0,0),	cast(k_popindex     )),		!Yb[Za]:=Xc
-	(kpopdotindex,	$,	(0,0,0,0),	cast(k_popdotindex  )),		!Yb.[Za]:=Xc
-	(kpopkeyindex,	$,	(0,0,0,0),	cast(k_popkeyindex  )),		!Yb{Za}:=Xc
-
-	(kexpand,		$,	(i,0,0,0),	cast(k_expand       )),		!Expand Xa when A objects are needed
-
-	(kpushtry,		$,	(l,i,i,0),	cast(k_pushtry      )),		!Push try/except into; label/except code/no. exceptions
-	(kraise,		$,	(0,0,0,0),	cast(k_raise        )),		!Raise exception Xa
-	(kmaps,			$,	(0,0,0,0),	cast(k_maps         )),		!Xa:=map(Xb,Ya)
-	(kmapss,		$,	(0,0,0,0),	cast(k_mapss        )),		!Xa:=map(Xc,Yb,Za)
-
-!Special composite opcodes used in asm optimiser
-
-	(kpushff,		$,	(f,f,0,0),	cast(nil)             ),		!
-	(kpushmm,		$,	(m,m,0,0),	cast(nil)             ),		!
-	(kpushfm,		$,	(f,m,0,0),	cast(nil)             ),		!
-	(kpushmf,		$,	(m,f,0,0),	cast(nil)             ),		!
-
-	(kmoveff,		$,	(f,f,0,0),	cast(nil)             ),		!
-	(kzmoveff,		$,	(f,f,0,0),	cast(nil)             ),		!
-	(kmovefm,		$,	(f,m,0,0),	cast(nil)             ),		!
-	(kmovemf,		$,	(m,f,0,0),	cast(nil)             ),		!
-	(kmovemm,		$,	(m,m,0,0),	cast(nil)             ),		!
-
-	(kmovefci,		$,	(f,i,0,0),	cast(nil)             ),		!
-	(kzmovefci,		$,	(f,i,0,0),	cast(nil)             ),		!
-	(kmovemci,		$,	(m,i,0,0),	cast(nil)             ),		!
-
-	(kpushfff,		$,	(f,f,f,0),	cast(nil)             ),		!
-	(knop2,			$,	(i,0,0,0),	cast(nil)             ),		!
-	(kpushci0,		$,	(i,0,0,0),	cast(nil)             ),		!
-	(kpushvoid2,	$,	(0,0,0,0),	cast(nil)             ),		!
-	(kpushvoid3,	$,	(0,0,0,0),	cast(nil)             ),		!
-
-	(kunshare1,		$,	(0,0,0,0),	cast(nil)             ),		!
-	(kunshare2,		$,	(0,0,0,0),	cast(nil)             ),		!
-	(kunshare3,		$,	(0,0,0,0),	cast(nil)             ),		!
-	(kprocentry1,	$,	(0,0,0,0),	cast(nil)             ),		!
-	(kprocentry2,	$,	(0,0,0,0),	cast(nil)             ),		!
-
-	(kjumpeqfci,	$,	(l,f,i,0),	cast(nil)             ),		!
-	(kjumpnefci,	$,	(l,f,i,0),	cast(nil)             ),		!
-	(kjumpltfci,	$,	(l,f,i,0),	cast(nil)             ),		!
-	(kjumplefci,	$,	(l,f,i,0),	cast(nil)             ),		!
-	(kjumpgefci,	$,	(l,f,i,0),	cast(nil)             ),		!
-	(kjumpgtfci,	$,	(l,f,i,0),	cast(nil)             ),		!
-
-	(kjumpeqff,		$,	(l,f,f,0),	cast(nil)             ),		!
-	(kjumpneff,		$,	(l,f,f,0),	cast(nil)             ),		!
-	(kjumpltff,		$,	(l,f,f,0),	cast(nil)             ),		!
-	(kjumpleff,		$,	(l,f,f,0),	cast(nil)             ),		!
-	(kjumpgeff,		$,	(l,f,f,0),	cast(nil)             ),		!
-	(kjumpgtff,		$,	(l,f,f,0),	cast(nil)             ),		!
-
-	(kaddfci,		$,	(f,i,0,0),	cast(nil)             ),		!
-	(ksubfci,		$,	(f,i,0,0),	cast(nil)             ),		!
-
-	(kaddff,		$,	(f,f,0,0),	cast(nil)             ),		!
-	(ksubff,		$,	(f,f,0,0),	cast(nil)             ),		!
-	(kindexff,		$,	(f,f,0,0),	cast(nil)             ),		!
-
-	(kpushincrptrm,	$,	(m,0,0,0),	cast(nil)             ),		!
-	(kpushincrptrf,	$,	(f,0,0,0),	cast(nil)             ),		!
-	(kpopincrptrm,	$,	(m,0,0,0),	cast(nil)             ),		!
-	(kpopincrptrf,	$,	(f,0,0,0),	cast(nil)             ),		!
-
-	(kswitchf,		$,	(f,i,i,0),	cast(nil)             ),		!
-	(klenf,			$,	(f,0,0,0),	cast(nil)             ),		!
-	(kpushptrf,		$,	(f,0,0,0),	cast(nil)             ),		!
-
-	(klastpcl,		$,	(0,0,0,0),	cast(nil)             )
-end
-
-global [0..klastpcl]ref void cmdmap			!map cmd index to possible fn/label address
 
 global enumdata []u64 symbolnames=
 !First half are basic tokens returned by lexreadtoken()
 	(errorsym,			'error'),		! Lex error
 	(dotsym,			'dot'),		! "."
-	(lexdotsym,			'lexdot'),		! ".", used at bol to prefix lexical 
 	(commasym,			'comma'),		! ","
 	(semisym,			'semi'),		! ";"
 	(colonsym,			'colon'),		! ":"
-	(dcolonsym,			'dcolon'),		! "::"
 	(assignsym,			'assign'),		! :=
-	(deepcopysym,		'deepcopy'),		! ::=
 	(sendtosym,			'sendto'),		! =>
 	(pipesym,			'pipe'),		! ->
 	(lbracksym,			'lbrack'),		! (
@@ -28091,11 +22634,8 @@ global enumdata []u64 symbolnames=
 	(atsym,				'at'),		! @
 	(questionsym,		'question'),		! ?
 	(addrsym,			'addr'),		! &
-	(daddrsym,			'daddr'),		! &&
-!	(curlsym,			'curl'),		! ~
 	(rangesym,			'range'),		! ..
 	(ellipsissym,		'ellipsis'),		! ...
-	(hashsym,			'hash'),		! #
 
 	(addsym,			'add'),		! +
 	(subsym,			'sub'),		! -
@@ -28112,15 +22652,13 @@ global enumdata []u64 symbolnames=
 	(shlsym,			'shl'),		! <<
 	(shrsym,			'shr'),		! >>
 
-	(minsym,			'min'),		! min
-	(maxsym,			'max'),		! max
+	(minmaxsym,			'minmax'),		! min/max
 	(appendsym,			'append'),		! append
 	(concatsym,			'concat'),		! concat
 	(insym,				'in'),		! in
-	(notinsym,			'notin'),		! notin
 	(inxsym,			'inx'),		! inx
-	(inrevsym,			'inrev'),		! inrevsym
 	(powersym,			'power'),		! **
+	(samesym,			'same'),		! ==
 
 	(eqsym,				'eq'),		! =
 	(nesym,				'ne'),		! <>
@@ -28128,27 +22666,24 @@ global enumdata []u64 symbolnames=
 	(lesym,				'le'),		! <=
 	(gesym,				'ge'),		! >=
 	(gtsym,				'gt'),		! >
-	(isequalsym,		'isequal'),		! ==
 
 	(notlsym,			'notl'),		! not
 	(inotsym,			'inot'),		! inot
 	(istruelsym,		'istruel'),		! istrue
 	(abssym,			'abs'),		! abs
-	(sqrsym,			'sqr'),		! sqr
-	(signsym,			'sign'),		! sign
 	(ascsym,			'asc'),		! asc
 	(chrsym,			'chr'),		! chr
 
 	(mathssym,			'maths'),		! sin etc
 	(maths2sym,			'maths2'),		! atan2 etc
 	(propsym,			'prop'),		! len etc
+	(istypesym,			'istype'),		! .isint etc
+	(miscpropsym,		'isvoid'),		! .isvoid/.elemtype etc
 
 	(incrsym,			'incr'),		! -
-	(decrsym,			'decr'),		! -
 
 	(eolsym,			'eol'),		! End of line
 	(eofsym,			'eof'),		! Eof seen
-	(rawnamesym,		'rawname'),		! unassigned name before lookup
 	(intconstsym,		'intconst'),		! 123 32 bits signed
 	(decimalconstsym,	'decconst'),		! 123 or 123.4 decimal
 	(realconstsym,		'fpconst'),		! 123.4 64 bits
@@ -28170,8 +22705,7 @@ global enumdata []u64 symbolnames=
 	(kelseselectsym,	'elsesel'),		! 
 	(kendsym,			'end'),		! 
 	(kunlesssym,		'unless'),		! 
-	(kcasesym,			'case'),		! CASE
-	(kdocasesym,		'docase'),		! DOCASE
+	(kcasesym,			'case'),		! CASE/DOCASE
 	(krecasesym,		'recase'),		! RECASE
 	(kwhensym,			'when'),		! 
 	(kforsym,			'for'),		! 
@@ -28185,13 +22719,10 @@ global enumdata []u64 symbolnames=
 	(kstopsym,			'stop'),		! 
 	(kloopsym,			'loop'),		! EXIT/NEXT/LOOP/REDO/RESTART
 	(kgotosym,			'goto'),		! GO/GOTO
-	(kswitchsym,		'switch'),		! SWITCH
-	(kdoswitchsym,		'doswitch'),		! DOSWITCH
+	(kswitchsym,		'switch'),		! SWITCH/DOSWITCH
 	(kprintsym,			'print'),		! PRINT/PRINTLN/FPRINT/FPRINTLN
 	(ksprintsym,		'sprint'),		! SPRINT/SFPRINT
 	(kreadsym,			'read'),		! READ/READLN
-	(ksreadsym,			'sread'),		! SREAD
-	(ksreadlnsym,		'sreadln'),		! SREADLN
 	(kprocsym,			'proc'),		! PROC
 	(kfunctionsym,		'func'),		! FUNCTION
 	(klabelsym,			'label'),		! LABEL
@@ -28204,11 +22735,9 @@ global enumdata []u64 symbolnames=
 	(ktypesym,			'type'),		! TYPE
 	(krefsym,			'ref'),		! REF
 	(kvarsym,			'var'),		! VAR
-	(kslicesym,			'slice'),		! SLICE
 	(kmacrosym,			'macro'),		! MACRO
 	(koperatorsym,		'op'),		! OPERATOR
 	(kconstsym,			'const'),		! 
-	(kfflangsym,		'fflang'),		! JLANG CLANG WINDOWS HOST
 	(kglobalsym,		'global'),		! global
 	(kstaticsym,		'static'),		! STATIC
 	(kcalignedsym,		'calign'),		! $CALIGNED
@@ -28216,8 +22745,6 @@ global enumdata []u64 symbolnames=
 	(ktrysym,			'try'),		! 
 	(kexceptsym,		'except'),		! 
 	(kraisesym,			'raise'),		! 
-	(kextendsym,		'extend'),		!
-	(kblocksym,			'block'),		!
 	(kcastsym,			'cast'),		! CAST
 	(compilervarsym,	'compvar'),		! $lineno etc
 	(dollarsym,			'dollar'),		! to be used for current array upperbound; also tabledata names
@@ -28228,11 +22755,9 @@ global enumdata []u64 symbolnames=
 	(kswapsym,			'swap'),		! SWAP
 	(sysconstsym,		'sysconst'),		! nil, etc
 	(khostfnsym,		'hostfn'),		! LEFT, CONVLC etc
-	(khostsym,			'host'),		! HOST
 	(knilsym,			'nil'),		! NIL/PNIL
 	(kstrincludesym,	'strincl'),		! STRINCLUDE
 	(specialopsym,		'specop'),		! $NEG, $INDEX etc
-	(kdummysym,			'dummy')		!
 end
 
 global enumdata =
@@ -28299,8 +22824,8 @@ global tabledata []ichar stnames, []byte stsymbols, []byte stsubcodes=
 	("else",		kelsesym,		0),
 	("elsecase",	kelsecasesym,	jcase),
 	("elseswitch",	kelseswitchsym,	jswitch),
-	("case",		kcasesym,		jcase),
-	("docase",		kdocasesym,		jdocase),
+	("case",		kcasesym,		0),
+	("docase",		kcasesym,		1),
 	("recase",		krecasesym,		jrecase),
 	("when",		kwhensym,		0),
 	("for",			kforsym,		0),
@@ -28317,19 +22842,15 @@ global tabledata []ichar stnames, []byte stsymbols, []byte stsubcodes=
 	("return",		kreturnsym,		0),
 	("stop",		kstopsym,		0),
 
-!	("redo",		questionsym,	0),
-!	("redo",		kloopsym,		jredo),
-	("redoloop",	kloopsym,		jredo),
+	("redoloop",	kloopsym,		loop_redo),
 
-!	("next",		questionsym,	0),
-!	("next",		kloopsym,		jnext),
-	("nextloop",	kloopsym,		jnext),
+	("nextloop",	kloopsym,		loop_next),
 
-	("exit",		kloopsym,		jexit),
-	("exitloop",	kloopsym,		jexit),
+	("exit",		kloopsym,		loop_exit),
+
 	("goto",		kgotosym,		0),
-	("switch",		kswitchsym,		jswitch),
-	("doswitch",	kdoswitchsym,	jdoswitch),
+	("switch",		kswitchsym,		0),
+	("doswitch",	kswitchsym,		1),
 	("tabledata",	ktabledatasym,	0),
 	("enumdata",	ktabledatasym,	1),
 	("clamp",		kclampsym,		0),
@@ -28337,18 +22858,18 @@ global tabledata []ichar stnames, []byte stsymbols, []byte stsubcodes=
 	("mapss",		kmapsym,		0),
 	("eval",		kevalsym,		0),
 
-	("print",		kprintsym,		jprint),
-	("println",		kprintsym,		jprintln),
-	("fprint",		kprintsym,		jfprint),
-	("fprintln",	kprintsym,		jfprintln),
-	("sprint",		ksprintsym,		jsprint),
-	("sfprint",		ksprintsym,		jsfprint),
+	("print",		kprintsym,		0),
+	("println",		kprintsym,		pr_newline),
+	("fprint",		kprintsym,		pr_format),
+	("fprintln",	kprintsym,		pr_format + pr_newline),
+	("sprint",		ksprintsym,		pr_sprint),
+	("sfprint",		ksprintsym,		pr_sprint + pr_format),
 
-	("cp",			kprintsym,		jprint),
-	("cpl",			kprintsym,		jprintln),
+	("cp",			kprintsym,		0),
+	("cpl",			kprintsym,		pr_newline),
 
-	("read",		kreadsym,		jread),
-	("readln",		kreadsym,		jreadln),
+	("read",		kreadsym,		0),
+	("readln",		kreadsym,		pr_newline),
 
 	("cast",		kcastsym,		13),
 
@@ -28367,7 +22888,6 @@ global tabledata []ichar stnames, []byte stsymbols, []byte stsubcodes=
 	("union",		kunionsym,		0),
 	("ref",			krefsym,		0),
 	("var",			kvarsym,		0),
-	("slice",		kslicesym,		0),
 
 	("macro",		kmacrosym,		0),
 
@@ -28389,9 +22909,6 @@ global tabledata []ichar stnames, []byte stsymbols, []byte stsubcodes=
 
 	("global",		kglobalsym,		global_scope),
 	("export",		kglobalsym,		export_scope),
-
-	("clang",		kfflangsym,		0),
-	("windows",		kfflangsym,		0),
 
 	("swap",		kswapsym,		0),
 
@@ -28455,91 +22972,92 @@ global tabledata []ichar stnames, []byte stsymbols, []byte stsubcodes=
 !	("thousand",	unitnamesym,	thousand_unit),
 	("as",			unitnamesym,	0),
 
-	("$lineno",		compilervarsym,	jcvlineno),
-	("$strlineno",	compilervarsym,	jcvstrlineno),
-	("$filename",	compilervarsym,	jcvfilename),
-	("$modulename",	compilervarsym,	jcvmodulename),
-	("$function",	compilervarsym,	jcvfunction),
-	("$date",		compilervarsym,	jcvdate),
-	("$time",		compilervarsym,	jcvtime),
+	("$lineno",		compilervarsym,	cv_lineno),
+	("$strlineno",	compilervarsym,	cv_strlineno),
+	("$filename",	compilervarsym,	cv_filename),
+	("$modulename",	compilervarsym,	cv_modulename),
+	("$function",	compilervarsym,	cv_function),
+	("$date",		compilervarsym,	cv_date),
+	("$time",		compilervarsym,	cv_time),
 !	("$version",	compilervarsym,	J_cvversion),
 	("$",			dollarsym,		0),
 
 	("and",			andlsym,		jandl),
 	("or",			orlsym,			jorl),
-	("iand",		iandsym,		jiand),
-	("ior",			iorsym,			jior),
-	("ixor",		ixorsym,		jixor),
-	("in",			insym,			jin),
-	("notin",		notinsym,		jnotin),
-	("inx",			inxsym,			jinx),
-	("inrev",		inrevsym,		jinrev),
-	("rem",			iremsym,		jirem),
-	("divrem",		idivremsym,		jidivrem),
-	("min",			minsym,			jmin),
-	("max",			maxsym,			jmax),
+	("iand",		iandsym,		kiand),
+	("ior",			iorsym,			kior),
+	("ixor",		ixorsym,		kixor),
+	("in",			insym,			0),
+	("inx",			inxsym,			0),
+	("rem",			iremsym,		kirem),
+	("divrem",		idivremsym,		kidivrem),
+	("min",			minmaxsym,		kmin),
+	("max",			minmaxsym,		kmax),
 
 	("not",			notlsym,		jnotl),
-	("inot",		inotsym,		jinot),
 	("istrue",		istruelsym,		jistruel),
-	("abs",			abssym,			jabs),
-!	("$neg",		opsym,			jneg),
-	("asc",			ascsym,			jasc),
-	("chr",			chrsym,			jchr),
-	("sqrt",		mathssym,		jsqrt),
-	("sqr",			sqrsym,			jsqr),
-	("cos",			mathssym,		jcos),
-	("sin",			mathssym,		jsin),
-	("tan",			mathssym,		jtan),
-	("asin",		mathssym,		jasin),
-	("acos",		mathssym,		jacos),
-	("atan",		mathssym,		jatan),
-	("atan2",		maths2sym,		jatan2),
-	("sign",		signsym,		jsign),
-	("log",			mathssym,		jlog),
-	("log10",		mathssym,		jlog10),
-	("exp",			mathssym,		jexp),
-	("round",		mathssym,		jround),
-	("floor",		mathssym,		jfloor),
-	("ceil",		mathssym,		jceil),
-	("fract",		mathssym,		jfract),
-	("fmod",		maths2sym,		jfmod),
+	("inot",		inotsym,		kinot),
+	("abs",			abssym,			kabs),
+	("asc",			ascsym,			kasc),
+	("chr",			chrsym,			kchr),
+	("sqrt",		mathssym,		mm_sqrt),
+	("sqr",			mathssym,		mm_sqr),
+	("cos",			mathssym,		mm_cos),
+	("sin",			mathssym,		mm_sin),
+	("tan",			mathssym,		mm_tan),
+	("asin",		mathssym,		mm_asin),
+	("acos",		mathssym,		mm_acos),
+	("atan",		mathssym,		mm_atan),
+	("atan2",		maths2sym,		mm_atan2),
+	("sign",		mathssym,		mm_sign),
+	("log",			mathssym,		mm_log),
+	("log10",		mathssym,		mm_log10),
+	("exp",			mathssym,		mm_exp),
+	("round",		mathssym,		mm_round),
+	("floor",		mathssym,		mm_floor),
+	("ceil",		mathssym,		mm_ceil),
+	("fract",		mathssym,		mm_fract),
+	("fmod",		maths2sym,		mm_fmod),
 
-	("append",		appendsym,		jappend),
-	("concat",		concatsym,		jconcat),
+	("append",		appendsym,		kappend),
+	("concat",		concatsym,		kconcat),
 
-	("len",			propsym,		jlen),
-	("lwb",			propsym,		jlwb),
-	("upb",			propsym,		jupb),
-	("bounds",		propsym,		jbounds),
-	("bitwidth",	propsym,		jbitwidth),
-	("bytes",		propsym,		jbytesize),
-	("minvalue",	propsym,		jminvalue),
-	("maxvalue",	propsym,		jmaxvalue),
-	("basetype",	propsym,		jbasetype),
-!	("usertype",	propsym,		jusertype),
-	("elemtype",	propsym,		jelemtype),
-	("dictitems",	propsym,		jdictitems),
-!	("decdigits",	propsym,		jdecdigits),
-	("isfound",		propsym,		jisfound),
-!	("type",		propsym,		ktype),
+	("len",			propsym,		klen),
+	("lwb",			propsym,		klwb),
+	("upb",			propsym,		kupb),
+	("bounds",		propsym,		kbounds),
+!	("bitwidth",	propsym,		jbitwidth),
+	("bytes",		propsym,		kbytesize),
+	("isfound",		propsym,		kisfound),
+	("dictitems",	propsym,		kdictsize),
 
-	("isvoid",		propsym,		jisvoid),
-	("isdef",		propsym,		jisdef),
-	("defined",		propsym,		jisdef),
-	("isint",		propsym,		jisint),
-	("isreal",		propsym,		jisreal),
-	("islist",		propsym,		jislist),
-	("isstring",	propsym,		jisstring),
-	("isrange",		propsym,		jisrange),
-	("ispointer",	propsym,		jispointer),
-	("isarray",		propsym,		jisarray),
-	("isrecord",	propsym,		jisrecord),
-	("isset",		propsym,		jisset),
-	("isnumber",	propsym,		jisnumber),
-	("ismutable",	propsym,		jismutable),
-	("odd",			propsym,		jodd),
-	("even",		propsym,		jeven),
+!	("odd"	,		propsym,		kmaxval),
+!	("even",		propsym,		kmaxval),
+
+!	("basetype",	propsym,		jbasetype),
+!!	("usertype",	propsym,		jusertype),
+	("basetype",	miscpropsym,	'b'),
+	("elemtype",	miscpropsym,	'e'),
+
+!	("dictitems",	miscpropsym,	'dict'),
+
+	("isvoid",		miscpropsym,	'v'),
+	("isdef",		miscpropsym,	'd'),
+	("defined",		miscpropsym,	'd'),
+
+	("isint",		istypesym,		tint),
+	("isreal",		istypesym,		treal),
+	("islist",		istypesym,		tlist),
+	("isstring",	istypesym,		tstring),
+	("isrange",		istypesym,		trange),
+	("ispointer",	istypesym,		trefvar),
+	("isarray",		istypesym,		tarray),
+	("isrecord",	istypesym,		trecord),
+	("isset",		istypesym,		tset),
+	("isnumber",	istypesym,		tnumber),
+!	("ismutable",	istypesym,		jismutable),
+!	("odd",			istypesym,		jodd),
+!	("even",		istypesym,		jeven),
 
 	("fi",			kendsym,		kifsym),
 	("esac",		kendsym,		kcasesym),
@@ -28641,23 +23159,23 @@ end
 global []byte D_binopset = (
 	andlsym, orlsym, eqsym, nesym, ltsym, lesym, gtsym, gesym, addsym,
 	subsym, mulsym, divsym, idivsym, iremsym, iandsym, iorsym, ixorsym,
-	shlsym, shrsym, minsym, maxsym,	concatsym, powersym, isequalsym,
-	idivremsym,  maths2sym, appendsym, addrsym )
+	shlsym, shrsym, minmaxsym,	concatsym, powersym,
+	idivremsym,  maths2sym, appendsym, addrsym, samesym )
 
 global [0..symbolnames.upb]byte binopset
 
 global []byte D_unaryopset = (
-	notlsym, inotsym, abssym, istruelsym, sqrsym, signsym, ascsym, chrsym,
+	notlsym, inotsym, abssym, istruelsym, ascsym, chrsym,
 	mathssym)
 
 global [0..symbolnames.upb]byte unaryopset
 
 global []byte D_addopset=(addsym, subsym, iandsym, iorsym, ixorsym,
-		concatsym, appendsym, minsym, maxsym, addrsym, daddrsym)
+		concatsym, appendsym, minmaxsym, addrsym, samesym)
 
-global []byte D_cmpopset=(eqsym, nesym, ltsym, lesym, gesym, gtsym, isequalsym)
+global []byte D_cmpopset=(eqsym, nesym, ltsym, lesym, gesym, gtsym)
 
-global []byte D_mulopset=(mulsym, divsym, idivsym, iremsym, shlsym, shrsym)
+global []byte D_mulopset=(mulsym, divsym, idivsym, iremsym, shlsym, shrsym, idivremsym)
 
 global [0..symbolnames.upb]byte addopset
 global [0..symbolnames.upb]byte cmpopset
@@ -28665,10 +23183,9 @@ global [0..symbolnames.upb]byte mulopset
 global [0..symbolnames.upb]byte exprendset
 
 global []int D_exprstarterset= (lbracksym,lsqsym,ptrsym,addrsym,namesym,
-	incrsym,decrsym,intconstsym,decimalconstsym,realconstsym,charconstsym,
+	incrsym,intconstsym,decimalconstsym,realconstsym,charconstsym,
 	stringconstsym,stdtypesym, kmapsym, lcurlysym,
-!	ksprintsym,ksreadsym,ksreadlnsym,knewsym,dollarsym,compilervarsym, kclampsym,
-	ksprintsym,ksreadsym,ksreadlnsym,dollarsym,compilervarsym, kclampsym,
+	ksprintsym,dollarsym,compilervarsym, kclampsym,
 	krefsym, kcastsym, ellipsissym,
 	knilsym, khostfnsym, kifsym, krecordsym, kstructsym)
 
@@ -28746,7 +23263,58 @@ proc start=
 	ntypes:=tlast
 end
 
-=== qq_dummyshow.m 0 0 30/44 ===
+!flags used with print/fprint/fprint
+global const pr_newline = 1
+global const pr_format = 2
+global const pr_sprint = 4
+
+global enumdata []ichar cvnames =
+	(cv_lineno,		$),
+	(cv_strlineno,	$),
+	(cv_filename,	$),
+	(cv_modulename,	$),
+	(cv_function,	$),
+	(cv_date,		$),
+	(cv_time,		$),
+end
+
+global enumdata []ichar loopnames =
+	(loop_redo,		$),		!must be in this order: start of loop body
+	(loop_next,		$),		!end of loop body
+	(loop_exit,		$),		!past end of loop
+end
+
+global enumdata []ichar mathsnames =
+	(mm_sqrt,		$),
+	(mm_sqr,		$),
+	(mm_sin,		$),
+	(mm_cos,		$),
+	(mm_tan,		$),
+	(mm_asin,		$),
+	(mm_acos,		$),
+	(mm_atan,		$),
+	(mm_sign,		$),
+	(mm_log,		$),
+	(mm_log10,		$),
+	(mm_exp,		$),
+	(mm_round,		$),
+	(mm_floor,		$),
+	(mm_ceil,		$),
+	(mm_fract,		$),
+	(mm_fmod,		$),
+	(mm_atan2,		$),
+end
+
+!can't start from 0, as 0 in cmpchain list means no more conds
+global enumdata [0:]ichar condnames, [0:]byte revconds =
+	(eq_cc = 0,	"eq",	ne_cc),			!order must match kjumpeq..kumpgt pcl ops
+	(ne_cc,		"ne",	eq_cc),
+	(lt_cc,		"lt",	ge_cc),
+	(le_cc,		"le",	gt_cc),
+	(ge_cc,		"ge",	lt_cc),
+	(gt_cc,		"gt",	le_cc),
+end
+=== qq_dummyshow.m 0 0 29/44 ===
 !labels are just numbers 1,2,3 which index both of these tables
 !labelblocktable is the pclblock no (as all labels are shared across the program)
 !labeloffsettable is the offset into the pclblock
@@ -28765,9 +23333,6 @@ global ref strbuffer pcldest = &pclv
 global proc printunit(ref unitrec p,int level=0,ichar prefix="*",filehandle dev=nil)=		!PRINTUNIT
 end
 
-global proc writeallpcl(int n, pass)=
-end
-
 global proc printglobalsymbols(filehandle f=nil)=
 end
 
@@ -28783,9 +23348,9 @@ end
 global proc printtypetables(filehandle f)=
 end
 
-global function getpclname:ichar=
-	return "<no show.m>"
-end
+!global function getpclname:ichar=
+!	return "<no show.m>"
+!end
 
 !function getpclcode(ref int pc)int=
 !	for i in pclnames.bounds do
@@ -28802,8 +23367,8 @@ end
 global proc showast(isubprog sp, ichar file)=
 end
 
-global proc showpcl(isubprog sp, int pass)=
-end
+!global proc showpcl(isubprog sp, int pass)=
+!end
 
 global proc showmpl(int pass)=
 end
@@ -28817,6 +23382,16 @@ end
 
 global proc deletetempfiles=
 end
+=== qq_showpcldummy.m 0 0 30/44 ===
+global proc showpcl(isubprog sp, int pass)=
+end
+
+global proc showpcl2(isubprog sp, int pass)=
+end
+
+global proc writeallpcl(ifile pm, int pass)=
+end
+
 === qq_vars.m 0 0 31/44 ===
 !Var-routines are usually called from bytecode handlers, either directly on indirectly
 
@@ -29559,7 +24134,7 @@ global function var_equal(variant a,b)int=
 	fi
 
 	case a.tag
-	when tint, trefvar, trefpack, ttype, tsymbol then
+	when tint, trefvar, trefpack, ttype, tsymbol, toperator then
 		return a.value=b.value
 !	when trefpack, trefbit then
 !		return var_equal_refpack(a, b)
@@ -30193,25 +24768,57 @@ end
 !	return 1
 !end
 !
-global proc var_inplace(variant px,y, ref proc(variant,variant) fnadd, fnaddmixed=nil)=
+
+!global proc var_inplace(variant px,y, ref proc(variant,variant) fnadd, fnaddmixed=nil)=
+!	varrec x
+!	varrec z
+!
+!	var_loadptr(px,&x)
+!!z:=x
+!
+!	if x.tag=y.tag then
+!		fnadd^(&x,y)
+!	elsif fnaddmixed then
+!		fnaddmixed^(&x,y)
+!	else
+!!		if u64(fnadd)=u64(var_add) and x.tag=tstring and y.tag=tint then
+!!			var_addto_string_ch(&x,y.value)
+!!		else
+!!
+!!			pcerror("Inplace mixed")
+!			pcmxtypes("Inplace mixed",&x,y)
+!!		fi
+!	fi
+!
+!!var_unshare(&z)
+!	var_storeptr(px,&x)
+!end
+!
+global proc var_inplace(int index, variant px, y)=
+	ref proc(variant, variant) fnadd, fnaddmixed
 	varrec x
 	varrec z
 
-	var_loadptr(px,&x)
-!z:=x
+	if bintotable[index].pclop=kadd then
+		if var_addto(px, y) then
+			return
+		fi
+	fi
 
+	fnadd:=cast(bintotable[index].fnadd)
+	fnaddmixed:=cast(bintotable[index].fnaddmixed)
+
+	var_loadptr(px,&x)
 	if x.tag=y.tag then
 		fnadd^(&x,y)
+!	elsif u64(fnadd)=u64(var_add) and x.tag=tstring and y.tag=tint then
+!		var_addto_string_ch(&x,y.value)
 	elsif fnaddmixed then
 		fnaddmixed^(&x,y)
 	else
-!		if u64(fnadd)=u64(var_add) and x.tag=tstring and y.tag=tint then
-!			var_addto_string_ch(&x,y.value)
-!		else
-!
-!			pcerror("Inplace mixed")
-			pcmxtypes("Inplace mixed",&x,y)
-!		fi
+!		pcerror("Inplace mixed")
+CPL PCLNAMES[BINTOTABLE[INDEX].PCLOP]
+		pcmxtypes("Inplace mixed",&x,y)
 	fi
 
 !var_unshare(&z)
@@ -30385,7 +24992,8 @@ global proc var_convert(variant x, int t, variant dest)=
 		when treal then
 			dest.xvalue:=x.value
 		when tdecimal then
-			var_make_dec_int(sptr.value,dest)
+!			var_make_dec_int(sptr.value,dest)
+			var_make_dec_int(x.value,dest)
 !		elsif ttbasetype[t]=tenum then
 !			dest.tag:=tenum
 !			dest.elemtag:=t
@@ -32833,201 +27441,200 @@ export type ws_openfilename64 = struct $caligned
 end
 
 importdll kernel32=
-	windows func	"GetLastError"					:wt_dword
-	windows func	"GetStdHandle"					(wt_dword)wt_handle
-	windows func	"WriteConsoleA" as writeconsole				(wt_handle,wt_string,wt_dword,wt_ptr,wt_ptr)wt_bool
-	windows func	"SetConsoleCursorPosition"		(wt_handle,wt_coord)wt_bool
-	windows func	"GetConsoleScreenBufferInfo"	(wt_handle,wt_ptr)wt_bool
-	windows func	"SetConsoleMode"				(wt_handle,wt_dword)wt_bool
-	windows func	"WriteConsoleOutputA" as writeconsoleoutput			(wt_handle,wt_ptr,wt_coord,wt_coord,wt_ptr)wt_bool
+	func	"GetLastError"					:wt_dword
+	func	"GetStdHandle"					(wt_dword)wt_handle
+	func	"WriteConsoleA" as writeconsole				(wt_handle,wt_string,wt_dword,wt_ptr,wt_ptr)wt_bool
+	func	"SetConsoleCursorPosition"		(wt_handle,wt_coord)wt_bool
+	func	"GetConsoleScreenBufferInfo"	(wt_handle,wt_ptr)wt_bool
+	func	"SetConsoleMode"				(wt_handle,wt_dword)wt_bool
+	func	"WriteConsoleOutputA" as writeconsoleoutput			(wt_handle,wt_ptr,wt_coord,wt_coord,wt_ptr)wt_bool
 
-	windows func	"GetConsoleScreenBufferInfoEx"	(wt_handle,wt_ptr)wt_bool
-	windows func	"SetConsoleScreenBufferInfoEx"	(wt_handle,wt_ptr)wt_bool
-	windows func	"GetConsoleWindow"				:wt_handle
+	func	"GetConsoleScreenBufferInfoEx"	(wt_handle,wt_ptr)wt_bool
+	func	"SetConsoleScreenBufferInfoEx"	(wt_handle,wt_ptr)wt_bool
+	func	"GetConsoleWindow"				:wt_handle
 
-	windows func	"SetConsoleTextAttribute"		(wt_handle,wt_word)wt_bool
-	windows func	"SetConsoleTitleA" as setconsoletitle				(wt_string)wt_bool
-	windows func	"ReadConsoleInputA" as readconsoleinput			(wt_handle,wt_ptr,wt_dword,wt_ptr)wt_bool
-	windows func	"PeekConsoleInputA"			(wt_handle,wt_ptr,wt_dword,wt_ptr)wt_bool
-	windows func	"FlushConsoleInputBuffer"		(wt_handle)wt_bool
-	windows func	"SetConsoleWindowInfo"			(wt_handle,wt_bool,wt_ptr)wt_bool
-	windows func	"SetConsoleScreenBufferSize"	(wt_handle,wt_coord)wt_bool
-	windows func	"GetConsoleCursorInfo"			(wt_handle,wt_ptr)wt_bool
-	windows func	"SetConsoleCursorInfo"			(wt_handle,wt_ptr)wt_bool
-	windows func	"GetNumberOfConsoleInputEvents"(wt_handle,wt_ptr)wt_bool
+	func	"SetConsoleTextAttribute"		(wt_handle,wt_word)wt_bool
+	func	"SetConsoleTitleA" as setconsoletitle				(wt_string)wt_bool
+	func	"ReadConsoleInputA" as readconsoleinput			(wt_handle,wt_ptr,wt_dword,wt_ptr)wt_bool
+	func	"PeekConsoleInputA"			(wt_handle,wt_ptr,wt_dword,wt_ptr)wt_bool
+	func	"FlushConsoleInputBuffer"		(wt_handle)wt_bool
+	func	"SetConsoleWindowInfo"			(wt_handle,wt_bool,wt_ptr)wt_bool
+	func	"SetConsoleScreenBufferSize"	(wt_handle,wt_coord)wt_bool
+	func	"GetConsoleCursorInfo"			(wt_handle,wt_ptr)wt_bool
+	func	"SetConsoleCursorInfo"			(wt_handle,wt_ptr)wt_bool
+	func	"GetNumberOfConsoleInputEvents"(wt_handle,wt_ptr)wt_bool
 
-	windows func	"FindFirstFileA" as findfirstfile		(stringz,ref int32)int32
-	windows func	"FindNextFileA"  as findnextfile			(int32,ref int32)int32
-	windows func	"FindClose"					(int32)int32
-	windows func	"SetCurrentDirectoryA" as setcurrentdirectory	(stringz)int32
-	windows func	"GetCurrentDirectoryA" as getcurrentdirectory	(int32,int32)int32
-	windows func	"CreateDirectoryA" as createdirectory		(stringz,int32)int32
-	windows func	"GetFileAttributesA"			(stringz)int32
-	windows func	"GetModuleHandleA" as getmodulehandle		(wt_string)wt_handle
-	windows func	"GetTickCount"								:wt_dword
-	windows func	"GlobalAlloc"									(wt_uint,wt_size)wt_handle
-	windows func	"GlobalLock"									(wt_handle)wt_ptr
-	windows func	"GlobalUnlock"								(wt_handle)wt_bool
-	windows func	"GlobalSize"									(wt_handle)wt_size
+	func	"FindFirstFileA" as findfirstfile		(stringz,ref int32)int32
+	func	"FindNextFileA"  as findnextfile			(int32,ref int32)int32
+	func	"FindClose"					(int32)int32
+	func	"SetCurrentDirectoryA" as setcurrentdirectory	(stringz)int32
+	func	"GetCurrentDirectoryA" as getcurrentdirectory	(int32,int32)int32
+	func	"CreateDirectoryA" as createdirectory		(stringz,int32)int32
+	func	"GetFileAttributesA"			(stringz)int32
+	func	"GetModuleHandleA" as getmodulehandle		(wt_string)wt_handle
+	func	"GetTickCount"								:wt_dword
+	func	"GlobalAlloc"									(wt_uint,wt_size)wt_handle
+	func	"GlobalLock"									(wt_handle)wt_ptr
+	func	"GlobalUnlock"								(wt_handle)wt_bool
+	func	"GlobalSize"									(wt_handle)wt_size
 
-	windows func	"GetSystemTime"(ref byte)int32
-	windows func	"Beep"							(wt_dword, wt_dword)wt_bool
-	windows func	"SetConsoleCP"								(wt_uint)wt_bool
-	windows func	"GetCommandLineA" : stringz
+	func	"GetSystemTime"(ref byte)int32
+	func	"Beep"							(wt_dword, wt_dword)wt_bool
+	func	"SetConsoleCP"								(wt_uint)wt_bool
+	func	"GetCommandLineA" : stringz
 end
 
 importdll user32=
-	windows func	"CreateWindowExA" as createwindowex		(wt_dword, wt_string, wt_string, wt_dword, wt_int,wt_int,wt_int,wt_int,
+	func	"CreateWindowExA" as createwindowex		(wt_dword, wt_string, wt_string, wt_dword, wt_int,wt_int,wt_int,wt_int,
 													 wt_handle, wt_handle, wt_handle, wt_ptr)wt_handle
 
-	windows func	"GetMessageA" as getmessage				(wt_ptr, wt_handle, wt_uint, wt_uint)wt_bool
-	windows func	"TranslateMessage"						(wt_ptr)wt_bool
-	windows func	"DispatchMessageA" as dispatchmessage		(wt_ptr)wt_result
-	windows func	"SetTimer"								(wt_handle,wt_intptr,wt_uint,wt_ptr)wt_intptr
-	windows func	"KillTimer"								(wt_handle,wt_intptr)wt_bool
-	windows func	"SystemParametersInfoA"					(wt_uint,wt_uint,wt_ptr,wt_uint)wt_bool
-	windows func	"GetSystemMetrics"						(wt_int)wt_int
-!	windows func	"CreateMenu"								:int
-	windows func	"AppendMenuA" as appendmenu				(wt_handle,wt_uint,wt_intptr,wt_string)wt_bool
-	windows func	"GetDC"									(wt_handle)wt_handle
-	windows func	"ReleaseDC"								(wt_handle,wt_handle)wt_int
+	func "GetMessageA" as getmessage				(wt_ptr, wt_handle, wt_uint, wt_uint)wt_bool
+	func "TranslateMessage"							(wt_ptr)wt_bool
+	func "DispatchMessageA" as dispatchmessage		(wt_ptr)wt_result
+	func "SetTimer"									(wt_handle,wt_intptr,wt_uint,wt_ptr)wt_intptr
+	func "KillTimer"								(wt_handle,wt_intptr)wt_bool
+	func "SystemParametersInfoA"					(wt_uint,wt_uint,wt_ptr,wt_uint)wt_bool
+	func "GetSystemMetrics"							(wt_int)wt_int
+!	func "CreateMenu"								:int
+	func "AppendMenuA" as appendmenu				(wt_handle,wt_uint,wt_intptr,wt_string)wt_bool
+	func "GetDC"									(wt_handle)wt_handle
+	func "ReleaseDC"								(wt_handle,wt_handle)wt_int
 
-	windows func	"SendMessageA" as sendmessage				(wt_handle,wt_uint,wt_wparam,wt_lparam)wt_result
-	windows func	"PostMessageA" as postmessage				(wt_handle,wt_uint,wt_wparam,wt_lparam)wt_bool
-	windows func	"PeekMessageA" as peekmessage				(wt_ptr,wt_handle,wt_uint,wt_uint,wt_uint)wt_bool
-	windows func	"BeginPaint"								(wt_handle,wt_ptr)wt_handle
-	windows func	"EndPaint"								(wt_handle,wt_ptr)wt_bool
-	windows proc     	"PostQuitMessage"					(wt_int)
-	windows func	"LoadIconA" as loadicon					(wt_handle,wt_string)wt_handle
-	windows func	"LoadCursorA" as loadcursor				(wt_handle,wt_string)wt_handle
-	windows func	"SetCursor"								(wt_handle)wt_handle
-	windows func	"DrawMenuBar"								(wt_handle)wt_bool
-	windows func	"GetSystemMenu"							(wt_handle,wt_bool)wt_handle
-	windows func	"CreateMenu"								:wt_handle
-	windows func	"CreatePopupMenu"							:wt_handle
-	windows func	"DestroyMenu"								(wt_handle)wt_bool
-	windows func	"CheckMenuItem"							(wt_handle,wt_uint,wt_uint)wt_dword
-	windows func	"EnableMenuItem"							(wt_handle,wt_uint,wt_uint)wt_bool
-	windows func	"GetSubMenu"								(wt_handle,wt_int)wt_handle
-	windows func	"GetMenuItemID"							(wt_handle,wt_int)wt_uint
-	windows func	"GetMenuItemCount"						(wt_handle)wt_int
-	windows func	"InsertMenuA" as insertmenu				(wt_handle,wt_uint,wt_uint,wt_intptr,wt_string)wt_bool
-	windows func	"ModifyMenuA" as modifymenu				(wt_handle,wt_uint,wt_uint,wt_intptr,wt_string)wt_bool
-	windows func	"RemoveMenu"								(wt_handle,wt_uint,wt_uint)wt_bool
-	windows func	"DeleteMenu"								(wt_handle,wt_uint,wt_uint)wt_bool
+	func "SendMessageA" as sendmessage				(wt_handle,wt_uint,wt_wparam,wt_lparam)wt_result
+	func "PostMessageA" as postmessage				(wt_handle,wt_uint,wt_wparam,wt_lparam)wt_bool
+	func "PeekMessageA" as peekmessage				(wt_ptr,wt_handle,wt_uint,wt_uint,wt_uint)wt_bool
+	func "BeginPaint"								(wt_handle,wt_ptr)wt_handle
+	func "EndPaint"									(wt_handle,wt_ptr)wt_bool
+	proc "PostQuitMessage"							(wt_int)
+	func "LoadIconA" as loadicon					(wt_handle,wt_string)wt_handle
+	func "LoadCursorA" as loadcursor				(wt_handle,wt_string)wt_handle
+	func "SetCursor"								(wt_handle)wt_handle
+	func "DrawMenuBar"								(wt_handle)wt_bool
+	func "GetSystemMenu"							(wt_handle,wt_bool)wt_handle
+	func "CreateMenu"								:wt_handle
+	func "CreatePopupMenu"							:wt_handle
+	func "DestroyMenu"								(wt_handle)wt_bool
+	func "CheckMenuItem"							(wt_handle,wt_uint,wt_uint)wt_dword
+	func "EnableMenuItem"							(wt_handle,wt_uint,wt_uint)wt_bool
+	func "GetSubMenu"								(wt_handle,wt_int)wt_handle
+	func "GetMenuItemID"							(wt_handle,wt_int)wt_uint
+	func "GetMenuItemCount"							(wt_handle)wt_int
+	func "InsertMenuA" as insertmenu				(wt_handle,wt_uint,wt_uint,wt_intptr,wt_string)wt_bool
+	func "ModifyMenuA" as modifymenu				(wt_handle,wt_uint,wt_uint,wt_intptr,wt_string)wt_bool
+	func "RemoveMenu"								(wt_handle,wt_uint,wt_uint)wt_bool
+	func "DeleteMenu"								(wt_handle,wt_uint,wt_uint)wt_bool
 
-	windows func	"DestroyWindow"							(wt_handle)wt_bool
-	windows func	"InvalidateRect"							(wt_handle,wt_ptr,wt_bool)wt_bool
-	windows func	"ValidateRect"							(wt_handle,wt_ptr)wt_bool
-	windows func	"ShowWindow"								(wt_handle,wt_int)wt_bool
-	windows func	"GetClassLongA" as getclassint			(wt_handle,wt_int)wt_word
-	windows func	"SetClassLongA" as setclasslong			(wt_handle,wt_int,wt_dword)wt_word
-	windows func	"SetWindowTextA" as setwindowtext			(wt_handle,wt_string)wt_bool
-	windows func	"GetWindowTextA" as getwindowtext			(wt_handle,wt_string,wt_int)wt_int
-	windows func	"GetWindowTextLengthA" as getwindowtextlength	(wt_handle)wt_int
-	windows func	"GetKeyState"								(wt_int)wt_word
+	func "DestroyWindow"							(wt_handle)wt_bool
+	func "InvalidateRect"							(wt_handle,wt_ptr,wt_bool)wt_bool
+	func "ValidateRect"							(wt_handle,wt_ptr)wt_bool
+	func "ShowWindow"								(wt_handle,wt_int)wt_bool
+	func "GetClassLongA" as getclassint			(wt_handle,wt_int)wt_word
+	func "SetClassLongA" as setclasslong			(wt_handle,wt_int,wt_dword)wt_word
+	func "SetWindowTextA" as setwindowtext			(wt_handle,wt_string)wt_bool
+	func "GetWindowTextA" as getwindowtext			(wt_handle,wt_string,wt_int)wt_int
+	func "GetWindowTextLengthA" as getwindowtextlength	(wt_handle)wt_int
+	func "GetKeyState"								(wt_int)wt_word
 
-!	windows func	"GetWindowLongPtrA" as getwindowlongptr	(wt_handle,wt_int)int64
-!	windows func	"SetWindowLongPtrA" as setwindowlongptr	(wt_handle,wt_int,wt_int)int64
-	windows func	"GetWindowLongA" as getwindowlongptr		(wt_handle,wt_int)int64
-	windows func	"SetWindowLongA" as setwindowlongptr		(wt_handle,wt_int,int64)int64
+!	func "GetWindowLongPtrA" as getwindowlongptr	(wt_handle,wt_int)int64
+!	func "SetWindowLongPtrA" as setwindowlongptr	(wt_handle,wt_int,wt_int)int64
+	func "GetWindowLongA" as getwindowlongptr		(wt_handle,wt_int)int64
+	func "SetWindowLongA" as setwindowlongptr		(wt_handle,wt_int,int64)int64
 
-	windows func	"GetClientRect"							(wt_handle,wt_ptr)wt_bool
-	windows func	"ClientToScreen"							(wt_handle,wt_ptr)wt_bool
-	windows func	"ScreenToClient"							(wt_handle,wt_ptr)wt_bool
-	windows func	"GetWindowRect"							(wt_handle,wt_ptr)wt_bool
-	windows func	"GetSysColor" as getsyscolour				(wt_int)wt_dword
-	windows func	"GetScrollInfo"							(wt_handle,wt_int,wt_ptr)wt_bool
-	windows func	"GetMenu"									(wt_handle)wt_handle
-	windows func	"SetMenu"									(wt_handle,wt_handle)wt_ptr
-	windows func	"TrackPopupMenu"							(wt_handle,wt_uint,wt_int,wt_int,wt_int,wt_handle,wt_ptr)wt_bool
-	windows func	"GetMenuState"							(wt_handle,wt_uint,wt_uint)wt_uint
-	windows func	"MessageBoxA" \
-								(wt_handle a=nil,wt_string message, wt_string caption="Caption", wt_uint b=0)wt_int
-	windows func	"OpenClipboard"							(wt_handle)wt_bool
-	windows func	"CloseClipboard"							:wt_bool
-	windows func	"EmptyClipboard"							:wt_bool
-	windows func	"GetClipboardData"						(wt_uint)wt_handle
-	windows func	"SetClipboardData"						(wt_uint,wt_handle)wt_handle
-	windows func	"MessageBeep"							(wt_uint x=0)wt_bool
-	windows func	"SetActiveWindow"						(wt_handle)wt_handle
-	windows func	"SetForegroundWindow"					(wt_handle)wt_bool
+	func "GetClientRect"							(wt_handle,wt_ptr)wt_bool
+	func "ClientToScreen"							(wt_handle,wt_ptr)wt_bool
+	func "ScreenToClient"							(wt_handle,wt_ptr)wt_bool
+	func "GetWindowRect"							(wt_handle,wt_ptr)wt_bool
+	func "GetSysColor" as getsyscolour				(wt_int)wt_dword
+	func "GetScrollInfo"							(wt_handle,wt_int,wt_ptr)wt_bool
+	func "GetMenu"									(wt_handle)wt_handle
+	func "SetMenu"									(wt_handle,wt_handle)wt_ptr
+	func "TrackPopupMenu"							(wt_handle,wt_uint,wt_int,wt_int,wt_int,wt_handle,wt_ptr)wt_bool
+	func "GetMenuState"								(wt_handle,wt_uint,wt_uint)wt_uint
+	func "MessageBoxA" 								(wt_handle a=nil,wt_string message, wt_string caption="Caption", wt_uint b=0)wt_int
+	func "OpenClipboard"							(wt_handle)wt_bool
+	func "CloseClipboard"							:wt_bool
+	func "EmptyClipboard"							:wt_bool
+	func "GetClipboardData"							(wt_uint)wt_handle
+	func "SetClipboardData"							(wt_uint,wt_handle)wt_handle
+	func "MessageBeep"								(wt_uint x=0)wt_bool
+	func "SetActiveWindow"							(wt_handle)wt_handle
+	func "SetForegroundWindow"						(wt_handle)wt_bool
 end
 
 importdll gdi32=
-	windows func	"Rectangle"								(wt_handle,wt_int,wt_int,wt_int,wt_int)wt_bool
-	windows func	"RoundRect"								(wt_handle,wt_int,wt_int,wt_int,wt_int,wt_int,wt_int)wt_bool
-	windows func	"Ellipse"									(wt_handle,wt_int,wt_int,wt_int,wt_int)wt_bool
-	windows func	"Arc"										(wt_handle,wt_int,wt_int,wt_int,wt_int,wt_int,wt_int,wt_int,wt_int)wt_bool
-	windows func	"Chord"									(wt_handle,wt_int,wt_int,wt_int,wt_int,wt_int,wt_int,wt_int,wt_int)wt_bool
-	windows func	"Pie"										(wt_handle,wt_int,wt_int,wt_int,wt_int,wt_int,wt_int,wt_int,wt_int)wt_bool
-	windows func	"Polygon"									(wt_handle,wt_handle,wt_int)wt_bool
-	windows func	"TextOutA" as textout						(wt_handle,wt_int,wt_int,wt_string,wt_int)wt_bool
-	windows func	"TextOutW" 						(wt_handle,wt_int,wt_int,wt_ptr,wt_int)wt_bool
-	windows func	"GetStockObject"							(wt_int)wt_handle
-	windows func	"SelectObject"							(wt_handle,wt_handle)wt_handle
-	windows func	"CreateDCA" as createdc					(wt_string,wt_string,wt_string,wt_ptr)wt_handle
-	windows func	"MoveToEx"						(wt_handle a,wt_int b,wt_int c,wt_ptr d=nil)wt_bool
-	windows func	"CreatePen"								(wt_int,wt_int,wt_dword)wt_handle
-	windows func	"CreateSolidBrush"						(wt_dword)wt_handle
-	windows func	"CreateBrushIndirect"						(wt_ptr)wt_handle
-	windows func	"LineTo"									(wt_handle,wt_int,wt_int)wt_bool
-	windows func	"GetPixel"								(wt_handle,wt_int,wt_int)wt_dword
-	windows func	"SetPixel"								(wt_handle,wt_int,wt_int,wt_dword)wt_dword
-	windows func	"SetGraphicsMode"							(wt_handle,wt_int)wt_int
-	windows func	"CreateFontIndirectA" as createfontindirect	(wt_ptr)wt_handle
-	windows func	"CreateFontA" as createfont \
+	func "Rectangle"								(wt_handle,wt_int,wt_int,wt_int,wt_int)wt_bool
+	func "RoundRect"								(wt_handle,wt_int,wt_int,wt_int,wt_int,wt_int,wt_int)wt_bool
+	func "Ellipse"									(wt_handle,wt_int,wt_int,wt_int,wt_int)wt_bool
+	func "Arc"										(wt_handle,wt_int,wt_int,wt_int,wt_int,wt_int,wt_int,wt_int,wt_int)wt_bool
+	func "Chord"									(wt_handle,wt_int,wt_int,wt_int,wt_int,wt_int,wt_int,wt_int,wt_int)wt_bool
+	func "Pie"										(wt_handle,wt_int,wt_int,wt_int,wt_int,wt_int,wt_int,wt_int,wt_int)wt_bool
+	func "Polygon"									(wt_handle,wt_handle,wt_int)wt_bool
+	func "TextOutA" as textout						(wt_handle,wt_int,wt_int,wt_string,wt_int)wt_bool
+	func "TextOutW" 								(wt_handle,wt_int,wt_int,wt_ptr,wt_int)wt_bool
+	func "GetStockObject"							(wt_int)wt_handle
+	func "SelectObject"								(wt_handle,wt_handle)wt_handle
+	func "CreateDCA" as createdc					(wt_string,wt_string,wt_string,wt_ptr)wt_handle
+	func "MoveToEx"									(wt_handle a,wt_int b,wt_int c,wt_ptr d=nil)wt_bool
+	func "CreatePen"								(wt_int,wt_int,wt_dword)wt_handle
+	func "CreateSolidBrush"							(wt_dword)wt_handle
+	func "CreateBrushIndirect"						(wt_ptr)wt_handle
+	func "LineTo"									(wt_handle,wt_int,wt_int)wt_bool
+	func "GetPixel"									(wt_handle,wt_int,wt_int)wt_dword
+	func "SetPixel"									(wt_handle,wt_int,wt_int,wt_dword)wt_dword
+	func "SetGraphicsMode"							(wt_handle,wt_int)wt_int
+	func "CreateFontIndirectA" as createfontindirect	(wt_ptr)wt_handle
+	func "CreateFontA" as createfont \
 			(wt_int height, wt_int width=0, wt_int escapement=0, wt_int orientation=0, wt_int bold=0,
 			 wt_dword italic=0, wt_dword underline=0, wt_dword strikeout=0, wt_dword charset=0,
 			 wt_dword outprec=0, wt_dword clipprec=0, wt_dword quality=0, wt_dword pitch=0, wt_string facename)wt_handle
-	windows func	"SaveDC"									(wt_handle)wt_int
-	windows func	"GetTextMetricsA" as gettextmetrics		(wt_handle,wt_ptr)wt_bool
-	windows func	"DeleteObject"							(wt_handle)wt_bool
-	windows func	"RestoreDC"								(wt_handle,wt_int)wt_bool
-	windows func	"GetTextExtentPoint32A" as gettextextentpoint32	(wt_handle,wt_string,wt_int,wt_ptr)wt_bool
-	windows func	"GetObjectA" as getobject					(wt_handle,wt_int,wt_ptr)wt_int
-	windows func	"CreatePalette"							(wt_ptr)wt_handle
-	windows func	"GetWindowExtEx"							(wt_handle,wt_ptr)wt_bool
-	windows func	"CreateCompatibleBitmap"					(wt_handle,wt_int,wt_int)wt_handle
-	windows func	"SetBitmapBits"							(wt_handle,wt_dword,wt_ptr)wt_long
-	windows func	"SelectPalette"							(wt_handle,wt_handle,wt_bool)wt_handle
-	windows func	"RealizePalette"							(wt_handle)wt_uint
-	windows func	"SetDIBitsToDevice"						(wt_handle,wt_int,wt_int,wt_dword,wt_dword,wt_int,wt_int,wt_uint,wt_uint,wt_ptr,wt_ptr,wt_uint)wt_int
-	windows func	"StretchDIBits"							(wt_handle,wt_int,wt_int,wt_int,wt_int,wt_int,wt_int,wt_int,wt_int,wt_ptr,wt_ptr,wt_uint,wt_dword)wt_int
-	windows func	"SetStretchBltMode"						(wt_handle,wt_int)wt_int
-	windows func	"PatBlt"									(wt_handle,wt_int,wt_int,wt_int,wt_int,wt_dword)wt_bool
-	windows func	"BitBlt"									(wt_handle,wt_int,wt_int,wt_int,wt_int,wt_handle,wt_int,wt_int,wt_dword)wt_bool
-	windows func	"SetROP2"									(wt_handle,wt_int)wt_int
-	windows func	"CreateCompatibleDC"						(wt_handle)wt_handle
-	windows func	"DeleteDC"								(wt_handle)wt_bool
-	windows func	"CreateBitmap"							(wt_int,wt_int,wt_uint,wt_uint,wt_ptr)wt_handle
-	windows func	"CreateBitmapIndirect"					(wt_ptr)wt_handle
-	windows func	"CreateDIBitmap"							(wt_handle,wt_ptr,wt_dword,wt_ptr,wt_ptr,wt_uint)wt_handle
-	windows func	"CreateDIBSection"						(wt_handle,wt_ptr,wt_uint,wt_ptr,wt_handle,wt_dword)wt_handle
-	windows func	"StretchBlt"								(wt_handle,wt_int,wt_int, wt_int,wt_int,wt_handle, wt_int,wt_int,wt_int, wt_int,wt_dword)wt_bool
-	windows func	"PlgBlt"								(wt_handle,wt_ptr,wt_handle, wt_int,wt_int,wt_int,wt_int, wt_handle, wt_int,wt_int)wt_bool
-	windows func	"SetTextColor"  as settextcolour			(wt_handle,wt_dword)wt_dword
-	windows func	"SetTextAlign"							(wt_handle,wt_uint)wt_uint
-	windows func	"SetTextJustification"					(wt_handle,wt_int,wt_int)wt_bool
-	windows func	"SetBkColor"  as setbkcolour				(wt_handle,wt_dword)wt_dword
-	windows func	"SetBkMode"								(wt_handle,wt_int)wt_int
-	windows func	"GetBkColor"  as getbkcolour				(wt_handle)wt_dword
-	windows func	"GetBkMode"								(wt_handle)wt_int
-	windows func	"StartDocA" as startdoc					(wt_handle,wt_ptr)wt_int
-	windows func	"StartPage"								(wt_handle)wt_int
-	windows func	"EndPage"									(wt_handle)wt_int
-	windows func	"EndDoc"									(wt_handle)wt_int
-	windows func	"AbortDoc"								(wt_handle)wt_int
-	windows func	"GetViewportOrgEx"						(wt_handle,wt_ptr)wt_bool
-	windows func	"GetDIBits"								(wt_handle,wt_handle,wt_uint,wt_uint,wt_ptr,wt_ptr,wt_uint)wt_int
-	windows func	"GetDIBColorTable" as getdibcolourtable	(wt_handle,wt_uint,wt_uint,wt_ptr)wt_uint
-	windows func	"SetDIBColorTable" as setdibcolourtable	(wt_handle,wt_uint,wt_uint,wt_ptr)wt_uint
-	windows func	"GetTextAlign"							(wt_handle)wt_uint
+	func "SaveDC"									(wt_handle)wt_int
+	func "GetTextMetricsA" as gettextmetrics		(wt_handle,wt_ptr)wt_bool
+	func "DeleteObject"								(wt_handle)wt_bool
+	func "RestoreDC"								(wt_handle,wt_int)wt_bool
+	func "GetTextExtentPoint32A" as gettextextentpoint32	(wt_handle,wt_string,wt_int,wt_ptr)wt_bool
+	func "GetObjectA" as getobject					(wt_handle,wt_int,wt_ptr)wt_int
+	func "CreatePalette"							(wt_ptr)wt_handle
+	func "GetWindowExtEx"							(wt_handle,wt_ptr)wt_bool
+	func "CreateCompatibleBitmap"					(wt_handle,wt_int,wt_int)wt_handle
+	func "SetBitmapBits"							(wt_handle,wt_dword,wt_ptr)wt_long
+	func "SelectPalette"							(wt_handle,wt_handle,wt_bool)wt_handle
+	func "RealizePalette"							(wt_handle)wt_uint
+	func "SetDIBitsToDevice"						(wt_handle,wt_int,wt_int,wt_dword,wt_dword,wt_int,wt_int,wt_uint,wt_uint,wt_ptr,wt_ptr,wt_uint)wt_int
+	func "StretchDIBits"							(wt_handle,wt_int,wt_int,wt_int,wt_int,wt_int,wt_int,wt_int,wt_int,wt_ptr,wt_ptr,wt_uint,wt_dword)wt_int
+	func "SetStretchBltMode"						(wt_handle,wt_int)wt_int
+	func "PatBlt"									(wt_handle,wt_int,wt_int,wt_int,wt_int,wt_dword)wt_bool
+	func "BitBlt"									(wt_handle,wt_int,wt_int,wt_int,wt_int,wt_handle,wt_int,wt_int,wt_dword)wt_bool
+	func "SetROP2"									(wt_handle,wt_int)wt_int
+	func "CreateCompatibleDC"						(wt_handle)wt_handle
+	func "DeleteDC"									(wt_handle)wt_bool
+	func "CreateBitmap"								(wt_int,wt_int,wt_uint,wt_uint,wt_ptr)wt_handle
+	func "CreateBitmapIndirect"						(wt_ptr)wt_handle
+	func "CreateDIBitmap"							(wt_handle,wt_ptr,wt_dword,wt_ptr,wt_ptr,wt_uint)wt_handle
+	func "CreateDIBSection"							(wt_handle,wt_ptr,wt_uint,wt_ptr,wt_handle,wt_dword)wt_handle
+	func "StretchBlt"								(wt_handle,wt_int,wt_int, wt_int,wt_int,wt_handle, wt_int,wt_int,wt_int, wt_int,wt_dword)wt_bool
+	func "PlgBlt"									(wt_handle,wt_ptr,wt_handle, wt_int,wt_int,wt_int,wt_int, wt_handle, wt_int,wt_int)wt_bool
+	func "SetTextColor"  as settextcolour			(wt_handle,wt_dword)wt_dword
+	func "SetTextAlign"								(wt_handle,wt_uint)wt_uint
+	func "SetTextJustification"						(wt_handle,wt_int,wt_int)wt_bool
+	func "SetBkColor"  as setbkcolour				(wt_handle,wt_dword)wt_dword
+	func "SetBkMode"								(wt_handle,wt_int)wt_int
+	func "GetBkColor"  as getbkcolour				(wt_handle)wt_dword
+	func "GetBkMode"								(wt_handle)wt_int
+	func "StartDocA" as startdoc					(wt_handle,wt_ptr)wt_int
+	func "StartPage"								(wt_handle)wt_int
+	func "EndPage"									(wt_handle)wt_int
+	func "EndDoc"									(wt_handle)wt_int
+	func "AbortDoc"									(wt_handle)wt_int
+	func "GetViewportOrgEx"							(wt_handle,wt_ptr)wt_bool
+	func "GetDIBits"								(wt_handle,wt_handle,wt_uint,wt_uint,wt_ptr,wt_ptr,wt_uint)wt_int
+	func "GetDIBColorTable" as getdibcolourtable	(wt_handle,wt_uint,wt_uint,wt_ptr)wt_uint
+	func "SetDIBColorTable" as setdibcolourtable	(wt_handle,wt_uint,wt_uint,wt_ptr)wt_uint
+	func "GetTextAlign"								(wt_handle)wt_uint
 end
 
 importdll comdlg32=
-	windows func	"GetOpenFileNameA"						(wt_ptr)wt_bool
-	windows func	"GetSaveFileNameA"						(wt_ptr)wt_bool
+	func "GetOpenFileNameA"							(wt_ptr)wt_bool
+	func "GetSaveFileNameA"							(wt_ptr)wt_bool
 end
 === gxlib.q 0 1 37/44 ===
 !MODULE winmessages
@@ -33037,6 +27644,8 @@ module winconsts
 module winapi
 module wingxlib
 module gxmisc
+
+VAR GGDI
 
 export var debug=0
 
@@ -34402,6 +29011,7 @@ export func gxfont(w,font=1)=		!GXFONT
 
 	if not w then w:=wapplic fi
 	if not w then w:=wscreen fi
+
 	gdi:=w.gdi
 
 	if font.isdef and font<>gdi.font then
@@ -35886,6 +30496,7 @@ end
 func process_wmmessage(msg)=
 !STATIC VAR CC=0
 !CPL "PROCESS/WMMESSAGE",++CC
+!CPL "PROC/WM1",MSG, MSG.HWND
 		x:=process_wmmessage2(msg)
 !CPL "RETURN X:",X
 !$SETDEBUG(1)
@@ -35905,7 +30516,9 @@ func process_wmmessage2(msg)=
 !CPL "PROCESSWMM2",MSG.MESSAGE, WINMESSAGENAMES{MSG.MESSAGE}
 
 	hwnd:=msg.hwnd
+!CPL "PM2",=HWND,MSG.HWND
 	w:=getwindow(hwnd)
+!CPL "AFTER GW1"
 
 	message:=msg.message
 	wparam:=msg.wparam
@@ -35914,6 +30527,7 @@ func process_wmmessage2(msg)=
 	case msg.message
 	when wm_command then
 		w:=getwindow(lparam)			!w was owner, use control window
+!CPL "AFTER GW2"
 		i:=wparam iand 0xffff			!id
 		j:=wparam>>16				!notify code
 		m:=mm_command
@@ -36085,7 +30699,6 @@ func process_wmmessage2(msg)=
 	esac
 !end
 !fall-through here to do default message processing instead of/in addition to local processing
-!CPL "HERE, RETURN 1"
 	return 1	!defwindowproc(hwnd,imsg,wparam,lparam)
 end
 
@@ -36267,7 +30880,10 @@ func dokeymessage(hwnd,msg,wparam,lparam)=
 		else
 			w:=wfocus
 !		if not w then w:=wx_getw(hwnd) fi
-			if not w then w:=getwindow(hwnd) fi
+!CPL "XXXXX"
+			if not w then w:=getwindow(hwnd)
+!CPL "AFTER GW3"
+ fi
 !CPL =GETSHIFTSTATE()
 !		postmess(w,(msg=wm_keydown|mm_key|mm_keyup),wparam,getshiftstate(),lparam)
 			postmess(w,(msg=wm_keydown|mm_key|mm_keyup),wparam,lparam,-1)
@@ -36305,6 +30921,7 @@ proc buttonmessages(hwnd,msg,wp,lp)=
 	mousepos.x:=lp iand 0xffff
 	mousepos.y:=int(lp)>>16
 	wmouse:=getwindow(hwnd)
+!CPL "AFTER GW4"
 
 !set mousesw to last pressed button (1,2,3) or 0 if one just released
 !(note other buttons may still be down, used for drag processing)
@@ -37884,7 +32501,7 @@ proc main=
 !	STOP
 
 	w:=GXCREATEWINDOW(DIM:(1800,700),caption:"HI THERE")
-!	gxcopy(w,bm,scalex:0.25)
+	gxcopy(w,bm)
 !	gxcopy(w,bm,scalex:0.5)
 !	gxcopy(w,bm,scalex:5.0, x:100)
 !	gxcopy(w,bm,scalex:2.0, x:100)
@@ -37970,6 +32587,9 @@ export func bmcreate(pixelbits,width,height)=
 		n:=(n+4) iand 0xfffc
 	fi
 	bm.linebytes:=n
+!CPL "XXX",=BM.TYPE
+!CPL =BM.BASETYPE
+
 	bm.framebytes:=bm.linebytes*bm.dimy
 
 !set palette colours, using winrgb order
@@ -38162,12 +32782,15 @@ export func bmputclipboard(bm)=
 end
 
 func putcbbitmap(bm)=
+	var mem
+
 	hsize:=ws_bitmapinfoheader.bytes
 	psize:=(bm.paltype|1024|0)
 	fsize:=bm.linebytes*bm.dimy
 
 	hmem:=globalalloc(0,hsize+psize+fsize)
 	mem:=makeref(globallock(hmem),byte)
+	mem:=0!makeref(globallock(hmem),byte)
 
 	hdr:=new(ws_bitmapinfoheader)
 	hdr.size:=hsize
@@ -38192,7 +32815,6 @@ func putcbbitmap(bm)=
 		memcpy(mem, p, bm.linebytes)
 		mem:=mem+bm.linebytes
 	od
-!	memcpy(mem+hsize+psize,bm.pixelptr,fsize)
 	globalunlock(hmem)
 
 	return hmem
@@ -39722,16 +34344,16 @@ proc iblurhoz8(bm,n)=
 
 	for y:=0 to h-1 do
 		p:=bmgetrowptr(bm,y)
-		blurhelper(w-n-1, n, shift, p)
+!		blurhelper(w-n-1, n, shift, p)
 
-!		to w-n-1 do
-!			sum:=0
-!			q:=p
-!			to n do
-!				sum+:=q++^
-!			od
-!			p++^:=sum>>shift
-!		od
+		to w-n-1 do
+			sum:=0
+			q:=p
+			to n do
+				sum+:=q++^
+			od
+			p++^:=sum>>shift
+		od
 	od
 end
 
@@ -43088,34 +37710,34 @@ end
 === END ===
 1 qqp.m
 2 qq_cli.m
-3 qq_api.m
-4 qq_arrays.m
-5 qq_bits.m
-6 qq_calldll.m
+3 qq_arrays.m
+4 qq_bits.m
+5 qq_calldll.m
+6 qq_decls.m
 7 qq_decimal.m
-8 qq_decls.m
-9 qq_dicts.m
-10 qq_jhandlers.m
-11 qq_khandlers.m
-12 qq_host.m
-13 qq_lex.m
-14 qq_lib.m
-15 qq_lists.m
-16 qq_modules.m
-17 qq_names.m
-18 qq_optim.m
-19 qq_packed.m
-20 qq_parse.m
-21 qq_print.m
-22 qq_pclgen.m
-23 qq_pcllib.m
-24 qq_records.m
-25 qq_resolve.m
-26 qq_sets.m
-27 qq_strings.m
-28 qq_syslibs.m
-29 qq_tables.m
-30 qq_dummyshow.m
+8 qq_dicts.m
+9 qq_host.m
+10 qq_lex.m
+11 qq_lib.m
+12 qq_lists.m
+13 qq_modules.m
+14 qq_names.m
+15 qq_packed.m
+16 qq_parse.m
+17 qq_pcltabs.m
+18 qq_pclgen.m
+19 qq_pcllib.m
+20 qq_print.m
+21 qq_records.m
+22 qq_resolve.m
+23 qq_runx.m
+24 qq_runaux.m
+25 qq_sets.m
+26 qq_strings.m
+27 qq_syslibs.m
+28 qq_tables.m
+29 qq_dummyshow.m
+30 qq_showpcldummy.m
 31 qq_vars.m
 32 qlib.q
 33 sysp.q

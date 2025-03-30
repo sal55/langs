@@ -54,7 +54,7 @@ end
 
 export byte pc_userunpcl=0
 === pc_api.m 0 0 3/29 ===
-INT PCLSEQNO
+EXPORT INT PCLSEQNO
 int STSEQNO
 
 export pcl pcstart			!start of pcl block
@@ -204,22 +204,26 @@ export func pcl_writeasm(ichar filename=nil, int atype='AA')ichar=
 end
 
 export proc pcl_writeobj(ichar filename)=
-	phighmem:=2
+!	phighmem:=2
+
 	genmcl()
 	genss(1)
 
-	int tt:=clock()
+PHIGHMEM:=0
+CPL =PHIGHMEM
+
+	int tt:=os_clock()
 	writecoff(filename)
-	objtime:=clock()-tt
+	objtime:=os_clock()-tt
 end
 
 export proc pcl_writedll(ichar filename)=
 	phighmem:=2
 	genmcl()
 	genss()
-	int tt:=clock()
+	int tt:=os_clock()
 	writeexe(filename, 1)
-	exetime:=clock()-tt
+	exetime:=os_clock()-tt
 end
 
 export proc pcl_writeexe(ichar filename)=
@@ -227,9 +231,9 @@ export proc pcl_writeexe(ichar filename)=
 	genmcl()
 
 	genss()
-	int tt:=clock()
+	int tt:=os_clock()
 	writeexe(filename, 0)
-	exetime:=clock()-tt
+	exetime:=os_clock()-tt
 end
 
 export proc pcl_writemx(ichar filename)=
@@ -383,8 +387,6 @@ export func genlabel(int a)pcl p=
 	p:=newpcl()
 	p.labelno:=a
 
-MLABELNO MAX:=A
-
 	p.opndtype:=label_opnd
 	return p
 end
@@ -418,7 +420,10 @@ export func gendata(ref byte s, int length)pcl p=
 end
 
 export proc gencomment(ichar s)=
-	RETURN WHEN DOREDUCE			!comments suppressed as they get in the way
+	return when fregoptim or fpeephole		!will get skipped anyway
+!	RETURN WHEN DOREDUCE			!comments suppressed as they get in the way
+!STATIC INT CCC
+!CPL "COMMENT",++CCC
 	pc_gen(kcomment,genpcstrimm(s))
 end
 
@@ -620,7 +625,11 @@ end
 
 export proc pc_addplib(ichar name)=
 	if nplibfiles>=maxplibfile then perror("Too many libs") fi
-	plibfiles[++nplibfiles]:=pcm_copyheapstring(name)
+
+!CPL "ADDPLIB",NAME
+
+!	plibfiles[++nplibfiles]:=pcm_copyheapstring(name)
+	plibfiles[++nplibfiles]:=pcm_copyheapstring(changeext(name,""))
 end
 
 export proc pc_defproc(psymbol d, int mode=tpvoid, isentry=0, threaded=0)=
@@ -978,8 +987,8 @@ export int assemtype='AA'
 
 GLOBAL INT PPSEQNO
 
-!GLOBAL CONST DOREDUCE=1
-GLOBAL CONST DOREDUCE=0
+!!GLOBAL CONST DOREDUCE=1
+!GLOBAL CONST DOREDUCE=0
 
 GLOBAL CONST REDUCELABELS=1
 !GLOBAL CONST REDUCELABELS=0
@@ -993,6 +1002,7 @@ EXPORT ICHAR $PMODULENAME
 
 EXPORT [PCLNAMES.BOUNDS]INT PCLFLAGS
 
+EXPORT INT PSTARTCLOCK
 === pc_diags_dummy.m 0 0 5/29 ===
 global proc pshowlogfile=
 end
@@ -1351,7 +1361,9 @@ const fuseregtable=1
 
 global const targetsize=8
 
-global int mclseqno
+!global int mclseqno
+EXPORT int mclseqno
+EXPORT int NMCLOPND
 
 [-1..10]mclopnd smallinttable
 [20]psymbol nametable
@@ -1461,7 +1473,7 @@ func newmclopnd:mclopnd a=
 !	a:=pcm_allocz(mclopndrec.bytes)
 	a:=pcm_allocnfz(mclopndrec.bytes)
 
-!++NMCLOPND
+++NMCLOPND
 	return a
 end
 
@@ -2096,7 +2108,7 @@ global proc genss(int obj=0)=
 
 	return when ssdone
 
-	sstime:=clock()
+	sstime:=os_clock()
 	initlib(mlabelno)
 
 	ss_zdatalen:=0
@@ -2142,7 +2154,7 @@ global proc genss(int obj=0)=
 	fi
 
 	ssdone:=1
-	sstime:=clock()-sstime
+	sstime:=os_clock()-sstime
 
 end
 
@@ -4186,7 +4198,10 @@ export record mclrec = !$caligned
 	end
 	u32 spare2
 
-	[r0..r15]byte regfreed		!1 indicates work-register freed after this instr
+	union
+		[r0..r15]byte regfreed		!1 indicates work-register freed after this instr
+		pair regfreedpr
+	end
 end
 
 export enumdata [0:]ichar valtypenames =
@@ -4805,11 +4820,20 @@ global int maxregvars, maxxregvars				!no. reg vars available
 
 global int xregmax
 
+
 global [r0..r15]byte regset			!register in-use flags: 0/1: free/in-use
 global [r0..r15]byte xregset		!same for xregs
 
 global [r0..r15]byte isregvar
 global [r0..r15]byte isxregvar
+
+global record pair =
+	u64 low, high
+end
+
+global pair regsetpr @ regset
+global pair isregvarpr @ isregvar
+global const u64 invertbytes = 0x0101'0101'0101'0101
 
 global [r0..r15]byte usedregs		!1 means used during proc
 global [r0..r15]byte usedxregs		!1 means used during proc
@@ -5182,8 +5206,11 @@ const useintelregs=0
 !const showsizes=1
 const showsizes=0
 
-const showfreed=1
-!const showfreed=0
+!const showfreed=1
+const showfreed=0
+
+!const fextendednames=1			!include module name in qualified names
+const fextendednames=0
 
 [8, r0..r15]ichar nregnames
 
@@ -5307,7 +5334,7 @@ global proc strmcl(ref mclrec mcl)=
 		return
 
 	WHEN M_TRACE THEN
-		ASMSTR(SINCLUDE("c:\\cx\\trace.aa"))
+		ASMSTR(SINCLUDE("c:\\px\\trace.aa"))
 
 		RETURN
 
@@ -5590,8 +5617,11 @@ global func getdispname(psymbol d)ichar=
 
 	if d.reg then
 
-		fprint @str,"##R.#", (fpshortnames|""|"`"),(pfloat[d.mode]|"X"|""), (fpshortnames|d.name|getfullname(d))
-!		fprint @str,"##R.#.#", (fpshortnames|""|"`"),(pfloat[d.mode]|"X"|""), $PMODULENAME,(fpshortnames|d.name|getfullname(d))
+		IF FEXTENDEDNAMES THEN
+			fprint @str,"##R.#.#", (fpshortnames|""|"`"),(pfloat[d.mode]|"X"|""), $PMODULENAME,(fpshortnames|d.name|getfullname(d))
+		else
+			fprint @str,"##R.#", (fpshortnames|""|"`"),(pfloat[d.mode]|"X"|""), (fpshortnames|d.name|getfullname(d))
+		fi
 
 		return str
 	fi
@@ -6248,6 +6278,7 @@ proc writeoptheader=
 	header.imagesize:=imagesize
 	header.headerssize:=sectiontable[1].rawoffset
 	header.subsystem:=3
+!	header.subsystem:=2
 
 	header.stackreserve:=4194304
 	header.stackcommit:=2097152
@@ -7619,6 +7650,8 @@ global proc alloclibdata(ref librec lib)=
 	ref byte p
 
 	lib.zdataptr:=pcm_allocz(lib.zdatasize)
+!CPL "RUN/MX: NO ALLOCZ"
+!	lib.zdataptr:=pcm_alloc(lib.zdatasize)
 
 	tablesize:=lib.nimports*16			!add in thunk table+address table
 	n:=lib.codesize
