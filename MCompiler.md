@@ -13,9 +13,10 @@ The name of the compiler is `MM` or `mm.exe`. It is a whole-program compiler, wr
                                                │           │        │       └─> MCU ─┬─> MCB ───> ML/MX Files
                                                │           │        │                └─> MCX ───> (RUN native code) 
                                                │           │        ├───────────────────────────> ASM File
-                                               │           │        └───────────────────────────> NASM File
+                                               │           │        └───────────────────────────> NASM File (Config option)
                                                │           ├────────────────────────────────────> (RUNP Interpret PCL)
                                                │           └────────────────────────────────────> PCL Source File
+                                               ├────────────────────────────────────────────────> C File (Proposed) (Config option)
                                                ├────────────────────────────────────────────────> MA File
                                                └────────────────────────────────────────────────> LIST/PROJ Files
 ````
@@ -86,6 +87,10 @@ RUN           Not an output, the program is run immediately in memory without ge
 RUNP          This interprets the PCL intermediate representation in memory without translation to native code.
 
 PCL           A dump of the IL as textual source code. This can be processed by the separate PC application.
+
+C             (Proposed config option, replaces dated separate C transpiler)
+              Single C source file represents the entire program. No headers are generated. No headers are used in the file.
+              Not all M programs can be transpiled as some features are not supported. Requires 64-bit C compiler; some features need gcc extensions.
 
 MA            A single-file amalgamation of all source and support files needed to build a program.
               It can be directly built by MM to make for a tidy way of distributing and building M applications from source.
