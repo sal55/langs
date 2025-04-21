@@ -147,71 +147,43 @@ This is the function called `main` in the main subprogram, and specifically in t
 
 ### Real Example
 
-This is from a C compiler, an old one which incorporates an x64 assembler as a separate subprogram. Thus there are two subprograms plus the standard library. This is lead module `cc.m`:
+This is the lead module from a C compiler project, which contains only project info. This version is for a production version. It uses backend library which has its own lead module, 'pclp', that lists the modules it uses:
 ````
+project =
     module cc_cli
-    module cc_decls
-    module cc_blockmcl
-    module cc_export
-    module cc_genasm
-    module cc_genmcl
-    module cc_headers
-    module cc_lex
-    module cc_lib
-    module cc_libmcl
 
-    module cc_parse
-    module cc_support
+!Global Data and Tables
+
+    module cc_decls
     module cc_tables
 
-    $sourcepath "c:/ax/"
-    import aalib
+!Lexing and Parsing
+    module cc_lex
+    module cc_parse
+
+!Generate PCL
+    module cc_genpcl
+    module cc_blockpcl
+    module cc_libpcl
+
+!General
+
+    module cc_lib
+    module cc_support
+
+!Bundled headers
+
+    module cc_headers
+
+!Diagnostics
+    module cc_showdummy
+
+!IL Backend
+    $sourcepath "c:/px/"
+    import pclp
+end
 ````
 
-That subprogram has its own lead module which is this:
-````
-    module cc_assembler
-    module aa_decls
-    module aa_disasm
-    module aa_genss
-    module aa_lex
-    module aa_lib
-    module aa_mcxdecls
-    module aa_objdecls
-    module aa_parse
-    module aa_tables
-    module aa_writeexe
-    module aa_writeobj
-````
-Normally, those `aa_` modules are used with a different lead module, `aa.m`, which is built into a standalone assembler:
-````
-    module aa_cli
-
-    module aa_decls
-    module aa_genss
-    module aa_lex
-    module aa_lib
-    module aa_objdecls
-    module aa_mcxdecls
-    module aa_parse
-
-    module aa_tables
-    module aa_writeexe
-    module aa_writemcx
-    module aa_writeobj
-
-#   module aa_disasm               # these two are optional; only used for development
-#   module aa_writess
-    module aa_writessdummy
-````
-The two projects are built like this:
-````
-c:\bcx>mm cc
-Compiling cc.m to cc.exe
-
-c:\ax>mm aa
-Compiling aa.m to aa.exe
-````
 ### Directives
 They are:
 ````
