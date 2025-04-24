@@ -7,8 +7,6 @@ The following discusses a bunch of interesting features, often relative to the C
 It is not a formal language reference, or a standard, or tutorial. There is little discussion of semantics
 or undefined behaviours or finer points of grammar.
 
--- Bart
-
 ### Overview
 
 'M' is a lower level systems language. It is roughly at the level of C, but has a quite different syntax, and many modern conveniences.
@@ -337,21 +335,14 @@ Also, `var` is what is used in the Q language, which at one point allowed also `
 There was an attempt to use `let` for read-only or assign-once variables, but that was poorly supported.
 
 ### Numeric Types
-There is a choice of denotations:
 
 ````
-Regular:    int8   int16  int32  int64      (signed)
-            word8  word16 word32 word64     (unsigned)
-            char8  char64
-            bool8  bool64
-            real32 real64                   (floating point)
-
-Compact:    i8 i16 i32 i64
-            u8 u16 u32 u64
-            c8 c64
-            r32 r64
+    i8 i16 i32 i64             signed
+    u8 u16 u32 u64             unsigned
+    c8 c64                     character
+    r32 r64                    floats
 ````
-And there are aliases commonly used:
+Commonly used aliases:
 ````
     byte      u8
     char      c8
@@ -447,8 +438,8 @@ I've introduced `struct/union` - C terms, but used here only for this purpose - 
 ````
     record R =
         union
-           int32 a
-           int32 b
+           i32 a
+           i32 b
            struct
               byte f,g,h,i
            end
@@ -458,8 +449,8 @@ I've introduced `struct/union` - C terms, but used here only for this purpose - 
 This record is only 4 bytes in size, because the space is shared: `a b f` are all at offset 0. In the past I used `@` to share space in the record. This still works; the same example would be:
 ````
     record R =
-        int32 a
-        int32 b @ a
+        i32 a
+        i32 b @ a
         byte  f @ a
         byte  g @ a+1    # always uses byte offset
         byte  h @ a+2
@@ -474,7 +465,7 @@ However, there is a feature used to match the layout of external structs which u
 ````
     record rec = $caligned
         byte a
-        int64 b
+        i64 b
     end
 ````
 Now, the size is 16 bytes, and `b` starts at offset +8. Without `$caligned`, the overall size would be 9 bytes, and `b` starts at offset +1.
@@ -1643,11 +1634,11 @@ Here, FFI functions (I don't support importing variables yet) are defined inside
 
 ````
 importdll msvcrt =
-    func puts(ichar)int32
+    func puts(ichar)i32
 end
 
 importdll $windows =
-    func "MessageBoxA"(int32 a = 0, ichar message, caption = "Caption", int32 flags = 0)int32
+    func "MessageBoxA"(i32 a = 0, ichar message, caption = "Caption", i32 flags = 0)i32
 end
 ````
 The library name is that of an actual one (`msvcrt.dll`, which is specified as an import in the EXE), or a dummy one if it starts with "$". This is used when the DLL name is unknown or unclear, or the set of functions exist across multiple DLLs.
