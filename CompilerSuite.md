@@ -13,6 +13,7 @@ All tools run on and for x64 with Windows.
                          ├────> .pcl IL File
                          ├────>  Interpret (IL code in memory)
                          ├────> .ma File (create single amalgamated source file)
+                         ├────> .c File (via PCL; proposed)
                          └────> .list/.proj Files (info for my IDE)
 ````
 **'BCC' C Subset Compiler (One Module only)**
@@ -24,6 +25,7 @@ All tools run on and for x64 with Windows.
                          ├────> .asm File
                          ├────> .nasm File
                          ├────> .pcl IL File
+                         ├────> .c File (via PCL; proposed)
                          └────>  Interpret IL code
 ````
 (For conventional multi-module C programs, a driver script is used, which invokes BCC with ASM output for each module, and submits all to AA6 to produce EXE etc. AA7, the version described below, accepts one module only.)
@@ -37,6 +39,7 @@ All tools run on and for x64 with Windows.
                          ├────> .asm File
                          ├────> .nasm File
                          ├────> .pcl IL File (uses .pct extension)
+                         ├────> .c File (via PCL; proposed)
                          └────>  Interpret IL code                      
 ````
 **'AA' x64 Assembler/linker (AA7)**
