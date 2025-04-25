@@ -1,5 +1,5 @@
-=== MA 44 ===
-=== qqp.m 0 0 1/44 ===
+=== MA 46 ===
+=== qqp.m 0 0 1/46 ===
 !project =
 	module qq_cli
 
@@ -46,7 +46,7 @@
 !
 	module qq_vars
 !end
-=== qq_cli.m 0 0 2/44 ===
+=== qq_cli.m 0 0 2/46 ===
 GLOBAL INT NALLDOT
 GLOBAL INT NALLDOT1FIELD
 
@@ -97,6 +97,7 @@ proc main=
 	getinputoptions()
 
 	readqabundle()
+
 	loadsyslib()
 
 	compile_sp(inputfile)
@@ -301,21 +302,29 @@ proc initdata=
 
 	deletetempfiles()
 
-	fnosys:=not os_iswindows()
+!	fnosys:=not os_iswindows()
 end
 
 proc loadsyslib=
 	[300]char str
+	ichar syslibname
 
 	if fnosys then return fi
 
 	if not fsyslibs then usebundled:=0 fi
 
+	if os_iswindows() then
+		syslibname:="syswin.q"
+	else
+		syslibname:="syslin.q"
+	fi
+
+CPL =SYSLIBNAME
 	if usebundled then				!bundled sys files
-		compile_sp(syslibname+".q")
+		compile_sp(syslibname)
 	else
 		strcpy(str, devdir)
-		strcat(str, syslibname+".q")
+		strcat(str, syslibname)
 		compile_sp(str)
 	fi
 end
@@ -435,13 +444,13 @@ func optim(pcl pc)pcl=
 	int skip, INDEX
 	ref genfieldrec g
 	pcl pcdest
-	byte cmd, abc, aux
+	byte cmd, newcmd, abc, aux
 	macro pcb = (pc+1)
 	macro pcc = (pc+2)
 	macro pcd = (pc+3)
 
 
-	cmd:=pc.opcode
+	cmd:=newcmd:=pc.opcode
 !CPL PCLNAMES[CMD], PC-PCSTART
 
 	skip:=0					!extra ops to skip tp next instruction
@@ -467,11 +476,11 @@ func optim(pcl pc)pcl=
 			if not abc then dopushff fi
 			case pcc.opcode
 			when kpushf then
-				pc.opcode:=kpushfff
+				newcmd:=kpushfff
 				skip:=2
 
 			when kadd then
-				pc.opcode:=kaddff
+				newcmd:=kaddff
 				skip:=2
 !
 			when ksub then
@@ -479,29 +488,29 @@ func optim(pcl pc)pcl=
 
 
 			when kjumpeq then
-				pc.opcode:=kjmpeqff
+				newcmd:=kjmpeqff
 				skip:=2
 			when kjumpne then
-				pc.opcode:=kjmpneff
+				newcmd:=kjmpneff
 				skip:=2
 			when kjumplt then
-				pc.opcode:=kjmpltff
+				newcmd:=kjmpltff
 				skip:=2
 			when kjumple then
-				pc.opcode:=kjmpleff
+				newcmd:=kjmpleff
 				skip:=2
 			when kjumpge then
-				pc.opcode:=kjmpgeff
+				newcmd:=kjmpgeff
 				skip:=2
 			when kjumpgt then
-				pc.opcode:=kjmpgtff
+				newcmd:=kjmpgtff
 				skip:=2
 			when kindex then
-				pc.opcode:=kindexff
+				newcmd:=kindexff
 				skip:=2
 			else
 dopushff:
-				pc.opcode:=kpushff
+				newcmd:=kpushff
 				skip:=1
 			end
 		when kpushm then			!pushf pushm
@@ -511,32 +520,32 @@ dopushff:
 			if not abc then dopushfci fi
 			case pcc.opcode
 			when kadd then
-				pc.opcode:=kaddfci
+				newcmd:=kaddfci
 				skip:=2
 			when ksub then
-				pc.opcode:=ksubfci
+				newcmd:=ksubfci
 				skip:=2
 			when kjumplt then
-				pc.opcode:=kjmpltfci
+				newcmd:=kjmpltfci
 				skip:=2
 			when kjumple then
-				pc.opcode:=kjmplefci
+				newcmd:=kjmplefci
 				skip:=2
 			when kjumpge then
-				pc.opcode:=kjmpgefci
+				newcmd:=kjmpgefci
 				skip:=2
 			when kjumpgt then
-				pc.opcode:=kjmpgtfci
+				newcmd:=kjmpgtfci
 				skip:=2
 			when kjumpeq then
-				pc.opcode:=kjmpeqfci
+				newcmd:=kjmpeqfci
 				skip:=2
 			when kjumpne then
-				pc.opcode:=kjmpnefci
+				newcmd:=kjmpnefci
 				skip:=2
 			else					!just pushfci
 dopushfci:
-				pc.opcode:=kpushfci
+				newcmd:=kpushfci
 				skip:=1
 
 			end
@@ -544,7 +553,7 @@ dopushfci:
 		when kpopm then				!pushf popm
 			skip:=1
 		when kpopf then				!pushf popf
-			pc.opcode:=kmoveff
+			newcmd:=kmoveff
 			skip:=1
 		when kzpopf then			!pushf zpopf
 			skip:=1
@@ -556,7 +565,7 @@ dopushfci:
 		when kupb then				!pushf upb
 			skip:=1
 		when kpushptr then			!pushf pushptr
-			pc.opcode:=kpushptrf
+			newcmd:=kpushptrf
 			skip:=1
 		end
 
@@ -567,7 +576,7 @@ dopushfci:
 !			skip:=1
 		when kpushf then			!pushm pushm
 			if abc and pcc.opcode=kindex then
-				pc.opcode:=kindexmf
+				newcmd:=kindexmf
 				skip:=2
 			else
 !				++pclcounts[kpushmf]
@@ -580,7 +589,7 @@ dopushfci:
 !			++pclcounts[kmovefm]
 			skip:=1
 		when kpushci then
-			pc.opcode:=kpushmci
+			newcmd:=kpushmci
 			skip:=1
 		esac
 
@@ -593,38 +602,59 @@ dopushfci:
 			skip:=1
 		when kpopf then				!pushci popf
 !CPL "PUSHCI/POPF"
-			pc.opcode:=kmovefci
+			newcmd:=kmovefci
 !			++pclcounts[kmovefci]
 			skip:=1
 		when kzpopf then			!pushci zpopf
 !			++pclcounts[kzmovefci]
 			skip:=1
 		when kadd then
-			pc.opcode:=kaddci
+			newcmd:=kaddci
 			skip:=1
 
 		when ksub then
-			pc.opcode:=ksubci
+			newcmd:=ksubci
 			skip:=1
 
 		when kiand then
-			pc.opcode:=kiandci
+			newcmd:=kiandci
 			skip:=1
 
 		when kshl then
-			pc.opcode:=kshlci
+			newcmd:=kshlci
 			skip:=1
 
 		when kshr then
-			pc.opcode:=kshrci
+			newcmd:=kshrci
 			skip:=1
 !
 		when kwheneq then
-			pc.opcode:=kwheneqci
+			newcmd:=kwheneqci
 			skip:=1
 		when kwhenne then
-			pc.opcode:=kwhenneci
+			newcmd:=kwhenneci
 			skip:=1
+
+		when kpushfref then
+			if abc and pcc.opcode=kbinto then
+				case bintotable[pcc.bintoindex].pclop
+				when kadd then
+					newcmd:=kaddtofci
+					skip:=2
+				when ksub then
+					newcmd:=ksubtofci
+					skip:=2
+!				when kixor then
+!					newcmd:=kixortofc
+!					skip:=2
+				when kshl then
+					newcmd:=kshltofci
+					skip:=2
+				when kshr then
+					newcmd:=kshrtofci
+					skip:=2
+				esac
+			fi
 
 !		elsif a=0 and b not in [kraise,kstop] then
 !			pc^:=kpushci0
@@ -647,15 +677,19 @@ dopushfci:
 			if abc then
 				case pcc.opcode
 				when kpushptr then		!loadincr pushptr
-					pc.opcode:=kpushipf
+					newcmd:=kpushipf
 					skip:=2
 				when kpopptr then		!loadincr popptr
-					pc.opcode:=kpopipf
+					newcmd:=kpopipf
 					skip:=2
 				esac
 			fi
 		when kbinto then
-			pc.opcode:=kbintof
+			if pcb.bintoindex=1 then
+				newcmd:=kaddtof
+			else
+				newcmd:=kbintof
+			fi
 			skip:=1
 		esac
 
@@ -665,19 +699,32 @@ dopushfci:
 			if abc then
 				case pcc.opcode
 				when kpushptr then		!loadincr pushptr
-					pc.opcode:=kpushipm
+					newcmd:=kpushipm
 					skip:=2
 				when kpopptr then		!loadincr popptr
-					pc.opcode:=kpopipm
+					newcmd:=kpopipm
 					skip:=2
 				esac
 			fi
 		esac
+
+	when kpopf then
+		case pcb.opcode
+		when kpushf then
+			if pc.def=pcb.def then
+!CPL "POPF/PUSH => STOREF"
+				newcmd:=kstoref
+				skip:=2
+			fi
+		esac
+
+
 	end
 
 finish:
+	pc.opcode:=newcmd
 	if skip then
-		aux:=pc.opcode<>cmd			!an update has been done
+		aux:=newcmd<>cmd			!an update has been done
 		for i to skip do
 			++pc
 			pc.isaux:=aux
@@ -687,7 +734,7 @@ finish:
 	pc+1
 end
 
-=== qq_arrays.m 0 0 3/44 ===
+=== qq_arrays.m 0 0 3/46 ===
 global proc var_empty_array(int tag, elemtype, lower, variant dest)=
 	dest.objptr:=obj_newarray(elemtype,lower, 0)
 	dest.tagx:=tag ior hasrefmask
@@ -1113,9 +1160,9 @@ function u8inarray(byte a,object p)int=
 	return i64.min
 end
 
-global function u16inarray(word16 a,object p)int=
+global function u16inarray(u16 a,object p)int=
 	int i
-	ref word16 q
+	ref u16 q
 
 	i:=p.lower
 	q:=cast(p.ptr)
@@ -1130,9 +1177,9 @@ global function u16inarray(word16 a,object p)int=
 	return i64.min
 end
 
-global function u32inarray(word32 a,object p)int=
+global function u32inarray(u32 a,object p)int=
 	int i
-	ref word32 q
+	ref u32 q
 
 	i:=p.lower
 	q:=cast(p.ptr)
@@ -1147,9 +1194,9 @@ global function u32inarray(word32 a,object p)int=
 	return i64.min
 end
 
-global function u64inarray(word64 a,object p)int=
+global function u64inarray(u64 a,object p)int=
 	int i
-	ref word64 q
+	ref u64 q
 
 	i:=p.lower
 	q:=cast(p.ptr)
@@ -1220,7 +1267,7 @@ global proc var_expand_array(variant p, dest, int m)=
 		--dest
 	od
 end
-=== qq_bits.m 0 0 4/44 ===
+=== qq_bits.m 0 0 4/46 ===
 global proc obj_free_bits(object p, int tag)=
 	if p.length then
 		pcm_free(p.ptr, getbitssize(p.alloc64, p.elemtag))
@@ -1561,7 +1608,7 @@ global function getbitssize(int n, t)int=
 	int nbits:=n*ttbitwidth[t]
 	return ((nbits-1)/64+1)*8			!bytes required in 64-bit blocks
 end
-=== qq_calldll.m 0 0 5/44 ===
+=== qq_calldll.m 0 0 5/46 ===
 global proc calldll(symbol d, variant args, result, int nargs)=
 	symbol e
 	const maxparams=100
@@ -1712,16 +1759,16 @@ proc packedtovar(word retval, int t, variant dest)=
 		dest.value:=retval
 	when ti32 then
 		dest.tagx:=tint
-		dest.value:=int32(retval)
+		dest.value:=i32(retval)
 	when tu32 then
 		dest.tagx:=tint
-		dest.value:=word32(retval)
+		dest.value:=u32(retval)
 	when ti16 then
 		dest.tagx:=tint
-		dest.value:=int16(retval)
+		dest.value:=i16(retval)
 	when tu16 then
 		dest.tagx:=tint
-		dest.value:=word16(retval)
+		dest.value:=u16(retval)
 	when trefpack then
 		dest.tagx:=trefpack
 		dest.ptr:=cast(retval)
@@ -1770,7 +1817,7 @@ function loaddllfunction(symbol d)ref proc=
 	return fnaddr
 end
 
-=== qq_decls.m 0 0 6/44 ===
+=== qq_decls.m 0 0 6/46 ===
 !global const fixbytecodes=1		!convert bytecodes to handler addresses
 
 global type unit      	= ref unitrec
@@ -1790,10 +1837,10 @@ global const varsize    = varrec.bytes
 !global record packfieldrec =
 !	object structobj			!owner record
 !	ichar name
-!	int32 packmode				!index into tables
-!	int32 offset				!byte offset
-!	int32 size					!size
-!	int32 length
+!	i32 packmode				!index into tables
+!	i32 offset				!byte offset
+!	i32 size					!size
+!	i32 length
 !end
 
 global record procrec =			!used as linked list
@@ -1803,7 +1850,7 @@ end
 
 global record userxrec =
 	symbol owner
-	ref int16 pmode
+	ref i16 pmode
 	ref userxrec nextmode
 end
 
@@ -1840,32 +1887,32 @@ global record strec =
 	union
 		u64 c
 		struct
-			int32 index			!frame/param/dllproc/enum/(const)
-			int32 capindex		!localid index
+			i32 index			!frame/param/dllproc/enum/(const)
+			i32 capindex		!localid index
 		end
 	end
 	union
 		u64 d
 		struct
-			int16 nparams		!procs/dllprocs
-			int16 nlocals		!procs
-!			int16 ncaptured		!anonprocs
+			i16 nparams		!procs/dllprocs
+			i16 nlocals		!procs
+!			i16 ncaptured		!anonprocs
 		end
 		struct
-			int16 nfields		!records/structs
-			int16 maxalign		!structs
-!			int32 fieldoffset
-			int16 fieldoffset
-			int16 baseclassindex		!into baseclass tables
+			i16 nfields		!records/structs
+			i16 maxalign		!structs
+!			i32 fieldoffset
+			i16 fieldoffset
+			i16 baseclassindex		!into baseclass tables
 		end
 		int genfieldindex		!generic
 	end
 
-	word16	subcode
+	u16	subcode
 	byte	moduleno
 	byte	subprogno
-	int16	mode
-	int16	hint				!0/tvoid, or hinted mode when .mode=tvar
+	i16	mode
+	i16	hint				!0/tvoid, or hinted mode when .mode=tvar
 	u16		flags: (isglobal:2, isimport:1, mstatic:1, misfunc:1, mbyref:1,
 							menumx:1,
 							moptional:1,  mvarparams:1, isframe:1,
@@ -1882,18 +1929,18 @@ end
 
 global record lexrec =		!should be 32-byte record
 	union
-		int64 value				!64-bit int
+		i64 value				!64-bit int
 		real xvalue				!64-bit float
-		word64 uvalue			!64-bit word
+		u64 uvalue			!64-bit word
 		ichar svalue			!pointer to string or charconst (not terminated)
 		ref strec symptr			!pointer to symbol table entry for name
 	end
 
-	int32 pos: (lineno:24, moduleno:8)
+	i32 pos: (lineno:24, moduleno:8)
 
 	byte symbol
 	byte subcode
-	word16 slength
+	u16 slength
 end
 
 global record uflagsrec =
@@ -1903,9 +1950,9 @@ end
 
 global record fieldrec =
 	ichar name
-	int16 recordtype
-	int16 fieldtype
-	int32 fieldoffset
+	i16 recordtype
+	i16 fieldtype
+	i32 fieldoffset
 end
 
 global record unitrec =
@@ -1922,7 +1969,7 @@ global record unitrec =
 				byte jsubcode			! access all above via one field
 			end
 			[2]byte spare
-			int32 pos: (sourceoffset:24, moduleno:8)
+			i32 pos: (sourceoffset:24, moduleno:8)
 		end
 		ref void word1
 	end
@@ -1933,24 +1980,24 @@ global record unitrec =
 		unit a
 		symbol def
 		symbol labeldef
-		int64 value
-		word64 uvalue
-		real64 xvalue
+		i64 value
+		u64 uvalue
+		r64 xvalue
 		ichar svalue
-		int64 range_lower
+		i64 range_lower
 	end
 
 	union
 		unit b
-		int64 range_upper
-		int64 slength
-		int16 mode
+		i64 range_upper
+		i64 slength
+		i16 mode
 		[4]byte cmpconds				!for jcmpchain
 		struct
-			int32 length
-			int32 lower
+			i32 length
+			i32 lower
 		end
-		int64 index		!of enum name; or host index; or could be expr
+		i64 index		!of enum name; or host index; or could be expr
 	end
 end
 
@@ -2000,7 +2047,8 @@ global record locrec=
 	symbol def				!if not nil, then containing proc, module etc
 	ichar startline			!point to start of line in source
 	int lineno              !line number within module
-	int column				!if not zero, then column number
+	i32 column				!if not zero, then column number
+	i32 status				!1/0 = info exists/not available
 end
 
 !Genfield Tables
@@ -2059,7 +2107,7 @@ global [0..255]object chrtable		!remember single-character objects
 global byte fnosys
 global byte fverbose
 
-global [0:256]int16 baseclasstable
+global [0:256]i16 baseclasstable
 global [0:256]ref strec baseclassdef
 global int nbaseclasses
 
@@ -2080,12 +2128,12 @@ global record filerec=
 	byte	issupport			!1 if a support file (strinclude); MAY BE STORED ELSEWHERE
 	byte	compiled			!1 if compiled
 
-!	int16	subprogno
+!	i16	subprogno
 	byte	subprogno
 	byte	islead				!1 if lead module in sp
 	union
-		int16	moduleno			!useful if using pointer to a source rec
-		int16	fileno
+		i16	moduleno			!useful if using pointer to a source rec
+		i16	fileno
 	end
 
 	unit	ast					!ast for module-level code
@@ -2111,9 +2159,9 @@ global record subprogrec =
 	ichar name
 	ichar path
 	ichar filespec
-	int16 firstmodule			!1st is lead module
-	int16 lastmodule			!always first..lastmodule
-	int16 compiled				!1 if compiled
+	i16 firstmodule			!1st is lead module
+	i16 lastmodule			!always first..lastmodule
+	i16 compiled				!1 if compiled
 	byte issyslib
 	byte subprogno
 end
@@ -2135,14 +2183,14 @@ global record varrec =
 					union
 						byte	bitlength		!for refbit/tbit: 0=1 bit, N=bitfield
 						byte	exceptiontype
-						byte	genmarker		!1 means is a generator used as a marker
+!						byte	genmarker		!1 means is a generator used as a marker
 					end
 				end
-				word32		tagx
+				u32		tagx
 			end
 			union
-				word32 		elemtag
-				word32 		frameptr_low
+				u32 		elemtag
+				u32 		frameptr_low
 				struct
 					i16		frameoffset
 					i16		nexceptions
@@ -2152,21 +2200,22 @@ global record varrec =
 		i64 dummy: (skip:16, range_lower:48)
 	end
 	union
-		int64		value
-		real64		xvalue
-		word64		uvalue
-		word64		range_upper
+		i64		value
+		r64		xvalue
+		u64		uvalue
+		u64		range_upper
 		object		objptr				!objects where hasref=1
 		variant		varptr				!for refvar
 		ref byte	ptr					!for refproc etc
 		symbol		def					!for tsymbol
 		pcl			retaddr
+		pcl			labelref
 	end
 end
 
 global record objrec =
 !1st 8 bytes
-	word32 refcount
+	u32 refcount
 	struct
 		byte flags: (lower:1, mutable:1, bittag:2)
 		byte objtype
@@ -2187,53 +2236,53 @@ global record objrec =
 	union
 		struct
 			union
-				int64		value
-				real64		xvalue
-				word64		uvalue
+				i64		value
+				r64		xvalue
+				u64		uvalue
 				ichar		strptr
 				variant		varptr
 				variant		genstack
 				ref byte	ptr
 				ref[0:]elemtype num
-				word64 b
+				u64 b
 				ref int		retaddr
 			end
 
 !3rd 8 bytes
 			union
-				int64 length
-				int64 lower64
+				i64 length
+				i64 lower64
 				struct
-					word32 rows
-					word32 columns
+					u32 rows
+					u32 columns
 				end
-				word64 c
+				u64 c
 				ref byte frameptr
 !				symbol		stgen
 				struct
-					int32 iterpos
-					int32 iterupper
+					i32 iterpos
+					i32 iterupper
 				end
 			end
 
 !4th 8 bytes (and end of long objects)
 			union
-				int64 alloc64				!object/item counts, not bytes
+				i64 alloc64				!object/item counts, not bytes
 				object objptr2
 				struct
-					int16 neg
-					int16 numtype
-					int32 expon
+					i16 neg
+					i16 numtype
+					i32 expon
 				end
 				struct
-					word32 alloc32
-					word32 dictitems
+					u32 alloc32
+					u32 dictitems
 				end
 				struct
 					u16		genstacksize		!in varrecs
 					byte	ngenparams			!params to gen func
 				end
-				word64 d
+				u64 d
 			end
 		end
 		[24]byte bignumdescr
@@ -2303,7 +2352,7 @@ global pcl pproclocals			!pointer to kprocent pcl op (for updating locals for av
 global [pclnames.lwb..pclnames.upb]int pclcounts
 
 GLOBAL INT NALLPCL
-=== qq_decimal.m 0 0 7/44 ===
+=== qq_decimal.m 0 0 7/46 ===
 const digitwidth   = 9
 const digitbase	= 1000000000
 const digitfmt	 = "%09d"
@@ -2311,11 +2360,11 @@ const mdigitfmt	 = "z9"
 
 const digitmax	 = digitbase-1
 
-global type elemtype = int32
+global type elemtype = i32
 global const decelemsize = elemtype.bytes
 
 record constrec =
-	int64 value
+	i64 value
 	object bnvalue
 	ref constrec nextconst
 end
@@ -2650,7 +2699,7 @@ function tostring_scient(object a)ichar=
 !a is an actual number
 	ichar s,t
 	int expon,nchars,n,shift
-	int64 x,scale
+	i64 x,scale
 
 	nchars:=3
 
@@ -3403,8 +3452,8 @@ proc bn_mulu(object dest, a,b) =
 
 			pr:=p-pd*digitbase
 !
-!			x:=int64((c+cx1)^)+p rem digitbase
-			x:=int64((c+cx1)^)+pr
+!			x:=i64((c+cx1)^)+p rem digitbase
+			x:=i64((c+cx1)^)+pr
 
 			if x>digitmax then
 				carry := pd+1
@@ -3446,7 +3495,7 @@ function smallmulto(ref elemtype p,q, int plen, m)int=
 	carry:=0
 
 	to plen do
-		d:=int64(qq^)*m+carry
+		d:=i64(qq^)*m+carry
 		pp^:=d rem digitbase
 		carry:=d/digitbase
 		--qq
@@ -3578,7 +3627,7 @@ proc bn_idivu(object dest,a,b,rm=nil)=
 	int na,nb,nc,nx,ne,nx2,ne2, cx,nupper
 	int uppera, upperb, upperc
 	int n, k, nexta
-	int64 xx,y
+	i64 xx,y
 	ref elemtype pa,pb
 
 	na:=a.length
@@ -3683,7 +3732,7 @@ proc bn_fdivu(object dest,a,b,int precision)=
 	int na,nb,nc,nx,ne,nx2,ne2, cx,nupper,nc2
 	int uppera, upperb, upperc
 	int n, k, nexta
-	int64 xx,y
+	i64 xx,y
 	ref elemtype pa,pb
 
 	na:=a.length
@@ -3766,7 +3815,7 @@ function smalldiv(ref elemtype x, b, int &xlen, nb)int =
 !when digits are 0..9, then result of x/b is always going to be 0 to 9.
 
 	int k,count
-	int64 xx,y
+	i64 xx,y
 	elemtype xi,bi
 	ref elemtype e
 	int esize,ne,nx
@@ -3780,7 +3829,7 @@ function smalldiv(ref elemtype x, b, int &xlen, nb)int =
 		if nx<nb then	 	 	 !completed this k
 	 	   exit
 		elsif nx>nb then	 	   !x will be at most 1 digit wider than b
-	 	   xx:=int64(x^)*digitbase+int64((x+1)^)
+	 	   xx:=i64(x^)*digitbase+i64((x+1)^)
 	 	   y:=xx/(b^+1)
 		else	 	 	 	 	 	   !x,b are same length
 	 	   if x^>=(b^+1) then
@@ -3917,7 +3966,7 @@ proc bn_setglobalprec(int prec)=
 	currprec:=((prec-1)/digitwidth+1)
 end
 
-function bn_makefloat(real64 x)object =
+function bn_makefloat(r64 x)object =
 	object a
 	[2048]char str
 
@@ -3948,7 +3997,7 @@ global proc freedectemp=
 	bn_free(vtemp.objptr)
 end
 
-proc bn_ipower(object d, a,int64 n)=
+proc bn_ipower(object d, a,i64 n)=
 !return a**b for bigints
 	object e,f
 
@@ -3990,8 +4039,8 @@ global function var_convert_dec_int(variant a)int=
 	return bn_toint(a.objptr)
 end
 
-function bn_toint(object a)int64=
-	int64 x
+function bn_toint(object a)i64=
+	i64 x
 	if not bn_isint(a) then
 		pcerror("dec-float->int not ready")
 		return 0
@@ -4020,7 +4069,7 @@ function bn_toint(object a)int64=
 	fi
 end
 
-=== qq_dicts.m 0 0 8/44 ===
+=== qq_dicts.m 0 0 8/46 ===
 global proc var_make_dict(variant a, dest, int n) =
 !create a list of n vars starting from a in reverse order (a is the last)
 !put the result in dest (note this will be the last/first of the n vars)
@@ -4138,7 +4187,7 @@ global function var_finddictitem(variant vd, variant p,int doins)variant=
 !   doins=0:     Will return nil
 
 	int hash,index,size,keytag,wrapped,limit
-	int64 keyvalue
+	i64 keyvalue
 	variant q
 	object pa,qa,d
 
@@ -4284,7 +4333,7 @@ proc adddictitem(variant d, p, q)=
 	var_unshare(r)			!overwrite any existing value
 	r^:=q^
 end
-=== qq_host.m 0 0 9/44 ===
+=== qq_host.m 0 0 9/46 ===
 
 record dimrec=(int lbound, upper, length)
 
@@ -4697,7 +4746,7 @@ global proc pch_$getparam(variant a, result)=
 	fi
 end
 
-function checkparam(variant p,int tag,defaultx=nodefault)int64=
+function checkparam(variant p,int tag,defaultx=nodefault)i64=
 !check out a host param, usually for ints
 !void:	return default value (assuming int needed), unless default=nodefault
 !		then it's an error
@@ -4836,7 +4885,7 @@ global proc pch_new(variant a, b, c, d, result)=
 	int i,t,nbytes,ival,nwords,nbits,offset,elemtype,n, usertag
 	dimrec dims
 	variant qvar
-	ref int64 qint
+	ref i64 qint
 	ref byte qbyte
 	ref byte ptr
 	object p
@@ -5189,7 +5238,7 @@ global proc pch_$procref(variant a, result)=
 	result.tagx:=tsymbol
 	result.def:=cast(procrefs[n])
 end
-=== qq_lex.m 0 0 10/44 ===
+=== qq_lex.m 0 0 10/46 ===
 const etx	= 26
 const cr	= 13
 const lf	= 10
@@ -5683,7 +5732,7 @@ proc lxreadstring(int termchar)=
 					c:=0
 				else
 					str[1]:=c; str[2]:=0
-					lxerror_s("Unknown string escape: \\%s",&.str)
+					lxerror_s("Unknown string escape: #",str)
 				end
 			when '"','\'' then		!possible terminators
 				if c=termchar then		!terminator char
@@ -6373,7 +6422,7 @@ proc readrawxname=
 
 	return
 end
-=== qq_lib.m 0 0 11/44 ===
+=== qq_lib.m 0 0 11/46 ===
 int currlineno
 global int nextavindex=0
 
@@ -6390,16 +6439,15 @@ global [0:]byte bytemasks=(1,2,4,8,16,32,64,128)
 
 global proc reportcterror(ichar errortype,mess,int pos, symbol currproc=nil)=
 	locrec loc
-!CPL "CT1",POS IAND 16777215, CURRPROC
+!CPL "CT1",POS IAND 16777215, CURRPROC, =POS,=QPOS
 	loc:=geterrorinfo(pos,currproc)
-!CPL "CT2"
 	println errortype,"Error:"
 	println "    ",,mess
 	println
 
-!CPL "CT3"
-	showerrorsource(loc)
-!CPL "CT4"
+	if pos or qpos then
+		showerrorsource(loc)
+	fi
 	stopcompiler(loc)
 end
 
@@ -6414,12 +6462,15 @@ global func geterrorinfo(word pos, symbol currproc=nil)locrec=
 	loc.lineno:=pos.[0..23]
 	moduleno:=pos.[24..31]
 
+	if moduleno=0 then
+		return loc
+	fi
 !CPL =SOFFSET
 !CPL =MODULENO
 
-	if moduleno=0 then
-		ABORTPROGRAM("GETERRORINFO: no module")
-	fi
+!	if moduleno=0 then
+!		ABORTPROGRAM("GETERRORINFO: no module")
+!	fi
 	if currproc=nil then
 		ABORTPROGRAM("GETERRORINFO: no currproc")
 	fi
@@ -6433,6 +6484,9 @@ end
 
 proc showerrorsource(locrec loc)=
 	ichar s
+
+	return unless loc.status
+
 	println "Line:",loc.lineno,"in Module",loc.pm.name,,".q:"
 
 	if loc.def then
@@ -6455,12 +6509,14 @@ end
 
 global proc stopcompiler(locrec loc)=
 	filehandle f
-	f:=fopen("$error.tmp","w")
-!	println @f,modulename,,".q",lineno
-	println @f,loc.pm.filespec, loc.lineno
-	fclose(f)
-	println
-	println
+	if loc.status then
+		f:=fopen("$error.tmp","w")
+!		println @f,modulename,,".q",lineno
+		println @f,loc.pm.filespec, loc.lineno
+		fclose(f)
+		println
+		println
+	fi
 
 !	OS_GETCH()
 
@@ -6545,7 +6601,7 @@ function allocunitrec:unit p=
 	return p
 end
 
-global function createintunit(int64 a)unit=
+global function createintunit(i64 a)unit=
 	unit u
 !	allocunit(u)
 	u:=allocunitrec()
@@ -6554,7 +6610,7 @@ global function createintunit(int64 a)unit=
 	return u
 end
 
-global function createrealunit(real64 x)unit=
+global function createrealunit(r64 x)unit=
 	unit u
 !	allocunit(u)
 	u:=allocunitrec()
@@ -6854,6 +6910,11 @@ proc jeval(unit p)=
 			additem(jtagnames[p.cmpconds[i]])
 			jeval(q)
 		od
+	when jmaths then
+		additem(mathsnames[p.mathsop]+3)
+		additem("(")
+		jeval(p.a)
+		additem(")")
 
 	elsif jflags[p.tag]=2 then
 		strcpy(&.str,getopcname(p.tag))
@@ -6869,7 +6930,6 @@ proc jeval(unit p)=
 		additem("(")
 		jevallist(p.a)
 		additem(")")
-
 
 	else
 		CPL jtagnames[p.tag]
@@ -6984,7 +7044,7 @@ global function createavnamex(symbol owner)unit p=
 	return p
 end
 
-global proc storemode(symbol owner, int m, ref int16 p)=
+global proc storemode(symbol owner, int m, ref i16 p)=
 	ref userxrec q
 !CPL "STOREMODE",STRMODE(M)
 	p^:=m
@@ -7075,10 +7135,10 @@ global proc setelemblock(ref[0:]byte p, int a,b) =
 	fi
 end
 
-global function ispoweroftwo(int64 x)int=
+global function ispoweroftwo(i64 x)int=
 !when x is a power of two, and is at least 2, then return the power (ie. equiv number of shifts)
 !otherwise return zero when x is negative, 0, 1, not a power of two, or more than 2**31
-	int64 a
+	i64 a
 	int n
 
 	a:=1
@@ -7125,7 +7185,7 @@ end
 global func getpcloffset(pcl p, q)int=
 	(ref byte(p)-ref byte(q))/pclrec.bytes
 end
-=== qq_lists.m 0 0 12/44 ===
+=== qq_lists.m 0 0 12/46 ===
 global object emptylist
 
 proc start=
@@ -7399,7 +7459,7 @@ end
 
 global proc obj_resize_list(object p,int n)=
 	variant q
-	word32 allocated
+	u32 allocated
 
 	if n<=p.alloc64 then
 		p.length:=n
@@ -7579,7 +7639,7 @@ global function var_inx_list(variant a,b)int =
 	od
 	return i64.min
 end
-=== qq_modules.m 0 0 13/44 ===
+=== qq_modules.m 0 0 13/46 ===
 
 global func loadsp(ichar filename, source=nil)isubprog sp=
 !source = nil:  load lead module and dependencies from given sourcefile
@@ -7744,7 +7804,7 @@ global func loadsourcefile(ichar filespec, int issyslib=0)ifile pm=
 		if not s then
 			return nil
 		fi
-		CPL "LOADED FROM MLIBS"
+!		CPL "LOADED FROM MLIBS"
 	fi
 !CPL "LOADED",FILESPEC,"FROM FILE"
 	pm.text:=s
@@ -7902,7 +7962,7 @@ global proc readqabundle=
 		(qatext[i]+qasize[i])^:=0	
 	od
 end
-=== qq_names.m 0 0 14/44 ===
+=== qq_names.m 0 0 14/46 ===
 !Symbol table handling
 
 int sdsize, sdoffset
@@ -8270,7 +8330,7 @@ global function createdupldef(symbol owner,symptr, int id)symbol=
 
 	return p
 end
-=== qq_packed.m 0 0 15/44 ===
+=== qq_packed.m 0 0 15/46 ===
 global proc var_loadpacked(ref void p,int t,variant dest, object ownerobj=nil) =
 ! p is a direct pointer to a packed type of type t.
 ! Extract target and store in varrec dest, which should have been freed.
@@ -8295,7 +8355,7 @@ global proc var_loadpacked(ref void p,int t,variant dest, object ownerobj=nil) =
 
 	when ti32 then
 !		dest.tagx:=tint
-		dest.value:=ref int32(p)^
+		dest.value:=ref i32(p)^
 
 	when ti64 then
 !		dest.tagx:=tint
@@ -8411,7 +8471,7 @@ global proc var_storepacked(ref byte p,variant q,int t) =
 			(ref u16(p)^):=q.value
 			return
 		when ti32,tu32 then
-			(ref int32(p)^):=q.value
+			(ref i32(p)^):=q.value
 			return
 		when ti64,tu64,trefpack then
 			(ref i64(p)^):=q.value
@@ -8427,10 +8487,10 @@ global proc var_storepacked(ref byte p,variant q,int t) =
 	when treal then
 		switch tbase
 		when ti32,tu32 then
-			(ref int32(p)^):=q.xvalue
+			(ref i32(p)^):=q.xvalue
 			return
 		when ti64,tu64 then
-			(ref int64(p)^):=q.xvalue
+			(ref i64(p)^):=q.xvalue
 			return
 		when tr32 then
 		(ref r32(p)^):=q.xvalue
@@ -8439,7 +8499,7 @@ global proc var_storepacked(ref byte p,variant q,int t) =
 			(ref r64(p)^):=q.xvalue
 			return
 		when ti16,tu16 then
-			(ref int16(p)^):=q.xvalue
+			(ref i16(p)^):=q.xvalue
 			return
 		end switch
 
@@ -8644,7 +8704,7 @@ global proc var_getix_struct(variant a, int index)=
 
 	var_loadpacked(p.ptr+r.fieldoffset, r.mode, a)
 end
-=== qq_parse.m 0 0 16/44 ===
+=== qq_parse.m 0 0 16/46 ===
 !Parser
 
 int intabledata
@@ -8982,7 +9042,7 @@ end
 function readtermsuffix(unit p, int pos)unit=
 	unit q, r
 	ref char pbyte
-	word64 a
+	u64 a
 	int opc, oldipl, shift, t, nparams
 
 	docase lx.symbol
@@ -9036,7 +9096,7 @@ end
 function readterm:unit=
 	unit p, q, r
 	ref char pbyte
-	word64 a
+	u64 a
 	int oldipl, opc, oldinrp, pos, shift, t, nparams, length
 	byte flag
 	ichar s
@@ -9044,7 +9104,7 @@ function readterm:unit=
 	record dummy=
 		union
 			[20]char str
-			int64 sa
+			i64 sa
 		end
 	end
 
@@ -9898,7 +9958,6 @@ function readif:unit=
 !		lex()
 	when kelsecasesym, kelseswitchsym then
 		lx.symbol:=kwd
-!	SERROR("ELSECASE NOT READY")
 		pelse:=makeblock(readswitchcase())
 	else
 		PELSE:=NIL
@@ -10468,11 +10527,8 @@ function readswitchcase:unit=
 
 	pos:=lx.pos
 	kwd:=lx.symbol			!remember kcasesym etc
-	if kwd=kcasesym then
-		opc:=(lx.subcode|jdocase|jcase)
-	else
-		opc:=(lx.subcode|jdoswitch|jswitch)
-	fi
+
+	opc:=lx.subcode
 
 	lex()
 
@@ -12027,7 +12083,7 @@ proc readpackvars(symbol owner, int id)=
 	od
 	if nvars=0 then serror("bad decl?") fi
 end
-=== qq_pcltabs.m 0 0 17/44 ===
+=== qq_pcltabs.m 0 0 17/46 ===
 global enumdata [0:]ichar opndnames=
 							!   PCL1		PCL2
 	(cnone=0,	$),
@@ -12118,7 +12174,7 @@ global record pclrec =
 	byte opcode
 	byte n						! n		nargs/etc
 	byte mode					! t		0/void, or optional type annotation info, or pushas code
-	byte flags:(haslabel:1,		!       1 when this instr is referenced as a table
+	byte flags:(haslabel:1,		!       1 when this instr is referenced as a label
 				isaux:1)		!		1 when part of a compound bytecode seq
 	union
 		struct
@@ -12166,6 +12222,7 @@ global enumdata  [0:]ichar pclnames, [0:]byte pclopnd, [0:]u32 pclattrs =
 	(kpushf,    $,  f, '    '),   ! Push v
 	(kpushmref, $,  m, '    '),   ! push &v
 	(kpushfref, $,  f, '    '),   ! push &v
+	(kpushlab,  $,  l, '    '),   ! push L
 	(kpopm,     $,  m, '    '),   ! v := Z
 	(kpopf,     $,  f, '    '),   ! v := Z
 
@@ -12393,10 +12450,20 @@ global enumdata  [0:]ichar pclnames, [0:]byte pclopnd, [0:]u32 pclattrs =
 	(ksubci,    $,  0, '    '),   ! 
 
 	(kiandci,   $,  0, '    '),   ! 
-	(kshlci,    $,  0, '    '),   ! 
-	(kshrci,    $,  0, '    '),   ! 
+	(kshlci,    $,  i, '    '),   ! 
+	(kshrci,    $,  i, '    '),   ! 
 
 	(kbintof,   $,  f, '    '),   ! 
+
+	(kaddtof,   $,  f, '    '),   ! 
+
+	(kaddtofci, $,  f, '    '),   ! 
+	(ksubtofci, $,  f, '    '),   ! 
+!	(kiandtofc, $,  f, '    '),   ! 
+!	(kiortofci, $,  f, '    '),   ! 
+!	(kixortofc, $,  f, '    '),   ! 
+	(kshltofci, $,  f, '    '),   ! 
+	(kshrtofci, $,  f, '    '),   ! 
 
 	(kindexmf,  $,  0, '    '),   ! 
 	(kindexff,  $,  0, '    '),   ! 
@@ -12443,7 +12510,7 @@ global[]bintorec bintotable = (
 	(kshr,		cast(var_shr),		nil),
 )
 
-=== qq_pclgen.m 0 0 18/44 ===
+=== qq_pclgen.m 0 0 18/46 ===
 !not opcodes, just used internally here for conditional jump logic
 !const kjumpt = 1
 !const kjumpf = 0
@@ -12517,14 +12584,14 @@ global proc evalunit(unit p, int res=1)=
 			genpc_name(kpushm, d)
 
 		when labelid then
+			if d.labelno=0 then
+				d.labelno:=createfwdlabel()
+			fi
 			if not res then
-				if d.labelno=0 then
-					d.labelno:=createfwdlabel()
-				fi
 				genpc_lab(kjump, d.labelno)
 				return
 			else
-				genpc_name(kpushsym, d)
+				genpc_lab(kpushlab, d.labelno)
 			fi
 
 !		when dllvarid then
@@ -14338,7 +14405,7 @@ proc do_case_nc(unit p, pindex, pwhenthen, int res) =
 			if w then					!not last
 				genpc_lab(kjumpt, labstmtstart)
 			else
-				genpc_lab(kjumpt, labnextwhen)
+				genpc_lab(kjumpf, labnextwhen)
 			fi
 		od
 		if fmult then
@@ -14802,7 +14869,7 @@ proc do_convert(unit pconv)=
 		lowerx:=ttlower[m]
 
 		checkelems(n, ttlength[m], p)
-		genpc_xy(kmakeax, lowerx, n)
+		genpc_xy(kmakeax, n, lowerx)
 		pccurr.usertag:=m
 		pccurr.usertag2:=elemmode
 
@@ -15120,7 +15187,7 @@ function checkblockreturn(unit p)int=
 	return 0
 end
 
-=== qq_pcllib.m 0 0 19/44 ===
+=== qq_pcllib.m 0 0 19/46 ===
 const pclinitalloc=128
 
 global pcl pcstart				!point to start of current pcl block
@@ -15128,12 +15195,12 @@ global pcl pccurr				!point to last create pcl rec
 global pcl pcend				!point to last allocated int (with enough margin for on extra instr)
 global int pcalloc				!ints allocated
 
-global ref int32 pcsourcestart
-global ref int32 pcsourcecurr
+global ref i32 pcsourcestart
+global ref i32 pcsourcecurr
 
 global int pclcurrlineno			!current line number
 const pclelemsize=pclrec.bytes
-const pcsrcelemsize=int32.bytes
+const pcsrcelemsize=i32.bytes
 
 global const labelinitalloc=8192
 global ref[]pcl labelpctable		!labelpctable[L] refers to target instr of label L
@@ -15201,7 +15268,7 @@ global proc genpc(int opc)=
 
 end
 
-!global proc genopnd_int(int64 x)=
+!global proc genopnd_int(i64 x)=
 !!no pcindex overflow check needed, as the genpc() check will be sufficient as
 !!it would allow for enough operands
 !	pccurr.value:=x
@@ -15211,7 +15278,7 @@ end
 !	pccurr.def:=d
 !end
 
-global proc genpc_int(int opc, int64 a)=
+global proc genpc_int(int opc, i64 a)=
 	genpc(opc)
 	pccurr.value:=a
 end
@@ -15268,7 +15335,7 @@ end
 proc extendpcldata=
 	int newpcalloc
 	pcl newpcstart
-	ref int32 newpcsourcestart
+	ref i32 newpcsourcestart
 
 	newpcalloc:=pcalloc*2
 
@@ -15347,7 +15414,7 @@ end
 !	CPL ")",NEXTLABELNO
 !END
 !
-=== qq_print.m 0 0 20/44 ===
+=== qq_print.m 0 0 20/46 ===
 !Vars for i/o
 !Makes use of stdio/fileio/strio/windio as used by Q system
 global  int mindev		!one of stdio/fileio/strio/windio
@@ -15365,7 +15432,7 @@ global const wind_io	= 3		!uses window inwind^ or outwind^
 global const istr_io	= 4		!used by pcx interpreter
 
 const maxoclevel=6
-[0:maxoclevel]int32			moutdevstack
+[0:maxoclevel]i32			moutdevstack
 [0:maxoclevel]filehandle	moutchanstack
 [0:maxoclevel]varrec		moutvarstack
 [0:maxoclevel]byte			mgapstack
@@ -16126,7 +16193,7 @@ end
 proc strtoreal(ichar s,int length,variant dest)=
 	[512]char str		! local copy
 	real x
-	int32 numlength
+	i32 numlength
 
 	dest.tagx:=treal
 
@@ -16225,7 +16292,7 @@ proc strtoint(ichar s,int length, variant dest, int dodec)=
 !now look at sign:
 	if signd then
 		case cat
-		when 'B' then cat:='A'		!-922...808 can be int64
+		when 'B' then cat:='A'		!-922...808 can be i64
 		when 'C' then cat:='D'		!needs longint
 		end
 	fi
@@ -16960,7 +17027,7 @@ proc tostr_list(variant p, ref fmtrec fmt, object dest) =
 	r.refcount:=-r.refcount
 	--listdepth
 end
-=== qq_records.m 0 0 21/44 ===
+=== qq_records.m 0 0 21/46 ===
 global proc var_make_record(variant a, dest, int n, rectype) =
 !create a list of n vars starting from a in reverse order (a is the last)
 !put the result in dest (note this will be the last the n vars)
@@ -17159,7 +17226,7 @@ global proc var_getixref_record(variant a, int index, variant dest)=
 	dest.varptr:=p
 end
 
-=== qq_resolve.m 0 0 22/44 ===
+=== qq_resolve.m 0 0 22/46 ===
 int nprocs
 
 int noexpand
@@ -17478,7 +17545,7 @@ proc evalbinop(unit p,lhs,rhs)=
 	esac
 end
 
-proc makeintconst(ref unitrec p,int64 value)=
+proc makeintconst(ref unitrec p,i64 value)=
 !convert unit p, currently binop or monop, to a const
 	p.tag:=jintconst
 	p.a:=p.b:=nil
@@ -17486,7 +17553,7 @@ proc makeintconst(ref unitrec p,int64 value)=
 	p.mode:=tint
 end
 
-proc makerealconst(ref unitrec p,real64 xvalue)=
+proc makerealconst(ref unitrec p,r64 xvalue)=
 !convert unit p, currently binop or monop, to a const
 	p.tag:=jrealconst
 	p.a:=p.b:=nil
@@ -18081,6 +18148,7 @@ global proc fixusertypes=
 					p.pmode^:=m
 
 					if tttarget[m]=m then
+!CPL "RX1"
 						rxerror_s("recursive type?",ttname[m])
 					fi
 				fi
@@ -18092,6 +18160,7 @@ global proc fixusertypes=
 
 	od
 	if rescan then
+!CPL "RX2"
 		rxerror("FUT Phase Error")
 	fi
 
@@ -18315,7 +18384,7 @@ proc dobaseclass(int baseclassindex)=
 		d:=d.nextdef
 	od
 end
-=== qq_runx.m 0 0 23/44 ===
+=== qq_runx.m 0 0 23/46 ===
 !const doretcheck=1
 const doretcheck=0
 
@@ -18473,6 +18542,13 @@ jpushfref:
 		var_unshare(x)
 		copyvar(x, sp)
 		--sp
+		steppc
+
+	when kpushlab  then   ! push L
+		++sp
+		sp.tagx:=trefpack
+		sp.elemtag:=tvoid
+		sp.labelref:=pc.labelref
 		steppc
 
 	when kpushci   then   ! Push i
@@ -18640,9 +18716,9 @@ refpackend:
 		pc:=pc.labelref
 
 	when kjumpptr  then   ! Jump to Z
-		unimpl
-		steppc
-
+		if sp.tag<>trefpack then pclerror("jumpptr?") fi
+		pc:=sp.labelref
+		--sp
 	when kjumpt    then   ! Jump to L when Z is true
 		x:=sp--
 
@@ -19148,7 +19224,11 @@ doretproc:
 		steppc
 
 	when kmakeax   then   ! x items on stack; make array with lwb y, type u and elemtype v
-		unimpl
+		x:=sp-pc.x+1				!start of data
+
+		var_make_array(x, x, pc.y, pc.x, pc.usertag, pc.usertag2)
+		sp:=x
+		sp.objptr.mutable:=0
 		steppc
 
 	when kmakebits then   ! x items on stack; make bits with lwb y, type u and elemtype v
@@ -19362,7 +19442,9 @@ jincrtofx:
 		steppc
 
 	when kmaths2   then   ! Z' := op(Y, Z)
-		unimpl
+		save
+		k_maths2(sp-1, sp, pc.mathscode)
+		--sp
 		steppc
 
 	when kunaryto  then   ! Z^ op:= Z
@@ -19428,7 +19510,17 @@ jupb:
 		steppc
 
 	when kdictsize then   ! Z' := Z.dictsize
-		unimpl
+		case sp.tag
+		when tdict then
+			n:=sp.objptr.dictitems
+		when tdecimal then
+			n:=sp.objptr.length
+		else
+			pcustype("Dictitems/digits",sp)
+		esac
+		var_unshare(sp)
+		sp.tagx:=tint
+		sp.value:=n
 		steppc
 
 	when kisfound  then   ! Z' := Z.isfound
@@ -19437,11 +19529,13 @@ jupb:
 		steppc
 
 	when kminval   then   ! Z' := Z.minvalue
-		unimpl
+		save
+		k_minval(sp)
 		steppc
 
 	when kmaxval   then   ! Z' := Z.maxvalue
-		unimpl
+		save
+		k_maxval(sp)
 		steppc
 
 	when kistype   then   ! Z' := Z.type/etc = t
@@ -19475,11 +19569,12 @@ jupb:
 		steppc
 
 	when ktypepun  then   ! Z' := t@(Z)
-		unimpl
+		sp.tagx:=pc.typecode
 		steppc
 
 	when kadd      then   ! Z' := Y + Z
 jadd:
+INT KKK1:=2222222
 		y:=sp--
 
 		if sp.tag=y.tag=tint then
@@ -19496,6 +19591,7 @@ jadd:
 			var_unshare(&vx)
 			var_unshare(y)
 		fi
+INT KKK2:=333333
 		steppc
 
 	when ksub      then   ! Z' := Y - Z
@@ -19582,7 +19678,14 @@ jadd:
 		steppc
 
 	when kidivrem  then   ! (Y', Z') := Y divrem Z
-		unimpl
+		y:=sp
+		x:=sp-1
+		unless x.tag=y.tag=tint then pclerror("divrem") end
+		lower:=x.value/y.value
+CPL =X.VALUE, Y.VALUE
+		y.value:=x.value rem y.value
+		x.value:=lower
+		sp:=k_makelist(sp, 1, 2)
 		steppc
 
 	when kiand     then   ! Z' := Y iand Z
@@ -19730,11 +19833,21 @@ jadd:
 		steppc
 
 	when kconcat   then   ! Z' := concat(Y, Z) or Y && Z
-		unimpl
+		y:=sp--
+		vx:=sp^
+
+		var_concat(sp,y)
+		var_unshare(&vx)
+
 		steppc
 
 	when kappend   then   ! Z' := append(Y, Z) or Y & Z
-		unimpl
+		y:=sp--
+		vx:=sp^
+
+		var_append(sp,y)
+		var_unshare(&vx)
+
 		steppc
 
 	when ksame     then   ! Z' := Y == Z
@@ -19766,6 +19879,7 @@ jadd:
 		steppc
 
 	when kbinto    then   ! Z^ op:= Y
+!CPL "BINTO"
 		x:=sp--
 		y:=sp--
 
@@ -19793,6 +19907,61 @@ jadd:
 			var_unshare(y)
 		fi
 		skip1
+
+	when kaddtof    then   ! A +:= Y
+		y:=sp--
+		z:=cast(fp+pc.offset)
+
+		if z.tag=y.tag=tint then
+			z.value+:=y.value
+		else
+			save
+			vx.tagx:=trefvar
+			vx.varptr:=z
+			var_inplace((pc+1).bintoindex, &vx, y)
+			var_unshare(y)
+		fi
+		skip1
+
+	when kaddtofci    then   ! A +:= B
+		z:=cast(fp+(pc+1).offset)
+
+		if z.tag=tint then
+			z.value+:=pc.value
+		else
+			goto jpushci
+		fi
+		skip2
+
+	when ksubtofci    then   ! A -:= B
+		z:=cast(fp+(pc+1).offset)
+
+		if z.tag=tint then
+			z.value-:=pc.value
+		else
+			goto jpushci
+		fi
+		skip2
+
+	when kshltofci    then   ! A <<:= B
+		z:=cast(fp+(pc+1).offset)
+
+		if z.tag=tint then
+			z.value<<:=pc.value
+		else
+			goto jpushci
+		fi
+		skip2
+
+	when kshrtofci    then   ! A >>:= B
+		z:=cast(fp+(pc+1).offset)
+
+		if z.tag=tint then
+			z.value>>:=pc.value
+		else
+			goto jpushci
+		fi
+		skip2
 
 	when kandlto   then   ! Y^ and:= Z
 		unimpl
@@ -19986,7 +20155,17 @@ jadd:
 		steppc
 
 	when kdotixref then   ! Z' := &Y.[Z]
-		unimpl
+		y:=sp--
+
+		case y.tag
+		when tint then
+			var_getdotixref(sp, y.value)
+		when trange then
+			var_getdotsliceref(sp, y.range_lower, y.range_upper)
+		else
+			pclmxtypes("Dotindexref",sp,y)
+		esac
+
 		steppc
 
 	when kexpand   then   ! Z' := Expand Z into n objects are needed
@@ -20251,6 +20430,12 @@ dopopipf:
 		--sp
 		skip2
 
+	when kstoref   then
+		x:=cast(fp+pc.offset)
+		var_share(sp)
+		copyvar(x, sp)
+		skip1
+
 	when klastpcl  then		! needed for switchu when to trap unimpl extended ops
 		unimpl
 	else
@@ -20299,7 +20484,7 @@ global function runqprogram(isubprog sp, int ismain)int=
 	return sptr.value
 end
 
-=== qq_runaux.m 0 0 24/44 ===
+=== qq_runaux.m 0 0 24/46 ===
 !comment
 
 !GLOBAL INT NRESOLVE, NRFLOOPS, NRFSINGLE, NRFONEINST
@@ -20381,7 +20566,7 @@ func getpcerrorpos(pcl pc)locrec =
 !and set up pcerrormodule
 	int offset, pos, soffset, moduleno
 	pcl pcstart
-	ref int32 pcsrcstart
+	ref i32 pcsrcstart
 	ifile pm
 	locrec loc
 
@@ -20477,10 +20662,14 @@ global proc k_maths(variant sp, int opc)=
 
 	case sp.tag
 	when tint then
-		if opc=mm_sqr then
+		case opc
+		when mm_sqr then
 			sp.value:=sqr(sp.value)
 			return
-		fi
+!		when mm_sign then
+!			sp.value:=sign(sp.value)
+!			return
+		esac
 		sp.tagx:=treal
 		x:=sp.value
 	when treal then
@@ -20493,19 +20682,40 @@ global proc k_maths(variant sp, int opc)=
 	when mm_sqrt then x:=sqrt(x)
 	when mm_sin then x:=sin(x)
 	when mm_cos then x:=cos(x)
+	when mm_tan then x:=tan(x)
+	when mm_asin then x:=asin(x)
+	when mm_acos then x:=acos(x)
+	when mm_atan then x:=atan(x)
+!	when mm_sign then x:=sign(x)
+	when mm_log then x:=log(x)
+	when mm_log10 then x:=log10(x)
 	when mm_round then
 		if x>=0.0 then
 			x:=floor(x+0.5)
 		else
 			x:=ceil(x-0.5)
 		fi
-	when mm_floor then
-		x:=floor(x)
+	when mm_floor then x:=floor(x)
+	when mm_ceil then x:=ceil(x)
 	else
 		pcerror("Maths op:", mathsnames[opc])
 	esac
 
 	sp.xvalue:=x
+end
+
+global proc k_maths2(variant x, y, int opc)=
+	unless x.tag=y.tag=treal then pcerror("maths2") end
+
+	case opc
+!	when mm_atan2 then
+!		x.xvalue:=atan2(x.xvalue, y.xvalue)
+!	when mm_fmod then
+!		x.xvalue:=fmod(x.xvalue, y.xvalue)
+	else
+		pcerror("Maths2:",mathsnames[opc])
+	esac
+
 end
 
 global proc k_lwb(variant sp)=
@@ -21287,7 +21497,53 @@ global func k_map(variant sp, pcl pc, variant &newsp)pcl=
 	return &codeseq[1]				!pass control this short sequence
 end
 
-=== qq_sets.m 0 0 25/44 ===
+global proc k_maxval(variant sp)=
+	i64 a
+
+	if sp.tag=ttype then sp.tag:=sp.value fi
+
+	case sp.tag
+	when tu8 then a:=255
+	when tu16 then a:=65536
+	when tu32 then a:=0xFFFF'FFFF
+	when tu64 then a:=0xFFFF'FFFF'FFFF'FFFF
+	when ti8 then a:=127
+	when ti16 then a:=32767
+	when ti32 then a:=0x7FFF'FFFF
+	when ti64,tint then a:=0x7FFF'FFFF'FFFF'FFFF
+	else
+		pcustype("MAXVALUE",sp)
+	esac
+	sp.tagx:=tint
+	sp.value:=a
+
+	++pcptr
+
+end
+
+global proc k_minval(variant sp)=
+	i64 a
+
+	if sp.tag=ttype then sp.tag:=sp.value fi
+
+	case sp.tag
+!	when tword,tu8,tu16,tu32,tu64 then a:=0
+	when tu8,tu16,tu32,tu64 then a:=0
+	when ti8 then a:=-128
+	when ti16 then a:=-32768
+	when ti32 then a:=-0x8000'0000
+	when tint,ti64 then a:=-0x8000'0000'0000'0000
+!	when tbignum then a:=-0x8000'0000'0000'0000
+	else
+		pcustype("MINVALUE",sp)
+	esac
+	sp.tagx:=tint
+	sp.value:=a
+
+	++pcptr
+end
+
+=== qq_sets.m 0 0 25/46 ===
 global proc obj_free_set(object p)=
 	if p.length then
 		pcm_free(p.ptr, getbitssize(p.alloc64, tu1))
@@ -21433,7 +21689,7 @@ global function obj_newset(int length)object p=
 
 	if length then
 		p.ptr := pcm_alloc(nbytes)              !(turns total allocated in 'allocbytes')
-		p.alloc64:=word64(allocbytes)*8
+		p.alloc64:=u64(allocbytes)*8
 		pcm_clearmem(p.ptr,allocbytes)
 	else
 		p.ptr:=nil
@@ -21694,7 +21950,7 @@ global proc var_inotto_set(variant x) =
 	fi
 end
 
-=== qq_strings.m 0 0 26/44 ===
+=== qq_strings.m 0 0 26/46 ===
 global object emptystring
 
 proc start=
@@ -22372,13 +22628,15 @@ global proc var_makechar(int ch,variant dest)=
 	dest.tagx:=tstring ior hasrefmask
 	dest.objptr:=p
 end
-=== qq_syslibs.m 0 0 27/44 ===
+=== qq_syslibs.m 0 0 27/46 ===
 global const fsyslibs = 1
 !global const fsyslibs = 0
 
 global tabledata []ichar syslibnames,[]ichar libtext =
-	("qlib.q",			(fsyslibs | strinclude "qlib.q" | "" )),
+	("syswin.q",		(fsyslibs | strinclude "syswin.q" | "" )),
+	("syslin.q",		(fsyslibs | strinclude "syslin.q" | "" )),
 	("sysp.q",			(fsyslibs | strinclude "sysp.q" | "" )),
+	("windows.q",		(fsyslibs | strinclude "windows.q" | "" )),
 	("clibp.q",			(fsyslibs | strinclude "clibp.q" | "" )),
 	("smlib.q",			(fsyslibs | strinclude "smlib.q" | "" )),
 	("winapi.q",		(fsyslibs | strinclude "winapi.q" | "" )),
@@ -22423,7 +22681,7 @@ global func loadsysmodule(ifile pm)int=
 		return 0
 	fi
 end
-=== qq_tables.m 0 0 28/44 ===
+=== qq_tables.m 0 0 28/46 ===
 !!---
 global enumdata	[0:]ichar stdtypenames,
 					[0:]byte stdtypewidths =
@@ -22824,8 +23082,8 @@ global tabledata []ichar stnames, []byte stsymbols, []byte stsubcodes=
 	("else",		kelsesym,		0),
 	("elsecase",	kelsecasesym,	jcase),
 	("elseswitch",	kelseswitchsym,	jswitch),
-	("case",		kcasesym,		0),
-	("docase",		kcasesym,		1),
+	("case",		kcasesym,		jcase),
+	("docase",		kcasesym,		jdocase),
 	("recase",		krecasesym,		jrecase),
 	("when",		kwhensym,		0),
 	("for",			kforsym,		0),
@@ -22849,8 +23107,8 @@ global tabledata []ichar stnames, []byte stsymbols, []byte stsubcodes=
 	("exit",		kloopsym,		loop_exit),
 
 	("goto",		kgotosym,		0),
-	("switch",		kswitchsym,		0),
-	("doswitch",	kswitchsym,		1),
+	("switch",		kswitchsym,		jswitch),
+	("doswitch",	kswitchsym,		jdoswitch),
 	("tabledata",	ktabledatasym,	0),
 	("enumdata",	ktabledatasym,	1),
 	("clamp",		kclampsym,		0),
@@ -22949,18 +23207,18 @@ global tabledata []ichar stnames, []byte stsymbols, []byte stsubcodes=
 	("r32",			stdtypesym,		tr32),
 	("r64",			stdtypesym,		tr64),
 
-	("int8",		stdtypesym,		ti8),
-	("int16",		stdtypesym,		ti16),
-	("int32",		stdtypesym,		ti32),
-	("int64",		stdtypesym,		ti64),
+!	("int8",		stdtypesym,		ti8),
+!	("int16",		stdtypesym,		ti16),
+!	("int32",		stdtypesym,		ti32),
+!	("int64",		stdtypesym,		ti64),
 
-	("word8",		stdtypesym,		tu8),
-	("word16",		stdtypesym,		tu16),
-	("word32",		stdtypesym,		tu32),
-	("word64",		stdtypesym,		tu64),
+!	("word8",		stdtypesym,		tu8),
+!	("word16",		stdtypesym,		tu16),
+!	("word32",		stdtypesym,		tu32),
+!	("word64",		stdtypesym,		tu64),
 
-	("real32",		stdtypesym,		tr32),
-	("real64",		stdtypesym,		tr64),
+!	("r32",		stdtypesym,		tr32),
+!	("r64",		stdtypesym,		tr64),
 
 	("stringc",		stdtypesym,		tpackstrc),
 	("stringz",		stdtypesym,		tpackstrz),
@@ -23196,8 +23454,8 @@ global const maxtype=250
 
 global [0..maxtype]ichar ttname
 global [0..maxtype]symbol ttnamedef
-global [0..maxtype]int16 ttbasetype
-global [0..maxtype]int16 tttarget
+global [0..maxtype]i16 ttbasetype
+global [0..maxtype]i16 tttarget
 
 global [0..maxtype]int ttlower
 global [0..maxtype]int ttlength
@@ -23314,7 +23572,7 @@ global enumdata [0:]ichar condnames, [0:]byte revconds =
 	(ge_cc,		"ge",	lt_cc),
 	(gt_cc,		"gt",	le_cc),
 end
-=== qq_dummyshow.m 0 0 29/44 ===
+=== qq_dummyshow.m 0 0 29/46 ===
 !labels are just numbers 1,2,3 which index both of these tables
 !labelblocktable is the pclblock no (as all labels are shared across the program)
 !labeloffsettable is the offset into the pclblock
@@ -23382,7 +23640,7 @@ end
 
 global proc deletetempfiles=
 end
-=== qq_showpcldummy.m 0 0 30/44 ===
+=== qq_showpcldummy.m 0 0 30/46 ===
 global proc showpcl(isubprog sp, int pass)=
 end
 
@@ -23392,7 +23650,7 @@ end
 global proc writeallpcl(ifile pm, int pass)=
 end
 
-=== qq_vars.m 0 0 31/44 ===
+=== qq_vars.m 0 0 31/46 ===
 !Var-routines are usually called from bytecode handlers, either directly on indirectly
 
 !Rules for dealing with variant params are:
@@ -25156,7 +25414,10 @@ global proc var_powermixed(variant a, b)=
 	a.tag:=newtag
 end
 
-=== qlib.q 0 1 32/44 ===
+=== syswin.q 0 1 32/46 ===
+!Q standard library - Windows
+
+!===============================
 module sysp
 module clibp
 module winapi
@@ -25170,32 +25431,31 @@ module winmessages
 module gxmisc
 module dates
 module smlib
-
-
-!module minsys
-=== sysp.q 0 1 33/44 ===
-!Q standard library
+!===============================
+=== syslin.q 0 1 33/46 ===
+!Q standard library - Windows
 
 !===============================
-!module sysp
+module sysp
 module clibp
-module winapi
+!module winapi
 
-module gxlib
-module bmlib
-module console
-module winconsts
-module wingxlib
-module winmessages
-module gxmisc
-module dates
-module smlib
+!module gxlib
+!module bmlib
+!module console
+module lincon
+!module winconsts
+!module wingxlib
+!module winmessages
+!module gxmisc
+!module dates
+!module smlib
 !===============================
-
-
+=== sysp.q 0 1 34/46 ===
+!Q Main Library
 
 export type rkey=struct	!key info as it's used locally
-	word16	charcode
+	u16	charcode
 	byte	keycode
 	byte	shift
 end
@@ -25424,7 +25684,7 @@ export func parsecmdparams(cmd)=
 #to be global, but can appear anywhere
 #NOTE: cmd can also already be a list of blocks
 
-const dash="-"
+	const dash="-"
 
 	if cmd.islist then
 		blocks:=cmd
@@ -25842,7 +26102,7 @@ export func makebits(data,t=bit)=
 	return a
 end
 
-export func makearray(data,t=int64)=
+export func makearray(data,t=i64)=
 #turn data (list, array of different type, or bit array) into an array of 
 #given element type
 
@@ -25888,7 +26148,7 @@ export func toarray(a,?t)=
 			if a then
 				t:=a[a.lwb].type
 			else
-				t:=int32
+				t:=i32
 			fi
 		fi
 
@@ -26046,7 +26306,7 @@ end
 
 export func openfile(name,option="rb")=
 #Open a file for reading. Uses C's fopen and default option is for binary mode
-#Return a valid file handle, which is an int64 value, or 0 when not found
+#Return a valid file handle, which is an i64 value, or 0 when not found
 	if not name.isstring or name="" then
 		return 0
 	fi
@@ -26168,20 +26428,20 @@ end
 export func appendfile(a,b)=
 #append line-based text file a to file b
 
-f:=openfile(a)
-if f=0 then return 0 fi
+	f:=openfile(a)
+	if f=0 then return 0 fi
 
-h:=openfile(b,"ab")
-if h=0 then return 0 fi
+	h:=openfile(b,"ab")
+	if h=0 then return 0 fi
 
-while not eof(f) do
-	readln @f,x:"l"
-	println @h,x
-od
+	while not eof(f) do
+		readln @f,x:"l"
+		println @h,x
+	od
 
-closefile(f)
-closefile(h)
-return 1
+	closefile(f)
+	closefile(h)
+	return 1
 end
 
 export func readblockfile(filename,doetx=0)=
@@ -26190,145 +26450,145 @@ export func readblockfile(filename,doetx=0)=
 #return byte pointer to start of block, or nil
 #doetx=1 to add etx byte to end
 
-f:=openfile(filename)
-if f=0 then return nil fi
+	f:=openfile(filename)
+	if f=0 then return nil fi
 
-n:=getfilesize(f)
-readfilesize:=n
+	n:=getfilesize(f)
+	readfilesize:=n
 
-s:=malloc(n+doetx)
-if s=0 then abort("Readfile/Malloc fails") fi
-sptr:=makeref(s,byte)
+	s:=malloc(n+doetx)
+	if s=0 then abort("Readfile/Malloc fails") fi
+	sptr:=makeref(s,byte)
 
-!readrandom(f,&s,0,n)
-readrandom(f,s,0,n)
+!	readrandom(f,&s,0,n)
+	readrandom(f,s,0,n)
 
-if doetx then
-	(sptr+n)^:=26
-fi
+	if doetx then
+		(sptr+n)^:=26
+	fi
 
-closefile(f)
-return sptr
+	closefile(f)
+	return sptr
 end
 
 export func readstrfile(filename,doetx=0)=
 #read text file into a single string
 #return string, or 0 if there was an error
 
-f:=openfile(filename)
-if f=0 then return 0 fi
+	f:=openfile(filename)
+	if f=0 then return 0 fi
 
-n:=getfilesize(f)
-readfilesize:=n
+	n:=getfilesize(f)
+	readfilesize:=n
 
-ptr:=malloc(n+1+doetx)
-if ptr=0 then abort("Readfile/Malloc fails") fi
+	ptr:=malloc(n+1+doetx)
+	if ptr=0 then abort("Readfile/Malloc fails") fi
 
-readrandom(f,ptr,0,n)
-if doetx then
-	(makeref(ptr,byte)+n)^:=26
-fi
+	readrandom(f,ptr,0,n)
+	if doetx then
+		(makeref(ptr,byte)+n)^:=26
+	fi
 
-closefile(f)
+	closefile(f)
 
-s::=makestr(ptr,n+doetx)
+	s::=makestr(ptr,n+doetx)
 
-free(ptr)
-return s
+	free(ptr)
+	return s
 end
 
 export func writestrfile(filename,s)=
 #read text file from a single string
 #return status
 
-f:=createfile(filename)
-if f=0 then return 0 fi
+	f:=createfile(filename)
+	if f=0 then return 0 fi
 
-writerandom(f,makeref(s,byte),0,s.len)
+	writerandom(f,makeref(s,byte),0,s.len)
 
-return closefile(f)
+	return closefile(f)
 end
 
 export func readbinfile(filename)=
 #read binary file into byte array
 #return () (empty list not array) on error
 
-f:=openfile(filename)
-if f=0 then return 0 fi
+	f:=openfile(filename)
+	if f=0 then return 0 fi
 
-n:=getfilesize(f)
-readfilesize:=n
+	n:=getfilesize(f)
+	readfilesize:=n
 
-a:=new(array,byte,n)
-readrandom(f,&a,0,n)
+	a:=new(array,byte,n)
+	readrandom(f,&a,0,n)
 
-closefile(f)
-return a
+	closefile(f)
+	return a
 end
 
 export func writebinfile(filename,a)=
 #write binary file from byte array a
 #return status 1/0
 
-f:=createfile(filename)
-if f=0 then return 0 fi
+	f:=createfile(filename)
+	if f=0 then return 0 fi
 
-writerandom(f,(&a),0,a.len)
+	writerandom(f,(&a),0,a.len)
 
-closefile(f)
-return 1
+	closefile(f)
+	return 1
 end
 
 export func writeblockfile(filename,p,length)=
 #return status 1/0
 
-f:=createfile(filename)
-if f=0 then return 0 fi
+	f:=createfile(filename)
+	if f=0 then return 0 fi
 
-if not writerandom(f,p,0,length) then return 0 fi
+	if not writerandom(f,p,0,length) then return 0 fi
 
-closefile(f)
-return 1
+	closefile(f)
+	return 1
 end
 
 export func erasefile(filename)=
 #delete given file, return status (check msdn)
-return remove(filename)
+	return remove(filename)
 end
 
 export func renamefile(oldfilename,newfilename)=
 #rename file, return status (check msnd)
-return rename(oldfilename,newfilename)
+	return rename(oldfilename,newfilename)
 end
 
 export func readtextfile(file)=
 #read text file into a list of strings; one per line
 #return list, or 0 on error
-f:=openfile(file)
-if not f then
-	return 0 
-fi
+	f:=openfile(file)
+	if not f then
+		return 0 
+	fi
 
-readfilesize:=getfilesize(f)
-a::=()
+	readfilesize:=getfilesize(f)
+	a::=()
 
-while not eof(f) do
-	a append:= sreadln(f)
-od
-closefile(f)
-return a
+	while not eof(f) do
+		a append:= sreadln(f)
+	od
+	closefile(f)
+	return a
 end
 
 export func writetextfile(file,a)=
 #write list of strings <a> as a text file <file>
-f:=createfile(file)
-if not f then return 0 fi
+	f:=createfile(file)
+	if not f then return 0 fi
 
-for i:=a.lwb to a.upb do
-	println @f,a[i]
-od
-closefile(f)
-return 1
+	for i:=a.lwb to a.upb do
+		println @f,a[i]
+	od
+	closefile(f)
+	return 1
 end
 
 export func readbinaryfile(filename,t)=
@@ -26373,6 +26633,27 @@ export func messagebox(a=nil,mess,caption="Caption",d=0)=
 	return messageboxa(nil,mess,caption,d)
 end
 
+export proc beep1=
+#Standard beep
+	messagebeep(0)
+end
+
+export proc mem(mess)=
+	static var startmem
+	if startmem.isvoid then
+		startmem:=$smallmemtotal()
+	fi
+	println mess,,":",$smallmemtotal()-startmem
+end
+
+export func reduce(op, a)=
+	x:=head(a)
+	for y in tail(a) do
+		x:=mapss(op,x,y)
+	od
+	x
+end
+=== windows.q 0 1 35/46 ===
 export func dirlist(s,t=1)=
 #s is a export filename (eg. "*.dwg") with possible drive/path; scan
 #directory for all matching files and return as a list of names
@@ -26446,73 +26727,53 @@ export func direxists(path)=
 	return attrib<>invalid_file_attributes and (attrib iand file_attribute_directory)
 end
 
-export proc beep1=
-#Standard beep
-	messagebeep(0)
-end
-
-export proc mem(mess)=
-	static var startmem
-	if startmem.isvoid then
-		startmem:=$smallmemtotal()
-	fi
-	println mess,,":",$smallmemtotal()-startmem
-end
-
-export func reduce(op, a)=
-	x:=head(a)
-	for y in tail(a) do
-		x:=mapss(op,x,y)
-	od
-	x
-end
-=== clibp.q 0 1 34/44 ===
+=== clibp.q 0 1 36/46 ===
 importdll msvcrt=
-	func "malloc"        (int64)ref byte
-	func realloc(int64, int32)int64
-	proc free        (int64)
-	proc memset      (ref byte, int32, int32)
-	proc memcpy      (ref byte, ref byte, int32)
-	func memcmp      (ref byte, ref byte, int32)int32
-!	func clock       :int32
-	func ftell       (int64)int32
-	func fseek       (int64, int32, int32)int32
-	func fread       (ref byte, int32, int32, int64)int32
-	func fwrite      (ref byte, int32, int32, int64)int32
-	func getc   (int64)int32
-	func ungetc (int32, int64)int32
-	func fopen       (stringz, stringz)int64
-	func fclose      (int64)int32
-	func fgets       (ref byte, int32, int64)ref byte
-	func remove      (stringz)int32
-	func rename      (stringz, stringz)int32
-	func getchar     :int32
-	proc putchar     (int32)
-	proc setbuf      (int64, int64)
+	func "malloc"        (i64)ref byte
+	func realloc(i64, i32)i64
+	proc free        (i64)
+	proc memset      (ref byte, i32, i32)
+	proc memcpy      (ref byte, ref byte, i32)
+	func memcmp      (ref byte, ref byte, i32)i32
+!	func clock       :i32
+	func ftell       (i64)i32
+	func fseek       (i64, i32, i32)i32
+	func fread       (ref byte, i32, i32, i64)i32
+	func fwrite      (ref byte, i32, i32, i64)i32
+	func getc   (i64)i32
+	func ungetc (i32, i64)i32
+	func fopen       (stringz, stringz)i64
+	func fclose      (i64)i32
+	func fgets       (ref byte, i32, i64)ref byte
+	func remove      (stringz)i32
+	func rename      (stringz, stringz)i32
+	func getchar     :i32
+	proc putchar     (i32)
+	proc setbuf      (i64, i64)
 
-	func rand        :int32
-	proc srand       (int32)
+	func rand        :i32
+	proc srand       (i32)
 
-	func puts        (stringz)int32
-	func printf      (stringz, ...)int32
+	func puts        (stringz)i32
+	func printf      (stringz, ...)i32
 
-	func sprintf     (stringz, stringz, ...)int32
+	func sprintf     (stringz, stringz, ...)i32
 
-	func sscanf      (stringz, stringz, ...)int32
-	func isalpha     (int32)int32
-	func tolower     (int32)int32
-	func strlen      (ref byte)int32
-	func atoi        (stringz)int32
+	func sscanf      (stringz, stringz, ...)i32
+	func isalpha     (i32)i32
+	func tolower     (i32)i32
+	func strlen      (ref byte)i32
+	func atoi        (stringz)i32
 
-!   clang func system      (stringz)int32
+!   clang func system      (stringz)i32
 
-	func fgetc  (int64)int32
-	func fputc  (int32,  int64)int32
-	func fprintf     (int64, stringz, ...)int32
-	func fputs       (stringz,  int64)int32
-	func feof        (int64)int32
-!   clang func getch       :int32
-	func _getch      :int32
+	func fgetc  (i64)i32
+	func fputc  (i32,  i64)i32
+	func fprintf     (i64, stringz, ...)i32
+	func fputs       (stringz,  i64)i32
+	func feof        (i64)i32
+!   clang func getch       :i32
+	func _getch      :i32
 
 end
 
@@ -26521,7 +26782,7 @@ global const seek_set  = 0
 global const seek_curr = 1
 global const seek_end  = 2
 
-=== smlib.q 0 1 35/44 ===
+=== smlib.q 0 1 37/46 ===
 
 export var popuplist::=()
 export var focuslist::=()
@@ -27139,50 +27400,50 @@ func getstyle(style)=
 		return currblock.blockstyle
 	fi
 end
-=== winapi.q 0 1 36/44 ===
+=== winapi.q 0 1 38/46 ===
 
-export type wt_word		= word16
-export type wt_bool		= word32
-export type wt_dword	= word32
-export type wt_wchar	= word16
+export type wt_word		= u16
+export type wt_bool		= u32
+export type wt_dword	= u32
+export type wt_wchar	= u16
 export type wt_char		= byte
 export type wt_ichar	= stringz
 export type wt_string	= stringz
 export type wt_ptr		= ref byte
-export type wt_wndproc	= word64
+export type wt_wndproc	= u64
 
 export type wt_handle	= ref void
-export type wt_int		= int32
-export type wt_uint		= word32
-export type wt_long		= int32
-export type wt_wparam	= word64
-export type wt_lparam	= word64
-export type wt_size		= word64
+export type wt_int		= i32
+export type wt_uint		= u32
+export type wt_long		= i32
+export type wt_wparam	= u64
+export type wt_lparam	= u64
+export type wt_size		= u64
 
-export type wt_wparam32	= word32
-export type wt_lparam32	= word32
-export type wt_handle32	= word32
-export type wt_ptr32	= word32
-export type wt_string32	= word32
-export type wt_wndproc32	= word32
+export type wt_wparam32	= u32
+export type wt_lparam32	= u32
+export type wt_handle32	= u32
+export type wt_ptr32	= u32
+export type wt_string32	= u32
+export type wt_wndproc32	= u32
 
-export type wt_wparam64	= word64
-export type wt_lparam64	= word64
-export type wt_handle64	= word64
-export type wt_ptr64	= word64
-export type wt_string64	= word64
-export type wt_wndproc64= word64
+export type wt_wparam64	= u64
+export type wt_lparam64	= u64
+export type wt_handle64	= u64
+export type wt_ptr64	= u64
+export type wt_string64	= u64
+export type wt_wndproc64= u64
 
-export type wt_result	= word64
-export type wt_intptr	= word64
-export type wt_coord	= word32
+export type wt_result	= u64
+export type wt_intptr	= u64
+export type wt_coord	= u32
 
 export type ws_spoint= struct
-	int16 x,y
+	i16 x,y
 end
 
 export type ws_srect=struct
-	int16 leftx,top, rightx,bottom
+	i16 leftx,top, rightx,bottom
 end
 
 export type ws_charinfo=struct
@@ -27193,7 +27454,7 @@ export type ws_charinfo=struct
 	wt_word		attributes
 end
 
-export type ws_palette16=[0..15]int32
+export type ws_palette16=[0..15]i32
 
 export type ws_console=struct
 	ws_spoint size,pos
@@ -27203,13 +27464,13 @@ export type ws_console=struct
 end
 
 export type ws_consoleex=struct
-	int32 recsize
+	i32 recsize
 	ws_spoint size,pos
 	wt_word attributes
 	ws_srect window
 	ws_spoint maxwindowsize
 	wt_word wpopup
-	int32 fullscreen
+	i32 fullscreen
 	ws_palette16 palette
 end
 
@@ -27227,7 +27488,7 @@ export type ws_keyevent = struct $caligned
 end
 
 export type ws_cursor=struct
-	int32 size,visible
+	i32 size,visible
 end
 
 export var hconsole, hconsolein
@@ -27243,79 +27504,79 @@ type spath=stringz*maxpathlen
 type sshort=stringz*14
 !
 export type ws_filetime=struct
-	int32 ftlow
-	int32 fthigh
+	i32 ftlow
+	i32 fthigh
 end
 
 export type ws_finddata=struct
-	int32		fileattributes
+	i32		fileattributes
 	ws_filetime	creationtime
 	ws_filetime	lastaccesstime
 	ws_filetime	lastwritetime
-	int32		filesizehigh
-	int32		filesizelow
-	int32		reserved0
-	int32		reserved1
+	i32		filesizehigh
+	i32		filesizelow
+	i32		reserved0
+	i32		reserved1
 	spath		filename
 	sshort		shortfilename
 end
 
 export type ws_systemtime = struct
-	word16	year
-	word16	month
-	word16	dayofweek
-	word16	day
-	word16	hour
-	word16	minute
-	word16	second
-	word16	milliseconds
+	u16	year
+	u16	month
+	u16	dayofweek
+	u16	day
+	u16	hour
+	u16	minute
+	u16	second
+	u16	milliseconds
 end
 
 export type ws_msg64 = struct $caligned
 	ref void	hwnd
-	int32		message
-	int64		wparam
-	int64		lparam
-	int32		time
-	int32		ptx
-	int32		pty
+	i32		message
+	i64		wparam
+	i64		lparam
+	i32		time
+	i32		ptx
+	i32		pty
 end
 
 export type ws_point = struct
-	int32 x, y
+	i32 x, y
 end
 
 export type ws_rect=struct		!rect record occupying 16 bytes
 	union
 		struct
-			int32 leftx,top, rightx,bottom
+			i32 leftx,top, rightx,bottom
 		end
 		struct
-			union int32 x,x1 end
-			union int32 y,y1 end
-			int32 x2,y2
+			union i32 x,x1 end
+			union i32 y,y1 end
+			i32 x2,y2
 		end
 	end
 end
 
 export type ws_logbrush = struct
-	int32 lbstyle
-	int32 lbcolour
-	int32 lbhatch
+	i32 lbstyle
+	i32 lbcolour
+	i32 lbhatch
 end
 
 export type ws_textmetrics = struct
-	int32	height
-	int32	ascent
-	int32	descent
-	int32	int32ernalleading
-	int32	externalleading
-	int32	avecharwidth
-	int32	maxcharwidth
-	int32	weight
-	int32	overhang
-	int32	digitizedaspectx
-	int32	digitizedaspecty
+	i32	height
+	i32	ascent
+	i32	descent
+	i32	i32ernalleading
+	i32	externalleading
+	i32	avecharwidth
+	i32	maxcharwidth
+	i32	weight
+	i32	overhang
+	i32	digitizedaspectx
+	i32	digitizedaspecty
 	byte	firstchar
 	byte	lastchar
 	byte	defaultchar
@@ -27329,30 +27590,30 @@ end
 !=========================================
 
 export type ws_bitmapv5header = struct
-	int32	size
-	int32	width
-	int32	height
-	word16	planes
-	word16	bitcount
-	int32	compression
-	int32	sizeimage
-	int32	xpelspermeter
-	int32	ypelspermeter
-	int32	clrused
-	int32	clrimportant
-	int32	redmask
-	int32	greenmask
-	int32	bluemask
-	int32	alphamask
-	int32	cstype
-	[1..9]int32 endpoints
-	int32	redgamma
-	int32	greengamma
-	int32	bluegamma
-	int32	intent
-	int32	profiledata
-	int32	profilesize
-	int32	reserved
+	i32	size
+	i32	width
+	i32	height
+	u16	planes
+	u16	bitcount
+	i32	compression
+	i32	sizeimage
+	i32	xpelspermeter
+	i32	ypelspermeter
+	i32	clrused
+	i32	clrimportant
+	i32	redmask
+	i32	greenmask
+	i32	bluemask
+	i32	alphamask
+	i32	cstype
+	[1..9]i32 endpoints
+	i32	redgamma
+	i32	greengamma
+	i32	bluegamma
+	i32	intent
+	i32	profiledata
+	i32	profilesize
+	i32	reserved
 end
 
 export type ws_bitmapfileheader = struct
@@ -27377,12 +27638,12 @@ export type ws_bitmapinfoheader = struct
 end
 
 export type ws_paintstruct = struct
-!	int64		hdc
-	int64		hdc
-	int32		erase
+!	i64		hdc
+	i64		hdc
+	i32		erase
 	ws_rect		paintrect
-	int32		restore
-	int32		incupdate
+	i32		restore
+	i32		incupdate
 	[32]byte	rgbreserved
 end
 
@@ -27464,13 +27725,13 @@ importdll kernel32=
 	func	"SetConsoleCursorInfo"			(wt_handle,wt_ptr)wt_bool
 	func	"GetNumberOfConsoleInputEvents"(wt_handle,wt_ptr)wt_bool
 
-	func	"FindFirstFileA" as findfirstfile		(stringz,ref int32)int32
-	func	"FindNextFileA"  as findnextfile			(int32,ref int32)int32
-	func	"FindClose"					(int32)int32
-	func	"SetCurrentDirectoryA" as setcurrentdirectory	(stringz)int32
-	func	"GetCurrentDirectoryA" as getcurrentdirectory	(int32,int32)int32
-	func	"CreateDirectoryA" as createdirectory		(stringz,int32)int32
-	func	"GetFileAttributesA"			(stringz)int32
+	func	"FindFirstFileA" as findfirstfile		(stringz,ref i32)i32
+	func	"FindNextFileA"  as findnextfile			(i32,ref i32)i32
+	func	"FindClose"					(i32)i32
+	func	"SetCurrentDirectoryA" as setcurrentdirectory	(stringz)i32
+	func	"GetCurrentDirectoryA" as getcurrentdirectory	(i32,i32)i32
+	func	"CreateDirectoryA" as createdirectory		(stringz,i32)i32
+	func	"GetFileAttributesA"			(stringz)i32
 	func	"GetModuleHandleA" as getmodulehandle		(wt_string)wt_handle
 	func	"GetTickCount"								:wt_dword
 	func	"GlobalAlloc"									(wt_uint,wt_size)wt_handle
@@ -27478,7 +27739,7 @@ importdll kernel32=
 	func	"GlobalUnlock"								(wt_handle)wt_bool
 	func	"GlobalSize"									(wt_handle)wt_size
 
-	func	"GetSystemTime"(ref byte)int32
+	func	"GetSystemTime"(ref byte)i32
 	func	"Beep"							(wt_dword, wt_dword)wt_bool
 	func	"SetConsoleCP"								(wt_uint)wt_bool
 	func	"GetCommandLineA" : stringz
@@ -27535,10 +27796,10 @@ importdll user32=
 	func "GetWindowTextLengthA" as getwindowtextlength	(wt_handle)wt_int
 	func "GetKeyState"								(wt_int)wt_word
 
-!	func "GetWindowLongPtrA" as getwindowlongptr	(wt_handle,wt_int)int64
-!	func "SetWindowLongPtrA" as setwindowlongptr	(wt_handle,wt_int,wt_int)int64
-	func "GetWindowLongA" as getwindowlongptr		(wt_handle,wt_int)int64
-	func "SetWindowLongA" as setwindowlongptr		(wt_handle,wt_int,int64)int64
+!	func "GetWindowLongPtrA" as getwindowlongptr	(wt_handle,wt_int)i64
+!	func "SetWindowLongPtrA" as setwindowlongptr	(wt_handle,wt_int,wt_int)i64
+	func "GetWindowLongA" as getwindowlongptr		(wt_handle,wt_int)i64
+	func "SetWindowLongA" as setwindowlongptr		(wt_handle,wt_int,i64)i64
 
 	func "GetClientRect"							(wt_handle,wt_ptr)wt_bool
 	func "ClientToScreen"							(wt_handle,wt_ptr)wt_bool
@@ -27636,7 +27897,7 @@ importdll comdlg32=
 	func "GetOpenFileNameA"							(wt_ptr)wt_bool
 	func "GetSaveFileNameA"							(wt_ptr)wt_bool
 end
-=== gxlib.q 0 1 37/44 ===
+=== gxlib.q 0 1 39/46 ===
 !MODULE winmessages
 module sysp
 
@@ -27745,26 +28006,26 @@ export type rgdistate = struct
 	ref void hdc				! 0 or device context handle for hwnd
 	ref void hwnd2				! secondary window/memory backup
 	ref void hdc2				! 0 or hwnd3 DC screen or memory hdc
-	int64 originalwndproc	! win32 control handling proc
+	i64 originalwndproc	! win32 control handling proc
 	union
-		int64 menuhandle		! win32 handle to any menubar
-		int64 oldbmobj			!used for bitmaps
+		i64 menuhandle		! win32 handle to any menubar
+		i64 oldbmobj			!used for bitmaps
 	end
-	int32 drawmode			! see dm- drawcodes
-	int32 updated				! 1 when pixels have changed
+	i32 drawmode			! see dm- drawcodes
+	i32 updated				! 1 when pixels have changed
 
-	int32 posx,posy			!current drawing position
-	int32 pencolour			! current line colour (rgb)
-	int32 penwidth			! current line width
+	i32 posx,posy			!current drawing position
+	i32 pencolour			! current line colour (rgb)
+	i32 penwidth			! current line width
 
-	int32 penstyle			! current line dotted style
+	i32 penstyle			! current line dotted style
 
-	int32 xormode				! 0=normal, 1=xor
-	int32 brushcolour			! current brush colour
-	int32 brushstyle			! current brush style (bs_solid/etc)
-	int32 brushpattern		! current brush hatch/bitmap pattern
+	i32 xormode				! 0=normal, 1=xor
+	i32 brushcolour			! current brush colour
+	i32 brushstyle			! current brush style (bs_solid/etc)
+	i32 brushpattern		! current brush hatch/bitmap pattern
 
-	int32 font				! current font number
+	i32 font				! current font number
 end
 
 export enumdata marktypenames =
@@ -32421,24 +32682,24 @@ EXPORT PROC CHECKCLOSED(NAME)=
 
 	CPL "CC: OK*****"
 END
-=== bmlib.q 0 1 38/44 ===
+=== bmlib.q 0 1 40/46 ===
 VAR DEBUG=0
 
 importdll imglib =
-    func imgload_rgb		(stringz, ref byte, ref byte, ref byte, int32)ref byte
+    func imgload_rgb		(stringz, ref byte, ref byte, ref byte, i32)ref byte
 
-    func imgload_bgr		(stringz, ref int32, ref int32, ref int32, int32)ref byte
+    func imgload_bgr		(stringz, ref i32, ref i32, ref i32, i32)ref byte
 
-!    func nanoloadjpeg		(stringz, ref int32, ref int32, ref int32)ref byte
-!    func loadjpegm			(stringz, ref int64, ref int64, ref int64)ref byte
+!    func nanoloadjpeg		(stringz, ref i32, ref i32, ref i32)ref byte
+!    func loadjpegm			(stringz, ref i64, ref i64, ref i64)ref byte
 
     proc          imgload_free		(ref byte)
-    func imgsave_jpeg_rgb	(stringz, ref byte, int32, int32, int32)int32
-    func imgsave_jpeg_bgr	(stringz, ref byte, int32, int32, int32)int32
+    func imgsave_jpeg_rgb	(stringz, ref byte, i32, i32, i32)i32
+    func imgsave_jpeg_bgr	(stringz, ref byte, i32, i32, i32)i32
 end
 
 importdll jpeg =
-    func loadjpegm			(stringz, ref int64, ref int64, ref int64)ref byte
+    func loadjpegm			(stringz, ref i64, ref i64, ref i64)ref byte
 end
 
 type bmpheader = struct
@@ -32594,7 +32855,7 @@ export func bmcreate(pixelbits,width,height)=
 
 !set palette colours, using winrgb order
 	if pixelbits=8 then
-		palette:=new(array,int32,0..255)
+		palette:=new(array,i32,0..255)
 		bm.paltype:=greyscale_pal
 		colour:=0
 		for i:=0 to 255 do
@@ -32618,7 +32879,7 @@ end
 export func bmgetpalette(bm)=
 !extract entire palette to p, in bmrgb order
 	if bm.paltype then
-		palette:=new(array,int32,0..256)
+		palette:=new(array,i32,0..256)
 		getdibcolortable(bm.gdi.hdc,0,256,&palette)
 		palette[256]:=bm.paltype
 		reversepalette(palette)
@@ -32715,6 +32976,10 @@ end
 export func bmgetrowptr(bm,y)=
 	return bm.pixelptr+y*bm.linebytes
 end
+
+!export func bmgetpixel(bm,y)=
+!	return bm.pixelptr+y*bm.linebytes
+!end
 
 func getcbbitmap(hwnd)=
 
@@ -32846,7 +33111,7 @@ end
 
 export proc bmresetpalette(bm)=
 # set palette back to greyscale
-	pal:=new(array,int32,0..256)
+	pal:=new(array,i32,0..256)
 	colour:=0
 	for i:=0 to 255 do
 		pal[i]:=colour
@@ -32935,7 +33200,7 @@ func bmloadbmp(filename)=
 	framebytes:=bm.linebytes*filedimy
 
 	if bm.paltype then
-		palette:=new(array,int32,0..255)
+		palette:=new(array,i32,0..255)
 		readrandom(f,&palette,bmpheader.bytes,1024)
 		bmputpalette(bm,palette,0)
 		colour:=0
@@ -33703,7 +33968,7 @@ export func bmneg(bm)=
 
 	for y:=0 to dy do
 		if do32 then
-			p:=makeref(bmgetrowptr(newbm,y),int32)
+			p:=makeref(bmgetrowptr(newbm,y),i32)
 			to n do
 				p++^ := p^ ixor 0xFFFFFFFF
 			od
@@ -33998,7 +34263,7 @@ export func bmtopal(bm)=
 
 	newbm:=bmcreate(8,w,h)
 
-	pal:=new(array,int32,0..255)
+	pal:=new(array,i32,0..255)
 
 !create special palette mapping for rrrgggbb
 	for r:=0 to 7 do
@@ -34051,7 +34316,7 @@ export func bmsplittorgb(bm,greydest=1)=
 	w:=bm.dimx
 	h:=bm.dimy
 
-	pal:=new(array,int32,0..255)
+	pal:=new(array,i32,0..255)
 	images::=()
 
 	for offset:=channels-1 downto 0 do
@@ -34154,7 +34419,7 @@ export func bmsplittoyuv(bm)=
 
 !create special greyscale for u/v images, since point of zero colour
 !info has been offset to +128
-	pal:=new(array,int32,0..256)
+	pal:=new(array,i32,0..256)
 	colour:=0
 	pal[128]:=0
 	for i:=1 to 127 do
@@ -34468,13 +34733,7 @@ func getlumtables=
 	bmap:=makescalemap(0.111)
 	return (rmap, gmap, bmap)
 end
-=== console.q 0 1 39/44 ===
-import sys
-import clib
-
-import winconsts
-import winapi
-
+=== console.q 0 1 41/46 ===
 !!Virtual keycodes
 export const vklbutton=1		!note these are physical not logical buttons
 export const vkrbutton=2
@@ -34623,7 +34882,8 @@ export var hconsole, hconsolein
 var colourpalette
 
 !export var wscreencols,wscreenrows
-export var currbgnd=-1,currfgnd=-1
+!export var currbgnd=-1,currfgnd=-1
+export var currbgnd=con_grey, currfgnd=con_black
 
 !export var screencolour=con_dkred..con_grey
 
@@ -34750,17 +35010,18 @@ export func setcursor(?visible)=
 	return cursor.visible
 end
 
-export proc setcolour(fgnd,bgnd)=
+export proc setcolour(fgnd, ?bgnd)=
 !call with as (fgnd,bgnd) or as (fgnd..bgnd)
 
+	if bgnd.isvoid then bgnd:=currbgnd fi
+
 	if fgnd=currfgnd and bgnd=currbgnd then
-		return
+!		return
 	fi
 
 	currfgnd:=fgnd
 	currbgnd:=bgnd
 
-!setconsoletextattribute(hconsole,(colourmap[bgnd]*16 + colourmap[fgnd]))
 	setconsoletextattribute(hconsole,(bgnd*16+fgnd))
 end
 
@@ -34806,14 +35067,6 @@ end
 
 export func keyready=
 	return testkey()
-end
-
-export proc wshowtext(w,s,?col,?row)=
-	if col.defined then
-		showtext(s,w.posx+col-1,w.posy+row-1)
-	else
-		showtext(s)
-	fi
 end
 
 export proc showtext(s,?x,?y)=
@@ -35143,6 +35396,14 @@ end
 
 export proc wsetpos(w,col,row)=
 	setpos(w.posx+col-1,w.posy+row-1)
+end
+
+export proc wshowtext(w,s,?col,?row)=
+	if col.defined then
+		showtext(s,w.posx+col-1,w.posy+row-1)
+	else
+		showtext(s)
+	fi
 end
 
 export proc wshowtext_b(w,s,col,fgnd,bgnd)=
@@ -35546,7 +35807,7 @@ export proc wsetcolumns(w,columns)=
 	w.pagesize:=w.rows*w.columns
 end
 
-=== winconsts.q 0 1 40/44 ===
+=== winconsts.q 0 1 42/46 ===
 !Windows win32 constants
 
 global const driverversion =  0
@@ -36500,7 +36761,7 @@ global const spi_getworkarea =  48
 proc start=
 end
 
-=== wingxlib.q 0 1 41/44 ===
+=== wingxlib.q 0 1 43/46 ===
 !import winmessages
 !import winconsts
 !import gxmisc
@@ -36853,7 +37114,7 @@ global func wx_createcontrol(?pos,?dim,border=wbs_simple,owner)=
 	return hwnd
 end
 
-=== winmessages.q 0 1 42/44 ===
+=== winmessages.q 0 1 44/46 ===
 export var winmessagenames=[
 	(0:"wm_null"),
 	(1:"wm_create"),
@@ -37438,7 +37699,7 @@ export var winmessagenames=[
 
 proc start=
 end
-=== gxmisc.q 0 1 43/44 ===
+=== gxmisc.q 0 1 45/46 ===
 export enumdata optionnames =
 	(wf_border,		$),		! wbs_simple
 	(wf_resize,		$),		! 0
@@ -37469,7 +37730,7 @@ export enumdata wbsnames=
 	(wbs_sunkenrs,$),
 	(wbs_dummy,$)
 end
-=== dates.q 0 1 44/44 ===
+=== dates.q 0 1 46/46 ===
 
 export var daynames=("Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday")
 
@@ -37739,16 +38000,18 @@ end
 29 qq_dummyshow.m
 30 qq_showpcldummy.m
 31 qq_vars.m
-32 qlib.q
-33 sysp.q
-34 clibp.q
-35 smlib.q
-36 winapi.q
-37 gxlib.q
-38 bmlib.q
-39 console.q
-40 winconsts.q
-41 wingxlib.q
-42 winmessages.q
-43 gxmisc.q
-44 dates.q
+32 syswin.q
+33 syslin.q
+34 sysp.q
+35 windows.q
+36 clibp.q
+37 smlib.q
+38 winapi.q
+39 gxlib.q
+40 bmlib.q
+41 console.q
+42 winconsts.q
+43 wingxlib.q
+44 winmessages.q
+45 gxmisc.q
+46 dates.q

@@ -104,11 +104,25 @@ const pcelemsize = pclrec.bytes
 global ichar longstring					!used in stropnd
 global int longstringlen
 
+export int mlabelno
+export byte phighmem
+global byte fpshortnames
+
+export ref proc (ref void) idomcl_assem
+export ref func (ref void)int icheckasmlabel
+export ref func (int)psymbol igethostfn
+
+
+
+
 export func pcl_start(ichar name=nil, int nunits=0)psymbol=
 !returns a descriptor to the global tables
 !at the moment little is done with the descriptor, except to have something
 !tangible to pass back to the caller of the API. There is no mechanism
 !to allow multiple, active sets of pcltables
+
+
+CPL =PSTREC.BYTES
 
 	if pcldone then pclerror("PCL start?") fi
 
@@ -389,7 +403,7 @@ end
 export func genreal(real x, int mode=tpr64)pcl p=
 	p:=newpcl()
 	p.xvalue:=x
-	p.opndtype:=(mode=tpr64|real_opnd|real32_opnd)
+	p.opndtype:=(mode=tpr64|real_opnd|r32_opnd)
 	return p
 end
 
@@ -683,6 +697,13 @@ export proc pc_defproc(psymbol d, int mode=tpvoid, isentry=0, threaded=0)=
 	currfunc:=d
 end
 
+export proc pc_setimport(psymbol d)=
+!allow the use of pc_addlocal
+!use d=nil when done
+
+	currfunc:=d
+end
+
 export proc pc_addparam(psymbol d)=
 	psymbol p:=currfunc, q
 
@@ -731,7 +752,6 @@ static [256]char str
 	str
 end
 
-
 EXPORT proc merror(ichar mess,ichar param="")=
 	int lineno
 	ichar filename, sourceline
@@ -745,7 +765,9 @@ EXPORT proc merror(ichar mess,ichar param="")=
 		filename:="?"
 	fi
 
-	println "Proc:", currfunc.name
+	if currfunc then
+		println "Proc:", currfunc.name
+	fi
 
 	fprintln "MCL Error: # (#) on Line: # in #, PCL:#",mess,param, lineno, filename,ppseqno
 
@@ -821,7 +843,10 @@ global record pstrec = $caligned
 	ichar name
 	psymbol next
 	psymbol nextparam
-	psymbol nextlocal
+	union
+		psymbol nextlocal
+		pcl pcdata				!istatics: point to first kdata op
+	end
 	psymbol owner
 	psymbol generic				!locals/params: version in global ST
 
@@ -831,6 +856,7 @@ global record pstrec = $caligned
 		pcl pcaddr				!for procs: entry point to function
 		ref proc dlladdr		!for imported functions
 		ivoid staddr			!var statics: address
+		psymbol cprocowner		!C target:var statics: owner proc
 	end
 	ref fwdrec fwdrefs			!fwd ref chain
 
@@ -839,7 +865,7 @@ global record pstrec = $caligned
 	byte opcode					!for opcode_rw
 	byte subcode				!for jumpcc_rw/setcc_rw/type_rw
 
-	int32 offset
+	i32 offset
 
 	byte imported				!only for import_id
 	byte exported				!only for proc_id/static_id
@@ -856,11 +882,13 @@ global record pstrec = $caligned
 	byte segment
 	byte hasdot
 
-	int16 stindex
-	int16 importindex
-	int32 labelno
+	i16 stindex
+	i16 importindex
+	i32 labelno
 
-	byte asmused				!1 when proc contains asmcode
+	byte flags:(asmused:1, chasstatics:1)
+
+!	byte asmused				!1 when proc contains asmcode
 	byte dllindex				!for dllproc: which dll in dlltable
 
 	byte nretvalues				!function: number of return values (0 for proc)
@@ -896,8 +924,8 @@ EXPORT record pclrec =
 	union
 		struct
 			union
-				int64	value
-				real64	xvalue
+				i64	value
+				r64	xvalue
 				ichar	svalue			!also used for data
 				int		labelno
 				psymbol	def
@@ -906,35 +934,35 @@ EXPORT record pclrec =
 
 			union						!two 32-bit params used according to opcode
 				struct
-					int32 x				!common access to these 1/2 extra attribs
-					int32 y
+					i32 x				!common access to these 1/2 extra attribs
+					i32 y
 				end
 
 				struct					! (x,y) pointer ops
-					int32 scale			! scale factor for offset
-					int32 extra			! extra constant byte offset, already scaled
+					i32 scale			! scale factor for offset
+					i32 extra			! extra constant byte offset, already scaled
 				end
 				struct					! (x,y) call/etc
-					int32 nargs			! number of args
+					i32 nargs			! number of args
 					union
-						int32 nvariadics	! 0, or arg # that is first variadic
-						int32 simple		!setcall: 1 if whole call sequence is simple
+						i32 nvariadics	! 0, or arg # that is first variadic
+						i32 simple		!setcall: 1 if whole call sequence is simple
 					end
 				end
 				struct					! (x,y) switch
-					int32 minlab
-					int32 maxlab
+					i32 minlab
+					i32 maxlab
 				end
 				struct					! defproc/retproc/retfn
-					int32 paramslots	! stack usage as 8-byte slots
-					int32 localslots
+					i32 paramslots	! stack usage as 8-byte slots
+					i32 localslots
 				end
 
-				int32 stepx				! (x) always +ve fixed step size for forup/fordown; also INCR
-				int32 align
-				int32 popone			! (x) jumpcc: leave X on stack
-				int32 slicelwb			! (x) for .upb
-				int32 inplace			! (x) for load, means &A operand is for inplace update
+				i32 stepx				! (x) always +ve fixed step size for forup/fordown; also INCR
+				i32 align
+				i32 popone			! (x) jumpcc: leave X on stack
+				i32 slicelwb			! (x) for .upb
+				i32 inplace			! (x) for load, means &A operand is for inplace update
 
 			end
 		end
@@ -946,9 +974,9 @@ end
 
 export record fwdrec =
 	ref fwdrec nextfwd
-	int32 offset
-	int16 reltype
-	int16 seg
+	i32 offset
+	i16 reltype
+	i16 seg
 end
 
 export type procinfo = ref procinforec
@@ -1299,7 +1327,7 @@ global func dispatch_loop(pcl pcentry, int cmain=0)int=
 	int fp:=0
 	int		a
 		real	x	@a
-		real32	sx	@a
+		r32	sx	@a
 		word	u	@a
 	ref byte ptr
 		ref u8  pu8		@ptr
@@ -1316,7 +1344,7 @@ global func dispatch_loop(pcl pcentry, int cmain=0)int=
 
 	int		b
 		real	y	@b
-		real32	sy	@b
+		r32	sy	@b
 		word	v	@b
 
 !	int opc
@@ -2590,7 +2618,7 @@ global func pci_getopnd(pcl p, ref i64 locals)i64 a =
 	when string_opnd then
 		a:=cast(p.svalue)
 
-	when real_opnd, real32_opnd then
+	when real_opnd, r32_opnd then
 		a:=int@(p.xvalue)
 
 	when label_opnd then
@@ -2882,7 +2910,7 @@ export enumdata [0:]ichar opndnames =
 	(label_opnd,		$),
 	(int_opnd,			$),
 	(real_opnd,			$),
-	(real32_opnd,		$),
+	(r32_opnd,		$),
 	(string_opnd,		$),
 	(strimm_opnd,		$),
 	(assem_opnd,		$),
@@ -2987,7 +3015,7 @@ export enumdata [0:]ichar pclnames,
 	(kstop,        $+1, 0, 0, 0, 0),  ! (1 - 0) (          ) Stop Z
 
 	(kto,          $+1, 1, 0, L, 0),  ! (0 - 0) (L t       ) --B (aux); goto L when B<>0 
-	(kforup,       $+1, 1, 1, L, 0),  ! (0 - 0) (L t n     ) B:=n; goto L when B<=C
+	(kforup,       $+1, 1, 1, L, 0),  ! (0 - 0) (L t n     ) B+:=n; goto L when B<=C
 	(kfordown,     $+1, 1, 1, L, 0),  ! (0 - 0) (L t n     ) B-:=n; goto L when B>=C
 
 	(kiswap,       $+1, 1, 0, 0, 0),  ! (2 - 0) (t         ) swap(Y^,Z^)
@@ -3162,7 +3190,7 @@ int framebytes
 [6]byte scondcodes=(eq_cond, ne_cond, lt_cond, le_cond, ge_cond, gt_cond)
 [6]byte ucondcodes=(eq_cond, ne_cond, ltu_cond, leu_cond, geu_cond, gtu_cond)
 
-global proc genmcl=
+global proc genmcl(ichar dummy=nil)=
 
 	return when mcldone
 
@@ -3468,7 +3496,7 @@ proc px_data*(pcl p) =
 		ax:=mgenrealimm(p.xvalue,tpr64)
 	when realimm32_opnd then
 		ax:=mgenrealimm(p.xvalue,tpr32)
-	when real32_opnd then
+	when r32_opnd then
 		ax:=mgenrealimm(p.xvalue, tpr32)
 
 	when string_opnd then
@@ -5842,6 +5870,62 @@ global proc do_for(pcl p, int incop, addop, cond)=
 	genmc_cond(m_jmpcc, cond, mgenlabel(p.labelno))
 end
 
+!global proc do_for(pcl p, int incop, addop, cond)=
+!THIS VERSION USES JMPEQ, so that an upper limit of i64.max/u64.max is handled.
+!But behaviour changes a little:
+!  loop index after normal termination will be LIMIT not LIMIT+1 or LIMIT-1
+!  loop index can't be modified inside the loop, so that it has a
+!  value beyond the limit
+
+!	pcl q,r
+!	mclopnd ax,bx,cx,dx,mx
+!	int reg, lab
+!
+!	q:=p+1
+!	r:=currpcl:=q+1
+!
+!	lab:=++mlabelno
+!
+!	mx:=mgenmem(q.def, pmode)
+!
+!	if q.def.reg then
+!		ax:=mx
+!	else
+!		ax:=mgenreg(getworkireg())
+!		genmc(m_mov, ax,mx)
+!	fi
+!
+!	if r.opndtype=int_opnd then
+!		bx:=mgenint(r.value)
+!	else
+!		bx:=mgenmem(r.def)
+!	fi
+!
+!	genmc(m_cmp, ax, bx)
+!	genmc_cond(m_jmpcc, z_cond, mgenlabel(lab))
+!
+!	if q.def.reg then
+!		if p.stepx=1 then
+!			genmc(incop, ax)
+!		else
+!			genmc(addop, ax, mgenint(p.stepx))
+!		fi
+!	else
+!		if p.stepx=1 then
+!			genmc(incop, ax)
+!		else
+!			genmc(addop, ax, mgenint(p.stepx))
+!		fi
+!		genmc(m_mov, mx, ax)
+!	fi
+!
+!	genmc(m_jmp, mgenlabel(p.labelno))
+!
+!	genmc(m_labelx,mgenlabel(lab))
+!
+!
+!end
+
 global func scaleindex(mclopnd ax, int scale)int=
 !when scale is 1/2/3/4, return scale unchanged
 !anything else, scale value in ax, return 1
@@ -6228,7 +6312,7 @@ global proc clearblock(mclopnd ax, int n)=
 	oddbytes:=n rem 8		!will be zero, or 1..7
 
 	n-:=oddbytes			!n will always be a multiple of 8; n can be zero too
-	nwords:=n/8				!number of word64s (ie. octobytes)
+	nwords:=n/8				!number of u64s (ie. octobytes)
 
 	rx:=getworkregm(tpu64)
 	clearreg(rx)
@@ -6360,7 +6444,7 @@ global proc copyblock(mclopnd ax,bx, int n, savedest=1)=
 
 	oddbytes:=n rem 8		!will be zero, or 1..7
 	n-:=oddbytes			!n will always be a multiple of 8; n can be zero too
-	nwords:=n/8				!number of word64s (ie. octobytes)
+	nwords:=n/8				!number of u64s (ie. octobytes)
 
 	rx:=getworkregm(tpu64)		!work reg
 
@@ -6512,7 +6596,7 @@ end
 global proc genrealtable=
 	ref constrec p
 
-	return unless creallist or creal32list
+	return unless creallist or cr32list
 
 	mgencomment("Real Table")
 	setsegment('I',8)
@@ -6528,11 +6612,11 @@ global proc genrealtable=
 	od
 
 	mgencomment("Real32 Table")
-	p:=creal32list
+	p:=cr32list
 	while p, p:=p.nextconst do
 		genmc(m_labelx,mgenlabel(p.labelno))
 		if p.xvalue=infinity then
-			genmc(m_dd, mgenint(int@(real32(p.xvalue))))
+			genmc(m_dd, mgenint(int@(r32(p.xvalue))))
 		else
 			genmc(m_dd, mgenrealimm(p.xvalue,tpr32))
 		fi
@@ -6729,7 +6813,7 @@ global proc do_loadbf_const(pcl p, int i, j) =
 		fi
 
 		mask:=inot(0xFFFF'FFFF'FFFF'FFFF<<(j-i+1))
-		if mask<=word(int32.max) then			!use immediate
+		if mask<=word(i32.max) then			!use immediate
 			genmc(m_andx, ax, mgenint(mask))
 		else
 			mx:=loadopnd(yy, tpu64)
@@ -6985,6 +7069,7 @@ const fuseregtable=1
 !const fuseregtable=0
 
 global const targetsize=8
+export const ctarget=0
 
 !global int mclseqno
 EXPORT int mclseqno
@@ -7242,7 +7327,7 @@ global func applyoffset(mclopnd a,int offset,int size=0)mclopnd=
 	return b
 end
 
-export func mgenint(int64 x,int mode=tpi64)mclopnd a=
+export func mgenint(i64 x,int mode=tpi64)mclopnd a=
 	int size:=psize[mode]
 
 	if x in -1..10 and size=8 then
@@ -7259,7 +7344,7 @@ export func mgenint(int64 x,int mode=tpi64)mclopnd a=
 	return a
 end
 
-global func mgenint0(int64 x,int size=8)mclopnd a=
+global func mgenint0(i64 x,int size=8)mclopnd a=
 	a:=newmclopnd()
 	a.mode:=a_imm
 
@@ -7270,20 +7355,20 @@ global func mgenint0(int64 x,int size=8)mclopnd a=
 	return a
 end
 
-global func mgenrealmem(real64 x,int mode=tpr64)mclopnd a=
+global func mgenrealmem(r64 x,int mode=tpr64)mclopnd a=
 	a:=newmclopnd()
 	a.mode:=a_mem
 	if ispwide(mode) then
 		a.value:=getrealindex(x)
 	else
-		a.value:=getreal32index(x)
+		a.value:=getr32index(x)
 	fi
 	a.valtype:=label_val
 	a.size:=psize[mode]
 	return a
 end
 
-export func mgenrealimm(real64 x,int mode=tpr64)mclopnd a=
+export func mgenrealimm(r64 x,int mode=tpr64)mclopnd a=
 	a:=newmclopnd()
 	a.mode:=a_imm
 	a.xvalue:=x
@@ -7598,15 +7683,15 @@ global func getrealindex(real x)int=
 	return addconst(creallist,cast@(x,int))
 end
 
-global func getreal32index(real x)int=
-	return addconst(creal32list,cast@(x,int))
+global func getr32index(real x)int=
+	return addconst(cr32list,cast@(x,int))
 end
 
-!global func ispoweroftwo(int64 x)int=
-EXPORT func ispoweroftwo(int64 x)int=
+!global func ispoweroftwo(i64 x)int=
+EXPORT func ispoweroftwo(i64 x)int=
 !when x is a power of two, and is at least 2, then return the power (ie. equiv number of shifts)
 !otherwise return zero when x is negative, 0, 1, not a power of two, or more than 2**31
-	int64 a
+	i64 a
 	int n
 
 	a:=1
@@ -7742,7 +7827,7 @@ global func getopnd(int n, mode, reg=rnone)mclopnd ax =
 			genmc(m_mov, ax, bx)
 		fi
 
-	when real_opnd, real32_opnd then
+	when real_opnd, r32_opnd then
 		ax:=mgenrealmem(a.xvalue, mode)
 
 	when string_opnd then
@@ -8325,6 +8410,11 @@ end
 
 global proc checkallloaded=
 	for i to noperands do
+
+!		if pclopnd[i].opndtype=mem_opnd and pclloc[i] in [pcl_loc, regvar_loc] then
+!			loadopnd(i, pclopnd[i].mode)
+!		fi
+
 		if pclloc[i]=pcl_loc and pclopnd[i].opndtype=mem_opnd then
 			loadopnd(i, pclopnd[i].mode)
 		fi
@@ -8599,7 +8689,7 @@ GLOBAL record amoderec =					!return from genrm
 	byte sib						!
 	i8 usesib						!-1/0/1 = rip/not used/used
 	byte dispsize					!0, 1 or 4
-	int32 offset					!for dispsize = 1/4
+	i32 offset					!for dispsize = 1/4
 end
 
 mclopnd extraparam
@@ -9030,7 +9120,7 @@ proc gendword(int x)=
 	adddword(currdata,x)
 end
 
-proc genqword(int64 x)=
+proc genqword(i64 x)=
 	addqword(currdata,x)
 end
 
@@ -9039,7 +9129,7 @@ proc genopnd(mclopnd a,int size=0)=
 !ignore reg etc
 !any labels, assume abs addresses of 32 or 64 bits
 	ref char s
-	int64 x
+	i64 x
 	int length
 
 	if size=0 then size:=a.size fi
@@ -9073,7 +9163,7 @@ proc genopnd(mclopnd a,int size=0)=
 		when intimm_val then
 			gendword(a.value)
 		when realimm_val then
-			real32 x32
+			r32 x32
 			x32:=a.xvalue
 			gendword(int@(x32))
 !		when realmem_val then
@@ -9094,7 +9184,7 @@ proc genopnd(mclopnd a,int size=0)=
 		when intimm_val then
 			genqword(a.value)
 		when realimm_val then
-			genqword(int64@(a.xvalue))
+			genqword(i64@(a.xvalue))
 !		when realmem_val then
 !			CPL "		OPND/REALMEM8",ALINENO
 !		when stringimm_val then
@@ -9263,7 +9353,7 @@ func getrel32(psymbol d,int offset)int=
 		fi
 		return d.offset-(offset+1)
 	else
-		return int32.max
+		return i32.max
 	fi
 end
 
@@ -9274,8 +9364,8 @@ proc dofwdrefs(psymbol d)=
 	ref fwdrec f
 	int offset, seg
 	ref byte p8
-	ref int32 p32
-	ref int64 p64
+	ref i32 p32
+	ref i64 p64
 	ref dbuffer data
 
 	if d.fwdrefs=nil then return fi
@@ -9326,12 +9416,12 @@ proc genrex=
 	if rex then genbyte(rex iand 15+0x40) fi
 end
 
-func isbytesized(int64 x)int=
+func isbytesized(i64 x)int=
 	return -128<=x<=127
 end
 
-func isdwordsized(int64 x)int=
-	return int32.min<=x<=int32.max
+func isdwordsized(i64 x)int=
+	return i32.min<=x<=i32.max
 end
 
 proc genamode(mclopnd a, amoderec am)=
@@ -9387,7 +9477,7 @@ proc setopsize(mclopnd a)=
 	esac
 end
 
-func getdispsize(mclopnd a, int32 &offset)int=
+func getdispsize(mclopnd a, i32 &offset)int=
 !look at imm/mem displacement, and return (0,1 or 4) and offset
 !0 is returned when no disp is needed (no labeldef and offset is zero)
 !unless mand=1 then 1 is returned
@@ -9770,7 +9860,7 @@ global proc adddword(ref dbuffer a, int x)=
 	++(a.pcurr32)
 end
 
-global proc addqword(ref dbuffer a, int64 x)=
+global proc addqword(ref dbuffer a, i64 x)=
 	a.pcurr64^:=x
 	++(a.pcurr64)
 end
@@ -9863,9 +9953,9 @@ proc checkimmrange(int value, size)=
 		unless -128<=value<=255 then axerror("exceeding byte value") end
 
 	when 2 then
-		unless -32768<=value<=65535 then axerror("exceeding word16 value") end
+		unless -32768<=value<=65535 then axerror("exceeding u16 value") end
 	else
-		unless -0x8000'0000<=value<=0xFFFF'FFFF then axerror("2:exceeding word32 value") end
+		unless -0x8000'0000<=value<=0xFFFF'FFFF then axerror("2:exceeding u32 value") end
 	esac
 end
 
@@ -10016,7 +10106,7 @@ proc do_arith(mclopnd a,b,int code)=
 !ops is being done
 	psymbol d
 	int opc, dispsize
-	int64 x
+	i64 x
 
 	case a.mode
 	when a_reg then
@@ -10083,7 +10173,7 @@ end
 
 proc do_mov(mclopnd a,b)=
 	int regcode, opc, dispsize
-	int64 value
+	i64 value
 	psymbol d:=getdef(b)
 
 	case a.mode
@@ -10111,7 +10201,7 @@ proc do_mov(mclopnd a,b)=
 				genbyte(value)
 
 			when 2 then
-				unless -32768<=value<=65535 then axerror("exceeding word16 value") end
+				unless -32768<=value<=65535 then axerror("exceeding u16 value") end
 				genbyte(0x66)
 				genrex()
 				genbyte(0xB8+regcode)
@@ -10124,7 +10214,7 @@ proc do_mov(mclopnd a,b)=
 				else
 					unless -0x8000'0000<=value<=u32(0xFFFF'FFFF) then
 						CPL value,ref void(value)
-						axerror("1:exceeding word32 value")
+						axerror("1:exceeding u32 value")
 					end
 doreg32:
 					genrex()
@@ -10357,7 +10447,7 @@ end
 
 proc do_imul2(mclopnd a,b)=
 	int regcode, am, opc, dispsize
-	int64 value
+	i64 value
 
 	if a.mode<>a_reg then
 		axerror("imul2 opnds")
@@ -10428,7 +10518,7 @@ proc do_shift(mclopnd a,b,int code)=
 end
 
 proc do_test(mclopnd a,b)=
-	int64 value
+	i64 value
 	int opc, am, regcode
 
 	if a.mode=a_reg and a.reg=r0 and b.mode=a_imm then
@@ -10681,8 +10771,8 @@ export record mclopndrec =
 !	ref pstrec labeldef	!nil, or handle of strec for label
 	union
 		psymbol def
-		int64 value		!immediate value
-		real64 xvalue	!immediate real value, mainly for dq
+		i64 value		!immediate value
+		r64 xvalue	!immediate real value, mainly for dq
 		ichar svalue	!immediate string
 		int labelno
 		int sysfn
@@ -11303,7 +11393,7 @@ global enumdata [0:]ichar opndcatnames =
 	(regmem_cat,	$),		! [R+d] [R+R*s] Any combo that is not ireg or mem
 end
 
-export int mlabelno
+!export int mlabelno
 !global byte foptimise
 
 global const maxoperands=20
@@ -11418,7 +11508,7 @@ end
 global ref constrec cstringlist
 global ref constrec vstringlist
 global ref constrec creallist
-global ref constrec creal32list
+global ref constrec cr32list
 
 global psymbol currasmproc
 
@@ -11439,9 +11529,9 @@ export record dbuffer =
 	ref byte pstart
 	union
 		ref byte pcurr
-		ref word16 pcurr16
-		ref word32 pcurr32
-		ref word64 pcurr64
+		ref u16 pcurr16
+		ref u32 pcurr32
+		ref u64 pcurr64
 	end
 	ref byte pend
 	int alloc
@@ -11484,9 +11574,9 @@ global ref mclrec mclprocentry
 global ref mclrec mce_oldmccodex, mce_lastmcl, mce_nextmcl		!used by reset/setmclentry
 global ref mclrec mcf_oldmccodex, mcf_lastmcl, mcf_nextmcl		!used by reset/setmclentry for frame setup
 
-global byte fpshortnames
+!global byte fpshortnames
 global byte fpcheckunusedlocals
-export byte phighmem
+!export byte phighmem
 
 global record riprec =
 	ref riprec next
@@ -11496,16 +11586,16 @@ end
 
 !global record fwdrec =
 !	ref fwdrec nextfwd
-!	int32 offset
-!	int16 reltype
-!	int16 seg
+!	i32 offset
+!	i16 reltype
+!	i16 seg
 !end
 
 global ref riprec riplist
 
-export ref proc (ref void) idomcl_assem
-export ref func (ref void)int icheckasmlabel
-export ref func (int)psymbol igethostfn
+!export ref proc (ref void) idomcl_assem
+!export ref func (ref void)int icheckasmlabel
+!export ref func (int)psymbol igethostfn
 
 global const maxblocktemps=50
 global [maxblocktemps]psymbol blockdefs
@@ -11531,51 +11621,51 @@ end
 
 === mc_objdecls.m 0 0 17/80 ===
 global record imagefileheader =
-	word16	machine
-	word16	nsections
-	word32	timedatestamp
-	word32	symtaboffset
-	word32	nsymbols
-	word16	optheadersize
-	word16	characteristics
+	u16	machine
+	u16	nsections
+	u32	timedatestamp
+	u32	symtaboffset
+	u32	nsymbols
+	u16	optheadersize
+	u16	characteristics
 end
 
 global record imagedir =
-	word32	virtualaddr
-	word32	size
+	u32	virtualaddr
+	u32	size
 end
 
 global record optionalheader =			!exe/dll only
-	word16  magic
+	u16  magic
 	byte     majorlv
 	byte     minorlv
-	word32 codesize
-	word32 idatasize
-	word32 zdatasize
-	word32 entrypoint
-	word32 codebase
-!	word32 datebase		!32-bit exe files only
-	word64	imagebase
-	word32 sectionalignment
-	word32 filealignment
-	word16  majorosv
-	word16  minorosv
-	word16  majorimagev
-	word16  minorimagev
-	word16  majorssv
-	word16  minorssv
-	word32 win32version
-	word32 imagesize
-	word32 headerssize
-	word32 checksum
-	word16  subsystem
-	word16  dllcharacteristics
-	word64   stackreserve
-	word64   stackcommit
-	word64   heapreserve
-	word64   heapcommit
-	word32 loaderflags
-	word32 rvadims
+	u32 codesize
+	u32 idatasize
+	u32 zdatasize
+	u32 entrypoint
+	u32 codebase
+!	u32 datebase		!32-bit exe files only
+	u64	imagebase
+	u32 sectionalignment
+	u32 filealignment
+	u16  majorosv
+	u16  minorosv
+	u16  majorimagev
+	u16  minorimagev
+	u16  majorssv
+	u16  minorssv
+	u32 win32version
+	u32 imagesize
+	u32 headerssize
+	u32 checksum
+	u16  subsystem
+	u16  dllcharacteristics
+	u64   stackreserve
+	u64   stackcommit
+	u64   heapreserve
+	u64   heapcommit
+	u32 loaderflags
+	u32 rvadims
 	imagedir exporttable
 	imagedir importtable
 	imagedir resourcetable
@@ -11597,47 +11687,47 @@ end
 global record imagesectionheader =
 	[8]char name
 	union
-		word32	physical_address
-		word32	virtual_size
+		u32	physical_address
+		u32	virtual_size
 	end
-	word32	virtual_address
-	word32	rawdata_size
-	word32	rawdata_offset
-	word32	relocations_ptr
-	word32	linenos_offset
-	word16	nrelocs
-	word16	nlinenos
-	word32	characteristics
+	u32	virtual_address
+	u32	rawdata_size
+	u32	rawdata_offset
+	u32	relocations_ptr
+	u32	linenos_offset
+	u16	nrelocs
+	u16	nlinenos
+	u32	characteristics
 end
 
 global record imagesymbol =
 	union
 		[8]char shortname
 		struct
-			word32	shortx
-			word32	longx
+			u32	shortx
+			u32	longx
 		end
-		word64 longname
+		u64 longname
 	end
-	word32	value
-	int16	sectionno
-	word16	symtype
+	u32	value
+	i16	sectionno
+	u16	symtype
 	byte	storageclass
 	byte	nauxsymbols
 end
 
 global record importdirrec =
-	word32	implookuprva
-	word32	timedatestamp
-	word32	fwdchain
-	word32	namerva
-	word32	impaddressrva
+	u32	implookuprva
+	u32	timedatestamp
+	u32	fwdchain
+	u32	namerva
+	u32	impaddressrva
 end
 
 global record coffrelocrec =
-	int32	virtualaddr
-	int32	stindex
-	int16	reloctype
+	i32	virtualaddr
+	i32	stindex
+	i16	reloctype
 end
 
 global enumdata [0:]ichar relocnames =
@@ -11651,12 +11741,12 @@ global enumdata [0:]ichar relocnames =
 end
 
 global record auxsectionrec = 
-	int32 length
-	int16 nrelocs
-	int16 nlines
-	int32 checksum
-	int16 sectionno
-	int32 dummy
+	i32 length
+	i16 nrelocs
+	i16 nlines
+	i32 checksum
+	i16 sectionno
+	i32 dummy
 end
 
 global record sectionrec =
@@ -11698,17 +11788,17 @@ global record dllrec =					!all imported libraries
 end
 
 global record exportdirrec =
-	word32 exportflags
-	word32 timedatestamp
-	word16 majorversion
-	word16 minorversion
-	word32 namerva
-	word32 ordinalbase
-	word32 naddrtable
-	word32 nnamepointers
-	word32 expaddressrva
-	word32 namepointerrva
-	word32 ordtablerva
+	u32 exportflags
+	u32 timedatestamp
+	u16 majorversion
+	u16 minorversion
+	u32 namerva
+	u32 ordinalbase
+	u32 naddrtable
+	u32 nnamepointers
+	u32 expaddressrva
+	u32 namepointerrva
+	u32 ordtablerva
 end
 === mc_writeasm.m 0 0 18/80 ===
 !export int assemtype='AA'
@@ -12025,7 +12115,7 @@ global func strvalue(mclopnd a)ichar=
 	static [512]char str
 	[128]char str2
 	psymbol def
-	int64 value,offset,length
+	i64 value,offset,length
 	ichar ss
 
 	def:=a.def
@@ -12269,7 +12359,7 @@ end
 ! genexe()
 ! writeexe(filename)
 
-[maxplibfile]int64 libinsttable
+[maxplibfile]i64 libinsttable
 [maxplibfile]ichar libinstnames
 [maxplibfile]int libnotable			!index into dlltable
 
@@ -12280,8 +12370,8 @@ global const isect=4
 
 record basereloc =
 	ref basereloc nextitem
-	word32 address				!virtual address
-	int32 reloctype
+	u32 address				!virtual address
+	i32 reloctype
 end
 
 ref basereloc basereloclist
@@ -12289,8 +12379,8 @@ int nbaserelocs
 int maxrelocaddr
 const maxbaseblock=500
 [maxbaseblock]int blockbases
-[maxbaseblock]int32 blockcounts
-[maxbaseblock]int32 blockbytes
+[maxbaseblock]i32 blockcounts
+[maxbaseblock]i32 blockbytes
 [maxbaseblock]byte blockpadding
 int nbaseblocks
 int basetablesize
@@ -12306,7 +12396,7 @@ global int imagebase
 
 int imagesize
 int filesize
-ref[]int64 thunktable				!point into code segment
+ref[]i64 thunktable				!point into code segment
 int fileiatoffset
 int fileiatsize
 psymbol stentrypoint				!psymbol to be the entry point
@@ -12395,7 +12485,7 @@ global proc genexe2(ichar outfile, int dodll)=
 	imagefileheader header
 	optionalheader optheader
 	int offset,i
-	int64 aa
+	i64 aa
 
 	dllfilename:=extractfile(outfile)
 
@@ -12429,7 +12519,7 @@ end
 proc loadlibs=
 !load library instances
 	int i
-	int64 hinst
+	i64 hinst
 	ichar file
 	[300]char filename
 
@@ -12614,8 +12704,8 @@ proc relocdata(ref sectionrec s)=
 	ref sectionrec u
 	ref relocrec r
 	ref byte p
-	ref word32 p32
-	ref word64 p64
+	ref u32 p32
+	ref u64 p64
 	psymbol d
 	int offset,index,thunkoffset,iatoffset
 
@@ -12632,11 +12722,11 @@ proc relocdata(ref sectionrec s)=
 			if not d.imported then
 				axerror("rel32/not imported")
 			fi
-			(ref word32(p+r.offset)^:=thunkoffset-r.offset-4)
+			(ref u32(p+r.offset)^:=thunkoffset-r.offset-4)
 !
 		when addr32_rel, addr64_rel then				!for addr64, just leave top half zero
 			if d.imported then
-				(ref word32(p+r.offset)^:=imagebase+thunkoffset+sectiontable[csect].virtoffset)
+				(ref u32(p+r.offset)^:=imagebase+thunkoffset+sectiontable[csect].virtoffset)
 			else
 				u:=nil
 				case d.segment
@@ -12833,7 +12923,7 @@ proc writesectionheader(ref sectionrec s)=
 	sheader.rawdata_offset:=s.rawoffset
 	sheader.rawdata_size:=s.rawsize
 
-	int64 aa
+	i64 aa
 	case s.segtype
 	when zdata_seg then
 		aa:=0xC050'0080
@@ -12874,9 +12964,9 @@ proc writeexporttable(ref byte pstart)=
 	const maxexports=2000
 	[maxexports]int sortindex
 	ref exportdirrec phdr := cast(pstart)
-	ref word32 paddrtable
-	ref word32 pnametable
-	ref word16 pordtable
+	ref u32 paddrtable
+	ref u32 pnametable
+	ref u16 pordtable
 	ref char pdllname
 	ref char pnames
 	int addrtableoffset
@@ -13021,8 +13111,8 @@ end
 
 proc writebasereloctable(ref byte pstart)=
 	
-	ref word32 p32
-	ref word16 p16
+	ref u32 p32
+	ref u16 p16
 	int baseaddr,addr,nextblock
 	ref basereloc q
 
@@ -13221,7 +13311,7 @@ proc getoffsets=
 
 !prepare the thunk area in the code segment
 	ref importdirrec pdir
-	ref int64 paddr,pname
+	ref i64 paddr,pname
 	int iatoffset
 	pdir:=cast(pimpdir)
 
@@ -13246,7 +13336,7 @@ proc getoffsets=
 
 !Fill in the hint/name table
 	ref byte phint
-	ref word32 pextra
+	ref u32 pextra
 
 	for i to nimports do
 		phint:=pimpdir+importtable[i].hintnameoffset-dirstartoffset
@@ -13286,7 +13376,7 @@ proc getoffsets=
 			thunkptr++^:=0x24
 			thunkptr++^:=0x25
 			thunkaddr:=imagebase+importtable[i].iatoffset
-			(ref int32(thunkptr)^:=thunkaddr)
+			(ref i32(thunkptr)^:=thunkaddr)
 			thunkptr+:=4
 		else					!use rip mode
 
@@ -13294,7 +13384,7 @@ proc getoffsets=
 			thunkptr++^:=0xFF
 			thunkptr++^:=0x25
 			thunkaddr:=imagebase+importtable[i].iatoffset
-			(ref int32(thunkptr)^:=getripoffset(int(thunkptr-codebase),thunkaddr-imagebase))
+			(ref i32(thunkptr)^:=getripoffset(int(thunkptr-codebase),thunkaddr-imagebase))
 			thunkptr+:=4
 			thunkptr++^:=0x90
 		fi
@@ -13338,7 +13428,7 @@ global proc writecoff(ichar outfile)=
 	imagefileheader header
 	imagesectionheader zsection, isection, csection
 	int offset
-	int64 aa
+	i64 aa
 
 	return when objdone
 
@@ -13495,7 +13585,7 @@ end
 
 proc writestringtable=
 !should immediately follow symboltable
-	ref int32 p
+	ref i32 p
 	int i,n
 
 	p:=cast(dataptr)
@@ -13795,7 +13885,7 @@ export record librec=
 	ref byte zdataptr				! zeroed data block
 	int codexsize					! bytes in thunk/addr tables that follow code
 	ref[]u64		exportaddr		! fully fixed-up addresses of exported symbols (not in file)
-	ref[]int16		importxreftable	! map symbol index to global one
+	ref[]i16		importxreftable	! map symbol index to global one
 
 	ichar			filespec		!full path
 	ichar			libname			!base name of library
@@ -13826,7 +13916,7 @@ global int nlibs
 global [maxsymbols]ichar	symbolnametable	! Name of symbol
 global [maxsymbols]byte		symboldefined	! 1 when fully resolved with address
 global [maxsymbols]ref void	symboladdress	! Abs address
-global [maxsymbols]int16	symbollibindex	! Lib index where defined
+global [maxsymbols]i16	symbollibindex	! Lib index where defined
 global [maxsymbols]byte		symboldllindex	! DLL index of library where found
 global int nsymbols
 
@@ -14611,7 +14701,7 @@ global proc writemcx(ichar filename)=
 
 	dest:=buffercreate()
 
-	genword32(mcxsig)
+	genu32(mcxsig)
 
 	genbyte(version_dir)
 	genstring("0.1234")
@@ -14620,14 +14710,14 @@ global proc writemcx(ichar filename)=
 	writerelocs()
 
 	genbyte(zdata_dir)
-	genword32(ss_zdatalen)
+	genu32(ss_zdatalen)
 
 	genbyte(code_dir)
-	genword32(n:=bufferlength(ss_code))
+	genu32(n:=bufferlength(ss_code))
 	genblock(bufferelemptr(ss_code,0), n)
 
 	genbyte(idata_dir)
-	genword32(n:=bufferlength(ss_idata))
+	genu32(n:=bufferlength(ss_idata))
 
 	genblock(bufferelemptr(ss_idata,0), n)
 
@@ -14637,7 +14727,7 @@ global proc writemcx(ichar filename)=
 	od
 
 	genbyte(dlls_dir)
-	genword32(ndlls)
+	genu32(ndlls)
 !	for i to nplibfiles when libfiles[i]^<>'$' and libtypes[i]='D' do
 	for i to nplibfiles when plibfiles[i]^<>'$' do
 		genstring(plibfiles[i])
@@ -14659,7 +14749,7 @@ global proc writerelocs=
 	ref u32 baseptr32@baseptr64
 
 	genbyte(reloc_dir)
-	genword32(n:=ss_nidatarelocs+ss_ncoderelocs)
+	genu32(n:=ss_nidatarelocs+ss_ncoderelocs)
 
 	count:=0
 
@@ -14711,7 +14801,7 @@ proc writesymbols=
 	ichar name
 
 	genbyte(importsymbols_dir)
-	genword32(nsymimports)
+	genu32(nsymimports)
 
 	for i to ss_nsymbols when ss_symboltable[i].impindex do
 		d:=ss_symboltable[i]
@@ -14719,7 +14809,7 @@ proc writesymbols=
 	od
 
 	genbyte(exportsymbols_dir)
-	genword32(nsymexports)
+	genu32(nsymexports)
 
 	for i to ss_nsymbols do
 		d:=ss_symboltable[i]
@@ -14733,7 +14823,7 @@ proc writesymbols=
 	od
 
 	genbyte(exportsegs_dir)
-	genword32(nsymexports)
+	genu32(nsymexports)
 	for i to ss_nsymbols do
 		d:=ss_symboltable[i]
 		if d.expindex then
@@ -14742,19 +14832,19 @@ proc writesymbols=
 	od
 
 	genbyte(exportoffsets_dir)
-	genword32(nsymexports)
+	genu32(nsymexports)
 	for i to ss_nsymbols do
 		d:=ss_symboltable[i]
 		if d.expindex then
-			genword32(d.offset)
+			genu32(d.offset)
 		fi
 	od
 
 	genbyte(entry_dir)		!must be present; writes 0xFFFFFFFF when no entry point
 	if entrypoint then
-		genword32(entrypoint.offset)
+		genu32(entrypoint.offset)
 	else
-		genword32(0xFFFF'FFFF)
+		genu32(0xFFFF'FFFF)
 	fi
 end
 
@@ -14774,7 +14864,7 @@ proc genbyte(int x)=
 	dest.pcurr++^:=x
 end
 
-proc genword32(int x)=
+proc genu32(int x)=
 	buffercheck(dest,4)
 	dest.pcurr32++^:=x
 end
@@ -15479,9 +15569,9 @@ global macro pr(a,b) = a<<16+b
 
 global record tokenrec = 		!should be 32-byte record
 	union
-		int64 value				!64-bit int
+		i64 value				!64-bit int
 		real xvalue				!64-bit float
-		word64 uvalue			!64-bit word
+		u64 uvalue			!64-bit word
 		ref char svalue			!pointer to string or charconst (not terminated)
 		ref strec symptr		!pointer to symbol table entry for name
 	end
@@ -15493,11 +15583,11 @@ global record tokenrec = 		!should be 32-byte record
 	u8	subcode
 	u8	flags
 
-	int32 length					!length of name/string/char
+	i32 length					!length of name/string/char
 	union
-		int32 numberoffset			!offset of numeric token within file[fileno]
-		int16 paramno				!for macro params
-		int16 pasteno
+		i32 numberoffset			!offset of numeric token within file[fileno]
+		i16 paramno				!for macro params
+		i16 pasteno
 	end
 end
 
@@ -15521,9 +15611,9 @@ end
 global record paramrec =
 	ref strec def			!named param: st entry, otherwise nil
 	ref paramrec nextparam
-	int32 mode				!tnone when there are no normal params
-	int16 nparams			!used on first param only
-	int16 flags				!used on first param only
+	i32 mode				!tnone when there are no normal params
+	i16 nparams			!used on first param only
+	i16 flags				!used on first param only
 end
 
 !mask bits for .flags of tokenrec; these can be combined if both are true
@@ -15566,23 +15656,23 @@ global record strec =
 		ichar macrovalue
 	end
 	union
-		int32 index					!enum/label index
-		int32 offset
-		int32 labelno				!normally used as .index
+		i32 index					!enum/label index
+		i32 offset
+		i32 labelno				!normally used as .index
 		byte oldsymbol				!for #define/#undef on keyword
 	end
 
-	word32 lineno
+	u32 lineno
 	union
 		struct
-			word16 blockno
-			word16 namespace				!experimental: set to namespaces[.nameid]
+			u16 blockno
+			u16 namespace				!experimental: set to namespaces[.nameid]
 		end
-		word32 nsblock						!combined block no and namespace
+		u32 nsblock						!combined block no and namespace
 	end
 
-	int16 subcode
-	word16 mode
+	i16 subcode
+	u16 mode
 
 	u16 nrefs
 	byte namelen
@@ -15604,47 +15694,47 @@ end
 
 global record fwdrec =
 	ref fwdrec nextfwd
-	int32 offset
-	int16 reltype
-	int16 seg
+	i32 offset
+	i16 reltype
+	i16 seg
 end
 
 global record unitrec =
 	union
 		ref strec def
-		int64 value
-		word64 uvalue
+		i64 value
+		u64 uvalue
 		real xvalue
 		ichar svalue
-		ref word16 wsvalue
+		ref u16 wsvalue
 		ref strec labeldef
 		ref caserec nextcase
-		int32 ptrscale			!use for derefoffset/addoffset
-		int32 offset				!for jdot
+		i32 ptrscale			!use for derefoffset/addoffset
+		i32 offset				!for jdot
 	end
 	ref unitrec nextunit
 	ref unitrec a	!single items, or linked lists
 	ref unitrec b
 	ref unitrec c
 
-	int32 tag			!kcode tag number
-	word32 lineno			!source lineno associated with item; fileno is in top byte
+	i32 tag			!kcode tag number
+	u32 lineno			!source lineno associated with item; fileno is in top byte
 
 	union
-		int32 opcode			!for conversion
-		int32 index				!label index
-		word32 uindex			!case index
-		int32 slength			!for const/string
-		int32 wslength
-		int32 alength			!for deref units, length of any array before conversion to ptr
-		int32 scale			!for scale unit (negative means divide)
-		int32 aparams			!callfn/proc: no. actual params
-		int32 count			!makelist, no. items
+		i32 opcode			!for conversion
+		i32 index				!label index
+		u32 uindex			!case index
+		i32 slength			!for const/string
+		i32 wslength
+		i32 alength			!for deref units, length of any array before conversion to ptr
+		i32 scale			!for scale unit (negative means divide)
+		i32 aparams			!callfn/proc: no. actual params
+		i32 count			!makelist, no. items
 	end
 
-	int32 mode
-	int16 memmode				!none, or memmode for name, ptr etc
-	int16 convmode				!conversion dest type
+	i32 mode
+	i16 memmode				!none, or memmode for name, ptr etc
+	i16 convmode				!conversion dest type
 	byte fileno
 	byte isstrconst			!for string consts: initialised with "..."
 	byte iswstrconst
@@ -15680,7 +15770,7 @@ global [0:maxtype]byte	ttisref
 !global [0:maxtype]byte	ttcat
 global [0:maxtype]byte	ttisblock
 global [0:maxtype]byte	ttsigned			!set up in genmcl
-global [0:maxtype]int32	ttshared			!no. of shared instances
+global [0:maxtype]i32	ttshared			!no. of shared instances
 global [0:maxtype]ref paramrec ttparams		!for modes involving function pointers
 global [0:maxtype]ref strec tttypedef
 
@@ -15693,7 +15783,7 @@ global [0..maxlibfile]ichar libfiles
 global [0..maxsourcefile]ichar sourcefilenames
 global [0..maxsourcefile]ichar sourcefilepaths
 global [0..maxsourcefile]ichar sourcefiletext
-global [0..maxsourcefile]int32 sourcefilesizes
+global [0..maxsourcefile]i32 sourcefilesizes
 
 global int nsourcefiles
 global int nlibfiles
@@ -15733,9 +15823,9 @@ global int hstmask				!filled in with hstsize-1
 global ref[0:]ref strec hashtable
 
 global const maxblock=2100,maxblockstack=100
-global [0..maxblock]int32 blockowner
-global [0..maxblock]int32 blockcounts
-global [0..maxblockstack]int32 blockstack
+global [0..maxblock]i32 blockowner
+global [0..maxblock]i32 blockcounts
+global [0..maxblockstack]i32 blockstack
 global int currblockno,nextblockno,blocklevel
 global ref strec currproc
 
@@ -15823,7 +15913,7 @@ global enumdata [0:]ichar catnames =
 end
 
 
-global enumdata []ichar typespecnames, []int32 typespectypes, []byte typespecsizes =
+global enumdata []ichar typespecnames, []i32 typespectypes, []byte typespecsizes =
 	(ts_void,		$,	tvoid,		0),
 !	(ts_char,		$,	tu8,		1),
 	(ts_char,		$,	ti8,		1),
@@ -16118,7 +16208,7 @@ global enumdata []ichar symbolnames, []ichar shortsymbolnames, []byte symboltojt
 	(kunionsym	,		$,	"k",	0),			! UNION
 	(klinkagesym,		$,	"k",	0),			! STATIC etc
 	(ktypequalsym,		$,	"k",	0),			! CONST etc
-	(kstdtypesym,		$,	"k",	0),			! uint32_t etc
+	(kstdtypesym,		$,	"k",	0),			! ui32_t etc
 	(kfnspecsym,		$,	"k",	0),			! INLINE etc
 	(kalignassym,		$,	"k",	0),			! _ALIGNAS
 	(kenumsym,			$,	"k",	0),			! ENUM
@@ -16159,7 +16249,7 @@ global enumdata [0:]ichar namespacenames=
 	(ns_fields,		$)			!field names
 end
 
-global enumdata [0:]ichar namenames, [0:]int32 namespaces, [0:]byte name2pid=
+global enumdata [0:]ichar namenames, [0:]i32 namespaces, [0:]byte name2pid=
 	(nullid=0,		$,		ns_none,		0),			!Not assigned, or keyword/macro defined by .symbol
 	(macroid,		$,		ns_none,		0),			!
 	(programid,		$,		ns_none,		0),			!Main root
@@ -16177,7 +16267,7 @@ global enumdata [0:]ichar namenames, [0:]int32 namespaces, [0:]byte name2pid=
 	(labelid,		$,		ns_labels,		label_id)	!Label name in proc only
 end
 
-global tabledata []ichar stnames, []int32 stsymbols, []int32 stsubcodes=
+global tabledata []ichar stnames, []i32 stsymbols, []i32 stsubcodes=
 
 	("if",			kifsym,			jif),
 	("else",		kelsesym,		0),
@@ -16614,8 +16704,8 @@ const mcchdr = "mcc.h"
 record stackinforec =
 	ref char startptr
 	ref char sptr
-	int32 lineno
-	int32 fileno
+	i32 lineno
+	i32 fileno
 end
 
 const maxmacroargs=200
@@ -16662,7 +16752,7 @@ global proc lex_preprocess_only(ichar infile, outfile, int toconsole=0)=
 	ref char psource
 	int ntokens,nlines,fileno,size
 	int LENGTH
-	int64 nchars,t,hashtot,symtot
+	i64 nchars,t,hashtot,symtot
 	real tsecs
 	static strbuffer sbuffer
 	static ref strbuffer dest=&sbuffer
@@ -17137,12 +17227,12 @@ proc readrealnumber(ref char pstart,intstart, int intlen, base)=
 	ref char fractstart
 	int fractlen,expon,i,c,badexpon,n,adj
 	real basex,x,expbase,f,y,y2,g
-	int64 aa,cc,pref
+	i64 aa,cc,pref
 	const maxrealdigits=500
 	[maxrealdigits+12]char realstr
 	ref char rs
 	[32]char expstr
-	word64 xx1,xx2
+	u64 xx1,xx2
 
 	if base<>10 then
 		old_readrealnumber(pstart,intstart,intlen,base)
@@ -17242,7 +17332,7 @@ function readexponent(int &badexpon)int=
 !exponent is always in base 10
 	ref char numstart
 	int length,neg,c
-	int64 a
+	i64 a
 
 	neg:=0
 	case lxsptr^
@@ -17813,7 +17903,7 @@ end
 
 proc readhex(ref char pstart)=
 !positioned at first char of hex number, after 0x/0X
-	word64 aa
+	u64 aa
 	word c
 	int length,leading,ll,usigned
 	ref char p
@@ -17883,7 +17973,7 @@ end
 
 proc readbinary(ref char pstart)=
 !positioned at first char of binary number, after 0b/0B
-	word64 aa
+	u64 aa
 	int c,length,res,leading
 	ref char p
 
@@ -17930,7 +18020,7 @@ end
 
 proc readoctal(ref char pstart)=
 !positioned at first char of octal number, after 0 (or at 8 or 9)
-	word64 aa
+	u64 aa
 	int c,length,res,leading,ll,usigned
 	ref char p
 
@@ -17994,7 +18084,7 @@ end
 proc readdecimal(ref char pstart)=
 !positioned at first char of decimal number
 !will read integer, unless ends with any of ".eE" than assumed to be real
-	word64 aa
+	u64 aa
 	int c,length,res,leading
 	byte ll,usigned
 
@@ -18038,7 +18128,7 @@ proc readdecimal(ref char pstart)=
 	fi
 
 	to length do				!A..Z have been preprocessed so that they carry on from '9'
-		aa:=aa*word64(10)+word(p++^-'0')
+		aa:=aa*u64(10)+word(p++^-'0')
 	od
 
 	nextlx.symbol:=intconstsym
@@ -18279,7 +18369,7 @@ proc lxreadstring(int termchar,int fwide)=
 	const maxlocalstr=2048
 	[maxlocalstr]char str
 	ref char dest,ws
-	ref word16 wd,wd0
+	ref u16 wd,wd0
 	int c,d,length,useheap
 
 	if termchar='"' then
@@ -20321,7 +20411,7 @@ function readdeclspec(ref strec owner,int &linkage)int=
 !if no declspec follows (usually eof) returns 0
 
 	record declrec=
-		int32 typeno				!not set, int, float, char, struct, union, enum etc
+		i32 typeno				!not set, int, float, char, struct, union, enum etc
 		byte isconst				!0, or 1 when const used (more than 1 allowed)
 		byte isvolatile				!0, or 1 when volatile used
 		byte isrestrict
@@ -20842,8 +20932,8 @@ end
 function readrelexpr:unit=
 	unit x,y
 	int opc,s,t,u
-	int64 a,b,c
-	word64 aa,bb,cc
+	i64 a,b,c
+	u64 aa,bb,cc
 
 	x:=readshiftexpr()
 
@@ -20982,7 +21072,7 @@ function readterm:unit=
 	unit p, q
 	int t,u,opc,shift,newlen,slength,tbase,fwide,newmode, tag
 	ref char pbyte
-	int64 a
+	i64 a
 	ref strec d
 	ichar ss,s
 	ref paramrec pm
@@ -21067,7 +21157,7 @@ function readterm:unit=
 		if lx.length>8 then serror("char const too long") fi
 
 		to lx.length do
-			a:=a ior word64(pbyte^)<<shift
+			a:=a ior u64(pbyte^)<<shift
 			shift+:=8
 			++pbyte
 		od
@@ -23834,6 +23924,8 @@ function docast(unit p,int t,hard=1,inplace=0)unit=
 
 	s:=p.mode
 
+!CPL "DOCAST", STRMODE(S), STRMODE(T), S, T
+
 	retry:
 
 	if s=t then return p fi
@@ -24228,7 +24320,7 @@ proc genidata(unit p,int doterm=1,am=1,offset=0)=
 	int t,length,n,i,j,nwords,offset1,offset2,size,padding,isunion
 	unit q,a,b
 	ref strec d
-	real32 sx
+	r32 sx
 	[256]char str
 	[16]char str2
 
@@ -25873,7 +25965,7 @@ global function createunit3(int tag, ref unitrec p,q,r)ref unitrec=
 	return u
 end
 
-global function createconstunit(word64 a, int t)ref unitrec=
+global function createconstunit(u64 a, int t)ref unitrec=
 	ref unitrec u
 	u:=allocunitrec()
 	u.tag:=jconst
@@ -25897,7 +25989,7 @@ global function createstringconstunit(ichar s, int length)ref unitrec=
 	return u
 end
 
-global function createwstringconstunit(ref word16 s, int length)ref unitrec=
+global function createwstringconstunit(ref u16 s, int length)ref unitrec=
 	ref unitrec u
 	u:=allocunitrec()
 	u.tag:=jconst
@@ -25915,7 +26007,7 @@ end
 global function getoptocode(int opc)int=		!GETOPTOCODE
 !opc is kadd etc
 !return matching kaddto, etc
-	static [0:jtagnames.len]int16 opctotable
+	static [0:jtagnames.len]i16 opctotable
 	int n,opcto,i
 	[20]char str
 
@@ -25939,7 +26031,7 @@ global function getoptocode(int opc)int=		!GETOPTOCODE
 	return 0
 end
 
-global function getconstvalue(ref unitrec p,int ID=0)int64=	!GETCONSTVALUE
+global function getconstvalue(ref unitrec p,int ID=0)i64=	!GETCONSTVALUE
 !extract value from kconst
 	if p and p.tag=jconst then
 		return p.value
@@ -25951,7 +26043,7 @@ end
 global function nextautotype:ichar=
 	static [32]char str
 
-!sprintf(&.str,"$T%d",int32(++autotypeno))
+!sprintf(&.str,"$T%d",i32(++autotypeno))
 	print @&.str,"$T",,++autotypeno
 	return &.str
 end
@@ -26043,7 +26135,7 @@ global function getautofieldname:ref strec=
 	[32]char str
 	ichar name
 
-!sprintf(&.str,"$F%d",int32(++nextafindex))
+!sprintf(&.str,"$F%d",i32(++nextafindex))
 	print @&.str,"$F",,++nextafindex
 
 	name:=pcm_copyheapstring(&.str)
@@ -26098,7 +26190,7 @@ global func convertstringc(ichar s, t,int length=-1)int=
 			t++^:='v'
 		else
 			if c<32 or c>=127 then
-!			sprintf(&.str,"\\%03o",int32(c))
+!			sprintf(&.str,"\\%03o",i32(c))
 				fprint @&.str,"\\#o",c:"z3"
 				t++^:=str[1]
 				t++^:=str[2]
@@ -26245,6 +26337,8 @@ global function typename(int m)ichar=
 		strcpy(&.str,(basem=tstruct|"struct "|"union "))
 		if ttnamedef[m] then
 			strcat(&.str,ttnamedef[m].name)
+			strcat(&.str,".")
+			strcat(&.str,strint(ttnamedef[m].blockno))
 		fi
 		return &.str
 	when tarray then
@@ -26267,7 +26361,7 @@ end
 
 global function allocunitrec:ref unitrec=
 	ref unitrec p
-	ref int64 q
+	ref i64 q
 	int nwords
 
 	++nunits
@@ -26685,10 +26779,10 @@ global function isintcc(int m)int=
 	return tfirstint<=m<=tlastint
 end
 
-global function ispoweroftwo(int64 x)int=
+global function ispoweroftwo(i64 x)int=
 !when x is a power of two, and is at least 2, then return the power (ie. equiv number of shifts)
 !otherwise return zero when x is negative, 0, 1, not a power of two, or more than 2**31
-	int64 a
+	i64 a
 	int n
 
 	a:=1

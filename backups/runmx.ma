@@ -5,8 +5,8 @@ module runmxshow
 module mx_decls
 module mx_lib
 
-$sourcepath "/ax/"
-module aa_disasm
+!$sourcepath "/ax/"
+module mc_disasm
 
 !global  enumdata [0:]ichar segmentnames =
 !	(no_seg=0,		$),
@@ -535,7 +535,7 @@ export record librec=
 	ref byte zdataptr				! zeroed data block
 	int codexsize					! bytes in thunk/addr tables that follow code
 	ref[]u64		exportaddr		! fully fixed-up addresses of exported symbols (not in file)
-	ref[]int16		importxreftable	! map symbol index to global one
+	ref[]i16		importxreftable	! map symbol index to global one
 
 	ichar			filespec		!full path
 	ichar			libname			!base name of library
@@ -566,7 +566,7 @@ global int nlibs
 global [maxsymbols]ichar	symbolnametable	! Name of symbol
 global [maxsymbols]byte		symboldefined	! 1 when fully resolved with address
 global [maxsymbols]ref void	symboladdress	! Abs address
-global [maxsymbols]int16	symbollibindex	! Lib index where defined
+global [maxsymbols]i16	symbollibindex	! Lib index where defined
 global [maxsymbols]byte		symboldllindex	! DLL index of library where found
 global int nsymbols
 
@@ -1138,10 +1138,10 @@ global func loadmemmcb(ichar filename, ref byte p)ref librec plib=
 	return plib
 end
 
-=== aa_disasm.m 0 0 5/5 ===
+=== mc_disasm.m 0 0 5/5 ===
 
-!const showmregs=1
-const showmregs=0
+const showmregs=1
+!const showmregs=0
 
 const halt=0xF4
 
@@ -1456,7 +1456,6 @@ global function decodeinstr(ref byte &cptr,baseaddr=nil)ichar=
 			if rex iand wmask then opsize:=8 fi
 		fi
 		genstr("mov ")
-!CPL "DIS",=REG
 		getsil(reg)
 
 		genstr(strreg(reg,opsize))
@@ -1582,6 +1581,7 @@ global function decodeinstr(ref byte &cptr,baseaddr=nil)ichar=
     genhex(opc)
 	end switch
 
+
 !at this point, deststr contains the decoded instruction
 !need to put in address, bytes etc
 
@@ -1609,7 +1609,7 @@ end
 
 proc decodetwobyteinstr=
 !0F has been decoded
-	int opc,rhssize,third,imm, reg
+	int opc,rhssize,third,imm
 	ichar opcstr
 
 	switch opc:=codeptr++^
@@ -1863,16 +1863,6 @@ proc decodetwobyteinstr=
 		getsilx(basereg)
 		printaddrmode()
 
-	when 0xA4, 0xAC then		!shld/shrd
-		decodeaddr(1)
-CPL =OPSIZE
-		genstr((opc=0xA4|"shld"|"shrd"))
-		printaddrmode(0)
-		genstr(",")
-		genstr(strreg(rmreg, opsize))	
-		genstr(",")
-		genstr(strint(codeptr++^))
-
 	when 0xAF then
 		decodeaddr(1)
 		genstr("imul ")
@@ -1902,13 +1892,6 @@ CPL =OPSIZE
 		genstr(strreg(rmreg,opsize))
 		genstr(", ")
 		printaddrmode()
-
-	when 0xC8..0xCF then			!BSWAP
-		reg:=getreg(opc iand 7,rex iand bmask)
-		opsize:=4
-		if rex iand wmask then opsize:=8 fi
-		genstr("bswap ")
-		genstr(strreg(reg, opsize))
 
 	when 0xD6 then
 		decodeaddr(1)
@@ -1968,15 +1951,9 @@ proc decodeaddr(int w=0)=
 
 	modrm:=codeptr++^
 
-!CPL "DECODE", MODRM:"H"
-
 	mode:=modrm>>6
 	xxx:=(modrm>>3) iand 7
 	rm:=modrm iand 7
-
-!CPL =MODE
-!CPL =XXX
-!CPL =RM
 
 	if mode=3 then		!plain register access
 		basereg:=rm+1
@@ -2042,43 +2019,43 @@ function readbyte:int=
 end
 
 function readsbyte:int=
-	return (ref int8(codeptr++))^
+	return (ref i8(codeptr++))^
 end
 
 function readword16:word=
 	word a
-	a:=ref word16(codeptr)^
+	a:=ref u16(codeptr)^
 	codeptr+:=2
 	return a
 end
 
 function readint16:int=
 	int a
-	a:=ref int16(codeptr)^
+	a:=ref i16(codeptr)^
 	codeptr+:=2
 	return a
 end
 
 function readword32:word=
 	word a
-	a:=ref word32(codeptr)^
+	a:=ref u32(codeptr)^
 	codeptr+:=4
 	return a
-end
+END
 
 function readint32:int=
 	int a
-	a:=ref int32(codeptr)^
+	a:=ref i32(codeptr)^
 	codeptr+:=4
 	return a
-end
+END
 
-function readint64:int64=
-	int64 a
-	a:=ref int64(codeptr)^
+function readi64:i64=
+	i64 a
+	a:=ref i64(codeptr)^
 	codeptr+:=8
 	return a
-end
+END
 
 function getreg(int regcode,upper)int=
 	if upper then
@@ -2194,12 +2171,10 @@ GENSTR("<INDEX>")
 	if offset or (basereg=0 and indexreg=0) then
 !	print plus,,offset,"<",ref void(offset),,">"
 		if basereg=0 and indexreg=0 then
-			genintd(offset)
-!			genhex(offset)
+			genhex(offset)
 		else
 			if offset>0 then genstr(plus) fi
 			genintd(offset)
-!			genhex(offset)
 		fi
 	fi
 	genstr("]")
@@ -2210,18 +2185,11 @@ proc genstr(ichar s)=
 	strcat(&.deststr,s)
 end
 
-proc genintd(int64 a)=
-!	genstr("0x")
-	genhex(a)
-	genstr("H")
-	unless a in 0..9 then
-		genstr("(")
-		genstr(strint(a))
-		genstr(")")
-	end
+proc genintd(i64 a)=
+	genstr(strint(a))
 end
 
-proc genhex(int64 a)=
+proc genhex(i64 a)=
 	genstr(strint(a,"h"))
 end
 
@@ -2236,10 +2204,10 @@ function readimm:int=
 	return 0
 end
 
-function readimm8:int64=
+function readimm8:i64=
 !like readimm but can 8 bytes too
 	if opsize<8 then return readimm() fi
-	return readint64()
+	return readi64()
 end
 
 function strxmm(int reg)ichar=
@@ -2444,4 +2412,4 @@ end
 2 runmxshow.m
 3 mx_decls.m
 4 mx_lib.m
-5 aa_disasm.m
+5 mc_disasm.m
