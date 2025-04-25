@@ -20,16 +20,22 @@ I will use an example program P consisting of 4 modules: P (the lead module), A,
 
 **(1)** P contains only the list of other modules (it doesn't include itself) and no other code. So it looks like this:
 ````
-module A
-module B
-module C
+project =
+    module A
+    module B
+    module C
+end
 ````
 This is the pattern I use for most projects. This allows the lead module to be easily swapped with another, with a slightly different set of modules to provide an alternate configuration.
 
+(Putting the list inside a project = ... end block is a recent addition. I will update this document to use that. But it is optional.)
+
 **(2)** P can also contain code, although here you'd probably dispense with P completely, and put the module info at the start of A:
 ````
-module B
-module C
+project =
+    module B
+    module C
+end
 .... the rest of module A ....
 ````
 (Note that the application will now be called A, but of course you can name the modules P, B, C, or you can choose a name at compile-time.)
@@ -50,15 +56,19 @@ Most of my current projects have one subprogram - one group of chummy modules (p
 
 Suppose there is a 3-module library Q with modules Q, X, Y. Q might contain:
 ````
-module X
-module Y
+project =
+    module X
+    module Y
+end
 ````
 To incorporate this into P, so that Q is statically compiled into the same EXE, P is defined like this:
 ````
-module A
-module B
-module C
-import Q           # read further modules from Q
+project =
+    module A
+    module B
+    module C
+    import Q           # read further modules from Q
+end
 ````
 The resulting program compromises modules P, A, B, C, Q, X, Y, although P and Q contain only module info here.
 
@@ -96,10 +106,12 @@ Any program can be compiled to a DLL file (Windows dynamic shared library) rathe
 
 In principle, anything in its own subprogram can be made into a DLL, and the same functions called via the usual FFI methods. If the DLL is created with my compiler, it will automatically produce an exports file to allow its use from my language. So if Q is compiled, it will create a module called Q_LIB. Then P can be revised to be this:
 ````
-module A
-module B
-module C
-module Q_LIB           # contains FFI module to access exported entities of Q
+project =
+    module A
+    module B
+   module C
+    module Q_LIB           # contains FFI module to access exported entities of Q
+end
 ````
 
 ### Library Imports
@@ -121,9 +133,11 @@ There is currently a weak spot: unless all input modules are in the same directo
 
 So this needs a better solution. Otherwise with that first example starting module P:
 ````
-module A
-module B
-module C
+project =
+    module A
+    module B
+    module C
+end
 ````
 This represents 4 source files, `P.m A.m B.m C.m` (assuming my systems language). The location of `P.m` depends on what path was provided to the compiler, so if invoked like this:
 ````
@@ -147,71 +161,43 @@ This is the function called `main` in the main subprogram, and specifically in t
 
 ### Real Example
 
-This is from a C compiler, an old one which incorporates an x64 assembler as a separate subprogram. Thus there are two subprograms plus the standard library. This is lead module `cc.m`:
+This is the lead module from a C compiler project, which contains only project info. This version is for a production version. It uses backend library which has its own lead module, 'pclp', that lists the modules it uses:
 ````
+project =
     module cc_cli
-    module cc_decls
-    module cc_blockmcl
-    module cc_export
-    module cc_genasm
-    module cc_genmcl
-    module cc_headers
-    module cc_lex
-    module cc_lib
-    module cc_libmcl
 
-    module cc_parse
-    module cc_support
+!Global Data and Tables
+
+    module cc_decls
     module cc_tables
 
-    $sourcepath "c:/ax/"
-    import aalib
+!Lexing and Parsing
+    module cc_lex
+    module cc_parse
+
+!Generate PCL
+    module cc_genpcl
+    module cc_blockpcl
+    module cc_libpcl
+
+!General
+
+    module cc_lib
+    module cc_support
+
+!Bundled headers
+
+    module cc_headers
+
+!Diagnostics
+    module cc_showdummy
+
+!IL Backend
+    $sourcepath "c:/px/"
+    import pclp
+end
 ````
 
-That subprogram has its own lead module which is this:
-````
-    module cc_assembler
-    module aa_decls
-    module aa_disasm
-    module aa_genss
-    module aa_lex
-    module aa_lib
-    module aa_mcxdecls
-    module aa_objdecls
-    module aa_parse
-    module aa_tables
-    module aa_writeexe
-    module aa_writeobj
-````
-Normally, those `aa_` modules are used with a different lead module, `aa.m`, which is built into a standalone assembler:
-````
-    module aa_cli
-
-    module aa_decls
-    module aa_genss
-    module aa_lex
-    module aa_lib
-    module aa_objdecls
-    module aa_mcxdecls
-    module aa_parse
-
-    module aa_tables
-    module aa_writeexe
-    module aa_writemcx
-    module aa_writeobj
-
-#   module aa_disasm               # these two are optional; only used for development
-#   module aa_writess
-    module aa_writessdummy
-````
-The two projects are built like this:
-````
-c:\bcx>mm cc
-Compiling cc.m to cc.exe
-
-c:\ax>mm aa
-Compiling aa.m to aa.exe
-````
 ### Directives
 They are:
 ````
@@ -221,5 +207,6 @@ They are:
      linkdll name
 ````
 
+The list can optionally be inside a `project ... end` block as shown in the examples. Possibly that can be used to define a name for executable, which otherwise will be based on the name of this module.
 
 
