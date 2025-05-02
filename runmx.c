@@ -102,43 +102,43 @@ enum {maxdlls =     20};
 enum {maxlibs =     20};
 enum {maxsymbols =  3000};
 
-extern char*    dllnametable[];
-extern u64      dllinsttable[];
-extern i64      ndlllibs;
+char*    dllnametable[];
+u64      dllinsttable[];
+i64      ndlllibs;
 
-extern char*    libnametable[];
-extern librec*  libtable[];
-extern byte     librelocated[];
-extern byte     libinitdone[];
-extern i64      nlibs;
+char*    libnametable[];
+librec*  libtable[];
+byte     librelocated[];
+byte     libinitdone[];
+i64      nlibs;
 
-extern char*    symbolnametable[];
-extern byte     symboldefined[];
-extern void*    symboladdress[];
-extern i16      symbollibindex[];
-extern i16      symboldllindex[];
-extern i64      nsymbols;
+char*    symbolnametable[];
+byte     symboldefined[];
+void*    symboladdress[];
+i16      symbollibindex[];
+i16      symboldllindex[];
+i64      nsymbols;
 
-extern char* addext(char*, char*);
-extern char* extractbasefile(char*);
-extern byte* readfile(char*);
+char* addext(char*, char*);
+char* extractbasefile(char*);
+byte* readfile(char*);
 int rfsize=0;
-extern char* convlcstring(char*);
+char* convlcstring(char*);
 
-extern char* extractext(char*,int);
-extern char* extractpath(char*);
-extern char* extractfile(char*);
-extern char* changeext(char*,char*);
+char* extractext(char*,int);
+char* extractpath(char*);
+char* extractfile(char*);
+char* changeext(char*,char*);
 
-extern u64 os_getdllinst(char*);
-extern void* os_getdllprocaddr(u64, char*);
-extern void* os_allocexecmem(u64);
+u64 os_getdllinst(char*);
+void* os_getdllprocaddr(u64, char*);
+void* os_allocexecmem(u64);
 
-extern u64 LoadLibraryA(char*);
-extern void* GetProcAddress(u64, char*);
+u64 LoadLibraryA(char*);
+void* GetProcAddress(u64, char*);
 
-extern void* VirtualAlloc(void*, u32, u32, u32);
-extern u32 VirtualProtect(void*, u32, u32, u32*);
+void* VirtualAlloc(void*, u32, u32, u32);
+u32 VirtualProtect(void*, u32, u32, u32*);
 
 enum {NORMAL_PRIORITY_CLASS=32};
 enum {CREATE_NEW_CONSOLE=16};
