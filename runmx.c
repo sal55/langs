@@ -102,23 +102,6 @@ enum {maxdlls =     20};
 enum {maxlibs =     20};
 enum {maxsymbols =  3000};
 
-char*    dllnametable[];
-u64      dllinsttable[];
-i64      ndlllibs;
-
-char*    libnametable[];
-librec*  libtable[];
-byte     librelocated[];
-byte     libinitdone[];
-i64      nlibs;
-
-char*    symbolnametable[];
-byte     symboldefined[];
-void*    symboladdress[];
-i16      symbollibindex[];
-i16      symboldllindex[];
-i64      nsymbols;
-
 char* addext(char*, char*);
 char* extractbasefile(char*);
 byte* readfile(char*);
@@ -294,7 +277,6 @@ void reloclib(librec* lib) {
             q=lib->codeptr+lib->codesize+(index-1)*8;
             *(u32*)p = q-(p+4);
         }
-
     }
 
     librelocated[lib->libno]=1;
@@ -367,7 +349,6 @@ void scansymbols(void) {
             printf("Undef: %s\n",symbolnametable[i]);
             ++undef;
         }
-
     }
 
     if (undef) {
@@ -400,7 +381,6 @@ void loaddlls(void) {
 
         dllinsttable[i]=inst;
     }
-
 }
 
 void dosymbols(librec* lib) {
@@ -509,7 +489,6 @@ librec* readlibfile(char* filename, byte* p) {
     switch (dir=readbyte(&p)) {
     case version_dir:
         lib.version=readstring(&p);
-
         break;
 
     case zdata_dir:
