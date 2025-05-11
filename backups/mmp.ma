@@ -418,6 +418,7 @@ export func genrealimm(real x, int mode=tpr64)pcl p=
 	p:=newpcl()
 	p.xvalue:=x
 	p.opndtype:=(mode=tpr64|realimm_opnd|realimm32_opnd)
+!CPL "GENREALIMM", OPNDNAMES[P.OPNDTYPE], STRPMODE(MODE)
 	return p
 end
 
@@ -3209,6 +3210,7 @@ global proc genmcl(ichar dummy=nil)=
 
 	currpcl:=pcstart
 
+
 	int i:=0
 	repeat
 		convertpcl(currpcl)
@@ -3246,8 +3248,7 @@ end
 proc convertpcl(pcl p)=
 
 !RETURN WHEN P.OPCODE IN [KCOMMENT]
-!CPL "    CONV",PCLNAMES[P.OPCODE],debug,P.SEQNO, =noperands
-
+!CPL "    CONV",PCLNAMES[P.OPCODE],debug, STRPMODE(P.MODE)
 	doshowpcl(p) when fshowpcl
 
 !PCLFLAGS[P.OPCODE]++
@@ -7819,7 +7820,7 @@ global func getopnd(int n, mode, reg=rnone)mclopnd ax =
 		fi
 
 	when int_opnd then
-		CASE PSIZE[PMODE]
+		CASE PSIZE[MODE]
 		WHEN 2 THEN
 			A.VALUE IAND:=0xFFFF
 		WHEN 4 THEN
@@ -15133,6 +15134,11 @@ proc production_compiler=
 		esac
 	fi
 
+CPL =NIF
+CPL =NWHEN
+CPL =NUNLESS
+CPL =NUNLESSC
+
 !CPL =NUNITS
 !CPL =PCLSEQNO
 !CPL =MCLSEQNO
@@ -16615,10 +16621,14 @@ proc do_callproc(unit p,a,b) =
 			pccurr.size:=8
 			pccurr.mode:=tpr64
 			pccurr.mode2:=tpr32
+
+			pc_gen(ksetarg)
+			setmode(tr64)
+		else
+			pc_gen(ksetarg)
+			setmode_u(q)
 		fi
 
-		pc_gen(ksetarg)
-		setmode_u(q)
 		pccurr.x:=i
 	od
 !
@@ -17126,10 +17136,14 @@ end
 proc do_index(unit p,parray,pindex) =
 	int addoffset,scale,offset
 
-	if ttisblock[p.mode] then
-		do_indexref(parray,pindex)
-		return
-	fi
+
+!GENCOMMENT("INDEX/ILOADNEXT/block")
+!	if ttisblock[p.mode] then
+!CPL "INDEX/BLOCK"
+!		do_indexref(parray,pindex)
+!
+!		return
+!	fi
 
 	addoffset:=getindexoffset(parray,pindex)
 
@@ -17138,8 +17152,11 @@ proc do_index(unit p,parray,pindex) =
 	offset:=-ttlower[parray.mode]*scale + addoffset*scale
 
 	evalunit(pindex)
+!GENCOMMENT("INDEX/ILOADNEXT")
+
 	pc_genix(kiloadx, scale, offset)
 	setmode_u(p)
+!GENCOMMENT("...INDEX/ILOADNEXT")
 end
 
 proc do_storeindex(unit p,parray,pindex,rhs) =
@@ -17201,10 +17218,16 @@ proc do_switch(unit p,pindex,pwhenthen,pelse, int isref=0) =
 	symbol djump
 
 	case p.tag
-	when jswitch then		looptype:=0; opc:=kswitch
-	when jdoswitch then		looptype:=1; opc:=kswitch
-	when jdoswitchu then	looptype:=2; opc:=kswitchu
-	else					looptype:=3
+	when jswitch then
+		looptype:=0; opc:=kswitch
+	when jdoswitch then
+dodosw:
+		looptype:=1; opc:=kswitch
+	when jdoswitchu then
+		if ctarget then dodosw fi			
+		looptype:=2; opc:=kswitchu
+	else
+		looptype:=3
 	esac
 
 	ismult:=p.mode<>tvoid and looptype=0
@@ -18748,6 +18771,7 @@ global const langhomedir	= "C:/mx/"
 
 global const langhelpfile	= "mm_help.txt"
 
+GLOBAL INT NIF, NUNLESS, NWHEN, NUNLESSC
 === mm_diags.m 0 0 30/53 ===
 int currlineno
 int currfileno
@@ -19920,7 +19944,7 @@ proc genidata(unit p,int doterm=1, am='A',offset=0)=
 			fi
 			setmode(ti64)
 		elsif ttisreal[t] then
-			pc_gen(kdata,genrealimm(p.xvalue, t))
+			pc_gen(kdata,genrealimm(p.xvalue, getpclmode(t)))
 			setmode(t)
 
 		elsif ttbasetype[t]=tarray then
@@ -20100,10 +20124,14 @@ global proc genpc_sysproc(int fnindex, unit a=nil,b=nil,c=nil, int asfunc=0)=
 	pc_gen(ksetcall)
 	p:=pccurr
 
-	if c then evalunit(c); pc_gen(ksetarg); ++nargs fi
-	if b then evalunit(b); pc_gen(ksetarg); ++nargs fi
-	if a then evalunit(a); pc_gen(ksetarg); ++nargs fi
+!	if c then evalunit(c); pc_gen(ksetarg); setmode_u(c); ++nargs fi
+!	if b then evalunit(b); pc_gen(ksetarg); setmode_u(b); ++nargs fi
+!	if a then evalunit(a); pc_gen(ksetarg); setmode_u(a); ++nargs fi
 
+	pushsysarg(c, 3, nargs)
+	pushsysarg(b, 2, nargs)
+	pushsysarg(a, 1, nargs)
+!
 	p.nargs:=nargs
 
 	d:=getsysfnhandler(fnindex)
@@ -20114,6 +20142,17 @@ global proc genpc_sysproc(int fnindex, unit a=nil,b=nil,c=nil, int asfunc=0)=
 		pc_gen((asfunc|kcallf|kcallp), gennameaddr(sysfnnames[fnindex]+3))
 	fi
 	pccurr.nargs:=nargs
+end
+
+global proc pushsysarg(unit p, int n, &nargs) =
+!return 0 or 1 args pushed
+	if p then
+		evalunit(p)
+		pc_gen(ksetarg)
+		setmode_u(p)
+		pccurr.x:=n
+		++nargs
+	fi
 end
 
 proc start=
@@ -20178,7 +20217,7 @@ global proc genpushint(int a)=
 end
 
 global proc genpushreal(real x, int mode)=
-	pc_gen(kload,genreal(x, mode))
+	pc_gen(kload,genreal(x, getpclmode(mode)))
 	setmode(mode)
 end
 
@@ -20307,7 +20346,10 @@ proc scanprocs=
 
 	if nprocs=0 and pnprocs=nil then
 		pnprocs:=pc_makesymbol("$nprocs", static_id)
+
 		pnprocs.mode:=tpi64
+!CPL "++++++++", =PNPROCS, PNPROCS.NAME
+
 		goto finish
 	fi
 
@@ -20318,6 +20360,8 @@ proc scanprocs=
 	pc_gen(kistatic, genmem(pprocaddr))
 	pccurr.mode:=tpblock
 	pccurr.size:=nprocs*8
+	pprocaddr.mode:=tpblock
+	pprocaddr.size:=pccurr.size
 
 	for i to nprocs do
 		pc_gen(kdata, genmemaddr(proctable[i]))
@@ -20327,6 +20371,8 @@ proc scanprocs=
 	pc_gen(kistatic, genmem(pprocname))
 	pccurr.mode:=tpblock
 	pccurr.size:=nprocs*8
+	pprocname.mode:=tpblock
+	pprocname.size:=pccurr.size
 
 	for i to nprocs do
 		pc_gen(kdata, genstring(getbasename(proctable[i].name)))
@@ -20343,6 +20389,8 @@ end
 global proc setfunctab=
 	if pnprocs=nil then
 		pnprocs:=pc_makesymbol("$nprocs", static_id)
+!CPL "SET PNPROCS", PNPROCS
+		pnprocs.mode:=tpi64
 		pprocname:=pc_makesymbol("$procname", static_id)
 		pprocaddr:=pc_makesymbol("$procaddr", static_id)
 	fi
@@ -25852,9 +25900,11 @@ func readcondsuffix(unit p)unit=
 
 	case lx.symbol
 	when kwhensym then
+++NWHEN
 		lex()
 		return createunit2(jif,fixcond(readunit()),createunit1(jblock,p))
 	when kunlesssym then
+++NUNLESSC
 		lex()
 		q:=createunit1(jnotl,fixcond(readunit()))
 		q.pclop:=knot
@@ -25868,6 +25918,8 @@ func readif:unit=
 !at 'if'
 	int pos1, kwd
 	unit clist,clistx, plist,plistx, pelse, p
+
+++NIF
 
 	pos1:=lx.pos
 	kwd:=lx.symbol			!in case coming from elsecase etc
@@ -25931,6 +25983,9 @@ end
 func readunless:unit=
 	int pos
 	unit pcond, pthen, pelse, p,q
+
+++NUNLESS
+
 	pos:=lx.pos
 	lex()
 	pcond:=fixcond(readsunit())

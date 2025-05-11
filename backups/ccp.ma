@@ -411,6 +411,7 @@ export func genrealimm(real x, int mode=tpr64)pcl p=
 	p:=newpcl()
 	p.xvalue:=x
 	p.opndtype:=(mode=tpr64|realimm_opnd|realimm32_opnd)
+!CPL "GENREALIMM", OPNDNAMES[P.OPNDTYPE], STRPMODE(MODE)
 	return p
 end
 
@@ -3202,6 +3203,7 @@ global proc genmcl(ichar dummy=nil)=
 
 	currpcl:=pcstart
 
+
 	int i:=0
 	repeat
 		convertpcl(currpcl)
@@ -3239,8 +3241,7 @@ end
 proc convertpcl(pcl p)=
 
 !RETURN WHEN P.OPCODE IN [KCOMMENT]
-!CPL "    CONV",PCLNAMES[P.OPCODE],debug,P.SEQNO, =noperands
-
+!CPL "    CONV",PCLNAMES[P.OPCODE],debug, STRPMODE(P.MODE)
 	doshowpcl(p) when fshowpcl
 
 !PCLFLAGS[P.OPCODE]++
@@ -7812,7 +7813,7 @@ global func getopnd(int n, mode, reg=rnone)mclopnd ax =
 		fi
 
 	when int_opnd then
-		CASE PSIZE[PMODE]
+		CASE PSIZE[MODE]
 		WHEN 2 THEN
 			A.VALUE IAND:=0xFFFF
 		WHEN 4 THEN
@@ -15386,6 +15387,12 @@ proc getinputoptions=
 		fverbose:=0
 	fi
 
+	if eqstring(extractfile(os_gethostname()),"cs.exe") then
+!		msfile:=1
+		fverbose:=0
+		do_option(run_sw, "")
+	fi
+
 	do
 		pmtype:=nextcmdparamnew(paramno,name,value,".c")
 		case pmtype
@@ -18132,10 +18139,20 @@ proc readdecimal(ref char pstart)=
 	od
 
 	nextlx.symbol:=intconstsym
-	nextlx.subcode:=ti32
+
+!	if aa>=i32.max then
+!		nextlx.subcode:=ti64
+!	else
+!		nextlx.subcode:=ti32
+!	fi
 
 	case ll
-	when 0,1 then
+	when 0 then
+		if aa>=i32.max then
+			nextlx.subcode:=ti64
+		else
+			nextlx.subcode:=ti32
+		fi
 		if usigned then
 			if aa>=u64(0xFFFF'FFFF) then
 				nextlx.subcode:=tu64
@@ -18147,7 +18164,19 @@ proc readdecimal(ref char pstart)=
 				nextlx.subcode:=ti64
 			fi
 		fi
-	else
+	when 1 then
+		if usigned then
+			if aa>=u64(0xFFFF'FFFF) then
+				nextlx.subcode:=tu64
+			else
+				nextlx.subcode:=tu32
+			fi
+		else
+			if aa>=u64(0x7FFF'FFFF) then
+				nextlx.subcode:=ti64
+			fi
+		fi
+	when 2 then
 		if usigned then
 			nextlx.subcode:=tu64
 		else
@@ -22635,13 +22664,21 @@ function createptrop(unit p)unit=
 	fi
 	m:=tttarget[t]
 
+!CPL "C/PTR",STRMODE(M)
+!CPL "C/PTR",STRMODE(P.MODE)
+!CPL "C/PTR",STRMODE(TTTARGET[P.MODE])
+!
 	case p.tag
 	when jaddrof then
 		q:=p.a
-		if p.alength then
+!		if p.alength then
 			q.mode:=tttarget[p.mode]
-		fi
+!		ELSE
+!			q.mode:=tttarget[p.mode]
+!		FI
+!CPL "DONE", STRMODE(Q.MODE)
 		fixmemopnd(q)
+!CPL "DONE", STRMODE(Q.MODE)
 		return q
 	esac
 
@@ -23040,6 +23077,7 @@ function eval_convert(unit p, int t,opc)int=
 		return 1
 	fi
 
+!RETURN 0
 	s:=p.mode
 	if s=t then return 1 fi
 
@@ -24499,6 +24537,7 @@ end
 [maxnestedloops]int breakstack
 int loopindex							!current level of nested loop/switch blocks
 
+
 const maxswitchrange=500
 const maxcases=maxswitchrange
 const maxswitchdepth=20
@@ -25363,6 +25402,7 @@ proc dx_call(unit p,a,b, int res)=
 			widen(p)
 		fi
 	fi
+
 end
 
 proc do_decl(symbol d)=

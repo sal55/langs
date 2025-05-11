@@ -379,6 +379,7 @@ export func genrealimm(real x, int mode=tpr64)pcl p=
 	p:=newpcl()
 	p.xvalue:=x
 	p.opndtype:=(mode=tpr64|realimm_opnd|realimm32_opnd)
+!CPL "GENREALIMM", OPNDNAMES[P.OPNDTYPE], STRPMODE(MODE)
 	return p
 end
 

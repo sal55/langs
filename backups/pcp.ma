@@ -384,6 +384,7 @@ export func genrealimm(real x, int mode=tpr64)pcl p=
 	p:=newpcl()
 	p.xvalue:=x
 	p.opndtype:=(mode=tpr64|realimm_opnd|realimm32_opnd)
+!CPL "GENREALIMM", OPNDNAMES[P.OPNDTYPE], STRPMODE(MODE)
 	return p
 end
 
@@ -3175,6 +3176,7 @@ global proc genmcl(ichar dummy=nil)=
 
 	currpcl:=pcstart
 
+
 	int i:=0
 	repeat
 		convertpcl(currpcl)
@@ -3212,8 +3214,7 @@ end
 proc convertpcl(pcl p)=
 
 !RETURN WHEN P.OPCODE IN [KCOMMENT]
-!CPL "    CONV",PCLNAMES[P.OPCODE],debug,P.SEQNO, =noperands
-
+!CPL "    CONV",PCLNAMES[P.OPCODE],debug, STRPMODE(P.MODE)
 	doshowpcl(p) when fshowpcl
 
 !PCLFLAGS[P.OPCODE]++
@@ -7785,7 +7786,7 @@ global func getopnd(int n, mode, reg=rnone)mclopnd ax =
 		fi
 
 	when int_opnd then
-		CASE PSIZE[PMODE]
+		CASE PSIZE[MODE]
 		WHEN 2 THEN
 			A.VALUE IAND:=0xFFFF
 		WHEN 4 THEN

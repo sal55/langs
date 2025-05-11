@@ -50,7 +50,8 @@
 GLOBAL INT NALLDOT
 GLOBAL INT NALLDOT1FIELD
 
-global const syslibname="sysp"
+!global const syslibname="sysp"
+global ichar syslibname
 !global const syslibname="minsys"
 
 global enumdata []ichar runnames =
@@ -95,6 +96,13 @@ proc main=
 	initdata()
 
 	getinputoptions()
+
+!CPL "HI THERE"
+!
+!FINDSYSLIB("FRED")
+
+
+!CPL =FOPTIMISE
 
 	readqabundle()
 
@@ -188,6 +196,8 @@ global proc compile_sp(ichar filename, source=nil)=
 	ichar qafile
 	isubprog sp
 	int a, b
+
+!CPL "COMPILESP",=SYSLIBNAME
 
 	sp:=loadsp(filename, source)
 
@@ -307,7 +317,7 @@ end
 
 proc loadsyslib=
 	[300]char str
-	ichar syslibname
+!	ichar syslibname
 
 	if fnosys then return fi
 
@@ -319,10 +329,12 @@ proc loadsyslib=
 		syslibname:="syslin.q"
 	fi
 
-CPL =SYSLIBNAME
+!CPL =SYSLIBNAME, =USEBUNDLED
 	if usebundled then				!bundled sys files
+!CPL "LOADSYS1", =SYSLIBNAME
 		compile_sp(syslibname)
 	else
+!CPL "LOADSYS2", =SYSLIBNAME
 		strcpy(str, devdir)
 		strcat(str, syslibname)
 		compile_sp(str)
@@ -7656,13 +7668,16 @@ global func loadsp(ichar filename, source=nil)isubprog sp=
 	symbol d
 	[300]char path
 
-!CPL "LOADSP",FILENAME
+!CPL "LOADSP",FILENAME,=SYSLIBNAME
 
 	if source then
 		pm:=loadstring(filename, source)
 		path[1]:=0
 	else
-		if eqstring(extractbasefile(filename), syslibname) then
+!CPL "////",=EXTRACTBASEFILE(FILENAME), =SYSLIBNAME
+		strcpy(path, extractbasefile(filename))
+!CPL "////",=PATH, EXTRACTBASEFILE(SYSLIBNAME)
+		if eqstring(path, extractbasefile(syslibname)) then
 			issyslib:=1
 		fi
 
@@ -7767,6 +7782,8 @@ end
 global func loadsourcefile(ichar filespec, int issyslib=0)ifile pm=
 	ichar s,basefilename
 	[300]char str
+
+!CPL "LOADSOURCEFILE", FILESPEC, =ISSYSLIB
 
 	pm:=pcm_allocz(filerec.bytes)
 
@@ -18463,8 +18480,8 @@ global proc disploop =
 	pc:=pcptr
 	fp:=frameptr
 
-	doswitchx(localjumptable) pc.labaddr
-!	doswitchu pc.opcode
+!	doswitchx(localjumptable) pc.labaddr
+	doswitchu pc.opcode
 !	doswitch pc.opcode
 !
 	when knop      then   ! simple nop
@@ -19574,7 +19591,6 @@ jupb:
 
 	when kadd      then   ! Z' := Y + Z
 jadd:
-INT KKK1:=2222222
 		y:=sp--
 
 		if sp.tag=y.tag=tint then
@@ -19591,7 +19607,6 @@ INT KKK1:=2222222
 			var_unshare(&vx)
 			var_unshare(y)
 		fi
-INT KKK2:=333333
 		steppc
 
 	when ksub      then   ! Z' := Y - Z
@@ -20478,8 +20493,8 @@ global function runqprogram(isubprog sp, int ismain)int=
 !
 	tt:=clock()-tt
 
-	println "Time:",TT
-	println
+!	println "Time:",TT
+!	println
 
 	return sptr.value
 end
@@ -22652,11 +22667,12 @@ end
 
 ![syslibnames.len]byte syslibfileno
 
-function findsyslib(ichar filename)ichar=
+GLOBAL function findsyslib(ichar filename)ichar=
 !filename must be module name with .q extension
 !return source code, or nil
 
 	for i to syslibnames.len do
+!CPL "FINDSYSLIB",I,FILENAME, SYSLIBNAMES[I]
 		if eqstring(filename, syslibnames[i]) then
 			return libtext[i]
 		fi
@@ -25421,6 +25437,7 @@ end
 module sysp
 module clibp
 module winapi
+module windows
 
 module gxlib
 module bmlib
@@ -26350,6 +26367,15 @@ export func getfilesize(f)=
 	return size
 end
 
+export func getfilesize64(f)=
+#return size of bytes of currently open file f
+	p:=_ftelli64(f)			!p=current position
+	_fseeki64(f,0,2)		!get eof position
+	size:=_ftelli64(f)		!size in bytes
+	_fseeki64(f,p,0)		!restore file position
+	return size
+end
+
 export func setfilepos(f,offset)=
 #set position in file f to given byte offset
 	return fseek(f,offset,0)
@@ -26729,6 +26755,8 @@ end
 
 === clibp.q 0 1 36/46 ===
 importdll msvcrt=
+!importdll msvcr100=
+!importdll msvcr120=
 	func "malloc"        (i64)ref byte
 	func realloc(i64, i32)i64
 	proc free        (i64)
@@ -26737,7 +26765,9 @@ importdll msvcrt=
 	func memcmp      (ref byte, ref byte, i32)i32
 !	func clock       :i32
 	func ftell       (i64)i32
+	func _ftelli64   (i64)i64
 	func fseek       (i64, i32, i32)i32
+	func _fseeki64   (i64, i32, i32)i64
 	func fread       (ref byte, i32, i32, i64)i32
 	func fwrite      (ref byte, i32, i32, i64)i32
 	func getc   (i64)i32
