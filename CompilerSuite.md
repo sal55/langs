@@ -9,11 +9,11 @@ All tools run on and for x64 with Windows.
                          ├────> .obj File
                          ├────>  Run (native code in memory)
                          ├────> .asm File (syntax for my AA assembler)
-                         ├────> .nasm File (NASM syntax)
+                         ├────> .nasm File (NASM syntax, if configured)
                          ├────> .pcl IL File
                          ├────>  Interpret (IL code in memory)
                          ├────> .ma File (create single amalgamated source file)
-                         ├────> .c File (via PCL; proposed)
+                         ├────> .c File via PCL (available via 'MC' config; see below)
                          └────> .list/.proj Files (info for my IDE)
 ````
 **'BCC' C Subset Compiler (One Module only)**
@@ -23,9 +23,9 @@ All tools run on and for x64 with Windows.
                          ├────> .obj File
                          ├────>  Run native code in memory
                          ├────> .asm File
-                         ├────> .nasm File
+                         ├────> .nasm File (if configured)
                          ├────> .pcl IL File
-                         ├────> .c File (via PCL; proposed)
+                         ├────> .c File (if configured)
                          └────>  Interpret IL code
 ````
 (For conventional multi-module C programs, a driver script is used, which invokes BCC with ASM output for each module, and submits all to AA6 to produce EXE etc. AA7, the version described below, accepts one module only.)
@@ -37,9 +37,9 @@ All tools run on and for x64 with Windows.
                          ├────> .obj File
                          ├────>  Run native code in memory
                          ├────> .asm File
-                         ├────> .nasm File
+                         ├────> .nasm File (if configured)
                          ├────> .pcl IL File (uses .pct extension)
-                         ├────> .c File (via PCL; proposed)
+                         ├────> .c File (if configured)
                          └────>  Interpret IL code                      
 ````
 **'AA' x64 Assembler/linker (AA7)**
@@ -63,8 +63,16 @@ All tools run on and for x64 with Windows.
 ````
 .mx ───────┬─> [runmx.exe] ───> Run (Load, fix up, and execute the MX-format executable)
 .ml/.dll ──┘
- ````
+````
+**'MC' M to C Transpiler (MC7)**
+````
+.m/.ma ──────> [mm.exe] ──────> .c File (linear, stripped C generated via PCL/IL)
+
+````
+
 **MM6** Previous M Compiler
+
+**MC6** Old M to C transpiler generating higher level C
 
 **AA6** Previous x64 Assembler
 
