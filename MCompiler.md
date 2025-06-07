@@ -15,8 +15,8 @@ The name of the compiler is `MM` or `mm.exe`. It is a whole-program compiler, wr
                                                │           │        ├───────────────────────────> ASM File
                                                │           │        └───────────────────────────> NASM File (Config option)
                                                │           ├────────────────────────────────────> (RUNP Interpret PCL)
-                                               │           └────────────────────────────────────> PCL Source File
-                                               ├────────────────────────────────────────────────> C File (Proposed) (Config option)
+                                               │           ├────────────────────────────────────> PCL Source File
+                                               │           └────────────────────────────────────> C Source File (Config option)
                                                ├────────────────────────────────────────────────> MA File
                                                └────────────────────────────────────────────────> LIST/PROJ Files
 ````
