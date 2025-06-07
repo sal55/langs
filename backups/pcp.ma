@@ -79,6 +79,7 @@ global int longstringlen
 
 export int mlabelno
 export byte phighmem
+export byte pfullsys
 global byte fpshortnames
 
 export ref proc (ref void) idomcl_assem
@@ -94,8 +95,7 @@ export func pcl_start(ichar name=nil, int nunits=0)psymbol=
 !tangible to pass back to the caller of the API. There is no mechanism
 !to allow multiple, active sets of pcltables
 
-
-CPL =PSTREC.BYTES
+!CPL =PSTREC.BYTES
 
 	if pcldone then pclerror("PCL start?") fi
 
@@ -780,7 +780,7 @@ export func convertstring(ichar s, t)int=
 			t++^:='n'
 		when 13 then
 			t++^:='\\'
-			t++^:='c'
+			t++^:='r'
 		when 9 then
 			t++^:='\\'
 			t++^:='t'
@@ -1037,6 +1037,8 @@ EXPORT ICHAR $PMODULENAME
 EXPORT [PCLNAMES.BOUNDS]INT PCLFLAGS
 
 EXPORT INT PSTARTCLOCK
+
+!export const ctarget=0
 === pc_diags_dummy.m 0 0 5/30 ===
 global proc pshowlogfile=
 end
@@ -2505,7 +2507,7 @@ export proc pcl_runpcl=
 
 	fixuppcl()
 
-CPL "COMPILE TO PCL:", OS_CLOCK()-PSTARTCLOCK
+!CPL "COMPILE TO PCL:", OS_CLOCK()-PSTARTCLOCK
 	if entryproc=nil then
 		pcerrorx(pcstart,"No 'main' entry point")
 	fi
@@ -2515,6 +2517,8 @@ CPL "COMPILE TO PCL:", OS_CLOCK()-PSTARTCLOCK
 	if pverbose then
 		println "Run PCL:"
 	fi
+
+!CPL "START DISPATCH"
 
 	stopcode:=dispatch_loop(entryproc.pcaddr, entryproc.nparams=2)
 
@@ -3096,6 +3100,7 @@ export enumdata [0:]ichar pclnames,
 	(kistatic,     $+1, 1, 0, M, 0),  ! (0 - 0) (M t       ) Define idata label (must be followed by correct DATA ops)
 	(kzstatic,     $+1, 1, 0, M, 0),  ! (0 - 0) (M t       ) Define zdata label and reserve sufficient space
 	(kdata,        $+1, 1, 0, A, 0),  ! (0 - 0) (M L C t   ) Constant data. For block types, there can be multiple C values
+	(kinitdswx,    $+1, 1, 0, A, 0),  ! (0 - 0) (          ) Following two ops initialise doswitchx jumptable
 
 	(klabel,       $+1, 0, 0, L, 0),  ! (0 - 0) (          ) ?
 	(klabeldef,    $+1, 0, 0,MA, 0),  ! (0 - 0) (          ) ?
@@ -3699,9 +3704,15 @@ end
 
 proc px_not*(pcl p) =
 ! Z' := not Z
-	mclopnd ax
-	ax:=loadopnd(zz, pmode)
-	genmc(m_xorx, changeopndsize(ax,1), mgenint(1, tpu8))
+	P.OPCODE:=KTOBOOLF
+	P.MODE2:=P.MODE
+	P.MODE:=TPI64
+	PX_TOBOOLT(P)
+!
+!
+!	mclopnd ax
+!	ax:=loadopnd(zz, pmode)
+!	genmc(m_xorx, changeopndsize(ax,1), mgenint(1, tpu8))
 end
 
 proc px_toboolt*(pcl p) =
@@ -5059,6 +5070,9 @@ proc px_longjmp*(pcl p)=
 	genmc(m_jmp, cx)			!
 	swapopnds(yy, zz)
 	poppcl()					!get rid of dest addr; leave ret value in r0
+end
+
+proc px_initdswx*(pcl p)=		!ignore for mcl/x64
 end
 === mc_auxmcl.m 0 0 11/30 ===
 !Auxially routines called by genmcl's PX handlers
@@ -7043,6 +7057,7 @@ const fuseregtable=1
 !const fuseregtable=0
 
 global const targetsize=8
+
 export const ctarget=0
 
 !global int mclseqno
@@ -8385,13 +8400,13 @@ end
 global proc checkallloaded=
 	for i to noperands do
 
-!		if pclopnd[i].opndtype=mem_opnd and pclloc[i] in [pcl_loc, regvar_loc] then
-!			loadopnd(i, pclopnd[i].mode)
-!		fi
-
-		if pclloc[i]=pcl_loc and pclopnd[i].opndtype=mem_opnd then
+		if pclopnd[i].opndtype=mem_opnd and pclloc[i] in [pcl_loc, regvar_loc] then
 			loadopnd(i, pclopnd[i].mode)
 		fi
+
+!		if pclloc[i]=pcl_loc and pclopnd[i].opndtype=mem_opnd then
+!			loadopnd(i, pclopnd[i].mode)
+!		fi
 	od
 end
 

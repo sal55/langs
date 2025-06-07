@@ -1,5 +1,5 @@
-=== MA 29 ===
-=== aap.m 0 0 1/29 ===
+=== MA 28 ===
+=== aap.m 0 0 1/28 ===
 project =
 	module aa_cli
 
@@ -11,14 +11,15 @@ project =
 
 	module aa_tables
 
-	$sourcepath "c:/px/"
+!	$sourcepath "c:/mx/"
 !	module mc_objdecls
 
 !	import pcl
 	import pclaxp
 end
-=== pclaxp.m 0 0 2/29 ===
+=== pclaxp.m 0 0 2/28 ===
 project =
+	$sourcepath "c:/mx/"
 	module pc_api
 	module pc_decls
 
@@ -53,7 +54,7 @@ project =
 end
 
 export byte pc_userunpcl=0
-=== pc_api.m 0 0 3/29 ===
+=== pc_api.m 0 0 3/28 ===
 EXPORT INT PCLSEQNO
 int STSEQNO
 
@@ -74,6 +75,7 @@ global int longstringlen
 
 export int mlabelno
 export byte phighmem
+export byte pfullsys
 global byte fpshortnames
 
 export ref proc (ref void) idomcl_assem
@@ -89,8 +91,7 @@ export func pcl_start(ichar name=nil, int nunits=0)psymbol=
 !tangible to pass back to the caller of the API. There is no mechanism
 !to allow multiple, active sets of pcltables
 
-
-CPL =PSTREC.BYTES
+!CPL =PSTREC.BYTES
 
 	if pcldone then pclerror("PCL start?") fi
 
@@ -242,11 +243,16 @@ end
 
 export proc pcl_writeexe(ichar filename)=
 
+!CPL "WX",$LINENO
 	genmcl()
+!CPL "WX",$LINENO
 
 	genss()
+!CPL "WX",$LINENO
 	int tt:=os_clock()
+!CPL "WX",$LINENO
 	writeexe(filename, 0)
+!CPL "WX",$LINENO
 	exetime:=os_clock()-tt
 end
 
@@ -775,7 +781,7 @@ export func convertstring(ichar s, t)int=
 			t++^:='n'
 		when 13 then
 			t++^:='\\'
-			t++^:='c'
+			t++^:='r'
 		when 9 then
 			t++^:='\\'
 			t++^:='t'
@@ -802,7 +808,7 @@ export func convertstring(ichar s, t)int=
 	return t-t0
 end
 
-=== pc_decls.m 0 0 4/29 ===
+=== pc_decls.m 0 0 4/28 ===
 !decls
 
 export type psymbol = ref pstrec
@@ -1032,7 +1038,9 @@ EXPORT ICHAR $PMODULENAME
 EXPORT [PCLNAMES.BOUNDS]INT PCLFLAGS
 
 EXPORT INT PSTARTCLOCK
-=== pc_diags_dummy.m 0 0 5/29 ===
+
+!export const ctarget=0
+=== pc_diags_dummy.m 0 0 5/28 ===
 global proc pshowlogfile=
 end
 
@@ -1067,10 +1075,10 @@ end
 !global proc showopndstack=
 !end
 
-=== pc_run_dummy.m 0 0 6/29 ===
+=== pc_run_dummy.m 0 0 6/28 ===
 export proc pcl_runpcl=
 end
-=== pc_tables.m 0 0 7/29 ===
+=== pc_tables.m 0 0 7/28 ===
 !type system
 
 export enumdata \
@@ -1212,7 +1220,7 @@ export enumdata [0:]ichar pclnames,
 	(kretfn,       $+1, 1, 0, 0, 0),  ! (0 - 0) (t         ) Return from func with Z=retval
 
 	(kjump,        $+1, 0, 0, L, 0),  ! (0 - 0) (L         ) goto L
-	(kijump,       $+1, 0, 0, 0, 0),  ! (1 - 0) (          ) goto Z
+	(kijump,       $+1, 1, 0, 0, 0),  ! (1 - 0) (          ) goto Z
 	(kjumpcc,      $+1, 1, 1, L, 0),  ! (2 - n) (L t c p   ) goto L when Y c Z; p=1: Z':=Y (b=0/1)
 	(kjumpt,       $+1, 1, 0, L, 0),  ! (1 - 0) (L t       ) goto L when Z is true
 	(kjumpf,       $+1, 1, 0, L, 0),  ! (1 - 0) (L t       ) goto L when Z is false
@@ -1331,6 +1339,7 @@ export enumdata [0:]ichar pclnames,
 	(kistatic,     $+1, 1, 0, M, 0),  ! (0 - 0) (M t       ) Define idata label (must be followed by correct DATA ops)
 	(kzstatic,     $+1, 1, 0, M, 0),  ! (0 - 0) (M t       ) Define zdata label and reserve sufficient space
 	(kdata,        $+1, 1, 0, A, 0),  ! (0 - 0) (M L C t   ) Constant data. For block types, there can be multiple C values
+	(kinitdswx,    $+1, 0, 0, 0, 0),  ! (0 - 0) (          ) Following two ops initialise doswitchx jumptable
 
 	(klabel,       $+1, 0, 0, L, 0),  ! (0 - 0) (          ) ?
 	(klabeldef,    $+1, 0, 0,MA, 0),  ! (0 - 0) (          ) ?
@@ -1381,14 +1390,15 @@ export enumdata [0:]ichar idnames
 	(program_id,	"Program"),		!?
 end
 
-=== mc_genmcl_dummy.m 0 0 8/29 ===
+=== mc_genmcl_dummy.m 0 0 8/28 ===
 global proc genmcl=
 end
-=== mc_libmcl.m 0 0 9/29 ===
+=== mc_libmcl.m 0 0 9/28 ===
 const fuseregtable=1
 !const fuseregtable=0
 
 global const targetsize=8
+
 export const ctarget=0
 
 !global int mclseqno
@@ -1922,25 +1932,6 @@ global func mgenxregvar(psymbol d)mclopnd a=
 	return a
 end
 
-global func getopndcat(mclopnd ax)int =
-!return mcl opnd category
-
-	case ax.mode
-	when a_reg, a_xreg then reg_cat						! R
-	when a_imm then imm_cat								! d
-	when a_mem then
-		if ax.reg=ax.regix=0 then
-			mem_cat										! [d]
-		elsif ax.reg or ax.regix and ax.scale<=1 then
-			ireg_cat									! [R]
-		else
-			regmem_cat									! [R+d] etc
-		fi
-	else
-		no_cat
-	esac
-end
-
 global func getprimreg(mclopnd ax)int =
 !get primary reg value; only one should be active
 !return 0 if no regs
@@ -2091,7 +2082,7 @@ global proc clearreg(mclopnd ax)=
 	fi
 	genmc(m_xorx, ax, ax)
 end
-=== mc_genss.m 0 0 10/29 ===
+=== mc_genss.m 0 0 10/28 ===
 const wmask = 2x1000				!1 means 64-bit operand size
 const rmask = 2x0100				!extends mod/rm reg field
 const xmask = 2x0010				!extends sib index field
@@ -2139,7 +2130,10 @@ global proc genss(int obj=0)=
 	return when ssdone
 
 	sstime:=os_clock()
+
 	initlib(mlabelno)
+!CPL "INITLAB 50"
+!	initlib(50)
 
 	ss_zdatalen:=0
 	ss_zdata:=buffercreate()
@@ -2163,6 +2157,7 @@ global proc genss(int obj=0)=
 		doinstr(m,++index)
 		m:=m.nextmcl
 	od
+!CPL "DONE GENSS LOOP"
 
 	switchseg(0)					!update ss_currrelocs etc
 
@@ -2193,6 +2188,8 @@ proc doinstr(ref mclrec m,int index)=
 	psymbol d,e
 	int x,offset,shortjmp,n
 
+!CPL "DOINSTR",MCLNAMES[M.OPCODE], M.SEQNO
+
 	if currdata.pend-currdata.pcurr<1024 then
 		bufferexpand(currdata)
 	fi
@@ -2209,6 +2206,7 @@ proc doinstr(ref mclrec m,int index)=
 	switch m.opcode
 	when m_procstart then
 		CURRASMPROC:=M.A.DEF
+!CPL "PROC", CURRASMPROC.NAME
 
 	when m_procend then
 	when m_define then
@@ -2220,6 +2218,7 @@ proc doinstr(ref mclrec m,int index)=
 		when stringimm_val then
 		when def_val then
 			d:=a.def
+!CPL "LABEL", D.NAME
 			d.reftype:=back_ref
 			d.segment:=currseg
 			d.offset:=getcurrdatalen(6)
@@ -2455,8 +2454,8 @@ proc doinstr(ref mclrec m,int index)=
 	when m_cvtsi2sd then
 		do_float(a,b,0xF2)
 
-	when m_param then
-		extraparam:=a
+!	when m_param then
+!		extraparam:=a
 
 	when m_cmovcc then
 		do_cmovcc(m.cond, a,b)
@@ -3220,8 +3219,20 @@ global proc initlib(int nlabels)=
 	ss_nsymbols:=0
 	labeldeftable:=pcm_alloc(nlabels*ref void.bytes)
 
+!IF NLABELS<MLABELNO THEN
+!CPL "INITLAB: BAD LABEL COUNT"
+!CPL "INITLAB: BAD LABEL COUNT"
+!!SROP
+!STOP
+!FI
+!
+!CPL "//INITLIB", NLABELS
+!STOP
+
 	for i to nlabels do
 		d:=labeldeftable[i]:=pcm_allocnfz(pstrec.bytes)
+
+!CPL "SETTING LAB",I,"TO",D
 		d.labelno:=i
 		fprint @&.str,"l#",i
 		d.name:=pcm_copyheapstring(&.str)
@@ -4188,7 +4199,7 @@ proc do_dshift(mclopnd a, b, int c, opc)=
 	genbyte(c)
 end
 
-=== mc_decls.m 0 0 11/29 ===
+=== mc_decls.m 0 0 11/28 ===
 export type mclopnd = ref mclopndrec
 
 export record mclopndrec =
@@ -4263,7 +4274,7 @@ export enumdata []ichar mclnames, []byte mclnopnds, []byte mclcodes =
 
 	(m_labelx,			$,		1,		0),		!
 	(m_nop,				$,		0,		0x90),		!
-	(m_param,			$,		1,		0),		!
+!	(m_param,			$,		1,		0),		!
 !	(m_assembly,		$,		1,		0),		!
 !	(m_proc,			$,		1,		0),		!
 
@@ -4806,20 +4817,6 @@ export enumdata [0:]ichar opndnames_ma =
 	(a_xreg,	$),		! xmm register
 end
 
-!Categories mcl operands a different way
-
-global enumdata [0:]ichar opndcatnames =
-	(no_cat,		$),		! -
-	(imm_cat,		$),		! d				Immediate only
-	(reg_cat,		$),		! D or X
-	(ireg_cat,		$),		! [D]			No displacement
-	(mem_cat,		$),		! [d]			Displacement only
-	(regmem_cat,	$),		! [R+d] [R+R*s] Any combo that is not ireg or mem
-end
-
-!export int mlabelno
-!global byte foptimise
-
 global const maxoperands=20
 
 !following are continually updates as opnds are pushed, moved and popped
@@ -5043,7 +5040,7 @@ proc start=
 	ploadop[tpu64]:=ploadop[tpi64]:=m_mov
 end
 
-=== mc_objdecls.m 0 0 12/29 ===
+=== mc_objdecls.m 0 0 12/28 ===
 global record imagefileheader =
 	u16	machine
 	u16	nsections
@@ -5224,7 +5221,7 @@ global record exportdirrec =
 	u32 namepointerrva
 	u32 ordtablerva
 end
-=== mc_writeasm.m 0 0 13/29 ===
+=== mc_writeasm.m 0 0 13/28 ===
 !export int assemtype='AA'
 
 !const fshowseq=1
@@ -5363,10 +5360,11 @@ global proc strmcl(ref mclrec mcl)=
 		esac
 		return
 
-	WHEN M_TRACE THEN
-		ASMSTR(SINCLUDE("c:\\px\\trace.aa"))
-
-		RETURN
+!	WHEN M_TRACE THEN
+!!		ASMSTR(SINCLUDE("c:\\px\\trace.aa"))
+!		ASMSTR(SINCLUDE("c:trace.aa"))
+!
+!		RETURN
 
 	esac
 
@@ -5776,7 +5774,7 @@ proc start=
 		od
 	fi
 end
-=== mc_writeexe.m 0 0 14/29 ===
+=== mc_writeexe.m 0 0 14/28 ===
 !Create .exe file from SS-data (code, data, reloc and psymbol tables)
 !Call order:
 ! initsectiontable()
@@ -6827,7 +6825,7 @@ func getripoffset(int addr, dest, int extra=0)int=
 	dest-(addr+4)-extra
 end
 
-=== mc_writeobj.m 0 0 15/29 ===
+=== mc_writeobj.m 0 0 15/28 ===
 !NEEDS REVISING TO MATCH UNLIMITED SS_SYMBOLTABLE size used for EXE
 !and also unlimited strings
 
@@ -7166,11 +7164,11 @@ proc convertsymboltable=
 
 	od
 end
-=== mc_writess_dummy.m 0 0 16/29 ===
+=== mc_writess_dummy.m 0 0 16/28 ===
 export function writessdata(int fexe)ref strbuffer=
 	nil
 end
-=== mx_decls.m 0 0 17/29 ===
+=== mx_decls.m 0 0 17/28 ===
 !Declarations for M-Code scheme
 !Terms:
 ! MCU		MCode Unit, binary code/data/imports/relocs for whole program (LIBREC)
@@ -7345,7 +7343,7 @@ global [maxsymbols]byte		symboldllindex	! DLL index of library where found
 global int nsymbols
 
 export int nsymimports=0, nsymexports=0
-=== mx_run.m 0 0 18/29 ===
+=== mx_run.m 0 0 18/28 ===
 !Translate SS data directly into MCU block, then try and run that
 
 global func writememlib(ichar filename)ref librec plib=
@@ -7541,7 +7539,7 @@ global proc runlibfile(ichar filename, int cmdskip)=
 !	fi
 end
 
-=== mx_lib.m 0 0 19/29 ===
+=== mx_lib.m 0 0 19/28 ===
 global enumdata [0:]ichar rsegmentnames =
 	(no_seg=0,		$),
 	(code_rseg,		$),
@@ -8108,7 +8106,7 @@ global func loadmemmcb(ichar filename, ref byte p)ref librec plib=
 	return plib
 end
 
-=== mx_write.m 0 0 20/29 ===
+=== mx_write.m 0 0 20/28 ===
 !Translate SS data directly into MCB block, then write as mx/ml file
 
 ref dbuffer dest
@@ -8302,7 +8300,7 @@ proc genblock(ref void p, int length)=
 	memcpy(dest.pcurr, p, length)
 	dest.pcurr+:=length
 end
-=== aa_cli.m 0 0 21/29 ===
+=== aa_cli.m 0 0 21/28 ===
 byte fshowasm
 byte fshowss					!early ss
 byte fshowsx					!late ss (I think)
@@ -8585,7 +8583,7 @@ proc loaderror_s(ichar mess,s)=
 	print @str, mess, s
 	loaderror(str)
 end
-=== aa_decls.m 0 0 22/29 ===
+=== aa_decls.m 0 0 22/28 ===
 !AA/PCL Assembler Global Decls
 
 global type symbol = ref strec
@@ -8659,7 +8657,7 @@ global ref stlistrec globalimportlist		!all global vars and imports across all m
 
 global byte highmem						!0/1/2 = lowmem+norip/lowmem+rip/himem+rip
 
-=== aa_lex.m 0 0 23/29 ===
+=== aa_lex.m 0 0 23/28 ===
 !Tokeniser Module
 macro testmode=0
 
@@ -9195,24 +9193,24 @@ proc inithashtable=
 
 	for i to jmpccnames.len do
 		addreservedword(jmpccnames[i],kjmpccsym,jmpcccodes[i])
-LXSYMPTR.ISCOND:=1
+		LXSYMPTR.ISCOND:=1
 	od
 
 	for i to setccnames.len do
 		addreservedword(setccnames[i],ksetccsym,setcccodes[i])
-LXSYMPTR.ISCOND:=1
+		LXSYMPTR.ISCOND:=1
 	od
 
 	for i to cmovccnames.len do
 		addreservedword(cmovccnames[i],kmovccsym,cmovcccodes[i])
-LXSYMPTR.ISCOND:=1
+		LXSYMPTR.ISCOND:=1
 	od
 
 	for i to prefixnames.len do
 		addreservedword(prefixnames[i],kprefixsym,prefixsizes[i])
 	od
 
-	for i to segmentnames.len do
+	for i in segmentnames.bounds do
 		addreservedword(segmentnames[i],ksegnamesym,i)
 	od
 
@@ -9361,7 +9359,7 @@ function makestring(ichar p,int length)ref char=
 	(s+length)^:=0
 	return s
 end
-=== aa_lib.m 0 0 24/29 ===
+=== aa_lib.m 0 0 24/28 ===
 const ptrsize=8
 
 global int currsegment=0		!
@@ -9472,7 +9470,7 @@ global func getpsymbol(symbol d)psymbol p =
 
 	p
 end
-=== aa_parse.m 0 0 25/29 ===
+=== aa_parse.m 0 0 25/28 ===
 !Globals that describe expression. Syntax is:
 ! name [+/- immexpr]
 !      [+/- immexpr]
@@ -10057,7 +10055,7 @@ function readaddrmode(int size)mclopnd=
 
 	return p
 end
-=== aa_show.m 0 0 26/29 ===
+=== aa_show.m 0 0 26/28 ===
 global proc showst(filehandle f)=
 	symbol d
 
@@ -10094,7 +10092,7 @@ global proc printhashtable(filehandle f)=
 println @f, count," items in table",hstsize
 end
 
-=== aa_tables.m 0 0 27/29 ===
+=== aa_tables.m 0 0 27/28 ===
 !x64 Assembler Tables
 
 global enumdata []ichar symbolnames=
@@ -10162,70 +10160,7 @@ global tabledata []ichar prefixnames, []byte prefixsizes =
 	("word80",	10),
 	("u80",		10),
 end
-=== trace.aa 0 1 28/29 ===
-!D1 Contains str arg
-!D0 May contain return value
-!D3..D9 are non-vols that need to preserved
-
-$tracemess:
-	push D3
-	push D4
-	push D5
-	push D6
-
-	push D7
-	push D8
-	push D9
-	push D10			!leaf procs may use these
-	push D11
-	push D12
-	push D13
-
-	push D0
-
-	movq D0, xmm0
-	push D0
-	movq D0, xmm1
-	push D0
-	movq D0, xmm2
-	push D0
-	movq D0, xmm3
-	push D0
-
-	sub Dstack, 40		!align stack and create shadow space
-
-	mov D10, D1
-	call puts*
-
-	add Dstack, 40
-
-	pop D0
-	movq xmm3, d0
-	pop D0
-	movq xmm2, d0
-	pop D0
-	movq xmm1, d0
-	pop D0
-	movq xmm0, d0
-
-	pop D0
-
-	pop D13
-	pop D12
-	pop D11
-	pop D10
-
-	pop D9
-	pop D8
-	pop D7
-
-	pop D6
-	pop D5
-	pop D4
-	pop D3
-
-	ret
-=== aa_help.txt 0 1 29/29 ===
+=== aa_help.txt 0 1 28/28 ===
 'AA' Assembler-Linker for Win64
 
 Assembles ASM files written in a special syntax to EXE, DLL or OBJ format.
@@ -10259,32 +10194,31 @@ DLLs msvcrt.dll, user32.dll, gdi32.dll, user32.dll are automatically included.
 Others can be specified in the ASM file using 'importdll' directives, or on
 the command line.
 === END ===
-1 aap.m
-2 pclaxp.m
-3 pc_api.m
-4 pc_decls.m
-5 pc_diags_dummy.m
-6 pc_run_dummy.m
-7 pc_tables.m
-8 mc_genmcl_dummy.m
-9 mc_libmcl.m
-10 mc_genss.m
-11 mc_decls.m
-12 mc_objdecls.m
-13 mc_writeasm.m
-14 mc_writeexe.m
-15 mc_writeobj.m
-16 mc_writess_dummy.m
-17 mx_decls.m
-18 mx_run.m
-19 mx_lib.m
-20 mx_write.m
-21 aa_cli.m
-22 aa_decls.m
-23 aa_lex.m
-24 aa_lib.m
-25 aa_parse.m
-26 aa_show.m
-27 aa_tables.m
-28 trace.aa
-29 aa_help.txt
+1 aap.m 0 0
+2 pclaxp.m 0 0
+3 pc_api.m 0 0
+4 pc_decls.m 0 0
+5 pc_diags_dummy.m 0 0
+6 pc_run_dummy.m 0 0
+7 pc_tables.m 0 0
+8 mc_genmcl_dummy.m 0 0
+9 mc_libmcl.m 0 0
+10 mc_genss.m 0 0
+11 mc_decls.m 0 0
+12 mc_objdecls.m 0 0
+13 mc_writeasm.m 0 0
+14 mc_writeexe.m 0 0
+15 mc_writeobj.m 0 0
+16 mc_writess_dummy.m 0 0
+17 mx_decls.m 0 0
+18 mx_run.m 0 0
+19 mx_lib.m 0 0
+20 mx_write.m 0 0
+21 aa_cli.m 0 0
+22 aa_decls.m 0 0
+23 aa_lex.m 0 0
+24 aa_lib.m 0 0
+25 aa_parse.m 0 0
+26 aa_show.m 0 0
+27 aa_tables.m 0 0
+28 aa_help.txt 0 1

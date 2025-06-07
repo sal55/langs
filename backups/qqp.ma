@@ -1,5 +1,5 @@
-=== MA 46 ===
-=== qqp.m 0 0 1/46 ===
+=== MA 48 ===
+=== qqp.m 0 0 1/48 ===
 !project =
 	module qq_cli
 
@@ -46,7 +46,7 @@
 !
 	module qq_vars
 !end
-=== qq_cli.m 0 0 2/46 ===
+=== qq_cli.m 0 0 2/48 ===
 GLOBAL INT NALLDOT
 GLOBAL INT NALLDOT1FIELD
 
@@ -93,11 +93,11 @@ proc main=
 	int i,nnames,t,tstart, stopcode
 	unit p
 
+!CPL "HI THERE"
 	initdata()
 
 	getinputoptions()
 
-!CPL "HI THERE"
 !
 !FINDSYSLIB("FRED")
 
@@ -172,7 +172,7 @@ LOADERROR("DO BUILT-IN")
 	elsif not inputfile then
 		println "Q7.0 Interpreter"
 		println "Usage:"
-		println "	",,sysparams[1],"filename[.q]"
+		println "	",,cmdparams[0],"filename[.q]"
 		stop
 	fi
 
@@ -319,10 +319,14 @@ proc loadsyslib=
 	[300]char str
 !	ichar syslibname
 
+!CPL "LOADSYSLIB", =FNOSYS, =USEBUNDLED
+
+
 	if fnosys then return fi
 
 	if not fsyslibs then usebundled:=0 fi
 
+!CPL "LOADSYSLIB2", =FNOSYS, =USEBUNDLED
 	if os_iswindows() then
 		syslibname:="syswin.q"
 	else
@@ -333,9 +337,13 @@ proc loadsyslib=
 	if usebundled then				!bundled sys files
 !CPL "LOADSYS1", =SYSLIBNAME
 		compile_sp(syslibname)
-	else
+	else							!-ext used
 !CPL "LOADSYS2", =SYSLIBNAME
-		strcpy(str, devdir)
+		if os_iswindows() then
+			strcpy(str, devdir)
+		else
+			strcpy(str, "./")		!on Linux, expects to find them locally
+		fi
 		strcat(str, syslibname)
 		compile_sp(str)
 	fi
@@ -387,7 +395,7 @@ end
 
 proc fixupmodule(ifile pm)=
 	pcl pc,pcstart
-	int cmd,y
+	int cmd, index
 	symbol d
 	variant p
 
@@ -421,7 +429,11 @@ proc fixupmodule(ifile pm)=
 			fi
 
 		when cgenfield then
-			pc.index:=pc.def.genfieldindex
+!CPL "FIXUP GENFIELD", PC.DEF.NAME, PC.DEF.GENFIELDINDEX
+			index:=pc.def.genfieldindex
+!			IF INDEX=0 THEN RXERROR_S("FIX/GENFIELD/ZERO?", PC.DEF.NAME) FI
+			pc.index:=index
+
 
 		when cstring then
 			pc.objptr:=obj_make_string(pc.svalue, 0)
@@ -746,7 +758,7 @@ finish:
 	pc+1
 end
 
-=== qq_arrays.m 0 0 3/46 ===
+=== qq_arrays.m 0 0 3/48 ===
 global proc var_empty_array(int tag, elemtype, lower, variant dest)=
 	dest.objptr:=obj_newarray(elemtype,lower, 0)
 	dest.tagx:=tag ior hasrefmask
@@ -1279,7 +1291,7 @@ global proc var_expand_array(variant p, dest, int m)=
 		--dest
 	od
 end
-=== qq_bits.m 0 0 4/46 ===
+=== qq_bits.m 0 0 4/48 ===
 global proc obj_free_bits(object p, int tag)=
 	if p.length then
 		pcm_free(p.ptr, getbitssize(p.alloc64, p.elemtag))
@@ -1620,7 +1632,7 @@ global function getbitssize(int n, t)int=
 	int nbits:=n*ttbitwidth[t]
 	return ((nbits-1)/64+1)*8			!bytes required in 64-bit blocks
 end
-=== qq_calldll.m 0 0 5/46 ===
+=== qq_calldll.m 0 0 5/48 ===
 global proc calldll(symbol d, variant args, result, int nargs)=
 	symbol e
 	const maxparams=100
@@ -1829,7 +1841,7 @@ function loaddllfunction(symbol d)ref proc=
 	return fnaddr
 end
 
-=== qq_decls.m 0 0 6/46 ===
+=== qq_decls.m 0 0 6/48 ===
 !global const fixbytecodes=1		!convert bytecodes to handler addresses
 
 global type unit      	= ref unitrec
@@ -2364,7 +2376,7 @@ global pcl pproclocals			!pointer to kprocent pcl op (for updating locals for av
 global [pclnames.lwb..pclnames.upb]int pclcounts
 
 GLOBAL INT NALLPCL
-=== qq_decimal.m 0 0 7/46 ===
+=== qq_decimal.m 0 0 7/48 ===
 const digitwidth   = 9
 const digitbase	= 1000000000
 const digitfmt	 = "%09d"
@@ -4081,7 +4093,7 @@ function bn_toint(object a)i64=
 	fi
 end
 
-=== qq_dicts.m 0 0 8/46 ===
+=== qq_dicts.m 0 0 8/48 ===
 global proc var_make_dict(variant a, dest, int n) =
 !create a list of n vars starting from a in reverse order (a is the last)
 !put the result in dest (note this will be the last/first of the n vars)
@@ -4345,7 +4357,7 @@ proc adddictitem(variant d, p, q)=
 	var_unshare(r)			!overwrite any existing value
 	r^:=q^
 end
-=== qq_host.m 0 0 9/46 ===
+=== qq_host.m 0 0 9/48 ===
 
 record dimrec=(int lbound, upper, length)
 
@@ -5250,7 +5262,15 @@ global proc pch_$procref(variant a, result)=
 	result.tagx:=tsymbol
 	result.def:=cast(procrefs[n])
 end
-=== qq_lex.m 0 0 10/46 ===
+
+global proc pch_$getstdinout(variant a, result)=
+	int n:=checkparam(a,tint)
+
+	result.tagx:=trefpack
+	result.ptr:=cast((a.value=1|os_getstdout()|os_getstdin()))
+	result.elemtag:=tvoid
+end
+=== qq_lex.m 0 0 10/48 ===
 const etx	= 26
 const cr	= 13
 const lf	= 10
@@ -6434,7 +6454,7 @@ proc readrawxname=
 
 	return
 end
-=== qq_lib.m 0 0 11/46 ===
+=== qq_lib.m 0 0 11/48 ===
 int currlineno
 global int nextavindex=0
 
@@ -6497,7 +6517,8 @@ end
 proc showerrorsource(locrec loc)=
 	ichar s
 
-	return unless loc.status
+!	return unless loc.status
+	return unless loc.pm
 
 	println "Line:",loc.lineno,"in Module",loc.pm.name,,".q:"
 
@@ -6521,7 +6542,7 @@ end
 
 global proc stopcompiler(locrec loc)=
 	filehandle f
-	if loc.status then
+	if loc.pm then
 		f:=fopen("$error.tmp","w")
 !		println @f,modulename,,".q",lineno
 		println @f,loc.pm.filespec, loc.lineno
@@ -6579,12 +6600,7 @@ end
 
 global proc loaderror(ichar mess,mess2="")=
 	[512]char str
-	if strchr(mess,'#') then
-!		fprint @str,mess,mess2,mess3
-		fprint @str,mess,mess2
-	else
-		print @str,mess
-	fi
+	print @str,mess,mess2
 
 	println "Load Error:",str
 	println "Stopping"
@@ -7197,7 +7213,7 @@ end
 global func getpcloffset(pcl p, q)int=
 	(ref byte(p)-ref byte(q))/pclrec.bytes
 end
-=== qq_lists.m 0 0 12/46 ===
+=== qq_lists.m 0 0 12/48 ===
 global object emptylist
 
 proc start=
@@ -7651,7 +7667,7 @@ global function var_inx_list(variant a,b)int =
 	od
 	return i64.min
 end
-=== qq_modules.m 0 0 13/46 ===
+=== qq_modules.m 0 0 13/48 ===
 
 global func loadsp(ichar filename, source=nil)isubprog sp=
 !source = nil:  load lead module and dependencies from given sourcefile
@@ -7677,7 +7693,7 @@ global func loadsp(ichar filename, source=nil)isubprog sp=
 !CPL "////",=EXTRACTBASEFILE(FILENAME), =SYSLIBNAME
 		strcpy(path, extractbasefile(filename))
 !CPL "////",=PATH, EXTRACTBASEFILE(SYSLIBNAME)
-		if eqstring(path, extractbasefile(syslibname)) then
+		if syslibname and eqstring(path, extractbasefile(syslibname)) then
 			issyslib:=1
 		fi
 
@@ -7783,7 +7799,7 @@ global func loadsourcefile(ichar filespec, int issyslib=0)ifile pm=
 	ichar s,basefilename
 	[300]char str
 
-!CPL "LOADSOURCEFILE", FILESPEC, =ISSYSLIB
+!CPL "LOADSOURCEFILE", FILESPEC, =ISSYSLIB, =usebundled
 
 	pm:=pcm_allocz(filerec.bytes)
 
@@ -7802,7 +7818,7 @@ global func loadsourcefile(ichar filespec, int issyslib=0)ifile pm=
 	if issyslib and usebundled then
 		pm.issyslib:=issyslib
 		if not loadsysmodule(pm) then
-			loaderror("LS:Can't load syslib",filespec)
+			loaderror("LS:Can't load syslib:",filespec)
 		fi
 !CPL "LOADED",FILESPEC,"FROM BUNDLE"
 		return pm
@@ -7979,7 +7995,7 @@ global proc readqabundle=
 		(qatext[i]+qasize[i])^:=0	
 	od
 end
-=== qq_names.m 0 0 14/46 ===
+=== qq_names.m 0 0 14/48 ===
 !Symbol table handling
 
 int sdsize, sdoffset
@@ -8347,7 +8363,7 @@ global function createdupldef(symbol owner,symptr, int id)symbol=
 
 	return p
 end
-=== qq_packed.m 0 0 15/46 ===
+=== qq_packed.m 0 0 15/48 ===
 global proc var_loadpacked(ref void p,int t,variant dest, object ownerobj=nil) =
 ! p is a direct pointer to a packed type of type t.
 ! Extract target and store in varrec dest, which should have been freed.
@@ -8721,7 +8737,7 @@ global proc var_getix_struct(variant a, int index)=
 
 	var_loadpacked(p.ptr+r.fieldoffset, r.mode, a)
 end
-=== qq_parse.m 0 0 16/46 ===
+=== qq_parse.m 0 0 16/48 ===
 !Parser
 
 int intabledata
@@ -12100,7 +12116,7 @@ proc readpackvars(symbol owner, int id)=
 	od
 	if nvars=0 then serror("bad decl?") fi
 end
-=== qq_pcltabs.m 0 0 17/46 ===
+=== qq_pcltabs.m 0 0 17/48 ===
 global enumdata [0:]ichar opndnames=
 							!   PCL1		PCL2
 	(cnone=0,	$),
@@ -12527,7 +12543,7 @@ global[]bintorec bintotable = (
 	(kshr,		cast(var_shr),		nil),
 )
 
-=== qq_pclgen.m 0 0 18/46 ===
+=== qq_pclgen.m 0 0 18/48 ===
 !not opcodes, just used internally here for conditional jump logic
 !const kjumpt = 1
 !const kjumpf = 0
@@ -12815,6 +12831,8 @@ GENCOMMENT(D.NAME)
 
 	when jdot then! do_bin(a, b, kdot)
 		evalunit(a)
+		if b.def.genfieldindex=0 then gerror(".m?") fi
+
 		genpc_name(kdot, b.def)
 
 	when jindex then
@@ -13265,7 +13283,9 @@ proc evalref(unit p)=
 
 	when jdot then! do_binref(a, b, kdotref)
 		evalunit(a)
+		if b.def.genfieldindex=0 then gerror(".m2?") fi
 		genpc_name(kdotref, b.def)
+
 	when jindex then! do_binref(a, b, kindexref)
 		evalunit(a)
 		evalunit(b)
@@ -14765,6 +14785,7 @@ proc do_store(unit a, int res=0)=
 
 	when jdot then
 		evalunit(a.a)
+		if a.b.def.genfieldindex=0 then gerror(".m3?") fi
 		genpc_name(kpopdot, a.b.def)
 
 	when jindex then
@@ -15204,7 +15225,7 @@ function checkblockreturn(unit p)int=
 	return 0
 end
 
-=== qq_pcllib.m 0 0 19/46 ===
+=== qq_pcllib.m 0 0 19/48 ===
 const pclinitalloc=128
 
 global pcl pcstart				!point to start of current pcl block
@@ -15431,7 +15452,7 @@ end
 !	CPL ")",NEXTLABELNO
 !END
 !
-=== qq_print.m 0 0 20/46 ===
+=== qq_print.m 0 0 20/48 ===
 !Vars for i/o
 !Makes use of stdio/fileio/strio/windio as used by Q system
 global  int mindev		!one of stdio/fileio/strio/windio
@@ -17044,7 +17065,7 @@ proc tostr_list(variant p, ref fmtrec fmt, object dest) =
 	r.refcount:=-r.refcount
 	--listdepth
 end
-=== qq_records.m 0 0 21/46 ===
+=== qq_records.m 0 0 21/48 ===
 global proc var_make_record(variant a, dest, int n, rectype) =
 !create a list of n vars starting from a in reverse order (a is the last)
 !put the result in dest (note this will be the last the n vars)
@@ -17243,7 +17264,7 @@ global proc var_getixref_record(variant a, int index, variant dest)=
 	dest.varptr:=p
 end
 
-=== qq_resolve.m 0 0 22/46 ===
+=== qq_resolve.m 0 0 22/48 ===
 int nprocs
 
 int noexpand
@@ -18401,7 +18422,7 @@ proc dobaseclass(int baseclassindex)=
 		d:=d.nextdef
 	od
 end
-=== qq_runx.m 0 0 23/46 ===
+=== qq_runx.m 0 0 23/48 ===
 !const doretcheck=1
 const doretcheck=0
 
@@ -18471,8 +18492,11 @@ global proc disploop =
 
 	varrec vx
 
+freddy:
+
 	if getjt then
 		jumptable:=localjumptable
+!JUMPTABLE:=NIL
 		return
 	fi
 
@@ -18480,9 +18504,13 @@ global proc disploop =
 	pc:=pcptr
 	fp:=frameptr
 
-!	doswitchx(localjumptable) pc.labaddr
-	doswitchu pc.opcode
+
+	IF JUMPTABLE=NIL THEN PCERROR("JUMPTABLE NOT SET") fI
+	doswitchx(localjumptable) pc.labaddr
+
+!	doswitchu pc.opcode
 !	doswitch pc.opcode
+!	docase pc.opcode
 !
 	when knop      then   ! simple nop
 !		unimpl
@@ -18529,7 +18557,6 @@ jpushf:
 		copyvar(sp, x)
 
 		var_share(sp)
-freddy:
 		steppc
 
 	when kpushmref then   ! push &v
@@ -19070,10 +19097,13 @@ jwhenne:
 
 		n:=sp.value
 
+!CPL "SWITCH", =N, =PC.X, =PC.Y
+
 		if n in pc.x..pc.y then
+!CPL "IN", (N-PC.X+1)
 			pc:=(pc+n-pc.x+1).labelref
 		else
-			pc:=(pc+pc.y-pc.x+1).labelref
+			pc:=(pc+pc.y-pc.x+2).labelref
 		fi
 		--sp
 
@@ -19502,6 +19532,7 @@ jupb:
 
 		else						!push as 1 range value
 			var_unshare(sp)
+billy:
 			sp.tagx:=trange
 			sp.range_lower:=lower
 			sp.range_upper:=upper
@@ -19669,6 +19700,7 @@ jadd:
 
 		if sp.tag=y.tag=tint then
 			sp.value/:=y.value
+!			sp.value:=sp.value/y.value
 		else	
 			save
 			var_idiv(sp, y)
@@ -20489,6 +20521,8 @@ global function runqprogram(isubprog sp, int ismain)int=
 !
 	int tt:=clock()
 
+!CPL "RUNQ"
+
 	disploop()
 !
 	tt:=clock()-tt
@@ -20499,7 +20533,7 @@ global function runqprogram(isubprog sp, int ismain)int=
 	return sptr.value
 end
 
-=== qq_runaux.m 0 0 24/46 ===
+=== qq_runaux.m 0 0 24/48 ===
 !comment
 
 !GLOBAL INT NRESOLVE, NRFLOOPS, NRFSINGLE, NRFONEINST
@@ -20571,6 +20605,8 @@ global proc reportpcerror(pcl pcptr, ichar mess, param="")=
 		fi
 		--s
 	od
+
+CPL "PC/STOPC", LOC.DEF,loc.lineno, =LOC.PM.FILESPEC
 
 	stopcompiler(loc)
 end
@@ -21558,7 +21594,7 @@ global proc k_minval(variant sp)=
 	++pcptr
 end
 
-=== qq_sets.m 0 0 25/46 ===
+=== qq_sets.m 0 0 25/48 ===
 global proc obj_free_set(object p)=
 	if p.length then
 		pcm_free(p.ptr, getbitssize(p.alloc64, tu1))
@@ -21965,7 +22001,7 @@ global proc var_inotto_set(variant x) =
 	fi
 end
 
-=== qq_strings.m 0 0 26/46 ===
+=== qq_strings.m 0 0 26/48 ===
 global object emptystring
 
 proc start=
@@ -22643,7 +22679,7 @@ global proc var_makechar(int ch,variant dest)=
 	dest.tagx:=tstring ior hasrefmask
 	dest.objptr:=p
 end
-=== qq_syslibs.m 0 0 27/46 ===
+=== qq_syslibs.m 0 0 27/48 ===
 global const fsyslibs = 1
 !global const fsyslibs = 0
 
@@ -22652,12 +22688,14 @@ global tabledata []ichar syslibnames,[]ichar libtext =
 	("syslin.q",		(fsyslibs | strinclude "syslin.q" | "" )),
 	("sysp.q",			(fsyslibs | strinclude "sysp.q" | "" )),
 	("windows.q",		(fsyslibs | strinclude "windows.q" | "" )),
+	("linux.q",			(fsyslibs | strinclude "linux.q" | "" )),
 	("clibp.q",			(fsyslibs | strinclude "clibp.q" | "" )),
 	("smlib.q",			(fsyslibs | strinclude "smlib.q" | "" )),
 	("winapi.q",		(fsyslibs | strinclude "winapi.q" | "" )),
 	("gxlib.q",			(fsyslibs | strinclude "gxlib.q" | "" )),
 	("bmlib.q",			(fsyslibs | strinclude "bmlib.q" | "" )),
 	("console.q",		(fsyslibs | strinclude "console.q" | "" )),
+	("lincon.q",		(fsyslibs | strinclude "lincon.q" | "" )),
 	("winconsts.q",		(fsyslibs | strinclude "winconsts.q" | "" )),
 	("wingxlib.q",		(fsyslibs | strinclude "wingxlib.q" | "" )),
 	("winmessages.q",	(fsyslibs | strinclude "winmessages.q" | "" )),
@@ -22697,7 +22735,7 @@ global func loadsysmodule(ifile pm)int=
 		return 0
 	fi
 end
-=== qq_tables.m 0 0 28/46 ===
+=== qq_tables.m 0 0 28/48 ===
 !!---
 global enumdata	[0:]ichar stdtypenames,
 					[0:]byte stdtypewidths =
@@ -23411,6 +23449,7 @@ global enumdata [0:]ichar hostfnnames, [0:]byte hostnparams, [0:]byte hostisfn,
 	(h_getos,			$,	0,	1,	0,	cast(pch_getos)          ),
 	(h_iswindows,		$,	0,	1,	0,	cast(pch_iswindows)      ),
 	(h_setmesshandler,	$,	1,	0,	0,	cast(pch_setmesshandler) ),
+	(h_$getstdinout,	$,	1,	1,	0,	cast(pch_$getstdinout)   ),
 	(h_$getparam,		$,	1,	1,	0,	cast(pch_$getparam)      ),
 	(h_makeempty,		$,	1,	1,	0,	cast(pch_makeempty)      ),
 	(h_$smallmemtotal,	$,	0,	1,	0,	cast(pch_$smallmemtotal) ),
@@ -23588,7 +23627,7 @@ global enumdata [0:]ichar condnames, [0:]byte revconds =
 	(ge_cc,		"ge",	lt_cc),
 	(gt_cc,		"gt",	le_cc),
 end
-=== qq_dummyshow.m 0 0 29/46 ===
+=== qq_dummyshow.m 0 0 29/48 ===
 !labels are just numbers 1,2,3 which index both of these tables
 !labelblocktable is the pclblock no (as all labels are shared across the program)
 !labeloffsettable is the offset into the pclblock
@@ -23656,7 +23695,7 @@ end
 
 global proc deletetempfiles=
 end
-=== qq_showpcldummy.m 0 0 30/46 ===
+=== qq_showpcldummy.m 0 0 30/48 ===
 global proc showpcl(isubprog sp, int pass)=
 end
 
@@ -23666,7 +23705,7 @@ end
 global proc writeallpcl(ifile pm, int pass)=
 end
 
-=== qq_vars.m 0 0 31/46 ===
+=== qq_vars.m 0 0 31/48 ===
 !Var-routines are usually called from bytecode handlers, either directly on indirectly
 
 !Rules for dealing with variant params are:
@@ -25430,7 +25469,7 @@ global proc var_powermixed(variant a, b)=
 	a.tag:=newtag
 end
 
-=== syswin.q 0 1 32/46 ===
+=== syswin.q 0 1 32/48 ===
 !Q standard library - Windows
 
 !===============================
@@ -25449,12 +25488,14 @@ module gxmisc
 module dates
 module smlib
 !===============================
-=== syslin.q 0 1 33/46 ===
-!Q standard library - Windows
+
+=== syslin.q 0 1 33/48 ===
+!Q standard library - Linux
 
 !===============================
 module sysp
 module clibp
+module linux
 !module winapi
 
 !module gxlib
@@ -25468,7 +25509,9 @@ module lincon
 !module dates
 !module smlib
 !===============================
-=== sysp.q 0 1 34/46 ===
+
+export macro console = lincon
+=== sysp.q 0 1 34/48 ===
 !Q Main Library
 
 export type rkey=struct	!key info as it's used locally
@@ -26679,7 +26722,7 @@ export func reduce(op, a)=
 	od
 	x
 end
-=== windows.q 0 1 35/46 ===
+=== windows.q 0 1 35/48 ===
 export func dirlist(s,t=1)=
 #s is a export filename (eg. "*.dwg") with possible drive/path; scan
 #directory for all matching files and return as a list of names
@@ -26753,7 +26796,39 @@ export func direxists(path)=
 	return attrib<>invalid_file_attributes and (attrib iand file_attribute_directory)
 end
 
-=== clibp.q 0 1 36/46 ===
+=== linux.q 0 1 36/48 ===
+export func dirlist(s,t=1)=
+ABORT("DIRLIST")
+0
+end
+
+export func setcurrdir(newdir)=
+#Set current directory; return Windows' status code
+	system("cd "+newdir)=0
+end
+
+export func getcurrdir=
+#Return current directory name, always ends with \ or /
+ABORT("GETCURRDIR")
+0
+end
+
+export func createdir(name)=
+#Create a new directory
+	if not direxists(name) then
+		system("mkdir "+name)=0
+	else
+		1
+	fi
+end
+
+export func direxists(path)=
+#Return 1 if directory path exists
+	checkfile(path+"/.")
+
+end
+
+=== clibp.q 0 1 37/48 ===
 importdll msvcrt=
 !importdll msvcr100=
 !importdll msvcr120=
@@ -26804,6 +26879,8 @@ importdll msvcrt=
 	func feof        (i64)i32
 !   clang func getch       :i32
 	func _getch      :i32
+	proc fflush      (ref void)
+	proc tcflush     (int, int)
 
 end
 
@@ -26812,7 +26889,7 @@ global const seek_set  = 0
 global const seek_curr = 1
 global const seek_end  = 2
 
-=== smlib.q 0 1 37/46 ===
+=== smlib.q 0 1 38/48 ===
 
 export var popuplist::=()
 export var focuslist::=()
@@ -27430,7 +27507,7 @@ func getstyle(style)=
 		return currblock.blockstyle
 	fi
 end
-=== winapi.q 0 1 38/46 ===
+=== winapi.q 0 1 39/48 ===
 
 export type wt_word		= u16
 export type wt_bool		= u32
@@ -27927,7 +28004,7 @@ importdll comdlg32=
 	func "GetOpenFileNameA"							(wt_ptr)wt_bool
 	func "GetSaveFileNameA"							(wt_ptr)wt_bool
 end
-=== gxlib.q 0 1 39/46 ===
+=== gxlib.q 0 1 40/48 ===
 !MODULE winmessages
 module sysp
 
@@ -32712,7 +32789,7 @@ EXPORT PROC CHECKCLOSED(NAME)=
 
 	CPL "CC: OK*****"
 END
-=== bmlib.q 0 1 40/46 ===
+=== bmlib.q 0 1 41/48 ===
 VAR DEBUG=0
 
 importdll imglib =
@@ -34763,7 +34840,7 @@ func getlumtables=
 	bmap:=makescalemap(0.111)
 	return (rmap, gmap, bmap)
 end
-=== console.q 0 1 41/46 ===
+=== console.q 0 1 42/48 ===
 !!Virtual keycodes
 export const vklbutton=1		!note these are physical not logical buttons
 export const vkrbutton=2
@@ -35436,9 +35513,16 @@ export proc wshowtext(w,s,?col,?row)=
 	fi
 end
 
-export proc wshowtext_b(w,s,col,fgnd,bgnd)=
+export proc wshowtext_b(w,s, colrow, fgnd,bgnd)=
 !version of wshowtext that dumps into char/attr buffer.
 !w is used for absolute column number
+
+	if colrow.islist then
+		col:=colrow[1]
+	else
+		col:=colrow
+	fi
+
 
 	length:=s.len
 	offset:=w.posx-1	!hoz offset
@@ -35451,11 +35535,11 @@ export proc wshowtext_b(w,s,col,fgnd,bgnd)=
 	attrdata.[(col+offset)..(col-1+length+offset)]:=chr(attr)*length
 end
 
-export proc updateconsolerow(row)=
+export proc updateconsolerow(w, row)=
 !write out latest contents to chardata/attrdata to console
 !this represents an entire composite wlineno+wvgap+wedit row, for given row within wedit
 !etc
-	w_writeconsolerow(chardata,attrdata,screencols,row)
+	w_writeconsolerow(chardata,attrdata,screencols,w.posy+row-1)
 end
 
 export func getkeyname(key)=
@@ -35837,7 +35921,913 @@ export proc wsetcolumns(w,columns)=
 	w.pagesize:=w.rows*w.columns
 end
 
-=== winconsts.q 0 1 42/46 ===
+=== lincon.q 0 1 43/48 ===
+!!Virtual keycodes
+export const vklbutton=1		!note these are physical not logical buttons
+export const vkrbutton=2
+export const vkmbutton=4		!middle button is correct
+export const vkbackspace=8
+export const vktab=9
+export const vkclear=12
+export const vkenter=13
+export const vkshift=16
+export const vkctrl=17
+export const vkalt=18
+export const vkbreak=19
+export const vkcapslock=20
+!export const vkrshift=21
+export const vkrctrl=22
+!export const vkralt=23
+export const vkinslock=24
+export const vkescape=27
+export const vkspace=32
+export const vkpageup=33
+export const vkpagedown=34
+export const vkend=35
+export const vkhome=36
+export const vkleft=37
+export const vkup=38
+export const vkright=39
+export const vkdown=40
+export const vkinsert=45
+export const vkdelete=46
+export const vkhelp=47
+export const vk0='0'
+export const vka='A'
+export const vkwindows=91
+export const vkrightbutton=93
+export const vknumpad0=96		!96..105 = '0'..'9'
+export const vkmul=106
+export const vkadd=107
+export const vksub=109
+export const vkdecimal=110
+export const vkdiv=111
+export const vkf1=112
+export const vkf2=113
+export const vkf3=114
+export const vkf4=115
+export const vkf5=116
+export const vkf6=117
+export const vkf7=118
+export const vkf8=119
+export const vkf9=120
+export const vkf10=121
+export const vkf11=122
+export const vkf12=123
+!export const vklsq=128
+!export const vkrsq=129
+!export const vksemi=130
+!export const vkquote=131
+!export const vkstroke=132
+!export const vkdot=133
+!export const vkcomma=134
+!export const vkbackslash=135
+!export const vkquote2=136
+!export const vkequals=137
+!export const vkminus=138
+!export const vkhash=139
+export const vklshift=160
+export const vkrshift=161
+export const vklcontrol=162
+export const vkrcontrol=163
+export const vklalt=164
+export const vkralt=165
+
+!oem codes
+export const vkminus=189
+export const vkequals=187
+export const vklsq=219
+export const vkrsq=221
+export const vksemi=186
+export const vkquote=192
+export const vkhash=222
+export const vkcomma=188
+export const vkperiod=190
+export const vkslash=191
+export const vkbackslash=220
+export const vkbackquote=223
+
+
+export enumdata		rr,     gg,     bb =
+	(con_black=0,	0,		0,		0),
+	(con_dkblue,	0,		0,		128),
+	(con_dkred,		128,	0,		0),
+	(con_dkmagenta,	128,	0,		128),
+	(con_dkgreen,	0,		128,	0),
+	(con_dkcyan,	0,		128,	128),
+	(con_dkyellow,	128,	128,	0),
+	(con_dkgrey,	128,	128,	128),
+	(con_grey,		192,	192,	192),
+	(con_blue,		0,		0,		255),
+	(con_red,		255,	0,		0),
+	(con_magenta,	255,	0,		255),
+	(con_green,		0,		255,	0),
+	(con_cyan,		0,		255,	255),
+	(con_yellow,	255,	255,	0),
+	(con_white,		255,	255,	255),
+end
+
+
+var digits=['0'..'9']
+var navkeys=['A':vkup, 'B':vkdown, 'C': vkright, 'D':vkleft, 'H':vkhome, 'F':vkend,
+				'P':vkf1, 'Q':vkf2, 'R': vkf3, 'S':vkf4]
+
+var fnkeys= [15:vkf5, 17:vkf6, 18:vkf7, 19:vkf8, 20:vkf9, 21:vkf10, 23:vkf11, 24:vkf12]
+
+const capsmask  = 0x8		!shift states as they are in .keyshift
+const altmask   = 0x4
+const ctrlmask  = 0x2
+const shiftmask = 0x1
+
+const capsbit=3
+const altbit=2
+const ctrlbit=1
+const shiftbit=0
+
+var shiftcodes = [5:ctrlmask, 2:shiftmask, 3:altmask, 4:shiftmask+altmask, 7:ctrlmask+altmask]
+
+export var wconscreen
+export var screencols,screenrows
+export var currbgnd=-1,currfgnd=-1
+
+export var chardata			!string these two represent row of the console
+export var attrdata			!string
+
+export var rlkey=0		!set by readline, when special key has been input
+export var rlbuffer			!contents of readline buffer when special key pressed
+
+var cmdindex,ncmds
+var cmdhistory
+
+!export var screencolour=con_dkred..con_grey
+
+export record winrec =
+	var posx,posy
+	var cols,rows
+	var fgnd,bgnd			!default text/background colour
+
+	var columns			!used when divided into columns
+	var itemcols			!width of each column
+	var pagesize			!columns*rows
+
+	var name
+
+	var hdata			!pointer to data record, or is nil
+end
+
+export proc init(cols=100)=
+	getdims()
+
+	cmdhistory::=()	!"one","two","three","four")
+	ncmds:=cmdhistory.upb
+	cmdindex:=0
+
+	wconscreen:=makewin((1,1),(screencols,screenrows),defscreencolour)
+
+end
+
+proc getdims=
+	(screencols,screenrows):=getscreensize()
+end
+
+export proc setpos(column,row)=
+	fprint "\e[#;#H",row,column
+end
+
+proc setfgndcol(c)=
+	fprint "\e[38;2;#;#;#m", rr[c], gg[c], bb[c]
+end
+
+proc setbgndcol(c)=
+	fprint "\e[48;2;#;#;#m", rr[c], gg[c], bb[c]
+end
+
+export proc setbgndrgb(r,g,b)=
+	fprint "\e[48;2;#;#;#m", r,g,b
+end
+
+export proc setbold(bold)=
+	fprint "\e[#m",(bold|1|21)
+end
+
+export proc setitalic(italic)=
+	fprint "\e[#m",(italic|3|23)
+end
+
+export func getpos=
+	print "\e[6n"
+	readkey()		!escape
+	readkey()		![
+
+	(row,column,c):=readkbdsequence()
+	return (column,row)
+end
+
+export func setcursor(?visible)=
+	return 1
+end
+
+export proc setcolour(fgnd, ?bgnd)=
+!call with as (fgnd,bgnd) or as (fgnd..bgnd)
+
+	if bgnd.isvoid then bgnd:=currbgnd fi
+
+	if fgnd<>currfgnd then
+		setfgndcol(fgnd)
+		currfgnd:=fgnd
+	fi
+
+	if bgnd<>currbgnd then
+		setbgndcol(bgnd)
+		currbgnd:=bgnd
+	fi
+end
+
+export proc settitle(caption)=
+end
+
+export func keyready=
+	return pcerror("Linux/keyready")
+end
+
+!export proc showtext(s)=
+!	if s then
+!		print s
+!	fi
+!end
+
+export proc showtext(s,?x,?y)=
+
+	if x.defined then
+		setpos(x,y)
+	fi
+
+	count:=0
+	if s then
+!		if not suppress then
+			print s
+!			writeconsole(hconsole,s,s.len,&count,nil)
+!		fi
+	fi
+end
+
+export proc setdims(cols,rows)=
+	pcerror("linux/setdims")
+end
+
+export proc setpalette(index,colour)=
+	pcerror("linux/setpallete")
+end
+
+func getscreensize=
+	savepos()
+	setpos(999,999)
+	(cols,rows):=getpos()
+	restorepos()
+	return (cols,rows)
+end
+
+proc savepos=
+	print "\e[s"
+end
+
+proc restorepos=
+	print "\e[u"
+end
+
+func readkey=
+	return waitkey()
+end
+
+func readintseq(c)=
+!c is '0' to '9'
+!read integer sequence up to first non-digit
+!return (number, terminator character)
+	x:=c-'0'
+	do
+		c:=readkey()
+		if c in digits then
+			x:=x*10+c-'0'
+		else
+			exit
+		fi
+	od
+	return (x,c)
+end
+
+func readkbdsequence=
+!Some key escape sequences for control chars in Linux look like this:
+! <esc> "[" [x[";"y] c/"~"
+!Parts in "..." are actual characters
+!x and y are optional integers, c is a capital letter
+!The sequence may have 0, 1 or 2 numbers (separated with ;) and end with
+!a capital letter, or "~"
+!the "[" has already been read
+!return (X, Y, C)
+!X or Y will be zero if not present. C will 'A' etc, or 0 if it ends with "~"
+!-1 is returned on error
+
+	x:=y:=0
+
+	c:=readkey()
+
+	if c in digits then
+		(x,c):=readintseq(c)
+		if c=';' then
+			c:=readkey()
+			if c not in digits then return -1 fi
+			(y,c):=readintseq(c)
+		fi
+	fi
+
+	if c='~' then
+		return (x,y,0)
+	fi
+	return (x,y,c)				!assume A-Z
+end
+
+!function keyname(k,shift=0)=
+!return getkeyname(rkey(0,k,shift))
+!end
+
+export func getkey=
+!read key events via readkey()
+!convert escape sequences to Windows virtual keys
+
+	k:=readkey()				!LINUX ONLY
+
+!CPL "<<<<<",K,">>>>>"
+
+	case k
+	when 10 then
+		return rkey(13,vkenter,0)
+	when 8 then
+		return rkey(127, vkbackspace, ctrlmask)
+	when 127 then
+		return rkey(127, vkbackspace, 0)
+	when 9 then
+!	CPL "TAB1"
+		return rkey(vktab,vktab,0)
+	when 'A'..'Z', '0'..'9', ' ' then
+		return rkey(k,k,0)
+	when 'a'..'z' then
+		return rkey(k,k-' ',0)
+	when 27 then
+	when 1..31 then
+		return rkey(k,0,ctrlmask)
+	else
+		c:=k
+		case k
+		when '[','{' then k:=vklsq
+		when ']','}' then k:=vkrsq
+		else
+			k:=0
+		esac
+
+		return rkey(c,k,0)
+	esac
+
+!CPL "ESC SEEN"
+
+!escape seen; look at next key
+	k:=readkey()
+
+	case k
+	when 27 then			!esc/esc => single escape
+		return rkey(0,k,0)
+
+	when 10 then			!esc/10 => alt enter
+		return rkey(0,vkenter,altmask)
+
+	when 8,127 then			!esc/bs => alt bs
+		return rkey(0,vkbackspace,altmask)
+
+	when 'O' then			!short set of function keys
+		(x,y,c):=readkbdsequence()
+
+!	CPL "O",x,y,chr(c)
+		return rkey(0,navkeys{c},shiftcodes{y,0})
+
+	when '[' then
+		(x,y,c):=readkbdsequence()
+
+		case c
+		when 'Z' then						!shift+tab
+			return rkey(9,9,shiftmask)
+!		return rkey(0,9,shiftmask)
+		when 'A','B','C','D','H','F','P','Q','R','S' then		!cursor keys, fn1..4; assume x=1
+			return rkey(0,navkeys{c},shiftcodes{y,0})
+		esac
+
+		case x
+		when 2,3,5,6 then
+			shift:=0
+			case y
+			when 5 then shift:=ctrlmask
+			when 3 then shift:=altmask
+			when 7 then shift:=altmask+ctrlmask
+			esac
+			return rkey(0,(x|0,vkinsert,vkdelete,0,vkpageup|vkpagedown),shift)
+		when 15..24 then
+			return rkey(0,fnkeys{x},shiftcodes{y,0})
+		esac
+
+	when 'A'..'Z' then			!must have been alt version (some esc letter codes above)
+		return rkey(k-64,0,altmask) 
+
+	when 'a'..'z' then			!must have been alt version (some esc letter codes above)
+		return rkey(k-96,0,altmask) 
+
+	when '0'..'9' then
+		return rkey(0,k,altmask) 
+
+	esac
+!	CPL "ESC 91"
+
+!Code 91 SEEN
+	return rkey(0,'?',0)
+end
+
+proc screentest=
+
+	savepos()
+	setpos(10,10)
+	setfgndcol(5)
+	setbgndcol(3)
+	setbold(1)
+	setitalic(1)
+	println "	HELLO	"
+	setbold(0)
+	setitalic(0)
+	restorepos()
+	println "	Goodbye	"
+
+	(cols,rows):=getscreensize()
+	cpl =rows,=cols
+	waitkey()
+end
+
+!proc keytest=
+!
+!lastkey:=0
+!
+!!do
+!!	k:=readkey()
+!!	if k=27 and lastkey=27 then exit fi
+!!	if k=27 then
+!!		cpl
+!!		cp "ESC "
+!!	elsif k in 32..126 then
+!!		cp chr(k)
+!!	else
+!!		cp "<"+tostr(k)+">"
+!!	fi
+!!	lastkey:=k
+!!od
+!
+!do
+!	k:=getkey()
+!	cpl getkeyname(k),k
+!	if k.keycode=27 then exit fi
+!od
+!
+!end
+
+proc keyscreentest=
+	(cols,rows):=getscreensize()
+	CPL =COLS,=ROWS
+
+	row:=rows%2
+	col:=cols%2
+	ch:="X"
+
+	setfgndcol(6)
+	setbgndcol(1)
+
+	do
+		setpos(col,row)
+		cp ch
+		setpos(col,row)
+		k:=getkey().keycode
+		case k
+		when 27 then
+			exit
+		when vkleft then col:=max(1,col-1)
+		when vkright then col:=min(cols,col+1)
+		when vkup then row:=max(1,row-1)
+		when vkdown then row:=min(rows,row+1)
+		esac
+	od
+
+!	waitkey()
+
+end
+
+proc main=
+
+!	keytest()
+!	screentest()
+	keyscreentest()
+end
+
+proc start=
+!CPL "LINCON START"
+	if not iswindows() then
+		init()
+	fi
+end
+
+export proc w_writeconsolerow(text, attributes, length, row)=
+!pcerror("lincon/writeconsolerow")
+!buffersize:=1<<16+length
+!coord:=0
+
+!setpos(1,row)
+!print leftstr(text,length)
+
+	setpos(1,row)
+	for i:=1 to length-1 do
+		attrs:=attributes.[i]
+		c:=text.[i]
+	!	setcolour(attrs>>4, attrs iand 15)
+		setcolour(attrs iand 15, attrs>>4)
+		print chr(c)
+	od
+end
+
+export proc flushkeyboard=
+	tcflush(0, 0)
+end
+
+export func setclipboard(s)=
+	abort("linux/setclipboard")
+	return 0
+end
+
+export func getclipboard=
+	abort("linux/getclipboard")
+	return ""
+end
+
+export proc clearscreen(?bgnd,?fgnd)=
+
+	system("clear")
+end
+
+export func makewin(pos, dims, fgnd=con_black,bgnd=con_grey,name="Anon")=
+!export func makewin(pos, dims, ?colour)=
+
+	w:=new(winrec)
+	w.posx:=pos[1]
+	w.posy:=pos[2]
+	w.cols:=dims[1]
+	w.rows:=dims[2]
+	w.columns:=1
+	if dims.len>=3 then
+		w.columns:=dims[3]
+	fi
+
+!CPL =POS,=DIMS,=W.COLUMNS
+
+	w.itemcols:=w.cols%w.columns
+	w.pagesize:=w.rows*w.columns
+	w.hdata:=nil
+
+	w.fgnd:=fgnd
+	w.bgnd:=bgnd
+	w.name:=name
+
+	return w
+end
+
+export proc clearwin(w)=
+!clear region used by listbox
+!can clear multi-columns at once
+	spaces:=" "*w.cols
+
+	setcolour(w.fgnd,w.bgnd)
+	for i:=1 to w.rows do
+		showtext(spaces,w.posx,w.posy+i-1)
+	od
+	setpos(w.posx,w.posy)
+end
+
+export proc wshowtext(w,s,?col,?row)=
+	if col.defined then
+		showtext(s,w.posx+col-1,w.posy+row-1)
+	else
+		showtext(s)
+	fi
+end
+
+export proc wsetpos(w,col,row)=
+	setpos(w.posx+col-1,w.posy+row-1)
+end
+
+export proc wshowtext_b(w,s,colrow,fgnd,bgnd)=
+!version of wshowtext that dumps into char/attr buffer.
+!w is used for absolute column number
+
+	if colrow.islist then
+		(col, row):=colrow
+	else
+		col:=colrow
+		ROW:=1
+	fi
+
+	setcolour(fgnd, bgnd)
+
+	wshowtext(w,s, col, row)
+!	showtext(s, col, row)
+
+
+!	length:=s.len
+!	offset:=w.posx-1	!hoz offset
+!
+!!CPL =CHARDATA
+!
+!	chardata.[(col+offset)..(col-1+length+offset)]:=s
+!
+!!	attr:=consolesw.colourmap[bgnd]<<4+consolesw.colourmap[fgnd]
+!	attr:=bgnd<<4+fgnd
+!
+!	attrdata.[(col+offset)..(col-1+length+offset)]:=chr(attr)*length
+end
+
+export proc updateconsolerow(w,row)=
+!write out latest contents to chardata/attrdata to console
+!this represents an entire composite wlineno+wvgap+wedit row, for given row within wedit
+!etc
+!	w_writeconsolerow(chardata,attrdata,screencols,row)
+end
+
+export func getkeyname(key)=
+	case key.keycode
+	when vkleft then name:="left"
+	when vkright then name:="right"
+	when vkup then name:="up"
+	when vkdown then name:="down"
+	when vkpageup then name:="pageup"
+	when vkpagedown then name:="pagedown"
+	when vkhome then name:="home"
+	when vkend then name:="end"
+	when vkinsert then name:="insert"
+	when vkdelete then name:="delete"
+	when vktab then name:="tab"
+	when vkescape then name:="escape"
+	when vkbackspace then name:="backspace"
+	when vkenter then name:="enter"
+	when vkf1..vkf12 then name:="f"+tostr(key.keycode-vkf1+1)
+	when vkspace then name:="space"
+	else
+		if key.charcode in [1..26] then	!ctrl code
+			name:=chr(key.charcode+'a'-1)
+		elsif key.charcode in ['!','"','£','$','%','^','&','*','(',')','-','_','+','=','[',']',
+		'{','}',':',';','\'','@','~','#','<','>',',','.','/','¬','¦','|','\\','?'] then
+			name:=chr(key.charcode)
+			key.shift iand:=inot shiftmask		!ignore any shift press needed to get char
+
+		elsif key.keycode in ['A'..'Z','0'..'9'] then
+			if (key.shift iand (ctrlmask ior altmask))=0 then
+				name:=chr(key.charcode)
+				key.shift iand:=inot shiftmask
+			else
+				name:=convlc(chr(key.keycode))
+			fi
+		elsif key.keycode in (186..223) then
+			case key.keycode
+			when vkminus then name:="-"
+			when vkequals then name:="="
+			when vklsq then name:="["
+			when vkrsq then name:="]"
+			when vksemi then name:=";"
+			when vkquote then name:="'"
+			when vkhash then name:="#"
+			when vkcomma then name:=","
+			when vkperiod then name:="."
+			when vkslash then name:="/"
+			when vkbackslash then name:="\\"
+			when vkbackquote then name:="`"
+			else
+				return "?"
+			esac
+		else
+			return "?"
+		fi
+	esac
+
+	prefix::="*"
+	if key.shift iand shiftmask then prefix+:="s" fi
+	if key.shift iand ctrlmask then prefix+:="c" fi
+	if key.shift iand altmask then prefix+:="a" fi
+	return prefix+name
+
+end
+
+export func readline(?cmdline,donewline=1)=
+!this func doesn't handle tabs properly
+!would need to maintain 2 buffers, one with tabs translated to spaces
+!or convert tabs to another char which is translated back to tabs on exit
+!return with input buffer set to the line, but also returns the complete line
+!newline=1 to end with a newline, 0 to leave it
+
+!readln
+!return
+
+	buffer:=""
+	nchars:=0
+!congetpos()
+
+!NOTE: getpos is dodgy using TERMCON; MAY NEED CALLER TO SPECIFY START POINT
+	(startx,starty):=(getpos())
+
+	pos:=0		!with nchars shown, pos can be 0 to nchars
+
+	reenter:
+	if cmdline.defined and cmdline<>"" then
+		buffer:=cmdline
+	reenter2:
+		pos:=nchars:=buffer.len
+	fi
+
+	do
+! print "_"
+		rlkey:=0			!normal input starts with "*" will expect rlkey to be a keyrec
+		setpos(startx,starty)
+		print buffer
+		setpos(startx+pos,starty)
+
+		key:=getkey()
+		keycode:=key.keycode
+		keyshift:=key.shift
+
+		case keycode
+		when vkpageup,vkpagedown,vkup,vkdown,vkinsert,vkf1..vkf12 then
+
+	dospecial:
+		rlbuffer:=buffer
+			oldbufferlen:=buffer.len		!to help erase old buffer
+			buffer:=getkeyname(key)
+			rlkey:=key				!allow caller to use key code rather than name
+			exit
+
+		when vkleft then
+			if buffer="" then goto dospecial fi
+			if (keyshift iand 7) then goto dospecial fi
+
+			if pos>0 then
+				--pos
+			fi
+
+		when vkhome then
+			if buffer="" then goto dospecial fi
+			if (keyshift iand 7) then goto dospecial fi
+			pos:=0
+
+		when vkend then
+			if buffer="" then goto dospecial fi
+			if (keyshift iand 7) then goto dospecial fi
+			pos:=nchars
+
+		when vkright then
+			if buffer="" then goto dospecial fi
+			if (keyshift iand 7) then goto dospecial fi
+			if pos<nchars then
+				++pos
+			fi
+
+		when vkenter then
+
+!  println
+			exit
+
+		when vkbackspace then
+
+			if (keyshift iand 7) then goto dospecial fi
+			if nchars then
+				setpos(startx,starty)
+				print " "*buffer.len
+
+				case pos
+				when 0 then			!not allowed
+				when nchars then		!at end
+					buffer:=leftstr(buffer,-1)
+					--nchars
+					--pos
+				else				!in middle
+					buffer:=leftstr(buffer,pos-1)+rightstr(buffer,-(pos))
+					--nchars
+					--pos
+				esac
+
+			fi
+
+		when vkdelete then
+			if (keyshift iand 7) then goto dospecial fi
+			if nchars and nchars=pos then
+				goto delline
+			fi
+			if nchars=0 then
+				goto dospecial
+			fi
+			if nchars then
+!CPL "\NNCHARS",=NCHARS,++CCC,=POS,"\N"
+				setpos(startx,starty)
+				print " "*buffer.len
+
+				case pos
+				when nchars then		!not allowed
+!			when 0 then			!at start
+!				buffer:=leftstr(buffer,-1)
+!				--nchars
+				else				!in middle
+					buffer:=leftstr(buffer,pos)+rightstr(buffer,-(pos+1))
+					--nchars
+!    --pos
+				esac
+
+			fi
+
+		when vkescape then
+			if nchars=0 then
+				goto dospecial
+!   oldbufferlen:=buffer.len
+!   buffer:="*esc"
+!   exit
+			fi
+	delline:
+			setpos(startx,starty)
+			print " "*buffer.len
+
+			buffer:=""
+			nchars:=pos:=0
+
+		when vktab then
+			goto normalkey
+
+		else
+	normalkey:
+			if (key.charcode>=' ' or key.charcode=9) then
+				if pos=0 then
+					buffer:=chr(key.charcode)+buffer
+				elsif pos=nchars then
+					buffer:=buffer+chr(key.charcode)
+				else
+					buffer:=leftstr(buffer,pos)+chr(key.charcode)+rightstr(buffer,-(pos))
+				fi
+				++nchars
+				++pos
+			else
+				GOTO DOSPECIAL
+				print "<",keycode,key.charcode,">"
+			fi
+
+		esac
+	od
+
+	case buffer
+	when "*cup","*cdown" then
+		if ncmds then
+			setpos(startx,starty)
+			print " "*oldbufferlen
+
+			if cmdindex=0 then		!get started on last
+				cmdline:=cmdhistory[ncmds]
+				cmdindex:=ncmds
+				goto reenter
+			fi
+
+			if buffer="*cup" and cmdindex>1 then
+				--cmdindex
+			elsif buffer="*cdown" and cmdindex<ncmds then
+				++cmdindex
+			fi
+			cmdline:=cmdhistory[cmdindex]
+			goto reenter
+		fi
+		buffer:=""
+		goto reenter2
+	esac
+
+	if buffer.len>1 and leftstr(buffer)<>"*" then
+		if ncmds=0 or cmdhistory[ncmds]<>buffer then
+			cmdhistory[++ncmds]:=buffer
+		fi
+		cmdindex:=0
+	fi
+
+	if donewline then println fi
+
+	return sreadln(buffer)
+end
+
+export proc wsetcolumns(w,columns)=
+	w.columns:=columns
+	w.itemcols:=w.cols%w.columns
+	w.pagesize:=w.rows*w.columns
+end
+
+=== winconsts.q 0 1 44/48 ===
 !Windows win32 constants
 
 global const driverversion =  0
@@ -36791,7 +37781,7 @@ global const spi_getworkarea =  48
 proc start=
 end
 
-=== wingxlib.q 0 1 43/46 ===
+=== wingxlib.q 0 1 45/48 ===
 !import winmessages
 !import winconsts
 !import gxmisc
@@ -37144,7 +38134,7 @@ global func wx_createcontrol(?pos,?dim,border=wbs_simple,owner)=
 	return hwnd
 end
 
-=== winmessages.q 0 1 44/46 ===
+=== winmessages.q 0 1 46/48 ===
 export var winmessagenames=[
 	(0:"wm_null"),
 	(1:"wm_create"),
@@ -37729,7 +38719,7 @@ export var winmessagenames=[
 
 proc start=
 end
-=== gxmisc.q 0 1 45/46 ===
+=== gxmisc.q 0 1 47/48 ===
 export enumdata optionnames =
 	(wf_border,		$),		! wbs_simple
 	(wf_resize,		$),		! 0
@@ -37760,7 +38750,7 @@ export enumdata wbsnames=
 	(wbs_sunkenrs,$),
 	(wbs_dummy,$)
 end
-=== dates.q 0 1 46/46 ===
+=== dates.q 0 1 48/48 ===
 
 export var daynames=("Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday")
 
@@ -37999,49 +38989,51 @@ export func getsystime=
 	return tm
 end
 === END ===
-1 qqp.m
-2 qq_cli.m
-3 qq_arrays.m
-4 qq_bits.m
-5 qq_calldll.m
-6 qq_decls.m
-7 qq_decimal.m
-8 qq_dicts.m
-9 qq_host.m
-10 qq_lex.m
-11 qq_lib.m
-12 qq_lists.m
-13 qq_modules.m
-14 qq_names.m
-15 qq_packed.m
-16 qq_parse.m
-17 qq_pcltabs.m
-18 qq_pclgen.m
-19 qq_pcllib.m
-20 qq_print.m
-21 qq_records.m
-22 qq_resolve.m
-23 qq_runx.m
-24 qq_runaux.m
-25 qq_sets.m
-26 qq_strings.m
-27 qq_syslibs.m
-28 qq_tables.m
-29 qq_dummyshow.m
-30 qq_showpcldummy.m
-31 qq_vars.m
-32 syswin.q
-33 syslin.q
-34 sysp.q
-35 windows.q
-36 clibp.q
-37 smlib.q
-38 winapi.q
-39 gxlib.q
-40 bmlib.q
-41 console.q
-42 winconsts.q
-43 wingxlib.q
-44 winmessages.q
-45 gxmisc.q
-46 dates.q
+1 qqp.m 0 0
+2 qq_cli.m 0 0
+3 qq_arrays.m 0 0
+4 qq_bits.m 0 0
+5 qq_calldll.m 0 0
+6 qq_decls.m 0 0
+7 qq_decimal.m 0 0
+8 qq_dicts.m 0 0
+9 qq_host.m 0 0
+10 qq_lex.m 0 0
+11 qq_lib.m 0 0
+12 qq_lists.m 0 0
+13 qq_modules.m 0 0
+14 qq_names.m 0 0
+15 qq_packed.m 0 0
+16 qq_parse.m 0 0
+17 qq_pcltabs.m 0 0
+18 qq_pclgen.m 0 0
+19 qq_pcllib.m 0 0
+20 qq_print.m 0 0
+21 qq_records.m 0 0
+22 qq_resolve.m 0 0
+23 qq_runx.m 0 0
+24 qq_runaux.m 0 0
+25 qq_sets.m 0 0
+26 qq_strings.m 0 0
+27 qq_syslibs.m 0 0
+28 qq_tables.m 0 0
+29 qq_dummyshow.m 0 0
+30 qq_showpcldummy.m 0 0
+31 qq_vars.m 0 0
+32 syswin.q 0 1
+33 syslin.q 0 1
+34 sysp.q 0 1
+35 windows.q 0 1
+36 linux.q 0 1
+37 clibp.q 0 1
+38 smlib.q 0 1
+39 winapi.q 0 1
+40 gxlib.q 0 1
+41 bmlib.q 0 1
+42 console.q 0 1
+43 lincon.q 0 1
+44 winconsts.q 0 1
+45 wingxlib.q 0 1
+46 winmessages.q 0 1
+47 gxmisc.q 0 1
+48 dates.q 0 1
