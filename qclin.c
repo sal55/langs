@@ -1,5 +1,13 @@
-// Generated C
+// Generated C for Linux, uses label pointers
 #pragma GCC diagnostic ignored "-Wbuiltin-declaration-mismatch"
+
+// Compile with gcc using:
+// gcc -O3 -s qclin.c -oqclin -lm -ldl -fno-strict-aliasing
+
+// Run using for example:
+// ./qclin hello
+// Needs input file hello.q (extension is optional to qclin) consisting of:
+// println "Hello, World!"
 
 extern double sqrt(double);
 extern double sin(double);
@@ -77309,4 +77317,6 @@ i64 Poweri64(i64 a, i64 n) {
 }
 
 // End of C Code
-
+
+
+
