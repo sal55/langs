@@ -969,9 +969,9 @@ end
 
 global procinfo pinfo
 
-global int frameoffset
-global int paramoffset
-global int framebytes
+!global int frameoffset
+!global int paramoffset
+!global int framebytes
 
 global const maxparams=32
 global const maxlocals=256

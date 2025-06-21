@@ -26,8 +26,7 @@
 	module qq_records
 	module qq_resolve
 
-	module qq_runx
-
+	module qq_run
 	module qq_runaux
 
 	module qq_sets
@@ -18422,7 +18421,7 @@ proc dobaseclass(int baseclassindex)=
 		d:=d.nextdef
 	od
 end
-=== qq_runx.m 0 0 23/48 ===
+=== qq_run.m 0 0 23/48 ===
 !const doretcheck=1
 const doretcheck=0
 
@@ -18505,7 +18504,7 @@ freddy:
 	fp:=frameptr
 
 
-	IF JUMPTABLE=NIL THEN PCERROR("JUMPTABLE NOT SET") fI
+IF JUMPTABLE=NIL THEN PCERROR("JUMPTABLE NOT SET") fI
 	doswitchx(localjumptable) pc.labaddr
 
 !	doswitchu pc.opcode
@@ -39011,7 +39010,7 @@ end
 20 qq_print.m 0 0
 21 qq_records.m 0 0
 22 qq_resolve.m 0 0
-23 qq_runx.m 0 0
+23 qq_run.m 0 0
 24 qq_runaux.m 0 0
 25 qq_sets.m 0 0
 26 qq_strings.m 0 0

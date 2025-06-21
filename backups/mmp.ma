@@ -1008,9 +1008,9 @@ end
 
 global procinfo pinfo
 
-global int frameoffset
-global int paramoffset
-global int framebytes
+!global int frameoffset
+!global int paramoffset
+!global int framebytes
 
 global const maxparams=32
 global const maxlocals=256
@@ -3212,7 +3212,8 @@ const fshowopndstack=0
 
 GLOBAL INT DEBUG
 
-int framebytes
+global int frameoffset, paramoffset
+global int framebytes
 
 [pclnames.bounds]ref proc(pcl) px_handlertable
 
@@ -8545,6 +8546,7 @@ global proc peephole=
 	int lab1,lab2
 
 	if not fpeephole then return fi
+!CPL "PEEP"
 
 	m:=mccode.nextmcl
 
@@ -15190,7 +15192,7 @@ proc production_compiler=
 !CPL =NIF
 !CPL =NWHEN
 !CPL =NUNLESS
-!CPL =NUNLESSC
+!CPL =NALLSYMS
 
 !CPL =NUNITS
 !CPL =PCLSEQNO
@@ -16053,6 +16055,9 @@ proc do_const(unit p) =
 
 	elsif ttisref[mode] then
 		if p.isastring then
+!CPL "doconst/CONST3", P.SVALUE, p.strtype
+if p.strtype='B' then gerror("1:B-str?") fi
+
 			genpushstring(p.svalue)
 		else
 			genpushint(p.value)
@@ -20015,6 +20020,8 @@ proc genidata(unit p,int doterm=1, am='A',offset=0)=
 		if ttisref[t] then
 			if t=trefchar then
 				if p.svalue then
+!CPL "GID/CONST1", P.SVALUE, p.strtype
+if p.strtype='B' then gerror("1:B-str?") fi
 					pc_gen(kdata,genstring(p.svalue))
 				else
 					pc_gen(kdata,genint(0))
@@ -20029,6 +20036,7 @@ proc genidata(unit p,int doterm=1, am='A',offset=0)=
 
 		elsif ttbasetype[t]=tarray then
 			IF P.STRTYPE=0 THEN GERROR("IDATA/ARRAY/NOT BLOCKDATA") FI
+!CPL "GID/CONST2", P.SVALUE, p.strtype
 			pc_gen(kdata, gendata(p.svalue, p.slength))
 
 		else						!assume int/word
