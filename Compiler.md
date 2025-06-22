@@ -2,7 +2,7 @@ My systems language compiler.
 
 ````
     Inputs             Intermediates                                                              Outputs
-                                                 A         B        C       D               E
+                                                 A         B        C      D/F              E
     Ext Libs      ───>───────────────────────────┐
     Source File   ─┬─> AST1 ─> AST2 ─┬─> AST3 ─┬─┴──> PCL ─┬─> MCL ─┬─> SS ─┬─> EXE Image ──┬───> EXE File
     Include Files ─┘                 │         │           │        │       │               └───> DLL File
