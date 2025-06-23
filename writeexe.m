@@ -1,5 +1,189 @@
 !Create .exe file from SS-data (code, data, reloc and psymbol tables)
 
+!Record definitions copied from objdecls.m:
+!----------------------------------
+global record imagefileheader =
+    u16 machine
+    u16 nsections
+    u32 timedatestamp
+    u32 symtaboffset
+    u32 nsymbols
+    u16 optheadersize
+    u16 characteristics
+end
+
+global record imagedir =
+    u32 virtualaddr
+    u32 size
+end
+
+global record optionalheader =          !exe/dll only
+    u16  magic
+    byte     majorlv
+    byte     minorlv
+    u32 codesize
+    u32 idatasize
+    u32 zdatasize
+    u32 entrypoint
+    u32 codebase
+!   u32 datebase        !32-bit exe files only
+    u64 imagebase
+    u32 sectionalignment
+    u32 filealignment
+    u16  majorosv
+    u16  minorosv
+    u16  majorimagev
+    u16  minorimagev
+    u16  majorssv
+    u16  minorssv
+    u32 win32version
+    u32 imagesize
+    u32 headerssize
+    u32 checksum
+    u16  subsystem
+    u16  dllcharacteristics
+    u64   stackreserve
+    u64   stackcommit
+    u64   heapreserve
+    u64   heapcommit
+    u32 loaderflags
+    u32 rvadims
+    imagedir exporttable
+    imagedir importtable
+    imagedir resourcetable
+    imagedir exceptiontable
+    imagedir certtable
+    imagedir basereloctable
+    imagedir debug
+    imagedir architecture
+    imagedir globalptr
+    imagedir tlstable
+    imagedir loadconfigtable
+    imagedir boundimport
+    imagedir iat
+    imagedir delayimportdescr
+    imagedir clrheader
+    imagedir reserved
+end
+
+global record imagesectionheader =
+    [8]char name
+    union
+        u32 physical_address
+        u32 virtual_size
+    end
+    u32 virtual_address
+    u32 rawdata_size
+    u32 rawdata_offset
+    u32 relocations_ptr
+    u32 linenos_offset
+    u16 nrelocs
+    u16 nlinenos
+    u32 characteristics
+end
+
+global record imagesymbol =
+    union
+        [8]char shortname
+        struct
+            u32 shortx
+            u32 longx
+        end
+        u64 longname
+    end
+    u32 value
+    i16 sectionno
+    u16 symtype
+    byte    storageclass
+    byte    nauxsymbols
+end
+
+global record importdirrec =
+    u32 implookuprva
+    u32 timedatestamp
+    u32 fwdchain
+    u32 namerva
+    u32 impaddressrva
+end
+
+global record coffrelocrec =
+    i32 virtualaddr
+    i32 stindex
+    i16 reloctype
+end
+
+global enumdata [0:]ichar relocnames =
+    (abs_rel = 0,   $),
+    (addr64_rel,    $),
+    (addr32_rel,    $),
+    (addr32nb_rel,  $),
+    (rel32_rel,     $),
+    (rel321_rel,    $),
+    (rel8_rel,      $),             !used within assembler only, not in coff format
+end
+
+global record auxsectionrec = 
+    i32 length
+    i16 nrelocs
+    i16 nlines
+    i32 checksum
+    i16 sectionno
+    i32 dummy
+end
+
+global record sectionrec =
+    union
+        ref dbuffer data        !copy of ss_zdata etc
+        ref byte bytedata       !added later, eg, import dir block
+    end
+    ichar name                  !name like ".bss" as it will be in obj/exe file
+    int segtype                 !code_seg etc
+    int rawsize                 !in file
+    int rawoffset               !offset in exe file
+    int virtsize                !in image
+    int virtoffset              !offset from imagebase
+    ref relocrec relocs         !for idata/code: reloc info needs to be processed
+    int nrelocs                 !
+end
+
+global record importrec =               !details about all imported symbols
+    psymbol def             !full st entry
+    int libno                   !which dll lib this belongs to
+    ichar name                  !name of symbol (extracted from lib.name if needed)
+    int hintnameoffset          !voffset of hint/name entry in impdir section
+    int iatoffset               !voffset of IAT entry
+    int thunkoffset             !offset within code section of thunk entry
+end
+
+global record exportrec =       !details about all exported symbols
+    psymbol def             !full st entry
+    ichar name                  !name of symbol (extracted from lib.name if needed)
+end
+
+global record dllrec =                  !all imported libraries
+    ichar name                  !name of library, including .dll
+    int nprocs                  !no. of imports which use this library
+    int nametableoffset         !start of name table in impdir
+    int addrtableoffset         !start of addr table (IAT)
+    int dllnameoffset           !offset of name within impdir
+    int dllextraoffset          !offset of mysterious region just before the name
+end
+
+global record exportdirrec =
+    u32 exportflags
+    u32 timedatestamp
+    u16 majorversion
+    u16 minorversion
+    u32 namerva
+    u32 ordinalbase
+    u32 naddrtable
+    u32 nnamepointers
+    u32 expaddressrva
+    u32 namepointerrva
+    u32 ordtablerva
+end
+!----------------------------------
+
 [maxplibfile]i64 libinsttable
 [maxplibfile]ichar libinstnames
 [maxplibfile]int libnotable         !index into dlltable
