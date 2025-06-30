@@ -51,7 +51,7 @@ end
 
 proc main =
     if ncmdparams<1 then
-        println "Usage:", cmdparams[0], "filename"
+        println "Usage: qq prog filename"
         stop
     fi
 
