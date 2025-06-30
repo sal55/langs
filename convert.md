@@ -1,8 +1,5 @@
 **var** *charmap* =  
- "AðšBð›CðœDðEðžFðŸGð Hð¡Ið¢Jð£Kð¤Lð¥Mð¦Nð§Oð¨Pð©QðªRð«Sð¬Tð­Uð®Vð¯Wð°Xð±Yð²Zð³"  
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+ "Að€BðCð‚DðƒEð„Fð…Gð†Hð‡IðˆJð‰KðŠLð‹MðŒNðOðŽPðQðRð‘Sð’Tð“Uð”Vð•Wð–Xð—Yð˜Zð™0ðŸŽ1ðŸ2ðŸ3ðŸ‘4ðŸ’5ðŸ“6ðŸ”7ðŸ•8ðŸ–9ðŸ—"  
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+ "að‘Žbð‘cð‘dð‘‘eð‘’fð‘“gð‘”hâ„Žið‘–jð‘—kð‘˜lð‘™mð‘šnð‘›oð‘œpð‘qð‘žrð‘Ÿsð‘ tð‘¡uð‘¢vð‘£wð‘¤xð‘¥yð‘¦zð‘§"  
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+ "að´bðµcð¶dð·eð¸fð¹gðºhð»ið¼jð½kð¾lð¿mð‘€nð‘oð‘‚pð‘ƒqð‘„rð‘…sð‘†tð‘‡uð‘ˆvð‘‰wð‘Šxð‘‹yð‘Œzð‘*Ã—*Â·%Ã·#Â¢";  
+ "AðšBð›CðœDðEðžFðŸGð Hð¡Ið¢Jð£Kð¤Lð¥Mð¦Nð§Oð¨Pð©QðªRð«Sð¬Tð­Uð®Vð¯Wð°Xð±Yð²Zð³Að€BðCð‚DðƒEð„Fð…Gð†Hð‡IðˆJð‰KðŠLð‹MðŒNðOðŽPðQðRð‘Sð’Tð“Uð”Vð•Wð–Xð—Yð˜Zð™0ðŸŽ1ðŸ2ðŸ3ðŸ‘4ðŸ’5ðŸ“6ðŸ”7ðŸ•8ðŸ–9ðŸ—að‘Žbð‘cð‘dð‘‘eð‘’fð‘“gð‘”hâ„Žið‘–jð‘—kð‘˜lð‘™mð‘šnð‘›oð‘œpð‘qð‘žrð‘Ÿsð‘ tð‘¡uð‘¢vð‘£wð‘¤xð‘¥yð‘¦zð‘§að´bðµcð¶dð·eð¸fð¹gðºhð»ið¼jð½kð¾lð¿mð‘€nð‘oð‘‚pð‘ƒqð‘„rð‘…sð‘†tð‘‡uð‘ˆvð‘‰wð‘Šxð‘‹yð‘Œzð‘*Ã—*Â·%Ã·#Â¢";  
   
 **var** *mapfrom* = ("â‰¤", "â‰¥", "â‰ ", "Â¬", "âˆ§", "âˆ¨", "â†");  
 **var** *mapto* = ("<=", ">=", "/=", " NOT ", " AND ", " OR ", ":=");  
@@ -35,14 +32,17 @@
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**if** *chunk* = """" **then**  
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*inquotes* := **not** *inquotes*  
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**fi**  
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**elsif** *mappos* := *chunk* **inx** *charmap* **then**  
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**print** *charmap*[*mappos*-1]  
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**else**  
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*mappos* := *mapto*.**len**  
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**while** *mappos*>0 **and** *mapfrom*[*mappos*] <> *chunk* **do**  
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;--*mappos*  
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**od**  
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**print** (*mappos* | *mapto*[*mappos*] | *chunk*)  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*mappos* := *chunk* **inx** *charmap*  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**if** *mappos*.*isfound* **then**  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**print** *charmap*[*mappos*-1]  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**else**  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*mappos* := *mapto*.**len**  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**while** *mappos*>0 **and** *mapfrom*[*mappos*] <> *chunk* **do**  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;    --*mappos*  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**od**  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**print** (*mappos* | *mapto*[*mappos*] | *chunk*)  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**fi**  
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**fi**  
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*pos* +:= *length*  
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**od**  
@@ -51,7 +51,7 @@
   
 **proc** *main* =  
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**if** *ncmdparams*<1 **then**  
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**println** "Usage:", *cmdparams*[1], "filename"  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**println** "Usage prog filename"  
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**stop**  
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**fi**  
   
