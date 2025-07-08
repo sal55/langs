@@ -53,7 +53,7 @@ All tools run on and for x64 with Windows.
 ````
 **'MC' M to C Transpiler (MC7)**
 ````
-.m/.ma ──────> [mm.exe] ──────> .c File (linear, stripped C generated via PCL/IL)
+.m/.ma ──────> [mc.exe] ──────> .c File (linear, stripped C generated via PCL/IL)
 
 ````
 
