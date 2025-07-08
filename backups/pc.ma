@@ -931,7 +931,7 @@ EXPORT record pclrec =
 					i32 nargs			! number of args
 					union
 						i32 nvariadics	! 0, or arg # that is first variadic
-						i32 simple		!setcall: 1 if whole call sequence is simple
+						i32 nrealargs	!setcall: 1 if whole call sequence is simple
 					end
 				end
 				struct					! (x,y) switch
@@ -1701,13 +1701,13 @@ skip:
 			recase else
 
 		when ksetcall then
-			if ncall then
-				for i:=ncall downto 1 do
-					callstack[i].simple:=0
-				od
-			else
-				pc.simple:=1
-			fi
+!			if ncall then
+!				for i:=ncall downto 1 do
+!					callstack[i].simple:=0
+!				od
+!			else
+!				pc.simple:=1
+!			fi
 			++newpc
 			newpc^:=pc^
 			newpc.seqno:=++seqno
@@ -2051,12 +2051,12 @@ export enumdata [0:]ichar pclnames,
 	(ksetjmp,      $+1, 0, 0, 0, 0),  ! (1 - 0) (          ) For C
 	(klongjmp,     $+1, 0, 0, 0, 0),  ! (1 - 1) (          ) For C
 
-	(ksetcall,     $+1, 0, 2, 0, 0),  ! (0 - 0) (n s       ) n=args, s=1 for simple call
+	(ksetcall,     $+1, 0, 1, 0, 0),  ! (0 - 0) (n s       ) n=args, s=1 for simple call
 
-	(ksetarg,      $+1, 0, 1, 0, 0),  ! (0 - 0) (n         ) ?
+	(ksetarg,      $+1, 0, 2, 0, 0),  ! (0 - 0) (n         ) ?
 	(kloadall,     $+1, 0, 0, 0, 0),  ! (0 - 0) (          ) ?
 
-	(keval,        $+1, 0, 0, 0, 0),  ! (1 - 0) (          ) Evaluate Z [load to an actual register], then pop
+	(keval,        $+1, 1, 0, 0, 0),  ! (1 - 0) (          ) Evaluate Z [load to an actual register], then pop
 	(kcomment,     $+1, 0, 0, 0, 0),  ! (0 - 0) (C         ) Comment C (a string)
 	(kendprog,     $+1, 0, 0, 0, 0),  ! (0 - 0) (          ) End-of-program marker.
 !------------------------- -
@@ -2136,7 +2136,7 @@ global proc genmcl(ichar dummy=nil)=
 	repeat
 		convertpcl(currpcl)
 
-!*!		showopndstack() when fshowopndstack and currpcl.opcode not in [klabel, kcomment, kproc, ktcproc, kretproc, kendproc]
+		showopndstack() when fshowopndstack and currpcl.opcode not in [klabel, kcomment, kproc, ktcproc, kretproc, kendproc]
 
 		++currpcl
 
@@ -2171,7 +2171,7 @@ proc convertpcl(pcl p)=
 !RETURN WHEN P.OPCODE IN [KCOMMENT]
 !CPL "    CONV",PCLNAMES[P.OPCODE]
 
-!*!	doshowpcl(p) when fshowpcl
+	doshowpcl(p) when fshowpcl
 
 	pmode:=p.mode
 	currpcl:=p
@@ -2184,13 +2184,13 @@ proc convertpcl(pcl p)=
 !	[r0..r15]byte OLDREGSET
 !	pair oldregsetpr @ oldregset
 !	OLDREGSET:=REGSET
-	clear regset
+	clear regset				!clear work reg flags
 
 	int reg
 !
 	for i to noperands do
 		reg:=pclreg[i]
-		if reg then
+		if reg then				!reset work reg occupied by a pcl opnd
 			regset[reg]:=1
 		fi
 	od
@@ -2268,24 +2268,38 @@ proc unimpl(pcl p)=
 	mgencomment(pcm_copyheapstring(str))
 end
 
+proc doshowpcl(pcl p)=
+	[1256]char str
+
+	return unless fshowpcl
+
+	case p.opcode
+	when kproc, ktcproc, kretproc, kendproc, kistatic, kzstatic, kdata then
+	else
+		strcpy(&.str,"                       ")
+		strcat(&.str,strpclstr(p, str.len))
+		mgencomment(PCM_COPYHEAPSTRING(&.str))
+	esac
+end
+
 proc px_nop*(pcl p) =
 ! ?
 !*!	unimpl(p)
 end
 
-proc px_dupl*(pcl p) =
-! Z' := Y' := Z
-	duplpcl()
-end
+!proc px_dupl*(pcl p) =
+!! Z' := Y' := Z
+!	duplpcl()
+!end
 
-proc px_double*(pcl p) =
-! Count extra instance of Z (only works for top stack item)
-	if ncalldepth then
-		duplpcl()
-	else
-		++pclcount[noperands]
-	fi
-end
+!proc px_double*(pcl p) =
+!! Count extra instance of Z (only works for top stack item)
+!	if ncalldepth then
+!		duplpcl()
+!	else
+!		++pclcount[noperands]
+!	fi
+!end
 
 proc px_opnd*(pcl p) =
 ! Define auxiliary operand M or L
@@ -2325,7 +2339,7 @@ proc px_proc*(pcl p) =
 	mgendef(currfunc)
 !CPL $LINENO
 
-	initproc(currfunc)
+	do_proccode_a()
 !CPL $LINENO
 !create dummy mcl op at which to insert hang proc-entry code onto later
 	mgencomment("?>>")
@@ -2479,15 +2493,16 @@ proc px_stop*(pcl p) =
 	psymbol d
 
 !	loadparam(zz,tpu64, r10)
+	loadopnd(zz,tpu64, r0)
 
-	genmc_reg(m_mov, r0)
-	mgenint(0)
-
+!	genmc_reg(m_mov, r0)
+!	mgenint(0)
+!
 	genmc(m_bl)
 	mgenname("exit")
 
 !	localshadow:=1
-!*!	poppcl()
+	poppcl()
 end
 
 proc px_retproc*(pcl p) =
@@ -2496,8 +2511,8 @@ proc px_retproc*(pcl p) =
 		mgencomment("---")				!injection of entry code goes wrong otherwise
 	fi
 
-	do_procentry(p)
-	do_procexit()
+	do_proccode_b()
+	do_proccode_c()
 end
 
 proc px_retfn*(pcl p) =
@@ -2519,21 +2534,112 @@ MERROR("RETFN/BLOCK")
 	px_retproc(p)
 end
 
+proc px_load*(pcl p) =
+! Z' := M &M L &L 123 4.5 "abc"
+
+	pushpcl(p)
+end
+
+proc px_store*(pcl p) =
+! M := Z
+	int bx
+
+	bx:=loadopnd(zz, p.mode)
+	storeopnd(p, bx)
+	poppcl()
+
+end
+
+proc px_eval*(pcl p) =
+! Evaluate Z [load to an actual register], then pop
+
+!MCOMM("EVAL")
+
+	loadopnd(zz, p.mode, getworkreg(p.mode))
+	poppcl()
+end
+
+proc px_add*(pcl p) =
+! Z' := Y + Z
+	do_binop(p, m_add, m_fadd)
+end
+
+proc px_sub*(pcl p) =
+! Z' := Y + Z
+	do_binop(p, m_sub, m_fsub)
+end
+
+proc px_mul*(pcl p) =
+! Z' := Y + Z
+	do_binop(p, m_mul, m_fmul)
+end
+
+proc px_setcall*(pcl p) =
+! ?
+	saveopnds()
+
+	if ncalldepth>=maxcalldepth then
+		merror("Too many nested calls")
+	fi
+
+	++ncalldepth
+
+	callblockret[ncalldepth]:=pmode=tpblock
+	callblocksize[ncalldepth]:=p.size
+	callpending[ncalldepth]:=0
+end
+
+proc px_setarg*(pcl p) =
+! Mark Z as n'th argument (counting backwards)
+	byte pending
+	byte n:=p.x
+
+!Note: not copying block args when they are stack args
+
+	case p.y
+	when 1 then							!pushed: first/odd operand
+		pushopnds(zz, zz)
+		poppcl()
+
+	when 2 then							!first or second of pair
+
+		pending:=callpending[ncalldepth]
+		if pending then
+			pushopnds(pending, zz)
+			callpending[ncalldepth]:=0
+			to zz-pending+1 do
+				poppcl()
+			od
+		else
+			callpending[ncalldepth]:=zz
+		fi
+
+	else								!register-passed
+		if pmode=tpblock then			!need to record its size
+			if n>8 then merror("block8") fi
+			callargsize[ncalldepth, n]:=p.size
+		fi
+
+		poppcl()
+
+	esac
+end
+
 === mc_auxmcl.m 0 0 10/24 ===
-ref mclrec mclframesetup
+!ref mclrec mclframesetup
 
 global int nsaveregs, nsavefregs		!number of integer/float non-vols to be saved
 global int nspilled						!spilled int/float registers
 
 global int framesize					!counts bytes in stack frame
-global int framebytes, frameoffset, paramoffset
+!global int framebytes, frameoffset, paramoffset
 global int paramstackoffset
 global int paramspilloffset
 global int fplrsize						!0 or 16
 
-global proc initproc(psymbol d)=
+global proc do_proccode_a=
 !initialise genmcl pass through proc pcl code
-	psymbol e
+	psymbol d
 	ref procinforec pinfi
 	int regargs, fregargs				!how many args can be in regs
 	int reglocals, freglocals			!how many locals reside in non-vols
@@ -2541,54 +2647,19 @@ global proc initproc(psymbol d)=
 	ref procinforec pinfo
 
 	clear regset
-	clear workregs
-	clear isregvar
 	int reg, xreg, n, fn, r, npregs, nextreg, nextfreg
 
-!NEW CODE REQUIRED WHICH SETS NWORK/X/REGS
-!Works with INFO=NIL, then not critical, but will be some of R0-R9
-!Or uses info to decide how many and where; then they will be
-!a combo of R0-R2, R9 downtowards R3 (depends on maxregvars), and possibly R12/R12
-
-!CPL "IP",$LINENO
 	npregs:=0
 	pinfo:=currfunc.info
 
-	for r in r9..r15 do workregs[r]:=1 od
-	for r in v16..v31 do workregs[r]:=1 od
-!CPL "IP",$LINENO
-	workrega:=r9
-	workregb:=r15
-	workxrega:=v16
-	workxregb:=v31
-
-!	println currfunc.name,,":",=nworkregs, =nworkxregs, =npregs, =MAXREGVARS, =MAXXREGVARS
-!	cp "  "; for r in r0..r13 when workregs[r] do print getregname(r),$ od; cpl
-!	cp "  "; for r in r0..r15 when workxregs[r] do print getxregname(r),$ od; cpl
-
-	clear usedregs
 	clear pcltempflags
-!CPL "IP",$LINENO
 
-	mstackdepth:=0
 	noperands:=0
+	tempreg:=(currfunc.mode=tpblock|rnone|r8)
 
-	framesize:=frameoffset:=paramoffset:=framebytes:=0
-	localshadow:=0
+	framesize:=0
 
 	nblocktemps:=0
-
-!	if d.mode=tpblock then
-!		e:=pc_makesymbol("$1x", misc_id)
-!		e.mode:=d.mode
-!		e.used:=1
-!		e.id:=param_id
-!		e.nextparam:=currfunc.nextparam
-!		e.owner:=currfunc
-!		currfunc.nextparam:=e
-!		blockretname:=e
-!	fi
-!CPL "IP",$LINENO
 
 	pinfo:=currfunc.info
 	nsaveregs:=nsavefregs:=nspilled:=0
@@ -2605,13 +2676,12 @@ global proc initproc(psymbol d)=
 		return
 	end
 
-	println =REGARGS, =FREGARGS, =REGLOCALS, =FREGLOCALS, =REGMOVED, =FREGMOVED
-
 	if not pinfo.isleaf then
 !get number of args to be moved from their regs (rest need to be spilled)
 		regmoved:=getmoveparams(regargs, 10, reglocals, 2)
 		fregmoved:=getmoveparams(fregargs, 16, freglocals, 4)
 	fi
+	println =REGARGS, =FREGARGS, =REGLOCALS, =FREGLOCALS, =REGMOVED, =FREGMOVED
 
 	nsaveregs:=regmoved+reglocals		!how many non-vols to be save in each file
 	nsavefregs:=fregmoved+freglocals
@@ -2622,15 +2692,15 @@ global proc initproc(psymbol d)=
 !* Scan local vars and set reg code for first reglocals/freglocals
 !  Note: start register will affected by f/regmoved
 
-	nextreg:=r0
-	nextfreg:=v0
+	nextreg:=regvara
+	nextfreg:=xregvara
 
 !for leaf, regarg settings can all stay
 	if not pinfo.isleaf then		!all regargs to be moved, or set to spill
 !do move/spill on regargs
 		n:=regmoved
 		fn:=fregmoved
-		d:=d.nextparam
+		d:=currfunc.nextparam
 		while d, d:=d.nextparam do
 			if d.paramcat=pmc_reg then
 				if pint[d.mode] and n then
@@ -2644,11 +2714,10 @@ global proc initproc(psymbol d)=
 					d.reg:=nextfreg++
 					--fn
 				else
-					d.reg:=rnone
+!					d.reg:=rnone
 					d.paramcat:=pmc_spill
 				fi
 			fi
-			if d.paramcat=pmc_spill then ++nspilled fi
 		od
 
 	fi
@@ -2657,6 +2726,8 @@ global proc initproc(psymbol d)=
 !Now scan locals and assign first reglocals/freglocals to next register
 !It is easier to do separate loops for int/float
 
+	nextreg:=regvara
+	nextfreg:=xregvara
 	d:=currfunc.nextlocal
 	n:=reglocals
 	while d and n, d:=d.nextlocal do
@@ -2689,6 +2760,188 @@ global proc initproc(psymbol d)=
 
 end
 
+global proc do_proccode_b=
+! Stack layout (grows downwards)
+!	| ...
+!	| Stack arg2
+! A	| Stack arg1			There can be 0 stack args
+!	| ----------
+!	| LR					Saved FP/LR when used
+! B	| FP
+!	| ----------
+!	! Spilled args			N slots, can be zero
+!	| ----------
+!	! Local vars			Ones not in regvars
+!	| ----------
+!	| Local Temps			Temps created during code gen
+! C	| [Stack adj]			Extra slot may be added to keep stack/framesize 16-byte aligned
+!	| ----------
+!	| Saved nonvol regs		(May have dummy slot to keep alignment)
+! D	| Saved nonvol fregs	(May also have dummy slot)
+! Framesize used to step SP is C-B, which SP pointing to C.
+! Nonvols are saved by pushing within the function's own stack space. Used code will
+! then have SP starting to D
+
+
+
+	int retmode, ntemps, hasequiv, offset, size, reg
+!*!	mclopnd ax
+	psymbol d
+	[100]char str, newname
+	int r, n
+
+	setmclentry(mclprocentry)
+
+	fplrsize:=16				!assume fp/lr are pushed
+
+	framesize:=0
+
+!	framesize+:=nsaveregs*8
+!	if nsaveregs.odd then framesize+:=8 fi			!keep aligned
+!
+!	framesize+:=nsavefregs*8
+!	if nsavefregs.odd then framesize+:=8 fi
+
+
+	d:=currfunc.nextparam
+	while d, d:=d.nextparam do if d.paramcat=pmc_spill then ++nspilled fi od
+
+	framesize+:=nspilled*8							!may be odd; fixed later
+
+!note that fp will be set to point to lower o pushed lr/fp
+
+!stackargs: assumed that any stack-adj is at top end
+	paramstackoffset:=fplrsize				!fp-rel offset of lowest stack arg				
+	paramspilloffset:=-framesize			!fp-rel offset of lowest spilled location
+
+	d:=currfunc.nextparam
+	while d, d:=d.nextparam do
+		if d.atvar then merror("@param") fi
+
+		case d.paramcat
+		when pmc_reg, pmc_move then
+			genmc_def(m_definereg, d)
+
+		when pmc_spill then
+			genmc_def(m_define, d)
+
+			d.offset:=paramspilloffset
+!CPL D.NAME,=FPLRSIZE, =FRAMESIZE, =PARAMSPILLOFFSET, =NSPILLED,=D.OFFSET
+			paramspilloffset+:=8
+
+		when pmc_stack then
+			genmc_def(m_define, d)
+			d.offset:=paramstackoffset
+			paramstackoffset+:=8
+
+		esac
+	od
+
+!	retmode:=currfunc.mode
+
+	d:=currfunc.nextlocal
+	while d, d:=d.nextlocal do
+		size:=psize[d.mode]
+		if d.mode=tpblock then
+			size:=d.size
+		fi
+		nextloop unless d.used
+
+		if d.atvar then
+			hasequiv:=1
+
+        elsif d.reg then
+			genmc_def(m_definereg, d)
+
+        else
+			framesize+:=roundsizetg(size)
+			d.offset:=-framesize
+			genmc_def(m_define, d)
+		fi
+	od
+
+	ntemps:=0
+CPL =NTEMPS
+!	for i to maxoperands when pcltempflags[i] do
+!		++ntemps
+!		frameoffset-:=8
+!!*!		ax:=pcltempopnds[i]
+!!*!		ax.offset:=frameoffset
+!MGENCOMMENT("DEFINE3")
+!!		genmc(m_define, mgenname(gettempname(currfunc,i)), mgenint(ax.offset))
+!	od
+
+	if framesize iand 8 then
+CPL "FRAME ADJ"
+		framesize+:=8				!keep stackframe a multiple of 16 bytes
+	fi
+
+!	MCOMM("FPLR:      ", STRINT(FPLRSIZE))
+!	MCOMM("NSAVEREGS: ", STRINT(NSAVEREGS))
+!	MCOMM("NSAVEFREGS:", STRINT(NSAVEFREGS))
+!	MCOMM("NSPILLED:  ", STRINT(NSPILLED))
+!	MCOMM("FRAMESIZE: ", STRINT(FRAMESIZE))
+
+!	MCOMM("<FRAME SETUP CODE>")
+
+	genmc_reg(m_push, rframe, rlink)
+	genmc_reg(m_mov, rframe, rstack)
+	if framesize then
+		genmc_reg(m_sub, rstack)
+		mgenint(framesize)
+	fi
+
+!MGENCOMMENT("SAVE NONVOL REGS")
+	saveregs(nsaveregs, regvara)
+	saveregs(nsavefregs, xregvara)
+
+!	MGENCOMMENT("?]]")
+!	MCLFRAMESETUP:=MCCODEX
+
+!MGENCOMMENT("SPILL REG ARGS")
+	spillparams()
+
+!MCOMM("COPY PARAMS TO REGVARS?")
+
+	MCOMM("---------------")
+	resetmclentry()
+end
+
+global proc do_proccode_c=
+	int offset
+
+	MCOMM("---------------")
+
+!	MCOMM("RESTORE NONVOL REGS")
+	restoreregs(nsavefregs, xregvara)
+	restoreregs(nsaveregs, regvara)
+
+!
+!	if framebytes or currfunc.nparams then
+!		if usedregs[rframe] then
+!MGENCOMMENT("POP FRAMEBYTES1")
+!!			popstack(framebytes)
+!!			genmc(m_pop, dframeopnd)
+!		else
+!			IF FRAMEBYTES THEN
+!MGENCOMMENT("POP FRAMEBYTES2")
+!!				popstack(framebytes+8)
+!			FI
+!		fi
+!	fi
+
+!	MCOMM("<FUNC LEAVE CODE>")
+
+	if framesize then
+		genmc_reg(m_add, rstack)
+		mgenint(framesize)
+	fi
+!	genmc_reg(m_push, rframe, rlink)
+	genmc_reg(m_pop, rlink, rframe)
+
+	genmc(m_ret)
+end
+
 func countregvars: int, int, int, int =
 !scan params in currfunc, and allocate pmc code.
 !It returns:
@@ -2702,12 +2955,12 @@ func countregvars: int, int, int, int =
 	int ireg:=0, freg:=0, basereg			!ireg/freg traverse r0-r7 and v0-v7
 	int regargs:=0, fregargs:=0				!how many args can be in regs
 	int reglocals:=0, freglocals:=0			!how many locals reside in non-vols
-	int regmoved:=0, fregmoved:=0			!how many of f/regargs can be moved to nonvol regs
+!	int regmoved:=0, fregmoved:=0			!how many of f/regargs can be moved to nonvol regs
 	byte skipregargs:=currfunc.ismain or currfunc.variadic
 
 	ref int preg, pregargs					!point to either ireg/regargs or freg/fregargs
 
-	CPL "SCAN PARAMS FOR", CURRFUNC.NAME, CURRFUNC.VARIADIC
+!	CPL "SCAN PARAMS FOR", CURRFUNC.NAME, CURRFUNC.VARIADIC
 	d:=currfunc.nextparam
 
 	while d, d:=d.nextparam do
@@ -2725,23 +2978,26 @@ func countregvars: int, int, int, int =
 
 		if preg^>=8 then				!keep on stack
 			d.paramcat:=pmc_stack
-		elsif skipregargs then			!main() or variadic (only for C)
-			d.paramcat:=pmc_spill
-			++(preg^)
-
 		else
-			if d.used then
-				if not d.addrof then
-					d.reg:=basereg + preg^
-					d.paramcat:=pmc_reg
-					++(pregargs^)
-				else
-					d.paramcat:=pmc_spill
-				fi
+			d.reg:=basereg + preg^
+
+			if skipregargs then			!main() or variadic (only for C)
+				d.paramcat:=pmc_spill
+				++(preg^)
+
 			else
-				d.paramcat:=pmc_ignore
+				if d.used then
+					if not d.addrof then
+						d.paramcat:=pmc_reg
+						++(pregargs^)
+					else
+						d.paramcat:=pmc_spill
+					fi
+				else
+					d.paramcat:=pmc_ignore
+				fi
+				++(preg^)
 			fi
-			++(preg^)
 		fi
 	od
 
@@ -2805,254 +3061,60 @@ func getmoveparams(int npreg, rmax, &nlocals, pmin)int nmove=
 	nmove
 end
 
-global proc do_procentry(pcl p)=
-	int retmode, ntemps, hasequiv, offset, size, reg
-!*!	mclopnd ax
-	psymbol d
-	[100]char str, newname
-	int rr, ff
-
-	setmclentry(mclprocentry)
-
-	fplrsize:=16				!assume fp/lr are pushed
-
-	framesize:=fplrsize
-	framesize+:=nsaveregs*8
-	if nsaveregs.odd then framesize+:=8 fi			!keep aligned
-	framesize+:=nsavefregs*8
-	if nsavefregs.odd then framesize+:=8 fi
-	framesize+:=nspilled*8							!may be odd; fixed later
-
-!note that fp will be set to point to lower o pushed lr/fp
-
-!stackargs: assumed that any stack-adj is at top end
-	paramstackoffset:=fplrsize				!fp-rel offset of lowest stack arg				
-	paramspilloffset:=-(framesize-fplrsize)	!fp-rel offset of lowest spilled location
-
-	d:=currfunc.nextparam
-	while d, d:=d.nextparam do
-		if d.atvar then merror("@param") fi
-
-		case d.paramcat
-		when pmc_reg, pmc_move then
-			genmc_def(m_definereg, d)
-
-		when pmc_spill then
-			genmc_def(m_define, d)
-			d.offset:=paramspilloffset
-			paramspilloffset+:=8
-
-		when pmc_stack then
-			genmc_def(m_define, d)
-			d.offset:=paramstackoffset
-			paramstackoffset+:=8
-
-		esac
-
-		d.offset:=paramspilloffset
-	od
-
-	retmode:=currfunc.mode
-
-	d:=currfunc.nextlocal
-	while d, d:=d.nextlocal do
-		size:=psize[d.mode]
-		if d.mode=tpblock then
-			size:=d.size
-		fi
-		nextloop unless d.used
-
-		if d.atvar then
-			hasequiv:=1
-
-        elsif d.reg then
-			genmc_def(m_definereg, d)
-
-        else
-			framesize+:=roundsizetg(size)
-			d.offset:=-(framesize-fplrsize)
-			genmc_def(m_define, d)
-		fi
-	od
-
-	ntemps:=0
-CPL =NTEMPS
-!	for i to maxoperands when pcltempflags[i] do
-!		++ntemps
-!		frameoffset-:=8
-!!*!		ax:=pcltempopnds[i]
-!!*!		ax.offset:=frameoffset
-!MGENCOMMENT("DEFINE3")
-!!		genmc(m_define, mgenname(gettempname(currfunc,i)), mgenint(ax.offset))
-!	od
-!
-!	if currfunc.isthreaded then
-!		if currfunc.nlocals or currfunc.nparams then merror("Threaded proc has locals/params") fi
-!		if ntemps then merror("Threaded proc has temps") fi
-!
-!!*!		if bspill or bxspill then merror("Threaded proc has spill regs") fi
-!
-!		resetmclentry()
-!		return
-!	fi
-
-	framebytes:=-frameoffset
-
-	if (bspill+bxspill).odd then				!need an even number to keep stack alighnment correct
-		unless framebytes iand 8 then
-			framebytes+:=8
-		end
-	else
-		if framebytes iand 8 then
-			framebytes+:=8
-		fi
-	fi
-
-	if framesize iand 8 then
-		framesize+:=8				!keep stackframe a multiple of 16 bytes
-	fi
-
-MGENCOMMENT("SAVE NONVOL REGS")
-
-!!spill any bregs
-!	if bspill then
-!		for r:=regvara to regvarb when usedregs[r] or isregvar[r] do
-!MGENCOMMENT("PUSH NON-VOL")
-!!			genmc(m_push, mgenreg(r, tpu64))
-!		od
-!	fi
-!
-!	if bxspill then
-!!*!		ax:=mgenreg(r0, tpu64)
-!		for r:=xregvara to xregvarb when usedregs[r] or isregvar[r] do
-!!			genmc(m_movq, ax, mgenxreg(r))
-!!			genmc(m_push, ax)
-!MGENCOMMENT("PUSH NON-VOLX")
-!		od
-!	fi
-
-	MGENCOMMENT("?]]")
-	MCLFRAMESETUP:=MCCODEX
-
-MGENCOMMENT("SPILL REG ARGS")
-!	spillparams()
-
-!MCOMM("COPY PARAMS TO REGVARS?")
-
-	MCOMM("---------------")
-	RESETMCLENTRY()
-end
-
-global proc do_procexit=
-!*!	mclopnd ax
-	int offset
-
-	MCOMM("---------------")
-	if currfunc.isthreaded then
-		genmc(m_ret)				!in case no jump out exists
-		return
-	fi
-
-	SETMCLENTRYF(mclframesetup)
-
-	if framebytes or currfunc.nparams then
-		if usedregs[rframe] then
-MGENCOMMENT("PUSH FRAMEBYTES1")
-
-!			genmc(m_push, dframeopnd)
-!			genmc(m_mov, dframeopnd, dstackopnd)
-!			pushstack(framebytes)
-		else
-			IF FRAMEBYTES THEN
-MGENCOMMENT("PUSH FRAMEBYTES2")
-!				pushstack(framebytes+8)
-			FI
-		fi
-	fi
-	RESETMCLENTRYF()
-
-	if framebytes or currfunc.nparams then
-		if usedregs[rframe] then
-MGENCOMMENT("POP FRAMEBYTES1")
-!			popstack(framebytes)
-!			genmc(m_pop, dframeopnd)
-		else
-			IF FRAMEBYTES THEN
-MGENCOMMENT("POP FRAMEBYTES2")
-!				popstack(framebytes+8)
-			FI
-		fi
-	fi
-
-	if bxspill then
-!*!		ax:=mgenreg(r10, tpu64)
-		for r:=xregvarb downto xregvara when usedregs[r] do
-MGENCOMMENT("UNSPILL REG")
-!*!			genmc(m_pop, ax)
-!*!			genmc(m_movq, mgenxreg(r), ax)
-		od
-	fi
-
-	if bspill then
-		for r:=regvarb downto regvara when usedregs[r] do
-MGENCOMMENT("UNSPILL XREG")
-!			genmc(m_pop, mgenreg(r, tpu64))
-		od
-	fi
-
-	genmc(m_ret)
-end
-
 proc spillparams=
 	psymbol d
 !*!	mclopnd ax
 	int offset:=16, regoffset:=0, xregoffset, firstoffset
 
-	regoffset:=0
+	d:=currfunc.nextparam
+	while d, d:=d.nextparam do
+		case d.paramcat
+		when pmc_spill then
+			genmc_rm(m_str, d.reg, rframe)
+!CPL "SPILL", D.NAME, D.OFFSET,D.REG
+!			moffset(d.offset)
+			mgenint(d.offset)
+			minside()
+		when pmc_move then
+!MCOMM("REGARG/MOVE",STRREG(D.REG), STRREG2(D.FROMREG))
+			genmc_reg(m_mov, d.reg, d.fromreg)
 
-MGENCOMMENT("SPILL PARAMS...")
+		esac
+	od
 
+end
 
-!	d:=currfunc.nextparam
-!
-!	if currfunc.variadic then				!C proc def using ...
-!		firstoffset:=d.offset				!param offsets may be pushed up
-!
-!		for i:=currfunc.nparams to 3 do				!0-based; if nparams=2, loops over 2..3 as 0..1 are normal
-!			ax:=mgenindex(areg:rframe, size:8, offset:i*8+firstoffset)
-!			genmc(m_mov, ax, mgenreg(i+r10))
-!		od
-!	fi
-!
-!	while d, d:=d.nextparam do
-!		if regoffset>3 then exit fi
-!
-!		if d.used  then
-!			if not d.reg then
-!				ax:=mgenindex(areg:rframe, size:8, offset:d.offset)
-!				case d.mode
-!				when tpr64 then
-!					genmc(m_movq, ax, mgenxreg(regoffset+xr0))
-!				when tpr32 then
-!					genmc(m_movd, changeopndsize(ax,4), mgenxreg(regoffset+xr0))
-!				else
-!					genmc(m_mov, ax, mgenreg(regoffset+r10))
-!				esac
-!			elsif d.reg then
-!				if ispfloat(d.mode) then
-!					if d.reg>=xr4 then				!not in-situ param
-!						genmc(m_movq, mgenxreg(d.reg), mgenxreg(regoffset+xr0, d.mode))
-!					fi
-!				elsif d.reg<=r9 then				!not in-situ param
-!					genmc(m_mov, mgenreg(d.reg, d.mode), mgenreg(regoffset+r10,d.mode))
-!				fi
-!			fi
-!		fi
-!
-!		offset+:=8
-!		++regoffset
-!	od
-!
+proc saveregs(int nregs, reg)=
+	int n
+	n:=0
+	while n<nregs-1 do
+		genmc_reg(m_push, reg, reg+1)
+		reg+:=2
+		n+:=2
+	od
+	if n<nregs then
+		genmc_reg(m_push, reg, reg)
+	fi
+end
+
+proc restoreregs(int nregs, reg)=
+	int n
+	return unless nregs
+
+	reg+:=nregs-1				!refers to last reg rather than first
+
+	if nregs.odd then
+		genmc_reg(m_pop, reg, reg)
+		--reg
+		--nregs
+	fi
+
+	n:=0
+	while n<nregs-1 do
+		genmc_reg(m_pop, reg, reg-1)
+		reg-:=2
+		n+:=2
+	od
 end
 
 global proc genstringtable=
@@ -3084,8 +3146,6 @@ global proc genstring_db(ichar s, int length=-1, strtype)=
 	ref char seq
 
 CPL "GENSTRING/DB", =LENGTH
-!MGENCOMMENT("STRING/DB")
-!RETURN
 
 	if length=-1 then
 		length:=strlen(s)
@@ -3096,39 +3156,7 @@ CPL "GENSTRING/DB", =LENGTH
 		return
 	fi
 
-
 	genmc_string((strtype|m_asciiz|m_ascii), s)
-!
-!
-!	seqlen:=0
-!
-!	
-!
-!
-!	to length do
-!		c:=s++^
-!!		if c<32 or c>=127 or c='\"' then
-!		if c<32 or c>=127 or c in ['\"', '\\'] then
-!			if seqlen then
-!				gendbstring(seq, seqlen)
-!				seqlen:=0
-!			fi
-!			gendb(c)
-!		else
-!			if seqlen=0 then
-!				seqlen:=1
-!				seq:=s-1
-!			else
-!				++seqlen
-!			fi
-!		fi
-!	od
-!	if seqlen then
-!		gendbstring(seq,seqlen)
-!	fi
-!	if strtype=0 then
-!		gendb(0)
-!	fi
 end
 
 proc gendb(int a)=
@@ -3293,6 +3321,24 @@ func resetmclentryf:mcl pnew =
 	pnew
 end
 
+global proc do_binop(pcl p, int iopc, fopc) =
+! Z' := Y op Z
+	int ax, bx, cx
+
+	bx:=loadopnd(yy, p.mode)
+	cx:=loadopnd(zz, p.mode)
+
+	if isregvar(bx) then
+		ax:=getworkreg(p.mode)
+		pclreg[yy]:=ax
+	else
+		ax:=bx
+	fi
+
+	genmc_reg((pint[p.mode]|iopc|fopc), ax, bx, cx)
+
+	poppcl()
+end
 
 === mc_libmcl.m 0 0 11/24 ===
 const fuseregtable=1
@@ -3311,7 +3357,7 @@ int nnametable
 
 global macro isframex(d) = (d.id in [local_id, param_id])
 
-global macro mcomm = mgencomment
+!global macro mcomm = mgencomment
 
 export proc mclinit(int bypass=0)=
 	int r,s
@@ -3521,8 +3567,14 @@ global proc mgencomment(ichar s)=
 	mgenstring(s)
 end
 
+global proc mcomm(ichar s, t="", u="")=
+	[256]char str
+	print @str, s,t,u
+	mgencomment(pcm_copyheapstring(str))
+end
+
 global proc mgenstring(ichar s)=
-	mccodex.svalue:=s
+	mccodex.svalue:=pcm_copyheapstring(s)
 	mccodex.valtype:=stringimm_val
 end
 
@@ -3732,10 +3784,7 @@ export func mgenreg(int reg, size)regopnd a =
 !reg is r0/r30/v0/v31
 	a.reg:=reg
 	a.size:=size
-!	a.mem:=0
-!	a.spare:=0
 
-	usedregs[reg]:=1
 	a
 end
 
@@ -3812,12 +3861,12 @@ end
 
 global proc pushslots(int nslots)=
 !*!	pushstack(nslots*8)
-	mstackdepth+:=nslots
+!	mstackdepth+:=nslots
 end
 
 global proc popslots(int nslots)=
 !*!	popstack(nslots*8)
-	mstackdepth-:=nslots
+!	mstackdepth-:=nslots
 end
 
 global proc pushstack(int n)=
@@ -3946,8 +3995,283 @@ end
 !
 
 === mc_stackmcl.m 0 0 12/24 ===
-
 !'PCS' Support - PCL Operand Stack 
+
+global func loadopnd(int n, mode, reg=rnone)int ax =
+!return registers containing operand
+!get access mode for operand n
+
+	pcl a
+	psymbol d
+	int labno, px, oldreg
+!CPL "-------------LOAD OPND1", LOCNAMES[PCLLOC[N]]
+
+	a:=pclopnd[n]
+
+	case pclloc[n]
+!	when reg_loc then
+	when reg_loc, regvar_loc then
+		oldreg:=pclreg[n]
+		if reg<>rnone and oldreg<>reg then
+			genmc_reg((reg<v0 | m_mov | m_fmov), reg, oldreg)
+		else
+			reg:=oldreg
+		fi
+		return reg
+
+	when temp_loc then
+MERROR("LOADOP/TEMP")
+!		ax:=mgentemp(n, mode)
+!		return ax
+	esac
+
+	ax:=getworkreg(mode, reg)
+
+!CPL "-------------LOAD OPND", OPNDNAMES[A.OPNDTYPE]
+	case a.opndtype
+	when mem_opnd then
+		d:=a.def
+		if mode=tpblock and d.id<>param_id then
+			mode:=tpu64
+			domemaddr
+		else
+domem:
+			if d.id in [param_id, local_id] then		!stack frame
+!CPL "MEM/LOCAL"
+				genmc_rm(m_ldr, ax, rframe)
+				msetsizea(d.size)
+				mgendef(d)
+				minside()
+			else										!static
+!CPL "MEM/STATIC"
+				px:=gettempreg()
+				genmc_reg(m_adrp, px)
+				mgendef(d)
+				genmc_reg(m_add, px, px)
+				mgendef(d)
+				mlo12()
+				genmc_rm(m_ldr, ax, px)
+				msetsizea(d.size)
+			fi
+		fi
+
+	when memaddr_opnd then
+		d:=a.def
+		if d.id=param_id and d.mode=tpblock then		!pcl mode will be u64
+			domem
+		else
+domemaddr:
+			if d.id in [param_id, local_id] then		!stack frame
+				genmc_reg(m_add, ax, rframe)
+				mgendef(d)
+
+			else										!static
+				genmc_reg(m_adrp, ax)
+				mgendef(a.def)
+				genmc_reg(m_add, ax, ax)
+				mgendef(a.def)
+				mlo12()
+			fi
+		fi
+
+	when int_opnd then
+		genmc_reg(m_mov, ax)
+		mgenint(a.value)
+
+	when real_opnd, r32_opnd then
+		genmc_reg(m_fmov, ax)
+		mgenrealimm(a.xvalue)
+
+	when string_opnd then
+		labno:=getstringindex(a.svalue)
+		loadlabel
+
+	when label_opnd then
+		labno:=a.labelno
+loadlabel:
+		genmc_reg(m_adrp, ax)
+		mgenlabel(labno)
+		genmc_reg(m_add, ax, ax)
+		mgenlabel(labno)
+		mlo12()
+
+	else
+error:
+		merror("getopnd", opndnames[a.opndtype])
+	esac
+
+	ax
+end
+
+global proc storeopnd(pcl p, int ax) =
+!p is a kstore op; store value in register to variable specified by p.def
+!That variable is top pcl stack item, but it is popped by the caller
+!The caller will already have loaded that item to the register
+
+	int px
+	psymbol d
+
+	if p.mode<>tpblock then
+		d:=p.def
+
+		if d.id in [param_id, local_id] then		!stack frame
+			if d.reg then
+				genmc_reg((pfloat[p.mode]|m_fmov|m_mov), d.reg, ax)
+			else
+				genmc_rm(m_str, ax, rframe)
+				mgendef(d)
+				minside()
+			fi
+		else
+			px:=gettempreg()
+			genmc_reg(m_adrp, px)
+			mgendef(d)
+			genmc_reg(m_add, px, px)
+			mgendef(d)
+			mlo12()
+			genmc_rm(m_str, ax, px)
+		fi
+		msetsizea(p.size)	
+
+	else
+		MERROR("STOREOPND/BLOCK")
+
+!		ax:=getworkireg()
+!		genmc(m_lea, ax, mgenmem(p.def, tpu64))
+!		ax:=makeopndind(ax, tpu64)
+!
+!		bx:=makeopndind(bx, tpu64)
+!		copyblock(ax, bx, p.size)
+	fi
+
+end
+
+!global func OLDloadopnd(int n, mode, reg = rnone)mclopnd ax =
+!!Load operand to designated register reg. If not provided, one is allocated
+!!If operand resides in a register already, and reg=0, then that is what is
+!!returned. But if it will be modified, either REG is needed, or an alternate
+!!scheme is needed to force a load to a different register
+!
+!	ax:=getopnd(n, mode, reg)
+!
+!	if pclloc[n]=regvar_loc then			!force a load to a workreg
+!		if reg=rnone then
+!			reg:=getworkreg(mode)
+!		fi
+!	fi
+!
+!	ax:=loadtoreg(ax, mode, reg)
+!
+!	pclopnd[n]:=nil
+!	pclloc[n]:=reg_loc
+!	pclreg[n]:=ax.reg
+!
+!	ax
+!end
+
+!global func loadparam(int n, mode, reg)mclopnd ax =
+!!Load operand to designated arg reg.
+!!If operand resides in a register already, and reg=0, then that is what is
+!!returned. But if it will be modified, either REG is needed, or an alternate
+!!scheme is needed to force a load to a different register
+!	ax:=getopnd(n, mode, reg)
+!	ax:=loadtoreg_m(ax, mode, reg)
+!	ax
+!end
+!
+!global func loadretval(int n, mode, reg)mclopnd ax =
+!!Load operand to return register
+!!reg will be r0 for most functions
+!	ax:=getopnd(n, mode, reg)
+!	ax:=loadtoreg_m(ax, mode, reg)
+!	ax
+!end
+
+global proc pushopnds(int a, b)=
+!Push opnds a, b to hardware stack
+	int ax, bx
+
+	ax:=loadopnd(a, pclmode[a])
+
+	if a=b then
+		genmc_reg(m_push, ax, ax)
+	else
+		bx:=loadopnd(b, pclmode[b])
+		genmc_reg(m_push, ax, bx)
+	fi
+
+end
+
+!global func loadtoreg(mclopnd ax, int mode, reg)mclopnd=
+!!if ax is not a register operand, then load it to given register
+!!mode is needed to give type of register (float etc) and size
+!!It is assumed that if ax /is/ in a register, that it is the correct one, or doesn't matter
+!	mclopnd bx
+!
+!	if ax.mode in [a_reg, a_xreg] then			!might already be in reg
+!		if not reg or ax.reg=reg then
+!			return ax
+!		fi
+!	fi
+!
+!	bx:=getworkreg_rm(reg, mode)
+!
+!	loadtoreg_common(bx, ax)
+!
+!	bx
+!end
+
+!global func loadtoreg_m(mclopnd ax, int mode, reg)mclopnd=
+!!same as loadtoreg but if already in a register, will move it to required one if needed
+!	mclopnd bx
+!
+!	if ax.mode in [a_reg, a_xreg] then			!already in register
+!		if ax.reg=reg then return ax fi			!in correct one
+!	fi
+!
+!!need loading/moving to given reg
+!	bx:=mgenreg(reg, mode)
+!
+!	loadtoreg_common(bx, ax)
+!!	genmc(m_mov, bx, ax)
+!	bx
+!end
+
+!proc loadtoreg_common(mclopnd bx, ax)=
+!	if ax.mode=a_imm and ax.valtype=intimm_val and ax.value=0 then
+!		bx:=changeopndsize(bx,4)
+!		clearreg(bx)
+!!		genmc(m_xorx, bx, bx)
+!	
+!	else
+!		genmc(m_mov, bx, ax)
+!	fi
+!
+!end
+
+global proc pushpcl(pcl p)=
+!Push a inline operand from pcl code to pcs
+	int n
+
+	if noperands>=maxoperands then
+		merror("PCL stack overflow")
+	fi
+
+	n:=++noperands
+
+	pclloc[n]:=pcl_loc
+
+	pclopnd[n]:=p
+	pclreg[n]:=0
+	pclcount[n]:=1
+	pclmode[n]:=p.mode
+
+	if p.opndtype=mem_opnd and p.def.reg then
+		pclreg[n]:=p.def.reg
+		pclloc[n]:=regvar_loc
+	fi
+
+end
 
 !global proc pushpcl_reg(int mode, reg=rnone)=
 !!Push a new, empty pcs slot located in given register
@@ -3988,18 +4312,387 @@ global proc poppcl=
 	--noperands
 end
 
-global proc duplpcl=
-!ensure zz is in a register, duplicate into a new register
-	int mode:=pclmode[zz]
-
-CPL "<DUPLPCL>"
-
+!global proc duplpcl=
+!!ensure zz is in a register, duplicate into a new register
+!	int mode:=pclmode[zz]
+!
 !	loadopnd(zz, mode)							!get zz to reg
 !!	pushpcl_reg(getworkreg(mode), mode)				!create new zz opnd, old is now yy
-!	pushpcl_reg(mode)							!create new zz opnd, old is now yy
+!!*!	pushpcl_reg(mode)							!create new zz opnd, old is now yy
 !
 !!MCOMM("DUPLOP")
 !	genmc(m_mov, getopnd(zz, mode), getopnd(yy, mode))	!copy old to new
+!end
+
+global func getworkireg:int r=
+
+	to 10 do
+		for r in workrega..workregb do
+			if regset[r]=0 then
+				regset[r]:=1
+				return r
+			fi
+		od
+		savenextopnd()
+	od
+	merror("No more work regs")
+	0
+end
+
+global func getworkxreg:int=
+	for r in workxrega..workxregb do
+		if regset[r]=0 then
+			regset[r]:=1
+			return r
+		fi
+	od
+	merror("No more work xregs")
+	0
+end
+
+global func getworkreg(int mode, reg=rnone)int=
+!return new work reg depending on mode
+	if reg then return reg fi
+
+	if ispfloat(mode) then
+		getworkxreg()
+	else
+		getworkireg()
+	fi
+end
+
+global proc saveopnd(int n, allregs=1)=
+!if operand is in a volatile register, then save it in a temp
+!allregs=1 to save both A and B regs (vol/nonval), which can include P regs if
+!used as workregs; this is to save pne reg=opnd to a temp to free up a register
+!allregs=0 to limit to A regs (possibly some P regs) only; normall for CALLs
+!in order to preserve non-vol regs, as call will preserve the rest
+
+!NOTE: operands that are unlikely to be unchanged from their value in
+!pclrec, could be revert to pcl_loc. Eg. immediates, addresses, or any
+!variable that is immutable
+
+	int reg, mode
+!	mclopnd tx
+
+	return unless pclloc[n]=reg_loc
+
+	reg:=pclreg[n]
+	mode:=pclmode[n]
+
+	if allregs or reg in workrega..workregb or reg in workxrega..workxregb then
+MCOMM("SAVE TO TEMP")
+!*!		genmc_reg(m_mov, mgentemp(n,mode), mgenreg(reg,mode))
+	fi
+	regset[reg]:=0
+
+	pclloc[n]:=temp_loc
+	pclreg[n]:=0
+
+end
+!
+global proc saveopnds(int n=0)=
+!save all operands other than top n
+!assume this is to do with calls
+	for i:=1 to noperands-n do
+		saveopnd(i,0)
+	od
+end
+
+global proc savenextopnd=
+!starting from the first loaded, look for and save first reg-based opnd
+!this does A/B/P regs if used
+	for i:=1 to noperands do
+		if pclloc[i]=reg_loc and ispint(pclmode[i]) then
+			saveopnd(i,1)
+			return
+		fi
+	od
+end
+
+global proc savenextxopnd=
+!as savenextopnd but only does AX/BX/PX regs 
+	for i:=1 to noperands do
+		if pclloc[i]=reg_loc and ispfloat(pclmode[i]) then
+			saveopnd(i,1)
+			return
+		fi
+	od
+end
+
+global proc movetoreg(int newreg)=
+!move top of stack (assumed to be in reg) to newreg
+!assumes integer reg
+	int oldreg
+	int mode:=pclmode[zz]
+
+	loadopnd(zz, mode)
+
+retry:
+
+	oldreg:=pclreg[zz]
+
+	if oldreg=newreg then
+		return
+	fi
+
+	if regset[newreg] then
+		for i to noperands do
+			if pclreg[i]=newreg then
+				swapopnds(i,zz)
+MCOMM("EXCH REGS")
+!				genmc(m_xchg, mgenreg(oldreg, tpu64), mgenreg(newreg,tpu64))
+				retry
+			fi
+		od
+	fi
+
+	genmc_reg((newreg<v0 |m_mov|m_fmov), newreg, oldreg)
+
+	pclreg[zz]:=newreg
+
+	regset[newreg]:=1
+end
+
+!global func getopnd_ind(int n=noperands, mode=tpi64)mclopnd=
+!!Get access mode to operand which is to be used as a pointer elsewhere
+!!So it needs first to in a register, if not already
+!	pcl a
+!	psymbol d
+!
+!	if pclloc[n]=pcl_loc then
+!		a:=pclopnd[n]
+!		if a.opndtype=memaddr_opnd then
+!			d:=a.def
+!			unless d.id=param_id and d.mode=tpblock then
+!				return mgenmem(a.def, mode)
+!			end
+!		fi
+!	fi
+!
+!	if pclloc[n]<>reg_loc then
+!		loadopnd(n, tpu64)
+!	fi
+!
+!	return mgenireg(pclreg[n], mode)
+!end
+
+!global func getopnd_ind_simp(int n=noperands, mode=tpi64)mclopnd=
+!!version of getopnd_ind which always returns [reg]
+!
+!	if pclloc[n]<>reg_loc then
+!		loadopnd(n, tpu64)
+!	fi
+!
+!	return mgenireg(pclreg[n], mode)
+!end
+
+global proc swapopnds(int m,n)=
+!exchange pcl stack operands
+	swap(pclopnd[m],	pclopnd[n])
+	swap(pclloc[m],		pclloc[n])
+	swap(pclreg[m],		pclreg[n])
+	swap(pclmode[m],	pclmode[n])
+	swap(pclcount[m],	pclcount[n])
+end
+
+!global func isimmload(int n)pcl p=
+!!return nil if operand is not immediate integer
+!!otherwise return the pcl operand
+!
+!	p:=pclopnd[n]
+!	if pclloc[n]=pcl_loc and p.opcode=kload and p.opndtype=int_opnd then p else nil fi
+!end
+
+global proc setnewzz(int reg, mode)=
+!some value has been into into given register
+!create replace pcl[zz] with that new operand
+!assume pclcount was 1 and stays at 1
+
+	pclloc[zz]:=reg_loc
+	pclopnd[zz]:=nil
+	pclreg[zz]:=reg
+	pclmode[zz]:=mode
+
+end
+
+global proc freeworkregs(pcl p)=
+	int reg
+
+!Clear everything first
+
+!(Code is a copy of that used inline in convertpcl)
+	clear regset
+
+!Then set the regs still in use as pcl opnds:
+
+	for i to noperands do
+		reg:=pclreg[i]
+		if pclreg[i] then
+			regset[reg]:=1
+		fi
+	od
+
+end
+
+global proc swapopndregs(int reg2)=
+!top operand is in a register. Need to switch its reg with whatever is occupying
+!reg2
+!Note that swapondregs is best assumed to invalidate all existing mclopnds that
+!refer to registers, as stuff if moved aound
+!Also invalided are workregs that might use reg2, even if no mclopnd exists for it
+
+	if not ispint(pclmode[zz]) then merror("SOR1") fi
+
+!assume int regs
+
+	int reg1:=pclreg[zz]
+
+	if reg1=reg2 then return fi
+
+	for i:=noperands-1 downto 1 do
+		if pclloc[i]=reg_loc and pclreg[i]=reg2 then
+			swap(pclreg[zz], pclreg[i])
+			return
+		fi
+	else
+!pcl op not found that occupies reg2, so it is assumed to be a work register
+!that is no longer needed. If it /is/ needed
+
+		regset[reg1]:=0				!make available (although done for next pcl op anyway)
+		pclreg[zz]:=reg2
+!		merror("swapopndregs/reg not found")
+	od
+end
+
+!global func makeopndind(mclopnd a, int mode=tpvoid)mclopnd=
+!	mclopnd b
+!
+!	if a.mode<>a_reg then
+!		merror("makeopndind")
+!	fi
+!
+!	return mgenireg(a.reg, mode)
+!end
+
+!global func makesimpleaddr(mclopnd ax)mclopnd bx=
+!!assume ax is an ireg, but need a simple one with areg set but not ireg
+!	int newreg, reg, regix
+!
+!	reg:=ax.reg
+!	regix:=ax.regix
+!	if reg=rframe then reg:=rnone fi
+!
+!	if ax.mode<>a_mem then merror("MSA") fi
+!
+!	if reg=rnone and regix=rnone then
+!		newreg:=getworkireg()
+!	elsif reg then				![reg] only; already simple
+!		return ax
+!	elsif regix then			![regix] only; may be scaled; use lea anyway
+!		newreg:=regix
+!	else						![reg+regix]
+!		newreg:=regix
+!	fi
+!
+!	bx:=mgenireg(newreg)
+!
+!	genmc(m_lea, mgenreg(newreg), ax)
+!	return bx
+!end
+
+global proc checkallloaded=
+	for i to noperands do
+
+!		if pclopnd[i].opndtype=mem_opnd and pclloc[i] in [pcl_loc, regvar_loc] then
+!			loadopnd(i, pclopnd[i].mode)
+!		fi
+
+		if pclloc[i]=pcl_loc and pclopnd[i].opndtype=mem_opnd then
+			loadopnd(i, pclopnd[i].mode)
+		fi
+	od
+end
+
+global func stropndstack(int indent=0)ichar=
+	static [512]char str
+	[512]char str2
+	ichar s:=&.str, t
+
+	if indent then
+		fprint @s, "="*40 + "#:(", NOPERANDS
+	else
+		fprint @s, "#:(", NOPERANDS
+	fi
+
+	for i to noperands do
+
+		strcat(s, (noperands-i+1|"Z:", "Y:", "X:", "W:"|""))
+
+		case pclloc[i]
+		when reg_loc, regvar_loc then				!loaded
+			strcat(s, strreg(pclreg[i]))
+			if pclloc[i]=regvar_loc then strcat(s, "*") fi
+		when temp_loc then				!in temp
+			strcat(s, "T")
+			strcat(s, strint(i))
+
+		else
+			strcat(s, "(")
+int fs:=fpshortnames
+fpshortnames:=1
+			strcat(s, stropnd(pclopnd[i]))
+fpshortnames:=fs
+			strcat(s, ")")
+		esac
+		if pclcount[i]>1 then strcat(s, "@") fi
+		strcat(s, "<")
+		strcat(s, pstdnames[pclmode[i]])
+		strcat(s, ">")
+
+		if i<noperands then strcat(s,", ") fi
+	od
+	strcat(s,") ")
+
+	ipadstr(str, 50)
+
+	strcat(s,"IWR:(")
+!	for r:=r0 to r9 when workregs[r] do
+	for r in workrega..workregb  do
+		strcat(s,(regset[r]|"1 "|"0 "))
+	od
+	strcat(s,") ")
+
+	strcat(s,"FWR:(")
+	for r in workxrega..workxregb  do
+		strcat(s,(regset[r]|"1 "|"0 "))
+	od
+
+	strcat(s,") noperands:")
+	strcat(s,strint(noperands))
+	strcat(s," ncalldepth:")
+	strcat(s,strint(ncalldepth))
+
+	return s
+end
+
+global proc showopndstack=
+	mgencomment(stropndstack(1))
+end
+
+global func gettempreg:int=
+	if tempreg then
+		return tempreg
+	fi
+	return getworkireg()
+end
+
+global func isregvar(int reg)int=
+	if reg in regvara..regvarb or reg in xregvara..xregvarb then
+		1
+	else
+		0
+	fi
 end
 === mc_genss_dummy.m 0 0 13/24 ===
 export int psstime
@@ -4163,6 +4856,8 @@ export enumdata []ichar mclnames =
 	(m_uxtw,		$),
 
 	(m_dotzero,		"m_.zero"),
+	(m_push,		$),
+	(m_pop,			$),
 
 end
 
@@ -4317,7 +5012,6 @@ global [maxoperands]byte pcltempflags		!1 means a temp uses local storage
 global [maxoperands]mclrec pcltempopnds	!store mcl opnd for such a temp
 
 global int noperands						!number of pcl operands, including wide
-global int mstackdepth						!hw stack size (pcl operands, + extra for wide, + padding)
 
 global enumdata [0:]ichar locnames =
 	(pcl_loc=0,	"pend"),				!operand still in pcl instruction
@@ -4326,19 +5020,16 @@ global enumdata [0:]ichar locnames =
 	(temp_loc,	"temp"),				!overflow to temporary
 end
 
-global [rfirst..rlast]byte workregs		!1 indicates available work regs
-
 global [rfirst..rlast]byte regset		!register in-use flags: 0/1: free/in-use
-global [rfirst..rlast]byte isregvar		!1 if reg var and in-use
+!global [rfirst..rlast]byte isregvar		!1 if reg var and in-use
 
-global const regvara=r19, regvarb=r28
-global const xregvara=v8, xregvarb=v15
+global const workrega  = r9,  workregb  = r15
+global const workxrega = v16, workxregb = v31
 
-global const maxregvars=regvarb-regvara+1
-global const maxxregvars=xregvarb-xregvara+1
+global const regvara  = r19,  regvarb  = r28
+global const xregvara  = v8,  xregvarb  = v15
 
-global int workrega, workregb
-global int workxrega, workxregb
+global int tempreg						!helper reg: r7/r8 or rnone
 
 !global record pair =
 !	u64 low, high
@@ -4348,7 +5039,7 @@ global int workxrega, workxregb
 !global pair isregvarpr @ isregvar
 global const u64 invertbytes = 0x0101'0101'0101'0101
 
-global [rfirst..rlast]byte usedregs		!1 means used during proc
+!global [rfirst..rlast]byte usedregs		!1 means used during proc
 
 global byte noxorclear					!1 to suppress xor optimisation
 
@@ -4358,10 +5049,12 @@ global macro xx = noperands-2
 global macro ww = noperands-3
 
 global const maxcalldepth=16
-global [maxcalldepth]byte callalign		!pending 1-slot alignment for syscalls
+!global [maxcalldepth]byte callalign		!pending 1-slot alignment for syscalls
 global [maxcalldepth]byte callblockret	!1 if fnc returns a block
 global [maxcalldepth]u32 callblocksize	!size of any returned block
-global [maxcalldepth,4]u32 callargsize	!size of any block pushed in low args
+global [maxcalldepth,8]u32 callargsize	!size of any block pushed in low args
+global [maxcalldepth]byte callpending	!opnd number waiting for a paired opnd for push
+
 global int ncalldepth
 
 global int lababs32, lababs64
@@ -4794,7 +5487,9 @@ global proc strmcl(mcl m)=
 		asmstr("    .set ")
 		asmstr(getdispname(d))
 		asmstr(", ")
-		asmint(m.offset)
+!CPL "///",=D.OFFSET, D.NAME
+
+		asmint(d.offset)
 		return
 
 	when m_definereg then
@@ -4858,6 +5553,9 @@ CPL =M.CONDCODE, condnames[m.condcode]
 		if m.regmode<>rm_none then
 			asmstr(", ")
 		fi
+		if m.lo12 then
+			asmstr(":lo12:")
+		fi
 		asmstr(strvalue(m))
 	fi
 
@@ -4909,7 +5607,9 @@ proc asmregmemopnds(mcl m)=
 	fi
 
 	if m.valtype and m.inside then
-		asmstr(" ")
+!CPL "///",=M.LO12, =M.VALTYPE; OS_GETCH()
+!	if m.valtype then
+		asmstr(", ")
 		if m.lo12 then
 			asmstr(":lo12:")
 		fi
@@ -5011,7 +5711,9 @@ global func strvalue(mcl m)ichar=
 	ichar ss
 	static ichar longstring
 
-!"<STRVAL>"
+!RETURN "<STRVAL>"
+!RETURN VALTYPENAMES[M.VALTYPE]
+
 
 	def:=m.def
 	value:=m.value
@@ -5157,13 +5859,28 @@ end
 !	str
 !end
 
-global func strreg(int reg, size)ichar=
+global func strreg2(int reg, size=8)ichar=
+	static [16]char str
+	strcpy(str, strreg(reg, size))
+	str
+end
+
+global func strreg(int reg, size=8)ichar=
 	[8]char str
 	ichar prefix
+	psymbol d
+
+	d:=regvars[reg]
+!	D:=NIL
+
+	if d and d.size=size then
+		return getdispname(d)
+	fi
 
 	case reg
 	when rstack then return "sp"
 	when rlink then return "lr"
+	when rframe then return "fp"
 	elsif reg in r0..r30 then
 		fprint @str, "##", (size<=4 |"w"|"x"), reg-r0
 	elsif reg in v0..v31 then
@@ -6253,6 +6970,7 @@ proc parseinstr(int opcode, condcode=0)=
 		fi
 	fi
 skipmode:
+!CPL PCLNAMES[OPCODE],NATTRS
 
 	if nattrs then
 		if lx.symbol<>divsym and opcode=kjumpcc then skip fi		!/popone=0 is assumed
@@ -6574,6 +7292,8 @@ proc dodirective(int opcode, mode, size, x, y)=
 			fi
 			pc_gen(opcode, genmem(d))
 			pc_setmode(mode, size)
+			d.mode:=mode
+			d.size:=size
 
 		when kextproc then
 			d.id:=import_id

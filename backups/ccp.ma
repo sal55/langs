@@ -41,8 +41,8 @@ project =
 	module pc_api
 	module pc_decls
 
-!	module pc_diags
-	module pc_diags_dummy
+	module pc_diags
+!	module pc_diags_dummy
 	module pc_reduce
 
 ! Interpreter
@@ -113,6 +113,12 @@ export ref proc (ref void) idomcl_assem
 export ref func (ref void)int icheckasmlabel
 export ref func (int)psymbol igethostfn
 
+
+!PROC START=
+!!CPL "PCL API",PCLEXTRA[KSETARG]
+!CPL "PCL API",PCLNAMES.LEN
+!CPL "PCL API",PSTREC.BYTES
+!END
 
 
 
@@ -783,7 +789,7 @@ end
 export func pc_duplpst(psymbol d)psymbol e=
 	e:=pcm_allocnfz(pstrec.bytes)
 	e^:=d^
-	e.generic:=d			!assume d is the original
+!*!	e.generic:=d			!assume d is the original
 	e.seqno:=++stseqno
 
 	e.next:=nil
@@ -951,8 +957,8 @@ EXPORT record pclrec =
 				struct					! (x,y) call/etc
 					i32 nargs			! number of args
 					union
-						i32 nvariadics	! 0, or arg # that is first variadic
-						i32 simple		!setcall: 1 if whole call sequence is simple
+						i32 nvariadics	!call: 0, or arg # that is first variadic
+						i32 nrealargs	!setcall: 1 if whole call sequence is simple
 					end
 				end
 				struct					! (x,y) switch
@@ -1071,50 +1077,580 @@ EXPORT [PCLNAMES.BOUNDS]INT PCLFLAGS
 EXPORT INT PSTARTCLOCK
 
 !export const ctarget=0
-=== pc_diags_dummy.m 0 0 5/79 ===
-global proc pshowlogfile=
-end
+=== pc_diags.m 0 0 5/79 ===
+!const fshowppseqno=1
+const fshowppseqno=0
+
+strbuffer sbuffer
+ref strbuffer dest=&sbuffer
+int destlinestart
+
+const tab1="    "
+const tab2="        "
+
+!const fshowsymbols=1
+const fshowsymbols=0
 
 global proc strpcl(pcl p)=
+	[256]char str
+	int opcode, n,x,y
+	psymbol d, e
+
+	const showformatted=1
+
+	opcode:=p.opcode
+
+!	if fshowppseqno then
+!		psstr(strint(p.seqno,"z5"))
+!		psstr("  ")
+!	fi
+
+!PSSTR("<PCL>")
+!PSSTR(OPNDNAMES[P.OPNDTYPE])
+
+!psstr(strint(getlineno(p.pos),"4"))
+!psstr(" ")
+
+	case opcode
+	when klabel then
+		strlabel(p.labelno,1)
+
+		IF P.POPONE THEN
+			PSSTR(" NOT USED")
+		FI
+
+		return
+	when klabeldef then
+		psstr("! ")
+		psstr(p.def.name)
+		psstr(":")
+		return
+	when kcomment then
+		if p.svalue^ then
+			psstr("!")
+			psstr(p.svalue)
+		ELSE
+			PSSTR("! - - -")
+		fi
+		return
+	when kproc, ktcproc then
+		d:=p.def
+
+!		showprocinfo(d)
+
+		if opcode=ktcproc then
+			psstr("tcproc")
+		else
+			psstr("proc")
+		fi
+
+		psstr(" ")
+		psname(d)
+
+		psstr((p.def.exported|"::"|":"))
+		if d.isentry then psstr(":") fi
+
+		psline()
+
+		e:=d.nextparam
+
+		while e, e:=e.nextparam do
+			if fshowppseqno then psstr("       ") fi
+			psstr(tab1+"param    ")
+			psstr(strpmode(e.mode, e.size))
+			psstr("       ")
+			psstr(e.name)
+			psline()
+		od
+
+		e:=d.nextlocal
+		while e, e:=e.nextlocal do
+			if fshowppseqno then psstr("       ") fi
+			psstr(tab1+"local    ")
+			psstr(strpmode(e.mode, e.size))
+			psstr("       ")
+			psstr(e.name)
+			psline()
+		od
+
+		if p.mode then
+			if fshowppseqno then psstr("       ") fi
+			psstr(tab1+"rettype  ")
+			psstr(strpmode(P.mode))
+			psline()
+		fi
+
+		if d.variadic then
+			psstrline(tab1+"variadic")
+		fi
+
+		return
+
+	when kendproc then
+		psstr("endproc")
+		psline()
+		return
+
+	when kendprog then
+		psstr("endprog")
+		return
+
+	when kdata then
+
+		if p.mode=tpblock then
+			psdata(p)
+			return
+		fi
+
+	when kistatic, kzstatic then
+		skiptab
+
+	esac
+
+	psstr(tab1)
+skiptab:
+
+
+	case opcode
+	when kjumpcc then
+		strcpy(str, "jump")
+		strcat(str, ccnames[p.condcode])
+!		if p.popone then
+!			strcat(str, "/1")
+!		fi
+	when ksetcc then
+		strcpy(str, "set")
+		strcat(str, ccnames[p.condcode])
+	else
+		strcpy(str, pclnames[opcode])
+	esac
+
+	gs_leftstr(dest,str,9)
+
+	str[1]:=0
+	if p.mode then
+		strcat(str, strpmode(p.mode, p.size))
+
+		if pclhastype[opcode]=2 then
+			strcat(str, "/")
+			strcat(str, strpmode(p.mode2))
+		fi
+		STRCAT(STR, " ")
+	fi
+	gs_leftstr(dest,str,4)
+
+	str[1]:=0
+	n:=pclextra[opcode]
+	if n then
+		x:=p.x; y:=p.y
+		if x or n=2 then			!don't show single 0 value
+			strcat(str, "/")
+			strcat(str, strint(p.x))
+		fi
+
+		if n=2 and y then
+			strcat(str, "/")
+			strcat(str, strint(y))
+		fi
+		STRCAT(STR, " ")
+	fi	
+	gs_leftstr(dest,str,5)
+
+	if p.opndtype<>no_opnd then
+		psstr(" ")
+		psstr(stropnd(p))
+	fi
+	pstabto(40)
+
+	if fshowppseqno then
+		psstr("! ")
+		psstr(strint(p.seqno,"z5"))
+		psstr("  ")
+	fi
 end
 
 global func stropnd(pcl p)ichar=
-	return nil
+	static[512]char str
+!	static[32]char str
+	int length
+	psymbol d
+	static ichar longstring
+
+	if p=nil then
+		return ""
+	fi
+
+	str[1]:=0
+
+	case p.opndtype
+	when int_opnd then
+		return strint(p.value)
+	when real_opnd, realimm_opnd, realimm32_opnd, r32_opnd then
+!RETURN "<REAL>"
+!CPL "HERE"
+		if p.xvalue=infinity then
+!CPL "INF"
+!			fprint @str,"0x#",word@(p.xvalue):"h"
+			fprint @str,"infinity"
+		else
+			print @str,p.xvalue:"e16.16"
+		fi
+
+!	when r32_opnd then
+!		print @str, p.xvalue
+
+!	when realimm_opnd, realimm32_opnd THEN
+!		print @str,p.xvalue
+!STRCAT(STR, OPNDNAMES[P.OPNDTYPE])
+
+
+	when string_opnd then
+		if (length:=strlen(p.svalue))<str.len/2 then
+			strcpy(str,"""")
+			convertstring(p.svalue,&.str+1)
+			strcat(str,"""")
+
+		else
+
+			if longstring then
+				pcm_free(longstring,longstringlen)
+			fi
+			longstringlen:=length*2
+			longstring:=pcm_alloc(longstringlen)
+			longstring^:='"'
+			length:=convertstring(p.svalue, longstring+1)
+			(longstring+length+1)^:='"'
+			(longstring+length+2)^:=0
+			return longstring
+		fi
+
+	when mem_opnd then
+		d:=p.def
+		strcat(str, p.def.name)
+
+		if p.opcode in [kistatic, kzstatic] then
+			strcat(str,":")
+			if d.exported then
+				strcat(str,":")
+			fi
+		fi
+
+	when memaddr_opnd then
+		strcpy(str, "&")
+		recase mem_opnd
+
+	when label_opnd then
+		fprint @str,"## ","#",p.labelno
+
+	when no_opnd then
+		return ""
+
+	when assem_opnd then
+		return strint(int(p.asmcode))
+
+	when data_opnd then
+		fprint @str,"<Data * # (#)>", p.size,p.svalue
+
+	else
+		println "---------",OPNDNAMES[P.OPNDTYPE]
+		return "<PCLOPND?>"
+	esac
+
+	return str
 end
 
 global func strpclstr(pcl p, int buffsize)ichar=
-	nil
+	gs_free(dest)
+	gs_init(dest)
+	destlinestart:=0
+	strpcl(p)
+	gs_char(dest,0)
+
+	if dest.length>=buffsize then return "<BIGSTR>" fi
+
+	dest.strptr
 end
 
 global proc writepcl(pcl p)=
+
+	strpcl(p)
+	case p.opcode
+	when kproc then
+	else
+		gs_line(dest)
+	esac
+
+
 end
 
 global func writeallpcl:ref strbuffer=
-ABORTPROGRAM("dummy diags")
-	nil
+!write all pcl code in system by scanning all procs
+!pcl code is only stored per-proc
+	pcl p
+	psymbol d
+
+	gs_init(dest)
+	destlinestart:=dest.length
+
+	gs_strln(dest, "!PROC PCL")
+
+	for i to nplibfiles do
+		psstr("addlib    """)
+		psstr(plibfiles[i])
+		psstr("""")
+		psline()
+	od
+	psline() when nplibfiles
+
+	d:=psymboltable
+	while d, d:=d.next do
+		if d.id=import_id then
+			psstr("extproc    ")
+			psstr(d.name)
+			if d.variadic then
+				psstr(" 1")
+			fi
+			psline()
+		fi
+	od
+
+	p:=pcstart
+
+	while p<=pccurr do
+		writepcl(p)
+
+		destlinestart:=dest.length
+		++p
+	od
+
+	psline()
+
+	if longstring then
+		pcm_free(longstring,longstringlen)
+	fi
+	return dest
+end
+
+global proc psstr(ichar s)=
+	gs_str(dest,s)
+end
+
+global proc psstrline(ichar s)=
+	gs_str(dest,s)
+	gs_line(dest)
+end
+
+global proc psline=
+	GS_STR(DEST, "\n")
+end
+
+global proc psint(int a)=
+	gs_str(dest,strint(a))
+end
+
+global proc psname(psymbol d)=
+	gs_str(dest, d.name)
+end
+
+global proc pstabto(int n)=
+	int col:=dest.length-destlinestart
+	while n>col do psstr(" "); ++col od
+end
+
+global proc strlabel(int labelno,colon=0)=
+	psstr("#")
+	psint(labelno)
+	if colon then
+		psstr(":")
+	fi
+	psstr(" ")
+end
+
+global proc psopnd(pcl p)=
+	psstr(stropnd(p))
+end
+
+proc psdata(pcl p)=
+	const perline = 20
+	int n:=p.size, m
+	ref byte q:=p.svalue
+
+	if n=0 then return fi
+
+	while n>0 do
+		m:=n
+		if m>=perline then
+			m:=perline
+		fi
+		n-:=m
+		psstr(tab1+"data mem:")
+		psint(m)
+		psstr("  ")
+		if m<10 then psstr(" ") fi
+		to m do
+			psint(q^)
+			psstr(" ")
+			++q
+		od
+		if n then
+			psline()
+		fi
+	od
 end
 
 global func writepst:ref strbuffer=
-	writeallpcl()
-!	nil
+	byte localfile:=0
+	int i:=0, j
+	psymbol d, e
+
+	gs_init(dest)
+
+	psstrline("PROC PC Symbol table")
+	psline()
+
+	d:=psymboltable
+
+	while d, d:=d.next do
+!		if not d.ksymbol then
+PSSTR(STRINT(INT(D),"H"))
+PSSTR(" ")
+			writepsymbol(d, "25jl")
+
+!			if d.id=proc_id then
+			if d.id in [proc_id, import_id] then
+				e:=d.nextparam
+				j:=0
+				while e, e:=e.nextparam do
+					psstr("    ")
+					writepsymbol(e, "21jl")
+				od
+				e:=d.nextlocal
+				j:=0
+				while e, e:=e.nextlocal do
+					psstr("    ")
+					writepsymbol(e, "21jl")
+				od
+			fi
+PSLINE()
+!		fi
+	od
+	psline()
+
+	return dest
 end
 
-!global func stropndstack(int indent=0)ichar=
-!	return nil
-!end
-!
-!global proc showopndstack=
-!end
+proc writepsymbol(psymbol d, ichar fmt)=
+	byte localfile:=0
+	[256]char str
+
+	print @str, d.seqno:"4", idnames[d.id]
+	psstr(str)
+	to 8-strlen(idnames[d.id]) do psstr(" ") od
+
+	str[1]:=0
+
+	print @str, d.name:fmt
+	psstr(str)
+
+	psstr(strpmode(d.mode, d.size))
+
+	if d.id=proc_id then
+		psstr(" Pm:")
+		psint(d.nparams)
+		psstr(" Loc:")
+		psint(d.nlocals)
+	fi
+
+	if d.exported then psstr(" Exp") fi
+	if d.imported then psstr(" Imp") fi
+	if d.varparams then psstr(" Var:"); psint(d.varparams) fi
+	if d.isthreaded then psstr(" TC") fi
+!*!	if d.reg then psstr(" "); psstr(regnames[d.reg]) fi
+	if d.hasdot then psstr(" Dot") fi
+	if d.isentry then psstr(" ENTRY PT") fi
+
+	if d.id=proc_id then psstr(" .PCADDR ="); PSSTR(STRINT(CAST(D.PCADDR),"H")) fi
+
+	if d.owner then
+		psstr(" (")
+		psint(d.owner.seqno)
+		psstr(" ")
+		psstr(d.owner.name)
+		psstr(")")
+	fi	
+
+	if ctarget and d.id=static_id and d.cprocowner then
+		psstr(" (Proc:")
+		psstr(d.cprocowner.name)
+		psstr(") (D:")
+!		psint(cast(d.pcdata))
+		psstr(strint(cast(d.pcdata),"H"))
+		psstr(")")
+	fi
+	if ctarget and d.id=proc_id and d.chasstatics then
+		psstr(" Has statics")
+!		psint(d.chasstatics)
+	fi
+
+	psline()
+end
+
+proc showprocinfo(psymbol d)=
+	[256]char str
+	procinfo p
+	psymbol e
+
+	p:=d.info
+	return unless p
+
+	fprint @str, "PROC INFO FOR: #", d.name
+	psstrline(str)
+
+	fprint @str, "  Params:   #", p.nparams
+	psstrline(str)
+
+	fprint @str, "  Locals:   #", p.nlocals
+	psstrline(str)
+
+	fprint @str, "  Leaf:     #", p.isleaf
+	psstrline(str)
+
+	fprint @str, "  Nmaxargs: #", p.nmaxargs
+	psstrline(str)
+
+	fprint @str, "  Assem:    #", p.assemused
+	psstrline(str)
+
+	fprint @str, "  MCLdone:  #", p.mcldone
+	psstrline(str)
+
+	fprint @str, "  Hasblocks:#", p.hasblocks
+	psstrline(str)
+
+	psline()
+	e:=d.nextparam
+	while e, e:=e.nextparam do
+		fprint @str,"  Pm: # used:#, addrof:#",e.name, e.used, e.addrof
+		psstrline(str)
+	od
+	e:=d.nextlocal
+	while e, e:=e.nextlocal do
+		fprint @str,"  Loc: # used:#, addrof:#",e.name, e.used, e.addrof
+		psstrline(str)
+	od
+	psline()
+
+end
 
 === pc_reduce.m 0 0 6/79 ===
 export proc pcl_reducetest=
 	int nn, seqno, lab, lab2, nargs
-	pcl pc, newpc, pcnext, pcx, pcproc
+	pcl pc, newpc, pcnext, pcnext2, pcproc
 	ref[]u16 labelmap
 	psymbol pdef
 	[maxcalldepth]pcl callstack
 	int ncall
-	int nprocs:=0, nleaf:=0, nallparams:=0, nalllocals:=0
+	int nprocs:=0, nleaf:=0, nallparams:=0, nalllocals:=0, offset
 
 	nn:=pccurr-pcstart+1
 
@@ -1192,13 +1728,13 @@ skip:
 			recase else
 
 		when ksetcall then
-			if ncall then
-				for i:=ncall downto 1 do
-					callstack[i].simple:=0
-				od
-			else
-				pc.simple:=1
-			fi
+!			if ncall then
+!				for i:=ncall downto 1 do
+!					callstack[i].simple:=0
+!				od
+!			else
+!				pc.simple:=1
+!			fi
 			++newpc
 			newpc^:=pc^
 			newpc.seqno:=++seqno
@@ -1249,6 +1785,19 @@ skip:
 				recase else
 			fi
 
+!		when kaddpx then
+!			if newpc.opcode=kload and newpc.opndtype=int_opnd and pcnext.opcode=kload and
+!				(pcnext+1).opcode=kaddpx then
+!				pcnext2:=pcnext+1
+!				pcnext2.extra+:=newpc.value*pc.scale+pc.extra
+!				newpc^:=pcnext^				!skip loadimm and 1st addpx
+!				pc:=pcnext2					!process next addpx next
+!CPL "REDUCE: LOAD IMM/ADDPX/LOAD/ADDPX"
+!!CPL "REDUCE: LOAD IMM/ADDPX/LOAD IMM/ADDPX"
+!			fi
+!
+!			recase else
+
 		else
 			++newpc
 			newpc^:=pc^
@@ -1281,6 +1830,9 @@ int dostep=1
 int go
 
 INT SEQNO
+
+!INT ALLCALLS
+!INT LEAFCALLS
 
 pstrec emptyst
 
@@ -1573,12 +2125,18 @@ fi
 	when kcallp, kcallf    then
 		d:=pc.def
 		if dotrace then
+
 IF DOSTACKCHECK THEN
 TO CALLSP DO PRINT INDENT OD
 FI
 !			fprintln "# Call:   # #", ++seqno, d.name, getlineno(pc),=SP,=FP
 			fprintln "# Call:   # # SP=# FP=#", ++seqno, d.name, getlineno(pc)
 		fi
+!++ALLCALLS
+!
+!IF D.INFO AND D.INFO.ISLEAF THEN
+!	++LEAFCALLS
+!FI
 
 		if dostackcheck then
 			if sp>(stacksize-100) then pcerror("Stack overflow") fi
@@ -2179,7 +2737,13 @@ IF PTR=NIL THEN PCERROR("ICALLF NIL PTR") FI
 
 
 	when kiremto   then
-		unimpl
+		ptr:=pstack[sp--]
+		a:=pci_loadptr(ptr, getmode)
+		b:=stack[sp--]
+
+		a:=a rem b
+
+		pci_storeptr(ptr, a, getmode)
 		steppc
 
 	when kbitandto then
@@ -2563,6 +3127,9 @@ export proc pcl_runpcl=
 !CPL "START DISPATCH"
 
 	stopcode:=dispatch_loop(entryproc.pcaddr, entryproc.nparams=2)
+
+!CPL "All Calls: ",ALLCALLS:"12s,"
+!CPL "Leaf Calls:",LEAFCALLS:"12s,"
 
 	if pverbose then
 		println "Stopped",stopcode
@@ -3149,9 +3716,9 @@ export enumdata [0:]ichar pclnames,
 	(ksetjmp,      $+1, 0, 0, 0, 0),  ! (1 - 0) (          ) For C
 	(klongjmp,     $+1, 0, 0, 0, 0),  ! (1 - 1) (          ) For C
 
-	(ksetcall,     $+1, 0, 2, 0, 0),  ! (0 - 0) (n s       ) n=args, s=1 for simple call
+	(ksetcall,     $+1, 0, 1, 0, 0),  ! (0 - 0) (n s       ) n=args, s=1 for simple call
 
-	(ksetarg,      $+1, 0, 1, 0, 0),  ! (0 - 0) (n         ) ?
+	(ksetarg,      $+1, 0, 2, 0, 0),  ! (0 - 0) (n1 n2     ) n1=arg no (LTR) n2=int or real arg no (maybe neg for real)
 	(kloadall,     $+1, 0, 0, 0, 0),  ! (0 - 0) (          ) ?
 
 	(keval,        $+1, 0, 0, 0, 0),  ! (1 - 0) (          ) Evaluate Z [load to an actual register], then pop
@@ -6138,7 +6705,10 @@ global proc do_binto(pcl p, int opc, fopc)=
 		return
 	fi
 
+!MCOMM("ONE")
 	ax:=getopnd_ind(zz, p.mode)
+!MCOMM("TWO")
+!MCOMM(MSTROPND(AX))
 	bx:=loadopnd(yy, p.mode)
 
 	genmc(opc,ax,bx)
@@ -8168,22 +8738,22 @@ global func getworkreg_rm(int reg, mode)mclopnd=
 	mgenreg(reg, mode)
 end
 
-global proc freeireg(int reg)=
-	regset[reg]:=0
-end
+!global proc freeireg(int reg)=
+!	regset[reg]:=0
+!end
 
-global proc freexreg(int reg)=
-	xregset[reg]:=0
-end
+!global proc freexreg(int reg)=
+!	xregset[reg]:=0
+!end
 
-global proc freereg(int reg, mode)=
-	if ispfloat(mode) then
-		xregset[reg]:=0
-	else
-		regset[reg]:=0
-	fi
-end
-
+!global proc freereg(int reg, mode)=
+!	if ispfloat(mode) then
+!		xregset[reg]:=0
+!	else
+!		regset[reg]:=0
+!	fi
+!end
+!
 global proc saveopnd(int n, allregs=1)=
 !if operand is in a volatile register, then save it in a temp
 !allregs=1 to save both A and B regs (vol/nonval), which can include P regs if
@@ -8662,12 +9232,6 @@ func isreg00(ref mclrec m)int=
 	0
 end
 
-func isregopnd(mclopnd a)int=
-	if not a then return 0 fi
-	if a.mode=a_reg and isregvar[a.reg] then return 1 fi
-	return 0
-end
-
 func isconst(mclopnd a)int=
 	if not a then return 0 fi
 	if a.mode=a_imm and a.valtype=intimm_val then
@@ -9003,6 +9567,7 @@ proc doinstr(ref mclrec m,int index)=
 		if a.mode=a_imm then
 			x:=a.value
 			if x<1 or x>16384 then axerror("align2") fi
+			buffercheck(currdata, x)
 			if currseg<>zdata_seg then
 				while bufferlength(currdata) rem x do genbyte((currseg=code_seg|0x90|0)) od
 			else
@@ -11854,8 +12419,8 @@ end
 !const fshowseq=1
 const fshowseq=0
 
-!const useintelregs=1
-const useintelregs=0
+const useintelregs=1
+!const useintelregs=0
 
 !const showsizes=1
 const showsizes=0
@@ -12403,10 +12968,6 @@ proc start=
 end
 === mc_writeexe.m 0 0 19/79 ===
 !Create .exe file from SS-data (code, data, reloc and psymbol tables)
-!Call order:
-! initsectiontable()
-! genexe()
-! writeexe(filename)
 
 [maxplibfile]i64 libinsttable
 [maxplibfile]ichar libinstnames
@@ -13205,17 +13766,14 @@ proc sortexports([]int &sortindex)=
 	od
 
 !do bubble sort for now
-	int swapped
-
 	repeat
-		swapped:=0
+		int swapped:=0
 		for i:=1 to nexports-1 do
 
 			d:=exporttable[sortindex[i]].def
 			e:=exporttable[sortindex[i+1]].def
 
 			if strcmp(getbasename(d.name), getbasename(e.name))>0 then
-
 				swapped:=1
 				swap(sortindex[i], sortindex[i+1])
 			fi
@@ -15126,7 +15684,6 @@ $PMODULENAME:=PCM_COPYHEAPSTRING(EXTRACTBASEFILE(INPUTFILE))
 		println "Done."
 	fi
 
-
 	if fshowtiming then
 		showtiming()
 	fi
@@ -15909,6 +16466,10 @@ global int npheaders
 global int nplibs
 
 global byte pci_target			!1 when using -runp
+
+!GLOBAL INT NALLCALLS
+!GLOBAL INT NUSESTACK
+!GLOBAL INT NUSEMIXEDSTACK
 === cc_tables.m 0 0 28/79 ===
 global enumdata [0:]ichar stdtypenames, [0:]byte stdtypewidths,
 		 [0:]byte stdsigned, [0:]byte stdpcl, [0:]byte stdsize =
@@ -25361,6 +25922,8 @@ proc dx_call(unit p,a,b, int res)=
 	int nfixedparams, isfn, blockret
 	[maxparams]unit paramlist
 	[maxparams]byte paramconst			!1 when 'const' (up to nfixedparams only)
+	[maxparams]i8 argattr
+	int iparams, fparams
 	symbol dblock, dtemp
 	unit q
 
@@ -25413,6 +25976,36 @@ proc dx_call(unit p,a,b, int res)=
 	setmode_u(p)
 	pccurr.nargs:=nparams
 
+	iparams:=fparams:=0
+
+	for i to nparams do
+		q:=paramlist[i]
+		if q.mode in [tr32, tr64] then
+			argattr[i]:=-(++fparams)
+		else
+			argattr[i]:=++iparams
+		fi
+	od
+
+!++NALLCALLS
+!IF FPARAMS>8 OR IPARAMS>8 THEN
+!!CPL D.NAME
+!	for i to nparams do
+!		q:=paramlist[i]
+!		if q.mode in [tr32, tr64] then
+!			CP "R "
+!		else
+!			CP "I"
+!		fi
+!	od
+!	CPL
+!	++NUSESTACK
+!FI
+!IF FPARAMS>8 AND IPARAMS>8 THEN
+!	++NUSEMIXEDSTACK
+!FI
+
+
 	for i:=nparams downto 1 do			!downto 
 		q:=paramlist[i]
 		dx_expr(q)
@@ -25426,6 +26019,7 @@ proc dx_call(unit p,a,b, int res)=
 		pc_gen(ksetarg)
 		setmode_u(q)
 		pccurr.x:=i
+		pccurr.y:=argattr[i]
 	od
 
 	if not isfnptr then
@@ -29248,7 +29842,7 @@ typedef double r64;
 2 pclp.m 0 0
 3 pc_api.m 0 0
 4 pc_decls.m 0 0
-5 pc_diags_dummy.m 0 0
+5 pc_diags.m 0 0
 6 pc_reduce.m 0 0
 7 pc_run.m 0 0
 8 pc_runaux.m 0 0

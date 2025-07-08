@@ -83,6 +83,12 @@ export ref func (ref void)int icheckasmlabel
 export ref func (int)psymbol igethostfn
 
 
+!PROC START=
+!!CPL "PCL API",PCLEXTRA[KSETARG]
+!CPL "PCL API",PCLNAMES.LEN
+!CPL "PCL API",PSTREC.BYTES
+!END
+
 
 
 export func pcl_start(ichar name=nil, int nunits=0)psymbol=
@@ -752,7 +758,7 @@ end
 export func pc_duplpst(psymbol d)psymbol e=
 	e:=pcm_allocnfz(pstrec.bytes)
 	e^:=d^
-	e.generic:=d			!assume d is the original
+!*!	e.generic:=d			!assume d is the original
 	e.seqno:=++stseqno
 
 	e.next:=nil
@@ -920,8 +926,8 @@ EXPORT record pclrec =
 				struct					! (x,y) call/etc
 					i32 nargs			! number of args
 					union
-						i32 nvariadics	! 0, or arg # that is first variadic
-						i32 simple		!setcall: 1 if whole call sequence is simple
+						i32 nvariadics	!call: 0, or arg # that is first variadic
+						i32 nrealargs	!setcall: 1 if whole call sequence is simple
 					end
 				end
 				struct					! (x,y) switch
@@ -1346,9 +1352,9 @@ export enumdata [0:]ichar pclnames,
 	(ksetjmp,      $+1, 0, 0, 0, 0),  ! (1 - 0) (          ) For C
 	(klongjmp,     $+1, 0, 0, 0, 0),  ! (1 - 1) (          ) For C
 
-	(ksetcall,     $+1, 0, 2, 0, 0),  ! (0 - 0) (n s       ) n=args, s=1 for simple call
+	(ksetcall,     $+1, 0, 1, 0, 0),  ! (0 - 0) (n s       ) n=args, s=1 for simple call
 
-	(ksetarg,      $+1, 0, 1, 0, 0),  ! (0 - 0) (n         ) ?
+	(ksetarg,      $+1, 0, 2, 0, 0),  ! (0 - 0) (n1 n2     ) n1=arg no (LTR) n2=int or real arg no (maybe neg for real)
 	(kloadall,     $+1, 0, 0, 0, 0),  ! (0 - 0) (          ) ?
 
 	(keval,        $+1, 0, 0, 0, 0),  ! (1 - 0) (          ) Evaluate Z [load to an actual register], then pop
@@ -2376,6 +2382,7 @@ proc doinstr(ref mclrec m,int index)=
 		if a.mode=a_imm then
 			x:=a.value
 			if x<1 or x>16384 then axerror("align2") fi
+			buffercheck(currdata, x)
 			if currseg<>zdata_seg then
 				while bufferlength(currdata) rem x do genbyte((currseg=code_seg|0x90|0)) od
 			else
@@ -5227,8 +5234,8 @@ end
 !const fshowseq=1
 const fshowseq=0
 
-!const useintelregs=1
-const useintelregs=0
+const useintelregs=1
+!const useintelregs=0
 
 !const showsizes=1
 const showsizes=0
@@ -5776,10 +5783,6 @@ proc start=
 end
 === mc_writeexe.m 0 0 14/28 ===
 !Create .exe file from SS-data (code, data, reloc and psymbol tables)
-!Call order:
-! initsectiontable()
-! genexe()
-! writeexe(filename)
 
 [maxplibfile]i64 libinsttable
 [maxplibfile]ichar libinstnames
@@ -6578,17 +6581,14 @@ proc sortexports([]int &sortindex)=
 	od
 
 !do bubble sort for now
-	int swapped
-
 	repeat
-		swapped:=0
+		int swapped:=0
 		for i:=1 to nexports-1 do
 
 			d:=exporttable[sortindex[i]].def
 			e:=exporttable[sortindex[i+1]].def
 
 			if strcmp(getbasename(d.name), getbasename(e.name))>0 then
-
 				swapped:=1
 				swap(sortindex[i], sortindex[i+1])
 			fi

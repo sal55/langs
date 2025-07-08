@@ -18440,13 +18440,13 @@ macro pclerror2(x,y) = (pcptr:=pc; pcerror(x,y))
 macro pclustype(x,t) = (pcptr:=pc; pcustype(x,t))
 macro pclmxtypes(x,t,u) = (pcptr:=pc; pcmxtypes(x,t,u))
 
-!macro copyvar(x, y) = x^:=y^
-!macro copyvarv(x, y) = x:=y^
-!macro copyvar_v(x, y) = x^:=y
+macro copyvar(x, y) = x^:=y^
+macro copyvarv(x, y) = x:=y^
+macro copyvar_v(x, y) = x^:=y
 
-macro copyvar(x, y) = (x.dummy:=y.dummy; x.value:=y.value)
-macro copyvarv(x, y) = (x.dummy:=y.dummy; x.value:=y.value)
-macro copyvar_v(x, y) = (x.dummy:=y.dummy; x.value:=y.value)
+!macro copyvar(x, y) = (x.dummy:=y.dummy; x.value:=y.value)
+!macro copyvarv(x, y) = (x.dummy:=y.dummy; x.value:=y.value)
+!macro copyvar_v(x, y) = (x.dummy:=y.dummy; x.value:=y.value)
 
 global ref[0:]ref label jumptable		!stays nil here
 byte getjt
@@ -23185,7 +23185,7 @@ global tabledata []ichar stnames, []byte stsymbols, []byte stsubcodes=
 	("cast",		kcastsym,		13),
 
 	("proc",		kprocsym,		0),
-	("sub",			kprocsym,		1),
+	("subx",		kprocsym,		1),
 
 	("function",	kfunctionsym,	0),
 
@@ -32867,7 +32867,7 @@ proc main=
 !	CPL "LOADED"
 !	STOP
 
-	w:=GXCREATEWINDOW(DIM:(1800,700),caption:"HI THERE")
+	w:=GXCREATEWINDOW(DIM:(1800,700),caption:"Hi There")
 	gxcopy(w,bm)
 !	gxcopy(w,bm,scalex:0.5)
 !	gxcopy(w,bm,scalex:5.0, x:100)
