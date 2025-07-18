@@ -909,7 +909,7 @@ global record pstrec = $caligned
 	byte isthreaded				!
 	byte ishandler				!1 if a proc to be part of func tables
 	byte ismain					!1 if a proc to be part of func tables
-	byte scope
+	byte SPARE
 
 !----------------------------------
 
@@ -2014,8 +2014,8 @@ fi
 !CPL "NEW PC RUN"
 !
 !
-!	doswitch getopcode
-	doswitchu getopcode
+	doswitch getopcode
+!	doswitchu getopcode
 
 	when knop      then
 		steppc
@@ -12084,7 +12084,7 @@ export enumdata [0:]ichar xregnames =
 	(xr15,		"xmm15")
 end
 
-global const maxcalldepth=16
+global const maxcalldepth=32
 global [maxcalldepth]byte callalign		!pending 1-slot alignment for syscalls
 global [maxcalldepth]byte callblockret	!1 if fnc returns a block
 global [maxcalldepth]u32 callblocksize	!size of any returned block
@@ -12419,8 +12419,8 @@ end
 !const fshowseq=1
 const fshowseq=0
 
-const useintelregs=1
-!const useintelregs=0
+!const useintelregs=1
+const useintelregs=0
 
 !const showsizes=1
 const showsizes=0

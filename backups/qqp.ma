@@ -107,6 +107,7 @@ proc main=
 
 	loadsyslib()
 
+!INT TT:=CLOCK()
 	compile_sp(inputfile)
 
 	if fallsp then
@@ -114,6 +115,9 @@ proc main=
 		if fshowast2 and runcode>parse_cc then showast(nil, "AST2") fi
 !		if fshowpcl2 and runcode=fixup_cc then showpcl(nil, 2) fi
 fi
+
+!TT:=CLOCK()-TT
+!CPL =TT
 
 !run the stack of sps (laters sps will be run as they are compiled)
 
@@ -18495,7 +18499,7 @@ freddy:
 
 	if getjt then
 		jumptable:=localjumptable
-!JUMPTABLE:=NIL
+JUMPTABLE:=NIL
 		return
 	fi
 
@@ -18503,11 +18507,11 @@ freddy:
 	pc:=pcptr
 	fp:=frameptr
 
+!CPL "HELLO"
+!IF JUMPTABLE=NIL THEN PCERROR("JUMPTABLE NOT SET") fI
+!	doswitchx(localjumptable) pc.labaddr
 
-IF JUMPTABLE=NIL THEN PCERROR("JUMPTABLE NOT SET") fI
-	doswitchx(localjumptable) pc.labaddr
-
-!	doswitchu pc.opcode
+	doswitchu pc.opcode
 !	doswitch pc.opcode
 !	docase pc.opcode
 !
@@ -19154,10 +19158,10 @@ doforff:
 		const countinterval=100
 		static int count=countinterval
 
-!		if --count=0 then
-!			count:=countinterval
-!			os_peek()
-!		fi
+		if --count=0 then
+			count:=countinterval
+			os_peek()
+		fi
 
 !		if sp>=stacklimit then
 !			pclerror("Stack Overflow")

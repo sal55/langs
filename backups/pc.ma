@@ -2187,13 +2187,13 @@ proc convertpcl(pcl p)=
 	clear regset				!clear work reg flags
 
 	int reg
-!
-	for i to noperands do
-		reg:=pclreg[i]
-		if reg then				!reset work reg occupied by a pcl opnd
-			regset[reg]:=1
-		fi
-	od
+!!
+!	for i to noperands do
+!		reg:=pclreg[i]
+!		if reg then				!reset work reg occupied by a pcl opnd
+!			regset[reg]:=1
+!		fi
+!	od
 
 !	mccodex.regfreedpr.low ior:=oldregsetpr.low iand ((regsetpr.low ior isregvarpr.low) ixor invertbytes)
 !	mccodex.regfreedpr.high ior:=oldregsetpr.high iand ((regsetpr.high ior isregvarpr.high) ixor invertbytes)
