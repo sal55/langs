@@ -1490,7 +1490,7 @@ There is some use for this even in a static language:
 ````
 `X` can be a type or expression. Parentheses may be needed around `X`, when it is a number for example.
 
-If unshare of the result type of an expression, this can display it:
+If unsure of the result type of an expression, this can display it:
 ````
     int a, b; real c
 
@@ -1528,17 +1528,17 @@ L3: println "THREE"
 ````
 Output is TWO then THREE here. This can be used to manually implement 'computed goto'.
 
-This is not needed so much since the `doswitchu` feature exists, so you don't have Fortran-style code with labels and gotos everywhere, but there are a couple of advantages:
-
-If using this in a typical bytecode dispatch loop, the `doswitchu` version may involve two memory access:
+This is not needed so much since the `doswitchu` feature exists, and now there is also `doswitchx`, which is marginally faster, but is a bit harder to use:
 ````
-   doswitchu pc.opcode
+  doswitchu pc.opcode                        # uses multiple dispatch points, each equivalent to 'goto jumptable[pc.opcode]'
+  when kadd then
+
+  doswitchx(jumptable) pc.addr               # multiple dispatch points each equivalent to 'goto pc.addr'
+  when kadd then
 ````
-This fetches the opcode first from bytecode data, then uses that to access the jumptable.
+The first used an internal jumptable. The second needs a local variable which is a pointer to a jumptable; it will be initialised to point to the internal one on function entry.
 
-With explicit label pointers, opcode can be replaced by the actual labels. Dispatch is then with `goto pc.labeladdr`. So it can be marginally faster.
-
-The other advantage is that label pointers can be transpiled to C (will need the gcc extensions) while `doswitchu` translates to regular C-style `switch'.
+In addition, that table needs to be used to fixup bytecode so that `pc.addr' can be used. This is extra work, but far easier than manually maintaining jump tables as would be necessary in gnu C (label pointers are an extension).
 
 ### Macros
 
