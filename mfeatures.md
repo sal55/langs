@@ -10,7 +10,7 @@ The following discusses a bunch of interesting features, often relative to the C
 
 It has been around a long time, and has been implemented on one platform at time, from 8-bit microprocessors through 3 generations of x86, evolving along the way. It was an in-house tool and now is a personal language. 
 
-The current implementation is for x64 running Windows. A WIP is version that generates code for ARM64 under Linux.
+The current implementation is for x64 running Windows. A WIP is a version that generates code for ARM64 under Linux.
 
 
 ### The 'Q' Language
