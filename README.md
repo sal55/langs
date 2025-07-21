@@ -1,12 +1,12 @@
 I develop a number of small-scale language-related projects on my PC.
 
-This github site is used for associated resources such as docs, charts, source backups, benchmark results, the odd binary. It been used also for random stuff related to posts made to my Reddit account, but that has now stopped.
+This github site is used for associated resources such as docs, charts, source backups, benchmark results, the odd binary. It had been used also for random stuff related to posts made to my Reddit account, but that has now stopped.
 
 ### Current Set of Languages
 ````
 M          Lower level systems language
 Q          Dynamic scripting language
-AA         x64 assembly using my syntax
+AA         x64-subset assembler using my syntax
 PCL7       Stack-based IL used by v7 compilers (this can be a complete standalone language)
 PCL8       3AC-based IL used by experimental v8 compiler (an internal language that can only be dumped to textual form).
 C-subset   The partly non-standard subset of C used by the BCC project. The subset is also the output of the MC projects.
