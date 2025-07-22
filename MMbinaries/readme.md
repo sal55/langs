@@ -1,6 +1,6 @@
 ## M Compiler Backups
 
-This is intended as a backup for the binary of my Windows M compiler. Since my language is unique, and compilers for it exist on no one else's machine, losing it would be catastrophic.
+This is intended as a backup for the binary of my Windows M compiler 'MM'. Since my language is unique, and compilers for it exist on no one else's machine, losing it would be catastrophic.
 
 The main binary needed is **mm7.exe**, since all projects are written in M and can be recovered from their source code (a separate backup folder).
 
