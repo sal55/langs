@@ -2,7 +2,7 @@
 
 This is intended as a backup for the binary of my Windows M compiler. Since my language is unique, and compilers for it exist on no one else's machine, losing it would be catastrophic.
 
-The main binary needed is mm7.exe, since all projects are written in M and can be recovered from their source code (a separate backup folder).
+The main binary needed is **mm7.exe**, since all projects are written in M and can be recovered from their source code (a separate backup folder).
 
 However, Windows will flag my EXE file (ie. any EXEs produced by the M compiler) as having a virus. So a few other representations are provided just in case:
 
