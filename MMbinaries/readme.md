@@ -1,4 +1,4 @@
-## Binary Backups
+## M Compiler Backups
 
 This is intended as a backup for the binary of my Windows M compiler. Since my language is unique, and compilers for it exist on no one else's machine, losing it would be catastrophic.
 
