@@ -18499,7 +18499,7 @@ freddy:
 
 	if getjt then
 		jumptable:=localjumptable
-JUMPTABLE:=NIL
+!JUMPTABLE:=NIL
 		return
 	fi
 
@@ -18508,10 +18508,10 @@ JUMPTABLE:=NIL
 	fp:=frameptr
 
 !CPL "HELLO"
-!IF JUMPTABLE=NIL THEN PCERROR("JUMPTABLE NOT SET") fI
-!	doswitchx(localjumptable) pc.labaddr
+IF JUMPTABLE=NIL THEN PCERROR("JUMPTABLE NOT SET") fI
+	doswitchx(localjumptable) pc.labaddr
 
-	doswitchu pc.opcode
+!	doswitchu pc.opcode
 !	doswitch pc.opcode
 !	docase pc.opcode
 !
