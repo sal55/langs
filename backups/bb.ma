@@ -3665,6 +3665,12 @@ cpl "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
 !CPL =MCLREC.bytes
 !CPL =Pstrec.len
 
+!FOR S IN PCLNAMES DO
+!	fprintln "\twhen k# then", s
+!	fprintln "\t\tunimpl(p)"
+!OD
+
+
 	startclock:=os_clock()
 PSTARTCLOCK:=STARTCLOCK
 	initdata()
@@ -3704,8 +3710,6 @@ PSTARTCLOCK:=STARTCLOCK
 	if passlevel>=mcl_pass then
 !CPL $LINENO
 		do_genmcl(passlevel=mcl_pass)
-!CPL $LINENO
-!		do_genmcl(passlevel=mcl_pass)
 
 		case passlevel
 		when obj_pass then
@@ -3809,7 +3813,7 @@ proc do_genpcl=
 
 	int tt:=clock()
 
-CPL "GENPCL-------------"
+!CPL "GENPCL-------------"
 
 	codegen_il(nil)
 
@@ -3839,13 +3843,10 @@ proc do_genmcl(int flog=0)=
 
 	pcl_genmcl()
 	mcltime:=clock()-tt
-
-!CPL "GENMCL", =OUTEXT
+!CPL =MCLTIME
 
 	if flog then
-!CPL "MCL1"
 		pcl_writeasm(changeext(outfile, (ctarget|"c"|"asm")))
-!CPL "MCL2"
 	fi
 
 	if fshowpst and passlevel>pcl_pass then
@@ -4139,6 +4140,9 @@ end
 
 PROC SHOWSURVEYS=
 
+!CPL =NALLEXPR
+!CPL =NFASTEXPR
+
 !CPL =NALLGENPCHIST[0]
 !CPL =NALLGENPCHIST[1]
 !CPL =NALLGENPCHIST[2]
@@ -4146,6 +4150,8 @@ PROC SHOWSURVEYS=
 !CPL =NALLGENPC1
 END
 === mm_gentcl.m 0 0 9/36 ===
+!const freducetemps=1
+const freducetemps=0
 
 global int retindex
 global int initstaticsindex
@@ -4159,6 +4165,15 @@ global int loopindex							!current level of nested loop/switch blocks
 unitrec zero_unit
 global unit pzero=&zero_unit
 
+record tempmoderec=
+	u32 size
+	u16 mode
+	u16 used
+end
+
+[maxfixedtemp]tempmoderec tempmodes
+int nredtemps
+
 int nvarlocals, nvarparams
 
 !macro divider = pc_comment("------------------------")
@@ -4170,7 +4185,7 @@ global proc codegen_il(ichar dummy)=
 
 	return when pcldone
 
-CPL "CODEGEN/IL"
+CPL "CODEGEN/PCL"
 !RETURN
 	dolibs()
 !CPL $LINENO
@@ -4215,6 +4230,7 @@ proc genprocdef (symbol d) =
 	imodule ms
 	psymbol p, q
 	symbol e
+	byte ismain:=0
 
 	ms:=modules[d.moduleno]
 	pcldoswx:=nil
@@ -4224,26 +4240,18 @@ proc genprocdef (symbol d) =
 	pc_addproc(p)
 	pc_currfunc(p)
 
-!CPL $LINENO
-
-!cpl D.NAME
 	e:=d.deflist
-!CPL $LINENO
 
 	while e, e:=e.nextdef do
 		q:=getpsymbol(e)
-!CPL =Q.NAME, Q.ATVAR, E.ATVAR
 		nextloop when e.atvar
 
 		case e.nameid
 		when paramid then
-!CPL "	PARAM", D.NAME, E.NAME
 			pc_addparam(q)
 		when frameid then
-!CPL "	FRAME", D.NAME, E.NAME
 			pc_addlocal(q)
 		when staticid then
-!CPL "ADD STATIC IN PROC", =D.NAME, =P.NAME, =Q.NAME, =E.NAME
 			pc_addstatic(q)
 			if not d.atvar then
 				do_idata(e)
@@ -4251,34 +4259,25 @@ proc genprocdef (symbol d) =
 		esac
 	od
 
-!CPL $LINENO
-
-
-!	if p=ms.stmain and moduletosub[p.moduleno]=mainsubprogno then
-!		genmaindef(p)
-!		return
-!	elsif p=ms.ststart then
-!		genstartdef(p)
-!		return
-!	fi
-	
 	pcl_start()
 
 	mmpos:=d.pos
-!CPL $LINENO
 
 	retindex:=createfwdlabel()
+
+	if d=ms.stmain and moduletosub[d.moduleno]=mainsubprogno then
+		ismain:=1
+		genmain(d)
+
+	elsif d=ms.ststart then
+		genstart(d)
+	fi
 
 	divider()
 
 	if d.hasdoswx then
-!		pc_gen0(knop)
 		pcldoswx:=pccurr
-!		pc_gen0(knop)
 	fi
-
-!PC_GEN0(KNOP)
-!CPL "GENPROC/PCL", =NTEMPS
 
 	evalunit(d.code)
 
@@ -4286,24 +4285,53 @@ proc genprocdef (symbol d) =
 
 	definefwdlabel(retindex)
 
-	FOR I TO NTEMPS DO
-		IF TEMPCOUNT[I]<>0 THEN
-		print @str,"Temp not retired: T",,i
-		pc_comment(str)
-		cpl str,currfunc.name
-!CPL CURRFUNC.NAME,,": UNRETIRED TEMP: T",,I
-		FI
-	OD
+	if ismain then
+		pc_gen1(kstop, genint(0))
+		setmode(ti64)
+	fi
 
 	p.code:=pcl_end()
-
-
 
 	pc_currfunc(nil)
 	p.maxtemp:=ntemps
 
-!CPL "SETMAXTEMPS", P.NAME, P.MAXTEMP
+	scanproctemps(p)
+!	reducetemps(p) when freducetemps and ctarget
+	reducetemps(p) when freducetemps
 
+end
+
+proc genmain(symbol p)=
+	symbol d
+	for i to nsubprogs when i<>mainsubprogno do
+		d:=modules[subprogs[i].mainmodule].ststart
+		docallproc(d)
+	od
+	d:=modules[subprogs[mainsubprogno].mainmodule].ststart
+	docallproc(d)
+
+	entryproc:=getpsymbol(p)
+end
+
+proc genstart(symbol p)=
+	symbol d
+	int lead:=0, m,s
+
+	m:=p.moduleno
+	s:=p.subprogno
+
+	if s=mainsubprogno and p.moduleno=subprogs[s].mainmodule then
+		LEAD:=1
+	elsif p.moduleno=subprogs[s].firstmodule then
+		LEAD:=2
+	fi
+
+	if lead then
+		for i to nmodules when moduletosub[i]=s and i<>m do
+			d:=modules[i].ststart
+			docallproc(d)
+		od
+	fi
 end
 
 proc gendllproc(symbol p)=
@@ -4766,15 +4794,13 @@ proc initstaticvar(symbol d)=
 !*!	pc_gen(kstore, pc_genmem_d(d))
 end
 
-!proc docallproc(symbol d)=
-!!call a simple proc, eg. start(), with no args
-!	return unless d
-!	pc_gen(ksetcall)
-!	pc_setnargs(0)
-!
-!	pc_gen(kcallp, pc_genmemaddr_d(d))
-!end
-!
+proc docallproc(symbol d)=
+!call a simple proc, eg. start(), with no args
+	if d then
+		pc_gen_call(pc_genmemaddr(getpsymbol(d)), 0, 0)
+	fi
+end
+
 !proc scanprocs=
 !	const maxprocs=1000
 !	[maxprocs]psymbol proctable
@@ -4858,6 +4884,194 @@ func genint(int value, mode=ti64)pclopnd tx=
 	tx:= pc_genint(value)
 	setopndmode(tx, mode)
 	tx
+end
+
+global proc scanproctemps(psymbol d)=
+!build templist table for proc d, and fixup ltmode/islast fields in pcl code
+	pcl p:=d.code, plast
+	int ndest, temp
+	ref temprec pt
+	pclopnd a
+	int ntempts
+
+	ntemps:=d.maxtemp
+
+	if ntemps<=maxfixedtemp then
+		templist:=&fixedtemplist
+		for i to ntemps do
+			memset(templist, 0, ntemps*temprec.bytes)
+		od
+
+	else
+!		gerror("Can't do that many temps right now")
+		templist:=pcm_allocz(ntemps*temprec.bytes)
+	fi
+
+	while p, p:=p.next do
+		ndest:=p.ndest
+!		nopnds:=p.nopnds
+
+		for i to p.nopnds do
+			a:=p.abc[i]
+			nextloop when a.optype<>temp_opnd
+			temp:=a.tempno
+
+			pt:=&templist[temp]
+			plast:=pt.lastpcl
+
+			if i<=ndest then				!ltemp
+				if pt.rtcount then MERROR("SCANT1?") fi
+
+				if plast=nil then			!first write
+					if i=1 then
+						p.ltmode:=1			!Set all 1st ltemps to 'Tm'
+						p.firstlt:=1
+					fi
+				else						!subsequent write
+					if i>1 then MERROR("SCANT3?") fi
+					p.ltmode:=1
+				fi
+
+				++pt.ltcount
+
+			else							!rtemp
+				if pt.ltcount=0 or plast=nil then MERROR("SCANT2?") fi
+
+				if pt.rtcount then			!previous rtemps exist
+					plast.islast.[pt.index]:=0		!make the last not the last!
+				elsif pt.index=1 then		!1st rtemp after leftmost ltemp
+					case pt.ltcount
+					when 1 then
+						plast.ltmode:=0		!change from tentative Tm/WN to W1 temp
+					else					!assume 2 or more
+						plast.ltmode:=2		!change last Tm temp to Tx
+					esac
+				fi
+
+				p.islast.[i]:=1				!assume this will be last rtemp
+
+				++pt.ltcount
+			fi
+
+			pt.lastpcl:=p					!always points to last pcl that uses this temp
+			pt.index:=i
+		od
+	od
+
+	if ntemps>maxfixedtemp then
+		pcm_free(templist, ntemps*temprec.bytes)
+	fi
+end
+
+global proc reducetemps(psymbol d)=
+!build templist table for proc d, and fixup ltmode/islast fields in pcl code
+	pcl p:=d.code, plast
+	int ndest, temp
+	ref temprec pt
+	pclopnd a
+	int ntempts
+
+!CPL "REDUCE TEMPS"
+	ntemps:=d.maxtemp
+	nredtemps:=0
+
+	if ntemps<=maxfixedtemp then
+		tempmap:=&fixedtempmap
+		memset(tempmap, 0, ntemps)
+
+	else
+		tempmap:=pcm_allocz(ntemps)
+	fi
+
+	memset(&tempmodes, 0, min(ntemps, maxfixedtemp)*tempmoderec.bytes)
+
+!set up translation map
+	while p, p:=p.next do
+		for i to p.nopnds do
+			maptemp(D,p, i)
+		od
+	od
+
+!now convert all the temp nos. Note that operands can be shared so can be
+!visited more than once; a flag .reduced ensures only converted once
+	p:=d.code
+	while p, p:=p.next do
+		for i to p.nopnds do
+			a:=p.abc[i]
+			if a.optype=temp_opnd and not a.reduced then
+				a.tempno:=tempmap[a.tempno]
+				a.reduced:=1
+			fi
+		od
+	od
+
+	if ntemps>maxfixedtemp then
+		pcm_free(tempmap, ntemps)
+	fi
+
+!!CPL "TEMPMODES:"
+!!IF NREDTEMPS>300 THEN
+!FOR I TO NREDTEMPS DO
+!	IF TEMPMODES[I].MODE=0 THEN EXIT FI
+!	CPL I, STRPMODE(TEMPMODES[I].MODE, TEMPMODES[I].SIZE), TEMPMODES[I].USED
+!od
+!!FI
+!IF NREDTEMPS<NTEMPS AND NTEMPS>100 THEN
+CPL "REDUCED TEMPS FROM",NTEMPS,"TO",NREDTEMPS, D.NAME
+!FI
+end
+
+proc maptemp(PSYMBOL D, pcl p, int n)=
+	int oldtemp, newtemp
+	int mode, size
+	pclopnd a:=p.abc[n]
+	ref tempmoderec pm
+
+	return when a.optype<>temp_opnd
+
+	oldtemp:=a.tempno
+
+	if tempmap[oldtemp] then				!already mapped
+		newtemp:=tempmap[oldtemp]
+		finish	
+	fi
+
+!assume this is a new ltemp modified for first time.
+!first get mode info
+
+	mode:=p.mode
+	size:=p.size
+
+	if p.opcode=kcall then
+		mode:=a.mode
+		size:=a.size
+	fi
+
+	for i to nredtemps do
+		pm:=&tempmodes[i]
+		if pm.used=0 then
+			if pm.mode=mode and pm.size=size then
+				pm.used:=1
+				tempmap[oldtemp]:=newtemp:=i
+				finish
+			fi
+		fi
+	od
+
+	if nredtemps>=maxfixedtemp then
+		merror("Too many new temps")
+	fi
+
+	pm:=&tempmodes[++nredtemps]
+	pm.mode:=mode
+	pm.size:=size
+	pm.used:=oldtemp
+	tempmap[oldtemp]:=newtemp:=nredtemps
+
+finish:
+	if p.islast.[n] then			!last used of it; free this combo
+		tempmodes[newtemp].used:=0
+	fi
 end
 === mm_libtcl.m 0 0 10/36 ===
 global [maxtuplesize]pclopnd extretopnds		!temps to hold func results
@@ -5390,10 +5604,9 @@ proc genjumpcond(int opc, unit p, int lab)=
 				sx:=evalunit(s)
 				s:=s.nextunit
 				if s then
-					pc_sharetemp(qx)
-					pc_gen3(kjumpsete, pc_genlabel(lab2), qx, sx)
+					pc_gen_cond(kjumpcc, eq_cc, pc_genlabel(lab2), qx, sx)
 				else
-					pc_gen3(kjumpsetn, pc_genlabel(lab), qx, sx)
+					pc_gen_cond(kjumpcc, ne_cc, pc_genlabel(lab), qx, sx)
 				fi
 				setmode_u(q)
 			od
@@ -5403,8 +5616,7 @@ proc genjumpcond(int opc, unit p, int lab)=
 
 			while s, s:=s.nextunit do
 				sx:=evalunit(s)
-				if s.nextunit then pc_sharetemp(qx) fi
-				pc_gen3(kjumpsete, pc_genlabel(lab), qx, sx)
+				pc_gen_cond(kjumpcc, eq_cc, pc_genlabel(lab), qx, sx)
 				setmode_u(q)
 			od
 			
@@ -5418,9 +5630,6 @@ proc genjumpcond(int opc, unit p, int lab)=
 		if opc=kjumpf then
 			while r do
 				rx:=evalunit(r)
-				if r.nextunit then
-					pc_sharetemp(rx)
-				fi
 				pc_gen_cond(kjumpcc, reversecond(p.cmpgenop[i]), pc_genlabel(lab), qx, rx)
 
 				setmode_u(q)
@@ -5434,7 +5643,6 @@ proc genjumpcond(int opc, unit p, int lab)=
 			while r do
 				rx:=evalunit(r)
 				if r.nextunit then
-					pc_sharetemp(rx)
 					pc_gen_cond(kjumpcc, reversecond(p.cmpgenop[i]), pc_genlabel(lab2), qx, rx)
 				else
 					pc_gen_cond(kjumpcc, p.cmpgenop[i], pc_genlabel(lab), qx, rx)
@@ -5674,10 +5882,6 @@ func do_assign(unit p, a, b, pclopnd dx)pclopnd =
 !Special handling for index/slice/dot
 	rhs:=evalunit(b)
 
-	if p.resultflag then
-		pc_sharetemp(rhs)
-	fi
-
 	case a.tag
 	when jindex then
 		do_storeindex(p, a.a, a.b, rhs)
@@ -5697,7 +5901,7 @@ GERROR("ASS/SLICE")
 	when jptr then
 		ax:=evalunit(a.a, dx)
 		pold:=pccurr
-		pc_gen_ix(kstorepx, ax, pc_genint(0), rhs)
+		pc_gen_ix(kistorex, ax, pc_genint(0), rhs)
 		checkaddpx_store(pold, 101)
 
 	when jdotindex then
@@ -5779,9 +5983,6 @@ func do_setccchain(unit p, q, pclopnd dx)pclopnd tx =
 	i:=1
 	while r do
 		rx:=evalunit(r)
-		if r.nextunit then
-			pc_sharetemp(rx)
-		fi
 		pc_gen_cond(kjumpcc, reversecond(p.cmpgenop[i]), pc_genlabel(lab1), qx, rx)
 
 		setmode_u(q)
@@ -5900,7 +6101,6 @@ proc do_to(unit p, a, b) =
 
 !check for count being nonzero
 	if a.tag<>jconst then			!assume const limit is non-zero
-		pc_sharetemp(cx)
 		pc_gen_cond(kjumpcc, le_cc, pc_genlabel(lab_d), cx, pc_genint(0))
 		setmode(ti64)
 
@@ -6098,8 +6298,10 @@ func do_returnmult(unit p, a)pclopnd tx =
 		pc_gen2(kretmult, results[1], results[2])
 	when 3 then
 		pc_gen3(kretmult, results[1], results[2], results[3])
+	when 4 then
+		pc_gen4(kretmult, results[1], results[2], results[3], results[4])
 	else
-		gerror("Retmult>3")
+		gerror("Retmult>4")
 	esac
 
 	results[1]
@@ -6389,7 +6591,6 @@ proc do_for(unit p, pindex, pfrom, pbody, int down) =
 			pc_gen1(kjump, pc_genlabel(lab_e))
 		fi
 	else
-		pc_sharetemp(qto)
 		if pfrom.tag=jconst then				!reverse condition; compare mem:imm
 			pc_gen_cond(kjumpcc, (down|gt_cc|lt_cc), pc_genlabel(lab_e), qto, qfrom)
 		else
@@ -6532,7 +6733,7 @@ func do_dot(unit pdot, pclopnd dx)pclopnd tx =
 	ax:=evalref(a)
 	pold:=pccurr
 
-	pc_gen_ix(kloadpx, tx:=gendest(dx, pdot), ax, nil, 1, offset)
+	pc_gen_ix(kiloadx, tx:=gendest(dx, pdot), ax, nil, 1, offset)
 	checkaddpx(pold, 103)
 
 !	fixshort(tx)
@@ -6573,7 +6774,7 @@ proc do_storedot(unit pdot, pfield, pclopnd rhs) =
 	ax:=evalref(a)
 	pold:=pccurr
 
-	pc_gen_ix(kstorepx, ax, pc_genint(0), rhs, 1, offset)
+	pc_gen_ix(kistorex, ax, pc_genint(0), rhs, 1, offset)
 	checkaddpx_store(pold, 105)
 
 	setmode_u(pdot)
@@ -6592,7 +6793,7 @@ func do_index(unit p, parray, pindex, pclopnd dx)pclopnd tx =
 	bx:=evalunit(pindex)
 
 	pold:=pccurr
-	pc_gen_ix(kloadpx, tx:=gendest(dx, p), ax, bx, 
+	pc_gen_ix(kiloadx, tx:=gendest(dx, p), ax, bx, 
 		scale, -ttlower[parray.mode]*scale + addoffset*scale)
 	checkaddpx(pold, 106)
 
@@ -6606,7 +6807,7 @@ func evalarray(unit p)pclopnd tx=
 	case ttbasetype[p.mode]
 	when tslice then
 		px:=evalref(p)
-		pc_gen2(kloadpx, tx:=pc_gentemp(tpi64), px)
+		pc_gen2(kiloadx, tx:=pc_gentemp(tpi64), px)
 		setmode(tu64)
 		tx
 
@@ -6630,7 +6831,7 @@ proc do_storeindex(unit p, parray, pindex, pclopnd rhs) =
 	ax:=evalarray(parray)
 	bx:=evalunit(pindex)
 	pold:=pccurr
-	pc_gen_ix(kstorepx, ax, bx, rhs, 
+	pc_gen_ix(kistorex, ax, bx, rhs, 
 		scale, -ttlower[parray.mode]*scale + addoffset*scale)
 	checkaddpx_store(pold, 107)
 !
@@ -6978,9 +7179,6 @@ func do_case(unit p, pindex, pwhenthen, pelse, pclopnd dx, int loopsw, isref)pcl
 			unittable[ncases]:=wt.b
 
 			while w, w:=w.nextunit do
-				if w.nextunit or wt.nextunit then
-					pc_sharetemp(cx)
-				fi
 				pc_gen_cond(kjumpcc, eq_cc, pc_genlabel(w.whenlabel:=labtable[ncases]), cx, evalunit(w))
 				setmode_u(w)
 			od
@@ -7176,7 +7374,7 @@ func do_syscall(unit p, a, pclopnd dx)pclopnd tx=
 	when sf_getprocname then
 		name:="$procname"
 doprocname:
-		pc_gen_ix(kloadpx, tx, pc_genname(name), evalunit(a), 8, -8)
+		pc_gen_ix(kiloadx, tx, pc_genname(name), evalunit(a), 8, -8)
 
 	when sf_getprocaddr then
 		name:="$procaddr"
@@ -7237,12 +7435,18 @@ global proc checkaddpx(pcl p, int id=0)=
 
 	pcl q:=pccurr
 
+!CPL "CHECK1",PCLNAMES[P.OPCODE], =ID
 	return unless freduce
+CPL "CHECK2"
 
 	return unless p.opcode=kaddpx
+CPL "CHECK3"
 	return unless q.c=nil or q.c.optype=int_opnd
+CPL "CHECK4"
 	return unless p.a=q.b
+CPL "CHECK5"
 	return unless q.islast.[2] = 1
+CPL "CHECK6"
 
 	p.a:=q.a							!move T2 over to P
 
@@ -7277,7 +7481,7 @@ global proc checkaddpx_store(pcl p, int id=0)=
 		p.extra +:= q.b.value*q.scale
 	fi
 	p.extra +:= q.extra
-	p.opcode := kstorepx				!addpx becomes storepx
+	p.opcode := kistorex				!addpx becomes storepx
 
 	moveopnd(p, p, 1, 2)
 	moveopnd(p, p, 2, 3)
@@ -7392,7 +7596,7 @@ proc do_assignarray(unit a, b)=
 		bx:=evalunit(q)
 
 		pold:=pccurr
-		pc_gen_ix(kstorepx, ax, pc_genint(i), bx,
+		pc_gen_ix(kistorex, ax, pc_genint(i), bx,
 			scale, -ttlower[a.mode]*scale)
 		checkaddpx_store(pold, 110)
 		setmode(tttarget[a.mode])
@@ -7428,7 +7632,7 @@ PC_COMMENT("ASSIGNRECORD")
 			ax:=evallv(a)
 			bx:=evalunit(q)
 			pold:=pccurr
-			pc_gen_ix(kstorepx, ax, pc_genint(0), bx, 1, e.offset)
+			pc_gen_ix(kistorex, ax, pc_genint(0), bx, 1, e.offset)
 			checkaddpx_store(pold, 111)
 			setmode(e.mode)
 
@@ -7486,15 +7690,6 @@ export byte phighmem
 export byte pfullsys
 global byte fpshortnames
 
-global const maxtemp=32
-global const maxltemp=4					!as used by multiple func return
-global [maxtemp]int tempsizes			!0..max size (for blocks)
-global [maxtemp]byte tempused			!1 means in use
-global [maxtemp]i16 tempcount			!how many reads are left
-global [maxtemp]pcl templastwrite		!pcl of last write to the temp
-
-global int currtempno, ntemps
-
 const maxsmallint=64
 [0..maxsmallint]pclopnd smallintoperands
 
@@ -7506,8 +7701,9 @@ global int longstringlen
 proc start=
 CPL =PSTREC.BYTES
 CPL =PclREC.BYTES
-CPL =mclREC.BYTES
-CPL =pclbasesize
+!CPL =mclREC.BYTES
+!CPL =pclbasesize
+CPL =PCLNAMES.LEN
 !CPL =regset.len
 !CPL =workregs.len
 !CPL =REGNAMES.LEN
@@ -7524,7 +7720,7 @@ export proc pcl_start =
 	pcstart:=pcm_allocnfz(pclbasesize)
 	pcstart.opcode:=knop
 	pccurr:=pcstart
-	ntemps:=currtempno:=0				!keep track of max used in proc
+	ntemps:=0				!keep track of max used in proc
 end
 
 export func pcl_end:pcl pc=
@@ -7721,10 +7917,6 @@ global proc pc_gen1(int opcode, pclopnd a)=
 	p:=newpcl(opcode, 1)
 
 	p.a:=a
-
-	if a.optype=temp_opnd then
-		addtemp(p, a, 1)
-	fi
 end
 
 global proc pc_gen2(int opcode, pclopnd a, b)=
@@ -7739,8 +7931,6 @@ global proc pc_gen2(int opcode, pclopnd a, b)=
 	p.a:=a
 	p.b:=b
 
-	addtemp(p, a, 1)
-	addtemp(p, b, 2)
 end
 
 global proc pc_gen3(int opcode, pclopnd a, b, c)=
@@ -7752,9 +7942,6 @@ global proc pc_gen3(int opcode, pclopnd a, b, c)=
 	p.b:=b
 	p.c:=c
 
-	addtemp(p, a, 1)
-	addtemp(p, b, 2)
-	addtemp(p, c, 3)
 end
 
 global proc pc_gen4(int opcode, pclopnd a,b,c,d)=
@@ -7767,10 +7954,6 @@ global proc pc_gen4(int opcode, pclopnd a,b,c,d)=
 	p.b:=b
 	p.c:=c
 	p.abc[4]:=d
-
-	for i to 4 do
-		addtemp(p, p.abc[i], i)
-	od
 end
 
 global proc pc_gen_ix(int opcode, pclopnd a, b, c, int scale=1, offset=0) =
@@ -7801,16 +7984,12 @@ global proc pc_gen_call(pclopnd fn, int nret, nargs)=
 	p.nargs:=nargs
 	p.argoffset:=argoffset:=nret+1
 
-	addtemp(p, fn, nret+1)
-
 	for i to nret do
 		p.abc[i]:=x:=extretopnds[i]			!offset past .a
-		addtemp_ret(p, x, i)
 	od
 
 	for i to nargs do
 		p.abc[i+argoffset]:=x:=extparamopnds[i]
-		addtemp(p, x, i+argoffset)
 	od
 end
 
@@ -7916,73 +8095,6 @@ global func pc_gennameaddr(ichar s)pclopnd p=
 	return pc_genmemaddr(pc_makesymbol(s, misc_id))
 end
 
-proc addtemp(pcl p, pclopnd a, int n)=
-!n=1,2,3 for n'th pclopnd in a normal pcl op
-	int temp
-	pcl plastw
-
-!	if a=nil then return fi
-
-	if a.optype<>temp_opnd then
-		return
-	fi
-
-	temp:=a.tempno
-	plastw:=templastwrite[temp]
-
-	if n<=p.ndest then			!is a new dest temp
-		if tempcount[temp] then		!subsequent Tm temp
-IF N>1 THEN MERROR("MULTI-TEMP/MULTI-DEST NOT 1ST") fi
-			p.ltmode:=1
-			plastw.ltmode:=1
-		fi
-
-!CPL "NEW WRITE", = temp, p
-		if n=1 then
-			templastwrite[temp]:=p
-		fi
-		tempcount[temp]:=1
-
-	else
-		--tempcount[temp]
-		if tempcount[temp]=0 then
-			tempused[temp]:=0
-!IF N THEN
-			p.islast.[n]:=1
-!CPL "SETTING IS LAST", =TEMP, =N, =PLASTW
-
-			if plastw and plastw.ltmode=1 then
-!CPL "SETTING TX", =TEMP, = N
-				plastw.ltmode:=2
-			fi
-!FI
-		elsif tempcount[temp]<0 then
-!CPL "NEG COUNT"
-		fi
-
-	fi
-end
-
-global proc addtemp_ret(pcl p, pclopnd a, int n)=
-!n=2..nret-1 for calls
-	int temp
-
-	return unless a.optype=temp_opnd
-
-	temp:=a.tempno
-
-	if tempcount[temp] then
-		if n>1 then MERROR("ATR/MULTI") fi
-		p.ltmode:=1
-		templastwrite[temp].ltmode:=1
-	fi
-
-	templastwrite[temp]:=p
-	tempcount[temp]:=1
-!
-!	dummy()
-end
-
 global func getfullname(psymbol d, int backtick=0)ichar=
 !create fully qualified name into caller's dest buffer
 	static [256]char str
@@ -8060,6 +8172,14 @@ export proc pc_setimport(psymbol d)=
 !use d=nil when done
 
 	currfunc:=d
+	return unless d
+
+	if pimporttable=nil then
+		pimporttable:=pimporttablex:=d
+	else
+		pimporttablex.next:=d
+		pimporttablex:=d
+	fi
 end
 
 export proc pc_comment(ichar s)=
@@ -8102,8 +8222,10 @@ global func pc_makeind(pclopnd a, unit q, int m, size=8)pclopnd p=
 !	CPL "MAKEIND/TEMPPTR"
 !FI
 		pold:=pccurr
-		pc_gen_ix(kloadpx, p:=pc_gentemp(tpu64),a, pc_genint(0))
+		pc_gen_ix(kiloadx, p:=pc_gentemp(tpu64),a, pc_genint(0))
 		checkaddpx(pold)
+
+!		pc_gen2(kiload, p:=pc_gentemp(tpu64),a)
 
 		pc_setmode(m, size)
 
@@ -8155,63 +8277,20 @@ global func pc_makeindlv(pclopnd a, unit q, int m, size=0)pclopnd p=
 	return p
 end
 
-global proc pc_sharetemp(pclopnd tx)=
-	if tx and tx.optype=temp_opnd then
-!CPL "SHARE", TX.TEMPNO
-		++tempcount[tx.tempno]
-	fi
-end
-
 global func pc_gentemp(int m, size=8)pclopnd p=
 	int n
 	p:=newopnd()
 
 !CPL "GENTEMP", STRMODE(M)
 
-	for i to ntemps do
-		if not tempused[i] then
-			n:=i
-			exit
-		fi
-	else
-		if currtempno>=maxtemp then
-			gerror("Too many temps")
-		fi
-		n:=++currtempno
-	
-		if n>ntemps then
-			ntemps:=n
-			tempsizes[n]:=0
-		fi
-	od
+	n:=++ntemps
 
 	p.tempno:=n
 	p.optype:=temp_opnd
 	p.mode:=m
 	p.size:=size
 
-!	COUNTTEMP(N, P.MODE)
-!	currproc.ntemps:=max(currproc.ntemps, ntemps)
-
-IF P.MODE=TBLOCK THEN
-	tempsizes[n] max:=size
-FI
-
-	tempused[n]:=1
-	tempcount[n]:=0
-	templastwrite[n]:=nil
-
-!CPL "NEW TEMP", =N
-
 	return p
-end
-
-global proc pc_freetemp(int temp)=
-	tempused[temp]:=0
-end
-
-global proc pc_addblocktemp(int temp, size)=
-	tempsizes[temp]:=size
 end
 
 export func convertstring(ichar s, t, int length)int=
@@ -8328,6 +8407,36 @@ static [256]char str
 	str
 end
 
+export func pcl_writeasm(ichar filename=nil, int atype='AA')ichar=
+	ref strbuffer asmstr
+	filehandle f
+
+!	if assemtype<>atype then
+!		pclerror("Wrong ASM Module")
+!	fi
+
+!	if assemtype='NASM' then
+!		phighmem:=2
+!	fi
+
+	genmcl()
+
+	asmstr:=getassemstr()
+
+	if filename then
+		if pverbose then println "Writing", filename fi
+
+		f:=fopen(filename,"w")
+		gs_println(asmstr, f)
+		fclose(f)
+
+		gs_free(asmstr)
+		nil
+	else
+		asmstr.strptr
+	fi
+end
+
 
 === tc_decls.m 0 0 14/36 ===
 
@@ -8377,6 +8486,7 @@ global record pstrec =
 	u32 size
 	i16 stindex
 	i16 importindex
+	u32 maxtemp				!for procs set after pcl codegen
 
 	i16 nlocals
 	i16 impindex
@@ -8392,7 +8502,7 @@ global record pstrec =
 		byte paramcat				!pc_reg/move/stack/spill
 		byte fromreg				!pc_reg: move from .fromreg to .reg
 	end
-	byte maxtemp				!for procs set after pcl codegen
+!	byte maxtemp				!for procs set after pcl codegen
 
 end
 
@@ -8434,7 +8544,7 @@ global record pclrec =
 	byte mode
 	byte mode2
 	byte opcode
-	byte flags:(isglobal:1, isvariadic:1,ffi:1)
+	byte flags:(isglobal:1, isvariadic:1, ffi:1, firstlt:1)
 
 	byte nopnds
 	byte argoffset				!So that p.abc[i+offset] accesses i'th argument
@@ -8470,7 +8580,7 @@ global record opndrec =
 		ichar svalue
 		psymbol def
 		struct
-			byte tempno
+			u32 tempno
 			byte reg
 		end
 
@@ -8480,8 +8590,23 @@ global record opndrec =
 	u32 size
 	byte optype
 	byte mode
-	byte flags:(isvariadic:1, isbinary:1, isstring:1)
+	byte flags:(isvariadic:1, isbinary:1, isstring:1, reduced:1)
 	byte spare1
+end
+
+global record temprec =
+!first group is the prepass to set up .ltmode/.islast within pcl ops
+
+	pcl lastpcl				!nil to start, then reference to pcl that has last ref
+	u16 ltcount				!how many writes so far to a temp
+	u16 rtcount				!how many reads so for of a temp
+	byte index				!index of operand for the last temp seen
+	[3]byte spare
+!second group is used during mcl pass for reg allocation and temp management
+
+!	byte loc				!reg, spilled or mult
+!	byte reg				!allocated reg (mult temps must use same reg)
+!	byte SPARE
 end
 
 export record fwdrec =
@@ -8493,8 +8618,20 @@ end
 
 global byte pcldone, mcldone, ssdone, objdone, exedone
 
+global [maxfixedtemp]temprec fixedtemplist
+global [maxfixedtemp]byte fixedtempmap
+global ref[]temprec templist			!points to above for small numbers of temps
+global ref[]byte tempmap
+
+!global const maxfixedtemp=256
+global const maxfixedtemp=512
+global const maxltemp=4					!as used by multiple func return
+
+global int ntemps
+
 global psymbol pstatictable, pstatictablex
 global psymbol pproctable, pproctablex
+global psymbol pimporttable, pimporttablex
 
 global psymbol currprog
 export psymbol currfunc
@@ -8578,7 +8715,7 @@ global proc strpcl(pcl p, int inline=0)=
 !PSSTR(" ")
 !PSSTR(STRINT(P.SEQNO,"4Z"))
 !PSSTR(" ")
-!
+
 	defused:=0
 	if not showformatted then
 		goto default
@@ -8656,14 +8793,6 @@ global proc strpcl(pcl p, int inline=0)=
 		psstr(" then goto ")
 		psopnd(1)
 
-!	when kjumpsete, kjumpsetn then
-!		psstr("if ")
-!		psopnd(2)
-!		psstr((opcode=kjumpsete|" = "|" <> "))
-!		psopnd(3)
-!		psstr(" then goto ")
-!		psopnd(1)
-
 	when kforup, kfordown then
 		psopnd(2)
 		psstr((opcode=kforup|" +:= "|" -:= "))
@@ -8683,17 +8812,17 @@ global proc strpcl(pcl p, int inline=0)=
 		psstr(" then goto ")
 		psopnd(1)
 
-	when kaddpx, kloadpx then
+	when kaddpx, kiloadx then
 !IF OPCODE=KLOADPX AND A.OPTYPE<>TEMP_OPND THEN PSSTR("TTTLOADPX/NONTEMP ") FI
 		psopnd(1)
 		psstr(" := ")
-		psptr(b, c, p.scale, p.extra)
-		if opcode=kloadpx then
+		psptr(2, 3, p.scale, p.extra)
+		if opcode=kiloadx then
 			psstr("^")
 		fi
 
-	when kstorepx then
-		psptr(a, b, p.scale, p.extra)
+	when kistorex then
+		psptr(1, 2, p.scale, p.extra)
 		psstr("^ := ")
 		psopnd(3)
 
@@ -8818,6 +8947,13 @@ global proc strpcl(pcl p, int inline=0)=
 		psopnd(2)
 		psstr((opcode=kloadincr|"++"|"--"))
 
+	when kretfn then
+		psstr("return ")
+		psopnd(1)
+
+	when kretproc then
+		psstr("return")
+
 	else
 		PSSTR("@@ ")				!may need attention
 default:
@@ -8871,7 +9007,7 @@ default:
 		PSTABTO(56)
 	fi
 
-!	gs_leftstr(dest,pclnames[opcode],9)
+	GS_LEFTSTR(DEST,PCLNAMES[OPCODE],9)
 !IF OPCODE=KMOVE AND A.OPTYPE=TEMP_OPND THEN PSSTR("MT") FI
 
 !return when inline
@@ -8948,6 +9084,7 @@ proc psopnd(int n)=
 		if n=1 and currpcl.ltmode then
 			psstr((currpcl.ltmode=2|"x"|"m"))
 		fi
+		if n=1 and currpcl.firstlt then psstr(".") fi
 		if ptrflag=n or ptrflag=3 and n<3 then
 			psstr("^")
 		fi
@@ -9326,30 +9463,20 @@ proc psprocbody(psymbol d)=
 
 end
 
-proc psptr(pclopnd a, b, int scale, offset)=
+proc psptr(int a, b, scale, offset)=
 !CPL "PSPTR",A,B
+	pclopnd ax:=currpcl.abc[a]
+	pclopnd bx:=currpcl.abc[b]
+
 	psstr("(")
-	psopnd(1)
+	psopnd(a)
 
-!	if b then
-!!		if b.optype=int_opnd then
-!!			offset+:=b.value*scale
-!!		else
-!			psstr(" + ")
-!			psopnd(2)
-!!			if scale>1 then
-!				psstr("*")
-!				psint(scale)
-!!			fi
-!!		fi
-!	fi
-
-	if b then
-		if b.optype=int_opnd then
-			offset+:=b.value*scale
+	if bx then
+		if bx.optype=int_opnd then
+			offset+:=bx.value*scale
 		else
 			psstr(" + ")
-			psopnd(2)
+			psopnd(b)
 			if scale>1 then
 				psstr("*")
 				psint(scale)
@@ -9401,6 +9528,9 @@ global func writepst:ref strbuffer=
 	writepst2("PROC PST Global Static Table", pstatictable)
 	psline()
 	writepst2("PROC PST Global Proc Table", pproctable)
+	psline()
+
+	writepst2("PROC PST Global Import Table", pimporttable)
 	psline()
 
 	return dest
@@ -9503,6 +9633,22 @@ proc writepsymbol(psymbol d, ichar fmt)=
 
 	psline()
 end
+
+global func strtemp(int temp)ichar=
+	static [16]char str
+	[2]char cc
+	str[1]:='T'
+	str[2]:=0
+
+	strcat(str, strint(temp))
+
+!	cc[1]:=temp+'a'-1
+!	cc[2]:=0
+!	strcat(str, cc)
+
+	str
+end
+
 === tc_tables.m 0 0 16/36 ===
 !type system
 
@@ -9552,10 +9698,7 @@ global enumdata [0:]ichar opndnames =
 
 	(int_opnd,			$),
 	(real_opnd,			$),
-	(r32_opnd,		$),
-
-	(realimm_opnd,		$),
-	(realimm32_opnd,	$),
+	(r32_opnd,			$),
 
 	(string_opnd,		$),		!reference to a string elsewhere (so like a label)
 	(stringimm_opnd,	$),		!immediate string using .asciz/.ascii
@@ -9597,8 +9740,10 @@ global enumdata [0:]ichar pclnames,
 	(keval,		$+1,  0,  1,  0),  !     (a - -)
   
 	(kaddpx,	$+1,  1,  1,  0),  ! s,n (T b c)	T := b + c*s + n
-	(kloadpx,	$+1,  1,  1,  0),  ! s,n (T b c)	T :=(b + c*s + n)^
-	(kstorepx,	$+1,  0,  1,  0),  ! s,n (b c r)	(a + b*s + n)^ := c
+	(kiload,	$+1,  1,  1,  0),  ! s,n (T b c)	T := b^
+	(kiloadx,	$+1,  1,  1,  0),  ! s,n (T b c)	T :=(b + c*s + n)^
+	(kistore,	$+1,  0,  1,  0),  ! s,n (b c r)	a^ := b
+	(kistorex,	$+1,  0,  1,  0),  ! s,n (b c r)	(a + b*s + n)^ := c
   
 	(kcall,		$+1,  0,  3,  0),  ! r,n (a- - -)	([T ...] F [r ...]) r=nret, n=nargs
 	(kretproc,	$+1,  0,  0,  0),  !     (- - -)	return
@@ -9632,20 +9777,20 @@ global enumdata [0:]ichar pclnames,
 	(kmin,		$+1,  1,  1,  0),  !     (T b c)
 	(kmax,		$+1,  1,  1,  0),  !     (T b c)
   
-	(ksubpx,	$+1,  1,  1,  0),  !     (T b c)
-	(ksubp,		$+1,  1,  1,  0),  !     (T b c)
-	(katan2,	$+1,  1,  1,  0),  !     (T b c)
-	(kpower,	$+1,  1,  1,  0),  !     (T b c)
+	(ksubpx,	$+1,  1,  1,  0),  ! s   (T b c)	T := b - c*s
+	(ksubp,		$+1,  1,  1,  0),  !     (T b c)	T := (b - c)/s
+	(katan2,	$+1,  1,  1,  0),  !     (T b c)	T := atan2(b, c)
+	(kpower,	$+1,  1,  1,  0),  !     (T b c)    T := b ** c
 	(kfmod,		$+1,  1,  1,  0),  !     (T b c)
   
 	(kneg,		$+1,  1,  1,  0),  !     (T b -)	T := -b
-	(kabs,		$+1,  1,  1,  0),  !     (T b -)
-	(kbitnot,	$+1,  1,  1,  0),  !     (T b -)
-	(knot,		$+1,  1,  1,  0),  !     (T b -)
-	(ktoboolt,	$+1,  1,  1,  0),  !     (T b -)
-	(ktoboolf,	$+1,  1,  1,  0),  !     (T b -)
+	(kabs,		$+1,  1,  1,  0),  !     (T b -)    T := abs b
+	(kbitnot,	$+1,  1,  1,  0),  !     (T b -)    T := inot b
+	(knot,		$+1,  1,  1,  0),  !     (T b -)    T := not b
+	(ktoboolt,	$+1,  1,  1,  0),  !     (T b -)    T := istrue b
+	(ktoboolf,	$+1,  1,  1,  0),  !     (T b -)    T := not istrue b
   
-	(ksqr,		$+1,  1,  1,  0),  !     (T b -)
+	(ksqr,		$+1,  1,  1,  0),  !     (T b -)    T := sqr(b)
   
 	(ksqrt,		$+1,  1,  1,  0),  !     (T b -)
 	(ksin,		$+1,  1,  1,  0),  !     (T b -)
@@ -9673,7 +9818,7 @@ global enumdata [0:]ichar pclnames,
   
 	(ktypepun,	$+1,  1,  2,  0),  !     (T b -)
   
-	(kaddto,	$+1,  0,  1,  1),  !     (P b -)
+	(kaddto,	$+1,  0,  1,  1),  !     (P b -)    P +:= b
 	(ksubto,	$+1,  0,  1,  1),  !     (P b -)
 	(kmulto,	$+1,  0,  1,  1),  !     (P b -)
 	(kdivto,	$+1,  0,  1,  1),  !     (P b -)
@@ -9686,21 +9831,21 @@ global enumdata [0:]ichar pclnames,
 	(kshrto,	$+1,  0,  2,  1),  !     (P b -)
 	(kminto,	$+1,  0,  1,  1),  !     (P b -)
 	(kmaxto,	$+1,  0,  1,  1),  !     (P b -)
-	(kaddpxto,	$+1,  0,  1,  1),  !     (P b -)
-	(ksubpxto,	$+1,  0,  1,  1),  !     (P b -)
+	(kaddpxto,	$+1,  0,  1,  1),  ! s   (P b -)    P +:= b*s
+	(ksubpxto,	$+1,  0,  1,  1),  !     (P b -)    P -:= b*s
  
-	(knegto,	$+1,  0,  1,  1),  !     (P - -)
-	(kabsto,	$+1,  0,  1,  1),  !     (P - -)
-	(kbitnotto,	$+1,  0,  1,  1),  !     (P - -)
-	(knotto,	$+1,  0,  1,  1),  !     (P - -)
-	(ktoboolto,	$+1,  0,  1,  1),  !     (P - -)
+	(knegto,	$+1,  0,  1,  1),  !     (P - -)    -:=P
+	(kabsto,	$+1,  0,  1,  1),  !     (P - -)    abs:=P
+	(kbitnotto,	$+1,  0,  1,  1),  !     (P - -)	inot:=P
+	(knotto,	$+1,  0,  1,  1),  !     (P - -)    not:=P
+	(ktoboolto,	$+1,  0,  1,  1),  !     (P - -)    istrue+:=P
   
-	(kincrto,	$+1,  0,  1,  1),  !     (P - -)	++a
-	(kdecrto,	$+1,  0,  1,  1),  !     (P - -)	--a
-	(kincrload,	$+1,  1,  1,  2),  !     (T P -)	T := ++b
-	(kdecrload,	$+1,  1,  1,  2),  !     (T P -)	T := --b
-	(kloadincr,	$+1,  1,  1,  2),  !     (T P -)	T := b++
-	(kloaddecr,	$+1,  1,  1,  2),  !     (T P -)	T := b--
+	(kincrto,	$+1,  0,  1,  1),  !     (P - -)	++P
+	(kdecrto,	$+1,  0,  1,  1),  !     (P - -)	--P
+	(kincrload,	$+1,  1,  1,  2),  !     (T P -)	T := ++P
+	(kdecrload,	$+1,  1,  1,  2),  !     (T P -)	T := --P
+	(kloadincr,	$+1,  1,  1,  2),  !     (T P -)	T := P++
+	(kloaddecr,	$+1,  1,  1,  2),  !     (T P -)	T := P--
   
 	(kswitch,	$+1,  0,  1,  0),  ! n   (b c r)	switch a (b elements, index from c) n=0/1: normal/unchecked
 	(kswitchu,	$+1,  0,  1,  0),  ! n   (b c r)	switch a (b elements, index from c) n=0/1: normal/unchecked
@@ -9719,12 +9864,10 @@ global enumdata [0:]ichar pclnames,
 	(kstorebf,	$+1,  0,  1,  1),  !     (P b c d)	P.[b..c] := d
 	(kidivrem,	$+1,  2,  1,  0),  !     (T b c)
 
-	(kjumpin,	$+1,  0,  1,  0),  ! **
-	(kjumpout,	$+1,  0,  1,  0),  ! **
-	(kjumpsete,	$+1,  0,  1,  0),  !     (L a b) Jump to L when a=b ?
-	(kjumpsetn,	$+1,  0,  1,  0),  !     (L a b) Jump to L when a<>b ?
+	(kjumpin,	$+1,  0,  1,  0),  !     (L b c d)  goto L when b in c..d
+	(kjumpout,	$+1,  0,  1,  0),  !     (L b c d)  goto L when b not in c..d
   
-	(kclear,	$+1,  0,  1,  0),  !
+	(kclear,	$+1,  0,  1,  0),  !     (P - -)    clear P
   
 	(klast,		$+1,  0,  0,  0),  !
 
@@ -10200,6 +10343,10 @@ global const langhelpfile	= "mm_help.txt"
 
 !GLOBAL INT NGENINT
 !GLOBAL INT NGENSMALLINT
+
+!GLOBAL INT NALLEXPR
+!GLOBAL INT NFASTEXPR
+!
 === mm_diags.m 0 0 18/36 ===
 int currlineno
 int currfileno
@@ -23405,7 +23552,6 @@ global proc do_proccode_a=
 	int reg, xreg, n, fn, r, npregs, nextreg, nextfreg
 
 	workset:=tempset:=0					!reset flags for this proc
-	clear temploc
 
 	npregs:=0
 
@@ -23544,7 +23690,7 @@ global proc do_proccode_b=
 
 
 
-	int retmode, ntemps, hasequiv, offset, size, reg
+	int retmode, hasequiv, offset, size, reg
 !*!	mclopnd ax
 	psymbol d
 	[100]char str, newname
@@ -23620,16 +23766,16 @@ global proc do_proccode_b=
 		fi
 	od
 
-	ntemps:=0
 !CPL =NTEMPS
-!	for i to maxoperands when pcltempflags[i] do
+	for i to ntemps when tempspilled[i] do
+		CPL "PROC/B SPILLING", I
+
 !		++ntemps
-!		frameoffset-:=8
-!!*!		ax:=pcltempopnds[i]
-!!*!		ax.offset:=frameoffset
-!MGENCOMMENT("DEFINE3")
-!!		genmc(m_define, mgenname(gettempname(currfunc,i)), mgenint(ax.offset))
-!	od
+		framesize+:=8
+		genmc(m_definetemp)
+		mgentemp(i)
+		moffset(-framesize)
+	od
 
 	if framesize iand 8 then
 !CPL "FRAME ADJ"
@@ -23647,7 +23793,7 @@ global proc do_proccode_b=
 	genmc_reg(m_push, rframe, rlink)
 	genmc_reg(m_mov, rframe, rstack)
 	if framesize then
-		genmc_reg(m_sub, rstack)
+		genmc_reg(m_sub, rstack, rstack)
 		mgenint(framesize)
 	fi
 
@@ -23693,7 +23839,7 @@ global proc do_proccode_c=
 !	MCOMM("<FUNC LEAVE CODE>")
 
 	if framesize then
-		genmc_reg(m_add, rstack)
+		genmc_reg(m_add, rstack, rstack)
 		mgenint(framesize)
 	fi
 !	genmc_reg(m_push, rframe, rlink)
@@ -24075,6 +24221,53 @@ global proc do_call(pcl p)=
 !adjust at the caller
 
 end
+
+global proc do_callx(pcl p, ichar fnname, int amode=0, pclopnd a=nil, int bmode=0, pclopnd b=nil)=
+!do auxialiary calls for stop, sin, etc
+!has 0/1/2 args. Return type is based on p.ndest/p.mode
+
+	int nextreg:=r0, nextxreg:=v0, reg
+
+!either move args to arg-regs, or store in stack-list
+
+	if amode then
+		if pfloat[amode] then
+			loadopnd(a, nextxreg++)
+		else
+			loadopnd(a, nextreg++)
+		fi
+
+		if bmode then
+			if pfloat[bmode] then
+				loadopnd(b, nextxreg++)
+			else
+				loadopnd(b, nextreg++)
+			fi
+		fi
+	fi
+
+!All temp-args will be retired, unless they are persisted
+!Persisting temp-args, and any active temps in regs not part of the call, must be spilled
+
+	spilltemps()
+
+	genmc_name(m_bl, fnname)
+
+!now active the dest temps (for functions returning value)
+!also move each to correct temp
+	if p.ndest then				!assume ltemp is in .a
+!		newtemp(p.a.tempno, p.mode, p.size)
+
+		nextreg:=r0; nextxreg:=v0
+
+		reg:=newltemp(p, 1)
+		genmc_reg(m_mov, reg, (pfloat[p.mode]|v0|r0))
+		msetsize(p.size)
+	fi
+end
+
+
+
 === mc_decls.m 0 0 30/36 ===
 !export record mclrec = $caligned
 export record mclrec =
@@ -24154,6 +24347,7 @@ export enumdata []ichar mclnames =
 	(m_labelname,	$),
 	(m_define,		$),
 	(m_definereg,	$),
+	(m_definetemp,	$),
 	(m_trace,		$),
 	(m_endx,		$),
 
@@ -24216,7 +24410,7 @@ export enumdata []ichar mclnames =
 	(m_movi,		$),
 	(m_movk,		$),
 	(m_mul,			$),
-	(m_mvn,			$),
+	(m_not,			"m_mvn"),
 	(m_neg,			$),
 	(m_negs,		$),
 	(m_orr,			$),
@@ -24384,7 +24578,7 @@ global enumdata [0:]ichar pmcnames =
 end	
 
 global enumdata [0:]ichar locnames =
-	(free_loc=0,"free"),				!temp not in use
+	(no_loc=0,	"unused"),				!temp not in use yet, or retired
 	(reg_loc,	"reg"),					!temp in use in given register
 	(mem_loc,	"mem"),					!temp in use but spilled to memory
 	(mult_loc,	"mult"),				!multi-temp in used but not using reg or mem
@@ -24396,10 +24590,11 @@ global const workxrega = v16, workxregb = v31
 global u64 workset						!has .[reg]=1 when in use as work reg or temp
 global u64 tempset						!has .[reg]=1 when in use as temp
 
-global [maxtemp]byte temploc			!loc-code of temp T
-global [maxtemp]byte tempreg			!reg-code of temp T when in loc is reg_loc or mult
+global [maxfixedtemp]byte temploc			!loc-code of temp T
+global [maxfixedtemp]byte tempreg			!reg-code of temp T when in loc is reg_loc or mult
+global [maxfixedtemp]byte tempspilled		!1 when temp is spilled
 
-global [maxtemp]byte tempspilled		!set to 1 if any temp needed spilling
+global ref[]byte ptemploc, ptempreg			!will point to above, or heap allocated versions
 
 global int auxreg						!either set to r8, or rnone
 
@@ -24537,16 +24732,12 @@ proc px_move*(pcl p) =
 	moveopnd(p)
 end
 
-!proc px_stop*(pcl p) =
-!! Stop Z
-!
-!	loadopnd(zz,tpu64, r0)
-!
-!	genmc(m_bl)
-!	mgenname("exit")
-!
-!	poppcl()
-!end
+proc px_stop*(pcl p) =
+! Stop Z
+	do_callx(p, "exit", tpi64, p.a)
+
+!global proc do_callx(pcl p, ichar fnname, int amode, bmode, pclopnd a, b)=
+end
 
 proc px_add*(pcl p) =
 	do_bin(p, (pfloat[p.mode] | m_fadd | m_add))
@@ -24588,6 +24779,23 @@ proc do_bin(pcl p, int opc) =
 	ax:=newltemp(p, 1)
 
 	genmc_reg(opc, ax, bx, cx)
+end
+
+proc px_neg*(pcl p)=
+	do_unary(p, (pfloat[p.mode]|m_fneg|m_neg))
+end
+
+proc px_bitnot*(pcl p)=
+	do_unary(p, m_not)
+end
+
+proc do_unary(pcl p, int opc) =
+	int ax, bx
+
+	bx:=loadopnd(p.b)
+	ax:=newltemp(p, 1)
+
+	genmc_reg(opc, ax, bx)
 end
 
 global proc px_call*(pcl p) =
@@ -24632,7 +24840,7 @@ proc px_forup*(pcl p) =
 	bx:=loadopnd(p.b)				!index var; a regvar, or copy in reg
 	d:=p.b.def
 
-	genmc_reg((up|m_add|m_sub), bx)
+	genmc_reg((up|m_add|m_sub), bx, bx)
 	mgenint(p.step)
 
 	if d.reg=rnone then		!memory: must update
@@ -24652,11 +24860,43 @@ proc px_retfn*(pcl p) =
 	loadopnd(p.a, reg, copy:1)
 end
 
-=== mc_genmcl.m 0 0 32/36 ===
-const fshowpcl=1
-!const fshowpcl=0
+proc px_incrto*(pcl p)=
+	pclopnd a:=p.a
+	psymbol d
 
-const fshowworkregs=1
+	if a.optype=mem_opnd then
+		d:=a.def
+		if d.reg then
+			genmc_reg(m_add, d.reg, d.reg)
+			mgenint(p.step)
+			return
+		fi
+	fi
+	MERROR("INCRTO...")
+
+!	CPL "INCRTO", =P.STEP, OPNDNAMES[A.OPTYPE]
+!	MCOMMENT("INCRTO")
+end
+
+proc px_sqr*(pcl p)=
+	int ax, bx
+	pclopnd a:=p.a
+
+	if pfloat[p.mode] then
+		MERROR("SQR/FLOAT")
+	else
+
+		bx:=loadopnd(p.b)
+		ax:=newltemp(p, 1)
+
+		genmc_reg(m_mul, ax, bx, bx)
+	fi
+end
+=== mc_genmcl.m 0 0 32/36 ===
+!const fshowpcl=1
+const fshowpcl=0
+
+!!const fshowworkregs=1
 !const fshowworkregs=0
 
 !global const docalltrace=1
@@ -24673,8 +24913,8 @@ GLOBAL INT DEBUG
 
 global proc genmcl(ichar dummy=nil)=
 
-CPL "DOING GENMCL"
 	return when mcldone
+CPL "DOING GENMCL"
 
 !CPL "DOING GENMCL2"
 
@@ -24689,9 +24929,10 @@ CPL "DOING GENMCL"
 !CPL $LINENO
 	initmcdest()
 !CPL $LINENO
-!
+
 	mcomment("ARM64 CODE II...")
 
+!CPL $LINENO
 	do_statics()
 !CPL $LINENO
 
@@ -24701,11 +24942,11 @@ CPL "DOING GENMCL"
 	do_procs()
 !CPL $LINENO
 
-!CPL "DONE CONVERTPCL"
-!
+CPL "DONE CONVERTPCL"
+
 !	genrealtable()
 !CPL $LINENO
-!	genabsneg()
+	genabsneg()
 	genstringtable()
 !CPL $LINENO
 
@@ -24798,7 +25039,8 @@ proc do_staticvar(psymbol d)=
 	pcl p
 
 	setsegment((d.code|'I'|'Z'), d.align)
-	genmc_name(m_labelname, d.name)
+!	genmc_name(m_labelname, d.name)
+	genmc_def(m_labelname, d)
 
 	if d.code then
 		p:=d.code
@@ -24877,14 +25119,31 @@ end
 proc do_procdef(psymbol p)=
 	pcl pc
 
-	setsegment('C',1)
-	mcomm(" ------------- Proc:", p.name)
-	genmc_name(m_labelname, p.name)
-	if p.ismain then
-		genmc_name(m_labelname, "main")
-	fi
+
 	currfunc:=p
-!	ntemps:=0						!keep track of max temp encountered
+
+	setsegment('C',1)
+!	mcomm(" ------------- Proc:", p.name)
+	genmc_def(m_procstart, p)
+	genmc_def(m_labelname, p)
+!	genmc_name(m_labelname, p.name)
+!	if p.ismain then
+!		genmc_name(m_labelname, "main")
+!	fi
+
+	ntemps:=p.maxtemp
+
+	if ntemps<=maxfixedtemp then
+		ptemploc:=&temploc
+		ptempreg:=&tempreg
+		memset(ptemploc, 0, ntemps)
+		memset(ptempreg, 0, ntemps)
+		memset(&tempspilled, 0, ntemps)
+
+	else
+		ptemploc:=pcm_allocz(ntemps)
+		ptempreg:=pcm_allocz(ntemps)
+	fi
 
 	do_proccode_a()
 
@@ -24911,14 +25170,25 @@ proc do_procdef(psymbol p)=
 		MCOMMENT("WORK/TEMPSET NOT EMPTY")
 	fi
 
-	mcomm("End", p.name)
+!	mcomm("End", p.name)
+	genmc(m_procend)
 	mcomment("")
+
+	if ntemps>maxfixedtemp then
+		pcm_free(ptemploc, ntemps)
+		pcm_free(ptempreg, ntemps)
+		ptemploc:=&temploc
+		ptempreg:=&tempreg
+	fi
+	currfunc:=nil
 end
 
 global proc initmcdest=
 !reset mccode/mccodex
 !called should have saved any values from last linked list 
 	mccode:=mccodex:=nil
+	ptemploc:=&temploc
+	ptempreg:=&tempreg
 !	clear rtsproclabels
 end
 
@@ -25000,46 +25270,11 @@ proc doshowpcl(pcl p)=
 	esac
 end
 
-!func strworkregs:ichar=
-!	static [256]char str
-!
-!	strcpy(str, "-"*36 + " W:")
-!
-!!note: workset should never be set for regs workregb+1 .. workxrega-1
-!	for i in workrega..workxregb when workset.[i] do
-!
-!		strcat(str, strreg(i))
-!		for t to currfunc.maxtemp do
-!			if temploc[t]=reg_loc and tempreg[t]=i then
-!				strcat(str, "(")
-!				strcat(str, strtemp(t))
-!				strcat(str, ")")
-!!				exit
-!			fi
-!		od
-!		strcat(str, " ")
-!	od
-!
-!	strcat(str, "T: ")
-!!	for t to currfunc.maxtemp when temploc[t] do
-!	for t to currfunc.maxtemp do
-!		strcat(str, strtemp(t))
-!		strcat(str, "[")
-!		case temploc[t]
-!		when reg_loc then strcat(str, strreg(tempreg[t]))
-!		when mem_loc then strcat(str, "mem")
-!		when mult_loc then strcat(str, "mult")
-!		else strcat(str, "--")
-!		esac
-!		strcat(str, "] ")
-!	od
-!
-!	str
-!end
-
 global func strworkregs(int inline=0)ichar=
 	static [256]char str
 	byte first
+
+	return "" unless currfunc
 
 	if inline then
 		strcpy(str, " (")
@@ -25067,20 +25302,20 @@ global func strworkregs(int inline=0)ichar=
 	strcat(str, ") (")
 	first:=1
 
-	for t to currfunc.maxtemp when temploc[t] do
+	for t to currfunc.maxtemp when ptemploc[t] do
 		if not first then strcat(str, " ") fi
 		first:=0
 		strcat(str, strtemp(t))
 		strcat(str, ":")
-		case temploc[t]
+		case ptemploc[t]
 		when reg_loc then
-			strcat(str, strreg(tempreg[t]))
+			strcat(str, strreg(ptempreg[t]))
 
 		when mem_loc then
 			strcat(str, "sp")
 		when mult_loc then
 			strcat(str, "mx:")
-			strcat(str, strreg(tempreg[t]))
+			strcat(str, strreg(ptempreg[t]))
 		else strcat(str, "-")
 		esac
 
@@ -25092,46 +25327,15 @@ global func strworkregs(int inline=0)ichar=
 	str
 end
 
-proc doshowworkregs(pcl p)=
-	return unless fshowworkregs
-	return when p.opcode in [kcomment, klabel]
-
-	mcomment(pcm_copyheapstring(strworkregs()))
-end
-
-export func pcl_writeasm(ichar filename=nil, int atype='AA')ichar=
-	ref strbuffer asmstr
-	filehandle f
-
-!	if assemtype<>atype then
-!		pclerror("Wrong ASM Module")
-!	fi
-
-!	if assemtype='NASM' then
-!		phighmem:=2
-!	fi
-
-	genmcl()
-
-	asmstr:=getassemstr()
-
-	if filename then
-		if pverbose then println "Writing", filename fi
-
-		f:=fopen(filename,"w")
-		gs_println(asmstr, f)
-		fclose(f)
-
-		gs_free(asmstr)
-		nil
-	else
-		asmstr.strptr
-	fi
-end
-
+!proc doshowworkregs(pcl p)=
+!	return unless fshowworkregs
+!	return when p.opcode in [kcomment, klabel]
+!
+!	mcomment(pcm_copyheapstring(strworkregs()))
+!end
 === mc_libmcl.m 0 0 33/36 ===
-const inlinecomment=1
-!const inlinecomment=0
+!const inlinecomment=1
+const inlinecomment=0
 
 const fuseregtable=1
 !const fuseregtable=0
@@ -25170,13 +25374,6 @@ export proc mclinit(int bypass=0)=
 	fi
 end
 
-global proc initmcdest=
-!reset mccode/mccodex
-!called should have saved any values from last linked list 
-	mccode:=mccodex:=nil
-!	clear rtsproclabels
-end
-
 global proc genmc(int opcode)=				!used in do_mcl/assem in host
 	mcl m, oldm
 	int labno
@@ -25190,8 +25387,6 @@ global proc genmc(int opcode)=				!used in do_mcl/assem in host
 	if inlinecomment then
 		m.comment:=pcm_copyheapstring(strworkregs(1))
 	fi
-
-!CPL "GENMC", MCLNAMES[OPCODE]
 
 	if mccode then
 		m.lastmcl:=mccodex
@@ -25650,16 +25845,6 @@ MCOMMENT("MOVE BLOCK")
 	esac
 end
 
-!global func getwritetemp(pcl p, int n)int reg =
-!!new temps is being written to (but may be multtemp)
-!!get reg for it
-!!assume caller has checked it is a temp
-!!note: I think this should already have been sorted by beforepcl
-!!CPL "NT/GETWRITETEMP"
-!	newtemp(p, n)
-!	tempreg[p.abc[.tempno]
-!end
-
 global func loadopnd(pclopnd a, int reg=rnone, copy=0)int =
 !Load operand into a register, and return register number
 
@@ -25756,7 +25941,7 @@ func loadlabelopnd(int labno, reg)int=
 	genmc_reg(m_adrp, reg)
 	mgenlabel(labno)
 
-	genmc_reg(m_add, reg)
+	genmc_reg(m_add, reg, reg)
 	mgenlabel(labno)
 	mlo12()
 
@@ -25845,9 +26030,9 @@ func loadtempopnd(pclopnd a, int reg, copy)int=
 	int preg, temp, treg
 
 	temp:=a.tempno
-	treg:=tempreg[temp]
+	treg:=ptempreg[temp]
 
-	if temploc[temp]=reg_loc then		!already in reg
+	if ptemploc[temp]=reg_loc then		!already in reg
 		if reg=rnone and copy then		!needs to be copied to a new work reg
 			reg:=getworkreg(a.mode)
 			docopy
@@ -25862,8 +26047,8 @@ docopy:
 	else								!assume in spilled slot
 MCOMMENT("LOAD SPILLED TEMP")
 		reg:=getworkreg(a.mode)
-		temploc[temp]:=reg_loc
-		tempreg[temp]:=reg
+		ptemploc[temp]:=reg_loc
+		ptempreg[temp]:=reg
 		tempset.[reg]:=1
 
 		genmc_rm(m_ldr, reg, rframe)
@@ -25903,10 +26088,10 @@ global proc afterpcl(pcl p)=
 			temp:=a.tempno
 
 !should also be in REG if it was used here (unless this was CALL), but check anyway
-			if temploc[temp]=reg_loc then
-				reg:=tempreg[temp]
-				temploc[temp]:=free_loc
-				tempreg[temp]:=rnone
+			if ptemploc[temp]=reg_loc then
+				reg:=ptempreg[temp]
+				ptemploc[temp]:=no_loc
+				ptempreg[temp]:=rnone
 
 				workset.[reg]:=0
 				tempset.[reg]:=0
@@ -25935,7 +26120,7 @@ global proc holdltemps(pcl p)=
 		case ltmode
 		when 0 then					!normal temp; keep in register as already rtemp
 		when 1 then					!Tm temp; put on hold (make reg available to intervening code until Tx set)
-			temploc[temp]:=mult_loc	!keep reg occupied
+			ptemploc[temp]:=mult_loc	!keep reg occupied
 !			workset.[reg]:=0
 !			tempset.[reg]:=0
 !		else						!Tx temp; keep in reg, but make into Rtemp
@@ -25960,10 +26145,10 @@ end
 global proc retiretemp(int temp)=
 !retire opnd n /if/ it is a temp on last use (not checked by caller)
 	int reg
-	if temploc[temp]=reg_loc then			!should be in reg if used as callarg
-		reg:=tempreg[temp]
-		temploc[temp]:=free_loc
-		tempreg[temp]:=rnone				!no really needed; guarded by temploc
+	if ptemploc[temp]=reg_loc then			!should be in reg if used as callarg
+		reg:=ptempreg[temp]
+		ptemploc[temp]:=no_loc
+		ptempreg[temp]:=rnone				!no really needed; guarded by ptemploc
 		
 		workset.[reg]:=0
 		tempset.[reg]:=0
@@ -25981,22 +26166,22 @@ global func newltemp(pcl p, int n)int =
 !		IF TEMPLOC[TEMP] THEN MERROR("NT:TEMP IN USE?") FI
 
 		reg:=getworkreg(p.mode)
-!		tempreg[temp]:=reg		!in case first of Tm
+!		ptempreg[temp]:=reg		!in case first of Tm
 setreg:
-		tempreg[temp]:=reg
+		ptempreg[temp]:=reg
 		tempset.[reg]:=1
-		temploc[temp]:=reg_loc
+		ptemploc[temp]:=reg_loc
 
 	else
-		case temploc[temp]
-		when free_loc then					!first of mult sequence, will be Tm not Tx
+		case ptemploc[temp]
+		when no_loc then					!first of mult sequence, will be Tm not Tx
 IGNORE:
 			reg:=getworkreg(p.mode)
 			setreg
 
 		when mult_loc then					!Subsequent Tm/Tx
-			reg:=tempreg[temp]
-			temploc[temp]:=reg_loc
+			reg:=ptempreg[temp]
+			ptemploc[temp]:=reg_loc
 
 		else
 CPL("MULT:TEMP IN USE**************"), =N, =TEMP
@@ -26007,21 +26192,6 @@ MCOMMENT("MULT:TEMP IN USE**************")
 	fi
 
 	reg
-end
-
-global func strtemp(int temp)ichar=
-	static [16]char str
-	[2]char cc
-	str[1]:='T'
-	str[2]:=0
-
-	strcat(str, strint(temp))
-
-!	cc[1]:=temp+'a'-1
-!	cc[2]:=0
-!	strcat(str, cc)
-
-	str
 end
 
 global func getworkireg:int=
@@ -26122,9 +26292,9 @@ global proc spilltemps=
 !(if no longer needed after the call, should have been retired)
 	int reg
 
-	for i to currfunc.maxtemp do
-		if temploc[i]=reg_loc then
-			reg:=tempreg[i]
+	for i to ntemps do
+		if ptemploc[i]=reg_loc then
+			reg:=ptempreg[i]
 
 !		CPL(ADDSTR("SPILL TEMP: T", STRINT(i)))
 		MCOMMENT(ADDSTR("SPILL TEMP: T", STRINT(i)))
@@ -26134,11 +26304,12 @@ global proc spilltemps=
 
 
 
-			temploc[i]:=mem_loc
-			tempspilled[i]:=1
+			ptemploc[i]:=mem_loc
 			workset.[reg]:=0
 			tempset.[reg]:=0
 
+CPL "SPILLING",I
+			tempspilled[i]:=1
 
 		fi
 	od
@@ -26154,19 +26325,55 @@ end
 !const fshowseq=1
 const fshowseq=0
 
-!const showsizes=1
-const showsizes=0
+const fexpandpp=1
+!const fexpandpp=0
 
-!const showfreed=1
-const showfreed=0
-
-!const fextendednames=1			!include module name in qualified names
-const fextendednames=0
 
 int destlinestart
 
 
 [regnames.bounds]psymbol regvars		!nil, or strec when it uses that reg
+
+export func getassemstr:ref strbuffer=
+!write all mcl code in system by scanning all procs
+!mcl code is only stored per-proc
+	psymbol d,e
+	mcl m
+	[64]char str
+	int i
+
+	gs_init(pdest)
+
+	for i in 1..2 do
+		d:=(i=1|pstatictable|pproctable)
+
+		while d, d:=d.next do
+			if d.exported then
+				asmstr("    .global ")
+				asmstr(getbasename(d.name))
+				asmstr("\n")
+			fi
+		od
+		asmstr("\n")
+	od
+
+	for i in 1..7 do
+		fprint @str, "    k# .req x#\n", i, i+8
+		asmstr(str)
+	od
+	asmstr("\n")
+
+	m:=mccode
+	i:=1
+
+	while m do
+		writemcl(i,m)
+		++i
+		m:=m.nextmcl
+	od
+
+	return pdest
+end
 
 proc writemcl(int index,mcl m)=
 
@@ -26204,6 +26411,7 @@ global proc strmcl(mcl m)=
 
 	case opcode
 	when m_procstart then
+!CPL "PROC************************************************"
 		d:=m.def
 		asmstr("# Proc ")
 		asmstr(d.name)
@@ -26220,8 +26428,7 @@ global proc strmcl(mcl m)=
 
 	when m_comment then
 		if m.svalue^ then
-!			asmstr("# ")
-			asmstr("! ")
+			asmstr("# ")
 			asmstr(m.svalue)
 		fi
 		return
@@ -26232,13 +26439,16 @@ global proc strmcl(mcl m)=
 		case m.valtype
 		when def_val then
 			d:=m.def
-			asmstr(getdispname(d))
-			if d.id=proc_id and d.exported then
+!			asmstr(getdispname(d))
+			asmstr(d.name)
+!			if d.id=proc_id and d.exported then
+			if d.exported then
 				asmstr(":\n")
 				asmstr(getbasename(d.name))
 			fi
 
 		when string_val, name_val then
+CPL "LABELNAME/STR"
 			asmstr(m.svalue)
 !			return
 		else
@@ -26276,9 +26486,39 @@ global proc strmcl(mcl m)=
 
 		asmstr(" .req ")
 
-		asmstr(strreg(d.reg, d.size))
+		asmstr(strreg(d.reg, d.size, doregvars:0))
 
 		return
+
+	when m_definetemp then
+		d:=m.def
+		asmstr("    .set ")
+		asmstr(strvalue(m))
+		asmstr(", ")
+		asmint(m.offset)
+
+		return
+
+	when m_push then
+		if fexpandpp then
+			asmstr("    stp       ")
+			asmreg(m.a)
+			asmstr(", ")
+			asmreg(m.b)
+			asmstr(", [sp, #-16]!")
+			return
+		fi
+
+	when m_pop then
+		if fexpandpp then
+			asmstr("    ldp       ")
+			asmreg(m.b)
+			asmstr(", ")
+			asmreg((m.a=m.b|rzero|m.a))
+			asmstr(", [sp], #16")
+			return
+		fi
+
 	esac
 
 	strcpy(opcname, mclnames[opcode]+2)
@@ -26328,8 +26568,8 @@ global proc strmcl(mcl m)=
 
 	if m.comment then
 		TABTO(35)
-!		asmstr(" #   ")
-		asmstr(" !   ")
+		asmstr(" #   ")
+!		asmstr(" !   ")
 		asmstr(m.comment)
 	fi
 
@@ -26384,7 +26624,7 @@ proc asmregmemopnds(mcl m)=
 	fi
 
 	asmstr("]")
-	if m.excl then asmstr("!") fi
+	if m.excl then asmstr("#") fi
 end
 
 global func strmclstr(mcl m)ichar=
@@ -26483,22 +26723,27 @@ end
 
 global func getdispname(psymbol d)ichar=
 	static [256]char str
+	ichar s
 
 	if d.reg then
-
-		IF FEXTENDEDNAMES THEN
-			fprint @str,"#R.#.#", (pfloat[d.mode]|"X"|""), $PMODULENAME,(fpshortnames|getbasename(d.name)|getfullname(d))
-		else
+!		IF FEXTENDEDNAMES THEN
+!			fprint @str,"#R.#.#", (pfloat[d.mode]|"X"|""), $PMODULENAME,(fpshortnames|getbasename(d.name)|getfullname(d))
+!		else
 !			fprint @str,"#R.#", (pfloat[d.mode]|"X"|""), (fpshortnames|d.name|getfullname(d))
-			fprint @str,"#R.#", (pfloat[d.mode]|"X"|""), (fpshortnames|getbasename(d.name)|getfullname(d))
-		fi
+		fprint @str,"#R.#", (pfloat[d.mode]|"X"|""), (fpshortnames|getbasename(d.name)|getfullname(d))
+
+		s:=str
+		while s^ do
+			if s^='.' then s^:='_' fi
+			++s
+		od
+
+
+
+!		fi
 
 		return str
 	fi
-
-!CPL =FPSHORTNAMES
-!RETURN "@"
-!RETURN "GETDISP"
 
 	if fpshortnames then
 		return getbasename(d.name)
@@ -26525,13 +26770,16 @@ global func strreg2(int reg, size=8)ichar=
 	str
 end
 
-global func strreg(int reg, size=8)ichar=
+global func strreg(int reg, size=8, doregvars=1)ichar=
 	[8]char str
 	ichar prefix
 	psymbol d
 
-	d:=regvars[reg]
-!	D:=NIL
+	if doregvars then
+		d:=regvars[reg]
+	else
+		d:=nil
+	fi
 
 	if d and d.size=size then
 		return getdispname(d)
@@ -26555,6 +26803,8 @@ global func strreg(int reg, size=8)ichar=
 		else        prefix:="b"
 		esac
 		print @str, prefix,,reg-v0
+	elsif reg=rzero then
+		return (size=4|"wzr"|"xzr")
 	else
 		return "r?"
 	esac
@@ -26562,41 +26812,7 @@ global func strreg(int reg, size=8)ichar=
 	str
 end
 
-export func getassemstr:ref strbuffer=
-!write all mcl code in system by scanning all procs
-!mcl code is only stored per-proc
-	psymbol d,e
-	mcl m
-	[32]char str2,str3
-	int i
-
-	gs_init(pdest)
-
-	for i in 1..2 do
-		d:=(i=1|pstatictable|pproctable)
-
-		while d, d:=d.next do
-			if d.exported then
-				asmstr("    global ")
-				asmstr(getbasename(d.name))
-				asmstr("\n")
-			fi
-		od
-		asmstr("\n")
-	od
-
-	m:=mccode
-	i:=1
-	while m do
-		writemcl(i,m)
-		++i
-		m:=m.nextmcl
-	od
-
-	return pdest
-end
-
-proc asmreg(int reg, size)=
+proc asmreg(int reg, size=8)=
 	asmstr(strreg(reg, size))
 end
 

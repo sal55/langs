@@ -1484,8 +1484,9 @@ fi
 !CPL "NEW PC RUN"
 !
 !
-	doswitch getopcode
-!	doswitchu getopcode
+!	doswitch getopcode
+	doswitchu getopcode
+!	docase getopcode
 
 	when knop      then
 		steppc
@@ -2466,7 +2467,8 @@ CPL =GETOPCODE
 		fprintln "Unimpl: # at seq: #", pclnames[getopcode], getseqno
 		println
 		stop 1
-	end doswitch
+!	end doswitch
+	end
 !	end end
 	0
 end
@@ -5266,6 +5268,8 @@ proc allocregvars(int skipparams, isleaf)=
 		++reg
 	od
 
+!CPL =NL, =NP
+
 	for i to np do
 		d:=params[i]
 		d.reg:=reg
@@ -5362,13 +5366,16 @@ global proc initproc(psymbol d)=
 	pinfo:=currfunc.info
 
 	if pinfo=nil then
+!NOINFO:
+!CPL "NO PINFO"
+
 		nworkregs:=10
 		nworkxregs:=12
 		for r in r3..r9 do workregs[r]:=1 od
 		for r in r6..r15 do workxregs[r]:=1 od
 	else	
+!GOTO NOINFO
 		npregs:=min(4, max(currfunc.nparams, pinfo.nmaxargs))
-
 		nworkregs:=4
 
 		if pinfo.hasblocks then ++nworkregs fi
@@ -5399,8 +5406,10 @@ global proc initproc(psymbol d)=
 	for r in r3..r9 when not workregs[r] do ++maxregvars od
 	for r in r6..r15 when not workxregs[r] do ++maxxregvars od
 
-!CPL =NWORKREGS
-!CPL =MAXREGVARS
+!CPL =NWORKREGS, =MAXREGVARS
+!FOR R IN R0..R15 DO
+!	IF WORKREGS[R] THEN CPL "WORK:", GETREGNAME(R) FI
+!OD
 
 !	println currfunc.name,,":",=nworkregs, =nworkxregs, =npregs, =MAXREGVARS, =MAXXREGVARS
 !	cp "  "; for r in r0..r13 when workregs[r] do print getregname(r),$ od; cpl
@@ -16818,8 +16827,8 @@ ref char lxsvalue
 [0..255]char spacemap
 
 ref strbuffer destcopy
-const int maxpastedtokens=7000
-!const int maxpastedtokens=87000
+!const int maxpastedtokens=7000
+const int maxpastedtokens=87000
 [maxpastedtokens]ichar pastedtokenlist
 int npastedtokens=0
 int isincludefile=0				!whether readng include file name
@@ -28407,6 +28416,9 @@ char* strstr(const char*, const char*);
 char* strrchr(const char*, int);
 int _stricmp(const char*, const char*);
 #define stricmp _stricmp
+#define strcasecmp _stricmp
+
+
 
 int _strnicmp(const char*, const char*, size_t);
 #define strnicmp _strnicmp
