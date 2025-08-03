@@ -7,8 +7,8 @@ This github site is used for associated resources such as docs, charts, source b
 M          Lower level systems language
 Q          Dynamic scripting language
 AA         x64-subset assembler using my syntax
-PCL7       Stack-based IL used by v7 compilers (this can be a complete standalone language)
-PCL8       3AC-based IL used by experimental v8 compiler (an internal language that can
+PCL        Stack-based IL used by v7 compilers (this can be a complete standalone language)
+TCL        3AC-based IL used by experimental v8 compiler (an internal language that can
            only be dumped to textual form).
 C-subset   The partly non-standard subset of C used by the BCC project. The subset is also
            the output of the MC projects.
@@ -17,7 +17,7 @@ C-subset   The partly non-standard subset of C used by the BCC project. The subs
 ### Current Projects
 
 ````
-MM8     WIP: M compiler for ARM64 running Linux; uses PCL8
+MM8     WIP: M compiler for ARM64 running Linux; uses TCL. (Currently shelved; now targetted at x64)
 MM7     M compiler for x64/Win64 ABI, uses PCL7
 QQ7     Bytecode compiler + interpreter for Q. Runs mostly on Windows but can also run
         to some extent on Linux
