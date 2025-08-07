@@ -1097,7 +1097,7 @@ export enumdata \
 		[0:]byte pfloat,
 
 		[0:]byte pmin,						!promoted type when min width applies
-		[0:]byte piwrb =					!int/word/real/block
+		[0:]byte xxpiwrb =					!int/word/real/block
 
 	(tpvoid=0,    "void",    	0,	0, 0,0,	tpvoid,		tpvoid),
 
@@ -2024,7 +2024,8 @@ EXPORT func ispoweroftwo(i64 x)int=
 end
 
 global proc axerror(ichar mess)=
-	CPL "AX ERROR:", mess, "AASEQ:", aaseqno
+!	CPL "AX ERROR:", mess, "AASEQ:", aaseqno, =aapos
+	CPL "AX ERROR:", mess, "Line:", aapos
 	CPL
 	STOP 1
 
@@ -2206,6 +2207,7 @@ proc doinstr(ref mclrec m,int index)=
 	b:=m.b
 
 	aaseqno:=m.seqno
+	aapos:=m.mpos
 	ripentry:=nil
 	CURRMCL:=M
 
@@ -3813,7 +3815,9 @@ proc do_lea(mclopnd a,b)=
 		axerror("LEA not reg/mem")
 	end
 
-	if a.size<4 then axerror("LEA size error") fi
+	if a.size<4 then
+CPL =A.SIZE
+ axerror("LEA size error") fi
 	genrrm(0x8D, a, b)
 end
 
@@ -4984,6 +4988,7 @@ global int ss_symboltablesize
 global ref[]psymbol labeldeftable
 
 global int aaseqno
+global int aapos
 
 !The following are highly dependent on the ordering of the base types being:
 ! r32 r64 ints... block ..., with r32 having value 1
@@ -9489,15 +9494,15 @@ global proc readmodule(ichar source)=
 
 	lxsymbol:=eolsym
 
-	if lxsymbol=eolsym then
-		mmpos:=lxlineno-1
-	else
-		mmpos:=lxlineno
-	fi
 
 	while lxsymbol=eolsym do
 
 		lex()
+		if lxsymbol=eolsym then
+			mmpos:=lxlineno-1
+		else
+			mmpos:=lxlineno
+		fi
 
 		switch lxsymbol
 		when kopcodesym then
