@@ -4649,6 +4649,7 @@ proc px_switch*(pcl p) =
 		genmc(m_jmp, mgenindex(ireg:ax.reg, areg:reg, scale:8))
 	else
 		genmc(m_jmp, mgenindex(ireg:ax.reg,scale:8,labno:jumplab))
+
 	fi
 
 	poppcl()
@@ -6400,6 +6401,8 @@ global proc clearblock(mclopnd ax, int n)=
 !ax is the operand with the address of memory to be cleared
 !generate code to clear n bytes
 
+!CPL "CLEARBLOCK", MSTROPND(AX), N
+
 	mclopnd rx, rcount
 	int nwords,lab,oddbytes,offset,workreg, countreg
 
@@ -6710,7 +6713,7 @@ global proc genrealtable=
 	while p, p:=p.nextconst do
 		genmc(m_labelx,mgenlabel(p.labelno))
 		if p.xvalue=infinity then
-			genmc(m_dd, mgenint(int@(r32(p.xvalue))))
+			genmc(m_dd, mgenint(i32@(r32(p.xvalue))))
 		else
 			genmc(m_dd, mgenrealimm(p.xvalue,tpr32))
 		fi
@@ -9269,7 +9272,7 @@ proc genopnd(mclopnd a,int size=0)=
 		when realimm_val then
 			r32 x32
 			x32:=a.xvalue
-			gendword(int@(x32))
+			gendword(i32@(x32))
 !		when realmem_val then
 !			CPL "		OPND/REALMEM4"
 !		when stringimm_val then
@@ -11914,8 +11917,8 @@ const fshowseq=0
 !const useintelregs=1
 const useintelregs=0
 
-!const showsizes=1
-const showsizes=0
+const showsizes=1
+!const showsizes=0
 
 !const showfreed=1
 const showfreed=0
@@ -36221,6 +36224,7 @@ importdll msvcrt=
 	func strcpy		(ichar,ichar)ichar
 	func strcat		(ichar,ichar)ichar
 	func strcmp		(ichar,ichar)i32
+	func `sqrt		(real)real
 
 	func _strdup	(ichar)ichar
 end
@@ -37570,6 +37574,7 @@ importdll $cstd=
 !	proc `exit		(i32)
 	func pow		(real,real)real
 
+	func `sqrt 		(real)real
 	func `sin 		(real)real
 	func `cos		(real)real
 	func `tan		(real)real

@@ -2408,8 +2408,8 @@ proc getsilx(int &reg)=
 	fi
 end
 === END ===
-1 runmx.m
-2 runmxshow.m
-3 mx_decls.m
-4 mx_lib.m
-5 mc_disasm.m
+1 runmx.m 0 0
+2 runmxshow.m 0 0
+3 mx_decls.m 0 0
+4 mx_lib.m 0 0
+5 mc_disasm.m 0 0
