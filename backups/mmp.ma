@@ -10808,9 +10808,13 @@ proc do_movxmm(mclopnd a,b,int size)=
 				genrrm(0x0F'6E, a, b)
 
 			else
+CPL "MOV XMM/MEM", CURRDATA.PCURR
+REF BYTE PP:=CURRDATA.PCURR
 				f3override:=1
 				nowmask:=1
 				genrrm(0x0F'7E, a, b)
+CPL "MOV XMM/MEM2", CURRDATA.PCURR-PP
+os_getch()
 			fi
 
 		else
@@ -19560,7 +19564,7 @@ global proc showlogfile=
 	logdev:=fopen(logfile,"w")
 
 	if fshowmodules then showprojectinfo(logdev) fi
-
+!
 	if fshowasm and dpasslevel>=dmcl_pass then
 		if ctarget then
 			println @logdev,"PROC CLANG"
