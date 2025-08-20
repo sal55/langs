@@ -430,7 +430,7 @@ proc initdata=
 	igetmsourceinfo:=cast(mgetsourceinfo)
 
 !	idomcl_assem:=cast(domcl_assem)
-	igethostfn:=cast(findhostfn)
+!	igethostfn:=cast(findhostfn)
 
 	REMOVE("PSYMTAB")
 
@@ -927,14 +927,14 @@ proc dostaticvar(symbol d)=
 		fi
 	fi
 
+	if d.atvar=1 then
+		return
+	fi
+
 	p:=getpsymbol(d)
 	tc_addstatic(p)
 
-	if d.atvar=1 then
-		return
-	else
-		do_idata(d)
-	fi
+	do_idata(d)
 end
 
 proc do_idata(symbol d)=
@@ -1276,99 +1276,6 @@ global func getsysfnhandler(int fn)symbol p=
 
 	return nil
 end
-
-global func findhostfn(int opc)psymbol=
-!called from tcl/mcl backend. opc refers to a TCL op
-
-	case opc
-	when kpower then			!assume for i64
-		getpsymbol(getsysfnhandler(sf_power_i64))
-
-	else
-		nil
-	esac
-end
-
-!global proc genpushint(int a)=
-!	tc_gen(kload, tc_genint(a))
-!	setmode(ti64)
-!end
-!
-!global proc genpushreal(real x, int mode)=
-!	tc_gen(kload, tc_genreal(x, gettclmode(mode)))
-!	setmode(mode)
-!end
-!
-!global proc genpushstring(ichar s)=
-!	tc_gen(kload, tc_genstring(s))
-!	setmode(tu64)
-!end
-
-!proc genmaindef(symbol p)=
-!	symbol d
-!
-!	mmpos:=p.pos
-!	doprocdef(p, 1)
-!
-!	retindex:=createfwdlabel()
-!	for i to nsubprogs when i<>mainsubprogno do
-!		d:=modules[subprogs[i].mainmodule].ststart
-!		docallproc(d)
-!	od
-!	d:=modules[subprogs[mainsubprogno].mainmodule].ststart
-!	docallproc(d)
-!
-!	divider()
-!	evalunit(p.code)
-!	divider()
-!
-!	definefwdlabel(retindex)
-!
-!	tc_gen(kload, tc_genint(0))
-!	setmode(ti64)
-!	tc_gen(kstop)
-!	tc_genreturn()
-!
-!	tc_endproc()
-!end
-
-!proc genstartdef(symbol p)=
-!	symbol d
-!	int lead:=0, m, s
-!
-!	m:=p.moduleno
-!	s:=p.subprogno
-!
-!	if s=mainsubprogno and p.moduleno=subprogs[s].mainmodule then
-!		LEAD:=1
-!	elsif p.moduleno=subprogs[s].firstmodule then
-!		LEAD:=2
-!	fi
-!
-!	mmpos:=p.pos
-!	doprocdef(p)
-!
-!	retindex:=createfwdlabel()
-!
-!	if lead then
-!		for i to nmodules when moduletosub[i]=s and i<>m do
-!			d:=modules[i].ststart
-!			docallproc(d)
-!		od
-!	fi
-!
-!	divider()
-
-!	evalunit(p.code)
-!	divider()
-!
-!	definefwdlabel(retindex)
-!
-!	tc_genreturn()
-!
-!	tc_endproc()
-!!	tc_comment("")
-!end
 
 proc initstaticvar(symbol d)=
 	if d.code then
@@ -4276,9 +4183,6 @@ export proc tcl_cmdskip(int a)=end
 
 
 global ref func (int pos, ichar &filename, &sourceline)int igetmsourceinfo
-global ref proc (ref void) idomcl_assem
-global ref func (ref void)int icheckasmlabel
-global ref func (int)psymbol igethostfn
 
 global byte fregoptim = 1
 global byte fpeephole
@@ -4479,6 +4383,8 @@ export proc tc_addstatic(psymbol d)=
 !add to global static if outside a function, or to current function
 
 	psymbol p
+
+!CPL "ADD STATIC", D.NAME
 
 	if currfunc=nil then
 		if pstatictable=nil then
@@ -5632,7 +5538,7 @@ global proc strtcl(tcl p, int inline=0)=
 		psstr("return")
 
 	else
-		PSSTR("@@ ")				!may need attention
+		PSSTR("* ")				!may need attention
 default:
 !CPL "DEFAULT"
 		psstr(tclnames[opcode])
@@ -6536,9 +6442,7 @@ global enumdata [0:]ichar tclnames,
 	(kswitch,	$+1,  0,  1,  0),  ! x,y (L L2 c)	switch on c; L=jumptable, L2=else label
 	(kswitchu,	$+1,  0,  1,  0),  ! x,y (L L2 c)	switch on c; L=jumptable, L2=else label; unchecked
 	(kswlabel,	$+1,  0,  0,  0),  !     (L - -)	label for switch jump table
-	(kendsw,	$+1,  0,  0,  0),  !     (- - -)
-  
-!	(kproc,		$+1,  0,  0,  0),  !     (d - -)
+
 	(kstop,		$+1,  0,  0,  0),  !
 	(klabel,	$+1,  0,  0,  0),  !     (L - -)
   
@@ -21735,8 +21639,8 @@ global proc genrealtable=
 end
 
 === mc_asm_x.m 0 0 25/35 ===
-!const fshowseq=1
-const fshowseq=0
+const fshowseq=1
+!const fshowseq=0
 
 !const showsizes=1
 const showsizes=0
@@ -21818,8 +21722,8 @@ global proc strmcl(ref mclrec mcl)=
 			fi
 		fi
 
-ASMSTR(" ")
-ASMSTR(STRINT(INT(D), "H"))
+!ASMSTR(" ")
+!ASMSTR(STRINT(INT(D), "H"))
 
 		return
 
@@ -22037,8 +21941,8 @@ global func strvalue(mclopnd a)ichar=
 			strcat(&.str, &.str2)
 		fi
 
-STRCAT(STR, " ")
-STRCAT(STR, STRINT(INT(DEF), "H"))
+!STRCAT(STR, " ")
+!STRCAT(STR, STRINT(INT(DEF), "H"))
 
 
 	when intimm_val then
@@ -22214,9 +22118,9 @@ global func getsizeprefix(int size, enable=0)ichar=
 end
 
 === mc_gen_xb.m 0 0 26/35 ===
-!const fshowtcl=2
+const fshowtcl=2
 !const fshowtcl=1
-const fshowtcl=0
+!const fshowtcl=0
 
 !!const fshowworkregs=1
 !const fshowworkregs=0
@@ -22373,7 +22277,6 @@ proc do_statics=
 	d:=pstatictable
 
 	while d, d:=d.next do
-!CPL "GLOBALS:", D.NAME
 		do_staticvar(d)
 	od
 
@@ -22399,6 +22302,9 @@ proc do_staticvar(psymbol d)=
 !	genmc_name(m_labelname, d.name)
 	genmc_def(m_labelname, d)
 
+!	if d.atvar then
+!		return
+!	elsif d.code then
 	if d.code then
 		p:=d.code
 		while p, p:=p.next do
@@ -22597,8 +22503,12 @@ end
 
 global proc unimpl(tcl p)=
 	[100]char str
+
 	fprint @str, "Unimpl: # (#)", tclnames[p.opcode], strpmode(pmode, p.size)
+!	fprint @str, "Unimpl: # (#)", tclnames[p.opcode]
+
 	CPL STR
+
 	mcomment(pcm_copyheapstring(str))
 end
 
@@ -23293,6 +23203,31 @@ global proc mulimm(mclopnd ax, int n)=
 
 end
 
+global func gethostfn(int opc)psymbol d =
+	ichar name, namec
+
+!try manual seach through pcl code
+	case opc
+	when kpower then
+		name:="msys.m$power_i64"		!msys or msysc
+		namec:="msysc.m$power_i64"
+	else
+		name:=nil
+	esac
+
+	if name then
+		psymbol ps:=pproctable
+		while ps, ps:=ps.next do
+			if eqstring(name, ps.name) or eqstring(namec, ps.name) then
+				return ps
+			fi
+		od
+	fi
+
+	merror("gethostfn?", tclnames[opc])
+	nil
+end
+
 === mc_conv_xb.m 0 0 28/35 ===
 !convert tcl to mcl cond codes
 !order is in eq ne lt le ge gt
@@ -23335,7 +23270,8 @@ proc tx_iloadx*(tcl p) =
 			genmc(m_imul2, cx, mgenint(scale))
 			scale:=1
 		fi
-		px:=mgenindex(areg:bx.reg, ireg:cx.reg, scale:scale, offset:offset, size:p.size)
+!		px:=mgenindex(areg:bx.reg, ireg:cx.reg, scale:scale, offset:offset, size:p.size)
+		px:=mgenindex(areg:bx.reg, ireg:cx.reg, scale:scale, offset:offset)
 	else
 		px:=mgenireg(bx.reg, pmode, offset)
 	end	
@@ -23583,7 +23519,15 @@ proc tx_atan2*(tcl p) =
 end
 
 proc tx_power*(tcl p) =
-	unimpl(p)
+!	T := b ** c
+	psymbol d
+	
+	if pint[pmode] then
+		d:=gethostfn(kpower)
+		do_host(p, d, 2)
+	else
+		do_maths(p, "pow*", 2)
+	fi
 end
 
 proc tx_fmod*(tcl p) =
@@ -23699,51 +23643,51 @@ proc tx_sqrt*(tcl p) =
 end
 
 proc tx_sin*(tcl p) =
-	unimpl(p)
+	do_maths(p, "sin*")
 end
 
 proc tx_cos*(tcl p) =
-	unimpl(p)
+	do_maths(p, "cos*")
 end
 
 proc tx_tan*(tcl p) =
-	unimpl(p)
+	do_maths(p, "tan*")
 end
 
 proc tx_asin*(tcl p) =
-	unimpl(p)
+	do_maths(p, "asin*")
 end
 
 proc tx_acos*(tcl p) =
-	unimpl(p)
+	do_maths(p, "acos*")
 end
 
 proc tx_atan*(tcl p) =
-	unimpl(p)
+	do_maths(p, "atan*")
 end
 
 proc tx_log*(tcl p) =
-	unimpl(p)
+	do_maths(p, "log*")
 end
 
 proc tx_log10*(tcl p) =
-	unimpl(p)
+	do_maths(p, "log10*")
 end
 
 proc tx_exp*(tcl p) =
-	unimpl(p)
+	do_maths(p, "exp*")
 end
 
 proc tx_round*(tcl p) =
-	unimpl(p)
+	do_maths(p, "round*")
 end
 
 proc tx_ceil*(tcl p) =
-	unimpl(p)
+	do_maths(p, "ceil*")
 end
 
 proc tx_floor*(tcl p) =
-	unimpl(p)
+	do_maths(p, "floor*")
 end
 
 proc tx_fract*(tcl p) =
@@ -23816,6 +23760,7 @@ proc tx_widen*(tcl p) =
 	ax:=loadopnd(p.b, p.mode2)
 
 	if pmode=tpu64 and p.mode2=tpu32 then		!32-bit load should have zeroed top half
+		bx:=changeopndsize(ax, p.size)
 	else
 		genmc((psigned[p.mode2]|m_movsx|m_movzx), bx:=changeopndsize(ax, p.size), ax)
 	fi
@@ -23933,7 +23878,18 @@ proc tx_addpxto*(tcl p) =
 end
 
 proc tx_subpxto*(tcl p) =
-	unimpl(p)
+	mclopnd px, bx
+	tclopnd b:=p.b
+
+	px:=loadptropnd(p.a)
+
+	if b.optype=int_opnd then
+		genmc(m_sub, px, mgenint(b.value*p.scale))
+	else
+		bx:=loadopnd(b, pmode)
+		mulimm(bx, p.scale)
+		genmc(m_sub, px, bx)
+	fi
 end
 
 proc tx_negto*(tcl p) =
@@ -24004,10 +23960,6 @@ end
 
 proc tx_swlabel*(tcl p) =
 	genmc(m_dq, mgenlabel(p.a.labelno))
-end
-
-proc tx_endsw*(tcl p) =
-	unimpl(p)
 end
 
 proc tx_addpx*(tcl p) =
@@ -24100,7 +24052,7 @@ proc tx_storebit*(tcl p) =
 end
 
 proc tx_storebf*(tcl p) =
-	unimpl(p)
+	do_storebf(p)
 end
 
 proc tx_idivrem*(tcl p) =
@@ -24633,6 +24585,82 @@ proc do_storebit(tcl p) =
 	else
 			merror("Storebit: both vars")
 	fi
+end
+
+global proc do_storebf(tcl p) =
+!	P.[b..c] := d
+	mclopnd px, rx, mx, dx
+	tclopnd b:=p.b, c:=p.c, d:=p.abc[4]
+	int i, j
+	word mask
+
+	unless b.optype=c.optype=int_opnd then
+		merror("storebf not imm")
+	end
+
+	dx:=loadopnd(d)							!rhs: value to store
+
+	px:=loadptropnd(p.a)
+
+	i:=b.value
+	j:=c.value
+
+	mx:=mgenreg(getworkireg())
+	rx:=mgenreg(getworkireg())
+
+	genmc(m_mov, rx, px)
+
+	mask:=inot((inot(0xFFFF'FFFF'FFFF'FFFF<<(j-i+1)))<<i)
+
+	genmc(m_mov, mx, mgenint(mask))
+
+	if i then
+		genmc(m_shl, dx, mgenint(i))
+	fi
+
+	genmc(m_and, rx, changeopndsize(mx, p.size))
+	genmc(m_or, rx, dx)
+
+	genmc(m_mov, px, changeopndsize(rx, p.size))
+end
+
+proc do_maths(tcl p, ichar opname, int nargs=1)=
+	do_callrts(p, opname, nil, nargs)
+end
+
+proc do_host(tcl p, psymbol d, int nargs=1)=
+	do_callrts(p, nil, d, nargs)
+end
+
+global proc do_callrts(tcl p, ichar opname, psymbol d, int nargs)=
+!simpler version of do_call where args are always <=4, and no variadics,
+!there is always one return value, and func call is always direct
+!mode of args and return value assumed to be all pmode
+	tclopnd a
+	mclopnd ax
+
+	for i to nargs do
+		a:=p.abc[i+1]
+		if pfloat[pmode] then				!mode of tcl op not operands
+			loadopnd(a, reg:xr0+i-1)
+		else
+			loadopnd(a, reg:r10+i-1)
+		fi
+	od
+
+	if opname then
+		genmc(m_call, mgenextname(opname))
+	else
+		genmc(m_call, mgenmemaddr(d))
+	fi
+
+	if pfloat[pmode] then
+		ax:=mgenreg(xr0, pmode)
+	else
+		ax:=mgenreg(r0)
+	fi
+
+	storeopnd(p.a, ax)
 end
 
 === mc_temp_xb.m 0 0 29/35 ===
