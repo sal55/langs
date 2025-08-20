@@ -3405,19 +3405,19 @@ proc inithandlers=
 	static [,2]byte dupltable = (
 
 !mapping           =>
-		(ktoboolf, 		ktoboolt)
+		(77, 88),
+		(ktoboolf, 		ktoboolt),
 
-		(kcallf,		kcallp)
-		(kicallp,		kcallp)
-		(kicallf,		kcallp)
+		(kcallf,		kcallp),
+		(kicallp,		kcallp),
+		(kicallf,		kcallp),
 
-		(kendmx,		kresetmx)
-		(ktcproc,		kproc)
+		(kendmx,		kresetmx),
+		(ktcproc,		kproc),
 
-		(kidivto,		kidiv)
+		(kidivto,		kidiv),
 		(kiremto,		kirem)
 		)
-
 
 	for i to dupltable.len do
 		px_handlertable[dupltable[i,1]]:=px_handlertable[dupltable[i,2]]
@@ -5226,6 +5226,7 @@ proc allocregvars(int skipparams, isleaf)=
 
 	d:=currfunc.nextlocal
 	while d, d:=d.nextlocal do
+
 		if d.used and not d.atvar and not d.addrof then
 			if pint[d.mode] then
 				if nlocals<locals.len then
@@ -10800,13 +10801,9 @@ proc do_movxmm(mclopnd a,b,int size)=
 				genrrm(0x0F'6E, a, b)
 
 			else
-CPL "MOV XMM/MEM", CURRDATA.PCURR
-REF BYTE PP:=CURRDATA.PCURR
 				f3override:=1
 				nowmask:=1
 				genrrm(0x0F'7E, a, b)
-CPL "MOV XMM/MEM2", CURRDATA.PCURR-PP
-os_getch()
 			fi
 
 		else
@@ -11499,7 +11496,8 @@ export enumdata [0:]ichar opndnames_ma =
 	(a_xreg,	$),		! xmm register
 end
 
-global const maxoperands=20
+!global const maxoperands=20
+global const maxoperands=50
 
 !following are continually updates as opnds are pushed, moved and popped
 global [maxoperands]pcl		pclopnd			!pclrec describing opnd when not loaded
@@ -15259,6 +15257,7 @@ proc do_genpcl=
 !		println @logdev, pcl_writepcl(nil)
 !
 	if cc_pass=pcl_pass then			!need discrete file
+CPL "WRITEPCL1"
 		pcl_writepcl(outfile)
 	fi
 
@@ -15319,8 +15318,6 @@ proc closelogfile=
 
 	return unless debugmode>=2
 
-CPL "PRESS KEY"
-STOP WHEN OS_GETCH()=27
 
 	if fshowmcl and cc_pass>=mcl_pass then
 		println @logdev, "PROC ASM"
@@ -15328,10 +15325,12 @@ STOP WHEN OS_GETCH()=27
 	fi
 
 	if fshowpcl and cc_pass>=pcl_pass then
+CPL "WRITEPCL2"
 		println @logdev, "!PROC PCL"
 		println @logdev, pcl_writepcl(nil)
 		if fshowpst then
 			pcl_writepst("PSYMTAB")
+
 			addtolog("PSYMTAB", logdev)
 		fi
 	fi
@@ -15351,6 +15350,7 @@ STOP WHEN OS_GETCH()=27
 	fi
 !
 	fclose(cast(logdev))
+CPL "PRESS KEY"; STOP WHEN OS_GETCH()=27
 
 	print @&.str,"\\m\\scripts\\med.bat ",logfile
 
@@ -24651,7 +24651,7 @@ const maxparams=64
 
 global proc do_stmt(unit p) =
 	int oldclineno
-	unit a,b
+	unit a, b
 	symbol d
 
 	return unless p
@@ -24675,25 +24675,25 @@ global proc do_stmt(unit p) =
 		do_decl(p.def)
 !
 	when jcallfn then
-		dx_call(p,a,b,0)
+		dx_call(p, a, b, 0)
 
 	when jreturn then
-		do_return(p,a)
+		do_return(p, a)
 
 	when jassign then
-		do_assign(a,b,0)
+		do_assign(a, b, 0)
 
 	when jif, jifx then
-		do_if(a,b,p.c)
+		do_if(a, b, p.c)
 
 	when jfor then
-		do_for(a,b)
+		do_for(a, b)
 
 	when jwhile then
-		do_while(a,b)
+		do_while(a, b)
 
 	when jdowhile then
-		do_dowhile(a,b)
+		do_dowhile(a, b)
 
 	when jgoto then
 		do_goto(p.def)
@@ -24721,37 +24721,37 @@ global proc do_stmt(unit p) =
 		genjumpl(continuestack[loopindex])
 
 	when jswitch then
-		do_switch(p,a,b)
+		do_switch(p, a, b)
 
 	when jaddto then
-		dx_binto(a,b, kaddto)
+		dx_binto(a, b, kaddto)
 
 	when jsubto then
-		dx_binto(a,b, ksubto)
+		dx_binto(a, b, ksubto)
 
 	when jmulto then
-		dx_binto(a,b, kmulto)
+		dx_binto(a, b, kmulto)
 
 	when jdivto then
-		dx_binto(a,b, (isrealcc(a.mode)|kdivto|kidivto))
+		dx_binto(a, b, (isrealcc(a.mode)|kdivto|kidivto))
 
 	when jremto then
-		dx_binto(a,b, kiremto)
+		dx_binto(a, b, kiremto)
 
 	when jiandto then
-		dx_binto(a,b, kbitandto)
+		dx_binto(a, b, kbitandto)
 
 	when jiorto then
-		dx_binto(a,b, kbitorto)
+		dx_binto(a, b, kbitorto)
 
 	when jixorto then
-		dx_binto(a,b, kbitxorto)
+		dx_binto(a, b, kbitxorto)
 
 	when jshlto then
-		dx_binto(a,b, kshlto)
+		dx_binto(a, b, kshlto)
 
 	when jshrto then
-		dx_binto(a,b, kshrto)
+		dx_binto(a, b, kshrto)
 
 	when jpreincr, jpostincr then
 		do_preincr(a, kincrto)
@@ -24777,12 +24777,13 @@ global proc do_stmt(unit p) =
 end
 
 proc dx_expr(unit p, int am=0) =
-	int oldclineno,value,m
-	unit a,b
+	int oldclineno, value, m
+	unit a, b
 	[256]char str
 	symbol d
 
 	return unless p
+!CPL "DXEXPR", JTAGNAMES[P.TAG], =am
 
 	oldclineno:=clineno
 	clineno:=p.lineno
@@ -24797,19 +24798,19 @@ proc dx_expr(unit p, int am=0) =
 		dx_const(p)
 
 	when jname then
-		dx_name(p,am)
+		dx_name(p, am)
 !
 	when jwidenmem then
-		dx_expr(a,am)
+		dx_expr(a, am)
 
 	when jfuncname then
 		pc_gen(kload, genmemaddr_d(p.def))
 		setmode(tu64)
 
 	when jassign then
-		do_assign(a,b, 1)
+		do_assign(a, b, 1)
 !!
-	when jandl,jorl then
+	when jandl, jorl then
 		dx_andorl(p)		!use non-short circuit versions for now
 
 	when jnotl then
@@ -24845,65 +24846,65 @@ proc dx_expr(unit p, int am=0) =
 		od
 
 	when jcallfn then
-		dx_call(p,a,b, 1)
+		dx_call(p, a, b, 1)
 
 	when jifx then
-		dx_ifx(p,a,b,p.c)
+		dx_ifx(p, a, b, p.c)
 
-	when jeq,jne,jlt,jle,jge,jgt then
-		dx_eq(p, a,b)
+	when jeq, jne, jlt, jle, jge, jgt then
+		dx_eq(p, a, b)
 
 	when jadd then
 		if ttisref[a.mode] and ttsize[b.mode]<=4 then
 			b.mode:=tu64
 		fi
-		dx_bin(a,b, kadd)
+		dx_bin(a, b, kadd)
 !
 	when jsub then
-		dx_bin(a,b, ksub)
+		dx_bin(a, b, ksub)
 !
 	when jmul then
-		dx_bin(a,b, kmul)
+		dx_bin(a, b, kmul)
 
 	when jdiv then
-		dx_bin(a,b, (isrealcc(a.mode)|kdiv|kidiv))
+		dx_bin(a, b, (isrealcc(a.mode)|kdiv|kidiv))
 
 	when jrem then
-		dx_bin(a,b, kirem)
+		dx_bin(a, b, kirem)
 
 	when jiand then
-		dx_bin(a,b, kbitand)
+		dx_bin(a, b, kbitand)
 
 	when jior then
-		dx_bin(a,b, kbitor)
+		dx_bin(a, b, kbitor)
 
 	when jixor then
-		dx_bin(a,b, kbitxor)
+		dx_bin(a, b, kbitxor)
 
 	when jshl then
-		dx_bin(a,b, kshl)
+		dx_bin(a, b, kshl)
 
 	when jshr then
-		dx_bin(a,b, kshr)
+		dx_bin(a, b, kshr)
 
 	when jptr then
-		dx_ptr(p,a,am)
+		dx_ptr(p, a, am)
 
 	when  jaddptr then
-		dx_addptr(p,a,b, kaddpx, am)
+		dx_addptr(p, a, b, kaddpx, am)
 !
 	when  jsubptr then
-		dx_addptr(p, a,b, ksubpx, am)
+		dx_addptr(p, a, b, ksubpx, am)
 !
 	when jconvert then
 		if p.convmode=tvoid then
 			dx_expr(a)
 		else
-			dx_convert(p,a,p.convmode, p.opcode)
+			dx_convert(p, a, p.convmode, p.opcode)
 		fi
 
 	when jscale then
-		dx_scale(p,a,b)
+		dx_scale(p, a, b)
 
 	when jneg then
 		dx_expr(a)
@@ -24916,46 +24917,46 @@ proc dx_expr(unit p, int am=0) =
 		setmode_u(a)
 
 	when jpreincr, jpredecr then
-		dx_preincrx(p,a)
+		dx_preincrx(p, a)
 
 	when jpostincr, jpostdecr then
-		dx_postincrx(p,a)
+		dx_postincrx(p, a)
 
 	when jaddto then
-		dx_binto(a,b, kaddto, 1)
+		dx_binto(a, b, kaddto, 1)
 
 	when jsubto then
-		dx_binto(a,b, ksubto, 1)
+		dx_binto(a, b, ksubto, 1)
 
 	when jmulto then
-		dx_binto(a,b, kmulto, 1)
+		dx_binto(a, b, kmulto, 1)
 
 	when jdivto then
-		dx_binto(a,b, kdivto, 1)
+		dx_binto(a, b, kdivto, 1)
 
 	when jremto then
-		dx_binto(a,b, kiremto, 1)
+		dx_binto(a, b, kiremto, 1)
 
 	when jiandto then
-		dx_binto(a,b, kbitandto, 1)
+		dx_binto(a, b, kbitandto, 1)
 
 	when jiorto then
-		dx_binto(a,b, kbitorto, 1)
+		dx_binto(a, b, kbitorto, 1)
 
 	when jixorto then
-		dx_binto(a,b, kbitxorto, 1)
+		dx_binto(a, b, kbitxorto, 1)
 
 	when jshlto then
-		dx_binto(a,b, kshlto, 1)
+		dx_binto(a, b, kshlto, 1)
 
 	when jshrto then
-		dx_binto(a,b, kshrto, 1)
+		dx_binto(a, b, kshrto, 1)
 
 	when jaddrof then
-		dx_addrof(p,a,am)
+		dx_addrof(p, a, am)
 
 	when jdot then
-		dx_dot(p,a,b,am)
+		dx_dot(p, a, b, am)
 
 	when jsetjmp then
 		dx_expr(a)
@@ -24967,7 +24968,7 @@ proc dx_expr(unit p, int am=0) =
 		pc_gen(klongjmp)
 
 	else
-		gerror_s("DX-EXPR: can't do tag: #",jtagnames[p.tag])
+		gerror_s("DX-EXPR: can't do tag: #", jtagnames[p.tag])
 	end switch
 
 	clineno:=oldclineno
@@ -24982,13 +24983,13 @@ proc dx_const(unit p)=
 
 	elsecase t
 	when tr32 then
-		pc_gen(kload, genreal(p.xvalue,tpr32))
+		pc_gen(kload, genreal(p.xvalue, tpr32))
 
 	when tr64 then
 		pc_gen(kload, genreal(p.xvalue, tpr64))
 
 	elsif t>=tfirstreal and t<=tlastreal then
-		pc_gen(kload, genreal(p.xvalue,tpr64))
+		pc_gen(kload, genreal(p.xvalue, tpr64))
 
 	elsif t=tref then
 		if p.isstrconst then
@@ -25033,14 +25034,14 @@ proc dx_binto(unit a, b, int opc, res=0)=
 !res=1 means value must be retained
 
 	dx_expr(b)
-	dx_expr(a,1)
+	dx_expr(a, 1)
 IF NOT RES and opc not in [kidivto, kiremto] THEN
 	do_setinplace()
 FI
 
 	if res then
 		pc_gen(kdupl)
-		pc_genxy(kswapstk, 2,3)
+		pc_genxy(kswapstk, 2, 3)
 	fi
 	pc_gen(opc)
 	setmode(getmemmode(a))
@@ -25051,14 +25052,14 @@ FI
 	fi
 !	dx_expr(b)
 !	if res then pc_gen(kdupl) fi
-!	dx_expr(a,1)
-!	pc_gen(getopc(opc,a))
+!	dx_expr(a, 1)
+!	pc_gen(getopc(opc, a))
 !	setmode(getmemmode(a))
 end
 
-proc do_assign(unit a,b, int res)=
+proc do_assign(unit a, b, int res)=
 
-	do_fixwiden(a,b)
+	do_fixwiden(a, b)
 
 	dx_expr(b)
 
@@ -25073,12 +25074,12 @@ proc do_assign(unit a,b, int res)=
 		setmode(getmemmode(a))
 
 	when jptr then
-		dx_expr(a,1)
+		dx_expr(a, 1)
 		pc_genix(kistore)
 		setmode(getmemmode(a))
 
 	when jdot then
-		dx_expr(a.a,1)
+		dx_expr(a.a, 1)
 		pc_gen(kload, genint(a.offset))
 		setmode(tu64)
 		pc_genix(kaddpx)
@@ -25090,11 +25091,13 @@ proc do_assign(unit a,b, int res)=
 		setmode(getmemmode(a))
 
 	else
-		GERROR_S("DOASSIGN not ready: #",jtagnames[a.tag])
+		GERROR_S("DOASSIGN not ready: #", jtagnames[a.tag])
 	esac
 end
 
 proc dx_ptr(unit p, a, int am)=
+CPL "PTR",=AM
+
 	dx_expr(a)
 	if am=0 then				!for &, exit with pointer value
 		pc_genix(kiload)
@@ -25102,7 +25105,7 @@ proc dx_ptr(unit p, a, int am)=
 	fi
 end
 
-proc dx_addptr(unit p, a,b, int opc, am)=
+proc dx_addptr(unit p, a, b, int opc, am)=
 	dx_expr(a)
 	dx_expr(b)
 	pc_genix(opc)
@@ -25112,12 +25115,12 @@ proc dx_addptr(unit p, a,b, int opc, am)=
 end
 
 proc dx_addrof(unit p, a, int am)=
-	dx_expr(a,1)
+	dx_expr(a, 1)
 end
 
-proc dx_convert(unit p,a, int t,opc)=
+proc dx_convert(unit p, a, int t, opc)=
 !convert unit a to type t, using conversion opc (uwiden_c etc)
-	int s,ssize,tsize
+	int s, ssize, tsize
 
 	s:=a.mode
 
@@ -25149,10 +25152,10 @@ proc dx_convert(unit p,a, int t,opc)=
 		if ssize=tsize then return fi
 		pc_gen(kwiden)
 
-	when sfloat_c,ufloat_c then
+	when sfloat_c, ufloat_c then
 		pc_gen(kfloat)
 
-	when sfix_c,ufix_c then
+	when sfix_c, ufix_c then
 		pc_gen(kfix)
 
 	when fwiden_c then
@@ -25161,7 +25164,7 @@ proc dx_convert(unit p,a, int t,opc)=
 	when fnarrow_c then
 		pc_gen(kfnarrow)
 
-	when narrow_c,truncate_c then
+	when narrow_c, truncate_c then
 dotruncate:
 		pc_gen(ktruncate)
 
@@ -25170,19 +25173,19 @@ dotruncate:
 		return
 
 	else
-		gerror_s("Convert op not implem: #",convnames[opc])
+		gerror_s("Convert op not implem: #", convnames[opc])
 	esac
 
 	setmode(t)
 	setmode2(s)
 end
 
-proc do_if(unit a,b,c)=
-	int lab1,lab2
+proc do_if(unit a, b, c)=
+	int lab1, lab2
 
 	lab1:=createfwdlabel()
 
-	genjumpcond(kjumpf,a,lab1)
+	genjumpcond(kjumpf, a, lab1)
 
 	do_stmt(b)
 
@@ -25197,11 +25200,11 @@ proc do_if(unit a,b,c)=
 	fi
 end
 
-proc genjumpcond(int opc,unit p,int lab)=
+proc genjumpcond(int opc, unit p, int lab)=
 !p is some conditional expression of arbitrary complexity
 !opc is kjumpf or kjumpt
 !evaluate and generate jumps as needed
-	unit q,r
+	unit q, r
 	int lab2
 
 	q:=p.a
@@ -25211,12 +25214,12 @@ proc genjumpcond(int opc,unit p,int lab)=
 	when jandl then
 		case opc
 		when kjumpf then
-			genjumpcond(kjumpf,q,lab)
-			genjumpcond(kjumpf,r,lab)
+			genjumpcond(kjumpf, q, lab)
+			genjumpcond(kjumpf, r, lab)
 		when kjumpt then
 			lab2:=createfwdlabel()
-			genjumpcond(kjumpf,q,lab2)
-			genjumpcond(kjumpt,r,lab)
+			genjumpcond(kjumpf, q, lab2)
+			genjumpcond(kjumpt, r, lab)
 			definefwdlabel(lab2)
 		esac
 
@@ -25224,28 +25227,28 @@ proc genjumpcond(int opc,unit p,int lab)=
 		case opc
 		when kjumpf then
 			lab2:=createfwdlabel()
-			genjumpcond(kjumpt,q,lab2)
-			genjumpcond(kjumpf,r,lab)
+			genjumpcond(kjumpt, q, lab2)
+			genjumpcond(kjumpf, r, lab)
 			definefwdlabel(lab2)
 		when kjumpt then
-			genjumpcond(kjumpt,q,lab)
-			genjumpcond(kjumpt,r,lab)
+			genjumpcond(kjumpt, q, lab)
+			genjumpcond(kjumpt, r, lab)
 		esac
 
 	when jnotl then
 		case opc
 		when kjumpf then
-			genjumpcond(kjumpt,q,lab)
+			genjumpcond(kjumpt, q, lab)
 		when kjumpt then
-			genjumpcond(kjumpf,q,lab)
+			genjumpcond(kjumpf, q, lab)
 		esac
 
 	when jistruel then
-		genjumpcond(opc,q,lab)
+		genjumpcond(opc, q, lab)
 
-	when jeq,jne,jlt,jle,jge,jgt then
+	when jeq, jne, jlt, jle, jge, jgt then
 
-		gcomparejump(opc,p,q,r,lab)
+		gcomparejump(opc, p, q, r, lab)
 
 	when jexprlist then
 		while q and (r:=q.nextunit) do
@@ -25253,7 +25256,7 @@ proc genjumpcond(int opc,unit p,int lab)=
 			q:=r
 		od
 
-		genjumpcond(opc,q,lab)
+		genjumpcond(opc, q, lab)
 	else			!other expression
 		dx_expr(p)
 		pc_gen(opc, genlabel(lab))
@@ -25261,7 +25264,7 @@ proc genjumpcond(int opc,unit p,int lab)=
 	end switch
 end
 
-proc gcomparejump(int jumpopc, unit p, lhs,rhs, int lab)=
+proc gcomparejump(int jumpopc, unit p, lhs, rhs, int lab)=
 !jumpopc is the base cmdcode needed: kjumpt or kjumpt
 !p is the eq/compare unit
 !convert into jumpcc cmdcode
@@ -25315,7 +25318,7 @@ proc genjumpl(int lab)=
 end
 
 proc do_while (unit pcond, pbody) =
-	int lab_b,lab_c,lab_d
+	int lab_b, lab_c, lab_d
 
 	if pcond.tag=jconst and pcond.value then
 		do_while1(pbody)
@@ -25335,14 +25338,14 @@ proc do_while (unit pcond, pbody) =
 
 	definefwdlabel(lab_c)
 
-	genjumpcond(kjumpt,pcond,lab_b)
+	genjumpcond(kjumpt, pcond, lab_b)
 !	setmode_u(pcond)
 	definefwdlabel(lab_d)
 	--loopindex
 end
 
 proc do_while1 (unit pbody) =
-	int lab_b,lab_c,lab_d
+	int lab_b, lab_c, lab_d
 
 	lab_c:=createfwdlabel()
 	lab_d:=createfwdlabel()
@@ -25361,7 +25364,7 @@ proc do_while1 (unit pbody) =
 end
 
 proc do_dowhile (unit pbody, pcond) =
-	int lab_b,lab_c,lab_d
+	int lab_b, lab_c, lab_d
 
 	lab_c:=createfwdlabel()
 	lab_d:=createfwdlabel()
@@ -25375,7 +25378,7 @@ proc do_dowhile (unit pbody, pcond) =
 	definefwdlabel(lab_c)
 
 	unless iscondfalse(pcond) then
-		genjumpcond(kjumpt,pcond,lab_b)
+		genjumpcond(kjumpt, pcond, lab_b)
 	end
 
 
@@ -25383,7 +25386,7 @@ proc do_dowhile (unit pbody, pcond) =
 	--loopindex
 end
 
-proc stacklooplabels(int a,b)=
+proc stacklooplabels(int a, b)=
 	!don't check for loop depth as that has been done during parsing
 	continuestack[++loopindex]:=a
 	breakstack[loopindex]:=b
@@ -25407,9 +25410,9 @@ proc do_return(unit p, a)=
 	fi
 end
 
-proc dx_call(unit p,a,b, int res)=
+proc dx_call(unit p, a, b, int res)=
 	ref paramrec pm
-	int isfnptr,variadic,nparams,retmode,nbytes,retsize,m,nvariadics
+	int isfnptr, variadic, nparams, retmode, nbytes, retsize, m, nvariadics
 	int nfixedparams, isfn, blockret
 	[maxparams]unit paramlist
 	[maxparams]byte paramconst			!1 when 'const' (up to nfixedparams only)
@@ -25561,8 +25564,8 @@ copyl:
 end
 
 proc do_for (unit pinit, pbody) =
-	unit pcond,pincr
-	int lab_b,lab_c,lab_d,lab_cond
+	unit pcond, pincr
+	int lab_b, lab_c, lab_d, lab_cond
 
 	pcond:=pinit.nextunit
 	pincr:=pcond.nextunit
@@ -25589,7 +25592,7 @@ proc do_for (unit pinit, pbody) =
 	definefwdlabel(lab_cond)
 
 	if pcond.tag<>jnull then
-		genjumpcond(kjumpt,pcond,lab_b)
+		genjumpcond(kjumpt, pcond, lab_b)
 	else
 		genjumpl(lab_b)
 	fi
@@ -25597,11 +25600,12 @@ proc do_for (unit pinit, pbody) =
 	--loopindex
 end
 
-proc do_preincr(unit a,int incrop)=
-	dx_expr(a,1)
+proc do_preincr(unit a, int incrop)=
+	dx_expr(a, 1)
 	do_setinplace()
 	pc_gen(incrop)
-	setmode_u(a)
+!	setmode_u(a)
+	setmode(getmemmode(a))
 	setincrstep(a.mode)
 end
 
@@ -25613,8 +25617,8 @@ proc setincrstep(int m)=
 	fi
 end
 
-proc dx_preincrx(unit p,a)=
-	dx_expr(a,1)
+proc dx_preincrx(unit p, a)=
+	dx_expr(a, 1)
 	do_setinplace()
 
 	pc_gen((p.tag=jpreincr|kincrload|kdecrload))
@@ -25624,8 +25628,8 @@ proc dx_preincrx(unit p,a)=
 
 end
 
-proc dx_postincrx(unit p,a)=
-	dx_expr(a,1)
+proc dx_postincrx(unit p, a)=
+	dx_expr(a, 1)
 	do_setinplace()
 
 	pc_gen((p.tag=jpostincr|kloadincr|kloaddecr))
@@ -25633,8 +25637,8 @@ proc dx_postincrx(unit p,a)=
 	WIDEN(A)
 end
 
-proc dx_dot(unit p,a,b, int am)=
-	dx_expr(a,1)
+proc dx_dot(unit p, a, b, int am)=
+	dx_expr(a, 1)
 	pc_gen(kload, genint(p.offset))
 	setmode(tu64)
 
@@ -25654,10 +25658,10 @@ proc dx_dot(unit p,a,b, int am)=
 
 end
 
-proc dx_eq(unit p, a,b)=
+proc dx_eq(unit p, a, b)=
 !apply =, <= etc between a and b, and get a logical result 1 or 0
 
-	do_fixwiden(a,b)
+	do_fixwiden(a, b)
 
 	dx_expr(a)
 	dx_expr(b)
@@ -25678,21 +25682,21 @@ end
 
 proc do_goto(symbol d)=
 	if d.index=0 then
-		gerror_s("Label not defined: #",d.name)
+		gerror_s("Label not defined: #", d.name)
 	elsif d.index<0 then
 		d.index:=++mlabelno	
 	fi
 	pc_gen(kjump, genlabel(d.index))
 end
 
-proc dx_ifx(unit p,a,b,c)=
+proc dx_ifx(unit p, a, b, c)=
 	int lab1, lab2, ismult:=p.mode<>tvoid
 
 	lab1:=createfwdlabel()				!dest label of main condition (to end of if, or start if else)
 	lab2:=createfwdlabel()
 
 	if ismult then pc_gen(kstartmx) fi
-	genjumpcond(kjumpf,a,lab1)
+	genjumpcond(kjumpf, a, lab1)
 
 	dx_expr(b)
 	if ismult then pc_gen(kresetmx); setmode_u(p) fi
@@ -25725,7 +25729,7 @@ proc do_casestmt(unit p, a)=
 	do_stmt(a)
 end
 
-proc do_switch(unit p,a,b)=
+proc do_switch(unit p, a, b)=
 !need to create switch levels, as they can be nested; nested case labels
 !belong to the top switch level
 	[maxswitchrange]i32 labeltable				!sw_length+1 labels
@@ -25735,16 +25739,16 @@ proc do_switch(unit p,a,b)=
 	int breakswlabel							!index of fwd break label
 	int switchlabel								!index of fwd break label
 	int lower, upper							!ower/upper ranges of switch case values
-	int length,value,ncases
+	int length, value, ncases
 	byte serialsw
-	int i,index
+	int i, index
 !int sw_index
 	ref caserec pcase
 
 !store current set of global values for outer switch
 	ref[]i32 old_labeltable
 	ref[]i32 old_valuetable
-	int old_ncases,old_lower
+	int old_ncases, old_lower
 	byte old_defaultseen
 	int old_defaultlabel
 	int old_breaklabel
@@ -25762,8 +25766,8 @@ proc do_switch(unit p,a,b)=
 		if ncases=1 then
 			lower:=upper:=value
 		else
-			lower:=min(lower,value)
-			upper:=max(upper,value)
+			lower:=min(lower, value)
+			upper:=max(upper, value)
 		fi
 		pcase:=pcase.nextcase
 	od
@@ -25792,7 +25796,7 @@ proc do_switch(unit p,a,b)=
 		dx_expr(a)
 
 		for i:=1 to ncases do
-!CPL "CASE",I,VALUETABLE[I]
+!CPL "CASE", I, VALUETABLE[I]
 			labeltable[i]:=createfwdlabel()
 !			if i<ncases then
 !				pc_gen(kdouble)
@@ -25815,7 +25819,7 @@ proc do_switch(unit p,a,b)=
 
 	else
 		serialsw:=0
-		memset(&flags,0,length)				!clear value flags
+		memset(&flags, 0, length)				!clear value flags
 
 !fill table with defaults first
 		for i:=1 to length do
@@ -25829,7 +25833,7 @@ proc do_switch(unit p,a,b)=
 			labeltable[index]:=createfwdlabel()
 
 			if flags[index] then
-				gerror_s("Dupl case value: #",strint(value))
+				gerror_s("Dupl case value: #", strint(value))
 			fi
 			flags[index]:=1
 		od
@@ -25897,12 +25901,12 @@ end
 proc dx_andorl(unit p)=
 !do short-circuit evaluation of a&&b or a||b
 !return operand containing 1 or 0
-	int lab1,lab2
+	int lab1, lab2
 
 	lab1:=createfwdlabel()			!dest label of main condition (to end of if, or start if else)
 
 	pc_gen(kstartmx)
-	genjumpcond(kjumpf,p,lab1)
+	genjumpcond(kjumpf, p, lab1)
 
 	lab2:=createfwdlabel()			!label past else part
 	pc_gen(kload, genint(1))
@@ -25920,8 +25924,8 @@ proc dx_andorl(unit p)=
 	definefwdlabel(lab2)
 end
 
-proc dx_scale(unit p,a,b)=
-	int opc,scale:=p.scale,n
+proc dx_scale(unit p, a, b)=
+	int opc, scale:=p.scale, n
 
 	dx_expr(a)
 	if p.scale>=0 then
@@ -25947,7 +25951,7 @@ proc widen(unit p) =
 
 	setmode(mode)
 
-	if ttsize[mode]<4 and pccurr.opcode in [kload, kiload, kiloadx,
+	if ttsize[mode]<4 and pccurr.opcode in [kload, kiload, kiloadx, 
 		kincrload, kdecrload, kloadincr, kloaddecr, kcallf] then
 		pc_gen(kwiden)
 		setmode((mode in [ti8, ti16]|ti32|tu32))

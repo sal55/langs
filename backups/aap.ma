@@ -4133,13 +4133,9 @@ proc do_movxmm(mclopnd a,b,int size)=
 				genrrm(0x0F'6E, a, b)
 
 			else
-CPL "MOV XMM/MEM", CURRDATA.PCURR
-REF BYTE PP:=CURRDATA.PCURR
 				f3override:=1
 				nowmask:=1
 				genrrm(0x0F'7E, a, b)
-CPL "MOV XMM/MEM2", CURRDATA.PCURR-PP
-os_getch()
 			fi
 
 		else
@@ -4832,7 +4828,8 @@ export enumdata [0:]ichar opndnames_ma =
 	(a_xreg,	$),		! xmm register
 end
 
-global const maxoperands=20
+!global const maxoperands=20
+global const maxoperands=50
 
 !following are continually updates as opnds are pushed, moved and popped
 global [maxoperands]pcl		pclopnd			!pclrec describing opnd when not loaded

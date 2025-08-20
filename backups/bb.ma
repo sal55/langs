@@ -1,5 +1,5 @@
-=== MA 35 ===
-=== mm.m 0 0 1/35 ===
+=== MA 34 ===
+=== mm.m 0 0 1/34 ===
 !project =
 	module mm_cli
 
@@ -7,7 +7,6 @@
 	module mm_libtcl
 	module mm_blocktcl
 
-	MODULE DUMMY
 	MODULE TC_API
 	MODULE TC_DECLS
 	MODULE TC_DIAGS
@@ -81,7 +80,7 @@ proc main=
 	main2()
 end
 
-=== mm_cli.m 0 0 2/35 ===
+=== mm_cli.m 0 0 2/34 ===
 
 global ichar syslibname=""
 
@@ -259,7 +258,7 @@ PSTARTCLOCK:=STARTCLOCK
 !CPL PASSNAMES[PASSLEVEL]
 
 	if passlevel>=mcl_pass then
-!CPL $LINENO
+CPL $LINENO, =passlevel=mcl_pass, PASSNAMES[PASSLEVEL]
 		do_genmcl(passlevel=mcl_pass)
 
 		case passlevel
@@ -370,7 +369,7 @@ proc do_gentcl=
 
 !CPL "GENTCL-------------"
 
-	codegen_il(nil)
+	codegen_tcl()
 
 	tcltime:=clock()-tt
 
@@ -400,6 +399,8 @@ proc do_genmcl(int flog=0)=
 	mcltime:=clock()-tt
 !CPL =MCLTIME
 
+CPL "MCL",=FLOG, =FSHOWASM
+
 	if flog then
 		tcl_writeasm(changeext(outfile, (ctarget|"c"|"asm")))
 	fi
@@ -427,7 +428,7 @@ proc initdata=
 	pm.stmodule:=stprogram
 	modules[0]:=pm
 
-	igetmsourceinfo:=cast(mgetsourceinfo)
+!*!	igetmsourceinfo:=cast(mgetsourceinfo)
 
 !	idomcl_assem:=cast(domcl_assem)
 !	igethostfn:=cast(findhostfn)
@@ -504,7 +505,7 @@ proc getinputoptions=
 	when obj_pass, dll_pass then
 		highmem:=2
 	when mcl_pass then
-		if assemtype='NASM' then highmem:=2 fi
+!*!		if assemtype='NASM' then highmem:=2 fi
 	when mx_pass, run_pass then
 		highmem:=0
 	esac
@@ -695,6 +696,8 @@ end
 
 PROC SHOWSURVEYS=
 
+!CPL =MLABELNO
+
 !CPL =NALLEXPR
 !CPL =NFASTEXPR
 
@@ -704,7 +707,7 @@ PROC SHOWSURVEYS=
 !CPL =NALLGENPCHIST[3]
 !CPL =NALLGENPC1
 END
-=== mm_gentcl.m 0 0 3/35 ===
+=== mm_gentcl.m 0 0 3/34 ===
 const freducetemps=1
 !const freducetemps=0
 
@@ -737,7 +740,7 @@ int nvarlocals, nvarparams
 !macro divider = tc_comment("-"*40)
 macro divider = tc_comment("="*40)
 
-global proc codegen_il(ichar dummy)=
+global proc codegen_tcl=
 	symbol d
 	ref procrec pp
 
@@ -801,14 +804,14 @@ proc genprocdef (symbol d) =
 	e:=d.deflist
 
 	while e, e:=e.nextdef do
-		q:=getpsymbol(e)
 		nextloop when e.atvar
+		q:=getpsymbol(e)
 
 		case e.nameid
 		when paramid then
 			tc_addparam(q)
 		when frameid then
-			tc_addlocal(q)
+			tc_addlocal(q) unless e.atvar
 		when staticid then
 			tc_addstatic(q)
 			if not d.atvar then
@@ -1001,8 +1004,6 @@ proc genidata(unit p, int doterm=1, am='A', offset=0)=
 			tc_gen1(kdata, tc_gendata(p.svalue, p.slength))
 !			setmode(t)
 			setmode_u(p)
-!CPL "JERE", STRPMODE(PC
-!SETMODE(TI64)
 
 		else						!assume int/word
 			tc_gen1(kdata, genint(p.value))
@@ -1268,6 +1269,7 @@ global func getsysfnhandler(int fn)symbol p=
 	fi
 	if fn<>sf_unimpl then
 		p:=getsysfnhandler(sf_unimpl)
+RETURN NIL
 		if p=nil and report then
 			gerror("No m$unimpl")
 		fi
@@ -1579,7 +1581,7 @@ finish:
 		tempmodes[newtemp].used:=0
 	fi
 end
-=== mm_libtcl.m 0 0 4/35 ===
+=== mm_libtcl.m 0 0 4/34 ===
 global [maxtuplesize]tclopnd extretopnds		!temps to hold func results
 global [maxparam]tclopnd extparamopnds
 
@@ -1593,9 +1595,12 @@ global func getpsymbol(symbol d)psymbol p=
 
 	if d.pdef then return d.pdef fi
 
+!CPL "GETPS", D.NAME
+
+
 	if d.atvar and d.equivvar then
 		getpsymbol(e:=getequivdef(d))
-		e.pdef.atvar:=1
+!		e.pdef.atvar:=1
 		d.pdef:=e.pdef
 		return e.pdef
 	fi
@@ -1640,7 +1645,7 @@ global func getpsymbol(symbol d)psymbol p=
 	p.ishandler:=d.ishandler
 	p.isthreaded:=d.isthreaded
 
-	p.varparams:=d.varparams
+	p.variadic:=d.varparams
 	p.align:=getalignment(d.mode)		!mainly for vars, but no harm for procs etc
 
 	e:=d.owner
@@ -1701,7 +1706,7 @@ global proc setopndmode(tclopnd p, int m)=
 	p.opsize:=ttsize[m]
 end
 
-=== mm_blocktcl.m 0 0 5/35 ===
+=== mm_blocktcl.m 0 0 5/34 ===
 !dummy
 
 const freduce=0
@@ -2422,6 +2427,11 @@ GERROR("ASS/SLICE")
 	when jdotslice then
 		tc_gen4(kstorebf, evallv(a.a), evalunit(a.b.a), evalunit(a.b.b), rhs)
 
+	when jif then
+		a.resultflag:=1
+		lhs:=do_if(a, a.a, a.b, a.c, nil, isref:1)
+		tc_gen_ix(kistorex, lhs, tc_genint(0), rhs)
+
 	else
 		cpl jtagnames[a.tag]
 		gerror("Can't assign")
@@ -2565,7 +2575,7 @@ proc do_goto(unit a)=
 	symbol d
 
 	case a.tag
-	when jname then
+	when jname and a.def.nameid=labelid then
 		d:=a.def
 		if d.index=0 then
 			d.index:=++mlabelno
@@ -2573,7 +2583,8 @@ proc do_goto(unit a)=
 		tc_gen1(kjump, tc_genlabel(d.index))
 
 	else
-		gerror("goto ptr?")
+		tc_gen1(kijump, evalunit(a))
+		setmode(tu64)
 	esac
 end
 
@@ -2841,10 +2852,6 @@ func do_callproc(unit p, a, b, tclopnd dx)tclopnd tx =
 	tx:=nil
 	nparams:=0
 
-!	if ttisblock[d.mode] and not p.resultflag then
-!		gerror("Can't discard block ret value")
-!	fi
-
 	c:=b
 	while c, c:=c.nextunit do
 		if nparams>=maxparam then gerror("call:too many params") fi
@@ -2862,16 +2869,13 @@ func do_callproc(unit p, a, b, tclopnd dx)tclopnd tx =
 	for i to nparams do
 		extparamopnds[i]:=paramopnds[i]
 
-		if ffi and d.varparams and i>=d.varparams and i<=4 then
+		if ffi and d.varparams and i>d.varparams and i<=4 then
 			extparamopnds[i].isvariadic:=1			!whether params pushed as variadic
 		fi
 	od
 
-!CPL =D.NRETVALUES, =DX, =TX
-
 	ax:=evalref(a)
 	nret:=d.nretvalues
-!	if not p.resultflag and nret=1 then nret:=0 fi
 	if not p.resultflag then nret:=0 fi
 
 	case nret
@@ -2895,20 +2899,12 @@ func do_callproc(unit p, a, b, tclopnd dx)tclopnd tx =
 			setopndmode(extretopnds[i], ttmult[d.mode, i])
 		od
 
-!CPL "CALLMULT", NUSED
 		tc_gen_call(ax, nused, nparams)
 	esac
 
-!CPL "BTCL CALL", =D.NAME, =D.VARPARAMS, =D.VARIADIC
 	if d.varparams then
 		tccurr.isvariadic:=1
 	fi
-
-!	COUNTARGS(TCCURR)
-!*!	currproc.maxargs:=max(currproc.maxargs, nparams)
-!*!	++currproc.ncalls
-
-	tccurr.ffi:=ffi
 
 	if ttisblock[p.mode] and not p.resultflag then	!???
 		return nil
@@ -3032,7 +3028,12 @@ proc do_incr(unit p, a) =
 	if a.tag=jname then
 		tc_gen1(p.tclop, genmem_u(a))
 	else
-		tc_gen1(p.tclop, evallv(a))
+
+		TX:=evallv(a)
+CPL "INCR", STROPND(TX)
+		tc_gen1(p.tclop, TX)
+
+!		tc_gen1(p.tclop, evallv(a))
 	fi
 
 	setmode_u(a)
@@ -4165,36 +4166,7 @@ TC_COMMENT("ASSIGNRECORD")
 	od
 end
 
-=== dummy.m 0 0 6/35 ===
-global int pstartclock
-global int mcltime
-global int sstime
-global int exetime
-
-!global proc tcl_genss= end
-global proc tcl_runtcl= end
-global proc tcl_writeobj(ichar filename)= end
-!global proc tcl_writeexe(ichar filename)= end
-!global proc tcl_writedll(ichar filename)= end
-global proc tcl_writemx(ichar filename)= end
-global proc tcl_writemcl= end
-global proc tcl_exec= end
-export proc tcl_cmdskip(int a)=end
-
-
-global ref func (int pos, ichar &filename, &sourceline)int igetmsourceinfo
-
-global byte fregoptim = 1
-global byte fpeephole
-global byte tc_useruntcl=0
-!global byte pfullsys
-export byte pverbose
-
-export int assemtype='AA'
-
-export int mmpos
-
-=== tc_api.m 0 0 7/35 ===
+=== tc_api.m 0 0 6/34 ===
 int STSEQNO
 
 export tcl tcstart			!start of tcl block
@@ -4220,6 +4192,22 @@ global byte fpshortnames
 
 global ichar longstring					!used in stropnd
 global int longstringlen
+
+global int pstartclock
+global int mcltime
+global int sstime
+global int exetime
+
+global ref func (int pos, ichar &filename, &sourceline)int igetmsourceinfo
+
+global byte fregoptim = 1
+global byte fpeephole
+global byte tc_useruntcl=0
+!global byte pfullsys
+export byte pverbose
+
+export int mmpos
+
 
 !---------------------------------------------------
 
@@ -4247,6 +4235,7 @@ export proc tcl_start =
 	tcstart.opcode:=knop
 	tccurr:=tcstart
 	ntemps:=0				!keep track of max used in proc
+
 end
 
 export func tcl_end:tcl pc=
@@ -4484,7 +4473,7 @@ global proc tc_gen4(int opcode, tclopnd a,b,c,d)=
 	p.abc[4]:=d
 end
 
-global proc tc_gen_ix(int opcode, tclopnd a, b, c, int scale=1, offset=0) =
+global proc tc_gen_ix(int opcode, tclopnd a, b, c=nil, int scale=1, offset=0) =
 
 !	IF A=NIL THEN A:=GENINT(0) FI
 	IF B=NIL THEN B:=TC_GENINT(0) FI
@@ -4800,6 +4789,12 @@ global func tc_gentemp:tclopnd p=
 	return p
 end
 
+global proc tc_deltemp=
+!remove last-generated temp; not needed after all
+!allocated operand may still exist
+	--ntemps
+end
+
 export func convertstring(ichar s, t, int length)int=
 !convert string s, that can contain control characters, into escaped form
 !return new string in t, so that ABC"DEF is returned as ABC\"DEF
@@ -4919,6 +4914,8 @@ export func tcl_writeasm(ichar filename=nil, int atype='AA')ichar=
 	ref strbuffer asmstr
 	filehandle f
 
+CPL "WRITEASM"
+
 !	if assemtype<>atype then
 !		tclerror("Wrong ASM Module")
 !	fi
@@ -4936,7 +4933,8 @@ export func tcl_writeasm(ichar filename=nil, int atype='AA')ichar=
 !CPL "WASM:",$LINENO
 
 	if filename then
-		if pverbose then println "Writing", filename fi
+!		if pverbose then println "Writing", filename fi
+		println "Writing", filename
 
 !CPL "WASM:",$LINENO
 		f:=fopen(filename,"w")
@@ -5002,8 +5000,24 @@ export func tcl_writess(ichar filename=nil, int obj=0)ichar =
 	fi
 end
 
+global proc tcl_runtcl=
+end
 
-=== tc_decls.m 0 0 8/35 ===
+global proc tcl_writeobj(ichar filename)= end
+
+!global proc tcl_genss= end
+!global proc tcl_runtcl= end
+!global proc tcl_writeobj(ichar filename)= end
+!global proc tcl_writeexe(ichar filename)= end
+!global proc tcl_writedll(ichar filename)= end
+global proc tcl_writemx(ichar filename)= end
+global proc tcl_writemcl= end
+global proc tcl_exec= end
+export proc tcl_cmdskip(int a)=end
+
+
+
+=== tc_decls.m 0 0 7/34 ===
 
 global type psymbol = ref pstrec
 
@@ -5041,7 +5055,7 @@ global record pstrec =
 	byte mode
 	byte isentry
 	byte nretvalues				!func: number of return values (0 for proc)
-	byte varparams				!0 or N; variadic params
+	byte variadic				!0 or N: fixed params of variadic function
 
 	byte dllindex				!for dllproc: which dll in dlltable
 	byte reg
@@ -5063,7 +5077,7 @@ global record pstrec =
 	i16 expindex
 	u16 flags:(chasstatics:1, addrof:1, atvar:1, used:1,
 				imported:1, exported:1, isthreaded:1, ishandler:1,
-				ismain:1, variadic:1)
+				ismain:1)
 
 !	byte scope
 	byte nparams
@@ -5114,7 +5128,9 @@ global record tclrec =
 	byte mode
 	byte mode2
 	byte opcode
-	byte flags:(isglobal:1, isvariadic:1, ffi:1, firstlt:1)
+	byte flags:(isglobal:1,
+				isvariadic:1,	!for calls: calling a variadic function
+				firstlt:1)
 
 	byte nopnds
 	byte argoffset				!So that p.abc[i+offset] accesses i'th argument
@@ -5160,7 +5176,10 @@ global record opndrec =
 	u32  opsize
 	byte optype
 	byte opmode
-	byte flags:(isvariadic:1, isbinary:1, isstring:1, reduced:1)
+	byte flags:(isvariadic:1,			!variadic argument (outside fixed params)
+				isbinary:1,
+				isstring:1,
+				reduced:1)
 	byte spare1
 end
 
@@ -5227,7 +5246,7 @@ strbuffer sbuffer
 global ref strbuffer pdest=&sbuffer
 
 EXPORT ICHAR $PMODULENAME
-=== tc_diags.m 0 0 9/35 ===
+=== tc_diags.m 0 0 8/34 ===
 !byte fshowallmodes=1
 byte fshowallmodes=0
 
@@ -5463,13 +5482,13 @@ global proc strtcl(tcl p, int inline=0)=
 		psopnd(p.nret+1)
 		psstr("(")
 		for i to p.nargs do
-!			a:=p.abc[i+p.argoffset]
 			psopnd(i+p.argoffset)
-!			if a.isvariadic then psstr("*") fi
+!			a:=p.abc[i+p.argoffset]
+!			if a.isvariadic then psstr("?") fi
 			if i<p.nargs then psstr(", ") fi
 		od
 		psstr(")")
-		if p.isvariadic then psstr("*") fi
+!		if p.isvariadic then psstr("?") fi
 
 	when kincrto, kdecrto then
 		psopnd(1)
@@ -5578,9 +5597,11 @@ FI
 			for i to nopnds do
 				a:=p.abc[i]
 				if i>1 then psstr(",") fi
+				if i=p.nret+1 and i>1 then psstr(" ") fi
+				if i=p.nret+2 then psstr(" ") fi
 				if a.opmode then
 					psmode(a.opmode, a.opsize)
-					if a.isvariadic then psstr("*") fi
+					if a.isvariadic then psstr("?") fi
 				else
 					psstr("---")
 				fi
@@ -5598,7 +5619,7 @@ FI
 		PSTABTO(56)
 	fi
 
-!	GS_LEFTSTR(DEST,TCLNAMES[OPCODE],9)
+	GS_LEFTSTR(DEST,TCLNAMES[OPCODE],9)
 !IF OPCODE=KMOVE AND A.OPTYPE=TEMP_OPND THEN PSSTR("MT") FI
 
 !return when inline
@@ -5729,17 +5750,18 @@ global function stropnd(tclopnd p)ichar=
 
 	when data_opnd then
 		q:=p.svalue
+
 		if p.isstring then
 			print @str, "S<"
-			to min(p.opsize,40) do
+
+			to min(currtcl.size,40) do
 				str2[1]:=q^; str2[2]:=0
 				strcat(str, str2)
 				++q
 			od
 		else						!binary, or normal non-data-string data
-!		if p.isbinary then
 			print @str, "B<"
-			to min(p.opsize,10) do
+			to min(currtcl.size,10) do
 				strcat(str, strint(q^,"Hz2"))
 				strcat(str, " ")
 				++q
@@ -5781,6 +5803,8 @@ global func writealltcl(ichar caption)ref strbuffer=
 	psymbol d,e
 	tclopnd a
 
+CPL "WRITEALL PCL"
+
 	gs_str(dest,"PROC ")
 	gs_strln(dest,caption)
 	gs_strln(dest,"!DATA ------------------------------------------------------")
@@ -5789,23 +5813,12 @@ global func writealltcl(ichar caption)ref strbuffer=
 
 !CHECKCOMM("ALL1")
 
+!GS_STRLN(DEST, "<TCL WRITE NOT READY>")
+!
+!RETURN DEST
+
 
 	labeltab:=pcm_allocz(mlabelno)			!indexed 1..labelno
-
-!scan code looking for unused labels, or rather, used ones
-
-	p:=tcstart.next
-
-	while p, p:=p.next do
-		if p.opcode<>klabel then
-			for i to p.nopnds do
-				a:=p.abc[i]
-				if a.optype=label_opnd then
-					labeltab[a.labelno]:=1
-				fi
-			od
-		fi
-	od
 
 	d:=pstatictable
 
@@ -5818,6 +5831,7 @@ global func writealltcl(ichar caption)ref strbuffer=
 
 			if d.code then
 				psstr(" = ")
+				currtcl:=d.code
 				psdata(d.code)
 			else
 				psline()
@@ -5858,14 +5872,15 @@ global func writealltcl(ichar caption)ref strbuffer=
 end
 
 proc writetcl(tcl p)=
-!	gs_leftint(dest,p.lineno,4)
-!	gs_str(dest,"--")
+	tclopnd a
 
-	unless p.opcode=klabel and not labeltab[p.abc[1].labelno] then
+	a:=p.a
+
+!	unless p.opcode=klabel and not labeltab[a.labelno] then
 		strtcl(p)
 		gs_line(dest)
 		psstrline("") when p.opcode=keval
-	end
+!	end
 end
 
 proc psbinop(int opc, a, b)=
@@ -5999,6 +6014,22 @@ proc psprocsig(psymbol d)=
 	od
 	if comma then psline() fi
 	if d.nextlocal then psline() fi
+
+	e:=d.nextstatic
+	while e, e:=e.nextstatic do
+		if comma then psline() fi
+		psstr(tab1)
+		psstr(strpmode(e.mode, e.size))
+		psstr(" ")
+		psstr(e.name)
+
+		if e.code then
+			psstr(" = ")
+			currtcl:=e.code
+			psdata(e.code)
+		fi
+	od
+	if d.nextstatic then psline() fi
 end
 
 proc psdata(tcl p)=
@@ -6015,8 +6046,8 @@ proc psdata(tcl p)=
 		psstr(stropnd(a))
 		psstr(" ")
 
-!		psmode(a.opmode, a.opsize)
-		psmode(p.mode, p.size)
+!!		psmode(a.opmode, a.opsize)
+!		psmode(p.mode, p.size)
 		if p.next then psstr(",") fi
 		psline()
 	od
@@ -6191,7 +6222,7 @@ proc writepsymbol(psymbol d, ichar fmt)=
 
 	if d.exported then psstr(" Exp") fi
 	if d.imported then psstr(" Imp") fi
-	if d.varparams then psstr(" Var:"); psint(d.varparams) fi
+	if d.variadic then psstr(" Varpms:"); psint(d.variadic) fi
 	if d.isthreaded then psstr(" TC") fi
 !*!	if d.reg then psstr(" "); psstr(regnames[d.reg]) fi
 !	if d.hasdot then psstr(" Dot") fi
@@ -6243,7 +6274,7 @@ global func strtemp(int temp)ichar=
 	str
 end
 
-=== tc_tables.m 0 0 10/35 ===
+=== tc_tables.m 0 0 9/34 ===
 !type system
 
 export enumdata \
@@ -6355,18 +6386,18 @@ global enumdata [0:]ichar tclnames,
 	(kiswap,	$+1,  0,  1,  3),  !     (P P -)	swap(P, P)
   
 	(kadd,		$+1,  1,  1,  0),  !     (T b c)	T := b + c
-	(ksub,		$+1,  1,  1,  0),  !     (T b c)
-	(kmul,		$+1,  1,  1,  0),  !     (T b c)
-	(kdiv,		$+1,  1,  1,  0),  !     (T b c)
-	(kidiv,		$+1,  1,  1,  0),  !     (T b c)
-	(kirem,		$+1,  1,  1,  0),  !     (T b c)
-	(kbitand,	$+1,  1,  1,  0),  !     (T b c)
-	(kbitor,	$+1,  1,  1,  0),  !     (T b c)
-	(kbitxor,	$+1,  1,  1,  0),  !     (T b c)
-	(kshl,		$+1,  1,  1,  0),  !     (T b c)
-	(kshr,		$+1,  1,  1,  0),  !     (T b c)
-	(kmin,		$+1,  1,  1,  0),  !     (T b c)
-	(kmax,		$+1,  1,  1,  0),  !     (T b c)
+	(ksub,		$+1,  1,  1,  0),  !     (T b c)	T := b - c
+	(kmul,		$+1,  1,  1,  0),  !     (T b c)	T := b * c
+	(kdiv,		$+1,  1,  1,  0),  !     (T b c)	T := b / c (float only)
+	(kidiv,		$+1,  1,  1,  0),  !     (T b c)	T := b / c (int only; b % c)
+	(kirem,		$+1,  1,  1,  0),  !     (T b c)	T := b irem c
+	(kbitand,	$+1,  1,  1,  0),  !     (T b c)	T := b iand c
+	(kbitor,	$+1,  1,  1,  0),  !     (T b c)	T := b ior c
+	(kbitxor,	$+1,  1,  1,  0),  !     (T b c)	T := b ixor c
+	(kshl,		$+1,  1,  1,  0),  !     (T b c)	T := b << c
+	(kshr,		$+1,  1,  1,  0),  !     (T b c)	T := b >> c
+	(kmin,		$+1,  1,  1,  0),  !     (T b c)	T := min(b, c)
+	(kmax,		$+1,  1,  1,  0),  !     (T b c)	T := max(b, c)
   
 	(katan2,	$+1,  1,  1,  0),  !     (T b c)	T := atan2(b, c)
 	(kpower,	$+1,  1,  1,  0),  !     (T b c)    T := b ** c
@@ -6384,45 +6415,45 @@ global enumdata [0:]ichar tclnames,
   
 	(ksqr,		$+1,  1,  1,  0),  !     (T b -)    T := sqr(b)
   
-	(ksqrt,		$+1,  1,  1,  0),  !     (T b -)
-	(ksin,		$+1,  1,  1,  0),  !     (T b -)
-	(kcos,		$+1,  1,  1,  0),  !     (T b -)
-	(ktan,		$+1,  1,  1,  0),  !     (T b -)
-	(kasin,		$+1,  1,  1,  0),  !     (T b -)
-	(kacos,		$+1,  1,  1,  0),  !     (T b -)
-	(katan,		$+1,  1,  1,  0),  !     (T b -)
+	(ksqrt,		$+1,  1,  1,  0),  !     (T b -)	T := sqrt(b)
+	(ksin,		$+1,  1,  1,  0),  !     (T b -)	T := sin(b)
+	(kcos,		$+1,  1,  1,  0),  !     (T b -)	T := cos(b)
+	(ktan,		$+1,  1,  1,  0),  !     (T b -)	T := tan(b)
+	(kasin,		$+1,  1,  1,  0),  !     (T b -)	T := asin(b)
+	(kacos,		$+1,  1,  1,  0),  !     (T b -)	T := asin(b)
+	(katan,		$+1,  1,  1,  0),  !     (T b -)	T := atan(b)
+ 
+	(klog,		$+1,  1,  1,  0),  !     (T b -)	T := log(b)
+	(klog10,	$+1,  1,  1,  0),  !     (T b -)	T := log10(b)
+	(kexp,		$+1,  1,  1,  0),  !     (T b -)	T := exp(b)
+	(kround,	$+1,  1,  1,  0),  !     (T b -)	T := round(b)
+	(kceil,		$+1,  1,  1,  0),  !     (T b -)	T := ceil(b)
+	(kfloor,	$+1,  1,  1,  0),  !     (T b -)	T := floor(b)
+	(kfract,	$+1,  1,  1,  0),  !     (T b -)	T := fract(b)
+	(ksign,		$+1,  1,  1,  0),  !     (T b -)	T := sign(b)
+
+	(kfloat,    $+1,  1,  2,  0),  !     (T b -)	T := float(b)
+	(kfix,		$+1,  1,  2,  0),  !     (T b -)	T := fix(b)
+	(ktruncate,	$+1,  1,  2,  0),  !     (T b -)	T := u(b)
+	(kfwiden,	$+1,  1,  2,  0),  !     (T b -)	T := r64(b)
+	(kfnarrow,	$+1,  1,  2,  0),  !     (T b -)	T := r32(b)
+	(kwiden,	$+1,  1,  2,  0),  !     (T b -)	T := t(b)
   
-	(klog,		$+1,  1,  1,  0),  !     (T b -)
-	(klog10,	$+1,  1,  1,  0),  !     (T b -)
-	(kexp,		$+1,  1,  1,  0),  !     (T b -)
-	(kround,	$+1,  1,  1,  0),  !     (T b -)
-	(kceil,		$+1,  1,  1,  0),  !     (T b -)
-	(kfloor,	$+1,  1,  1,  0),  !     (T b -)
-	(kfract,	$+1,  1,  1,  0),  !     (T b -)
-	(ksign,		$+1,  1,  1,  0),  !     (T b -)
-  
-	(kfloat,    $+1,  1,  2,  0),  !     (T b -)
-	(kfix,		$+1,  1,  2,  0),  !     (T b -)
-	(ktruncate,	$+1,  1,  2,  0),  !     (T b -)
-	(kfwiden,	$+1,  1,  2,  0),  !     (T b -)
-	(kfnarrow,	$+1,  1,  2,  0),  !     (T b -)
-	(kwiden,	$+1,  1,  2,  0),  !     (T b -)
-  
-	(ktypepun,	$+1,  1,  2,  0),  !     (T b -)
+	(ktypepun,	$+1,  1,  2,  0),  !     (T b -)	T := t(u@(b))
   
 	(kaddto,	$+1,  0,  1,  1),  !     (P b -)    P +:= b
-	(ksubto,	$+1,  0,  1,  1),  !     (P b -)
-	(kmulto,	$+1,  0,  1,  1),  !     (P b -)
-	(kdivto,	$+1,  0,  1,  1),  !     (P b -)
-	(kidivto,	$+1,  0,  1,  1),  !     (P b -)
-	(kiremto,	$+1,  0,  1,  1),  !     (P b -)
-	(kbitandto,	$+1,  0,  1,  1),  !     (P b -)
-	(kbitorto,	$+1,  0,  1,  1),  !     (P b -)
-	(kbitxorto,	$+1,  0,  1,  1),  !     (P b -)
-	(kshlto,	$+1,  0,  2,  1),  !     (P b -)
-	(kshrto,	$+1,  0,  2,  1),  !     (P b -)
-	(kminto,	$+1,  0,  1,  1),  !     (P b -)
-	(kmaxto,	$+1,  0,  1,  1),  !     (P b -)
+	(ksubto,	$+1,  0,  1,  1),  !     (P b -)	P -:= b
+	(kmulto,	$+1,  0,  1,  1),  !     (P b -)	P *:= b
+	(kdivto,	$+1,  0,  1,  1),  !     (P b -)	P /:= b (float)
+	(kidivto,	$+1,  0,  1,  1),  !     (P b -)	P /:= b (int: %:= b)
+	(kiremto,	$+1,  0,  1,  1),  !     (P b -)	P irem:= b
+	(kbitandto,	$+1,  0,  1,  1),  !     (P b -)	P iand:= b
+	(kbitorto,	$+1,  0,  1,  1),  !     (P b -)	P ior:= b
+	(kbitxorto,	$+1,  0,  1,  1),  !     (P b -)	P ixor:= b
+	(kshlto,	$+1,  0,  2,  1),  !     (P b -)	P <<:= b
+	(kshrto,	$+1,  0,  2,  1),  !     (P b -)	P >>:= b
+	(kminto,	$+1,  0,  1,  1),  !     (P b -)	P min:= b
+	(kmaxto,	$+1,  0,  1,  1),  !     (P b -)	P max:= b
 	(kaddpxto,	$+1,  0,  1,  1),  ! s   (P b -)    P +:= b*s
 	(ksubpxto,	$+1,  0,  1,  1),  !     (P b -)    P -:= b*s
  
@@ -6517,7 +6548,7 @@ end
 
 !r32 source is typepunnded to 32 bits but is then widened to 64. The alternative
 !would have been an untidy extra conversion. Otherwise widths must match.
-=== mm_decls.m 0 0 11/35 ===
+=== mm_decls.m 0 0 10/34 ===
 global const maxmodule=300
 global const maxsubprog=30
 global const maxlibfile=50
@@ -6632,7 +6663,7 @@ global record strec = $caligned
 
 		byte nretvalues			!func: number of return values (0 for proc)
 		byte varparams			!0 or 1; variadic params in B and FF
-		byte isthreaded			!0 or 1; variadic params in B and FF
+		byte isthreaded			!
 	end
 
 	struct						!when a record or record field
@@ -6958,7 +6989,7 @@ global const langhelpfile	= "mm_help.txt"
 !GLOBAL INT NALLEXPR
 !GLOBAL INT NFASTEXPR
 !
-=== mm_diags.m 0 0 12/35 ===
+=== mm_diags.m 0 0 11/34 ===
 int currlineno
 int currfileno
 
@@ -7735,18 +7766,18 @@ global proc showtimings=
 	showtime("Type:", 		typetime)
 	showtime("TCL:", 		tcltime)
 	showtime("MCL:", 		mcltime)
-!	showtime("SS:", 			sstime)
-!	showtime("EXE:", 		exetime)
+	showtime("SS:", 			sstime)
+	showtime("EXE:", 		exetime)
 	println "-----------------------------"
 	showtime("Total:", 		compiletime)
 end
 
-=== mm_export_dummy.m 0 0 13/35 ===
+=== mm_export_dummy.m 0 0 12/34 ===
 !hello
 
 global proc writeexports(ichar basefile, modulename)=
 end
-=== mm_lex.m 0 0 14/35 ===
+=== mm_lex.m 0 0 13/34 ===
 macro hashc(hsum,c)=hsum<<4-hsum+c
 !macro hashw(hsum)=(hsum<<5-hsum)
 macro hashw(hsum)=hsum
@@ -9053,7 +9084,7 @@ proc start=
 	od
 end
 
-=== mm_lib.m 0 0 15/35 ===
+=== mm_lib.m 0 0 14/34 ===
 int autotypeno=0
 global int nextavindex=0
 int nextsvindex=0
@@ -10321,12 +10352,12 @@ global func gettclmode(int t)int u=
 	return u
 end
 
-=== mm_libsources_dummy.m 0 0 16/35 ===
+=== mm_libsources_dummy.m 0 0 15/34 ===
 global const fsyslibs = 0
 
 global proc loadbuiltins=
 end
-=== mm_modules.m 0 0 17/35 ===
+=== mm_modules.m 0 0 16/34 ===
 ichar fileext="m"
 
 global func loadsp(ichar filename, int mainsub=0)isubprog sp=
@@ -10805,7 +10836,7 @@ proc loadmafile(ichar filespec, ichar builtinstr=nil)=
 end
 
 
-=== mm_name.m 0 0 18/35 ===
+=== mm_name.m 0 0 17/34 ===
 symbol currstproc
 int allowmodname=0
 int noexpand
@@ -11541,7 +11572,7 @@ proc do_baseclass(symbol p)=
 		d:=d.nextdef
 	od
 end
-=== mm_parse.m 0 0 19/35 ===
+=== mm_parse.m 0 0 18/34 ===
 !M Language Parserxxx
 
 int intabledata=0		!1 means reading table data line; $ gives tabledataname
@@ -13041,7 +13072,7 @@ gotmode:
 					checksymbollex(commasym)
 !					lex()
 					if lx.symbol=ellipsissym then
-						varparams:=nparams+1		!from next param on
+						varparams:=nparams		!no. of fixed params
 						lex()
 						exit
 					fi
@@ -15278,7 +15309,7 @@ proc checknotempty(unit p)=
 		serror("Empty sunit")
 	fi
 end
-=== mm_support.m 0 0 20/35 ===
+=== mm_support.m 0 0 19/34 ===
 global [0:]byte bytemasks=(1,2,4,8,16,32,64,128)
 
 global func newsourcefile:ifile pf=
@@ -15816,7 +15847,7 @@ proc getstrec(filehandle f, symbol d)=
 	println @f
 
 end
-=== mm_tables.m 0 0 21/35 ===
+=== mm_tables.m 0 0 20/34 ===
 !include "mm_types.m"
 
 global enumdata  [0:]ichar stdnames,
@@ -16632,7 +16663,7 @@ proc start=
 	isbooltag[jinset]:=1
 end
 
-=== mm_type.m 0 0 22/35 ===
+=== mm_type.m 0 0 21/34 ===
 const nolv=0
 const needlv=1
 
@@ -20193,7 +20224,7 @@ func tx_in(unit p,a,b)int=
 	fi
 	return 1
 end
-=== mc_decls_x.m 0 0 23/35 ===
+=== mc_decls_x.m 0 0 22/34 ===
 export type mclopnd = ref mclopndrec
 
 export record mclopndrec =
@@ -20792,7 +20823,7 @@ GLOBAL INT WORKREGA
 GLOBAL INT WORKREGB
 GLOBAL INT WORKXREGA
 GLOBAL INT WORKXREGB
-=== mc_lib_x.m 0 0 24/35 ===
+=== mc_lib_x.m 0 0 23/34 ===
 !const fuseregtable=1
 !const fuseregtable=0
 
@@ -21638,9 +21669,9 @@ global proc genrealtable=
 	od
 end
 
-=== mc_asm_x.m 0 0 25/35 ===
-const fshowseq=1
-!const fshowseq=0
+=== mc_asm_x.m 0 0 24/34 ===
+!const fshowseq=1
+const fshowseq=0
 
 !const showsizes=1
 const showsizes=0
@@ -21649,6 +21680,8 @@ const showsizes=0
 const showfreed=0
 
 [r0..xr15]psymbol regvars		!nil, or strec when it uses that reg
+
+export int assemtype='AA'
 
 proc writemcl(int index, ref mclrec mcl)=
 	if mcl.opcode=m_comment and mcl.a.svalue^='?' then
@@ -22117,7 +22150,7 @@ global func getsizeprefix(int size, enable=0)ichar=
 	fi
 end
 
-=== mc_gen_xb.m 0 0 26/35 ===
+=== mc_gen_xb.m 0 0 25/34 ===
 const fshowtcl=2
 !const fshowtcl=1
 !const fshowtcl=0
@@ -22321,8 +22354,6 @@ proc do_staticvar(psymbol d)=
 	mcomment("")
 end
 
-!proc do_staticdata(tcl p)=
-!proc do_staticdata(tclopnd a, TCL P)=
 proc do_staticdata(tclopnd a, TCL P, PSYMBOL D)=
 	static [1..8]byte ops= (m_db, m_dw, 0, m_dd, 0, 0, 0, m_dq)
 	[256]CHAR STR
@@ -22338,10 +22369,10 @@ proc do_staticdata(tclopnd a, TCL P, PSYMBOL D)=
 !
 !	mcomment(str)
 
-	if p.mode=tpblock then
-		do_blockdata(p)
-		return
-	fi
+!	if p.mode=tpblock then
+!		do_blockdata(p)
+!		return
+!	fi
 
 	case a.optype
 	when int_opnd then
@@ -22354,12 +22385,17 @@ proc do_staticdata(tclopnd a, TCL P, PSYMBOL D)=
 	when string_opnd then
 		genmc_label(m_dq, getstringindex(a.svalue))
 
-!	when data_opnd then
+	when data_opnd then
+		do_blockdata(p)
+		return
 !		genmc(m_ascii)
 !		mgendata(a.svalue, p.size)
 !
 	when memaddr_opnd then
 		genmc_defaddr(m_dq, a.def)
+
+	when label_opnd then
+		genmc_label(m_dq, a.labelno)
 
 	else
 		mcomm("Opnd not ready:", opndnames[a.optype])
@@ -22371,6 +22407,7 @@ end
 proc do_blockdata(tcl p) =
 	ref byte s
 	ref u64 d
+	ref byte db@d
 	int n,nqwords,nwords,r
 	tclopnd a:=p.a
 
@@ -22381,15 +22418,26 @@ MCOMMENT("BLOCK DATA")
 
 	nwords:=n/8
 
-	d:=cast(a.svalue)
+!	IF P.MODE=TPBLOCK THEN
+		d:=cast(a.svalue)
+!	ELSE					!1/2/4/8-byte blocks may have u8-64 types
+!CPL "POINT TO .VALUE"
+!MCOMMENT("BLOCKDATA WITH INT TYPE")
+!		d:=cast(&a.value)
+!	fi
+
 	to nwords do
 		genmc(m_dq, mgenint(d++^))
 	od
 
 	r:=n-nwords*8
-	if r then
-		genstring_db(cast(d), r, 'B')
-	fi
+	to r do
+		genmc(m_db, mgenint(db++^))
+	od
+!	if r then
+!
+!		genstring_db(cast(d), r, 'B')
+!	fi
 	MCOMMENT("ENDDATA")
 end
 
@@ -22597,7 +22645,7 @@ end
 !
 !	mcomment(pcm_copyheapstring(strworkregs()))
 !end
-=== mc_aux_xb.m 0 0 27/35 ===
+=== mc_aux_xb.m 0 0 26/34 ===
 !ref mclrec mclframesetup
 
 global int nsaveregs, nsavefregs		!number of integer/float non-vols to be saved
@@ -22687,14 +22735,14 @@ global proc do_proccode_b=
 			fi
 			nextloop
 		fi
+
 		size:=psize[d.mode]
 		if d.mode=tpblock then
 			size:=d.size
 		fi
 
 		if d.atvar then
-			hasequiv:=1
-
+			MERROR("PCODEB/@")
         else
 			framesize+:=roundsizetg(size)
 			d.offset:=-framesize
@@ -23228,7 +23276,7 @@ global func gethostfn(int opc)psymbol d =
 	nil
 end
 
-=== mc_conv_xb.m 0 0 28/35 ===
+=== mc_conv_xb.m 0 0 27/34 ===
 !convert tcl to mcl cond codes
 !order is in eq ne lt le ge gt
 [6]byte scondcodes=(eq_cond, ne_cond, lt_cond, le_cond, ge_cond, gt_cond)
@@ -23243,7 +23291,7 @@ proc tx_comment*(tcl p) =
 !	mcomment("<COMMENT>")
 end
 
-proc tx_move*(tcl p) =
+proc tx_move*(tcl p) =	! M := b
 	mclopnd ax
 
 	ax:=loadopnd(p.b)
@@ -23254,8 +23302,7 @@ proc tx_eval*(tcl p) =
 	loadopnd(p.a)
 end
 
-proc tx_iloadx*(tcl p) =
-!	(kiloadx,	$+1,  1,  1,  0),  ! s,n (T b c)	T :=(b + c*s + n)^
+proc tx_iloadx*(tcl p) =	! T :=(b + c*s + n)^
 	mclopnd ax, bx, cx, px
 	tclopnd c:=p.c
 	int scale:=p.scale, offset:=p.extra
@@ -23291,8 +23338,7 @@ proc tx_iloadx*(tcl p) =
 	storeopnd(p.a, ax)
 end
 
-proc tx_istorex*(tcl p) =
-!	(kistorex,	$+1,  0,  1,  0),  ! s,n (b c r)	(a + b*s + n)^ := c
+proc tx_istorex*(tcl p) =	! (a + b*s + n)^ := c
 	mclopnd ax, bx, cx, px
 	tclopnd b:=p.b
 	int scale:=p.scale, offset:=p.extra
@@ -23324,15 +23370,15 @@ proc tx_istorex*(tcl p) =
 
 end
 
-proc tx_call*(tcl p) =
+proc tx_call*(tcl p) =	! ([T ...] F [r ...]) r=nret, n=nargs
 	do_call(p)
 end
 
-proc tx_retproc*(tcl p) =
+proc tx_retproc*(tcl p) =	! return
 	genmc_label(m_jmp, mretindex)
 end
 
-proc tx_retfn*(tcl p) =
+proc tx_retfn*(tcl p) =	! return a
 
 	if pfloat[p.mode] then
 		loadopnd(p.a, reg:xr0)
@@ -23342,36 +23388,40 @@ proc tx_retfn*(tcl p) =
 	genmc_label(m_jmp, mretindex)
 end
 
-proc tx_retmult*(tcl p) =
+proc tx_retmult*(tcl p) =	! return n values
 	unimpl(p)
 end
 
-proc tx_jump*(tcl p) =
+proc tx_jump*(tcl p) =	! goto L
 	genmc_label(m_jmp, p.a.labelno)
 end
 
-proc tx_jumpcc*(tcl p) =
+proc tx_jumpcc*(tcl p) =	! goto L when b cc c
 	do_jumpcc(p)
 end
 
-proc tx_jumpt*(tcl p) =
+proc tx_jumpt*(tcl p) =	! goto L when istrue(b)
 	do_jumptf(p, nz_cond)
 end
 
-proc tx_jumpf*(tcl p) =
+proc tx_jumpf*(tcl p) =	! goto L when not istrue(b)
 	do_jumptf(p, z_cond)
 end
 
-proc tx_ijump*(tcl p) =
-	unimpl(p)
+proc tx_ijump*(tcl p) =	! goto a
+!	mclopnd ax
+!
+!	ax:=loadopnd(p.a)
+
+!	genmc(m_jmp, mgenireg(ax.reg))
+	genmc(m_jmp, loadopnd(p.a))
 end
 
-proc tx_setcc*(tcl p) =
+proc tx_setcc*(tcl p) =	! T := b cc c
 	do_setcc(p)
 end
 
-proc tx_to*(tcl p) =
-!	(kto,		$+1,  0,  1,  0),  !     (L b -)	--b; goto L when b<>0
+proc tx_to*(tcl p) =	! --b; goto L when b<>0
 	mclopnd ax
 	tclopnd b:=p.b
 
@@ -23381,12 +23431,11 @@ proc tx_to*(tcl p) =
 	genmc_cond(m_jmpcc, nz_cond, mgenlabel(p.a.labelno))
 end
 
-proc tx_forup*(tcl p) =
+proc tx_forup*(tcl p) =	! b+:=n; goto L when b <= c
 	do_for(p)
 end
 
-proc tx_iswap*(tcl p) =
-!	(kiswap,	$+1,  0,  1,  3),  !     (P P -)	swap(P, P)
+proc tx_iswap*(tcl p) =	! swap(P, P)
 	mclopnd px, qx, ax, bx
 
 	px:=loadptropnd(p.a)
@@ -23403,51 +23452,51 @@ proc tx_iswap*(tcl p) =
 
 end
 
-proc tx_add*(tcl p) =
+proc tx_add*(tcl p) =	! T := b + c
 	do_binarith(p, m_add, m_addss)
 end
 
-proc tx_sub*(tcl p) =
+proc tx_sub*(tcl p) =	! T := b - c
 	do_binarith(p, m_sub, m_subss)
 end
 
-proc tx_mul*(tcl p) =
+proc tx_mul*(tcl p) =	! T := b * c
 	do_binarith(p, m_imul2, m_mulss)
 end
 
-proc tx_div*(tcl p) =
+proc tx_div*(tcl p) =	! T := b / c (float only)
 	do_binarith(p, m_nop, m_divss)
 end
 
-proc tx_idiv*(tcl p) =
+proc tx_idiv*(tcl p) =	! T := b / c (int only; b % c)
 	do_divrem(p, issigned:psigned[pmode], isdiv:1)
 end
 
-proc tx_irem*(tcl p) =
+proc tx_irem*(tcl p) =	! T := b irem c
 	do_divrem(p, issigned:psigned[pmode], isdiv:0)
 end
 
-proc tx_bitand*(tcl p) =
+proc tx_bitand*(tcl p) =	! T := b iand c
 	do_bitbin(p, m_and)
 end
 
-proc tx_bitor*(tcl p) =
+proc tx_bitor*(tcl p) =	! T := b ior c
 	do_bitbin(p, m_or)
 end
 
-proc tx_bitxor*(tcl p) =
+proc tx_bitxor*(tcl p) =	! T := b ixor c
 	do_bitbin(p, m_xor)
 end
 
-proc tx_shl*(tcl p) =
+proc tx_shl*(tcl p) =	! T := b << c
 	do_shift(p, m_shl)
 end
 
-proc tx_shr*(tcl p) =
+proc tx_shr*(tcl p) =	! T := b >> c
 	do_shift(p, (psigned[pmode]|m_sar|m_shr))
 end
 
-proc tx_min*(tcl p) =
+proc tx_min*(tcl p) =	! T := min(b, c)
 	if pfloat[pmode] then
 		do_max_float(p, m_minss+pwide[pmode])
 	else
@@ -23455,7 +23504,7 @@ proc tx_min*(tcl p) =
 	fi
 end
 
-proc tx_max*(tcl p) =
+proc tx_max*(tcl p) =	! T := max(b, c)
 	if pfloat[pmode] then
 		do_max_float(p, m_maxss+pwide[pmode])
 	else
@@ -23463,7 +23512,7 @@ proc tx_max*(tcl p) =
 	fi
 end
 
-proc tx_subpx*(tcl p) =
+proc tx_subpx*(tcl p) =	! T := b - c*s
 	int scale
 	mclopnd ax, bx
 	tclopnd b
@@ -23473,21 +23522,22 @@ proc tx_subpx*(tcl p) =
 	ax:=loadopnd(p.b)
 	b:=p.c
 
-	if scale>1 then
-		if b.optype=int_opnd then
-			genmc(m_sub, ax, mgenint(b.value*scale))
-		else
-			bx:=loadopnd(b)
-			scale:=scaleindex(bx, scale)
-			if scale>1 then
-				mulimm(bx, scale)
-			fi
-			genmc(m_sub, ax, bx)
+	if b.optype=int_opnd then
+		genmc(m_sub, ax, mgenint(b.value*scale))
+	else
+		bx:=loadopnd(b)
+		scale:=scaleindex(bx, scale)
+		if scale>1 then
+			mulimm(bx, scale)
 		fi
+		genmc(m_sub, ax, bx)
 	fi
+
+	storeopnd(p.a, ax)
+
 end
 
-proc tx_subp*(tcl p) =
+proc tx_subp*(tcl p) =	! T := (b - c)/s
 	mclopnd ax, bx
 	int n, scale:=p.scale
 
@@ -23514,12 +23564,11 @@ proc tx_subp*(tcl p) =
 	storeopnd(p.a, ax)
 end
 
-proc tx_atan2*(tcl p) =
+proc tx_atan2*(tcl p) =	! T := atan2(b, c)
 	unimpl(p)
 end
 
-proc tx_power*(tcl p) =
-!	T := b ** c
+proc tx_power*(tcl p) =	! T := b ** c
 	psymbol d
 	
 	if pint[pmode] then
@@ -23534,7 +23583,7 @@ proc tx_fmod*(tcl p) =
 	unimpl(p)
 end
 
-proc tx_neg*(tcl p) =
+proc tx_neg*(tcl p) =	! T := -b
 	mclopnd ax
 
 	ax:=loadopnd(p.b)
@@ -23554,7 +23603,7 @@ proc tx_neg*(tcl p) =
 	storeopnd(p.a, ax)
 end
 
-proc tx_abs*(tcl p) =
+proc tx_abs*(tcl p) =	! T := abs b
 ! T := abs b
 	mclopnd ax,lx
 
@@ -23580,7 +23629,7 @@ proc tx_abs*(tcl p) =
 	storeopnd(p.a, ax)
 end
 
-proc tx_bitnot*(tcl p) =
+proc tx_bitnot*(tcl p) =	! T := inot b
 	mclopnd ax
 
 	ax:=loadopnd(p.b)
@@ -23588,12 +23637,11 @@ proc tx_bitnot*(tcl p) =
 	storeopnd(p.a, ax)
 end
 
-proc tx_not*(tcl p) =
+proc tx_not*(tcl p) =	! T := not b
 	unimpl(p)
 end
 
-proc tx_toboolt*(tcl p) =
-!	T := istrue b / T := not istrue b for toboolt/toboolf
+proc tx_toboolt*(tcl p) =	! T := istrue b
 !toboolf implements 'not b' in HLL when b is not known to a boolean
 
 	mclopnd ax, bx, cx
@@ -23619,7 +23667,7 @@ proc tx_toboolt*(tcl p) =
 	fi
 end
 
-proc tx_sqr*(tcl p) =
+proc tx_sqr*(tcl p) =	! T := sqr(b)
 	mclopnd ax
 	int opc
 
@@ -23634,7 +23682,7 @@ proc tx_sqr*(tcl p) =
 	storeopnd(p.a, ax)
 end
 
-proc tx_sqrt*(tcl p) =
+proc tx_sqrt*(tcl p) =	! T := sqrt(b)
 	mclopnd fx
 
 	fx:=loadopnd(p.b)
@@ -23642,63 +23690,63 @@ proc tx_sqrt*(tcl p) =
 	storeopnd(p.a, fx)
 end
 
-proc tx_sin*(tcl p) =
+proc tx_sin*(tcl p) =	! T := sin(b)
 	do_maths(p, "sin*")
 end
 
-proc tx_cos*(tcl p) =
+proc tx_cos*(tcl p) =	! T := cos(b)
 	do_maths(p, "cos*")
 end
 
-proc tx_tan*(tcl p) =
+proc tx_tan*(tcl p) =	! T := tan(b)
 	do_maths(p, "tan*")
 end
 
-proc tx_asin*(tcl p) =
+proc tx_asin*(tcl p) =	! T := asin(b)
 	do_maths(p, "asin*")
 end
 
-proc tx_acos*(tcl p) =
+proc tx_acos*(tcl p) =	! T := asin(b)
 	do_maths(p, "acos*")
 end
 
-proc tx_atan*(tcl p) =
+proc tx_atan*(tcl p) =	! T := atan(b)
 	do_maths(p, "atan*")
 end
 
-proc tx_log*(tcl p) =
+proc tx_log*(tcl p) =	! T := log(b)
 	do_maths(p, "log*")
 end
 
-proc tx_log10*(tcl p) =
+proc tx_log10*(tcl p) =	! T := log10(b)
 	do_maths(p, "log10*")
 end
 
-proc tx_exp*(tcl p) =
+proc tx_exp*(tcl p) =	! T := exp(b)
 	do_maths(p, "exp*")
 end
 
-proc tx_round*(tcl p) =
+proc tx_round*(tcl p) =	! T := round(b)
 	do_maths(p, "round*")
 end
 
-proc tx_ceil*(tcl p) =
+proc tx_ceil*(tcl p) =	! T := ceil(b)
 	do_maths(p, "ceil*")
 end
 
-proc tx_floor*(tcl p) =
+proc tx_floor*(tcl p) =	! T := floor(b)
 	do_maths(p, "floor*")
 end
 
-proc tx_fract*(tcl p) =
+proc tx_fract*(tcl p) =	! T := fract(b)
 	unimpl(p)
 end
 
-proc tx_sign*(tcl p) =
+proc tx_sign*(tcl p) =	! T := sign(b)
 	unimpl(p)
 end
 
-proc tx_float*(tcl p) =
+proc tx_float*(tcl p) =	! T := float(b)
 	mclopnd fx, ax
 
 	ax:=loadopnd(p.b, p.mode2)
@@ -23709,7 +23757,7 @@ proc tx_float*(tcl p) =
 	storeopnd(p.a, fx)
 end
 
-proc tx_fix*(tcl p) =
+proc tx_fix*(tcl p) =	! T := fix(b)
 	mclopnd fx, ax
 
 	fx:=loadopnd(p.b, p.mode2)
@@ -23720,7 +23768,7 @@ proc tx_fix*(tcl p) =
 	storeopnd(p.a, ax)
 end
 
-proc tx_truncate*(tcl p) =
+proc tx_truncate*(tcl p) =	! T := u(b)
 	mclopnd ax, bx
 	byte pmode2:=p.mode2
 
@@ -23734,7 +23782,7 @@ proc tx_truncate*(tcl p) =
 	storeopnd(p.a, ax)
 end
 
-proc tx_fwiden*(tcl p) =
+proc tx_fwiden*(tcl p) =	! T := r64(b)
 	mclopnd fx, gx
 
 	fx:=loadopnd(p.b, tpr32)
@@ -23744,7 +23792,7 @@ proc tx_fwiden*(tcl p) =
 	storeopnd(p.a, gx)
 end
 
-proc tx_fnarrow*(tcl p) =
+proc tx_fnarrow*(tcl p) =	! T := r32(b)
 	mclopnd fx, gx
 
 	fx:=loadopnd(p.b, tpr64)
@@ -23754,7 +23802,7 @@ proc tx_fnarrow*(tcl p) =
 	storeopnd(p.a, gx)
 end
 
-proc tx_widen*(tcl p) =
+proc tx_widen*(tcl p) =	! T := t(b)
 	mclopnd ax, bx
 
 	ax:=loadopnd(p.b, p.mode2)
@@ -23769,7 +23817,7 @@ proc tx_widen*(tcl p) =
 
 end
 
-proc tx_typepun*(tcl p) =
+proc tx_typepun*(tcl p) =	! T := t(u@(b))
 !  T1 := typepun(sx)                     i64/r32         |<T1: 
 !  T3 := typepun(sx)                     u64/r32         |<T3: 
 !
@@ -23802,51 +23850,51 @@ proc tx_typepun*(tcl p) =
 	storeopnd(p.a, bx)
 end
 
-proc tx_addto*(tcl p) =
+proc tx_addto*(tcl p) =	! P +:= b
 	do_bintoarith(p, m_add, m_addss)
 end
 
-proc tx_subto*(tcl p) =
-	do_bintoarith(p, m_add, m_addss)
+proc tx_subto*(tcl p) =	! P -:= b
+	do_bintoarith(p, m_sub, m_subss)
 end
 
-proc tx_multo*(tcl p) =
-	do_bintoarith(p, m_add, m_addss)
+proc tx_multo*(tcl p) =	! P *:= b
+	do_bintoarith(p, m_imul2, m_mulss)
 end
 
-proc tx_divto*(tcl p) =
+proc tx_divto*(tcl p) =	! P /:= b (float)
 	do_bintoarith(p, m_nop, m_addss)
 end
 
-proc tx_idivto*(tcl p) =
-	unimpl(p)
+proc tx_idivto*(tcl p) =	! P /:= b (int: %:= b)
+	do_divremto(p, issigned:psigned[pmode], isdiv:1)
 end
 
-proc tx_iremto*(tcl p) =
-	unimpl(p)
+proc tx_iremto*(tcl p) =	! P irem:= b
+	do_divremto(p, issigned:psigned[pmode], isdiv:0)
 end
 
-proc tx_bitandto*(tcl p) =
+proc tx_bitandto*(tcl p) =	! P iand:= b
 	do_bitbinto(p, m_and)
 end
 
-proc tx_bitorto*(tcl p) =
+proc tx_bitorto*(tcl p) =	! P ior:= b
 	do_bitbinto(p, m_or)
 end
 
-proc tx_bitxorto*(tcl p) =
+proc tx_bitxorto*(tcl p) =	! P ixor:= b
 	do_bitbinto(p, m_xor)
 end
 
-proc tx_shlto*(tcl p) =
+proc tx_shlto*(tcl p) =	! P <<:= b
 	do_shiftto(p, m_shl)
 end
 
-proc tx_shrto*(tcl p) =
+proc tx_shrto*(tcl p) =	! P >>:= b
 	do_shiftto(p, (psigned[pmode]|m_sar|m_shr))
 end
 
-proc tx_minto*(tcl p) =
+proc tx_minto*(tcl p) =	! P min:= b
 	if pfloat[pmode] then
 		do_maxto_real(p, leu_cond)
 	else
@@ -23854,7 +23902,7 @@ proc tx_minto*(tcl p) =
 	fi
 end
 
-proc tx_maxto*(tcl p) =
+proc tx_maxto*(tcl p) =	! P max:= b
 	if pfloat[pmode] then
 		do_maxto_real(p, geu_cond)
 	else
@@ -23862,7 +23910,7 @@ proc tx_maxto*(tcl p) =
 	fi
 end
 
-proc tx_addpxto*(tcl p) =
+proc tx_addpxto*(tcl p) =	! P +:= b*s
 	mclopnd px, bx
 	tclopnd b:=p.b
 
@@ -23877,7 +23925,7 @@ proc tx_addpxto*(tcl p) =
 	fi
 end
 
-proc tx_subpxto*(tcl p) =
+proc tx_subpxto*(tcl p) =	! P -:= b*s
 	mclopnd px, bx
 	tclopnd b:=p.b
 
@@ -23892,34 +23940,34 @@ proc tx_subpxto*(tcl p) =
 	fi
 end
 
-proc tx_negto*(tcl p) =
+proc tx_negto*(tcl p) =	! -:=P
 	unimpl(p)
 end
 
-proc tx_absto*(tcl p) =
+proc tx_absto*(tcl p) =	! abs:=P
 	unimpl(p)
 end
 
-proc tx_bitnotto*(tcl p) =
+proc tx_bitnotto*(tcl p) =	! inot:=P
 	unimpl(p)
 end
 
-proc tx_notto*(tcl p) =
+proc tx_notto*(tcl p) =	! not:=P
 	unimpl(p)
 end
 
-proc tx_toboolto*(tcl p) =
+proc tx_toboolto*(tcl p) =	! istrue+:=P
 	unimpl(p)
 end
 
-proc tx_incrto*(tcl p) =
+proc tx_incrto*(tcl p) =	! ++P
 	mclopnd px
 
 	px:=loadptropnd(p.a)
 	genmc((p.opcode=kincrto|m_add|m_sub), px, mgenint(p.step))
 end
 
-proc tx_incrload*(tcl p) =
+proc tx_incrload*(tcl p) =	! T := ++P
 	mclopnd ax, px
 
 	px:=loadptropnd(p.b)
@@ -23930,7 +23978,7 @@ proc tx_incrload*(tcl p) =
 
 end
 
-proc tx_loadincr*(tcl p) =
+proc tx_loadincr*(tcl p) =	! T := P++
 	mclopnd ax, px
 
 	px:=loadptropnd(p.b)
@@ -23941,7 +23989,7 @@ proc tx_loadincr*(tcl p) =
 	genmc((p.opcode=kloadincr|m_add|m_sub), px, mgenint(p.step))
 end
 
-proc tx_switch*(tcl p) =
+proc tx_switch*(tcl p) =	! switch on c; L=jumptable, L2=else label
 	mclopnd ax
 	int minlab:=p.minlab, maxlab:=p.maxlab
 
@@ -23958,12 +24006,11 @@ proc tx_switch*(tcl p) =
 	genmc(m_jmp, mgenindex(ireg:ax.reg, scale:8, labno:p.a.labelno))	!jump via table
 end
 
-proc tx_swlabel*(tcl p) =
+proc tx_swlabel*(tcl p) =	! label for switch jump table
 	genmc(m_dq, mgenlabel(p.a.labelno))
 end
 
-proc tx_addpx*(tcl p) =
-!	(kaddpx,	$+1,  1,  1,  0),  ! s,n (T b c)	T := b + c*s + n
+proc tx_addpx*(tcl p) =	! T := b + c*s + n
 	mclopnd ax, bx, cx, px
 	tclopnd c:=p.c
 	int scale:=p.scale, offset:=p.extra
@@ -23974,7 +24021,7 @@ proc tx_addpx*(tcl p) =
 
 	ax:=mgenreg(getworkreg(pmode), pmode)
 
-	unless c.optype=int_opnd and c.value=0 then
+	unless c.optype=int_opnd and c.value=0 and offset=0 then
 		cx:=loadopnd(c)
 		if scale not in [1,2,4,8] then
 			genmc(m_imul2, cx, mgenint(scale))
@@ -24005,7 +24052,7 @@ proc tx_data*(tcl p) =
 	unimpl(p)
 end
 
-proc tx_loadbit*(tcl p) =
+proc tx_loadbit*(tcl p) =	! T := b.[c]
 !t:=b.[c]
 	tclopnd c:=p.c
 	mclopnd ax, bx
@@ -24033,8 +24080,7 @@ skip:
 
 end
 
-proc tx_loadbf*(tcl p) =
-!	T := b.[c..d]
+proc tx_loadbf*(tcl p) =	! T := b.[c..d]
 	tclopnd c:=p.c, d:=p.abc[4]
 	mclopnd ax
 
@@ -24047,19 +24093,19 @@ proc tx_loadbf*(tcl p) =
 	storeopnd(p.a, ax)
 end
 
-proc tx_storebit*(tcl p) =
+proc tx_storebit*(tcl p) =	! P.[b] := c
 	do_storebit(p)
 end
 
-proc tx_storebf*(tcl p) =
+proc tx_storebf*(tcl p) =	! P.[b..c] := d
 	do_storebf(p)
 end
 
-proc tx_idivrem*(tcl p) =
+proc tx_idivrem*(tcl p) =	! (T1, T2) := C divrem d
 	do_divrem(p, issigned:psigned[pmode], isdiv:2)
 end
 
-proc tx_jumpin*(tcl p) =
+proc tx_jumpin*(tcl p) =	! goto L when b in c..d
 	mclopnd ax, bx, cx
 	int lab
 
@@ -24079,7 +24125,7 @@ proc tx_jumpin*(tcl p) =
 
 end
 
-proc tx_jumpout*(tcl p) =
+proc tx_jumpout*(tcl p) =	! goto L when b not in c..d
 	mclopnd lx, ax, bx, cx
 
 	lx:=mgenlabel(p.a.labelno)
@@ -24095,10 +24141,10 @@ proc tx_jumpout*(tcl p) =
 	genmc_cond(m_jmpcc, gt_cond, lx)
 end
 
-proc tx_clear*(tcl p) =
+proc tx_clear*(tcl p) =	! clear P
 	mclopnd ax
 
-	ax:=loadopnd(p.a)
+	ax:=loadopnd(p.a, tpu64)
 	clearblock(ax, p.size)
 end
 
@@ -24341,6 +24387,12 @@ proc do_bintoarith(tcl p, int iopc, fopc)=
 		genmc(m_movd+wide, ax, px)
 		genmc(fopc+wide, ax, bx)
 		genmc(m_movd+wide, px, ax)
+	elsif iopc=m_imul2 then
+		ax:=mgenreg(getworkireg(), pmode)
+		genmc(m_mov, ax, px)
+		genmc(m_imul2, ax, bx)
+		genmc(m_mov, px, ax)
+
 	else
 		genmc(iopc, px, bx)
 	fi
@@ -24494,7 +24546,7 @@ global proc do_maxto_real(tcl p, int cond)=
 
 	genmc_cond(m_jmpcc, cond, mgenlabel(lab))
 	genmc(m_mov, px, bx)
-	definefwdlabel(lab)
+	mdefinefwdlabel(lab)
 end
 
 func do_loadbf_const(tcl p, int i, j)mclopnd =
@@ -24663,7 +24715,47 @@ global proc do_callrts(tcl p, ichar opname, psymbol d, int nargs)=
 	storeopnd(p.a, ax)
 end
 
-=== mc_temp_xb.m 0 0 29/35 ===
+global proc do_divremto(tcl p, int issigned, isdiv)=
+! P /:= b or P rem:= b
+
+!isdiv = 0/1 = rem/div
+! Z' := Y % Z
+	mclopnd px, ax, bx, rx
+	tclopnd b:=p.b
+	int opc, n, shifts
+
+	ax:=mgenreg(r0)
+	nextworkreg:=r1
+	px:=loadptropnd(p.a)
+
+	genmc(m_mov, ax, px)
+
+	bx:=loadopnd(b)
+
+	rx:=mgenreg(r11)
+
+	if issigned then
+		opc:=
+			case psize[pmode]
+			when 8 then	m_cqo
+			when 4 then	m_cdq
+			when 2 then	m_cwd
+			else merror("div/u8"); 0
+			esac
+		genmc(opc)
+
+		opc:=m_idiv
+	else
+		clearreg(rx)
+		opc:=m_div
+	fi
+
+	genmc(opc, bx)
+
+	genmc(m_mov, px, (isdiv|bx|rx))
+end
+
+=== mc_temp_xb.m 0 0 28/34 ===
 
 global func loadopnd(tclopnd a, int mode=pmode, reg=rnone, copy=0)mclopnd =
 !Load operand into a register, and return register number
@@ -24702,7 +24794,7 @@ global func loadopnd(tclopnd a, int mode=pmode, reg=rnone, copy=0)mclopnd =
 	case a.optype
 	when mem_opnd then
 		bx:=mgenmem(a.def, mode)
-		if mode=tpblock then
+		if mode=tpblock and a.def.id<>param_id then
 			dolea
 		fi
 domov:
@@ -24883,7 +24975,7 @@ global func makesimpleaddr(mclopnd ax)mclopnd bx=
 	genmc(m_lea, mgenreg(newreg), ax)
 	return bx
 end
-=== mc_objdecls.m 0 0 30/35 ===
+=== mc_objdecls.m 0 0 29/34 ===
 global record imagefileheader =
 	u16	machine
 	u16	nsections
@@ -25064,7 +25156,7 @@ global record exportdirrec =
 	u32 namepointerrva
 	u32 ordtablerva
 end
-=== mc_genss.m 0 0 31/35 ===
+=== mc_genss.m 0 0 30/34 ===
 const wmask = 2x1000				!1 means 64-bit operand size
 const rmask = 2x0100				!extends mod/rm reg field
 const xmask = 2x0010				!extends sib index field
@@ -27206,7 +27298,7 @@ proc do_dshift(mclopnd a, b, int c, opc)=
 	genrrm(0x0F<<8+opc, b, a)
 	genbyte(c)
 end
-=== mc_writeexe.m 0 0 32/35 ===
+=== mc_writeexe.m 0 0 31/34 ===
 !Create .exe file from SS-data (code, data, reloc and psymbol tables)
 
 [maxplibfile]i64 libinsttable
@@ -28251,7 +28343,7 @@ func getripoffset(int addr, dest, int extra=0)int=
 	dest-(addr+4)-extra
 end
 
-=== mc_writess.m 0 0 33/35 ===
+=== mc_writess.m 0 0 32/34 ===
 
 export function writessdata(int fexe)ref strbuffer=
 	gs_init(pdest)
@@ -28518,7 +28610,7 @@ proc showsections=
 	od
 end
 
-=== mc_disasm.m 0 0 34/35 ===
+=== mc_disasm.m 0 0 33/34 ===
 
 const showmregs=1
 !const showmregs=0
@@ -29787,7 +29879,7 @@ proc getsilx(int &reg)=
 !		reg+:=12				!5..8 => 17..20
 	fi
 end
-=== mm_help.txt 0 1 35/35 ===
+=== mm_help.txt 0 1 34/34 ===
 M Compiler for 64-bit Windows
 
 Normal use:           Compiles lead module prog.m to:
@@ -29819,33 +29911,32 @@ Other options:
 3 mm_gentcl.m 0 0
 4 mm_libtcl.m 0 0
 5 mm_blocktcl.m 0 0
-6 dummy.m 0 0
-7 tc_api.m 0 0
-8 tc_decls.m 0 0
-9 tc_diags.m 0 0
-10 tc_tables.m 0 0
-11 mm_decls.m 0 0
-12 mm_diags.m 0 0
-13 mm_export_dummy.m 0 0
-14 mm_lex.m 0 0
-15 mm_lib.m 0 0
-16 mm_libsources_dummy.m 0 0
-17 mm_modules.m 0 0
-18 mm_name.m 0 0
-19 mm_parse.m 0 0
-20 mm_support.m 0 0
-21 mm_tables.m 0 0
-22 mm_type.m 0 0
-23 mc_decls_x.m 0 0
-24 mc_lib_x.m 0 0
-25 mc_asm_x.m 0 0
-26 mc_gen_xb.m 0 0
-27 mc_aux_xb.m 0 0
-28 mc_conv_xb.m 0 0
-29 mc_temp_xb.m 0 0
-30 mc_objdecls.m 0 0
-31 mc_genss.m 0 0
-32 mc_writeexe.m 0 0
-33 mc_writess.m 0 0
-34 mc_disasm.m 0 0
-35 mm_help.txt 0 1
+6 tc_api.m 0 0
+7 tc_decls.m 0 0
+8 tc_diags.m 0 0
+9 tc_tables.m 0 0
+10 mm_decls.m 0 0
+11 mm_diags.m 0 0
+12 mm_export_dummy.m 0 0
+13 mm_lex.m 0 0
+14 mm_lib.m 0 0
+15 mm_libsources_dummy.m 0 0
+16 mm_modules.m 0 0
+17 mm_name.m 0 0
+18 mm_parse.m 0 0
+19 mm_support.m 0 0
+20 mm_tables.m 0 0
+21 mm_type.m 0 0
+22 mc_decls_x.m 0 0
+23 mc_lib_x.m 0 0
+24 mc_asm_x.m 0 0
+25 mc_gen_xb.m 0 0
+26 mc_aux_xb.m 0 0
+27 mc_conv_xb.m 0 0
+28 mc_temp_xb.m 0 0
+29 mc_objdecls.m 0 0
+30 mc_genss.m 0 0
+31 mc_writeexe.m 0 0
+32 mc_writess.m 0 0
+33 mc_disasm.m 0 0
+34 mm_help.txt 0 1

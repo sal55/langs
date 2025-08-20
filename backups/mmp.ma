@@ -3413,19 +3413,19 @@ proc inithandlers=
 	static [,2]byte dupltable = (
 
 !mapping           =>
-		(ktoboolf, 		ktoboolt)
+		(77, 88),
+		(ktoboolf, 		ktoboolt),
 
-		(kcallf,		kcallp)
-		(kicallp,		kcallp)
-		(kicallf,		kcallp)
+		(kcallf,		kcallp),
+		(kicallp,		kcallp),
+		(kicallf,		kcallp),
 
-		(kendmx,		kresetmx)
-		(ktcproc,		kproc)
+		(kendmx,		kresetmx),
+		(ktcproc,		kproc),
 
-		(kidivto,		kidiv)
+		(kidivto,		kidiv),
 		(kiremto,		kirem)
 		)
-
 
 	for i to dupltable.len do
 		px_handlertable[dupltable[i,1]]:=px_handlertable[dupltable[i,2]]
@@ -5234,6 +5234,7 @@ proc allocregvars(int skipparams, isleaf)=
 
 	d:=currfunc.nextlocal
 	while d, d:=d.nextlocal do
+
 		if d.used and not d.atvar and not d.addrof then
 			if pint[d.mode] then
 				if nlocals<locals.len then
@@ -10808,13 +10809,9 @@ proc do_movxmm(mclopnd a,b,int size)=
 				genrrm(0x0F'6E, a, b)
 
 			else
-CPL "MOV XMM/MEM", CURRDATA.PCURR
-REF BYTE PP:=CURRDATA.PCURR
 				f3override:=1
 				nowmask:=1
 				genrrm(0x0F'7E, a, b)
-CPL "MOV XMM/MEM2", CURRDATA.PCURR-PP
-os_getch()
 			fi
 
 		else
@@ -11507,7 +11504,8 @@ export enumdata [0:]ichar opndnames_ma =
 	(a_xreg,	$),		! xmm register
 end
 
-global const maxoperands=20
+!global const maxoperands=20
+global const maxoperands=50
 
 !following are continually updates as opnds are pushed, moved and popped
 global [maxoperands]pcl		pclopnd			!pclrec describing opnd when not loaded
@@ -15117,6 +15115,9 @@ global proc main2=
 !proc main=
 	unit p,q,r
 	int m,fileno,ntokens,t,tt
+
+CPL =PCLNAMES.LEN
+
 
 !for s in pclnames do
 !	fprintln "	when k# then",s:"8jl"
@@ -32748,7 +32749,9 @@ proc applyconversion(unit p, int s,t, opc)=
 		txerror_ss("Can't do conversion: # => #",strmode(s),strmode2(t))
 
 	when kkharderr then
-		txerror_ss("Need explicit cast: # => #",strmode(s),strmode2(t))
+PRINTUNIT(P)
+
+		txerror_ss("2:Need explicit cast: # => #",strmode(s),strmode2(t))
 
 	when kksoftconv then
 		p.mode:=t
@@ -33465,7 +33468,10 @@ export proc m$print_r64(real x,ichar fmtstyle=nil)=
 end
 
 export proc m$print_r32(r32 x,ichar fmtstyle=nil)=
-	m$print_r64(x,fmtstyle)
+!	m$print_r64(x,fmtstyle)
+	nextfmtchars()
+	printf("%f",x)
+	needgap:=1
 end
 
 global proc m$print_c8(i64 a,ichar fmtstyle=nil)=
@@ -34701,12 +34707,13 @@ end
 !export fun `fract(real x)real = fmod(x,1.0)
 !export fun fraction(real x)real = fmod(x,1.0)
 
-export fun m$sign_i64(int a)int = (a<0|-1| (a>0|1|0))
-export func m$sign_r64(real x)real =
-	if x<0 then return -1 fi
-	if x>0 then return 1 fi
-	0
-end
+!export fun m$sign_i64(int a)int = (a<0|-1| (a>0|1|0))
+!
+!export func m$sign_r64(real x)real =
+!	if x<0 then return -1 fi
+!	if x>0 then return 1 fi
+!	0
+!end
 === msysc.m 0 1 49/57 ===
 global record procinforec=
 	u16		fnindex
