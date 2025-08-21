@@ -13,7 +13,6 @@ int max(int num1, int num2) {
    return result; 
 }
 
-
 =========================================
 WAT (textual WASM) from that example
 =========================================
@@ -38,26 +37,6 @@ WAT (textual WASM) from that example
       (get_local $0) 
    )
 )
-
-=========================================
-bart2025's TAC/3AC IL for that C example
-=========================================
-
-Import Proc displaylog(i32 n)i32
-
-Proc max(i32 num1, num2)i32 =
-  i32 result
-
-  if num1 <= num2 then goto L2   i32
-  result := num1                 i32
-  goto L3
-L2: 
-  result := num2                 i32
-L3: 
-  &displaylog(result)            (u64, i32)
-  return result                  i32
-End
-
 
 =========================================
 LLVM IR from 'clang -S -emit-llvm -O0'
@@ -93,3 +72,58 @@ define dso_local i32 @max(i32 noundef %0, i32 noundef %1) #0 {
 }
 
 declare dso_local i32 @displaylog(i32 noundef) #1
+
+=========================================
+bart2025's TAC/3AC IL for that C example
+=========================================
+
+Import Proc displaylog(i32 n)i32
+
+Proc max(i32 num1, num2)i32 =
+  i32 result
+
+  if num1 <= num2 then goto L2   i32
+  result := num1                 i32
+  goto L3
+L2: 
+  result := num2                 i32
+L3: 
+  &displaylog(result)            (u64, i32)
+  return result                  i32
+End
+
+
+=========================================
+bart2025's Stack-based IL
+=========================================
+
+extproc    displaylog
+
+proc max::
+    param    i32       num1
+    param    i32       num2
+    local    i32       result
+    rettype  i32
+
+    load     i32       num1             
+    load     i32       num2             
+    jumple   i32       #2               
+    load     i32       num1             
+    store    i32       result           
+    jump               #3               
+#2: 
+    load     i32       num2             
+    store    i32       result           
+#3: 
+    setcall  i32 /1                     
+    load     i32       result           
+    setarg   i32 /1/1                   
+    callf    i32 /1    &displaylog      
+    unload   i32                        
+    load     i32       result           
+    jumpret  i32       #1               
+
+#1: 
+    retfn    i32                        
+endproc
+
