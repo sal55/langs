@@ -79,7 +79,7 @@ bart2025's TAC/3AC IL for that C example
 
 Import Proc displaylog(i32 n)i32
 
-Proc max(i32 num1, num2)i32 =
+Proc max(i32 num1, num2) =
   i32 result
 
   if num1 <= num2 then goto L2   i32
@@ -118,11 +118,9 @@ proc max::
     setcall  i32 /1                     
     load     i32       result           
     setarg   i32 /1/1                   
-    callf    i32 /1    &displaylog      
-    unload   i32                        
+    callf    i32 /1    &displaylog               
     load     i32       result           
     jumpret  i32       #1               
-
 #1: 
     retfn    i32                        
 endproc
