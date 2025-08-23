@@ -1,3 +1,5 @@
+import tcl
+
 proc main=
     psymbol p, a, b, c
     tclopnd t1, t2
