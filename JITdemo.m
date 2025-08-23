@@ -56,12 +56,3 @@ func addparam(ichar name, int mode=tpi64)psymbol=
     d
 end
 
-func findfunc(ichar name)ref proc =
-    for i to nsymbols do
-        if eqstring(name, symbolnametable[i]) then
-            return symboladdress[i]
-        fi
-    od
-
-    nil
-end
