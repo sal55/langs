@@ -51,13 +51,12 @@ func addparam(ichar name, int mode=tpi64)psymbol=
 
     d:=tc_makesymbol(name, param_id)
     d.mode:=mode
-    d.used:=1
+    d.used:=1                     ! normally set in HLL compiler; needed otherwise parameter is not spilled
     tc_addparam(d)
     d
 end
 
 func findfunc(ichar name)ref proc =
-
     for i to nsymbols do
         if eqstring(name, symbolnametable[i]) then
             return symboladdress[i]
