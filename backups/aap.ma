@@ -5243,8 +5243,8 @@ const fshowseq=0
 !const useintelregs=1
 const useintelregs=0
 
-const showsizes=1
-!const showsizes=0
+!const showsizes=1
+const showsizes=0
 
 !const showfreed=1
 const showfreed=0

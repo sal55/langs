@@ -11911,8 +11911,8 @@ const fshowseq=0
 !const useintelregs=1
 const useintelregs=0
 
-const showsizes=1
-!const showsizes=0
+!const showsizes=1
+const showsizes=0
 
 !const showfreed=1
 const showfreed=0
@@ -15257,7 +15257,6 @@ proc do_genpcl=
 !		println @logdev, pcl_writepcl(nil)
 !
 	if cc_pass=pcl_pass then			!need discrete file
-CPL "WRITEPCL1"
 		pcl_writepcl(outfile)
 	fi
 
@@ -15325,7 +15324,6 @@ proc closelogfile=
 	fi
 
 	if fshowpcl and cc_pass>=pcl_pass then
-CPL "WRITEPCL2"
 		println @logdev, "!PROC PCL"
 		println @logdev, pcl_writepcl(nil)
 		if fshowpst then
@@ -24431,6 +24429,7 @@ proc dostaticvar(symbol d)=
 	align:=getalignment(d.mode)
 
 	if d.code then
+CPL "DOSTATIC", D.NAME, NAMENAMES[D.NAMEID]
 		if d.nameid=frameid then			!const init data for local var
 			fprint @str,"$#.#.#",d.owner.name,d.name,d.blockno
 			e:=createdupldef(nil,addnamestr(str),staticid)
@@ -25096,8 +25095,6 @@ proc do_assign(unit a, b, int res)=
 end
 
 proc dx_ptr(unit p, a, int am)=
-CPL "PTR",=AM
-
 	dx_expr(a)
 	if am=0 then				!for &, exit with pointer value
 		pc_genix(kiload)
