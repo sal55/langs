@@ -1,0 +1,127 @@
+=========================================
+C example from https://www.tutorialspoint.com/webassembly/webassembly_examples.htm
+=========================================
+
+void displaylog(int n);
+/* function returning the max between two numbers */ 
+int max(int num1, int num2) {
+   /* local variable declaration */ int result; 
+   if (num1 > num2) 
+      result = num1; 
+   else result = num2;
+      displaylog(result);
+   return result; 
+}
+
+=========================================
+WAT (textual WASM) from that example
+=========================================
+
+(module 
+   (type $FUNCSIG$vi (func (param i32))) 
+   (import "env" "displaylog" (func $displaylog (param i32))) 
+   (table 0 anyfunc) 
+   (memory $0 1) 
+   (export "memory" (memory $0)) 
+   (export "max" (func $max)) 
+   (func $max (; 1 ;) (param $0 i32) (param $1 i32) (result i32) 
+      (call $displaylog       
+         (tee_local $0 
+            (select 
+               (get_local $0) 
+               (get_local $1) 
+               (i32.gt_s (get_local $0) (get_local $1)) 
+            )
+         )
+      )
+      (get_local $0) 
+   )
+)
+
+=========================================
+LLVM IR from 'clang -S -emit-llvm -O0'
+=========================================
+
+; Function Attrs: noinline nounwind optnone uwtable
+define dso_local i32 @max(i32 noundef %0, i32 noundef %1) #0 {
+  %3 = alloca i32, align 4
+  %4 = alloca i32, align 4
+  %5 = alloca i32, align 4
+  store i32 %1, ptr %3, align 4
+  store i32 %0, ptr %4, align 4
+  %6 = load i32, ptr %4, align 4
+  %7 = load i32, ptr %3, align 4
+  %8 = icmp sgt i32 %6, %7
+  br i1 %8, label %9, label %11
+
+9:                                                ; preds = %2
+  %10 = load i32, ptr %4, align 4
+  store i32 %10, ptr %5, align 4
+  br label %13
+
+11:                                               ; preds = %2
+  %12 = load i32, ptr %3, align 4
+  store i32 %12, ptr %5, align 4
+  br label %13
+
+13:                                               ; preds = %11, %9
+  %14 = load i32, ptr %5, align 4
+  %15 = call i32 @displaylog(i32 noundef %14)
+  %16 = load i32, ptr %5, align 4
+  ret i32 %16
+}
+
+declare dso_local i32 @displaylog(i32 noundef) #1
+
+=========================================
+bart2025's TAC/3AC IL for that C example
+=========================================
+
+Import Proc displaylog(i32 n)i32
+
+Proc max(i32 num1, num2) =
+  i32 result
+
+  if num1 <= num2 then goto L2   i32
+  result := num1                 i32
+  goto L3
+L2: 
+  result := num2                 i32
+L3: 
+  &displaylog(result)            (u64, i32)
+  return result                  i32
+End
+
+
+=========================================
+bart2025's Stack-based IL
+=========================================
+
+extproc    displaylog
+
+proc max::
+    param    i32       num1
+    param    i32       num2
+    local    i32       result
+    rettype  i32
+
+    load     i32       num1             
+    load     i32       num2             
+    jumple   i32       #2               
+    load     i32       num1             
+    store    i32       result           
+    jump               #3               
+#2: 
+    load     i32       num2             
+    store    i32       result           
+#3: 
+    setcall  i32 /1                     
+    load     i32       result           
+    setarg   i32 /1/1                   
+    callf    i32 /1    &displaylog               
+    load     i32       result           
+    jumpret  i32       #1               
+#1: 
+    retfn    i32                        
+endproc
+
