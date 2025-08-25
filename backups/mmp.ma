@@ -250,6 +250,7 @@ export func pcl_writeasm(ichar filename=nil, int atype='AA')ichar=
 	asmstr:=getassemstr()
 
 	if filename then
+!CPL "WRITEASM/FILE"
 		if pverbose then println "Writing", filename fi
 
 		f:=fopen(filename,"w")
@@ -259,6 +260,7 @@ export func pcl_writeasm(ichar filename=nil, int atype='AA')ichar=
 		gs_free(asmstr)
 		nil
 	else
+!CPL "WRITEASM/STR"
 		asmstr.strptr
 	fi
 end
@@ -3241,9 +3243,9 @@ export enumdata [0:]ichar idnames
 end
 
 === mc_genmcl.m 0 0 10/57 ===
-!const fshowpcl=1
+const fshowpcl=1
 !const fshowopndstack=1
-const fshowpcl=0
+!const fshowpcl=0
 const fshowopndstack=0
 
 !global const docalltrace=1

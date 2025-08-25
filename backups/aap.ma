@@ -211,6 +211,7 @@ export func pcl_writeasm(ichar filename=nil, int atype='AA')ichar=
 	asmstr:=getassemstr()
 
 	if filename then
+!CPL "WRITEASM/FILE"
 		if pverbose then println "Writing", filename fi
 
 		f:=fopen(filename,"w")
@@ -220,6 +221,7 @@ export func pcl_writeasm(ichar filename=nil, int atype='AA')ichar=
 		gs_free(asmstr)
 		nil
 	else
+!CPL "WRITEASM/STR"
 		asmstr.strptr
 	fi
 end
@@ -9568,11 +9570,16 @@ global proc readmodule(ichar source)=
 				redoloop
 
 			when dcolonsym then
+!CPL "DCOLON2",SYMPTR.NAME, LXLINENO
+!OS_GETCH()
 				genmc(m_labelx, mgenmem(ps:=getpsymbol(symptr)))
 				symptr.symbol:=exportedsym
 				ps.id:=export_id
 				ps.exported:=1
 				lxsymbol:=eolsym
+				if eqstring(symptr.name, "main") then
+					ps.isentry:=1
+				fi
 				redoloop
 
 			else

@@ -242,6 +242,7 @@ export func pcl_writeasm(ichar filename=nil, int atype='AA')ichar=
 	asmstr:=getassemstr()
 
 	if filename then
+!CPL "WRITEASM/FILE"
 		if pverbose then println "Writing", filename fi
 
 		f:=fopen(filename,"w")
@@ -251,6 +252,7 @@ export func pcl_writeasm(ichar filename=nil, int atype='AA')ichar=
 		gs_free(asmstr)
 		nil
 	else
+!CPL "WRITEASM/STR"
 		asmstr.strptr
 	fi
 end
@@ -3233,9 +3235,9 @@ export enumdata [0:]ichar idnames
 end
 
 === mc_genmcl.m 0 0 10/79 ===
-!const fshowpcl=1
+const fshowpcl=1
 !const fshowopndstack=1
-const fshowpcl=0
+!const fshowpcl=0
 const fshowopndstack=0
 
 !global const docalltrace=1
@@ -24429,7 +24431,6 @@ proc dostaticvar(symbol d)=
 	align:=getalignment(d.mode)
 
 	if d.code then
-CPL "DOSTATIC", D.NAME, NAMENAMES[D.NAMEID]
 		if d.nameid=frameid then			!const init data for local var
 			fprint @str,"$#.#.#",d.owner.name,d.name,d.blockno
 			e:=createdupldef(nil,addnamestr(str),staticid)

@@ -927,8 +927,9 @@ CPL "WRITEASM"
 !CPL "WASM:",$LINENO
 
 	if filename then
+CPL "WRITEASM/file"
 !		if pverbose then println "Writing", filename fi
-		println "Writing", filename
+		println "Writing ASM", filename
 
 !CPL "WASM:",$LINENO
 		f:=fopen(filename,"w")
@@ -940,6 +941,7 @@ CPL "WRITEASM"
 		gs_free(asmstr)
 		nil
 	else
+CPL "WRITEASM/STR"
 		asmstr.strptr
 	fi
 end
@@ -2022,7 +2024,9 @@ global function stropnd(tclopnd p)ichar=
 
 	case p.optype
 	when int_opnd then
-		return strint(p.value)
+!		return strint(p.value)
+!		return strint(p.value,"H")
+		return strint(p.value,"HU")
 
 	when real_opnd then
 		return strreal(p.xvalue)
@@ -2805,6 +2809,7 @@ export enumdata [0:]ichar tclnames,
 
 	(ksetjmp,	$+1,  0,  1,  0,  1),  !     (a - -)
 	(klongjmp,	$+1,  0,  1,  0,  2),  !     (a b -)
+	(kgetr0,	$+1,  1,  1,  0,  1),  !     (T - -)    get value of r0 put there by set/longjmp
   
 	(kclear,	$+1,  0,  1,  1,  1),  !     (P - -)    clear P
   
@@ -4312,11 +4317,11 @@ global proc genrealtable=
 end
 
 === mc_asm_x.m 0 0 9/40 ===
-!const fshowseq=1
-const fshowseq=0
+const fshowseq=1
+!const fshowseq=0
 
-!const showsizes=1
-const showsizes=0
+const showsizes=1
+!const showsizes=0
 
 !const showfreed=1
 const showfreed=0
@@ -5137,6 +5142,10 @@ proc do_procdef(psymbol p)=
 	mcomment("?>>")
 	mclprocentry:=mccodex
 
+	if p.isentry and p.nparams=2 then
+		fixmain()
+	fi
+
 	pc:=p.code
 
 	while pc, pc:=pc.next do
@@ -5211,71 +5220,74 @@ proc doshowtcl(tcl p)=
 	esac
 end
 
-global func strworkregs(int inline=0)ichar=
-	static [256]char str
-	byte first
+global proc fixmain=
+!d is a main func with 2 params
+!convert params to locald, add more locals needed for calling __getmainargs
+	psymbol d:=currfunc, e
+	psymbol dn, dargs, denv, dinfo
+	mclopnd ax
 
-RETURN "<WORKREGS>"
+	dn:=d.nextparam
+	dargs:=dn.nextparam
 
-!	return "" unless currfunc
-!
-!	if inline then
-!		strcpy(str, " (")
-!	else
-!		strcpy(str, "-"*36 + " (")
-!	fi
-!
-!!note: workset should never be set for regs workregb+1 .. workxrega-1
-!	first:=1
-!	for i in workrega..workxregb when workset.[i] and not tempset.[i] do
-!
-!		if not first then strcat(str, " ") fi
-!		first:=0
-!		strcat(str, strreg(i))
-!!		for t to currfunc.maxtemp do
-!!			if temploc[t]=reg_loc and tempreg[t]=i then
-!!				strcat(str, "(")
-!!				strcat(str, strtemp(t))
-!!				strcat(str, ")")
-!!!				exit
-!!			fi
-!!		od
-!!		strcat(str, " ")
-!	od
-!	strcat(str, ") (")
-!	first:=1
-!
-!	for t to currfunc.maxtemp when ptemploc[t] do
-!		if not first then strcat(str, " ") fi
-!		first:=0
-!		strcat(str, strtemp(t))
-!		strcat(str, ":")
-!		case ptemploc[t]
-!		when reg_loc then
-!			strcat(str, strreg(ptempreg[t]))
-!
-!		when mem_loc then
-!			strcat(str, "sp")
-!		when mult_loc then
-!			strcat(str, "mx:")
-!			strcat(str, strreg(ptempreg[t]))
-!		else strcat(str, "-")
-!		esac
-!
-!
-!!		strcat(str, " ")
-!	od
-!	strcat(str, ")")
+!add 2 new locals
+!	denv:=tc_makesymbol("$env", local_id)
+	denv:=tc_makesymbol("$env", static_id)
+	denv.mode:=tpref
+	denv.size:=8
 
-	str
+!	dinfo:=tc_makesymbol("$info", local_id)
+	dinfo:=tc_makesymbol("$info", static_id)
+	dinfo.mode:=tpblock
+	dinfo.size:=128
+
+
+	setsegment('Z',8)
+	genmc(m_label, mgenmemaddr(dinfo))
+	genmc(m_resb, mgenint(128))
+	genmc(m_label, mgenmemaddr(denv))
+	genmc(m_resb, mgenint(8))
+	setsegment('C',1)
+	tc_addlocal(denv)
+	tc_addlocal(dinfo)
+
+!remove dn/dargs as params
+
+	dn.nextparam:=dargs.nextparam:=d.nextparam:=nil
+	d.nparams:=0
+	dn.id:=local_id
+	dn.used:=1
+	dargs.id:=local_id
+	dargs.used:=local_id
+!
+!add them as locals
+
+	tc_addlocal(dargs)
+	tc_addlocal(dn)
+
+	genmc(m_push, ax:=mgenreg(r0))
+	genmc(m_lea , ax, mgenmem(dinfo))
+DINFO.ADDROF:=1
+	genmc(m_push, ax)
+	genmc(m_sub, dstackopnd, mgenint(32))
+	genmc(m_lea,  mgenreg(r10), mgenmem(dn))
+DN.ADDROF:=1
+	genmc(m_lea,  mgenreg(r11), mgenmem(dargs))
+DARGS.ADDROF:=1
+	genmc(m_lea,  mgenreg(r12), mgenmem(denv))
+DENV.ADDROF:=1
+	clearreg(mgenreg(r13))
+	genmc(m_call, mgenextname("__getmainargs*"))
+!
+	genmc(m_sub, dstackopnd, mgenint(48))
+
+!do pcmdskip fixes
+	if pcmdskip then
+		genmc(m_sub, mgenmem(dn), mgenint(pcmdskip, tpi32))
+		genmc(m_add, mgenmem(dargs), mgenint(pcmdskip*8))
+	fi
+
 end
-
-!proc doshowworkregs(tcl p)=
-!	return unless fshowworkregs
-!	return when p.opcode in [kcomment, klabel]
-!
-!	mcomment(pcm_copyheapstring(strworkregs()))
-!end
 === mc_aux_xb.m 0 0 11/40 ===
 !ref mclrec mclframesetup
 
@@ -6269,7 +6281,12 @@ proc tx_bitnot*(tcl p) =	! T := inot b
 end
 
 proc tx_not*(tcl p) =	! T := not b
-	unimpl(p)
+	mclopnd ax
+
+	if not pint[pmode] then merror("not") fi
+	ax:=loadopnd(p.b)
+	genmc(m_xor, ax, mgenint(1))
+	storeopnd(p.a, ax)
 end
 
 proc tx_toboolt*(tcl p) =	! T := istrue b
@@ -6389,12 +6406,13 @@ proc tx_float*(tcl p) =	! T := float(b)
 end
 
 proc tx_fix*(tcl p) =	! T := fix(b)
-	mclopnd fx, ax
+	mclopnd fx, ax, bx
 
 	fx:=loadopnd(p.b, p.mode2)
-	ax:=mgenreg(getworkireg(), pmode)
+	bx:=ax:=mgenreg(getworkireg(), pmode)
+	if bx.size<4 then bx:=changeopndsize(bx, 4) fi
 
-	genmc(m_cvttss2si+pwide[p.mode2], ax, fx)
+	genmc(m_cvttss2si+pwide[p.mode2], bx, fx)
 
 	storeopnd(p.a, ax)
 end
@@ -7355,7 +7373,7 @@ global proc do_divremto(tcl p, int issigned, isdiv)=
 	tclopnd b:=p.b
 	int opc, n, shifts
 
-	ax:=mgenreg(r0)
+	ax:=mgenreg(r0, pmode)
 	nextworkreg:=r1
 	px:=loadptropnd(p.a)
 
@@ -7363,7 +7381,7 @@ global proc do_divremto(tcl p, int issigned, isdiv)=
 
 	bx:=loadopnd(b)
 
-	rx:=mgenreg(r11)
+	rx:=mgenreg(r11, pmode)
 
 	if issigned then
 		opc:=
@@ -7386,6 +7404,47 @@ global proc do_divremto(tcl p, int issigned, isdiv)=
 	genmc(m_mov, px, (isdiv|bx|rx))
 end
 
+proc tx_setjmp*(tcl p)=
+	mclopnd px, ax, bx
+	int lab:=mcreatefwdlabel()
+
+
+	ax:=loadopnd(p.a)
+	px:=mgenireg(ax.reg)
+
+	bx:=mgenreg(getworkireg())
+	genmc(m_mov, bx, mgenlabel(lab))
+	genmc(m_mov, px, bx)
+
+	genmc(m_mov, applyoffset(px,8), dstackopnd)
+	genmc(m_mov, applyoffset(px,16), dframeopnd)
+
+	clearreg(ax)
+	mdefinefwdlabel(lab)
+
+end
+
+proc tx_longjmp*(tcl p)=
+	mclopnd px, ax, bx, cx
+
+	bx:=loadopnd(p.b, reg:r0)			!ret value
+	nextworkreg++
+
+	ax:=loadopnd(p.a)
+	px:=mgenireg(ax.reg)
+
+	genmc(m_mov, dstackopnd, applyoffset(px,8))
+	genmc(m_mov, dframeopnd, applyoffset(px,16))
+
+	cx:=mgenreg(getworkireg())
+!
+	genmc(m_mov, cx, px)		!load stored return address
+	genmc(m_jmp, cx)			!
+end
+
+proc tx_getr0*(tcl p)=
+	storeopnd(p.a, mgenreg(r0))
+end
 === mc_temp_xb.m 0 0 13/40 ===
 
 global func loadopnd(tclopnd a, int mode=pmode, reg=rnone, copy=0)mclopnd =
@@ -7439,7 +7498,14 @@ domov:
 		domov
 
 	when int_opnd then
-		bx:=mgenint(a.value)
+		CASE CURRTCL.SIZE
+		WHEN 2 THEN
+			A.VALUE IAND:=0xFFFF
+		WHEN 4 THEN
+			A.VALUE IAND:=0xFFFF'FFFF
+		ESAC
+
+		bx:=mgenint(a.value, pmode)
 		domov
 
 	when real_opnd then
