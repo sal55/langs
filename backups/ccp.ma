@@ -3235,9 +3235,9 @@ export enumdata [0:]ichar idnames
 end
 
 === mc_genmcl.m 0 0 10/79 ===
-const fshowpcl=1
+!const fshowpcl=1
 !const fshowopndstack=1
-!const fshowpcl=0
+const fshowpcl=0
 const fshowopndstack=0
 
 !global const docalltrace=1
@@ -5479,6 +5479,7 @@ global proc do_procentry(pcl p)=
 		IF D.ATVAR THEN MERROR("@PARAM") FI
 		if not d.reg then			!not a regvar
 			d.offset:=paramoffset+16+(bspill+bxspill)*8
+
 			genmc(m_define, mgenname(getdispname(d)), mgenint(d.offset))
 		else						!assume regvar
 			rr:=d.reg

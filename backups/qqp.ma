@@ -18444,13 +18444,13 @@ macro pclerror2(x,y) = (pcptr:=pc; pcerror(x,y))
 macro pclustype(x,t) = (pcptr:=pc; pcustype(x,t))
 macro pclmxtypes(x,t,u) = (pcptr:=pc; pcmxtypes(x,t,u))
 
-macro copyvar(x, y) = x^:=y^
-macro copyvarv(x, y) = x:=y^
-macro copyvar_v(x, y) = x^:=y
+!macro copyvar(x, y) = x^:=y^
+!macro copyvarv(x, y) = x:=y^
+!macro copyvar_v(x, y) = x^:=y
 
-!macro copyvar(x, y) = (x.dummy:=y.dummy; x.value:=y.value)
-!macro copyvarv(x, y) = (x.dummy:=y.dummy; x.value:=y.value)
-!macro copyvar_v(x, y) = (x.dummy:=y.dummy; x.value:=y.value)
+macro copyvar(x, y) = (x.dummy:=y.dummy; x.value:=y.value)
+macro copyvarv(x, y) = (x.dummy:=y.dummy; x.value:=y.value)
+macro copyvar_v(x, y) = (x.dummy:=y.dummy; x.value:=y.value)
 
 global ref[0:]ref label jumptable		!stays nil here
 byte getjt
@@ -18507,7 +18507,6 @@ freddy:
 	pc:=pcptr
 	fp:=frameptr
 
-!CPL "HELLO"
 IF JUMPTABLE=NIL THEN PCERROR("JUMPTABLE NOT SET") fI
 	doswitchx(localjumptable) pc.labaddr
 
@@ -19158,11 +19157,13 @@ doforff:
 		const countinterval=100
 		static int count=countinterval
 
-		if --count=0 then
-			count:=countinterval
-			os_peek()
-		fi
-
+!		if --count=0 then
+!			count:=countinterval
+!CPL "OS_PEEK"
+!			os_peek()
+!CPL "......OS_PEEK"
+!		fi
+!
 !		if sp>=stacklimit then
 !			pclerror("Stack Overflow")
 !		fi
@@ -19702,8 +19703,8 @@ jadd:
 		copyvarv(vx, sp)
 
 		if sp.tag=y.tag=tint then
-			sp.value/:=y.value
-!			sp.value:=sp.value/y.value
+!			sp.value/:=y.value
+			sp.value:=sp.value/y.value
 		else	
 			save
 			var_idiv(sp, y)

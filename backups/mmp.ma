@@ -3243,9 +3243,9 @@ export enumdata [0:]ichar idnames
 end
 
 === mc_genmcl.m 0 0 10/57 ===
-const fshowpcl=1
+!const fshowpcl=1
 !const fshowopndstack=1
-!const fshowpcl=0
+const fshowpcl=0
 const fshowopndstack=0
 
 !global const docalltrace=1
@@ -5487,6 +5487,7 @@ global proc do_procentry(pcl p)=
 		IF D.ATVAR THEN MERROR("@PARAM") FI
 		if not d.reg then			!not a regvar
 			d.offset:=paramoffset+16+(bspill+bxspill)*8
+
 			genmc(m_define, mgenname(getdispname(d)), mgenint(d.offset))
 		else						!assume regvar
 			rr:=d.reg
@@ -15118,7 +15119,7 @@ global proc main2=
 	unit p,q,r
 	int m,fileno,ntokens,t,tt
 
-CPL =PCLNAMES.LEN
+!CPL =PCLNAMES.LEN
 
 
 !for s in pclnames do
@@ -37856,6 +37857,12 @@ export func os_execwait(ichar cmdline,int newconsole=0,ichar workdir=nil)int =
 
 	rstartupinfo si
 	rprocess_information xpi
+
+	status:=si.bytes
+	status:=xpi.bytes
+
+status:=123456
+status:=0x123456
 
 	clear si
 	clear xpi
