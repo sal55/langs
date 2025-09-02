@@ -379,7 +379,7 @@ proc do_genmcl=
 	if cc_pass=mcl_pass then			!need discrete file
 !CPL "DOMCL3"
 !CPL "GENMCL_WRITEASM"
-		tcl_writeasm(outfile)
+		tcl_writeasm(changeext(outfile, (ctarget|"cc"|"asm")))
 	fi
 end
 
@@ -432,7 +432,7 @@ proc closelogfile=
 	if fshowmcl and cc_pass>=mcl_pass then
 		println @logdev, "PROC ASM"
 !		println @logdev, tcl_writeasm(nil)
-		addtolog(changeext(outfile, "asm"), logdev)
+		addtolog(changeext(outfile, (ctarget|"cc"|"asm")), logdev)
 	fi
 
 	if fshowtcl and cc_pass>=tcl_pass then
@@ -648,6 +648,9 @@ proc getinputoptions=
 		highmem:=0
 	fi
 	outext:=extnames[cc_pass]
+	if ctarget and cc_pass in [mcl_pass, asm_pass] then
+		outext:="cc"
+	fi
 
 	if inputfile=nil and not fwriteheaders then
 		showcaption()
@@ -8712,6 +8715,7 @@ function readstructdecl(ref strec owner)int=
 
 	currrecord.nextfield:=fieldlist
 	ttsize[currrecord.mode]:=roundoffset((funion|maxsize|recsize),maxalignment)
+
 	currrecord.align:=maxalignment
 
 	if ttsize[currrecord.mode] in [1,2,4,8] then ttisblock[currrecord.mode]:=0 fi
@@ -11206,6 +11210,12 @@ global func getpsymbol(symbol d)psymbol p=
 		fi
 	fi
 
+!CPL "GETPS", D.NAME, D, STRMODE(D.MODE), =D.ALIGN
+
+	if d.mode then
+		p.align:=getalignment(d.mode)
+	fi
+
 	return p
 end
 
@@ -12129,7 +12139,9 @@ global function getalignment(int m)int=
 	when tarray then
 		return getalignment(tttarget[m])
 	when tstruct,tunion then
-
+!REF STREC D:=TTNAMEDEF[M]
+!
+!CPL "GETALIGN/STRUCT", D.NAME, D, D.ALIGN
 		a:=ttnamedef[m].align
 		if a=0 then
 !		CPL("GETALIGN 0")
@@ -14380,8 +14392,6 @@ finish:
 		tempmodes[newtemp].used:=0
 	fi
 end
-
-
 === tc_decls.m 0 0 16/32 ===
 
 export type psymbol = ref pstrec
@@ -14934,12 +14944,20 @@ global proc strtcl(tcl p, int inlinex=0)=
 		psassign()
 		psstr((opcode=kincrload|"++"|"--"))
 		psopnd(2)
+		if p.step>1 then
+			psstr(" *")
+			psint(p.step)
+		fi
 
 	when kloadincr, kloaddecr then
 		psopnd(1)
 		psassign()
 		psopnd(2)
 		psstr((opcode=kloadincr|"++"|"--"))
+		if p.step>1 then
+			psstr(" *")
+			psint(p.step)
+		fi
 
 	when kretfn then
 		psstr("return ")
@@ -15467,11 +15485,17 @@ proc psdata(tcl p)=
 !		psstr(tclnames[p.opcode])
 !		psstr(" ")
 		psstr(stropnd(a))
-		psstr(" ")
 
 !!		psmode(a.opmode, a.opsize)
 !		psmode(p.mode, p.size)
-		if p.next then psstr(",") fi
+		if p.next then psstr(", ") fi
+
+		psstr(" ! ")
+		psmode(p.mode, p.size)
+
+!		psstr(" ! ")
+!		psmode(a.opmode, a.opsize)
+
 		psline()
 	od
 
@@ -15916,6 +15940,7 @@ export enumdata [0:]ichar tclnames,
 	(ksetjmp,	$+1,  0,  1,  0,  1),  !     (a - -)
 	(klongjmp,	$+1,  0,  1,  0,  2),  !     (a b -)
 	(kgetr0,	$+1,  1,  1,  0,  1),  !     (T - -)    get value of r0 put there by set/longjmp
+	(kinitdswx,	$+1,  0,  0,  0,  0),  !     (T - -)    Mark next instr as setting up local jumptable
   
 	(kclear,	$+1,  0,  1,  1,  1),  !     (P - -)    clear P
   
@@ -15925,7 +15950,7 @@ end
 
 export enumdata [0:]ichar ccnames, [0:]ichar ccshortnames =
 	(no_cc=0,	"xx",	"?"),
-	(eq_cc,		"eq",	" = "),
+	(eq_cc,		"eq",	" == "),
 	(ne_cc,		"ne",	" != "),
 	(lt_cc,		"lt",	" < "),
 	(le_cc,		"le",	" <= "),
@@ -16887,6 +16912,12 @@ export func mgenint(i64 x, int mode=tpi64)mclopnd a=
 
 	a:=newmclopnd()
 	a.mode:=a_imm
+
+	case size
+	when 1 then x iand:=255
+	when 2 then x iand:=65535
+	when 4 then x iand:=0xffff'ffff
+	esac
 
 	a.value:=x
 	a.valtype:=intimm_val
@@ -17906,9 +17937,9 @@ global func getsizeprefix(int size, enable=0)ichar=
 end
 
 === mc_gen_xb.m 0 0 22/32 ===
-!const fshowtcl=2
+const fshowtcl=2
 !const fshowtcl=1
-const fshowtcl=0
+!const fshowtcl=0
 
 !!const fshowworkregs=1
 !const fshowworkregs=0
@@ -18112,6 +18143,7 @@ proc do_staticvar(psymbol d)=
 	int size:=d.size
 	tcl p
 
+!	setsegment((d.code|'I'|'Z'), getalignment(d.mode))
 	setsegment((d.code|'I'|'Z'), d.align)
 !	genmc_name(m_labelname, d.name)
 	genmc_def(m_labelname, d)
@@ -20519,14 +20551,14 @@ global proc do_storebf(tcl p) =
 	i:=b.value
 	j:=c.value
 
-	mx:=mgenreg(getworkireg())
-	rx:=mgenreg(getworkireg())
+	mx:=mgenreg(getworkireg(),pmode)
+	rx:=mgenreg(getworkireg(),pmode)
 
 	genmc(m_mov, rx, px)
 
 	mask:=inot((inot(0xFFFF'FFFF'FFFF'FFFF<<(j-i+1)))<<i)
 
-	genmc(m_mov, mx, mgenint(mask))
+	genmc(m_mov, mx, mgenint(mask, pmode))
 
 	if i then
 		genmc(m_shl, dx, mgenint(i))
@@ -20659,6 +20691,11 @@ end
 proc tx_getr0*(tcl p)=
 	storeopnd(p.a, mgenreg(r0))
 end
+
+proc tx_initdswx*(tcl p)=
+!only needed for C target
+end
+
 === mc_temp_xb.m 0 0 25/32 ===
 
 global func loadopnd(tclopnd a, int mode=pmode, reg=rnone, copy=0)mclopnd =

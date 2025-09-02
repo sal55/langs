@@ -1299,8 +1299,6 @@ finish:
 		tempmodes[newtemp].used:=0
 	fi
 end
-
-
 === tc_decls.m 0 0 4/40 ===
 
 export type psymbol = ref pstrec
@@ -1853,12 +1851,20 @@ global proc strtcl(tcl p, int inlinex=0)=
 		psassign()
 		psstr((opcode=kincrload|"++"|"--"))
 		psopnd(2)
+		if p.step>1 then
+			psstr(" *")
+			psint(p.step)
+		fi
 
 	when kloadincr, kloaddecr then
 		psopnd(1)
 		psassign()
 		psopnd(2)
 		psstr((opcode=kloadincr|"++"|"--"))
+		if p.step>1 then
+			psstr(" *")
+			psint(p.step)
+		fi
 
 	when kretfn then
 		psstr("return ")
@@ -2386,11 +2392,17 @@ proc psdata(tcl p)=
 !		psstr(tclnames[p.opcode])
 !		psstr(" ")
 		psstr(stropnd(a))
-		psstr(" ")
 
 !!		psmode(a.opmode, a.opsize)
 !		psmode(p.mode, p.size)
-		if p.next then psstr(",") fi
+		if p.next then psstr(", ") fi
+
+		psstr(" ! ")
+		psmode(p.mode, p.size)
+
+!		psstr(" ! ")
+!		psmode(a.opmode, a.opsize)
+
 		psline()
 	od
 
@@ -2835,6 +2847,7 @@ export enumdata [0:]ichar tclnames,
 	(ksetjmp,	$+1,  0,  1,  0,  1),  !     (a - -)
 	(klongjmp,	$+1,  0,  1,  0,  2),  !     (a b -)
 	(kgetr0,	$+1,  1,  1,  0,  1),  !     (T - -)    get value of r0 put there by set/longjmp
+	(kinitdswx,	$+1,  0,  0,  0,  0),  !     (T - -)    Mark next instr as setting up local jumptable
   
 	(kclear,	$+1,  0,  1,  1,  1),  !     (P - -)    clear P
   
@@ -2844,7 +2857,7 @@ end
 
 export enumdata [0:]ichar ccnames, [0:]ichar ccshortnames =
 	(no_cc=0,	"xx",	"?"),
-	(eq_cc,		"eq",	" = "),
+	(eq_cc,		"eq",	" == "),
 	(ne_cc,		"ne",	" != "),
 	(lt_cc,		"lt",	" < "),
 	(le_cc,		"le",	" <= "),
@@ -3806,6 +3819,12 @@ export func mgenint(i64 x, int mode=tpi64)mclopnd a=
 
 	a:=newmclopnd()
 	a.mode:=a_imm
+
+	case size
+	when 1 then x iand:=255
+	when 2 then x iand:=65535
+	when 4 then x iand:=0xffff'ffff
+	esac
 
 	a.value:=x
 	a.valtype:=intimm_val
@@ -4825,9 +4844,9 @@ global func getsizeprefix(int size, enable=0)ichar=
 end
 
 === mc_gen_xb.m 0 0 10/40 ===
-!const fshowtcl=2
+const fshowtcl=2
 !const fshowtcl=1
-const fshowtcl=0
+!const fshowtcl=0
 
 !!const fshowworkregs=1
 !const fshowworkregs=0
@@ -5031,6 +5050,7 @@ proc do_staticvar(psymbol d)=
 	int size:=d.size
 	tcl p
 
+!	setsegment((d.code|'I'|'Z'), getalignment(d.mode))
 	setsegment((d.code|'I'|'Z'), d.align)
 !	genmc_name(m_labelname, d.name)
 	genmc_def(m_labelname, d)
@@ -7438,14 +7458,14 @@ global proc do_storebf(tcl p) =
 	i:=b.value
 	j:=c.value
 
-	mx:=mgenreg(getworkireg())
-	rx:=mgenreg(getworkireg())
+	mx:=mgenreg(getworkireg(),pmode)
+	rx:=mgenreg(getworkireg(),pmode)
 
 	genmc(m_mov, rx, px)
 
 	mask:=inot((inot(0xFFFF'FFFF'FFFF'FFFF<<(j-i+1)))<<i)
 
-	genmc(m_mov, mx, mgenint(mask))
+	genmc(m_mov, mx, mgenint(mask, pmode))
 
 	if i then
 		genmc(m_shl, dx, mgenint(i))
@@ -7578,6 +7598,11 @@ end
 proc tx_getr0*(tcl p)=
 	storeopnd(p.a, mgenreg(r0))
 end
+
+proc tx_initdswx*(tcl p)=
+!only needed for C target
+end
+
 === mc_temp_xb.m 0 0 13/40 ===
 
 global func loadopnd(tclopnd a, int mode=pmode, reg=rnone, copy=0)mclopnd =
@@ -14903,6 +14928,7 @@ proc genprocdef (symbol d) =
 	divider()
 
 	if d.hasdoswx then
+		tc_gen(kinitdswx)
 		tcldoswx:=tccurr
 	fi
 
@@ -14994,6 +15020,7 @@ proc dostaticvar(symbol d)=
 	fi
 
 	p:=getpsymbol(d)
+	p.align:=getalignment(d.mode)
 	tc_addstatic(p)
 
 	do_idata(d)
@@ -16057,33 +16084,35 @@ GERROR("ASS/SLICE")
 	switch a.tag
 	when jname then
 		tc_gen(kmove, genmem_u(a), rhs)
+		setmode_u(a)
 
 	when jptr then
 		ax:=evalu(a.a)
 		pold:=tccurr
 		tc_gen_ixs(kistorex, ax, tc_genint(0), rhs)
 		checkaddpx_store(pold, 101)
+		setmode_u(a)
 
 	when jdotindex then
 
 		tc_gen(kstorebit, evallv(a.a), evalu(a.b), rhs)
+!PRINTUNIT(A.A)
+		setmode_u(a.a)
 
 	when jdotslice then
 		tc_gen4(kstorebf, evallv(a.a), evalu(a.b.a), evalu(a.b.b), rhs)
+		setmode_u(a.a)
 
 	when jif then
 		a.resultflag:=1
 		lhs:=do_if(a, a.a, a.b, a.c, isref:1)
 		tc_gen_ixs(kistorex, lhs, tc_genint(0), rhs)
+		setmode_u(a)
 
 	else
 		cpl jtagnames[a.tag]
 		gerror("Can't assign")
 	end switch
-
-	setmode_u(a)
-
-!	setmemmode2(a, b)
 
 finish:
 
@@ -16209,8 +16238,7 @@ end
 proc do_goto(unit a)=
 	symbol d
 
-	case a.tag
-	when jname and a.def.nameid=labelid then
+	if a.tag=jname and a.def.nameid=labelid then
 		d:=a.def
 		if d.index=0 then
 			d.index:=++mlabelno
@@ -16220,7 +16248,7 @@ proc do_goto(unit a)=
 	else
 		tc_gen(kijump, evalu(a))
 		setmode(tu64)
-	esac
+	fi
 end
 
 proc do_do(unit p, a, b) =
@@ -17074,7 +17102,6 @@ dodosw:
 		fi
 
 !move just-create <move> op to just before instr following tcldosw
-
 		p1:=tcldoswx.next
 		tcldoswx.next:=tccurr
 		tccurr.next:=p1
@@ -18419,7 +18446,7 @@ global proc printunit(ref unitrec p, int level=0, number=0, filehandle dev=nil)=
 		a:=p.value
 		if t=trefchar then
 			if p.slength>256 then
-				print @dev, """",,"(LONGSTR)", """ *",,p.slength
+				print @dev, """",,"1:(longSTR)", """ *",,p.slength
 			elsif p.slength then
 				print @dev, """",,p.svalue,,""" *",,p.slength
 			else
@@ -20798,7 +20825,7 @@ global proc jevalx(ref unitrec p)=			!JEVAL
 		when tref then
 			if p.mode=trefchar and p.isastring then
 				if p.slength>str.len/4 then
-					strcpy(&.str,"LONGSTR)")
+					strcpy(&.str,"2:(LONGstr)")
 				else
 					convertstring(p.svalue, &.str, p.slength)
 				fi
@@ -21315,6 +21342,8 @@ global func getalignment(int m)int=
 !return alignment needed for type m, as 1,2,4,8
 	int a
 
+!CPL "GETALIGN", STRMODE(M), STRMODE(TTTARGET[M])
+
 	case ttbasetype[m]
 	when tarray then
 		return getalignment(tttarget[m])
@@ -21322,7 +21351,9 @@ global func getalignment(int m)int=
 		a:=ttnamedef[m].maxalign
 		if a=0 then
 CPL "GAL0"
- a:=8 fi
+			 a:=8
+		 fi
+!CPL "  //RECORD/MAXALIGN=",A
 		return a
 	elsif ttisblock[m] then
 		return 8
@@ -29396,6 +29427,13 @@ proc setrecordsize(int m)=
 		d.maxalign:=maxalign
 	else
 		d.maxalign:=1
+		if size iand 7 = 0 then
+			d.maxalign:=8
+		elsif size iand 3 = 0 then
+			d.maxalign:=4
+		elsif size iand 1 = 0 then
+			d.maxalign:=2
+		fi
 	fi
 
 	ttsize[m]:=size
@@ -30850,7 +30888,8 @@ checkref:
 					ttlength[t]:=p.slength/ttsize[tttarget[p.mode]]
 					ttsize[t]:=p.slength
 				else
-					txerror("Array not empty")
+!!					txerror("Array not empty")
+					CPL("Array not empty")
 				fi
 			fi
 
