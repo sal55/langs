@@ -96,11 +96,12 @@ Viable formats are .c files, or .nasm files. MX can work, since the RUNMX progra
 
 Although all my tools are single, self-contained binaries, I also like the either of dedicated binaries to support a particular target for example, without needing to specify options.
 
-These are some examples of specially built programs, and their equivalent using the special purpose version; some have been used, other are possibilities:
+These are some examples of specially built programs, and their equivalent using the special purpose version; some have been used, others are possibilities:
 ````
 Program     Equivalent      Notes
 
-ms          mm -r -q        Run program from source as native code. Built using the lead module ms, which also allows it to run itself from source to multiple generations.
+ms          mm -r -q        Run program from source as native code. Built using the lead module ms, which also allows
+                            it to run itself from source to multiple generations.
 mi          mm -i           Run program from source using the IL interpreter
 cs          mcc -r -q       Run C program from source
 ci          mcc -i          Run C program via IL interpreter
