@@ -10,8 +10,8 @@ AA         x64-subset assembler using my syntax
 PCL        Stack-based IL used by MM compilers (this can be a complete standalone language)
 TCL        3AC-based IL used by experimental BB compiler (an internal language that can
            only be dumped to textual form).
-C-subset   The partly non-standard subset of C used by the BCC project. The subset is also
-           the output of the MC projects.
+C-subset   The partly non-standard subset of C used by the BCC/MCC project. The subset is also
+           the output of the MC product (MM configured with a C backend).
 ````
 
 ### Active Projects
@@ -91,3 +91,18 @@ These also list the possible forms of distribution. All have problems: .m/.ma ne
 attract attention from AVs.
 
 Viable formats are .c files, or .nasm files. MX can work, since the RUNMX program needed can be supplied as small C source file.
+
+### Special Configurations
+
+Although all my tools are single, self-contained binaries, I also like the either of dedicated binaries to support a particular target for example, without needing to specify options.
+
+These are some examples of specially built programs, and their equivalent using the special purpose version; some have been used, other are possibilities:
+````
+Program     Equivalent      Notes
+
+ms          mm -r -q        Run program from source as native code. Built using the lead module ms, which also allows it to run itself from source to multiple generations.
+mi          mm -i           Run program from source using the IL interpreter
+cs          mcc -r -q       Run C program from source
+ci          mcc -i          Run C program via IL interpreter
+mc          --              Transpile to C via IL. (Needs to be specially configured anyway.)
+````
