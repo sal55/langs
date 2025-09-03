@@ -1,6 +1,6 @@
 I develop a number of small-scale language-related projects on my PC.
 
-This github site is used for associated resources such as docs, charts, source backups, benchmark results, the odd binary. It had been used also for random stuff related to posts made to my Reddit account, but that has now stopped.
+This github site is used for associated resources such as docs, charts, source backups, benchmark results, the odd binary. Most projects are written in my M language, but the master sources and development are on my home PC.
 
 ### Current Set of Languages
 ````
