@@ -1317,7 +1317,7 @@ global func stropnd(pcl p)ichar=
 	when string_opnd then
 		if (length:=strlen(p.svalue))<str.len/2 then
 			strcpy(str,"""")
-			convertstring(p.svalue,&.str+1)
+			convertstring(p.svalue, &str[1]+1)
 			strcat(str,"""")
 
 		else
@@ -3980,9 +3980,9 @@ proc doshowpcl(pcl p)=
 	case p.opcode
 	when kproc, ktcproc, kretproc, kendproc, kistatic, kzstatic, kdata then
 	else
-		strcpy(&.str,"                       ")
-		strcat(&.str,strpclstr(p, str.len))
-		mgencomment(PCM_COPYHEAPSTRING(&.str))
+		strcpy(str,"                       ")
+		strcat(str,strpclstr(p, str.len))
+		mgencomment(PCM_COPYHEAPSTRING(str))
 	esac
 end
 
@@ -8225,7 +8225,7 @@ global func mgenextname(ichar s)mclopnd=
 	static [20]psymbol table
 	static int ntable
 
-	strcpy(&.str,s)
+	strcpy(str,s)
 	str[strlen(s)]:=0			!lose final *
 
 	d:=findnamesym(str)
@@ -8233,7 +8233,7 @@ global func mgenextname(ichar s)mclopnd=
 	if not d then
 		d:=pcm_allocnfz(pstrec.bytes)
 
-		d.name:=pcm_copyheapstring(&.str)
+		d.name:=pcm_copyheapstring(str)
 		d.id:=import_id
 		d.imported:=1
 		addnamesym(d)
@@ -9060,7 +9060,7 @@ end
 global func stropndstack(int indent=0)ichar=
 	static [512]char str
 	[512]char str2
-	ichar s:=&.str, t
+	ichar s:=str, t
 
 	if indent then
 		fprint @s, "="*40 + "#:(", NOPERANDS
@@ -10452,8 +10452,8 @@ global proc initlib(int nlabels)=
 
 !CPL "SETTING LAB",I,"TO",D
 		d.labelno:=i
-		fprint @&.str,"l#",i
-		d.name:=pcm_copyheapstring(&.str)
+		fprint @str,"l#",i
+		d.name:=pcm_copyheapstring(str)
 		d.reftype:=fwd_ref
 	od
 end
@@ -12550,7 +12550,7 @@ global proc strmcl(ref mclrec mcl)=
 		else
 			recase m_labelname
 		fi
-		asmstr(&.str)
+		asmstr(str)
 		return
 
 	when m_define then
@@ -12592,37 +12592,37 @@ global proc strmcl(ref mclrec mcl)=
 
 	case opcode
 	when m_jmpcc then
-		print @&.opcname,"j",,asmcondnames[cond]
+		print @opcname,"j",,asmcondnames[cond]
 
 	when m_setcc then
-		print @&.opcname,"set",,asmcondnames[cond]
+		print @opcname,"set",,asmcondnames[cond]
 
 	when m_cmovcc then
-		print @&.opcname,"cmov",,asmcondnames[cond]
+		print @opcname,"cmov",,asmcondnames[cond]
 
 	when m_andx then
-		strcpy(&.opcname,"and")
+		strcpy(opcname,"and")
 	when m_orx then
-		strcpy(&.opcname,"or")
+		strcpy(opcname,"or")
 	when m_xorx then
-		strcpy(&.opcname,"xor")
+		strcpy(opcname,"xor")
 	when m_notx then
-		strcpy(&.opcname,"not")
+		strcpy(opcname,"not")
 
 	ELSIF OPCODE>M_HALT THEN
-		STRCPY(&.OPCNAME,STRINT(OPCODE))
+		STRCPY(OPCNAME,STRINT(OPCODE))
 
 	else
-		strcpy(&.opcname,mclnames[opcode]+2)
+		strcpy(opcname,mclnames[opcode]+2)
 	esac
 
-	ipadstr(&.opcname,(opcode=m_dq|4|10)," ")
+	ipadstr(opcname,(opcode=m_dq|4|10)," ")
 
-	ipadstr(&.str,4)
+	ipadstr(str,4)
 
-	strcat(&.str,&.opcname)
+	strcat(str,opcname)
 
-	asmstr(&.str)
+	asmstr(str)
 
 	if a and b then		!2 operands
 		sizepref:=needsizeprefix(opcode,a,b)
@@ -12695,54 +12695,54 @@ global func mstropnd(mclopnd a,int sizeprefix=0,opcode=0)ichar=
 	when a_imm then
 		if opcode=m_dq and a.valtype=intimm_val then
 			if a.value in 0..9 then
-				strcat(&.str,strint(a.value))
+				strcat(str,strint(a.value))
 			else
-				strcat(&.str,"0x")
-				strcat(&.str,strword(a.value,"H"))
+				strcat(str,"0x")
+				strcat(str,strword(a.value,"H"))
 			fi
 		else
-			strcpy(&.str,strvalue(a))
+			strcpy(str,strvalue(a))
 		fi
 
 	when a_mem then
 		case a.valtype
 		when intimm_val then
-			strcpy(&.str,strint(a.value))
+			strcpy(str,strint(a.value))
 		when realimm_val then
-			strcpy(&.str,strreal(a.xvalue))
+			strcpy(str,strreal(a.xvalue))
 		when realmem_val then
-			fprint @&.str,"M#",a.xvalue
+			fprint @str,"M#",a.xvalue
 		esac
 
-		strcat(&.str,getsizeprefix(a.size,sizeprefix))
-		strcat(&.str,"[")
+		strcat(str,getsizeprefix(a.size,sizeprefix))
+		strcat(str,"[")
 
 		plus:=""
 		if a.reg then
-			strcat(&.str,strreg(a.reg,8))
+			strcat(str,strreg(a.reg,8))
 			plus:=" + "
 		fi
 		if a.regix then
-			strcat(&.str,plus)
-			strcat(&.str,strreg(a.regix,8))
+			strcat(str,plus)
+			strcat(str,strreg(a.regix,8))
 			plus:=" + "
 
 			if a.scale>1 then
-				strcat(&.str,"*")
-				strcat(&.str,strint(a.scale))
+				strcat(str,"*")
+				strcat(str,strint(a.scale))
 			fi
 		fi
 
 		if a.valtype in [def_val,label_val, temp_val] then
 			if plus^ then
-				strcat(&.str,plus)
+				strcat(str,plus)
 			fi
-			strcat(&.str,strvalue(a))
+			strcat(str,strvalue(a))
 	    elsif offset:=a.offset then
-			print @&.str2,offset:" + "
-			strcat(&.str,&.str2)
+			print @str2,offset:" + "
+			strcat(str,str2)
 		fi
-		strcat(&.str,"]")
+		strcat(str,"]")
 
 	when a_xreg then
 		return strxreg(a.reg,a.size)
@@ -12752,7 +12752,7 @@ global func mstropnd(mclopnd a,int sizeprefix=0,opcode=0)ichar=
 		return "<BAD OPND>"
 	esac
 
-	return &.str
+	return str
 end
 
 global func strvalue(mclopnd a)ichar=
@@ -12765,39 +12765,39 @@ global func strvalue(mclopnd a)ichar=
 	def:=a.def
 	value:=a.value
 
-	strcpy(&.str,"")
+	strcpy(str,"")
 
 	case a.valtype
 	when def_val then
-		strcat(&.str,getdispname(def))
+		strcat(str,getdispname(def))
 
 	addoffset:
 		if offset:=a.offset then
-			print @&.str2,(offset>0|"+"|""),,offset
-			strcat(&.str,&.str2)
+			print @str2,(offset>0|"+"|""),,offset
+			strcat(str,str2)
 		fi
 
 	when intimm_val then
-		strcat(&.str,strint(value))
+		strcat(str,strint(value))
 
 	when realimm_val then
-		print @&.str,a.xvalue:"20.20"
+		print @str,a.xvalue:"20.20"
 
 	when realmem_val then
-		strcat(&.str,"M")
-		strcat(&.str,strreal(a.xvalue))
+		strcat(str,"M")
+		strcat(str,strreal(a.xvalue))
 
 	when stringimm_val then
-		strcat(&.str,"""")
-		strcat(&.str,a.svalue)
-		strcat(&.str,"""")
+		strcat(str,"""")
+		strcat(str,a.svalue)
+		strcat(str,"""")
 
 	when name_val then
-		strcat(&.str,a.svalue)
+		strcat(str,a.svalue)
 
 	when label_val then
-		strcat(&.str,"L")
-		strcat(&.str,strint(a.labelno))
+		strcat(str,"L")
+		strcat(str,strint(a.labelno))
 		goto addoffset
 
 	when temp_val then
@@ -12808,7 +12808,7 @@ global func strvalue(mclopnd a)ichar=
 	esac
 
 !STRCAT(STR, VALTYPENAMES[A.VALTYPE])
-	return &.str
+	return str
 
 end
 
@@ -12837,12 +12837,12 @@ global func getregname(int reg,size=8)ichar=
 	when rframe then rs:="fp"
 	when rstack then rs:="sp"
 	else
-		getstrint(reg-r0,&.str2)
-		rs:=&.str2
+		getstrint(reg-r0,str2)
+		rs:=str2
 	esac
 
-	print @&.str,prefix[size2],,rs
-	return &.str
+	print @str,prefix[size2],,rs
+	return str
 end
 
 global func getxregname(int reg,size=8)ichar=
@@ -12850,8 +12850,8 @@ global func getxregname(int reg,size=8)ichar=
 
 	if reg=rnone then return "-" fi
 
-	print @&.str,"XMM",,reg-xr0
-	return &.str
+	print @str,"XMM",,reg-xr0
+	return str
 end
 
 proc asmstr(ichar s)=
@@ -13164,14 +13164,14 @@ proc loadlibs=
 	[300]char filename
 
 	for i to nplibfiles when plibfiles[i]^<>'$' do
-		strcpy(&.filename, plibfiles[i])
-		hinst:=os_getdllinst(&.filename)
+		strcpy(filename, plibfiles[i])
+		hinst:=os_getdllinst(filename)
 		if hinst=0 then
-			cpl "File:",&.filename
+			cpl "File:",filename
 			axerror("Can't load search lib")
 		fi
 		libinsttable[i]:=hinst
-		libinstnames[i]:=pcm_copyheapstring(&.filename)
+		libinstnames[i]:=pcm_copyheapstring(filename)
 	od
 end
 
@@ -13243,12 +13243,12 @@ func extractlibname(ichar name, int &libno,moduleno)ichar=
 
 	while s^ do
 		if s^='.' then			!assume lib.name
-			memcpy(&.str,name,s-name)
+			memcpy(str,name,s-name)
 			str[s-name+1]:=0
-			strcat(&.str,".dll")
+			strcat(str,".dll")
 
 			for i:=1 to ndlls do
-				if eqstring(&.str,dlltable[i].name) then
+				if eqstring(str,dlltable[i].name) then
 					libno:=i
 					++dlltable[libno].nprocs
 					return (name2|name2|s+1)
@@ -13257,7 +13257,7 @@ func extractlibname(ichar name, int &libno,moduleno)ichar=
 			if ndlls>=maxlibs then axerror("Too many libs") fi
 			libno:=++ndlls
 
-			dlltable[libno].name:=pcm_copyheapstring(&.str)
+			dlltable[libno].name:=pcm_copyheapstring(str)
 			dlltable[libno].nprocs:=1
 			return (name2|name2|s+1)
 		fi
@@ -13285,12 +13285,12 @@ func extractlibname(ichar name, int &libno,moduleno)ichar=
 	fi
 
 !first use of this lib
-	strcpy(&.str, plibfiles[n])
-	strcat(&.str,".dll")
+	strcpy(str, plibfiles[n])
+	strcat(str,".dll")
 	if ndlls>=maxlibs then axerror("2:Too many libs") fi
 	libno:=++ndlls
 
-	dlltable[libno].name:=pcm_copyheapstring(&.str)
+	dlltable[libno].name:=pcm_copyheapstring(str)
 	dlltable[libno].nprocs:=1
 	libnotable[n]:=libno
 
@@ -16036,9 +16036,9 @@ proc getinputoptions=
 		fi
 
 		if destfilepath then
-			strcpy(&.filespec,destfilepath)
-			strcat(extractfile(&.filespec), outfile)
-			outfile:=pcm_copyheapstring(&.filespec)	
+			strcpy(filespec,destfilepath)
+			strcat(extractfile(filespec), outfile)
+			outfile:=pcm_copyheapstring(filespec)	
 		fi
 	fi
 
@@ -16047,7 +16047,7 @@ proc getinputoptions=
 	strcpy(filespec, changeext(cmdparams[0],ext))
 	convlcstring(filespec)
 	if eqstring(filespec, inputfile) and passlevel=exe_pass then
-		strcpy(&.filespec+strlen(filespec)-extlen-1, "2.m")
+		strcpy(&filespec[1]+strlen(filespec)-extlen-1, "2.m")
 		outfile:=pcm_copyheapstring(filespec)
 		println "New dest=",outfile
 	fi
@@ -18880,9 +18880,9 @@ global proc initassemsymbols=
 	od
 
 	for i to segmentnames.upb do
-		strcpy(&.str,segmentnames[i])
-		str[strlen(&.str)-3]:=0
-		addreservedword(pcm_copyheapstring(&.str),segnamesym,i)
+		strcpy(str,segmentnames[i])
+		str[strlen(str)-3]:=0
+		addreservedword(pcm_copyheapstring(str),segnamesym,i)
 	od
 
 	static []ichar regnames=("aframe","dframe","astack","dstack","dprog","dsptr")
@@ -19170,7 +19170,7 @@ global record strec = $caligned
 		ref strec nextparam
 		byte parammode			!0=byval_param, in_param, byref_param
 		byte optional			!0 or 1	
-		byte variadic			!variadic parameter for B code
+!		byte variadic			!variadic parameter for B code
 		byte dummy3				!variadic parameter for B code
 	end
 
@@ -19198,7 +19198,7 @@ global record unitrec =
 			union
 				unit	a
 				symbol	def
-				symbol	labeldef
+!				symbol	labeldef
 				i64	value
 				u64	uvalue
 				r64	xvalue
@@ -19250,7 +19250,7 @@ global record unitrec =
 			u32 length		!number of elements
 			byte makearray		!1 for makelist to create array-var not list-var
 		end
-		byte addroffirst	!1 for jnameaddr when derived from &.name
+		byte addroffirst	!1 for jnameaddr when derived from name
 
 		u32 offset			!for jdot
 		i32 whenlabel			!label no associated with when expr; for recase
@@ -19564,11 +19564,11 @@ proc printstrec(filehandle f,ref strec p,int level)=
 
 	if dd.moduleno then
 		if dd.nameid<>subprogid then
-			print @&.str,"Modno#",,dd.moduleno
+			print @str,"Modno#",,dd.moduleno
 		else
-			print @&.str,"Subno#",,dd.subprogno
+			print @str,"Subno#",,dd.subprogno
 		fi
-		gs_str(d,&.str)
+		gs_str(d,str)
 	fi
 
 	if dd.used then
@@ -19584,8 +19584,8 @@ proc printstrec(filehandle f,ref strec p,int level)=
 	gs_padto(d,col+10,'=')
 
 	if p.owner then
-		fprint @&.str,"(#)",p.owner.name
-		gs_leftstr(d,&.str,18,'-')
+		fprint @str,"(#)",p.owner.name
+		gs_leftstr(d,str,18,'-')
 	else
 		gs_leftstr(d,"()",18,'-')
 	fi
@@ -19612,10 +19612,10 @@ proc printstrec(filehandle f,ref strec p,int level)=
 			gs_strint(d,p.bitfieldwidth)
 		fi
 
-		sprintf(&.str,"%.*s",int(p.uflags.ulength),&p.uflags.codes)
-		print @&.str,p.uflags.ulength:"v",ichar(&p.uflags.codes):".*"
+		sprintf(str,"%.*s",int(p.uflags.ulength),&p.uflags.codes)
+		print @str,p.uflags.ulength:"v",ichar(&p.uflags.codes):".*"
 		gs_str(d," UFLAGS:")
-		gs_str(d,&.str)
+		gs_str(d,str)
 		gs_str(d,"-")
 		gs_strint(d,p.uflags.ulength)
 
@@ -19624,9 +19624,9 @@ proc printstrec(filehandle f,ref strec p,int level)=
 			gs_strvar(d,strexpr(p.code))
 		fi
 
-		if p.nameid=paramid and p.variadic then
-			gs_str(d,"...")
-		fi
+!		if p.nameid=paramid and p.variadic then
+!			gs_str(d,"...")
+!		fi
 	when procid then
 
 		gs_str(d,"Index:")
@@ -19936,7 +19936,7 @@ func getprefix(int level,ichar prefix,ref unitrec p)ichar=
 	if level>10 then level:=10 fi
 
 	to level do
-		strcat(&.indentstr,"- ")
+		strcat(indentstr,"- ")
 	od
 
 	isexpr:="S"
@@ -19949,29 +19949,29 @@ func getprefix(int level,ichar prefix,ref unitrec p)ichar=
 		fi
 	esac
 
-	fprint @&.modestr,"# #:#",isexpr,(p.resultflag|"RES"|"---"),strmode(p.mode)
+	fprint @modestr,"# #:#",isexpr,(p.resultflag|"RES"|"---"),strmode(p.mode)
 	modestr[256]:=0
 
-	strcat(&.modestr,"-----------------------------")
+	strcat(modestr,"-----------------------------")
 	modestr[17]:=' '
 	modestr[18]:=0
 
-	strcpy(&.str,getlineinfok())
-	strcat(&.str,&.modestr)
-	strcat(&.str,&.indentstr)
-	strcat(&.str,prefix)
+	strcpy(str,getlineinfok())
+	strcat(str,modestr)
+	strcat(str,indentstr)
+	strcat(str,prefix)
 	if prefix^ then
-		strcat(&.str," ")
+		strcat(str," ")
 	fi
 
-	return &.str
+	return str
 end
 
 func getlineinfok:ichar=			!GETLINEINFO
 	static [40]char str
 
-	fprint @&.str,"# # ",CURRFILENO:"Z2",currlineno:"z4"
-	return &.str
+	fprint @str,"# # ",CURRFILENO:"Z2",currlineno:"z4"
+	return str
 end
 
 global proc printmodelist(filehandle f)=
@@ -20139,10 +20139,10 @@ global proc showlogfile=
 
 	if size then
 CPL "PRESS KEY..."; if OS_GETCH()=27 then stop fi
-		print @&.str,"\\m\\ed.bat ",logfile
+		print @str,"\\m\\ed.bat ",logfile
 
 		if checkfile("mm.m") then
-			os_execwait(&.str,0,nil)
+			os_execwait(str,0,nil)
 		else
 			println "Diagnostic outputs written to",logfile
 		fi
@@ -20895,7 +20895,7 @@ global func getsysfnhandler(int fn)symbol p=
 	report:=0
 
 	if report then
-		println "Sysfn not found:",&.str
+		println "Sysfn not found:",str
 	fi
 	if fn<>sf_unimpl then
 		p:=getsysfnhandler(sf_unimpl)
@@ -21999,7 +21999,7 @@ proc lxreadstring(int termchar)=
 					c:=0
 				else
 					str[1]:=c; str[2]:=0
-					lxerror_s("Unknown string escape: \\%s",&.str)
+					lxerror_s("Unknown string escape: \\%s",str)
 				end
 			when '"','\'' then		!possible terminators
 				if c=termchar then		!terminator char
@@ -22121,7 +22121,7 @@ proc readdec=
 
 	pstart:=lxsptr
 
-	dest:=&.str
+	dest:=str
 	destend:=dest+str.len-10
 	a:=0
 
@@ -22148,9 +22148,9 @@ proc readdec=
 			nodecimal()
 
 		when 'b','B' then
-			length:=dest-&.str
+			length:=dest-&str[1]
 			if length>64 then lxerror("bin overflow") fi
-			dest:=&.str
+			dest:=str
 			a:=0
 			to length do
 				if dest^>='2' then lxerror("bad bin digit") fi
@@ -22165,7 +22165,7 @@ proc readdec=
 
 		if dest>=destend then lxerror("Numlit too long") fi
 	end
-	length:=dest-&.str
+	length:=dest-&str[1]
 
 	if length>20 or length=20 and strncmp(str,u64maxstr,20)>0 then
 		nodecimal()
@@ -22186,7 +22186,7 @@ proc readhex=
 
 	pstart:=lxsptr
 
-	dest:=&.str
+	dest:=str
 	destend:=dest+str.len-10
 	a:=0
 
@@ -22218,7 +22218,7 @@ proc readhex=
 
 		if dest>=destend then lxerror("Numlit too long") fi
 	end
-	length:=dest-&.str
+	length:=dest-&str[1]
 
 	if length>16 then
 		LXERROR("MAKEDEC")
@@ -22239,7 +22239,7 @@ proc readbin=
 
 	pstart:=lxsptr
 
-	dest:=&.str
+	dest:=str
 	destend:=dest+str.len-10
 	a:=0
 
@@ -22266,7 +22266,7 @@ proc readbin=
 
 		if dest>=destend then lxerror("bin overflow") fi
 	end
-	length:=dest-&.str
+	length:=dest-&str[1]
 
 	if length>64 then
 		nodecimal()
@@ -22286,7 +22286,7 @@ proc readreal=
 	ichar dest, destend
 	u64 a
 
-	dest:=&.str
+	dest:=str
 	destend:=dest+str.len-100
 	length:=negexpon:=dotseen:=expseen:=expon:=fractlen:=0
 
@@ -22746,8 +22746,8 @@ end
 global func nextautotype:ichar=
 	static [32]char str
 
-	print @&.str,"$T",,++autotypeno
-	return &.str
+	print @str,"$T",,++autotypeno
+	return str
 end
 
 global func createslicemode(symbol owner,int slicetype,target,unit dimexpr, int typedefx=0)int=
@@ -22865,16 +22865,16 @@ global func getdottedname(symbol p)ichar=
 	[256]char str2
 	symbol owner
 
-	strcpy(&.str,p.name)
+	strcpy(str,p.name)
 	owner:=p.owner
 	while owner and owner.nameid<>programid do
-		strcpy(&.str2,&.str)
-		strcpy(&.str,owner.name)
-		strcat(&.str,".")
-		strcat(&.str,&.str2)
+		strcpy(str2,str)
+		strcpy(str,owner.name)
+		strcat(str,".")
+		strcat(str,str2)
 		owner:=owner.owner
 	od
-	return &.str
+	return str
 end
 
 global func getavname(symbol owner,int id=frameid)symbol=
@@ -22888,12 +22888,12 @@ global func getavname(symbol owner,int id=frameid)symbol=
 	fi
 
 	if id=frameid then
-		print @&.str,"av_",,++nextavindex
+		print @str,"av_",,++nextavindex
 	else
-		print @&.str,"sv_",,++nextsvindex
+		print @str,"sv_",,++nextsvindex
 	fi
 
-	name:=pcm_copyheapstring(&.str)
+	name:=pcm_copyheapstring(str)
 	addnamestr(name)
 
 	p:=getduplnameptr(owner,addnamestr(name),id)
@@ -23014,50 +23014,50 @@ global proc jevalx(ref unitrec p)=			!JEVAL
 
 		case ttbasetype[p.mode]
 		when ti32,ti64,ti8,ti16 then
-			getstrint(p.value,&.str)
+			getstrint(p.value,str)
 		when tu32,tu64,tu8,tu16 then
-			strcpy(&.str,strword(p.uvalue))
+			strcpy(str,strword(p.uvalue))
 		when tc8,tc64 then
 			str[1]:=p.uvalue
 			str[0]:=0
 
 		when treal,tr32 then
-			print @&.str,p.xvalue
+			print @str,p.xvalue
 		when tref then
 			if p.mode=trefchar and p.isastring then
 				if p.slength>str.len/2 then
-					strcpy(&.str,"LONGSTR)")
+					strcpy(str,"LONGSTR)")
 				else
-					convertstring(p.svalue,&.str)
+					convertstring(p.svalue,str)
 				fi
 				jadditem("""")
-				jadditem(&.str)
+				jadditem(str)
 				jadditem("""")
 				return
 			else
-				print @&.str,ref void(p.value)
+				print @str,ref void(p.value)
 			fi
 		else
-			strcpy(&.STR,"<EVAL/CONST PROBABLY VOID>")
+			strcpy(STR,"<EVAL/CONST PROBABLY VOID>")
 		esac
-		jadditem(&.str)
+		jadditem(str)
 
 	when jname then
 		jadditem(p.def.name)
 
 	when jbin,jcmp then
 
-		strcpy(&.str,pclnames[p.pclop])
+		strcpy(str,pclnames[p.pclop])
 		jadditem("(")
 		jevalx(a)
-		jadditem(&.str)
+		jadditem(str)
 		jevalx(b)
 		jadditem(")")
 
 	when junary, jistruel, jnotl then
 
-		strcpy(&.str,pclnames[p.pclop])
-		jadditem(&.str)
+		strcpy(str,pclnames[p.pclop])
+		jadditem(str)
 		jadditem("(")
 
 		if a.tag=jtypeconst then
@@ -23069,8 +23069,8 @@ global proc jevalx(ref unitrec p)=			!JEVAL
 
 	when jprop then
 
-		strcpy(&.str,propnames[p.propcode])
-		jadditem(&.str)
+		strcpy(str,propnames[p.propcode])
+		jadditem(str)
 		jadditem("(")
 		jevalx(a)
 		jadditem(")")
@@ -23184,7 +23184,7 @@ global proc jevalx(ref unitrec p)=			!JEVAL
 		fi
 
 	when jaddroffirst then
-		jadditem("&.")
+		jadditem("")
 		jevalx(a)
 
 	when jtypestr then
@@ -23235,14 +23235,14 @@ end
 
 global func strmode(int m,expand=1)ichar=
 	static [4096]char str
-	istrmode(m,expand,&.str)
-	return &.str
+	istrmode(m,expand,str)
+	return str
 end
 
 global func strmode2(int m,expand=1)ichar=
 	static [4096]char str
-	istrmode(m,expand,&.str)
-	return &.str
+	istrmode(m,expand,str)
+	return str
 end
 
 global proc istrmode(int m,expand=1,ichar dest)=
@@ -23290,8 +23290,8 @@ global proc istrmode(int m,expand=1,ichar dest)=
 
 	when tarray then
 		if ttdimexpr[m] then
-			gs_copytostr(strexpr(ttdimexpr[m]),&.strdim)
-			fprint @dest,"@[#<#>",&.strdim,M
+			gs_copytostr(strexpr(ttdimexpr[m]),strdim)
+			fprint @dest,"@[#<#>",&strdim[1],M
 		else
 			if ttlength[m] then
 				if ttlower[m]=1 then
@@ -23313,8 +23313,8 @@ global proc istrmode(int m,expand=1,ichar dest)=
 		prefix:=stdnames[mbase]
 
 		if ttdimexpr[m] then
-			gs_copytostr(strexpr(ttdimexpr[m]),&.strdim)
-			fprint @dest,"@#[#:]",prefix,&.strdim
+			gs_copytostr(strexpr(ttdimexpr[m]),strdim)
+			fprint @dest,"@#[#:]",prefix,&strdim[1]
 		else
 			if ttlower[m]=1 then
 				strcpy(dest,prefix)
@@ -24164,7 +24164,7 @@ CPL "LOADING FROM MA FILE"
 		loadmafile(file)
 		loadedfromma:=1
 		strcpy(str, changeext(file,"m"))			!assume lead module has same name as ma file
-		file:=&.str
+		file:=str
 	fi
 
 	loadsp(file, 1)
@@ -24202,7 +24202,7 @@ func readfileline(ichar s)ichar =
 
 	t^:=0
 
-	readln @&.str
+	readln @&str[1]
 	return s
 end
 
@@ -25310,9 +25310,9 @@ global proc checkend(int endsym,endkwd1, endkwd2=0,startline=0)=
 error:
 			strcpy(str,"Mismatched end ")
 			if startline then
-				fprint @(&.str+strlen(&.str))," (from line #)",startline
+				fprint @(&str[1]+strlen(str))," (from line #)",startline
 			fi
-			serror(&.str)
+			serror(str)
 		fi
 	fi
 
@@ -25826,7 +25826,7 @@ func readcompilervar:unit=
 		return p
 
 	when jcvstrlineno then
-		getstrint(getlineno(lx.pos),&.str)
+		getstrint(getlineno(lx.pos),str)
 
 	when jcvmodulename then
 		strcpy(str,stmodule.name)
@@ -25835,18 +25835,18 @@ func readcompilervar:unit=
 		strcpy(str,sources[currmodule.fileno].filespec)
 
 	when jcvfunction then
-		strcpy(&.str,currproc.name)
+		strcpy(str,currproc.name)
 
 	when jcvdate then
 		os_getsystime(&tm)
-		fprint @&.str,"#-#-#",tm.day,monthnames[tm.month],tm.year:"4"
+		fprint @str,"#-#-#",tm.day,monthnames[tm.month],tm.year:"4"
 
 	when jcvtime then
 		os_getsystime(&tm)
-		fprint @&.str,"#:#:#",tm.hour:"z2",tm.minute:"z2",tm.second:"z2"
+		fprint @str,"#:#:#",tm.hour:"z2",tm.minute:"z2",tm.second:"z2"
 
 	when jcvversion then
-		strcpy(&.str,"Compiler:M6.4")
+		strcpy(str,"Compiler:M6.4")
 
 	when jcvtrue,jcvfalse then
 		p:=createconstunit(lx.subcode=jcvtrue,tbool64)
@@ -25858,7 +25858,7 @@ func readcompilervar:unit=
 	end switch
 	lex()
 
-	return createstringconstunit(pcm_copyheapstring(&.str),-1)
+	return createstringconstunit(pcm_copyheapstring(str),-1)
 end
 
 func readcastx:unit=
@@ -25900,8 +25900,8 @@ global proc checksymbol(int symbol)=
 	[100]char str
 
 	if lx.symbol<>symbol then
-		fprint @&.str,"# expected, not #",symbolnames[symbol],symbolnames[lx.symbol]
-		serror(&.str)
+		fprint @str,"# expected, not #",symbolnames[symbol],symbolnames[lx.symbol]
+		serror(str)
 	fi
 end
 
@@ -26528,7 +26528,7 @@ gotmode:
 					++nparams
 					str[1]:='$'; str[2]:=0
 					strcat(str, strint(nparams))
-					stname:=getduplnameptr(owner,addnamestr(&.str),paramid)
+					stname:=getduplnameptr(owner,addnamestr(str),paramid)
 					adddef(owner,stname)
 
 					storemode(owner,pmode,stname.mode)
@@ -28871,8 +28871,8 @@ end
 
 global proc serror_s(ichar mess,a)=
 	[256]char str
-	fprint @&.str,mess,a
-	serror_gen(&.str)
+	fprint @str,mess,a
+	serror_gen(str)
 end
 
 global proc error_gen(int pass,ichar mess,unit p=nil)=
@@ -28919,27 +28919,27 @@ end
 
 global proc txerror_s(ichar mess,a,unit p=nil)=
 	[256]char str
-	fprint @&.str,mess,a
-	error_gen('T',&.str,p)
+	fprint @str,mess,a
+	error_gen('T',str,p)
 end
 
 global proc txerror_ss(ichar mess,a,b)=
 	[256]char str
-	fprint @&.str,mess,a,b
-	error_gen('T',&.str)
+	fprint @str,mess,a,b
+	error_gen('T',str)
 end
 
 global proc rxerror_s(ichar mess,a,unit p=nil)=
 	[256]char str
-	fprint @&.str,mess,a
-	error_gen('N',&.str,p)
+	fprint @str,mess,a
+	error_gen('N',str,p)
 end
 
 global proc gerror_s(ichar mess,s,ref unitrec p=nil)=
 	[256]char str
 
-	fprint @&.str,mess,s
-	error_gen('G',&.str,p)
+	fprint @str,mess,s
+	error_gen('G',str,p)
 end
 
 global proc lxerror_gen(ichar mess)=
@@ -29079,7 +29079,7 @@ global func getsupportfile(ichar filename, ext="", path="")ifile =
 
 	if ext^ then
 		strcpy(filespec,addext(filename,ext))
-		file:=&.filespec
+		file:=filespec
 	fi
 
 	if loadedfromma then
@@ -29095,7 +29095,7 @@ global func getsupportfile(ichar filename, ext="", path="")ifile =
 	if not isabspath(file) then
 		strcpy(filespec2,path)
 		strcat(filespec2,file)
-		file:=&.filespec2
+		file:=filespec2
 	fi
 
 	if fverbose=3 and fileno then
@@ -29661,7 +29661,7 @@ global enumdata []ichar symbolnames,
 					[]byte exprstarter =
 !First half are basic tokens returned by lexreadtoken()
 	(dotsym,			".",		0,			0,	0,	0,	0),		! "."
-	(anddotsym,			"&.",		0,			0,	0,	0,	1),		! "&."
+	(anddotsym,			"",		0,			0,	0,	0,	1),		! ""
 	(commasym,			",",		0,			0,	0,	0,	0),		! ","
 	(semisym,			";",		0,			0,	0,	0,	0),		! ";"
 	(colonsym,			":",		0,			0,	0,	0,	0),		! ":"
@@ -32398,14 +32398,14 @@ proc tx_switch(unit p,a,b,c,int t,lv)=
 end
 
 proc tx_addroffirst(unit p,a,int t)=
-!&.x maps to &x[x.lwb]
+!x maps to &x[x.lwb]
 	int m
 
 	tpass(a)
 
 	m:=a.mode
 	if ttbasetype[m]<>tarray then
-		txerror("&. ref[] expected")
+		txerror(" ref[] expected")
 	fi
 
 	m:=createrefmode(nil,tttarget[m])

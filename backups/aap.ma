@@ -1909,7 +1909,7 @@ global func mgenextname(ichar s)mclopnd=
 	static [20]psymbol table
 	static int ntable
 
-	strcpy(&.str,s)
+	strcpy(str,s)
 	str[strlen(s)]:=0			!lose final *
 
 	d:=findnamesym(str)
@@ -1917,7 +1917,7 @@ global func mgenextname(ichar s)mclopnd=
 	if not d then
 		d:=pcm_allocnfz(pstrec.bytes)
 
-		d.name:=pcm_copyheapstring(&.str)
+		d.name:=pcm_copyheapstring(str)
 		d.id:=import_id
 		d.imported:=1
 		addnamesym(d)
@@ -3245,8 +3245,8 @@ global proc initlib(int nlabels)=
 
 !CPL "SETTING LAB",I,"TO",D
 		d.labelno:=i
-		fprint @&.str,"l#",i
-		d.name:=pcm_copyheapstring(&.str)
+		fprint @str,"l#",i
+		d.name:=pcm_copyheapstring(str)
 		d.reftype:=fwd_ref
 	od
 end
@@ -5343,7 +5343,7 @@ global proc strmcl(ref mclrec mcl)=
 		else
 			recase m_labelname
 		fi
-		asmstr(&.str)
+		asmstr(str)
 		return
 
 	when m_define then
@@ -5385,37 +5385,37 @@ global proc strmcl(ref mclrec mcl)=
 
 	case opcode
 	when m_jmpcc then
-		print @&.opcname,"j",,asmcondnames[cond]
+		print @opcname,"j",,asmcondnames[cond]
 
 	when m_setcc then
-		print @&.opcname,"set",,asmcondnames[cond]
+		print @opcname,"set",,asmcondnames[cond]
 
 	when m_cmovcc then
-		print @&.opcname,"cmov",,asmcondnames[cond]
+		print @opcname,"cmov",,asmcondnames[cond]
 
 	when m_andx then
-		strcpy(&.opcname,"and")
+		strcpy(opcname,"and")
 	when m_orx then
-		strcpy(&.opcname,"or")
+		strcpy(opcname,"or")
 	when m_xorx then
-		strcpy(&.opcname,"xor")
+		strcpy(opcname,"xor")
 	when m_notx then
-		strcpy(&.opcname,"not")
+		strcpy(opcname,"not")
 
 	ELSIF OPCODE>M_HALT THEN
-		STRCPY(&.OPCNAME,STRINT(OPCODE))
+		STRCPY(OPCNAME,STRINT(OPCODE))
 
 	else
-		strcpy(&.opcname,mclnames[opcode]+2)
+		strcpy(opcname,mclnames[opcode]+2)
 	esac
 
-	ipadstr(&.opcname,(opcode=m_dq|4|10)," ")
+	ipadstr(opcname,(opcode=m_dq|4|10)," ")
 
-	ipadstr(&.str,4)
+	ipadstr(str,4)
 
-	strcat(&.str,&.opcname)
+	strcat(str,opcname)
 
-	asmstr(&.str)
+	asmstr(str)
 
 	if a and b then		!2 operands
 		sizepref:=needsizeprefix(opcode,a,b)
@@ -5488,54 +5488,54 @@ global func mstropnd(mclopnd a,int sizeprefix=0,opcode=0)ichar=
 	when a_imm then
 		if opcode=m_dq and a.valtype=intimm_val then
 			if a.value in 0..9 then
-				strcat(&.str,strint(a.value))
+				strcat(str,strint(a.value))
 			else
-				strcat(&.str,"0x")
-				strcat(&.str,strword(a.value,"H"))
+				strcat(str,"0x")
+				strcat(str,strword(a.value,"H"))
 			fi
 		else
-			strcpy(&.str,strvalue(a))
+			strcpy(str,strvalue(a))
 		fi
 
 	when a_mem then
 		case a.valtype
 		when intimm_val then
-			strcpy(&.str,strint(a.value))
+			strcpy(str,strint(a.value))
 		when realimm_val then
-			strcpy(&.str,strreal(a.xvalue))
+			strcpy(str,strreal(a.xvalue))
 		when realmem_val then
-			fprint @&.str,"M#",a.xvalue
+			fprint @str,"M#",a.xvalue
 		esac
 
-		strcat(&.str,getsizeprefix(a.size,sizeprefix))
-		strcat(&.str,"[")
+		strcat(str,getsizeprefix(a.size,sizeprefix))
+		strcat(str,"[")
 
 		plus:=""
 		if a.reg then
-			strcat(&.str,strreg(a.reg,8))
+			strcat(str,strreg(a.reg,8))
 			plus:=" + "
 		fi
 		if a.regix then
-			strcat(&.str,plus)
-			strcat(&.str,strreg(a.regix,8))
+			strcat(str,plus)
+			strcat(str,strreg(a.regix,8))
 			plus:=" + "
 
 			if a.scale>1 then
-				strcat(&.str,"*")
-				strcat(&.str,strint(a.scale))
+				strcat(str,"*")
+				strcat(str,strint(a.scale))
 			fi
 		fi
 
 		if a.valtype in [def_val,label_val, temp_val] then
 			if plus^ then
-				strcat(&.str,plus)
+				strcat(str,plus)
 			fi
-			strcat(&.str,strvalue(a))
+			strcat(str,strvalue(a))
 	    elsif offset:=a.offset then
-			print @&.str2,offset:" + "
-			strcat(&.str,&.str2)
+			print @str2,offset:" + "
+			strcat(str,str2)
 		fi
-		strcat(&.str,"]")
+		strcat(str,"]")
 
 	when a_xreg then
 		return strxreg(a.reg,a.size)
@@ -5545,7 +5545,7 @@ global func mstropnd(mclopnd a,int sizeprefix=0,opcode=0)ichar=
 		return "<BAD OPND>"
 	esac
 
-	return &.str
+	return str
 end
 
 global func strvalue(mclopnd a)ichar=
@@ -5558,39 +5558,39 @@ global func strvalue(mclopnd a)ichar=
 	def:=a.def
 	value:=a.value
 
-	strcpy(&.str,"")
+	strcpy(str,"")
 
 	case a.valtype
 	when def_val then
-		strcat(&.str,getdispname(def))
+		strcat(str,getdispname(def))
 
 	addoffset:
 		if offset:=a.offset then
-			print @&.str2,(offset>0|"+"|""),,offset
-			strcat(&.str,&.str2)
+			print @str2,(offset>0|"+"|""),,offset
+			strcat(str,str2)
 		fi
 
 	when intimm_val then
-		strcat(&.str,strint(value))
+		strcat(str,strint(value))
 
 	when realimm_val then
-		print @&.str,a.xvalue:"20.20"
+		print @str,a.xvalue:"20.20"
 
 	when realmem_val then
-		strcat(&.str,"M")
-		strcat(&.str,strreal(a.xvalue))
+		strcat(str,"M")
+		strcat(str,strreal(a.xvalue))
 
 	when stringimm_val then
-		strcat(&.str,"""")
-		strcat(&.str,a.svalue)
-		strcat(&.str,"""")
+		strcat(str,"""")
+		strcat(str,a.svalue)
+		strcat(str,"""")
 
 	when name_val then
-		strcat(&.str,a.svalue)
+		strcat(str,a.svalue)
 
 	when label_val then
-		strcat(&.str,"L")
-		strcat(&.str,strint(a.labelno))
+		strcat(str,"L")
+		strcat(str,strint(a.labelno))
 		goto addoffset
 
 	when temp_val then
@@ -5601,7 +5601,7 @@ global func strvalue(mclopnd a)ichar=
 	esac
 
 !STRCAT(STR, VALTYPENAMES[A.VALTYPE])
-	return &.str
+	return str
 
 end
 
@@ -5630,12 +5630,12 @@ global func getregname(int reg,size=8)ichar=
 	when rframe then rs:="fp"
 	when rstack then rs:="sp"
 	else
-		getstrint(reg-r0,&.str2)
-		rs:=&.str2
+		getstrint(reg-r0,str2)
+		rs:=str2
 	esac
 
-	print @&.str,prefix[size2],,rs
-	return &.str
+	print @str,prefix[size2],,rs
+	return str
 end
 
 global func getxregname(int reg,size=8)ichar=
@@ -5643,8 +5643,8 @@ global func getxregname(int reg,size=8)ichar=
 
 	if reg=rnone then return "-" fi
 
-	print @&.str,"XMM",,reg-xr0
-	return &.str
+	print @str,"XMM",,reg-xr0
+	return str
 end
 
 proc asmstr(ichar s)=
@@ -5957,14 +5957,14 @@ proc loadlibs=
 	[300]char filename
 
 	for i to nplibfiles when plibfiles[i]^<>'$' do
-		strcpy(&.filename, plibfiles[i])
-		hinst:=os_getdllinst(&.filename)
+		strcpy(filename, plibfiles[i])
+		hinst:=os_getdllinst(filename)
 		if hinst=0 then
-			cpl "File:",&.filename
+			cpl "File:",filename
 			axerror("Can't load search lib")
 		fi
 		libinsttable[i]:=hinst
-		libinstnames[i]:=pcm_copyheapstring(&.filename)
+		libinstnames[i]:=pcm_copyheapstring(filename)
 	od
 end
 
@@ -6036,12 +6036,12 @@ func extractlibname(ichar name, int &libno,moduleno)ichar=
 
 	while s^ do
 		if s^='.' then			!assume lib.name
-			memcpy(&.str,name,s-name)
+			memcpy(str,name,s-name)
 			str[s-name+1]:=0
-			strcat(&.str,".dll")
+			strcat(str,".dll")
 
 			for i:=1 to ndlls do
-				if eqstring(&.str,dlltable[i].name) then
+				if eqstring(str,dlltable[i].name) then
 					libno:=i
 					++dlltable[libno].nprocs
 					return (name2|name2|s+1)
@@ -6050,7 +6050,7 @@ func extractlibname(ichar name, int &libno,moduleno)ichar=
 			if ndlls>=maxlibs then axerror("Too many libs") fi
 			libno:=++ndlls
 
-			dlltable[libno].name:=pcm_copyheapstring(&.str)
+			dlltable[libno].name:=pcm_copyheapstring(str)
 			dlltable[libno].nprocs:=1
 			return (name2|name2|s+1)
 		fi
@@ -6078,12 +6078,12 @@ func extractlibname(ichar name, int &libno,moduleno)ichar=
 	fi
 
 !first use of this lib
-	strcpy(&.str, plibfiles[n])
-	strcat(&.str,".dll")
+	strcpy(str, plibfiles[n])
+	strcat(str,".dll")
 	if ndlls>=maxlibs then axerror("2:Too many libs") fi
 	libno:=++ndlls
 
-	dlltable[libno].name:=pcm_copyheapstring(&.str)
+	dlltable[libno].name:=pcm_copyheapstring(str)
 	dlltable[libno].nprocs:=1
 	libnotable[n]:=libno
 
@@ -9042,7 +9042,7 @@ proc readnumber(int c)=
 		return
 	fi
 
-	if slen>20 or slen=20 and cmpstring(&.str,"18446744073709551615")>0 then
+	if slen>20 or slen=20 and cmpstring(str,"18446744073709551615")>0 then
 		lxerror("Overflow in 64-bit value")
 	fi
 
@@ -9124,11 +9124,11 @@ end
 global proc printsymbol(filehandle dev=nil)=
 	[1256]char str
 
-	strcpy(&.str,symbolnames[lxsymbol])
-!	str[strlen(&.str)-2]:=0
+	strcpy(str,symbolnames[lxsymbol])
+!	str[strlen(str)-2]:=0
 
-	print @dev,&.str
-	to 14-strlen(&.str) do print @dev," " od
+	print @dev,str
+	to 14-strlen(str) do print @dev," " od
 
 	case lxsymbol
 	when namesym then
@@ -9444,14 +9444,14 @@ end
 function inttostr(i64 a)ichar=
 	static [64]char str
 
-	getstrint(a,&.str)
-	return &.str
+	getstrint(a,str)
+	return str
 end
 
 function realtostr(real a)ichar=
 	static [64]char str
-	strcpy(&.str,strreal(a))
-	return &.str
+	strcpy(str,strreal(a))
+	return str
 end
 
 global func getpsymbol(symbol d)psymbol p =
@@ -9763,9 +9763,9 @@ proc checksymbol(int symbol)=
 	[265]char str
 
 	if lxsymbol<>symbol then
-		fprint @&.str,"# expected not #",symbolnames[symbol],symbolnames[lxsymbol]
+		fprint @str,"# expected not #",symbolnames[symbol],symbolnames[lxsymbol]
 
-		serror(&.str)
+		serror(str)
 	fi
 end
 

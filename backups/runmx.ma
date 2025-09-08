@@ -1586,25 +1586,25 @@ global function decodeinstr(ref byte &cptr,baseaddr=nil)ichar=
 !need to put in address, bytes etc
 
 !	if baseaddr then
-		print @&.str,baseaddr:"z6h",,": "
+		print @str,baseaddr:"z6h",,": "
 !	else
-!		print @&.str,pstart:"z6h",,": "
+!		print @str,pstart:"z6h",,": "
 !	fi
 
 	n:=codeptr-pstart
 	to n do
-		print @&.str2,int(pstart++^):"z2H",," "
+		print @str2,int(pstart++^):"z2H",," "
 
-		strcat(&.str,&.str2)
+		strcat(str,str2)
 	od
 	to maxinstrlen-n do
-		strcat(&.str,"-- ")
+		strcat(str,"-- ")
 	od
-	strcat(&.str,&.deststr)
+	strcat(str,deststr)
 
 	cptr:=codeptr
 
-	return &.str
+	return str
 end
 
 proc decodetwobyteinstr=
@@ -2182,7 +2182,7 @@ GENSTR("<INDEX>")
 end
 
 proc genstr(ichar s)=
-	strcat(&.deststr,s)
+	strcat(deststr,s)
 end
 
 proc genintd(i64 a)=
@@ -2212,15 +2212,15 @@ end
 
 function strxmm(int reg)ichar=
 	static [32]char str
-	print @&.str,"xmm",,reg-1
-	return &.str
+	print @str,"xmm",,reg-1
+	return str
 end
 
 function strmmx(int reg)ichar=
 	static [32]char str
 
-	print @&.str,"mmx",,reg-1
-	return &.str
+	print @str,"mmx",,reg-1
+	return str
 end
 
 proc decode8087(int ttt)=

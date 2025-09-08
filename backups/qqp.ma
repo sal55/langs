@@ -3997,11 +3997,11 @@ function bn_makefloat(r64 x)object =
 	object a
 	[2048]char str
 
-!	sprintf(&.str,"%.15g",x)
+!	sprintf(str,"%.15g",x)
 
 	print @str, x:".15g"
 
-	return bn_makestr(&.str)
+	return bn_makestr(str)
 end
 
 global function dectemp(variant a)variant=
@@ -6149,7 +6149,7 @@ end
 global proc lxerror_s(ichar mess,a)=
 	[256]char str
 	fprint @str,mess,a
-	lxerror(&.str)
+	lxerror(str)
 end
 
 proc makedecimal(ichar s, int length,base)=
@@ -6176,7 +6176,7 @@ proc readdec=
 
 	pstart:=lxsptr
 
-	dest:=&.str
+	dest:=str
 	destend:=dest+str.len-10
 	a:=0
 
@@ -6201,13 +6201,13 @@ proc readdec=
 		when '_','\'' then
 		when 'l','L' then
 			dest^:=0
-			makedecimal(&.str,dest-&.str,10)
+			makedecimal(str,dest-&str[1],10)
 			return
 
 		when 'b','B' then
-			length:=dest-&.str
+			length:=dest-&str[1]
 			if length>64 then lxerror("bin overflow") fi
-			dest:=&.str
+			dest:=str
 			a:=0
 			to length do
 				if dest^>='2' then lxerror("bad bin digit") fi
@@ -6222,10 +6222,10 @@ proc readdec=
 
 		if dest>=destend then lxerror("Numlit too long") fi
 	end
-	length:=dest-&.str
+	length:=dest-&str[1]
 
-	if length>20 or length=20 and strncmp(&.str,u64maxstr,20)>0 then
-		makedecimal(&.str,length,10)
+	if length>20 or length=20 and strncmp(str,u64maxstr,20)>0 then
+		makedecimal(str,length,10)
 		return
 	fi
 
@@ -6244,7 +6244,7 @@ proc readhex=
 
 	pstart:=lxsptr
 
-	dest:=&.str
+	dest:=str
 	destend:=dest+str.len-10
 	a:=0
 
@@ -6264,7 +6264,7 @@ proc readhex=
 		when '_','\'' then
 		when 'l','L' then
 			dest^:=0
-			makedecimal(&.str,dest-&.str,16)
+			makedecimal(str,dest-&str[1],16)
 			return
 
 		when '.' then
@@ -6278,10 +6278,10 @@ proc readhex=
 
 		if dest>=destend then lxerror("Numlit too long") fi
 	end
-	length:=dest-&.str
+	length:=dest-&str[1]
 
 	if length>16 then
-		makedecimal(&.str,length,16)
+		makedecimal(str,length,16)
 		return
 	fi
 
@@ -6299,7 +6299,7 @@ proc readbin=
 
 	pstart:=lxsptr
 
-	dest:=&.str
+	dest:=str
 	destend:=dest+str.len-10
 	a:=0
 
@@ -6312,7 +6312,7 @@ proc readbin=
 		when '_','\'' then
 		when 'l','L' then
 			dest^:=0
-			makedecimal(&.str,dest-&.str,2)
+			makedecimal(str,dest-&str[1],2)
 			return
 
 		when '.' then
@@ -6328,10 +6328,10 @@ proc readbin=
 
 		if dest>=destend then lxerror("bin overflow") fi
 	end
-	length:=dest-&.str
+	length:=dest-&str[1]
 
 	if length>64 then
-		makedecimal(&.str,length,2)
+		makedecimal(str,length,2)
 		return
 	fi
 
@@ -6348,7 +6348,7 @@ proc readreal=
 	[1024]char str
 	ichar dest, destend, pexpon
 
-	dest:=&.str
+	dest:=str
 	destend:=dest+str.len-100
 	length:=negexpon:=dotseen:=expseen:=expon:=fractlen:=0
 
@@ -6384,7 +6384,7 @@ proc readreal=
 				when '_','\'' then
 				when 'l','L' then
 					dest^:=0
-					makedecimal(&.str,dest-&.str,10)
+					makedecimal(str,dest-&str[1],10)
 					return
 				else
 					--lxsptr
@@ -6395,7 +6395,7 @@ proc readreal=
 		when '_','\'' then
 
 		when 'l','L' then
-			makedecimal(&.str,dest-&.str,10)
+			makedecimal(str,dest-&str[1],10)
 			return
 		else
 			--lxsptr
@@ -6567,7 +6567,7 @@ end
 global proc gerror_s(ichar mess, param,unit p=nil)=
 	[300]char str
 	print @str, mess, param
-	reportcterror("Code Gen",&.str,(p|p.pos|qpos),stcurrproc)
+	reportcterror("Code Gen",str,(p|p.pos|qpos),stcurrproc)
 end
 
 global proc serror(ichar mess)=
@@ -6576,9 +6576,9 @@ end
 
 global proc serror_s(ichar mess,param)=
 	[300]char str
-	strcpy(&.str,mess)
-	strcat(&.str," ")
-	strcat(&.str,param)
+	strcpy(str,mess)
+	strcat(str," ")
+	strcat(str,param)
 	reportcterror("Syntax",str,lx.pos,stcurrproc)
 end
 
@@ -6591,9 +6591,9 @@ end
 
 global proc rxerror_s(ichar mess,param, unit p=nil)=
 	[300]char str
-	strcpy(&.str,mess)
-	strcat(&.str," ")
-	strcat(&.str,param)
+	strcpy(str,mess)
+	strcat(str," ")
+	strcat(str,param)
 	rxerror(str,p)
 end
 
@@ -6732,10 +6732,10 @@ global function createavname:unit=
 	[32]char str
 	ichar name
 
-!	sprintf(&.str,"av$%d",++nextavindex)
+!	sprintf(str,"av$%d",++nextavindex)
 	print @str, "av$",,++nextavindex
 
-	name:=pcm_copyheapstring(&.str)
+	name:=pcm_copyheapstring(str)
 	p:=addnamestr(name)
 
 	return createname(p)
@@ -6839,12 +6839,12 @@ proc jeval(unit p)=
 
 	when jstringconst then
 		if p.slength>str.len/2 then
-			strcpy(&.str,"LONGSTR)")
+			strcpy(str,"LONGSTR)")
 		else
-			convertstring(p.svalue,&.str)
+			convertstring(p.svalue,str)
 		fi
 		additem("""")
-		additem(&.str)
+		additem(str)
 		additem("""")
 !
 	when jname then
@@ -6948,16 +6948,16 @@ proc jeval(unit p)=
 		additem(")")
 
 	elsif jflags[p.tag]=2 then
-		strcpy(&.str,getopcname(p.tag))
+		strcpy(str,getopcname(p.tag))
 		additem("(")
 		jevallist(p.a)
-		additem(&.str)
+		additem(str)
 		jevallist(p.b)
 		additem(")")
 
 	elsif jflags[p.tag]=1 then
-		strcpy(&.str,getopcname(p.tag))
-		additem(&.str)
+		strcpy(str,getopcname(p.tag))
+		additem(str)
 		additem("(")
 		jevallist(p.a)
 		additem(")")
@@ -7199,8 +7199,8 @@ global proc checksymbol(int symbol)=
 	[100]char str
 
 	if lx.symbol<>symbol then
-		fprint @&.str,"# expected, not #",symbolnames[symbol]:"m",symbolnames[lx.symbol]:"m"
-		serror(&.str)
+		fprint @str,"# expected, not #",symbolnames[symbol]:"m",symbolnames[lx.symbol]:"m"
+		serror(str)
 	fi
 end
 
@@ -7895,7 +7895,7 @@ function readfileline(ichar s)ichar =
 
 	t^:=0
 
-	readln @&.str
+	readln @&str[1]
 	return s
 end
 
@@ -9178,7 +9178,7 @@ function readterm:unit=
 		if length>8 then
 			serror("char const too long")
 		fi
-		memcpy(&.ustr.str, lx.svalue, length)
+		memcpy(ustr.str, lx.svalue, length)
 		p:=createintunit(ustr.sa)
 		lex()
 
@@ -10029,9 +10029,9 @@ proc checkend(int endkwd1, endkwd2=0, startline=0)=
 error:
 			strcpy(str, "Mismatched end ")
 			if startline then
-				fprint @(&.str+strlen(&.str)), " (from line #)", startline
+				fprint @(&str[1]+strlen(str)), " (from line #)", startline
 			fi
-			serror(&.str)
+			serror(str)
 		fi
 	fi
 
@@ -11720,21 +11720,21 @@ function readcompilervar:unit=
 		strcpy(str, strint(lx.lineno))
 
 	when cv_modulename then
-		strcpy(&.str, currmodule.name)
+		strcpy(str, currmodule.name)
 
 	when cv_filename then
-!		strcpy(&.str, modules[currmoduleno].filename)
-!		strcpy(&.str, currmodule.name)
-		strcpy(&.str, currmodule.filespec)
+!		strcpy(str, modules[currmoduleno].filename)
+!		strcpy(str, currmodule.name)
+		strcpy(str, currmodule.filespec)
 	when cv_function then
-		strcpy(&.str, (stcurrproc|stcurrproc.name|"<none>"))
+		strcpy(str, (stcurrproc|stcurrproc.name|"<none>"))
 	when cv_date then
 		os_getsystime(&tm)
-		fprint @&.str, "#-#-#", tm.day, monthnames[tm.month], tm.year:"4"
+		fprint @str, "#-#-#", tm.day, monthnames[tm.month], tm.year:"4"
 !
 	when cv_time then
 		os_getsystime(&tm)
-		fprint @&.str, "#:#:#", tm.hour:"2", tm.minute:"z2", tm.second:"z2"
+		fprint @str, "#:#:#", tm.hour:"2", tm.minute:"z2", tm.second:"z2"
 
 !	when jcvversion then x:=compilerversion
 !	when jcvpclversion then x:=pclversion
@@ -11742,7 +11742,7 @@ function readcompilervar:unit=
 		serror("compiler var not impl")
 	esac
 
-	return createstringunit(pcm_copyheapstring(&.str))
+	return createstringunit(pcm_copyheapstring(str))
 end
 
 function readpair(int tag, pclop=knop)unit p=
@@ -15463,7 +15463,7 @@ global  int moutdev
 global  ref int minchan		!actual file handles
 global  filehandle moutchan
 global  varrec minvar		!strio: vars to be used as source or dest
-global  varrec moutvar		!str: used for sprint(=string) and @&.string (=refvar)
+global  varrec moutvar		!str: used for sprint(=string) and @string (=refvar)
 
 !I/O Constants: print/read i/o channels
 global const std_io	= 0		!console i/o
@@ -15902,7 +15902,7 @@ function readhex(ref char sold,int length,variant dest)ref char =
 	od
 
 	if length<=maxstrlen then	! use local buffer
-		s:=&.str
+		s:=str
 		nalloc:=0
 	else
 		nalloc:=length+1
@@ -15982,7 +15982,7 @@ function readbin(ref char sold,int length,variant dest)ref char =
 	od
 
 	if length<=maxstrlen then	! use local buffer
-		s:=&.str
+		s:=str
 		nalloc:=0
 	else
 		nalloc:=length+1
@@ -16242,12 +16242,12 @@ proc strtoreal(ichar s,int length,variant dest)=
 		dest.xvalue:=0.0
 		return
 	fi
-	memcpy(&.str,s,length)
+	memcpy(str,s,length)
 	str[length+1]:=0
 
 	itemerror:=0
 
-	if sscanf(&.str,"%lf%n", &x, &numlength)=0 or numlength<>length then
+	if sscanf(str,"%lf%n", &x, &numlength)=0 or numlength<>length then
 		if numlength=length then x:=0.0 fi
 		itemerror:=1
 	fi
@@ -16516,7 +16516,7 @@ proc domultichar (ref char p,int n,ref char dest,ref fmtrec fmt) =
 	ref char q
 	int i,nchars
 
-	q:=&.str
+	q:=str
 
 	nchars:=n
 
@@ -16579,7 +16579,7 @@ global proc pch_strtoval(variant p,variant fmt,variant dest) =
 	byte oldmutable
 	object q
 	[1024]char str
-	ref char s:=&.str
+	ref char s:=str
 
 	q:=p.objptr
 
@@ -18159,8 +18159,8 @@ function fixmode2(ref strec owner, int m)int=
 		ttxmap[m]:=e.mode
 		return e.mode
 	else
-		fprint @&.str,"# in module #, line:#",d.name,modules[ttxmoduleno[m]].name
-		rxerror_s("2:Can't resolve type: #",&.str)
+		fprint @str,"# in module #, line:#",d.name,modules[ttxmoduleno[m]].name
+		rxerror_s("2:Can't resolve type: #",str)
 	fi
 	return 0
 end

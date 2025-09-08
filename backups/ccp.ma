@@ -1309,7 +1309,7 @@ global func stropnd(pcl p)ichar=
 	when string_opnd then
 		if (length:=strlen(p.svalue))<str.len/2 then
 			strcpy(str,"""")
-			convertstring(p.svalue,&.str+1)
+			convertstring(p.svalue, &str[1]+1)
 			strcat(str,"""")
 
 		else
@@ -3972,9 +3972,9 @@ proc doshowpcl(pcl p)=
 	case p.opcode
 	when kproc, ktcproc, kretproc, kendproc, kistatic, kzstatic, kdata then
 	else
-		strcpy(&.str,"                       ")
-		strcat(&.str,strpclstr(p, str.len))
-		mgencomment(PCM_COPYHEAPSTRING(&.str))
+		strcpy(str,"                       ")
+		strcat(str,strpclstr(p, str.len))
+		mgencomment(PCM_COPYHEAPSTRING(str))
 	esac
 end
 
@@ -8217,7 +8217,7 @@ global func mgenextname(ichar s)mclopnd=
 	static [20]psymbol table
 	static int ntable
 
-	strcpy(&.str,s)
+	strcpy(str,s)
 	str[strlen(s)]:=0			!lose final *
 
 	d:=findnamesym(str)
@@ -8225,7 +8225,7 @@ global func mgenextname(ichar s)mclopnd=
 	if not d then
 		d:=pcm_allocnfz(pstrec.bytes)
 
-		d.name:=pcm_copyheapstring(&.str)
+		d.name:=pcm_copyheapstring(str)
 		d.id:=import_id
 		d.imported:=1
 		addnamesym(d)
@@ -9052,7 +9052,7 @@ end
 global func stropndstack(int indent=0)ichar=
 	static [512]char str
 	[512]char str2
-	ichar s:=&.str, t
+	ichar s:=str, t
 
 	if indent then
 		fprint @s, "="*40 + "#:(", NOPERANDS
@@ -10444,8 +10444,8 @@ global proc initlib(int nlabels)=
 
 !CPL "SETTING LAB",I,"TO",D
 		d.labelno:=i
-		fprint @&.str,"l#",i
-		d.name:=pcm_copyheapstring(&.str)
+		fprint @str,"l#",i
+		d.name:=pcm_copyheapstring(str)
 		d.reftype:=fwd_ref
 	od
 end
@@ -12542,7 +12542,7 @@ global proc strmcl(ref mclrec mcl)=
 		else
 			recase m_labelname
 		fi
-		asmstr(&.str)
+		asmstr(str)
 		return
 
 	when m_define then
@@ -12584,37 +12584,37 @@ global proc strmcl(ref mclrec mcl)=
 
 	case opcode
 	when m_jmpcc then
-		print @&.opcname,"j",,asmcondnames[cond]
+		print @opcname,"j",,asmcondnames[cond]
 
 	when m_setcc then
-		print @&.opcname,"set",,asmcondnames[cond]
+		print @opcname,"set",,asmcondnames[cond]
 
 	when m_cmovcc then
-		print @&.opcname,"cmov",,asmcondnames[cond]
+		print @opcname,"cmov",,asmcondnames[cond]
 
 	when m_andx then
-		strcpy(&.opcname,"and")
+		strcpy(opcname,"and")
 	when m_orx then
-		strcpy(&.opcname,"or")
+		strcpy(opcname,"or")
 	when m_xorx then
-		strcpy(&.opcname,"xor")
+		strcpy(opcname,"xor")
 	when m_notx then
-		strcpy(&.opcname,"not")
+		strcpy(opcname,"not")
 
 	ELSIF OPCODE>M_HALT THEN
-		STRCPY(&.OPCNAME,STRINT(OPCODE))
+		STRCPY(OPCNAME,STRINT(OPCODE))
 
 	else
-		strcpy(&.opcname,mclnames[opcode]+2)
+		strcpy(opcname,mclnames[opcode]+2)
 	esac
 
-	ipadstr(&.opcname,(opcode=m_dq|4|10)," ")
+	ipadstr(opcname,(opcode=m_dq|4|10)," ")
 
-	ipadstr(&.str,4)
+	ipadstr(str,4)
 
-	strcat(&.str,&.opcname)
+	strcat(str,opcname)
 
-	asmstr(&.str)
+	asmstr(str)
 
 	if a and b then		!2 operands
 		sizepref:=needsizeprefix(opcode,a,b)
@@ -12687,54 +12687,54 @@ global func mstropnd(mclopnd a,int sizeprefix=0,opcode=0)ichar=
 	when a_imm then
 		if opcode=m_dq and a.valtype=intimm_val then
 			if a.value in 0..9 then
-				strcat(&.str,strint(a.value))
+				strcat(str,strint(a.value))
 			else
-				strcat(&.str,"0x")
-				strcat(&.str,strword(a.value,"H"))
+				strcat(str,"0x")
+				strcat(str,strword(a.value,"H"))
 			fi
 		else
-			strcpy(&.str,strvalue(a))
+			strcpy(str,strvalue(a))
 		fi
 
 	when a_mem then
 		case a.valtype
 		when intimm_val then
-			strcpy(&.str,strint(a.value))
+			strcpy(str,strint(a.value))
 		when realimm_val then
-			strcpy(&.str,strreal(a.xvalue))
+			strcpy(str,strreal(a.xvalue))
 		when realmem_val then
-			fprint @&.str,"M#",a.xvalue
+			fprint @str,"M#",a.xvalue
 		esac
 
-		strcat(&.str,getsizeprefix(a.size,sizeprefix))
-		strcat(&.str,"[")
+		strcat(str,getsizeprefix(a.size,sizeprefix))
+		strcat(str,"[")
 
 		plus:=""
 		if a.reg then
-			strcat(&.str,strreg(a.reg,8))
+			strcat(str,strreg(a.reg,8))
 			plus:=" + "
 		fi
 		if a.regix then
-			strcat(&.str,plus)
-			strcat(&.str,strreg(a.regix,8))
+			strcat(str,plus)
+			strcat(str,strreg(a.regix,8))
 			plus:=" + "
 
 			if a.scale>1 then
-				strcat(&.str,"*")
-				strcat(&.str,strint(a.scale))
+				strcat(str,"*")
+				strcat(str,strint(a.scale))
 			fi
 		fi
 
 		if a.valtype in [def_val,label_val, temp_val] then
 			if plus^ then
-				strcat(&.str,plus)
+				strcat(str,plus)
 			fi
-			strcat(&.str,strvalue(a))
+			strcat(str,strvalue(a))
 	    elsif offset:=a.offset then
-			print @&.str2,offset:" + "
-			strcat(&.str,&.str2)
+			print @str2,offset:" + "
+			strcat(str,str2)
 		fi
-		strcat(&.str,"]")
+		strcat(str,"]")
 
 	when a_xreg then
 		return strxreg(a.reg,a.size)
@@ -12744,7 +12744,7 @@ global func mstropnd(mclopnd a,int sizeprefix=0,opcode=0)ichar=
 		return "<BAD OPND>"
 	esac
 
-	return &.str
+	return str
 end
 
 global func strvalue(mclopnd a)ichar=
@@ -12757,39 +12757,39 @@ global func strvalue(mclopnd a)ichar=
 	def:=a.def
 	value:=a.value
 
-	strcpy(&.str,"")
+	strcpy(str,"")
 
 	case a.valtype
 	when def_val then
-		strcat(&.str,getdispname(def))
+		strcat(str,getdispname(def))
 
 	addoffset:
 		if offset:=a.offset then
-			print @&.str2,(offset>0|"+"|""),,offset
-			strcat(&.str,&.str2)
+			print @str2,(offset>0|"+"|""),,offset
+			strcat(str,str2)
 		fi
 
 	when intimm_val then
-		strcat(&.str,strint(value))
+		strcat(str,strint(value))
 
 	when realimm_val then
-		print @&.str,a.xvalue:"20.20"
+		print @str,a.xvalue:"20.20"
 
 	when realmem_val then
-		strcat(&.str,"M")
-		strcat(&.str,strreal(a.xvalue))
+		strcat(str,"M")
+		strcat(str,strreal(a.xvalue))
 
 	when stringimm_val then
-		strcat(&.str,"""")
-		strcat(&.str,a.svalue)
-		strcat(&.str,"""")
+		strcat(str,"""")
+		strcat(str,a.svalue)
+		strcat(str,"""")
 
 	when name_val then
-		strcat(&.str,a.svalue)
+		strcat(str,a.svalue)
 
 	when label_val then
-		strcat(&.str,"L")
-		strcat(&.str,strint(a.labelno))
+		strcat(str,"L")
+		strcat(str,strint(a.labelno))
 		goto addoffset
 
 	when temp_val then
@@ -12800,7 +12800,7 @@ global func strvalue(mclopnd a)ichar=
 	esac
 
 !STRCAT(STR, VALTYPENAMES[A.VALTYPE])
-	return &.str
+	return str
 
 end
 
@@ -12829,12 +12829,12 @@ global func getregname(int reg,size=8)ichar=
 	when rframe then rs:="fp"
 	when rstack then rs:="sp"
 	else
-		getstrint(reg-r0,&.str2)
-		rs:=&.str2
+		getstrint(reg-r0,str2)
+		rs:=str2
 	esac
 
-	print @&.str,prefix[size2],,rs
-	return &.str
+	print @str,prefix[size2],,rs
+	return str
 end
 
 global func getxregname(int reg,size=8)ichar=
@@ -12842,8 +12842,8 @@ global func getxregname(int reg,size=8)ichar=
 
 	if reg=rnone then return "-" fi
 
-	print @&.str,"XMM",,reg-xr0
-	return &.str
+	print @str,"XMM",,reg-xr0
+	return str
 end
 
 proc asmstr(ichar s)=
@@ -13156,14 +13156,14 @@ proc loadlibs=
 	[300]char filename
 
 	for i to nplibfiles when plibfiles[i]^<>'$' do
-		strcpy(&.filename, plibfiles[i])
-		hinst:=os_getdllinst(&.filename)
+		strcpy(filename, plibfiles[i])
+		hinst:=os_getdllinst(filename)
 		if hinst=0 then
-			cpl "File:",&.filename
+			cpl "File:",filename
 			axerror("Can't load search lib")
 		fi
 		libinsttable[i]:=hinst
-		libinstnames[i]:=pcm_copyheapstring(&.filename)
+		libinstnames[i]:=pcm_copyheapstring(filename)
 	od
 end
 
@@ -13235,12 +13235,12 @@ func extractlibname(ichar name, int &libno,moduleno)ichar=
 
 	while s^ do
 		if s^='.' then			!assume lib.name
-			memcpy(&.str,name,s-name)
+			memcpy(str,name,s-name)
 			str[s-name+1]:=0
-			strcat(&.str,".dll")
+			strcat(str,".dll")
 
 			for i:=1 to ndlls do
-				if eqstring(&.str,dlltable[i].name) then
+				if eqstring(str,dlltable[i].name) then
 					libno:=i
 					++dlltable[libno].nprocs
 					return (name2|name2|s+1)
@@ -13249,7 +13249,7 @@ func extractlibname(ichar name, int &libno,moduleno)ichar=
 			if ndlls>=maxlibs then axerror("Too many libs") fi
 			libno:=++ndlls
 
-			dlltable[libno].name:=pcm_copyheapstring(&.str)
+			dlltable[libno].name:=pcm_copyheapstring(str)
 			dlltable[libno].nprocs:=1
 			return (name2|name2|s+1)
 		fi
@@ -13277,12 +13277,12 @@ func extractlibname(ichar name, int &libno,moduleno)ichar=
 	fi
 
 !first use of this lib
-	strcpy(&.str, plibfiles[n])
-	strcat(&.str,".dll")
+	strcpy(str, plibfiles[n])
+	strcat(str,".dll")
 	if ndlls>=maxlibs then axerror("2:Too many libs") fi
 	libno:=++ndlls
 
-	dlltable[libno].name:=pcm_copyheapstring(&.str)
+	dlltable[libno].name:=pcm_copyheapstring(str)
 	dlltable[libno].nprocs:=1
 	libnotable[n]:=libno
 
@@ -15755,13 +15755,13 @@ proc do_loadmodule=
 	modulename:=extractbasefile(inputfile)
 	stmodule:=createdupldef(stprogram, addnamestr(modulename), moduleid)
 
-	strcpy(&.path,extractpath(inputfile))
+	strcpy(path,extractpath(inputfile))
 	if path[1] then
 		++nsearchdirs
 		for i:=nsearchdirs downto 2 do
 			searchdirs[i]:=searchdirs[i-1]
 		od
-		searchdirs[1]:=ref char(pcm_copyheapstring(&.path))
+		searchdirs[1]:=ref char(pcm_copyheapstring(path))
 	fi
 
 	loadtime:=gettiming()
@@ -15883,11 +15883,11 @@ proc closelogfile=
 	fclose(cast(logdev))
 CPL "PRESS KEY"; STOP WHEN OS_GETCH()=27
 
-	print @&.str,"\\m\\scripts\\med.bat ",logfile
+	print @str,"\\m\\scripts\\med.bat ",logfile
 
 
 	if checkfile("cc.m") then
-		os_execwait(&.str,0,nil)
+		os_execwait(str,0,nil)
 	else
 		println "Diagnostic outputs written to",logfile
 	fi
@@ -16134,9 +16134,9 @@ proc do_option(int sw, ichar value)=
 		case (value+length-1)^
 		when '\\', '/' then
 		else
-			strcpy(&.str,value)
-			strcat(&.str,"/")
-			value:=&.str
+			strcpy(str,value)
+			strcat(str,"/")
+			value:=str
 		esac
 
 		includepaths[++nincludepaths]:=pcm_copyheapstring(value)
@@ -16960,16 +16960,16 @@ global tabledata []ichar stnames, []i32 stsymbols, []i32 stsubcodes=
 
 	("_Bool",		ktypespecsym,	ts_bool),
 
-	("int8",		kstdtypesym,	ti8),
-	("int16",		kstdtypesym,	ti16),
-	("int32",		kstdtypesym,	ti32),
-	("int64",		kstdtypesym,	ti64),
-
-	("uint8",		kstdtypesym,	tu8),
-	("uint16",		kstdtypesym,	tu16),
-	("uint32",		kstdtypesym,	tu32),
-	("uint64",		kstdtypesym,	tu64),
-
+!	("int8",		kstdtypesym,	ti8),
+!	("int16",		kstdtypesym,	ti16),
+!	("int32",		kstdtypesym,	ti32),
+!	("int64",		kstdtypesym,	ti64),
+!
+!	("uint8",		kstdtypesym,	tu8),
+!	("uint16",		kstdtypesym,	tu16),
+!	("uint32",		kstdtypesym,	tu32),
+!	("uint64",		kstdtypesym,	tu64),
+!
 	("__DATE__",	predefmacrosym,	pdm_date),
 	("__FILE__",	predefmacrosym,	pdm_file),
 	("__LINE__",	predefmacrosym,	pdm_line),
@@ -17943,14 +17943,14 @@ proc readrealnumber(ref char pstart,intstart, int intlen, base)=
 
 	realstr[pref+intlen+fractlen+1]:=0
 
-	print @&.expstr,(base=10|"e"|"p"),,expon
+	print @expstr,(base=10|"e"|"p"),,expon
 
-	strcat(&.realstr,&.expstr)
+	strcat(realstr,expstr)
 	if base<>10 then
 		lxerror("Non-base-10 floats temporarily unavailable")
 	fi
 
-	x:=strtod(&.realstr,nil)
+	x:=strtod(realstr,nil)
 
 	nextlx.symbol:=realconstsym
 	nextlx.subcode:=tr64
@@ -18253,7 +18253,7 @@ function dolexdirective:int=
 
 		if nextlx.symbol=ltsym then
 			syshdr:=1
-			p:=&.filename
+			p:=filename
 
 			if allowmacros then
 
@@ -18287,19 +18287,19 @@ function dolexdirective:int=
 
 		elsif nextlx.symbol=stringconstsym then
 			syshdr:=0
-			strcpy(&.filename,nextlx.svalue)
+			strcpy(filename,nextlx.svalue)
 		else
 			lxerror("include?")
 		fi
 		lexm()
 
 	IF FSHOWINCLUDES THEN
-		PRINTLN "INCLUDE",&.filename,"FROM",sourcefilepaths[getfileno()],nextlx.lineno,
+		PRINTLN "INCLUDE",filename,"FROM",sourcefilepaths[getfileno()],nextlx.lineno,
 			=nsourcefiles
 	FI
 	++NINCLUDES
 
-		stacksourcefile(&.filename,syshdr)
+		stacksourcefile(filename,syshdr)
 
 	when definedir then
 		dodefine()
@@ -18852,14 +18852,14 @@ proc stacksourcefile(ichar file,int syshdr)=
 
 	fullpath[1]:=0
 	if lx_stackindex>1 then
-		strcpy(&.fullpath,headerpathlist[lx_stackindex-1])
+		strcpy(fullpath,headerpathlist[lx_stackindex-1])
 	fi
 
 	if headerpath[1] then
-		strcat(&.fullpath,pcm_copyheapstring(&.headerpath))
+		strcat(fullpath,pcm_copyheapstring(headerpath))
 	fi
 
-	headerpathlist[lx_stackindex]:=pcm_copyheapstring(&.fullpath)
+	headerpathlist[lx_stackindex]:=pcm_copyheapstring(fullpath)
 
 	info.startptr:=lxstart
 	info.sptr:=lxsptr
@@ -18899,12 +18899,12 @@ function getsourcefile(ichar file,int syshdr)int=
 
 	headerpath[1]:=0
 
-	strcpy(&.filespec,file)
-	convlcstring(&.filespec)
+	strcpy(filespec,file)
+	convlcstring(filespec)
 
 !check to see if already loaded
 	for i:=1 to nsourcefiles do
-		if eqstring(&.filespec,sourcefilenames[i]) then
+		if eqstring(filespec,sourcefilenames[i]) then
 			return i
 		fi
 	od
@@ -18912,9 +18912,9 @@ function getsourcefile(ichar file,int syshdr)int=
 !see if a builtin header
 
 	if dointheaders then
-		hdrtext:=findheader(&.filespec)
+		hdrtext:=findheader(filespec)
 		if hdrtext then
-			return loadbuiltin(&.filespec,hdrtext)
+			return loadbuiltin(filespec,hdrtext)
 		fi
 	fi
 
@@ -18922,7 +18922,7 @@ function getsourcefile(ichar file,int syshdr)int=
 		return loadbuiltin(filespec, strinclude(mcchdr))
 	fi
 
-	strcpy(&.headerpath,extractpath(file))
+	strcpy(headerpath,extractpath(file))
 
 	if headerpath[1] then
 		if headerpath[1]='/' or headerpath[2]=':' and headerpath[3]='/' then
@@ -18934,21 +18934,21 @@ function getsourcefile(ichar file,int syshdr)int=
 	fi
 
 	for i:=lx_stackindex downto 1 do
-		strcpy(&.filespec,headerpathlist[i])
-		strcat(&.filespec,file)
+		strcpy(filespec,headerpathlist[i])
+		strcat(filespec,file)
 
-		if checkfile(&.filespec) then
-			return loadsourcefile(&.filespec,file)
+		if checkfile(filespec) then
+			return loadsourcefile(filespec,file)
 		fi
 	od
 
 	for i to nsearchdirs do
-		strcpy(&.filespec,searchdirs[i])
-		strcat(&.filespec,file)
+		strcpy(filespec,searchdirs[i])
+		strcat(filespec,file)
 
-		if checkfile(&.filespec) then
-			strcpy(&.headerpath,extractpath(&.filespec))
-			return loadsourcefile(&.filespec,file)
+		if checkfile(filespec) then
+			strcpy(headerpath,extractpath(filespec))
+			return loadsourcefile(filespec,file)
 		fi
 	od
 
@@ -19041,7 +19041,7 @@ proc lxreadstring(int termchar,int fwide)=
 		ws:=dest					!for wide only
 		useheap:=0
 	else							!for headers that can be re-read, form string externally
-		dest:=&.str
+		dest:=str
 		ws:=dest					!for wide only
 		useheap:=1
 	fi
@@ -19146,7 +19146,7 @@ proc lxreadstring(int termchar,int fwide)=
 		nextlx.length:=length
 
 		nextlx.svalue:=pcm_alloc(length+1)
-		memcpy(nextlx.svalue,&.str,length+1)
+		memcpy(nextlx.svalue,str,length+1)
 	else
 		nextlx.length:=dest-nextlx.svalue
 	fi
@@ -20533,18 +20533,18 @@ proc expandpredefmacro(int pdmcode,ref tokenrec tk,int lineno)=
 	when pdm_date then
 		os_getsystime(&tm)
 
-		fprint @&.str, "#-#-#",tm.day,monthnames[tm.month],tm.year:"4"
+		fprint @str, "#-#-#",tm.day,monthnames[tm.month],tm.year:"4"
 
 		tk.symbol:=stringconstsym
-		tk.svalue:=pcm_copyheapstring(&.str)
+		tk.svalue:=pcm_copyheapstring(str)
 
 	when pdm_time then
 		os_getsystime(&tm)
 
-		fprint @&.str,"#:#:#",tm.hour:"2",tm.minute:"z2",tm.second:"z2"
+		fprint @str,"#:#:#",tm.hour:"2",tm.minute:"z2",tm.second:"z2"
 
 		tk.symbol:=stringconstsym
-		tk.svalue:=pcm_copyheapstring(&.str)
+		tk.svalue:=pcm_copyheapstring(str)
 	when pdm_file then
 		tk.symbol:=stringconstsym
 		fileno:=getfilenox(tk)
@@ -25093,24 +25093,24 @@ GERROR("GENIDATA/WSTRING2")
 			d:=a.def
 			case d.nameid
 			when staticid then
-				strcpy(&.str,"`")
+				strcpy(str,"`")
 				if d.scope=function_scope then
-					strcat(&.str,currproc.name)
-					strcat(&.str,",")
+					strcat(str,currproc.name)
+					strcat(str,",")
 				fi
-				strcat(&.str,d.name)
-				strcat(&.str,"+")
+				strcat(str,d.name)
+				strcat(str,"+")
 
-				getstrint(b.value, &.str2)
+				getstrint(b.value, str2)
 
-				strcat(&.str,&.str2)
-				pc_gen(kdata, genname(&.str))
+				strcat(str,str2)
+				pc_gen(kdata, genname(str))
 			else
 				gerror("Add/Idata &frame")
 			esac	
 		elsif a.tag=jconst and b.tag=jconst and ttbasetype[a.mode]=tref then		!ASSUME REF+REF
-			print @&.str,a.value,,"+",,b.value
-			pc_gen(kdata, genname(&.str))
+			print @str,a.value,,"+",,b.value
+			pc_gen(kdata, genname(str))
 
 		else
 			gerror("1:Runtime or unsupported expr in static data")
@@ -26719,11 +26719,11 @@ global function getoptocode(int opc)int=		!GETOPTOCODE
 
 !assume memoising table not filled in for this opc
 
-	strcpy(&.str,jtagnames[opc])					!"add" etc
-	strcat(&.str,"to")							!"addto" etc
+	strcpy(str,jtagnames[opc])					!"add" etc
+	strcat(str,"to")							!"addto" etc
 
 	for i:=0 to jtagnames.upb do
-		if eqstring(jtagnames[i],&.str) then
+		if eqstring(jtagnames[i],str) then
 			opctotable[opc]:=i
 			return i
 		fi
@@ -26746,9 +26746,9 @@ end
 global function nextautotype:ichar=
 	static [32]char str
 
-!sprintf(&.str,"$T%d",i32(++autotypeno))
-	print @&.str,"$T",,++autotypeno
-	return &.str
+!sprintf(str,"$T%d",i32(++autotypeno))
+	print @str,"$T",,++autotypeno
+	return str
 end
 
 global function createconstmode(int m)int=
@@ -26838,10 +26838,10 @@ global function getautofieldname:ref strec=
 	[32]char str
 	ichar name
 
-!sprintf(&.str,"$F%d",i32(++nextafindex))
-	print @&.str,"$F",,++nextafindex
+!sprintf(str,"$F%d",i32(++nextafindex))
+	print @str,"$F",,++nextafindex
 
-	name:=pcm_copyheapstring(&.str)
+	name:=pcm_copyheapstring(str)
 	return addnamestr(name)
 end
 
@@ -26893,8 +26893,8 @@ global func convertstringc(ichar s, t,int length=-1)int=
 			t++^:='v'
 		else
 			if c<32 or c>=127 then
-!			sprintf(&.str,"\\%03o",i32(c))
-				fprint @&.str,"\\#o",c:"z3"
+!			sprintf(str,"\\%03o",i32(c))
+				fprint @str,"\\#o",c:"z3"
 				t++^:=str[1]
 				t++^:=str[2]
 				t++^:=str[3]
@@ -26918,9 +26918,9 @@ global function getopcjname(int opc)ichar=		!GETOPCJNAME
 	name:=jtagnames[opc]
 	s:=strchr(name,' ')
 	if s then
-		memcpy(&.str,name,s-name)
+		memcpy(str,name,s-name)
 		str[s-name+1]:=0
-		return &.str
+		return str
 	else
 		return name
 	fi
@@ -26929,17 +26929,17 @@ end
 global function strmode(int m,expand=1)ichar=		!STRMODE
 	static [16384]char str
 
-	istrmode(m,expand,&.str)
+	istrmode(m,expand,str)
 
-	return &.str
+	return str
 end
 
 global function strmode2(int m,expand=1)ichar=		!STRMODE
 	static [16384]char str
 
-	istrmode(m,expand,&.str)
+	istrmode(m,expand,str)
 
-	return &.str
+	return str
 end
 
 global proc istrmode(int m,expand=1,ichar dest)=		!ISTRMODE
@@ -27037,13 +27037,13 @@ global function typename(int m)ichar=
 	basem:=ttbasetype[m]
 	case basem
 	when tstruct,tunion then
-		strcpy(&.str,(basem=tstruct|"struct "|"union "))
+		strcpy(str,(basem=tstruct|"struct "|"union "))
 		if ttnamedef[m] then
-			strcat(&.str,ttnamedef[m].name)
-			strcat(&.str,".")
-			strcat(&.str,strint(ttnamedef[m].blockno))
+			strcat(str,ttnamedef[m].name)
+			strcat(str,".")
+			strcat(str,strint(ttnamedef[m].blockno))
 		fi
-		return &.str
+		return str
 	when tarray then
 		return "<array>"
 	when tenum then
@@ -27053,9 +27053,9 @@ global function typename(int m)ichar=
 		return "<enum>"
 	else
 		if ttconst[m] then
-			strcpy(&.str,"const ")
-			strcat(&.str,stdtypenames[basem])
-			return &.str
+			strcpy(str,"const ")
+			strcat(str,stdtypenames[basem])
+			return str
 		fi
 		return stdtypenames[basem]
 	esac
@@ -27171,14 +27171,14 @@ global proc checksymbol(int symbol)=
 	[256]char str
 
 	if lx.symbol<>symbol then
-		fprint @&.str,"# expected, not #",symbolnames[symbol],symbolnames[lx.symbol]
+		fprint @str,"# expected, not #",symbolnames[symbol],symbolnames[lx.symbol]
 
 	if lx.symbol=namesym then
-		strcat(&.str," \"")
-		strcat(&.str,getstname(lx.symptr))
-		strcat(&.str,"\"")
+		strcat(str," \"")
+		strcat(str,getstname(lx.symptr))
+		strcat(str,"\"")
 	fi
-		serror(&.str)
+		serror(str)
 	fi
 end
 
@@ -27467,9 +27467,9 @@ end
 
 global function getstname(ref strec d)ichar=
 	static [256]char name
-	memcpy(&.name,d.name,d.namelen)
+	memcpy(name,d.name,d.namelen)
 	name[d.namelen+1]:=0
-	return &.name
+	return name
 end
 
 global function isrealcc(int m)int=
@@ -27590,16 +27590,16 @@ end
 
 global proc serror_ss(ichar mess,a,b)=
 	[256]char str
-!	sprintf(&.str,mess,a,b)
+!	sprintf(str,mess,a,b)
 	fprint @str, mess,a,b
-	serror_gen(&.str)
+	serror_gen(str)
 end
 
 global proc serror_s(ichar mess,a)=
 	[256]char str
-!	sprintf(&.str,mess,a)
+!	sprintf(str,mess,a)
 	fprint @str, mess, a
-	serror_gen(&.str)
+	serror_gen(str)
 end
 
 global proc terror_gen(ichar mess)=
@@ -27623,14 +27623,14 @@ global proc terror_s(ichar mess,a)=
 	[256]char str
 
 	fprint @str, mess, a
-	terror_gen(&.str)
+	terror_gen(str)
 end
 
 global proc terror_ss(ichar mess,a,b)=
 	[256]char str
 
 	fprint @str, mess, a, b
-	terror_gen(&.str)
+	terror_gen(str)
 end
 
 global proc gerror_gen(ichar mess,ref unitrec p=nil)=
@@ -27662,7 +27662,7 @@ global proc gerror_s(ichar mess,s,ref unitrec p=nil)=
 	[256]char str
 
 	fprint @str, mess, s
-	gerror_gen(&.str,p)
+	gerror_gen(str,p)
 end
 
 global function nextpoweroftwo(int x)int=
@@ -27681,7 +27681,7 @@ global proc loaderror(ichar mess,mess2="")=
 	[512]char str
 
 	fprint @str, mess, mess2
-	println "Load Error:",&.str
+	println "Load Error:",str
 	println "Stopping"
 	stop 45
 end
@@ -27889,7 +27889,7 @@ global function findheader(ichar name)ichar=
 	ichar s,t
 
 	if strchr(name,'\\') then
-		s:=name; t:=&.newname
+		s:=name; t:=newname
 		while s^ do
 			if s^='\\' then
 				t++^:='/'
@@ -27899,7 +27899,7 @@ global function findheader(ichar name)ichar=
 			++s
 		od
 		t^:=0
-		name:=&.newname
+		name:=newname
 	fi
 
 	for i:=1 to stdhdrnames.len do
