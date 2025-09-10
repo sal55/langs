@@ -7,9 +7,8 @@ This github site is used for associated resources such as docs, charts, source b
 M          Lower level systems language
 Q          Dynamic scripting language
 AA         x64-subset assembler using my syntax
-PCL        Stack-based IL used by MM compilers (this can be a complete standalone language)
-TCL        3AC-based IL used by experimental BB compiler (an internal language that can
-           only be dumped to textual form).
+PCL        Stack-based IL used by MM and BCC compilers (this can be a complete standalone language)
+
 C-subset   The partly non-standard subset of C used by the BCC/MCC project. The subset is also
            the output of the MC product (MM configured with a C backend).
 ````
@@ -17,9 +16,7 @@ C-subset   The partly non-standard subset of C used by the BCC/MCC project. The 
 ### Active Projects and Tools
 ````
 Tool    Folder
-BB      BX        (In development) M compiler using new TCL
-MCC     DX        (In development) C-subset compiler using new TCL
-
+BB      BX        (In development) M compiler. This works without an IL
 MM      MX        M compiler using PCL (configured for X64/Windows target)
 QQ      QX        Bytecode compiler + interpreter for Q. Runs mostly on Windows but can also run
                   to some extent on Linux
@@ -29,28 +26,14 @@ RUNMX   MX        Stub program for MX binaries produced by MM/AA/BCC/PC
 ZZ      ZX        Z80 Assembler (and, sometime, emulator)
 ````
 
-### TCL: Planned Backend Targets
-````               
-          OS             Outputs supported
-  x64R    W       0%    .exe .dll .obj .asm .nasm .mx Run
-  x64M    W      99%    .exe .dll .obj .asm .nasm .mx Run
-  LinC    W/L    95%    .c
-  RUN     W/L    95%
-  A64R    L      10%    .s
-  TCL     -      99%    .tcl   (Dump TCL generated via API to textual form)
-
--R    Temporaries and/or some locals are register-based
--M    Temporaries and locals are memory-based only (can be quite slow)
-
-W/L   Can work on either OS (may need a -Linux option to switch in suitable OS-speficic module).
-      Linear C requires a C compiler for the platform
-      Interpreted IL requires a compiler that includes the interpreter, to be compiled via Linear C for the platform.
-      But applications will either work on one OS only, unless they are OS-agnostic, or use cross-platform libraries
+### Recently Dropped Projects
+````
+TCL        New 3AC-based IL, and various planned backends
+BB/TCL     M compiled based on TCL
+MCC/TCL    C-ubset compiled based on TCL
 ````
 
-All TCL stuff is under development
-
-### Old Projects (still in use)
+### Old Projects, still in some  use
 ````
 AA6    Older AA assembler, can assemble multiple ASM files into one binary. Used by BCX,
        and needed to 'link' individual ASM files produced by BCC, for multi-module projects
