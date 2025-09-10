@@ -1,5 +1,5 @@
-=== MA 28 ===
-=== aap.m 0 0 1/28 ===
+=== MA 29 ===
+=== aa.m 0 0 1/29 ===
 project =
 	module aa_cli
 
@@ -11,26 +11,61 @@ project =
 
 	module aa_tables
 
+!	$sourcepath "c:/px/"
 !	$sourcepath "c:/mx/"
 !	module mc_objdecls
 
 !	import pcl
-	import pclaxp
+	import pclax
 end
-=== pclaxp.m 0 0 2/28 ===
+=== pclax.m 0 0 2/29 ===
+!project =
+!	module pc_api
+!	module pc_decls
+!
+!!	module pc_diags
+!	module pc_diags_dummy
+!
+!	module pc_run
+!	module pc_runaux
+!
+!	module pc_tables
+!
+!	module mc_GenMCL_dummy
+!	module mc_GenSS_dummy
+!	module mc_Decls
+!	module mc_OBJdecls
+!	module mc_WriteASM_dummy
+!	module mc_WriteEXE_dummy
+!	module mc_WriteOBJ_dummy
+!	module mx_run_dummy
+!
+!end
+!
+!export byte pc_userunpcl=1			!ask host to default to -runpcl option
+!
 project =
+
 	$sourcepath "c:/mx/"
 	module pc_api
 	module pc_decls
 
 	module pc_diags_dummy
 
+!	module pc_run
+!	module pc_runaux
 	module pc_run_dummy
 
 	module pc_tables
 
+!	module pc_genc
+!	module pc_auxc
+!	module pc_libc
+
 	module mc_GenMCL_dummy
+!	module mc_AuxMCL
 	module mc_LibMCL
+!	module mc_StackMCL
 
 	module mc_GenSS
 
@@ -42,9 +77,9 @@ project =
 	module mc_WriteEXE
 	module mc_WriteOBJ
 
-!	module mc_writess
-!	module mc_disasm
-	module mc_writess_dummy
+	module mc_writess
+	module mc_disasm
+!	module mc_writess_dummy
 
 	module mx_decls
 	module mx_run
@@ -54,7 +89,12 @@ project =
 end
 
 export byte pc_userunpcl=0
-=== pc_api.m 0 0 3/28 ===
+
+!proc main=
+!end
+
+
+=== pc_api.m 0 0 3/29 ===
 EXPORT INT PCLSEQNO
 int STSEQNO
 
@@ -816,7 +856,7 @@ export func convertstring(ichar s, t)int=
 	return t-t0
 end
 
-=== pc_decls.m 0 0 4/28 ===
+=== pc_decls.m 0 0 4/29 ===
 !decls
 
 export type psymbol = ref pstrec
@@ -1048,7 +1088,7 @@ EXPORT [PCLNAMES.BOUNDS]INT PCLFLAGS
 EXPORT INT PSTARTCLOCK
 
 !export const ctarget=0
-=== pc_diags_dummy.m 0 0 5/28 ===
+=== pc_diags_dummy.m 0 0 5/29 ===
 global proc pshowlogfile=
 end
 
@@ -1083,10 +1123,10 @@ end
 !global proc showopndstack=
 !end
 
-=== pc_run_dummy.m 0 0 6/28 ===
+=== pc_run_dummy.m 0 0 6/29 ===
 export proc pcl_runpcl=
 end
-=== pc_tables.m 0 0 7/28 ===
+=== pc_tables.m 0 0 7/29 ===
 !type system
 
 export enumdata \
@@ -1398,10 +1438,10 @@ export enumdata [0:]ichar idnames
 	(program_id,	"Program"),		!?
 end
 
-=== mc_genmcl_dummy.m 0 0 8/28 ===
+=== mc_genmcl_dummy.m 0 0 8/29 ===
 global proc genmcl=
 end
-=== mc_libmcl.m 0 0 9/28 ===
+=== mc_libmcl.m 0 0 9/29 ===
 const fuseregtable=1
 !const fuseregtable=0
 
@@ -2091,7 +2131,7 @@ global proc clearreg(mclopnd ax)=
 	fi
 	genmc(m_xorx, ax, ax)
 end
-=== mc_genss.m 0 0 10/28 ===
+=== mc_genss.m 0 0 10/29 ===
 const wmask = 2x1000				!1 means 64-bit operand size
 const rmask = 2x0100				!extends mod/rm reg field
 const xmask = 2x0010				!extends sib index field
@@ -4212,7 +4252,7 @@ proc do_dshift(mclopnd a, b, int c, opc)=
 	genbyte(c)
 end
 
-=== mc_decls.m 0 0 11/28 ===
+=== mc_decls.m 0 0 11/29 ===
 export type mclopnd = ref mclopndrec
 
 export record mclopndrec =
@@ -5055,7 +5095,7 @@ proc start=
 	ploadop[tpu64]:=ploadop[tpi64]:=m_mov
 end
 
-=== mc_objdecls.m 0 0 12/28 ===
+=== mc_objdecls.m 0 0 12/29 ===
 global record imagefileheader =
 	u16	machine
 	u16	nsections
@@ -5236,7 +5276,7 @@ global record exportdirrec =
 	u32 namepointerrva
 	u32 ordtablerva
 end
-=== mc_writeasm.m 0 0 13/28 ===
+=== mc_writeasm.m 0 0 13/29 ===
 !export int assemtype='AA'
 
 !const fshowseq=1
@@ -5789,7 +5829,7 @@ proc start=
 		od
 	fi
 end
-=== mc_writeexe.m 0 0 14/28 ===
+=== mc_writeexe.m 0 0 14/29 ===
 !Create .exe file from SS-data (code, data, reloc and psymbol tables)
 
 [maxplibfile]i64 libinsttable
@@ -6833,7 +6873,7 @@ func getripoffset(int addr, dest, int extra=0)int=
 	dest-(addr+4)-extra
 end
 
-=== mc_writeobj.m 0 0 15/28 ===
+=== mc_writeobj.m 0 0 15/29 ===
 !NEEDS REVISING TO MATCH UNLIMITED SS_SYMBOLTABLE size used for EXE
 !and also unlimited strings
 
@@ -7172,11 +7212,1543 @@ proc convertsymboltable=
 
 	od
 end
-=== mc_writess_dummy.m 0 0 16/28 ===
+=== mc_writess.m 0 0 16/29 ===
+
 export function writessdata(int fexe)ref strbuffer=
-	nil
+	gs_init(pdest)
+GS_STRLN(PDEST,"HELLO/SS")
+	showssdata(fexe)
+
+	gs_line(pdest)
+	return pdest
 end
-=== mx_decls.m 0 0 17/28 ===
+
+proc showssdata(int fexe)=
+	pclerror("SS not done") when not ssdone
+
+	gs_strln(pdest,(fexe|"EXE FORMAT"|"AFTER GENSS"))
+
+!	showsections()
+
+	gs_line(pdest)
+
+!	showsectionrelocs2("Idata",ss_idatarelocs,ss_nidatarelocs)
+!	showsectionrelocs2("Code",ss_coderelocs,ss_ncoderelocs)
+
+	gs_str(pdest,"proc Section Zdata: ")
+	gs_strint(pdest,ss_zdatalen)
+	gs_line(pdest)
+
+	showsectiondata(&sectiontable[dsect])
+	showsectioncode(&sectiontable[csect])
+	if fexe then
+		showsectiondata(&sectiontable[isect])
+	fi
+
+	showsymboltable2()
+	showimporttable()
+	gs_strln(pdest,"END OF GENSS")
+
+end
+
+proc showsectiondata(ref sectionrec d)=
+int i,k,length,bb
+	[128]char str,str2
+	ref byte p
+
+	gs_str(pdest,"proc Section ")
+	gs_str(pdest,d.name)
+	gs_str(pdest," Size:")
+	gs_strint(pdest,d.virtsize)
+	gs_line(pdest)
+	gs_line(pdest)
+
+	k:=0
+	if d.segtype<>impdata_seg then
+		p:=bufferelemptr(d.data,0)
+	else
+		p:=d.bytedata
+	fi
+	length:=d.virtsize
+
+	str[1]:=0
+
+	ref byte baseaddr:=cast(imagebase+d.virtoffset)
+
+	print @str2,baseaddr:"Z8H",,": "
+
+	gs_str(pdest,str2)
+
+	for i:=1 to length do
+		bb:=p++^
+		print @str2,bb:"z2H",," "
+		gs_str(pdest,str2)
+
+		if 32<=bb<=127 then
+			str2[1]:=bb
+			str2[2]:=0
+			strcat(str,str2)
+		else
+			strcat(str,".")
+		fi
+		if ++k=16 or i=length then
+			if k<16 then
+				to 16-k do
+					gs_str(pdest,"   ")
+					strcat(str," ")
+				od
+			fi
+			gs_str(pdest,"	[")
+			gs_str(pdest,str)
+			gs_strln(pdest,"]")
+			k:=0
+			str[1]:=0
+			baseaddr+:=16
+			print @str2,baseaddr:"z8h",,": "
+			gs_str(pdest,str2)
+		fi
+	od
+	if k=0 then
+		gs_line(pdest)
+	fi
+
+	gs_line(pdest)
+	if k then gs_line(pdest) fi
+end
+
+proc showsectioncode(ref sectionrec p)=
+ref byte codeptr,codeend,codestart
+	int length,offset
+	ichar s
+	[16]char str
+
+	gs_strln(pdest, "proc Section Code")
+
+	length:=p.virtsize
+	codestart:=codeptr:=bufferelemptr(p.data,0)
+	codeend:=codeptr+length
+
+	ref byte baseaddr:=cast(imagebase+p.virtoffset)
+
+!INT TT:=CLOCK(), N:=0
+	while codeptr<codeend do
+		offset:=codeptr-codestart
+		s:=decodeinstr(codeptr,baseaddr+offset)
+!++N
+		exit when s=nil
+
+		print @str,offset:"4",," "
+		gs_str(pdest,str)
+
+		gs_strln(pdest,s)
+	od
+!TT:=CLOCK()-TT
+!CPL "DECODE TIME:",TT,N
+!OS_GETCH()
+	gs_line(pdest)
+end
+
+proc showsectionrelocs2(ichar caption,ref relocrec relocs, int nrelocs)=
+	ref relocrec r
+
+	gs_str(pdest,"proc Section Relocs: ")
+	gs_str(pdest,caption)
+	gs_str(pdest," ")
+	gs_strint(pdest,nrelocs)
+	gs_line(pdest)
+
+	r:=relocs
+
+	while r do
+
+		gs_str(pdest,"Reloc: ")
+		gs_str(pdest,relocnames[r.reloctype])
+		gs_str(pdest," Offset: ")
+		gs_strint(pdest,r.offset)
+		gs_str(pdest," ST Index: ")
+		gs_strint(pdest,r.stindex)
+		gs_str(pdest," ")
+		gs_str(pdest,ss_symboltable[r.stindex].name)
+		gs_line(pdest)
+
+		r:=r.nextreloc
+	od
+	gs_line(pdest)
+
+end
+
+proc gs_value(ichar caption, i64 value)=
+	[256]char str
+
+	strcpy(str,caption)
+	strcat(str,":")
+	ipadstr(str,20)
+	gs_str(pdest,str)
+
+	fprint @str,"0x# #",value:"H",value
+	gs_strln(pdest,str)
+end
+
+proc showsymboltable2=
+
+	gs_strln(pdest,"Proc Symbol Table")
+	int i
+	for i:=1 to ss_nsymbols do
+		gs_strint(pdest,i)
+		gs_str(pdest,": ")
+		gs_strln(pdest,ss_symboltable[i].name)
+	od
+	gs_line(pdest)
+end
+
+proc showimporttable=
+	[256]char str
+	dllrec d
+	importrec p
+
+
+	gs_strln(pdest,"Proc Dll List")
+	int i
+	for i:=1 to ndlls do
+		gs_strint(pdest,i)
+		gs_str(pdest,": ")
+		gs_str(pdest,dlltable[i].name)
+		gs_str(pdest," ")
+		gs_strint(pdest,dlltable[i].nprocs)
+		gs_line(pdest)
+		gs_value("		Name Table Offset",dlltable[i].nametableoffset)
+		gs_value("		Addr Table Offset",dlltable[i].addrtableoffset)
+		gs_value("		DLL Name Offset  ",dlltable[i].dllnameoffset)
+	od
+	gs_line(pdest)
+	gs_strln(pdest,"Proc Import List")
+
+	for i:=1 to nimports do
+		p:=importtable[i]
+
+		gs_strint(pdest,i)
+		gs_str(pdest,": ")
+		if p.libno then
+			strcpy(str,p.name)
+			ipadstr(str,16)
+			gs_str(pdest,str)
+			gs_str(pdest," (")
+			gs_str(pdest,dlltable[p.libno].name)
+			gs_strln(pdest,")")
+
+			gs_value("	IAT Offset        ",p.iatoffset)
+			gs_value("	Thunk Offset      ",p.thunkoffset)
+			gs_value("	Hint/Name Offset  ",p.hintnameoffset)
+
+		else
+			strcpy(str,p.name)
+			ipadstr(str,20)
+			gs_str(pdest,str)
+			gs_strln(pdest," (---)")
+		fi
+	od
+	gs_line(pdest)
+end
+
+proc showsections=
+	sectionrec s
+	int i
+
+	gs_strln(pdest,"proc Section Headersxxx")
+	gs_line(pdest)
+
+	for i:=1 to nsections do
+		s:=sectiontable[i]
+
+		gs_str(pdest,"Section ")
+		gs_strint(pdest,i)
+		gs_str(pdest,": ")
+		gs_str(pdest,s.name)
+		gs_str(pdest,"  (")
+		gs_str(pdest,segmentnames[s.segtype])
+		gs_strln(pdest,")")
+
+		gs_value("    Raw Offset",s.rawoffset)
+		gs_value("    Raw Size",s.rawsize)
+		gs_value("    Virtual Offset",s.virtoffset)
+		gs_value("    Virtual Size",s.virtsize)
+		gs_value("    Nrelocs",s.nrelocs)
+		gs_value("    Data",int(s.data))
+		gs_line(pdest)
+
+	od
+end
+
+=== mc_disasm.m 0 0 17/29 ===
+
+const showmregs=1
+!const showmregs=0
+
+const halt=0xF4
+
+int nmodules
+int xfchsmask_pd
+
+enumdata [0:]ichar opnames =
+	(add_op=0,	"add"),
+	(or_op,		"or"),
+	(adc_op,	"adc"),
+	(sbb_op,	"sbb"),
+	(and_op,	"and"),
+	(sub_op,	"sub"),
+	(xor_op,	"xor"),
+	(cmp_op,	"cmp")
+end
+
+[0:]ichar condnames = 
+("o", "no", "b","ae","z","nz","be","a","s","ns","p","np",
+ "l","ge","le","g")
+
+enumdata []ichar addrmodenames=		! rm modes
+	(amreg,			$),				! R
+	(ammem,			$),				! [R+d]
+	(amrel,			$)				! [RIP+d]
+end
+
+const wmask = 2x1000
+const rmask = 2x0100
+const xmask = 2x0010
+const bmask = 2x0001
+
+const rstack=5						!1-base register codes
+const rframe=6
+
+int rex
+
+int addrmode						!amreg/ammem/amrel
+int rmreg							!0, or 1..16; adjusted middle value of modrm byte
+int rmopc							!0 to 7; middle value of modrm byte 
+int ripmode							!1 for rip-relative
+int basereg							!0, or 1..16
+int indexreg						!0, or 1..16
+int scale							!1,2,4
+int opsize							!1,2,4,8
+int offset
+int offsetsize						!1 or 4
+int sizeoverride					!32=>16 switch
+int addroverride					!32=>16 switch
+int f2override						!xmm regs
+int f3override						!xmm regs
+
+[256]char deststr
+ichar destptr
+
+ref byte codeptr
+
+global function decodeinstr(ref byte &cptr,baseaddr=nil)ichar=
+!decode next instruction at codeptr
+!return 1 if decoded, with codeptr stepped to start of next instruction
+!return 0 when end-of-code seen (nop or 0x90)
+	int n,w
+	int opc,reg,op,xxx,oldopsize,dispsize
+	ref byte pstart
+	static [256]char str
+	[128]char str2
+	const maxinstrlen=14
+	ichar s
+
+	deststr[1]:=0
+
+	pstart:=codeptr:=cptr
+
+	rex:=0
+	opsize:=1
+	f2override:=f3override:=sizeoverride:=addroverride:=0
+	basereg:=indexreg:=offset:=0
+
+	retry:						!back here after prefix byte seen
+
+	switch opc:=codeptr++^
+	when 0x00,0x1, 0x08,0x9, 0x10,0x11, 0x18,0x19,
+						0x20,0x21, 0x28,0x29, 0x30,0x31, 0x38,0x39 then	!arith R/M, R
+		op:=opc>>3
+		decodeaddr(opc iand 1)
+		getsilx(basereg)
+		getsil(rmreg)
+		genstr(opnames[op])
+		printaddrmode()
+		genstr(", ")
+		genstr(strreg(rmreg,opsize))
+
+	when 0x02,0x3, 0x0A,0xB, 0x12,0x13, 0x1A,0x1B,
+						0x22,0x23, 0x2A,0x2B, 0x32,0x33, 0x3A,0x3B then	!arith R,R/M
+		op:=opc>>3
+		decodeaddr(opc iand 1)
+		genstr(opnames[op])
+		genstr(" ")
+		getsil(rmreg)
+		genstr(strreg(rmreg,opsize))
+		genstr(", ")
+		printaddrmode()
+
+	when 0x04,0x5, 0x0C,0xD, 0x14,0x15, 0x1C,0x1D,
+						0x24,0x25, 0x2C,0x2D, 0x34,0x35, 0x3C,0x3D then	!arith rAX,imm
+		genstr(opnames[opc>>3])
+		genstr(" ")
+		if opc iand 1 then
+			opsize:=4
+			if sizeoverride then opsize:=2 fi
+			if rex iand wmask then opsize:=8 fi
+		fi
+		genstr(strreg(1,opsize))
+		genstr(", ")
+		genintd(readimm())
+
+	when 0x0F then
+		decodetwobyteinstr()
+
+	when 0x40 .. 0x4F then
+		rex:=opc
+!	if rex iand wmask then wopsize:=8 fi
+
+		goto retry
+
+	when 0x50 .. 0x57 then
+		reg:=getreg(opc iand 7,rex iand bmask)
+		genstr("push ")
+		genstr(strreg(reg,8))
+
+	when 0x58 .. 0x5F then
+		reg:=getreg(opc iand 7,rex iand bmask)
+		genstr("pop ")
+		genstr(strreg(reg,8))
+
+	when 0x63 then
+		decodeaddr(1)
+		genstr("movsxd ")
+		genstr(strreg(rmreg,opsize))
+		genstr(", ")
+		opsize:=4
+		printaddrmode()
+
+	when 0x66 then
+		sizeoverride:=1
+		goto retry
+
+	when 0x67 then
+		addroverride:=1
+		goto retry
+
+	when 0x68 then
+		genstr("push ")
+		if sizeoverride then
+			genintd(readint16())
+		else
+			genintd(readint32())
+		fi
+
+	when 0x6A then
+		genstr("push ")
+		genintd(readsbyte())
+
+	when 0x69, 0x6B then
+		decodeaddr(1)
+		if basereg<>rmreg then
+			genstr("imul3")
+			genstr(" ")
+			genstr(strreg(rmreg,opsize))
+			genstr(", ")
+		else
+			genstr("imul2")
+		fi
+		printaddrmode()
+		genstr(", ")
+		opsize:=(opc iand 2|1|opsize)
+		genintd(readimm())
+
+	when 0x70..0x7F then
+		genstr("j")
+		genstr(condnames[opc iand 15])
+		genstr(" ")
+		genintd(readsbyte())
+
+	when 0x80..0x83 then			!arith r/m,imm
+		decodeaddr(opc iand 1)
+		genstr(opnames[rmopc])
+		getsilx(basereg)
+		printaddrmode()
+		genstr(", ")
+		if opc<>0x83 then
+			genintd(readimm())
+		else
+			genintd(readsbyte())
+		fi
+
+	when 0x84, 0x85 then			!test reg,reg/mem
+		decodeaddr(opc iand 1)
+		getsilx(basereg)
+		getsil(rmreg)
+		genstr("test ")
+		printaddrmode()
+		genstr(", ")
+		genstr(strreg(rmreg,opsize))
+
+	when 0x86,0x87 then				!complex excg
+		decodeaddr(opc iand 1)
+		genstr("exch2 ")
+		getsilx(basereg)
+		getsil(rmreg)
+		genstr(strreg(rmreg,opsize))
+		genstr(",")
+		printaddrmode()
+
+	when 0x88, 0x89 then			!mov r/m,reg
+		decodeaddr(opc iand 1)
+		genstr("mov")
+		getsilx(basereg)
+		getsil(rmreg)
+
+		printaddrmode()
+		genstr(", ")
+		genstr(strreg(rmreg,opsize))
+
+	when 0x8A, 0x8B then			!mov reg,r/m
+		decodeaddr(opc iand 1)
+		genstr("mov ")
+		getsilx(basereg)
+		getsil(rmreg)
+		genstr(strreg(rmreg,opsize))
+		genstr(", ")
+		printaddrmode()
+
+	when 0x8D then
+		decodeaddr(1)
+		genstr("lea ")
+		genstr(strreg(rmreg,opsize))
+		genstr(", ")
+		printaddrmode()
+
+	when 0x8F then
+		decodeaddr(1)
+		opsize:=1
+		genstr("pop")
+		printaddrmode()
+
+	when 0x90 then
+		if rex then goto doexch fi
+		genstr("nop")
+
+	when 0x91..0x97 then			!exch eax/reg
+	doexch:
+		reg:=(opc iand 7)+1
+		if rex iand bmask then reg+:=8 fi
+		opsize:=(sizeoverride|2|4)
+		if rex iand wmask then opsize:=8 fi
+		genstr("xchg ")
+		genstr(strreg(1,opsize))
+		genstr(", ")
+		genstr(strreg(reg,opsize))
+
+	when 0x98 then
+		if sizeoverride then
+			genstr("cbw")
+		else
+			genstr("cbw???")
+		fi
+	when 0x99 then
+		if sizeoverride then
+			genstr("cwd")
+		elsif rex iand wmask then
+			genstr("cqo")
+		else
+			genstr("cdq")
+		fi
+	when 0x9B then genstr("wait")
+
+	when 0x9C then genstr("pushf")
+	when 0x9D then genstr("popf")
+	when 0x9E then genstr("sahf")
+	when 0x9F then genstr("lahf")
+
+	when 0xA4..0xA7, 0xAA..0xAF then
+		genstr((opc>>1 iand 7|"?","movs","cmps","?","stos","lods","scas"|"?"))
+		if opc iand 1=0 then
+			genstr("b")
+		else
+			if rex iand wmask then
+				genstr("q")
+			elsif sizeoverride then
+				genstr("w")
+			else
+				genstr("d")
+			fi
+		fi
+
+	when 0xA8, 0xA9 then				!test r0,imm
+		genstr("test ")
+		if opc iand 1 then
+			opsize:=(sizeoverride |2|4)
+			if rex iand wmask then opsize:=8 fi
+		fi
+		genstr(strreg(1,opsize))
+		genstr(", ")
+		genintd(readimm())
+
+	when 0xB0..0xBF then			!mov reg,imm
+		reg:=(opc iand 7)+1
+		if rex iand bmask then reg+:=8 fi
+		if (opc iand 2x1000) then
+			opsize:=(sizeoverride |2|4)
+			if rex iand wmask then opsize:=8 fi
+		fi
+		genstr("mov ")
+		getsil(reg)
+
+		genstr(strreg(reg,opsize))
+		genstr(", ")
+		genintd(readimm8())
+
+	when 0xC0, 0xC1, 0xD0..0xD3 then
+		decodeaddr(opc iand 1)
+		getsilx(basereg)
+		genstr((rmopc+1|"rol","ror","rcl","rcr","shl","shr","?","sar"|"?"))
+		printaddrmode()
+		if opc<=0xC1 then
+			genstr(", ")
+			genintd(readbyte())
+		else
+			genstr((opc iand 2|", cl"|", 1"))
+		fi
+
+	when 0xC2 then
+		genstr("retn ")
+		genintd(readword16())
+
+	when 0xC3 then
+		genstr("ret")
+
+	when 0xC6,0xC7 then
+		decodeaddr(opc iand 1)
+		genstr("mov")
+		printaddrmode()
+		genstr(", ")
+		genintd(readimm())
+
+	when 0xD7 then genstr("xlat")
+
+	when 0xD8..0xDF then
+		decode8087(opc iand 7)
+
+	when 0xE0 then genstr("loopnz "); genintd(readsbyte())
+	when 0xE1 then genstr("loopz "); genintd(readsbyte())
+	when 0xE2 then genstr("loop "); genintd(readsbyte())
+
+	when 0xE3 then
+		if addroverride then
+			genstr("jecxz ")
+		else
+			genstr("jrcxz ")
+		fi
+		genintd(readsbyte())
+
+	when 0xE8 then
+		genstr("call ")
+		genintd(readint32())
+
+	when 0xE9 then
+		genstr("[4] jmp ")
+		genintd(readint32())
+
+	when 0xEB then
+		genstr("jmp ")
+		genintd(readsbyte())
+
+	when 0xF2 then
+		if codeptr^<>0x0F and (codeptr^<0x40 and codeptr^>0x4F) then
+			genstr("repne")
+		else
+			f2override:=1
+			goto retry
+		fi
+	when 0xF3 then
+		if codeptr^<>0x0F and (codeptr^<0x40 and codeptr^>0x4F) then
+			genstr("repe")
+		else
+			f3override:=1
+			goto retry
+		fi
+
+	when 0xF4 then
+!		println "	end of code [halt]"
+!		return nil
+
+	when 0xF6,0xF7 then
+		decodeaddr(opc iand 1)
+		getsilx(basereg)
+		genstr((rmopc+1|"test","?","not","neg","mul","imul","div","idiv"|"?"))
+		printaddrmode()
+		if rmopc=0 then
+			if opsize=8 then opsize:=4 fi
+			genstr(", ")
+			genintd(readimm())
+		fi
+
+	when 0xFE then
+		w:=0
+		goto doff
+
+	when 0xFF then			!various
+		w:=1
+	doff:
+		decodeaddr(w)
+		case rmopc
+		when 2x_000 then	!inc
+			getsilx(basereg)
+			genstr("inc")
+		when 2x_001 then	!dec
+			getsilx(basereg)
+			genstr("dec")
+		when 2x_010 then	!call
+			opsize:=8
+			genstr("icall")
+		when 2x_100 then	!jmp
+			opsize:=8
+			genstr("jmp")
+		when 2x_110 then	!push
+			opsize:=8
+			genstr("push")
+		else
+			println "FFxx?"
+		esac
+		printaddrmode()
+
+	else
+		genstr("Unknown opcode: ")
+    genhex(opc)
+	end switch
+
+
+!at this point, deststr contains the decoded instruction
+!need to put in address, bytes etc
+
+!	if baseaddr then
+		print @str,baseaddr:"z6h",,": "
+!	else
+!		print @str,pstart:"z6h",,": "
+!	fi
+
+	n:=codeptr-pstart
+	to n do
+		print @str2,int(pstart++^):"z2H",," "
+
+		strcat(str,str2)
+	od
+	to maxinstrlen-n do
+		strcat(str,"-- ")
+	od
+	strcat(str,deststr)
+
+	cptr:=codeptr
+
+	return str
+end
+
+proc decodetwobyteinstr=
+!0F has been decoded
+	int opc,rhssize,third,imm
+	ichar opcstr
+
+	switch opc:=codeptr++^
+	when 0x2A then					!cvtsi2ss/sd XMM, REG/MEM
+		decodeaddr(1)
+		if f3override then
+			genstr("cvtsi2ss ")
+		else
+			genstr("cvtsi2sd ")
+		fi
+		genstr(strxmm(rmreg))
+		genstr(", ")
+		printaddrmode(0)
+		
+	when 0x2C then					!cvt2ss/sd2si XMM, REG/MEM
+		decodeaddr(1)
+		if f3override then
+			genstr("cvttss2si ")
+			rhssize:=4
+		else
+			genstr("cvttsd2si ")
+			rhssize:=8
+		fi
+		if rex iand wmask then
+			genstr(strreg(rmreg,8))
+		else
+			genstr(strreg(rmreg,4))
+		fi
+		genstr(", ")
+		opsize:=rhssize
+		printaddrmode(1)
+
+	when 0x2D then					!cvt2ss/sd2si XMM, REG/MEM
+		decodeaddr(1)
+		if f3override then
+			genstr("cvtss2si ")
+			rhssize:=4
+		else
+			genstr("cvtsd2si ")
+			rhssize:=8
+		fi
+		if rex iand wmask then
+			genstr(strreg(rmreg,8))
+		else
+			genstr(strreg(rmreg,4))
+		fi
+		genstr(", ")
+		opsize:=rhssize
+		printaddrmode(1)
+
+	when 0x2F then					!comiss/comisd XMM, REG/MEM
+		decodeaddr(1)
+		if sizeoverride then
+			opsize:=8
+			genstr("comisd ")
+		else
+			opsize:=4
+			genstr("comiss ")
+		fi
+		genstr(strxmm(rmreg))
+		genstr(", ")
+		printaddrmode(1)
+
+	when 0x3A then					!possible pcmpistri
+		third:=codeptr++^
+
+		case third
+		when 0x63 then
+			genstr("pcmpistri ")
+		when 0x62 then
+			genstr("pcmpistrm ")
+		else
+			genstr("Unknown opcode 2-byte opcode: 0F ")
+		    genhex(opc)
+			return
+		esac
+
+		decodeaddr(1)
+		genstr(strxmm(rmreg))
+		genstr(", ")
+		printaddrmode(1)
+		genstr(", ")
+		imm:=codeptr++^
+		genintd(imm)
+
+	when 0x40..0x4F then
+		decodeaddr(1)
+		genstr("cmov")
+		genstr(condnames[opc iand 15])
+		genstr(" ")
+		genstr(strreg(rmreg,opsize))
+		genstr(", ")
+		printaddrmode()
+
+	when 0x51 then					!sqrtss/sd
+		decodeaddr(1)
+		opsize:=(f3override|4|8)
+		genstr((opsize=4|"sqrtss "|"sqrtsd "))
+		genstr(strxmm(rmreg))
+		genstr(", ")
+		printaddrmode(1)
+
+	when 0x54 then					!ANDPD
+		decodeaddr(1)
+		genstr((sizeoverride|"andpd "|"andps "))
+		genstr(strxmm(rmreg))
+		genstr(", ")
+		opsize:=(sizeoverride|8|4)
+		printaddrmode(1)
+
+	when 0x57 then					!XORPD
+		decodeaddr(1)
+		genstr((sizeoverride|"xorpd "|"xorps "))
+		genstr(strxmm(rmreg))
+		genstr(", ")
+		opsize:=(sizeoverride|8|4)
+		printaddrmode(1)
+
+	when 0x58 then					!addss/addsd
+		opcstr:="adds"
+	doarith:
+		genstr(opcstr)
+		decodeaddr(1)
+		if f2override then
+			opsize:=8
+			genstr("d ")
+		else
+			opsize:=4
+			genstr("s ")
+		fi
+		genstr(strxmm(rmreg))
+		genstr(", ")
+		printaddrmode(1)
+
+	when 0x59 then					!mulss/mulsd
+		opcstr:="muls"
+		goto doarith
+
+	when 0x5A then					!cvtss2sd/cvtsd2ss
+		decodeaddr(1)
+		if f3override then
+			genstr("cvtss2sd ")
+			rhssize:=4
+		else
+			genstr("cvtsd2ss ")
+			rhssize:=8
+		fi
+		genstr(strxmm(rmreg))
+		genstr(", ")
+		opsize:=rhssize
+		printaddrmode(1)
+
+	when 0x5C then					!subss/subsd
+		opcstr:="subs"
+		goto doarith
+
+	when 0x5D then
+		opcstr:="mins"
+		goto doarith
+
+	when 0x5E then					!divss/divsd
+		opcstr:="divs"
+		goto doarith
+
+	when 0x5F then
+		opcstr:="maxs"
+		goto doarith
+
+
+	when 0x6E then					!mov X/MM, REG/MEM
+		decodeaddr(1)
+		opsize:=(rex iand wmask|8|4)
+		genstr((opsize=4|"movd "|"movq "))
+		if sizeoverride then		!xmm
+			genstr(strxmm(rmreg))
+		else
+			genstr(strmmx(rmreg))
+		fi
+		genstr(", ")
+		printaddrmode()
+
+	when 0x6F then					!movdqa/dqu, X/MEM, X/X
+		decodeaddr(1)
+		opsize:=16
+		if sizeoverride then		!66
+			genstr("movdqa ")
+		elsif f3override then		!F3
+			genstr("movdqu ")
+		else
+			genstr("No 66/F3 ")
+		fi
+		genstr(strxmm(rmreg))
+		genstr(", ")
+		printaddrmode(1)
+
+	when 0x7E then					!mov REG/MEM, X/MM
+		decodeaddr(1)
+		if f3override then
+			opsize:=8
+			genstr("movq ")
+			genstr(strxmm(rmreg))
+			genstr(", ")
+			printaddrmode(1)
+		elsif rex iand wmask then
+			opsize:=8
+			genstr("movq ")
+			printaddrmode()
+			genstr(", ")
+			genstr(strxmm(rmreg))
+		else
+			opsize:=4
+			genstr("movd ")
+			printaddrmode()
+			genstr(", ")
+			if sizeoverride then		!xmm
+				genstr(strxmm(rmreg))
+			else
+				genstr(strmmx(rmreg))
+			fi
+		fi
+
+	when 0x7F then					!movdqa/dqu, MEM/X
+		decodeaddr(1)
+		opsize:=16
+		if sizeoverride then		!66
+			genstr("movdqa ")
+		elsif f3override then		!F3
+			genstr("movdqu ")
+		else
+			genstr("No 66/F3 ")
+		fi
+		printaddrmode(1)
+		genstr(", ")
+		genstr(strxmm(rmreg))
+
+	when 0x80..0x8F then			!long rel jumps
+		genstr("[long] j")
+		genstr(condnames[opc iand 15])
+		genstr(" ")
+		if sizeoverride then
+			genintd(readint16())
+		else
+			genintd(readint32())
+		fi
+
+	when 0x90..0x9F then
+		decodeaddr(0)
+		genstr("set")
+		genstr(condnames[opc iand 15])
+		genstr(" ")
+		getsilx(basereg)
+		printaddrmode()
+
+	when 0xAF then
+		decodeaddr(1)
+		genstr("imul ")
+		genstr(strreg(rmreg,opsize))
+		genstr(", ")
+		printaddrmode()
+
+	when 0xB6, 0xB7, 0xBE, 0xBF then
+		decodeaddr(1)
+!	opsize:=4
+		genstr((opc<0xBE|"movzx "|"movsx "))
+		genstr(strreg(rmreg,opsize))
+		genstr(", ")
+		opsize:=(opc iand 1|2|1)
+		printaddrmode()
+
+	when 0xB8 then
+		decodeaddr(1)
+		genstr("popcnt ")
+		genstr(strreg(rmreg,opsize))
+		genstr(", ")
+		printaddrmode()
+
+	when 0xBC, 0xBD then
+		decodeaddr(1)
+		genstr((opc=0xBC|"bsf "|"bsr "))
+		genstr(strreg(rmreg,opsize))
+		genstr(", ")
+		printaddrmode()
+
+	when 0xD6 then
+		decodeaddr(1)
+		opsize:=8
+		genstr("movq ")
+		printaddrmode(1)
+		genstr(",")
+		genstr(strxmm(rmreg))	
+
+	when 0xDB then					!PAND
+		decodeaddr(1)
+		genstr("pand ")
+		genstr(strxmm(rmreg))
+		genstr(", ")
+		opsize:=8	!(sizeoverride|8|4)
+		printaddrmode(1)
+
+	when 0xEF then					!PXOR
+		decodeaddr(1)
+		genstr("pxor ")
+		genstr(strxmm(rmreg))
+		genstr(", ")
+		opsize:=8	!(sizeoverride|8|4)
+		printaddrmode(1)
+
+
+	else
+	error:
+		genstr("Unknown opcode 2-byte opcode: 0F ")
+    genhex(opc)
+	end switch
+end
+
+proc decodeaddr(int w=0)=
+!codeptr points to modrm byte, with possible sib and/or disp following
+!decode modrm, sib and disp
+!store result in amode:
+! basereg		0 when not used
+! indexreg
+! scale			1,2,4,8 factor for indexreg
+! offset		0, or any offset or abs address
+! addrmode		rm-code
+!the function returns the xxx value (middle part of modrm byte)
+	int modrm,xxx,mode,sib,rm
+
+	basereg:=indexreg:=0
+	scale:=1
+	offset:=0
+	ripmode:=0
+
+	if w then
+		opsize:=(sizeoverride|2|4)
+		if rex iand wmask then opsize:=8 fi
+	else
+		opsize:=1
+	fi
+
+	modrm:=codeptr++^
+
+	mode:=modrm>>6
+	xxx:=(modrm>>3) iand 7
+	rm:=modrm iand 7
+
+	if mode=3 then		!plain register access
+		basereg:=rm+1
+		addrmode:=amreg
+	elsif rm<>4 then				!not esp; no sib
+		if mode=0 and rm=5 then		![ebp] is actually [rip+disp]
+			offset:=readint32()		!
+			ripmode:=1
+			addrmode:=ammem
+
+		else
+			basereg:=rm+1
+			addrmode:=ammem
+			case mode
+			when 1 then
+				offset:=readsbyte()
+			when 2 then
+				offset:=readint32()
+			esac
+		fi
+	else			!sib follows
+		addrmode:=ammem
+		sib:=readbyte()
+		indexreg:=((sib>>3) iand 7)+1
+		basereg:=(sib iand 7)+1
+		scale:=(sib>>6+1|1,2,4,8|0)
+
+		if mode=0 and basereg=rframe and indexreg=rstack then	!no base/index regs, only d32 disp
+			indexreg:=basereg:=0
+			offset:=readint32()
+
+		elsif mode=0 and basereg=rframe  then	!no base/index regs, only d32 disp
+			basereg:=0
+			offset:=readint32()
+
+		elsif mode=0 and indexreg=rstack then	!no index register, only base; no disp
+			indexreg:=0
+
+		else
+			case mode
+			when 1 then
+				offset:=readsbyte()
+			when 2 then
+				offset:=readint32()
+			esac
+			if indexreg=rstack then				!stack means no index reg
+				indexreg:=0
+			fi
+		fi
+
+	fi
+
+	if basereg and rex iand bmask then basereg+:=8 fi
+	if indexreg and rex iand xmask then indexreg+:=8 fi
+
+	rmreg:=xxx+1
+	if rex iand rmask then rmreg+:=8 fi
+	rmopc:=xxx
+end
+
+function readbyte:int=
+	return codeptr++^
+end
+
+function readsbyte:int=
+	return (ref i8(codeptr++))^
+end
+
+function readword16:word=
+	word a
+	a:=ref u16(codeptr)^
+	codeptr+:=2
+	return a
+end
+
+function readint16:int=
+	int a
+	a:=ref i16(codeptr)^
+	codeptr+:=2
+	return a
+end
+
+function readword32:word=
+	word a
+	a:=ref u32(codeptr)^
+	codeptr+:=4
+	return a
+END
+
+function readint32:int=
+	int a
+	a:=ref i32(codeptr)^
+	codeptr+:=4
+	return a
+END
+
+function readi64:i64=
+	i64 a
+	a:=ref i64(codeptr)^
+	codeptr+:=8
+	return a
+END
+
+function getreg(int regcode,upper)int=
+	if upper then
+		return regcode+8+1
+	fi
+	return regcode+1
+end
+
+global function strreg(int reg,opsize)ichar=
+static []ichar regnames8=("al","cl","dl","bl","spl","bpl","sil","dil",
+						"r8b","r9b","r10b","r11b","r12b","r13b","r14b","r15b",
+				"ah","bh","ch","dh")
+
+static []ichar regnames16=("ax","cx","dx","bx","sp","bp","si","di",
+						"r8w","r9w","r10w","r11w","r12w","r13w","r14w","r15w")
+
+static []ichar regnames32=("eax","ecx","edx","ebx","esp","ebp","esi","edi",
+						"r8d","r9d","r10d","r11d","r12d","r13d","r14d","r15d")
+
+static []ichar regnames64=("rax","rcx","rdx","rbx","rsp","rbp","rsi","rdi",
+						"r8","r9","r10","r11","r12","r13","r14","r15")
+
+static []ichar mregnames8=("B0","B10","B11","B4","B15","B14","B5","B3",
+						"B12","B13","B1","B2","B6","B7","B8","B9",
+					"B16","B18","B19","B17")
+
+static []ichar mregnames16=("W0","W10","W11","W4","Wsp","Wbp","W5","W3",
+						"W12","W13","W1","W2","W6","W7","W8","W9")
+
+static []ichar mregnames32=("A0","A10","A11","A4","Astack","Aframe","A5","A3",
+						"A12","A13","A1","A2","A6","A7","A8","A9")
+
+static []ichar mregnames64=("D0","D10","D11","D4","Dstack","Dframe","D5","D3",
+						"D12","D13","D1","D2","D6","D7","D8","D9")
+
+	if reg=0 then return "<>" fi
+
+	if showmregs then
+		case opsize
+		when 1 then return mregnames8[reg]
+		when 2 then return mregnames16[reg]
+		when 4 then return mregnames32[reg]
+		when 8 then return mregnames64[reg]
+		esac
+	else
+		case opsize
+		when 1 then return regnames8[reg]
+		when 2 then return regnames16[reg]
+		when 4 then return regnames32[reg]
+		when 8 then return regnames64[reg]
+		esac
+	fi
+	return ""
+end
+
+function strfreg(int freg)ichar=
+!freg is 0-based
+	static []ichar fregnames=("st0","st1","st2","st3","st4","st5","st6","st7")
+	return fregnames[freg]
+end
+
+proc printaddrmode(int xmm=0)=
+	static [100]char str
+	ichar plus
+	int addrsize
+
+	genstr(" ")
+
+	case addrmode
+	when amreg then
+		if xmm then
+			genstr(strxmm(basereg))
+		else
+			getsilx(basereg)
+			genstr(strreg(basereg,opsize))
+		fi
+		return
+	esac
+
+	case opsize
+	when 1 then genstr("byte ")
+	when 2 then genstr("word ")
+	when 4 then genstr("dword ")
+	when 8 then genstr("qword ")
+	when 10 then genstr("tword ")
+	when 16 then genstr("oword ")
+	else
+	CPL "///OPSIZE",opsize
+	esac
+
+	if ripmode then
+		genstr("rip:")
+	fi
+	genstr("[")
+	plus:=""
+	addrsize:=(addroverride|4|8)
+
+	if basereg then
+		genstr(strreg(basereg,addrsize))
+		plus:="+"
+	fi
+	if indexreg then
+		genstr(plus)
+		genstr(strreg(indexreg,addrsize))
+GENSTR("<INDEX>")
+		if scale>1 then
+			genstr("*")
+			genintd(scale)
+		fi
+		plus:="+"
+	fi
+
+	if offset or (basereg=0 and indexreg=0) then
+!	print plus,,offset,"<",ref void(offset),,">"
+		if basereg=0 and indexreg=0 then
+			genhex(offset)
+		else
+			if offset>0 then genstr(plus) fi
+			genintd(offset)
+		fi
+	fi
+	genstr("]")
+!	if addrmode=amrel then genstr("+RIP") fi
+end
+
+proc genstr(ichar s)=
+	strcat(deststr,s)
+end
+
+proc genintd(i64 a)=
+	genstr(strint(a))
+end
+
+proc genhex(i64 a)=
+	genstr(strint(a,"h"))
+end
+
+function readimm:int=
+!read signed offset according to opsize
+
+	case opsize
+	when 1 then return readsbyte()
+	when 2 then return readint16()
+	when 4,8 then return readint32()			!64-bit uses 32-bit immediate
+	esac
+	return 0
+end
+
+function readimm8:i64=
+!like readimm but can 8 bytes too
+	if opsize<8 then return readimm() fi
+	return readi64()
+end
+
+function strxmm(int reg)ichar=
+	static [32]char str
+	print @str,"xmm",,reg-1
+	return str
+end
+
+function strmmx(int reg)ichar=
+	static [32]char str
+
+	print @str,"mmx",,reg-1
+	return str
+end
+
+proc decode8087(int ttt)=
+	byte bb
+	int longopc,freg,shortopc,code
+
+	bb:=codeptr++^			!following byte
+
+	longopc:=ttt<<8+bb		!bottom 11 bits of 2-bytes opcode
+	freg:=(bb iand 7)+1		!where bb specifies a register in bottom 3 bits
+
+!first look at all dedicated opcodes before treating bb as modrm byte
+
+	case longopc
+	when 2x'110'1101'1001 then genstr("fcompp")
+	when 2x'001'1110'0100 then genstr("ftst")
+	when 2x'001'1110'0101 then genstr("fxam")
+	when 2x'001'1110'1110 then genstr("fldz")
+	when 2x'001'1110'1000 then genstr("fld1")
+	when 2x'001'1110'1011 then genstr("fldpi")
+	when 2x'001'1110'1001 then genstr("fldl2t")
+	when 2x'001'1110'1010 then genstr("fldl2e")
+	when 2x'001'1110'1100 then genstr("fldlg2")
+	when 2x'001'1110'1101 then genstr("fldln2")
+
+	when 2x'001'1111'1010 then genstr("fsqrt")
+	when 2x'001'1111'1110 then genstr("fsin")
+	when 2x'001'1111'1111 then genstr("fcos")
+	when 2x'001'1111'1011 then genstr("fsincos")
+	when 2x'001'1111'1101 then genstr("fscale")
+	when 2x'001'1111'1000 then genstr("fprem")
+	when 2x'001'1111'1100 then genstr("frndint")
+	when 2x'001'1111'0100 then genstr("fxtract")
+	when 2x'001'1110'0001 then genstr("fabs")
+	when 2x'001'1110'0000 then genstr("fchs")
+
+	when 2x'001'1111'0010 then genstr("fptan")
+	when 2x'001'1111'0011 then genstr("fpatan")
+	when 2x'001'1111'0000 then genstr("f2xm1")
+	when 2x'001'1111'0001 then genstr("fyl2x")
+	when 2x'001'1111'1001 then genstr("fyl2xp1")
+
+	when 2x'011'1110'0011 then genstr("finit")
+	when 2x'011'1110'0000 then genstr("feni")
+	when 2x'011'1110'0001 then genstr("fdisi")
+
+	when 2x'011'1110'0010 then genstr("fclex")
+
+	when 2x'001'1111'0111 then genstr("fincstp")
+	when 2x'001'1111'0110 then genstr("fdecstp")
+	when 2x'001'1101'0000 then genstr("fnop")
+
+	elsecase longopc iand 2x'111'11111'000			!ignore bottom 3 bits
+
+	when 2x'001'11000'000 then genstr("fld "); genstr(strfreg(freg))
+	when 2x'101'11010'000 then genstr("fst "); genstr(strfreg(freg))
+	when 2x'101'11011'000 then genstr("fstp "); genstr(strfreg(freg))
+	when 2x'001'11001'000 then genstr("fxch "); genstr(strfreg(freg))
+	when 2x'000'11010'000 then genstr("fcom "); genstr(strfreg(freg))
+	when 2x'000'11011'000 then genstr("fcomp "); genstr(strfreg(freg))
+	when 2x'101'11000'000 then genstr("ffree "); genstr(strfreg(freg))
+
+	elsecase longopc iand 2x'001'11111'000			!ignore bottom 3 bits and top 2
+
+	when 2x'000'11000'000 then do87arith("fadd",ttt,freg)
+
+	when 2x'000'11100'000 then do87arith("fsub",ttt,freg)
+	when 2x'000'11101'000 then do87arith("fsubr",ttt,freg)
+
+	when 2x'000'11001'000 then do87arith("fmul",ttt,freg)
+
+	when 2x'000'11110'000 then do87arith("fdiv",ttt,freg)
+	when 2x'000'11111'000 then do87arith("fdivr",ttt,freg)
+
+	else	!finally, have to deal with modrm etc
+		--codeptr					!put back modrm byte
+		decodeaddr(0)			!code is middle bits
+		shortopc:=ttt<<3 + rmopc
+
+		case shortopc				!look at combination of ttt and code (middle bits of modrm)
+		when 2x'111'101 then do87mem("fld",4)
+		when 2x'011'101 then do87mem("fld",5)
+		when 2x'111'100 then do87mem("fldbcd")
+
+		when 2x'111'111 then do87mem("fstp",4)
+		when 2x'011'111 then do87mem("fstp",5)
+		when 2x'111'110 then do87mem("fstpbcd")
+
+		when 2x'001'101 then do87mem("fldcw")
+		when 2x'001'111 then do87mem("fstcw")
+		when 2x'101'111 then do87mem("fstsw")
+
+		when 2x'001'110 then do87mem("fstenv")
+		when 2x'001'100 then do87mem("fldenv")
+		when 2x'101'110 then do87mem("fsave")
+		when 2x'101'100 then do87mem("frstor")
+
+		elsecase shortopc iand 2x001'111		!ignore top two bits (mf code)
+
+		when 2x'001'000 then do87mem("fld",ttt>>1)
+		when 2x'001'010 then do87mem("fst",ttt>>1)
+		when 2x'001'011 then do87mem("fstp",ttt>>1)
+		when 2x'000'010 then do87mem("fcom",ttt>>1)
+		when 2x'000'011 then do87mem("fcomp",ttt>>1)
+		when 2x'000'000 then do87mem("fadd",ttt>>1)
+		when 2x'000'100 then do87mem("fsub",ttt>>1)
+		when 2x'000'101 then do87mem("fsubr",ttt>>1)
+		when 2x'000'001 then do87mem("fmul",ttt>>1)
+		when 2x'000'110 then do87mem("fdiv",ttt>>1)
+		when 2x'000'111 then do87mem("fdivr",ttt>>1)
+
+		else
+			genstr("UNKNOWN x87 OPCODE")
+		esac
+	esac
+
+end
+
+proc do87arith(ichar opcstr, int ttt,freg)=
+	int d, p
+
+	d:=ttt iand 2x100		!d=0:  to st0; d<>0: to freg
+	p:=ttt iand 2x010		!p<>0: pop after operation
+
+	genstr(opcstr)
+	if p then
+		genstr("p")
+	fi
+	genstr(" ")
+
+	if d=0 then
+		genstr("st0, ")
+    genstr(strfreg(freg))
+	else
+    genstr(strfreg(freg))
+		genstr(", st0")
+	fi
+end
+
+proc do87mem(ichar opcstr,int mf=-1)=
+!mf has values 0,1,2,4 for type and width, when used; but also 4 for i64
+	genstr("f")
+
+	case mf
+	when 2x'00 then opsize:=4
+	when 2x'01 then genstr("i"); opsize:=4
+	when 2x'10 then opsize:=8
+	when 2x'11 then genstr("i"); opsize:=2
+	when 4 then genstr("i"); opsize:=8
+	when 5 then opsize:=10
+	esac
+	genstr(opcstr+1)
+
+	genstr(" ")
+	printaddrmode()
+end
+
+proc getsil(int &reg)=
+!for certain byte-reg combinations, convert regs ah,ch,dh,bh to spl,bpl,sil,dil
+	if opsize=1 and not rex and reg>=5 and reg<=8 then
+		case reg
+		when 5 then reg:=17
+		when 6 then reg:=19
+		when 7 then reg:=20
+		when 8 then reg:=18
+		esac
+
+!		reg+:=12				!5..8 => 17..20
+
+
+	fi
+end
+
+proc getsilx(int &reg)=
+!as getsil but used for basereg, which must have addrmode=amreg
+	if addrmode=amreg and opsize=1 and rex=0 and reg>=5 and reg<=8 then
+		case reg
+		when 5 then reg:=17
+		when 6 then reg:=19
+		when 7 then reg:=20
+		when 8 then reg:=18
+		esac
+
+!		reg+:=12				!5..8 => 17..20
+	fi
+end
+=== mx_decls.m 0 0 18/29 ===
 !Declarations for M-Code scheme
 !Terms:
 ! MCU		MCode Unit, binary code/data/imports/relocs for whole program (LIBREC)
@@ -7351,7 +8923,7 @@ global [maxsymbols]byte		symboldllindex	! DLL index of library where found
 global int nsymbols
 
 export int nsymimports=0, nsymexports=0
-=== mx_run.m 0 0 18/28 ===
+=== mx_run.m 0 0 19/29 ===
 !Translate SS data directly into MCU block, then try and run that
 
 global func writememlib(ichar filename)ref librec plib=
@@ -7547,7 +9119,7 @@ global proc runlibfile(ichar filename, int cmdskip)=
 !	fi
 end
 
-=== mx_lib.m 0 0 19/28 ===
+=== mx_lib.m 0 0 20/29 ===
 global enumdata [0:]ichar rsegmentnames =
 	(no_seg=0,		$),
 	(code_rseg,		$),
@@ -8114,7 +9686,7 @@ global func loadmemmcb(ichar filename, ref byte p)ref librec plib=
 	return plib
 end
 
-=== mx_write.m 0 0 20/28 ===
+=== mx_write.m 0 0 21/29 ===
 !Translate SS data directly into MCB block, then write as mx/ml file
 
 ref dbuffer dest
@@ -8308,7 +9880,7 @@ proc genblock(ref void p, int length)=
 	memcpy(dest.pcurr, p, length)
 	dest.pcurr+:=length
 end
-=== aa_cli.m 0 0 21/28 ===
+=== aa_cli.m 0 0 22/29 ===
 byte fshowasm
 byte fshowss					!early ss
 byte fshowsx					!late ss (I think)
@@ -8591,7 +10163,7 @@ proc loaderror_s(ichar mess,s)=
 	print @str, mess, s
 	loaderror(str)
 end
-=== aa_decls.m 0 0 22/28 ===
+=== aa_decls.m 0 0 23/29 ===
 !AA/PCL Assembler Global Decls
 
 global type symbol = ref strec
@@ -8665,7 +10237,7 @@ global ref stlistrec globalimportlist		!all global vars and imports across all m
 
 global byte highmem						!0/1/2 = lowmem+norip/lowmem+rip/himem+rip
 
-=== aa_lex.m 0 0 23/28 ===
+=== aa_lex.m 0 0 24/29 ===
 !Tokeniser Module
 macro testmode=0
 
@@ -9367,7 +10939,7 @@ function makestring(ichar p,int length)ref char=
 	(s+length)^:=0
 	return s
 end
-=== aa_lib.m 0 0 24/28 ===
+=== aa_lib.m 0 0 25/29 ===
 const ptrsize=8
 
 global int currsegment=0		!
@@ -9478,7 +11050,7 @@ global func getpsymbol(symbol d)psymbol p =
 
 	p
 end
-=== aa_parse.m 0 0 25/28 ===
+=== aa_parse.m 0 0 26/29 ===
 !Globals that describe expression. Syntax is:
 ! name [+/- immexpr]
 !      [+/- immexpr]
@@ -9609,13 +11181,7 @@ global proc readmodule(ichar source)=
 			lex()
 			checksymbol(namesym)
 			if nimportlibs>=maximportlibs then serror("Too many import libs") fi
-			for i to nimportlibs do
-				if eqstring(importlibs[i],lxsymptr.name) then	!already imported
-					exit
-				fi
-			else
-				importlibs[++nimportlibs]:=lxsymptr.name
-			od
+			pc_addplib(lxsymptr.name)
 			lex()
 
 		when kimportdllsym then
@@ -10068,7 +11634,7 @@ function readaddrmode(int size)mclopnd=
 
 	return p
 end
-=== aa_show.m 0 0 26/28 ===
+=== aa_show.m 0 0 27/29 ===
 global proc showst(filehandle f)=
 	symbol d
 
@@ -10105,7 +11671,7 @@ global proc printhashtable(filehandle f)=
 println @f, count," items in table",hstsize
 end
 
-=== aa_tables.m 0 0 27/28 ===
+=== aa_tables.m 0 0 28/29 ===
 !x64 Assembler Tables
 
 global enumdata []ichar symbolnames=
@@ -10173,7 +11739,7 @@ global tabledata []ichar prefixnames, []byte prefixsizes =
 	("word80",	10),
 	("u80",		10),
 end
-=== aa_help.txt 0 1 28/28 ===
+=== aa_help.txt 0 1 29/29 ===
 'AA' Assembler-Linker for Win64
 
 Assembles ASM files written in a special syntax to EXE, DLL or OBJ format.
@@ -10207,8 +11773,8 @@ DLLs msvcrt.dll, user32.dll, gdi32.dll, user32.dll are automatically included.
 Others can be specified in the ASM file using 'importdll' directives, or on
 the command line.
 === END ===
-1 aap.m 0 0
-2 pclaxp.m 0 0
+1 aa.m 0 0
+2 pclax.m 0 0
 3 pc_api.m 0 0
 4 pc_decls.m 0 0
 5 pc_diags_dummy.m 0 0
@@ -10222,16 +11788,17 @@ the command line.
 13 mc_writeasm.m 0 0
 14 mc_writeexe.m 0 0
 15 mc_writeobj.m 0 0
-16 mc_writess_dummy.m 0 0
-17 mx_decls.m 0 0
-18 mx_run.m 0 0
-19 mx_lib.m 0 0
-20 mx_write.m 0 0
-21 aa_cli.m 0 0
-22 aa_decls.m 0 0
-23 aa_lex.m 0 0
-24 aa_lib.m 0 0
-25 aa_parse.m 0 0
-26 aa_show.m 0 0
-27 aa_tables.m 0 0
-28 aa_help.txt 0 1
+16 mc_writess.m 0 0
+17 mc_disasm.m 0 0
+18 mx_decls.m 0 0
+19 mx_run.m 0 0
+20 mx_lib.m 0 0
+21 mx_write.m 0 0
+22 aa_cli.m 0 0
+23 aa_decls.m 0 0
+24 aa_lex.m 0 0
+25 aa_lib.m 0 0
+26 aa_parse.m 0 0
+27 aa_show.m 0 0
+28 aa_tables.m 0 0
+29 aa_help.txt 0 1

@@ -1,5 +1,5 @@
-=== MA 15 ===
-=== mm.m 0 0 1/15 ===
+=== MA 21 ===
+=== mm.m 0 0 1/21 ===
 !project =
 	module mm_cli
 
@@ -11,6 +11,10 @@
 	module mm_export_dummy
 !	module mm_exportq
 !	module mm_exportm
+
+	module mm_gen
+	module mm_genaux
+	module mm_genblock
 
 	module mm_lex
 	module mm_lib
@@ -26,6 +30,10 @@
 	module mm_tables
 	module mm_type
 
+
+	module mcx_decls
+	module mcx_lib
+	module mcx_asm
 
 
 !global type int8	= i8
@@ -48,7 +56,7 @@ proc main=
 	main2()
 end
 
-=== mm_cli.m 0 0 2/15 ===
+=== mm_cli.m 0 0 2/21 ===
 
 global ichar syslibname=""
 
@@ -167,13 +175,10 @@ global proc main2=
 
 !cpl "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
 
-!CPL =TCLNAMES.LEN
-CPL =strec.bytes
-CPL =unitrec.bytes
-!CPL =TCLREC.bytes
+!CPL =strec.bytes
+!CPL =unitrec.bytes
 !CPL =MCLREC.bytes
-!CPL =KLAST
-CPL =JTAGNAMES.LEN
+!CPL =JTAGNAMES.LEN
 	startclock:=os_clock()
 	initdata()
 
@@ -186,60 +191,34 @@ CPL =JTAGNAMES.LEN
 	loadproject(inputfile)
 
 	do_parse()
-!CPL $LINENO
 	do_name()
-!CPL $LINENO
 	do_type()
-!CPL $LINENO
 
 ! Special outputs can be done at this point
 	do_writema(inputfile)	when passlevel=ma_pass			! terminates
-!CPL $LINENO
 	do_getinfo(inputfile)	when passlevel in [getst_pass, getproj_pass]		! terminates
 	do_writeexports()		when passlevel=dll_pass
-!CPL $LINENO
 
-!*!	do_gentcl()
-!CPL $LINENO
+	case passlevel
+	when mcl_pass then
+		do_genmcl()
 
-!*!	tcl_runtcl() when passlevel=runtcl_pass				!terminates
-!CPL $LINENO
+	when obj_pass then
+		do_writeobj()	
 
-! Deal with chosen output kind
+	when exe_pass then
+		do_writeexe()	
 
-!CPL PASSNAMES[PASSLEVEL]
+	when dll_pass then
+		do_writedll()	
 
-	if passlevel>=mcl_pass then
-		do_genmcl(passlevel=mcl_pass)
+	when mx_pass then
+		do_writemx()	
 
-		case passlevel
-		when obj_pass then
-!CPL $LINENO
-!*!			tcl_writeobj(changeext(outfile, "obj"))	
+	when run_pass then
+		do_run()
 
-		when exe_pass then
-!CPL $LINENO
-!*!			tcl_writeexe(changeext(outfile, "exe"))	
-
-!IF FSHOWSS THEN
-!	tcl_writess("SS")
-!FI
-
-		when dll_pass then
-!CPL $LINENO
-!*!			tcl_writedll(changeext(outfile, "dll"))	
-
-		when mx_pass then
-!CPL $LINENO
-!*!			tcl_writemx(changeext(outfile, "mx"))	
-
-		when run_pass then
-!CPL $LINENO
-!*!			tcl_exec()
-
-		esac
-	fi
-!CPL $LINENO
+	esac
 
 	showsurveys()
 
@@ -308,22 +287,6 @@ proc do_type=
 	typetime:=clock()-tt
 
 	if fshowast3 then showast("AST3") fi
-end
-
-proc do_genmcl(int flog=0)=
-!	if fverbose=3 then println "GENMCL" fi
-
-	return unless passlevel>=mcl_pass
-	int tt:=clock()
-
-!*!	tcl_genmcl()
-	mcltime:=clock()-tt
-!CPL =MCLTIME
-
-	if flog then
-!*!		tcl_writeasm(changeext(outfile, (ctarget|"c"|"asm")))
-	fi
-
 end
 
 proc initdata=
@@ -618,7 +581,60 @@ PROC SHOWSURVEYS=
 !CPL =NALLGENPCHIST[3]
 !CPL =NALLGENPC1
 END
-=== mm_decls.m 0 0 3/15 ===
+
+proc do_genmcl=
+	genmcl()
+
+	if passlevel=mcl_pass or fshowasm then
+		do_writeasm()
+	fi
+end
+
+proc do_writeobj=
+	CPL "WRITEOBJ NOT READY"
+end
+
+proc do_writeexe=
+	CPL "WRITEEXE NOT READY"
+end
+
+proc do_writedll=
+	CPL "WRITEDLL NOT READY"
+end
+
+proc do_writemx=
+	CPL "WRITEMX NOT READY"
+end
+
+proc do_writeasm=
+	ichar filename
+	ref strbuffer asmstr
+	filehandle f
+
+!	if assemtype='NASM' then
+!		phighmem:=2
+!	fi
+
+	genmcl()
+
+	asmstr:=writeasm()
+
+	filename:=changeext(outfile, "asm")
+
+	if fverbose then println "Writing ASM", filename fi
+
+	f:=fopen(filename, "w")
+	gs_println(asmstr, f)
+	fclose(f)
+
+	gs_free(asmstr)
+end
+
+proc do_run=
+	CPL "RUN NOT READY"
+end
+
+=== mm_decls.m 0 0 3/21 ===
 global const maxmodule=300
 global const maxsubprog=30
 global const maxlibfile=50
@@ -711,6 +727,11 @@ global record strec =
 		ishandler:1,			!proc is a handler (proc F*())
 
 		atfield:1,				!field def has @ x (.equivfield will be set too, but that is shared)
+
+!ADDROF:1,						!TEMP ADDITIONS FOR MCL BACKEND
+!IMPORTED:1,
+!EXPORTED:1,
+
 		isimport:1)				!for dllproc/dllvar
 
 	byte moduleno				!module in which this name is defined
@@ -749,6 +770,10 @@ global record strec =
 	byte used					!1 if var used at least once
 
 	byte scope					!module_scope etc
+
+!temporary, added for mcl backend which now uses same strec
+	byte reg
+	u32 size
 end
 
 !global record unitrec = $caligned
@@ -756,61 +781,38 @@ global record unitrec =
 	unit nextunit
 
 	byte tag					!jtag number
+	byte resultflag				!1 when the result of this unit is needed; 0=void or discarded
 	byte insptr					!tx-processing flags
 	byte txcount
-	byte spare
+
 	u32 pos: (
 		sourceoffset:24,		!char offset in source file
 		fileno:8)				!sourcefileno
 
-	union						!misc stuff depends on tag
-		struct					!const string
-			u32  slength		!includes any zero term
-			byte isastring
-			char strtype		!0/'B'/'S' = normal / bindata / strdata
-		end
-
-		byte avcode			!jname for/autovars: 'I','T','S' = index/to/step autovars
-
-		union					!for makelist
-			u32 length			!number of elements
-			byte makearray		!1 for makelist to create array-var not list-var
-		end
-
-		u32 offset				!for jdot
-
-		struct
-			union
-				i16 bitopindex	!
-				i16 opcindex	!operator nodes
-				i16 fnindex		!sf_add_var etc
-				i16 bfcode
-				i16 mathsop		!maths code (tcl kmaths/2)
-			end
-		end
-		i32 index
-		[4]byte cmpgenop		!cmpchain: up to 8 genops
-	end
-
 	i32 mode
-	union
-		i32 convmode			!convert/typepun: source/target(?) mode (will be widened to give unit mode)
-		i32 cvindex				!compiler var index
-	end
+	i32 oldmode					!convert/typepun: original mode (usually that of any subnode)
 
 	byte moduleno
 	byte subprogno
-	byte initlet				!1 for an assignment that initialises a let
-	byte isconst				!1 for jconst, and jmakerange with const range
+	byte flags: (
+		initlet:1,				!1 for an assignment that initialises a let
+		isconst:1)				!1 for jconst, and jmakerange with const range
 
-	byte resultflag				!1 when the result of this unit is needed; 0=void or discarded
 	union
-		byte genop				!generic operator for jbin, incr etc
+		byte genop				!kadd etc, for jbin, incr etc
 		byte propcode			!kklen etc
 		byte inv				!notin
 		byte convcode			!kkfix etc
+		byte bfcode				!bf_even etc
+		byte cvindex			!cv_lineno etc, compile var index
+		byte fnindex			!sf_print etc
 	end
-	byte tclcond				!eq_cc etc
+	union
+		byte mathsop			!maths_sin etc
+		byte condcode			!eq_cc etc
+	end
+
+	[3]byte SPARE
 
 !Rest of unit is fields A, B, C. Not all will be used
 !Jsubs[tag] says how many (0-3) will be sub-nodes
@@ -832,7 +834,24 @@ global record unitrec =
 
 	union
 		unit	c				!subnode
-		[4]i16	cmptclmode		!jcmpchain only
+
+		struct					!const string
+			u32  slength		!includes any zero term
+			byte isastring
+			char strtype		!0/'B'/'S' = normal / bindata / strdata
+		end
+
+		u32 length			!makelist: number of elements
+
+		struct					!cmpchain
+			[8]byte cmpgenop
+		end
+
+		u32 offset				!jdot
+		byte avcode				!jname for/autovars: 'I','T','S' = index/to/step autovars
+
+		i32 loopindex			!jexit etc
+
 	end
 	[3]unit abc @ a				!alias a/b/c with an array
 
@@ -1007,17 +1026,19 @@ global const langhomedir	= "C:/bx/"
 
 global const langhelpfile	= "mm_help.txt"
 
-global byte ctarget=0
+!global byte ctarget=0
 
 global int mcltime
 global int sstime
 global int exetime
 
-export byte fregoptim = 1
-export byte fpeephole
+global byte fregoptim = 1
+global byte fpeephole
 
-export int mmpos
-=== mm_diags.m 0 0 4/15 ===
+global int mmpos
+
+global int mlabelno
+=== mm_diags.m 0 0 4/21 ===
 int currlineno
 int currfileno
 
@@ -1029,6 +1050,9 @@ ref strbuffer ds=&v
 
 const tab1="\t"
 const tab2="\t\t"
+
+const tabstr="|--"
+
 
 !const fshowsymbols=1
 const fshowsymbols=0
@@ -1321,8 +1345,8 @@ global proc printunit(ref unitrec p, int level=0, number=0, filehandle dev=nil)=
 !		print @dev, " ",,getdottedname(d)!, q
 !		print @dev, (p.dottedname|" {Dotted}"|"")
 
-		if p.c then
-			print @dev, " Lastcall:", p.c
+		if p.avcode then
+			print @dev, " AV:", p.c:"c"
 		fi
 
 !		print @dev, " Moduleno:", p.moduleno
@@ -1373,16 +1397,16 @@ global proc printunit(ref unitrec p, int level=0, number=0, filehandle dev=nil)=
 		fi
 
 	when jtypeconst then
-		print @dev, typename(p.mode), typename(p.value)
+		print @dev, typename(p.value)
 
 	when jbitfield then
 		print @dev, bitfieldnames[p.bfcode]+3
 
 	when jconvert, jtypepun then
-		print @dev, " Convmode:", strmode(p.convmode)
+		print @dev, " From mode:", strmode(p.oldmode)
 
 	when jmakelist then
-		print @dev, "Len:", p.length, " Makeax:", p.makearray
+		print @dev, "Len:", p.length
 
 	when jdot then
 		print @dev, "Offset:", p.offset
@@ -1390,12 +1414,15 @@ global proc printunit(ref unitrec p, int level=0, number=0, filehandle dev=nil)=
 	when jindex, jptr then
 
 	when jexit, jredo, jnext then
-		print @dev, "#",,p.index
+		print @dev, "#",,p.loopindex
 
 	when jsyscall then
 		print @dev, sysfnnames[p.fnindex]+3
 
-	when jmakeset then
+	when joperator then
+		print @dev, genopnames[p.genop]
+
+!	when jmakeset then
 	when jcmpchain then
 		for i to p.cmpgenop.len do
 			if p.cmpgenop[i]=0 then exit fi
@@ -1410,8 +1437,7 @@ global proc printunit(ref unitrec p, int level=0, number=0, filehandle dev=nil)=
 	fi
 
 	case p.tag
-	when jbin, jbinto, junary, junaryto, jincr, 
-		jandl, jorl, jnotl, jistruel then
+	when jbin, jbinto, junary, junaryto, jincr then
 		if p.genop then
 			fprint @dev, " <#>", genopnames[p.genop]
 			if p.genop in [kmaths, kmaths2] then
@@ -1425,7 +1451,7 @@ global proc printunit(ref unitrec p, int level=0, number=0, filehandle dev=nil)=
 	when jconvert then
 		fprint @dev, " Conv<#>", convnames[p.convcode]
 	when jcmp then
-		fprint @dev, " CC<#>", ccnames[p.tclcond]
+		fprint @dev, " <#>", ccnames[p.condcode]
 	esac
 
 
@@ -1456,9 +1482,7 @@ func getprefix(int level, number, ref unitrec p)ichar=
 	if level>10 then level:=10 fi
 
 	to level do
-!		strcat(indentstr, "- ")
-		strcat(indentstr, "|---")
-!		strcat(indentstr, "|   ")
+		strcat(indentstr, tabstr)
 	od
 
 	isexpr:="S"
@@ -1748,7 +1772,9 @@ global proc printsymbol(ref tokenrec lp)=
 		andlsym, orlsym, eqsym, cmpsym, addsym, subsym, 
 		mulsym, divsym, idivsym, iremsym, iandsym, iorsym, ixorsym, shlsym, shrsym, 
 		minsym, maxsym, powersym then
-		print symbolnames[l.symbol]
+		print symbolnames[l.symbol], =L.SUBCODE
+!	elsif l.subcode then
+!	ELSE
 	elsif l.subcode then
 		fprint "SUBCODE:", l.subcode
 !	fprint "#", symbolnames[l.subcode]
@@ -1785,12 +1811,108 @@ proc dsint(int a)=
 	gs_strint(ds, a)
 end
 
-=== mm_export_dummy.m 0 0 5/15 ===
+=== mm_export_dummy.m 0 0 5/21 ===
 !hello
 
 global proc writeexports(ichar basefile, modulename)=
 end
-=== mm_lex.m 0 0 6/15 ===
+=== mm_gen.m 0 0 6/21 ===
+!dummy
+
+global proc genmcl=
+	ref strbuffer asmstr
+	ref procrec pp
+	symbol d
+
+	return when mcldone
+
+	mclinit()
+
+	mcomment("Generated ASM")
+
+	dolibfiles()
+
+	pp:=staticlist
+	while pp do
+		d:=pp.def
+		dostaticvar(d)
+		pp:=pp.nextproc
+	od
+
+	mcomment("")
+
+!import list not needed for AA; only for NASM
+
+!	for i to ndllproctable do
+!		gendllproc(dllproctable[i])
+!	od
+
+	pp:=proclist
+	while pp do
+		d:=pp.def
+		genprocdef(d)
+		pp:=pp.nextproc
+	od
+
+
+	genmc(m_endx)
+
+	mcldone:=1
+end
+
+proc dolibfiles =
+	mcomment("Lib files go here")
+	mcomment("")
+end
+
+proc dostaticvar(symbol d) =
+
+	return when d.isimport or d.equivvar
+
+	if d.scope = program_scope and d.name^='$' then
+		if eqstring(d.name,"$cmdskip") then
+			d.scope:=export_scope				!export from mlib subprog
+		fi
+	fi
+
+	setsegment((d.code|'I'|'Z'), getalignment(d.mode))
+	genmc(m_labelname, mgenmemaddr(d))
+
+	if d.code then
+		genidata(d)
+	else
+		genmc(m_resb, mgenint(ttsize[d.mode]))
+	fi
+end
+
+proc genidata(symbol d) =
+	mcomm("    IDATA for:", d.name)
+end
+
+proc genprocdef(symbol d) =
+
+	currfunc:=d
+	setsegment('C',1)
+
+
+	genmc(m_procstart, mgenmemaddr(currfunc))
+	genmc(m_labelname, mgenmemaddr(currfunc))
+
+!	initproc(currfunc)
+
+	mcomment("?>>")
+	mclprocentry:=mccodex
+
+
+
+	genmc(m_procend)
+end
+
+=== mm_genaux.m 0 0 7/21 ===
+!dummy
+=== mm_genblock.m 0 0 8/21 ===
+!dummy
+=== mm_lex.m 0 0 9/21 ===
 macro hashc(hsum,c)=hsum<<4-hsum+c
 !macro hashw(hsum)=(hsum<<5-hsum)
 macro hashw(hsum)=hsum
@@ -3070,7 +3192,7 @@ proc start=
 	od
 end
 
-=== mm_lib.m 0 0 7/15 ===
+=== mm_lib.m 0 0 10/21 ===
 int autotypeno=0
 global int nextavindex=0
 int nextsvindex=0
@@ -3339,29 +3461,6 @@ global func createarraymode(symbol owner,int target,unit dimexpr, int typedefx)i
 	ttisblock[m]:=1
 
 	return m
-end
-
-func sameunit(unit p,q, symbol powner=nil, qowner=nil)int=
-!p are q are units just parses; no name resolving or type checking
-!do a simple check to see if they are the same unit
-	if p=q then return 1 fi
-	if p=nil or q=nil then return 0 fi
-
-	if p.tag<>q.tag then return 0 fi
-
-	case p.tag
-	when jconst then
-		return p.value=q.value
-	when jmakerange,jkeyvalue then
-		return sameunit(p.a, q.a) and sameunit(p.b, q.b)
-	when jname then
-		if p.def=q.def and powner=qowner then
-			return 1
-		fi
-	esac
-
-	return 0
-
 end
 
 global func createarraymodek(symbol owner,int target,int lower,length, int typedefx)int=
@@ -3787,7 +3886,7 @@ global proc jevalx(ref unitrec p)=			!JEVAL
 
 	when jconvert,jtypepun then
 
-		jadditem(strmode(p.convmode))
+		jadditem(strmode(p.oldmode))
 		if p.tag=jtypepun then
 			jadditem("@")
 		fi
@@ -3805,7 +3904,7 @@ global proc jevalx(ref unitrec p)=			!JEVAL
 		jadditem("cast(")
 		jevalx(a)
 		jadditem(")")
-	when jkeyvalue then
+	when jdim then
 		jevalx(a)
 		jadditem(":")
 		if b then
@@ -3849,7 +3948,7 @@ global proc jevalx(ref unitrec p)=			!JEVAL
 	when jbitfield then
 		jevalx(a)
 		jaddstr(".")
-		jaddstr(bitfieldnames[p.bitopindex])
+		jaddstr(bitfieldnames[p.bfcode])
 
 	when jfmtitem then
 		jevalx(a)
@@ -4368,12 +4467,12 @@ global func convertstring(ichar s, t, int length)int=
 	return t-t0
 end
 
-=== mm_libsources_dummy.m 0 0 8/15 ===
+=== mm_libsources_dummy.m 0 0 11/21 ===
 global const fsyslibs = 0
 
 global proc loadbuiltins=
 end
-=== mm_modules.m 0 0 9/15 ===
+=== mm_modules.m 0 0 12/21 ===
 ichar fileext="m"
 
 global func loadsp(ichar filename, int mainsub=0)isubprog sp=
@@ -4846,7 +4945,7 @@ proc loadmafile(ichar filespec, ichar builtinstr=nil)=
 end
 
 
-=== mm_name.m 0 0 10/15 ===
+=== mm_name.m 0 0 13/21 ===
 symbol currstproc
 int allowmodname=0
 int noexpand
@@ -4913,7 +5012,7 @@ global proc rx_unit(symbol owner, unit p)=
 			case d.nameid
 			when typeid then		!change to type conversion
 				p.tag:=jconvert
-				storemode(owner,d.mode,p.convmode)
+				storemode(owner,d.mode,p.oldmode)
 				p.a:=b
 				if b.nextunit then
 					p.a:=createunit1(jmakelist,b)
@@ -5542,7 +5641,7 @@ proc duplfield(symbol owner,p,q)=
 	q.uflags:=p.uflags		!for .uflags
 	storemode(owner,p.mode,q.mode)
 end
-=== mm_parse.m 0 0 11/15 ===
+=== mm_parse.m 0 0 14/21 ===
 !M Language Parserxxx
 
 int intabledata=0		!1 means reading table data line; $ gives tabledataname
@@ -6018,16 +6117,8 @@ func readlbrack:unit=
 	elsif binopset[lx.symbol] and nextlx.symbol=rbracksym then	!operator constant
 !	elsif symboloptypes[lx.symbol]=bin_op and nextlx.symbol=rbracksym then	!operator constant
 		p:=createunit0(joperator)
-		p.opcindex:=lx.subcode
-		lex()
-		lex()
-		return p
-	elsif binopset[lx.symbol] and nextlx.symbol=assignsym then	!operator:= constant
-!	elsif symboloptypes[lx.symbol]=bin_op and nextlx.symbol=assignsym then	!operator:= constant
-		p:=createunit0(joperator)
 		p.genop:=symbolgenops[lx.symbol]
-		lex()			!read :=
-		lexchecksymbol(rbracksym)
+		lex()
 		lex()
 		return p
 	fi
@@ -6184,7 +6275,7 @@ func readcast:unit=
 	case lx.symbol
 	when rbracksym then
 		p:=createunit0(jtypeconst)
-		p.mode:=ttype
+		p.mode:=ti64
 		p.value:=t
 		return p
 
@@ -6197,7 +6288,7 @@ func readcast:unit=
 			lex()
 			p:=createunit0(jtypeconst)
 			p.value:=t
-			p.mode:=ttype
+			p.mode:=ti64
 			lex()
 		else					!leave dot to be processed by caller
 			p:=createunit0(jtypeconst)
@@ -6215,7 +6306,7 @@ func readcast:unit=
 !	lex()
 
 	p:=createunit1(opc, p)
-	storemode(currproc, t, p.convmode)
+	storemode(currproc, t, p.oldmode)
 	return p
 end
 
@@ -6394,7 +6485,7 @@ func readcastx:unit=
 !	lex()
 
 	p:=createunit1(opc, p)
-	storemode(currproc, m, p.convmode)
+	storemode(currproc, m, p.oldmode)
 
 	return p
 end
@@ -6457,9 +6548,9 @@ arraybounds:
 					lex()
 					if not (lx.symbol=commasym or lx.symbol=rsqsym) then	!lower:length
 						length:=readunit()
-						dim:=createunit2(jkeyvalue, dim, length)
+						dim:=createunit2(jdim, dim, length)
 					else													!lower:
-						dim:=createunit1(jkeyvalue, dim)
+						dim:=createunit1(jdim, dim)
 					fi
 				esac
 			fi
@@ -7112,7 +7203,7 @@ func readcondsuffix(unit p)unit=
 	when kunlesssym then
 		lex()
 		q:=createunit1(jnotl, fixcond(readunit()))
-		q.genop:=knot
+!		q.genop:=knot
 		return createunit2(jif, q, createunit1(jblock, p))
 	else
 		return p
@@ -7203,7 +7294,7 @@ func readunless:unit=
 	fi
 	checkend(kendsym, kunlesssym)
 	p:=createunit3(jif, q:=createunit1(jnotl, pcond), pthen, pelse)
-	q.genop:=knot
+!	q.genop:=knot
 	p.pos:=pos
 	return p
 end
@@ -7614,8 +7705,8 @@ func readfor:unit=
 	pcond:=nil
 
 	if lx.symbol in [insym, inrevsym] then				!assume forall
-		if lx.symbol=jinrev then
-			opc:=jfordown				!tentative; may be changed to forall
+		if lx.symbol=inrevsym then
+			opc:=jfordown						!tentative; may be changed to forall
 		fi
 		lex()
 
@@ -8372,7 +8463,7 @@ end
 
 func readset:unit=
 !positioned at "["
-	int length, nkeyvalues, oldirp
+	int length
 	unit p, ulist, ulistx
 
 	lex()					!first symbol of first expression
@@ -8384,16 +8475,11 @@ func readset:unit=
 	esac
 
 	length:=0
-	nkeyvalues:=0
 
 	ulist:=ulistx:=nil
 
 	do
-		oldirp:=inreadprint
-		inreadprint:=0
 		p:=readunit()
-		inreadprint:=oldirp
-		if p.tag=jkeyvalue then ++nkeyvalues fi
 		++length
 
 		addlistunit(ulist, ulistx, p)
@@ -8414,12 +8500,12 @@ func readset:unit=
 	od
 	lex()
 
-	if nkeyvalues then
-		if length>nkeyvalues then serror("dict: mixed elements") fi
-		p:=createunit1(jmakedict, ulist)
-	else
+!	if nkeyvalues then
+!		if length>nkeyvalues then serror("dict: mixed elements") fi
+!		p:=createunit1(jmakedict, ulist)
+!	else
 		p:=createunit1(jmakeset, ulist)
-	fi
+!	fi
 	p.length:=length
 	return p
 end
@@ -8534,7 +8620,7 @@ end
 func readcmpterms(unit pt=nil)unit p=
 	int pos, opc, n
 	unit ulist, ulistx, q
-	[4]byte genops
+	[8]byte genops
 
 	p:=readinterms(pt)
 
@@ -8566,7 +8652,7 @@ func readcmpterms(unit pt=nil)unit p=
 	if n=1 then
 		p.tag:=jcmp
 		q:=p.a
-		p.tclcond:=genops[1]
+		p.condcode:=genops[1]
 		p.b:=q.nextunit
 		q.nextunit:=nil
 	else
@@ -8587,7 +8673,8 @@ func readinterms(unit pt=nil)unit p=
 		pos:=lx.pos
 		lex()
 
-		p:=createunit2(jin, p, readrangeterm())
+		p:=createunit2(jinrange, p, readrangeterm())		!can change to inset later
+
 		p.inv:=opc
 		p.pos:=pos
 	else
@@ -8726,7 +8813,12 @@ func readterm2:unit=
 		if inreadprint then exit fi
 		lex()
 		q:=readunit()
-		p:=createunit2((inparamlist|jkeyword|jkeyvalue), p, q)
+
+		if inparamlist then
+			p:=createunit2(jkeyword, p, q)
+		else
+			serror("A:B?")
+		fi
 
 	when incrsym then
 		case lx.subcode
@@ -8806,7 +8898,7 @@ iandsym, iorsym, ixorsym,
 		else
 			lex()
 			p:=createunit1(jnotl, readterm2())
-			p.genop:=knot
+!			p.genop:=knot
 		fi
 
 	when istruelsym then
@@ -8860,7 +8952,7 @@ iandsym, iorsym, ixorsym,
 			if ndollar<=0 then
 				serror("[$] No array")
 			fi
-			p:=createunit1(junary, dollarstack[ndollar])
+			p:=createunit1(jprop, dollarstack[ndollar])
 			p.propcode:=kkupb
 		fi
 		lex()
@@ -8976,6 +9068,7 @@ iandsym, iorsym, ixorsym,
 		checksymbollex(commasym)
 		q:=readunit()
 		checksymbollex(rbracksym)
+CPL "MAKESLICE"
 		p:=createunit2(jmakeslice, p, q)
 
 	else
@@ -9243,7 +9336,7 @@ proc checknotempty(unit p)=
 		serror("Empty sunit")
 	fi
 end
-=== mm_support.m 0 0 12/15 ===
+=== mm_support.m 0 0 15/21 ===
 global [0:]byte bytemasks=(1,2,4,8,16,32,64,128)
 
 global func newsourcefile:ifile pf=
@@ -9781,54 +9874,57 @@ proc getstrec(filehandle f, symbol d)=
 	println @f
 
 end
-=== mm_tables.m 0 0 13/15 ===
+=== mm_tables.m 0 0 16/21 ===
 !include "mm_types.m"
 
 global enumdata  [0:]ichar stdnames,
         [0:]byte stdsize,
-        [0:]byte stdtcl =
+        [0:]byte stdtcl,
+		[0:]byte stdsigned,
+		[0:]byte stdint,
+		[0:]byte stdfloat,
+		[0:]byte stdwide =
 
-!    type         name       bits     tcl
-    (tvoid=0,     "void",       0,    tvoid),
+!    type         name       bits     tcl     sign int flt  wide
+    (tvoid=0,     "void",       0,    tvoid,	0,	0,	0,	0),
 
-    (tr64,        "r64",        8,    tr64),
-    (tr32,        "r32",        4,    tr32),
-    (ti64,        "i64",        8,    ti64),
-    (tu64,        "u64",        8,    tu64),
-    (tc64,        "c64",        8,    tu64),
+    (tr64,        "r64",        8,    tr64,		0,	0,	1,	1),
+    (tr32,        "r32",        4,    tr32,		0,	0,	1,	0),
+    (ti64,        "i64",        8,    ti64,		1,	1,	0,	0),
+    (tu64,        "u64",        8,    tu64,		0,	1,	0,	0),
+    (tc64,        "c64",        8,    tu64,		0,	1,	0,	0),
 
-    (tbool64,     "bool64",     8,    tu64),
+    (tbool64,     "bool64",     8,    tu64,		0,	1,	0,	0),
 
-    (tref,        "ref",        8,    tu64),
-    (trecord,     "rec",        0,    tblock),
-    (trange,      "range",     16,    tblock),
+    (tref,        "ref",        8,    tu64,		0,	0,	0,	0),
+    (trecord,     "rec",        0,    tblock,	0,	0,	0,	0),
+    (trange,      "range",     16,    tblock,	0,	0,	0,	0),
 
-    (tarray,      "array",       0,   tblock),
-    (tslice,      "slice",      16,   tblock),
+    (tarray,      "array",       0,   tblock,	0,	0,	0,	0),
+    (tslice,      "slice",      16,   tblock,	0,	0,	0,	0),
 
-    (tc8,         "c8",          1,   tu8),
-    (tbool8,      "b8",          1,   tu8),
-    (ti8,         "i8",          1,   ti8),
-    (ti16,        "i16",         2,   ti16),
-    (ti32,        "i32",         4,   ti32),
-    (tu8,         "u8",          1,   tu8),
-    (tu16,        "u16",         2,   tu16),
-    (tu32,        "u32",         4,   tu32),
+    (tc8,         "c8",          1,   tu8,		0,	1,	0,	0),
+    (tbool8,      "b8",          1,   tu8,		0,	1,	0,	0),
+    (ti8,         "i8",          1,   ti8,		1,	1,	0,	0),
+    (ti16,        "i16",         2,   ti16,		1,	1,	0,	0),
+    (ti32,        "i32",         4,   ti32,		1,	1,	0,	0),
+    (tu8,         "u8",          1,   tu8,		0,	1,	0,	0),
+    (tu16,        "u16",         2,   tu16,		0,	1,	0,	0),
+    (tu32,        "u32",         4,   tu32,		0,	1,	0,	0),
 
-    (trefchar,    "ichar",       8,   tu64),
-    (trefbit,     "refbit",     16,   tu64),
+    (trefchar,    "ichar",       8,   tu64,		0,	0,	0,	0),
+    (trefbit,     "refbit",     16,   tu64,		0,	0,	0,	0),
 
-    (tauto,       "auto",        0,   tu64),
-    (tany,        "any",         0,   tu64),
-    (tproc,       "proc",        0,   tu64),
-    (tlabel,      "label",       0,   tu64),
-    (ttype,       "type",        8,   tu64),
-    (tbitfield,   "bitfl",       8,   tu64),
-    (ttuple,      "tuple",       0,   tu64),
-    (tpending,    "pend",        0,   tu64),
-    (tblock,      "block",       8,   tblock),
+    (tauto,       "auto",        0,   tu64,		0,	0,	0,	0),
+    (tany,        "any",         0,   tu64,		0,	0,	0,	0),
+    (tproc,       "proc",        0,   tu64,		0,	0,	0,	0),
+    (tlabel,      "label",       0,   tu64,		0,	0,	0,	0),
+    (tbitfield,   "bitfl",       8,   tu64,		0,	0,	0,	0),
+    (ttuple,      "tuple",       0,   tu64,		0,	0,	0,	0),
+    (tpending,    "pend",        0,   tu64,		0,	0,	0,	0),
+    (tblock,      "block",       8,   tblock,	0,	0,	0,	0),
 
-    (tlast,       "last ",       0,   tvoid),
+    (tlast,       "last ",       0,   tvoid,	0,	0,	0,	0),
 end
 
 global const tuser	= tlast
@@ -9905,129 +10001,132 @@ global enumdata [0:]ichar jtagnames,
 ! 3 means returns a value, but is not a unary or binary op
 !jsolo = 1 means unit is allowed standalone without its value being used
 
-!a,b,c are unitrec refs, which can be a single unit, or a linked-list chain
-!(usually in forward order)
-!	L means .a/b/c pointing to a unitlist; L can be nil for an empty list
-!	u means .a/b/c pointing to a single unit
-!	u/nil means can be nil
+!Key
+!   A B C		Indicate single subnodes
+!   A*			Etc, means a subnode can be a list
+!   A+			Etc, means a list with one or two extra elements, so A2, A3
 
-![a=u] means a is a unit/list, or is nil
-
+!                       N Expr  Solo
 	(jnull=0,		$,	0,	3,	0), ! Place holder unit: means 'param no present' when used where a param is expected
-	(jconst,		$,	0,	3,	0), ! value/etc=value, typeno=type code
-	(jname,			$,	0,	3,	0), ! def=nameptr
-	(jblock,		$,	1,	0,	1), ! a=L
-	(jstrinclude,	$,	1,	3,	0), !
+	(jconst,		$,	0,	3,	0), ! int/real/string/range in .value/.xvalue/.svalue etc
+	(jname,			$,	0,	3,	0), ! .def = ST entry
+	(jblock,		$,	1,	0,	1), ! A*
+	(jstrinclude,	$,	1,	3,	0), ! A; should be const string
 
 !Logical Operators
 
-	(jandl,			$,	2,	2,	0), ! A B	This group are for conditional expressions (no result)
-	(jorl,			$,	2,	2,	0), ! A B
+	(jandl,			$,	2,	2,	0), ! A and B; A/B must be bools otherwise ISTRUE applied
+	(jorl,			$,	2,	2,	0), ! A or B
 
-	(jnotl,			$,	1,	1,	0), ! a
-	(jistruel,		$,	1,	1,	0), ! a
-	(jisfalsel,		$,	1,	1,	0), ! a
+	(jnotl,			$,	1,	1,	0), ! not A; A must be a bool (compiler generates jisfalsel if not)
+	(jistruel,		$,	1,	1,	0), ! istrue A  zero/not-zero => 0/1
+	(jisfalsel,		$,	1,	1,	0), ! isfalse A zero/not-zero => 1/0
 
 !Expressions and Operators
 
-	(jmakelist,		$,	2,	3,	0), ! a=L, b=[u], length=N; element list/lower bound expr
-	(jmakerange,	$,	2,	3,	0), ! A B
-	(jmakeset,		$,	1,	3,	0), ! a=L, length=N
-	(jmakedict,		$,	1,	3,	0), !
-	(jmakeslice,	$,	2,	3,	0), !
-	(jreturnmult,	$,	1,	0,	0), !
+	(jmakelist,		$,	2,	3,	0), ! (B: A*); B is lower bound; .length=# elements
+	(jmakerange,	$,	2,	3,	0), ! A..B
+	(jmakeset,		$,	1,	3,	0), ! [A*]; .length=# elements
+	(jmakeslice,	$,	2,	3,	0), ! slice(A, B) A=ptr, B=length
+	(jreturnmult,	$,	1,	0,	0), ! A*; uses .length; (set in TX from return/makelist
 
-	(jkeyword,		$,	1,	3,	0), ! def=st entry
-	(jkeyvalue,		$,	2,	3,	0), ! A B
-	(jassign,		$,	2,	3,	1), ! A B a := x
-	(jassignmm,		$,	2,	3,	1), ! A B (a,b,c) := (x,y,z)
-	(jassignms,		$,	2,	3,	1), ! A B (a,b,c) := x
-	(jassignmdrem,	$,	2,	3,	1), ! A B (a,b) := x divrem y
-	(jcall,			$,	2,	3,	1), ! A B
+	(jkeyword,		$,	2,	3,	0), ! def=st entry
+	(jdim,			$,	2,	3,	0), ! [A:] or [A:B] (set array dims by length)
+	(jassign,		$,	2,	3,	1), ! A := B
+	(jassignmm,		$,	2,	3,	1), ! (A*) := (B*); .length
+	(jassignms,		$,	2,	3,	1), ! (A*) := B; .length
+	(jassignmdrem,	$,	2,	3,	1), ! (A+) := B; B should be x divrem y 
+	(jcall,			$,	2,	3,	1), ! A(B*)
 
-	(jcmp,			$,	2,	2,	0), ! A B
-	(jcmpchain,		$,	2,	1,	0), ! A B
-	(jbin,			$,	2,	2,	0), ! A B
-	(junary,		$,	2,	1,	0), ! A B
-	(jprop,			$,	2,	1,	0), ! A B
-	(jbinto,		$,	2,	2,	0), ! A B
-	(junaryto,		$,	1,	1,	0), ! A B
-	(jincr,			$,	1,	3,	0), ! a	++a
-	(jin,			$,	2,	2,	0), ! A B
+	(jcmp,			$,	2,	2,	0), ! A cc B
+	(jcmpchain,		$,	2,	1,	0), ! A* uses .cmpgenop/.cmpmode
+	(jbin,			$,	2,	2,	0), ! A op B
+	(junary,		$,	2,	1,	0), ! op A
+	(jprop,			$,	2,	1,	0), ! prop A
+	(jbinto,		$,	2,	2,	0), ! A op:= b
+	(junaryto,		$,	1,	1,	0), ! op:= A
+	(jincr,			$,	1,	3,	0), ! op A, A op
 
-	(jinrev,		$,	2,	2,	0), ! A B
-	(jinrange,		$,	2,	2,	0), ! A B
-	(jinset,		$,	2,	2,	0), ! A B
+	(jinrange,		$,	2,	2,	0), ! A in B (B is range)
+	(jinset,		$,	2,	2,	0), ! A in B (B is set)
 
-	(jindex,		$,	2,	3,	0), ! A B		a[b]
-	(jslice,		$,	2,	3,	0), ! A B		a[b.a..b.b]
+	(jindex,		$,	2,	3,	0), ! A[B]
+	(jslice,		$,	2,	3,	0), ! A[B..C]
 
-	(jdot,			$,	2,	3,	0), ! A B opcode	a.b; opcode=0/1/2 used for signalling in rx pass
-	(jdotindex,		$,	2,	3,	0), ! A B		a[b]
-	(jdotslice,		$,	2,	3,	0), ! A B		a[b]
+	(jdot,			$,	2,	3,	0), ! A.B (B usu name); uses .offset in later stages
+	(jdotindex,		$,	2,	3,	0), ! A.[B]
+	(jdotslice,		$,	2,	3,	0), ! A.[B] (B must be jmakerange)
 
-	(jptr,			$,	1,	3,	0), ! a		a^
-	(jaddrof,		$,	2,	3,	0), ! a		&a
-	(jconvert,		$,	1,	3,	0), ! typeno=T a		T(a)			T
-	(jshorten,		$,	1,	3,	0), !
-	(jautocast,		$,	1,	3,	0), ! typeno=T a		T(a)			T
-	(jtypepun,		$,	1,	3,	0), ! typeno=T a		T@(a)			T
-	(jtypeconst,	$,	0,	3,	0), ! typeno=T			typeconst(T)
-	(joperator,		$,	0,	3,	0), ! opcode=opc
-	(jupper,		$,	1,	3,	0), ! a		$					T
+	(jptr,			$,	1,	3,	0), ! A^
+	(jaddrof,		$,	2,	3,	0), ! &A
 
-	(jbitwidth,		$,	1,	1,	0), ! a
-	(jbytesize,		$,	1,	1,	0), ! a
-	(jtypestr,		$,	0,	1,	0), ! a
-	(jbitfield,		$,	1,	3,	0), ! a
+!NOTE conversion handling in the frontend needs to be reviewed, especially
+!type punning
 
-	(jminvalue,		$,	1,	3,	0), ! a
-	(jmaxvalue,		$,	1,	3,	0), ! a
+	(jconvert,		$,	1,	3,	0), ! mode(A); A has type oldmode; cast to mode. Uses .convcode
 
-	(jcompilervar,	$,	0,	3,	0), !
-	(jwhenthen,		$,	2,	0,	0), ! a=L b=u
-	(jfmtitem,		$,	2,	3,	0), ! A B  x/fmtstr
+	(jshorten,		$,	1,	3,	0), ! A; convert type of A to type of this node;
+									! seems to be used in init data only; must be compile-time
+	(jautocast,		$,	1,	3,	0), ! A (changed to jconvert by tx pass)
+	(jtypepun,		$,	1,	3,	0), ! THIS NEEDS REVISING
+
+	(jtypeconst,	$,	0,	3,	0), ! .value is the type code. The node itself has type i64
+	(joperator,		$,	0,	3,	0), ! Uses .genop
+
+	(jbitwidth,		$,	1,	1,	0), ! A.bitwidth
+	(jbytesize,		$,	1,	1,	0), ! A.bytes
+	(jtypestr,		$,	0,	1,	0), ! A.typestr
+	(jbitfield,		$,	1,	3,	0), ! A.odd etc (uses .bfcode)
+
+	(jminvalue,		$,	1,	3,	0), ! A.min
+	(jmaxvalue,		$,	1,	3,	0), ! A.max
+
+	(jcompilervar,	$,	0,	3,	0), ! Uses .cvindex to denote compiler var)
+	(jfmtitem,		$,	2,	3,	0), ! A:B within print items
 	(jnogap,		$,	0,	3,	0), ! 
 	(jspace,		$,	0,	3,	0), ! 
 
 !Statements
 
-	(jreturn,		$,	1,	0,	0), ! a=x/nil
-	(jsyscall,		$,	1,	3,	1), ! a=x or nil
+	(jreturn,		$,	1,	0,	0), ! return [A]
+	(jsyscall,		$,	1,	3,	1), ! FN(A*); .fnindex = sysfn no.
 
-	(jto,			$,	3,	0,	0), ! a=N, b=body, c=tempvar/nil, def=name
-	(jif,			$,	3,	3,	1), ! condcode a=then b=else
-	(jforup,		$,	3,	0,	0), ! 
-	(jfordown,		$,	3,	0,	0), !
-	(jforall,		$,	3,	0,	0), !
-	(jforallrev,	$,	3,	0,	0), !
-	(jwhile,		$,	3,	0,	1), ! a=x b=u
-	(jrepeat,		$,	2,	0,	1), ! a=u b=x
-	(jgoto,			$,	1,	0,	1), ! a=x
-	(jlabeldef,		$,	0,	0,	0), ! def=nameptr
-	(jredo,			$,	0,	0,	1), ! [a=x]
-	(jnext,			$,	0,	0,	1), ! [a=x]
-	(jexit,			$,	0,	0,	1), ! [a=x]
-	(jdo,			$,	1,	0,	1), ! [a=u
-	(jcase,			$,	3,	3,	1), ! a=x b=L [c=else]		L is series of whenthen pairs
-	(jdocase,		$,	3,	0,	1), ! a=x b=L [c=else]
-	(jswitch,		$,	3,	3,	1), ! a=x b=L [c=else]
-	(jdoswitch,		$,	3,	0,	1), ! a=x b=L [c=else]
-	(jdoswitchu,	$,	3,	0,	1), ! a=x b=L [c=else]
-	(jdoswitchx,	$,	3,	0,	1), ! a=x b=L [c=else]
-	(jswap,			$,	2,	0,	1), ! A B
-	(jselect,		$,	3,	3,	1), ! Not implemented
-	(jrecase,		$,	1,	0,	0), ! Not implemented
+	(jto,			$,	3,	0,	0), ! to A do B od
+	(jif,			$,	3,	3,	1), ! if A then B [else C] fi
+	(jforup,		$,	3,	0,	0), ! for A := B+     to B2 [by B3] do C+ [else C2] od
+	(jfordown,		$,	3,	0,	0), ! for A := B+ downto B2 [by B3] do C+ [else C2] od
+	(jforall,		$,	3,	0,	0), ! for[all] [i,]x in L do body [else e] od
+									!    A1=i; A2=x; A3=L.lwb; A4=L.upb; B=L; B2={x:=L[I];C1=body; C2=E
+	(jforallrev,	$,	3,	0,	0), ! Same but with inrev
+	(jwhile,		$,	3,	0,	1), ! while A [,C] do B od
+	(jrepeat,		$,	2,	0,	1), ! repeat A until B
+	(jgoto,			$,	1,	0,	1), ! goto A
+	(jlabeldef,		$,	0,	0,	0), ! A:
+	(jexit,			$,	0,	0,	1), ! exit     .loopindex
+	(jredo,			$,	0,	0,	1), ! redoloop .loopindex
+	(jnext,			$,	0,	0,	1), ! nextloop .loopindex
+	(jdo,			$,	1,	0,	1), ! do A od
+	(jcase,			$,	3,	3,	1), ! case A <B* = whenthen chain> [else C] end
+	(jdocase,		$,	3,	0,	1), ! Same as case
+	(jwhenthen,		$,	2,	0,	0), ! when A* then B (part of internal case/switch)
 
-	(jprint,		$,	2,	0,	1), ! [a=dev] b=L
-	(jprintln,		$,	2,	0,	1), ! [a=dev] b=L
-	(jfprint,		$,	3,	0,	1), ! [a=dev] b=fmtstr c=L
-	(jfprintln,		$,	3,	0,	1), ! [a=dev] b=fmtstr c=L
-	(jread,			$,	2,	0,	1), ! [a=dev] b=L
-	(jreadln,		$,	2,	0,	1), ! [a=dev] b=L
-	(jstop,			$,	1,	0,	0), ! [a=x]
-	(jeval,			$,	1,	3,	1), ! "
-	(jclear,		$,	1,	1,	1), ! "
+	(jswitch,		$,	3,	3,	1), ! Same as case
+	(jdoswitch,		$,	3,	0,	1), ! Same as case
+	(jdoswitchu,	$,	3,	0,	1), ! Same as case
+	(jdoswitchx,	$,	3,	0,	1), ! Same as case
+	(jswap,			$,	2,	0,	1), ! swap(A, B)
+	(jselect,		$,	3,	3,	1), ! (A | B* | C)
+	(jrecase,		$,	1,	0,	0), ! recase A; must be const
+
+	(jprint,		$,	2,	0,	1), ! print   [@A,] B*
+	(jprintln,		$,	2,	0,	1), ! println [@A,] B*
+	(jfprint,		$,	3,	0,	1), ! print   [@A,] B, C*   B is fmtstr
+	(jfprintln,		$,	3,	0,	1), ! println [@A,] B, C*   B is fmtstr
+	(jread,			$,	2,	0,	1), ! read A*
+	(jreadln,		$,	2,	0,	1), ! readln [@A] (items are in separate jread node)
+	(jstop,			$,	1,	0,	0), ! stop [A]
+	(jeval,			$,	1,	3,	1), ! eval A
+	(jclear,		$,	1,	1,	1), ! clear A
 end
 
 global enumdata []ichar bitfieldnames=
@@ -10613,7 +10712,7 @@ proc start=
 
 end
 
-=== mm_type.m 0 0 14/15 ===
+=== mm_type.m 0 0 17/21 ===
 const nolv=0
 const needlv=1
 
@@ -10662,7 +10761,7 @@ proc tpass(unit p, int t=tany, lv=nolv)=
 	when jbin, jcmp then
 		tx_bin(p,a,b)
 
-	when jin then
+	when jinrange then
 		tx_in(p,a,b)
 
 	when junary then
@@ -10911,6 +11010,9 @@ proc tpass(unit p, int t=tany, lv=nolv)=
 	when jmakeset then
 		tx_makeset(p,a,t)
 
+	when joperator then
+		p.mode:=ti64
+
 	else
 		CPL "TXUNIT: CAN'T DO:",jtagnames[p.tag]
 	doelse:
@@ -11059,7 +11161,7 @@ proc setarraysize(int m)=
 			tpass(b)
 			lower:=getconstint(a)
 			length:=getconstint(b)-lower+1
-		when jkeyvalue then
+		when jdim then
 			tpass(a)
 			lower:=getconstint(a)
 			if b then
@@ -11551,7 +11653,7 @@ doidiv:
 			return
 		fi
 
-	elsif p.tclcond then
+	elsif p.condcode then
 		if dobinnumx(p,a,b) then
 			p.mode:=tbool
 			return
@@ -11563,7 +11665,7 @@ doidiv:
 			fi
 			return
 		fi
-		if p.tclcond in [eq_cc, ne_cc] then
+		if p.condcode in [eq_cc, ne_cc] then
 			if comparemodes(amode, bmode) then
 				return
 			fi
@@ -11672,6 +11774,13 @@ proc tx_cmpchain(unit p,a)=
 		genop:=p.cmpgenop[i]
 		if genop=0 then exit fi
 
+STATIC INT REPORTED
+IF NOT REPORTED THEN
+	CPL("CMPCHAIN/NEEDS GETTCLMODE")
+	REPORTED:=1
+FI
+
+!TXERROR("CMPCHAIN/NEED GETTCLMODE")
 !*!		p.cmptclmode[i]:=gettclmode(u)
 	od
 
@@ -12336,14 +12445,14 @@ end
 proc tx_convert(unit p,a,int hard=0)=
 	case a.tag
 	when jmakelist then
-		tx_makelist(a,a.a,p.convmode,nolv)
+		tx_makelist(a,a.a,p.oldmode,nolv)
 	else
 !CPL "TX CONVERT"
 		tpass(a)
-		coerceunit(a,p.convmode,hard)
+		coerceunit(a,p.oldmode,hard)
 !!NEW:
-!		tpass(a, p.convmode, hard:hard)
-!!		coerceunit(a,p.convmode,hard)
+!		tpass(a, p.oldmode, hard:hard)
+!!		coerceunit(a,p.oldmode,hard)
 	esac
 	deleteunit(p,a)			!get rid of this convert (may be replaced by new convert unit)
 end
@@ -12729,7 +12838,7 @@ proc tx_typepun(unit p,a)=
 		tpass(a)
 
 		smode:=ttbasetype[a.mode]
-		tmode:=ttbasetype[p.convmode]
+		tmode:=ttbasetype[p.oldmode]
 
 !CPL =STRMODE(SMODE)
 !CPL =STRMODE(TMODE)
@@ -12771,7 +12880,7 @@ proc tx_exit(unit p,a)=
 	if a.tag<>jconst then
 		txerror("exit/etc not const")
 	fi
-	p.index:=a.value
+	p.loopindex:=a.value
 	p.a:=nil
 end
 
@@ -12953,7 +13062,7 @@ proc tx_dotindex(unit p,a,b,int lv) =
 	if not ttisinteger[a.mode] then
 		if ttisreal[a.mode] then
 			insertunit(a,jtypepun)
-			a.mode:=a.convmode:=tu64
+			a.mode:=a.oldmode:=tu64
 			a.resultflag:=1
 
 		else
@@ -13019,7 +13128,7 @@ proc twiden(unit p, int lv)=
 	when jname, jptr, jindex, jdot, jcall, jincr then
 		insertunit(p, jconvert)
 		p.convcode:=kkwiden
-		p.convmode:=m
+		p.oldmode:=m
 		p.mode:=gettypebase(m)
 	else
 		PRINTUNIT(P)
@@ -13062,7 +13171,7 @@ proc tx_bitfield(unit p,a,int lv)=
 	if not ttisinteger[a.mode] and not ttisref[a.mode] then
 		if ttisreal[a.mode] then
 			insertunit(a,jtypepun)
-			a.mode:=a.convmode:=tu64
+			a.mode:=a.oldmode:=tu64
 			a.resultflag:=1
 		else
 			txerror("Int/ref needed")
@@ -13110,7 +13219,7 @@ proc tx_bitfield(unit p,a,int lv)=
 		p.resultflag:=1
 		p.b.resultflag:=1
 
-		if p.bitopindex=bf_even then
+		if p.bfcode=bf_even then
 			p.mode:=tu64
 			addnotl(p)
 		fi
@@ -13632,8 +13741,8 @@ checkhard:
 		elsecase tbase
 		when tbool then
 			opc:=kktoboolt
-		when ttype then
-			opc:=kksoftconv
+!		when ttype then
+!			opc:=kksoftconv
 		fi
 
 	elsecase sbase
@@ -13738,11 +13847,11 @@ GERROR("COERCE/SLICEPTR")
 
 		esac
 
-	when ttype then
-		if tbase<=tlastnum then
-			opc:=kksoftconv
-
-		fi
+!	when ttype then
+!		if tbase<=tlastnum then
+!			opc:=kksoftconv
+!
+!		fi
 	fi
 
 	applyconversion(p,s,t,opc)
@@ -13799,12 +13908,12 @@ proc applyconversion(unit p, int s,t, opc)=
 	insertunit(p, jconvert)
 	p.genop:=opc
 
-	p.convmode:=s
+	p.oldmode:=s
 	p.resultflag:=1
 
 !???
 	if ttisshort[t] then
-		p.convmode:=t
+		p.oldmode:=t
 		t:=gettypebase(t)
 	fi
 
@@ -13974,7 +14083,7 @@ proc tx_assign(unit p,a,b,int t)=
 			STATIC INT NN
 
 			if b.tag=jconvert and b.convcode=kkwiden and
-				 ttsize[a.mode]<=ttsize[b.convmode] and not needres then
+				 ttsize[a.mode]<=ttsize[b.oldmode] and not needres then
 				DELETEUNIT(B, B.A)
 			fi
 
@@ -14154,13 +14263,17 @@ func tx_in(unit p,a,b)int=
 				exit
 			fi
 		od
+
+		p.tag:=jinset
+
 	fi
 
-	if isnum(a.mode) and b.tag in [jmakerange, jmakeset] and simpleset then
-		p.tag:=(b.tag=jmakerange|jinrange|jinset)
-	else
+!CPL "TXIN:"
+!PRINTUNIT(P)
+
+	unless isnum(a.mode) and b.tag in [jmakerange, jmakeset] and simpleset then
 		txerror("doin")
-	fi
+	end
 	p.mode:=tbool
 
 !	if p.genop=kknotin then
@@ -14169,7 +14282,1962 @@ func tx_in(unit p,a,b)int=
 	fi
 	return 1
 end
-=== mm_help.txt 0 1 15/15 ===
+=== mcx_decls.m 0 0 18/21 ===
+
+
+global type mclopnd = ref mclopndrec
+
+global record mclopndrec =
+!	ref pstrec labeldef	!nil, or handle of strec for label
+	union
+		symbol def
+		i64 value		!immediate value
+		r64 xvalue	!immediate real value, mainly for dq
+		ichar svalue	!immediate string
+		int labelno
+		int sysfn
+		struct
+			i32 tempno
+			byte lasttemp		!set to 1 if .islast applied to the temp
+		end
+	end
+
+	u16 misc: (			! bitfields
+		size:5,			! one of 1 2 4 8
+		scale:4,		! one of 1 2 4 8
+		mode:3,			! R, X, imm, [mem]
+		valtype:4)
+
+	byte reg			!0, or main register
+	byte regix			!0, or index register
+	i32 offset			!additional offset to memory operands
+end
+
+global type mcl = ref mclrec
+
+global record mclrec = !$caligned
+	ref mclrec lastmcl, nextmcl
+	mclopnd a,b
+	byte c
+	byte opcode
+	byte cond
+	byte spare1
+	u32 seqno
+	union
+		u32 mpos
+		u32 lineno				!used by aa assembler
+	end
+	u32 spare2
+
+!	union
+!		[r0..r15]byte regfreed		!1 indicates work-register freed after this instr
+!		pair regfreedpr
+!	end
+end
+
+global enumdata [0:]ichar valtypenames =
+	(no_val=0,		$),		!no operand
+	(intimm_val,	$),		!immediate int
+	(realimm_val,	$),		!immediate real (mainly for dq etc)
+	(realmem_val,	$),		!indirect real (for movq etc)
+	(stringimm_val,	$),		!immediate string, for comments, or address of string etc
+	(def_val,		$),		!var/proc name
+	(label_val,		$),		!label index
+!	(labelind_val,	$),		!label index
+	(name_val,		$),		!immediate string must be output as ah unquoted name
+	(temp_val,		$),		!index of pclopnd temp (later becomes ptr to descriptor?)
+	(data_val,		$),		!data string
+!	(syscall_val,	$),		!
+end
+
+global enumdata []ichar mclnames, []byte mclnopnds, []byte mclcodes =
+
+	(m_procstart,		$,		0,		0),		!
+	(m_procend,			$,		0,		0),		!
+	(m_comment,			$,		0,		0),		!
+!	(m_blank,			$,		0,		0),		!
+!	(m_deleted,			$,		0,		0),		!
+	(m_labelname,		$,		0,		0),		!
+	(m_define,			$,		0,		0),		!
+	(m_definereg,		$,		0,		0),		!
+	(m_definetemp,		$,		0,		0),		!
+	(m_trace,			$,		0,		0),		!
+	(m_endx,			$,		0,		0),		!
+
+	(m_label,			$,		1,		0),		!
+	(m_nop,				$,		0,		0x90),		!
+!	(m_param,			$,		1,		0),		!
+!	(m_assembly,		$,		1,		0),		!
+!	(m_proc,			$,		1,		0),		!
+
+	(m_mov,				$,		2,		0),		!
+	(m_push,			$,		1,		0),		!
+	(m_pop,				$,		1,		0),		!
+	(m_lea,				$,		2,		0),		!
+	(m_cmovcc,			$,		2,		0),		!
+
+	(m_movd,			$,		2,		0),		!
+	(m_movq,			$,		2,		0),		!
+
+	(m_movsx,			$,		2,		0),		!
+	(m_movzx,			$,		2,		0),		!
+	(m_movsxd,			$,		2,		0),		!
+
+	(m_call,			$,		1,		0xE8),		!
+	(m_ret,				$,		0,		0xC3),	!
+	(m_leave,			$,		0,		0xC9),	!
+	(m_retn,			$,		1,		0),		!
+
+	(m_jmp,				$,		1,		0xE9),	!
+	(m_jmpcc,			$,		1,		0),		!
+	(m_xchg,			$,		2,		0),		!
+
+	(m_add,				$,		2,		0),		!
+	(m_sub,				$,		2,		5),		!
+	(m_adc,				$,		2,		2),		!
+	(m_sbb,				$,		2,		3),		!
+	(m_imul,			$,		1,		5),		!
+	(m_mul,				$,		1,		4),		!
+	(m_imul2,			$,		2,		0),		!
+	(m_imul3,			$,		3,		0),		!
+
+	(m_idiv,			$,		1,		7),		!
+	(m_div,				$,		1,		6),		!
+
+	(m_and,				$,		2,		0x04),	!
+	(m_or,				$,		2,		0x01),	!
+	(m_xor,				$,		2,		0x06),	!
+	(m_test,			$,		2,		0),		!
+
+	(m_cmp,				$,		2,		0x07),	!
+
+	(m_shl,				$,		2,		0x04),	!
+	(m_sar,				$,		2,		0x07),	!
+	(m_shr,				$,		2,		0x05),	!
+	(m_rol,				$,		2,		0x00),	!
+	(m_ror,				$,		2,		0x01),	!
+	(m_rcl,				$,		2,		0x02),	!
+	(m_rcr,				$,		2,		0x03),	!
+
+	(m_neg,				$,		1,		3),		!
+	(m_not,				$,		1,		2),		!
+
+	(m_inc,				$,		1,		0),		!
+	(m_dec,				$,		1,		1),		!
+
+	(m_cbw,				$,		0,		0),	!
+	(m_cwd,				$,		0,		0),	!
+	(m_cdq,				$,		0,		0),		!
+	(m_cqo,				$,		0,		0),		!
+	(m_setcc,			$,		1,		0),		!
+
+	(m_bsf,				$,		2,		0xBC),	!
+	(m_bsr,				$,		2,		0xBD),	!
+
+	(m_shld,			$,		2,		0xA4),	!
+	(m_shrd,			$,		2,		0xAC),	!
+
+	(m_sqrtss,			$,		2,		0x51),	!
+	(m_sqrtsd,			$,		2,		0x51),	!
+
+	(m_addss,			$,		2,		0x58),	!
+	(m_addsd,			$,		2,		0x58),	!
+
+	(m_subss,			$,		2,		0x5C),	!
+	(m_subsd,			$,		2,		0x5C),	!
+
+	(m_mulss,			$,		2,		0x59),	!
+	(m_mulsd,			$,		2,		0x59),	!
+
+	(m_divss,			$,		2,		0x5E),	!
+	(m_divsd,			$,		2,		0x5E),	!
+
+	(m_comiss,			$,		2,		0),		!
+	(m_comisd,			$,		2,		0x2F),	!
+	(m_ucomisd,			$,		2,		0x2E),	!
+
+	(m_xorps,			$,		2,		0x57),	!
+	(m_xorpd,			$,		2,		0x57),	!
+
+	(m_andps,			$,		2,		0x54),	!
+	(m_andpd,			$,		2,		0x54),	!
+
+	(m_pxor,			$,		2,		0xEF),	!
+	(m_pand,			$,		2,		0xDB),	!
+
+	(m_cvtss2si,		$,		2,		0),		!
+	(m_cvtsd2si,		$,		2,		0),		!
+
+	(m_cvttss2si,		$,		2,		0),		!
+	(m_cvttsd2si,		$,		2,		0),		!
+
+	(m_cvtsi2ss,		$,		2,		0),		!
+	(m_cvtsi2sd,		$,		2,		0),		!
+
+	(m_cvtsd2ss,		$,		2,		0),		!
+	(m_cvtss2sd,		$,		2,		0),		!
+
+	(m_movdqa,			$,		2,		0x66),	!
+	(m_movdqu,			$,		2,		0xF3),	!
+
+	(m_pcmpistri,		$,		3,		0x63),	!
+	(m_pcmpistrm,		$,		3,		0x62),	!
+
+	(m_fld,				$,		1,		0),		!
+	(m_fst,				$,		1,		2),		!
+	(m_fstp,			$,		1,		3),		!
+
+	(m_fild,			$,		1,		0),		!
+	(m_fist,			$,		1,		2),		!
+	(m_fistp,			$,		1,		3),		!
+
+	(m_fadd,			$,		0,		0xC1),	!
+	(m_fsub,			$,		0,		0xE9),	!
+	(m_fmul,			$,		0,		0xC9),	!
+	(m_fdiv,			$,		0,		0xF9),	!
+	(m_fsqrt,			$,		0,		0xFA),	!
+	(m_fsin,			$,		0,		0xFE),	!
+	(m_fcos,			$,		0,		0xFF),	!
+	(m_fsincos,			$,		0,		0xFB),	!
+	(m_fptan,			$,		0,		0xF2),	!
+	(m_fpatan,			$,		0,		0xF3),	!
+	(m_fabs,			$,		0,		0xE1),	!
+	(m_fchs,			$,		0,		0xE0),	!
+
+	(m_minss,			$,		2,		0x5D),	!
+	(m_minsd,			$,		2,		0x5D),	!
+	(m_maxss,			$,		2,		0x5F),	!
+	(m_maxsd,			$,		2,		0x5F),	!
+
+	(m_db,				$,		1,		0),		!
+	(m_dw,				$,		1,		0),		!
+	(m_dd,				$,		1,		0),		!
+	(m_dq,				$,		1,		0),		!
+	(m_ascii,			$,		1,		0),		!
+	(m_asciiz,			$,		1,		0),		!
+!	(m_ddoffset,		$,		1,		0),		!
+
+!	(m_segment,			$,		1,		0),		!
+	(m_isegment,		$,		0,		0),		!
+	(m_zsegment,		$,		0,		0),		!
+	(m_csegment,		$,		0,		0),		!
+
+	(m_align,			$,		1,		0),		!
+	(m_resb,			$,		1,		1),		!
+	(m_resw,			$,		1,		2),		!
+	(m_resd,			$,		1,		4),		!
+	(m_resq,			$,		1,		8),		!
+
+	(m_xlat,			$,		0,		0xD7),	!
+	(m_loopnz,			$,		1,		0xE0),	!
+	(m_loopz,			$,		1,		0xE1),	!
+	(m_loopcx,			$,		1,		0xE2),	!
+	(m_jecxz,			$,		1,		0xE3),	!
+	(m_jrcxz,			$,		1,		0xE3),	!
+
+	(m_cmpsb,			$,		0,		0),		!
+	(m_cmpsw,			$,		0,		0),		!
+	(m_cmpsd,			$,		0,		0),		!
+	(m_cmpsq,			$,		0,		0),		!
+
+	(m_rdtsc,			$,		0,		0x31),	!
+	(m_popcnt,			$,		2,		0),		!
+	(m_bswap,			$,		1,		0),		!
+
+	(m_finit,			$,		0,		0),		!
+
+	(m_fldz,			$,		0,		0xEE),	!
+	(m_fld1,			$,		0,		0xE8),	!
+	(m_fldpi,			$,		0,		0xEB),	!
+	(m_fld2t,			$,		0,		0xE9),	!
+	(m_fld2e,			$,		0,		0xEA),	!
+	(m_fldlg2,			$,		0,		0xEC),	!
+	(m_fldln2,			$,		0,		0xED),	!
+
+	(m_cpuid,			$,		0,		0),		!
+
+	(m_xxxx,			$,		0,		0xF4),	!
+	(m_halt,			$,		0,		0xF4),	!
+end
+
+global enumdata [0:]ichar regnames, [0:]byte regcodes =
+	(rnone=0,	$,	0),			!
+	(r0,		$,	0),			!d0 rax
+	(r1,		$,	10),		!d1 r10
+	(r2,		$,	11),		!d2 r11
+	(r3,		$,	7),			!d3 rdi
+	(r4,		$,	3),			!d4 rbx
+	(r5,		$,	6),			!d5 rsi
+	(r6,		$,	12),		!d6 r12
+	(r7,		$,	13),		!d7 r13
+	(r8,		$,	14),		!d8 r14
+	(r9,		$,	15),		!d9 r15
+	(r10,		$,	1),			!d10 rcx
+	(r11,		$,	2),			!d11 rdx
+	(r12,		$,	8),			!d12 r8
+	(r13,		$,	9),			!d13 r9
+	(r14,		$,	5),			!d14 rbp
+	(r15,		$,	4),			!d15 rsp
+
+	(r16,		$,	4),			!b0h ah
+	(r17,		$,	7),			!b1h bh
+	(r18,		$,	5),			!b10h ch
+	(r19,		$,	6),			!b11h dh
+
+	(xr0,		$,	0),			!xmm0
+	(xr1,		$,	1),
+	(xr2,		$,	2),
+	(xr3,		$,	3),
+	(xr4,		$,	4),
+	(xr5,		$,	5),
+	(xr6,		$,	6),
+	(xr7,		$,	7),
+	(xr8,		$,	8),
+	(xr9,		$,	9),
+	(xr10,		$,	10),
+	(xr11,		$,	11),
+	(xr12,		$,	12),
+	(xr13,		$,	13),
+	(xr14,		$,	14),
+	(xr15,		$,	15),
+
+end
+
+global const rframe = r14
+global const rstack = r15
+
+global enumdata [0:]ichar condnames, [0:]ichar asmcondnames,
+		[0:]int asmrevcond =
+
+	(ov_cond=0,	"ov",	"o",		nov_cond),
+	(nov_cond,	"nov",	"no",		ov_cond),
+
+	(ltu_cond,	"ltu",	"b",		geu_cond),
+	(geu_cond,	"geu",	"ae",		ltu_cond),
+
+	(eq_cond,	"eq",	"z",		ne_cond),
+	(ne_cond,	"ne",	"nz",		eq_cond),
+
+	(leu_cond,	"leu",	"be",		gtu_cond),
+	(gtu_cond,	"gtu",	"a",		leu_cond),
+
+	(s_cond,	"s",	"s",		ns_cond),
+	(ns_cond,	"ns",	"ns",		s_cond),
+
+	(p_cond,	"p",	"p",		np_cond),
+	(np_cond,	"np",	"np",		p_cond),
+
+	(lt_cond,	"lt",	"l",		ge_cond),
+	(ge_cond,	"ge",	"ge",		lt_cond),
+
+	(le_cond,	"le",	"le",		gt_cond),
+	(gt_cond,	"gt",	"g",		le_cond),
+
+	(flt_cond,	"flt",	"b",		fge_cond),		!special floating point codes
+	(fge_cond,	"fge",	"ae",		flt_cond),
+	(fle_cond,	"fle",	"be",		fgt_cond),
+	(fgt_cond,	"fgt",	"a",		fle_cond)
+end
+
+global const z_cond = eq_cond
+global const nz_cond = ne_cond
+
+global enumdata [0:]ichar segmentnames =
+	(no_seg=0,		$),
+	(code_seg,		$),
+	(idata_seg,		$),
+	(zdata_seg,		$),
+	(rodata_seg,	$),
+	(impdata_seg,	$),
+end
+
+global enumdata [0:]ichar reftypenames =
+	(extern_ref=0,		$),		!is external
+	(fwd_ref,			$),		!not yet reached
+	(back_ref,			$),		!has been reached
+end
+
+global enumdata [0:]ichar opndnames_ma =
+	(a_none=0,	$),
+	(a_reg,		$),		! Ri
+	(a_imm,		$),		! d including def name, label etc
+	(a_mem,		$),		! any memory modes: [d], [R], [R*4+R2+d+imm] etc
+	(a_cond,	$),		! a condition code for jcc/setcc
+	(a_xreg,	$),		! xmm register
+end
+
+global enumdata [0:]ichar pmcnames =
+	(pmc_ignore=0,	"Ignore"),
+	(pmc_stack,		"Stack"),
+	(pmc_reg,		"Reg"),
+	(pmc_spill,		"Spill"),
+	(pmc_move,		"Move"),
+end	
+
+global enumdata [0:]ichar locnames =
+	(no_loc=0,	"unused"),				!temp not in use yet, or retired
+	(reg_loc,	"reg"),					!temp in use in given register
+	(mem_loc,	"mem"),					!temp in use but spilled to memory
+	(mult_loc,	"mult"),				!multi-temp in used but not using reg or mem
+end
+
+
+!global [r0..r15]byte workregs, workxregs		!1 indicates available work regs
+!global int nworkregs, nworkxregs				!no. workregs assigned
+!global int nregvars, nxregvars					!no. reg vars allocated (consec regs)
+!global int maxregvars, maxxregvars				!no. reg vars available
+!
+!global int xregmax
+!
+
+!global [r0..r15]byte regset			!register in-use flags: 0/1: free/in-use
+!global [r0..r15]byte xregset		!same for xregs
+!
+!global [r0..r15]byte isregvar
+!global [r0..r15]byte isxregvar
+!
+!global record pair =
+!	u64 low, high
+!end
+
+!global pair regsetpr @ regset
+!global pair isregvarpr @ isregvar
+!global const u64 invertbytes = 0x0101'0101'0101'0101
+!
+global [r0..r15]byte usedregs		!1 means used during proc
+global [r0..r15]byte usedxregs		!1 means used during proc
+
+global byte noxorclear		!1 to suppress xor optimisation
+
+!global macro zz = noperands
+!global macro yy = noperands-1
+!global macro xx = noperands-2
+!global macro ww = noperands-3
+
+!global const maxcalldepth=32
+!global [maxcalldepth]byte callalign		!pending 1-slot alignment for syscalls
+!global [maxcalldepth]byte callblockret	!1 if fnc returns a block
+!global [maxcalldepth]u32 callblocksize	!size of any returned block
+!global [maxcalldepth,4]u32 callargsize	!size of any block pushed in low args
+!global int ncalldepth
+!
+global int lababs32, lababs64
+global int labneg32, labneg64
+global int labmask63, laboffset64
+global int labzero
+global int kk0used=0
+
+global ref mclrec mccode, mccodex		!genmc adds to this linked list
+
+global int currsegment=0
+
+global mclopnd dstackopnd
+global mclopnd dframeopnd
+
+global [r0..r15,1..8]mclopnd regtable
+
+global [-128..64]mclopnd frameregtable
+
+global record constrec =
+	union
+		int value
+		real xvalue
+		ichar svalue
+	end
+	ref constrec nextconst
+	int labelno
+end
+
+global ref constrec cstringlist
+global ref constrec vstringlist
+global ref constrec creallist
+global ref constrec cr32list
+
+!global symbol currasmproc
+
+global int lab_funcnametable
+global int lab_funcaddrtable
+global int lab_funcnprocs
+
+global record relocrec =			!informal version
+	ref relocrec nextreloc
+	int reloctype
+	int offset
+	int stindex
+end
+
+!record used for expanding buffers. Expansion is not automatic: buffercheck(n)
+!is needed at strategic points to ensure that are at least n bytes left
+global record dbuffer =
+	ref byte pstart
+	union
+		ref byte pcurr
+		ref u16 pcurr16
+		ref u32 pcurr32
+		ref u64 pcurr64
+	end
+	ref byte pend
+	int alloc
+end
+
+global int ss_zdatalen
+global ref dbuffer ss_zdata			!used for error checking only (should be empty at end)
+global ref dbuffer ss_idata
+global ref dbuffer ss_code
+
+global ref relocrec ss_idatarelocs
+global ref relocrec ss_coderelocs
+
+global int ss_nidatarelocs
+global int ss_ncoderelocs
+
+global const init_ss_symbols=32768				!globaled to coff
+global ref []symbol ss_symboltable
+global int ss_nsymbols
+global int ss_symboltablesize
+
+global ref[]symbol labeldeftable
+
+global int aaseqno
+global int aapos
+
+!The following are highly dependent on the ordering of the base types being:
+! r32 r64 ints... block ..., with r32 having value 1
+!They assume mode is not void, and for ispfloat, is not a block
+
+global macro ispwide(m)  = m - 1
+global macro ispfloat(m) = m <= tr64
+global macro ispint(m)   = m > tr64	!when block type is not expected
+
+global [1..8]byte regmodes=(tu8, tu16, 0, tu32, 0,0,0, tu64)
+
+global int pmode
+
+global ref mclrec mclprocentry
+global ref mclrec mce_oldmccodex, mce_lastmcl, mce_nextmcl		!used by reset/setmclentry
+global ref mclrec mcf_oldmccodex, mcf_lastmcl, mcf_nextmcl		!used by reset/setmclentry for frame setup
+
+!global byte fpshortnames
+global byte fpcheckunusedlocals
+!global byte phighmem
+
+global record riprec =
+	ref riprec next
+	u32 offset			!within code segment, offset of d32 field
+	i32 immsize			!0,1,4 bytes of trailing imm field
+end
+
+!global record fwdrec =
+!	ref fwdrec nextfwd
+!	i32 offset
+!	i16 reltype
+!	i16 seg
+!end
+
+global ref riprec riplist
+
+!global ref proc (ref void) idomcl_assem
+!global ref func (ref void)int icheckasmlabel
+!global ref func (int)symbol igethostfn
+
+global const maxblocktemps=50
+global [maxblocktemps]symbol blockdefs
+global int nblocktemps
+
+global []int multregs=(r0,r1,r2,r10,r11,r12)
+global []int multxregs=(r0,r1,r2,r3,r4,r5)
+
+global u64 workset						!has .[reg]=1 when in use as work reg or temp
+global u64 tempset						!has .[reg]=1 when in use as temp
+
+global int nextworkreg, nextworkxreg		!per instruction
+global int highworkreg, highworkxreg		!per function
+
+global [stdnames.bounds]byte ploadopx
+global [stdnames.bounds]byte ploadop
+
+proc start=
+	for i in ploadop.bounds do ploadop[i]:=m_nop od
+
+	ploadop[tu8]:=ploadop[tu16]:=ploadop[tu32]:=m_movzx
+	ploadop[ti8]:=ploadop[ti16]:=ploadop[ti32]:=m_movsx
+	ploadop[tr32]:=m_movd
+	ploadop[tr64]:=m_movq
+	ploadop[tu64]:=ploadop[ti64]:=m_mov
+end
+
+GLOBAL INT REGVARA
+GLOBAL INT XREGVARA
+
+GLOBAL INT WORKREGA
+GLOBAL INT WORKREGB
+GLOBAL INT WORKXREGA
+GLOBAL INT WORKXREGB
+
+global byte mcldone
+
+global const ctarget=0
+
+global symbol currfunc
+=== mcx_lib.m 0 0 19/21 ===
+!const fuseregtable=1
+!const fuseregtable=0
+
+global const targetsize=8
+
+!global int mclseqno
+global int mclseqno
+global int NMCLOPND
+
+global int mstackdepth
+
+[-1..10]mclopnd smallinttable
+[20]symbol nametable
+int nnametable
+
+global macro isframex(d) = (d.nameid in [frameid, paramid])
+
+global proc mclinit(int bypass=0)=
+	mclopnd a
+	int r, s
+
+	if mclrec.bytes>64 then ABORTPROGRAM("MCLREC>64B") fi
+
+	for r:=r0 to r15 do
+		regtable[r, 1]:=mgenreg0(r, 1)
+		regtable[r, 2]:=mgenreg0(r, 2)
+		regtable[r, 4]:=mgenreg0(r, 4)
+		regtable[r, 8]:=mgenreg0(r, 8)
+	od
+
+	for i in frameregtable.bounds do
+		a:=newmclopnd()
+		a.mode:=a_mem
+		a.reg:=rframe
+		a.size:=8
+		a.offset:=i
+		frameregtable[i]:=a
+	end
+
+	dframeopnd:=mgenreg(rframe, tu64)
+	dstackopnd:=mgenreg(rstack, tu64)
+
+	initmcdest()
+
+	setsegment('C')
+
+	lab_funcnametable:=0
+	lab_funcaddrtable:=0
+
+	for i in smallinttable.bounds do
+		smallinttable[i]:=mgenint0(i, 8)
+	od
+
+!bypass is used when directly using mcl api (eg. from an external assembler)
+!then genmcl(), called from pcl functions, is a no-op
+	if bypass then
+		mcldone:=1
+	fi
+end
+
+global proc initmcdest=
+!reset mccode/mccodex
+!called should have saved any values from last linked list 
+	mccode:=mccodex:=nil
+!	clear rtsproclabels
+end
+
+EXPORT proc genmc(int opcode, mclopnd a=nil, b=nil)=		!used in do_mcl/assem in host
+	ref mclrec m, oldm
+	int labno
+
+	m:=pcm_allocnfz(mclrec.bytes)
+
+	m.opcode:=opcode
+	m.seqno:=++mclseqno
+	m.mpos:=mmpos
+
+	m.a:=a
+	m.b:=b
+
+	case opcode
+	when m_lea then
+		if b and b.valtype=def_val then
+!*!			b.def.addrof:=1
+		fi
+	when m_label then
+		labno:=a.labelno
+
+	when m_mov then				!change to movd/q if needed
+		if a.mode=a_xreg or (b and b.mode=a_xreg) then
+			m.opcode:=(a.size=8|m_movq|m_movd)
+		fi
+	esac
+
+	if mccode then
+		m.lastmcl:=mccodex
+		mccodex.nextmcl:=m
+		mccodex:=m
+	else
+		mccode:=mccodex:=m
+	fi
+end
+
+global proc genmc_cond(int opcode, cond, mclopnd a=nil, b=nil)=
+	genmc(opcode, a, b)
+	mccodex.cond:=cond
+end
+
+global proc genmc_label(int opcode, labelno)=
+	genmc(opcode, mgenlabel(labelno))
+end
+
+global proc genmc_string(int opcode, ichar s)=
+!as genmc but uses a single immediate string operand
+	genmc(opcode, mgenstring(s))
+end
+
+global proc genmc_def(int opcode,  symbol d)=
+!as genmc but uses a single immediate string operand
+	genmc(opcode, mgenmem(d))
+end
+
+global proc genmc_defaddr(int opcode,  symbol d)=
+!as genmc but uses a single immediate string operand
+	genmc(opcode, mgenmemaddr(d))
+end
+
+global proc genmc_int(int opcode,  int a)=
+!as genmc but uses a single immediate string operand
+	genmc(opcode, mgenint(a))
+end
+
+global proc genmc_name(int opcode,  ichar name)=
+!as genmc but uses a single immediate string operand
+	genmc(opcode, mgenname(name))
+end
+
+func newmclopnd:mclopnd a=
+!	a:=pcm_allocz(mclopndrec.bytes)
+	a:=pcm_allocnfz(mclopndrec.bytes)
+
+++NMCLOPND
+	return a
+end
+
+global func duplopnd(mclopnd a)mclopnd=
+	mclopnd b
+!	b:=pcm_alloc(mclopndrec.bytes)
+	b:=pcm_allocnfz(mclopndrec.bytes)
+	b^:=a^
+	return b
+end
+
+EXPORT func mgenindex(int areg=0, ireg=0, scale=1, offset=0, size=0, labno=0, symbol def=nil)mclopnd=
+!construct a mem address mode
+	mclopnd a
+	a:=newmclopnd()
+
+	a.mode:=a_mem
+	a.reg:=areg
+
+	if areg=rframe or ireg=rframe then usedregs[rframe]:=1 fi
+
+	a.regix:=ireg
+	a.scale:=scale
+	a.size:=size
+
+	a.offset:=offset
+
+	if labno then
+		a.value:=labno
+		a.valtype:=label_val
+	elsif def then
+		a.def:=def
+!		++def.nrefs
+		a.valtype:=def_val
+		if isframex(def) then
+			a.reg:=rframe
+			usedregs[rframe]:=1
+		fi
+	fi
+
+	return a
+end
+
+global proc mcomment(ichar s)=
+!if not debugmode then return fi
+!	if s=nil or s^=0 then
+!		genmc(m_blank)
+!	else
+		genmc_string(m_comment, s)
+!	fi
+end
+
+global func mgenstring(ichar s, int length=-1)mclopnd=
+	mclopnd a
+	a:=newmclopnd()
+	a.mode:=a_imm
+
+	if length<0 then
+		length:=strlen(s)
+	fi
+
+	a.svalue:=pcm_alloc(length+1)
+	memcpy(a.svalue, s, length)
+	(a.svalue+length)^:=0
+
+	a.valtype:=stringimm_val
+	a.size:=8
+	return a
+end
+
+global func mgendata(ref byte p, int length)mclopnd=
+	mclopnd a
+	a:=newmclopnd()
+	a.mode:=a_imm
+	a.svalue:=pcm_copyheapstringn(p, length)
+
+	a.valtype:=data_val
+	a.size:=length
+	return a
+end
+
+global func mgenname(ichar s)mclopnd=
+	[64]char str
+	mclopnd a
+	a:=newmclopnd()
+	a.mode:=a_imm
+	a.svalue:=pcm_copyheapstring(s)
+	a.valtype:=name_val
+	a.size:=8
+
+	return a
+end
+
+global proc setsegment(int seg, align=1)=
+!seg is 'D', 'Z', 'C', 'R' for data, zdata, code, rdata
+	int opc, oldalign
+
+	if seg<>currsegment then
+		case seg
+		when 'I' then opc:=m_isegment
+		when 'Z' then opc:=m_zsegment
+		when 'C' then opc:=m_csegment
+		when 'R' then MERROR("CAN'T DO RODATA SEG")
+		else
+			MERROR("BAD SEG CODE")
+		esac
+		if mccodex and mccodex.opcode in [m_isegment, m_zsegment, m_csegment] then
+			mccodex.opcode:=opc
+		else
+			genmc(opc)
+		fi
+
+		currsegment:=seg
+	fi
+
+	if align>1 then
+		if mccodex.opcode=m_align then
+			oldalign:=mccodex.a.value
+			if oldalign>=align then return fi
+		fi
+		genmc(m_align, mgenint(align))
+	fi
+end
+
+global func changeopndsize(mclopnd a, int size)mclopnd=
+	mclopnd b
+
+	if a.size<>size then
+		if a.mode=a_reg then
+			b:=regtable[a.reg, size]
+		else
+			b:=duplopnd(a)
+			b.size:=size
+		fi
+		return b
+	fi
+	return a
+end
+
+global func applyoffset(mclopnd a, int offset, int size=0)mclopnd=
+!astr is an asm operand
+!add possible byte offset
+	mclopnd b
+
+	if offset=0 and size=0 then
+		return a
+	fi
+	b:=duplopnd(a)
+	b.offset+:=offset
+	if size then
+		b.size:=size
+	fi
+
+	return b
+end
+
+global func mgenint(i64 x, int mode=ti64)mclopnd a=
+	int size:=stdsize[mode]
+
+	if x in -1..10 and size=8 then
+		return smallinttable[x]
+	fi
+
+	a:=newmclopnd()
+	a.mode:=a_imm
+
+	case size
+	when 1 then x iand:=255
+	when 2 then x iand:=65535
+	when 4 then x iand:=0xffff'ffff
+	esac
+
+	a.value:=x
+	a.valtype:=intimm_val
+	a.size:=size
+
+	return a
+end
+
+global func mgenint0(i64 x, int size=8)mclopnd a=
+	a:=newmclopnd()
+	a.mode:=a_imm
+
+	a.value:=x
+	a.valtype:=intimm_val
+	a.size:=size
+
+	return a
+end
+
+global func mgenrealmem(r64 x, int mode=tr64)mclopnd a=
+	a:=newmclopnd()
+	a.mode:=a_mem
+
+	if ispwide(mode) then
+		a.value:=getrealindex(x)
+	else
+		a.value:=getr32index(x)
+
+	fi
+	a.valtype:=label_val
+	a.size:=stdsize[mode]
+	return a
+end
+
+global func mgenrealimm(r64 x, int mode=tr64)mclopnd a=
+	a:=newmclopnd()
+	a.mode:=a_imm
+	a.xvalue:=x
+	a.valtype:=realimm_val
+	a.size:=stdsize[mode]
+	return a
+end
+
+EXPORT func mgenlabel(int x=0)mclopnd a=
+!x is a label index
+!generate immediate operand containing label
+	a:=newmclopnd()
+	a.mode:=a_imm
+
+	if x=0 then x:=++mlabelno fi
+	a.value:=x
+	a.valtype:=label_val
+	a.size:=8
+
+	return a
+end
+
+global func mgenlabelmem(int x)mclopnd a=
+!x is a label index
+!generate immediate operand containing label
+
+	a:=mgenlabel(x)
+	a.mode:=a_mem
+	return a
+end
+
+global func mgenmem(symbol d, int mode=tu64)mclopnd a=
+	int reg
+
+	if d.reg then
+		if stdfloat[d.mode] then
+			return mgenxregvar(d)
+		else
+			return mgenregvar(d, mode)
+		fi
+	fi
+
+	reg:=rnone
+	if isframex(d) then
+!		if not foptim and (int(d.offset) in -128..64) and ttsize[d.mode]=8 then
+!			return frameregtable[d.offset]
+!		fi
+
+		reg:=rframe
+		usedregs[rframe]:=1
+
+	fi
+
+	a:=newmclopnd()
+	a.mode:=a_mem
+	a.reg:=reg
+	a.def:=d
+!	++d.nrefs
+	a.valtype:=def_val
+
+	if mode then
+		a.size:=stdsize[mode]
+	else
+		a.size:=min(d.size, 8)
+	fi
+	if a.size=0 then a.size:=8 fi
+
+	return a
+end
+
+EXPORT func mgenmemaddr(symbol d)mclopnd=
+	mclopnd a
+
+!*!	d.addrof:=1
+!	++d.nrefs
+
+	a:=newmclopnd()
+	a.mode:=a_imm
+
+	a.def:=d
+!	++d.nrefs
+	a.valtype:=def_val
+	a.size:=8
+
+	return a
+end
+
+global func mgenreg0(int reg, size=8)mclopnd a=
+	a:=newmclopnd()
+	a.mode:=a_reg
+	a.reg:=reg
+	a.size:=size
+
+IF SIZE=0 THEN MERROR("1:SIZE=0") FI
+	return a
+end
+
+EXPORT func mgenxreg(int xreg, size=8)mclopnd=
+	mclopnd a
+
+!	if xreg=rnone then xreg:=++currxregno fi
+	a:=newmclopnd()
+
+	a.mode:=a_xreg
+	a.reg:=xreg
+	a.size:=size
+IF SIZE=0 THEN MERROR("2:SIZE=0") FI
+	return a
+end
+
+EXPORT func mgenreg(int reg, mode=ti64)mclopnd a =
+!EXPORT func mgenreg(int reg, mode)mclopnd a =
+	int size:=stdsize[mode]
+
+!	if stdfloat[mode] and reg>=xr0 then
+	if reg>=xr0 then
+		a:=newmclopnd()
+		a.mode:=a_xreg
+		a.reg:=reg
+		a.size:=stdsize[mode]
+		a
+	else
+		if size=0 then size:=8 fi
+		usedregs[reg]:=1
+
+!IF REG IN R10..R13 THEN REGSET[REG]:=1 FI
+
+!		if fuseregtable then
+!			return regtable[reg, size]
+!		fi
+		return mgenreg0(reg, size)
+	fi
+end
+
+!global func mgenregi(int reg, mode=ti64)mclopnd a =
+!!	if fuseregtable then
+!!		return regtable[reg, stdsize[mode]]
+!!	fi
+!	return mgenreg0(reg, stdsize[mode])
+!end
+
+global func mgenireg(int reg, mode=ti64, offset=0)mclopnd=
+	mclopnd a
+
+	a:=newmclopnd()
+	a.mode:=a_mem
+	a.reg:=reg
+	a.size:=stdsize[mode]
+	a.offset:=offset
+
+	return a
+end
+
+global func roundsizetg(int size)int=
+!make sure size is round up to next multiple of targetsize (4 or 8)
+	if size iand 7=0 then return size fi
+	return size+(8-(size iand 7))
+end
+
+global proc merroropnd(ichar mess, int opndtype)=
+	fprintln "MCL Opnd not supported: # (#) [#]", mess, opndnames_ma[opndtype]
+	PRINTLN
+	STOP 1
+!	stopcompiler(sourcefilepaths[mmpos>>24], mmpos iand 16777215)
+end
+
+global func mcreatefwdlabel:int =
+	return ++mlabelno
+end
+
+global proc mdefinefwdlabel(int lab) =
+	genmc(m_label, mgenlabel(lab))
+end
+
+global func mgenextname(ichar s)mclopnd=
+	[64]char str
+	symbol d
+	static [20]symbol table
+	static int ntable
+
+	strcpy(&.str, s)
+!	str[strlen(s)]:=0			!lose final *
+
+	d:=findnamesym(str)
+
+	if not d then
+		d:=pcm_allocnfz(strec.bytes)
+
+		d.name:=pcm_copyheapstring(&.str)
+		d.nameid:=dllprocid
+!		d.imported:=1
+		addnamesym(d)
+	fi
+
+	return mgenmemaddr(d)
+end
+
+global func mgenregvar(symbol d, int mode)mclopnd a=
+	a:=mgenreg(d.reg, mode)
+!	isregvar[d.reg]:=1
+
+	return a
+end
+
+global func mgenxregvar(symbol d)mclopnd a=
+	a:=mgenxreg(d.reg)
+!	isxregvar[d.reg]:=1
+
+	return a
+end
+
+global func getprimreg(mclopnd ax)int =
+!get primary reg value; only one should be active
+!return 0 if no regs
+!//error if both regs are active
+
+	if ax.reg then
+!		if ax.regix then merror("getprim?") fi
+		ax.reg
+	else
+		ax.regix	!0 if no regs used
+	fi
+end
+
+global proc pushslots(int nslots)=
+	pushstack(nslots*8)
+	mstackdepth+:=nslots
+end
+
+global proc popslots(int nslots)=
+	popstack(nslots*8)
+	mstackdepth-:=nslots
+end
+
+global proc pushstack(int n)=
+	if n then
+		genmc(m_sub, dstackopnd, mgenint(n))
+	fi
+end
+
+global proc popstack(int n)=
+	if n then
+		genmc(m_add, dstackopnd, mgenint(n))
+	fi
+end
+
+global func getstringindex(ichar s)int=
+	if s=nil then			!assume nil
+		kk0used:=++mlabelno
+		return kk0used
+	fi
+
+	if cstringlist and eqstring(cstringlist.svalue, s) then
+		return cstringlist.labelno
+	fi
+
+	return addconst(cstringlist, cast(s))
+end
+
+global func addconst(ref constrec &clist, int value)int=
+	ref constrec p
+	p:=pcm_allocnfz(constrec.bytes)
+	p.value:=value
+	p.labelno:=++mlabelno
+	p.nextconst:=clist
+	clist:=p
+	return mlabelno
+end
+
+global func getrealindex(real x)int=
+	return addconst(creallist, cast@(x, int))
+end
+
+global func getr32index(real x)int=
+	return addconst(cr32list, cast@(x, int))
+end
+
+!global func ispoweroftwo(i64 x)int=
+EXPORT func ispoweroftwo(i64 x)int=
+!when x is a power of two, and is at least 2, then return the power (ie. equiv number of shifts)
+!otherwise return zero when x is negative, 0, 1, not a power of two, or more than 2**31
+	i64 a
+	int n
+
+	a:=1
+	n:=0
+	to 60 do
+		++n
+		a:=a<<1
+		if a=x then
+			return n
+		fi
+	od
+	return 0
+end
+
+global proc axerror(ichar mess)=
+	CPL "AX ERROR:", mess, "AASEQ:", aaseqno
+	CPL
+	STOP 1
+
+end
+
+global func findnamesym(ichar s)symbol d=
+!search for s in cache of named symbols
+
+	for i to nnametable do
+		if eqstring(s, nametable[i].name) then
+			return nametable[i]
+		fi
+	od
+	nil
+end
+
+global proc addnamesym(symbol d)=
+!add new name symbol, which should be unique
+
+	if nnametable<nametable.len then
+		nametable[++nnametable]:=d
+	else
+		merror("Ext nametab overflow")
+	fi
+end
+
+global proc callproc(ichar cpname, name, int lineno)=
+RETURN
+end
+
+func mgenstringx(ichar s)mclopnd=
+	mgenlabelmem(getstringindex(s))
+end
+
+global proc clearreg(mclopnd ax)=
+	if ax.size=8 then
+		ax:=changeopndsize(ax, 4)
+	fi
+	genmc(m_xor, ax, ax)
+end
+
+global proc genstringtable=
+	ref constrec p
+
+	return unless cstringlist
+
+	mcomment("String Table")
+
+	setsegment('I', 8)
+
+!	if kk0used then
+!		genmc(m_label, mgenlabel(kk0used))
+!		gendb(0)
+!	fi
+
+	p:=cstringlist
+	while p, p:=p.nextconst do
+		genmc_label(m_label, p.labelno)
+		genstring_db(p.svalue, strtype:0)
+	od
+end
+
+global proc mcomm(ichar s, t="", u="")=
+	[256]char str
+	print @str, s, t, u
+	mcomment(pcm_copyheapstring(str))
+end
+
+global proc genstring_db(ichar s, int length=-1, strtype)=
+!string table generated in ax pass, so is just text
+!this is target-specific, so should really be moved
+!strtype should be zero for a normal string, then a zero-terminator is added.
+	int i, c, seqlen
+	ref char seq
+
+	if length=-1 then
+		length:=strlen(s)
+	fi
+
+	if length=0 then
+		gendb(0)
+		return
+	fi
+
+	seqlen:=0
+
+	to length do
+		c:=s++^
+!		if c<32 or c>=127 or c='\"' then
+		if c<32 or c>=127 or c in ['\"', '\\'] then
+			if seqlen then
+				gendbstring(seq, seqlen)
+				seqlen:=0
+			fi
+			gendb(c)
+		else
+			if seqlen=0 then
+				seqlen:=1
+				seq:=s-1
+			else
+				++seqlen
+			fi
+		fi
+	od
+	if seqlen then
+		gendbstring(seq,seqlen)
+	fi
+	if strtype=0 then
+		gendb(0)
+	fi
+end
+
+proc gendb(int a)=
+	genmc(m_db,mgenint(a))
+end
+
+proc gendbstring(ichar s, int length)=
+!string is printable, and doesn't include double quotes
+	genmc(m_db,mgenstring(s,length))
+end
+
+global proc genrealtable=
+	ref constrec p
+
+	return unless creallist or cr32list
+
+	mcomment("Real Table")
+	setsegment('I',8)
+	p:=creallist
+	while p, p:=p.nextconst do
+		genmc(m_label,mgenlabel(p.labelno))
+
+		if p.xvalue=infinity then
+			genmc(m_dq, mgenint(u64@(p.xvalue)))
+		else
+			genmc(m_dq, mgenrealimm(p.xvalue,tr64))
+		fi
+	od
+
+	mcomment("Real32 Table")
+	p:=cr32list
+	while p, p:=p.nextconst do
+		genmc(m_label,mgenlabel(p.labelno))
+		if p.xvalue=infinity then
+			genmc(m_dd, mgenint(int@(r32(p.xvalue))))
+		else
+			genmc(m_dd, mgenrealimm(p.xvalue,tr32))
+		fi
+
+	od
+end
+
+global proc merror(ichar mess,ichar param="")=
+	int lineno
+	ichar filename, sourceline
+
+!	if igetmsourceinfo then
+!		lineno:=igetmsourceinfo(mmpos, filename, sourceline)
+!		CPL =LINENO
+!		CPL =FILENAME
+!	else
+CPL "NO LINE INFO"
+		lineno:=0
+		filename:="?"
+!	fi
+
+!	if currfunc then
+!		println "Proc:", currfunc.name
+!	fi
+
+	fprintln "MCL Error: # (#) on Line: # in #",mess,param, lineno, filename
+OS_GETCH()
+	stop 1
+!	pcerrorstop(filename, lineno)
+end
+
+global func getbasename(ichar s)ichar t=
+	t:=s+strlen(s)-1
+	while t>s and (t-1)^<>'.' do
+		--t
+	od
+
+	return t
+end
+
+global func getfullname(symbol d, int backtick=0)ichar=
+!create fully qualified name into caller's dest buffer
+	static [256]char str
+	int n:=0
+	symbol e:=d
+
+!	if fpshortnames then return d.name fi
+
+	str[1]:=0
+	if backtick then
+		strcpy(str, "`")
+	fi
+
+!	if d.imported then
+	if d.isimport then
+		if backtick then
+			strcat(str, d.name)
+			strcat(str, "*")
+		else
+			strcat(str, d.name)
+		fi
+		return str
+	fi
+
+	if d.nameid in [frameid, paramid] then
+IF CURRFUNC=NIL THEN
+ABORTPROGRAM("CURRFUNC=0\N\N")
+FI
+		strcat(str, currfunc.name)
+		strcat(str, ".")
+		strcat(str, d.name)
+		return str
+	fi
+
+	if backtick then
+		strcat(str, d.name)
+	else
+		return d.name
+	fi
+end
+
+=== mcx_asm.m 0 0 20/21 ===
+!const fshowseq=1
+const fshowseq=0
+
+!const showsizes=1
+const showsizes=0
+
+!const showfreed=1
+const showfreed=0
+
+[r0..xr15]symbol regvars		!nil, or strec when it uses that reg
+
+global int assemtype='AA'
+
+strbuffer sbuffer
+global ref strbuffer pdest=&sbuffer
+
+global func writeasm:ref strbuffer=
+!write all mcl code in system by scanning all procs
+!mcl code is only stored per-proc
+	symbol d, e
+	ref mclrec m
+	[32]char str2, str3
+	int i
+
+	gs_init(pdest)
+!
+	case highmem
+	when 1 then asmstr("    $userip\n")
+	when 2 then asmstr("    $highmem\n")
+	esac
+
+	m:=mccode
+	i:=1
+	while m do
+		writemcl(i, m)
+		++i
+		m:=m.nextmcl
+	od
+	return pdest
+end
+
+proc writemcl(int index, ref mclrec mcl)=
+	if mcl.opcode=m_comment and mcl.a.svalue^='?' then
+	else
+		strmcl(mcl)
+		gs_line(pdest)
+	fi
+end
+
+global proc strmcl(ref mclrec mcl)=
+	static [512]char str
+	[128]char opcname
+	mclopnd a, b
+	int opcode, cond, sizepref
+	symbol d
+
+	opcode:=mcl.opcode
+	str[1]:=0
+
+	cond:=mcl.cond
+	a:=mcl.a
+	b:=mcl.b
+
+!CPL "STRMCL", MCLNAMES[OPCODE], A, B
+
+	case opcode
+	when m_procstart then
+
+		asmstr(";Proc ")
+		asmstr(a.def.name)
+		currfunc:=a.def
+		clear regvars
+
+		return
+
+	when m_procend then
+		asmstr(";End\n")
+		currfunc:=nil
+
+		return
+
+	when m_comment then
+		if a.svalue^ then
+			asmchar(';')
+			asmstr(a.svalue)
+		fi
+		return
+	when m_endx then
+		return
+
+	when m_labelname then				!label name will be complete and will have colon(s)
+		d:=a.def
+		case a.valtype
+		when def_val then
+			asmstr(getdispname(d))
+		when stringimm_val then
+			asmstr(a.svalue)
+			return
+		else
+			merror("strmcl/lab")
+		esac
+
+		asmstr(":")
+
+		if d.scope=export_scope then
+			if eqstring(getbasename(d.name), d.name) then
+				asmstr(":")
+			else
+				asmstr("\n`")
+				asmstr(getbasename(d.name))
+				asmstr("::")
+			fi
+		fi
+
+!ASMSTR(" ")
+!ASMSTR(STRINT(INT(D), "H"))
+
+		return
+
+	when m_label then
+		if a.valtype=label_val then
+			fprint @str, "L#:", a.value
+		else
+			recase m_labelname
+		fi
+		asmstr(&.str)
+		return
+
+	when m_define then
+		d:=a.def
+		asmstr("    ")
+		asmstr(getdispname(d))
+		asmstr(" = ")
+		asmint(d.offset)
+		return
+
+	when m_definereg then
+		d:=a.def
+		asmstr("    ")
+		asmstr(getdispname(d))
+		regvars[d.reg]:=d
+
+		asmstr(" = ")
+		asmstr(getregname(d.reg, d.size))
+		return
+
+	when m_definetemp then
+		asmstr("    ")
+		asmstr(gettempname(currfunc, a.tempno))
+		asmstr(" = ")
+		asmint(a.offset)
+		return
+
+	when m_asciiz then
+		asmstr("    db ")
+		asmstr(mstropnd(a))
+		asmstr(", 0")
+		return
+
+
+	esac
+
+	case opcode
+	when m_jmpcc then
+		print @&.opcname, "j", ,asmcondnames[cond]
+
+	when m_setcc then
+		print @&.opcname, "set", ,asmcondnames[cond]
+
+	when m_cmovcc then
+		print @&.opcname, "cmov", ,asmcondnames[cond]
+
+	when m_and then
+		strcpy(&.opcname, "and")
+	when m_or then
+		strcpy(&.opcname, "or")
+	when m_xor then
+		strcpy(&.opcname, "xor")
+	when m_not then
+		strcpy(&.opcname, "not")
+
+	ELSIF OPCODE>M_HALT THEN
+		STRCPY(&.OPCNAME, STRINT(OPCODE))
+
+	else
+		strcpy(&.opcname, mclnames[opcode]+2)
+	esac
+
+	ipadstr(&.opcname, (opcode=m_dq|4|10), " ")
+	ipadstr(&.str, 4)
+
+	strcat(&.str, &.opcname)
+
+	asmstr(&.str)
+
+	if a and b then		!2 operands
+		sizepref:=needsizeprefix(opcode, a, b)
+!
+		asmopnd(a, sizepref)
+		asmstr(", 	")
+		asmopnd(b, sizepref)
+
+		if mcl.c then
+			asmstr(", ")
+			asmstr(strint(mcl.c))
+		fi
+
+	elsif a and a.mode then								!1 operand
+		if opcode=m_call then
+			asmopnd(a, 0, opcode)
+		else
+			asmopnd(a, 1, opcode)
+		fi
+	fi
+
+	if showsizes then
+		if a then
+			asmstr("  ; ")
+			asmstr(strint(a.size))
+			if b then
+				asmstr("/")
+				asmstr(strint(b.size))
+			fi
+		fi
+	fi
+
+	if fshowseq then
+		asmstr(" ; ")
+		asmstr(strint(mcl.seqno, "z5"))
+	fi
+
+end
+
+global func strmclstr(ref mclrec m)ichar=
+	gs_init(pdest)
+	strmcl(m)
+	return pdest.strptr
+end
+
+global func mstropnd(mclopnd a, int sizeprefix=0, opcode=0)ichar=
+	static [512]char str
+	[128]char str2
+	ichar plus, t
+	int offset, tc
+
+	str[1]:=0
+
+	case a.mode
+	when a_reg, a_xreg then
+		return strreg(a.reg, a.size)
+
+	when a_imm then
+		if opcode=m_dq and a.valtype=intimm_val then
+			if a.value in 0..9 then
+				strcat(&.str, strint(a.value))
+			else
+				strcat(&.str, "0x")
+				strcat(&.str, strword(a.value, "H"))
+			fi
+		else
+			strcpy(&.str, strvalue(a))
+		fi
+
+	when a_mem then
+		case a.valtype
+		when intimm_val then
+			strcpy(&.str, strint(a.value))
+		when realimm_val then
+			strcpy(&.str, strreal(a.xvalue))
+		when realmem_val then
+			fprint @&.str, "M#", a.xvalue
+		esac
+
+		strcat(&.str, getsizeprefix(a.size, sizeprefix))
+		strcat(&.str, "[")
+
+		plus:=""
+		if a.reg then
+			strcat(&.str, strreg(a.reg, 8))
+			plus:=" + "
+		fi
+		if a.regix then
+			strcat(&.str, plus)
+			strcat(&.str, strreg(a.regix, 8))
+			plus:=" + "
+
+			if a.scale>1 then
+				strcat(&.str, "*")
+				strcat(&.str, strint(a.scale))
+			fi
+		fi
+
+		if a.valtype in [def_val, label_val, temp_val] then
+			if plus^ then
+				strcat(&.str, plus)
+			fi
+			strcat(&.str, strvalue(a))
+	    elsif offset:=a.offset then
+			print @&.str2, offset:" + "
+			strcat(&.str, &.str2)
+		fi
+		strcat(&.str, "]")
+
+	else
+		println "BAD OPND", A.MODE
+		return "<BAD OPND>"
+	esac
+
+	return &.str
+end
+
+global func strvalue(mclopnd a)ichar=
+	static [512]char str
+	[128]char str2
+	symbol def
+	i64 value, offset, length
+	ichar ss
+
+	def:=a.def
+	value:=a.value
+
+	strcpy(&.str, "")
+
+	case a.valtype
+	when def_val then
+		strcat(&.str, getdispname(def))
+
+	addoffset:
+		if offset:=a.offset then
+			print @&.str2, (offset>0|"+"|""), ,offset
+			strcat(&.str, &.str2)
+		fi
+
+!STRCAT(STR, " ")
+!STRCAT(STR, STRINT(INT(DEF), "H"))
+
+
+	when intimm_val then
+		strcat(&.str, strint(value))
+
+	when realimm_val then
+		print @&.str, a.xvalue:"20.20"
+
+	when realmem_val then
+		strcat(&.str, "M")
+		strcat(&.str, strreal(a.xvalue))
+
+	when stringimm_val then
+		strcat(&.str, """")
+		strcat(&.str, a.svalue)
+		strcat(&.str, """")
+
+	when name_val then
+		strcat(&.str, a.svalue)
+
+	when label_val then
+		strcat(&.str, "L")
+		strcat(&.str, strint(a.labelno))
+		goto addoffset
+
+	when temp_val then
+		return gettempname(currfunc, a.tempno)
+
+	else
+		merror("Stropnd?")
+	esac
+
+	return &.str
+end
+
+global proc asmopnd(mclopnd a, int sizeprefix=0, opcode=0)=
+	asmstr(mstropnd(a, sizeprefix, opcode))
+end
+
+global func getregname(int reg, size=8)ichar=
+	static [1..17]ichar prefix=("B", "W", "", "A", "", "", "", "D", "", "", "", "", "", "", "", "Q", "N")
+	static [32]char str
+	[16]char str2
+	ichar rs
+	int size2
+
+!	if useintelregs then
+!		return nregnames[size, reg]
+!	fi
+
+	size2:=size
+	if size2>16 then
+		size2:=17
+	fi
+
+	case reg
+	when rnone then return "-"
+	when rframe then rs:="fp"
+	when rstack then rs:="sp"
+	elsif reg>=xr0 then
+		print @str, "XMM", ,reg-xr0
+		return str
+
+	else
+		getstrint(reg-r0, &.str2)
+		rs:=&.str2
+	esac
+
+	print @&.str, prefix[size2], ,rs
+	return &.str
+end
+
+proc asmstr(ichar s)=
+	gs_str(pdest, s)
+end
+
+proc asmint(int a)=
+	asmstr(strint(a))
+end
+
+proc asmchar(int c)=
+	gs_char(pdest, c)
+end
+
+global func getdispname(symbol d)ichar=
+	static [256]char str
+
+	if d.reg then
+		fprint @str, "##R.#", (fshortnames|""|"`"), (stdfloat[d.mode]|"X"|""),
+			 (fshortnames|d.name|getfullname(d))
+		return str
+	fi
+
+	if fshortnames then
+		return getbasename(d.name)
+	else
+		return getfullname(d, backtick:1)
+	fi
+end 
+
+global func gettempname(symbol d, int n)ichar=
+	static [128]char str
+
+	if fshortnames or d=nil then
+		print @str, "T", ,n
+	else
+		fprint @str, "#.$T#", getdispname(d), n
+	fi
+	str
+end
+
+global func strreg(int reg, size=8)ichar=
+	symbol d
+
+	d:=regvars[reg]
+
+	if d and stdsize[d.mode]=size then
+		return getdispname(d)
+	fi
+	getregname(reg, size)
+end
+
+global func needsizeprefix(int opcode, mclopnd a, b)int=
+	case opcode
+	when m_movsx, m_movzx, m_cvtsi2ss, m_cvtsi2sd then
+		return 1
+
+	when m_cvtss2si, m_cvtsd2si, m_cvttss2si, m_cvttsd2si then
+		return 1
+	when m_shl, m_shr, m_sar then
+		if a.mode=a_mem then return 1 fi
+		return 0
+	esac
+
+	if a.mode=a_reg or a.mode=a_xreg or b.mode=a_reg or b.mode=a_xreg then
+		return 0
+	fi
+	return 1
+end
+
+global func getsizeprefix(int size, enable=0)ichar=
+	static []ichar table=("byte ", "u16 ", "", "u32 ", "","","", "u64 ")
+	if not enable or size not in 1..8 then
+		""
+	else
+		table[size]
+	fi
+end
+
+=== mm_help.txt 0 1 21/21 ===
 M Compiler for 64-bit Windows
 
 Normal use:           Compiles lead module prog.m to:
@@ -14201,13 +16269,19 @@ Other options:
 3 mm_decls.m 0 0
 4 mm_diags.m 0 0
 5 mm_export_dummy.m 0 0
-6 mm_lex.m 0 0
-7 mm_lib.m 0 0
-8 mm_libsources_dummy.m 0 0
-9 mm_modules.m 0 0
-10 mm_name.m 0 0
-11 mm_parse.m 0 0
-12 mm_support.m 0 0
-13 mm_tables.m 0 0
-14 mm_type.m 0 0
-15 mm_help.txt 0 1
+6 mm_gen.m 0 0
+7 mm_genaux.m 0 0
+8 mm_genblock.m 0 0
+9 mm_lex.m 0 0
+10 mm_lib.m 0 0
+11 mm_libsources_dummy.m 0 0
+12 mm_modules.m 0 0
+13 mm_name.m 0 0
+14 mm_parse.m 0 0
+15 mm_support.m 0 0
+16 mm_tables.m 0 0
+17 mm_type.m 0 0
+18 mcx_decls.m 0 0
+19 mcx_lib.m 0 0
+20 mcx_asm.m 0 0
+21 mm_help.txt 0 1

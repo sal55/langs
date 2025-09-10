@@ -1,5 +1,5 @@
 === MA 48 ===
-=== qqp.m 0 0 1/48 ===
+=== qq.m 0 0 1/48 ===
 !project =
 	module qq_cli
 
@@ -37,11 +37,11 @@
 
 	module qq_tables
 
-!	module qq_show
-	module qq_dummyshow
+	module qq_show
+!	module qq_dummyshow
 
-!	module qq_showpcl
-	module qq_showpcldummy
+	module qq_showpcl
+!	module qq_showpcldummy
 !
 	module qq_vars
 !end
@@ -18499,7 +18499,7 @@ freddy:
 
 	if getjt then
 		jumptable:=localjumptable
-!JUMPTABLE:=NIL
+JUMPTABLE:=NIL
 		return
 	fi
 
@@ -18507,11 +18507,11 @@ freddy:
 	pc:=pcptr
 	fp:=frameptr
 
-IF JUMPTABLE=NIL THEN PCERROR("JUMPTABLE NOT SET") fI
-	doswitchx(localjumptable) pc.labaddr
+!IF JUMPTABLE=NIL THEN PCERROR("JUMPTABLE NOT SET") fI
+!	doswitchx(localjumptable) pc.labaddr
 
 !	doswitchu pc.opcode
-!	doswitch pc.opcode
+	doswitch pc.opcode
 !	docase pc.opcode
 !
 	when knop      then   ! simple nop
@@ -23631,7 +23631,7 @@ global enumdata [0:]ichar condnames, [0:]byte revconds =
 	(ge_cc,		"ge",	lt_cc),
 	(gt_cc,		"gt",	le_cc),
 end
-=== qq_dummyshow.m 0 0 29/48 ===
+=== qq_show.m 0 0 29/48 ===
 !labels are just numbers 1,2,3 which index both of these tables
 !labelblocktable is the pclblock no (as all labels are shared across the program)
 !labeloffsettable is the offset into the pclblock
@@ -23647,66 +23647,1187 @@ symbol currpclproc
 strbuffer pclv
 global ref strbuffer pcldest = &pclv
 
+!const tabstr = "- "
+!const tabstr = "    "
+const tabstr = "|   "
+
+const logfile="qq.log"
+
 global proc printunit(ref unitrec p,int level=0,ichar prefix="*",filehandle dev=nil)=		!PRINTUNIT
+!p is a tagrec
+	ref unitrec q
+	symbol d
+	int t,flags
+	ichar idname
+	i64 a
+	r32 x32
+
+	if p=nil then
+		return
+	fi
+
+	currlineno:=p.pos iand 16777215
+
+!CPL "PRINTUNIT:",P,P.TAG,JTAGNAMES[P.TAG],=LEVEL,CURRLINENO
+
+
+!if p.lineno then
+!fi
+
+	print @dev,p,":"
+	print @dev,getprefix(level,prefix,p)
+
+	idname:=jtagnames[p.tag]
+	if idname^='j' then ++idname fi
+	print @dev,idname,,": "
+
+
+	case p.tag
+	when jname then
+		d:=p.def
+!		print @dev,d.name,namenames[d.nameid],"Module:",p.moduleno
+		if d.owner then print @dev,d.owner.name,,"." fi
+
+		print @dev,d.name,namenames[d.nameid],"Module:",p.moduleno
+		if d.truename and d.nameid=dllprocid then
+			print @dev," ",d.truename
+		fi
+
+	when jintconst then
+		print @dev,p.value
+
+!	when jenumconst then
+!		fprint @dev,"# (#:#)",p.value, strmode(p.mode),getenumname(p.mode, p.value)
+
+	when jrealconst then
+		print @dev,p.xvalue
+
+	when jstringconst then
+		fprint @dev,"""#""",p.svalue
+
+	when jdecimal then
+		print @dev,p.svalue,,"L"
+
+	when jcmp then
+		print @dev, condnames[p.condcode]
+
+	when jcmpchain then
+		for i to 4 do
+!CP P.CMPGENOP[I],$
+			if p.cmpconds[i]=0 then exit fi
+			print @dev,condnames[p.cmpconds[i]],$
+		od
+
+	when joperator then
+		print @dev, pclnames[p.pclop]
+
+	when jassign, jin, jgettype, jisvoid, jincrload, jloadincr,
+			jaddrof, jfor, jforx, jprint, jfprint, jread then
+		print @dev,p.flag
+!CPL JTAGNAMES.LEN
+
+	when jbin, junary, jproperty, jbinto, junaryto then
+		fprint @dev, "<#>",pclnames[p.pclop]+1
+
+	when jmaths, jmaths2 then
+		fprint @dev, "<#>",mathsnames[p.mathsop]+3
+
+!when jmakestrtype then
+!	print @dev, ttname[p.strtype]
+
+!when jimport then
+!	print @dev, p.def.name
+
+!when jprocdef then
+!	print @dev, p.def.name
+!	if p.mglobal then print @dev, " (global)" fi
+!	if p.isfn then print @dev, " (func)" fi
+!
+!when jrecorddef then
+!	print @dev, p.def.name
+!	if p.mglobal then print @dev, " (global)" fi
+!
+!
+	when jmakelist then
+		print @dev,p.lower,,":",=p.length,ttname[p.elemtype]
+
+!when jnew then
+!	print @dev,p.nparams
+
+!when jframesize then
+!	print @dev,"Framesize",p.value
+!
+!when jconvert,jtypepun then
+!	print @dev,"Mode",ttname[p.mode]
+!
+	when jtypeconst,jconvert,jtypepun then
+		print @dev,ttname[p.mode]
+
+!when jpacktypeconst then
+!	print @dev,getpacktypename(p.value)
+
+!when kdecimal then
+!	print @dev,p.svalue,"Len:",p.slength
+!
+!when ktypeconst then
+!	print @dev,typename(p.mode),typename(p.value)
+!
+!when koperator then
+!	print @dev,pclnames[p.opcode]+1
+!
+!when kconvert,ktypepun then
+!	print @dev,convnames[p.opcode]," to:",strmode(p.newmode)
+!
+!when kmakelist,kmultexpr then
+!	print @dev,"Len:",p.length
+!
+!when kdot then
+!	print @dev,"Offset:",p.offset
+!
+	when jcallhost then
+		print @dev,hostfnnames[p.index]+2
+
+!when kindex, kptr then
+!
+!when kexit,kredo,krestart,knext then
+!	print @dev,"#",,p.index
+!
+	esac
+
+	println @dev
+	flags:=jflags[p.tag]
+
+	if flags>=1 then printunitlist(dev,p.a,level+1,"1") fi
+	if flags=2 then printunitlist(dev,p.b,level+1,"2") fi
+
+end
+
+proc printunitlist(filehandle dev,ref unitrec p,int level=0,ichar prefix="*")=		!PRINTUNIT
+	if p=nil then return fi
+
+	while p do
+		printunit(p,level,prefix,dev)
+		p:=p.nextunit
+	od
+end
+
+function getprefix(int level,ichar prefix,ref unitrec p)ichar=		!GETPREFIX
+!combine any lineno info with indent string, return string to be output at start of a line
+	static [1024]char str
+	[1024]char indentstr
+	[16384]char modestr
+
+	indentstr[1]:=0
+	!if level>10 then level:=10 fi
+	if level>20 then level:=10 fi
+
+	to level do
+!		strcat(indentstr,"- ")
+		strcat(indentstr, tabstr)
+	od
+
+	strcpy(str,getlineinfok())
+	strcat(str,indentstr)
+	strcat(str,prefix)
+	if prefix^ then
+		strcat(str," ")
+	fi
+
+	return str
+end
+
+function getlineinfok:ichar=			!GETLINEINFO
+	static [40]char str
+
+!	sprintf(str,"%04d ",currlineno)
+	strcpy(str,strint(currlineno,"z4"))
+	return str
 end
 
 global proc printglobalsymbols(filehandle f=nil)=
+	println @f,"PROC Global Symbol Table"
+	println @f
+
+	printst(f,stprogram)
+
+!	println @f,"Global Proc Table",nglobalprocs
+!	for i to nglobalprocs do
+!		println @f,i,,":",globalproctable[i].name,namenames[globalproctable[i].nameid]
+!	od
+
 end
 
 global proc printst(filehandle f,symbol p,int level=0)=
+	ref strec q
+
+	printstrec(f,p,level)
+
+	q:=p.deflist
+
+	while q<>nil do
+		printst(f,q,level+1)
+		q:=q.nextdef
+	od
 end
 
-global proc printglobalsymbols_full(filehandle f=nil)=
-end
+proc printstrec(filehandle f,symbol p,int level)=
+	strec dd
+	ref byte q
+	strbuffer v
+	ref strbuffer d:=&v
+	int col,offset,n
+	const tabstr="    "
+	[256]char str
+	ichar s
 
-global proc printstfull(filehandle f,symbol p,int level=0)=
+!CPL "PRINTSTREC",P.NAME,NAMENAMES[P.NAMEID]
+
+!RETURN
+
+	offset:=0
+	to level do
+		print @f,tabstr
+		offset+:=4
+		col+:=4
+	od
+
+	print @f,padstr(p.name,22-offset,"-")
+	print @f, padstr(namenames[p.nameid],12,".")
+
+	col:=40
+	dd:=p^
+
+
+	if dd.isimport then
+		print @f,"Imp "
+	elsif dd.isglobal then
+		print @f,(dd.isglobal|"Glob ","Exp "|"Local ")
+	fi
+
+	if dd.mbyref then
+		print@f,"byref "
+	fi
+	if dd.moptional then
+		print@f,"opt "
+	fi
+
+	if dd.moduleno then
+		fprint @f,"Modno:#",dd.moduleno
+	fi
+
+	print @f,"=========="
+
+	if dd.owner then
+		fprint @str,"(#)",dd.owner.name
+		print @f, padstr(str,18,"-")
+	else
+		print @f, padstr("()",18,"-")
+	fi
+
+
+	case dd.nameid
+	when fieldid,frameid,paramid,enumid then
+		print @f," Ix:",dd.index,," "
+		if dd.nameid=fieldid and dd.atfield then
+			print @f,"@",dd.atfield.name,$
+		fi
+		print @f," Offset:",dd.fieldoffset,," "
+
+	when structfieldid then
+		print @f," Offset:",dd.fieldoffset,," Ix:",DD.INDEX,$
+	when recordid then
+		print @f," Nfields:",dd.nfields,," "
+	when procid, dllprocid, anonprocid then
+		fprint @f," Nparms:# ",dd.nparams,=dd.misfunc
+
+	esac	
+
+	case dd.nameid
+	when frameid, staticid,constid,macroid,paramid,dllparamid then
+		if dd.code then
+			case dd.initcode
+			when 3 then s:="::="
+			when 2 then s:=":="
+			else s:="="
+			esac
+
+			print @f, s, strexpr(dd.code).strptr,$
+		fi
+	esac
+
+	if dd.mode then
+		fprint @f,"Mode:#",strmode(dd.mode),dd.mode
+	fi
+!	fprint @f,"Mode:#",(dd.mode)
+!
+!	PRINT @F," Moduleno:",P.MODULENO
+!
+	println @f
+	ichar tab:="          "
 end
 
 global proc printtypetables(filehandle f)=
+	symbol d
+
+CPL "PRINT TYPE TABLES",NUSERXTYPES
+	println @f,"PROC TYPE TABLES"
+!	for m:=0 to ntypes do
+	for m:=0 to ntypes do
+!	for m:=tlast+1 to ntypes do
+!		fprint @f, "#: #  (#)",i:"3",ttname[i]:"jl12",ttnamedef[i]
+		fprintln @f, "#: # ",m:"3",ttname[m]:"jl12"
+		d:=ttnamedef[m]
+
+!		if d then
+!			println @f,"	ST=",d
+			println @f,"	ST=",d
+			println @f,"	Len=",ttlength[m], "Lower",ttlower[m]
+			println @f,"	Size=",ttsize[m]
+			println @f,"	Basetype=",ttbasetype[m],ttname[ttbasetype[m]]
+			println @f,"	Target=",tttarget[m],ttname[tttarget[m]]
+!			println @f,"	Ispacked=",ttispacked[m]
+			println @f,"	Caligned=",ttcaligned[m]
+
+		d:=ttfields[m]
+		if d then
+			println @f,"	Fields:"
+			while d do
+				println @f,"		",d.name, (d.mode|strmode(d.mode)|"")
+				d:=d.nextdef
+			od
+		fi
+
+	od
+
+	ref userxrec p
+INT M
+	p:=userxmodelist
+!	rescan:=0
+
+!global [0:maxuserxtype]symbol ttnamedefx
+!!global [0:maxuserxtype]symbol ttnamedefx2
+!global [0:maxuserxtype]int ttxmap
+!global [0:maxuserxtype]byte ttxmoduleno
+!
+	for i:=1 to nuserxtypes do
+		println @f, i, -i,ttnamedefx[i].name
+	od
 end
 
-!global function getpclname:ichar=
-!	return "<no show.m>"
-!end
+global proc showsttree=
+	filehandle f
+	ifile m
+	symbol d
+	ref genfieldrec g
+	ref procrec p
 
-!function getpclcode(ref int pc)int=
-!	for i in pclnames.bounds do
-!		if cast(pc^,ref void)=handlertable[i] then
-!			return i
-!		fi
+	return unless fshowst
+
+	f:=fopen("ST","w")
+	printglobalsymbols(f)
+!	printglobalsymbols_full(f)
+
+	println @f
+	println @f,"Modules",nmodules
+	for i to nmodules do
+		m:=modules[i]
+		IF M THEN
+			println @f,"	",,i,,":",m.name,=m.compiled,=m.pcstart,=m.pcsize
+		ELSE
+			PRINTLN @F,"MODULE",I,"MISSING"
+		FI
+	od
+
+!	println @f
+!	println @f,"Source Files",nsourcefiles
+!	for i to nsourcefiles do
+!!		println @f,"	",,i,,":",m.name,=m.startfn,=m.mainfn,=m.ast,=m.pcstart,=m.pcsize,
+!		println @f,"	",,i,,":",sourcefilenames[i],=sourcefilesys[i],=sourcefilesupport[i]
 !	od
-!	return 0
-!end
+!
+	println @f
+	println @f,"PROC Global GenField Table",ngenfields
+	for i to ngenfields do
+		g:=genfieldtable[i]
+		if g=nil then nextloop fi
+		fprintln @f,"   #) #:",i,g.def.name
+		while g do
+			d:=g.def
+			println @f,"      ",d.name, namenames[d.nameid],d.owner.name
+			g:=g.nextdef
+		od
+	od
+	println @f
 
-global proc showlogfile=
+
+	println @f,"DLL Table", nlibfiles
+	for i to nlibfiles do
+		println @f, i,":",libtable[i].name, dllinsttable[i], libtypes[i]:"c"
+	od
+	println @f
+
+	println @f,"DLL Proc Table", ndllprocs
+	for i to ndllprocs do
+		d:=dllproctable[i]
+		println @f, i,":",d.name, dllproclibindex[i], dllprocaddr[i],(d.mvarparams|"Variadic"|""),
+			libtypes[dllproclibindex[i]]:"c",=D.INDEX,=DLLPROCTABLE[D.INDEX],=D
+	od
+	println @f
+
+	println @f,"All Proc Table",nproclist
+	p:=proclist
+	while p do
+		println @f,"Proc:",p.def.name,p.def.owner.name
+		p:=p.nextproc
+	od
+	println @f
+
+
+	fclose(f)
+end
+
+global proc showtypes=
+	filehandle f
+	ref filerec m
+
+	return unless fshowtypes
+	return when runcode=run_cc
+
+	f:=fopen("TYPES","w")
+	printtypetables(f)
+
+	fclose(f)
 end
 
 global proc showast(isubprog sp, ichar file)=
+	filehandle f
+	ifile pm
+	symbol d
+	int k,i
+
+	return when runcode=run_cc
+
+	f:=fopen(file,"w")
+	return unless f
+
+	println @f,"PROC",file,,":"
+
+
+	if sp then
+		showast2(f, sp)
+	else
+		for i to nsubprogs do
+			showast2(f, subprogs[i])
+		od
+	fi
+
+	fclose(f)
 end
 
-!global proc showpcl(isubprog sp, int pass)=
-!end
+global proc showast2(filehandle f, isubprog sp)=
+	ifile pm
+	symbol d, e
+	int k,i
 
-global proc showmpl(int pass)=
+	println @f,"Proc Subprog",sp.name,,": ******\n"
+	for i:=sp.firstmodule to sp.lastmodule do
+		pm:=modules[i]
+
+		println @f,"Module:",pm.name
+		printunit(pm.ast, dev:f)
+		d:=pm.def.deflist
+		while d, d:=d.nextdef do
+!			if d.nameid=procid then
+			if d.nameid=procid then
+!CPL "PROC:",D.NAME
+				println @f,"\n---PROC",d.name
+				printunit(d.code, dev:f)
+
+				e:=d.deflist
+				while e, e:=e.nextdef do
+					if e.nameid=anonprocid then
+						println @f,"\n---ANONPROC",e.name
+CPL "ANON",E.CODE
+						printunit(e.code, dev:f)
+					fi
+				od
+
+			fi
+		od
+		println @f
+	od
+end
+
+global proc showlogfile=
+	[256]char str
+	filehandle logdev
+
+!CPL "SHOWLOG1"
+!OS_GETCH()
+
+	if fshowpcl1+fshowpcl2+fshowast1+fshowast2+
+			fshowst+fshowtypes+fshowmodules+fshowstflat=0 then return fi
+!CPL "SHOWLOG2",RUNCODE, RUN_CC
+	if runcode=run_cc then
+		return
+	fi
+
+CPL "PRESS KEY"; STOP WHEN OS_GETCH()=27
+
+!CPL "SHOWLOG2"
+
+	if fshowst then
+		showsttree()
+	fi
+!CPL "SHOWLOG3"
+
+	if fshowstflat then
+		showstflat()
+	fi
+!CPL "SHOWLOG4"
+
+	if fshowtypes then
+		showtypes()
+	fi
+
+!CPL "SHOWLOG5"
+	logdev:=fopen(logfile,"w")
+
+!CPL "SHOWLOG3",=FSHOWMODULES
+	if fshowmodules then showmoduleinfo(logdev) fi
+!CPL "SHOWLOG6"
+
+!	if runcode>=fixup_cc and fshowpcl3 then addtolog("PCL3",logdev) fi
+	if runcode>=gencode_cc and fshowpcl2 then addtolog("PCL2",logdev) fi
+	if runcode>=gencode_cc and fshowpcl1 then addtolog("PCL1",logdev) fi
+	if runcode>=names_cc and fshowast2 then addtolog("AST2",logdev) fi
+	if runcode>=parse_cc and fshowast1 then addtolog("AST1",logdev) fi
+	if fshowst then addtolog("ST",logdev) fi
+	if fshowstflat then addtolog("STFLAT",logdev) fi
+	if fshowtypes then addtolog("TYPES",logdev) fi
+	fclose(logdev)
+
+!	fprint @str,"c:/m/scripts/med.bat -w #",logfile
+	fprint @str,"c:/m/scripts/med.bat #",logfile
+!CPL =STR
+!os_GETCH()
+
+!	os_execwait(str,1,nil)
+	os_execwait(str,0,nil)
+
+end
+
+proc addtolog(ichar filename, filehandle logdest)=
+filehandle f
+int c
+
+f:=fopen(filename,"rb")
+if f=nil then return fi
+
+do
+	c:=fgetc(f)
+	exit when c=c_eof
+	fputc(c,logdest)
+od
+fclose(f)
+end
+
+global proc showstflat=
+	filehandle f
+	symbol p
+
+	return unless fshowstflat
+
+	f:=fopen("STFLAT","w")
+
+	println @f,"GLOBAL FLAT SYMBOL TABLE:"
+
+	for i:=0 to hashtable.upb-1 do
+		p:=cast(&hashtable[i])
+		if p.name then
+			case p.symbolcode
+			when namesym then
+				println @f,i,p,":",p.name,symbolnames[p.symbolcode]:"m",namenames[p.nameid]
+				p:=p.nextdupl
+				while p do
+					int sym:=p.symbolcode
+					if sym=0 then sym:=errorsym fi
+					println @f,"	",p,p.name,symbolnames[sym]:"m",namenames[p.nameid],
+						"(From",(p.owner|p.owner.name|"-"),,")"
+					p:=p.nextdupl
+				od
+			esac
+		fi
+	od
+!
+	fclose(f)
+end
+
+global proc showmoduleinfo(filehandle dev)=
+	ifile pm
+	ref subprogrec ps
+	static ichar tab="    "
+
+CPL "SMI0"
+	println @dev,"Project Structure:"
+	println @dev,"---------------------------------------"
+	println @dev,"Modules",nmodules
+	for i to nmodules do
+		pm:=modules[i]
+!CPL "SMI",I,PM
+
+!		if i>1 and pm.subprogno<>modules[i-1].subprogno then
+!			println @dev
+!		fi
+!
+		print @dev, tab,i:"2",pm.name:"16jl", "Lead:",pm.islead, "Sys:",pm.issyslib, "Path:",pm.path,
+			"Sub:",subprogs[pm.subprogno].name,"File:",pm.filespec
+!		if pm.stmacro then
+!			print @dev," Alias:",pm.stmacro.name
+!		fi
+!		print @dev, "START:",pm.startfn
+!		if i=mainmoduleno then print @dev, "<MAIN>" fi
+!	PRINT @DEV,"<TEMP MODULE INFO>"
+		println @dev
+	od
+	println @dev
+
+	println @dev,"Subprograms",nsubprogs
+	for i to nsubprogs do
+		ps:=subprogs[i]
+		println @dev, tab,i,ps.name,"Sys:",ps.issyslib, "Path:",ps.path,
+			 "Spec:",ps.filespec,"Comp:",ps.compiled
+		if ps.firstmodule then
+			print @dev, tab,tab,ps.firstmodule,ps.lastmodule,,": "
+			for j:=ps.firstmodule to ps.lastmodule do
+				print @dev, modules[j].name,$
+			od
+			println @dev
+		fi
+	od
+	println @dev
+!
+!	println @dev,"Sourcefiles",nsourcefiles
+!	for i to nsourcefiles do
+!		println @dev, tab,i,sourcefilenames[i]
+!		if sourcefilepaths[i]^ then println @dev, tab,tab,sourcefilepaths[i] fi
+!		println @dev, tab,tab,sourcefilespecs[i]
+!		println @dev, tab,tab,=sourcefilesizes[i]
+!		println @dev, tab,tab,=sourcefilesys[i]
+!		println @dev, tab,tab,=sourcefilesupport[i]
+!!		println @dev, tab,tab,=sourcefiledupl[i]
+!	od
+!	println @dev
+!
+!!	println @dev,"Header Variables:"
+!!	for i to headervars.len do
+!!		fprintln @dev,"\t#: #",headervarnames[i],headervars[i]
+!	od
+!	println @dev
+!	println @dev,"---------------------------------------"
+
+	return unless stprogram
+	println @dev,"Symboltable:"
+	symbol d:=stprogram.deflist
+	while d, d:=d.nextdef do
+		ichar id
+		case d.nameid
+		when moduleid then id:="Mod"
+		when subprogid then id:="Sub"
+		else id:="---"
+		esac
+		fprintln @dev,"    # # (m#, s#)",d.name,id,d.moduleno, d.subprogno
+	od
+	println @dev
+
 end
 
 global proc printsymbol(ref lexrec lp)=
+	lexrec l
+	l:=lp^
+
+!	printf("%-18s",symbolnames[l.symbol])
+!	print symbolnames[l.symbol]:"18 jl"
+	print symbolnames[l.symbol]:"m 18 jl"
+
+	case l.symbol
+	when namesym then
+!	print l.symptr.name
+
+		printstr_n(l.symptr.name,l.symptr.namelen)
+	when intconstsym then
+		case l.subcode
+		when tint then print l.value,"int"
+!		when tword then print l.uvalue,"word"
+		else print l.value
+		esac
+
+	when realconstsym then
+		print l.xvalue
+
+	when stringconstsym then
+		print """",$
+		printstr(l.svalue)
+		print $,""""
+	when charconstsym then
+		print "'",$
+		printstr(l.svalue)
+		print $,"'"
+	when decimalconstsym then
+		printstr(l.svalue)
+		print "L"
+	when assignsym,addrsym,ptrsym,rangesym then
+		print jtagnames[l.subcode]
+	elsif l.subcode then
+		print "#",l.subcode
+	end
+
+	println
+
 end
 
 global function strmode(int t, expand=0)ichar=
-	ttname[t]
+	static [2048]char str
+
+	istrmode(t,str,expand)
+	return str
+end
+
+proc istrmode(int t, ichar dest,int expand=1)=
+	static [2048]char str
+	symbol d
+
+	if t<0 then
+		strcpy(dest,"*")
+		strcat(dest,ttnamedefx[-t].name)
+!		if ttnamedefx2[-t] then
+!			strcat(dest,".")
+!			strcat(dest,ttnamedefx2[-t].name)
+!		fi
+		return
+	fi
+
+!CPL "MM1",T
+
+	if t<tlast then
+!CPL "MM2",T,=TTNAME[T]
+		strcpy(dest,ttname[t])
+		return
+	fi
+
+	case ttbasetype[t]
+	when trefpack then
+		strcpy(dest,"ref ")
+		istrmode(tttarget[t], dest+strlen(dest),0)
+	when tvector then
+		fprint @dest, "[#..#]",ttlower[t],ttlength[t]+ttlower[t]-1
+		istrmode(tttarget[t], dest+strlen(dest),0)
+
+!	when tslice then
+!		strcpy(dest, "slice[]")
+!		istrmode(tttarget[t], dest+strlen(dest),0)
+
+	when tstruct then
+!		if not expand then recase else fi
+		if not expand then goto $else fi
+		strcpy(dest,"struct(")
+dostruct:
+		d:=ttfields[t]
+		while d, d:=d.nextdef do
+			istrmode(d.mode, dest+strlen(dest),0)
+			strcat(dest, " ")
+			strcat(dest, d.name)
+			if d.nextdef then
+				strcat(dest, ", ")
+			fi
+		od
+		strcat(dest,")")
+	when trecord then
+!		if not expand then recase else fi
+		if not expand then goto $else fi
+		strcpy(dest,"record(")
+		goto dostruct
+
+!	when tenum then
+!!		if not expand then recase else fi
+!		if not expand then $else fi
+!		strcpy(dest,"enum(")
+!		d:=ttfields[t]
+!		while d, d:=d.nextdef do
+!			if d.nameid=enumid and d.mode=t then
+!				strcat(dest, d.name)
+!				strcat(dest, " ")
+!			fi
+!		od
+!		strcat(dest,")")
+
+	else
+$else:
+!CPL "STRMODE BASETYPE"!,STDTYPENAMES[TTBASETYPE[T]]
+		strcpy(dest,ttname[t])
+	esac
 end
 
 global proc deletetempfiles=
+	remove("PCL1")
+	remove("PCL2")
+	remove("PCL3")
+	remove("AST1")
+	remove("AST2")
+	remove("TYPES")
+	remove("STFLAT")
+	remove("ST")
+!	remove(logfile)
 end
-=== qq_showpcldummy.m 0 0 30/48 ===
-global proc showpcl(isubprog sp, int pass)=
+=== qq_showpcl.m 0 0 30/48 ===
+int currlineno
+symbol currpclproc
+
+proc writepcl(pcl pcstart, pc, ref i32 pclsource, int pass, ichar sourcecode)=
+!write pc instruction to ttdeststr, as a single line of pcl
+!index is index of ins in pccode/pcdata
+	[512]char str
+
+	int cmdcode, a, soffset, moduleno, offset
+	int attrs
+	ref strec d
+	const tabx="!      ----------"
+
+!CPL "WRITEPCL",PCLNAMES[PC.opcode]
+
+	cmdcode:=pc.opcode
+
+	case cmdcode
+	WHEN KSKIP THEN
+		RETURN
+
+	when kprocdef then
+!	CPL "--PROCDEF", SYMBOL(PC^).NAME
+		currpclproc:=pc.def
+!CPL =CURRPCLPROC
+		gstr(tabx)
+		gstr("Procdef:")
+		gstr(currpclproc.name)
+		gline()
+		return
+	when kprocend then
+		gstr(tabx)
+IF PC.HASLABEL THEN GSTR("<LABEL>") FI
+		gstrln("End")
+		return
+	esac
+
+	if pc.haslabel then
+		gstr("                 ")
+		glabeldef(pcstart, pc)
+!		gstrln(str)
+!		gline()
+	fi
+
+	offset:=getpcloffset(pc,pcstart)+1
+
+	soffset:=(pclsource+offset)^
+	currlineno:=soffset iand 16777215
+
+!	fprint @str, "# [#]: #: ", pc-1:"8zh", currlineno:"05jr", pc-pcstart+1:"4"
+	fprint @str, "#: [#]: ", getpcloffset(pc,pcstart)+1:"4", currlineno:"05jr"
+	gstr(str)
+
+	case cmdcode
+	when kprocdef then
+		currpclproc:=pc.def
+		return
+	when kcomment then
+		gstr("! ")
+		gstrln(pc.svalue)
+		return
+	esac
+
+	str[1]:=0
+
+	if pc.isaux then
+		strcat(str, "*")
+	fi
+
+	strcat(str, pclnames[cmdcode]+1)
+
+	a:=1
+	gs_leftstr(pcldest, " ", 7, '-')
+	gs_leftstr(pcldest, str, 11)
+!	gstr(" ")
+
+	if pclopnd[cmdcode] then
+		strcpy(str, writepclopnd(pcstart, pc, pass))
+		gstr(str)
+		gstr(" ")
+	fi
+
+	attrs:=pclattrs[cmdcode]
+	if attrs<>'    ' then
+
+		gstr("<")
+		to 4 do
+			case attrs.[0..7]
+			when ' ' then
+				exit
+			when 'n', 'b' then
+				gstrint(pc.n)
+			when 'x' then
+				gstrint(pc.x)
+			when 'y' then
+				gstrint(pc.y)
+			when 'c' then
+				gstr(condnames[pc.n])
+			when 'u' then
+				gstr(ttname[pc.usertag])
+			when 'v' then
+				gstr(ttname[pc.usertag2])
+			esac
+			attrs>>:=8
+			if attrs iand 255<>' ' then gstr(" ") fi
+
+		od
+		gstr(">")
+	fi
+
+	gline()
 end
 
-global proc showpcl2(isubprog sp, int pass)=
+function writepclopnd(pcl pcstart, pc, int pass)ichar=
+!f=o/p channel
+!fmt=single operand code
+!x is value of operand
+!n is operand @ (1..4)
+	static [512]char str, str2
+	symbol d
+	ichar suffix, s
+	int slen
+	object p
+
+!IF PASS=2 THEN
+!	RETURN "OPND"
+!FI
+
+	d:=symbol(pc.def)
+
+	case pclopnd[pc.opcode]
+	when cint then
+		print @str, pc.value
+
+	when creal then
+		print @str, pc.xvalue
+
+	when cstring then
+!CPL "CSTRING", =PASS
+		if pass=1 then
+!			recase cstringz			!COMPILER ERROR HERE????
+			DOCSTRINGZ
+		fi
+!RETURN "<STROBJ>"
+			p:=pc.objptr
+			if (slen:=p.length)=0 then return """" fi
+			s:=p.strptr
+			goto dostring
+
+	when cstringz then
+DOCSTRINGZ:
+!CPL "CSTRINGZ"
+		s:=pc.svalue
+		slen:=strlen(s)
+dostring:
+		if slen>=255 then slen:=255 fi
+		memcpy(str, s, slen)			!truncate too-long strings
+		str[slen+1]:=0
+		convertstring(str, str2)
+!		fprint @&str[1], """#""", &.str2[1]
+		fprint @str, """#""", &str2[1]
+
+	when cstatic then
+		if pass=1 then
+			strcpy(str, d.name)
+		else
+!RETURN "<STATIC>"
+!CPL "SHOW STATIC"
+			d:=allstaticdefs
+			while d, d:=d.nextstatic do
+				if d.varptr=pc.varptr then
+					exit
+				fi
+			od
+!CPL "DONE", D
+!IF D=NIL THEN
+!CPL "STATIC??",CURRPCLPROC.NAME
+!RETURN "<STATIC??>"
+!FI
+			fprint @str, "[#] (#:#)", d.varptr:"h", (d|d.owner.name|"?"), (d|d.name|"?")
+		fi
+
+	when cframe then
+		if pass=1 then
+			strcpy(str, d.name)
+		else
+			d:=currpclproc.deflist
+
+			while d do
+				if d.nameid in [frameid, paramid] and d.index*16=pc.offset then
+					fprint @str,"[#] (#)", pc.offset/16, d.name
+					return str
+				fi
+				d:=d.nextdef
+			od
+		fi
+
+	when csymbol then
+		fprint @str, "#.$", d.name
+
+	when cproc then
+		if pass=1 then
+			strcpy(str, d.name)
+		else
+!CPL "CPROC", D
+!RETURN "PROC"
+			d:=allprocdefs
+			while d, d:=d.nextproc do
+				if d.labelref=pc.labelref then
+					exit
+				fi
+			od
+			fprint @str, "[#] (#:#)", pc.labelref, (d|d.owner.name|"?"), (d|d.name|"?")
+		fi
+
+	when cdllproc then
+!		fprint @str, "[DLL:#]", getdottedname(d)
+		fprint @str, "[DLL:#]", d.name
+
+	when chost then
+		print @str, pc.hostindex, hostfnnames[pc.hostindex]+2
+
+	when cgenfield then
+		if pass=1 then
+			fprint @str, ".#", d.name
+		else
+!RETURN "GENFIELD"
+			fprint @str, "## (#)", "#", pc.value, genfieldtable[pc.value].def.name
+		fi
+!
+	when ctype then
+		fprint @str, "T:# (#)", strmode(pc.typecode), pc.typecode
+
+	when clabel then
+		fprint @str, "L#", getpcloffset(pc.labelref,pcstart)+1
+!		fprint @str, "L#", pc.labelno
+
+	when coperator then
+		fprint @str, "(#)", pclnames[pc.pclop]
+
+	when cbinto then
+		fprint @str, "(# #)", pc.bintoindex, pclnames[bintotable[pc.bintoindex].pclop]
+
+	when cmaths then
+		fprint @str, "<#>", mathsnames[pc.mathscode]+3
+
+	else
+	other:
+		fprint @str, "<#>", opndnames[pclopnd[pc.opcode]]
+	esac
+	return str
 end
 
 global proc writeallpcl(ifile pm, int pass)=
+!display code currently in pccode/pcopnd
+	int cmd
+	pcl pc, pclcode
+	ref i32 pclsource
+	ichar sourcecode
+
+	currlineno:=0
+!CPL "WRITEALLPCL",=pass
+
+	gstr("PCL FOR MODULE:")
+	gstrln(pm.name)
+
+	pc:=pclcode:=pm.pcstart
+	pclsource:=pm.pcsourcestart
+	sourcecode:=pm.text
+
+	repeat
+		cmd:=pc.opcode
+
+		writepcl(pclcode, pc, pclsource, pass, sourcecode)
+		++pc
+	until cmd=kendmod
+
+	gline()
+
+end
+
+global proc showpcl(isubprog sp, int pass)=
+	filehandle f
+
+	return when runcode=run_cc
+
+	gs_init(pcldest)
+	gs_str(pcldest, "PROC ALL PCL pass:")
+	gs_strint(pcldest, pass)
+	gs_line(pcldest)
+
+	if sp then
+		showpcl2(sp, pass)
+	else
+		for i to nsubprogs do
+			showpcl2(subprogs[i], pass)
+		od
+	fi
+
+!CPL "SHOWPCL", PASS
+	f:=fopen((pass|"PCL1", "PCL2"|"PCL3"), "w")
+	if not f then return fi
+	gs_println(pcldest, f)
+!CPL "WROTE PCL FILE"
+!OS_GETCH()
+
+	fclose(f)
+end
+
+global proc showpcl2(isubprog sp, int pass)=
+
+	for i:=sp.firstmodule to sp.lastmodule do
+		writeallpcl(modules[i], pass)
+	od
+end
+
+global proc gstr(ichar s)=
+	gs_str(pcldest,s)
+end
+
+global proc gstrln(ichar s)=
+	gs_strln(pcldest,s)
+end
+
+global proc gline=
+	gs_line(pcldest)
+end
+
+global proc gstrint(int a)=
+	gs_strint(pcldest,a)
+end
+
+global proc glabeldef(pcl pcstart, pc)=
+!GSTRLN("LABELDEF")
+
+	gstr("L")
+	gstrint(getpcloffset(pc,pcstart)+1)
+	gstrln(": ")
+
+!	int lab:=0
+!	for i to nextlabelno do
+!		if pc=labelpctable[i] then lab:=i fi
+!	end
+!
+!	gstr("L")
+!	gstrint(lab)
+!
+!	gstrln(": ")
 end
 
 === qq_vars.m 0 0 31/48 ===
@@ -38993,7 +40114,7 @@ export func getsystime=
 	return tm
 end
 === END ===
-1 qqp.m 0 0
+1 qq.m 0 0
 2 qq_cli.m 0 0
 3 qq_arrays.m 0 0
 4 qq_bits.m 0 0
@@ -39021,8 +40142,8 @@ end
 26 qq_strings.m 0 0
 27 qq_syslibs.m 0 0
 28 qq_tables.m 0 0
-29 qq_dummyshow.m 0 0
-30 qq_showpcldummy.m 0 0
+29 qq_show.m 0 0
+30 qq_showpcl.m 0 0
 31 qq_vars.m 0 0
 32 syswin.q 0 1
 33 syslin.q 0 1

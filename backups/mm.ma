@@ -1,8 +1,10 @@
 === MA 57 ===
-=== mmp.m 0 0 1/57 ===
+=== mm.m 0 0 1/57 ===
 !project =
 	module mm_cli
 
+	module mm_genpcl
+	module mm_libpcl
 	module mm_blockpcl
 
 	module mm_assem
@@ -11,19 +13,17 @@
 
 	module mm_diags
 !	module mm_diags_dummy
-
+!
+!	module mm_export_dummy
+!	module mm_exportq
 	module mm_exportm
-
-	module mm_genpcl
 
 	module mm_lex
 	module mm_lib
 
-	module mm_libpcl
-
 	module mm_libsources
 !	module mm_libsources_dummy
-
+!
 	module mm_modules
 	module mm_name
 	module mm_parse
@@ -33,10 +33,13 @@
 	module mm_type
 
 !	$sourcepath "c:/px/"
-!	import pcl
-	import pclp
+!	$sourcepath "c:/xxx/"
+	import pcl
 !	import pclmin
 !	import pclrunx
+
+!	$sourcepath "c:/qx/"
+!	import qc
 
 !end
 
@@ -44,7 +47,7 @@ proc main=
 	main2()
 end
 
-=== pclp.m 0 0 2/57 ===
+=== pcl.m 0 0 2/57 ===
 project =
 	module pc_api
 	module pc_decls
@@ -55,14 +58,11 @@ project =
 
 ! Interpreter
 	module pc_run
+!	module pc_runD
 	module pc_runaux
 
 ! Tables (eg. types and IL opcodes)
 	module pc_tables
-
-!	module pc_genc
-!	module pc_auxc
-!	module pc_libc
 
 	module mc_GenMCL
 	module mc_AuxMCL
@@ -93,6 +93,7 @@ project =
 end
 
 export byte pc_userunpcl=0
+
 === pc_api.m 0 0 3/57 ===
 EXPORT INT PCLSEQNO
 int STSEQNO
@@ -16049,7 +16050,7 @@ proc getinputoptions=
 	if eqstring(filespec, inputfile) and passlevel=exe_pass then
 		strcpy(&filespec[1]+strlen(filespec)-extlen-1, "2.m")
 		outfile:=pcm_copyheapstring(filespec)
-		println "New dest=",outfile
+		println "New dest=",changeext(outfile, "exe")
 	fi
 
 	pcl_setflags(highmem:highmem, shortnames:fshortnames)
@@ -16206,7 +16207,726 @@ func addstartproc(symbol owner, ichar name, int scope,moduleno)symbol stproc=
 	return stproc
 end
 
-=== mm_blockpcl.m 0 0 27/57 ===
+=== mm_genpcl.m 0 0 27/57 ===
+
+global int retindex
+global int initstaticsindex
+global pcl pcldoswx
+
+const maxnestedloops	= 50
+
+global [maxnestedloops,4]int loopstack
+global int loopindex							!current level of nested loop/switch blocks
+
+unitrec zero_unit
+global unit pzero=&zero_unit
+
+int nvarlocals, nvarparams
+
+macro divider = gencomment("------------------------")
+
+global proc codegen_il(ichar dummy)=
+!generate code for module n
+	symbol d
+	ref procrec pp
+
+	pcl_start(nil, nunits)
+
+	dolibs()
+
+	pp:=staticlist
+	while pp do
+		d:=pp.def
+		dostaticvar(d)
+		pp:=pp.nextproc
+	od
+
+	gencomment("")
+
+	for i to ndllproctable do
+		gendllproc(dllproctable[i])
+	od
+
+	pp:=proclist
+	while pp do
+		d:=pp.def
+!CPL "GENPCL/PROC", D.NAME
+		genprocdef(currproc:=d)
+		pp:=pp.nextproc
+	od
+
+	scanprocs()
+
+	pcl_end()
+
+end
+
+proc genprocdef (symbol p) =
+	imodule ms
+
+	ms:=modules[p.moduleno]
+	pcldoswx:=nil
+!	nblocktemps:=0
+
+	if p=ms.stmain and moduletosub[p.moduleno]=mainsubprogno then
+		genmaindef(p)
+		return
+	elsif p=ms.ststart then
+		genstartdef(p)
+		return
+	fi
+
+	mmpos:=p.pos
+	doprocdef(p)
+
+	retindex:=createfwdlabel()
+
+	divider()
+
+	if p.hasdoswx then
+		pc_gen(kinitdswx)
+		pc_gen(knop)
+		pcldoswx:=pccurr
+		pc_gen(knop)
+	fi
+GENCOMMENT("AFTER DOSWX")
+
+	evalunit(p.code)
+	divider()
+
+	definefwdlabel(retindex)
+
+	genreturn()
+
+	pc_endproc()
+end
+
+proc gendllproc(symbol p)=
+	symbol e
+
+!CPL "GENDLLPROC", P.NAME
+	pc_setimport(getpsymbol(p))
+
+	e:=p.deflist
+	while e, e:=e.nextdef do
+		pc_addparam(getpsymbol(e))
+	od
+	pc_setimport(nil)
+
+end
+
+proc dolibs=
+	for i to nlibfiles when libfiles[i]^<>'$' do
+		pc_addplib(libfiles[i])
+	od
+end
+
+proc dostaticvar(symbol d)=
+
+	if d.isimport then return fi
+
+	if d.scope = program_scope and d.name^='$' then
+		if eqstring(d.name,"$cmdskip") then
+			d.scope:=export_scope				!export from mlib subprog
+		fi
+	fi
+
+	if d.atvar=1 then
+		return
+	elsif d.code then
+		pc_gen(kistatic,genmem_d(d))
+		setmode(d.mode)
+		pc_setalign(getalignment(d.mode))
+		genidata(d.code)
+	else
+dozstatic:
+		pc_gen(kzstatic,genmem_d(d))
+		setmode(d.mode)
+		pc_setalign(getalignment(d.mode))
+	fi
+
+end
+
+proc genidata(unit p,int doterm=1, am='A',offset=0)=
+	[2000]byte data
+	int t,tbase
+	byte allbytes, nbytes
+	unit q,a
+	symbol d
+	ref char s
+
+	t:=p.mode
+	mmpos:=p.pos
+	tbase:=ttbasetype[t]
+
+	case p.tag
+	when jconst then
+		if ttisref[t] then
+			if t=trefchar then
+				if p.svalue then
+!CPL "GID/CONST1", P.SVALUE, p.strtype
+if p.strtype='B' then gerror("1:B-str?") fi
+					pc_gen(kdata,genstring(p.svalue))
+				else
+					pc_gen(kdata,genint(0))
+				fi
+			else
+				pc_gen(kdata,genint(p.value))
+			fi
+			setmode(ti64)
+		elsif ttisreal[t] then
+			pc_gen(kdata,genrealimm(p.xvalue, getpclmode(t)))
+			setmode(t)
+
+		elsif ttbasetype[t]=tarray then
+			IF P.STRTYPE=0 THEN GERROR("IDATA/ARRAY/NOT BLOCKDATA") FI
+!CPL "GID/CONST2", P.SVALUE, p.strtype
+			pc_gen(kdata, gendata(p.svalue, p.slength))
+
+		else						!assume int/word
+			pc_gen(kdata,genint(p.value))
+			setmode_u(p)
+		fi
+
+	when jmakelist then
+		q:=p.a
+
+		allbytes:=1
+		nbytes:=0
+		while q, q:=q.nextunit do
+			if q.tag=jconst and q.mode=tu8 and nbytes<data.len then
+				data[++nbytes]:=q.value
+			else
+				allbytes:=0
+				exit
+			end
+		end
+
+		if allbytes and nbytes then		!was all byte constants, not in data[1..nbytes]
+			pc_gen(kdata, gendata(pcm_copyheapstringn(cast(&data), nbytes), nbytes))
+		else
+			q:=p.a
+			while q, q:=q.nextunit do
+				genidata(q)
+			od
+		fi
+
+	when jname then
+		d:=p.def
+		case d.nameid
+		when staticid,procid,dllprocid then
+			pc_gen(kdata, genmemaddr_d(d))
+			if offset then
+				pc_setscaleoff(1, offset)
+			fi
+			if am='P' then
+				setmode(tu64)
+			else
+				setmode(t)
+			fi
+		when labelid then
+			if d.index=0 then d.index:=++mlabelno fi
+			pc_gen(kdata, genlabel(d.index))
+			setmode(ti64)
+		else
+			gerror("Idata &frameXXX")
+		esac
+		return
+	when jconvert then
+		genidata(p.a)
+	when jshorten then
+		pc_gen(kdata,genint(p.a.value))
+		setmode(t)
+
+	when jaddrof,jaddroffirst then
+		genidata(p.a,am:'P',offset:(p.b|p.b.value|0))
+	else
+		gerror_s("IDATA: ",jtagnames[p.tag],p)
+
+	esac
+end
+
+global func genmem_u(unit p)pcl=
+	return genmem(getpsymbol(p.def))
+end
+
+global func genmem_d(symbol d)pcl=
+	return genmem(getpsymbol(d))
+end
+
+global proc genpushmem_d(symbol d)=
+	pc_gen(kload,genmem(getpsymbol(d)))
+end
+
+global func genmemaddr_d(symbol d)pcl=
+	return genmemaddr(getpsymbol(d))
+end
+
+global proc genpushmemaddr_d(symbol d)=
+	pc_gen(kload,genmemaddr(getpsymbol(d)))
+end
+
+global func definelabel:int =
+	pc_gen(klabel,genlabel(++mlabelno))
+	return mlabelno
+end
+
+global func createfwdlabel:int =
+	return ++mlabelno
+end
+
+global proc definefwdlabel(int lab) =
+	pc_gen(klabel,genlabel(lab))
+end
+
+global proc genreturn=
+!assume returning from currproc
+	case currproc.nretvalues
+	when 0 then
+		pc_gen(kretproc)
+	when 1 then
+		pc_gen(kretfn)
+		setmode(currproc.mode)
+
+	else
+		pc_genx(kretfn,currproc.nretvalues)
+	esac
+end
+
+global func reversecond(int cc)int=
+!reverse conditional operator
+	case cc
+	when eq_cc then cc:=ne_cc
+	when ne_cc then cc:=eq_cc
+	when lt_cc then cc:=ge_cc
+	when le_cc then cc:=gt_cc
+	when ge_cc then cc:=lt_cc
+	when gt_cc then cc:=le_cc
+	esac
+
+	return cc
+end
+
+global func reversecond_order(int cc)int=
+	case cc
+	when eq_cc then cc:=eq_cc
+	when ne_cc then cc:=ne_cc
+	when lt_cc then cc:=gt_cc
+	when le_cc then cc:=ge_cc
+	when ge_cc then cc:=le_cc
+	when gt_cc then cc:=lt_cc
+	esac
+
+	return cc
+end
+
+global proc stacklooplabels(int a,b,c)=
+!don't check for loop depth as that has been done during parsing
+	++loopindex
+	if loopindex>maxnestedloops then
+		gerror("Too many nested loops")
+	fi
+
+	loopstack[loopindex,1]:=a
+	loopstack[loopindex,2]:=b
+	loopstack[loopindex,3]:=c
+
+end
+
+global func findlooplabel(int k,n)int=
+!k is 1,2,3 for label A,B,C
+!n is a 1,2,3, according to loop nesting index
+	int i
+
+	i:=loopindex-(n-1)		!point to entry
+	if i<1 or i>loopindex then gerror("Bad loop index") fi
+	return loopstack[i,k]
+end
+
+global proc genpc_sysfn(int fnindex, unit a=nil,b=nil,c=nil)=
+	genpc_sysproc(fnindex, a,b,c, 1)
+end
+
+global proc genpc_sysproc(int fnindex, unit a=nil,b=nil,c=nil, int asfunc=0)=
+	int nargs:=0, opc
+	symbol d
+	pcl p
+	opc:=0
+
+	pc_gen(ksetcall)
+	p:=pccurr
+
+!	if c then evalunit(c); pc_gen(ksetarg); setmode_u(c); ++nargs fi
+!	if b then evalunit(b); pc_gen(ksetarg); setmode_u(b); ++nargs fi
+!	if a then evalunit(a); pc_gen(ksetarg); setmode_u(a); ++nargs fi
+
+	pushsysarg(c, 3, nargs)
+	pushsysarg(b, 2, nargs)
+	pushsysarg(a, 1, nargs)
+!
+	p.nargs:=nargs
+
+	d:=getsysfnhandler(fnindex)
+	if d then
+		pc_gen((asfunc|kcallf|kcallp), genmemaddr(getpsymbol(d)))
+		pc_setnargs(nargs)
+	else
+		pc_gen((asfunc|kcallf|kcallp), gennameaddr(sysfnnames[fnindex]+3))
+	fi
+	pccurr.nargs:=nargs
+end
+
+global proc pushsysarg(unit p, int n, &nargs) =
+!return 0 or 1 args pushed
+	if p then
+		evalunit(p)
+		pc_gen(ksetarg)
+		setmode_u(p)
+		pccurr.x:=n
+		pccurr.y:=n			!ASSUMES ALL INTS; however this only important
+							!for arm64, and only matters if more than 8 args
+		++nargs
+	fi
+end
+
+proc start=
+	zero_unit.tag:=jconst
+	zero_unit.mode:=ti64
+	zero_unit.value:=0
+	zero_unit.resultflag:=1
+end
+
+global func getsysfnhandler(int fn)symbol p=
+	[300]char str
+	int report
+
+	if sysfnhandlers[fn] then
+		return sysfnhandlers[fn]
+	fi
+
+	strcpy(str,"m$")
+	strcat(str,sysfnnames[fn]+3)	!"sf_stop" => "m$stop"
+
+	ref procrec pp:=proclist
+	while pp, pp:=pp.nextproc do
+		if eqstring(pp.def.name, str) then
+			sysfnhandlers[fn]:=pp.def
+			return pp.def
+		fi
+	od
+
+!	report:=passlevel>asm_pass
+	report:=1
+	report:=0
+
+	if report then
+		println "Sysfn not found:",str
+	fi
+	if fn<>sf_unimpl then
+		p:=getsysfnhandler(sf_unimpl)
+		if p=nil and report then
+			gerror("No m$unimpl")
+		fi
+		return p
+	fi
+
+	return nil
+end
+
+global func findhostfn(int opc)psymbol=
+!called from pcl/mcl backend. opc refers to a PCL op
+
+	case opc
+	when kpower then			!assume for i64
+		getpsymbol(getsysfnhandler(sf_power_i64))
+
+	else
+		nil
+	esac
+end
+
+global proc genpushint(int a)=
+	pc_gen(kload, genint(a))
+	setmode(ti64)
+end
+
+global proc genpushreal(real x, int mode)=
+	pc_gen(kload,genreal(x, getpclmode(mode)))
+	setmode(mode)
+end
+
+global proc genpushstring(ichar s)=
+	pc_gen(kload,genstring(s))
+	setmode(tu64)
+end
+
+proc genmaindef(symbol p)=
+	symbol d
+
+	mmpos:=p.pos
+	doprocdef(p,1)
+
+	retindex:=createfwdlabel()
+	for i to nsubprogs when i<>mainsubprogno do
+		d:=modules[subprogs[i].mainmodule].ststart
+		docallproc(d)
+	od
+	d:=modules[subprogs[mainsubprogno].mainmodule].ststart
+	docallproc(d)
+
+	divider()
+	evalunit(p.code)
+	divider()
+
+	definefwdlabel(retindex)
+
+	pc_gen(kload, genint(0))
+	setmode(ti64)
+	pc_gen(kstop)
+	genreturn()
+
+	pc_endproc()
+end
+
+proc genstartdef(symbol p)=
+	symbol d
+	int lead:=0, m,s
+
+	m:=p.moduleno
+	s:=p.subprogno
+
+	if s=mainsubprogno and p.moduleno=subprogs[s].mainmodule then
+		LEAD:=1
+	elsif p.moduleno=subprogs[s].firstmodule then
+		LEAD:=2
+	fi
+
+	mmpos:=p.pos
+	doprocdef(p)
+
+	retindex:=createfwdlabel()
+
+	if lead then
+		for i to nmodules when moduletosub[i]=s and i<>m do
+			d:=modules[i].ststart
+			docallproc(d)
+		od
+	fi
+
+	divider()
+	evalunit(p.code)
+	divider()
+
+	definefwdlabel(retindex)
+
+	genreturn()
+
+	pc_endproc()
+!	gencomment("")
+end
+
+proc initstaticvar(symbol d)=
+	if d.code then
+		evalunit(d.code)
+	fi
+	pc_gen(kstore,genmem_d(d))
+end
+
+proc docallproc(symbol d)=
+!call a simple proc, eg. start(), with no args
+	return unless d
+	pc_gen(ksetcall)
+	pc_setnargs(0)
+
+	pc_gen(kcallp, genmemaddr_d(d))
+end
+
+proc doprocdef(symbol d, int ismain=0)=
+	psymbol p
+	symbol e
+
+	pc_defproc(p:=getpsymbol(d), isentry:ismain, threaded:d.isthreaded)
+
+	e:=d.deflist
+	while e, e:=e.nextdef do
+		case e.nameid
+		when paramid then
+			pc_addparam(getpsymbol(e))
+
+		when frameid then
+			unless e.atvar and e.equivvar then
+				pc_addlocal(getpsymbol(e))
+			end
+
+		esac
+	od
+end
+
+proc scanprocs=
+	const maxprocs=1000
+	[maxprocs]psymbol proctable
+	pcl currpcl
+	int nprocs:=0
+
+	currpcl:=pcstart
+
+	repeat
+		if currpcl.opcode in [kproc,ktcproc] and currpcl.def.ishandler then
+			if nprocs>=maxprocs then gerror("PCL proctab overflow") fi
+			proctable[++nprocs]:=currpcl.def
+		fi
+		++currpcl
+	until currpcl>pccurr
+
+	if nprocs=0 and pnprocs=nil then
+		pnprocs:=pc_makesymbol("$nprocs", static_id)
+
+		pnprocs.mode:=tpi64
+!CPL "++++++++", =PNPROCS, PNPROCS.NAME
+
+		goto finish
+	fi
+
+	setfunctab()
+
+!CPL "SCANP", =PNPROCS, =PPROCADDR
+
+	pc_gen(kistatic, genmem(pprocaddr))
+	pccurr.mode:=tpblock
+	pccurr.size:=nprocs*8
+	pprocaddr.mode:=tpblock
+	pprocaddr.size:=pccurr.size
+
+	for i to nprocs do
+		pc_gen(kdata, genmemaddr(proctable[i]))
+		setmode(tu64)
+	od
+
+	pc_gen(kistatic, genmem(pprocname))
+	pccurr.mode:=tpblock
+	pccurr.size:=nprocs*8
+	pprocname.mode:=tpblock
+	pprocname.size:=pccurr.size
+
+	for i to nprocs do
+		pc_gen(kdata, genstring(getbasename(proctable[i].name)))
+		setmode(tu64)
+	od
+
+finish:
+	pc_gen(kistatic, genmem(pnprocs))
+	setmode(ti64)
+	pc_gen(kdata, genint(nprocs))
+	setmode(ti64)
+end
+
+global proc setfunctab=
+	if pnprocs=nil then
+		pnprocs:=pc_makesymbol("$nprocs", static_id)
+!CPL "SET PNPROCS", PNPROCS
+		pnprocs.mode:=tpi64
+		pprocname:=pc_makesymbol("$procname", static_id)
+		pprocaddr:=pc_makesymbol("$procaddr", static_id)
+	fi
+end
+=== mm_libpcl.m 0 0 28/57 ===
+global function getpsymbol(symbol d)psymbol p=
+	symbol e
+	[256]char str
+	[16]symbol chain
+	int n
+
+	return nil when d=nil
+
+	if d.pdef then return d.pdef fi
+
+	if d.atvar and d.equivvar then
+		getpsymbol(e:=getequivdef(d))
+		d.pdef:=e.pdef
+		return e.pdef
+	fi
+
+	if d.nameid in [frameid, paramid] or d.isimport then
+		strcpy(str, (d.truename|d.truename|d.name))
+	else
+		e:=d
+		n:=0
+		repeat
+			chain[++n]:=e
+			e:=e.owner
+		until e=nil or e.nameid=programid
+
+		strcpy(str,chain[n].name)
+		for i:=n-1 downto 1 do
+			strcat(str,".")
+			if chain[i].truename then
+				strcat(str,chain[i].truename)
+			else
+				strcat(str,chain[i].name)
+			fi
+		od
+	fi
+
+	d.pdef:=p:=pc_makesymbol(str, name2pid[d.nameid])
+
+	p.mode:=getpclmode(d.mode)
+
+	p.size:=ttsize[d.mode]
+
+	if d.owner and d.owner.owner then
+		p.owner:=getpsymbol(d.owner)
+	fi
+
+	if d.scope=export_scope then p.exported:=1 fi
+	if d.nameid in [dllprocid, dllvarid] then p.imported:=1 fi
+	p.used:=d.used
+	p.labelno:=d.index
+	p.ishandler:=d.ishandler
+	p.isthreaded:=d.isthreaded
+
+	p.varparams:=d.varparams
+
+	e:=d.owner
+	if ctarget and d.nameid=staticid and e and e.nameid=procid and d.code then
+!CPL "GETPS/STATIC VAR", D.NAME, E.PDEF.CHASSTATICS
+		p.cprocowner:=e.pdef
+		e.pdef.chasstatics:=1
+!		p.pcdata:=cast(123456)
+	fi
+
+	return p
+end
+
+global proc setmode(int mode)=
+	pc_setmode(getpclmode(mode), ttsize[mode])
+end
+
+global proc setmode2(int mode)=
+	pc_setmode2(getpclmode(mode))
+end
+
+global proc setmode_u(unit p)=
+	int mode:=p.mode
+
+	pc_setmode(getpclmode(mode), ttsize[mode])
+end
+
+func getequivdef(symbol d)symbol=
+!assume that d.atvar/d.equivvar are set
+	unit p
+
+	p:=d.equivvar
+	case p.tag
+	when jname then
+		p.def
+	when jconvert then
+		p.a.def			!assume points to name
+	else
+		gerror("geteqv")
+		nil
+	esac
+end
+=== mm_blockpcl.m 0 0 29/57 ===
 const dodotchains=1
 !const dodotchains=0
 
@@ -18588,7 +19308,7 @@ proc do_setinplace=
 		pccurr.inplace:=1
 	fi
 end
-=== mm_assem.m 0 0 28/57 ===
+=== mm_assem.m 0 0 30/57 ===
 global func readassemline:unit=
 	lex()
 	return assembleline(1)
@@ -18894,7 +19614,7 @@ global proc initassemsymbols=
 
 end
 
-=== mm_assemaux.m 0 0 29/57 ===
+=== mm_assemaux.m 0 0 31/57 ===
 global proc domcl_assem(unit pcode)=
 	return when not pcode or pcode.tag<>jassem
 
@@ -19037,7 +19757,7 @@ global func checkasmlabel(unit p)int=
 	0
 end
 
-=== mm_decls.m 0 0 30/57 ===
+=== mm_decls.m 0 0 32/57 ===
 global const maxmodule=300
 global const maxsubprog=30
 global const maxlibfile=50
@@ -19213,7 +19933,7 @@ global record unitrec =
 
 			union
 				unit	c
-				[4]i16	cmppclmode
+				[4]i16	xxcmppclmode
 			end
 		end
 		[3]unit abc
@@ -19475,7 +20195,7 @@ global const langhelpfile	= "mm_help.txt"
 !GLOBAL INT NUSESTACK
 !GLOBAL INT NUSEMIXEDSTACK
 
-=== mm_diags.m 0 0 31/57 ===
+=== mm_diags.m 0 0 33/57 ===
 int currlineno
 int currfileno
 
@@ -20259,7 +20979,7 @@ global proc showtimings=
 	showtime("Total:",		compiletime)
 end
 
-=== mm_exportm.m 0 0 32/57 ===
+=== mm_exportm.m 0 0 34/57 ===
 strbuffer sbuffer
 ref strbuffer dest=&sbuffer
 
@@ -20482,629 +21202,7 @@ proc wxmode(int mode)=
 	fi
 	wxstr(strmode(mode,0))
 end
-=== mm_genpcl.m 0 0 33/57 ===
-
-global int retindex
-global int initstaticsindex
-global pcl pcldoswx
-
-const maxnestedloops	= 50
-
-global [maxnestedloops,4]int loopstack
-global int loopindex							!current level of nested loop/switch blocks
-
-unitrec zero_unit
-global unit pzero=&zero_unit
-
-int nvarlocals, nvarparams
-
-macro divider = gencomment("------------------------")
-
-global proc codegen_il(ichar dummy)=
-!generate code for module n
-	symbol d
-	ref procrec pp
-
-	pcl_start(nil, nunits)
-
-	dolibs()
-
-	pp:=staticlist
-	while pp do
-		d:=pp.def
-		dostaticvar(d)
-		pp:=pp.nextproc
-	od
-
-	gencomment("")
-
-	for i to ndllproctable do
-		gendllproc(dllproctable[i])
-	od
-
-	pp:=proclist
-	while pp do
-		d:=pp.def
-!CPL "GENPCL/PROC", D.NAME
-		genprocdef(currproc:=d)
-		pp:=pp.nextproc
-	od
-
-	scanprocs()
-
-	pcl_end()
-
-end
-
-proc genprocdef (symbol p) =
-	imodule ms
-
-	ms:=modules[p.moduleno]
-	pcldoswx:=nil
-!	nblocktemps:=0
-
-	if p=ms.stmain and moduletosub[p.moduleno]=mainsubprogno then
-		genmaindef(p)
-		return
-	elsif p=ms.ststart then
-		genstartdef(p)
-		return
-	fi
-
-	mmpos:=p.pos
-	doprocdef(p)
-
-	retindex:=createfwdlabel()
-
-	divider()
-
-	if p.hasdoswx then
-		pc_gen(kinitdswx)
-		pc_gen(knop)
-		pcldoswx:=pccurr
-		pc_gen(knop)
-	fi
-GENCOMMENT("AFTER DOSWX")
-
-	evalunit(p.code)
-	divider()
-
-	definefwdlabel(retindex)
-
-	genreturn()
-
-	pc_endproc()
-end
-
-proc gendllproc(symbol p)=
-	symbol e
-
-!CPL "GENDLLPROC", P.NAME
-	pc_setimport(getpsymbol(p))
-
-	e:=p.deflist
-	while e, e:=e.nextdef do
-		pc_addparam(getpsymbol(e))
-	od
-	pc_setimport(nil)
-
-end
-
-proc dolibs=
-	for i to nlibfiles when libfiles[i]^<>'$' do
-		pc_addplib(libfiles[i])
-	od
-end
-
-proc dostaticvar(symbol d)=
-
-	if d.isimport then return fi
-
-	if d.scope = program_scope and d.name^='$' then
-		if eqstring(d.name,"$cmdskip") then
-			d.scope:=export_scope				!export from mlib subprog
-		fi
-	fi
-
-	if d.atvar=1 then
-		return
-	elsif d.code then
-		pc_gen(kistatic,genmem_d(d))
-		setmode(d.mode)
-		pc_setalign(getalignment(d.mode))
-		genidata(d.code)
-	else
-dozstatic:
-		pc_gen(kzstatic,genmem_d(d))
-		setmode(d.mode)
-		pc_setalign(getalignment(d.mode))
-	fi
-
-end
-
-proc genidata(unit p,int doterm=1, am='A',offset=0)=
-	[2000]byte data
-	int t,tbase
-	byte allbytes, nbytes
-	unit q,a
-	symbol d
-	ref char s
-
-	t:=p.mode
-	mmpos:=p.pos
-	tbase:=ttbasetype[t]
-
-	case p.tag
-	when jconst then
-		if ttisref[t] then
-			if t=trefchar then
-				if p.svalue then
-!CPL "GID/CONST1", P.SVALUE, p.strtype
-if p.strtype='B' then gerror("1:B-str?") fi
-					pc_gen(kdata,genstring(p.svalue))
-				else
-					pc_gen(kdata,genint(0))
-				fi
-			else
-				pc_gen(kdata,genint(p.value))
-			fi
-			setmode(ti64)
-		elsif ttisreal[t] then
-			pc_gen(kdata,genrealimm(p.xvalue, getpclmode(t)))
-			setmode(t)
-
-		elsif ttbasetype[t]=tarray then
-			IF P.STRTYPE=0 THEN GERROR("IDATA/ARRAY/NOT BLOCKDATA") FI
-!CPL "GID/CONST2", P.SVALUE, p.strtype
-			pc_gen(kdata, gendata(p.svalue, p.slength))
-
-		else						!assume int/word
-			pc_gen(kdata,genint(p.value))
-			setmode_u(p)
-		fi
-
-	when jmakelist then
-		q:=p.a
-
-		allbytes:=1
-		nbytes:=0
-		while q, q:=q.nextunit do
-			if q.tag=jconst and q.mode=tu8 and nbytes<data.len then
-				data[++nbytes]:=q.value
-			else
-				allbytes:=0
-				exit
-			end
-		end
-
-		if allbytes and nbytes then		!was all byte constants, not in data[1..nbytes]
-			pc_gen(kdata, gendata(pcm_copyheapstringn(cast(&data), nbytes), nbytes))
-		else
-			q:=p.a
-			while q, q:=q.nextunit do
-				genidata(q)
-			od
-		fi
-
-	when jname then
-		d:=p.def
-		case d.nameid
-		when staticid,procid,dllprocid then
-			pc_gen(kdata, genmemaddr_d(d))
-			if offset then
-				pc_setscaleoff(1, offset)
-			fi
-			if am='P' then
-				setmode(tu64)
-			else
-				setmode(t)
-			fi
-		when labelid then
-			if d.index=0 then d.index:=++mlabelno fi
-			pc_gen(kdata, genlabel(d.index))
-			setmode(ti64)
-		else
-			gerror("Idata &frameXXX")
-		esac
-		return
-	when jconvert then
-		genidata(p.a)
-	when jshorten then
-		pc_gen(kdata,genint(p.a.value))
-		setmode(t)
-
-	when jaddrof,jaddroffirst then
-		genidata(p.a,am:'P',offset:(p.b|p.b.value|0))
-	else
-		gerror_s("IDATA: ",jtagnames[p.tag],p)
-
-	esac
-end
-
-global func genmem_u(unit p)pcl=
-	return genmem(getpsymbol(p.def))
-end
-
-global func genmem_d(symbol d)pcl=
-	return genmem(getpsymbol(d))
-end
-
-global proc genpushmem_d(symbol d)=
-	pc_gen(kload,genmem(getpsymbol(d)))
-end
-
-global func genmemaddr_d(symbol d)pcl=
-	return genmemaddr(getpsymbol(d))
-end
-
-global proc genpushmemaddr_d(symbol d)=
-	pc_gen(kload,genmemaddr(getpsymbol(d)))
-end
-
-global func definelabel:int =
-	pc_gen(klabel,genlabel(++mlabelno))
-	return mlabelno
-end
-
-global func createfwdlabel:int =
-	return ++mlabelno
-end
-
-global proc definefwdlabel(int lab) =
-	pc_gen(klabel,genlabel(lab))
-end
-
-global proc genreturn=
-!assume returning from currproc
-	case currproc.nretvalues
-	when 0 then
-		pc_gen(kretproc)
-	when 1 then
-		pc_gen(kretfn)
-		setmode(currproc.mode)
-
-	else
-		pc_genx(kretfn,currproc.nretvalues)
-	esac
-end
-
-global func reversecond(int cc)int=
-!reverse conditional operator
-	case cc
-	when eq_cc then cc:=ne_cc
-	when ne_cc then cc:=eq_cc
-	when lt_cc then cc:=ge_cc
-	when le_cc then cc:=gt_cc
-	when ge_cc then cc:=lt_cc
-	when gt_cc then cc:=le_cc
-	esac
-
-	return cc
-end
-
-global func reversecond_order(int cc)int=
-	case cc
-	when eq_cc then cc:=eq_cc
-	when ne_cc then cc:=ne_cc
-	when lt_cc then cc:=gt_cc
-	when le_cc then cc:=ge_cc
-	when ge_cc then cc:=le_cc
-	when gt_cc then cc:=lt_cc
-	esac
-
-	return cc
-end
-
-global proc stacklooplabels(int a,b,c)=
-!don't check for loop depth as that has been done during parsing
-	++loopindex
-	if loopindex>maxnestedloops then
-		gerror("Too many nested loops")
-	fi
-
-	loopstack[loopindex,1]:=a
-	loopstack[loopindex,2]:=b
-	loopstack[loopindex,3]:=c
-
-end
-
-global func findlooplabel(int k,n)int=
-!k is 1,2,3 for label A,B,C
-!n is a 1,2,3, according to loop nesting index
-	int i
-
-	i:=loopindex-(n-1)		!point to entry
-	if i<1 or i>loopindex then gerror("Bad loop index") fi
-	return loopstack[i,k]
-end
-
-global proc genpc_sysfn(int fnindex, unit a=nil,b=nil,c=nil)=
-	genpc_sysproc(fnindex, a,b,c, 1)
-end
-
-global proc genpc_sysproc(int fnindex, unit a=nil,b=nil,c=nil, int asfunc=0)=
-	int nargs:=0, opc
-	symbol d
-	pcl p
-	opc:=0
-
-	pc_gen(ksetcall)
-	p:=pccurr
-
-!	if c then evalunit(c); pc_gen(ksetarg); setmode_u(c); ++nargs fi
-!	if b then evalunit(b); pc_gen(ksetarg); setmode_u(b); ++nargs fi
-!	if a then evalunit(a); pc_gen(ksetarg); setmode_u(a); ++nargs fi
-
-	pushsysarg(c, 3, nargs)
-	pushsysarg(b, 2, nargs)
-	pushsysarg(a, 1, nargs)
-!
-	p.nargs:=nargs
-
-	d:=getsysfnhandler(fnindex)
-	if d then
-		pc_gen((asfunc|kcallf|kcallp), genmemaddr(getpsymbol(d)))
-		pc_setnargs(nargs)
-	else
-		pc_gen((asfunc|kcallf|kcallp), gennameaddr(sysfnnames[fnindex]+3))
-	fi
-	pccurr.nargs:=nargs
-end
-
-global proc pushsysarg(unit p, int n, &nargs) =
-!return 0 or 1 args pushed
-	if p then
-		evalunit(p)
-		pc_gen(ksetarg)
-		setmode_u(p)
-		pccurr.x:=n
-		pccurr.y:=n			!ASSUMES ALL INTS; however this only important
-							!for arm64, and only matters if more than 8 args
-		++nargs
-	fi
-end
-
-proc start=
-	zero_unit.tag:=jconst
-	zero_unit.mode:=ti64
-	zero_unit.value:=0
-	zero_unit.resultflag:=1
-end
-
-global func getsysfnhandler(int fn)symbol p=
-	[300]char str
-	int report
-
-	if sysfnhandlers[fn] then
-		return sysfnhandlers[fn]
-	fi
-
-	strcpy(str,"m$")
-	strcat(str,sysfnnames[fn]+3)	!"sf_stop" => "m$stop"
-
-	ref procrec pp:=proclist
-	while pp, pp:=pp.nextproc do
-		if eqstring(pp.def.name, str) then
-			sysfnhandlers[fn]:=pp.def
-			return pp.def
-		fi
-	od
-
-!	report:=passlevel>asm_pass
-	report:=1
-	report:=0
-
-	if report then
-		println "Sysfn not found:",str
-	fi
-	if fn<>sf_unimpl then
-		p:=getsysfnhandler(sf_unimpl)
-		if p=nil and report then
-			gerror("No m$unimpl")
-		fi
-		return p
-	fi
-
-	return nil
-end
-
-global func findhostfn(int opc)psymbol=
-!called from pcl/mcl backend. opc refers to a PCL op
-
-	case opc
-	when kpower then			!assume for i64
-		getpsymbol(getsysfnhandler(sf_power_i64))
-
-	else
-		nil
-	esac
-end
-
-global proc genpushint(int a)=
-	pc_gen(kload, genint(a))
-	setmode(ti64)
-end
-
-global proc genpushreal(real x, int mode)=
-	pc_gen(kload,genreal(x, getpclmode(mode)))
-	setmode(mode)
-end
-
-global proc genpushstring(ichar s)=
-	pc_gen(kload,genstring(s))
-	setmode(tu64)
-end
-
-proc genmaindef(symbol p)=
-	symbol d
-
-	mmpos:=p.pos
-	doprocdef(p,1)
-
-	retindex:=createfwdlabel()
-	for i to nsubprogs when i<>mainsubprogno do
-		d:=modules[subprogs[i].mainmodule].ststart
-		docallproc(d)
-	od
-	d:=modules[subprogs[mainsubprogno].mainmodule].ststart
-	docallproc(d)
-
-	divider()
-	evalunit(p.code)
-	divider()
-
-	definefwdlabel(retindex)
-
-	pc_gen(kload, genint(0))
-	setmode(ti64)
-	pc_gen(kstop)
-	genreturn()
-
-	pc_endproc()
-end
-
-proc genstartdef(symbol p)=
-	symbol d
-	int lead:=0, m,s
-
-	m:=p.moduleno
-	s:=p.subprogno
-
-	if s=mainsubprogno and p.moduleno=subprogs[s].mainmodule then
-		LEAD:=1
-	elsif p.moduleno=subprogs[s].firstmodule then
-		LEAD:=2
-	fi
-
-	mmpos:=p.pos
-	doprocdef(p)
-
-	retindex:=createfwdlabel()
-
-	if lead then
-		for i to nmodules when moduletosub[i]=s and i<>m do
-			d:=modules[i].ststart
-			docallproc(d)
-		od
-	fi
-
-	divider()
-	evalunit(p.code)
-	divider()
-
-	definefwdlabel(retindex)
-
-	genreturn()
-
-	pc_endproc()
-!	gencomment("")
-end
-
-proc initstaticvar(symbol d)=
-	if d.code then
-		evalunit(d.code)
-	fi
-	pc_gen(kstore,genmem_d(d))
-end
-
-proc docallproc(symbol d)=
-!call a simple proc, eg. start(), with no args
-	return unless d
-	pc_gen(ksetcall)
-	pc_setnargs(0)
-
-	pc_gen(kcallp, genmemaddr_d(d))
-end
-
-proc doprocdef(symbol d, int ismain=0)=
-	psymbol p
-	symbol e
-
-	pc_defproc(p:=getpsymbol(d), isentry:ismain, threaded:d.isthreaded)
-
-	e:=d.deflist
-	while e, e:=e.nextdef do
-		case e.nameid
-		when paramid then
-			pc_addparam(getpsymbol(e))
-
-		when frameid then
-			unless e.atvar and e.equivvar then
-				pc_addlocal(getpsymbol(e))
-			end
-
-		esac
-	od
-end
-
-proc scanprocs=
-	const maxprocs=1000
-	[maxprocs]psymbol proctable
-	pcl currpcl
-	int nprocs:=0
-
-	currpcl:=pcstart
-
-	repeat
-		if currpcl.opcode in [kproc,ktcproc] and currpcl.def.ishandler then
-			if nprocs>=maxprocs then gerror("PCL proctab overflow") fi
-			proctable[++nprocs]:=currpcl.def
-		fi
-		++currpcl
-	until currpcl>pccurr
-
-	if nprocs=0 and pnprocs=nil then
-		pnprocs:=pc_makesymbol("$nprocs", static_id)
-
-		pnprocs.mode:=tpi64
-!CPL "++++++++", =PNPROCS, PNPROCS.NAME
-
-		goto finish
-	fi
-
-	setfunctab()
-
-!CPL "SCANP", =PNPROCS, =PPROCADDR
-
-	pc_gen(kistatic, genmem(pprocaddr))
-	pccurr.mode:=tpblock
-	pccurr.size:=nprocs*8
-	pprocaddr.mode:=tpblock
-	pprocaddr.size:=pccurr.size
-
-	for i to nprocs do
-		pc_gen(kdata, genmemaddr(proctable[i]))
-		setmode(tu64)
-	od
-
-	pc_gen(kistatic, genmem(pprocname))
-	pccurr.mode:=tpblock
-	pccurr.size:=nprocs*8
-	pprocname.mode:=tpblock
-	pprocname.size:=pccurr.size
-
-	for i to nprocs do
-		pc_gen(kdata, genstring(getbasename(proctable[i].name)))
-		setmode(tu64)
-	od
-
-finish:
-	pc_gen(kistatic, genmem(pnprocs))
-	setmode(ti64)
-	pc_gen(kdata, genint(nprocs))
-	setmode(ti64)
-end
-
-global proc setfunctab=
-	if pnprocs=nil then
-		pnprocs:=pc_makesymbol("$nprocs", static_id)
-!CPL "SET PNPROCS", PNPROCS
-		pnprocs.mode:=tpi64
-		pprocname:=pc_makesymbol("$procname", static_id)
-		pprocaddr:=pc_makesymbol("$procaddr", static_id)
-	fi
-end
-=== mm_lex.m 0 0 34/57 ===
+=== mm_lex.m 0 0 35/57 ===
 macro hashc(hsum,c)=hsum<<4-hsum+c
 !macro hashw(hsum)=(hsum<<5-hsum)
 macro hashw(hsum)=hsum
@@ -22411,7 +22509,7 @@ proc start=
 	od
 end
 
-=== mm_lib.m 0 0 35/57 ===
+=== mm_lib.m 0 0 36/57 ===
 int autotypeno=0
 global int nextavindex=0
 int nextsvindex=0
@@ -23675,103 +23773,6 @@ global func getpclmode(int t)int u=
 	return u
 end
 
-=== mm_libpcl.m 0 0 36/57 ===
-global function getpsymbol(symbol d)psymbol p=
-	symbol e
-	[256]char str
-	[16]symbol chain
-	int n
-
-	return nil when d=nil
-
-	if d.pdef then return d.pdef fi
-
-	if d.atvar and d.equivvar then
-		getpsymbol(e:=getequivdef(d))
-		d.pdef:=e.pdef
-		return e.pdef
-	fi
-
-	if d.nameid in [frameid, paramid] or d.isimport then
-		strcpy(str, (d.truename|d.truename|d.name))
-	else
-		e:=d
-		n:=0
-		repeat
-			chain[++n]:=e
-			e:=e.owner
-		until e=nil or e.nameid=programid
-
-		strcpy(str,chain[n].name)
-		for i:=n-1 downto 1 do
-			strcat(str,".")
-			if chain[i].truename then
-				strcat(str,chain[i].truename)
-			else
-				strcat(str,chain[i].name)
-			fi
-		od
-	fi
-
-	d.pdef:=p:=pc_makesymbol(str, name2pid[d.nameid])
-
-	p.mode:=getpclmode(d.mode)
-
-	p.size:=ttsize[d.mode]
-
-	if d.owner and d.owner.owner then
-		p.owner:=getpsymbol(d.owner)
-	fi
-
-	if d.scope=export_scope then p.exported:=1 fi
-	if d.nameid in [dllprocid, dllvarid] then p.imported:=1 fi
-	p.used:=d.used
-	p.labelno:=d.index
-	p.ishandler:=d.ishandler
-	p.isthreaded:=d.isthreaded
-
-	p.varparams:=d.varparams
-
-	e:=d.owner
-	if ctarget and d.nameid=staticid and e and e.nameid=procid and d.code then
-!CPL "GETPS/STATIC VAR", D.NAME, E.PDEF.CHASSTATICS
-		p.cprocowner:=e.pdef
-		e.pdef.chasstatics:=1
-!		p.pcdata:=cast(123456)
-	fi
-
-	return p
-end
-
-global proc setmode(int mode)=
-	pc_setmode(getpclmode(mode), ttsize[mode])
-end
-
-global proc setmode2(int mode)=
-	pc_setmode2(getpclmode(mode))
-end
-
-global proc setmode_u(unit p)=
-	int mode:=p.mode
-
-	pc_setmode(getpclmode(mode), ttsize[mode])
-end
-
-func getequivdef(symbol d)symbol=
-!assume that d.atvar/d.equivvar are set
-	unit p
-
-	p:=d.equivvar
-	case p.tag
-	when jname then
-		p.def
-	when jconvert then
-		p.a.def			!assume points to name
-	else
-		gerror("geteqv")
-		nil
-	esac
-end
 === mm_libsources.m 0 0 37/57 ===
 global const fsyslibs = 1
 
@@ -31211,7 +31212,7 @@ proc tx_cmpchain(unit p,a)=
 		genop:=p.cmpgenop[i]
 		if genop=0 then exit fi
 
-		p.cmppclmode[i]:=getpclmode(u)
+!		p.cmppclmode[i]:=getpclmode(u)
 	od
 
 	p.mode:=ti64
@@ -39275,8 +39276,8 @@ Other options:
     -himem            Generate PIC code (automatic with -obj/-dll)
     @file             Read files and options from a file
 === END ===
-1 mmp.m 0 0
-2 pclp.m 0 0
+1 mm.m 0 0
+2 pcl.m 0 0
 3 pc_api.m 0 0
 4 pc_decls.m 0 0
 5 pc_diags.m 0 0
@@ -39301,16 +39302,16 @@ Other options:
 24 mx_lib.m 0 0
 25 mx_write.m 0 0
 26 mm_cli.m 0 0
-27 mm_blockpcl.m 0 0
-28 mm_assem.m 0 0
-29 mm_assemaux.m 0 0
-30 mm_decls.m 0 0
-31 mm_diags.m 0 0
-32 mm_exportm.m 0 0
-33 mm_genpcl.m 0 0
-34 mm_lex.m 0 0
-35 mm_lib.m 0 0
-36 mm_libpcl.m 0 0
+27 mm_genpcl.m 0 0
+28 mm_libpcl.m 0 0
+29 mm_blockpcl.m 0 0
+30 mm_assem.m 0 0
+31 mm_assemaux.m 0 0
+32 mm_decls.m 0 0
+33 mm_diags.m 0 0
+34 mm_exportm.m 0 0
+35 mm_lex.m 0 0
+36 mm_lib.m 0 0
 37 mm_libsources.m 0 0
 38 mm_modules.m 0 0
 39 mm_name.m 0 0

@@ -1,5 +1,5 @@
 === MA 79 ===
-=== ccp.m 0 0 1/79 ===
+=== cc.m 0 0 1/79 ===
 project =
     module cc_cli
 
@@ -28,15 +28,15 @@ project =
 !   module cc_headersx
 
 !Diagnostics
-!    module cc_show
-    module cc_showdummy
+    module cc_show
+!    module cc_showdummy
 
 !IL Backend
     $sourcepath "c:/mx/"
-    import pclp
-!    import pclint
+    import pcl
+!   import pclint
 end
-=== pclp.m 0 0 2/79 ===
+=== pcl.m 0 0 2/79 ===
 project =
 	module pc_api
 	module pc_decls
@@ -47,14 +47,11 @@ project =
 
 ! Interpreter
 	module pc_run
+!	module pc_runD
 	module pc_runaux
 
 ! Tables (eg. types and IL opcodes)
 	module pc_tables
-
-!	module pc_genc
-!	module pc_auxc
-!	module pc_libc
 
 	module mc_GenMCL
 	module mc_AuxMCL
@@ -85,6 +82,7 @@ project =
 end
 
 export byte pc_userunpcl=0
+
 === pc_api.m 0 0 3/79 ===
 EXPORT INT PCLSEQNO
 int STSEQNO
@@ -27931,53 +27929,693 @@ global function isheaderfile(ichar file)int=
 	od
 	return 0
 end
-=== cc_showdummy.m 0 0 37/79 ===
-strbuffer sbuffer
-global ref strbuffer dest=&sbuffer
-
+=== cc_show.m 0 0 37/79 ===
+int currfileno
 int currlineno
 
+strbuffer sbuffer
+global ref strbuffer dest=&sbuffer
+int destlinestart
+
+strbuffer exprstrvar
+ref strbuffer exprstr=&exprstrvar
+
+
 global proc printcode(filehandle f,ichar caption)=
+	int i
+	ref strec p
+
+	println @f, caption
+
+	p:=stmodule.deflist
+
+	while p do
+		case p.nameid
+		when procid then
+!		if p.scope<>imported_scope and p.code then
+			if p.code then
+				println @f,p.name,,"=",scopenames[p.scope]
+				printunit(f,p.code,,"1")
+				println @f
+			fi
+		esac
+		p:=p.nextdef
+	od
 end
 
-global proc printunit(filehandle dev,ref unitrec p,int level=0,ichar prefix="*")=
+global proc printunit(filehandle dev,ref unitrec p,int level=0,ichar prefix="*")=		!PRINTUNIT
+!p is a tagrec
+	ref unitrec q
+	ref strec d
+	int t,n,lincr
+	ichar idname
+	ref caserec pc
+
+	if p=nil then
+		return
+	fi
+
+	if p.tag>=jdummy then
+		println "print unit: bad tag",p.tag
+		stop 30
+	fi
+
+	if p.lineno then
+		currlineno:=p.lineno
+		currfileno:=p.fileno
+	fi
+
+	lincr:=1
+	if level<0 then
+		lincr:=-1
+		print @dev,"             "
+	fi
+
+	print @dev,getprefix(abs(level),prefix,p)
+	idname:=jtagnames[p.tag]
+	if idname^='j' then ++idname fi
+
+	print @dev,idname,,": "
+
+	case p.tag
+	when jname, jfuncname then
+		d:=p.def
+
+		print @dev,d.name,namenames[d.nameid]
+
+		if d.code then
+			print @dev," {",,jtagnames[d.code.tag],,"}"
+		fi
+
+		print @dev," ",,getdottedname(d)!,q
+
+		if p.c then
+			print @dev," Lastcall:",p.c
+		fi
+
+	when jtempdecl, jdecl, jgoto then
+
+		d:=p.def
+		print @dev,d.name,namenames[d.nameid]
+
+		println @dev
+		printunit(dev,d.code,level+lincr,"1")
+		return
+
+	when jgoto then
+
+		d:=p.def
+		print @dev,d.name,namenames[d.nameid]
+
+	when jlabelstmt then
+		print @dev,p.def.name!,"+ LABELED STATEMENT"
+
+	when jcasestmt then
+		print @dev,"Value:", p.value
+
+	when jconst then
+		t:=p.mode
+		if t=trefchar then
+			if not p.isstrconst then
+				goto doref
+			fi
+	dostring:
+			if p.slength>256 then
+				print @dev,"""",,"(LONGSTR)",""" *",,p.slength
+			else
+				print @dev,"""",,p.svalue,,""" *",,p.slength
+			fi
+		elsif t=trefwchar then
+			if not p.iswstrconst then
+				goto doref
+			fi
+			print @dev,"""",,"(WSTRING)",""" *",,p.wslength
+		elsif t>=ti8 and t<=ti64 then
+			print @dev,p.value
+		elsif t>=tu8 and t<=tu64 then
+			print @dev,p.uvalue
+		elsif isrealcc(t) then
+			print @dev,p.xvalue
+		elsif ttbasetype[t]=tref then
+			if p.isstrconst then
+				goto dostring
+			fi
+	doref:
+			print @dev,ref void(p.value)
+		elsif ttbasetype[t]=tarray then
+			if p.isstrconst then
+				goto dostring
+			fi
+			serror("PRINTUNIT/CONST/aRRAY")
+		else
+			cpl typename(t)
+			serror("PRINTUNIT BAD CONST")
+		fi
+		print @dev," ",,strmode(t)
+		if p.isstrconst then print @dev,"<STRCONST>" fi
+		if p.iswstrconst then print @dev,"<WSTRCONST>" fi
+
+	when jconvert then
+		print @dev,convnames[p.opcode]
+		print @dev," "
+		print @dev,typename(p.a.mode)
+		print @dev," => "
+		print @dev,typename(p.convmode)
+
+	when jscale then
+		print @dev,"Scale:",p.scale
+
+	when jaddptr,jsubptr then
+		print @dev,"Ptrscale:",p.ptrscale
+
+	when jswitch then
+		pc:=p.nextcase
+		n:=0
+		while pc do ++n; pc:=pc.nextcase od
+
+		print @dev,p.nextcase,n
+
+	when jcallfn then
+		print @dev," Aparams:",p.aparams
+
+	when jptr then
+
+	when jdot then
+		print @dev," Offset:",p.offset
+
+	esac
+
+	if p.memmode then
+		print @dev, " Widen from:",strmode(p.memmode)
+	fi
+
+	if p.alength then print @dev," ALENGTH=",p.alength fi
+
+	println @dev
+
+	printunitlist(dev,p.a,level+lincr,"1")
+	printunitlist(dev,p.b,level+lincr,"2")
+	if p.tag<>jblock then					!.c is used to point to last element
+		printunitlist(dev,p.c,level+lincr,"3")
+	fi
 end
 
-global proc printmodelist(filehandle f)=
+proc printunitlist(filehandle dev,ref unitrec p,int level=0,ichar prefix="*")=		!PRINTUNIT
+	if p=nil then return fi
+
+	while p do
+		printunit(dev,p,level,prefix)
+		p:=p.nextunit
+	od
 end
 
-global function strexpr(ref unitrec p)ref strbuffer=
-!CPL "STREXPR"
-	nil
+function getprefix(int level,ichar prefix,ref unitrec p)ichar=		!GETPREFIX
+!combine any lineno info with indent string, return string to be output at start of a line
+	static [512]char str
+	[512]char indentstr
+	ichar modestr
+	int length
+
+	indentstr[1]:=0
+	if level>10 then level:=10 fi
+
+	strcpy(indentstr,"-----------------------")
+
+	modestr:=strmode(p.mode,0)
+	length:=strlen(modestr)
+	if length<strlen(indentstr) then
+		memcpy(indentstr,modestr,length)
+	else
+		strcpy(indentstr,modestr)
+	fi
+
+	to level do
+		strcat(indentstr,"|---")
+	od
+
+	strcpy(str,getlineinfok())
+	strcat(str,indentstr)
+	strcat(str,prefix)
+	if prefix^ then
+		strcat(str," ")
+	fi
+
+	return str
+end
+
+global function getdottedname(ref strec p)ichar=		!GETDOTTEDNAME
+!build full dotted name for st item p
+	static [256]char str
+	[256]char str2
+	ref strec owner
+
+	strcpy(str,p.name)
+	owner:=p.owner
+	while owner and owner.nameid<>programid do
+		strcpy(str2,str)
+		strcpy(str,owner.name)
+		strcat(str,".")
+		strcat(str,str2)
+		owner:=owner.owner
+	od
+	if p.blockno then
+	!	sprintf(str2,".%d",i32(p.blockno))
+		print @str2,".",,p.blockno
+		strcat(str,str2)
+	fi
+	return str
+end
+
+function getlineinfok:ichar=			!GETLINEINFO
+	static [40]char str
+
+	fprint @str,"# ",currfileno,currlineno:"z5",$
+	return str
 end
 
 global proc printst(filehandle f,ref strec p,int level=0)=
+	ref strec q
+
+	if p.symbol<>namesym then
+		mcerror("PRINTST not name")
+	fi
+
+	printstrec(f,p,level)
+
+	q:=p.deflist
+
+	while q<>nil do
+		printst(f,q,level+1)
+		q:=q.nextdef
+	od
+end
+
+proc printstrec(filehandle f,ref strec p,int level)=
+	ref byte q
+	strbuffer v
+	ref strbuffer d:=&v
+	int col,offset
+	const tabstr="    "
+	[256]char str
+	int scope
+	ref paramrec pm
+
+	gs_init(d)
+
+	offset:=0
+	to level do
+		gs_str(d,tabstr)
+		offset+:=4
+	od
+	gs_str(d,":")
+
+	if p.blockno then
+!	sprintf(str,"#.%d",p.name,i32(p.blockno))
+		print @str,p.name,,".",,p.blockno
+
+		gs_leftstr(d,str,28-offset,'-')
+	else
+		gs_leftstr(d,p.name,28-offset,'-')
+	fi
+	gs_leftstr(d,namenames[p.nameid],12,'.')
+	col:=gs_getcol(d)
+
+	gs_str(d,"[")
+
+	gs_str(d,scopenames[p.scope])
+	gs_str(d," ")
+
+	if p.align then
+		gs_str(d,"@@")
+		gs_strint(d,p.align)
+		gs_str(d," ")
+	fi
+	if p.varparams then
+		gs_str(d,"Var ")
+	fi
+	if p.used then
+		gs_str(d,"Used ")
+	fi
+	if p.nparams then
+		fprint @str,"Pm:# ",p.nparams
+		gs_str(d,str)
+	fi
+
+	gs_str(d,"]")
+	gs_padto(d,col+10,'=')
+
+	if p.owner then
+		fprint @str,"(#)",p.owner.name
+		gs_leftstr(d,str,18,' ')
+	else
+		gs_leftstr(d,"()",18,' ')
+	fi
+
+	case p.mode
+	when tvoid then
+		gs_str(d,"Void ")
+	else
+		gs_strsp(d,strmode(p.mode))
+	esac
+
+	case p.nameid
+	when fieldid then
+		gs_str(d,"Offset:")
+		gs_strint(d,p.offset)
+
+	when frameid,paramid then
+		if p.code then
+			gs_str(d,"=")
+
+			gs_strvar(d,strexpr(p.code))
+		fi
+		gs_str(d," Offset: ")
+		gs_strint(d,p.offset)
+
+	when procid then
+
+		gs_str(d,"Index:")
+		gs_strint(d,p.index)
+
+	when enumid then
+		gs_str(d,"Enum:")
+		gs_strint(d,p.index)
+
+	when staticid then
+		if p.code then
+			gs_str(d,"=")
+			gs_strvar(d,strexpr(p.code))
+		fi
+		gs_str(d,"STATIC********")
+	esac
+
+	gs_str(d," ")
+
+	gs_str(d,"Lineno:")
+	gs_strint(d,p.lineno iand 16777215)
+	gs_str(d," ")
+	gs_str(d,sourcefilenames[p.lineno>>24])
+
+	if p.nameid=procid then
+		gs_line(d)
+		pm:=p.paramlist
+		while pm do
+			gs_str(d,"		Param: ")
+			gs_leftstr(d,(pm.def|pm.def.name|"Anon"),10,'-')
+			gs_str(d,pmflagnames[pm.flags])
+			gs_str(d," Mode:")
+			gs_str(d,strmode(pm.mode))
+			gs_str(d," Code:")
+			gs_strint(d,cast(p.code))
+
+			gs_line(d)
+			pm:=pm.nextparam
+		od
+	fi
+
+	gs_println(d,f)
+
+	if p.code then
+		case p.nameid
+		when frameid,staticid then
+			printunit(f,p.code,-3)
+		esac
+	fi
 end
 
 global proc printstflat(filehandle f)=
+	int i
+	ref strec p
+	ref tokenrec lx
+	println @f,"GLOBAL SYMBOL TABLE:"
+
+	for i:=0 to hstsize-1 do
+		p:=hashtable^[i]
+		if p.name then
+			case p.symbol
+			when namesym,ktypespecsym, ksourcedirsym then
+				println @f,i,p,":",getstname(p),symbolnames[p.symbol],namenames[p.nameid]
+				p:=p.nextdupl
+				while p do
+					print   @f,"	",p,getstname(p),symbolnames[p.symbol],namenames[p.nameid],
+						p.prevdupl
+					println @f,"(From",(p.owner|getstname(p.owner)|"-"),,")"
+					p:=p.nextdupl
+				od
+			esac
+		fi
+	od
 end
 
-global function writeallpcl:ref strbuffer=
-!CPL "ALLPCL"
-	nil
+global function strexpr(ref unitrec p)ref strbuffer=
+!vx_makestring("",exprstr)
+	gs_init(exprstr)
+
+	jeval(exprstr,p)
+	return exprstr
 end
 
-global function strpclstr(pcl p)ichar=
-!CPL "STRPCL"
-	nil
-end
+proc jeval(ref strbuffer dest, ref unitrec p)=
+!p represents an expression. It can be a unitrec only, not a list (lists only occur inside
+!kmakelist and kmakeset units, which specially dealt with here)
+!dest is a destination string. Special routines such as gs_additem() are used, which take care
+!of separators so that successive alphanumeric items don't touch
+	ref unitrec q
+	[16000]char str
+	int lb,t
 
-global function stropndstack(int indent=0)ichar=
-!CPL "STROS"
-	nil
-end
+!CPL "JEVAL",P,JTAGNAMES[P.TAG]
 
-global proc showopndstack=
-!"SHOW"
+	case p.tag
+	when jconst then
+		if (t:=p.mode)=trefchar then
+			if p.slength=0 then goto doref fi		!might be initialised to something else
+			if not p.isstrconst then goto doref fi		!might be initialised to something else
+			if p.slength>str.len/2 then
+				strcpy(str,"LONGSTR)")
+			else
+				convertstring(p.svalue,str)
+			fi
+			gs_additem(dest,"""")
+			gs_additem(dest,str)
+			gs_additem(dest,"""")
+			return
+		elsif t>=ti8 and t<=ti64 then
+			getstrint(p.value, str)
+
+		elsif t>=tu8 and t<=tu64 then
+			strcpy(str,strword(p.uvalue))
+
+		elsif t=tr64 or t=tr32 then
+			strcpy(str,strreal(p.xvalue))
+		else
+			case ttbasetype[p.mode]
+			when tref then
+	doref:
+				print @str,ref void(p.svalue)
+			when tarray then
+				strcpy(str,"ARRAY")
+			else
+				CPL typename(p.mode)
+				ABORTPROGRAM("EVAL/C")
+
+			esac
+		fi
+		gs_additem(dest,str)
+
+	when jname then
+		gs_additem(dest,p.def.name)
+
+	when jfuncname then
+		gs_str(dest,"&")
+		gs_additem(dest,p.def.name)
+
+	when jandl,jorl,jandand,jeq,jne,jlt,jle,jgt,jge,jadd,jsub,jmul,jdiv,
+			jrem,jiand,jior,jixor,jshl,jshr,
+			jaddto,jsubto,jmulto,jdivto,
+			jremto,jiandto,jiorto,jixorto,jshlto,jshrto 	then
+
+		strcpy(str,getopcjname(p.tag))
+		gs_additem(dest,"(")
+		jeval(dest,p.a)
+		gs_additem(dest,str)
+		jeval(dest,p.b)
+		gs_additem(dest,")")
+
+	when jneg,jabs,jinot,jnotl,jistruel then
+
+		strcpy(str,getopcjname(p.tag))
+		gs_additem(dest,str)
+		gs_additem(dest,"(")
+		jeval(dest,p.a)
+		gs_additem(dest,")")
+
+	when jcallfn then
+		jeval(dest,p.a)
+		gs_additem(dest,"(")
+
+		q:=p.b
+		while q do
+			jeval(dest,q)
+			q:=q.nextunit
+			if q then gs_additem(dest,",") fi
+		od
+		gs_additem(dest,")")
+
+	when jdot then
+		jeval(dest,p.a)
+		gs_additem(dest,".")
+		GS_STR(DEST,"???")
+
+	when jidot then
+		jeval(dest,p.a)
+		gs_additem(dest,"->")
+		jeval(dest,p.b)
+
+	when jmakelist,jexprlist then
+		lb:=p.tag=jexprlist
+		gs_additem(dest,(lb|"("|"{"))
+
+		q:=p.a
+		while q do
+			jeval(dest,q)
+			q:=q.nextunit
+			if q then gs_additem(dest,",") fi
+		od
+		gs_additem(dest,(lb|")"|"}"))
+
+	when jassign then
+		jeval(dest,p.a)
+		gs_additem(dest,"=")
+		jeval(dest,p.b)
+
+	when jifx then
+		jeval(dest,p.a)
+		gs_additem(dest,"?")
+		jeval(dest,p.b)
+		gs_additem(dest,":")
+		jeval(dest,p.c)
+
+	when jconvert then
+
+		gs_additem(dest,strmode(p.mode))
+		gs_additem(dest,"(")
+		jeval(dest,p.a)
+		gs_additem(dest,")")
+
+	when jptr then
+		gs_additem(dest,"*(")
+		jeval(dest,p.a)
+		if p.b then
+			gs_additem(dest,"+")
+			jeval(dest,p.b)
+		fi
+		gs_additem(dest,")")
+
+	when jblock then
+		gs_additem(dest,"<JBLOCK>")
+
+	when jpreincr then
+		gs_additem(dest,"++")
+		jeval(dest,p.a)
+
+	when jpredecr then
+		gs_additem(dest,"--")
+		jeval(dest,p.a)
+
+	when jpostincr then
+		jeval(dest,p.a)
+		gs_additem(dest,"++")
+
+	when jpostdecr then
+		jeval(dest,p.a)
+		gs_additem(dest,"--")
+
+
+	when jnull then
+		gs_str(dest,"<nullunit>")
+
+	when jscale then
+		gs_str(dest,"scale((")
+		jeval(dest,p.a)
+		if p.scale>0 then
+			gs_str(dest,")*")
+			gs_strint(dest,p.scale)
+		else
+			gs_str(dest,")/")
+			gs_strint(dest,-p.scale)
+		fi
+		gs_str(dest,")")
+	when jaddptr then
+		gs_str(dest,"(")
+		jeval(dest,p.a)
+		gs_str(dest,"+")
+		jeval(dest,p.b)
+		gs_str(dest,")")
+
+	when jwidenmem then
+		jeval(dest,p.a)
+
+
+	else
+!CPL JTAGNAMES[P.TAG]
+	gs_str(dest,"<CAN'T DO JEVAL>")
+	end
 end
 
 global proc printfilelist(filehandle f)=
+	println @f,"Source files",nsourcefiles
+	for i to nsourcefiles do
+		fprintln @f,"# # (#)", i, sourcefilenames[i]:"12jl", sourcefilepaths[i]
+	od
+	println @f,"\nInput file:",inputfile
+	println @f,"\nLibfiles",nlibfiles
+	for i to nlibfiles do
+		println @f,i, libfiles[i]
+	od
+
 end
+
+global proc printmodelist(filehandle f)=
+	int m, mbase
+	ref strec d
+	const tab="\t"
+
+	println @f,"PROC MODELIST",ntypes
+
+	for m:=0 to ntypes do
+		println @f,m:"4", strmode(m)
+		mbase:=ttbasetype[m]
+		if tttypedef[m] then println @f,tab,"Typedef:",tttypedef[m].name fi
+
+		println @f,tab,"Basetype:",mbase,strmode(mbase)
+		println @f,tab,"Name:",typename(m)
+		d:=ttnamedef[m]
+		print @f,tab,"ttnamedef:",d,$
+			if d then
+				print @f, d.name,,".",,d.blockno
+			else
+				print @f,"-"
+			fi
+!(ttnamedef[m]|ttnamedef[m].name|"-")
+
+		println @f
+		
+		println @f,tab,"Target:",strmode(tttarget[m])
+		println @f,tab,"Size:",ttsize[m]
+		println @f,tab,"Length:",ttlength[m]
+		println @f,tab,"Isblock:",ttisblock[m]
+		println @f,tab,"Const:",ttconst[m]
+		println @f,tab,"Signed:",ttsigned[m]
+		println @f,tab,"Ref:",ttreftype[m]
+		println @f,tab,"Constver:",strmode(ttconsttype[m])
+		println @f,tab,"Shared:",ttshared[m]
+		println @f
+	od
+
+	println @f
+end
+
 === info.txt 0 1 38/79 ===
     The 'MCC' C Compiler comprises:
 
@@ -29866,8 +30504,8 @@ typedef float r32;
 typedef double r64;
 
 === END ===
-1 ccp.m 0 0
-2 pclp.m 0 0
+1 cc.m 0 0
+2 pcl.m 0 0
 3 pc_api.m 0 0
 4 pc_decls.m 0 0
 5 pc_diags.m 0 0
@@ -29902,7 +30540,7 @@ typedef double r64;
 34 cc_lib.m 0 0
 35 cc_support.m 0 0
 36 cc_headers.m 0 0
-37 cc_showdummy.m 0 0
+37 cc_show.m 0 0
 38 info.txt 0 1
 39 assert.h 0 1
 40 ctype.h 0 1
