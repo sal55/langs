@@ -43,7 +43,7 @@ global proc disploop =
 !Next fastest (equivalent to using table of label pointers in C)
 !   doswitchu pc.opcode
 
-!Normal jump-table-based switch
+!Normal jump-table-based switch (well, looping version of normal switch!)
 !   doswitch pc.opcode
 
 !Slowest: this does sequential testing
