@@ -15,3 +15,5 @@ https://www.reddit.com/r/Compilers/comments/1iltptz/baseline_compilers/
 https://www.reddit.com/r/ProgrammingLanguages/comments/1m4sse2/comment/n48180c/?utm_source=share&utm_medium=web3x&utm_name=web3xcss&utm_term=1&utm_content=share_button
 
 https://www.reddit.com/r/Compilers/comments/1c1vk3j/why_are_linkers_still_a_big_deal/
+
+https://www.reddit.com/r/Compilers/comments/1nk9knm/eliminating_an_il_stage/
