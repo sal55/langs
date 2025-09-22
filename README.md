@@ -2,6 +2,12 @@ I develop a number of small-scale language-related projects on my PC.
 
 This github site is used for associated resources such as docs, charts, source backups, benchmark results, the odd binary. Most projects are written in my M language, but the master sources and development are on my home PC.
 
+Currently I'm working on a version 8 of my M compiler (codenamed BB in folder BX), but it's been going in various different directions for months.
+
+First targeting ARM64, then using a IL 'TCL', back to x64 using TCL, doing a couple of backends that weren't great; dropping it for a IL-less compiler; tidying the front-end; realising using no IL is a lot of trouble; reinstating an IL based on PCL but in a much reduced manner, so that it is only a small part of that code gen.
+
+At least, it has helped refine the design so that the result should be sweet. Some weeks to go though.
+
 ### Current Set of Languages
 ````
 M          Lower level systems language
