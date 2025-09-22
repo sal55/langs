@@ -1,16 +1,14 @@
+## Language Development
+
 I develop a number of small-scale language-related projects on my PC.
 
-This github site is used for associated resources such as docs, charts, source backups, benchmark results, the odd binary. Most projects are written in my M language, but the master sources and development are on my home PC.
+This github site is used for associated resources such as docs, source backups, benchmark results, and the odd binary. Most projects are written in my M language, but the master sources and development are on my home PC.
 
-Currently I'm working on a version 8 of my M compiler (codenamed BB in folder BX), but it's been going in various different directions for months.
-
-First targeting ARM64, then using a IL 'TCL', back to x64 using TCL, doing a couple of backends that weren't great; dropping it for a IL-less compiler; tidying the front-end; realising using no IL is a lot of trouble; reinstating an IL based on PCL but in a much reduced manner, so that it is only a small part of that code gen.
-
-At least, it has helped refine the design so that the result should be sweet. Some weeks to go though.
+Currently I'm working on a version 8 of my M compiler (codenamed BB in folder BX), but it's been going in various different directions for months.  It is gradually converging towards a scheme where AST is directly converted to native code, but using the operand model of the stack IL.
 
 ### Current Set of Languages
 ````
-M          Lower level systems language
+M          Lower level systems language (see below)
 Q          Dynamic scripting language
 AA         x64-subset assembler using my syntax
 PCL        Stack-based IL used by MM and BCC compilers (this can be a complete standalone language)
@@ -47,3 +45,14 @@ QQ6    Older Q interpreter with twin dispatchers: slow function-table dispatcher
        threaded-code/ASM-based dispatcher. (QQ7 uses HLL code only using faster techniques.)
 ````
 
+### M Language
+
+This was first created in 1981 for Z80, and then implemented on several generations of x86 up to x64. There was recently at attempt to port it to ARM64, but I got fed up.
+
+It has steadily evolved, but has also been deliberately kept low level. It has been self-hosted (written in itself or a previous version) in a continuous chain going to back to the 1980s.
+
+The original was written in assembly (and I wrote the assembler for that, in hex machine code!), but may have been rebooted once or twice during the 80s.
+
+This has then been my primary language for over 40 years. However, I haven't done any commercial work with it since the early 2000s; it is just a hobby now.
+
+It still exists partly to make a stand against the hugely complex modern languages that are around now.
