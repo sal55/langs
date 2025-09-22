@@ -49,4 +49,4 @@ This has then been my primary language for over 40 years. However, I haven't don
 
 I specialise now in small, single-file, self-contained and very fast compilers with minimal external dependencies.
 
-M is basically C but with utterly different syntax, and several modern conveniences. See [M Features)[Mfeatures.md].
+M is basically C but with utterly different syntax, and several modern conveniences. See [M Features](Mfeatures.md).
