@@ -15475,8 +15475,6 @@ L1267:
     call      mc_libmcl.mclinit
     mov       %rax,	[%rip+pc_api.pcstart]
     mov       [%rip+mc_decls.currpcl],	%rax
-    lea       %rcx,	[%rip+L8418]
-    call      mc_libmcl.mgencomment
     xor       %rbx,	%rbx
 L1269:
     mov       %rcx,	[%rip+mc_decls.currpcl]
@@ -15669,7 +15667,7 @@ L1288:
     mov       %r10,	%r15
     mov       %rdi,	[%rax + %r10*8-8]
     mov       %rcx,	%rdi
-    lea       %rdx,	[%rip+L8419]
+    lea       %rdx,	[%rip+L8418]
     mov       %r8,	3
     call      mlib.eqbytes
     test      %rax,	%rax
@@ -15708,7 +15706,7 @@ L1300:
     cmp       %rax,	%r12
     jle       L1293
 L1296:
-    lea       %rcx,	[%rip+L8420]
+    lea       %rcx,	[%rip+L8419]
     mov       %rdx,	%rdi
     call      pc_api.merror
 L1295:
@@ -15804,7 +15802,7 @@ L1311:
     jmp       L1310
 L1312:
     lea       %rcx,	[%rbp + mc_genmcl.doshowpcl.str]
-    lea       %rdx,	[%rip+L8421]
+    lea       %rdx,	[%rip+L8420]
     call      strcpy
     mov       %rcx,	%rdi
     mov       %rdx,	1256
@@ -15837,7 +15835,7 @@ mc_genmcl.unimpl:
 #---------------
     lea       %rcx,	[%rbp + mc_genmcl.unimpl.str]
     call      msys.m$print_startstr
-    lea       %rcx,	[%rip+L8422]
+    lea       %rcx,	[%rip+L8421]
     call      msys.m$print_setfmt
     movzx     %rax,	byte ptr[%rdi]
     lea       %r10,	[%rip+pc_tables.pclnames]
@@ -15977,7 +15975,7 @@ mc_genmcl.px_proc:
     call      mc_libmcl.genmc
     mov       %rcx,	[%rip+pc_decls.currfunc]
     call      mc_auxmcl.initproc
-    lea       %rcx,	[%rip+L8423]
+    lea       %rcx,	[%rip+L8422]
     call      mc_libmcl.mgencomment
     mov       %rax,	[%rip+mc_decls.mccodex]
     mov       [%rip+mc_decls.mclprocentry],	%rax
@@ -16007,14 +16005,14 @@ mc_genmcl.px_endproc:
     test      %rax,	%rax
     jz        L1327
     call      msys.m$print_startcon
-    lea       %rcx,	[%rip+L8424]
+    lea       %rcx,	[%rip+L8423]
     call      msys.m$print_str_nf
     mov       %rax,	[%rip+pc_decls.currfunc]
     mov       %rcx,	[%rax]
     call      msys.m$print_str_nf
     call      msys.m$print_newline
     call      msys.m$print_end
-    lea       %rcx,	[%rip+L8424]
+    lea       %rcx,	[%rip+L8423]
     call      mc_libmcl.mgencomment
 L1327:
     mov       %rcx,	2
@@ -16185,7 +16183,7 @@ L1342:
     movzx     %rax,	byte ptr[%rsi+1]
     lea       %r10,	[%rip+pc_tables.opndnames]
     mov       %r10,	[%r10 + %rax*8]
-    lea       %rcx,	[%rip+L8425]
+    lea       %rcx,	[%rip+L8424]
     mov       %rdx,	%r10
     call      pc_api.merror
 L1334:
@@ -16213,12 +16211,12 @@ L1347:
     jmp       L1343
 L1348:
     call      msys.m$print_startcon
-    lea       %rcx,	[%rip+L8426]
+    lea       %rcx,	[%rip+L8425]
     call      msys.m$print_str_nf
     mov       %eax,	[%rsi+4]
     mov       %rcx,	%rax
     call      msys.m$print_i64_nf
-    lea       %rcx,	[%rip+L8427]
+    lea       %rcx,	[%rip+L8426]
     call      msys.m$print_str_nf
     movzx     %rax,	byte ptr[%rsi+3]
     mov       %rcx,	%rax
@@ -16228,8 +16226,8 @@ L1348:
     call      msys.m$print_str_nf
     call      msys.m$print_newline
     call      msys.m$print_end
-    lea       %rcx,	[%rip+L8428]
-    lea       %rdx,	[%rip+L8429]
+    lea       %rcx,	[%rip+L8427]
+    lea       %rdx,	[%rip+L8428]
     call      pc_api.merror
 L1343:
     mov       %rcx,	%rbx
@@ -17124,8 +17122,8 @@ mc_genmcl.px_jumpcc:
     movzx     %rax,	byte ptr[%rip+mc_decls.pmode]
     cmp       %rax,	11
     jnz       L1412
-    lea       %rcx,	[%rip+L8430]
-    lea       %rdx,	[%rip+L8431]
+    lea       %rcx,	[%rip+L8429]
+    lea       %rdx,	[%rip+L8430]
     call      pc_api.merror
     jmp       L1411
 L1412:
@@ -17354,7 +17352,7 @@ mc_genmcl.px_retproc:
     mov       %rax,	[%rip+mc_decls.mclprocentry]
     cmp       %rax,	[%rip+mc_decls.mccodex]
     jnz       L1433
-    lea       %rcx,	[%rip+L8432]
+    lea       %rcx,	[%rip+L8431]
     call      mc_libmcl.mgencomment
 L1433:
     mov       %rcx,	%rdi
@@ -17446,8 +17444,8 @@ mc_genmcl.px_setcall:
     mov       %rax,	[%rip+mc_decls.ncalldepth]
     cmp       %rax,	32
     jl        L1439
-    lea       %rcx,	[%rip+L8433]
-    lea       %rdx,	[%rip+L8434]
+    lea       %rcx,	[%rip+L8432]
+    lea       %rdx,	[%rip+L8433]
     call      pc_api.merror
 L1439:
     inc       qword ptr[%rip+mc_decls.ncalldepth]
@@ -17818,7 +17816,7 @@ mc_genmcl.px_stop:
     mov       %rdx,	6
     mov       %r8,	11
     call      mc_stackmcl.loadparam
-    lea       %rcx,	[%rip+L8435]
+    lea       %rcx,	[%rip+L8434]
     call      mc_libmcl.mgenextname
     mov       %rcx,	21
     mov       %rdx,	%rax
@@ -18376,8 +18374,8 @@ mc_genmcl.px_storem:
     mov       %eax,	[%r12+4]
     cmp       %rax,	16
     jz        L1524
-    lea       %rcx,	[%rip+L8436]
-    lea       %rdx,	[%rip+L8437]
+    lea       %rcx,	[%rip+L8435]
+    lea       %rdx,	[%rip+L8436]
     call      pc_api.merror
 L1524:
     mov       %rcx,	16
@@ -18527,14 +18525,14 @@ L1530:
     test      %rbx,	%rbx
     jz        L1532
     call      msys.m$print_startcon
-    lea       %rcx,	[%rip+L8438]
+    lea       %rcx,	[%rip+L8437]
     call      msys.m$print_str_nf
     mov       %rcx,	%rbx
     call      msys.m$print_i64_nf
     call      msys.m$print_newline
     call      msys.m$print_end
-    lea       %rcx,	[%rip+L8439]
-    lea       %rdx,	[%rip+L8440]
+    lea       %rcx,	[%rip+L8438]
+    lea       %rdx,	[%rip+L8439]
     call      pc_api.merror
 L1532:
 L1527:
@@ -18638,8 +18636,8 @@ mc_genmcl.px_iswap:
     call      mc_libmcl.genmc
     jmp       L1535
 L1536:
-    lea       %rcx,	[%rip+L8441]
-    lea       %rdx,	[%rip+L8442]
+    lea       %rcx,	[%rip+L8440]
+    lea       %rdx,	[%rip+L8441]
     call      pc_api.merror
 L1535:
     call      mc_stackmcl.poppcl
@@ -18693,7 +18691,7 @@ mc_genmcl.px_labeldef:
     mov       %rdx,	%rax
     call      strcpy
     lea       %rcx,	[%rbp + mc_genmcl.px_labeldef.str]
-    lea       %rdx,	[%rip+L8443]
+    lea       %rdx,	[%rip+L8442]
     call      strcat
     lea       %rcx,	[%rbp + mc_genmcl.px_labeldef.str]
     call      mc_libmcl.mgencomment
@@ -18762,8 +18760,8 @@ L1543:
     movzx     %r10,	byte ptr[%r10 + %rax]
     cmp       %r10,	1
     jnz       L1545
-    lea       %rcx,	[%rip+L8444]
-    lea       %rdx,	[%rip+L8445]
+    lea       %rcx,	[%rip+L8443]
+    lea       %rdx,	[%rip+L8444]
     call      pc_api.merror
 L1545:
     mov       %rcx,	10
@@ -19005,8 +19003,8 @@ mc_genmcl.px_float:
     movzx     %r10,	byte ptr[%r10 + %rax]
     cmp       %r10,	4
     jge       L1558
-    lea       %rcx,	[%rip+L8446]
-    lea       %rdx,	[%rip+L8447]
+    lea       %rcx,	[%rip+L8445]
+    lea       %rdx,	[%rip+L8446]
     call      pc_api.merror
 L1558:
     movzx     %rax,	%r13b
@@ -19298,8 +19296,8 @@ L1575:
     call      msys.m$print_i64_nf
     call      msys.m$print_newline
     call      msys.m$print_end
-    lea       %rcx,	[%rip+L8448]
-    lea       %rdx,	[%rip+L8449]
+    lea       %rcx,	[%rip+L8447]
+    lea       %rdx,	[%rip+L8448]
     call      pc_api.merror
 L1574:
 L1573:
@@ -19889,8 +19887,8 @@ mc_genmcl.px_assem:
     call      %r10
     jmp       L1610
 L1611:
-    lea       %rcx,	[%rip+L8450]
-    lea       %rdx,	[%rip+L8451]
+    lea       %rcx,	[%rip+L8449]
+    lea       %rdx,	[%rip+L8450]
     call      pc_api.merror
 L1610:
 #---------------
@@ -19907,7 +19905,7 @@ mc_genmcl.px_sin:
     mov       %rdi,	%rcx
 #---------------
     mov       %rcx,	%rdi
-    lea       %rdx,	[%rip+L8452]
+    lea       %rdx,	[%rip+L8451]
     mov       %r8,	1
     call      mc_auxmcl.do_maths
 #---------------
@@ -19924,7 +19922,7 @@ mc_genmcl.px_cos:
     mov       %rdi,	%rcx
 #---------------
     mov       %rcx,	%rdi
-    lea       %rdx,	[%rip+L8453]
+    lea       %rdx,	[%rip+L8452]
     mov       %r8,	1
     call      mc_auxmcl.do_maths
 #---------------
@@ -19941,7 +19939,7 @@ mc_genmcl.px_tan:
     mov       %rdi,	%rcx
 #---------------
     mov       %rcx,	%rdi
-    lea       %rdx,	[%rip+L8454]
+    lea       %rdx,	[%rip+L8453]
     mov       %r8,	1
     call      mc_auxmcl.do_maths
 #---------------
@@ -19958,7 +19956,7 @@ mc_genmcl.px_asin:
     mov       %rdi,	%rcx
 #---------------
     mov       %rcx,	%rdi
-    lea       %rdx,	[%rip+L8455]
+    lea       %rdx,	[%rip+L8454]
     mov       %r8,	1
     call      mc_auxmcl.do_maths
 #---------------
@@ -19975,7 +19973,7 @@ mc_genmcl.px_acos:
     mov       %rdi,	%rcx
 #---------------
     mov       %rcx,	%rdi
-    lea       %rdx,	[%rip+L8456]
+    lea       %rdx,	[%rip+L8455]
     mov       %r8,	1
     call      mc_auxmcl.do_maths
 #---------------
@@ -19992,7 +19990,7 @@ mc_genmcl.px_atan:
     mov       %rdi,	%rcx
 #---------------
     mov       %rcx,	%rdi
-    lea       %rdx,	[%rip+L8457]
+    lea       %rdx,	[%rip+L8456]
     mov       %r8,	1
     call      mc_auxmcl.do_maths
 #---------------
@@ -20009,7 +20007,7 @@ mc_genmcl.px_log:
     mov       %rdi,	%rcx
 #---------------
     mov       %rcx,	%rdi
-    lea       %rdx,	[%rip+L8458]
+    lea       %rdx,	[%rip+L8457]
     mov       %r8,	1
     call      mc_auxmcl.do_maths
 #---------------
@@ -20026,7 +20024,7 @@ mc_genmcl.px_log10:
     mov       %rdi,	%rcx
 #---------------
     mov       %rcx,	%rdi
-    lea       %rdx,	[%rip+L8459]
+    lea       %rdx,	[%rip+L8458]
     mov       %r8,	1
     call      mc_auxmcl.do_maths
 #---------------
@@ -20043,7 +20041,7 @@ mc_genmcl.px_exp:
     mov       %rdi,	%rcx
 #---------------
     mov       %rcx,	%rdi
-    lea       %rdx,	[%rip+L8460]
+    lea       %rdx,	[%rip+L8459]
     mov       %r8,	1
     call      mc_auxmcl.do_maths
 #---------------
@@ -20060,7 +20058,7 @@ mc_genmcl.px_round:
     mov       %rdi,	%rcx
 #---------------
     mov       %rcx,	%rdi
-    lea       %rdx,	[%rip+L8461]
+    lea       %rdx,	[%rip+L8460]
     mov       %r8,	1
     call      mc_auxmcl.do_maths
 #---------------
@@ -20077,7 +20075,7 @@ mc_genmcl.px_floor:
     mov       %rdi,	%rcx
 #---------------
     mov       %rcx,	%rdi
-    lea       %rdx,	[%rip+L8462]
+    lea       %rdx,	[%rip+L8461]
     mov       %r8,	1
     call      mc_auxmcl.do_maths
 #---------------
@@ -20094,7 +20092,7 @@ mc_genmcl.px_ceil:
     mov       %rdi,	%rcx
 #---------------
     mov       %rcx,	%rdi
-    lea       %rdx,	[%rip+L8463]
+    lea       %rdx,	[%rip+L8462]
     mov       %r8,	1
     call      mc_auxmcl.do_maths
 #---------------
@@ -20116,7 +20114,7 @@ mc_genmcl.px_atan2:
     mov       %rdx,	[%rip+mc_decls.noperands]
     call      mc_stackmcl.swapopnds
     mov       %rcx,	%rdi
-    lea       %rdx,	[%rip+L8464]
+    lea       %rdx,	[%rip+L8463]
     mov       %r8,	2
     call      mc_auxmcl.do_maths
 #---------------
@@ -20138,7 +20136,7 @@ mc_genmcl.px_fmod:
     mov       %rdx,	[%rip+mc_decls.noperands]
     call      mc_stackmcl.swapopnds
     mov       %rcx,	%rdi
-    lea       %rdx,	[%rip+L8465]
+    lea       %rdx,	[%rip+L8464]
     mov       %r8,	2
     call      mc_auxmcl.do_maths
 #---------------
@@ -20179,8 +20177,8 @@ mc_genmcl.px_setcc:
     movzx     %rax,	byte ptr[%rip+mc_decls.pmode]
     cmp       %rax,	11
     jnz       L1628
-    lea       %rcx,	[%rip+L8466]
-    lea       %rdx,	[%rip+L8467]
+    lea       %rcx,	[%rip+L8465]
+    lea       %rdx,	[%rip+L8466]
     call      pc_api.merror
     jmp       L1627
 L1628:
@@ -20352,7 +20350,7 @@ L1644:
     mov       %rdx,	[%rip+mc_decls.noperands]
     call      mc_stackmcl.swapopnds
     mov       %rcx,	%rbx
-    lea       %rdx,	[%rip+L8468]
+    lea       %rdx,	[%rip+L8467]
     mov       %r8,	2
     call      mc_auxmcl.do_maths
 L1643:
@@ -20676,8 +20674,8 @@ L1666:
     mov       %eax,	[%r12+20]
     test      %eax,	%eax
     jz        L1668
-    lea       %rcx,	[%rip+L8469]
-    lea       %rdx,	[%rip+L8470]
+    lea       %rcx,	[%rip+L8468]
+    lea       %rdx,	[%rip+L8469]
     call      pc_api.merror
 L1668:
 L1665:
@@ -20851,7 +20849,7 @@ mc_genmcl.px_sign:
     mov       %al,	2
     mov       [%rbp + mc_genmcl.px_sign.ltop],	%al
     movzx     %rax,	byte ptr[%rip+mc_decls.pmode]
-    movq      %XMM0,	[%rip+L8471]
+    movq      %XMM0,	[%rip+L8470]
     mov       %rdx,	%rax
     call      mc_libmcl.mgenrealmem
     movzx     %r10,	byte ptr[%rip+mc_decls.pmode]
@@ -21882,7 +21880,7 @@ L1793:
     movzx     %rax,	byte ptr[%r15+82]
     cmp       %rax,	11
     jnz       L1795
-    lea       %rcx,	[%rip+L8472]
+    lea       %rcx,	[%rip+L8471]
     mov       %rdx,	8
     call      pc_api.pc_makesymbol
     mov       %rdi,	%rax
@@ -22037,8 +22035,8 @@ L1820:
     mov       %al,	[%r14+91]
     test      %al,	%al
     jz        L1825
-    lea       %rcx,	[%rip+L8473]
-    lea       %rdx,	[%rip+L8474]
+    lea       %rcx,	[%rip+L8472]
+    lea       %rdx,	[%rip+L8473]
     call      pc_api.merror
 L1825:
     mov       %al,	[%r14+90]
@@ -22225,14 +22223,14 @@ L1843:
     test      %al,	%al
     jz        L1847
 L1848:
-    lea       %rcx,	[%rip+L8475]
-    lea       %rdx,	[%rip+L8476]
+    lea       %rcx,	[%rip+L8474]
+    lea       %rdx,	[%rip+L8475]
     call      pc_api.merror
 L1847:
     test      %rbx,	%rbx
     jz        L1850
-    lea       %rcx,	[%rip+L8477]
-    lea       %rdx,	[%rip+L8478]
+    lea       %rcx,	[%rip+L8476]
+    lea       %rdx,	[%rip+L8477]
     call      pc_api.merror
 L1850:
     call      mc_auxmcl.resetmclentry
@@ -22337,12 +22335,12 @@ L1873:
     cmp       %rax,	16
     jle       L1869
 L1868:
-    lea       %rcx,	[%rip+L8479]
+    lea       %rcx,	[%rip+L8478]
     call      mc_libmcl.mgencomment
     mov       %rax,	[%rip+mc_decls.mccodex]
     mov       [%rip+mc_auxmcl.mclframesetup],	%rax
     call      mc_auxmcl.spillparams
-    lea       %rcx,	[%rip+L8480]
+    lea       %rcx,	[%rip+L8479]
     call      mc_libmcl.mgencomment
     call      mc_auxmcl.resetmclentry
 L1804:
@@ -22366,7 +22364,7 @@ mc_auxmcl.do_procexit:
 #?]]
     sub       %rsp,	40
 #---------------
-    lea       %rcx,	[%rip+L8480]
+    lea       %rcx,	[%rip+L8479]
     call      mc_libmcl.mgencomment
     mov       %rax,	[%rip+pc_decls.currfunc]
     mov       %al,	[%rax+108]
@@ -24485,8 +24483,8 @@ L2063:
     jz        L2070
     jmp       L2071
 L2069:
-    lea       %rcx,	[%rip+L8481]
-    lea       %rdx,	[%rip+L8482]
+    lea       %rcx,	[%rip+L8480]
+    lea       %rdx,	[%rip+L8481]
     call      pc_api.merror
     jmp       L2068
 L2070:
@@ -24562,8 +24560,8 @@ L2081:
     mov       %rax,	55
     jmp       L2078
 L2082:
-    lea       %rcx,	[%rip+L8483]
-    lea       %rdx,	[%rip+L8484]
+    lea       %rcx,	[%rip+L8482]
+    lea       %rdx,	[%rip+L8483]
     call      pc_api.merror
     xor       %eax,	%eax
 L2078:
@@ -25162,7 +25160,7 @@ L2135:
     mov       %r8,	66
     call      mc_auxmcl.genstring_db
 L2137:
-    lea       %rcx,	[%rip+L8485]
+    lea       %rcx,	[%rip+L8484]
     call      mc_libmcl.mgencomment
 L2130:
 #---------------
@@ -25493,7 +25491,7 @@ mc_auxmcl.genstringtable:
     test      %rax,	%rax
     jz        L2159
 L2161:
-    lea       %rcx,	[%rip+L8486]
+    lea       %rcx,	[%rip+L8485]
     call      mc_libmcl.mgencomment
     mov       %rcx,	73
     mov       %rdx,	8
@@ -25708,7 +25706,7 @@ mc_auxmcl.genrealtable:
     test      %rax,	%rax
     jz        L2191
 L2193:
-    lea       %rcx,	[%rip+L8487]
+    lea       %rcx,	[%rip+L8486]
     call      mc_libmcl.mgencomment
     mov       %rcx,	73
     mov       %rdx,	8
@@ -25724,7 +25722,7 @@ L2194:
     xor       %r8d,	%r8d
     call      mc_libmcl.genmc
     movq      %XMM4,	[%rdi]
-    comisd    %XMM4,	[%rip+L8488]
+    comisd    %XMM4,	[%rip+L8487]
     jnz       L2199
     movq      %XMM4,	[%rdi]
     movq      %rax,	%XMM4
@@ -25751,7 +25749,7 @@ L2198:
 L2197:
     test      %rdi,	%rdi
     jnz       L2194
-    lea       %rcx,	[%rip+L8489]
+    lea       %rcx,	[%rip+L8488]
     call      mc_libmcl.mgencomment
     mov       %rdi,	[%rip+mc_decls.cr32list]
     jmp       L2203
@@ -25764,7 +25762,7 @@ L2200:
     xor       %r8d,	%r8d
     call      mc_libmcl.genmc
     movq      %XMM4,	[%rdi]
-    comisd    %XMM4,	[%rip+L8490]
+    comisd    %XMM4,	[%rip+L8489]
     jnz       L2205
     movq      %XMM4,	[%rdi]
     cvtsd2ss  %XMM4,	%XMM4
@@ -25816,7 +25814,7 @@ L2208:
     mov       %rax,	[%rip+mc_decls.lababs32]
     test      %rax,	%rax
     jz        L2210
-    lea       %rcx,	[%rip+L8491]
+    lea       %rcx,	[%rip+L8490]
     call      mc_libmcl.mgencomment
     mov       %rcx,	[%rip+mc_decls.lababs32]
     call      mc_libmcl.mgenlabel
@@ -25832,7 +25830,7 @@ L2210:
     mov       %rax,	[%rip+mc_decls.lababs64]
     test      %rax,	%rax
     jz        L2212
-    lea       %rcx,	[%rip+L8492]
+    lea       %rcx,	[%rip+L8491]
     call      mc_libmcl.mgencomment
     mov       %rcx,	[%rip+mc_decls.lababs64]
     call      mc_libmcl.mgenlabel
@@ -25848,7 +25846,7 @@ L2212:
     mov       %rax,	[%rip+mc_decls.labneg32]
     test      %rax,	%rax
     jz        L2214
-    lea       %rcx,	[%rip+L8493]
+    lea       %rcx,	[%rip+L8492]
     call      mc_libmcl.mgencomment
     mov       %rcx,	[%rip+mc_decls.labneg32]
     call      mc_libmcl.mgenlabel
@@ -25864,7 +25862,7 @@ L2214:
     mov       %rax,	[%rip+mc_decls.labneg64]
     test      %rax,	%rax
     jz        L2216
-    lea       %rcx,	[%rip+L8494]
+    lea       %rcx,	[%rip+L8493]
     call      mc_libmcl.mgencomment
     mov       %rcx,	[%rip+mc_decls.labneg64]
     call      mc_libmcl.mgenlabel
@@ -25880,7 +25878,7 @@ L2216:
     mov       %rax,	[%rip+mc_decls.labzero]
     test      %rax,	%rax
     jz        L2218
-    lea       %rcx,	[%rip+L8495]
+    lea       %rcx,	[%rip+L8494]
     call      mc_libmcl.mgencomment
     mov       %rcx,	[%rip+mc_decls.labzero]
     call      mc_libmcl.mgenlabel
@@ -25894,7 +25892,7 @@ L2218:
     mov       %rax,	[%rip+mc_decls.labmask63]
     test      %rax,	%rax
     jz        L2220
-    lea       %rcx,	[%rip+L8496]
+    lea       %rcx,	[%rip+L8495]
     call      mc_libmcl.mgencomment
     mov       %rcx,	[%rip+mc_decls.labmask63]
     call      mc_libmcl.mgenlabel
@@ -26461,8 +26459,8 @@ mc_auxmcl.do_loadbf_var:
 #?]]
     sub       %rsp,	40
 #---------------
-    lea       %rcx,	[%rip+L8497]
-    lea       %rdx,	[%rip+L8498]
+    lea       %rcx,	[%rip+L8496]
+    lea       %rdx,	[%rip+L8497]
     call      pc_api.merror
 #---------------
     add       %rsp,	40
@@ -26657,14 +26655,14 @@ L2278:
 L2277:
     jmp       L2271
 L2272:
-    lea       %rcx,	[%rip+L8499]
-    lea       %rdx,	[%rip+L8500]
+    lea       %rcx,	[%rip+L8498]
+    lea       %rdx,	[%rip+L8499]
     call      pc_api.merror
 L2271:
     jmp       L2262
 L2270:
-    lea       %rcx,	[%rip+L8501]
-    lea       %rdx,	[%rip+L8502]
+    lea       %rcx,	[%rip+L8500]
+    lea       %rdx,	[%rip+L8501]
     call      pc_api.merror
 L2262:
     call      mc_stackmcl.poppcl
@@ -26714,8 +26712,8 @@ mc_auxmcl.do_storebf:
     jnz       L2281
     test      %rax,	%rax
     jnz       L2281
-    lea       %rcx,	[%rip+L8503]
-    lea       %rdx,	[%rip+L8504]
+    lea       %rcx,	[%rip+L8502]
+    lea       %rdx,	[%rip+L8503]
     call      pc_api.merror
 L2281:
     movzx     %rax,	byte ptr[%rip+mc_decls.pmode]
@@ -26831,9 +26829,9 @@ mc_auxmcl.gethostfn:
     cmp       %r13,	82
     jnz       L2289
 L2288:
-    lea       %rax,	[%rip+L8505]
+    lea       %rax,	[%rip+L8504]
     mov       %rbx,	%rax
-    lea       %rax,	[%rip+L8506]
+    lea       %rax,	[%rip+L8505]
     mov       %rsi,	%rax
     jmp       L2287
 L2289:
@@ -26868,7 +26866,7 @@ L2291:
     lea       %rax,	[%rip+pc_tables.pclnames]
     mov       %r10,	%r13
     mov       %rax,	[%rax + %r10*8]
-    lea       %rcx,	[%rip+L8507]
+    lea       %rcx,	[%rip+L8506]
     mov       %rdx,	%rax
     call      pc_api.merror
 L2286:
@@ -26881,7 +26879,7 @@ L2286:
     lea       %rax,	[%rip+pc_tables.pclnames]
     mov       %r10,	%r13
     mov       %rax,	[%rax + %r10*8]
-    lea       %rcx,	[%rip+L8508]
+    lea       %rcx,	[%rip+L8507]
     mov       %rdx,	%rax
     call      pc_api.merror
 L2300:
@@ -26916,13 +26914,13 @@ mc_auxmcl.copyblockarg:
     test      %r12,	%r12
     jnz       L2303
     call      msys.m$print_startcon
-    lea       %rcx,	[%rip+L8509]
+    lea       %rcx,	[%rip+L8508]
     call      msys.m$print_str_nf
     mov       %rax,	[%rip+pc_decls.currfunc]
     mov       %rcx,	[%rax]
     call      msys.m$print_str_nf
     call      msys.m$print_nogap
-    lea       %rcx,	[%rip+L8510]
+    lea       %rcx,	[%rip+L8509]
     call      msys.m$print_str_nf
     call      msys.m$print_newline
     call      msys.m$print_end
@@ -27017,7 +27015,7 @@ mc_auxmcl.fixmain:
     mov       %rdi,	[%rip+pc_decls.currfunc]
     mov       %rbx,	[%rdi+16]
     mov       %rsi,	[%rbx+16]
-    lea       %rcx,	[%rip+L8511]
+    lea       %rcx,	[%rip+L8510]
     mov       %rdx,	3
     call      pc_api.pc_makesymbol
     mov       %r12,	%rax
@@ -27025,7 +27023,7 @@ mc_auxmcl.fixmain:
     mov       [%r12+82],	%al
     mov       %eax,	8
     mov       [%r12+84],	%eax
-    lea       %rcx,	[%rip+L8512]
+    lea       %rcx,	[%rip+L8511]
     mov       %rdx,	3
     call      pc_api.pc_makesymbol
     mov       %r13,	%rax
@@ -27160,7 +27158,7 @@ mc_auxmcl.fixmain:
     call      mc_libmcl.mgenreg
     mov       %rcx,	%rax
     call      mc_libmcl.clearreg
-    lea       %rcx,	[%rip+L8513]
+    lea       %rcx,	[%rip+L8512]
     call      mc_libmcl.mgenextname
     mov       %rcx,	21
     mov       %rdx,	%rax
@@ -27228,7 +27226,7 @@ mc_libmcl.mclinit:
     mov       %rax,	64
     cmp       %rax,	64
     jle       L2313
-    lea       %rcx,	[%rip+L8514]
+    lea       %rcx,	[%rip+L8513]
     call      mlib.abortprogram
 L2313:
     mov       %rbx,	1
@@ -27827,13 +27825,13 @@ L2366:
     mov       %rdi,	123
     jmp       L2363
 L2367:
-    lea       %rcx,	[%rip+L8515]
-    lea       %rdx,	[%rip+L8516]
+    lea       %rcx,	[%rip+L8514]
+    lea       %rdx,	[%rip+L8515]
     call      pc_api.merror
     jmp       L2363
 L2368:
-    lea       %rcx,	[%rip+L8517]
-    lea       %rdx,	[%rip+L8518]
+    lea       %rcx,	[%rip+L8516]
+    lea       %rdx,	[%rip+L8517]
     call      pc_api.merror
 L2363:
     mov       %rax,	[%rip+mc_decls.mccodex]
@@ -28458,8 +28456,8 @@ mc_libmcl.mgenreg0:
     mov       [%rax],	%r9w
     test      %rsi,	%rsi
     jnz       L2413
-    lea       %rcx,	[%rip+L8519]
-    lea       %rdx,	[%rip+L8520]
+    lea       %rcx,	[%rip+L8518]
+    lea       %rdx,	[%rip+L8519]
     call      pc_api.merror
 L2413:
     mov       %rax,	%rdi
@@ -28502,8 +28500,8 @@ mc_libmcl.mgenxreg:
     mov       [%rax],	%r9w
     test      %rsi,	%rsi
     jnz       L2416
-    lea       %rcx,	[%rip+L8521]
-    lea       %rdx,	[%rip+L8522]
+    lea       %rcx,	[%rip+L8520]
+    lea       %rdx,	[%rip+L8521]
     call      pc_api.merror
 L2416:
     mov       %rax,	%rdi
@@ -28783,7 +28781,7 @@ mc_libmcl.merroropnd:
     mov       %rbx,	%rdx
 #---------------
     call      msys.m$print_startcon
-    lea       %rcx,	[%rip+L8523]
+    lea       %rcx,	[%rip+L8522]
     call      msys.m$print_setfmt
     mov       %rcx,	%rdi
     call      msys.m$print_str_nf
@@ -29187,11 +29185,11 @@ mc_libmcl.axerror:
     mov       %rdi,	%rcx
 #---------------
     call      msys.m$print_startcon
-    lea       %rcx,	[%rip+L8524]
+    lea       %rcx,	[%rip+L8523]
     call      msys.m$print_str_nf
     mov       %rcx,	%rdi
     call      msys.m$print_str_nf
-    lea       %rcx,	[%rip+L8525]
+    lea       %rcx,	[%rip+L8524]
     call      msys.m$print_str_nf
     mov       %rcx,	[%rip+mc_decls.aapos]
     call      msys.m$print_i64_nf
@@ -29222,14 +29220,14 @@ mc_libmcl.newblocktemp:
     mov       %rax,	[%rip+mc_decls.nblocktemps]
     cmp       %rax,	50
     jle       L2468
-    lea       %rcx,	[%rip+L8526]
-    lea       %rdx,	[%rip+L8527]
+    lea       %rcx,	[%rip+L8525]
+    lea       %rdx,	[%rip+L8526]
     call      pc_api.merror
 L2468:
     inc       qword ptr[%rip+mc_decls.nblocktemps]
     lea       %rcx,	[%rbp + mc_libmcl.newblocktemp.str]
     call      msys.m$print_startstr
-    lea       %rcx,	[%rip+L8528]
+    lea       %rcx,	[%rip+L8527]
     call      msys.m$print_setfmt
     mov       %rcx,	[%rip+mc_decls.nblocktemps]
     call      msys.m$print_i64_nf
@@ -29324,8 +29322,8 @@ mc_libmcl.addnamesym:
     mov       [%r11 + %rax*8-8],	%r10
     jmp       L2476
 L2477:
-    lea       %rcx,	[%rip+L8529]
-    lea       %rdx,	[%rip+L8530]
+    lea       %rcx,	[%rip+L8528]
+    lea       %rdx,	[%rip+L8529]
     call      pc_api.merror
 L2476:
 #---------------
@@ -29580,7 +29578,7 @@ L2495:
     movzx     %rax,	byte ptr[%rsi+1]
     lea       %r10,	[%rip+pc_tables.opndnames]
     mov       %r10,	[%r10 + %rax*8]
-    lea       %rcx,	[%rip+L8531]
+    lea       %rcx,	[%rip+L8530]
     mov       %rdx,	%r10
     call      pc_api.merror
 L2488:
@@ -29955,8 +29953,8 @@ mc_stackmcl.pushpcl:
     mov       %rax,	[%rip+mc_decls.noperands]
     cmp       %rax,	50
     jl        L2550
-    lea       %rcx,	[%rip+L8532]
-    lea       %rdx,	[%rip+L8533]
+    lea       %rcx,	[%rip+L8531]
+    lea       %rdx,	[%rip+L8532]
     call      pc_api.merror
 L2550:
     inc       qword ptr[%rip+mc_decls.noperands]
@@ -30018,8 +30016,8 @@ mc_stackmcl.pushpcl_reg:
     mov       %rax,	[%rip+mc_decls.noperands]
     cmp       %rax,	50
     jl        L2555
-    lea       %rcx,	[%rip+L8534]
-    lea       %rdx,	[%rip+L8535]
+    lea       %rcx,	[%rip+L8533]
+    lea       %rdx,	[%rip+L8534]
     call      pc_api.merror
 L2555:
     test      %rsi,	%rsi
@@ -30080,8 +30078,8 @@ mc_stackmcl.poppcl:
     mov       %rdi,	[%rip+mc_decls.noperands]
     cmp       %rdi,	0
     jg        L2562
-    lea       %rcx,	[%rip+L8536]
-    lea       %rdx,	[%rip+L8537]
+    lea       %rcx,	[%rip+L8535]
+    lea       %rdx,	[%rip+L8536]
     call      pc_api.merror
 L2562:
     lea       %rax,	[%rip+mc_decls.pclcount]
@@ -30179,8 +30177,8 @@ L2574:
     call      mc_stackmcl.savenextopnd
     dec       %rbx
     jnz       L2567
-    lea       %rcx,	[%rip+L8538]
-    lea       %rdx,	[%rip+L8539]
+    lea       %rcx,	[%rip+L8537]
+    lea       %rdx,	[%rip+L8538]
     call      pc_api.merror
     xor       %eax,	%eax
 L2566:
@@ -30219,8 +30217,8 @@ L2580:
     inc       %rdi
     cmp       %rdi,	16
     jle       L2576
-    lea       %rcx,	[%rip+L8540]
-    lea       %rdx,	[%rip+L8541]
+    lea       %rcx,	[%rip+L8539]
+    lea       %rdx,	[%rip+L8540]
     call      pc_api.merror
     xor       %eax,	%eax
 L2575:
@@ -30561,8 +30559,8 @@ L2624:
     mov       %al,	[%rax + %r10-1]
     test      %al,	%al
     jz        L2628
-    lea       %rcx,	[%rip+L8542]
-    lea       %rdx,	[%rip+L8543]
+    lea       %rcx,	[%rip+L8541]
+    lea       %rdx,	[%rip+L8542]
     call      pc_api.merror
 L2628:
     jmp       L2625
@@ -30928,8 +30926,8 @@ mc_stackmcl.swapopndregs:
     movzx     %rax,	byte ptr[%rax + %r10-1]
     cmp       %rax,	2
     jg        L2666
-    lea       %rcx,	[%rip+L8544]
-    lea       %rdx,	[%rip+L8545]
+    lea       %rcx,	[%rip+L8543]
+    lea       %rdx,	[%rip+L8544]
     call      pc_api.merror
 L2666:
     lea       %rax,	[%rip+mc_decls.pclreg]
@@ -31002,8 +31000,8 @@ mc_stackmcl.makeopndind:
     and       %rax,	7
     cmp       %rax,	1
     jz        L2677
-    lea       %rcx,	[%rip+L8546]
-    lea       %rdx,	[%rip+L8547]
+    lea       %rcx,	[%rip+L8545]
+    lea       %rdx,	[%rip+L8546]
     call      pc_api.merror
 L2677:
     movzx     %rax,	byte ptr[%rdi+10]
@@ -31043,8 +31041,8 @@ L2680:
     and       %rax,	7
     cmp       %rax,	3
     jz        L2682
-    lea       %rcx,	[%rip+L8548]
-    lea       %rdx,	[%rip+L8549]
+    lea       %rcx,	[%rip+L8547]
+    lea       %rdx,	[%rip+L8548]
     call      pc_api.merror
 L2682:
     test      %rsi,	%rsi
@@ -31149,7 +31147,7 @@ mc_stackmcl.stropndstack:
     jz        L2695
     mov       %rcx,	%rdi
     call      msys.m$print_startstr
-    lea       %rcx,	[%rip+L8550]
+    lea       %rcx,	[%rip+L8549]
     call      msys.m$print_setfmt
     mov       %rcx,	[%rip+mc_decls.noperands]
     call      msys.m$print_i64_nf
@@ -31158,7 +31156,7 @@ mc_stackmcl.stropndstack:
 L2695:
     mov       %rcx,	%rdi
     call      msys.m$print_startstr
-    lea       %rcx,	[%rip+L8551]
+    lea       %rcx,	[%rip+L8550]
     call      msys.m$print_setfmt
     mov       %rcx,	[%rip+mc_decls.noperands]
     call      msys.m$print_i64_nf
@@ -31185,19 +31183,19 @@ L2700:
     .quad     L2705
     .text
 L2702:
-    lea       %rax,	[%rip+L8552]
+    lea       %rax,	[%rip+L8551]
     jmp       L2699
 L2703:
-    lea       %rax,	[%rip+L8553]
+    lea       %rax,	[%rip+L8552]
     jmp       L2699
 L2704:
-    lea       %rax,	[%rip+L8554]
+    lea       %rax,	[%rip+L8553]
     jmp       L2699
 L2705:
-    lea       %rax,	[%rip+L8555]
+    lea       %rax,	[%rip+L8554]
     jmp       L2699
 L2701:
-    lea       %rax,	[%rip+L8556]
+    lea       %rax,	[%rip+L8555]
 L2699:
     mov       %rcx,	%rdi
     mov       %rdx,	%rax
@@ -31243,13 +31241,13 @@ L2710:
     cmp       %rax,	2
     jnz       L2713
     mov       %rcx,	%rdi
-    lea       %rdx,	[%rip+L8557]
+    lea       %rdx,	[%rip+L8556]
     call      strcat
 L2713:
     jmp       L2706
 L2708:
     mov       %rcx,	%rdi
-    lea       %rdx,	[%rip+L8558]
+    lea       %rdx,	[%rip+L8557]
     call      strcat
     mov       %rcx,	%rsi
     xor       %edx,	%edx
@@ -31260,7 +31258,7 @@ L2708:
     jmp       L2706
 L2709:
     mov       %rcx,	%rdi
-    lea       %rdx,	[%rip+L8559]
+    lea       %rdx,	[%rip+L8558]
     call      strcat
     movzx     %rax,	byte ptr[%rip+pc_api.fpshortnames]
     mov       %rbx,	%rax
@@ -31276,7 +31274,7 @@ L2709:
     call      strcat
     mov       [%rip+pc_api.fpshortnames],	%bl
     mov       %rcx,	%rdi
-    lea       %rdx,	[%rip+L8560]
+    lea       %rdx,	[%rip+L8559]
     call      strcat
 L2706:
     lea       %rax,	[%rip+mc_decls.pclcount]
@@ -31285,11 +31283,11 @@ L2706:
     cmp       %rax,	1
     jle       L2715
     mov       %rcx,	%rdi
-    lea       %rdx,	[%rip+L8561]
+    lea       %rdx,	[%rip+L8560]
     call      strcat
 L2715:
     mov       %rcx,	%rdi
-    lea       %rdx,	[%rip+L8562]
+    lea       %rdx,	[%rip+L8561]
     call      strcat
     lea       %rax,	[%rip+mc_decls.pclmode]
     mov       %r10,	%rsi
@@ -31300,12 +31298,12 @@ L2715:
     mov       %rdx,	%r10
     call      strcat
     mov       %rcx,	%rdi
-    lea       %rdx,	[%rip+L8563]
+    lea       %rdx,	[%rip+L8562]
     call      strcat
     cmp       %rsi,	[%rip+mc_decls.noperands]
     jge       L2717
     mov       %rcx,	%rdi
-    lea       %rdx,	[%rip+L8564]
+    lea       %rdx,	[%rip+L8563]
     call      strcat
 L2717:
     inc       %rsi
@@ -31313,14 +31311,14 @@ L2717:
     jle       L2696
 L2698:
     mov       %rcx,	%rdi
-    lea       %rdx,	[%rip+L8565]
+    lea       %rdx,	[%rip+L8564]
     call      strcat
     lea       %rcx,	[%rip+mc_stackmcl.stropndstack.str]
     mov       %rdx,	50
-    lea       %r8,	[%rip+L8566]
+    lea       %r8,	[%rip+L8565]
     call      mlib.ipadstr
     mov       %rcx,	%rdi
-    lea       %rdx,	[%rip+L8567]
+    lea       %rdx,	[%rip+L8566]
     call      strcat
     mov       %r12,	1
 L2718:
@@ -31329,10 +31327,10 @@ L2718:
     mov       %al,	[%rax + %r10-1]
     test      %al,	%al
     jz        L2722
-    lea       %rax,	[%rip+L8568]
+    lea       %rax,	[%rip+L8567]
     jmp       L2721
 L2722:
-    lea       %rax,	[%rip+L8569]
+    lea       %rax,	[%rip+L8568]
 L2721:
     mov       %rcx,	%rdi
     mov       %rdx,	%rax
@@ -31341,10 +31339,10 @@ L2721:
     cmp       %r12,	10
     jle       L2718
     mov       %rcx,	%rdi
-    lea       %rdx,	[%rip+L8570]
+    lea       %rdx,	[%rip+L8569]
     call      strcat
     mov       %rcx,	%rdi
-    lea       %rdx,	[%rip+L8571]
+    lea       %rdx,	[%rip+L8570]
     call      strcat
     mov       %r12,	1
     mov       %rax,	[%rip+mc_decls.xregmax]
@@ -31356,10 +31354,10 @@ L2723:
     mov       %al,	[%rax + %r10-1]
     test      %al,	%al
     jz        L2727
-    lea       %rax,	[%rip+L8572]
+    lea       %rax,	[%rip+L8571]
     jmp       L2726
 L2727:
-    lea       %rax,	[%rip+L8573]
+    lea       %rax,	[%rip+L8572]
 L2726:
     mov       %rcx,	%rdi
     mov       %rdx,	%rax
@@ -31369,7 +31367,7 @@ L2726:
     jle       L2723
 L2725:
     mov       %rcx,	%rdi
-    lea       %rdx,	[%rip+L8574]
+    lea       %rdx,	[%rip+L8573]
     call      strcat
     mov       %rcx,	[%rip+mc_decls.mstackdepth]
     xor       %edx,	%edx
@@ -31378,7 +31376,7 @@ L2725:
     mov       %rdx,	%rax
     call      strcat
     mov       %rcx,	%rdi
-    lea       %rdx,	[%rip+L8575]
+    lea       %rdx,	[%rip+L8574]
     call      strcat
     mov       %rcx,	[%rip+mc_decls.noperands]
     xor       %edx,	%edx
@@ -31387,7 +31385,7 @@ L2725:
     mov       %rdx,	%rax
     call      strcat
     mov       %rcx,	%rdi
-    lea       %rdx,	[%rip+L8576]
+    lea       %rdx,	[%rip+L8575]
     call      strcat
     mov       %rcx,	[%rip+mc_decls.ncalldepth]
     xor       %edx,	%edx
@@ -32033,8 +32031,8 @@ mc_optim.deletemcl:
     test      %rbx,	%rbx
     jnz       L2812
 L2813:
-    lea       %rcx,	[%rip+L8577]
-    lea       %rdx,	[%rip+L8578]
+    lea       %rcx,	[%rip+L8576]
+    lea       %rdx,	[%rip+L8577]
     call      pc_api.merror
 L2812:
     mov       [%rdi+8],	%rbx
@@ -32131,6 +32129,8 @@ mc_writegas.getassemstr:
 #---------------
     mov       %rcx,	[%rip+pc_decls.pdest]
     call      mlib.gs_init
+    lea       %rcx,	[%rip+L8578]
+    call      mc_writegas.asmstr
     lea       %rcx,	[%rip+L8579]
     call      mc_writegas.asmstr
     lea       %rcx,	[%rip+L8580]
@@ -32139,26 +32139,24 @@ mc_writegas.getassemstr:
     call      mc_writegas.asmstr
     lea       %rcx,	[%rip+L8582]
     call      mc_writegas.asmstr
-    lea       %rcx,	[%rip+L8583]
-    call      mc_writegas.asmstr
     mov       %rdi,	[%rip+pc_decls.psymboltable]
     jmp       L2824
 L2821:
     mov       %al,	[%rdi+81]
     test      %al,	%al
     jz        L2826
-    lea       %rcx,	[%rip+L8584]
+    lea       %rcx,	[%rip+L8583]
     call      mc_writegas.asmstr
     mov       %rcx,	[%rdi]
     call      mc_writegas.asmstr
-    lea       %rcx,	[%rip+L8585]
+    lea       %rcx,	[%rip+L8584]
     call      mc_writegas.asmstr
 L2826:
     mov       %rdi,	[%rdi+8]
 L2824:
     test      %rdi,	%rdi
     jnz       L2821
-    lea       %rcx,	[%rip+L8585]
+    lea       %rcx,	[%rip+L8584]
     call      mc_writegas.asmstr
     mov       %rbx,	[%rip+mc_decls.mccode]
     mov       %rsi,	1
@@ -32343,7 +32341,7 @@ mc_writegas.strmcl:
     jz        L2862
     jmp       L2863
 L2854:
-    lea       %rcx,	[%rip+L8586]
+    lea       %rcx,	[%rip+L8585]
     call      mc_writegas.asmstr
     mov       %rax,	[%rdi]
     mov       %rcx,	[%rax]
@@ -32352,7 +32350,7 @@ L2854:
     mov       [%rip+mc_decls.currasmproc],	%rax
     jmp       L2852
 L2855:
-    lea       %rcx,	[%rip+L8587]
+    lea       %rcx,	[%rip+L8586]
     call      mc_writegas.asmstr
     xor       %eax,	%eax
     mov       [%rip+mc_decls.currasmproc],	%rax
@@ -32384,11 +32382,11 @@ L2866:
     call      mc_writegas.asmstr
     jmp       L2852
 L2867:
-    lea       %rcx,	[%rip+L8588]
-    lea       %rdx,	[%rip+L8589]
+    lea       %rcx,	[%rip+L8587]
+    lea       %rdx,	[%rip+L8588]
     call      pc_api.merror
 L2864:
-    lea       %rcx,	[%rip+L8590]
+    lea       %rcx,	[%rip+L8589]
     call      mc_writegas.asmstr
     mov       %al,	[%r15+81]
     test      %al,	%al
@@ -32404,14 +32402,14 @@ L2864:
     test      %rax,	%rax
     jnz       L2870
 L2871:
-    lea       %rcx,	[%rip+L8591]
+    lea       %rcx,	[%rip+L8590]
     call      mc_writegas.asmstr
     mov       %rax,	[%r15]
     mov       %rcx,	%rax
     call      pc_api.getbasename
     mov       %rcx,	%rax
     call      mc_writegas.asmstr
-    lea       %rcx,	[%rip+L8592]
+    lea       %rcx,	[%rip+L8591]
     call      mc_writegas.asmstr
 L2870:
 L2869:
@@ -32424,7 +32422,7 @@ L2858:
     jnz       L2873
     lea       %rcx,	[%rip+mc_writegas.strmcl.str]
     call      msys.m$print_startstr
-    lea       %rcx,	[%rip+L8593]
+    lea       %rcx,	[%rip+L8592]
     call      msys.m$print_setfmt
     mov       %rcx,	[%rdi]
     call      msys.m$print_i64_nf
@@ -32437,11 +32435,11 @@ L2872:
     call      mc_writegas.asmstr
     jmp       L2852
 L2859:
-    lea       %rcx,	[%rip+L8594]
+    lea       %rcx,	[%rip+L8593]
     call      mc_writegas.asmstr
     mov       %rcx,	[%rdi]
     call      mc_writegas.asmstr
-    lea       %rcx,	[%rip+L8595]
+    lea       %rcx,	[%rip+L8594]
     call      mc_writegas.asmstr
     mov       %rcx,	%rbx
     xor       %edx,	%edx
@@ -32450,19 +32448,19 @@ L2859:
     jmp       L2852
     jmp       L2853
 L2860:
-    lea       %rcx,	[%rip+L8596]
+    lea       %rcx,	[%rip+L8595]
     call      mc_writegas.asmstr
     mov       %al,	1
     mov       [%rip+mc_writegas.currseg],	%al
     jmp       L2852
 L2861:
-    lea       %rcx,	[%rip+L8597]
+    lea       %rcx,	[%rip+L8596]
     call      mc_writegas.asmstr
     mov       %al,	2
     mov       [%rip+mc_writegas.currseg],	%al
     jmp       L2852
 L2862:
-    lea       %rcx,	[%rip+L8598]
+    lea       %rcx,	[%rip+L8597]
     call      mc_writegas.asmstr
     mov       %al,	3
     mov       [%rip+mc_writegas.currseg],	%al
@@ -32514,7 +32512,7 @@ L2853:
 L2875:
     lea       %rcx,	[%rbp + mc_writegas.strmcl.opcname]
     call      msys.m$print_startstr
-    lea       %rcx,	[%rip+L8599]
+    lea       %rcx,	[%rip+L8598]
     call      msys.m$print_str_nf
     call      msys.m$print_nogap
     lea       %rax,	[%rip+mc_decls.asmcondnames]
@@ -32526,7 +32524,7 @@ L2875:
 L2876:
     lea       %rcx,	[%rbp + mc_writegas.strmcl.opcname]
     call      msys.m$print_startstr
-    lea       %rcx,	[%rip+L8600]
+    lea       %rcx,	[%rip+L8599]
     call      msys.m$print_str_nf
     call      msys.m$print_nogap
     lea       %rax,	[%rip+mc_decls.asmcondnames]
@@ -32538,7 +32536,7 @@ L2876:
 L2877:
     lea       %rcx,	[%rbp + mc_writegas.strmcl.opcname]
     call      msys.m$print_startstr
-    lea       %rcx,	[%rip+L8601]
+    lea       %rcx,	[%rip+L8600]
     call      msys.m$print_str_nf
     call      msys.m$print_nogap
     lea       %rax,	[%rip+mc_decls.asmcondnames]
@@ -32549,27 +32547,27 @@ L2877:
     jmp       L2874
 L2878:
     lea       %rcx,	[%rbp + mc_writegas.strmcl.opcname]
-    lea       %rdx,	[%rip+L8602]
+    lea       %rdx,	[%rip+L8601]
     call      strcpy
     jmp       L2874
 L2879:
     lea       %rcx,	[%rbp + mc_writegas.strmcl.opcname]
-    lea       %rdx,	[%rip+L8603]
+    lea       %rdx,	[%rip+L8602]
     call      strcpy
     jmp       L2874
 L2880:
     lea       %rcx,	[%rbp + mc_writegas.strmcl.opcname]
-    lea       %rdx,	[%rip+L8604]
+    lea       %rdx,	[%rip+L8603]
     call      strcpy
     jmp       L2874
 L2881:
     lea       %rcx,	[%rbp + mc_writegas.strmcl.opcname]
-    lea       %rdx,	[%rip+L8605]
+    lea       %rdx,	[%rip+L8604]
     call      strcpy
     jmp       L2874
 L2882:
     lea       %rcx,	[%rbp + mc_writegas.strmcl.opcname]
-    lea       %rdx,	[%rip+L8606]
+    lea       %rdx,	[%rip+L8605]
     call      strcpy
     jmp       L2874
 L2883:
@@ -32601,7 +32599,7 @@ L2884:
     cmp       %rax,	4
     jnz       L2899
     lea       %rcx,	[%rbp + mc_writegas.strmcl.opcname]
-    lea       %rdx,	[%rip+L8607]
+    lea       %rdx,	[%rip+L8606]
     call      strcpy
     jmp       L2898
 L2899:
@@ -32653,37 +32651,37 @@ L2903:
     jmp       L2874
 L2887:
     lea       %rcx,	[%rbp + mc_writegas.strmcl.opcname]
-    lea       %rdx,	[%rip+L8608]
+    lea       %rdx,	[%rip+L8607]
     call      strcpy
     jmp       L2874
 L2888:
     lea       %rcx,	[%rbp + mc_writegas.strmcl.opcname]
-    lea       %rdx,	[%rip+L8609]
+    lea       %rdx,	[%rip+L8608]
     call      strcpy
     jmp       L2874
 L2889:
     lea       %rcx,	[%rbp + mc_writegas.strmcl.opcname]
-    lea       %rdx,	[%rip+L8610]
+    lea       %rdx,	[%rip+L8609]
     call      strcpy
     jmp       L2874
 L2890:
     lea       %rcx,	[%rbp + mc_writegas.strmcl.opcname]
-    lea       %rdx,	[%rip+L8611]
+    lea       %rdx,	[%rip+L8610]
     call      strcpy
     jmp       L2874
 L2891:
     lea       %rcx,	[%rbp + mc_writegas.strmcl.opcname]
-    lea       %rdx,	[%rip+L8612]
+    lea       %rdx,	[%rip+L8611]
     call      strcpy
     jmp       L2874
 L2892:
     lea       %rcx,	[%rbp + mc_writegas.strmcl.opcname]
-    lea       %rdx,	[%rip+L8613]
+    lea       %rdx,	[%rip+L8612]
     call      strcpy
     jmp       L2874
 L2893:
     lea       %rcx,	[%rbp + mc_writegas.strmcl.opcname]
-    lea       %rdx,	[%rip+L8614]
+    lea       %rdx,	[%rip+L8613]
     call      strcpy
     jmp       L2874
 L2894:
@@ -32710,14 +32708,14 @@ L2905:
 L2874:
     lea       %rcx,	[%rbp + mc_writegas.strmcl.opcname]
     mov       %rdx,	10
-    lea       %r8,	[%rip+L8615]
+    lea       %r8,	[%rip+L8614]
     call      mlib.ipadstr
     lea       %rcx,	[%rip+mc_writegas.strmcl.str]
-    lea       %rdx,	[%rip+L8616]
+    lea       %rdx,	[%rip+L8615]
     call      strcpy
     lea       %rcx,	[%rip+mc_writegas.strmcl.str]
     mov       %rdx,	4
-    lea       %r8,	[%rip+L8617]
+    lea       %r8,	[%rip+L8616]
     call      mlib.ipadstr
     lea       %rcx,	[%rip+mc_writegas.strmcl.str]
     lea       %rdx,	[%rbp + mc_writegas.strmcl.opcname]
@@ -32737,7 +32735,7 @@ L2874:
     mov       %rdx,	%r13
     xor       %r8d,	%r8d
     call      mc_writegas.asmopnd
-    lea       %rcx,	[%rip+L8618]
+    lea       %rcx,	[%rip+L8617]
     call      mc_writegas.asmstr
     mov       %rcx,	%rbx
     mov       %rdx,	%r13
@@ -32747,7 +32745,7 @@ L2874:
     mov       %al,	[%rax+32]
     test      %al,	%al
     jz        L2910
-    lea       %rcx,	[%rip+L8619]
+    lea       %rcx,	[%rip+L8618]
     call      mc_writegas.asmstr
     mov       %rax,	[%rbp + mc_writegas.strmcl.mcl]
     movzx     %rax,	byte ptr[%rax+32]
@@ -32876,11 +32874,11 @@ L2918:
     jmp       L2924
 L2925:
     lea       %rcx,	[%rip+mc_writegas.mstropnd.str]
-    lea       %rdx,	[%rip+L8620]
+    lea       %rdx,	[%rip+L8619]
     call      strcat
     mov       %rax,	[%rsi]
     mov       %rcx,	%rax
-    lea       %rdx,	[%rip+L8621]
+    lea       %rdx,	[%rip+L8620]
     call      msys.strword
     lea       %rcx,	[%rip+mc_writegas.mstropnd.str]
     mov       %rdx,	%rax
@@ -32905,9 +32903,9 @@ L2919:
     mov       %rdx,	%rax
     call      strcat
     lea       %rcx,	[%rip+mc_writegas.mstropnd.str]
-    lea       %rdx,	[%rip+L8622]
+    lea       %rdx,	[%rip+L8621]
     call      strcat
-    lea       %rax,	[%rip+L8623]
+    lea       %rax,	[%rip+L8622]
     mov       %rdi,	%rax
     mov       %al,	[%rsi+10]
     test      %al,	%al
@@ -32919,7 +32917,7 @@ L2919:
     lea       %rcx,	[%rip+mc_writegas.mstropnd.str]
     mov       %rdx,	%rax
     call      strcat
-    lea       %rax,	[%rip+L8624]
+    lea       %rax,	[%rip+L8623]
     mov       %rdi,	%rax
 L2927:
     mov       %al,	[%rsi+11]
@@ -32935,7 +32933,7 @@ L2927:
     lea       %rcx,	[%rip+mc_writegas.mstropnd.str]
     mov       %rdx,	%rax
     call      strcat
-    lea       %rax,	[%rip+L8624]
+    lea       %rax,	[%rip+L8623]
     mov       %rdi,	%rax
     movzx     %rax,	word ptr[%rsi+8]
     shr       %rax,	5
@@ -32943,7 +32941,7 @@ L2927:
     cmp       %rax,	1
     jle       L2931
     lea       %rcx,	[%rip+mc_writegas.mstropnd.str]
-    lea       %rdx,	[%rip+L8625]
+    lea       %rdx,	[%rip+L8624]
     call      strcat
     movzx     %rax,	word ptr[%rsi+8]
     shr       %rax,	5
@@ -32973,7 +32971,7 @@ L2934:
     test      %r10,	%r10
     jnz       L2936
     lea       %rcx,	[%rip+mc_writegas.mstropnd.str]
-    lea       %rdx,	[%rip+L8626]
+    lea       %rdx,	[%rip+L8625]
     call      strcat
 L2936:
     mov       %al,	[%rdi]
@@ -32997,7 +32995,7 @@ L2933:
     lea       %rcx,	[%rbp + mc_writegas.mstropnd.str2]
     call      msys.m$print_startstr
     mov       %rcx,	%rbx
-    lea       %rdx,	[%rip+L8627]
+    lea       %rdx,	[%rip+L8626]
     call      msys.m$print_i64
     call      msys.m$print_end
     lea       %rcx,	[%rip+mc_writegas.mstropnd.str]
@@ -33006,7 +33004,7 @@ L2933:
 L2939:
 L2932:
     lea       %rcx,	[%rip+mc_writegas.mstropnd.str]
-    lea       %rdx,	[%rip+L8628]
+    lea       %rdx,	[%rip+L8627]
     call      strcat
     jmp       L2916
 L2920:
@@ -33019,7 +33017,7 @@ L2920:
     jmp       L2915
 L2921:
     call      msys.m$print_startcon
-    lea       %rcx,	[%rip+L8629]
+    lea       %rcx,	[%rip+L8628]
     call      msys.m$print_str_nf
     movzx     %rax,	word ptr[%rsi+8]
     shr       %rax,	9
@@ -33029,7 +33027,7 @@ L2921:
     call      msys.m$print_u64
     call      msys.m$print_newline
     call      msys.m$print_end
-    lea       %rax,	[%rip+L8630]
+    lea       %rax,	[%rip+L8629]
     jmp       L2915
 L2916:
     lea       %rax,	[%rip+mc_writegas.mstropnd.str]
@@ -33061,7 +33059,7 @@ mc_writegas.strvalue:
     mov       %rdi,	[%r12]
     mov       %rbx,	[%r12]
     lea       %rcx,	[%rip+mc_writegas.strvalue.str]
-    lea       %rdx,	[%rip+L8631]
+    lea       %rdx,	[%rip+L8630]
     call      strcpy
     movzx     %rax,	word ptr[%r12+8]
     shr       %rax,	12
@@ -33099,10 +33097,10 @@ L2951:
     call      msys.m$print_startstr
     cmp       %rsi,	0
     jle       L2955
-    lea       %rax,	[%rip+L8632]
+    lea       %rax,	[%rip+L8631]
     jmp       L2954
 L2955:
-    lea       %rax,	[%rip+L8633]
+    lea       %rax,	[%rip+L8632]
 L2954:
     mov       %rcx,	%rax
     call      msys.m$print_str_nf
@@ -33128,13 +33126,13 @@ L2944:
     call      msys.m$print_startstr
     movq      %XMM4,	[%r12]
     movq      %XMM0,	%XMM4
-    lea       %rdx,	[%rip+L8634]
+    lea       %rdx,	[%rip+L8633]
     call      msys.m$print_r64
     call      msys.m$print_end
     jmp       L2941
 L2945:
     lea       %rcx,	[%rip+mc_writegas.strvalue.str]
-    lea       %rdx,	[%rip+L8635]
+    lea       %rdx,	[%rip+L8634]
     call      strcat
     movq      %XMM4,	[%r12]
     movq      %XMM0,	%XMM4
@@ -33146,14 +33144,14 @@ L2945:
     jmp       L2941
 L2946:
     lea       %rcx,	[%rip+mc_writegas.strvalue.str]
-    lea       %rdx,	[%rip+L8636]
+    lea       %rdx,	[%rip+L8635]
     call      strcat
     mov       %rax,	[%r12]
     lea       %rcx,	[%rip+mc_writegas.strvalue.str]
     mov       %rdx,	%rax
     call      strcat
     lea       %rcx,	[%rip+mc_writegas.strvalue.str]
-    lea       %rdx,	[%rip+L8636]
+    lea       %rdx,	[%rip+L8635]
     call      strcat
     jmp       L2941
 L2947:
@@ -33164,7 +33162,7 @@ L2947:
     jmp       L2941
 L2948:
     lea       %rcx,	[%rip+mc_writegas.strvalue.str]
-    lea       %rdx,	[%rip+L8637]
+    lea       %rdx,	[%rip+L8636]
     call      strcat
     mov       %rax,	[%r12]
     mov       %rcx,	%rax
@@ -33181,8 +33179,8 @@ L2949:
     call      mc_writegas.gettempname
     jmp       L2940
 L2950:
-    lea       %rcx,	[%rip+L8638]
-    lea       %rdx,	[%rip+L8639]
+    lea       %rcx,	[%rip+L8637]
+    lea       %rdx,	[%rip+L8638]
     call      pc_api.merror
 L2941:
     lea       %rax,	[%rip+mc_writegas.strvalue.str]
@@ -33232,12 +33230,12 @@ mc_writegas.getxregname:
 #---------------
     test      %rdi,	%rdi
     jnz       L2959
-    lea       %rax,	[%rip+L8640]
+    lea       %rax,	[%rip+L8639]
     jmp       L2957
 L2959:
     lea       %rcx,	[%rip+mc_writegas.getxregname.str]
     call      msys.m$print_startstr
-    lea       %rcx,	[%rip+L8641]
+    lea       %rcx,	[%rip+L8640]
     call      msys.m$print_str_nf
     call      msys.m$print_nogap
     lea       %rax,	[%rdi-1]
@@ -33315,7 +33313,7 @@ mc_writegas.gettempname:
     jz        L2965
     lea       %rcx,	[%rip+mc_writegas.gettempname.str]
     call      msys.m$print_startstr
-    lea       %rcx,	[%rip+L8642]
+    lea       %rcx,	[%rip+L8641]
     call      msys.m$print_str_nf
     call      msys.m$print_nogap
     mov       %rcx,	%rbx
@@ -33325,7 +33323,7 @@ mc_writegas.gettempname:
 L2965:
     lea       %rcx,	[%rip+mc_writegas.gettempname.str]
     call      msys.m$print_startstr
-    lea       %rcx,	[%rip+L8643]
+    lea       %rcx,	[%rip+L8642]
     call      msys.m$print_setfmt
     mov       %rcx,	%rdi
     call      mc_writegas.getdispname
@@ -33354,7 +33352,7 @@ mc_writegas.strreg:
     mov       %rbx,	%rdx
 #---------------
     lea       %rcx,	[%rip+mc_writegas.strreg.str]
-    lea       %rdx,	[%rip+L8644]
+    lea       %rdx,	[%rip+L8643]
     call      strcpy
     lea       %rax,	[%rip+mc_writegas.nregnames]
     mov       %r10,	%rbx
@@ -33492,7 +33490,7 @@ mc_writegas.getsizeprefix:
 #---------------
     test      %rdx,	%rdx
     jnz       L2983
-    lea       %rax,	[%rip+L8645]
+    lea       %rax,	[%rip+L8644]
     jmp       L2981
 L2983:
     mov       %rax,	%rcx
@@ -33506,20 +33504,20 @@ L2983:
     jz        L2988
     jmp       L2989
 L2985:
-    lea       %rax,	[%rip+L8646]
+    lea       %rax,	[%rip+L8645]
     jmp       L2981
 L2986:
-    lea       %rax,	[%rip+L8647]
+    lea       %rax,	[%rip+L8646]
     jmp       L2981
 L2987:
-    lea       %rax,	[%rip+L8648]
+    lea       %rax,	[%rip+L8647]
     jmp       L2981
 L2988:
-    lea       %rax,	[%rip+L8649]
+    lea       %rax,	[%rip+L8648]
     jmp       L2981
 L2989:
 L2984:
-    lea       %rax,	[%rip+L8650]
+    lea       %rax,	[%rip+L8649]
 L2981:
 #---------------
     ret       
@@ -33588,7 +33586,7 @@ mx_run_dummy.runlibfile:
 #?]]
     sub       %rsp,	40
 #---------------
-    lea       %rcx,	[%rip+L8651]
+    lea       %rcx,	[%rip+L8650]
     call      mlib.abortprogram
 #---------------
     add       %rsp,	40
@@ -33633,7 +33631,7 @@ L2999:
     test      %al,	%al
     jz        L3001
     call      msys.m$print_startcon
-    lea       %rcx,	[%rip+L8652]
+    lea       %rcx,	[%rip+L8651]
     call      msys.m$print_setfmt
     mov       %rcx,	[%rip+cc_decls.inputfile]
     call      msys.m$print_str_nf
@@ -33703,7 +33701,7 @@ L3011:
     mov       %r10,	[%r10 + %rax*8-8]
     mov       %rcx,	%r10
     call      msys.m$print_str_nf
-    lea       %rcx,	[%rip+L8653]
+    lea       %rcx,	[%rip+L8652]
     call      msys.m$print_str_nf
     call      msys.m$print_newline
     call      msys.m$print_end
@@ -33713,7 +33711,7 @@ L3002:
     cmp       %rax,	2
     jl        L3015
     call      msys.m$print_startcon
-    lea       %rcx,	[%rip+L8654]
+    lea       %rcx,	[%rip+L8653]
     call      msys.m$print_str_nf
     call      msys.m$print_newline
     call      msys.m$print_end
@@ -33768,7 +33766,7 @@ cc_cli.do_loadmodule:
     cmp       %rax,	3
     jnz       L3023
     call      msys.m$print_startcon
-    lea       %rcx,	[%rip+L8655]
+    lea       %rcx,	[%rip+L8654]
     call      msys.m$print_str_nf
     mov       %rcx,	[%rip+cc_decls.inputfile]
     call      msys.m$print_str_nf
@@ -33776,13 +33774,13 @@ cc_cli.do_loadmodule:
     call      msys.m$print_end
 L3023:
     call      cc_cli.starttiming
-    lea       %rax,	[%rip+L8656]
+    lea       %rax,	[%rip+L8655]
     lea       %r10,	[%rip+cc_decls.sourcefilenames]
     mov       [%r10],	%rax
-    lea       %rax,	[%rip+L8657]
+    lea       %rax,	[%rip+L8656]
     lea       %r10,	[%rip+cc_decls.sourcefilepaths]
     mov       [%r10],	%rax
-    lea       %rax,	[%rip+L8658]
+    lea       %rax,	[%rip+L8657]
     lea       %r10,	[%rip+cc_decls.sourcefiletext]
     mov       [%r10],	%rax
     lea       %rax,	[%rip+cc_decls.sourcefiletext]
@@ -33791,7 +33789,7 @@ L3023:
     call      strlen
     lea       %r10,	[%rip+cc_decls.sourcefilesizes]
     mov       [%r10],	%eax
-    lea       %rcx,	[%rip+L8659]
+    lea       %rcx,	[%rip+L8658]
     call      cc_lex.addnamestr
     xor       %ecx,	%ecx
     mov       %rdx,	%rax
@@ -33802,7 +33800,7 @@ L3023:
     call      mlib.checkfile
     test      %rax,	%rax
     jnz       L3025
-    lea       %rcx,	[%rip+L8660]
+    lea       %rcx,	[%rip+L8659]
     mov       %rdx,	[%rip+cc_decls.inputfile]
     call      cc_support.loaderror
 L3025:
@@ -34041,10 +34039,10 @@ cc_cli.initlogfile:
     movzx     %rax,	byte ptr[%rip+cc_cli.debugmode]
     cmp       %rax,	2
     jl        L3065
-    lea       %rcx,	[%rip+L8661]
+    lea       %rcx,	[%rip+L8660]
     call      remove
-    lea       %rcx,	[%rip+L8661]
-    lea       %rdx,	[%rip+L8662]
+    lea       %rcx,	[%rip+L8660]
+    lea       %rdx,	[%rip+L8661]
     call      fopen
     mov       [%rip+cc_decls.logdev],	%rax
 L3065:
@@ -34073,7 +34071,7 @@ L3068:
     jl        L3070
     mov       %rcx,	[%rip+cc_decls.logdev]
     call      msys.m$print_startfile
-    lea       %rcx,	[%rip+L8663]
+    lea       %rcx,	[%rip+L8662]
     call      msys.m$print_str_nf
     call      msys.m$print_newline
     call      msys.m$print_end
@@ -34095,7 +34093,7 @@ L3070:
     jl        L3072
     mov       %rcx,	[%rip+cc_decls.logdev]
     call      msys.m$print_startfile
-    lea       %rcx,	[%rip+L8664]
+    lea       %rcx,	[%rip+L8663]
     call      msys.m$print_str_nf
     call      msys.m$print_newline
     call      msys.m$print_end
@@ -34110,9 +34108,9 @@ L3070:
     mov       %al,	[%rip+cc_cli.fshowpst]
     test      %al,	%al
     jz        L3074
-    lea       %rcx,	[%rip+L8665]
+    lea       %rcx,	[%rip+L8664]
     call      pc_api.pcl_writepst
-    lea       %rcx,	[%rip+L8665]
+    lea       %rcx,	[%rip+L8664]
     mov       %rdx,	[%rip+cc_decls.logdev]
     call      cc_lib.addtolog
 L3074:
@@ -34121,13 +34119,13 @@ L3072:
     mov       %al,	[%rip+cc_cli.fshowst]
     test      %al,	%al
     jz        L3076
-    lea       %rcx,	[%rip+L8666]
+    lea       %rcx,	[%rip+L8665]
     call      cc_cli.showst
 L3076:
     mov       %al,	[%rip+cc_cli.fshowstflat]
     test      %al,	%al
     jz        L3078
-    lea       %rcx,	[%rip+L8667]
+    lea       %rcx,	[%rip+L8666]
     call      cc_cli.showstflat
 L3078:
     mov       %al,	[%rip+cc_cli.fshowtypes]
@@ -34138,12 +34136,12 @@ L3078:
 L3080:
     mov       %rcx,	[%rip+cc_decls.logdev]
     call      fclose
-    lea       %rcx,	[%rip+L8668]
+    lea       %rcx,	[%rip+L8667]
     call      mlib.checkfile
     test      %rax,	%rax
     jz        L3082
     call      msys.m$print_startcon
-    lea       %rcx,	[%rip+L8669]
+    lea       %rcx,	[%rip+L8668]
     call      msys.m$print_str_nf
     call      msys.m$print_newline
     call      msys.m$print_end
@@ -34155,9 +34153,9 @@ L3080:
 L3084:
     lea       %rcx,	[%rbp + cc_cli.closelogfile.str]
     call      msys.m$print_startstr
-    lea       %rcx,	[%rip+L8670]
+    lea       %rcx,	[%rip+L8669]
     call      msys.m$print_str_nf
-    lea       %rcx,	[%rip+L8671]
+    lea       %rcx,	[%rip+L8670]
     call      msys.m$print_str_nf
     call      msys.m$print_end
     lea       %rcx,	[%rbp + cc_cli.closelogfile.str]
@@ -34167,9 +34165,9 @@ L3084:
     jmp       L3081
 L3082:
     call      msys.m$print_startcon
-    lea       %rcx,	[%rip+L8672]
+    lea       %rcx,	[%rip+L8671]
     call      msys.m$print_str_nf
-    lea       %rcx,	[%rip+L8673]
+    lea       %rcx,	[%rip+L8672]
     call      msys.m$print_str_nf
     call      msys.m$print_newline
     call      msys.m$print_end
@@ -34194,6 +34192,11 @@ cc_cli.initdata:
     mov       [%rip+cc_decls.nlibfiles],	%rax
     inc       qword ptr[%rip+cc_decls.nlibfiles]
     mov       %rax,	[%rip+cc_decls.nlibfiles]
+    lea       %r10,	[%rip+L8673]
+    lea       %r11,	[%rip+cc_decls.libfiles]
+    mov       [%r11 + %rax*8],	%r10
+    inc       qword ptr[%rip+cc_decls.nlibfiles]
+    mov       %rax,	[%rip+cc_decls.nlibfiles]
     lea       %r10,	[%rip+L8674]
     lea       %r11,	[%rip+cc_decls.libfiles]
     mov       [%r11 + %rax*8],	%r10
@@ -34205,11 +34208,6 @@ cc_cli.initdata:
     inc       qword ptr[%rip+cc_decls.nlibfiles]
     mov       %rax,	[%rip+cc_decls.nlibfiles]
     lea       %r10,	[%rip+L8676]
-    lea       %r11,	[%rip+cc_decls.libfiles]
-    mov       [%r11 + %rax*8],	%r10
-    inc       qword ptr[%rip+cc_decls.nlibfiles]
-    mov       %rax,	[%rip+cc_decls.nlibfiles]
-    lea       %r10,	[%rip+L8677]
     lea       %r11,	[%rip+cc_decls.libfiles]
     mov       [%r11 + %rax*8],	%r10
     lea       %rax,	[%rip+cc_cli.cgetsourceinfo]
@@ -34229,7 +34227,7 @@ cc_cli.cgetsourceinfo:
     lea       %r10,	[%rip+cc_decls.sourcefilenames]
     mov       %r10,	[%r10 + %rax*8]
     mov       [%rdx],	%r10
-    lea       %rax,	[%rip+L8678]
+    lea       %rax,	[%rip+L8677]
     mov       [%r8],	%rax
     mov       %rax,	%rcx
     and       %rax,	16777215
@@ -34246,12 +34244,12 @@ cc_cli.initsearchdirs:
 #---------------
     inc       qword ptr[%rip+cc_decls.nsearchdirs]
     mov       %rax,	[%rip+cc_decls.nsearchdirs]
-    lea       %r10,	[%rip+L8679]
+    lea       %r10,	[%rip+L8678]
     lea       %r11,	[%rip+cc_decls.searchdirs]
     mov       [%r11 + %rax*8-8],	%r10
     inc       qword ptr[%rip+cc_decls.nsearchdirs]
     mov       %rax,	[%rip+cc_decls.nsearchdirs]
-    lea       %r10,	[%rip+L8680]
+    lea       %r10,	[%rip+L8679]
     lea       %r11,	[%rip+cc_decls.searchdirs]
     mov       [%r11 + %rax*8-8],	%r10
     call      mnoos.os_gethostname
@@ -34299,7 +34297,7 @@ cc_cli.showsearchdirs:
     sub       %rsp,	48
 #---------------
     call      msys.m$print_startcon
-    lea       %rcx,	[%rip+L8681]
+    lea       %rcx,	[%rip+L8680]
     call      msys.m$print_str_nf
     call      msys.m$print_newline
     call      msys.m$print_end
@@ -34307,7 +34305,7 @@ cc_cli.showsearchdirs:
     test      %al,	%al
     jz        L3095
     call      msys.m$print_startcon
-    lea       %rcx,	[%rip+L8682]
+    lea       %rcx,	[%rip+L8681]
     call      msys.m$print_str_nf
     call      msys.m$print_newline
     call      msys.m$print_end
@@ -34327,7 +34325,7 @@ L3096:
     mov       %rcx,	%rdi
     call      msys.m$print_i64_nf
     call      msys.m$print_nogap
-    lea       %rcx,	[%rip+L8683]
+    lea       %rcx,	[%rip+L8682]
     call      msys.m$print_str_nf
     lea       %rax,	[%rip+cc_decls.searchdirs]
     mov       %r10,	%rdi
@@ -34341,7 +34339,7 @@ L3100:
     mov       %rcx,	%rdi
     call      msys.m$print_i64_nf
     call      msys.m$print_nogap
-    lea       %rcx,	[%rip+L8684]
+    lea       %rcx,	[%rip+L8683]
     call      msys.m$print_str_nf
     call      msys.m$print_newline
     call      msys.m$print_end
@@ -34368,7 +34366,7 @@ cc_cli.showast:
     test      %al,	%al
     jz        L3103
     mov       %rcx,	[%rip+cc_decls.logdev]
-    lea       %rdx,	[%rip+L8685]
+    lea       %rdx,	[%rip+L8684]
     call      cc_show.printcode
     mov       %rcx,	[%rip+cc_decls.logdev]
     call      msys.m$print_startfile
@@ -34389,7 +34387,7 @@ cc_cli.showstflat:
 #---------------
     mov       %rcx,	[%rip+cc_decls.logdev]
     call      msys.m$print_startfile
-    lea       %rcx,	[%rip+L8686]
+    lea       %rcx,	[%rip+L8685]
     call      msys.m$print_str_nf
     mov       %rcx,	%rdi
     call      msys.m$print_str_nf
@@ -34416,7 +34414,7 @@ cc_cli.showst:
 #---------------
     mov       %rcx,	[%rip+cc_decls.logdev]
     call      msys.m$print_startfile
-    lea       %rcx,	[%rip+L8686]
+    lea       %rcx,	[%rip+L8685]
     call      msys.m$print_str_nf
     mov       %rcx,	%rdi
     call      msys.m$print_str_nf
@@ -34443,7 +34441,7 @@ cc_cli.showfiles:
     sub       %rsp,	48
 #---------------
     call      msys.m$print_startcon
-    lea       %rcx,	[%rip+L8687]
+    lea       %rcx,	[%rip+L8686]
     call      msys.m$print_str_nf
     call      msys.m$print_newline
     call      msys.m$print_end
@@ -34455,7 +34453,7 @@ L3107:
     call      msys.m$print_startcon
     mov       %rcx,	%rdi
     call      msys.m$print_i64_nf
-    lea       %rcx,	[%rip+L8688]
+    lea       %rcx,	[%rip+L8687]
     call      msys.m$print_str_nf
     lea       %rax,	[%rip+cc_decls.sourcefilepaths]
     mov       %r10,	%rdi
@@ -34465,7 +34463,7 @@ L3107:
     mov       %r10,	%rdi
     mov       %rcx,	[%rax + %r10*8]
     call      msys.m$print_str_nf
-    lea       %rcx,	[%rip+L8689]
+    lea       %rcx,	[%rip+L8688]
     call      msys.m$print_str_nf
     lea       %rax,	[%rip+cc_decls.sourcefilesizes]
     mov       %r10,	%rdi
@@ -34497,22 +34495,22 @@ cc_cli.showtime:
     mov       %rbx,	%rdx
 #---------------
     call      msys.m$print_startcon
-    lea       %rcx,	[%rip+L8690]
+    lea       %rcx,	[%rip+L8689]
     call      msys.m$print_setfmt
     mov       %rcx,	%rdi
-    lea       %rdx,	[%rip+L8691]
+    lea       %rdx,	[%rip+L8690]
     call      msys.m$print_str
     mov       %rcx,	%rbx
-    lea       %rdx,	[%rip+L8692]
+    lea       %rdx,	[%rip+L8691]
     call      msys.m$print_i64
     mov       %rax,	%rbx
     cvtsi2sd  %XMM4,	%rax
-    mulsd     %XMM4,	[%rip+L8693]
+    mulsd     %XMM4,	[%rip+L8692]
     mov       %rax,	[%rip+cc_cli.compiletime]
     cvtsi2sd  %XMM5,	%rax
     divsd     %XMM4,	%XMM5
     movq      %XMM0,	%XMM4
-    lea       %rdx,	[%rip+L8694]
+    lea       %rdx,	[%rip+L8693]
     call      msys.m$print_r64
     call      msys.m$print_newline
     call      msys.m$print_end
@@ -34531,33 +34529,33 @@ cc_cli.showtiming:
     call      mnoos.os_clock
     sub       %rax,	[%rip+cc_cli.startclock]
     mov       [%rip+cc_cli.compiletime],	%rax
-    lea       %rcx,	[%rip+L8695]
+    lea       %rcx,	[%rip+L8694]
     mov       %rdx,	[%rip+cc_cli.inittime]
     call      cc_cli.showtime
-    lea       %rcx,	[%rip+L8696]
+    lea       %rcx,	[%rip+L8695]
     mov       %rdx,	[%rip+cc_cli.loadtime]
     call      cc_cli.showtime
-    lea       %rcx,	[%rip+L8697]
+    lea       %rcx,	[%rip+L8696]
     mov       %rdx,	[%rip+cc_cli.parsetime]
     call      cc_cli.showtime
-    lea       %rcx,	[%rip+L8698]
+    lea       %rcx,	[%rip+L8697]
     mov       %rdx,	[%rip+cc_cli.pcltime]
     call      cc_cli.showtime
-    lea       %rcx,	[%rip+L8699]
+    lea       %rcx,	[%rip+L8698]
     mov       %rdx,	[%rip+pc_decls.mcltime]
     call      cc_cli.showtime
-    lea       %rcx,	[%rip+L8700]
+    lea       %rcx,	[%rip+L8699]
     mov       %rdx,	[%rip+pc_decls.sstime]
     call      cc_cli.showtime
-    lea       %rcx,	[%rip+L8701]
+    lea       %rcx,	[%rip+L8700]
     mov       %rdx,	[%rip+pc_decls.exetime]
     call      cc_cli.showtime
     call      msys.m$print_startcon
-    lea       %rcx,	[%rip+L8702]
+    lea       %rcx,	[%rip+L8701]
     call      msys.m$print_str_nf
     call      msys.m$print_newline
     call      msys.m$print_end
-    lea       %rcx,	[%rip+L8703]
+    lea       %rcx,	[%rip+L8702]
     mov       %rdx,	[%rip+cc_cli.compiletime]
     call      cc_cli.showtime
 #---------------
@@ -34594,21 +34592,21 @@ L3114:
     mov       %rcx,	%rax
     call      mlib.extractfile
     mov       %rcx,	%rax
-    lea       %rdx,	[%rip+L8704]
+    lea       %rdx,	[%rip+L8703]
     call      mlib.eqstring
     test      %rax,	%rax
     jz        L3116
     xor       %eax,	%eax
     mov       [%rip+cc_cli.fverbose],	%al
     mov       %rcx,	17
-    lea       %rdx,	[%rip+L8705]
+    lea       %rdx,	[%rip+L8704]
     call      cc_cli.do_option
 L3116:
 L3117:
     lea       %rcx,	[%rbp + cc_cli.getinputoptions.paramno]
     lea       %rdx,	[%rbp + cc_cli.getinputoptions.name]
     lea       %r8,	[%rbp + cc_cli.getinputoptions.value]
-    lea       %r9,	[%rip+L8706]
+    lea       %r9,	[%rip+L8705]
     call      mlib.nextcmdparamnew
     mov       %rdi,	%rax
     mov       %rax,	%rdi
@@ -34647,7 +34645,7 @@ L3130:
     jle       L3125
 L3128:
     call      msys.m$print_startcon
-    lea       %rcx,	[%rip+L8707]
+    lea       %rcx,	[%rip+L8706]
     call      msys.m$print_str_nf
     mov       %rcx,	[%rbp + cc_cli.getinputoptions.name]
     call      msys.m$print_str_nf
@@ -34661,8 +34659,8 @@ L3121:
     mov       %rax,	[%rip+cc_decls.inputfile]
     test      %rax,	%rax
     jz        L3132
-    lea       %rcx,	[%rip+L8708]
-    lea       %rdx,	[%rip+L8709]
+    lea       %rcx,	[%rip+L8707]
+    lea       %rdx,	[%rip+L8708]
     call      cc_support.loaderror
 L3132:
     mov       %rcx,	[%rbp + cc_cli.getinputoptions.name]
@@ -34690,8 +34688,8 @@ L3122:
     mov       %rax,	[%rip+cc_decls.nlibfiles]
     cmp       %rax,	200
     jl        L3137
-    lea       %rcx,	[%rip+L8710]
-    lea       %rdx,	[%rip+L8711]
+    lea       %rcx,	[%rip+L8709]
+    lea       %rdx,	[%rip+L8710]
     call      cc_support.loaderror
 L3137:
     mov       %rcx,	[%rbp + cc_cli.getinputoptions.name]
@@ -34760,51 +34758,51 @@ L3148:
     jnz       L3151
     call      cc_cli.showcaption
     call      msys.m$print_startcon
+    lea       %rcx,	[%rip+L8711]
+    call      msys.m$print_str_nf
+    call      msys.m$print_newline
+    call      msys.m$print_end
+    call      msys.m$print_startcon
     lea       %rcx,	[%rip+L8712]
     call      msys.m$print_str_nf
-    call      msys.m$print_newline
-    call      msys.m$print_end
-    call      msys.m$print_startcon
+    call      msys.m$print_nogap
+    mov       %rax,	[%rip+msys.cmdparams]
+    mov       %rcx,	[%rax]
+    call      msys.m$print_str_nf
     lea       %rcx,	[%rip+L8713]
     call      msys.m$print_str_nf
-    call      msys.m$print_nogap
-    mov       %rax,	[%rip+msys.cmdparams]
-    mov       %rcx,	[%rax]
-    call      msys.m$print_str_nf
+    call      msys.m$print_newline
+    call      msys.m$print_end
+    call      msys.m$print_startcon
     lea       %rcx,	[%rip+L8714]
     call      msys.m$print_str_nf
-    call      msys.m$print_newline
-    call      msys.m$print_end
-    call      msys.m$print_startcon
+    call      msys.m$print_nogap
+    mov       %rax,	[%rip+msys.cmdparams]
+    mov       %rcx,	[%rax]
+    call      msys.m$print_str_nf
     lea       %rcx,	[%rip+L8715]
     call      msys.m$print_str_nf
-    call      msys.m$print_nogap
-    mov       %rax,	[%rip+msys.cmdparams]
-    mov       %rcx,	[%rax]
-    call      msys.m$print_str_nf
+    call      msys.m$print_newline
+    call      msys.m$print_end
+    call      msys.m$print_startcon
     lea       %rcx,	[%rip+L8716]
     call      msys.m$print_str_nf
-    call      msys.m$print_newline
-    call      msys.m$print_end
-    call      msys.m$print_startcon
+    call      msys.m$print_nogap
+    mov       %rax,	[%rip+msys.cmdparams]
+    mov       %rcx,	[%rax]
+    call      msys.m$print_str_nf
     lea       %rcx,	[%rip+L8717]
     call      msys.m$print_str_nf
-    call      msys.m$print_nogap
-    mov       %rax,	[%rip+msys.cmdparams]
-    mov       %rcx,	[%rax]
-    call      msys.m$print_str_nf
-    lea       %rcx,	[%rip+L8718]
-    call      msys.m$print_str_nf
     call      msys.m$print_newline
     call      msys.m$print_end
     call      msys.m$print_startcon
-    lea       %rcx,	[%rip+L8719]
+    lea       %rcx,	[%rip+L8718]
     call      msys.m$print_str_nf
     call      msys.m$print_nogap
     mov       %rax,	[%rip+msys.cmdparams]
     mov       %rcx,	[%rax]
     call      msys.m$print_str_nf
-    lea       %rcx,	[%rip+L8720]
+    lea       %rcx,	[%rip+L8719]
     call      msys.m$print_str_nf
     call      msys.m$print_newline
     call      msys.m$print_end
@@ -34891,8 +34889,8 @@ L3162:
     mov       %rax,	[%rip+cc_decls.inputfile]
     test      %rax,	%rax
     jz        L3164
-    lea       %rcx,	[%rip+L8721]
-    lea       %rdx,	[%rip+L8722]
+    lea       %rcx,	[%rip+L8720]
+    lea       %rdx,	[%rip+L8721]
     call      cc_support.loaderror
 L3164:
     mov       %rax,	%rsi
@@ -34922,8 +34920,8 @@ L3169:
     mov       %rax,	[%rip+cc_decls.nincludepaths]
     cmp       %rax,	20
     jle       L3175
-    lea       %rcx,	[%rip+L8723]
-    lea       %rdx,	[%rip+L8724]
+    lea       %rcx,	[%rip+L8722]
+    lea       %rdx,	[%rip+L8723]
     call      cc_support.loaderror
 L3175:
     mov       %rcx,	%r12
@@ -34943,7 +34941,7 @@ L3178:
     mov       %rdx,	%r12
     call      strcpy
     lea       %rcx,	[%rbp + cc_cli.do_option.str]
-    lea       %rdx,	[%rip+L8725]
+    lea       %rdx,	[%rip+L8724]
     call      strcat
     lea       %rax,	[%rbp + cc_cli.do_option.str]
     mov       %r12,	%rax
@@ -34990,7 +34988,7 @@ cc_cli.showincludepaths:
     sub       %rsp,	48
 #---------------
     call      msys.m$print_startcon
-    lea       %rcx,	[%rip+L8726]
+    lea       %rcx,	[%rip+L8725]
     call      msys.m$print_str_nf
     mov       %rcx,	[%rip+cc_decls.nincludepaths]
     call      msys.m$print_i64_nf
@@ -35030,7 +35028,7 @@ cc_cli.showhelp:
 #---------------
     call      cc_cli.showcaption
     call      msys.m$print_startcon
-    lea       %rcx,	[%rip+L8727]
+    lea       %rcx,	[%rip+L8726]
     call      msys.m$print_str_nf
     call      msys.m$print_newline
     call      msys.m$print_end
@@ -35064,11 +35062,11 @@ cc_cli.showcaption:
     sub       %rsp,	40
 #---------------
     call      msys.m$print_startcon
+    lea       %rcx,	[%rip+L8727]
+    call      msys.m$print_str_nf
     lea       %rcx,	[%rip+L8728]
     call      msys.m$print_str_nf
     lea       %rcx,	[%rip+L8729]
-    call      msys.m$print_str_nf
-    lea       %rcx,	[%rip+L8730]
     call      msys.m$print_str_nf
     call      msys.m$print_newline
     call      msys.m$print_end
@@ -35159,7 +35157,7 @@ cc_lex.lex_preprocess_only:
     call      cc_lex.setfileno
     xor       %eax,	%eax
     mov       [%rip+cc_lex.ifcondlevel],	%rax
-    lea       %rcx,	[%rip+L8731]
+    lea       %rcx,	[%rip+L8730]
     mov       %rdx,	1
     call      cc_lex.stacksourcefile
     mov       %al,	56
@@ -35179,7 +35177,7 @@ L3189:
     mov       %rax,	[%rip+cc_lex.ifcondlevel]
     test      %rax,	%rax
     jz        L3193
-    lea       %rcx,	[%rip+L8732]
+    lea       %rcx,	[%rip+L8731]
     call      cc_lex.lxerror
 L3193:
     lea       %rax,	[%rip+cc_lex.showtokens]
@@ -35194,7 +35192,7 @@ L3193:
     jmp       L3196
 L3197:
     mov       %rcx,	[%rbp + cc_lex.lex_preprocess_only.outfile]
-    lea       %rdx,	[%rip+L8733]
+    lea       %rdx,	[%rip+L8732]
     call      fopen
     mov       [%rbp + cc_lex.lex_preprocess_only.f],	%rax
     mov       %rcx,	[%rip+cc_lex.lex_preprocess_only.dest]
@@ -36376,7 +36374,7 @@ L3335:
     jmp       L3198
 L3338:
     call      msys.m$print_startcon
-    lea       %rcx,	[%rip+L8734]
+    lea       %rcx,	[%rip+L8733]
     call      msys.m$print_str_nf
     lea       %rax,	[%rip+cc_decls.nextlx]
     mov       %eax,	[%rax+16]
@@ -36425,7 +36423,7 @@ L3205:
     jle       L3207
 L3346:
     call      msys.m$print_startcon
-    lea       %rcx,	[%rip+L8735]
+    lea       %rcx,	[%rip+L8734]
     call      msys.m$print_str_nf
     mov       %rax,	[%rip+cc_lex.lxsptr]
     sub       %rax,	1
@@ -36442,7 +36440,7 @@ L3346:
     call      msys.m$print_i64_nf
     call      msys.m$print_newline
     call      msys.m$print_end
-    lea       %rcx,	[%rip+L8735]
+    lea       %rcx,	[%rip+L8734]
     call      cc_lex.lxerror
     mov       %al,	1
     lea       %r10,	[%rip+cc_decls.nextlx]
@@ -36597,7 +36595,7 @@ L3367:
     add       %rax,	%rbx
     cmp       %rax,	500
     jle       L3370
-    lea       %rcx,	[%rip+L8736]
+    lea       %rcx,	[%rip+L8735]
     call      cc_lex.lxerror
 L3370:
     mov       %rax,	[%rbp + cc_lex.readrealnumber.intlen]
@@ -36632,7 +36630,7 @@ L3376:
     mov       %rax,	%rbx
     shl       %rax,	2
     sub       %rsi,	%rax
-    movq      %XMM4,	[%rip+L8737]
+    movq      %XMM4,	[%rip+L8736]
     movq      %XMM13,	%XMM4
 L3375:
     mov       %rax,	%r12
@@ -36645,10 +36643,10 @@ L3375:
     mov       %rax,	[%rbp + cc_lex.readrealnumber.base]
     cmp       %rax,	10
     jnz       L3378
-    lea       %rax,	[%rip+L8738]
+    lea       %rax,	[%rip+L8737]
     jmp       L3377
 L3378:
-    lea       %rax,	[%rip+L8739]
+    lea       %rax,	[%rip+L8738]
 L3377:
     mov       %rcx,	%rax
     call      msys.m$print_str_nf
@@ -36662,7 +36660,7 @@ L3377:
     mov       %rax,	[%rbp + cc_lex.readrealnumber.base]
     cmp       %rax,	10
     jz        L3380
-    lea       %rcx,	[%rip+L8740]
+    lea       %rcx,	[%rip+L8739]
     call      cc_lex.lxerror
 L3380:
     lea       %rcx,	[%rbp + cc_lex.readrealnumber.realstr]
@@ -36794,11 +36792,11 @@ cc_lex.lxerror:
     mov       %rdi,	%rcx
 #---------------
     call      msys.m$print_startcon
-    lea       %rcx,	[%rip+L8741]
+    lea       %rcx,	[%rip+L8740]
     call      msys.m$print_str_nf
     mov       %rcx,	%rdi
     call      msys.m$print_str_nf
-    lea       %rcx,	[%rip+L8742]
+    lea       %rcx,	[%rip+L8741]
     call      msys.m$print_str_nf
     call      msys.m$print_nogap
     call      cc_lex.getfileno
@@ -36806,7 +36804,7 @@ cc_lex.lxerror:
     mov       %r10,	[%r10 + %rax*8]
     mov       %rcx,	%r10
     call      msys.m$print_str_nf
-    lea       %rcx,	[%rip+L8743]
+    lea       %rcx,	[%rip+L8742]
     call      msys.m$print_str_nf
     lea       %rax,	[%rip+cc_decls.nextlx]
     mov       %eax,	[%rax+16]
@@ -36854,7 +36852,7 @@ cc_lex.printsymbol:
     movzx     %rax,	byte ptr[%rbp + cc_lex.printsymbol.l+21]
     lea       %r10,	[%rip+cc_tables.symbolnames]
     mov       %r10,	[%r10 + %rax*8-8]
-    lea       %rcx,	[%rip+L8744]
+    lea       %rcx,	[%rip+L8743]
     mov       %rdx,	%r10
     call      printf
     movzx     %rax,	byte ptr[%rbp + cc_lex.printsymbol.l+21]
@@ -36884,7 +36882,7 @@ L3397:
     mov       %rcx,	[%rbp + cc_lex.printsymbol.l]
     call      msys.m$print_i64_nf
     call      msys.m$print_nogap
-    lea       %rcx,	[%rip+L8745]
+    lea       %rcx,	[%rip+L8744]
     call      msys.m$print_str_nf
     call      msys.m$print_end
     mov       %rcx,	%rdi
@@ -36898,7 +36896,7 @@ L3398:
     xor       %edx,	%edx
     call      msys.m$print_r64
     call      msys.m$print_nogap
-    lea       %rcx,	[%rip+L8745]
+    lea       %rcx,	[%rip+L8744]
     call      msys.m$print_str_nf
     call      msys.m$print_end
     mov       %rcx,	%rdi
@@ -36907,7 +36905,7 @@ L3398:
     jmp       L3395
 L3399:
     call      msys.m$print_startcon
-    lea       %rcx,	[%rip+L8746]
+    lea       %rcx,	[%rip+L8745]
     call      msys.m$print_str_nf
     call      msys.m$print_end
     movsxd    %rax,	dword ptr[%rbp + cc_lex.printsymbol.l+24]
@@ -36917,13 +36915,13 @@ L3399:
     xor       %r8d,	%r8d
     call      cc_lex.printstrn
     call      msys.m$print_startcon
-    lea       %rcx,	[%rip+L8746]
+    lea       %rcx,	[%rip+L8745]
     call      msys.m$print_str_nf
     call      msys.m$print_end
     jmp       L3395
 L3400:
     call      msys.m$print_startcon
-    lea       %rcx,	[%rip+L8747]
+    lea       %rcx,	[%rip+L8746]
     call      msys.m$print_str_nf
     call      msys.m$print_end
     movsxd    %rax,	dword ptr[%rbp + cc_lex.printsymbol.l+24]
@@ -36933,7 +36931,7 @@ L3400:
     xor       %r8d,	%r8d
     call      cc_lex.printstrn
     call      msys.m$print_startcon
-    lea       %rcx,	[%rip+L8747]
+    lea       %rcx,	[%rip+L8746]
     call      msys.m$print_str_nf
     call      msys.m$print_end
     jmp       L3395
@@ -36942,7 +36940,7 @@ L3401:
     test      %al,	%al
     jz        L3403
     call      msys.m$print_startcon
-    lea       %rcx,	[%rip+L8748]
+    lea       %rcx,	[%rip+L8747]
     call      msys.m$print_str_nf
     movzx     %rax,	byte ptr[%rbp + cc_lex.printsymbol.l+22]
     mov       %rcx,	%rax
@@ -37297,11 +37295,11 @@ cc_lex.printstrn:
     jnz       L3420
     call      msys.m$print_startcon
     mov       %rcx,	%rbx
-    lea       %rdx,	[%rip+L8749]
+    lea       %rdx,	[%rip+L8748]
     call      msys.m$print_i64
     call      msys.m$print_nogap
     mov       %rcx,	%rdi
-    lea       %rdx,	[%rip+L8750]
+    lea       %rdx,	[%rip+L8749]
     call      msys.m$print_str
     call      msys.m$print_end
     jmp       L3419
@@ -37309,11 +37307,11 @@ L3420:
     mov       %rcx,	%rsi
     call      msys.m$print_startfile
     mov       %rcx,	%rbx
-    lea       %rdx,	[%rip+L8751]
+    lea       %rdx,	[%rip+L8750]
     call      msys.m$print_i64
     call      msys.m$print_nogap
     mov       %rcx,	%rdi
-    lea       %rdx,	[%rip+L8752]
+    lea       %rdx,	[%rip+L8751]
     call      msys.m$print_str
     call      msys.m$print_end
 L3419:
@@ -37423,7 +37421,7 @@ L3426:
     mov       %r10,	%rbx
     cmp       %r10,	%rax
     jl        L3428
-    lea       %rcx,	[%rip+L8753]
+    lea       %rcx,	[%rip+L8752]
     call      cc_lex.lxerror
 L3428:
     jmp       L3422
@@ -37508,7 +37506,7 @@ L3440:
     jl        L3444
     test      %rbx,	%rbx
     jz        L3446
-    lea       %rcx,	[%rip+L8754]
+    lea       %rcx,	[%rip+L8753]
     call      mlib.abortprogram
 L3446:
     mov       %rbx,	1
@@ -37691,7 +37689,7 @@ L3464:
     call      msys.m$print_str_nf
     call      msys.m$print_newline
     call      msys.m$print_end
-    lea       %rcx,	[%rip+L8755]
+    lea       %rcx,	[%rip+L8754]
     call      mlib.abortprogram
 L3466:
     lea       %rax,	[%rip+cc_tables.stsymbols]
@@ -37750,7 +37748,7 @@ cc_lex.dolexdirective:
     call      msys.m$print_startcon
     call      msys.m$print_newline
     call      msys.m$print_end
-    lea       %rcx,	[%rip+L8756]
+    lea       %rcx,	[%rip+L8755]
     call      cc_lex.lxerror
 L3469:
     mov       %rax,	[%rbp + cc_lex.dolexdirective.dir]
@@ -37827,7 +37825,7 @@ L3491:
     jz        L3495
     jmp       L3496
 L3494:
-    lea       %rcx,	[%rip+L8757]
+    lea       %rcx,	[%rip+L8756]
     call      cc_lex.lxerror
     jmp       L3493
 L3495:
@@ -37864,7 +37862,7 @@ L3497:
 L3500:
     jmp       L3498
 L3501:
-    lea       %rcx,	[%rip+L8758]
+    lea       %rcx,	[%rip+L8757]
     call      cc_lex.lxerror
     jmp       L3499
 L3502:
@@ -37892,7 +37890,7 @@ L3488:
     call      strcpy
     jmp       L3487
 L3503:
-    lea       %rcx,	[%rip+L8759]
+    lea       %rcx,	[%rip+L8758]
     call      cc_lex.lxerror
 L3487:
     call      cc_lex.lexm
@@ -37900,11 +37898,11 @@ L3487:
     test      %al,	%al
     jz        L3505
     call      msys.m$print_startcon
-    lea       %rcx,	[%rip+L8760]
+    lea       %rcx,	[%rip+L8759]
     call      msys.m$print_str_nf
     lea       %rcx,	[%rbp + cc_lex.dolexdirective.filename]
     call      msys.m$print_str_nf
-    lea       %rcx,	[%rip+L8761]
+    lea       %rcx,	[%rip+L8760]
     call      msys.m$print_str_nf
     call      cc_lex.getfileno
     lea       %r10,	[%rip+cc_decls.sourcefilepaths]
@@ -37915,7 +37913,7 @@ L3487:
     mov       %eax,	[%rax+16]
     mov       %rcx,	%rax
     call      msys.m$print_i64_nf
-    lea       %rcx,	[%rip+L8762]
+    lea       %rcx,	[%rip+L8761]
     call      msys.m$print_str_nf
     mov       %rcx,	[%rip+cc_decls.nsourcefiles]
     call      msys.m$print_i64_nf
@@ -37936,7 +37934,7 @@ L3473:
     movzx     %rax,	byte ptr[%rax+21]
     cmp       %rax,	67
     jz        L3507
-    lea       %rcx,	[%rip+L8763]
+    lea       %rcx,	[%rip+L8762]
     call      cc_lex.lxerror
 L3507:
     lea       %rax,	[%rip+cc_decls.nextlx]
@@ -38012,7 +38010,7 @@ L3477:
     mov       %rax,	[%rip+cc_lex.ifcondlevel]
     test      %rax,	%rax
     jnz       L3522
-    lea       %rcx,	[%rip+L8764]
+    lea       %rcx,	[%rip+L8763]
     call      cc_lex.lxerror
 L3522:
 L3523:
@@ -38027,7 +38025,7 @@ L3478:
     mov       %rax,	[%rip+cc_lex.ifcondlevel]
     test      %rax,	%rax
     jnz       L3527
-    lea       %rcx,	[%rip+L8765]
+    lea       %rcx,	[%rip+L8764]
     call      cc_lex.lxerror
 L3527:
     dec       qword ptr[%rip+cc_lex.ifcondlevel]
@@ -38045,7 +38043,7 @@ L3528:
 L3481:
     call      cc_lex.lexm
     call      msys.m$print_startcon
-    lea       %rcx,	[%rip+L8766]
+    lea       %rcx,	[%rip+L8765]
     call      msys.m$print_str_nf
     call      msys.m$print_end
     lea       %rcx,	[%rip+cc_decls.nextlx]
@@ -38053,7 +38051,7 @@ L3481:
     call      msys.m$print_startcon
     call      msys.m$print_newline
     call      msys.m$print_end
-    lea       %rcx,	[%rip+L8767]
+    lea       %rcx,	[%rip+L8766]
     call      cc_lex.lxerror
     jmp       L3470
 L3482:
@@ -38062,7 +38060,7 @@ L3482:
 L3483:
 #cc_lex.dolexdirective.skip:
     call      msys.m$print_startcon
-    lea       %rcx,	[%rip+L8768]
+    lea       %rcx,	[%rip+L8767]
     call      msys.m$print_str_nf
     lea       %rax,	[%rip+cc_tables.sourcedirnames]
     mov       %r10,	[%rbp + cc_lex.dolexdirective.dir]
@@ -38076,7 +38074,7 @@ L3483:
     mov       [%r10+21],	%al
     mov       %rax,	1
     jmp       L3467
-    lea       %rcx,	[%rip+L8769]
+    lea       %rcx,	[%rip+L8768]
     call      cc_lex.lxerror
 L3470:
     xor       %eax,	%eax
@@ -38248,7 +38246,7 @@ cc_lex.endlex:
     call      msys.m$print_i64_nf
     call      msys.m$print_newline
     call      msys.m$print_end
-    lea       %rcx,	[%rip+L8770]
+    lea       %rcx,	[%rip+L8769]
     call      cc_lex.lxerror
 L3555:
 #---------------
@@ -38267,7 +38265,7 @@ cc_lex.ps:
     mov       %rcx,	%rdi
     call      msys.m$print_str_nf
     call      msys.m$print_nogap
-    lea       %rcx,	[%rip+L8771]
+    lea       %rcx,	[%rip+L8770]
     call      msys.m$print_str_nf
     call      msys.m$print_end
     lea       %rcx,	[%rip+cc_decls.lx]
@@ -38289,7 +38287,7 @@ cc_lex.psnext:
     mov       %rcx,	%rdi
     call      msys.m$print_str_nf
     call      msys.m$print_nogap
-    lea       %rcx,	[%rip+L8772]
+    lea       %rcx,	[%rip+L8771]
     call      msys.m$print_str_nf
     call      msys.m$print_end
     lea       %rcx,	[%rip+cc_decls.nextlx]
@@ -38424,7 +38422,7 @@ L3586:
     inc       dword ptr[%rax]
     jmp       L3585
 L3587:
-    lea       %rcx,	[%rip+L8773]
+    lea       %rcx,	[%rip+L8772]
     call      cc_lex.lxerror
     jmp       L3585
 L3588:
@@ -38608,14 +38606,14 @@ L3604:
     inc       %r13
     cmp       %r13,	2
     jle       L3606
-    lea       %rcx,	[%rip+L8774]
+    lea       %rcx,	[%rip+L8773]
     call      cc_lex.lxerror
 L3606:
     jmp       L3593
 L3607:
     test      %r14,	%r14
     jz        L3609
-    lea       %rcx,	[%rip+L8775]
+    lea       %rcx,	[%rip+L8774]
     call      cc_lex.lxerror
 L3609:
     mov       %r14,	1
@@ -38634,7 +38632,7 @@ L3594:
     mov       [%r10+24],	%eax
     cmp       %rsi,	16
     jle       L3611
-    lea       %rcx,	[%rip+L8776]
+    lea       %rcx,	[%rip+L8775]
     call      cc_lex.lxerror
 L3611:
     mov       %al,	59
@@ -38738,11 +38736,11 @@ L3622:
 L3624:
     jmp       L3617
 L3625:
-    lea       %rcx,	[%rip+L8777]
+    lea       %rcx,	[%rip+L8776]
     call      cc_lex.lxerror
     jmp       L3617
 L3626:
-    lea       %rcx,	[%rip+L8778]
+    lea       %rcx,	[%rip+L8777]
     call      cc_lex.lxerror
     jmp       L3617
 L3620:
@@ -38762,7 +38760,7 @@ L3618:
     mov       [%r10+24],	%eax
     cmp       %rsi,	64
     jle       L3628
-    lea       %rcx,	[%rip+L8779]
+    lea       %rcx,	[%rip+L8778]
     call      cc_lex.lxerror
 L3628:
     mov       %r14,	%rsi
@@ -38946,7 +38944,7 @@ L3644:
     inc       %r14
     cmp       %r14,	2
     jle       L3646
-    lea       %rcx,	[%rip+L8780]
+    lea       %rcx,	[%rip+L8779]
     call      cc_lex.lxerror
 L3646:
     jmp       L3635
@@ -38954,7 +38952,7 @@ L3647:
     mov       %rax,	[%rbp + cc_lex.readoctal.usigned]
     test      %rax,	%rax
     jz        L3649
-    lea       %rcx,	[%rip+L8781]
+    lea       %rcx,	[%rip+L8780]
     call      cc_lex.lxerror
 L3649:
     mov       %rax,	1
@@ -38987,14 +38985,14 @@ L3636:
     cmp       %rsi,	22
     jnz       L3654
     mov       %rcx,	[%rbp + cc_lex.readoctal.p]
-    lea       %rdx,	[%rip+L8782]
+    lea       %rdx,	[%rip+L8781]
     mov       %r8,	22
     call      mlib.cmpstringn
     mov       %r12,	%rax
     cmp       %rax,	0
     jle       L3654
 L3655:
-    lea       %rcx,	[%rip+L8783]
+    lea       %rcx,	[%rip+L8782]
     call      cc_lex.lxerror
 L3654:
     mov       [%rbp + cc_lex.readoctal.av_1],	%rsi
@@ -39186,14 +39184,14 @@ L3673:
     movzx     %rax,	%r13b
     cmp       %rax,	2
     jle       L3675
-    lea       %rcx,	[%rip+L8784]
+    lea       %rcx,	[%rip+L8783]
     call      cc_lex.lxerror
 L3675:
     jmp       L3668
 L3676:
     test      %r14b,	%r14b
     jz        L3678
-    lea       %rcx,	[%rip+L8785]
+    lea       %rcx,	[%rip+L8784]
     call      cc_lex.lxerror
 L3678:
     mov       %r14b,	1
@@ -39224,14 +39222,14 @@ L3669:
     cmp       %rsi,	20
     jnz       L3682
     mov       %rcx,	[%rbp + cc_lex.readdecimal.p]
-    lea       %rdx,	[%rip+L8786]
+    lea       %rdx,	[%rip+L8785]
     mov       %r8,	20
     call      mlib.cmpstringn
     mov       %r12,	%rax
     cmp       %rax,	0
     jle       L3682
 L3683:
-    lea       %rcx,	[%rip+L8787]
+    lea       %rcx,	[%rip+L8786]
     call      cc_lex.lxerror
 L3682:
     mov       [%rbp + cc_lex.readdecimal.av_1],	%rsi
@@ -39322,7 +39320,12 @@ L3701:
     mov       %al,	4
     lea       %r10,	[%rip+cc_decls.nextlx]
     mov       [%r10+22],	%al
+    jmp       L3704
 L3705:
+    mov       %al,	3
+    lea       %r10,	[%rip+cc_decls.nextlx]
+    mov       [%r10+22],	%al
+L3704:
 L3700:
     jmp       L3687
 L3690:
@@ -39465,13 +39468,13 @@ cc_lex.stacksourcefile:
     call      msys.m$print_i64_nf
     call      msys.m$print_newline
     call      msys.m$print_end
-    lea       %rcx,	[%rip+L8788]
+    lea       %rcx,	[%rip+L8787]
     call      cc_lex.lxerror
 L3718:
     mov       %rax,	[%rip+cc_lex.lx_stackindex]
     cmp       %rax,	20
     jl        L3720
-    lea       %rcx,	[%rip+L8789]
+    lea       %rcx,	[%rip+L8788]
     call      cc_lex.lxerror
 L3720:
     inc       qword ptr[%rip+cc_lex.lx_stackindex]
@@ -39642,12 +39645,12 @@ L3729:
 L3735:
 L3733:
     mov       %rcx,	%rsi
-    lea       %rdx,	[%rip+L8790]
+    lea       %rdx,	[%rip+L8789]
     call      mlib.eqstring
     test      %rax,	%rax
     jz        L3737
     lea       %rcx,	[%rip+cc_lex.getsourcefile.filespec]
-    lea       %rdx,	[%rip+L8791]
+    lea       %rdx,	[%rip+L8790]
     call      cc_support.loadbuiltin
     jmp       L3726
 L3737:
@@ -40345,7 +40348,7 @@ L3822:
     jmp       L3779
 L3782:
     call      msys.m$print_startcon
-    lea       %rcx,	[%rip+L8792]
+    lea       %rcx,	[%rip+L8791]
     call      msys.m$print_str_nf
     lea       %rax,	[%rip+cc_decls.nextlx]
     mov       %eax,	[%rax+16]
@@ -40353,7 +40356,7 @@ L3782:
     call      msys.m$print_i64_nf
     call      msys.m$print_newline
     call      msys.m$print_end
-    lea       %rcx,	[%rip+L8793]
+    lea       %rcx,	[%rip+L8792]
     call      cc_lex.lxerror
 L3783:
 L3779:
@@ -40377,7 +40380,7 @@ L3824:
     mov       [%rax],	%r10b
     jmp       L3823
 L3825:
-    lea       %rcx,	[%rip+L8794]
+    lea       %rcx,	[%rip+L8793]
     call      cc_lex.lxerror
 L3823:
     jmp       L3777
@@ -40671,7 +40674,7 @@ cc_lex.dodefine:
     movzx     %rax,	byte ptr[%rax+21]
     cmp       %rax,	67
     jz        L3852
-    lea       %rcx,	[%rip+L8795]
+    lea       %rcx,	[%rip+L8794]
     call      cc_lex.lxerror
 L3852:
     lea       %rax,	[%rip+cc_decls.nextlx]
@@ -40719,7 +40722,7 @@ L3862:
     mov       %rax,	[%rdi]
     cmp       %rax,	%r12
     jnz       L3866
-    lea       %rcx,	[%rip+L8796]
+    lea       %rcx,	[%rip+L8795]
     call      cc_lex.lxerror
 L3866:
     mov       %rdi,	[%rdi+8]
@@ -40748,7 +40751,7 @@ L3868:
 L3859:
     jmp       L3856
 L3860:
-    lea       %rcx,	[%rip+L8797]
+    lea       %rcx,	[%rip+L8796]
     call      cc_lex.addnamestr
     mov       %r12,	%rax
     lea       %rax,	[%rsi+108]
@@ -40758,7 +40761,7 @@ L3860:
     movzx     %rax,	byte ptr[%rax+21]
     cmp       %rax,	14
     jz        L3870
-    lea       %rcx,	[%rip+L8798]
+    lea       %rcx,	[%rip+L8797]
     call      cc_lex.lxerror
 L3870:
     mov       %rcx,	16
@@ -40774,7 +40777,7 @@ L3870:
     inc       %r14
     jmp       L3856
 L3861:
-    lea       %rcx,	[%rip+L8799]
+    lea       %rcx,	[%rip+L8798]
     call      cc_lex.lxerror
 L3857:
     jmp       L3855
@@ -40933,7 +40936,7 @@ cc_lex.showtokens:
     mov       %rcx,	%rdi
     call      msys.m$print_str_nf
     call      msys.m$print_nogap
-    lea       %rcx,	[%rip+L8800]
+    lea       %rcx,	[%rip+L8799]
     call      msys.m$print_str_nf
     call      msys.m$print_end
     jmp       L3896
@@ -40945,7 +40948,7 @@ L3896:
     test      %rbx,	%rbx
     jnz       L3895
     call      msys.m$print_startcon
-    lea       %rcx,	[%rip+L8801]
+    lea       %rcx,	[%rip+L8800]
     call      msys.m$print_str_nf
     call      msys.m$print_newline
     call      msys.m$print_end
@@ -41665,7 +41668,7 @@ cc_lex.readmacrocall:
     movzx     %rax,	byte ptr[%rax+21]
     cmp       %rax,	13
     jz        L4007
-    lea       %rcx,	[%rip+L8802]
+    lea       %rcx,	[%rip+L8801]
     call      cc_lex.lxerror
 L4007:
     movzx     %rax,	byte ptr[%r15+111]
@@ -41680,7 +41683,7 @@ L4007:
     movzx     %rax,	byte ptr[%rax+21]
     cmp       %rax,	14
     jz        L4011
-    lea       %rcx,	[%rip+L8803]
+    lea       %rcx,	[%rip+L8802]
     call      cc_lex.lxerror
 L4011:
     xor       %eax,	%eax
@@ -41748,7 +41751,7 @@ L4023:
 L4022:
     jmp       L4016
 L4018:
-    lea       %rcx,	[%rip+L8804]
+    lea       %rcx,	[%rip+L8803]
     call      cc_lex.lxerror
     jmp       L4016
 L4019:
@@ -41805,7 +41808,7 @@ L4013:
     mov       [%r10 + %r11*8-8],	%rax
     jmp       L4033
 L4034:
-    lea       %rcx,	[%rip+L8805]
+    lea       %rcx,	[%rip+L8804]
     call      cc_lex.lxerror
 L4033:
 L4032:
@@ -41879,13 +41882,13 @@ L4040:
     mov       %rbx,	[%rbx+8]
     test      %rbx,	%rbx
     jnz       L4046
-    lea       %rcx,	[%rip+L8806]
+    lea       %rcx,	[%rip+L8805]
     call      cc_lex.lxerror
 L4046:
     movzx     %rax,	byte ptr[%rbx+23]
     and       %rax,	2
     jnz       L4048
-    lea       %rcx,	[%rip+L8807]
+    lea       %rcx,	[%rip+L8806]
     call      cc_lex.lxerror
 L4048:
     movsx     %rax,	word ptr[%rbx+28]
@@ -41913,13 +41916,13 @@ L4043:
 L4041:
     cmp       %rbx,	%rsi
     jnz       L4050
-    lea       %rcx,	[%rip+L8808]
+    lea       %rcx,	[%rip+L8807]
     call      cc_lex.lxerror
 L4050:
     mov       %rax,	[%rbp + cc_lex.substituteargs.nhashhash]
     cmp       %rax,	250
     jl        L4052
-    lea       %rcx,	[%rip+L8809]
+    lea       %rcx,	[%rip+L8808]
     call      cc_lex.lxerror
 L4052:
     inc       qword ptr[%rbp + cc_lex.substituteargs.nhashhash]
@@ -42184,7 +42187,7 @@ L4076:
 L4084:
     mov       %rax,	1
     mov       [%r12],	%rax
-    lea       %rax,	[%rip+L8810]
+    lea       %rax,	[%rip+L8809]
     jmp       L4069
 L4083:
     mov       %rax,	%rbx
@@ -42192,7 +42195,7 @@ L4083:
 L4077:
     xor       %eax,	%eax
     mov       [%r12],	%rax
-    lea       %rax,	[%rip+L8811]
+    lea       %rax,	[%rip+L8810]
     jmp       L4069
 L4078:
     jmp       L4080
@@ -42228,11 +42231,11 @@ L4088:
 L4087:
     jmp       L4085
 L4086:
-    lea       %rax,	[%rip+L8811]
+    lea       %rax,	[%rip+L8810]
     jmp       L4069
 L4085:
 L4070:
-    lea       %rax,	[%rip+L8811]
+    lea       %rax,	[%rip+L8810]
 L4069:
 #---------------
     add       %rsp,	80
@@ -42372,13 +42375,13 @@ cc_lex.showtoken:
     mov       %rax,	[%rip+cc_lex.showtoken.dest]
     movsxd    %rax,	dword ptr[%rax+8]
     mov       %rcx,	%rax
-    lea       %rdx,	[%rip+L8812]
+    lea       %rdx,	[%rip+L8811]
     call      msys.m$print_i64
     call      msys.m$print_nogap
     mov       %rax,	[%rip+cc_lex.showtoken.dest]
     mov       %rax,	[%rax]
     mov       %rcx,	%rax
-    lea       %rdx,	[%rip+L8813]
+    lea       %rdx,	[%rip+L8812]
     call      msys.m$print_str
     call      msys.m$print_end
 #---------------
@@ -42543,7 +42546,7 @@ L4114:
     mov       %rax,	[%rip+cc_lex.npastedtokens]
     cmp       %rax,	87000
     jl        L4116
-    lea       %rcx,	[%rip+L8814]
+    lea       %rcx,	[%rip+L8813]
     call      cc_lex.lxerror
 L4116:
     inc       qword ptr[%rip+cc_lex.npastedtokens]
@@ -42651,7 +42654,7 @@ cc_lex.getifexpr:
     movzx     %rax,	byte ptr[%rax+21]
     cmp       %rax,	56
     jz        L4121
-    lea       %rcx,	[%rip+L8815]
+    lea       %rcx,	[%rip+L8814]
     call      cc_lex.lxerror
 L4121:
     mov       %rax,	%rdi
@@ -42695,7 +42698,7 @@ cc_lex.evalcondexpr:
     movzx     %rax,	byte ptr[%rax+21]
     cmp       %rax,	10
     jz        L4126
-    lea       %rcx,	[%rip+L8816]
+    lea       %rcx,	[%rip+L8815]
     call      cc_lex.lxerror
 L4126:
     call      cc_lex.lexm
@@ -43218,7 +43221,7 @@ L4189:
     jnz       L4193
     cmp       %rsi,	25
     jz        L4193
-    lea       %rcx,	[%rip+L8817]
+    lea       %rcx,	[%rip+L8816]
     call      cc_lex.lxerror
 L4193:
     mov       %rax,	%rsi
@@ -43388,7 +43391,7 @@ L4221:
     movzx     %rax,	byte ptr[%rax+21]
     cmp       %rax,	67
     jz        L4223
-    lea       %rcx,	[%rip+L8818]
+    lea       %rcx,	[%rip+L8817]
     call      cc_lex.lxerror
 L4223:
     lea       %rax,	[%rip+cc_decls.nextlx]
@@ -43405,7 +43408,7 @@ L4223:
     movzx     %rax,	byte ptr[%rax+21]
     cmp       %rax,	14
     jz        L4227
-    lea       %rcx,	[%rip+L8819]
+    lea       %rcx,	[%rip+L8818]
     call      cc_lex.lxerror
 L4227:
     call      cc_lex.lexm
@@ -43419,7 +43422,7 @@ L4218:
     movzx     %rax,	byte ptr[%rax+21]
     cmp       %rax,	13
     jz        L4229
-    lea       %rcx,	[%rip+L8820]
+    lea       %rcx,	[%rip+L8819]
     call      cc_lex.lxerror
 L4229:
     call      cc_lex.lexm
@@ -43427,7 +43430,7 @@ L4229:
     movzx     %rax,	byte ptr[%rax+21]
     cmp       %rax,	67
     jz        L4231
-    lea       %rcx,	[%rip+L8821]
+    lea       %rcx,	[%rip+L8820]
     call      cc_lex.lxerror
 L4231:
     lea       %rax,	[%rip+cc_decls.nextlx]
@@ -43444,7 +43447,7 @@ L4233:
     mov       %rdi,	%r10
     jmp       L4232
 L4234:
-    lea       %rcx,	[%rip+L8822]
+    lea       %rcx,	[%rip+L8821]
     call      cc_lex.lxerror
 L4232:
     call      cc_lex.lexm
@@ -43452,7 +43455,7 @@ L4232:
     movzx     %rax,	byte ptr[%rax+21]
     cmp       %rax,	14
     jz        L4236
-    lea       %rcx,	[%rip+L8823]
+    lea       %rcx,	[%rip+L8822]
     call      cc_lex.lxerror
 L4236:
     call      cc_lex.lexm
@@ -43492,7 +43495,7 @@ L4214:
     movzx     %rax,	byte ptr[%rax+21]
     cmp       %rax,	14
     jz        L4240
-    lea       %rcx,	[%rip+L8824]
+    lea       %rcx,	[%rip+L8823]
     call      cc_lex.lxerror
 L4240:
     call      cc_lex.lexm
@@ -43511,7 +43514,7 @@ L4215:
     call      msys.m$print_startcon
     call      msys.m$print_newline
     call      msys.m$print_end
-    lea       %rcx,	[%rip+L8825]
+    lea       %rcx,	[%rip+L8824]
     call      cc_lex.lxerror
 L4210:
     mov       %rax,	%rdi
@@ -43540,7 +43543,7 @@ cc_lex.getifdef:
     movzx     %rax,	byte ptr[%rax+21]
     cmp       %rax,	67
     jz        L4243
-    lea       %rcx,	[%rip+L8826]
+    lea       %rcx,	[%rip+L8825]
     call      cc_lex.lxerror
 L4243:
     lea       %rax,	[%rip+cc_decls.nextlx]
@@ -43563,7 +43566,7 @@ L4244:
     movzx     %rax,	byte ptr[%rax+21]
     cmp       %rax,	56
     jz        L4248
-    lea       %rcx,	[%rip+L8827]
+    lea       %rcx,	[%rip+L8826]
     call      cc_lex.lxerror
 L4248:
     mov       %rax,	%rdi
@@ -43630,7 +43633,7 @@ L4260:
 L4256:
     jmp       L4252
 L4254:
-    lea       %rcx,	[%rip+L8828]
+    lea       %rcx,	[%rip+L8827]
     call      cc_lex.lxerror
 L4255:
 L4252:
@@ -43934,7 +43937,7 @@ L4305:
     call      mnoos.os_getsystime
     lea       %rcx,	[%rbp + cc_lex.expandpredefmacro.str]
     call      msys.m$print_startstr
-    lea       %rcx,	[%rip+L8829]
+    lea       %rcx,	[%rip+L8828]
     call      msys.m$print_setfmt
     movzx     %rax,	word ptr[%rbp + cc_lex.expandpredefmacro.tm+6]
     mov       %rcx,	%rax
@@ -43946,7 +43949,7 @@ L4305:
     call      msys.m$print_str_nf
     movzx     %rax,	word ptr[%rbp + cc_lex.expandpredefmacro.tm]
     mov       %rcx,	%rax
-    lea       %rdx,	[%rip+L8830]
+    lea       %rdx,	[%rip+L8829]
     call      msys.m$print_i64
     call      msys.m$print_end
     mov       %al,	63
@@ -43960,19 +43963,19 @@ L4306:
     call      mnoos.os_getsystime
     lea       %rcx,	[%rbp + cc_lex.expandpredefmacro.str]
     call      msys.m$print_startstr
-    lea       %rcx,	[%rip+L8831]
+    lea       %rcx,	[%rip+L8830]
     call      msys.m$print_setfmt
     movzx     %rax,	word ptr[%rbp + cc_lex.expandpredefmacro.tm+8]
     mov       %rcx,	%rax
-    lea       %rdx,	[%rip+L8832]
+    lea       %rdx,	[%rip+L8831]
     call      msys.m$print_i64
     movzx     %rax,	word ptr[%rbp + cc_lex.expandpredefmacro.tm+10]
     mov       %rcx,	%rax
-    lea       %rdx,	[%rip+L8833]
+    lea       %rdx,	[%rip+L8832]
     call      msys.m$print_i64
     movzx     %rax,	word ptr[%rbp + cc_lex.expandpredefmacro.tm+12]
     mov       %rcx,	%rax
-    lea       %rdx,	[%rip+L8833]
+    lea       %rdx,	[%rip+L8832]
     call      msys.m$print_i64
     call      msys.m$print_end
     mov       %al,	63
@@ -44000,7 +44003,7 @@ L4315:
     mov       [%r12],	%rax
     jmp       L4316
 L4317:
-    lea       %rax,	[%rip+L8834]
+    lea       %rax,	[%rip+L8833]
     mov       [%r12],	%rax
 L4316:
     jmp       L4304
@@ -44015,7 +44018,7 @@ L4308:
     mov       [%r12],	%rax
     jmp       L4318
 L4319:
-    lea       %rax,	[%rip+L8835]
+    lea       %rax,	[%rip+L8834]
     mov       [%r12],	%rax
 L4318:
     jmp       L4304
@@ -44048,7 +44051,7 @@ L4313:
     call      msys.m$print_i64_nf
     call      msys.m$print_newline
     call      msys.m$print_end
-    lea       %rcx,	[%rip+L8836]
+    lea       %rcx,	[%rip+L8835]
     call      cc_lex.lxerror
 L4304:
     movzx     %rax,	byte ptr[%r12+21]
@@ -44077,7 +44080,7 @@ L4321:
     mov       %rax,	[%rip+cc_lex.npastedtokens]
     cmp       %rax,	87000
     jl        L4323
-    lea       %rcx,	[%rip+L8837]
+    lea       %rcx,	[%rip+L8836]
     call      cc_lex.lxerror
 L4323:
     inc       qword ptr[%rip+cc_lex.npastedtokens]
@@ -44117,7 +44120,7 @@ cc_lex.dopragmadir:
     mov       %rax,	[%rax]
     mov       %rax,	[%rax]
     mov       %rcx,	%rax
-    lea       %rdx,	[%rip+L8838]
+    lea       %rdx,	[%rip+L8837]
     mov       %r8,	4
     call      memcmp
     movsxd    %r10,	%eax
@@ -44128,7 +44131,7 @@ cc_lex.dopragmadir:
     movzx     %rax,	byte ptr[%rax+21]
     cmp       %rax,	13
     jz        L4330
-    lea       %rcx,	[%rip+L8839]
+    lea       %rcx,	[%rip+L8838]
     call      cc_lex.lxerror
 L4330:
     call      cc_lex.lexm
@@ -44146,7 +44149,7 @@ L4334:
     jmp       L4333
 L4335:
     jmp       L4336
-    lea       %rcx,	[%rip+L8840]
+    lea       %rcx,	[%rip+L8839]
     call      cc_lex.lxerror
 L4333:
     call      cc_lex.lexm
@@ -44166,7 +44169,7 @@ L4328:
     mov       %rax,	[%rax]
     mov       %rax,	[%rax]
     mov       %rcx,	%rax
-    lea       %rdx,	[%rip+L8841]
+    lea       %rdx,	[%rip+L8840]
     mov       %r8,	6
     call      memcmp
     movsxd    %r10,	%eax
@@ -44180,7 +44183,7 @@ L4338:
     mov       %rax,	[%rax]
     mov       %rax,	[%rax]
     mov       %rcx,	%rax
-    lea       %rdx,	[%rip+L8842]
+    lea       %rdx,	[%rip+L8841]
     mov       %r8,	6
     call      memcmp
     movsxd    %r10,	%eax
@@ -44194,7 +44197,7 @@ L4339:
     mov       %rax,	[%rax]
     mov       %rax,	[%rax]
     mov       %rcx,	%rax
-    lea       %rdx,	[%rip+L8843]
+    lea       %rdx,	[%rip+L8842]
     mov       %r8,	4
     call      memcmp
     movsxd    %r10,	%eax
@@ -44238,7 +44241,7 @@ cc_lex.addbuildinfo:
     movzx     %rax,	byte ptr[%rax+21]
     cmp       %rax,	63
     jz        L4347
-    lea       %rcx,	[%rip+L8844]
+    lea       %rcx,	[%rip+L8843]
     call      cc_lex.lxerror
 L4347:
     lea       %rax,	[%rip+cc_decls.nextlx]
@@ -44258,7 +44261,7 @@ L4349:
     mov       %rax,	[%rip+cc_decls.npmodules]
     cmp       %rax,	199
     jl        L4354
-    lea       %rcx,	[%rip+L8845]
+    lea       %rcx,	[%rip+L8844]
     call      cc_lex.lxerror
 L4354:
     inc       qword ptr[%rip+cc_decls.npmodules]
@@ -44271,7 +44274,7 @@ L4350:
     mov       %rax,	[%rip+cc_decls.npheaders]
     cmp       %rax,	100
     jl        L4356
-    lea       %rcx,	[%rip+L8846]
+    lea       %rcx,	[%rip+L8845]
     call      cc_lex.lxerror
 L4356:
     inc       qword ptr[%rip+cc_decls.npheaders]
@@ -44284,7 +44287,7 @@ L4351:
     mov       %rax,	[%rip+cc_decls.nplibs]
     cmp       %rax,	100
     jl        L4358
-    lea       %rcx,	[%rip+L8847]
+    lea       %rcx,	[%rip+L8846]
     call      cc_lex.lxerror
 L4358:
     inc       qword ptr[%rip+cc_decls.nplibs]
@@ -44367,7 +44370,7 @@ cc_lex.dospecialinclude:
 #?]]
     sub       %rsp,	40
 #---------------
-    lea       %rcx,	[%rip+L8848]
+    lea       %rcx,	[%rip+L8847]
     mov       %rdx,	1
     call      cc_lex.stacksourcefile
     mov       %rax,	[%rip+cc_decls.dheaderfile]
@@ -44600,7 +44603,7 @@ L4397:
     movsxd    %r10,	%eax
     test      %r10,	%r10
     jnz       L4401
-    lea       %rcx,	[%rip+L8849]
+    lea       %rcx,	[%rip+L8848]
     call      cc_lex.lxerror
 L4401:
 L4399:
@@ -44609,7 +44612,7 @@ L4399:
     jl        L4403
     test      %rbx,	%rbx
     jz        L4405
-    lea       %rcx,	[%rip+L8850]
+    lea       %rcx,	[%rip+L8849]
     call      mlib.abortprogram
 L4405:
     mov       %rbx,	1
@@ -44823,7 +44826,7 @@ L4428:
     add       %rax,	%rbx
     cmp       %rax,	500
     jle       L4434
-    lea       %rcx,	[%rip+L8851]
+    lea       %rcx,	[%rip+L8850]
     call      cc_lex.lxerror
 L4434:
     mov       %rax,	[%rbp + cc_lex.old_readrealnumber.intlen]
@@ -44858,10 +44861,10 @@ L4440:
     mov       %rax,	%rbx
     shl       %rax,	2
     sub       %rsi,	%rax
-    movq      %XMM4,	[%rip+L8852]
+    movq      %XMM4,	[%rip+L8851]
     movq      %XMM13,	%XMM4
 L4439:
-    movq      %XMM4,	[%rip+L8853]
+    movq      %XMM4,	[%rip+L8852]
     movq      %XMM14,	%XMM4
     mov       %r12,	1
     mov       %rax,	[%rbp + cc_lex.old_readrealnumber.intlen]
@@ -44898,16 +44901,16 @@ L4445:
     addsd     %XMM4,	%XMM5
     mov       %rax,	97
     cmp       %rax,	0
-    jl        L8854
+    jl        L8853
     cvtsi2sd  %XMM5,	%rax
-    jmp       L8855
+    jmp       L8854
+L8853:
+    and       %rax,	[%rip+L8855]
+    cvtsi2sd  %XMM5,	%rax
+    addsd     %XMM5,	[%rip+L8856]
 L8854:
-    and       %rax,	[%rip+L8856]
-    cvtsi2sd  %XMM5,	%rax
-    addsd     %XMM5,	[%rip+L8857]
-L8855:
     subsd     %XMM4,	%XMM5
-    addsd     %XMM4,	[%rip+L8858]
+    addsd     %XMM4,	[%rip+L8857]
     movq      %XMM14,	%XMM4
     jmp       L4444
 L4446:
@@ -44918,16 +44921,16 @@ L4446:
     addsd     %XMM4,	%XMM5
     mov       %rax,	65
     cmp       %rax,	0
-    jl        L8859
+    jl        L8858
     cvtsi2sd  %XMM5,	%rax
-    jmp       L8860
+    jmp       L8859
+L8858:
+    and       %rax,	[%rip+L8855]
+    cvtsi2sd  %XMM5,	%rax
+    addsd     %XMM5,	[%rip+L8856]
 L8859:
-    and       %rax,	[%rip+L8856]
-    cvtsi2sd  %XMM5,	%rax
-    addsd     %XMM5,	[%rip+L8857]
-L8860:
     subsd     %XMM4,	%XMM5
-    addsd     %XMM4,	[%rip+L8861]
+    addsd     %XMM4,	[%rip+L8860]
     movq      %XMM14,	%XMM4
 L4444:
     inc       %r12
@@ -45082,7 +45085,7 @@ L4467:
     cmp       %rax,	9
     jnz       L4472
 L4471:
-    lea       %rcx,	[%rip+L8862]
+    lea       %rcx,	[%rip+L8861]
     call      cc_support.serror
 L4472:
 L4470:
@@ -45114,7 +45117,7 @@ L4475:
     mov       %rax,	[%rbp + cc_parse.readmodule.d]
     test      %rax,	%rax
     jnz       L4478
-    lea       %rcx,	[%rip+L8863]
+    lea       %rcx,	[%rip+L8862]
     call      cc_support.serror
 L4478:
     mov       %rax,	[%rbp + cc_parse.readmodule.linkage]
@@ -45146,7 +45149,7 @@ L4484:
     jnz       L4486
     test      %rsi,	%rsi
     jz        L4486
-    lea       %rcx,	[%rip+L8864]
+    lea       %rcx,	[%rip+L8863]
     call      cc_support.serror
 L4486:
     sub       %rsp,	8
@@ -45225,7 +45228,7 @@ L4495:
 L4496:
     mov       %rcx,	%rbx
     call      cc_lib.typename
-    lea       %rcx,	[%rip+L8865]
+    lea       %rcx,	[%rip+L8864]
     mov       %rdx,	%rax
     call      cc_support.serror_s
 L4493:
@@ -45257,7 +45260,7 @@ cc_parse.parsemodule:
     cmp       %rax,	3
     jnz       L4499
     call      msys.m$print_startcon
-    lea       %rcx,	[%rip+L8866]
+    lea       %rcx,	[%rip+L8865]
     call      msys.m$print_str_nf
     mov       %rcx,	[%rip+cc_decls.inputfile]
     call      msys.m$print_str_nf
@@ -45273,7 +45276,7 @@ L4499:
     xor       %edx,	%edx
     mov       %r8,	512
     call      memset
-    lea       %rcx,	[%rip+L8867]
+    lea       %rcx,	[%rip+L8866]
     mov       %rdx,	[%rip+cc_decls.mainfileno]
     call      cc_lex.startlex
     mov       %rdi,	[%rip+cc_decls.stmodule]
@@ -45474,7 +45477,7 @@ L4515:
     movzx     %rax,	byte ptr[%rax+22]
     lea       %r10,	[%rip+cc_tables.typespecnames]
     mov       %r10,	[%r10 + %rax*8-8]
-    lea       %rcx,	[%rip+L8868]
+    lea       %rcx,	[%rip+L8867]
     mov       %rdx,	%r10
     call      cc_support.serror_s
 L4507:
@@ -45509,7 +45512,7 @@ L4539:
     mov       %al,	[%rbp + cc_parse.readdeclspec.d+7]
     test      %al,	%al
     jz        L4541
-    lea       %rcx,	[%rip+L8869]
+    lea       %rcx,	[%rip+L8868]
     call      cc_support.serror
 L4541:
     lea       %rax,	[%rip+cc_decls.lx]
@@ -45533,7 +45536,7 @@ L4546:
     movsxd    %rax,	dword ptr[%rbp + cc_parse.readdeclspec.d]
     cmp       %rax,	20
     jz        L4548
-    lea       %rcx,	[%rip+L8870]
+    lea       %rcx,	[%rip+L8869]
     call      cc_support.serror
 L4548:
     mov       %rcx,	%r13
@@ -45547,7 +45550,7 @@ L4549:
     movsxd    %rax,	dword ptr[%rbp + cc_parse.readdeclspec.d]
     cmp       %rax,	20
     jz        L4551
-    lea       %rcx,	[%rip+L8871]
+    lea       %rcx,	[%rip+L8870]
     call      cc_support.serror
 L4551:
     mov       %rcx,	%r13
@@ -45586,7 +45589,7 @@ L4554:
     lea       %rax,	[%rip+cc_decls.lx]
     mov       %rax,	[%rax]
     mov       %rax,	[%rax]
-    lea       %rcx,	[%rip+L8872]
+    lea       %rcx,	[%rip+L8871]
     mov       %rdx,	%rax
     call      cc_support.serror_s
 L4558:
@@ -45683,7 +45686,7 @@ L4567:
     test      %al,	%al
     jz        L4582
 L4583:
-    lea       %rcx,	[%rip+L8873]
+    lea       %rcx,	[%rip+L8872]
     call      cc_support.serror
 L4582:
     mov       %al,	[%rbp + cc_parse.readdeclspec.d+13]
@@ -45710,14 +45713,14 @@ L4568:
     test      %al,	%al
     jz        L4587
 L4588:
-    lea       %rcx,	[%rip+L8874]
+    lea       %rcx,	[%rip+L8873]
     call      cc_support.serror
 L4587:
     jmp       L4565
 L4569:
     test      %rbx,	%rbx
     jz        L4590
-    lea       %rcx,	[%rip+L8875]
+    lea       %rcx,	[%rip+L8874]
     call      cc_support.serror
 L4590:
 L4565:
@@ -46087,7 +46090,7 @@ L4638:
     mov       %al,	[%rax + %r10]
     test      %al,	%al
     jz        L4640
-    lea       %rcx,	[%rip+L8876]
+    lea       %rcx,	[%rip+L8875]
     call      cc_support.terror
 L4640:
     movsxd    %rax,	dword ptr[%rdi+40]
@@ -46097,7 +46100,7 @@ L4640:
     movsxd    %rax,	dword ptr[%rax+40]
     cmp       %rax,	1
     jnz       L4642
-    lea       %rcx,	[%rip+L8877]
+    lea       %rcx,	[%rip+L8876]
     call      cc_support.terror
 L4642:
     lea       %rax,	[%rip+cc_tables.symboltojtag]
@@ -46280,7 +46283,7 @@ L4657:
     call      msys.m$print_str_nf
     call      msys.m$print_newline
     call      msys.m$print_end
-    lea       %rcx,	[%rip+L8878]
+    lea       %rcx,	[%rip+L8877]
     call      cc_support.terror
 L4646:
     mov       %rcx,	31
@@ -46455,7 +46458,7 @@ L4676:
     jz        L4680
     cmp       %rsi,	10
     jl        L4682
-    lea       %rcx,	[%rip+L8879]
+    lea       %rcx,	[%rip+L8878]
     call      cc_support.terror
 L4682:
     mov       %rcx,	%rdi
@@ -46468,7 +46471,7 @@ L4682:
     mov       %rbx,	%rax
     jmp       L4679
 L4680:
-    lea       %rcx,	[%rip+L8880]
+    lea       %rcx,	[%rip+L8879]
     call      cc_support.terror
 L4679:
     movsxd    %rax,	dword ptr[%rdi+40]
@@ -46546,7 +46549,7 @@ L4689:
     jz        L4693
     cmp       %rsi,	10
     jl        L4695
-    lea       %rcx,	[%rip+L8881]
+    lea       %rcx,	[%rip+L8880]
     call      cc_support.terror
 L4695:
     mov       %rcx,	%rdi
@@ -46559,7 +46562,7 @@ L4695:
     mov       %rbx,	%rax
     jmp       L4692
 L4693:
-    lea       %rcx,	[%rip+L8882]
+    lea       %rcx,	[%rip+L8881]
     call      cc_support.terror
 L4692:
     movsxd    %rax,	dword ptr[%rdi+40]
@@ -46637,7 +46640,7 @@ L4702:
     jz        L4706
     cmp       %rsi,	10
     jl        L4708
-    lea       %rcx,	[%rip+L8883]
+    lea       %rcx,	[%rip+L8882]
     call      cc_support.terror
 L4708:
     mov       %rcx,	%rdi
@@ -46668,7 +46671,7 @@ L4706:
     call      msys.m$print_str_nf
     call      msys.m$print_newline
     call      msys.m$print_end
-    lea       %rcx,	[%rip+L8884]
+    lea       %rcx,	[%rip+L8883]
     call      cc_support.terror
 L4705:
     movsxd    %rax,	dword ptr[%rdi+40]
@@ -46791,7 +46794,7 @@ L4719:
     call      cc_parse.checkpointertypes
     test      %rax,	%rax
     jnz       L4726
-    lea       %rcx,	[%rip+L8885]
+    lea       %rcx,	[%rip+L8884]
     call      cc_support.terror
 L4726:
 L4724:
@@ -46809,7 +46812,7 @@ L4720:
     test      %rax,	%rax
     jz        L4729
 L4730:
-    lea       %rcx,	[%rip+L8886]
+    lea       %rcx,	[%rip+L8885]
     call      cc_support.terror
 L4729:
     jmp       L4718
@@ -46825,19 +46828,19 @@ L4727:
     test      %rax,	%rax
     jz        L4733
 L4734:
-    lea       %rcx,	[%rip+L8887]
+    lea       %rcx,	[%rip+L8886]
     call      cc_support.terror
 L4733:
     jmp       L4718
 L4731:
     call      msys.m$print_startcon
-    lea       %rcx,	[%rip+L8888]
+    lea       %rcx,	[%rip+L8887]
     call      msys.m$print_str_nf
     mov       %rcx,	%r14
     call      msys.m$print_i64_nf
     call      msys.m$print_newline
     call      msys.m$print_end
-    lea       %rcx,	[%rip+L8889]
+    lea       %rcx,	[%rip+L8888]
     call      cc_support.terror
 L4718:
     movsxd    %rax,	dword ptr[%rdi+40]
@@ -46975,12 +46978,12 @@ L4747:
     call      cc_parse.checkpointertypes
     test      %rax,	%rax
     jnz       L4750
-    lea       %rcx,	[%rip+L8890]
+    lea       %rcx,	[%rip+L8889]
     call      cc_support.terror
 L4750:
     jmp       L4746
 L4748:
-    lea       %rcx,	[%rip+L8891]
+    lea       %rcx,	[%rip+L8890]
     call      cc_support.terror
 L4746:
     movsxd    %rax,	dword ptr[%rdi+40]
@@ -47153,7 +47156,7 @@ L4768:
     cmp       %r12,	9
     jle       L4772
 L4773:
-    lea       %rcx,	[%rip+L8892]
+    lea       %rcx,	[%rip+L8891]
     call      cc_support.terror
 L4772:
     mov       %rcx,	%rbx
@@ -47512,7 +47515,7 @@ L4809:
     mov       %rax,	[%rax]
     mov       %rcx,	%rax
     call      cc_lib.getstname
-    lea       %rcx,	[%rip+L8893]
+    lea       %rcx,	[%rip+L8892]
     mov       %rdx,	%rax
     call      cc_support.serror_s
 L4812:
@@ -47704,7 +47707,7 @@ L4830:
     movsxd    %rax,	dword ptr[%rax+24]
     cmp       %rax,	8
     jle       L4832
-    lea       %rcx,	[%rip+L8894]
+    lea       %rcx,	[%rip+L8893]
     call      cc_support.serror
 L4832:
     lea       %rax,	[%rip+cc_decls.lx]
@@ -47806,7 +47809,7 @@ L4846:
 L4845:
     jmp       L4802
 L4847:
-    lea       %rcx,	[%rip+L8895]
+    lea       %rcx,	[%rip+L8894]
     call      cc_support.serror
     jmp       L4802
 L4848:
@@ -47861,7 +47864,7 @@ L4851:
     movzx     %rax,	byte ptr[%rax+21]
     cmp       %rax,	17
     jnz       L4855
-    lea       %rcx,	[%rip+L8896]
+    lea       %rcx,	[%rip+L8895]
     call      cc_support.serror
     jmp       L4854
 L4855:
@@ -47987,7 +47990,7 @@ L4867:
     mov       %rdi,	%rax
     jmp       L4802
 L4868:
-    lea       %rcx,	[%rip+L8897]
+    lea       %rcx,	[%rip+L8896]
     call      cc_support.serror
     jmp       L4802
 L4869:
@@ -48024,9 +48027,9 @@ L4870:
     call      cc_lex.lex
     jmp       L4802
 L4804:
-    lea       %rcx,	[%rip+L8898]
+    lea       %rcx,	[%rip+L8897]
     call      cc_lex.ps
-    lea       %rcx,	[%rip+L8899]
+    lea       %rcx,	[%rip+L8898]
     call      cc_support.serror
 L4802:
 L4872:
@@ -48227,7 +48230,7 @@ cc_parse.readmodulevar:
     lea       %r10,	[%rip+cc_tables.namenames]
     mov       %r10,	[%r10 + %rax*8]
     mov       %rax,	[%rdi]
-    lea       %rcx,	[%rip+L8900]
+    lea       %rcx,	[%rip+L8899]
     mov       %rdx,	%rax
     mov       %r8,	%r10
     call      cc_support.serror_ss
@@ -48244,7 +48247,7 @@ L4892:
 #cc_parse.readmodulevar.redef:
 L4897:
     mov       %rax,	[%rdi]
-    lea       %rcx,	[%rip+L8901]
+    lea       %rcx,	[%rip+L8900]
     mov       %rdx,	%rax
     call      cc_support.serror_s
 L4896:
@@ -48339,14 +48342,14 @@ L4889:
     test      %rax,	%rax
     jz        L4917
     mov       %rax,	[%r12]
-    lea       %rcx,	[%rip+L8902]
+    lea       %rcx,	[%rip+L8901]
     mov       %rdx,	%rax
     call      cc_support.serror_s
 L4917:
     cmp       %rbx,	3
     jnz       L4919
     mov       %rax,	[%r12]
-    lea       %rcx,	[%rip+L8903]
+    lea       %rcx,	[%rip+L8902]
     mov       %rdx,	%rax
     call      cc_support.serror_s
 L4919:
@@ -48394,7 +48397,7 @@ cc_parse.readframevar:
     test      %rdi,	%rdi
     jz        L4922
     mov       %rax,	[%rdi]
-    lea       %rcx,	[%rip+L8904]
+    lea       %rcx,	[%rip+L8903]
     mov       %rdx,	%rax
     call      cc_support.serror_s
     mov       %r12,	%rdi
@@ -48463,14 +48466,14 @@ L4921:
     test      %rax,	%rax
     jz        L4936
     mov       %rax,	[%r12]
-    lea       %rcx,	[%rip+L8905]
+    lea       %rcx,	[%rip+L8904]
     mov       %rdx,	%rax
     call      cc_support.serror_s
 L4936:
     cmp       %rbx,	3
     jnz       L4938
     mov       %rax,	[%r12]
-    lea       %rcx,	[%rip+L8906]
+    lea       %rcx,	[%rip+L8905]
     mov       %rdx,	%rax
     call      cc_support.serror_s
 L4938:
@@ -48645,7 +48648,7 @@ L4961:
 L4962:
     jmp       L4960
 L4963:
-    lea       %rcx,	[%rip+L8907]
+    lea       %rcx,	[%rip+L8906]
     call      cc_support.serror
 L4960:
     call      cc_lex.lex
@@ -48712,20 +48715,20 @@ L4974:
     mov       %rdi,	[%rsi]
     jmp       L4975
 L4976:
-    lea       %rcx,	[%rip+L8908]
+    lea       %rcx,	[%rip+L8907]
     call      cc_support.serror
 L4975:
     mov       %rcx,	16
     call      cc_lib.checksymbol
     test      %rdi,	%rdi
     jnz       L4978
-    lea       %rcx,	[%rip+L8909]
+    lea       %rcx,	[%rip+L8908]
     call      cc_support.serror
 L4978:
 L4973:
     cmp       %rdi,	0
     jge       L4980
-    lea       %rcx,	[%rip+L8910]
+    lea       %rcx,	[%rip+L8909]
     call      cc_support.terror
 L4980:
     call      cc_lex.lex
@@ -48807,7 +48810,7 @@ L4989:
     movsxd    %rax,	dword ptr[%rdi+40]
     lea       %r10,	[%rip+cc_tables.jtagnames]
     mov       %r10,	[%r10 + %rax*8]
-    lea       %rcx,	[%rip+L8911]
+    lea       %rcx,	[%rip+L8910]
     mov       %rdx,	%r10
     call      cc_support.serror_s
 L4987:
@@ -48896,7 +48899,7 @@ L4995:
     jnz       L4999
     test      %r13,	%r13
     jnz       L4999
-    lea       %rcx,	[%rip+L8912]
+    lea       %rcx,	[%rip+L8911]
     call      cc_support.terror
 L4999:
     lea       %rax,	[%rip+cc_decls.tttarget]
@@ -48928,7 +48931,7 @@ L4996:
     mov       %rax,	[%rbp + cc_parse.readinitexpr2.e]
     test      %rax,	%rax
     jnz       L5004
-    lea       %rcx,	[%rip+L8913]
+    lea       %rcx,	[%rip+L8912]
     call      cc_support.terror
 L5004:
     mov       %rax,	[%rbp + cc_parse.readinitexpr2.e]
@@ -48970,7 +48973,7 @@ L5008:
     jz        L5013
     cmp       %r14,	%r13
     jle       L5013
-    lea       %rcx,	[%rip+L8914]
+    lea       %rcx,	[%rip+L8913]
     call      cc_support.terror
 L5013:
     lea       %rax,	[%rip+cc_decls.ttbasetype]
@@ -49034,7 +49037,7 @@ L5016:
     movzx     %rax,	byte ptr[%rax+21]
     cmp       %rax,	18
     jz        L5021
-    lea       %rcx,	[%rip+L8915]
+    lea       %rcx,	[%rip+L8914]
     call      cc_support.terror
 L5021:
     jmp       L5018
@@ -49124,7 +49127,7 @@ L5002:
     movsx     %rax,	word ptr[%rax + %r10*2]
     cmp       %rax,	1
     jz        L5033
-    lea       %rcx,	[%rip+L8916]
+    lea       %rcx,	[%rip+L8915]
     call      cc_support.terror
 L5033:
     call      cc_parse.readassignexpr
@@ -49140,7 +49143,7 @@ L5035:
 L5036:
     jmp       L5034
 L5037:
-    lea       %rcx,	[%rip+L8917]
+    lea       %rcx,	[%rip+L8916]
     call      cc_support.terror
 L5034:
     mov       %eax,	[%rbp + cc_parse.readinitexpr2.m]
@@ -49164,7 +49167,7 @@ L5039:
     movsxd    %rax,	dword ptr[%rdi+48]
     cmp       %rax,	%r13
     jle       L5041
-    lea       %rcx,	[%rip+L8918]
+    lea       %rcx,	[%rip+L8917]
     call      cc_support.terror
 L5041:
 L5038:
@@ -49210,13 +49213,13 @@ cc_parse.pushblock:
     mov       %rax,	[%rip+cc_decls.blocklevel]
     cmp       %rax,	100
     jl        L5046
-    lea       %rcx,	[%rip+L8919]
+    lea       %rcx,	[%rip+L8918]
     call      cc_support.serror
 L5046:
     mov       %rax,	[%rip+cc_decls.nextblockno]
     cmp       %rax,	2100
     jl        L5048
-    lea       %rcx,	[%rip+L8920]
+    lea       %rcx,	[%rip+L8919]
     call      cc_support.serror
 L5048:
     inc       qword ptr[%rip+cc_decls.blocklevel]
@@ -49382,7 +49385,7 @@ L5071:
     movzx     %rax,	byte ptr[%rax+21]
     cmp       %rax,	17
     jz        L5073
-    lea       %rcx,	[%rip+L8921]
+    lea       %rcx,	[%rip+L8920]
     call      cc_support.serror
 L5073:
     xor       %ecx,	%ecx
@@ -49541,7 +49544,7 @@ L5090:
 L5089:
     jmp       L5087
 L5088:
-    lea       %rcx,	[%rip+L8922]
+    lea       %rcx,	[%rip+L8921]
     call      cc_support.serror
 L5087:
     jmp       L5075
@@ -49561,7 +49564,7 @@ L5093:
 L5095:
     test      %rsi,	%rsi
     jnz       L5097
-    lea       %rcx,	[%rip+L8923]
+    lea       %rcx,	[%rip+L8922]
     call      cc_support.serror
 L5097:
     mov       %rcx,	21
@@ -49614,7 +49617,7 @@ L5101:
     call      msys.m$print_str_nf
     call      msys.m$print_newline
     call      msys.m$print_end
-    lea       %rcx,	[%rip+L8924]
+    lea       %rcx,	[%rip+L8923]
     call      cc_support.terror
 L5107:
     jmp       L5104
@@ -49824,13 +49827,13 @@ cc_parse.deleteunit:
     mov       %rax,	%rdx
     push      %rcx
     mov       %r11,	8
-L8925:
+L8924:
     mov       %r10,	[%rax]
     mov       [%rcx],	%r10
     add       %rcx,	8
     add       %rax,	8
     dec       %r11
-    jnz       L8925
+    jnz       L8924
     pop       %rcx
     mov       [%rcx+8],	%rdi
 #---------------
@@ -49898,7 +49901,7 @@ L5142:
     mov       %rax,	[%rbp + cc_parse.readforstmt.d]
     test      %rax,	%rax
     jnz       L5145
-    lea       %rcx,	[%rip+L8926]
+    lea       %rcx,	[%rip+L8925]
     call      cc_support.serror
 L5145:
     mov       %rax,	[%rbp + cc_parse.readforstmt.linkage]
@@ -49908,7 +49911,7 @@ L5145:
     test      %rax,	%rax
     jz        L5147
 L5148:
-    lea       %rcx,	[%rip+L8927]
+    lea       %rcx,	[%rip+L8926]
     call      cc_support.serror
 L5147:
     mov       %rcx,	[%rbp + cc_parse.readforstmt.d]
@@ -49942,7 +49945,7 @@ L5153:
 L5151:
     jmp       L5140
 L5143:
-    lea       %rcx,	[%rip+L8928]
+    lea       %rcx,	[%rip+L8927]
     call      cc_support.serror
     jmp       L5140
 L5141:
@@ -50102,7 +50105,7 @@ cc_parse.readreturnstmt:
     movzx     %rax,	word ptr[%rax+102]
     test      %rax,	%rax
     jnz       L5166
-    lea       %rcx,	[%rip+L8929]
+    lea       %rcx,	[%rip+L8928]
     call      cc_support.terror
 L5166:
     call      cc_parse.readexpression
@@ -50121,7 +50124,7 @@ L5164:
     movzx     %rax,	word ptr[%rax+102]
     test      %rax,	%rax
     jz        L5167
-    lea       %rcx,	[%rip+L8930]
+    lea       %rcx,	[%rip+L8929]
     call      cc_support.terror
 L5167:
 L5163:
@@ -50367,7 +50370,7 @@ L5183:
     mov       %rax,	[%rbp + cc_parse.readlocaldecl.d]
     test      %rax,	%rax
     jnz       L5186
-    lea       %rcx,	[%rip+L8931]
+    lea       %rcx,	[%rip+L8930]
     call      cc_support.serror
 L5186:
     mov       %rax,	[%rbp + cc_parse.readlocaldecl.linkage]
@@ -50387,7 +50390,7 @@ L5188:
     movzx     %rax,	byte ptr[%rax+21]
     cmp       %rax,	17
     jnz       L5191
-    lea       %rcx,	[%rip+L8932]
+    lea       %rcx,	[%rip+L8931]
     call      cc_support.serror
 L5191:
     sub       %rsp,	8
@@ -50455,7 +50458,7 @@ L5197:
 L5198:
     mov       %rcx,	%rdi
     call      cc_lib.typename
-    lea       %rcx,	[%rip+L8933]
+    lea       %rcx,	[%rip+L8932]
     mov       %rdx,	%rax
     call      cc_support.serror_s
 L5195:
@@ -50498,7 +50501,7 @@ cc_parse.createtypedef:
     cmp       %rax,	5
     jz        L5203
     mov       %rax,	[%rdi]
-    lea       %rcx,	[%rip+L8934]
+    lea       %rcx,	[%rip+L8933]
     mov       %rdx,	%rax
     call      cc_support.serror_s
 L5203:
@@ -50512,7 +50515,7 @@ L5203:
     test      %rax,	%rax
     jnz       L5207
     mov       %rax,	[%rdi]
-    lea       %rcx,	[%rip+L8935]
+    lea       %rcx,	[%rip+L8934]
     mov       %rdx,	%rax
     call      cc_support.serror_s
 L5207:
@@ -50625,7 +50628,7 @@ L5215:
     mov       %rax,	[%rbp + cc_parse.readparams.lastbasetype]
     test      %rax,	%rax
     jnz       L5219
-    lea       %rcx,	[%rip+L8936]
+    lea       %rcx,	[%rip+L8935]
     call      cc_support.serror
 L5219:
     sub       %rsp,	8
@@ -50715,7 +50718,7 @@ L5230:
     mov       %r10,	[%r10 + %rax*8]
     mov       %rax,	[%rbp + cc_parse.readparams.d]
     mov       %rax,	[%rax]
-    lea       %rcx,	[%rip+L8937]
+    lea       %rcx,	[%rip+L8936]
     mov       %rdx,	%rax
     mov       %r8,	%r10
     call      cc_support.serror_ss
@@ -50744,7 +50747,7 @@ L5236:
 L5237:
     jmp       L5235
 L5238:
-    lea       %rcx,	[%rip+L8938]
+    lea       %rcx,	[%rip+L8937]
     call      cc_support.serror
 L5235:
 L5210:
@@ -50875,7 +50878,7 @@ L5253:
     jnz       L5256
     mov       %rax,	[%rbx]
     mov       %rax,	[%rax]
-    lea       %rcx,	[%rip+L8939]
+    lea       %rcx,	[%rip+L8938]
     mov       %rdx,	%rax
     call      cc_support.serror_s
 L5256:
@@ -50929,7 +50932,7 @@ cc_parse.readfunction:
     cmp       %rax,	6
     jz        L5261
     mov       %rax,	[%r12]
-    lea       %rcx,	[%rip+L8940]
+    lea       %rcx,	[%rip+L8939]
     mov       %rdx,	%rax
     call      cc_support.serror_s
 L5261:
@@ -50986,7 +50989,7 @@ L5258:
     test      %rax,	%rax
     jz        L5272
     mov       %rax,	[%r12]
-    lea       %rcx,	[%rip+L8941]
+    lea       %rcx,	[%rip+L8940]
     mov       %rdx,	%rax
     call      cc_support.serror_s
 L5272:
@@ -51001,7 +51004,7 @@ L5274:
     movzx     %rax,	byte ptr[%rax+21]
     cmp       %rax,	9
     jnz       L5276
-    lea       %rcx,	[%rip+L8942]
+    lea       %rcx,	[%rip+L8941]
     call      cc_support.serror
 L5276:
 L5270:
@@ -51131,7 +51134,7 @@ L5290:
     jmp       L5285
 L5291:
     movq      %XMM4,	[%rsi]
-    xorpd     %XMM4,	[%rip+L8943]
+    xorpd     %XMM4,	[%rip+L8942]
     movq      [%rsi],	%XMM4
     mov       %rax,	%rsi
     jmp       L5285
@@ -51171,7 +51174,7 @@ L5296:
     call      msys.m$print_str_nf
     call      msys.m$print_newline
     call      msys.m$print_end
-    lea       %rcx,	[%rip+L8944]
+    lea       %rcx,	[%rip+L8943]
     call      cc_support.terror
 L5294:
     mov       %eax,	[%rsi+52]
@@ -51208,9 +51211,9 @@ cc_parse.createabsop:
 L5301:
     mov       %rax,	[%rsi]
     cmp       %rax,	0
-    jge       L8945
+    jge       L8944
     neg       %rax
-L8945:
+L8944:
     mov       [%rsi],	%rax
     mov       %rax,	%rsi
     jmp       L5297
@@ -51229,7 +51232,7 @@ L5299:
     mov       %rdi,	%rax
     jmp       L5303
 L5304:
-    lea       %rcx,	[%rip+L8946]
+    lea       %rcx,	[%rip+L8945]
     call      cc_support.terror
 L5303:
     mov       %eax,	[%rsi+52]
@@ -51298,7 +51301,7 @@ L5312:
     call      msys.m$print_str_nf
     call      msys.m$print_newline
     call      msys.m$print_end
-    lea       %rcx,	[%rip+L8947]
+    lea       %rcx,	[%rip+L8946]
     call      cc_support.terror
 L5311:
     mov       %eax,	[%rsi+52]
@@ -51332,9 +51335,9 @@ cc_parse.createptrop:
     xor       %ecx,	%ecx
     mov       %rdx,	%r12
     xor       %r8d,	%r8d
-    lea       %r9,	[%rip+L8948]
+    lea       %r9,	[%rip+L8947]
     call      cc_show.printunit
-    lea       %rcx,	[%rip+L8949]
+    lea       %rcx,	[%rip+L8948]
     call      cc_support.terror
 L5315:
     lea       %rax,	[%rip+cc_decls.tttarget]
@@ -51405,7 +51408,7 @@ L5322:
     mov       %al,	[%rax + %r10]
     test      %al,	%al
     jnz       L5321
-    lea       %rcx,	[%rip+L8950]
+    lea       %rcx,	[%rip+L8949]
     call      cc_support.terror
 L5321:
     mov       %rcx,	%rsi
@@ -51666,7 +51669,7 @@ L5347:
     mov       [%rbp + cc_parse.createaddop.y],	%rax
     mov       [%rbp + cc_parse.createaddop.x],	%r10
     jmp       L5348
-    lea       %rcx,	[%rip+L8951]
+    lea       %rcx,	[%rip+L8950]
     call      cc_support.terror
 L5351:
 L5345:
@@ -51849,7 +51852,7 @@ L5362:
     mov       [%rbp + cc_parse.createsubop.y],	%rax
     jmp       L5359
 L5361:
-    lea       %rcx,	[%rip+L8951]
+    lea       %rcx,	[%rip+L8950]
     call      cc_support.terror
 L5359:
     mov       %rax,	[%rbp + cc_parse.createsubop.x]
@@ -51941,7 +51944,7 @@ cc_parse.createmulop:
     mov       [%rbp + cc_parse.createmulop.y],	%rax
     jmp       L5371
 L5372:
-    lea       %rcx,	[%rip+L8952]
+    lea       %rcx,	[%rip+L8951]
     call      cc_support.terror
 L5371:
     mov       %rax,	[%rbp + cc_parse.createmulop.x]
@@ -52030,7 +52033,7 @@ cc_parse.createdivop:
     mov       [%rbp + cc_parse.createdivop.y],	%rax
     jmp       L5378
 L5379:
-    lea       %rcx,	[%rip+L8953]
+    lea       %rcx,	[%rip+L8952]
     call      cc_support.terror
 L5378:
     mov       %rax,	[%rbp + cc_parse.createdivop.x]
@@ -52057,7 +52060,7 @@ L5381:
     mov       %r13,	41
     mov       %rax,	[%rbp + cc_parse.createdivop.y]
     movq      %XMM4,	[%rax]
-    movq      %XMM5,	[%rip+L8954]
+    movq      %XMM5,	[%rip+L8953]
     divsd     %XMM5,	%XMM4
     mov       %rax,	[%rbp + cc_parse.createdivop.y]
     movq      [%rax],	%XMM5
@@ -52135,7 +52138,7 @@ L5387:
     mov       [%rbp + cc_parse.createremop.y],	%rax
     jmp       L5384
 L5385:
-    lea       %rcx,	[%rip+L8955]
+    lea       %rcx,	[%rip+L8954]
     call      cc_support.terror
 L5384:
     mov       %rax,	[%rbp + cc_parse.createremop.x]
@@ -52188,13 +52191,13 @@ cc_parse.insertunit:
     mov       %rax,	%rbx
     push      %rdi
     mov       %r11,	8
-L8956:
+L8955:
     mov       %r10,	[%rax]
     mov       [%rdi],	%r10
     add       %rdi,	8
     add       %rax,	8
     dec       %r11
-    jnz       L8956
+    jnz       L8955
     pop       %rdi
     mov       [%rbx+40],	%esi
     mov       [%rbx+16],	%rdi
@@ -52345,7 +52348,7 @@ L5403:
     movsx     %r10,	word ptr[%r10 + %rax*2]
     cmp       %r10,	13
     jnz       L5407
-    lea       %rcx,	[%rip+L8957]
+    lea       %rcx,	[%rip+L8956]
     call      cc_support.terror
 L5407:
     mov       %rax,	%rsi
@@ -52477,7 +52480,7 @@ L5416:
     mov       %rax,	[%r12]
     test      %rax,	%rax
     jnz       L5421
-    lea       %rcx,	[%rip+L8958]
+    lea       %rcx,	[%rip+L8957]
     call      cc_support.serror
 L5421:
     mov       %rax,	[%rsi]
@@ -52491,7 +52494,7 @@ L5417:
     mov       %rax,	[%r12]
     test      %rax,	%rax
     jnz       L5423
-    lea       %rcx,	[%rip+L8958]
+    lea       %rcx,	[%rip+L8957]
     call      cc_support.serror
 L5423:
     mov       %rax,	[%rsi]
@@ -52552,7 +52555,7 @@ L5426:
     mov       %rax,	[%r12]
     test      %rax,	%rax
     jnz       L5429
-    lea       %rcx,	[%rip+L8959]
+    lea       %rcx,	[%rip+L8958]
     call      cc_support.serror
 L5429:
     mov       %rax,	[%rsi]
@@ -52912,7 +52915,7 @@ L5490:
     mov       %rcx,	%rdi
     mov       %rdx,	1
     call      cc_lib.strmode
-    lea       %rcx,	[%rip+L8960]
+    lea       %rcx,	[%rip+L8959]
     mov       %rdx,	%rax
     call      cc_support.serror_s
 L5485:
@@ -53012,17 +53015,17 @@ L5509:
     mov       %rax,	[%rdi+16]
     push      %rdi
     mov       %r11,	8
-L8961:
+L8960:
     mov       %r10,	[%rax]
     mov       [%rdi],	%r10
     add       %rdi,	8
     add       %rax,	8
     dec       %r11
-    jnz       L8961
+    jnz       L8960
     pop       %rdi
     jmp       L5508
 L5510:
-    lea       %rcx,	[%rip+L8962]
+    lea       %rcx,	[%rip+L8961]
     call      cc_support.terror
 L5508:
     jmp       L5496
@@ -53049,12 +53052,12 @@ L5507:
     xor       %ecx,	%ecx
     mov       %rdx,	%rdi
     xor       %r8d,	%r8d
-    lea       %r9,	[%rip+L8963]
+    lea       %r9,	[%rip+L8962]
     call      cc_show.printunit
     movsxd    %rax,	dword ptr[%rdi+40]
     lea       %r10,	[%rip+cc_tables.jtagnames]
     mov       %r10,	[%r10 + %rax*8]
-    lea       %rcx,	[%rip+L8964]
+    lea       %rcx,	[%rip+L8963]
     mov       %rdx,	%r10
     call      cc_support.terror_s
 L5496:
@@ -53137,7 +53140,7 @@ L5523:
     jz        L5526
     mov       %rcx,	[%rbp + cc_parse.createcall.mproc]
     call      cc_lib.typename
-    lea       %rcx,	[%rip+L8965]
+    lea       %rcx,	[%rip+L8964]
     mov       %rdx,	%rax
     call      cc_support.serror_s
 L5526:
@@ -53177,7 +53180,7 @@ L5519:
     jmp       L5521
 L5520:
     call      msys.m$print_startcon
-    lea       %rcx,	[%rip+L8966]
+    lea       %rcx,	[%rip+L8965]
     call      msys.m$print_str_nf
     mov       %rax,	[%rbp + cc_parse.createcall.p]
     movsxd    %rax,	dword ptr[%rax+40]
@@ -53190,9 +53193,9 @@ L5520:
     xor       %ecx,	%ecx
     mov       %rdx,	[%rbp + cc_parse.createcall.p]
     xor       %r8d,	%r8d
-    lea       %r9,	[%rip+L8967]
+    lea       %r9,	[%rip+L8966]
     call      cc_show.printunit
-    lea       %rcx,	[%rip+L8968]
+    lea       %rcx,	[%rip+L8967]
     call      cc_support.serror
 L5516:
     movsx     %rax,	word ptr[%r12+20]
@@ -53210,7 +53213,7 @@ L5530:
     mov       %rax,	[%rbp + cc_parse.createcall.aparams]
     cmp       %rax,	%r14
     jge       L5533
-    lea       %rcx,	[%rip+L8969]
+    lea       %rcx,	[%rip+L8968]
     call      cc_support.terror
     jmp       L5532
 L5533:
@@ -53233,7 +53236,7 @@ L5533:
     call      msys.m$print_i64_nf
     call      msys.m$print_newline
     call      msys.m$print_end
-    lea       %rcx,	[%rip+L8970]
+    lea       %rcx,	[%rip+L8969]
     call      cc_support.terror
 L5536:
 L5534:
@@ -53256,7 +53259,7 @@ L5541:
     movsxd    %rax,	dword ptr[%rbx+52]
     test      %rax,	%rax
     jnz       L5543
-    lea       %rcx,	[%rip+L8971]
+    lea       %rcx,	[%rip+L8970]
     call      cc_support.terror
 L5543:
     mov       %rcx,	%rbx
@@ -53348,16 +53351,16 @@ L5549:
     jmp       L5547
 L5550:
     call      msys.m$print_startcon
-    lea       %rcx,	[%rip+L8972]
+    lea       %rcx,	[%rip+L8971]
     call      msys.m$print_str_nf
     call      msys.m$print_newline
     call      msys.m$print_end
     xor       %ecx,	%ecx
     mov       %rdx,	%r14
     xor       %r8d,	%r8d
-    lea       %r9,	[%rip+L8973]
+    lea       %r9,	[%rip+L8972]
     call      cc_show.printunit
-    lea       %rcx,	[%rip+L8974]
+    lea       %rcx,	[%rip+L8973]
     call      cc_support.terror
 L5547:
     mov       [%r14+52],	%r13d
@@ -53478,7 +53481,7 @@ L5556:
     cmp       %rax,	13
     jz        L5562
     mov       %rax,	[%rdi]
-    lea       %rcx,	[%rip+L8975]
+    lea       %rcx,	[%rip+L8974]
     mov       %rdx,	%rax
     call      cc_support.serror_s
 L5562:
@@ -53523,7 +53526,7 @@ L5555:
     cmp       %rax,	13
     jz        L5568
     mov       %rax,	[%rdi]
-    lea       %rcx,	[%rip+L8975]
+    lea       %rcx,	[%rip+L8974]
     mov       %rdx,	%rax
     call      cc_support.serror_s
 L5568:
@@ -53531,7 +53534,7 @@ L5568:
     test      %rax,	%rax
     jz        L5570
     call      msys.m$print_startcon
-    lea       %rcx,	[%rip+L8976]
+    lea       %rcx,	[%rip+L8975]
     call      msys.m$print_str_nf
     mov       %eax,	[%rdi+92]
     and       %rax,	1677215
@@ -53552,7 +53555,7 @@ L5568:
     call      msys.m$print_newline
     call      msys.m$print_end
     mov       %rax,	[%rdi]
-    lea       %rcx,	[%rip+L8977]
+    lea       %rcx,	[%rip+L8976]
     mov       %rdx,	%rax
     call      cc_support.serror_s
 L5570:
@@ -53623,7 +53626,7 @@ L5578:
     mov       %rax,	[%rbp + cc_parse.readstructdecl.d]
     test      %rax,	%rax
     jnz       L5582
-    lea       %rcx,	[%rip+L8978]
+    lea       %rcx,	[%rip+L8977]
     call      cc_support.serror
 L5582:
     mov       %rax,	[%rbp + cc_parse.readstructdecl.linkage]
@@ -53633,7 +53636,7 @@ L5582:
     test      %rax,	%rax
     jz        L5584
 L5585:
-    lea       %rcx,	[%rip+L8979]
+    lea       %rcx,	[%rip+L8978]
     call      cc_support.serror
 L5584:
     mov       %rcx,	%rbx
@@ -53645,14 +53648,14 @@ L5584:
     test      %rdi,	%rdi
     jz        L5587
     mov       %rax,	[%rdi]
-    lea       %rcx,	[%rip+L8980]
+    lea       %rcx,	[%rip+L8979]
     mov       %rdx,	%rax
     call      cc_support.serror_s
 L5587:
     mov       %rax,	[%rbp + cc_parse.readstructdecl.linkage]
     test      %rax,	%rax
     jz        L5589
-    lea       %rcx,	[%rip+L8981]
+    lea       %rcx,	[%rip+L8980]
     call      cc_support.serror
 L5589:
 #cc_parse.readstructdecl.addanonfield:
@@ -53761,13 +53764,13 @@ L5601:
 L5602:
     cmp       %r14,	-1
     jnz       L5604
-    lea       %rcx,	[%rip+L8982]
+    lea       %rcx,	[%rip+L8981]
     call      cc_support.serror
     jmp       L5603
 L5604:
     mov       %rcx,	%r14
     call      cc_lib.typename
-    lea       %rcx,	[%rip+L8983]
+    lea       %rcx,	[%rip+L8982]
     mov       %rdx,	%rax
     call      cc_support.serror_s
 L5603:
@@ -53904,7 +53907,7 @@ L5614:
     call      msys.m$print_str_nf
     call      msys.m$print_newline
     call      msys.m$print_end
-    lea       %rcx,	[%rip+L8984]
+    lea       %rcx,	[%rip+L8983]
     call      cc_support.terror
 L5616:
     cmp       %rdi,	%rbx
@@ -53997,7 +54000,7 @@ L5627:
     test      %rax,	%rax
     jz        L5632
     call      msys.m$print_startcon
-    lea       %rcx,	[%rip+L8985]
+    lea       %rcx,	[%rip+L8984]
     call      msys.m$print_str_nf
     call      msys.m$print_newline
     call      msys.m$print_end
@@ -54193,7 +54196,7 @@ L5652:
     cmp       %rax,	12
     jz        L5658
     mov       %rax,	[%rbx]
-    lea       %rcx,	[%rip+L8986]
+    lea       %rcx,	[%rip+L8985]
     mov       %rdx,	%rax
     call      cc_support.serror_s
 L5658:
@@ -54227,7 +54230,7 @@ L5654:
     cmp       %rax,	12
     jz        L5662
     mov       %rax,	[%rbx]
-    lea       %rcx,	[%rip+L8986]
+    lea       %rcx,	[%rip+L8985]
     mov       %rdx,	%rax
     call      cc_support.serror_s
 L5662:
@@ -54235,7 +54238,7 @@ L5662:
     test      %rax,	%rax
     jz        L5664
     mov       %rax,	[%rbx]
-    lea       %rcx,	[%rip+L8987]
+    lea       %rcx,	[%rip+L8986]
     mov       %rdx,	%rax
     call      cc_support.serror_s
 L5664:
@@ -54319,7 +54322,7 @@ L5671:
     test      %rdi,	%rdi
     jz        L5675
     mov       %rax,	[%rdi]
-    lea       %rcx,	[%rip+L8988]
+    lea       %rcx,	[%rip+L8987]
     mov       %rdx,	%rax
     call      cc_support.serror_s
 L5675:
@@ -54400,7 +54403,7 @@ cc_parse.createdotop:
     mov       %al,	[%rax + %r10]
     test      %al,	%al
     jnz       L5684
-    lea       %rcx,	[%rip+L8989]
+    lea       %rcx,	[%rip+L8988]
     call      cc_support.serror
 L5684:
     lea       %rax,	[%rip+cc_decls.tttarget]
@@ -54418,7 +54421,7 @@ L5682:
 L5686:
     jmp       L5685
 L5687:
-    lea       %rcx,	[%rip+L8990]
+    lea       %rcx,	[%rip+L8989]
     call      cc_support.serror
 L5685:
     lea       %rax,	[%rip+cc_decls.ttnamedef]
@@ -54480,7 +54483,7 @@ L5694:
     call      cc_lib.strmode
     mov       %r10,	[%rbp + cc_parse.createdotop.d]
     mov       %r10,	[%r10]
-    lea       %rcx,	[%rip+L8991]
+    lea       %rcx,	[%rip+L8990]
     mov       %rdx,	%r10
     mov       %r8,	%rax
     call      cc_support.terror_ss
@@ -54669,7 +54672,7 @@ L5720:
     mov       %al,	[%rax + %r10]
     test      %al,	%al
     jz        L5724
-    lea       %rcx,	[%rip+L8992]
+    lea       %rcx,	[%rip+L8991]
     call      cc_support.serror
 L5724:
     mov       %rcx,	[%rbp + cc_parse.createassignopref.q]
@@ -54696,7 +54699,7 @@ L5721:
     call      cc_parse.comparemode
     test      %rax,	%rax
     jnz       L5728
-    lea       %rcx,	[%rip+L8993]
+    lea       %rcx,	[%rip+L8992]
     call      cc_support.serror
 L5728:
     mov       %rcx,	40
@@ -54721,7 +54724,7 @@ L5726:
 L5725:
     jmp       L5718
 L5722:
-    lea       %rcx,	[%rip+L8994]
+    lea       %rcx,	[%rip+L8993]
     call      cc_support.serror
 L5718:
     mov       [%r13+52],	%esi
@@ -54814,7 +54817,7 @@ cc_parse.pushloop:
     mov       %rax,	[%rip+cc_parse.loopindex]
     cmp       %rax,	64
     jl        L5740
-    lea       %rcx,	[%rip+L8995]
+    lea       %rcx,	[%rip+L8994]
     call      cc_support.serror
 L5740:
     inc       qword ptr[%rip+cc_parse.loopindex]
@@ -54843,7 +54846,7 @@ cc_parse.poploop:
     dec       qword ptr[%rip+cc_parse.loopindex]
     jmp       L5742
 L5743:
-    lea       %rcx,	[%rip+L8996]
+    lea       %rcx,	[%rip+L8995]
     call      cc_support.serror
 L5742:
 #---------------
@@ -54875,7 +54878,7 @@ L5746:
 L5748:
     test      %rbx,	%rbx
     jnz       L5750
-    lea       %rcx,	[%rip+L8997]
+    lea       %rcx,	[%rip+L8996]
     call      cc_support.serror
 L5750:
     mov       %rcx,	16
@@ -55096,14 +55099,14 @@ L5769:
     xor       %ecx,	%ecx
     mov       %rdx,	%r12
     xor       %r8d,	%r8d
-    lea       %r9,	[%rip+L8998]
+    lea       %r9,	[%rip+L8997]
     call      cc_show.printunit
     mov       %rcx,	%r13
     call      cc_lib.typename
     mov       [%rbp + cc_parse.docast.$T1],	%rax
     mov       %rcx,	%rbx
     call      cc_lib.typename
-    lea       %rcx,	[%rip+L8999]
+    lea       %rcx,	[%rip+L8998]
     mov       %rdx,	%rax
     mov       %r8,	[%rbp + cc_parse.docast.$T1]
     call      cc_support.terror_ss
@@ -55271,9 +55274,9 @@ cc_parse.createsizeofop:
     xor       %ecx,	%ecx
     mov       %rdx,	%r12
     xor       %r8d,	%r8d
-    lea       %r9,	[%rip+L9000]
+    lea       %r9,	[%rip+L8999]
     call      cc_show.printunit
-    lea       %rcx,	[%rip+L9001]
+    lea       %rcx,	[%rip+L9000]
     call      cc_support.serror
 L5800:
     mov       %rcx,	%r12
@@ -55490,7 +55493,7 @@ L5827:
     jnz       L5831
     test      %r14,	%r14
     jz        L5833
-    lea       %rcx,	[%rip+L9002]
+    lea       %rcx,	[%rip+L9001]
     call      cc_support.serror
 L5833:
     mov       %r14,	1
@@ -55538,13 +55541,13 @@ L5837:
     call      cc_lex.lex
     test      %rbx,	%rbx
     jnz       L5840
-    lea       %rcx,	[%rip+L9003]
+    lea       %rcx,	[%rip+L9002]
     call      cc_support.serror
 L5840:
     mov       %rax,	[%rbp + cc_parse.readgeneric.count]
     cmp       %rax,	1
     jle       L5842
-    lea       %rcx,	[%rip+L9004]
+    lea       %rcx,	[%rip+L9003]
     call      cc_support.serror
 L5842:
     mov       %rax,	%rbx
@@ -55612,7 +55615,7 @@ cc_genpcl.codegen_pcl:
     cmp       %rax,	3
     jnz       L5853
     call      msys.m$print_startcon
-    lea       %rcx,	[%rip+L9005]
+    lea       %rcx,	[%rip+L9004]
     call      msys.m$print_str_nf
     mov       %rcx,	[%rip+cc_decls.inputfile]
     call      msys.m$print_str_nf
@@ -55623,7 +55626,7 @@ L5853:
     mov       %rdx,	[%rip+cc_decls.nunits]
     call      pc_api.pcl_start
     call      cc_genpcl.dolibs
-    lea       %rcx,	[%rip+L9006]
+    lea       %rcx,	[%rip+L9005]
     call      pc_api.gencomment
     mov       %rax,	[%rip+cc_decls.stmodule]
     mov       %rdi,	[%rax+16]
@@ -55659,7 +55662,7 @@ L5863:
     test      %rax,	%rax
     jnz       L5868
     mov       %rax,	[%rdi]
-    lea       %rcx,	[%rip+L9007]
+    lea       %rcx,	[%rip+L9006]
     mov       %rdx,	%rax
     xor       %r8d,	%r8d
     call      cc_support.gerror_s
@@ -55713,7 +55716,7 @@ L5857:
 L5855:
     test      %rdi,	%rdi
     jnz       L5854
-    lea       %rcx,	[%rip+L9008]
+    lea       %rcx,	[%rip+L9007]
     call      pc_api.gencomment
     mov       %rax,	[%rip+cc_decls.stmodule]
     mov       %rdi,	[%rax+16]
@@ -55756,7 +55759,7 @@ cc_genpcl.genprocdef:
     xor       %rsi,	%rsi
     mov       %rax,	[%r12]
     mov       %rcx,	%rax
-    lea       %rdx,	[%rip+L9009]
+    lea       %rdx,	[%rip+L9008]
     call      mlib.eqstring
     test      %rax,	%rax
     jz        L5891
@@ -55808,11 +55811,11 @@ L5895:
     jnz       L5892
     call      cc_libpcl.createfwdlabel
     mov       [%rip+cc_genpcl.retindex],	%rax
-    lea       %rcx,	[%rip+L9010]
+    lea       %rcx,	[%rip+L9009]
     call      pc_api.gencomment
     mov       %rcx,	[%r12+72]
     call      cc_blockpcl.do_stmt
-    lea       %rcx,	[%rip+L9010]
+    lea       %rcx,	[%rip+L9009]
     call      pc_api.gencomment
     mov       %rcx,	[%rip+cc_genpcl.retindex]
     call      cc_libpcl.definefwdlabel
@@ -55844,7 +55847,7 @@ L5902:
     mov       %rcx,	%rax
     call      cc_libpcl.setmode
     call      pc_api.pc_endproc
-    lea       %rcx,	[%rip+L9011]
+    lea       %rcx,	[%rip+L9010]
     call      pc_api.gencomment
 #---------------
     add       %rsp,	40
@@ -55884,7 +55887,7 @@ L5906:
     jnz       L5910
     lea       %rcx,	[%rbp + cc_genpcl.dostaticvar.str]
     call      msys.m$print_startstr
-    lea       %rcx,	[%rip+L9012]
+    lea       %rcx,	[%rip+L9011]
     call      msys.m$print_setfmt
     mov       %rax,	[%r12+8]
     mov       %rcx,	[%rax]
@@ -56210,7 +56213,7 @@ L5946:
     mov       %al,	[%rax+62]
     test      %al,	%al
     jz        L5947
-    lea       %rcx,	[%rip+L9013]
+    lea       %rcx,	[%rip+L9012]
     xor       %edx,	%edx
     call      cc_support.gerror
     mov       %rcx,	[%rbp + cc_genpcl.genidata.padding]
@@ -56284,7 +56287,7 @@ L5948:
     call      msys.m$print_str_nf
     call      msys.m$print_newline
     call      msys.m$print_end
-    lea       %rcx,	[%rip+L9014]
+    lea       %rcx,	[%rip+L9013]
     xor       %edx,	%edx
     call      cc_support.gerror
 L5937:
@@ -56309,7 +56312,7 @@ L5953:
     call      cc_libpcl.setmode
     jmp       L5952
 L5954:
-    lea       %rcx,	[%rip+L9015]
+    lea       %rcx,	[%rip+L9014]
     mov       %rdx,	[%rbp + cc_genpcl.genidata.p]
     call      cc_support.gerror
 L5952:
@@ -56332,7 +56335,7 @@ L5916:
     jnz       L5959
 L5958:
     lea       %rcx,	[%rbp + cc_genpcl.genidata.str]
-    lea       %rdx,	[%rip+L9016]
+    lea       %rdx,	[%rip+L9015]
     call      strcpy
     mov       %rax,	[%rbp + cc_genpcl.genidata.d]
     movzx     %rax,	byte ptr[%rax+110]
@@ -56344,7 +56347,7 @@ L5958:
     mov       %rdx,	%rax
     call      strcat
     lea       %rcx,	[%rbp + cc_genpcl.genidata.str]
-    lea       %rdx,	[%rip+L9017]
+    lea       %rdx,	[%rip+L9016]
     call      strcat
 L5961:
     mov       %rax,	[%rbp + cc_genpcl.genidata.d]
@@ -56353,7 +56356,7 @@ L5961:
     mov       %rdx,	%rax
     call      strcat
     lea       %rcx,	[%rbp + cc_genpcl.genidata.str]
-    lea       %rdx,	[%rip+L9018]
+    lea       %rdx,	[%rip+L9017]
     call      strcat
     mov       %rax,	[%rbp + cc_genpcl.genidata.b]
     mov       %rax,	[%rax]
@@ -56370,7 +56373,7 @@ L5961:
     call      pc_api.pc_gen
     jmp       L5957
 L5959:
-    lea       %rcx,	[%rip+L9019]
+    lea       %rcx,	[%rip+L9018]
     xor       %edx,	%edx
     call      cc_support.gerror
 L5957:
@@ -56396,7 +56399,7 @@ L5956:
     mov       %rcx,	[%rax]
     call      msys.m$print_i64_nf
     call      msys.m$print_nogap
-    lea       %rcx,	[%rip+L9020]
+    lea       %rcx,	[%rip+L9019]
     call      msys.m$print_str_nf
     call      msys.m$print_nogap
     mov       %rax,	[%rbp + cc_genpcl.genidata.b]
@@ -56410,7 +56413,7 @@ L5956:
     call      pc_api.pc_gen
     jmp       L5955
 L5962:
-    lea       %rcx,	[%rip+L9021]
+    lea       %rcx,	[%rip+L9020]
     xor       %edx,	%edx
     call      cc_support.gerror
 L5955:
@@ -56441,7 +56444,7 @@ L5918:
     movsxd    %rax,	dword ptr[%rax+40]
     cmp       %rax,	1
     jz        L5966
-    lea       %rcx,	[%rip+L9022]
+    lea       %rcx,	[%rip+L9021]
     xor       %edx,	%edx
     call      cc_support.gerror
 L5966:
@@ -56468,9 +56471,9 @@ L5920:
     xor       %ecx,	%ecx
     mov       %rdx,	[%rbp + cc_genpcl.genidata.p]
     xor       %r8d,	%r8d
-    lea       %r9,	[%rip+L9023]
+    lea       %r9,	[%rip+L9022]
     call      cc_show.printunit
-    lea       %rcx,	[%rip+L9024]
+    lea       %rcx,	[%rip+L9023]
     mov       %rdx,	[%rbp + cc_genpcl.genidata.p]
     call      cc_support.gerror
 L5912:
@@ -57426,7 +57429,7 @@ L6030:
     movsxd    %rax,	dword ptr[%r13+40]
     lea       %r10,	[%rip+cc_tables.jtagnames]
     mov       %r10,	[%r10 + %rax*8]
-    lea       %rcx,	[%rip+L9025]
+    lea       %rcx,	[%rip+L9024]
     mov       %rdx,	%r10
     xor       %r8d,	%r8d
     call      cc_support.gerror_s
@@ -57523,7 +57526,7 @@ L6105:
     mov       %al,	[%rbx+62]
     test      %al,	%al
     jz        L6106
-    lea       %rcx,	[%rip+L9026]
+    lea       %rcx,	[%rip+L9025]
     xor       %edx,	%edx
     call      cc_support.gerror
     jmp       L6104
@@ -57537,7 +57540,7 @@ L6106:
 L6104:
     jmp       L6101
 L6103:
-    lea       %rcx,	[%rip+L9027]
+    lea       %rcx,	[%rip+L9026]
     xor       %edx,	%edx
     call      cc_support.gerror
 L6101:
@@ -57593,7 +57596,7 @@ L6112:
 L6111:
     jmp       L6108
 L6110:
-    lea       %rcx,	[%rip+L9028]
+    lea       %rcx,	[%rip+L9027]
     xor       %edx,	%edx
     call      cc_support.gerror
 L6108:
@@ -57797,7 +57800,7 @@ L6128:
     movsxd    %rax,	dword ptr[%rdi+40]
     lea       %r10,	[%rip+cc_tables.jtagnames]
     mov       %r10,	[%r10 + %rax*8]
-    lea       %rcx,	[%rip+L9029]
+    lea       %rcx,	[%rip+L9028]
     mov       %rdx,	%r10
     xor       %r8d,	%r8d
     call      cc_support.gerror_s
@@ -57962,7 +57965,7 @@ L6137:
     cmp       %rax,	11
     jnz       L6146
 L6147:
-    lea       %rcx,	[%rip+L9030]
+    lea       %rcx,	[%rip+L9029]
     xor       %edx,	%edx
     call      cc_support.gerror
 L6146:
@@ -58021,7 +58024,7 @@ L6144:
     lea       %rax,	[%rip+cc_tables.convnames]
     mov       %r10,	%r14
     mov       %rax,	[%rax + %r10*8]
-    lea       %rcx,	[%rip+L9031]
+    lea       %rcx,	[%rip+L9030]
     mov       %rdx,	%rax
     xor       %r8d,	%r8d
     call      cc_support.gerror_s
@@ -58747,7 +58750,7 @@ L6221:
 L6227:
     cmp       %r12,	64
     jl        L6232
-    lea       %rcx,	[%rip+L9032]
+    lea       %rcx,	[%rip+L9031]
     xor       %edx,	%edx
     call      cc_support.gerror
 L6232:
@@ -59373,7 +59376,7 @@ cc_blockpcl.do_goto:
     test      %rax,	%rax
     jnz       L6290
     mov       %rax,	[%rdi]
-    lea       %rcx,	[%rip+L9033]
+    lea       %rcx,	[%rip+L9032]
     mov       %rdx,	%rax
     xor       %r8d,	%r8d
     call      cc_support.gerror_s
@@ -59526,7 +59529,7 @@ L6307:
     cmp       %rbx,	[%rip+cc_blockpcl.sw_ncases]
     jle       L6302
 L6305:
-    lea       %rcx,	[%rip+L9034]
+    lea       %rcx,	[%rip+L9033]
     xor       %edx,	%edx
     call      cc_support.gerror
 L6304:
@@ -59588,7 +59591,7 @@ L6309:
     mov       %rax,	[%rbp + cc_blockpcl.do_switch.ncases]
     cmp       %rax,	500
     jle       L6313
-    lea       %rcx,	[%rip+L9035]
+    lea       %rcx,	[%rip+L9034]
     xor       %edx,	%edx
     call      cc_support.gerror
 L6313:
@@ -59745,7 +59748,7 @@ L6330:
     mov       %rcx,	[%rbp + cc_blockpcl.do_switch.value]
     xor       %edx,	%edx
     call      msys.strint
-    lea       %rcx,	[%rip+L9036]
+    lea       %rcx,	[%rip+L9035]
     mov       %rdx,	%rax
     xor       %r8d,	%r8d
     call      cc_support.gerror_s
@@ -60131,7 +60134,7 @@ L6366:
     cmp       %rax,	1
     jle       L6368
     lea       %rcx,	[%rbp + cc_libpcl.getpsymbol.str]
-    lea       %rdx,	[%rip+L9037]
+    lea       %rdx,	[%rip+L9036]
     call      strcat
     movzx     %rax,	word ptr[%rsi+96]
     mov       %rcx,	%rax
@@ -60159,7 +60162,7 @@ L6365:
     mov       %rdx,	%rax
     call      strcpy
     lea       %rcx,	[%rbp + cc_libpcl.getpsymbol.str]
-    lea       %rdx,	[%rip+L9037]
+    lea       %rdx,	[%rip+L9036]
     call      strcat
     mov       %rax,	[%rsi]
     lea       %rcx,	[%rbp + cc_libpcl.getpsymbol.str]
@@ -60169,7 +60172,7 @@ L6365:
     cmp       %rax,	1
     jle       L6371
     lea       %rcx,	[%rbp + cc_libpcl.getpsymbol.str]
-    lea       %rdx,	[%rip+L9037]
+    lea       %rdx,	[%rip+L9036]
     call      strcat
     movzx     %rax,	word ptr[%rsi+96]
     mov       %rcx,	%rax
@@ -60237,7 +60240,7 @@ L6377:
     jnz       L6379
     mov       %rax,	[%rsi]
     mov       %rcx,	%rax
-    lea       %rdx,	[%rip+L9038]
+    lea       %rdx,	[%rip+L9037]
     call      mlib.eqstring
     test      %rax,	%rax
     jz        L6379
@@ -60428,14 +60431,14 @@ cc_lib.newstrec:
     mov       %rax,	%rdi
     xor       %r10d,	%r10d
     mov       %r11,	4
-L9039:
+L9038:
     mov       [%rax],	%r10
     mov       [%rax+8],	%r10
     mov       [%rax+16],	%r10
     mov       [%rax+24],	%r10
     add       %rax,	32
     dec       %r11
-    jnz       L9039
+    jnz       L9038
     lea       %rax,	[%rip+cc_decls.lx]
     mov       %eax,	[%rax+16]
     mov       [%rdi+92],	%eax
@@ -60708,7 +60711,7 @@ L6402:
     mov       %rdx,	%rax
     call      strcpy
     lea       %rcx,	[%rbp + cc_lib.getoptocode.str]
-    lea       %rdx,	[%rip+L9040]
+    lea       %rdx,	[%rip+L9039]
     call      strcat
     xor       %rbx,	%rbx
     mov       %rax,	77
@@ -60742,7 +60745,7 @@ L6405:
     call      msys.m$print_str_nf
     call      msys.m$print_newline
     call      msys.m$print_end
-    lea       %rcx,	[%rip+L9041]
+    lea       %rcx,	[%rip+L9040]
     call      cc_support.serror
     xor       %eax,	%eax
 L6400:
@@ -60772,7 +60775,7 @@ cc_lib.getconstvalue:
     mov       %rax,	[%rdi]
     jmp       L6408
 L6410:
-    lea       %rcx,	[%rip+L9042]
+    lea       %rcx,	[%rip+L9041]
     call      cc_support.serror
     xor       %eax,	%eax
 L6408:
@@ -60789,7 +60792,7 @@ cc_lib.nextautotype:
 #---------------
     lea       %rcx,	[%rip+cc_lib.nextautotype.str]
     call      msys.m$print_startstr
-    lea       %rcx,	[%rip+L9043]
+    lea       %rcx,	[%rip+L9042]
     call      msys.m$print_str_nf
     call      msys.m$print_nogap
     inc       qword ptr[%rip+cc_lib.autotypeno]
@@ -61052,7 +61055,7 @@ cc_lib.getautofieldname:
 #---------------
     lea       %rcx,	[%rbp + cc_lib.getautofieldname.str]
     call      msys.m$print_startstr
-    lea       %rcx,	[%rip+L9044]
+    lea       %rcx,	[%rip+L9043]
     call      msys.m$print_str_nf
     call      msys.m$print_nogap
     inc       qword ptr[%rip+cc_lib.nextafindex]
@@ -61306,10 +61309,10 @@ L6434:
 L6447:
     lea       %rcx,	[%rbp + cc_lib.convertstringc.str]
     call      msys.m$print_startstr
-    lea       %rcx,	[%rip+L9045]
+    lea       %rcx,	[%rip+L9044]
     call      msys.m$print_setfmt
     mov       %rcx,	%rdi
-    lea       %rdx,	[%rip+L9046]
+    lea       %rdx,	[%rip+L9045]
     call      msys.m$print_i64
     call      msys.m$print_end
     mov       %al,	[%rbp + cc_lib.convertstringc.str]
@@ -61504,12 +61507,12 @@ L6457:
     test      %al,	%al
     jz        L6465
     mov       %rcx,	[%rbp + cc_lib.istrmode.dest]
-    lea       %rdx,	[%rip+L9047]
+    lea       %rdx,	[%rip+L9046]
     call      strcpy
     jmp       L6464
 L6465:
     mov       %rcx,	[%rbp + cc_lib.istrmode.dest]
-    lea       %rdx,	[%rip+L9048]
+    lea       %rdx,	[%rip+L9047]
     call      strcpy
 L6464:
     lea       %rax,	[%rip+cc_decls.tttarget]
@@ -61556,7 +61559,7 @@ L6458:
     jz        L6469
     mov       %rcx,	[%rbp + cc_lib.istrmode.dest]
     call      msys.m$print_startstr
-    lea       %rcx,	[%rip+L9049]
+    lea       %rcx,	[%rip+L9048]
     call      msys.m$print_setfmt
     lea       %rax,	[%rip+cc_decls.ttlength]
     mov       %r10,	%r15
@@ -61566,7 +61569,7 @@ L6458:
     jmp       L6468
 L6469:
     mov       %rcx,	[%rbp + cc_lib.istrmode.dest]
-    lea       %rdx,	[%rip+L9050]
+    lea       %rdx,	[%rip+L9049]
     call      strcpy
 L6468:
     mov       %rcx,	[%rbp + cc_lib.istrmode.dest]
@@ -61583,7 +61586,7 @@ L6468:
     jmp       L6456
 L6459:
     mov       %rcx,	[%rbp + cc_lib.istrmode.dest]
-    lea       %rdx,	[%rip+L9051]
+    lea       %rdx,	[%rip+L9050]
     call      strcpy
     mov       %rcx,	%r15
     call      cc_lib.typename
@@ -61611,7 +61614,7 @@ L6471:
     mov       %rdx,	%rax
     call      strcpy
     mov       %rcx,	[%rbp + cc_lib.istrmode.dest]
-    lea       %rdx,	[%rip+L9052]
+    lea       %rdx,	[%rip+L9051]
     call      strcat
     lea       %rax,	[%rip+cc_decls.ttnamedef]
     mov       %r10,	%r15
@@ -61624,7 +61627,7 @@ L6472:
     test      %rsi,	%rsi
     jz        L6476
     mov       %rcx,	[%rbp + cc_lib.istrmode.dest]
-    lea       %rdx,	[%rip+L9053]
+    lea       %rdx,	[%rip+L9052]
     call      strcat
 L6476:
     mov       %rsi,	1
@@ -61638,7 +61641,7 @@ L6476:
     mov       %r8,	%r10
     call      cc_lib.istrmode
     mov       %rcx,	[%rbp + cc_lib.istrmode.dest]
-    lea       %rdx,	[%rip+L9054]
+    lea       %rdx,	[%rip+L9053]
     call      strcat
     mov       %rax,	[%rbx]
     mov       %rcx,	[%rbp + cc_lib.istrmode.dest]
@@ -61649,7 +61652,7 @@ L6473:
     test      %rbx,	%rbx
     jnz       L6472
     mov       %rcx,	[%rbp + cc_lib.istrmode.dest]
-    lea       %rdx,	[%rip+L9055]
+    lea       %rdx,	[%rip+L9054]
     call      strcat
     jmp       L6456
 L6461:
@@ -61661,7 +61664,7 @@ L6461:
     jmp       L6456
 L6462:
     mov       %rcx,	[%rbp + cc_lib.istrmode.dest]
-    lea       %rdx,	[%rip+L9056]
+    lea       %rdx,	[%rip+L9055]
     call      strcpy
     lea       %rax,	[%rip+cc_decls.ttparams]
     mov       %r10,	%r15
@@ -61688,7 +61691,7 @@ L6477:
     cmp       %r12,	[%rbp + cc_lib.istrmode.n]
     jz        L6481
     mov       %rcx,	[%rbp + cc_lib.istrmode.dest]
-    lea       %rdx,	[%rip+L9057]
+    lea       %rdx,	[%rip+L9056]
     call      strcat
 L6481:
     mov       %rax,	[%rbp + cc_lib.istrmode.pm]
@@ -61699,7 +61702,7 @@ L6481:
     jle       L6477
 L6479:
     mov       %rcx,	[%rbp + cc_lib.istrmode.dest]
-    lea       %rdx,	[%rip+L9058]
+    lea       %rdx,	[%rip+L9057]
     call      strcat
     mov       %rcx,	[%rbp + cc_lib.istrmode.dest]
     call      strlen
@@ -61730,7 +61733,7 @@ L6483:
     call      msys.m$print_str_nf
     call      msys.m$print_newline
     call      msys.m$print_end
-    lea       %rcx,	[%rip+L9059]
+    lea       %rcx,	[%rip+L9058]
     call      cc_support.mcerror
 L6482:
 L6456:
@@ -61773,10 +61776,10 @@ cc_lib.typename:
 L6486:
     cmp       %rdi,	18
     jnz       L6491
-    lea       %rax,	[%rip+L9060]
+    lea       %rax,	[%rip+L9059]
     jmp       L6490
 L6491:
-    lea       %rax,	[%rip+L9061]
+    lea       %rax,	[%rip+L9060]
 L6490:
     lea       %rcx,	[%rip+cc_lib.typename.str]
     mov       %rdx,	%rax
@@ -61794,7 +61797,7 @@ L6490:
     mov       %rdx,	%rax
     call      strcat
     lea       %rcx,	[%rip+cc_lib.typename.str]
-    lea       %rdx,	[%rip+L9062]
+    lea       %rdx,	[%rip+L9061]
     call      strcat
     lea       %rax,	[%rip+cc_decls.ttnamedef]
     mov       %r10,	%rbx
@@ -61810,7 +61813,7 @@ L6493:
     lea       %rax,	[%rip+cc_lib.typename.str]
     jmp       L6484
 L6487:
-    lea       %rax,	[%rip+L9063]
+    lea       %rax,	[%rip+L9062]
     jmp       L6484
 L6488:
     lea       %rax,	[%rip+cc_decls.ttnamedef]
@@ -61824,7 +61827,7 @@ L6488:
     mov       %rax,	[%rax]
     jmp       L6484
 L6495:
-    lea       %rax,	[%rip+L9064]
+    lea       %rax,	[%rip+L9063]
     jmp       L6484
 L6489:
     lea       %rax,	[%rip+cc_decls.ttconst]
@@ -61833,7 +61836,7 @@ L6489:
     test      %al,	%al
     jz        L6497
     lea       %rcx,	[%rip+cc_lib.typename.str]
-    lea       %rdx,	[%rip+L9065]
+    lea       %rdx,	[%rip+L9064]
     call      strcpy
     lea       %rax,	[%rip+cc_tables.stdtypenames]
     mov       %r10,	%rdi
@@ -61849,7 +61852,7 @@ L6497:
     mov       %rax,	[%rax + %r10*8]
     jmp       L6484
 L6485:
-    lea       %rax,	[%rip+L9066]
+    lea       %rax,	[%rip+L9065]
 L6484:
 #---------------
     add       %rsp,	40
@@ -61925,7 +61928,7 @@ cc_lib.copymode:
     mov       %rax,	[%rip+cc_decls.ntypes]
     cmp       %rax,	80000
     jl        L6507
-    lea       %rcx,	[%rip+L9067]
+    lea       %rcx,	[%rip+L9066]
     call      cc_support.serror
 L6507:
     inc       qword ptr[%rip+cc_decls.ntypes]
@@ -62002,7 +62005,7 @@ cc_lib.createnewmode:
     cmp       %rax,	80000
     jl        L6510
     call      msys.m$print_startcon
-    lea       %rcx,	[%rip+L9068]
+    lea       %rcx,	[%rip+L9067]
     call      msys.m$print_str_nf
     mov       %rcx,	%rdi
     mov       %rdx,	1
@@ -62011,7 +62014,7 @@ cc_lib.createnewmode:
     call      msys.m$print_str_nf
     call      msys.m$print_newline
     call      msys.m$print_end
-    lea       %rcx,	[%rip+L9069]
+    lea       %rcx,	[%rip+L9068]
     call      cc_support.serror
 L6510:
     inc       qword ptr[%rip+cc_decls.ntypes]
@@ -62118,7 +62121,7 @@ cc_lib.checksymbol:
     jz        L6522
     lea       %rcx,	[%rbp + cc_lib.checksymbol.str]
     call      msys.m$print_startstr
-    lea       %rcx,	[%rip+L9070]
+    lea       %rcx,	[%rip+L9069]
     call      msys.m$print_setfmt
     lea       %rax,	[%rip+cc_tables.symbolnames]
     mov       %r10,	%rdi
@@ -62136,7 +62139,7 @@ cc_lib.checksymbol:
     cmp       %rax,	67
     jnz       L6524
     lea       %rcx,	[%rbp + cc_lib.checksymbol.str]
-    lea       %rdx,	[%rip+L9071]
+    lea       %rdx,	[%rip+L9070]
     call      strcat
     lea       %rax,	[%rip+cc_decls.lx]
     mov       %rax,	[%rax]
@@ -62146,7 +62149,7 @@ cc_lib.checksymbol:
     mov       %rdx,	%rax
     call      strcat
     lea       %rcx,	[%rbp + cc_lib.checksymbol.str]
-    lea       %rdx,	[%rip+L9072]
+    lea       %rdx,	[%rip+L9071]
     call      strcat
 L6524:
     lea       %rcx,	[%rbp + cc_lib.checksymbol.str]
@@ -62439,13 +62442,13 @@ L6550:
     call      msys.m$print_startcon
     mov       %rcx,	[%rbx]
     call      msys.m$print_str_nf
-    lea       %rcx,	[%rip+L9073]
+    lea       %rcx,	[%rip+L9072]
     call      msys.m$print_str_nf
     mov       %rcx,	[%rsi]
     call      msys.m$print_str_nf
     call      msys.m$print_newline
     call      msys.m$print_end
-    lea       %rcx,	[%rip+L9074]
+    lea       %rcx,	[%rip+L9073]
     call      cc_support.serror
 L6554:
 L6551:
@@ -62773,7 +62776,7 @@ L6610:
     call      msys.m$print_i64_nf
     call      msys.m$print_newline
     call      msys.m$print_end
-    lea       %rcx,	[%rip+L9075]
+    lea       %rcx,	[%rip+L9074]
     call      cc_support.serror
     xor       %eax,	%eax
 L6603:
@@ -62936,7 +62939,7 @@ cc_lib.writegsfile:
     mov       %rsi,	%rdx
 #---------------
     mov       %rcx,	%rbx
-    lea       %rdx,	[%rip+L9076]
+    lea       %rdx,	[%rip+L9075]
     call      fopen
     mov       %rdi,	%rax
     mov       %rcx,	%rsi
@@ -63033,13 +63036,13 @@ cc_lib.addtolog:
     mov       %r12,	%rdx
 #---------------
     mov       %rcx,	%rsi
-    lea       %rdx,	[%rip+L9077]
+    lea       %rdx,	[%rip+L9076]
     call      fopen
     mov       %rdi,	%rax
     test      %rdi,	%rdi
     jnz       L6649
     call      msys.m$print_startcon
-    lea       %rcx,	[%rip+L9078]
+    lea       %rcx,	[%rip+L9077]
     call      msys.m$print_str_nf
     mov       %rcx,	%rsi
     call      msys.m$print_str_nf
@@ -63085,8 +63088,8 @@ cc_support.stopcompiler:
     mov       %al,	[%rip+cc_cli.fwriteerrors]
     test      %al,	%al
     jz        L6656
-    lea       %rcx,	[%rip+L9079]
-    lea       %rdx,	[%rip+L9080]
+    lea       %rcx,	[%rip+L9078]
+    lea       %rdx,	[%rip+L9079]
     call      fopen
     mov       %rdi,	%rax
     mov       %rcx,	%rdi
@@ -63124,7 +63127,7 @@ cc_support.mcerror:
     mov       %rdi,	%rcx
 #---------------
     call      msys.m$print_startcon
-    lea       %rcx,	[%rip+L9081]
+    lea       %rcx,	[%rip+L9080]
     call      msys.m$print_str_nf
     mov       %rcx,	%rdi
     call      msys.m$print_str_nf
@@ -63164,31 +63167,31 @@ cc_support.serror_gen:
     test      %rax,	%rax
     jz        L6661
     call      msys.m$print_startcon
-    lea       %rcx,	[%rip+L9082]
+    lea       %rcx,	[%rip+L9081]
     call      msys.m$print_str_nf
     mov       %rax,	[%rip+cc_decls.currproc]
     mov       %rcx,	[%rax]
     call      msys.m$print_str_nf
     call      msys.m$print_nogap
-    lea       %rcx,	[%rip+L9083]
+    lea       %rcx,	[%rip+L9082]
     call      msys.m$print_str_nf
     call      msys.m$print_end
     jmp       L6660
 L6661:
     call      msys.m$print_startcon
-    lea       %rcx,	[%rip+L9084]
+    lea       %rcx,	[%rip+L9083]
     call      msys.m$print_str_nf
     call      msys.m$print_newline
     call      msys.m$print_end
 L6660:
     call      msys.m$print_startcon
-    lea       %rcx,	[%rip+L9085]
+    lea       %rcx,	[%rip+L9084]
     call      msys.m$print_str_nf
     lea       %rax,	[%rip+cc_decls.lx]
     mov       %eax,	[%rax+16]
     mov       %rcx,	%rax
     call      msys.m$print_i64_nf
-    lea       %rcx,	[%rip+L9086]
+    lea       %rcx,	[%rip+L9085]
     call      msys.m$print_str_nf
     lea       %rax,	[%rip+cc_decls.lx]
     movzx     %rax,	byte ptr[%rax+20]
@@ -63209,11 +63212,11 @@ L6660:
     call      msys.m$print_newline
     call      msys.m$print_end
     call      msys.m$print_startcon
-    lea       %rcx,	[%rip+L9087]
+    lea       %rcx,	[%rip+L9086]
     call      msys.m$print_str_nf
     mov       %rcx,	%rdi
     call      msys.m$print_str_nf
-    lea       %rcx,	[%rip+L9088]
+    lea       %rcx,	[%rip+L9087]
     call      msys.m$print_str_nf
     call      msys.m$print_newline
     call      msys.m$print_end
@@ -63309,7 +63312,7 @@ cc_support.terror_gen:
     test      %rax,	%rax
     jz        L6666
     call      msys.m$print_startcon
-    lea       %rcx,	[%rip+L9089]
+    lea       %rcx,	[%rip+L9088]
     call      msys.m$print_str_nf
     mov       %rax,	[%rip+cc_decls.currproc]
     mov       %rcx,	[%rax]
@@ -63318,11 +63321,11 @@ cc_support.terror_gen:
     call      msys.m$print_end
 L6666:
     call      msys.m$print_startcon
-    lea       %rcx,	[%rip+L9090]
+    lea       %rcx,	[%rip+L9089]
     call      msys.m$print_str_nf
     mov       %rcx,	%rdi
     call      msys.m$print_str_nf
-    lea       %rcx,	[%rip+L9091]
+    lea       %rcx,	[%rip+L9090]
     call      msys.m$print_str_nf
     lea       %rax,	[%rip+cc_decls.lx]
     mov       %eax,	[%rax+16]
@@ -63456,24 +63459,24 @@ L6671:
     test      %rax,	%rax
     jz        L6674
     call      msys.m$print_startcon
-    lea       %rcx,	[%rip+L9092]
+    lea       %rcx,	[%rip+L9091]
     call      msys.m$print_str_nf
     mov       %rax,	[%rip+cc_decls.currproc]
     mov       %rcx,	[%rax]
     call      msys.m$print_str_nf
     call      msys.m$print_nogap
-    lea       %rcx,	[%rip+L9093]
+    lea       %rcx,	[%rip+L9092]
     call      msys.m$print_str_nf
     call      msys.m$print_end
 L6674:
     call      msys.m$print_startcon
-    lea       %rcx,	[%rip+L9094]
+    lea       %rcx,	[%rip+L9093]
     call      msys.m$print_str_nf
     mov       %rax,	%rdi
     and       %rax,	16777215
     mov       %rcx,	%rax
     call      msys.m$print_i64_nf
-    lea       %rcx,	[%rip+L9095]
+    lea       %rcx,	[%rip+L9094]
     call      msys.m$print_str_nf
     lea       %rax,	[%rip+cc_decls.sourcefilepaths]
     mov       %r10,	%rbx
@@ -63485,11 +63488,11 @@ L6674:
     call      msys.m$print_newline
     call      msys.m$print_end
     call      msys.m$print_startcon
-    lea       %rcx,	[%rip+L9096]
+    lea       %rcx,	[%rip+L9095]
     call      msys.m$print_str_nf
     mov       %rcx,	%rsi
     call      msys.m$print_str_nf
-    lea       %rcx,	[%rip+L9097]
+    lea       %rcx,	[%rip+L9096]
     call      msys.m$print_str_nf
     call      msys.m$print_newline
     call      msys.m$print_end
@@ -63606,14 +63609,14 @@ cc_support.loaderror:
     call      msys.m$print_str_nf
     call      msys.m$print_end
     call      msys.m$print_startcon
-    lea       %rcx,	[%rip+L9098]
+    lea       %rcx,	[%rip+L9097]
     call      msys.m$print_str_nf
     lea       %rcx,	[%rbp + cc_support.loaderror.str]
     call      msys.m$print_str_nf
     call      msys.m$print_newline
     call      msys.m$print_end
     call      msys.m$print_startcon
-    lea       %rcx,	[%rip+L9099]
+    lea       %rcx,	[%rip+L9098]
     call      msys.m$print_str_nf
     call      msys.m$print_newline
     call      msys.m$print_end
@@ -63640,8 +63643,8 @@ cc_support.loadsourcefile:
     mov       %rax,	[%rip+cc_decls.nsourcefiles]
     cmp       %rax,	200
     jle       L6686
-    lea       %rcx,	[%rip+L9100]
-    lea       %rdx,	[%rip+L9101]
+    lea       %rcx,	[%rip+L9099]
+    lea       %rdx,	[%rip+L9100]
     call      cc_support.loaderror
 L6686:
     inc       qword ptr[%rip+cc_decls.nsourcefiles]
@@ -63660,7 +63663,7 @@ L6686:
     mov       %rdi,	%rax
     test      %rdi,	%rdi
     jnz       L6688
-    lea       %rcx,	[%rip+L9102]
+    lea       %rcx,	[%rip+L9101]
     mov       %rdx,	%rbx
     call      cc_support.loaderror
 L6688:
@@ -63759,12 +63762,12 @@ cc_support.loadbuiltin:
     mov       %rax,	[%rip+cc_decls.nsourcefiles]
     cmp       %rax,	200
     jle       L6698
-    lea       %rcx,	[%rip+L9103]
-    lea       %rdx,	[%rip+L9104]
+    lea       %rcx,	[%rip+L9102]
+    lea       %rdx,	[%rip+L9103]
     call      cc_support.loaderror
 L6698:
     inc       qword ptr[%rip+cc_decls.nsourcefiles]
-    lea       %rax,	[%rip+L9105]
+    lea       %rax,	[%rip+L9104]
     lea       %r10,	[%rip+cc_decls.sourcefilepaths]
     mov       %r11,	[%rip+cc_decls.nsourcefiles]
     mov       [%r10 + %r11*8],	%rax
@@ -63857,7 +63860,7 @@ cc_support.gs_additem:
     test      %rax,	%rax
     jz        L6706
     mov       %rcx,	%r12
-    lea       %rdx,	[%rip+L9106]
+    lea       %rdx,	[%rip+L9105]
     mov       %r8,	-1
     call      mlib.strbuffer_add
 L6706:
@@ -64018,24 +64021,24 @@ L6730:
     mov       %r10,	%rsi
     mov       %rax,	[%rax + %r10*8-8]
     mov       %rcx,	%rax
-    lea       %rdx,	[%rip+L9107]
+    lea       %rdx,	[%rip+L9106]
     call      mlib.changeext
     mov       %rbx,	%rax
     call      msys.m$print_startcon
-    lea       %rcx,	[%rip+L9108]
+    lea       %rcx,	[%rip+L9107]
     call      msys.m$print_str_nf
     lea       %rax,	[%rip+cc_headers.stdhdrnames]
     mov       %r10,	%rsi
     mov       %rcx,	[%rax + %r10*8-8]
     call      msys.m$print_str_nf
-    lea       %rcx,	[%rip+L9109]
+    lea       %rcx,	[%rip+L9108]
     call      msys.m$print_str_nf
     mov       %rcx,	%rbx
     call      msys.m$print_str_nf
     call      msys.m$print_newline
     call      msys.m$print_end
     mov       %rcx,	%rbx
-    lea       %rdx,	[%rip+L9110]
+    lea       %rdx,	[%rip+L9109]
     call      fopen
     mov       %rdi,	%rax
     lea       %rax,	[%rip+cc_headers.stdhdrtext]
@@ -64139,7 +64142,7 @@ L6744:
     mov       %rcx,	[%rdi]
     call      msys.m$print_str_nf
     call      msys.m$print_nogap
-    lea       %rcx,	[%rip+L9111]
+    lea       %rcx,	[%rip+L9110]
     call      msys.m$print_str_nf
     movzx     %rax,	byte ptr[%rdi+110]
     lea       %r10,	[%rip+cc_tables.scopenames]
@@ -64152,7 +64155,7 @@ L6744:
     mov       %rcx,	%rbx
     mov       %rdx,	%rax
     xor       %r8d,	%r8d
-    lea       %r9,	[%rip+L9112]
+    lea       %r9,	[%rip+L9111]
     call      cc_show.printunit
     mov       %rcx,	%rbx
     call      msys.m$print_startfile
@@ -64202,7 +64205,7 @@ L6750:
     cmp       %rax,	77
     jl        L6752
     call      msys.m$print_startcon
-    lea       %rcx,	[%rip+L9113]
+    lea       %rcx,	[%rip+L9112]
     call      msys.m$print_str_nf
     movsxd    %rax,	dword ptr[%r14+40]
     mov       %rcx,	%rax
@@ -64227,7 +64230,7 @@ L6754:
     mov       %r12,	-1
     mov       %rcx,	%r13
     call      msys.m$print_startfile
-    lea       %rcx,	[%rip+L9114]
+    lea       %rcx,	[%rip+L9113]
     call      msys.m$print_str_nf
     call      msys.m$print_end
 L6756:
@@ -64235,9 +64238,9 @@ L6756:
     call      msys.m$print_startfile
     mov       %rax,	[%rbp + cc_show.printunit.level]
     cmp       %rax,	0
-    jge       L9115
+    jge       L9114
     neg       %rax
-L9115:
+L9114:
     mov       %rcx,	%rax
     mov       %rdx,	[%rbp + cc_show.printunit.prefix]
     mov       %r8,	%r14
@@ -64260,7 +64263,7 @@ L6758:
     mov       %rcx,	[%rbp + cc_show.printunit.idname]
     call      msys.m$print_str_nf
     call      msys.m$print_nogap
-    lea       %rcx,	[%rip+L9116]
+    lea       %rcx,	[%rip+L9115]
     call      msys.m$print_str_nf
     call      msys.m$print_end
     movsxd    %rax,	dword ptr[%r14+40]
@@ -64316,7 +64319,7 @@ L6760:
     jz        L6775
     mov       %rcx,	%r13
     call      msys.m$print_startfile
-    lea       %rcx,	[%rip+L9117]
+    lea       %rcx,	[%rip+L9116]
     call      msys.m$print_str_nf
     call      msys.m$print_nogap
     mov       %rax,	[%rdi+72]
@@ -64326,13 +64329,13 @@ L6760:
     mov       %rcx,	%r10
     call      msys.m$print_str_nf
     call      msys.m$print_nogap
-    lea       %rcx,	[%rip+L9118]
+    lea       %rcx,	[%rip+L9117]
     call      msys.m$print_str_nf
     call      msys.m$print_end
 L6775:
     mov       %rcx,	%r13
     call      msys.m$print_startfile
-    lea       %rcx,	[%rip+L9119]
+    lea       %rcx,	[%rip+L9118]
     call      msys.m$print_str_nf
     call      msys.m$print_nogap
     mov       %rcx,	%rdi
@@ -64345,7 +64348,7 @@ L6775:
     jz        L6777
     mov       %rcx,	%r13
     call      msys.m$print_startfile
-    lea       %rcx,	[%rip+L9120]
+    lea       %rcx,	[%rip+L9119]
     call      msys.m$print_str_nf
     mov       %rcx,	[%r14+32]
     call      msys.m$print_ptr_nf
@@ -64374,7 +64377,7 @@ L6761:
     mov       %rcx,	%r13
     mov       %rdx,	%r10
     mov       %r8,	%rax
-    lea       %r9,	[%rip+L9121]
+    lea       %r9,	[%rip+L9120]
     call      cc_show.printunit
     jmp       L6748
 L6762:
@@ -64401,7 +64404,7 @@ L6763:
 L6764:
     mov       %rcx,	%r13
     call      msys.m$print_startfile
-    lea       %rcx,	[%rip+L9122]
+    lea       %rcx,	[%rip+L9121]
     call      msys.m$print_str_nf
     mov       %rcx,	[%r14]
     call      msys.m$print_i64_nf
@@ -64423,12 +64426,12 @@ L6783:
     jle       L6785
     mov       %rcx,	%r13
     call      msys.m$print_startfile
-    lea       %rcx,	[%rip+L9123]
+    lea       %rcx,	[%rip+L9122]
     call      msys.m$print_str_nf
     call      msys.m$print_nogap
-    lea       %rcx,	[%rip+L9124]
+    lea       %rcx,	[%rip+L9123]
     call      msys.m$print_str_nf
-    lea       %rcx,	[%rip+L9125]
+    lea       %rcx,	[%rip+L9124]
     call      msys.m$print_str_nf
     call      msys.m$print_nogap
     movsxd    %rax,	dword ptr[%r14+48]
@@ -64439,13 +64442,13 @@ L6783:
 L6785:
     mov       %rcx,	%r13
     call      msys.m$print_startfile
-    lea       %rcx,	[%rip+L9126]
+    lea       %rcx,	[%rip+L9125]
     call      msys.m$print_str_nf
     call      msys.m$print_nogap
     mov       %rcx,	[%r14]
     call      msys.m$print_str_nf
     call      msys.m$print_nogap
-    lea       %rcx,	[%rip+L9127]
+    lea       %rcx,	[%rip+L9126]
     call      msys.m$print_str_nf
     call      msys.m$print_nogap
     movsxd    %rax,	dword ptr[%r14+48]
@@ -64463,12 +64466,12 @@ L6779:
 L6788:
     mov       %rcx,	%r13
     call      msys.m$print_startfile
-    lea       %rcx,	[%rip+L9128]
+    lea       %rcx,	[%rip+L9127]
     call      msys.m$print_str_nf
     call      msys.m$print_nogap
-    lea       %rcx,	[%rip+L9129]
+    lea       %rcx,	[%rip+L9128]
     call      msys.m$print_str_nf
-    lea       %rcx,	[%rip+L9130]
+    lea       %rcx,	[%rip+L9129]
     call      msys.m$print_str_nf
     call      msys.m$print_nogap
     movsxd    %rax,	dword ptr[%r14+48]
@@ -64541,7 +64544,7 @@ L6792:
     test      %al,	%al
     jnz       L6783
 L6797:
-    lea       %rcx,	[%rip+L9131]
+    lea       %rcx,	[%rip+L9130]
     call      cc_support.serror
     jmp       L6778
 L6795:
@@ -64552,12 +64555,15 @@ L6795:
     call      msys.m$print_str_nf
     call      msys.m$print_newline
     call      msys.m$print_end
-    lea       %rcx,	[%rip+L9132]
-    call      cc_support.serror
+    call      msys.m$print_startcon
+    lea       %rcx,	[%rip+L9131]
+    call      msys.m$print_str_nf
+    call      msys.m$print_newline
+    call      msys.m$print_end
 L6778:
     mov       %rcx,	%r13
     call      msys.m$print_startfile
-    lea       %rcx,	[%rip+L9133]
+    lea       %rcx,	[%rip+L9132]
     call      msys.m$print_str_nf
     call      msys.m$print_nogap
     mov       %rcx,	%rbx
@@ -64571,7 +64577,7 @@ L6778:
     jz        L6799
     mov       %rcx,	%r13
     call      msys.m$print_startfile
-    lea       %rcx,	[%rip+L9134]
+    lea       %rcx,	[%rip+L9133]
     call      msys.m$print_str_nf
     call      msys.m$print_end
 L6799:
@@ -64580,7 +64586,7 @@ L6799:
     jz        L6801
     mov       %rcx,	%r13
     call      msys.m$print_startfile
-    lea       %rcx,	[%rip+L9135]
+    lea       %rcx,	[%rip+L9134]
     call      msys.m$print_str_nf
     call      msys.m$print_end
 L6801:
@@ -64596,7 +64602,7 @@ L6766:
     call      msys.m$print_end
     mov       %rcx,	%r13
     call      msys.m$print_startfile
-    lea       %rcx,	[%rip+L9136]
+    lea       %rcx,	[%rip+L9135]
     call      msys.m$print_str_nf
     call      msys.m$print_end
     mov       %rcx,	%r13
@@ -64610,7 +64616,7 @@ L6766:
     call      msys.m$print_end
     mov       %rcx,	%r13
     call      msys.m$print_startfile
-    lea       %rcx,	[%rip+L9137]
+    lea       %rcx,	[%rip+L9136]
     call      msys.m$print_str_nf
     call      msys.m$print_end
     mov       %rcx,	%r13
@@ -64625,7 +64631,7 @@ L6766:
 L6767:
     mov       %rcx,	%r13
     call      msys.m$print_startfile
-    lea       %rcx,	[%rip+L9138]
+    lea       %rcx,	[%rip+L9137]
     call      msys.m$print_str_nf
     movsxd    %rax,	dword ptr[%r14+48]
     mov       %rcx,	%rax
@@ -64635,7 +64641,7 @@ L6767:
 L6768:
     mov       %rcx,	%r13
     call      msys.m$print_startfile
-    lea       %rcx,	[%rip+L9139]
+    lea       %rcx,	[%rip+L9138]
     call      msys.m$print_str_nf
     movsxd    %rax,	dword ptr[%r14]
     mov       %rcx,	%rax
@@ -64667,7 +64673,7 @@ L6803:
 L6770:
     mov       %rcx,	%r13
     call      msys.m$print_startfile
-    lea       %rcx,	[%rip+L9140]
+    lea       %rcx,	[%rip+L9139]
     call      msys.m$print_str_nf
     movsxd    %rax,	dword ptr[%r14+48]
     mov       %rcx,	%rax
@@ -64679,7 +64685,7 @@ L6771:
 L6772:
     mov       %rcx,	%r13
     call      msys.m$print_startfile
-    lea       %rcx,	[%rip+L9141]
+    lea       %rcx,	[%rip+L9140]
     call      msys.m$print_str_nf
     movsxd    %rax,	dword ptr[%r14]
     mov       %rcx,	%rax
@@ -64692,7 +64698,7 @@ L6759:
     jz        L6806
     mov       %rcx,	%r13
     call      msys.m$print_startfile
-    lea       %rcx,	[%rip+L9142]
+    lea       %rcx,	[%rip+L9141]
     call      msys.m$print_str_nf
     movsx     %rax,	word ptr[%r14+56]
     mov       %rcx,	%rax
@@ -64707,7 +64713,7 @@ L6806:
     jz        L6808
     mov       %rcx,	%r13
     call      msys.m$print_startfile
-    lea       %rcx,	[%rip+L9143]
+    lea       %rcx,	[%rip+L9142]
     call      msys.m$print_str_nf
     movsxd    %rax,	dword ptr[%r14+48]
     mov       %rcx,	%rax
@@ -64724,7 +64730,7 @@ L6808:
     mov       %rcx,	%r13
     mov       %rdx,	%r10
     mov       %r8,	%rax
-    lea       %r9,	[%rip+L9144]
+    lea       %r9,	[%rip+L9143]
     call      cc_show.printunitlist
     mov       %rax,	[%rbp + cc_show.printunit.level]
     add       %rax,	%r12
@@ -64732,7 +64738,7 @@ L6808:
     mov       %rcx,	%r13
     mov       %rdx,	%r10
     mov       %r8,	%rax
-    lea       %r9,	[%rip+L9145]
+    lea       %r9,	[%rip+L9144]
     call      cc_show.printunitlist
     movsxd    %rax,	dword ptr[%r14+40]
     cmp       %rax,	6
@@ -64743,7 +64749,7 @@ L6808:
     mov       %rcx,	%r13
     mov       %rdx,	%r10
     mov       %r8,	%rax
-    lea       %r9,	[%rip+L9146]
+    lea       %r9,	[%rip+L9145]
     call      cc_show.printunitlist
 L6810:
 L6748:
@@ -64821,7 +64827,7 @@ cc_show.getprefix:
     mov       %r12,	10
 L6819:
     lea       %rcx,	[%rbp + cc_show.getprefix.indentstr]
-    lea       %rdx,	[%rip+L9147]
+    lea       %rdx,	[%rip+L9146]
     call      strcpy
     movsxd    %rax,	dword ptr[%r14+52]
     mov       %rcx,	%rax
@@ -64851,7 +64857,7 @@ L6820:
     jle       L6824
 L6822:
     lea       %rcx,	[%rbp + cc_show.getprefix.indentstr]
-    lea       %rdx,	[%rip+L9148]
+    lea       %rdx,	[%rip+L9147]
     call      strcat
     dec       %rsi
     jnz       L6822
@@ -64870,7 +64876,7 @@ L6824:
     test      %al,	%al
     jz        L6826
     lea       %rcx,	[%rip+cc_show.getprefix.str]
-    lea       %rdx,	[%rip+L9149]
+    lea       %rdx,	[%rip+L9148]
     call      strcat
 L6826:
     lea       %rax,	[%rip+cc_show.getprefix.str]
@@ -64913,7 +64919,7 @@ L6828:
     mov       %rdx,	%rax
     call      strcpy
     lea       %rcx,	[%rip+cc_show.getdottedname.str]
-    lea       %rdx,	[%rip+L9150]
+    lea       %rdx,	[%rip+L9149]
     call      strcat
     lea       %rcx,	[%rip+cc_show.getdottedname.str]
     lea       %rdx,	[%rbp + cc_show.getdottedname.str2]
@@ -64931,7 +64937,7 @@ L6831:
     jz        L6833
     lea       %rcx,	[%rbp + cc_show.getdottedname.str2]
     call      msys.m$print_startstr
-    lea       %rcx,	[%rip+L9150]
+    lea       %rcx,	[%rip+L9149]
     call      msys.m$print_str_nf
     call      msys.m$print_nogap
     movzx     %rax,	word ptr[%rbx+96]
@@ -64959,12 +64965,12 @@ cc_show.getlineinfok:
 #---------------
     lea       %rcx,	[%rip+cc_show.getlineinfok.str]
     call      msys.m$print_startstr
-    lea       %rcx,	[%rip+L9151]
+    lea       %rcx,	[%rip+L9150]
     call      msys.m$print_setfmt
     mov       %rcx,	[%rip+cc_show.currfileno]
     call      msys.m$print_i64_nf
     mov       %rcx,	[%rip+cc_show.currlineno]
-    lea       %rdx,	[%rip+L9152]
+    lea       %rdx,	[%rip+L9151]
     call      msys.m$print_i64
     call      msys.m$print_space
     call      msys.m$print_end
@@ -64990,7 +64996,7 @@ cc_show.printst:
     movzx     %rax,	byte ptr[%rsi+107]
     cmp       %rax,	67
     jz        L6837
-    lea       %rcx,	[%rip+L9153]
+    lea       %rcx,	[%rip+L9152]
     call      cc_support.mcerror
 L6837:
     mov       %rcx,	%rbx
@@ -65049,7 +65055,7 @@ cc_show.printstrec:
     jle       L6844
 L6842:
     mov       %rcx,	%rdi
-    lea       %rdx,	[%rip+L9154]
+    lea       %rdx,	[%rip+L9153]
     call      mlib.gs_str
     mov       %rax,	4
     add       %rsi,	%rax
@@ -65057,7 +65063,7 @@ L6842:
     jnz       L6842
 L6844:
     mov       %rcx,	%rdi
-    lea       %rdx,	[%rip+L9155]
+    lea       %rdx,	[%rip+L9154]
     call      mlib.gs_str
     mov       %rax,	[%rbp + cc_show.printstrec.p]
     mov       %ax,	[%rax+96]
@@ -65069,7 +65075,7 @@ L6844:
     mov       %rcx,	[%rax]
     call      msys.m$print_str_nf
     call      msys.m$print_nogap
-    lea       %rcx,	[%rip+L9156]
+    lea       %rcx,	[%rip+L9155]
     call      msys.m$print_str_nf
     call      msys.m$print_nogap
     mov       %rax,	[%rbp + cc_show.printstrec.p]
@@ -65109,7 +65115,7 @@ L6845:
     call      mlib.gs_getcol
     mov       %rbx,	%rax
     mov       %rcx,	%rdi
-    lea       %rdx,	[%rip+L9157]
+    lea       %rdx,	[%rip+L9156]
     call      mlib.gs_str
     mov       %rax,	[%rbp + cc_show.printstrec.p]
     movzx     %rax,	byte ptr[%rax+110]
@@ -65119,14 +65125,14 @@ L6845:
     mov       %rdx,	%r10
     call      mlib.gs_str
     mov       %rcx,	%rdi
-    lea       %rdx,	[%rip+L9158]
+    lea       %rdx,	[%rip+L9157]
     call      mlib.gs_str
     mov       %rax,	[%rbp + cc_show.printstrec.p]
     mov       %al,	[%rax+112]
     test      %al,	%al
     jz        L6848
     mov       %rcx,	%rdi
-    lea       %rdx,	[%rip+L9159]
+    lea       %rdx,	[%rip+L9158]
     call      mlib.gs_str
     mov       %rax,	[%rbp + cc_show.printstrec.p]
     movzx     %rax,	byte ptr[%rax+112]
@@ -65134,7 +65140,7 @@ L6845:
     mov       %rdx,	%rax
     call      mlib.gs_strint
     mov       %rcx,	%rdi
-    lea       %rdx,	[%rip+L9160]
+    lea       %rdx,	[%rip+L9159]
     call      mlib.gs_str
 L6848:
     mov       %rax,	[%rbp + cc_show.printstrec.p]
@@ -65144,7 +65150,7 @@ L6848:
     test      %rax,	%rax
     jz        L6850
     mov       %rcx,	%rdi
-    lea       %rdx,	[%rip+L9161]
+    lea       %rdx,	[%rip+L9160]
     call      mlib.gs_str
 L6850:
     mov       %rax,	[%rbp + cc_show.printstrec.p]
@@ -65152,7 +65158,7 @@ L6850:
     test      %al,	%al
     jz        L6852
     mov       %rcx,	%rdi
-    lea       %rdx,	[%rip+L9162]
+    lea       %rdx,	[%rip+L9161]
     call      mlib.gs_str
 L6852:
     mov       %rax,	[%rbp + cc_show.printstrec.p]
@@ -65161,7 +65167,7 @@ L6852:
     jz        L6854
     lea       %rcx,	[%rbp + cc_show.printstrec.str]
     call      msys.m$print_startstr
-    lea       %rcx,	[%rip+L9163]
+    lea       %rcx,	[%rip+L9162]
     call      msys.m$print_setfmt
     mov       %rax,	[%rbp + cc_show.printstrec.p]
     movzx     %rax,	byte ptr[%rax+111]
@@ -65173,7 +65179,7 @@ L6852:
     call      mlib.gs_str
 L6854:
     mov       %rcx,	%rdi
-    lea       %rdx,	[%rip+L9164]
+    lea       %rdx,	[%rip+L9163]
     call      mlib.gs_str
     lea       %rax,	[%rbx+10]
     mov       %rcx,	%rdi
@@ -65186,7 +65192,7 @@ L6854:
     jz        L6856
     lea       %rcx,	[%rbp + cc_show.printstrec.str]
     call      msys.m$print_startstr
-    lea       %rcx,	[%rip+L9165]
+    lea       %rcx,	[%rip+L9164]
     call      msys.m$print_setfmt
     mov       %rax,	[%rbp + cc_show.printstrec.p]
     mov       %rax,	[%rax+8]
@@ -65201,7 +65207,7 @@ L6854:
     jmp       L6855
 L6856:
     mov       %rcx,	%rdi
-    lea       %rdx,	[%rip+L9166]
+    lea       %rdx,	[%rip+L9165]
     mov       %r8,	18
     mov       %r9,	32
     call      mlib.gs_leftstr
@@ -65212,7 +65218,7 @@ L6855:
     jnz       L6859
 L6858:
     mov       %rcx,	%rdi
-    lea       %rdx,	[%rip+L9167]
+    lea       %rdx,	[%rip+L9166]
     call      mlib.gs_str
     jmp       L6857
 L6859:
@@ -65242,7 +65248,7 @@ L6857:
     jmp       L6866
 L6861:
     mov       %rcx,	%rdi
-    lea       %rdx,	[%rip+L9168]
+    lea       %rdx,	[%rip+L9167]
     call      mlib.gs_str
     mov       %rax,	[%rbp + cc_show.printstrec.p]
     movsxd    %rax,	dword ptr[%rax+88]
@@ -65256,7 +65262,7 @@ L6862:
     test      %rax,	%rax
     jz        L6868
     mov       %rcx,	%rdi
-    lea       %rdx,	[%rip+L9169]
+    lea       %rdx,	[%rip+L9168]
     call      mlib.gs_str
     mov       %rax,	[%rbp + cc_show.printstrec.p]
     mov       %rax,	[%rax+72]
@@ -65267,7 +65273,7 @@ L6862:
     call      mlib.gs_strvar
 L6868:
     mov       %rcx,	%rdi
-    lea       %rdx,	[%rip+L9170]
+    lea       %rdx,	[%rip+L9169]
     call      mlib.gs_str
     mov       %rax,	[%rbp + cc_show.printstrec.p]
     movsxd    %rax,	dword ptr[%rax+88]
@@ -65277,7 +65283,7 @@ L6868:
     jmp       L6860
 L6863:
     mov       %rcx,	%rdi
-    lea       %rdx,	[%rip+L9171]
+    lea       %rdx,	[%rip+L9170]
     call      mlib.gs_str
     mov       %rax,	[%rbp + cc_show.printstrec.p]
     movsxd    %rax,	dword ptr[%rax+88]
@@ -65287,7 +65293,7 @@ L6863:
     jmp       L6860
 L6864:
     mov       %rcx,	%rdi
-    lea       %rdx,	[%rip+L9172]
+    lea       %rdx,	[%rip+L9171]
     call      mlib.gs_str
     mov       %rax,	[%rbp + cc_show.printstrec.p]
     movsxd    %rax,	dword ptr[%rax+88]
@@ -65301,7 +65307,7 @@ L6865:
     test      %rax,	%rax
     jz        L6870
     mov       %rcx,	%rdi
-    lea       %rdx,	[%rip+L9173]
+    lea       %rdx,	[%rip+L9172]
     call      mlib.gs_str
     mov       %rax,	[%rbp + cc_show.printstrec.p]
     mov       %rax,	[%rax+72]
@@ -65312,15 +65318,15 @@ L6865:
     call      mlib.gs_strvar
 L6870:
     mov       %rcx,	%rdi
-    lea       %rdx,	[%rip+L9174]
+    lea       %rdx,	[%rip+L9173]
     call      mlib.gs_str
 L6866:
 L6860:
     mov       %rcx,	%rdi
-    lea       %rdx,	[%rip+L9175]
+    lea       %rdx,	[%rip+L9174]
     call      mlib.gs_str
     mov       %rcx,	%rdi
-    lea       %rdx,	[%rip+L9176]
+    lea       %rdx,	[%rip+L9175]
     call      mlib.gs_str
     mov       %rax,	[%rbp + cc_show.printstrec.p]
     mov       %eax,	[%rax+92]
@@ -65329,7 +65335,7 @@ L6860:
     mov       %rdx,	%rax
     call      mlib.gs_strint
     mov       %rcx,	%rdi
-    lea       %rdx,	[%rip+L9177]
+    lea       %rdx,	[%rip+L9176]
     call      mlib.gs_str
     mov       %rax,	[%rbp + cc_show.printstrec.p]
     mov       %eax,	[%rax+92]
@@ -65350,7 +65356,7 @@ L6860:
     jmp       L6874
 L6873:
     mov       %rcx,	%rdi
-    lea       %rdx,	[%rip+L9178]
+    lea       %rdx,	[%rip+L9177]
     call      mlib.gs_str
     mov       %rax,	[%r12]
     test      %rax,	%rax
@@ -65359,7 +65365,7 @@ L6873:
     mov       %rax,	[%rax]
     jmp       L6876
 L6877:
-    lea       %rax,	[%rip+L9179]
+    lea       %rax,	[%rip+L9178]
 L6876:
     mov       %rcx,	%rdi
     mov       %rdx,	%rax
@@ -65373,7 +65379,7 @@ L6876:
     mov       %rdx,	%r10
     call      mlib.gs_str
     mov       %rcx,	%rdi
-    lea       %rdx,	[%rip+L9180]
+    lea       %rdx,	[%rip+L9179]
     call      mlib.gs_str
     movsxd    %rax,	dword ptr[%r12+16]
     mov       %rcx,	%rax
@@ -65383,7 +65389,7 @@ L6876:
     mov       %rdx,	%rax
     call      mlib.gs_str
     mov       %rcx,	%rdi
-    lea       %rdx,	[%rip+L9181]
+    lea       %rdx,	[%rip+L9180]
     call      mlib.gs_str
     mov       %rax,	[%rbp + cc_show.printstrec.p]
     mov       %rax,	[%rax+72]
@@ -65416,7 +65422,7 @@ L6881:
     mov       %rcx,	%r14
     mov       %rdx,	%rax
     mov       %r8,	-3
-    lea       %r9,	[%rip+L9182]
+    lea       %r9,	[%rip+L9181]
     call      cc_show.printunit
 L6882:
 L6880:
@@ -65445,7 +65451,7 @@ cc_show.printstflat:
 #---------------
     mov       %rcx,	%r12
     call      msys.m$print_startfile
-    lea       %rcx,	[%rip+L9183]
+    lea       %rcx,	[%rip+L9182]
     call      msys.m$print_str_nf
     call      msys.m$print_newline
     call      msys.m$print_end
@@ -65476,7 +65482,7 @@ L6890:
     call      msys.m$print_i64_nf
     mov       %rcx,	%rbx
     call      msys.m$print_ptr_nf
-    lea       %rcx,	[%rip+L9184]
+    lea       %rcx,	[%rip+L9183]
     call      msys.m$print_str_nf
     mov       %rcx,	%rbx
     call      cc_lib.getstname
@@ -65499,7 +65505,7 @@ L6890:
 L6892:
     mov       %rcx,	%r12
     call      msys.m$print_startfile
-    lea       %rcx,	[%rip+L9185]
+    lea       %rcx,	[%rip+L9184]
     call      msys.m$print_str_nf
     mov       %rcx,	%rbx
     call      msys.m$print_ptr_nf
@@ -65522,7 +65528,7 @@ L6892:
     call      msys.m$print_end
     mov       %rcx,	%r12
     call      msys.m$print_startfile
-    lea       %rcx,	[%rip+L9186]
+    lea       %rcx,	[%rip+L9185]
     call      msys.m$print_str_nf
     mov       %rax,	[%rbx+8]
     test      %rax,	%rax
@@ -65531,12 +65537,12 @@ L6892:
     call      cc_lib.getstname
     jmp       L6895
 L6896:
-    lea       %rax,	[%rip+L9187]
+    lea       %rax,	[%rip+L9186]
 L6895:
     mov       %rcx,	%rax
     call      msys.m$print_str_nf
     call      msys.m$print_nogap
-    lea       %rcx,	[%rip+L9188]
+    lea       %rcx,	[%rip+L9187]
     call      msys.m$print_str_nf
     call      msys.m$print_newline
     call      msys.m$print_end
@@ -65724,7 +65730,7 @@ L6929:
     cmp       %rax,	8000
     jle       L6931
     lea       %rcx,	[%rbp + cc_show.jeval.str]
-    lea       %rdx,	[%rip+L9189]
+    lea       %rdx,	[%rip+L9188]
     call      strcpy
     jmp       L6930
 L6931:
@@ -65734,13 +65740,13 @@ L6931:
     call      pc_api.convertstring
 L6930:
     mov       %rcx,	%r12
-    lea       %rdx,	[%rip+L9190]
+    lea       %rdx,	[%rip+L9189]
     call      cc_support.gs_additem
     mov       %rcx,	%r12
     lea       %rdx,	[%rbp + cc_show.jeval.str]
     call      cc_support.gs_additem
     mov       %rcx,	%r12
-    lea       %rdx,	[%rip+L9190]
+    lea       %rdx,	[%rip+L9189]
     call      cc_support.gs_additem
     jmp       L6898
 L6924:
@@ -65800,7 +65806,7 @@ L6927:
     jmp       L6936
 L6938:
     lea       %rcx,	[%rbp + cc_show.jeval.str]
-    lea       %rdx,	[%rip+L9191]
+    lea       %rdx,	[%rip+L9190]
     call      strcpy
     jmp       L6936
 L6939:
@@ -65812,7 +65818,7 @@ L6939:
     call      msys.m$print_str_nf
     call      msys.m$print_newline
     call      msys.m$print_end
-    lea       %rcx,	[%rip+L9192]
+    lea       %rcx,	[%rip+L9191]
     call      mlib.abortprogram
 L6936:
 L6923:
@@ -65829,7 +65835,7 @@ L6901:
     jmp       L6899
 L6902:
     mov       %rcx,	%r12
-    lea       %rdx,	[%rip+L9193]
+    lea       %rdx,	[%rip+L9192]
     call      mlib.gs_str
     mov       %rax,	[%r13]
     mov       %rax,	[%rax]
@@ -65845,7 +65851,7 @@ L6903:
     mov       %rdx,	%rax
     call      strcpy
     mov       %rcx,	%r12
-    lea       %rdx,	[%rip+L9194]
+    lea       %rdx,	[%rip+L9193]
     call      cc_support.gs_additem
     mov       %rax,	[%r13+16]
     mov       %rcx,	%r12
@@ -65859,7 +65865,7 @@ L6903:
     mov       %rdx,	%rax
     call      cc_show.jeval
     mov       %rcx,	%r12
-    lea       %rdx,	[%rip+L9195]
+    lea       %rdx,	[%rip+L9194]
     call      cc_support.gs_additem
     jmp       L6899
 L6904:
@@ -65873,14 +65879,14 @@ L6904:
     lea       %rdx,	[%rbp + cc_show.jeval.str]
     call      cc_support.gs_additem
     mov       %rcx,	%r12
-    lea       %rdx,	[%rip+L9196]
+    lea       %rdx,	[%rip+L9195]
     call      cc_support.gs_additem
     mov       %rax,	[%r13+16]
     mov       %rcx,	%r12
     mov       %rdx,	%rax
     call      cc_show.jeval
     mov       %rcx,	%r12
-    lea       %rdx,	[%rip+L9197]
+    lea       %rdx,	[%rip+L9196]
     call      cc_support.gs_additem
     jmp       L6899
 L6905:
@@ -65889,7 +65895,7 @@ L6905:
     mov       %rdx,	%rax
     call      cc_show.jeval
     mov       %rcx,	%r12
-    lea       %rdx,	[%rip+L9198]
+    lea       %rdx,	[%rip+L9197]
     call      cc_support.gs_additem
     mov       %rdi,	[%r13+24]
     jmp       L6941
@@ -65901,14 +65907,14 @@ L6940:
     test      %rdi,	%rdi
     jz        L6944
     mov       %rcx,	%r12
-    lea       %rdx,	[%rip+L9199]
+    lea       %rdx,	[%rip+L9198]
     call      cc_support.gs_additem
 L6944:
 L6941:
     test      %rdi,	%rdi
     jnz       L6940
     mov       %rcx,	%r12
-    lea       %rdx,	[%rip+L9200]
+    lea       %rdx,	[%rip+L9199]
     call      cc_support.gs_additem
     jmp       L6899
 L6906:
@@ -65917,10 +65923,10 @@ L6906:
     mov       %rdx,	%rax
     call      cc_show.jeval
     mov       %rcx,	%r12
-    lea       %rdx,	[%rip+L9201]
+    lea       %rdx,	[%rip+L9200]
     call      cc_support.gs_additem
     mov       %rcx,	%r12
-    lea       %rdx,	[%rip+L9202]
+    lea       %rdx,	[%rip+L9201]
     call      mlib.gs_str
     jmp       L6899
 L6907:
@@ -65929,7 +65935,7 @@ L6907:
     mov       %rdx,	%rax
     call      cc_show.jeval
     mov       %rcx,	%r12
-    lea       %rdx,	[%rip+L9203]
+    lea       %rdx,	[%rip+L9202]
     call      cc_support.gs_additem
     mov       %rax,	[%r13+24]
     mov       %rcx,	%r12
@@ -65944,10 +65950,10 @@ L6908:
     mov       %rbx,	%rax
     test      %rbx,	%rbx
     jz        L6946
-    lea       %rax,	[%rip+L9204]
+    lea       %rax,	[%rip+L9203]
     jmp       L6945
 L6946:
-    lea       %rax,	[%rip+L9205]
+    lea       %rax,	[%rip+L9204]
 L6945:
     mov       %rcx,	%r12
     mov       %rdx,	%rax
@@ -65962,7 +65968,7 @@ L6947:
     test      %rdi,	%rdi
     jz        L6951
     mov       %rcx,	%r12
-    lea       %rdx,	[%rip+L9206]
+    lea       %rdx,	[%rip+L9205]
     call      cc_support.gs_additem
 L6951:
 L6948:
@@ -65970,10 +65976,10 @@ L6948:
     jnz       L6947
     test      %rbx,	%rbx
     jz        L6953
-    lea       %rax,	[%rip+L9207]
+    lea       %rax,	[%rip+L9206]
     jmp       L6952
 L6953:
-    lea       %rax,	[%rip+L9208]
+    lea       %rax,	[%rip+L9207]
 L6952:
     mov       %rcx,	%r12
     mov       %rdx,	%rax
@@ -65985,7 +65991,7 @@ L6909:
     mov       %rdx,	%rax
     call      cc_show.jeval
     mov       %rcx,	%r12
-    lea       %rdx,	[%rip+L9209]
+    lea       %rdx,	[%rip+L9208]
     call      cc_support.gs_additem
     mov       %rax,	[%r13+24]
     mov       %rcx,	%r12
@@ -65998,14 +66004,14 @@ L6910:
     mov       %rdx,	%rax
     call      cc_show.jeval
     mov       %rcx,	%r12
-    lea       %rdx,	[%rip+L9210]
+    lea       %rdx,	[%rip+L9209]
     call      cc_support.gs_additem
     mov       %rax,	[%r13+24]
     mov       %rcx,	%r12
     mov       %rdx,	%rax
     call      cc_show.jeval
     mov       %rcx,	%r12
-    lea       %rdx,	[%rip+L9211]
+    lea       %rdx,	[%rip+L9210]
     call      cc_support.gs_additem
     mov       %rax,	[%r13+32]
     mov       %rcx,	%r12
@@ -66021,19 +66027,19 @@ L6911:
     mov       %rdx,	%rax
     call      cc_support.gs_additem
     mov       %rcx,	%r12
-    lea       %rdx,	[%rip+L9212]
+    lea       %rdx,	[%rip+L9211]
     call      cc_support.gs_additem
     mov       %rax,	[%r13+16]
     mov       %rcx,	%r12
     mov       %rdx,	%rax
     call      cc_show.jeval
     mov       %rcx,	%r12
-    lea       %rdx,	[%rip+L9213]
+    lea       %rdx,	[%rip+L9212]
     call      cc_support.gs_additem
     jmp       L6899
 L6912:
     mov       %rcx,	%r12
-    lea       %rdx,	[%rip+L9214]
+    lea       %rdx,	[%rip+L9213]
     call      cc_support.gs_additem
     mov       %rax,	[%r13+16]
     mov       %rcx,	%r12
@@ -66043,7 +66049,7 @@ L6912:
     test      %rax,	%rax
     jz        L6955
     mov       %rcx,	%r12
-    lea       %rdx,	[%rip+L9215]
+    lea       %rdx,	[%rip+L9214]
     call      cc_support.gs_additem
     mov       %rax,	[%r13+24]
     mov       %rcx,	%r12
@@ -66051,17 +66057,17 @@ L6912:
     call      cc_show.jeval
 L6955:
     mov       %rcx,	%r12
-    lea       %rdx,	[%rip+L9216]
+    lea       %rdx,	[%rip+L9215]
     call      cc_support.gs_additem
     jmp       L6899
 L6913:
     mov       %rcx,	%r12
-    lea       %rdx,	[%rip+L9217]
+    lea       %rdx,	[%rip+L9216]
     call      cc_support.gs_additem
     jmp       L6899
 L6914:
     mov       %rcx,	%r12
-    lea       %rdx,	[%rip+L9218]
+    lea       %rdx,	[%rip+L9217]
     call      cc_support.gs_additem
     mov       %rax,	[%r13+16]
     mov       %rcx,	%r12
@@ -66070,7 +66076,7 @@ L6914:
     jmp       L6899
 L6915:
     mov       %rcx,	%r12
-    lea       %rdx,	[%rip+L9219]
+    lea       %rdx,	[%rip+L9218]
     call      cc_support.gs_additem
     mov       %rax,	[%r13+16]
     mov       %rcx,	%r12
@@ -66083,7 +66089,7 @@ L6916:
     mov       %rdx,	%rax
     call      cc_show.jeval
     mov       %rcx,	%r12
-    lea       %rdx,	[%rip+L9220]
+    lea       %rdx,	[%rip+L9219]
     call      cc_support.gs_additem
     jmp       L6899
 L6917:
@@ -66092,17 +66098,17 @@ L6917:
     mov       %rdx,	%rax
     call      cc_show.jeval
     mov       %rcx,	%r12
-    lea       %rdx,	[%rip+L9221]
+    lea       %rdx,	[%rip+L9220]
     call      cc_support.gs_additem
     jmp       L6899
 L6918:
     mov       %rcx,	%r12
-    lea       %rdx,	[%rip+L9222]
+    lea       %rdx,	[%rip+L9221]
     call      mlib.gs_str
     jmp       L6899
 L6919:
     mov       %rcx,	%r12
-    lea       %rdx,	[%rip+L9223]
+    lea       %rdx,	[%rip+L9222]
     call      mlib.gs_str
     mov       %rax,	[%r13+16]
     mov       %rcx,	%r12
@@ -66112,7 +66118,7 @@ L6919:
     cmp       %rax,	0
     jle       L6957
     mov       %rcx,	%r12
-    lea       %rdx,	[%rip+L9224]
+    lea       %rdx,	[%rip+L9223]
     call      mlib.gs_str
     movsxd    %rax,	dword ptr[%r13+48]
     mov       %rcx,	%r12
@@ -66121,7 +66127,7 @@ L6919:
     jmp       L6956
 L6957:
     mov       %rcx,	%r12
-    lea       %rdx,	[%rip+L9225]
+    lea       %rdx,	[%rip+L9224]
     call      mlib.gs_str
     movsxd    %rax,	dword ptr[%r13+48]
     neg       %rax
@@ -66130,26 +66136,26 @@ L6957:
     call      mlib.gs_strint
 L6956:
     mov       %rcx,	%r12
-    lea       %rdx,	[%rip+L9226]
+    lea       %rdx,	[%rip+L9225]
     call      mlib.gs_str
     jmp       L6899
 L6920:
     mov       %rcx,	%r12
-    lea       %rdx,	[%rip+L9227]
+    lea       %rdx,	[%rip+L9226]
     call      mlib.gs_str
     mov       %rax,	[%r13+16]
     mov       %rcx,	%r12
     mov       %rdx,	%rax
     call      cc_show.jeval
     mov       %rcx,	%r12
-    lea       %rdx,	[%rip+L9228]
+    lea       %rdx,	[%rip+L9227]
     call      mlib.gs_str
     mov       %rax,	[%r13+24]
     mov       %rcx,	%r12
     mov       %rdx,	%rax
     call      cc_show.jeval
     mov       %rcx,	%r12
-    lea       %rdx,	[%rip+L9229]
+    lea       %rdx,	[%rip+L9228]
     call      mlib.gs_str
     jmp       L6899
 L6921:
@@ -66160,7 +66166,7 @@ L6921:
     jmp       L6899
 L6922:
     mov       %rcx,	%r12
-    lea       %rdx,	[%rip+L9230]
+    lea       %rdx,	[%rip+L9229]
     call      mlib.gs_str
 L6899:
 L6898:
@@ -66185,7 +66191,7 @@ cc_show.printfilelist:
 #---------------
     mov       %rcx,	%rbx
     call      msys.m$print_startfile
-    lea       %rcx,	[%rip+L9231]
+    lea       %rcx,	[%rip+L9230]
     call      msys.m$print_str_nf
     mov       %rcx,	[%rip+cc_decls.nsourcefiles]
     call      msys.m$print_i64_nf
@@ -66198,7 +66204,7 @@ cc_show.printfilelist:
 L6959:
     mov       %rcx,	%rbx
     call      msys.m$print_startfile
-    lea       %rcx,	[%rip+L9232]
+    lea       %rcx,	[%rip+L9231]
     call      msys.m$print_setfmt
     mov       %rcx,	%rdi
     call      msys.m$print_i64_nf
@@ -66206,7 +66212,7 @@ L6959:
     mov       %r10,	%rdi
     mov       %rax,	[%rax + %r10*8]
     mov       %rcx,	%rax
-    lea       %rdx,	[%rip+L9233]
+    lea       %rdx,	[%rip+L9232]
     call      msys.m$print_str
     lea       %rax,	[%rip+cc_decls.sourcefilepaths]
     mov       %r10,	%rdi
@@ -66220,7 +66226,7 @@ L6959:
 L6961:
     mov       %rcx,	%rbx
     call      msys.m$print_startfile
-    lea       %rcx,	[%rip+L9234]
+    lea       %rcx,	[%rip+L9233]
     call      msys.m$print_str_nf
     mov       %rcx,	[%rip+cc_decls.inputfile]
     call      msys.m$print_str_nf
@@ -66228,7 +66234,7 @@ L6961:
     call      msys.m$print_end
     mov       %rcx,	%rbx
     call      msys.m$print_startfile
-    lea       %rcx,	[%rip+L9235]
+    lea       %rcx,	[%rip+L9234]
     call      msys.m$print_str_nf
     mov       %rcx,	[%rip+cc_decls.nlibfiles]
     call      msys.m$print_i64_nf
@@ -66272,7 +66278,7 @@ cc_show.printmodelist:
 #---------------
     mov       %rcx,	%r12
     call      msys.m$print_startfile
-    lea       %rcx,	[%rip+L9236]
+    lea       %rcx,	[%rip+L9235]
     call      msys.m$print_str_nf
     mov       %rcx,	[%rip+cc_decls.ntypes]
     call      msys.m$print_i64_nf
@@ -66286,7 +66292,7 @@ L6966:
     mov       %rcx,	%r12
     call      msys.m$print_startfile
     mov       %rcx,	%rdi
-    lea       %rdx,	[%rip+L9237]
+    lea       %rdx,	[%rip+L9236]
     call      msys.m$print_i64
     mov       %rcx,	%rdi
     mov       %rdx,	1
@@ -66306,9 +66312,9 @@ L6966:
     jz        L6970
     mov       %rcx,	%r12
     call      msys.m$print_startfile
-    lea       %rcx,	[%rip+L9238]
+    lea       %rcx,	[%rip+L9237]
     call      msys.m$print_str_nf
-    lea       %rcx,	[%rip+L9239]
+    lea       %rcx,	[%rip+L9238]
     call      msys.m$print_str_nf
     lea       %rax,	[%rip+cc_decls.tttypedef]
     mov       %r10,	%rdi
@@ -66320,9 +66326,9 @@ L6966:
 L6970:
     mov       %rcx,	%r12
     call      msys.m$print_startfile
-    lea       %rcx,	[%rip+L9240]
+    lea       %rcx,	[%rip+L9239]
     call      msys.m$print_str_nf
-    lea       %rcx,	[%rip+L9241]
+    lea       %rcx,	[%rip+L9240]
     call      msys.m$print_str_nf
     mov       %rcx,	%rbx
     call      msys.m$print_i64_nf
@@ -66335,9 +66341,9 @@ L6970:
     call      msys.m$print_end
     mov       %rcx,	%r12
     call      msys.m$print_startfile
-    lea       %rcx,	[%rip+L9242]
+    lea       %rcx,	[%rip+L9241]
     call      msys.m$print_str_nf
-    lea       %rcx,	[%rip+L9243]
+    lea       %rcx,	[%rip+L9242]
     call      msys.m$print_str_nf
     mov       %rcx,	%rdi
     call      cc_lib.typename
@@ -66350,9 +66356,9 @@ L6970:
     mov       %rsi,	[%rax + %r10*8]
     mov       %rcx,	%r12
     call      msys.m$print_startfile
-    lea       %rcx,	[%rip+L9244]
+    lea       %rcx,	[%rip+L9243]
     call      msys.m$print_str_nf
-    lea       %rcx,	[%rip+L9245]
+    lea       %rcx,	[%rip+L9244]
     call      msys.m$print_str_nf
     mov       %rcx,	%rsi
     call      msys.m$print_ptr_nf
@@ -66365,7 +66371,7 @@ L6970:
     mov       %rcx,	[%rsi]
     call      msys.m$print_str_nf
     call      msys.m$print_nogap
-    lea       %rcx,	[%rip+L9246]
+    lea       %rcx,	[%rip+L9245]
     call      msys.m$print_str_nf
     call      msys.m$print_nogap
     movzx     %rax,	word ptr[%rsi+96]
@@ -66376,7 +66382,7 @@ L6970:
 L6972:
     mov       %rcx,	%r12
     call      msys.m$print_startfile
-    lea       %rcx,	[%rip+L9247]
+    lea       %rcx,	[%rip+L9246]
     call      msys.m$print_str_nf
     call      msys.m$print_end
 L6971:
@@ -66386,9 +66392,9 @@ L6971:
     call      msys.m$print_end
     mov       %rcx,	%r12
     call      msys.m$print_startfile
-    lea       %rcx,	[%rip+L9248]
+    lea       %rcx,	[%rip+L9247]
     call      msys.m$print_str_nf
-    lea       %rcx,	[%rip+L9249]
+    lea       %rcx,	[%rip+L9248]
     call      msys.m$print_str_nf
     lea       %rax,	[%rip+cc_decls.tttarget]
     mov       %r10,	%rdi
@@ -66402,9 +66408,9 @@ L6971:
     call      msys.m$print_end
     mov       %rcx,	%r12
     call      msys.m$print_startfile
-    lea       %rcx,	[%rip+L9250]
+    lea       %rcx,	[%rip+L9249]
     call      msys.m$print_str_nf
-    lea       %rcx,	[%rip+L9251]
+    lea       %rcx,	[%rip+L9250]
     call      msys.m$print_str_nf
     lea       %rax,	[%rip+cc_decls.ttsize]
     mov       %r10,	%rdi
@@ -66414,9 +66420,9 @@ L6971:
     call      msys.m$print_end
     mov       %rcx,	%r12
     call      msys.m$print_startfile
-    lea       %rcx,	[%rip+L9252]
+    lea       %rcx,	[%rip+L9251]
     call      msys.m$print_str_nf
-    lea       %rcx,	[%rip+L9253]
+    lea       %rcx,	[%rip+L9252]
     call      msys.m$print_str_nf
     lea       %rax,	[%rip+cc_decls.ttlength]
     mov       %r10,	%rdi
@@ -66426,9 +66432,9 @@ L6971:
     call      msys.m$print_end
     mov       %rcx,	%r12
     call      msys.m$print_startfile
-    lea       %rcx,	[%rip+L9254]
+    lea       %rcx,	[%rip+L9253]
     call      msys.m$print_str_nf
-    lea       %rcx,	[%rip+L9255]
+    lea       %rcx,	[%rip+L9254]
     call      msys.m$print_str_nf
     lea       %rax,	[%rip+cc_decls.ttisblock]
     mov       %r10,	%rdi
@@ -66439,9 +66445,9 @@ L6971:
     call      msys.m$print_end
     mov       %rcx,	%r12
     call      msys.m$print_startfile
-    lea       %rcx,	[%rip+L9256]
+    lea       %rcx,	[%rip+L9255]
     call      msys.m$print_str_nf
-    lea       %rcx,	[%rip+L9257]
+    lea       %rcx,	[%rip+L9256]
     call      msys.m$print_str_nf
     lea       %rax,	[%rip+cc_decls.ttconst]
     mov       %r10,	%rdi
@@ -66452,9 +66458,9 @@ L6971:
     call      msys.m$print_end
     mov       %rcx,	%r12
     call      msys.m$print_startfile
-    lea       %rcx,	[%rip+L9258]
+    lea       %rcx,	[%rip+L9257]
     call      msys.m$print_str_nf
-    lea       %rcx,	[%rip+L9259]
+    lea       %rcx,	[%rip+L9258]
     call      msys.m$print_str_nf
     lea       %rax,	[%rip+cc_decls.ttsigned]
     mov       %r10,	%rdi
@@ -66465,9 +66471,9 @@ L6971:
     call      msys.m$print_end
     mov       %rcx,	%r12
     call      msys.m$print_startfile
-    lea       %rcx,	[%rip+L9260]
+    lea       %rcx,	[%rip+L9259]
     call      msys.m$print_str_nf
-    lea       %rcx,	[%rip+L9261]
+    lea       %rcx,	[%rip+L9260]
     call      msys.m$print_str_nf
     lea       %rax,	[%rip+cc_decls.ttreftype]
     mov       %r10,	%rdi
@@ -66478,9 +66484,9 @@ L6971:
     call      msys.m$print_end
     mov       %rcx,	%r12
     call      msys.m$print_startfile
-    lea       %rcx,	[%rip+L9262]
+    lea       %rcx,	[%rip+L9261]
     call      msys.m$print_str_nf
-    lea       %rcx,	[%rip+L9263]
+    lea       %rcx,	[%rip+L9262]
     call      msys.m$print_str_nf
     lea       %rax,	[%rip+cc_decls.ttconsttype]
     mov       %r10,	%rdi
@@ -66494,9 +66500,9 @@ L6971:
     call      msys.m$print_end
     mov       %rcx,	%r12
     call      msys.m$print_startfile
-    lea       %rcx,	[%rip+L9264]
+    lea       %rcx,	[%rip+L9263]
     call      msys.m$print_str_nf
-    lea       %rcx,	[%rip+L9265]
+    lea       %rcx,	[%rip+L9264]
     call      msys.m$print_str_nf
     lea       %rax,	[%rip+cc_decls.ttshared]
     mov       %r10,	%rdi
@@ -66681,6 +66687,7 @@ $procaddr:
     .quad     mc_genmcl.px_initdswx
     .quad     mc_auxmcl.do_addrmode
 $procname:
+    .quad     L9265
     .quad     L9266
     .quad     L9267
     .quad     L9268
@@ -66810,30 +66817,29 @@ $procname:
     .quad     L9392
     .quad     L9393
     .quad     L9394
-    .quad     L9395
 $nprocs:
     .quad     0x82
 #Real Table
     .align    8
-L8954:
+L8953:
     .quad     0x3FF0000000000000
-L8861:
+L8860:
     .quad     0x4024000000000000
-L8858:
+L8857:
     .quad     0x4024000000000000
-L8853:
-    .quad     0
 L8852:
+    .quad     0
+L8851:
     .quad     0x4000000000000000
-L8737:
+L8736:
     .quad     0x4000000000000000
-L8693:
+L8692:
     .quad     0x4059000000000000
-L8490:
+L8489:
     .quad     0x7FF0000000000000
-L8488:
+L8487:
     .quad     0x7FF0000000000000
-L8471:
+L8470:
     .quad     0
 L8353:
     .quad     0x7FF0000000000000
@@ -66850,1784 +66856,1784 @@ L8259:
 #Real32 Table
     .align    16
 #labneg64
-L8943:
+L8942:
     .quad     0x8000000000000000
     .quad     0x8000000000000000
 #mask63/offset64
-L8856:
+L8855:
     .quad     0x7FFFFFFFFFFFFFFF
-L8857:
+L8856:
     .quad     0x43E0000000000000
 #String Table
     .align    8
-L9395:
+L9394:
     .ascii    "do_addrmode"
     .byte     0
-L9394:
+L9393:
     .ascii    "px_initdswx"
     .byte     0
-L9393:
+L9392:
     .ascii    "px_longjmp"
     .byte     0
-L9392:
+L9391:
     .ascii    "px_setjmp"
     .byte     0
-L9391:
+L9390:
     .ascii    "px_loadall"
     .byte     0
-L9390:
+L9389:
     .ascii    "px_storebf"
     .byte     0
-L9389:
+L9388:
     .ascii    "px_storebit"
     .byte     0
-L9388:
+L9387:
     .ascii    "px_loadbf"
     .byte     0
-L9387:
+L9386:
     .ascii    "px_sign"
     .byte     0
-L9386:
+L9385:
     .ascii    "px_toboolto"
     .byte     0
-L9385:
+L9384:
     .ascii    "px_notto"
     .byte     0
-L9384:
+L9383:
     .ascii    "px_bitnotto"
     .byte     0
-L9383:
+L9382:
     .ascii    "px_divto"
     .byte     0
-L9382:
+L9381:
     .ascii    "px_subpxto"
     .byte     0
-L9381:
+L9380:
     .ascii    "px_addpxto"
     .byte     0
-L9380:
+L9379:
     .ascii    "px_absto"
     .byte     0
-L9379:
+L9378:
     .ascii    "px_negto"
     .byte     0
-L9378:
+L9377:
     .ascii    "px_maxto"
     .byte     0
-L9377:
+L9376:
     .ascii    "px_minto"
     .byte     0
-L9376:
+L9375:
     .ascii    "px_power"
     .byte     0
-L9375:
+L9374:
     .ascii    "px_max"
     .byte     0
-L9374:
+L9373:
     .ascii    "px_min"
     .byte     0
-L9373:
+L9372:
     .ascii    "px_setcc"
     .byte     0
-L9372:
+L9371:
     .ascii    "px_fmod"
     .byte     0
-L9371:
+L9370:
     .ascii    "px_atan2"
     .byte     0
-L9370:
+L9369:
     .ascii    "px_ceil"
     .byte     0
-L9369:
+L9368:
     .ascii    "px_floor"
     .byte     0
-L9368:
+L9367:
     .ascii    "px_round"
     .byte     0
-L9367:
+L9366:
     .ascii    "px_exp"
     .byte     0
-L9366:
+L9365:
     .ascii    "px_log10"
     .byte     0
-L9365:
+L9364:
     .ascii    "px_log"
     .byte     0
-L9364:
+L9363:
     .ascii    "px_atan"
     .byte     0
-L9363:
+L9362:
     .ascii    "px_acos"
     .byte     0
-L9362:
+L9361:
     .ascii    "px_asin"
     .byte     0
-L9361:
+L9360:
     .ascii    "px_tan"
     .byte     0
-L9360:
+L9359:
     .ascii    "px_cos"
     .byte     0
-L9359:
+L9358:
     .ascii    "px_sin"
     .byte     0
-L9358:
+L9357:
     .ascii    "px_assem"
     .byte     0
-L9357:
+L9356:
     .ascii    "px_loadbit"
     .byte     0
-L9356:
+L9355:
     .ascii    "px_unload"
     .byte     0
-L9355:
+L9354:
     .ascii    "px_typepun"
     .byte     0
-L9354:
+L9353:
     .ascii    "px_truncate"
     .byte     0
-L9353:
+L9352:
     .ascii    "px_fnarrow"
     .byte     0
-L9352:
+L9351:
     .ascii    "px_fwiden"
     .byte     0
-L9351:
+L9350:
     .ascii    "px_endsw"
     .byte     0
-L9350:
+L9349:
     .ascii    "px_swlabel"
     .byte     0
-L9349:
+L9348:
     .ascii    "px_switchu"
     .byte     0
-L9348:
+L9347:
     .ascii    "px_switch"
     .byte     0
-L9347:
+L9346:
     .ascii    "px_subp"
     .byte     0
-L9346:
+L9345:
     .ascii    "px_clear"
     .byte     0
-L9345:
+L9344:
     .ascii    "px_idivrem"
     .byte     0
-L9344:
+L9343:
     .ascii    "px_irem"
     .byte     0
-L9343:
+L9342:
     .ascii    "px_idiv"
     .byte     0
-L9342:
+L9341:
     .ascii    "px_float"
     .byte     0
-L9341:
+L9340:
     .ascii    "px_fix"
     .byte     0
-L9340:
+L9339:
     .ascii    "px_shrto"
     .byte     0
-L9339:
+L9338:
     .ascii    "px_shlto"
     .byte     0
-L9338:
+L9337:
     .ascii    "px_bitxorto"
     .byte     0
-L9337:
+L9336:
     .ascii    "px_bitorto"
     .byte     0
-L9336:
+L9335:
     .ascii    "px_bitandto"
     .byte     0
-L9335:
+L9334:
     .ascii    "px_multo"
     .byte     0
-L9334:
+L9333:
     .ascii    "px_subto"
     .byte     0
-L9333:
+L9332:
     .ascii    "px_addto"
     .byte     0
-L9332:
+L9331:
     .ascii    "px_labeldef"
     .byte     0
-L9331:
+L9330:
     .ascii    "px_swapstk"
     .byte     0
-L9330:
+L9329:
     .ascii    "px_iswap"
     .byte     0
-L9329:
+L9328:
     .ascii    "px_to"
     .byte     0
-L9328:
+L9327:
     .ascii    "px_subpx"
     .byte     0
-L9327:
+L9326:
     .ascii    "px_addpx"
     .byte     0
-L9326:
+L9325:
     .ascii    "px_storem"
     .byte     0
-L9325:
+L9324:
     .ascii    "px_istorex"
     .byte     0
-L9324:
+L9323:
     .ascii    "px_istore"
     .byte     0
-L9323:
+L9322:
     .ascii    "px_iloadx"
     .byte     0
-L9322:
+L9321:
     .ascii    "px_iload"
     .byte     0
-L9321:
+L9320:
     .ascii    "px_fordown"
     .byte     0
-L9320:
+L9319:
     .ascii    "px_forup"
     .byte     0
-L9319:
+L9318:
     .ascii    "px_loaddecr"
     .byte     0
-L9318:
+L9317:
     .ascii    "px_loadincr"
     .byte     0
-L9317:
+L9316:
     .ascii    "px_decrload"
     .byte     0
-L9316:
+L9315:
     .ascii    "px_incrload"
     .byte     0
-L9315:
+L9314:
     .ascii    "px_decrto"
     .byte     0
-L9314:
+L9313:
     .ascii    "px_incrto"
     .byte     0
-L9313:
+L9312:
     .ascii    "px_stop"
     .byte     0
-L9312:
+L9311:
     .ascii    "px_resetmx"
     .byte     0
-L9311:
+L9310:
     .ascii    "px_startmx"
     .byte     0
-L9310:
+L9309:
     .ascii    "px_jumpretm"
     .byte     0
-L9309:
+L9308:
     .ascii    "px_jumpret"
     .byte     0
-L9308:
+L9307:
     .ascii    "px_callp"
     .byte     0
-L9307:
+L9306:
     .ascii    "px_setarg"
     .byte     0
-L9306:
+L9305:
     .ascii    "px_setcall"
     .byte     0
-L9305:
+L9304:
     .ascii    "px_retfn"
     .byte     0
-L9304:
+L9303:
     .ascii    "px_retproc"
     .byte     0
-L9303:
+L9302:
     .ascii    "px_shr"
     .byte     0
-L9302:
+L9301:
     .ascii    "px_shl"
     .byte     0
-L9301:
+L9300:
     .ascii    "px_bitxor"
     .byte     0
-L9300:
+L9299:
     .ascii    "px_bitor"
     .byte     0
-L9299:
+L9298:
     .ascii    "px_bitand"
     .byte     0
-L9298:
+L9297:
     .ascii    "px_jumpf"
     .byte     0
-L9297:
+L9296:
     .ascii    "px_jumpt"
     .byte     0
-L9296:
+L9295:
     .ascii    "px_jumpcc"
     .byte     0
-L9295:
+L9294:
     .ascii    "px_sqrt"
     .byte     0
-L9294:
+L9293:
     .ascii    "px_sqr"
     .byte     0
-L9293:
+L9292:
     .ascii    "px_toboolt"
     .byte     0
-L9292:
+L9291:
     .ascii    "px_not"
     .byte     0
-L9291:
+L9290:
     .ascii    "px_bitnot"
     .byte     0
-L9290:
+L9289:
     .ascii    "px_abs"
     .byte     0
-L9289:
+L9288:
     .ascii    "px_neg"
     .byte     0
-L9288:
+L9287:
     .ascii    "px_ijump"
     .byte     0
-L9287:
+L9286:
     .ascii    "px_jump"
     .byte     0
-L9286:
+L9285:
     .ascii    "px_widen"
     .byte     0
-L9285:
+L9284:
     .ascii    "px_eval"
     .byte     0
-L9284:
+L9283:
     .ascii    "px_div"
     .byte     0
-L9283:
+L9282:
     .ascii    "px_mul"
     .byte     0
-L9282:
+L9281:
     .ascii    "px_sub"
     .byte     0
-L9281:
+L9280:
     .ascii    "px_add"
     .byte     0
-L9280:
+L9279:
     .ascii    "px_store"
     .byte     0
-L9279:
+L9278:
     .ascii    "px_load"
     .byte     0
-L9278:
+L9277:
     .ascii    "px_label"
     .byte     0
-L9277:
+L9276:
     .ascii    "px_data"
     .byte     0
-L9276:
+L9275:
     .ascii    "px_zstatic"
     .byte     0
-L9275:
+L9274:
     .ascii    "px_istatic"
     .byte     0
-L9274:
+L9273:
     .ascii    "px_endprog"
     .byte     0
-L9273:
+L9272:
     .ascii    "px_endproc"
     .byte     0
-L9272:
+L9271:
     .ascii    "px_proc"
     .byte     0
-L9271:
+L9270:
     .ascii    "px_comment"
     .byte     0
-L9270:
+L9269:
     .ascii    "px_type"
     .byte     0
-L9269:
+L9268:
     .ascii    "px_opnd"
     .byte     0
-L9268:
+L9267:
     .ascii    "px_double"
     .byte     0
-L9267:
+L9266:
     .ascii    "px_dupl"
     .byte     0
-L9266:
+L9265:
     .ascii    "px_nop"
     .byte     0
-L9265:
+L9264:
     .ascii    "Shared:"
     .byte     0
-L9264:
-    .byte     9
-    .byte     0
 L9263:
-    .ascii    "Constver:"
+    .byte     9
     .byte     0
 L9262:
-    .byte     9
+    .ascii    "Constver:"
     .byte     0
 L9261:
-    .ascii    "Ref:"
+    .byte     9
     .byte     0
 L9260:
-    .byte     9
+    .ascii    "Ref:"
     .byte     0
 L9259:
-    .ascii    "Signed:"
+    .byte     9
     .byte     0
 L9258:
-    .byte     9
+    .ascii    "Signed:"
     .byte     0
 L9257:
-    .ascii    "Const:"
+    .byte     9
     .byte     0
 L9256:
-    .byte     9
+    .ascii    "Const:"
     .byte     0
 L9255:
-    .ascii    "Isblock:"
+    .byte     9
     .byte     0
 L9254:
-    .byte     9
+    .ascii    "Isblock:"
     .byte     0
 L9253:
-    .ascii    "Length:"
+    .byte     9
     .byte     0
 L9252:
-    .byte     9
+    .ascii    "Length:"
     .byte     0
 L9251:
-    .ascii    "Size:"
+    .byte     9
     .byte     0
 L9250:
-    .byte     9
+    .ascii    "Size:"
     .byte     0
 L9249:
-    .ascii    "Target:"
+    .byte     9
     .byte     0
 L9248:
-    .byte     9
+    .ascii    "Target:"
     .byte     0
 L9247:
-    .ascii    "-"
+    .byte     9
     .byte     0
 L9246:
-    .ascii    "."
+    .ascii    "-"
     .byte     0
 L9245:
-    .ascii    "ttnamedef:"
+    .ascii    "."
     .byte     0
 L9244:
-    .byte     9
+    .ascii    "ttnamedef:"
     .byte     0
 L9243:
-    .ascii    "Name:"
+    .byte     9
     .byte     0
 L9242:
-    .byte     9
+    .ascii    "Name:"
     .byte     0
 L9241:
-    .ascii    "Basetype:"
+    .byte     9
     .byte     0
 L9240:
-    .byte     9
+    .ascii    "Basetype:"
     .byte     0
 L9239:
-    .ascii    "Typedef:"
-    .byte     0
-L9238:
     .byte     9
     .byte     0
+L9238:
+    .ascii    "Typedef:"
+    .byte     0
 L9237:
-    .ascii    "4"
+    .byte     9
     .byte     0
 L9236:
-    .ascii    "PROC MODELIST"
+    .ascii    "4"
     .byte     0
 L9235:
-    .byte     10
-    .ascii    "Libfiles"
+    .ascii    "PROC MODELIST"
     .byte     0
 L9234:
     .byte     10
-    .ascii    "Input file:"
+    .ascii    "Libfiles"
     .byte     0
 L9233:
-    .ascii    "12jl"
+    .byte     10
+    .ascii    "Input file:"
     .byte     0
 L9232:
-    .ascii    "# # (#)"
+    .ascii    "12jl"
     .byte     0
 L9231:
-    .ascii    "Source files"
+    .ascii    "# # (#)"
     .byte     0
 L9230:
-    .ascii    "<CAN'T DO JEVAL>"
+    .ascii    "Source files"
     .byte     0
 L9229:
-    .ascii    ")"
+    .ascii    "<CAN'T DO JEVAL>"
     .byte     0
 L9228:
-    .ascii    "+"
+    .ascii    ")"
     .byte     0
 L9227:
-    .ascii    "("
-    .byte     0
-L9226:
-    .ascii    ")"
-    .byte     0
-L9225:
-    .ascii    ")/"
-    .byte     0
-L9224:
-    .ascii    ")*"
-    .byte     0
-L9223:
-    .ascii    "scale(("
-    .byte     0
-L9222:
-    .ascii    "<nullunit>"
-    .byte     0
-L9221:
-    .ascii    "--"
-    .byte     0
-L9220:
-    .ascii    "++"
-    .byte     0
-L9219:
-    .ascii    "--"
-    .byte     0
-L9218:
-    .ascii    "++"
-    .byte     0
-L9217:
-    .ascii    "<JBLOCK>"
-    .byte     0
-L9216:
-    .ascii    ")"
-    .byte     0
-L9215:
     .ascii    "+"
     .byte     0
+L9226:
+    .ascii    "("
+    .byte     0
+L9225:
+    .ascii    ")"
+    .byte     0
+L9224:
+    .ascii    ")/"
+    .byte     0
+L9223:
+    .ascii    ")*"
+    .byte     0
+L9222:
+    .ascii    "scale(("
+    .byte     0
+L9221:
+    .ascii    "<nullunit>"
+    .byte     0
+L9220:
+    .ascii    "--"
+    .byte     0
+L9219:
+    .ascii    "++"
+    .byte     0
+L9218:
+    .ascii    "--"
+    .byte     0
+L9217:
+    .ascii    "++"
+    .byte     0
+L9216:
+    .ascii    "<JBLOCK>"
+    .byte     0
+L9215:
+    .ascii    ")"
+    .byte     0
 L9214:
-    .ascii    "*("
+    .ascii    "+"
     .byte     0
 L9213:
-    .ascii    ")"
+    .ascii    "*("
     .byte     0
 L9212:
-    .ascii    "("
+    .ascii    ")"
     .byte     0
 L9211:
-    .ascii    ":"
+    .ascii    "("
     .byte     0
 L9210:
-    .ascii    "?"
-    .byte     0
-L9209:
-    .ascii    "="
-    .byte     0
-L9208:
-    .ascii    "}"
-    .byte     0
-L9207:
-    .ascii    ")"
-    .byte     0
-L9206:
-    .ascii    ","
-    .byte     0
-L9205:
-    .ascii    "{"
-    .byte     0
-L9204:
-    .ascii    "("
-    .byte     0
-L9203:
-    .ascii    "->"
-    .byte     0
-L9202:
-    .ascii    "???"
-    .byte     0
-L9201:
-    .ascii    "."
-    .byte     0
-L9200:
-    .ascii    ")"
-    .byte     0
-L9199:
-    .ascii    ","
-    .byte     0
-L9198:
-    .ascii    "("
-    .byte     0
-L9197:
-    .ascii    ")"
-    .byte     0
-L9196:
-    .ascii    "("
-    .byte     0
-L9195:
-    .ascii    ")"
-    .byte     0
-L9194:
-    .ascii    "("
-    .byte     0
-L9193:
-    .ascii    "&"
-    .byte     0
-L9192:
-    .ascii    "EVAL/C"
-    .byte     0
-L9191:
-    .ascii    "ARRAY"
-    .byte     0
-L9190:
-    .byte     34
-    .byte     0
-L9189:
-    .ascii    "LONGSTR)"
-    .byte     0
-L9188:
-    .ascii    ")"
-    .byte     0
-L9187:
-    .ascii    "-"
-    .byte     0
-L9186:
-    .ascii    "(From"
-    .byte     0
-L9185:
-    .byte     9
-    .byte     0
-L9184:
     .ascii    ":"
     .byte     0
+L9209:
+    .ascii    "?"
+    .byte     0
+L9208:
+    .ascii    "="
+    .byte     0
+L9207:
+    .ascii    "}"
+    .byte     0
+L9206:
+    .ascii    ")"
+    .byte     0
+L9205:
+    .ascii    ","
+    .byte     0
+L9204:
+    .ascii    "{"
+    .byte     0
+L9203:
+    .ascii    "("
+    .byte     0
+L9202:
+    .ascii    "->"
+    .byte     0
+L9201:
+    .ascii    "???"
+    .byte     0
+L9200:
+    .ascii    "."
+    .byte     0
+L9199:
+    .ascii    ")"
+    .byte     0
+L9198:
+    .ascii    ","
+    .byte     0
+L9197:
+    .ascii    "("
+    .byte     0
+L9196:
+    .ascii    ")"
+    .byte     0
+L9195:
+    .ascii    "("
+    .byte     0
+L9194:
+    .ascii    ")"
+    .byte     0
+L9193:
+    .ascii    "("
+    .byte     0
+L9192:
+    .ascii    "&"
+    .byte     0
+L9191:
+    .ascii    "EVAL/C"
+    .byte     0
+L9190:
+    .ascii    "ARRAY"
+    .byte     0
+L9189:
+    .byte     34
+    .byte     0
+L9188:
+    .ascii    "LONGSTR)"
+    .byte     0
+L9187:
+    .ascii    ")"
+    .byte     0
+L9186:
+    .ascii    "-"
+    .byte     0
+L9185:
+    .ascii    "(From"
+    .byte     0
+L9184:
+    .byte     9
+    .byte     0
 L9183:
-    .ascii    "GLOBAL SYMBOL TABLE:"
+    .ascii    ":"
     .byte     0
 L9182:
-    .ascii    "*"
+    .ascii    "GLOBAL SYMBOL TABLE:"
     .byte     0
 L9181:
-    .ascii    " Code:"
+    .ascii    "*"
     .byte     0
 L9180:
-    .ascii    " Mode:"
+    .ascii    " Code:"
     .byte     0
 L9179:
-    .ascii    "Anon"
+    .ascii    " Mode:"
     .byte     0
 L9178:
+    .ascii    "Anon"
+    .byte     0
+L9177:
     .byte     9
     .byte     9
     .ascii    "Param: "
     .byte     0
-L9177:
-    .ascii    " "
-    .byte     0
 L9176:
-    .ascii    "Lineno:"
+    .ascii    " "
     .byte     0
 L9175:
-    .ascii    " "
+    .ascii    "Lineno:"
     .byte     0
 L9174:
-    .ascii    "STATIC********"
+    .ascii    " "
     .byte     0
 L9173:
-    .ascii    "="
+    .ascii    "STATIC********"
     .byte     0
 L9172:
-    .ascii    "Enum:"
-    .byte     0
-L9171:
-    .ascii    "Index:"
-    .byte     0
-L9170:
-    .ascii    " Offset: "
-    .byte     0
-L9169:
     .ascii    "="
     .byte     0
+L9171:
+    .ascii    "Enum:"
+    .byte     0
+L9170:
+    .ascii    "Index:"
+    .byte     0
+L9169:
+    .ascii    " Offset: "
+    .byte     0
 L9168:
-    .ascii    "Offset:"
+    .ascii    "="
     .byte     0
 L9167:
-    .ascii    "Void "
+    .ascii    "Offset:"
     .byte     0
 L9166:
-    .ascii    "()"
+    .ascii    "Void "
     .byte     0
 L9165:
-    .ascii    "(#)"
+    .ascii    "()"
     .byte     0
 L9164:
-    .ascii    "]"
+    .ascii    "(#)"
     .byte     0
 L9163:
-    .ascii    "Pm:# "
+    .ascii    "]"
     .byte     0
 L9162:
-    .ascii    "Used "
+    .ascii    "Pm:# "
     .byte     0
 L9161:
-    .ascii    "Var "
+    .ascii    "Used "
     .byte     0
 L9160:
-    .ascii    " "
+    .ascii    "Var "
     .byte     0
 L9159:
-    .ascii    "@@"
+    .ascii    " "
     .byte     0
 L9158:
-    .ascii    " "
+    .ascii    "@@"
     .byte     0
 L9157:
-    .ascii    "["
+    .ascii    " "
     .byte     0
 L9156:
-    .ascii    "."
+    .ascii    "["
     .byte     0
 L9155:
-    .ascii    ":"
-    .byte     0
-L9154:
-    .ascii    "    "
-    .byte     0
-L9153:
-    .ascii    "PRINTST not name"
-    .byte     0
-L9152:
-    .ascii    "z5"
-    .byte     0
-L9151:
-    .ascii    "# "
-    .byte     0
-L9150:
     .ascii    "."
     .byte     0
+L9154:
+    .ascii    ":"
+    .byte     0
+L9153:
+    .ascii    "    "
+    .byte     0
+L9152:
+    .ascii    "PRINTST not name"
+    .byte     0
+L9151:
+    .ascii    "z5"
+    .byte     0
+L9150:
+    .ascii    "# "
+    .byte     0
 L9149:
-    .ascii    " "
+    .ascii    "."
     .byte     0
 L9148:
-    .ascii    "|---"
+    .ascii    " "
     .byte     0
 L9147:
-    .ascii    "-----------------------"
+    .ascii    "|---"
     .byte     0
 L9146:
-    .ascii    "3"
+    .ascii    "-----------------------"
     .byte     0
 L9145:
-    .ascii    "2"
+    .ascii    "3"
     .byte     0
 L9144:
-    .ascii    "1"
+    .ascii    "2"
     .byte     0
 L9143:
-    .ascii    " ALENGTH="
+    .ascii    "1"
     .byte     0
 L9142:
-    .ascii    " Widen from:"
+    .ascii    " ALENGTH="
     .byte     0
 L9141:
-    .ascii    " Offset:"
+    .ascii    " Widen from:"
     .byte     0
 L9140:
-    .ascii    " Aparams:"
+    .ascii    " Offset:"
     .byte     0
 L9139:
-    .ascii    "Ptrscale:"
+    .ascii    " Aparams:"
     .byte     0
 L9138:
-    .ascii    "Scale:"
+    .ascii    "Ptrscale:"
     .byte     0
 L9137:
-    .ascii    " => "
+    .ascii    "Scale:"
     .byte     0
 L9136:
-    .ascii    " "
+    .ascii    " => "
     .byte     0
 L9135:
-    .ascii    "<WSTRCONST>"
-    .byte     0
-L9134:
-    .ascii    "<STRCONST>"
-    .byte     0
-L9133:
     .ascii    " "
     .byte     0
+L9134:
+    .ascii    "<WSTRCONST>"
+    .byte     0
+L9133:
+    .ascii    "<STRCONST>"
+    .byte     0
 L9132:
-    .ascii    "PRINTUNIT BAD CONST"
+    .ascii    " "
     .byte     0
 L9131:
-    .ascii    "PRINTUNIT/CONST/aRRAY"
+    .ascii    "PRINTUNIT BAD CONST"
     .byte     0
 L9130:
+    .ascii    "PRINTUNIT/CONST/aRRAY"
+    .byte     0
+L9129:
     .byte     34
     .ascii    " *"
     .byte     0
-L9129:
-    .ascii    "(WSTRING)"
-    .byte     0
 L9128:
-    .byte     34
+    .ascii    "(WSTRING)"
     .byte     0
 L9127:
     .byte     34
-    .ascii    " *"
     .byte     0
 L9126:
     .byte     34
+    .ascii    " *"
     .byte     0
 L9125:
     .byte     34
-    .ascii    " *"
     .byte     0
 L9124:
-    .ascii    "(LONGSTR)"
+    .byte     34
+    .ascii    " *"
     .byte     0
 L9123:
-    .byte     34
+    .ascii    "(LONGSTR)"
     .byte     0
 L9122:
-    .ascii    "Value:"
+    .byte     34
     .byte     0
 L9121:
-    .ascii    "1"
+    .ascii    "Value:"
     .byte     0
 L9120:
-    .ascii    " Lastcall:"
-    .byte     0
-L9119:
-    .ascii    " "
-    .byte     0
-L9118:
-    .ascii    "}"
-    .byte     0
-L9117:
-    .ascii    " {"
-    .byte     0
-L9116:
-    .ascii    ": "
-    .byte     0
-L9114:
-    .ascii    "             "
-    .byte     0
-L9113:
-    .ascii    "print unit: bad tag"
-    .byte     0
-L9112:
     .ascii    "1"
     .byte     0
+L9119:
+    .ascii    " Lastcall:"
+    .byte     0
+L9118:
+    .ascii    " "
+    .byte     0
+L9117:
+    .ascii    "}"
+    .byte     0
+L9116:
+    .ascii    " {"
+    .byte     0
+L9115:
+    .ascii    ": "
+    .byte     0
+L9113:
+    .ascii    "             "
+    .byte     0
+L9112:
+    .ascii    "print unit: bad tag"
+    .byte     0
 L9111:
-    .ascii    "="
+    .ascii    "1"
     .byte     0
 L9110:
-    .ascii    "wb"
+    .ascii    "="
     .byte     0
 L9109:
-    .ascii    "as"
+    .ascii    "wb"
     .byte     0
 L9108:
-    .ascii    "Writing internal"
+    .ascii    "as"
     .byte     0
 L9107:
-    .ascii    "hdr"
+    .ascii    "Writing internal"
     .byte     0
 L9106:
-    .ascii    " "
+    .ascii    "hdr"
     .byte     0
 L9105:
-    .ascii    "<builtin>"
+    .ascii    " "
     .byte     0
 L9104:
+    .ascii    "<builtin>"
     .byte     0
 L9103:
-    .ascii    "Too many source files"
     .byte     0
 L9102:
-    .ascii    "LSF can't load "
-    .byte     0
-L9101:
-    .byte     0
-L9100:
     .ascii    "Too many source files"
     .byte     0
+L9101:
+    .ascii    "LSF can't load "
+    .byte     0
+L9100:
+    .byte     0
 L9099:
-    .ascii    "Stopping"
+    .ascii    "Too many source files"
     .byte     0
 L9098:
-    .ascii    "Load Error:"
+    .ascii    "Stopping"
     .byte     0
 L9097:
-    .ascii    "****"
+    .ascii    "Load Error:"
     .byte     0
 L9096:
-    .ascii    "**** Code Gen Error:"
-    .byte     0
-L9095:
-    .ascii    "in file"
-    .byte     0
-L9094:
-    .ascii    "On line"
-    .byte     0
-L9093:
-    .ascii    " "
-    .byte     0
-L9092:
-    .ascii    "In function"
-    .byte     0
-L9091:
-    .ascii    "on line"
-    .byte     0
-L9090:
-    .ascii    "Type error:"
-    .byte     0
-L9089:
-    .byte     10
-    .ascii    "In function"
-    .byte     0
-L9088:
     .ascii    "****"
     .byte     0
-L9087:
-    .ascii    "**** Syntax Error:"
+L9095:
+    .ascii    "**** Code Gen Error:"
     .byte     0
-L9086:
+L9094:
     .ascii    "in file"
     .byte     0
-L9085:
+L9093:
     .ascii    "On line"
     .byte     0
-L9084:
-    .ascii    "OUTSIDE PROC"
-    .byte     0
-L9083:
+L9092:
     .ascii    " "
     .byte     0
-L9082:
+L9091:
+    .ascii    "In function"
+    .byte     0
+L9090:
+    .ascii    "on line"
+    .byte     0
+L9089:
+    .ascii    "Type error:"
+    .byte     0
+L9088:
     .byte     10
     .ascii    "In function"
+    .byte     0
+L9087:
+    .ascii    "****"
+    .byte     0
+L9086:
+    .ascii    "**** Syntax Error:"
+    .byte     0
+L9085:
+    .ascii    "in file"
+    .byte     0
+L9084:
+    .ascii    "On line"
+    .byte     0
+L9083:
+    .ascii    "OUTSIDE PROC"
+    .byte     0
+L9082:
+    .ascii    " "
     .byte     0
 L9081:
     .byte     10
-    .ascii    "MC Error:"
+    .ascii    "In function"
     .byte     0
 L9080:
-    .ascii    "w"
+    .byte     10
+    .ascii    "MC Error:"
     .byte     0
 L9079:
-    .ascii    "$error.tmp"
-    .byte     0
-L9078:
-    .ascii    "ATL ERROR"
-    .byte     0
-L9077:
-    .ascii    "rb"
-    .byte     0
-L9076:
     .ascii    "w"
     .byte     0
+L9078:
+    .ascii    "$error.tmp"
+    .byte     0
+L9077:
+    .ascii    "ATL ERROR"
+    .byte     0
+L9076:
+    .ascii    "rb"
+    .byte     0
 L9075:
-    .ascii    "GETALIGN SIZE NOT 1248"
+    .ascii    "w"
     .byte     0
 L9074:
-    .ascii    "Dupl proc name"
+    .ascii    "GETALIGN SIZE NOT 1248"
     .byte     0
 L9073:
-    .ascii    "in"
+    .ascii    "Dupl proc name"
     .byte     0
 L9072:
-    .byte     34
+    .ascii    "in"
     .byte     0
 L9071:
-    .ascii    " "
     .byte     34
     .byte     0
 L9070:
-    .ascii    "# expected, not #"
+    .ascii    " "
+    .byte     34
     .byte     0
 L9069:
-    .ascii    "Too many types/cnm"
+    .ascii    "# expected, not #"
     .byte     0
 L9068:
-    .ascii    "STRMODE(M)="
+    .ascii    "Too many types/cnm"
     .byte     0
 L9067:
-    .ascii    "Too many types"
+    .ascii    "STRMODE(M)="
     .byte     0
 L9066:
+    .ascii    "Too many types"
     .byte     0
 L9065:
-    .ascii    "const "
     .byte     0
 L9064:
-    .ascii    "<enum>"
+    .ascii    "const "
     .byte     0
 L9063:
-    .ascii    "<array>"
+    .ascii    "<enum>"
     .byte     0
 L9062:
-    .ascii    "."
+    .ascii    "<array>"
     .byte     0
 L9061:
-    .ascii    "union "
+    .ascii    "."
     .byte     0
 L9060:
-    .ascii    "struct "
+    .ascii    "union "
     .byte     0
 L9059:
-    .ascii    "NEWSTRMODE"
+    .ascii    "struct "
     .byte     0
 L9058:
-    .ascii    ")"
+    .ascii    "NEWSTRMODE"
     .byte     0
 L9057:
-    .ascii    ","
-    .byte     0
-L9056:
-    .ascii    "proc("
-    .byte     0
-L9055:
     .ascii    ")"
     .byte     0
-L9054:
-    .ascii    " "
-    .byte     0
-L9053:
+L9056:
     .ascii    ","
     .byte     0
+L9055:
+    .ascii    "proc("
+    .byte     0
+L9054:
+    .ascii    ")"
+    .byte     0
+L9053:
+    .ascii    " "
+    .byte     0
 L9052:
-    .ascii    "("
+    .ascii    ","
     .byte     0
 L9051:
-    .ascii    "enum "
+    .ascii    "("
     .byte     0
 L9050:
-    .ascii    "[]"
+    .ascii    "enum "
     .byte     0
 L9049:
-    .ascii    "[#]"
+    .ascii    "[]"
     .byte     0
 L9048:
-    .ascii    "ref "
+    .ascii    "[#]"
     .byte     0
 L9047:
-    .ascii    "const ref "
+    .ascii    "ref "
     .byte     0
 L9046:
-    .ascii    "z3"
+    .ascii    "const ref "
     .byte     0
 L9045:
+    .ascii    "z3"
+    .byte     0
+L9044:
     .byte     92
     .ascii    "#o"
     .byte     0
-L9044:
+L9043:
     .ascii    "$F"
     .byte     0
-L9043:
+L9042:
     .ascii    "$T"
     .byte     0
-L9042:
+L9041:
     .ascii    "GCV Not constant"
     .byte     0
-L9041:
+L9040:
     .ascii    "Can't find -to version"
     .byte     0
-L9040:
+L9039:
     .ascii    "to"
     .byte     0
-L9038:
-    .ascii    "main"
-    .byte     0
 L9037:
-    .ascii    "."
+    .ascii    "main"
     .byte     0
 L9036:
-    .ascii    "Dupl case value: #"
+    .ascii    "."
     .byte     0
 L9035:
-    .ascii    "Too many cases on one switch"
+    .ascii    "Dupl case value: #"
     .byte     0
 L9034:
-    .ascii    "case: serial switch not found"
+    .ascii    "Too many cases on one switch"
     .byte     0
 L9033:
-    .ascii    "Label not defined: #"
+    .ascii    "case: serial switch not found"
     .byte     0
 L9032:
-    .ascii    "maxparams"
+    .ascii    "Label not defined: #"
     .byte     0
 L9031:
-    .ascii    "Convert op not implem: #"
+    .ascii    "maxparams"
     .byte     0
 L9030:
-    .ascii    "Bad cast"
+    .ascii    "Convert op not implem: #"
     .byte     0
 L9029:
-    .ascii    "DOASSIGN not ready: #"
+    .ascii    "Bad cast"
     .byte     0
 L9028:
-    .ascii    "dxname"
+    .ascii    "DOASSIGN not ready: #"
     .byte     0
 L9027:
-    .ascii    "const?"
+    .ascii    "dxname"
     .byte     0
 L9026:
-    .ascii    "CONST/WSTRING"
+    .ascii    "const?"
     .byte     0
 L9025:
-    .ascii    "DX-EXPR: can't do tag: #"
+    .ascii    "CONST/WSTRING"
     .byte     0
 L9024:
-    .ascii    "2:Runtime expr in static data"
+    .ascii    "DX-EXPR: can't do tag: #"
     .byte     0
 L9023:
-    .ascii    "*"
+    .ascii    "2:Runtime expr in static data"
     .byte     0
 L9022:
-    .ascii    "Complex ptr expr in static data"
+    .ascii    "*"
     .byte     0
 L9021:
-    .ascii    "1:Runtime or unsupported expr in static data"
+    .ascii    "Complex ptr expr in static data"
     .byte     0
 L9020:
-    .ascii    "+"
+    .ascii    "1:Runtime or unsupported expr in static data"
     .byte     0
 L9019:
-    .ascii    "Add/Idata &frame"
-    .byte     0
-L9018:
     .ascii    "+"
     .byte     0
+L9018:
+    .ascii    "Add/Idata &frame"
+    .byte     0
 L9017:
-    .ascii    ","
+    .ascii    "+"
     .byte     0
 L9016:
-    .ascii    "`"
+    .ascii    ","
     .byte     0
 L9015:
-    .ascii    "Idata &frame"
+    .ascii    "`"
     .byte     0
 L9014:
-    .ascii    "IDATA/SCALAR"
+    .ascii    "Idata &frame"
     .byte     0
 L9013:
-    .ascii    "GENIDATA/WSTRING2"
+    .ascii    "IDATA/SCALAR"
     .byte     0
 L9012:
-    .ascii    "$#.#.#"
+    .ascii    "GENIDATA/WSTRING2"
     .byte     0
 L9011:
+    .ascii    "$#.#.#"
     .byte     0
 L9010:
-    .ascii    "------------------------"
     .byte     0
 L9009:
-    .ascii    "main"
+    .ascii    "------------------------"
     .byte     0
 L9008:
+    .ascii    "main"
     .byte     0
 L9007:
-    .ascii    "Static fn not defined: #"
     .byte     0
 L9006:
-    .ascii    "1:Start of code"
+    .ascii    "Static fn not defined: #"
     .byte     0
 L9005:
-    .ascii    "GenPCL:"
+    .ascii    "1:Start of code"
     .byte     0
 L9004:
-    .ascii    "Generic: multiple types match"
+    .ascii    "GenPCL:"
     .byte     0
 L9003:
-    .ascii    "Generic: no type match"
+    .ascii    "Generic: multiple types match"
     .byte     0
 L9002:
-    .ascii    "generic/default twice"
+    .ascii    "Generic: no type match"
     .byte     0
 L9001:
-    .ascii    "Not array"
+    .ascii    "generic/default twice"
     .byte     0
 L9000:
-    .ascii    "*"
+    .ascii    "Not array"
     .byte     0
 L8999:
-    .ascii    "Can't do conversion # => #"
+    .ascii    "*"
     .byte     0
 L8998:
-    .ascii    "*"
+    .ascii    "Can't do conversion # => #"
     .byte     0
 L8997:
-    .ascii    "case not inside switch stmt"
+    .ascii    "*"
     .byte     0
 L8996:
-    .ascii    "poploop?"
+    .ascii    "case not inside switch stmt"
     .byte     0
 L8995:
-    .ascii    "Too many nested loop or switch"
+    .ascii    "poploop?"
     .byte     0
 L8994:
-    .ascii    "Not allowed on ptrs"
+    .ascii    "Too many nested loop or switch"
     .byte     0
 L8993:
-    .ascii    "-= refs don't match"
+    .ascii    "Not allowed on ptrs"
     .byte     0
 L8992:
-    .ascii    "ptr+=ptr"
+    .ascii    "-= refs don't match"
     .byte     0
 L8991:
-    .ascii    "Not a field of struct # #"
+    .ascii    "ptr+=ptr"
     .byte     0
 L8990:
-    .ascii    ". -> not a struct"
+    .ascii    "Not a field of struct # #"
     .byte     0
 L8989:
-    .ascii    "-> needs pointer"
+    .ascii    ". -> not a struct"
     .byte     0
 L8988:
-    .ascii    "enum name reused #"
+    .ascii    "-> needs pointer"
     .byte     0
 L8987:
-    .ascii    "Redefining enum #"
+    .ascii    "enum name reused #"
     .byte     0
 L8986:
-    .ascii    "Enum tag in use #"
+    .ascii    "Redefining enum #"
     .byte     0
 L8985:
-    .ascii    "BAD REF[]"
+    .ascii    "Enum tag in use #"
     .byte     0
 L8984:
-    .ascii    "const to non-const pointer"
+    .ascii    "BAD REF[]"
     .byte     0
 L8983:
-    .ascii    "Struct decl error #"
+    .ascii    "const to non-const pointer"
     .byte     0
 L8982:
-    .ascii    "Struct decl error"
+    .ascii    "Struct decl error #"
     .byte     0
 L8981:
-    .ascii    "Can't use ss in struct"
+    .ascii    "Struct decl error"
     .byte     0
 L8980:
-    .ascii    "member name in use #"
+    .ascii    "Can't use ss in struct"
     .byte     0
 L8979:
-    .ascii    "typedef or function inside struct"
+    .ascii    "member name in use #"
     .byte     0
 L8978:
-    .ascii    "Field name expected"
+    .ascii    "typedef or function inside struct"
     .byte     0
 L8977:
-    .ascii    "Redefining struct #"
+    .ascii    "Field name expected"
     .byte     0
 L8976:
-    .ascii    "Prev"
+    .ascii    "Redefining struct #"
     .byte     0
 L8975:
-    .ascii    "Struct tag in use #"
+    .ascii    "Prev"
     .byte     0
 L8974:
-    .ascii    "ATP?"
+    .ascii    "Struct tag in use #"
     .byte     0
 L8973:
-    .ascii    "*"
+    .ascii    "ATP?"
     .byte     0
 L8972:
-    .ascii    "ATP:"
+    .ascii    "*"
     .byte     0
 L8971:
-    .ascii    "Variadic param is void"
+    .ascii    "ATP:"
     .byte     0
 L8970:
-    .ascii    "Too many args"
+    .ascii    "Variadic param is void"
     .byte     0
 L8969:
-    .ascii    "1:Too few args"
+    .ascii    "Too many args"
     .byte     0
 L8968:
-    .ascii    "ccall?"
+    .ascii    "1:Too few args"
     .byte     0
 L8967:
-    .ascii    "*"
+    .ascii    "ccall?"
     .byte     0
 L8966:
-    .ascii    "JTAGNAMES[P.TAG]="
+    .ascii    "*"
     .byte     0
 L8965:
-    .ascii    "Not function pointer: #"
+    .ascii    "JTAGNAMES[P.TAG]="
     .byte     0
 L8964:
-    .ascii    "value: #"
+    .ascii    "Not function pointer: #"
     .byte     0
 L8963:
-    .ascii    "*"
+    .ascii    "value: #"
     .byte     0
 L8962:
-    .ascii    "CHECKLV/WIDEN"
-    .byte     0
-L8960:
-    .ascii    "Invalid condition #"
-    .byte     0
-L8959:
-    .ascii    "rem 0"
-    .byte     0
-L8958:
-    .ascii    "div 0"
-    .byte     0
-L8957:
-    .ascii    "EVALSUB/REF"
-    .byte     0
-L8955:
-    .ascii    "Rem bad types"
-    .byte     0
-L8953:
-    .ascii    "Div bad types"
-    .byte     0
-L8952:
-    .ascii    "Mul bad types"
-    .byte     0
-L8951:
-    .ascii    "Sub bad types"
-    .byte     0
-L8950:
-    .ascii    "++ bad type"
-    .byte     0
-L8949:
-    .ascii    "* not pointer"
-    .byte     0
-L8948:
     .ascii    "*"
     .byte     0
+L8961:
+    .ascii    "CHECKLV/WIDEN"
+    .byte     0
+L8959:
+    .ascii    "Invalid condition #"
+    .byte     0
+L8958:
+    .ascii    "rem 0"
+    .byte     0
+L8957:
+    .ascii    "div 0"
+    .byte     0
+L8956:
+    .ascii    "EVALSUB/REF"
+    .byte     0
+L8954:
+    .ascii    "Rem bad types"
+    .byte     0
+L8952:
+    .ascii    "Div bad types"
+    .byte     0
+L8951:
+    .ascii    "Mul bad types"
+    .byte     0
+L8950:
+    .ascii    "Sub bad types"
+    .byte     0
+L8949:
+    .ascii    "++ bad type"
+    .byte     0
+L8948:
+    .ascii    "* not pointer"
+    .byte     0
 L8947:
-    .ascii    "! bad type"
+    .ascii    "*"
     .byte     0
 L8946:
+    .ascii    "! bad type"
+    .byte     0
+L8945:
     .ascii    "abs bad type"
     .byte     0
-L8944:
+L8943:
     .ascii    "neg bad type"
     .byte     0
-L8942:
+L8941:
     .ascii    "; after function def"
     .byte     0
-L8941:
+L8940:
     .ascii    "Can't define function twice #"
     .byte     0
-L8940:
+L8939:
     .ascii    "fn: name in use #"
     .byte     0
-L8939:
+L8938:
     .ascii    "NAME not allowed in cast type #"
     .byte     0
-L8938:
+L8937:
     .ascii    "bad symbol in paramlist"
     .byte     0
-L8937:
+L8936:
     .ascii    "Param name reused # #"
     .byte     0
-L8936:
+L8935:
     .ascii    "Param type missing or misspelt"
     .byte     0
-L8935:
+L8934:
     .ascii    "Typedef redefined or can't match types #"
     .byte     0
-L8934:
+L8933:
     .ascii    "Typedef name in use #"
     .byte     0
-L8933:
+L8932:
     .ascii    "Local decl error #"
     .byte     0
-L8932:
+L8931:
     .ascii    "Nested function"
     .byte     0
-L8931:
-    .ascii    "Var name expected"
-    .byte     0
 L8930:
-    .ascii    "Return value needed"
+    .ascii    "Var name expected"
     .byte     0
 L8929:
-    .ascii    "Can't return value in void function"
+    .ascii    "Return value needed"
     .byte     0
 L8928:
-    .ascii    "For decl error"
+    .ascii    "Can't return value in void function"
     .byte     0
 L8927:
-    .ascii    "Not allowed in for stmt"
+    .ascii    "For decl error"
     .byte     0
 L8926:
+    .ascii    "Not allowed in for stmt"
+    .byte     0
+L8925:
     .ascii    "Var name expected"
     .byte     0
-L8924:
+L8923:
     .ascii    "2:Duplicate label"
     .byte     0
-L8923:
+L8922:
     .ascii    "continue outside loop"
     .byte     0
-L8922:
+L8921:
     .ascii    "break outside loop/sw"
     .byte     0
-L8921:
+L8920:
     .ascii    "{...} statement expected"
     .byte     0
-L8920:
+L8919:
     .ascii    "Too many blocks"
     .byte     0
-L8919:
+L8918:
     .ascii    "Too many block levels"
     .byte     0
-L8918:
+L8917:
     .ascii    "Init str too long"
     .byte     0
-L8917:
+L8916:
     .ascii    "Array init"
     .byte     0
-L8916:
+L8915:
     .ascii    "{} initialiser expected"
     .byte     0
-L8915:
+L8914:
     .ascii    "Too many struct elems"
     .byte     0
-L8914:
+L8913:
     .ascii    "Too many array elems"
     .byte     0
-L8913:
+L8912:
     .ascii    "init/Empty struct"
     .byte     0
-L8912:
+L8911:
     .ascii    "init/0-size array"
     .byte     0
-L8911:
+L8910:
     .ascii    "readconstint #"
     .byte     0
-L8910:
+L8909:
     .ascii    "Negative array dim"
     .byte     0
-L8909:
+L8908:
     .ascii    "ZERO LEN ARRAY"
     .byte     0
-L8908:
+L8907:
     .ascii    "Can't do VLAs"
     .byte     0
-L8907:
+L8906:
     .ascii    "rnt1"
     .byte     0
-L8906:
-    .ascii    "Can't init extern #"
-    .byte     0
 L8905:
-    .ascii    "Can't init twice #"
+    .ascii    "Can't init extern #"
     .byte     0
 L8904:
-    .ascii    "var: name in use #"
-    .byte     0
-L8903:
-    .ascii    "Can't init extern #"
-    .byte     0
-L8902:
     .ascii    "Can't init twice #"
     .byte     0
+L8903:
+    .ascii    "var: name in use #"
+    .byte     0
+L8902:
+    .ascii    "Can't init extern #"
+    .byte     0
 L8901:
-    .ascii    "var: redefining #"
+    .ascii    "Can't init twice #"
     .byte     0
 L8900:
-    .ascii    "var: name in use # #"
+    .ascii    "var: redefining #"
     .byte     0
 L8899:
-    .ascii    "Readterm?"
+    .ascii    "var: name in use # #"
     .byte     0
 L8898:
-    .ascii    "RT"
+    .ascii    "Readterm?"
     .byte     0
 L8897:
-    .ascii    "rt/alignof"
+    .ascii    "RT"
     .byte     0
 L8896:
-    .ascii    "rt/compound lit"
+    .ascii    "rt/alignof"
     .byte     0
 L8895:
-    .ascii    "rt/&&label"
+    .ascii    "rt/compound lit"
     .byte     0
 L8894:
-    .ascii    "char const too long"
+    .ascii    "rt/&&label"
     .byte     0
 L8893:
+    .ascii    "char const too long"
+    .byte     0
+L8892:
     .ascii    "Undefined name "
     .byte     34
     .ascii    "#"
     .byte     34
     .byte     0
-L8892:
+L8891:
     .ascii    "shift:Not an int"
     .byte     0
-L8891:
+L8890:
     .ascii    "invalid rel operands"
     .byte     0
-L8890:
+L8889:
     .ascii    "Comparing distinct pointers/rel"
     .byte     0
-L8889:
+L8888:
     .ascii    "invalid == operands"
     .byte     0
-L8888:
+L8887:
     .ascii    "U="
     .byte     0
-L8887:
+L8886:
     .ascii    "Can't compare pointer to int2"
     .byte     0
-L8886:
+L8885:
     .ascii    "Can't compare pointer to int"
     .byte     0
-L8885:
+L8884:
     .ascii    "Comparing distinct pointers/eq"
     .byte     0
-L8884:
+L8883:
     .ascii    "invalid & operands"
     .byte     0
-L8883:
+L8882:
     .ascii    "float&float"
     .byte     0
-L8882:
+L8881:
     .ascii    "invalid ^ operands"
     .byte     0
-L8881:
+L8880:
     .ascii    "float^float"
     .byte     0
-L8880:
+L8879:
     .ascii    "invalid | operands"
     .byte     0
-L8879:
+L8878:
     .ascii    "float|float"
     .byte     0
-L8878:
+L8877:
     .ascii    "?: incompatible types"
     .byte     0
-L8877:
+L8876:
     .ascii    "Modifying constant?"
     .byte     0
-L8876:
+L8875:
     .ascii    "Modifying read-only var"
     .byte     0
-L8875:
+L8874:
     .ascii    "declspec/float"
     .byte     0
-L8874:
+L8873:
     .ascii    "dbl decl?"
     .byte     0
-L8873:
+L8872:
     .ascii    "char decl?"
     .byte     0
-L8872:
+L8871:
     .ascii    "Implicit decls not allowed: #"
     .byte     0
-L8871:
+L8870:
     .ascii    "enum?"
     .byte     0
-L8870:
+L8869:
     .ascii    "struct?"
     .byte     0
-L8869:
+L8868:
     .ascii    "Dual storage spec"
     .byte     0
-L8868:
+L8867:
     .ascii    "declspec/ts #"
     .byte     0
-L8867:
+L8866:
     .ascii    "PARSETEST"
     .byte     0
-L8866:
+L8865:
     .ascii    "Parsing:"
     .byte     0
-L8865:
+L8864:
     .ascii    "Decl error #"
     .byte     0
-L8864:
+L8863:
     .ascii    "fn def after comma"
     .byte     0
-L8863:
+L8862:
     .ascii    "Var name expected"
     .byte     0
-L8862:
+L8861:
     .ascii    "Extra semicolon 2"
     .byte     0
-L8851:
+L8850:
     .ascii    "Real too long"
     .byte     0
-L8850:
+L8849:
     .ascii    "REGENHST FULL?"
     .byte     0
-L8849:
+L8848:
     .ascii    "regenhst dupl?"
     .byte     0
-L8848:
+L8847:
     .ascii    "mcc.h"
     .byte     0
-L8847:
+L8846:
     .ascii    "TMLM"
     .byte     0
-L8846:
+L8845:
     .ascii    "TMH"
     .byte     0
-L8845:
+L8844:
     .ascii    "TMM"
     .byte     0
-L8844:
+L8843:
     .ascii    "Str expected"
     .byte     0
-L8843:
+L8842:
     .ascii    "link"
     .byte     0
-L8842:
+L8841:
     .ascii    "header"
     .byte     0
-L8841:
+L8840:
     .ascii    "module"
     .byte     0
-L8840:
+L8839:
     .ascii    "Only pack(1) or () allowed"
     .byte     0
-L8839:
-    .ascii    "'(' expected"
-    .byte     0
 L8838:
-    .ascii    "pack"
+    .ascii    "'(' expected"
     .byte     0
 L8837:
-    .ascii    "2:Too many pasted tokens"
+    .ascii    "pack"
     .byte     0
 L8836:
-    .ascii    "PDM"
+    .ascii    "2:Too many pasted tokens"
     .byte     0
 L8835:
-    .ascii    "???"
+    .ascii    "PDM"
     .byte     0
 L8834:
-    .ascii    "(File not available)"
+    .ascii    "???"
     .byte     0
 L8833:
-    .ascii    "z2"
+    .ascii    "(File not available)"
     .byte     0
 L8832:
-    .ascii    "2"
+    .ascii    "z2"
     .byte     0
 L8831:
-    .ascii    "#:#:#"
+    .ascii    "2"
     .byte     0
 L8830:
-    .ascii    "4"
+    .ascii    "#:#:#"
     .byte     0
 L8829:
-    .ascii    "#-#-#"
+    .ascii    "4"
     .byte     0
 L8828:
-    .ascii    "#if:Unexpected eof"
+    .ascii    "#-#-#"
     .byte     0
 L8827:
-    .ascii    "EOL expected"
+    .ascii    "#if:Unexpected eof"
     .byte     0
 L8826:
-    .ascii    "Name expected"
+    .ascii    "EOL expected"
     .byte     0
 L8825:
-    .ascii    "evalterm?"
+    .ascii    "Name expected"
     .byte     0
 L8824:
-    .ascii    ") expected"
+    .ascii    "evalterm?"
     .byte     0
 L8823:
-    .ascii    "')' expected"
+    .ascii    ") expected"
     .byte     0
 L8822:
-    .ascii    "sizeof2"
+    .ascii    "')' expected"
     .byte     0
 L8821:
-    .ascii    "name expected"
+    .ascii    "sizeof2"
     .byte     0
 L8820:
-    .ascii    "'(' expected"
+    .ascii    "name expected"
     .byte     0
 L8819:
-    .ascii    "')' expected"
+    .ascii    "'(' expected"
     .byte     0
 L8818:
-    .ascii    "defined?"
-    .byte     0
-L8817:
-    .ascii    "#if:div by zero"
-    .byte     0
-L8816:
-    .ascii    ": expected"
-    .byte     0
-L8815:
-    .ascii    "#if:eol expected"
-    .byte     0
-L8814:
-    .ascii    "Too many pasted tokens"
-    .byte     0
-L8813:
-    .ascii    ".*"
-    .byte     0
-L8812:
-    .ascii    "v"
-    .byte     0
-L8811:
-    .byte     0
-L8810:
-    .byte     10
-    .byte     0
-L8809:
-    .ascii    "Too many ##"
-    .byte     0
-L8808:
-    .ascii    "## at start"
-    .byte     0
-L8807:
-    .ascii    "# not followed by param"
-    .byte     0
-L8806:
-    .ascii    "# at end"
-    .byte     0
-L8805:
-    .ascii    "Wrong # macro params"
-    .byte     0
-L8804:
-    .ascii    "EOS in macro call"
-    .byte     0
-L8803:
-    .ascii    "rmc: ')' expected"
-    .byte     0
-L8802:
-    .ascii    "rmc: no '('"
-    .byte     0
-L8801:
-    .ascii    ">"
-    .byte     0
-L8800:
-    .ascii    "<"
-    .byte     0
-L8799:
-    .ascii    "macro params?"
-    .byte     0
-L8798:
     .ascii    "')' expected"
     .byte     0
+L8817:
+    .ascii    "defined?"
+    .byte     0
+L8816:
+    .ascii    "#if:div by zero"
+    .byte     0
+L8815:
+    .ascii    ": expected"
+    .byte     0
+L8814:
+    .ascii    "#if:eol expected"
+    .byte     0
+L8813:
+    .ascii    "Too many pasted tokens"
+    .byte     0
+L8812:
+    .ascii    ".*"
+    .byte     0
+L8811:
+    .ascii    "v"
+    .byte     0
+L8810:
+    .byte     0
+L8809:
+    .byte     10
+    .byte     0
+L8808:
+    .ascii    "Too many ##"
+    .byte     0
+L8807:
+    .ascii    "## at start"
+    .byte     0
+L8806:
+    .ascii    "# not followed by param"
+    .byte     0
+L8805:
+    .ascii    "# at end"
+    .byte     0
+L8804:
+    .ascii    "Wrong # macro params"
+    .byte     0
+L8803:
+    .ascii    "EOS in macro call"
+    .byte     0
+L8802:
+    .ascii    "rmc: ')' expected"
+    .byte     0
+L8801:
+    .ascii    "rmc: no '('"
+    .byte     0
+L8800:
+    .ascii    ">"
+    .byte     0
+L8799:
+    .ascii    "<"
+    .byte     0
+L8798:
+    .ascii    "macro params?"
+    .byte     0
 L8797:
-    .ascii    "__VA_ARGS__"
+    .ascii    "')' expected"
     .byte     0
 L8796:
-    .ascii    "Dupl macro param"
+    .ascii    "__VA_ARGS__"
     .byte     0
 L8795:
-    .ascii    "define: name expected"
+    .ascii    "Dupl macro param"
     .byte     0
 L8794:
-    .ascii    "Local str too long"
+    .ascii    "define: name expected"
     .byte     0
 L8793:
-    .ascii    "String not terminated"
+    .ascii    "Local str too long"
     .byte     0
 L8792:
-    .ascii    "NEXTLX.LINENO="
+    .ascii    "String not terminated"
     .byte     0
 L8791:
+    .ascii    "NEXTLX.LINENO="
+    .byte     0
+L8790:
     .ascii    "#define __attribute__(x)"
     .byte     10
     .ascii    "#define _WIN32"
@@ -68713,194 +68719,194 @@ L8791:
     .byte     10
     .byte     10
     .byte     0
-L8790:
+L8789:
     .ascii    "mcc.h"
     .byte     0
-L8789:
+L8788:
     .ascii    "Too many nested includes"
     .byte     0
-L8788:
+L8787:
     .ascii    "Can't find include file"
     .byte     0
-L8787:
+L8786:
     .ascii    "Overflow in decimal number"
     .byte     0
-L8786:
+L8785:
     .ascii    "18446744073709551615"
     .byte     0
-L8785:
-    .ascii    "-U?"
-    .byte     0
 L8784:
-    .ascii    "-LL?"
+    .ascii    "-U?"
     .byte     0
 L8783:
-    .ascii    "Overflow in octal number"
+    .ascii    "-LL?"
     .byte     0
 L8782:
-    .ascii    "1777777777777777777777"
+    .ascii    "Overflow in octal number"
     .byte     0
 L8781:
-    .ascii    "-U?"
+    .ascii    "1777777777777777777777"
     .byte     0
 L8780:
-    .ascii    "-LL?"
-    .byte     0
-L8779:
-    .ascii    "Overflow in binary number"
-    .byte     0
-L8778:
-    .ascii    "Binary fp"
-    .byte     0
-L8777:
-    .ascii    "Binary bad digit"
-    .byte     0
-L8776:
-    .ascii    "Overflow in hex number"
-    .byte     0
-L8775:
     .ascii    "-U?"
     .byte     0
-L8774:
+L8779:
     .ascii    "-LL?"
     .byte     0
+L8778:
+    .ascii    "Overflow in binary number"
+    .byte     0
+L8777:
+    .ascii    "Binary fp"
+    .byte     0
+L8776:
+    .ascii    "Binary bad digit"
+    .byte     0
+L8775:
+    .ascii    "Overflow in hex number"
+    .byte     0
+L8774:
+    .ascii    "-U?"
+    .byte     0
 L8773:
-    .ascii    "block comment eof"
+    .ascii    "-LL?"
     .byte     0
 L8772:
-    .ascii    ":##"
+    .ascii    "block comment eof"
     .byte     0
 L8771:
-    .ascii    ":::"
+    .ascii    ":##"
     .byte     0
 L8770:
-    .ascii    "#endif missing"
+    .ascii    ":::"
     .byte     0
 L8769:
-    .ascii    "Directive not implemented"
+    .ascii    "#endif missing"
     .byte     0
 L8768:
-    .ascii    "DIRECTIVE NOT IMPL:"
+    .ascii    "Directive not implemented"
     .byte     0
 L8767:
-    .ascii    "ABORTING"
+    .ascii    "DIRECTIVE NOT IMPL:"
     .byte     0
 L8766:
-    .ascii    "#ERROR:"
+    .ascii    "ABORTING"
     .byte     0
 L8765:
-    .ascii    "#if missing/endif"
+    .ascii    "#ERROR:"
     .byte     0
 L8764:
-    .ascii    "#if missing/elif/else"
+    .ascii    "#if missing/endif"
     .byte     0
 L8763:
-    .ascii    "undef: name expected"
+    .ascii    "#if missing/elif/else"
     .byte     0
 L8762:
-    .ascii    "NSOURCEFILES="
+    .ascii    "undef: name expected"
     .byte     0
 L8761:
-    .ascii    "FROM"
+    .ascii    "NSOURCEFILES="
     .byte     0
 L8760:
-    .ascii    "INCLUDE"
+    .ascii    "FROM"
     .byte     0
 L8759:
-    .ascii    "include?"
+    .ascii    "INCLUDE"
     .byte     0
 L8758:
-    .ascii    "include: > expected"
+    .ascii    "include?"
     .byte     0
 L8757:
-    .ascii    "Bad include file"
+    .ascii    "include: > expected"
     .byte     0
 L8756:
-    .ascii    "Invalid # directive"
+    .ascii    "Bad include file"
     .byte     0
 L8755:
-    .ascii    "Duplicate symbol table entry"
+    .ascii    "Invalid # directive"
     .byte     0
 L8754:
-    .ascii    "HASHTABLE FULL"
+    .ascii    "Duplicate symbol table entry"
     .byte     0
 L8753:
-    .ascii    "Digit out of range"
+    .ascii    "HASHTABLE FULL"
     .byte     0
 L8752:
-    .ascii    ".*"
+    .ascii    "Digit out of range"
     .byte     0
 L8751:
-    .ascii    "v"
-    .byte     0
-L8750:
     .ascii    ".*"
     .byte     0
-L8749:
+L8750:
     .ascii    "v"
     .byte     0
+L8749:
+    .ascii    ".*"
+    .byte     0
 L8748:
-    .ascii    "#"
+    .ascii    "v"
     .byte     0
 L8747:
-    .ascii    "'"
+    .ascii    "#"
     .byte     0
 L8746:
-    .byte     34
+    .ascii    "'"
     .byte     0
 L8745:
-    .ascii    " "
+    .byte     34
     .byte     0
 L8744:
-    .ascii    "%-18s"
+    .ascii    " "
     .byte     0
 L8743:
-    .ascii    "Line:"
+    .ascii    "%-18s"
     .byte     0
 L8742:
-    .ascii    "in:"
+    .ascii    "Line:"
     .byte     0
 L8741:
+    .ascii    "in:"
+    .byte     0
+L8740:
     .byte     10
     .ascii    "Lex error"
     .byte     0
-L8740:
+L8739:
     .ascii    "Non-base-10 floats temporarily unavailable"
     .byte     0
-L8739:
+L8738:
     .ascii    "p"
     .byte     0
-L8738:
+L8737:
     .ascii    "e"
     .byte     0
-L8736:
+L8735:
     .ascii    "Real too long"
     .byte     0
-L8735:
+L8734:
     .ascii    "ERROR CHAR"
     .byte     0
-L8734:
+L8733:
     .ascii    "@ SEEN"
     .byte     0
-L8733:
+L8732:
     .ascii    "wb"
     .byte     0
-L8732:
+L8731:
     .ascii    "#endif missing"
     .byte     0
-L8731:
+L8730:
     .ascii    "mcc.h"
     .byte     0
-L8730:
-    .ascii    "12977:9216:00"
-    .byte     0
 L8729:
-    .ascii    "0-<null>-   0"
+    .ascii    "13022:9216:00"
     .byte     0
 L8728:
-    .ascii    "CC C Compiler"
+    .ascii    "0-<null>-   0"
     .byte     0
 L8727:
+    .ascii    "CC C Compiler"
+    .byte     0
+L8726:
     .ascii    "C Subset Compiler for 64-bit Windows"
     .byte     10
     .byte     10
@@ -68967,166 +68973,166 @@ L8727:
     .ascii    "    * .c extension is optional on input file"
     .byte     10
     .byte     0
-L8726:
+L8725:
     .ascii    "Include paths"
     .byte     0
-L8725:
+L8724:
     .ascii    "/"
     .byte     0
-L8724:
-    .byte     0
 L8723:
-    .ascii    "Too many include paths"
     .byte     0
 L8722:
+    .ascii    "Too many include paths"
     .byte     0
 L8721:
-    .ascii    "-RUNP OUT OF ORDER"
     .byte     0
 L8720:
-    .ascii    "-help                Show all options"
+    .ascii    "-RUNP OUT OF ORDER"
     .byte     0
 L8719:
-    .ascii    "    "
+    .ascii    "-help                Show all options"
     .byte     0
 L8718:
-    .ascii    "-i prog[.c]          Compile prog.c and interpret"
+    .ascii    "    "
     .byte     0
 L8717:
-    .ascii    "    "
+    .ascii    "-i prog[.c]          Compile prog.c and interpret"
     .byte     0
 L8716:
-    .ascii    "-r prog[.c]          Compile prog.c and run"
+    .ascii    "    "
     .byte     0
 L8715:
-    .ascii    "    "
+    .ascii    "-r prog[.c]          Compile prog.c and run"
     .byte     0
 L8714:
-    .ascii    "   prog[.c]          Compile prog.c to prog.exe"
-    .byte     0
-L8713:
     .ascii    "    "
     .byte     0
+L8713:
+    .ascii    "   prog[.c]          Compile prog.c to prog.exe"
+    .byte     0
 L8712:
-    .ascii    "Usage:"
+    .ascii    "    "
     .byte     0
 L8711:
+    .ascii    "Usage:"
     .byte     0
 L8710:
-    .ascii    "Too many lib files"
     .byte     0
 L8709:
+    .ascii    "Too many lib files"
     .byte     0
 L8708:
-    .ascii    "One input file only"
     .byte     0
 L8707:
-    .ascii    "Unknown option:"
+    .ascii    "One input file only"
     .byte     0
 L8706:
-    .ascii    ".c"
+    .ascii    "Unknown option:"
     .byte     0
 L8705:
+    .ascii    ".c"
     .byte     0
 L8704:
-    .ascii    "cs.exe"
     .byte     0
 L8703:
-    .ascii    "Total:"
+    .ascii    "cs.exe"
     .byte     0
 L8702:
-    .ascii    "-----------------------------"
+    .ascii    "Total:"
     .byte     0
 L8701:
-    .ascii    "EXE:"
+    .ascii    "-----------------------------"
     .byte     0
 L8700:
-    .ascii    "SS:"
+    .ascii    "EXE:"
     .byte     0
 L8699:
-    .ascii    "MCL:"
+    .ascii    "SS:"
     .byte     0
 L8698:
-    .ascii    "PCL:"
+    .ascii    "MCL:"
     .byte     0
 L8697:
-    .ascii    "Parse:"
+    .ascii    "PCL:"
     .byte     0
 L8696:
-    .ascii    "Load:"
+    .ascii    "Parse:"
     .byte     0
 L8695:
-    .ascii    "Init:"
+    .ascii    "Load:"
     .byte     0
 L8694:
+    .ascii    "Init:"
+    .byte     0
+L8693:
     .ascii    "5.1jr"
     .byte     0
-L8692:
+L8691:
     .ascii    "5"
     .byte     0
-L8691:
+L8690:
     .ascii    "12jl"
     .byte     0
-L8690:
+L8689:
     .ascii    "# # ms # %"
     .byte     0
-L8689:
+L8688:
     .ascii    "Size:"
     .byte     0
-L8688:
-    .ascii    ":"
-    .byte     0
 L8687:
-    .ascii    "Sourcefiles:"
+    .ascii    ":"
     .byte     0
 L8686:
-    .ascii    "PROC"
+    .ascii    "Sourcefiles:"
     .byte     0
 L8685:
-    .ascii    "PROC AST"
+    .ascii    "PROC"
     .byte     0
 L8684:
-    .ascii    ": ."
+    .ascii    "PROC AST"
     .byte     0
 L8683:
-    .ascii    ":"
+    .ascii    ": ."
     .byte     0
 L8682:
-    .ascii    "0: Internal standard headers (disable with -ext)"
+    .ascii    ":"
     .byte     0
 L8681:
-    .ascii    "Include search paths:"
+    .ascii    "0: Internal standard headers (disable with -ext)"
     .byte     0
 L8680:
-    .ascii    "c:/cx/headers/"
+    .ascii    "Include search paths:"
     .byte     0
 L8679:
+    .ascii    "c:/cx/headers/"
     .byte     0
 L8678:
-    .ascii    "<line>"
     .byte     0
 L8677:
-    .ascii    "kernel32"
+    .ascii    "<line>"
     .byte     0
 L8676:
-    .ascii    "user32"
+    .ascii    "kernel32"
     .byte     0
 L8675:
-    .ascii    "gdi32"
+    .ascii    "user32"
     .byte     0
 L8674:
-    .ascii    "msvcrt"
+    .ascii    "gdi32"
     .byte     0
 L8673:
-    .ascii    "mcc.log"
+    .ascii    "msvcrt"
     .byte     0
 L8672:
-    .ascii    "Diagnostic outputs written to"
-    .byte     0
-L8671:
     .ascii    "mcc.log"
     .byte     0
+L8671:
+    .ascii    "Diagnostic outputs written to"
+    .byte     0
 L8670:
+    .ascii    "mcc.log"
+    .byte     0
+L8669:
     .byte     92
     .ascii    "m"
     .byte     92
@@ -69134,712 +69140,709 @@ L8670:
     .byte     92
     .ascii    "med.bat "
     .byte     0
-L8669:
+L8668:
     .ascii    "PRESS KEY"
     .byte     0
-L8668:
+L8667:
     .ascii    "cc.m"
     .byte     0
-L8667:
+L8666:
     .ascii    "STFLAT"
     .byte     0
-L8666:
+L8665:
     .ascii    "ST"
     .byte     0
-L8665:
+L8664:
     .ascii    "PSYMTAB"
     .byte     0
-L8664:
+L8663:
     .ascii    "!PROC PCL"
     .byte     0
-L8663:
+L8662:
     .ascii    "PROC ASM"
     .byte     0
-L8662:
+L8661:
     .ascii    "w"
     .byte     0
-L8661:
+L8660:
     .ascii    "mcc.log"
     .byte     0
-L8660:
+L8659:
     .ascii    "Can't load main module: #"
     .byte     0
-L8659:
+L8658:
     .ascii    "$prog"
     .byte     0
-L8658:
+L8657:
     .ascii    "<sourcefile0>"
     .byte     0
-L8657:
+L8656:
     .ascii    "<dummy path>"
     .byte     0
-L8656:
+L8655:
     .ascii    "<dummy file>"
     .byte     0
-L8655:
+L8654:
     .ascii    "Loading:"
     .byte     0
-L8654:
+L8653:
     .ascii    "Done."
     .byte     0
-L8653:
+L8652:
     .ascii    "not ready"
     .byte     0
-L8652:
+L8651:
     .ascii    "Compiling # to #"
     .byte     0
-L8651:
+L8650:
     .ascii    "No Run"
     .byte     0
-L8650:
-    .byte     0
 L8649:
-    .ascii    "qword ptr"
     .byte     0
 L8648:
-    .ascii    "dword ptr"
+    .ascii    "qword ptr"
     .byte     0
 L8647:
-    .ascii    "word ptr"
+    .ascii    "dword ptr"
     .byte     0
 L8646:
-    .ascii    "byte ptr"
+    .ascii    "word ptr"
     .byte     0
 L8645:
+    .ascii    "byte ptr"
     .byte     0
 L8644:
-    .ascii    "%"
     .byte     0
 L8643:
-    .ascii    "#.$T#"
+    .ascii    "%"
     .byte     0
 L8642:
-    .ascii    "T"
+    .ascii    "#.$T#"
     .byte     0
 L8641:
-    .ascii    "%XMM"
+    .ascii    "T"
     .byte     0
 L8640:
-    .ascii    "-"
+    .ascii    "%XMM"
     .byte     0
 L8639:
+    .ascii    "-"
     .byte     0
 L8638:
-    .ascii    "Stropnd?"
     .byte     0
 L8637:
-    .ascii    "L"
+    .ascii    "Stropnd?"
     .byte     0
 L8636:
-    .byte     34
+    .ascii    "L"
     .byte     0
 L8635:
-    .ascii    "M"
+    .byte     34
     .byte     0
 L8634:
-    .ascii    "20.20"
+    .ascii    "M"
     .byte     0
 L8633:
+    .ascii    "20.20"
     .byte     0
 L8632:
-    .ascii    "+"
     .byte     0
 L8631:
+    .ascii    "+"
     .byte     0
 L8630:
-    .ascii    "<BAD OPND>"
     .byte     0
 L8629:
-    .ascii    "BAD OPND"
+    .ascii    "<BAD OPND>"
     .byte     0
 L8628:
-    .ascii    "]"
+    .ascii    "BAD OPND"
     .byte     0
 L8627:
-    .ascii    " + "
+    .ascii    "]"
     .byte     0
 L8626:
-    .ascii    "%rip+"
-    .byte     0
-L8625:
-    .ascii    "*"
-    .byte     0
-L8624:
     .ascii    " + "
     .byte     0
+L8625:
+    .ascii    "%rip+"
+    .byte     0
+L8624:
+    .ascii    "*"
+    .byte     0
 L8623:
+    .ascii    " + "
     .byte     0
 L8622:
-    .ascii    "["
     .byte     0
 L8621:
-    .ascii    "H"
+    .ascii    "["
     .byte     0
 L8620:
-    .ascii    "0x"
+    .ascii    "H"
     .byte     0
 L8619:
-    .ascii    ","
+    .ascii    "0x"
     .byte     0
 L8618:
     .ascii    ","
-    .byte     9
     .byte     0
 L8617:
-    .ascii    " "
+    .ascii    ","
+    .byte     9
     .byte     0
 L8616:
-    .ascii    "  "
-    .byte     0
-L8615:
     .ascii    " "
     .byte     0
+L8615:
+    .ascii    "  "
+    .byte     0
 L8614:
-    .ascii    ".ascii"
+    .ascii    " "
     .byte     0
 L8613:
-    .ascii    ".quad"
+    .ascii    ".ascii"
     .byte     0
 L8612:
-    .ascii    ".long"
+    .ascii    ".quad"
     .byte     0
 L8611:
-    .ascii    ".word"
+    .ascii    ".long"
     .byte     0
 L8610:
-    .ascii    ".byte"
+    .ascii    ".word"
     .byte     0
 L8609:
-    .ascii    ".space"
+    .ascii    ".byte"
     .byte     0
 L8608:
-    .ascii    ".align"
+    .ascii    ".space"
     .byte     0
 L8607:
-    .ascii    "movsxd"
+    .ascii    ".align"
     .byte     0
 L8606:
-    .ascii    "imul"
+    .ascii    "movsxd"
     .byte     0
 L8605:
-    .ascii    "not"
+    .ascii    "imul"
     .byte     0
 L8604:
-    .ascii    "xor"
+    .ascii    "not"
     .byte     0
 L8603:
-    .ascii    "or"
+    .ascii    "xor"
     .byte     0
 L8602:
-    .ascii    "and"
+    .ascii    "or"
     .byte     0
 L8601:
-    .ascii    "cmov"
+    .ascii    "and"
     .byte     0
 L8600:
-    .ascii    "set"
+    .ascii    "cmov"
     .byte     0
 L8599:
-    .ascii    "j"
+    .ascii    "set"
     .byte     0
 L8598:
-    .ascii    "    .bss"
+    .ascii    "j"
     .byte     0
 L8597:
-    .ascii    "    .data"
+    .ascii    "    .bss"
     .byte     0
 L8596:
-    .ascii    "    .text"
+    .ascii    "    .data"
     .byte     0
 L8595:
-    .ascii    ", "
+    .ascii    "    .text"
     .byte     0
 L8594:
-    .ascii    "    .set "
+    .ascii    ", "
     .byte     0
 L8593:
-    .ascii    "L#:"
+    .ascii    "    .set "
     .byte     0
 L8592:
-    .ascii    ":"
+    .ascii    "L#:"
     .byte     0
 L8591:
-    .byte     10
-    .byte     0
-L8590:
     .ascii    ":"
     .byte     0
+L8590:
+    .byte     10
+    .byte     0
 L8589:
+    .ascii    ":"
     .byte     0
 L8588:
-    .ascii    "strmcl/lab"
     .byte     0
 L8587:
-    .ascii    "# End "
+    .ascii    "strmcl/lab"
     .byte     0
 L8586:
-    .ascii    "# Proc "
+    .ascii    "# End "
     .byte     0
 L8585:
-    .byte     10
+    .ascii    "# Proc "
     .byte     0
 L8584:
-    .ascii    "    .global "
-    .byte     0
-L8583:
     .byte     10
     .byte     0
+L8583:
+    .ascii    "    .global "
+    .byte     0
 L8582:
-    .ascii    "    .global main"
     .byte     10
     .byte     0
 L8581:
-    .ascii    "    .intel_syntax prefix"
+    .ascii    "    .global main"
     .byte     10
     .byte     0
 L8580:
-    .ascii    "    .code64"
+    .ascii    "    .intel_syntax prefix"
     .byte     10
     .byte     0
 L8579:
-    .ascii    "# GAS VERSION"
+    .ascii    "    .code64"
     .byte     10
     .byte     0
 L8578:
+    .ascii    "# GAS VERSION"
+    .byte     10
     .byte     0
 L8577:
-    .ascii    "delmcl?"
     .byte     0
 L8576:
-    .ascii    " ncalldepth:"
+    .ascii    "delmcl?"
     .byte     0
 L8575:
-    .ascii    " noperands:"
+    .ascii    " ncalldepth:"
     .byte     0
 L8574:
-    .ascii    ") hwstack:"
+    .ascii    " noperands:"
     .byte     0
 L8573:
-    .ascii    "0 "
+    .ascii    ") hwstack:"
     .byte     0
 L8572:
-    .ascii    "1 "
-    .byte     0
-L8571:
-    .ascii    "XWR:("
-    .byte     0
-L8570:
-    .ascii    ") "
-    .byte     0
-L8569:
     .ascii    "0 "
     .byte     0
-L8568:
+L8571:
     .ascii    "1 "
     .byte     0
-L8567:
-    .ascii    "WR:("
+L8570:
+    .ascii    "XWR:("
     .byte     0
-L8566:
-    .ascii    " "
-    .byte     0
-L8565:
+L8569:
     .ascii    ") "
     .byte     0
+L8568:
+    .ascii    "0 "
+    .byte     0
+L8567:
+    .ascii    "1 "
+    .byte     0
+L8566:
+    .ascii    "WR:("
+    .byte     0
+L8565:
+    .ascii    " "
+    .byte     0
 L8564:
-    .ascii    ", "
+    .ascii    ") "
     .byte     0
 L8563:
-    .ascii    ">"
+    .ascii    ", "
     .byte     0
 L8562:
-    .ascii    "<"
+    .ascii    ">"
     .byte     0
 L8561:
-    .ascii    "@"
+    .ascii    "<"
     .byte     0
 L8560:
-    .ascii    ")"
+    .ascii    "@"
     .byte     0
 L8559:
-    .ascii    "(=="
+    .ascii    ")"
     .byte     0
 L8558:
-    .ascii    "T"
+    .ascii    "(=="
     .byte     0
 L8557:
-    .ascii    "*"
+    .ascii    "T"
     .byte     0
 L8556:
+    .ascii    "*"
     .byte     0
 L8555:
-    .ascii    "W:"
     .byte     0
 L8554:
-    .ascii    "X:"
+    .ascii    "W:"
     .byte     0
 L8553:
-    .ascii    "Y:"
+    .ascii    "X:"
     .byte     0
 L8552:
-    .ascii    "Z:"
+    .ascii    "Y:"
     .byte     0
 L8551:
-    .ascii    "#:("
+    .ascii    "Z:"
     .byte     0
 L8550:
-    .ascii    "========================================#:("
+    .ascii    "#:("
     .byte     0
 L8549:
+    .ascii    "========================================#:("
     .byte     0
 L8548:
-    .ascii    "MSA"
     .byte     0
 L8547:
+    .ascii    "MSA"
     .byte     0
 L8546:
-    .ascii    "makeopndind"
     .byte     0
 L8545:
+    .ascii    "makeopndind"
     .byte     0
 L8544:
-    .ascii    "SOR1"
     .byte     0
 L8543:
+    .ascii    "SOR1"
     .byte     0
 L8542:
-    .ascii    "MOVE TO REG: XREG IN USE"
     .byte     0
 L8541:
+    .ascii    "MOVE TO REG: XREG IN USE"
     .byte     0
 L8540:
-    .ascii    "No more work xregs"
     .byte     0
 L8539:
+    .ascii    "No more work xregs"
     .byte     0
 L8538:
-    .ascii    "No more work regs"
     .byte     0
 L8537:
+    .ascii    "No more work regs"
     .byte     0
 L8536:
-    .ascii    "poppcl/underflow"
     .byte     0
 L8535:
+    .ascii    "poppcl/underflow"
     .byte     0
 L8534:
-    .ascii    "PCL stack overflow"
     .byte     0
 L8533:
-    .byte     0
-L8532:
     .ascii    "PCL stack overflow"
     .byte     0
+L8532:
+    .byte     0
 L8531:
-    .ascii    "getopnd"
+    .ascii    "PCL stack overflow"
     .byte     0
 L8530:
+    .ascii    "getopnd"
     .byte     0
 L8529:
-    .ascii    "Ext nametab overflow"
     .byte     0
 L8528:
-    .ascii    "$B#"
+    .ascii    "Ext nametab overflow"
     .byte     0
 L8527:
+    .ascii    "$B#"
     .byte     0
 L8526:
-    .ascii    "Too many block temps"
     .byte     0
 L8525:
-    .ascii    "Line:"
+    .ascii    "Too many block temps"
     .byte     0
 L8524:
-    .ascii    "AX ERROR:"
+    .ascii    "Line:"
     .byte     0
 L8523:
-    .ascii    "MCL Opnd not supported: # (#) [#]"
+    .ascii    "AX ERROR:"
     .byte     0
 L8522:
+    .ascii    "MCL Opnd not supported: # (#) [#]"
     .byte     0
 L8521:
-    .ascii    "2:SIZE=0"
     .byte     0
 L8520:
+    .ascii    "2:SIZE=0"
     .byte     0
 L8519:
-    .ascii    "1:SIZE=0"
     .byte     0
 L8518:
+    .ascii    "1:SIZE=0"
     .byte     0
 L8517:
-    .ascii    "BAD SEG CODE"
     .byte     0
 L8516:
+    .ascii    "BAD SEG CODE"
     .byte     0
 L8515:
-    .ascii    "CAN'T DO RODATA SEG"
     .byte     0
 L8514:
-    .ascii    "MCLREC>64B"
+    .ascii    "CAN'T DO RODATA SEG"
     .byte     0
 L8513:
-    .ascii    "__getmainargs*"
+    .ascii    "MCLREC>64B"
     .byte     0
 L8512:
-    .ascii    "$info"
+    .ascii    "__getmainargs*"
     .byte     0
 L8511:
-    .ascii    "$env"
+    .ascii    "$info"
     .byte     0
 L8510:
-    .ascii    "()"
+    .ascii    "$env"
     .byte     0
 L8509:
-    .ascii    "High block arg not copied in"
+    .ascii    "()"
     .byte     0
 L8508:
-    .ascii    "No host fn:"
+    .ascii    "High block arg not copied in"
     .byte     0
 L8507:
-    .ascii    "gethostfn?"
+    .ascii    "No host fn:"
     .byte     0
 L8506:
-    .ascii    "msysc.m$power_i64"
+    .ascii    "gethostfn?"
     .byte     0
 L8505:
-    .ascii    "msys.m$power_i64"
+    .ascii    "msysc.m$power_i64"
     .byte     0
 L8504:
+    .ascii    "msys.m$power_i64"
     .byte     0
 L8503:
-    .ascii    "storebf not imm"
     .byte     0
 L8502:
+    .ascii    "storebf not imm"
     .byte     0
 L8501:
-    .ascii    "Storebit: both vars"
     .byte     0
 L8500:
+    .ascii    "Storebit: both vars"
     .byte     0
 L8499:
-    .ascii    "STOREBIT/VAR"
     .byte     0
 L8498:
+    .ascii    "STOREBIT/VAR"
     .byte     0
 L8497:
-    .ascii    "LOADBF_VAR"
     .byte     0
 L8496:
-    .ascii    "mask63/offset64"
+    .ascii    "LOADBF_VAR"
     .byte     0
 L8495:
-    .ascii    "labzero"
+    .ascii    "mask63/offset64"
     .byte     0
 L8494:
-    .ascii    "labneg64"
+    .ascii    "labzero"
     .byte     0
 L8493:
-    .ascii    "labneg32"
+    .ascii    "labneg64"
     .byte     0
 L8492:
-    .ascii    "lababs64"
+    .ascii    "labneg32"
     .byte     0
 L8491:
+    .ascii    "lababs64"
+    .byte     0
+L8490:
     .ascii    "lababs32"
     .byte     0
-L8489:
+L8488:
     .ascii    "Real32 Table"
     .byte     0
-L8487:
+L8486:
     .ascii    "Real Table"
     .byte     0
-L8486:
+L8485:
     .ascii    "String Table"
     .byte     0
-L8485:
+L8484:
     .ascii    "ENDDATA"
     .byte     0
-L8484:
-    .byte     0
 L8483:
-    .ascii    "div/u8"
     .byte     0
 L8482:
+    .ascii    "div/u8"
     .byte     0
 L8481:
-    .ascii    "Divide by zero"
     .byte     0
 L8480:
-    .ascii    "---------------"
+    .ascii    "Divide by zero"
     .byte     0
 L8479:
-    .ascii    "?]]"
+    .ascii    "---------------"
     .byte     0
 L8478:
+    .ascii    "?]]"
     .byte     0
 L8477:
-    .ascii    "Threaded proc has temps"
     .byte     0
 L8476:
+    .ascii    "Threaded proc has temps"
     .byte     0
 L8475:
-    .ascii    "Threaded proc has locals/params"
     .byte     0
 L8474:
+    .ascii    "Threaded proc has locals/params"
     .byte     0
 L8473:
-    .ascii    "@PARAM"
     .byte     0
 L8472:
+    .ascii    "@PARAM"
+    .byte     0
+L8471:
     .ascii    "$1x"
     .byte     0
-L8470:
-    .byte     0
 L8469:
-    .ascii    "SUBTOREF/EXTRA"
     .byte     0
 L8468:
-    .ascii    "pow*"
+    .ascii    "SUBTOREF/EXTRA"
     .byte     0
 L8467:
+    .ascii    "pow*"
     .byte     0
 L8466:
-    .ascii    "setcc/block"
     .byte     0
 L8465:
-    .ascii    "fmod*"
+    .ascii    "setcc/block"
     .byte     0
 L8464:
-    .ascii    "atan2*"
+    .ascii    "fmod*"
     .byte     0
 L8463:
-    .ascii    "ceil*"
+    .ascii    "atan2*"
     .byte     0
 L8462:
-    .ascii    "floor*"
+    .ascii    "ceil*"
     .byte     0
 L8461:
-    .ascii    "round*"
+    .ascii    "floor*"
     .byte     0
 L8460:
-    .ascii    "exp*"
+    .ascii    "round*"
     .byte     0
 L8459:
-    .ascii    "log10*"
+    .ascii    "exp*"
     .byte     0
 L8458:
-    .ascii    "log*"
+    .ascii    "log10*"
     .byte     0
 L8457:
-    .ascii    "atan*"
+    .ascii    "log*"
     .byte     0
 L8456:
-    .ascii    "acos*"
+    .ascii    "atan*"
     .byte     0
 L8455:
-    .ascii    "asin*"
+    .ascii    "acos*"
     .byte     0
 L8454:
-    .ascii    "tan*"
+    .ascii    "asin*"
     .byte     0
 L8453:
-    .ascii    "cos*"
+    .ascii    "tan*"
     .byte     0
 L8452:
-    .ascii    "sin*"
+    .ascii    "cos*"
     .byte     0
 L8451:
+    .ascii    "sin*"
     .byte     0
 L8450:
-    .ascii    "No Assem handler"
     .byte     0
 L8449:
+    .ascii    "No Assem handler"
     .byte     0
 L8448:
-    .ascii    "SUB/REF NOT POWER OF xx"
     .byte     0
 L8447:
+    .ascii    "SUB/REF NOT POWER OF xx"
     .byte     0
 L8446:
-    .ascii    "float/short"
     .byte     0
 L8445:
+    .ascii    "float/short"
     .byte     0
 L8444:
-    .ascii    "multo/byte"
     .byte     0
 L8443:
-    .ascii    ":"
+    .ascii    "multo/byte"
     .byte     0
 L8442:
+    .ascii    ":"
     .byte     0
 L8441:
-    .ascii    "swap/block"
     .byte     0
 L8440:
+    .ascii    "swap/block"
     .byte     0
 L8439:
-    .ascii    "SUBREF/EXTRA"
     .byte     0
 L8438:
-    .ascii    "EXTRA="
+    .ascii    "SUBREF/EXTRA"
     .byte     0
 L8437:
+    .ascii    "EXTRA="
     .byte     0
 L8436:
-    .ascii    "Storem not 16"
     .byte     0
 L8435:
-    .ascii    "exit*"
+    .ascii    "Storem not 16"
     .byte     0
 L8434:
+    .ascii    "exit*"
     .byte     0
 L8433:
-    .ascii    "Too many nested calls"
     .byte     0
 L8432:
-    .ascii    "---"
+    .ascii    "Too many nested calls"
     .byte     0
 L8431:
+    .ascii    "---"
     .byte     0
 L8430:
-    .ascii    "JUMPCC/BLOCK"
     .byte     0
 L8429:
+    .ascii    "JUMPCC/BLOCK"
     .byte     0
 L8428:
-    .ascii    "DATA/not 1248"
     .byte     0
 L8427:
-    .ascii    "STRPMODE(P.MODE)="
+    .ascii    "DATA/not 1248"
     .byte     0
 L8426:
-    .ascii    "P.SIZE="
+    .ascii    "STRPMODE(P.MODE)="
     .byte     0
 L8425:
-    .ascii    "db/dq optype? #"
+    .ascii    "P.SIZE="
     .byte     0
 L8424:
-    .ascii    "PCL STACK NOT EMPTY"
+    .ascii    "db/dq optype? #"
     .byte     0
 L8423:
-    .ascii    "?>>"
+    .ascii    "PCL STACK NOT EMPTY"
     .byte     0
 L8422:
-    .ascii    "Unimpl: # (#)"
+    .ascii    "?>>"
     .byte     0
 L8421:
-    .ascii    "                       "
+    .ascii    "Unimpl: # (#)"
     .byte     0
 L8420:
-    .ascii    "Invalid handler name:"
+    .ascii    "                       "
     .byte     0
 L8419:
-    .ascii    "px_"
+    .ascii    "Invalid handler name:"
     .byte     0
 L8418:
-    .ascii    "MCL1"
+    .ascii    "px_"
     .byte     0
 L8417:
     .ascii    "********* ASM HAS PCL INFO *********"
