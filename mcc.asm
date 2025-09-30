@@ -720,7 +720,7 @@ pc_tables.pclextra:
     .quad     0x100000000000000
     .quad     1
     .quad     0
-    .quad     0
+    .quad     0x20000000000
     .quad     0x201000000
     .byte     0
     .byte     0
@@ -56314,6 +56314,12 @@ L5955:
     mov       %rcx,	125
     mov       %rdx,	%rax
     call      pc_api.pc_gen
+    mov       %eax,	1
+    mov       %r10,	[%rip+pc_api.pccurr]
+    mov       [%r10+16],	%eax
+    mov       %eax,	[%rbp + cc_genpcl.genidata.offset]
+    mov       %r10,	[%rip+pc_api.pccurr]
+    mov       [%r10+20],	%eax
     mov       %rcx,	9
     call      cc_libpcl.setmode
     jmp       L5954
