@@ -1,4 +1,16 @@
-// Generated C
+/*
+ This generated C code is place in the public domain
+
+ Recommended build instructions, when file is called prog.c:
+
+   gcc -O2 -s prog.c -o prog -lm -ldl -fno-strict-aliasing
+
+   -lm/-ldl are needed for Linux
+   -O2 is recommended due to low quality C code
+
+*/
+
+#pragma GCC diagnostic ignored "-Wbuiltin-declaration-mismatch"
 #pragma GCC diagnostic ignored "-Wbuiltin-declaration-mismatch"
 
 extern double sqrt(double);
@@ -34621,7 +34633,7 @@ static void cc_cli_showcaption() {
 	msysc_m$print_str_nf(asu64(R1));
 	R1 = tou64("13-Oct-2025");
 	msysc_m$print_str_nf(asu64(R1));
-	R1 = tou64("19:17:51");
+	R1 = tou64("19:34:04");
 	msysc_m$print_str_nf(asu64(R1));
 	msysc_m$print_newline();
 	msysc_m$print_end();
