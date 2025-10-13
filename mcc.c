@@ -1,5 +1,5 @@
 /*
- This generated C code is place in the public domain
+ This generated C code is placed in the public domain
 
  Recommended build instructions, when file is called prog.c:
 
@@ -34633,7 +34633,7 @@ static void cc_cli_showcaption() {
 	msysc_m$print_str_nf(asu64(R1));
 	R1 = tou64("13-Oct-2025");
 	msysc_m$print_str_nf(asu64(R1));
-	R1 = tou64("19:34:04");
+	R1 = tou64("20:44:24");
 	msysc_m$print_str_nf(asu64(R1));
 	msysc_m$print_newline();
 	msysc_m$print_end();
