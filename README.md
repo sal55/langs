@@ -11,24 +11,30 @@ Currently I'm working on a version 8 of my M compiler (codenamed BB below).
 M          Lower level systems language (see below)
 Q          Dynamic scripting language
 AA         x64-subset assembler using my syntax
-PCL        Stack-based IL used by MM and BCC compilers (this can be a complete standalone language)
+PCL7       Stack-based IL used by MM and BCC compilers (this can be a complete standalone language)
+PCL8       IL used by BB project
 
-C-subset   The partly non-standard subset of C used by the BCC roject. The subset is also
-           the output of the MC product (MM configured with a C backend).
+C-subset   The partly non-standard subset of C used by the BCC/MCC projects
+
 ````
 
 ### Active Projects and Tools
 ````
 Tool    Folder
-BB      BX        (In development) M compiler.
-MM      MX        M compiler using PCL-IL (configured for X64/Windows target)
+BB      BX        (In development) M compiler using PCL8-IL
+MM      MX        M compiler using PCL7-IL (configured for X64/Windows target)
 MC      MX        M compiler targeting linear C via PCL (Windows/Linux target)
 QQ      QX        Bytecode compiler + interpreter for Q. Runs mostly on Windows but can also run
                   to some extent on Linux by compiling with MC
 AA      AX        Single-file assembler for x64-subset
-BCC     CX        C-subset compiler using PCL-IL
+BCC     CX        C-subset compiler using PCL7-IL
+MCC     CX        Version of MCC configured for one output: ASM in 'GAS' format.
 RUNMX   MX        Stub program for MX binaries produced by MM/AA/BCC
 ZZ      ZX        Z80 Assembler (and, sometime, emulator)
+
+Upcoming:
+DD      DX        Version of BCC/MCC based around PCL8-IL (BCC8/MCC8)
+??      ??        Original C version of MCC8
 ````
 
 ### Old Projects, still in some  use
