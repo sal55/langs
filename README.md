@@ -22,10 +22,10 @@ C-subset   The partly non-standard subset of C used by the BCC/MCC projects
 ````
 Tool    Folder   Written in
 BB      BX       M           M8 compiler using PCL8-IL. This lacks Linear-C targets, and PCL interpreter
-MM      MX       M           M7 compiler using PCL7-IL (configured for X64/Windows target)
-MC      MX       M           M7 compiler targeting linear C via PCL7 (Windows/Linux target)
 QQ      QX       M           Bytecode compiler + interpreter for Q. Runs mostly on Windows but can also run
                              to some extent on Linux by compiling with MC
+MM      MX       M           M7 compiler using PCL7-IL (configured for X64/Windows target)
+MC      MX       M           M7 compiler targeting linear C via PCL7 (Windows/Linux target)
 AA      AX       M           Single-file assembler for x64-subset
 BCC     CX       M           C-subset compiler using PCL7
 MCC     CX       M           Version of BCC configured for one output: ASM in 'GAS' format.
@@ -36,17 +36,6 @@ ZZ      ZX       Q           Z80 Assembler (and, sometime in the future, emulato
 
 ````
 
-### Old Deprecated Projects
-````
-AA6       Older AA assembler, can assemble multiple ASM files into one binary. Needed to 'link' individual ASM files produced by BCC,
-          for multi-module projects
-QQ6       Older Q interpreter with twin dispatchers: slow function-table dispatcher, and fast
-          threaded-code/ASM-based dispatcher. (QQ7 uses HLL code only using faster techniques.)
-'BCX'     Older C compiler, that supports multi-module inputs and can directly produce executables
-'MCX'     Old M to C transpiler (no longer supports latest M language, and is anyway buggy)
-'MMP/PX'  Old M compiler to standalone PCL code, and separate PCL interpreter. Some effort went into making this fast,
-          and it is twice as fast as MM's PCL interpreter. But it is still slower than QQ's dynamic interpreter
-````
 
 ### M Language
 
