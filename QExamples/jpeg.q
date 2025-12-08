@@ -51,23 +51,19 @@ var hdr
 
 proc start=
 
-!   files:=cmd_getparams()
-!
-!   case files.len
-!   when 0 then
-!       println "Decode JPEG file and display and/or write out PPM file"
-!       println "Usage:"
-!       println "     qq jpeg filename[.jpg]"
-!       stop
-!   when 1 then
-!       file:=addext(files[1],"jpg")
-!   else
-!       println "Too many files"
-!   esac
+   files:=cmd_getparams()
 
-FILE:="GIRL.JPG"
-!FILE:="/jpeg/wtc-photo.JPG"
-!FILE:="/jpeg/card2.JPG"
+   case files.len
+   when 0 then
+       println "Decode JPEG file and display and/or write out PPM file"
+       println "Usage:"
+       println "     qq jpeg filename[.jpg]"
+       stop
+   when 1 then
+       file:=addext(files[1],"jpg")
+   else
+       println "Too many files"
+   esac
 
     t:=ticks()
 
