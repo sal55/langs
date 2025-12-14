@@ -2,9 +2,9 @@
 
 I develop a number of small-scale language-related projects on my PC.
 
-This github site is used for associated resources such as docs, source backups, benchmark results, and the odd binary. Most projects are written in my M language, but the master sources and development are on my home PC.
+This github site is used for associated resources such as source backups, or the odd binary. Most projects are written in my M language, but the master sources and development are on my home PC.
 
-Currently I'm working on a version 8 of my M compiler (codenamed BB below).
+'M' is mostly used for compilers, interpreters, assemblers, emulators, and any support libraries that are needed.
 
 ### Current Set of Languages
 ````
@@ -13,33 +13,36 @@ Q          Dynamic scripting language
 AA         x64-subset assembler using my syntax
 PCL7       Stack-based IL used by MM and BCC compilers (this can be a complete standalone language)
 PCL8       Lighter IL used by BB project (this is used internally only)
-
 C-subset   The partly non-standard subset of C used by the BCC/MCC projects
-
+ZA         Z80 assembler, with some tweaks on Zilog syntax
 ````
 
-### Active Language Projects and Tools
+### Current Language Projects and Tools
 ````
 Tool    Folder   Written in
-BB      BX       M           M8 compiler using PCL8-IL. This lacks Linear-C targets, and PCL interpreter
-QQ      QX       M           Bytecode compiler + interpreter for Q. Runs mostly on Windows but can also run
-                             to some extent on Linux by compiling with MC
-MM      MX       M           M7 compiler using PCL7-IL (configured for X64/Windows target)
-MC      MX       M           M7 compiler targeting linear C via PCL7 (Windows/Linux target)
+BB      BX       M           Streamlined M8 compiler using PCL8-IL
+QQ      QX       M           Bytecode compiler + interpreter for Q
+MM      MX       M           M7 compiler for x64/Windows using PCL7
+MC      MX       M           M7 transpiler for linear C via PCL7
 AA      AX       M           Single-file assembler for x64-subset
 BCC     CX       M           C-subset compiler using PCL7
 MCC     CX       M           Version of BCC configured for one output: ASM in 'GAS' format.
 'CC'    DX       M           (No identity yet) Self-contained fork of MCC with all extranous code removed.
                              This is intended as the basis for a version of MCC written in C
-RUNMX   MX       M/C         Stub program for MX binaries produced by MM/AA/BCC. M and C versions exist
-ZZ      ZX       Q           Z80 Assembler (and, sometime in the future, emulator)
+ZA      ZX       Q           Z80 Assembler
+ZZ      ZX       M           Z80 Emulator
 
+Shelved projects or possibilities:
+
+MMA     MX       M           M7 compiler for ARM64/Linux via PCL7 (abandoned in early stages; it may be picked up
+                             again for M8, and possibly adapted for ARM64/Windows)
+MMZ     --       M           Cutdown M8 compiler targeting Z80 via PCL8; experimental
+PC      MX       M           Processor for standalone PCL7 programs
 ````
-
 
 ### M Language
 
-This was first created in 1981 for Z80, and then evolved over several generations of x86 up to x64. There was recently at attempt to port it to ARM64, but that got abandoned.
+This was first created in 1981 for Z80, and then evolved over several generations of x86 up to x64. There was recently an attempt to port it to ARM64, but that got abandoned.
 
 It has steadily evolved, but has also been deliberately kept low level. It has been self-hosted (written in itself or a previous version) in a continuous chain going to back to the 1980s.
 
