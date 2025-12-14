@@ -13,7 +13,7 @@ and a few other bits.
 
 Each amalgamation can be directly compiled by mm/bb, if first renamed to the desired lead module (so mm7.ma becomes mm.ma, or bb8.ma is also mm.ma).
 
-Alternatively, each .ma file can be expanded into its descrete. This can be done with the BB compiler, for example:
+Alternatively, each .ma file can be expanded into its discrete files. This can be done with the BB compiler, for example:
 ````
   bb -decons bb8.ma
 ````
