@@ -17,5 +17,5 @@ Alternatively, each .ma file can be expanded into its discrete files. This can b
 ````
   bb -decons bb8.ma
 ````
-This writes the files into src\*.*. It can also be done with a script as this text format is not that complicated (see contents).
+This writes the files into src\\\*.\*. It can also be done with a script as this text format is not that complicated (see contents).
 
