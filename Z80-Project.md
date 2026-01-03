@@ -73,9 +73,32 @@ I'd forgotten how slow the Z80 could be. My current interpreted language can run
 
 And yet, an early 80s Z80-based computer could so lots of useful work.
 
+**Note** Some instructions are fiddly to emulate but only took a small number of clock ticks in the original hardware. Others easy but took lots of clicks. So emulation speed depends on the mix of instructions.
+
 ### Example Program
 
 This uses the Fannkuch benchmark, with a low N of 9 to make it suitable for 16 bits (10 or more would overlow 16 bits). First it runs the program using my x64 compiler, then it runs *the same source file* on the emulated Z80:
+````
+c:\zx>tm mm -r fann                    # run-from-source in x64 Windows PC
+Compiling fann.m to fann.(run)
+Pfannkuchen( 9 )= 8629 30
+TM: 0.06
+
+c:\zx>mz -r -ss fann              # Do the same via Z80 compiler and emulator (-ss shows size)
+Compiling fann.m to fann.z
+Assembling fann.za to fann.z
+ Code size:   1089 bytes
+Run fann.z:
+--------------------------------------------------
+Pfannkuchen( 9 )= 8629 30
+--------------------------------------------------
+Stopped @ PC:               0476
+Clock ticks:       4,086,582,027
+Instrs:              346,079,427
+Time on PC:                 2.10 secs
+Time on 4MHz Z80:        1021.65 secs
+Emulated Z80 runs at:       1946 MHz
+````
 
 
 
