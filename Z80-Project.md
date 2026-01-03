@@ -48,6 +48,8 @@ But also, my M language normally widens narrow integers to the default 'int' siz
 
 I decided also not to deal with floating point for now, and only reserved a suitable type (f32, which would likely only work with 24 of those bits).
 
+Supported data types are therefore `u8 i16 u16`, plus pointers, plus aggregate types.
+
 ### A Three-Program Solution
 
 My compilers have generally been self-contained one-file executables. For this Z80 project, it actually needs 4 programs, not even three:
@@ -79,7 +81,7 @@ And yet, an early 80s Z80-based computer could so lots of useful work.
 
 This uses the Fannkuch benchmark, with a low N of 9 to make it suitable for 16 bits (10 or more would overlow 16 bits). First it runs the program using my x64 compiler, then it runs *the same source file* on the emulated Z80:
 ````
-c:\zx>tm mm -r fann                    # run-from-source in x64 Windows PC
+c:\zx>tm mm -r fann               # run-from-source in x64 Windows PC
 Compiling fann.m to fann.(run)
 Pfannkuchen( 9 )= 8629 30
 TM: 0.06
@@ -90,7 +92,7 @@ Assembling fann.za to fann.z
  Code size:   1089 bytes
 Run fann.z:
 --------------------------------------------------
-Pfannkuchen( 9 )= 8629 30
+Pfannkuchen(9) = 8629 30
 --------------------------------------------------
 Stopped @ PC:               0476
 Clock ticks:       4,086,582,027
@@ -99,18 +101,41 @@ Time on PC:                 2.10 secs
 Time on 4MHz Z80:        1021.65 secs
 Emulated Z80 runs at:       1946 MHz
 ````
+I don't too have many examples of small programs; bigger ones may use floating point, need wider integers, or need library routines or files.
 
+I have experimented with a simple lexer; a toy Pascal interpreter (just the backend working on precompiled bytecode); and a toy bigint library, that implements only unsigned ADD and MUL.
 
+(Apparently working out 1000! - a 2570-digit result - would take 40 minutes on a 4MHz Z80, although that's with my poor code, and poor algorithm.)
+### Inline Assembly
 
+This is a feature that recently got rid of from my main compiler. There was too little need for it on a modern PC. For the Z80 however it would be indispensible.
 
+I've no plans to add that. Since the MC backend is simplistic, in that it generates ASM source code, it would be easy enough to simply append separately written Z80 assembly code to the output of the compiler, which is always one ASM file.
 
+(The MZ compiler still retains most features of the x64 compiler, which include a module scheme, and whole-program compilation. Then output is always one file. But the IL-Z80 backend currently has some restrictions.)
 
+### Comparison With the 1981 Compiler
 
+That was my first attempt at a compiler for my own language. The Z80 system was also homemade, with no reliable means of storage. So the compiler was memory-resident.
 
+I can't remember the size, but the compiler binary, editor binary, and source of the program being developed, shared 16KB of RAM. That RAM could be write-protected when doing test runs. Another 16KB contained the compiled binary, and memory needed for its data. (Plus 9KB more of video memory.)
 
+My MZ compiler is 200KB. It needs a 45KB assembler, and the emulator is 55KB.
 
+Further, the 1981 system supported 24-bit floating point type. (The programs I played with included 3D vector graphics and basic image processing.)
 
+In all, it's much more impressive than my 2025 version! Given that it had to run on the Z80 itself.
 
+### Further Work
 
+This is not clear ATM. I wasn't sure about the point of this at first, another than as a decent test for the design of my IL, in being able to target something so diverse.
 
+But seeing the Z80 come alive on my PC was great.
 
+Perhaps I will emulate a more complete system, with its own terminal and graphical windows. I might see if I can slow down the emulation to the original speed.
+
+(I had thought briefly about running the Z80 emulator itself on the Z80, but there would be certain problems to solve. One of which is how I can emulate a 64KB system, on a machine which only has 64KB in total.)
+
+### Related Projects
+
+The Z80 is a device I used extensively. There were other microprocessors of that era which I never got round to using, since the 8086 started to take over. So perhaps try and emulate one of those.
