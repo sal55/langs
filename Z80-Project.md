@@ -53,7 +53,7 @@ Supported data types are therefore `u8 i16 u16`, plus pointers, plus aggregate t
 My compilers have generally been self-contained one-file executables. For this Z80 project, it actually needs 4 programs, not even three:
 
 * The front-end compiler MZ turns M programs into ZA source code
-* The ZA assembler turns Z80 source code into a 'Z' binary format (needs need that fourth program, the interpreter for the scripting language)
+* The ZA assembler turns Z80 source code into a 'Z' binary format (this needs that fourth program, the interpreter for the scripting language)
 * The ZZ emulator which runs that binary code
 
 This can all be orchestrated, transparently, from the MZ compiler. This is not a production system, it is just for interest.
