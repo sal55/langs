@@ -115,7 +115,7 @@ I've no plans to add that. Since the MZ backend is simplistic, in that it genera
 
 (The MZ compiler still retains most features of the x64 compiler, which include a module scheme, and whole-program compilation. Then output is always one file. But the IL-Z80 backend currently has some restrictions.)
 
-### Comparison With the 1981 Compiler
+### Comparison with the 1981 Compiler
 
 That was my first attempt at a compiler for my own language. The Z80 system was also homemade, with no reliable means of storage. So the compiler was memory-resident.
 
