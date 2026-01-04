@@ -76,7 +76,9 @@ I'd also forgotten how slow the Z80 could be! My current interpreted language ca
 
 And yet, an early 80s Z80-based computer could still loads lots of useful work.
 
-**Note** Some instructions are fiddly to emulate but only took a small number of clock ticks in the original hardware. Others are easy but took lots of clicks. So emulation speed depends on the mix of instructions.
+* Some instructions are fiddly to emulate but only took a small number of clock ticks in the original hardware. Others are easy but took lots of clicks. So emulation speed depends on the mix of instructions.
+
+* There are different categories of emulators; some will try and model the hardware more precisely, a clock tick at a time, even keep track of pin signals. Mine isn't one of those! It simply runs my code to get results, and counts how many ticks are used.
 
 ### Example Program
 
