@@ -10,10 +10,10 @@ This github site is used for associated resources such as source backups, or the
 ````
 M          Lower level systems language (see below), in M7 and M8 mostly compatible versions
 Q          Dynamic scripting language
-AA         x64-subset assembler using my syntax
+AA         x64-subset assembly using my syntax
 PCL7       Stack-based IL used by MM and BCC compilers (this can be a complete standalone language)
 PCL8       Lighter IL used by BB project (this is used internally only)
-ZA         Z80 assembler, with some tweaks on Zilog syntax
+ZA         Z80 assembly, with some tweaks on Zilog syntax
 C-subset   The partly non-standard subset of C used by the BCC/MCC projects
 ````
 
