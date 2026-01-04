@@ -139,3 +139,79 @@ Perhaps I will emulate a more complete system, with its own terminal and graphic
 ### Related Projects
 
 The Z80 is a device I used extensively. There were other microprocessors of that era which I never got round to using, since the 8086 started to take over. So perhaps try and emulate one of those. But probably not the 6502: that looks hard work just to code in assembly, let alone be a HLL target.
+
+### Example Code
+
+This a Fibonacci routine in my language:
+````
+func fib(byte x)word=
+    if x >  2 then
+        fib(x-1) + fib(x-2)
+    else
+        1
+    end
+end
+````
+(Not the usual version, this is derived from a C version published in BYTE magazine in 1983, part of a survey of 8080 C compilers, but tweaked to use a byte (u8) parameter and word (u16) integers. Hence the 'fib83' below.)
+
+This is the Z80 code my compiler produces. The IL instructions are shown as comments:
+````
+    jp main
+    dw 0
+fib83.fib:
+    fib83.fib.x = 4
+    push ix
+    ld ix, 0
+    add ix, sp
+
+;Startmx                                       
+;Load      x                          u8       
+;Load      2                          u8       
+;Jumple    L3                         u8       
+    ld l, 2
+    ld e, (ix + fib83.fib.x)
+    ld a, l
+    cmp a, e
+    jr nc, L3
+;Load      x                          u8       
+;Load      1                          u8       
+;Sub                                  u8       
+    ld l, (ix + fib83.fib.x)
+    dec hl
+;Setarg                               u8       
+    push hl
+;Callf     &fib83.fib                 u16 /1   
+    call fib83.fib
+    pop bc 
+;Load      x                          u8       
+;Load      2                          u8       
+;Sub                                  u8       
+    push hl 
+    ld l, (ix + fib83.fib.x)
+    dec hl
+    dec hl
+;Setarg                               u8       
+    push hl
+;Callf     &fib83.fib                 u16 /1   
+    call fib83.fib
+    pop bc 
+;Add                                  u16      
+    ex de, hl
+    pop hl
+    add hl, de
+;Resetmx                              u16      
+;Jump      L2                                  
+    jr L2
+L3:
+;Load      1                          u16      
+;Endmx                                u16      
+    ld hl, 1
+L2:
+L1:
+;Retfn                                u16      
+    pop ix
+    ret 
+````
+(The first line refers to a 'main' routine that is not shown.)
+
+In this modified form, the code produced by SDCC for the C versions, gives comparable performance. Using 16-types throughout, SDCC is much better, about 30% faster.
