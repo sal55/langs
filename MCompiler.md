@@ -3,6 +3,11 @@
 'M' is my lower level systems language.
 
 The name of the compiler is `MM` or `mm.exe`. It is a whole-program compiler, written in M, that converts M programs to x64 native code running under Windows ABI.
+
+There is also a newer version called 'BB' (v8 versus v7 of MM). That as a simplified 'PCL' intermediate language, and omits RUNP (interpreter), and C source options.
+
+Plus there is an experimental version for Z80 target 'MZ': there is only one option after 'PCL', and that is for Z80 assembly file.
+
 ````
     Inputs             Intermediates                                                              Outputs
                                                A           B        C       D       (F)     E        
@@ -12,8 +17,8 @@ The name of the compiler is `MM` or `mm.exe`. It is a whole-program compiler, wr
     Strinclude    ───>───────────────┘         │           │        │       ├───────────────────> OBJ File
                                                │           │        │       └─> MCU ─┬─> MCB ───> ML/MX Files
                                                │           │        │                └─> MCX ───> (RUN native code) 
-                                               │           │        ├───────────────────────────> ASM File
-                                               │           │        └───────────────────────────> NASM File (Config option)
+                                               │           │        ├───────────────────────────> ASM File (AA syntax)
+                                               │           │        └───────────────────────────> ASM File (GAS syntax; config option)
                                                │           ├────────────────────────────────────> (RUNP Interpret PCL)
                                                │           ├────────────────────────────────────> PCL Source File
                                                │           └────────────────────────────────────> C Source File (Config option)
@@ -74,9 +79,10 @@ EXP           Export files. These are under review, but when generating ML (it w
               import module, which I plan to do for both M and Q languages, which simplify using the library from an M or
               Q application. Just import that generated module.
 
-ASM           x64 assembly source code, in a syntax used by my own assembler 'AA'.
+ASM (AA)      x64 assembly source code, in a syntax used by my own assembler 'AA'.
 
-NASM          NASM format x64 assembly source code.
+ASM (GAS)     AT&T or 'GAS' x64 assembly format source code. Need to be processed with gcc or directly with 'as', and needs
+              a conventional linker to process further
 
 OBJ           The single OBJ file produced represents the whole program. OBJ files allow M code to be statically linked with other
               languages, but require an external linker.
@@ -84,9 +90,11 @@ OBJ           The single OBJ file produced represents the whole program. OBJ fil
 RUN           Not an output, the program is run immediately in memory without generating any executable file. This allows M to be used
               like a scripting language, running programs directly from source code.
 
-RUNP          This interprets the PCL intermediate representation in memory without translation to native code.
+RUNP          This interprets the PCL intermediate representation in memory without translation to native code. (This has fallen into
+              disuse and may be buggy.)
 
-PCL           A dump of the IL as textual source code. This can be processed by the separate PC application.
+PCL           A dump of the IL as textual source code. This can be processed by the separate PC application. (That product is deprecated.
+              For BB v8, the PCL dump does not form a viable source format anyway; it is only for viewing.)
 
 C             Single C source file represents the entire program. No headers are generated. No headers are used in the file.
               Not all M programs can be transpiled as some features are not supported. Requires 64-bit C compiler; some features need gcc extensions.
@@ -103,9 +111,9 @@ PROJ          A summary of modules and subprograms used by the project
 
 #### Compiler Size and Presentation
 
-The compiler is a single 300KB to 400KB EXE file depending on configuration. It is self-contained, and contains the sources for the language's standard library. So the whole installation is a single file, `mm.exe`.
+The compiler is a single 300KB to 400KB EXE file depending on configuration. It is self-contained, and contains the sources for the language's standard library. So the whole installation is a single file, `mm.exe`, or `bb.exe`.
 
-It translates M source code to binary at speeds of at least 500K lines per seconds, generating code at around 5MB per second.
+It translates M source code to binary at speeds of at least 500K lines per seconds, generating code at up to 5MB per second.
 
 The smallest M compiler, minus std library, and with only an IL interpreter is about 220KB.
 
