@@ -2,32 +2,31 @@
 
 All tools run on and for x64 with Windows.
 
-**'MM' M Systems Compiler (MM7)**
+**'BB' M Systems Compiler (v8 using PCL8)**
+````
+.m/.ma ────┬─> [bb.exe] ─┬────> .exe/.dll Files (+ M/Q Interface module for DLL/ML)
+.ml/.dll ──┘             ├────> .ml/.mx Files
+                         ├────> .obj File
+                         ├────>  Run (native code in memory)
+                         ├────> .asm File (syntax for my AA assembler)
+                         ├────> .asm File (AT&T/GAS syntax, if configured)
+                         ├────> .ma File (create single amalgamated source file)
+                         └────> .list/.proj Files (info for my IDE)
+````
+
+**'MM' M Systems Compiler (v7 using PCL7)**
 ````
 .m/.ma ────┬─> [mm.exe] ─┬────> .exe/.dll Files (+ M/Q Interface module for DLL/ML)
 .ml/.dll ──┘             ├────> .ml/.mx Files
                          ├────> .obj File
                          ├────>  Run (native code in memory)
                          ├────> .asm File (syntax for my AA assembler)
-                         ├────> .nasm File (NASM syntax, if configured)
+                         ├────> .asm File (AT&T/GAS syntax, if configured)
                          ├────> .pcl IL File
                          ├────>  Interpret (IL code in memory)
                          ├────> .ma File (create single amalgamated source file)
                          ├────> .c File via PCL (available via 'MC' config; see below)
                          └────> .list/.proj Files (info for my IDE)
-````
-
-**'PC' PCL Processor**
-````
-.pcl ──────┬─> [pc.exe] ─┬────> .exe/.dll Files
-.ml/.dll ──┘             ├────> .ml/.mx Files
-                         ├────> .obj File
-                         ├────>  Run native code in memory
-                         ├────> .asm File
-                         ├────> .nasm File (if configured)
-                         ├────> .pcl IL File (uses .pct extension)
-                         ├────> .c File (if configured)
-                         └────>  Interpret IL code                      
 ````
 **'AA' x64 Assembler/linker (AA7)**
 ````
@@ -36,16 +35,26 @@ All tools run on and for x64 with Windows.
                          ├────> .obj File
                          ├────>  Run (native code in memory)
                          ├────> .asm File (syntax for my AA assembler) (uses .aa extension)
-                         └────> .nasm File (NASM syntax)                      
+                         └────> .asm File (AT&T/GAS syntax when configured)                      
 ````
 
-**'QQ' Q Interpreter (QQ7)**
+**'QQ' Q Interpreter**
+````                 
+.q/.qa ────┬─> [qq.exe] ──┬───> Run (compile to internal bytecode and immediately interpret)
+.ml/.dll ──┘              └───> .qa File (create single amalgamated source file)
 ````
-.q/.qa ───> [qq.exe] ──┬────> Run (compile to internal bytecode and immediately interpret)
-              ↑	       └────> .qa File (create single amalgamated source file)
-.ml/.dll ─────┘ 
+**'MZ' M Systems Compiler for Z80 (Derived from BB)**
+````
+.m/.ma ────┬─> [mz.exe] ─┬────> .za Z80 Assembly file
+.ml/.dll ──┘             ├────> .z Z80 binary (via ZA)
+                         └────> Run (Z80 binar via ZZ emulator)
 
+.za ─────────> [za.q] ────────> .z Z80 binary
+
+.z ──────────> [zz.exe] ──────> Run (Z80 binary via emulator)
 ````
+
+
 **'RUNMX' Launch MX Programs**
 ````
 .mx ───────┬─> [runmx.exe] ───> Run (Load, fix up, and execute the MX-format executable)
@@ -74,6 +83,4 @@ All products are written in my M language and built with **MM**. Single-file sou
 
 Building all of the above executables from source takes about 1/3 second in total.
 
-### Versions
 
-All products will share the same major version number 7. This ensures that can all work together.
