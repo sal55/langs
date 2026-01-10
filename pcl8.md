@@ -6,27 +6,33 @@ This documents some details of the IL I now use in my lower-level language compi
 
 All my 'PCL' languages are stack-based.
 
-* **PCL** is also the name of the bytecode language I use for my dynamic language interpreters. There is not connection other than it is also stack-based, and was an inspiration for my static ILs.
-* **PCL v7** Used in my previous compiler, and also my C-subset compiler. This one had a broader scope than v8, as detailed below
-* **PCL v6** (The v6 is the compiler version; before v6 I didn't use ILs.) v6 was very specific to my language and how its execution model worked. v7 was designed so that it could be used for languages with other characteristic, such as C, or also for small devices, such as 8/16-bit microprocessors.
+* **PCL** is also the name of the bytecode language I use for my dynamic language interpreters. There is no connection other than it is also stack-based, and was an inspiration for my static ILs.
+* **PCL v7** Used in my previous compiler, and also my C-subset compiler. This one had a broader scope than v8
+* **PCL v6** (The v6 is the compiler version; before v6 I didn't use ILs.) v6 was very specific to my language and how its execution model worked. v7 was more general.
 * **TCL** This is the name of a 3AC-based IL that I have also tried to use. That has some useful characteristics, and it makes some things simpler. But in the end the stack-based version won out.
 
-v7 versus v8 is described in more detail at the end.
 
-### Inline Assembly and Other Special Features
+### Characteristics
 
-Inline assembly is problematic: PCL does not deal with it directly. It is only viable when the PCL backend is built-in to the compiler, which can then call into the front-end for the details needed. (ASM instructions are represented by special AST nodes.)
+* All these products are designed for whole-program compilers
+* PCL v8 represents a whole program primarily as a symbol table or ST, which is a simple list of global variables and functions
+* Each function has its own PCL IL instruction sequence of executable code
+* Variable can use IL sequences of DATA instructions to represent the any initialisation expressions (not executable)
+* The HLL front-end turns its AST, ST and type tables into a PCL ST and IL structures, by building them via a special API
 
-However the BB compile has dropped inline assembly. This was only used for certain things like solving the LIBFFI problem. So a temporary solution is used (some actual x64 ASM code is compiled to a relative binary function by the v7 compiled, and embedded as data in a v8 program. This is then copied to executable memory.
+Once in PCL form, the following possibilities exist, here for a Win64 target which is the main one:
+* Generate EXE file executable directly (Windows binary)
+* DLL file (relocatable binary)
+* OBJ file
+* ASM file in either my private format, or in AT&T form
+* MX private binary format
+* Run the code direcly without an discrete executable
 
-Eventually special PCL instructions will be created.
+v7 could also interpret the PCL code, or turn it into linear C code; those have been dropped here.
 
-For compiling C, it will need 
+It could also dump PCL code into a textual format that was a standalone language. That has been dropped too; it can still be dumped, but it is for debugging purposes only.
 
-### BCC C-Subset Compiler
-
-### Z80 Compiler
-
+(For the recent Z80 8-bit target, there is only ASM output, which is processed further with my own tools.)
 
 #### Main IL Instructions:
 ````
@@ -147,40 +153,23 @@ LABEL    label                   L:                       Define label
 
 ### The PCL API
 
+This is not documented other that within the source code. The API is not pure: these is a mix of functions and global variables, and there can be leakage either way.
+
+### PCL Support Library
+
+Most instructions generate inline code. More complex ones may need a support library. There is no special provision for this ATM, just workarounds:
+
+* For ones like POWER/i64, this is handled by by std library of my language, which is usually compiled with my apps. The backend calls into the front-end to scan for a particular function, eg. `msyslib.power_i64`, and turns it into a call to that.
+* Sometimes, a special SYSCALL op is used (not in the lists; it's target-specific), an approach used for the Z80 target where there is no library yet. Then the backend generates code to call into emulator
+
 ### Deployment
+
+The PCL backend needs to be integrated into the front-end. I no longer support a standalone product.
 
 ### Back-End Strategies
 
+For x64 and ARM64, this gets ugly. While there is no proper optimisation, the architecture and ABIs involved make things complicated.
 
-### v7 versus v8
+A simple approach such as emulating the stack behaviour of the IL is not that simple either because of the ABIs, and would be too inefficient.
 
-Up to v7, an IL formed a complete representation of a program. Internally, the IL was one monolithic sequence of instructions, which included declarations for all variables, global and local; functions; and imports.
-
-As an internal data structure, ST (symbol table) entries were linked to PCL instructions.
-
-A v7 program could be dumped in a textual format that formed a fully independent language.
-
-An attractive feature of v7 was that a standalone backend could be created, as a library or application, that could take PCL IL programs created via an API, or read from that textual format, and turn them directly into EXEs, or DLLs OBJ, ASM files, or run or interpret then directly. It could do all that with a single program that was under 200KB.
-
-(The original motivation for creating an IL like this was to see what LLVM would look like if I had a hand in it. Which turns to be magnitudes small in scope, size and complexity, and faster magnitudes faster in compilation speed and self-build time, while being within 1:2 the speed of generated code. I guess I proved some point.)
-
-However, v7 did not support embedded native code, which could be generated by the inline assembly features of my front-end language. So discrete PCL files were not possible in that case. It only worked when the PCL backend was integrated into the compiler, which ws the normal way it was used.
-
-v8 was a simplfied version with a reduced instrucion set:
-
-### v8 IL
-
-At first I simplified too much: PCL was only used for code within functions, while other aspects such as STs and type systems were shared between front end and back end. But this proved unwieldly, and confusing. A clear demarcation was needed between front and back ends. So eventually these where the differences:
-
-* A PCL program is primarily representated by a symbol table that contains the variables and functions. This is distinct from the ST of the front enD
-* Executable PCL code only exists for the bodies of functions: each function has its own sequence of PCL instructions
-* For initialised variables, the data for each is presented by one or more PCL 'DATA' opcodes; this contains an operand only and is not executable.
-* v7 had about 120 distinct opcodes; v8 has about 80. Since many of those are directives or hints, or are codes only used in the front end, that means the active opcodes have been almost halved. (My M front end uses PCL opcodes such as ADD or SQR within its AST, but ones like SQR, part of v7, are lowered to MUL before it gets to the backend. It would need some refactoring to remove those.)
-* The back end (the stages after the PCL) does not include the interpreter, or the linear-C target.
-
-The compiler front-end has a discrete step that turned its ST, AST and type tables into that PCL representation. There is still a textual representation, but it is for debugging only; it does not form a separate language.
-
-The PCL backend is usually built-in to the compiler. (For the Z80 port, this only supports ASM output.)
-
-
-
+However for Z80, I did end up using the stack, as there is no official ABI, and it is not much slower than the more complex approach.
