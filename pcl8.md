@@ -29,6 +29,20 @@ v8 was a simplfied version with a reduced instrucion set:
 
 ### v8 IL
 
+At first I simplied too much: PCL was only used for code within functions, while other aspects such as STs and type systems were shared between front-end and back-end. But this provided unwieldly, and confusing. A clear demarcation was needed between front-end and back-end. So eventually these where the differences:
+
+* A PCL program is primarily representated by a symbol table that contains the variables and functions. This is distinct from the ST of the front ent
+* Executable PCL code only exists for the bodies of functions: each function has its own sequence of PCL instructions
+* For initialised variables, the data for each is presented by one or more PCL 'DATA' opcodes; this contains an operand only and is not executable.
+* v7 had about 120 distinct opcodes; v8 has about 80. Since many of those are directives or hints, or are codes only used in the front end, that means the active opcodes have been almost halved. (My M front end uses PCL opcodes such as ADD or SQR within its AST, but ones like SQR, part of v7, are lowered to MUL before it gets to the backend. It would need some refactoring to remove those.)
+
+### Inline Assembly and Other Special Features
+
+### BCC C-Subset Compiler
+
+### Z80 Compiler
+
+
 #### Main IL Instructions:
 ````
 Opcode   Inline   Type  Attrs    Function                Note
@@ -145,4 +159,10 @@ COMMENT  string
 EVAL
 LABEL    label                   L:                       Define label
 ````
+
+### The PCL API
+
+### Deployment
+
+### Back-End Strategies
 
