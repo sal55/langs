@@ -179,9 +179,8 @@ Any Instruction may operate on values on the stack (X Y Z) or with operands that
     real             123.4             Floating point constant
     string           "abc"             A reference to a string stored elsewhere
     label            L                 A numeric label (eg. L56)
-
-#### Attributes
 ````
+#### Attributes
 There can also be some extra bits of info. This lists all shown:
 ````
     n          Count (eg, call arguments)
@@ -193,8 +192,8 @@ There can also be some extra bits of info. This lists all shown:
     pop1       A value of rather than zero means that only Z is popped for JUMPcc rather than X Y, but only if
                false; ie. the jumps is not taken. This used used for chain sets of compared
     op         For maths functions, one of SIN COS TAN ASIN .... (in my HLLs such functions are built-in operators)
-
-#### Type System
+````
+#### The Type System
 These the types used:
 ````
 void            Means no type
@@ -221,17 +220,19 @@ The front end either can assume it is by-value, or can use knowledge of the back
 
 * A 'Vector' is reserved for the short-vectors used in SIMD-style instructions and registers. But I don't do anything with these yet since none of my HLLs support such types.
 
+While this type system is PCL's, my front end build on top it. (Otherwise there is the problem that there are different denotations for an 'i64' type for example, in front and back ends.)
+
+Note there is no type defining a machine address or pointer; an ordinary unsigned integer is used. Usually the front end define an alias for that, which is usually `u64` for 64-bit targets, amnd 'u16' for the Z80 target.
+
 #### Platform ABI
 
 I have tried to make it so what whoever/whatever generated the IL, does not need to know how the ABI works, and can assume a pure stack machine where everyhing is passed by value. That would be the headache of the backend.
 
-But as noted above, there is currently some leakage.
+But as noted above, there is currently some leakage. For example the existence of of SETCALL/SETARG hint instructions, to simplify the backend's job for ABIs like Win64 and SYS V.
 
-Also, there is the existence of of SETCALL/SETARG hint instructions, to specifically simply the backend's job for ABIs like Win64 and SYS V.
+(SYS V for ARM64 is particularly complex, requiring even more hinting, which lead to me abandoning that target.)
 
-(SYS V for ARM64 is particularly complex, requiring even more hinting, which lead to me abandoning that target. If I revisit it, I might use by own ABI and only use the official one for the FFI.)
-
-#### STARTMX/RESETMX/ENDMX
+#### Startmx/Resetmx/Endmx
 
 These are necessary hints used when one of several paths is taken to evaluate some result. For example, this is a 2-way example:
 ````
@@ -242,8 +243,21 @@ These are necessary hints used when one of several paths is taken to evaluate so
 
 With a pure stack machine, the result will always be at the top of the stack whatever the path. But that is not the case with a register-based target; results may be in diverse registers.
 
-So `startmx resetmx endmx` are used to guard each path. (This needs some PCL examples.)
+So `startmx resetmx endmx` are used to denote each path. Example PCL for my `(c | a | b)` example, when all have i64 types:
+````
+    startmx                                       
+    load      c                          i64      Stack is (c)
+    jumpf     L3                         i64      Stack is ()
+    load      a                          i64      Stack is (a)
+    resetmx                              i64      Reset to ()
+    jump      L2                                  
+L3: 
+    load      b                          i64      Stack is (b)
+    endmx                                i64      
+L2:                                               Stack is either (a) or (b)
+````
+Effectively, `startmx` remembers the current stack state ('()' here), and each `resetmx` will restore it to that state.
 
-These hints are not needed for PCL is interpreted, or translated directly to stack machine. Unless it still involves the backend keeping track of the stack level as it performs a linear pass through PCL; the stack must be reset at `resetmx` and `endmx`.
+These hints are not needed for PCL that is interpreted, or translated directly to stack machine. Unless it still involves the backend keeping track of the stack level as it performs a linear pass through PCL; then it needs those reset points.
 
 (I think this problem is related to 'phi nodes' used in SSA representations, but I know little about it.)
