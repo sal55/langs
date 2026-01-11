@@ -2,37 +2,36 @@
 
 This documents some details of the IL I now use in my lower-level language compilers.
 
-### Disambiguation
-
-All my 'PCL' languages are stack-based.
-
-* **PCL** is also the name of the bytecode language I use for my dynamic language interpreters. There is no connection other than it is also stack-based, and was an inspiration for my static ILs.
-* **PCL v7** Used in my previous compiler, and also my C-subset compiler. This one had a broader scope than v8
-* **PCL v6** (The v6 is the compiler version; before v6 I didn't use ILs.) v6 was very specific to my language and how its execution model worked. v7 was more general.
-* **TCL** This is the name of a 3AC-based IL that I have also tried to use. That has some useful characteristics, and it makes some things simpler. But in the end the stack-based version won out.
-
 
 ### Characteristics
 
-* All these products are designed for whole-program compilers
+* Designed for whole-program compilers
 * PCL v8 represents a whole program primarily as a symbol table or ST, which is a simple list of global variables and functions
-* Each function has its own PCL IL instruction sequence of executable code
-* Variable can use IL sequences of DATA instructions to represent the any initialisation expressions (not executable)
-* The HLL front-end turns its AST, ST and type tables into a PCL ST and IL structures, by building them via a special API
+* Each function has its own PCL IL sequence of executable instructions
+* Variable can use IL sequences of non-executable DATA instructions for any static initialising data
+* The HLL front-end turns its AST, ST and type tables into a PCL ST and IL structures, via a set of API calls
 
-Once in PCL form, the following possibilities exist, here for a Win64 target which is the main one:
+### PCL Backend
+
+This is what happens after the PCL representation has been done, and it depends on the supported target and how the compiler works. For the main Win64 target:
+
 * Generate EXE file executable directly (Windows binary)
 * DLL file (relocatable binary)
 * OBJ file
-* ASM file in either my private format, or in AT&T form
+* ASM file in either my private format, or in AT&T form (build option)
 * MX private binary format
-* Run the code direcly without an discrete executable
+* Run the code directly without an discrete executable
 
-v7 could also interpret the PCL code, or turn it into linear C code; those have been dropped here.
+These are all available with the same compiler executable.
 
-It could also dump PCL code into a textual format that was a standalone language. That has been dropped too; it can still be dumped, but it is for debugging purposes only.
+(Options to interpret the IL code, turn it into linear C, or write it as a textual PCL syntax that formed a self-contained language, have been dropped. They existed in v7.)
 
-(For the recent Z80 8-bit target, there is only ASM output, which is processed further with my own tools.)
+If the case of the Z80 target, the compiler uses separate compiler, assembler and emulator; the options are:
+* Generate 'Z' private binary 
+* 'ZA' assembly source file
+* Run directly on PC via emulator 
+
+### PCL IL Instructions
 
 #### Main IL Instructions:
 ````
@@ -150,26 +149,17 @@ COMMENT  string
 EVAL
 LABEL    label                   L:                       Define label
 ````
+### Keys to Instruction Tables
 
-### The PCL API
+#### Stack Operands
 
-This is not documented other that within the source code. The API is not pure: these is a mix of functions and global variables, and there can be leakage either way.
+#### Inline Operands
 
-### PCL Support Library
+#### Attributes
 
-Most instructions generate inline code. More complex ones may need a support library. There is no special provision for this ATM, just workarounds:
+#### Type System
 
-* For ones like POWER/i64, this is handled by by std library of my language, which is usually compiled with my apps. The backend calls into the front-end to scan for a particular function, eg. `msyslib.power_i64`, and turns it into a call to that.
-* Sometimes, a special SYSCALL op is used (not in the lists; it's target-specific), an approach used for the Z80 target where there is no library yet. Then the backend generates code to call into emulator
+#### STARTMX/RESETMX/ENDMX
 
-### Deployment
 
-The PCL backend needs to be integrated into the front-end. I no longer support a standalone product.
 
-### Back-End Strategies
-
-For x64 and ARM64, this gets ugly. While there is no proper optimisation, the architecture and ABIs involved make things complicated.
-
-A simple approach such as emulating the stack behaviour of the IL is not that simple either because of the ABIs, and would be too inefficient.
-
-However for Z80, I did end up using the stack, as there is no official ABI, and it is not much slower than the more complex approach.
