@@ -2,36 +2,34 @@
 
 This documents some details of the IL I now use in my lower-level language compilers.
 
+### Overview
 
-### Characteristics
+PCL is a complete representation of a whole program or library. It describes three kinds of entities:
+* Declarations, stored in a linear Symbol Table (ST). This is a linear list of variables and functions, both local and imported
+* Data, mainly static initialisation data for static variables
+* Code, which is sequences of executable instructions for a Stack VM
 
-* Designed for whole-program compilers
-* PCL v8 represents a whole program primarily as a symbol table or ST, which is a simple list of global variables and functions
-* Each function has its own PCL IL sequence of executable instructions
-* Variable can use IL sequences of non-executable DATA instructions for any static initialising data
-* The HLL front-end turns its AST, ST and type tables into a PCL ST and IL structures, via a set of API calls
+The primary data structure is the ST (declarations). Each initialised variable in the ST will a sequence of one or more DATA non-executable instructions.
 
-### PCL Backend
+Each local function has sequence of one or more of the executable IL instructions that are listed below
 
-This is what happens after the PCL representation has been done, and it depends on the supported target and how the compiler works. For the main Win64 target:
+There is one more auxiliary data stucture which is list of import libraries, which may be needed for the backend to do its job.
 
-* Generate EXE file executable directly (Windows binary)
-* DLL file (relocatable binary)
-* OBJ file
-* ASM file in either my private format, or in AT&T form (build option)
-* MX private binary format
-* Run the code directly without an discrete executable
+PCL is intended for whole-program compilers with a backend (the bit that comes after the PCL stage) that directly generates execubles, or even runs the generated code, without extraneous tools such as linkers.
 
-These are all available with the same compiler executable.
+However this describes only the form of the IL; it does not dictate what happens next. It just strives to include enough information to make that job possible.
 
-(Options to interpret the IL code, turn it into linear C, or write it as a textual PCL syntax that formed a self-contained language, have been dropped. They existed in v7.)
+### Generating PCL
 
-If the case of the Z80 target, the compiler uses separate compiler, assembler and emulator; the options are:
-* Generate 'Z' private binary 
-* 'ZA' assembly source file
-* Run directly on PC via emulator 
+This is done via a small library and API that is expected to be compiled-in to the front-end compiler. Although the front and back ends are demarcated (eg. PCL has its own ST and type system), there is some leakage between the two.
+
+The API is not documented ATM, it is defined by its source module.
+
+(I am not offering a working product, just describing the design of an IL which I have refined and which seems to work well.)
 
 ### PCL IL Instructions
+
+More info about instruction layouts and a key to the table is provided later.
 
 #### Main IL Instructions:
 ````
@@ -128,8 +126,9 @@ DATA     &mem     t                                      For data only
          label    t
 ````
 
-#### Hints
-The following are hint instructions useful when target is register-based code. Not needed when IL is interpreted, or target is also a stack machine:
+#### Miscellenous
+
+**Hints** The following are hint instructions useful when target is register-based code. Not needed when IL is interpreted, or target is also a stack machine:
 ````
 STARTMX                                                  New resetmx/endmx sequence
 RESETMX           t
@@ -140,7 +139,7 @@ SETARG            t     n                                Mark argument n
 
 LOADALL                                                  Ensure all pcl stack values are pushed
 ````
-#### Directives and Miscellaneous:
+**Directives Etc**
 ````
 TYPE              t                                      Auxiliary op following CALLF/ICALLF
 NOP                        
@@ -151,15 +150,100 @@ LABEL    label                   L:                       Define label
 ````
 ### Keys to Instruction Tables
 
+#### Instruction Format
+Each Instruction has these fields:
+````
+Opcode                One of the capitalised codes above
+Operand Type          Which kind of operand is used, including None
+Operands              Where used, one of `mem &mem int real string label`
+                      Under 'Function`, uses generic examples `A &A 123 123.4 "abc" L`
+Type and Size         Shown as `t` where used
+Secondary type        Shown as `u` where used
+Attributes            Optional 1 or 2 integers, which are variously named as shown
+````
+
 #### Stack Operands
+PCL instructions are for a stack machine. The top stack element is always called Z; the next is Y if used, and the one below is X.
+
+If X, Y or Z appear in the Function columns, these can be assumed to be consumed, or popped from the stack. (With the odd exception described in the Note).
+
+Any newly pushed result is shown as Z' (or, where there are two new results, both Y' and Z')
 
 #### Inline Operands
 
+Any Instruction may operate on values on the stack (X Y Z) or with operands that are part of the instruction, or both. Where inline operands are used, the will one of these six. The right column shows the forms used under Function:
+````
+    mem              A                 Contents of static, global or local variable
+    &mem             &A                Address of such a variable, or address of a function
+    int              123               Integer constant
+    real             123.4             Floating point constant
+    string           "abc"             A reference to a string stored elsewhere
+    label            L                 A numeric label (eg. L56)
+
 #### Attributes
+````
+There can also be some extra bits of info. This lists all shown:
+````
+    n          Count (eg, call arguments)
+    s          Scale factor to complex pointer instructions (eg. byte-size of a pointer target type)
+    d          Extra byte-offset for complex pointers (so it is not scaled)
+    cc         Condition code, one of EQ NE LT LE GE GT
+    v          A value of 1 (rather than 0) means a called function uses C-style variadic arguments, which have
+               special ABI rules
+    pop1       A value of rather than zero means that only Z is popped for JUMPcc rather than X Y, but only if
+               false; ie. the jumps is not taken. This used used for chain sets of compared
+    op         For maths functions, one of SIN COS TAN ASIN .... (in my HLLs such functions are built-in operators)
 
 #### Type System
+These the types used:
+````
+void            Means no type
+i8              Signed integer
+i16
+i32
+i64
+u8              Unsigned integer
+u16
+u32
+u64
+r32             Floating point
+r64
+block           Any aggregate type of N bytes
+(vector         Reserved type)
+````
+* Record/Array types are reprented by an N-byte block. Alignment info for the whole block is deduced from the overall size. Struct layout info does not exist; this is up to the front-end.
+
+(This would be at odds with SYS V ABI where structs passed by-value have incomprehensible passing rules. However I understand that neither LLVM nor Cranelift get involved with this either.)
+
+* Blocks are notionally manipulated by-value. However, a LOAD of a block value will only load a reference; it will not copy, unless this is pushing a function argument where the ABI requires by-value passing of structs. I decided to leave this up to the backend. 
+
+The front end either can assume it is by-value, or can use knowledge of the back-end to say that blocks will be passed by reference. (So in my HLL, they will be passed by reference, but if compiling C, structs (not arrays) must be passed by value. However my C compiler only used v7)
+
+* A 'Vector' is reserved for the short-vectors used in SIMD-style instructions and registers. But I don't do anything with these yet since none of my HLLs support such types.
+
+#### Platform ABI
+
+I have tried to make it so what whoever/whatever generated the IL, does not need to know how the ABI works, and can assume a pure stack machine where everyhing is passed by value. That would be the headache of the backend.
+
+But as noted above, there is currently some leakage.
+
+Also, there is the existence of of SETCALL/SETARG hint instructions, to specifically simply the backend's job for ABIs like Win64 and SYS V.
+
+(SYS V for ARM64 is particularly complex, requiring even more hinting, which lead to me abandoning that target. If I revisit it, I might use by own ABI and only use the official one for the FFI.)
 
 #### STARTMX/RESETMX/ENDMX
 
+These are necessary hints used when one of several paths is taken to evaluate some result. For example, this is a 2-way example:
+````
+    (c | a | b)                  # select a or b depending on C
+     c ? a : e                   # in C syntax
+````
+(My HLLs have several such constructions, and in general are N-way.)
 
+With a pure stack machine, the result will always be at the top of the stack whatever the path. But that is not the case with a register-based target; results may be in diverse registers.
 
+So `startmx resetmx endmx` are used to guard each path. (This needs some PCL examples.)
+
+These hints are not needed for PCL is interpreted, or translated directly to stack machine. Unless it still involves the backend keeping track of the stack level as it performs a linear pass through PCL; the stack must be reset at `resetmx` and `endmx`.
+
+(I think this problem is related to 'phi nodes' used in SSA representations, but I know little about it.)
