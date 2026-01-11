@@ -1,23 +1,25 @@
 ## PCL v8 Intermediate Language
 
-This documents some details of the IL I now use in my lower-level language compilers.
+This documents some details of the IL I now use in my lower-level language whole-program compilers. 
+
+Note that I am not offering a working product that anyone code download and use. Just describing the design of an IL which I have refined and which seems to work well for me. I don't got into details of how the IL is generated, or what comes next.
 
 ### Overview
 
 PCL is a complete representation of a whole program or library. It describes three kinds of entities:
 * Declarations, stored in a linear Symbol Table (ST). This is a linear list of variables and functions, both local and imported
-* Data, mainly static initialisation data for static variables
+* Data, mainly initialisation data for static variables
 * Code, which is sequences of executable instructions for a Stack VM
 
-The primary data structure is the ST (declarations). Each initialised variable in the ST will a sequence of one or more DATA non-executable instructions.
+The primary data structure is the ST (declarations). Each initialised variable in the ST will have a sequence of one or more DATA non-executable instructions.
 
-Each local function has sequence of one or more of the executable IL instructions that are listed below
+Each local function has a sequence the executable IL instructions that are listed below
 
-There is one more auxiliary data stucture which is list of import libraries, which may be needed for the backend to do its job.
+There is one more auxiliary data stucture, a list of import libraries, which may be needed for the backend to do its job.
 
-PCL is intended for whole-program compilers with a backend (the bit that comes after the PCL stage) that directly generates execubles, or even runs the generated code, without extraneous tools such as linkers.
+PCL is intended for whole-program compilers with a backend (the bit that comes after the PCL stage) that directly generates executables, or even runs the generated code, without extraneous tools such as linkers.
 
-However this describes only the form of the IL; it does not dictate what happens next. It just strives to include enough information to make that job possible.
+However this describes only the form of the IL; it does not dictate what happens next. The PCL design just strives to include enough information to make that job possible.
 
 ### Generating PCL
 
@@ -25,7 +27,6 @@ This is done via a small library and API that is expected to be compiled-in to t
 
 The API is not documented ATM, it is defined by its source module.
 
-(I am not offering a working product, just describing the design of an IL which I have refined and which seems to work well.)
 
 ### PCL IL Instructions
 
@@ -150,13 +151,19 @@ LABEL    label                   L:                       Define label
 ````
 ### Keys to Instruction Tables
 
+#### Some Symbols
+````
+&      Address-of
+^      Postfix pointer dereference
+:=     Assignment or Push
+...    Argument list
+
 #### Instruction Format
 Each Instruction has these fields:
 ````
 Opcode                One of the capitalised codes above
 Operand Type          Which kind of operand is used, including None
 Operands              Where used, one of `mem &mem int real string label`
-                      Under 'Function`, uses generic examples `A &A 123 123.4 "abc" L`
 Type and Size         Shown as `t` where used
 Secondary type        Shown as `u` where used
 Attributes            Optional 1 or 2 integers, which are variously named as shown
@@ -207,7 +214,7 @@ u32
 u64
 r32             Floating point
 r64
-block           Any aggregate type of N bytes
+mem:N           ('Block') Any aggregate type of N bytes
 (vector         Reserved type)
 ````
 * Record/Array types are reprented by an N-byte block. Alignment info for the whole block is deduced from the overall size. Struct layout info does not exist; this is up to the front-end.
@@ -234,12 +241,12 @@ But as noted above, there is currently some leakage. For example the existence o
 
 #### Startmx/Resetmx/Endmx
 
-These are necessary hints used when one of several paths is taken to evaluate some result. For example, this is a 2-way example:
+These are necessary hints used when one of several paths is taken to evaluate some result. This is a 2-way example:
 ````
     (c | a | b)                  # select a or b depending on C
      c ? a : e                   # in C syntax
 ````
-(My HLLs have several such constructions, and in general are N-way.)
+(My HLLs have several such constructions and in general are N-way.)
 
 With a pure stack machine, the result will always be at the top of the stack whatever the path. But that is not the case with a register-based target; results may be in diverse registers.
 
