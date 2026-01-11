@@ -2,7 +2,9 @@
 
 This documents some details of the IL I now use in my lower-level language whole-program compilers. 
 
-Note that I am not offering a working product that anyone code download and use. Just describing the design of an IL which I have refined and which seems to work well for me. I don't got into details of how the IL is generated, or what comes next.
+Note that I am not offering a working product that anyone code download and use. Just describing the design of an IL which I have refined and which seems to work well for me.
+
+I don't go into details of how the IL is generated, or what comes next.
 
 ### Overview
 
@@ -19,14 +21,11 @@ There is one more auxiliary data stucture, a list of import libraries, which may
 
 PCL is intended for whole-program compilers with a backend (the bit that comes after the PCL stage) that directly generates executables, or even runs the generated code, without extraneous tools such as linkers.
 
-However this describes only the form of the IL; it does not dictate what happens next. The PCL design just strives to include enough information to make that job possible.
-
 ### Generating PCL
 
-This is done via a small library and API that is expected to be compiled-in to the front-end compiler. Although the front and back ends are demarcated (eg. PCL has its own ST and type system), there is some leakage between the two.
+This is done via a small library and API that is expected to be compiled-in to the front-end compiler.
 
-The API is not documented ATM, it is defined by its source module.
-
+The API is not documented ATM, it is defined by its source module. There is no viable textual form of the IL as there was in previous version, only what is displaye for debugging purposes.
 
 ### PCL IL Instructions
 
@@ -126,10 +125,14 @@ DATA     &mem     t                                      For data only
          string   t
          label    t
 ````
+The operand is a reference to a string stored elsewhere. For an actual value string, a sequence of int `data` items is used. It can use one item per character, or they can be packed.
+
+(In my API, string data, which can be zero-terminated or not, uses a function call like this; `p` is a reference to an AST node here: `pgen(kdata, pgendata(p.svalue, p.slength))`)
+````
 
 #### Miscellenous
 
-**Hints** The following are hint instructions useful when target is register-based code. Not needed when IL is interpreted, or target is also a stack machine:
+**Hints** 
 ````
 STARTMX                                                  New resetmx/endmx sequence
 RESETMX           t
@@ -142,9 +145,8 @@ LOADALL                                                  Ensure all pcl stack va
 ````
 **Directives Etc**
 ````
-TYPE              t                                      Auxiliary op following CALLF/ICALLF
 NOP                        
-
+TYPE              t                                      Auxiliary op following CALLF/ICALLF
 COMMENT  string
 EVAL
 LABEL    label                   L:                       Define label
@@ -159,7 +161,7 @@ LABEL    label                   L:                       Define label
 ...    Argument list
 
 #### Instruction Format
-Each Instruction has these fields:
+Each instruction has these fields:
 ````
 Opcode                One of the capitalised codes above
 Operand Type          Which kind of operand is used, including None
@@ -172,7 +174,7 @@ Attributes            Optional 1 or 2 integers, which are variously named as sho
 #### Stack Operands
 PCL instructions are for a stack machine. The top stack element is always called Z; the next is Y if used, and the one below is X.
 
-If X, Y or Z appear in the Function columns, these can be assumed to be consumed, or popped from the stack. (With the odd exception described in the Note).
+If X, Y or Z appear in the Function column, these can be assumed to be consumed, or popped from the stack. (With the odd exception described in the Note).
 
 Any newly pushed result is shown as Z' (or, where there are two new results, both Y' and Z')
 
