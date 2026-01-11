@@ -128,7 +128,6 @@ DATA     &mem     t                                      For data only
 The operand is a reference to a string stored elsewhere. For an actual value string, a sequence of int `data` items is used. It can use one item per character, or they can be packed.
 
 (In my API, string data, which can be zero-terminated or not, uses a function call like this; `p` is a reference to an AST node here: `pgen(kdata, pgendata(p.svalue, p.slength))`)
-````
 
 #### Miscellenous
 
@@ -159,7 +158,7 @@ LABEL    label                   L:                       Define label
 ^      Postfix pointer dereference
 :=     Assignment or Push
 ...    Argument list
-
+````
 #### Instruction Format
 Each instruction has these fields:
 ````
