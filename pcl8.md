@@ -224,17 +224,17 @@ r64
 mem:N           ('Block') Any aggregate type of N bytes
 (vector         Reserved type)
 ````
-**Record/Array** types are reprented by an N-byte block. Alignment info for the whole block is deduced from the overall size. Struct layout info does not exist; this is up to the front-end.
+**Record/Array** types are represented by an N-byte block. Alignment info for the whole block is deduced from the overall size. Struct layout info does not exist; this is up to the front-end.
 
 (This would be at odds with SYS V ABI where structs passed by-value have incomprehensible passing rules. However I understand that neither LLVM nor Cranelift get involved with this either.)
 
 **Blocks** are notionally manipulated by-value. However, a LOAD of a block value will only load a reference; it will not copy, unless this is pushing a function argument where the ABI requires by-value passing of structs. But this is up to the backend; the front end can assume it is all by-value unless it has extra info.
 
-(If used for compiling C, as v7 was, then the backend must perform copies of structs used as arguments, as the language requires it.)
+(If used for compiling C, as v7 was, then the backend must make copies of structs passed as arguments, as the language requires it.)
 
 **Vector** is reserved for the short-vectors used in SIMD-style instructions and registers. But I don't do anything with these yet since none of my HLLs support such types.
 
-While this type system is PCL's, my front end builds on top it. Otherwise there is the problem that there are different denotations for an 'i64' type for example, in front and back ends.
+While this type system is PCL's, my front end builds on top of it. Otherwise there is the problem that there are different denotations for an 'i64' type for example, in front and back ends.
 
 Note there is no type defining a machine address or pointer. The front end can define an alias for that in terms of `u64` for example, or perhaps 'u16' for small devices.
 
@@ -242,24 +242,24 @@ Note there is no type defining a machine address or pointer. The front end can d
 
 I have tried to make it so what whoever/whatever generated the IL, does not need to know how the ABI works, and can assume a pure stack machine where everything is manipulated by value. That would be the headache of the backend.
 
-But as noted above, there is currently some leakage. And the potentional difficulties are acknowledged with the SETCALL/SETARG hint instructions, to simplify the backend's job for ABIs like Win64 and SYS V.
+But as noted above, there is currently some leakage. And the potential difficulties are acknowledged with the SETCALL/SETARG hint instructions, to simplify the backend's job for ABIs like Win64 and SYS V.
 
 One assumption that is made currently, is that function arguments are evaluated right-to-left. This should not matter; the back end could reorder them, but it is awkward. Alternately the PCL backend (the bit past the API) could be interrogated for such details.
 
 #### Startmx/Resetmx/Endmx
 
-These are necessary hints used when one of several paths is taken to evaluate some result. This is a 2-way example:
+These are necessary hints used when one of several paths is taken to evaluate some result. This is a 2-way example in HLL syntax:
 ````
     (c | a | b)                  # select a or b depending on C
-     c ? a : e                   # in C syntax
+     c ? a : b                   # in C syntax
 ````
 (My HLLs have several such constructions and in general are N-way.)
 
 With a pure stack machine, the result will always be at the top of the stack whatever the path. But that is not the case with a register-based target; results may be in diverse registers.
 
-So `startmx resetmx endmx` are used to denote each path. Example PCL for my `(c | a | b)` example, when all have i64 types:
+So `startmx resetmx endmx` are used to mark each path. Example PCL for my `(c | a | b)` example, when all have i64 types:
 ````
-    startmx                                       
+    startmx                                       Stack is ()
     load      c                          i64      Stack is (c)
     jumpf     L3                         i64      Stack is ()
     load      a                          i64      Stack is (a)
@@ -278,7 +278,7 @@ These hints are not needed for PCL that is interpreted, or translated directly t
 
 #### Multiple Function Return Values
 
-Inside the callee, this works the same way as normal returns: all N values are pushed, and `jumpret' with n = N used to jump to the common return point. (A normal `jump` won't do as `jumpret` has to pop those N values off the stack so that the following code can be processed.)
+Inside the callee, this works the same way as normal returns: all N values are pushed, and `jumpret` with n = N is used to jump to the common return point. (A normal `jump` won't do as `jumpret` has to pop those N values off the stack so that the following code can be processed.)
 
 The common return point still needs `retfn`; in the backend, this might serve to get all the values into the correct registers.
 
@@ -286,4 +286,95 @@ At the call-site, it's a little different:
 
 * For 1 return value, a normal `callf` or `icallf` is used. The instruction type gives the type (and hence location) of the return value.
 * For N return values, there are N auxiliary `type` instructions following. Each gives the type of the corresponding return value, in LTR order.
+
+### Example
+
+I won't give an example of generating IL for some trivial hard-coded program. That would not be typical of how it is used. But this an example of what PCL looks like in practice, for this function in my HLL:
+````
+func bitsinbyte(int b)int =
+    int c, m
+
+    c := 0
+    m := 1
+    while m < 256 do
+        if b iand m then
+            ++c
+        end
+        m <<:= 1
+    end
+
+    c
+end
+````
+And here is the PCL IL as displayed by my diagnostic routines (not my `int` type defaults to `i64`):
+````
+Proc bitops.bitsinbyte(i64 b)i64 =
+    i64 c
+    i64 m
+
+    load      0                          i64      
+    store     c                          i64      
+    load      1                          i64      
+    store     m                          i64      
+    jump      L3                                  
+L2: 
+    load      b                          i64      
+    load      m                          i64      
+    bitand                               i64      
+    jumpf     L6                         i64      
+    load      c                          i64      
+    load      1                          i64      
+    add                                  i64      
+    store     c                          i64      
+L6: 
+    load      m                          i64      
+    load      1                          i64      
+    shl                                  i64      
+    store     m                          i64      
+L3: 
+    load      m                          i64      
+    load      256                        i64      
+    jumplt    L2                         i64      
+    load      c                          i64      
+    jumpret   L1                         i64 /1   
+L1: 
+    retfn                                i64 /1     
+End
+````
+Those /1 near end represent the `n` attribute, in this case the number of return values.
+
+Typical code generated for x64 is this:
+````
+bitsinbyte:
+    R.b = D10                        # non-standard x64 register names
+    R.c = D3
+    R.m = D4
+    push      R.c
+    push      R.m
+
+    xor       R.c, 	R.c
+    mov       D0, 	1
+    mov       R.m, 	D0
+    jmp       L3
+L2:
+    mov       D0, 	R.b
+    and       D0, 	R.m
+    jz        L6
+    inc       R.c
+L6:
+    shl       R.m, 	1
+L3:
+    cmp       R.m, 	256
+    jl        L2
+    mov       D0, 	R.c
+    pop       R.m
+    pop       R.c
+    ret       
+````
+Not great, but not that terrible either. However, this is specific to my back end, which does not optimise. I believe the IL contains all the info needed to allow
+all the usual optimisations. (The v7 IL code, which is very similar to the above, could be translated to linear C code with much redundancy. gcc had no problem optimising despite the poor quality.)
+
+
+
+
 
