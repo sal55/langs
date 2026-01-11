@@ -13,23 +13,23 @@ PCL is a complete representation of a whole program or library. It describes thr
 * Data, mainly initialisation data for static variables
 * Code, which is sequences of executable instructions for a Stack VM
 
-The primary data structure is the ST (declarations). Each initialised variable in the ST will have a sequence of one or more DATA non-executable instructions.
+The primary data structure is the ST (declarations). Each initialised variable in the ST is a sequence of one or more DATA non-executable instructions.
 
-Each local function has a sequence the executable IL instructions that are listed below
+Each local function has a sequence of executable IL instructions, the ones that are are listed below
 
-There is one more auxiliary data stucture, a list of import libraries, which may be needed for the backend to do its job.
+There is also an auxiliary data stucture, a list of import libraries, which may be needed for the backend to complete its job.
 
-PCL is intended for whole-program compilers with a backend (the bit that comes after the PCL stage) that directly generates executables, or even runs the generated code, without extraneous tools such as linkers.
+PCL is intended for whole-program compilers but can also be used for independently compiled modules (perhaps with more limited output options).
 
 ### Generating PCL
 
 This is done via a small library and API that is expected to be compiled-in to the front-end compiler.
 
-The API is not documented ATM, it is defined by its source module. There is no viable textual form of the IL as there was in previous version, only what is displaye for debugging purposes.
+The API is not documented ATM, it is defined by its source module. There is no viable textual form of the IL as there was in a previous version, only what is displayed for debugging purposes.
 
 ### PCL IL Instructions
 
-More info about instruction layouts and a key to the table is provided later. But I will mention that 'Load' and 'Store' are used in place of 'Push' and 'Pop', because the latter tended to get confused with hardware Push and Pop instructions.
+More info about instruction layouts and a key to the table is provided later. But I will mention that Load and Store are used in place of Push and Pop, because the latter tended to get confused with hardware Push and Pop instructions.
 
 #### Main IL Instructions:
 ````
@@ -113,11 +113,10 @@ JUMPCC   label    t     cc pop1  goto L when Y cc Z      Conditional jump
 JUMPRET  label    t              goto L                  Jump to common return point
 
 DUPL                             Y' := Z' := Z           Duplicate top of stack
-DOUBLE                           Y' := Z' := Z           Emulate 'dupl' without duplicating
 UNLOAD            t              Discard Z
 ````
 #### Data Instruction
-This one is used internally to represent static data. This includes jump tables for 'switch':
+This one is used internally to represent static data, including jump tables for 'switch':
 ````
 DATA     &mem     t                                      For data only
          int      t
@@ -125,9 +124,12 @@ DATA     &mem     t                                      For data only
          string   t
          label    t
 ````
-The operand is a reference to a string stored elsewhere. For an actual value string, a sequence of int `data` items is used. It can use one item per character, or they can be packed.
+The string operand is a reference to a string stored elsewhere. For an actual value string, a sequence of int `data` items is used. It can use one item per character, or they can be packed.
 
-(In my API, string data, which can be zero-terminated or not, uses a function call like this; `p` is a reference to an AST node here: `pgen(kdata, pgendata(p.svalue, p.slength))`)
+(In my API, such string data, which can be zero-terminated or not, is generated uses a function call like this; `p` is a reference to an AST node here:
+````
+pgen(kdata, pgendata(p.svalue, p.slength))
+````
 
 #### Miscellenous
 
@@ -140,7 +142,10 @@ ENDMX             t
 SETCALL                 n                                Start of call sequence with n args
 SETARG            t     n                                Mark argument n
 
-LOADALL                                                  Ensure all pcl stack values are pushed
+LOADALL                                                  Ensure all pcl stack values are pushed (the backend may use
+                                                         lazily loaded operands)
+DOUBLE                           Y' := Z' := Z           Emulate 'dupl' without duplicating (backend can treat as DUPL,
+                                                         or take advantage). Restrictions apply
 ````
 **Directives Etc**
 ````
@@ -238,7 +243,7 @@ I have tried to make it so what whoever/whatever generated the IL, does not need
 
 But as noted above, there is currently some leakage. For example the existence of of SETCALL/SETARG hint instructions, to simplify the backend's job for ABIs like Win64 and SYS V.
 
-(SYS V for ARM64 is particularly complex, requiring even more hinting, which lead to me abandoning that target.)
+One assumption that is made currently, is that function arguments are evaluated right-to-left. This should not matter; the back end could reorder them, but it is awkward. Alternately the PCL backend (the bit past the API) could be interrogated for such details.
 
 #### Startmx/Resetmx/Endmx
 
@@ -269,3 +274,15 @@ Effectively, `startmx` remembers the current stack state ('()' here), and each `
 These hints are not needed for PCL that is interpreted, or translated directly to stack machine. Unless it still involves the backend keeping track of the stack level as it performs a linear pass through PCL; then it needs those reset points.
 
 (I think this problem is related to 'phi nodes' used in SSA representations, but I know little about it.)
+
+#### Multiple Function Return Values
+
+Inside the callee, this works the same way as normal returns: all N values are pushed, and `jumpret' with n = N used to jump to the common return point. (A normal `jump` won't do as `jumpret` has to pop those N values off the stack so that the following code can be processed.)
+
+The common return point still needs `retfn`; in the backend, this might serve to get all the values into the correct registers.
+
+At the call-site, it's a little different:
+
+* For 1 return value, a normal `callf` or `icallf` is used. The instruction type gives the type (and hence location) of the return value.
+* For N return values, there are N auxiliary `type` instructions following. Each gives the type of the corresponding return value, in LTR order.
+
