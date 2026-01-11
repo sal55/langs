@@ -29,7 +29,7 @@ The API is not documented ATM, it is defined by its source module. There is no v
 
 ### PCL IL Instructions
 
-More info about instruction layouts and a key to the table is provided later.
+More info about instruction layouts and a key to the table is provided later. But I will mention that 'Load' and 'Store' are used in place of 'Push' and 'Pop', because the latter tended to get confused with hardware Push and Pop instructions.
 
 #### Main IL Instructions:
 ````
