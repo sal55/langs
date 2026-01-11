@@ -1,21 +1,21 @@
 ## PCL v8 Intermediate Language
 
-This documents some details of the IL I now use in my lower-level language whole-program compilers. 
+This documents some details of the IL I now use in my lower-level language compilers. 
 
-Note that I am not offering a working product that anyone code download and use. Just describing the design of an IL which I have refined and which seems to work well for me.
+Note that I am not offering a working product that anyone can download and use. Just describing the design of an IL which I have refined and which seems to work well for me.
 
 I don't go into details of how the IL is generated, or what comes next.
 
 ### Overview
 
 PCL is a complete representation of a whole program or library. It describes three kinds of entities:
-* Declarations, stored in a linear Symbol Table (ST). This is a linear list of variables and functions, both local and imported
+* Symbols, a list of named variables and functions, both local and imported, forming the Symbol Table or ST
 * Data, mainly initialisation data for static variables
 * Code, which is sequences of executable instructions for a Stack VM
 
-The primary data structure is the ST (declarations). Each initialised variable in the ST is a sequence of one or more DATA non-executable instructions.
+The primary data structure is the ST. Each initialised variable in the ST is a sequence of one or more DATA non-executable instructions.
 
-Each local function has a sequence of executable IL instructions, the ones that are are listed below
+Each local function in the ST has a sequence of executable IL instructions, the ones that are are listed below
 
 There is also an auxiliary data stucture, a list of import libraries, which may be needed for the backend to complete its job.
 
@@ -124,14 +124,14 @@ DATA     &mem     t                                      For data only
          string   t
          label    t
 ````
-The string operand is a reference to a string stored elsewhere. For an actual value string, a sequence of int `data` items is used. It can use one item per character, or they can be packed.
+The string operand is a reference to a string stored elsewhere. For an actual value string, a sequence of int `data` items can be used, either 8 bits at a time or packed into workds.
 
-(In my API, such string data, which can be zero-terminated or not, is generated uses a function call like this; `p` is a reference to an AST node here:
+(In my API, such string data, which can be zero-terminated or not, is generated uses a function call like this; `p` is a reference to an AST node here:)
 ````
 pgen(kdata, pgendata(p.svalue, p.slength))
 ````
 
-#### Miscellenous
+#### Miscellaneous
 
 **Hints** 
 ````
@@ -184,7 +184,7 @@ Any newly pushed result is shown as Z' (or, where there are two new results, bot
 
 #### Inline Operands
 
-Any Instruction may operate on values on the stack (X Y Z) or with operands that are part of the instruction, or both. Where inline operands are used, the will one of these six. The right column shows the forms used under Function:
+Any Instruction may operate on values on the stack (X Y Z) or with operands that are part of the instruction, or both. Where inline operands are used, they will one of these six. The second column shows the forms used under Function:
 ````
     mem              A                 Contents of static, global or local variable
     &mem             &A                Address of such a variable, or address of a function
@@ -196,20 +196,21 @@ Any Instruction may operate on values on the stack (X Y Z) or with operands that
 #### Attributes
 There can also be some extra bits of info. This lists all shown:
 ````
-    n          Count (eg, call arguments)
-    s          Scale factor to complex pointer instructions (eg. byte-size of a pointer target type)
+    n          Count (eg. number of call arguments)
+    s          Scale factor for complex pointer instructions (eg. byte-size of a pointer target type)
     d          Extra byte-offset for complex pointers (so it is not scaled)
     cc         Condition code, one of EQ NE LT LE GE GT
     v          A value of 1 (rather than 0) means a called function uses C-style variadic arguments, which have
                special ABI rules
-    pop1       A value of rather than zero means that only Z is popped for JUMPcc rather than X Y, but only if
-               false; ie. the jumps is not taken. This used used for chain sets of compared
+    pop1       A value of 1 rather than 0 means that only Z is popped for JUMPcc rather than X Y, but only if
+               false; ie. the jumps is not taken. This is used for chain sequences of compares against the
+               same X
     op         For maths functions, one of SIN COS TAN ASIN .... (in my HLLs such functions are built-in operators)
 ````
 #### The Type System
 These the types used:
 ````
-void            Means no type
+void            No type info
 i8              Signed integer
 i16
 i32
@@ -223,25 +224,25 @@ r64
 mem:N           ('Block') Any aggregate type of N bytes
 (vector         Reserved type)
 ````
-* Record/Array types are reprented by an N-byte block. Alignment info for the whole block is deduced from the overall size. Struct layout info does not exist; this is up to the front-end.
+**Record/Array** types are reprented by an N-byte block. Alignment info for the whole block is deduced from the overall size. Struct layout info does not exist; this is up to the front-end.
 
 (This would be at odds with SYS V ABI where structs passed by-value have incomprehensible passing rules. However I understand that neither LLVM nor Cranelift get involved with this either.)
 
-* Blocks are notionally manipulated by-value. However, a LOAD of a block value will only load a reference; it will not copy, unless this is pushing a function argument where the ABI requires by-value passing of structs. I decided to leave this up to the backend. 
+**Blocks** are notionally manipulated by-value. However, a LOAD of a block value will only load a reference; it will not copy, unless this is pushing a function argument where the ABI requires by-value passing of structs. But this is up to the backend; the front end can assume it is all by-value unless it has extra info.
 
-The front end either can assume it is by-value, or can use knowledge of the back-end to say that blocks will be passed by reference. (So in my HLL, they will be passed by reference, but if compiling C, structs (not arrays) must be passed by value. However my C compiler only used v7)
+(If used for compiling C, as v7 was, then the backend must perform copies of structs used as arguments, as the language requires it.)
 
-* A 'Vector' is reserved for the short-vectors used in SIMD-style instructions and registers. But I don't do anything with these yet since none of my HLLs support such types.
+**Vector** is reserved for the short-vectors used in SIMD-style instructions and registers. But I don't do anything with these yet since none of my HLLs support such types.
 
-While this type system is PCL's, my front end build on top it. (Otherwise there is the problem that there are different denotations for an 'i64' type for example, in front and back ends.)
+While this type system is PCL's, my front end builds on top it. Otherwise there is the problem that there are different denotations for an 'i64' type for example, in front and back ends.
 
-Note there is no type defining a machine address or pointer; an ordinary unsigned integer is used. Usually the front end define an alias for that, which is usually `u64` for 64-bit targets, amnd 'u16' for the Z80 target.
+Note there is no type defining a machine address or pointer. The front end can define an alias for that in terms of `u64` for example, or perhaps 'u16' for small devices.
 
 #### Platform ABI
 
-I have tried to make it so what whoever/whatever generated the IL, does not need to know how the ABI works, and can assume a pure stack machine where everyhing is passed by value. That would be the headache of the backend.
+I have tried to make it so what whoever/whatever generated the IL, does not need to know how the ABI works, and can assume a pure stack machine where everything is manipulated by value. That would be the headache of the backend.
 
-But as noted above, there is currently some leakage. For example the existence of of SETCALL/SETARG hint instructions, to simplify the backend's job for ABIs like Win64 and SYS V.
+But as noted above, there is currently some leakage. And the potentional difficulties are acknowledged with the SETCALL/SETARG hint instructions, to simplify the backend's job for ABIs like Win64 and SYS V.
 
 One assumption that is made currently, is that function arguments are evaluated right-to-left. This should not matter; the back end could reorder them, but it is awkward. Alternately the PCL backend (the bit past the API) could be interrogated for such details.
 
