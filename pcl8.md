@@ -1,4 +1,4 @@
-## PCL v8 Intermediate Language
+### PCL v8 Intermediate Language
 
 This documents some details of the IL I now use in my lower-level language compilers. 
 
@@ -6,7 +6,7 @@ Note that I am not offering a working product that anyone can download and use. 
 
 I don't go into details of how the IL is generated, or what comes next.
 
-### Overview
+#### Overview
 
 PCL is a complete representation of a whole program or library. It describes three kinds of entities:
 * Symbols, a list of named variables and functions, both local and imported, forming the Symbol Table or ST
@@ -21,17 +21,17 @@ There is also an auxiliary data stucture, a list of import libraries, which may 
 
 PCL is intended for whole-program compilers but can also be used for independently compiled modules (perhaps with more limited output options).
 
-### Generating PCL
+#### Generating PCL
 
 This is done via a small library and API that is expected to be compiled-in to the front-end compiler.
 
 The API is not documented ATM, it is defined by its source module. There is no viable textual form of the IL as there was in a previous version, only what is displayed for debugging purposes.
 
-### PCL IL Instructions
+#### PCL IL Instructions
 
 More info about instruction layouts and a key to the table is provided later. But I will mention that Load and Store are used in place of Push and Pop, because the latter tended to get confused with hardware Push and Pop instructions.
 
-#### Main IL Instructions:
+##### Main IL Instructions:
 ````
 Opcode   Inline   Type  Attrs    Function                Note
 
@@ -115,7 +115,7 @@ JUMPRET  label    t              goto L                  Jump to common return p
 DUPL                             Y' := Z' := Z           Duplicate top of stack
 UNLOAD            t              Discard Z
 ````
-#### Data Instruction
+##### Data Instruction
 This one is used internally to represent static data, including jump tables for 'switch':
 ````
 DATA     &mem     t                                      For data only
@@ -131,7 +131,7 @@ The string operand is a reference to a string stored elsewhere. For an actual va
 pgen(kdata, pgendata(p.svalue, p.slength))
 ````
 
-#### Miscellaneous
+##### Miscellaneous
 
 **Hints** 
 ````
@@ -155,16 +155,16 @@ COMMENT  string
 EVAL
 LABEL    label                   L:                       Define label
 ````
-### Keys to Instruction Tables
+#### Keys to Instruction Tables
 
-#### Some Symbols
+##### Some Symbols
 ````
 &      Address-of
 ^      Postfix pointer dereference
 :=     Assignment or Push
 ...    Argument list
 ````
-#### Instruction Format
+##### Instruction Format
 Each instruction has these fields:
 ````
 Opcode                One of the capitalised codes above
@@ -175,14 +175,14 @@ Secondary type        Shown as `u` where used
 Attributes            Optional 1 or 2 integers, which are variously named as shown
 ````
 
-#### Stack Operands
+##### Stack Operands
 PCL instructions are for a stack machine. The top stack element is always called Z; the next is Y if used, and the one below is X.
 
 If X, Y or Z appear in the Function column, these can be assumed to be consumed, or popped from the stack. (With the odd exception described in the Note).
 
 Any newly pushed result is shown as Z' (or, where there are two new results, both Y' and Z')
 
-#### Inline Operands
+##### Inline Operands
 
 Any Instruction may operate on values on the stack (X Y Z) or with operands that are part of the instruction, or both. Where inline operands are used, they will one of these six. The second column shows the forms used under Function:
 ````
@@ -193,7 +193,7 @@ Any Instruction may operate on values on the stack (X Y Z) or with operands that
     string           "abc"             A reference to a string stored elsewhere
     label            L                 A numeric label (eg. L56)
 ````
-#### Attributes
+##### Attributes
 There can also be some extra bits of info. This lists all shown:
 ````
     n          Count (eg. number of call arguments)
@@ -287,9 +287,9 @@ At the call-site, it's a little different:
 * For 1 return value, a normal `callf` or `icallf` is used. The instruction type gives the type (and hence location) of the return value.
 * For N return values, there are N auxiliary `type` instructions following. Each gives the type of the corresponding return value, in LTR order.
 
-### Example
+#### Example
 
-I won't give an example of generating IL for some trivial hard-coded program. That would not be typical of how it is used. But this an example of what PCL looks like in practice, for this function in my HLL:
+I won't give an example of generating IL for some trivial hard-coded program. That would not be typical of how it is used. But this is an example of what PCL looks like in practice, for this function in my HLL:
 ````
 func bitsinbyte(int b)int =
     int c, m
@@ -306,7 +306,7 @@ func bitsinbyte(int b)int =
     c
 end
 ````
-And here is the PCL IL as displayed by my diagnostic routines (not my `int` type defaults to `i64`):
+And here is the PCL IL as displayed by my diagnostic routines:
 ````
 Proc bitops.bitsinbyte(i64 b)i64 =
     i64 c
@@ -372,8 +372,7 @@ L3:
     ret       
 ````
 Not great, but not that terrible either. However, this is specific to my back end, which does not optimise. I believe the IL contains all the info needed to allow
-all the usual optimisations. (The v7 IL code, which is very similar to the above, could be translated to linear C code with much redundancy. gcc had no problem optimising despite the poor quality.)
-
+all the usual optimisations.
 
 
 
