@@ -1,6 +1,6 @@
 ### PCL v8 Intermediate Language
 
-This documents some details of the IL I now use in my lower-level language compilers. 
+This documents some details of the stack-based IL I now use in my lower-level language compilers. 
 
 Note that I am not offering a working product that anyone can download and use. Just describing the design of an IL which I have refined and which seems to work well for me.
 
@@ -15,7 +15,7 @@ PCL is a complete representation of a whole program or library. It describes thr
 
 The primary data structure is the ST. Each initialised variable in the ST is a sequence of one or more DATA non-executable instructions.
 
-Each local function in the ST has a sequence of executable IL instructions, the ones that are are listed below
+Each local function in the ST has a sequence of executable IL instructions, the ones that are listed below
 
 There is also an auxiliary data stucture, a list of import libraries, which may be needed for the backend to complete its job.
 
@@ -39,8 +39,8 @@ LOAD     mem      t              Z' := A                 Push variable to IL sta
          &mem     t              Z' := &A
          int      t              Z' := 123
          real     t              Z' := 123.4
-         string   t              Z' := "abc"
-         label    t              Z' := L
+         string   t              Z' := "abc"             Push reference to a string
+         label    t              Z' := L                 Push label reference
 ILOAD             t              Z' := Z^                Push value at pointer  
 ILOADX            t     s, d     Z' := (Y + Z*s + d)^    Complex address load
 
@@ -58,7 +58,7 @@ CALLF    &mem     t     n, v     Z' := &A(...)           Call func A with nargs;
 ICALLP            t     n, v     Z(...)
 ICALLF            t     n, v     Z' := Z(...)
 RETP                             return                  Return from proc
-RETF                    n        return Z+               Return n varues from func
+RETF              t     n        return Z+               Return n values from func
 
 JUMP     label                   goto L
 IJUMP                            goto Z                  Z is a label pointer
@@ -66,7 +66,7 @@ JUMPCC   label    t     cc pop1  goto L when Y cc Z      Conditional jump
                                                          pop1=1: pop only Z when false
 JUMPT    label    t              goto L when Z
 JUMPF    label    t              goto L when not Z
-JUMPRET  label    t              goto L                  Jump to common return point
+JUMPRET  label    t              goto L, pop stack       Jump to common return point
 
 SETCC             t              Z' := Y cc Z
 
@@ -102,7 +102,8 @@ MATHS2            t     op       Z' := op(Y, Z)
 INCRLOAD          t     n        Z' := ++(Z^)            Increment amount is n (can be < 0)
 LOADINCR          t     n        Z' := (Z^)++
 
-TYPEPUN           t u            Z' := t(u@(Z^))
+TYPEPUN           t u            Z' := cast@(Z, t)       Z has type u; interpret as type t
+                                                         (int/float only; sizes must match)
 FLOAT             t u            Z' := cast(Z, t)        Int (u) to float (t)
 FIX               t u            Z' := cast(Z, t)        Float (u) to int (t)
 WIDEN             t u            Z' := cast(Z, t)        Widen integer type from u to t
@@ -110,7 +111,7 @@ FWIDEN            t u            Z' := cast(Z, t)        Widen float type (r32 t
 FNARROW           t u            Z' := cast(Z, t)        Narrow float type (r64 to r32)
 
 JUMPCC   label    t     cc pop1  goto L when Y cc Z      Conditional jump
-JUMPRET  label    t              goto L                  Jump to common return point
+JUMPRET  label    t     n        goto L                  Jump to common return point; n ret values
 
 DUPL                             Y' := Z' := Z           Duplicate top of stack
 UNLOAD            t              Discard Z
