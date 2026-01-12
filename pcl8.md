@@ -121,9 +121,9 @@ DATA     &mem     t                                      For data only
          string   t
          label    t
 ````
-The string operand is a reference to a string stored elsewhere. For an actual value string, a sequence of int `data` items can be used, either 8 bits at a time or packed into workds.
+The string operand is a reference to a string stored elsewhere. For an actual value string, a sequence of int `data` items can be used, either 8 bits at a time or packed into words.
 
-(In my API, such string data, which can be zero-terminated or not, is generated uses a function call like this; `p` is a reference to an AST node here:)
+(In my API, such string data, which can be zero-terminated or not, is generated using a function call like this; `p` is a reference to an AST node here:)
 ````
 pgen(kdata, pgendata(p.svalue, p.slength))
 ````
@@ -250,7 +250,7 @@ These are necessary hints used when one of several paths is taken to evaluate so
     (c | a | b)                  # select a or b depending on C
      c ? a : b                   # in C syntax
 ````
-(My HLLs have several such constructions and in general are N-way.)
+(My HLLs have several such constructs and in general are N-way.)
 
 With a pure stack machine, the result will always be at the top of the stack whatever the path. But that is not the case with a register-based target; results may be in diverse registers.
 
