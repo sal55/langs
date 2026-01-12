@@ -90,7 +90,6 @@ POWER             t              Z' := Y ** Z
 NEG               t              Z' := -Z
 ABS               t              Z' := abs Z
 BITNOT            t              Z' := inot Z
-NOT               t              Z' := not Z
 SQRT              t              Z' := sqrt Z
 
 TOBOOLT           t u            Z' := istrue Z          Z is of type u; result is type t
@@ -109,9 +108,6 @@ FIX               t u            Z' := cast(Z, t)        Float (u) to int (t)
 WIDEN             t u            Z' := cast(Z, t)        Widen integer type from u to t
 FWIDEN            t u            Z' := cast(Z, t)        Widen float type (r32 to r64)
 FNARROW           t u            Z' := cast(Z, t)        Narrow float type (r64 to r32)
-
-JUMPCC   label    t     cc pop1  goto L when Y cc Z      Conditional jump
-JUMPRET  label    t     n        goto L                  Jump to common return point; n ret values
 
 DUPL                             Y' := Z' := Z           Duplicate top of stack
 UNLOAD            t              Discard Z
