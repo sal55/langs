@@ -31,7 +31,7 @@ The API is not documented ATM, it is defined by its source module. There is no v
 
 More info about instruction layouts and a key to the table is provided later. But I will mention that Load and Store are used in place of Push and Pop, because the latter tended to get confused with hardware Push and Pop instructions.
 
-##### Main IL Instructions:
+##### IL Instructions:
 ````
 Opcode   Inline   Type  Attrs    Function                Note
 
@@ -111,27 +111,9 @@ FNARROW           t u            Z' := cast(Z, t)        Narrow float type (r64 
 
 DUPL                             Y' := Z' := Z           Duplicate top of stack
 UNLOAD            t              Discard Z
-````
-##### Data Instruction
-This one is used internally to represent static data, including jump tables for 'switch':
-````
-DATA     &mem     t                                      For data only
-         int      t
-         real     t
-         string   t
-         label    t
-````
-The string operand is a reference to a string stored elsewhere. For an actual value string, a sequence of int `data` items can be used, either 8 bits at a time or packed into words.
 
-(In my API, such string data, which can be zero-terminated or not, is generated using a function call like this; `p` is a reference to an AST node here:)
-````
-pgen(kdata, pgendata(p.svalue, p.slength))
-````
+Hint Instructions:
 
-##### Miscellaneous
-
-**Hints** 
-````
 STARTMX                                                  New resetmx/endmx sequence
 RESETMX           t
 ENDMX             t
@@ -142,14 +124,22 @@ SETARG            t     n                                Mark argument n
 LOADALL                                                  Ensure all pcl stack values are pushed (the
                                                          backend may use lazily loaded operands)
 DOUBLE                           Y' := Z' := Z           Emulate 'dupl' without duplicating
-````
-**Directives Etc**
-````
+
+Directives:
+
 NOP                        
 TYPE              t                                      Auxiliary op following CALLF/ICALLF
 COMMENT  string
 EVAL
 LABEL    label                   L:                       Define label
+
+For Data Initialisation:
+
+DATA     &mem     t                                      For data only
+         int      t
+         real     t
+         string   t
+         label    t
 ````
 #### Keys to Instruction Tables
 
