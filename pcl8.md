@@ -139,10 +139,9 @@ ENDMX             t
 SETCALL                 n                                Start of call sequence with n args
 SETARG            t     n                                Mark argument n
 
-LOADALL                                                  Ensure all pcl stack values are pushed (the backend may use
-                                                         lazily loaded operands)
-DOUBLE                           Y' := Z' := Z           Emulate 'dupl' without duplicating (backend can treat as DUPL,
-                                                         or take advantage). Restrictions apply
+LOADALL                                                  Ensure all pcl stack values are pushed (the
+                                                         backend may use lazily loaded operands)
+DOUBLE                           Y' := Z' := Z           Emulate 'dupl' without duplicating
 ````
 **Directives Etc**
 ````
@@ -194,15 +193,16 @@ Any Instruction may operate on values on the stack (X Y Z) or with operands that
 There can also be some extra bits of info. This lists all shown:
 ````
     n          Count (eg. number of call arguments)
-    s          Scale factor for complex pointer instructions (eg. byte-size of a pointer target type)
+    s          Scale factor for complex pointer instructions
     d          Extra byte-offset for complex pointers (so it is not scaled)
     cc         Condition code, one of EQ NE LT LE GE GT
-    v          A value of 1 (rather than 0) means a called function uses C-style variadic arguments, which have
-               special ABI rules
-    pop1       A value of 1 rather than 0 means that only Z is popped for JUMPcc rather than X Y, but only if
-               false; ie. the jumps is not taken. This is used for chain sequences of compares against the
-               same X
-    op         For maths functions, one of SIN COS TAN ASIN .... (in my HLLs such functions are built-in operators)
+    v          A value of 1 (rather than 0) means a called function uses C-style variadic
+               arguments, which often have special ABI rules
+    pop1       A value of 1 rather than 0 means that only Z is popped for JUMPcc rather than
+               X Y, but only if false; ie. the jumps is not taken. This is used for chain sequences
+               of compares against the same X
+    op         For maths functions, one of SIN COS TAN ASIN .... (in my HLLs such functions are
+               built-in operators)
 ````
 #### The Type System
 These the types used:
