@@ -68,21 +68,4 @@ All tools run on and for x64 with Windows.
 
 ### Packaging
 
-All the above programs are single-file, self-contained executables, and all are under 1MB. The current set of programs are:
-````
-mm.exe        403 KB           Includes std library sources
-aa.exe        121 KB
-qq.exe        508 KB           Includes std lib sources
-pc.exe        184 KB           Fully loaded (smaller configurations can be done, eg. interpret only)
-runmx.exe      57 KB           (Includes diagnostic display)
-````
-(To be updated)
-
-### Implementation
-
-All products are written in my M language and built with **MM**. Single-file source amalgamations (MA files) can be generated for any project.
-
-Building all of the above executables from source takes about 1/3 second in total.
-
-(To be updated)
-
+All the above programs are single-file, self-contained executables, and all are under 1MB. All (except za.q) are written in my M systems language, and can be compiled with MM or BB.
