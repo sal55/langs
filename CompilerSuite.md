@@ -45,8 +45,8 @@ All tools run on and for x64 with Windows.
 ````
 **'MZ' M Systems Compiler for Z80 (Derived from BB)**
 ````
-.m/.ma ────┬─> [mz.exe] ─┬────> .za Z80 Assembly file
-.ml/.dll ──┘             ├────> .z Z80 binary (via ZA)
+.m/.ma ──────> [mz.exe] ─┬────> .za Z80 Assembly file
+                         ├────> .z Z80 binary (via ZA)
                          └────> Run (Z80 binar via ZZ emulator)
 
 .za ─────────> [za.q] ────────> .z Z80 binary
