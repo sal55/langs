@@ -76,6 +76,7 @@ qq.exe        508 KB           Includes std lib sources
 pc.exe        184 KB           Fully loaded (smaller configurations can be done, eg. interpret only)
 runmx.exe      57 KB           (Includes diagnostic display)
 ````
+(To be updated)
 
 ### Implementation
 
@@ -83,4 +84,5 @@ All products are written in my M language and built with **MM**. Single-file sou
 
 Building all of the above executables from source takes about 1/3 second in total.
 
+(To be updated)
 
