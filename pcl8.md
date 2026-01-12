@@ -13,7 +13,7 @@ PCL is a complete representation of a whole program or library. It describes thr
 * Data, mainly initialisation data for static variables
 * Code, which is sequences of executable instructions for a Stack VM
 
-The primary data structure is the ST. Each initialised variable in the ST is a sequence of one or more DATA non-executable instructions.
+The primary data structure is the ST. Each initialised variable in the ST has a sequence of one or more DATA non-executable instructions.
 
 Each local function in the ST has a sequence of executable IL instructions, the ones that are listed below
 
@@ -181,7 +181,7 @@ Any newly pushed result is shown as Z' (or, where there are two new results, bot
 
 ##### Inline Operands
 
-Any Instruction may operate on values on the stack (X Y Z) or with operands that are part of the instruction, or both. Where inline operands are used, they will one of these six. The second column shows the forms used under Function:
+Any Instruction may operate on values on the stack (X Y Z) or with operands that are part of the instruction, or both. Where inline operands are used, they will be one of these six. The second column shows the forms used under Function:
 ````
     mem              A                 Contents of static, global or local variable
     &mem             &A                Address of such a variable, or address of a function
@@ -275,13 +275,13 @@ These hints are not needed for PCL that is interpreted, or translated directly t
 
 #### Multiple Function Return Values
 
-Inside the callee, this works the same way as normal returns: all N values are pushed, and `jumpret` with n = N is used to jump to the common return point. (A normal `jump` won't do as `jumpret` has to pop those N values off the stack so that the following code can be processed.)
+Inside the callee, `jumpret` is used with n set to the number of pushed return values. (A normal `jump` won't do as `jumpret` has to pop those N values off the stack so that the following code can be processed.)
 
 The common return point still needs `retfn`; in the backend, this might serve to get all the values into the correct registers.
 
 At the call-site, it's a little different:
 
-* For 1 return value, a normal `callf` or `icallf` is used. The instruction type gives the type (and hence location) of the return value.
+* For 1 return value, a normal `callf` or `icallf` is used. The instruction type gives the type of the return value.
 * For N return values, there are N auxiliary `type` instructions following. Each gives the type of the corresponding return value, in LTR order.
 
 #### Example
