@@ -349,9 +349,8 @@ bitsinbyte:
     push      R.c
     push      R.m
 
-    xor       R.c, 	R.c
-    mov       D0, 	1
-    mov       R.m, 	D0
+    xor       R.c, 	R.c    
+    mov       R.m, 	1
     jmp       L3
 L2:
     mov       D0, 	R.b
