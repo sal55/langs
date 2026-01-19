@@ -13,7 +13,7 @@ This github site is used for associated resources such as source backups, or the
 ### Current Set of Languages
 ````
 HLLs:
-'X'        Untitled new language
+'B'        New language
 M          Lower level systems language (see below)
 Q          Dynamic scripting language
 C-subset   The partly non-standard subset of C used by the BCC/MCC projects
@@ -32,8 +32,9 @@ ZA         Z80 assembly, with some tweaks on Zilog syntax
 ````
 Tool    Folder   Written in
 
-BB      BX       M           M compiler for x64/Windows, streamlined version using PCL8
-MM      MX       M           M compiler for x64/Windows using PCL7
+'B'     BX       M           Tentative new project
+MM8     MX       M           M compiler for x64/Windows, streamlined version using PCL8
+MM7     MX7      M           M compiler for x64/Windows using PCL7
 QQ      QX       M           Bytecode compiler + interpreter for Q
 AA      AX       M           Single-file assembler for x64-subset (currently shares MM backend)
 
