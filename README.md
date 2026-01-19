@@ -6,10 +6,6 @@ This github site is used for associated resources such as source backups, or the
 
 'M' is mostly used for compilers, interpreters, assemblers, emulators, and any support libraries that are needed.
 
-### (Reddit)
-
-(I've posted there mainly in r/PL, r/Compilers and r/asm over a few years, under various accounts. That's now finished. The stuff I'm doing is utterly different from what people seem to be interested now. This work is now done primarily for my interest and satisfaction.)
-
 ### Current Set of Languages
 ````
 HLLs:
