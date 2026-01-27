@@ -2,7 +2,7 @@
 
 I develop a number of small-scale language-related projects on my PC.
 
-This github site is used for associated resources such as source backups, or the odd binary. Most projects are written in my M language, but the master sources and development are on my home PC.
+This github site is used for associated resources such as source backups, essential binaries, and docs. Most projects are written in my M language, but the master sources and development are on my home PC.
 
 'M' is mostly used for compilers, interpreters, assemblers, emulators, and any support libraries that are needed.
 
