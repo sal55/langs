@@ -32,6 +32,10 @@ Most products now target x64 running Windows. There have also been experimental 
 * Devoid of most modern new features - except for those I consider worth having and easy to understand, use and implement
 * A focus on having what I consider to be fundamental features that many now lack, especially in the scripting language
 
+### mcc.c
+
+This file that sometimes appears is a version of my C-subset compiler, transpiled to OS-agnostic C code, that someone is using. It's how updates are made available.
+
 ### Characteristics of my Tools
 
 * Single-file, self-contained executables
