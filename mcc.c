@@ -496,16 +496,15 @@ static struct $B12 mc_decls_multxregs;
 static struct $B22 mc_decls_ploadopx;
 static struct $B22 mc_decls_ploadop;
 static struct $B24 mc_objdecls_relocnames;
-static u64 mc_writegas_asmext;
-static struct $B42 mc_writegas_nregnames;
-static u8 mc_writegas_currseg;
-static struct $B20 mc_writegas_strmcl_str;
-static struct $B20 mc_writegas_mstropnd_str;
-static struct $B20 mc_writegas_strvalue_str;
-static struct $B17 mc_writegas_getxregname_str;
-static struct $B16 mc_writegas_getdispname_str;
-static struct $B36 mc_writegas_gettempname_str;
-static struct $B3 mc_writegas_strreg_str;
+static u64 mc_writemasm_asmext;
+static struct $B42 mc_writemasm_nregnames;
+static u8 mc_writemasm_currseg;
+static struct $B20 mc_writemasm_strmcl_str;
+static struct $B20 mc_writemasm_mstropnd_str;
+static struct $B20 mc_writemasm_strvalue_str;
+static struct $B17 mc_writemasm_getxregname_str;
+static struct $B16 mc_writemasm_getdispname_str;
+static struct $B36 mc_writemasm_gettempname_str;
 static struct $B45 cc_cli_passnames;
 static struct $B45 cc_cli_extnames;
 static u8 cc_cli_cc_pass;
@@ -831,13 +830,12 @@ static void pc_diags_psopnd(u64 p);
 static void mc_genmcl_inithandlers();
 static u64 mc_libmcl_mgenextname(u64 s);
 static u64 mc_stackmcl_stropndstack(i64 indent);
-static void mc_writegas_strmcl(u64 mcl);
-static u64 mc_writegas_mstropnd(u64 a, i64 sizeprefix, i64 opcode);
-static u64 mc_writegas_strvalue(u64 a);
-static u64 mc_writegas_getxregname(i64 reg, i64 size);
-static u64 mc_writegas_getdispname(u64 d);
-static u64 mc_writegas_gettempname(u64 d, i64 n);
-static u64 mc_writegas_strreg(i64 reg, i64 size);
+static void mc_writemasm_strmcl(u64 mcl);
+static u64 mc_writemasm_mstropnd(u64 a, i64 sizeprefix, i64 opcode);
+static u64 mc_writemasm_strvalue(u64 a);
+static u64 mc_writemasm_getxregname(i64 reg, i64 size);
+static u64 mc_writemasm_getdispname(u64 d);
+static u64 mc_writemasm_gettempname(u64 d, i64 n);
 static void cc_cli_showextrainfo();
 static void cc_lex_lex_preprocess_only(u64 infile, u64 outfile, i64 toconsole);
 static i64 cc_lex_getsourcefile(u64 file, i64 syshdr);
@@ -1046,7 +1044,7 @@ static void mc_genmcl_genmcl(u64 dummy);
 static void pc_api_pcl_genss(i64 obj);
 static u64 pc_api_pcl_writess(u64 filename, i64 obj);
 static u64 pc_api_pcl_writeasm(u64 filename, i64 atype);
-static u64 mc_writegas_getassemstr();
+static u64 mc_writemasm_getassemstr();
 static void pc_api_pcl_writeobj(u64 filename);
 static void pc_api_pcl_writedll(u64 filename);
 static void pc_api_pcl_writeexe(u64 filename);
@@ -1395,16 +1393,17 @@ static i64 mc_optim_isreg00(u64 m);
 static i64 mc_optim_sameoperand(u64 a, u64 b);
 static i64 mc_optim_sameregopnd(u64 a, u64 b);
 static void mc_decls_start();
-static void mc_writegas_asmstr(u64 s);
-static void mc_writegas_writemcl(i64 index, u64 mcl);
-static void mc_writegas_start();
-static void mc_writegas_asmchar(i64 c);
-static void mc_writegas_asmopnd(u64 a, i64 sizeprefix, i64 opcode);
-static i64 mc_writegas_needsizeprefix(i64 opcode, u64 a, u64 b);
-static u64 mc_writegas_strmclstr(u64 m);
-static u64 mc_writegas_getsizeprefix(i64 size, i64 enable);
-static u64 mc_writegas_strxreg(i64 reg, i64 size);
-static u64 mc_writegas_checkregvar(i64 reg, i64 ispfloat);
+static void mc_writemasm_asmstr(u64 s);
+static void mc_writemasm_writemcl(i64 index, u64 mcl);
+static void mc_writemasm_start();
+static void mc_writemasm_asmchar(i64 c);
+static void mc_writemasm_asmopnd(u64 a, i64 sizeprefix, i64 opcode);
+static u64 mc_writemasm_strreg(i64 reg, i64 size);
+static u64 mc_writemasm_strxreg(i64 reg, i64 size);
+static i64 mc_writemasm_needsizeprefix(i64 opcode, u64 a, u64 b);
+static u64 mc_writemasm_strmclstr(u64 m);
+static u64 mc_writemasm_getsizeprefix(i64 size, i64 enable);
+static u64 mc_writemasm_checkregvar(i64 reg, i64 ispfloat);
 void cc_cli_main();
 static void pepcl_start();
 static void cc_cli_starttiming();
@@ -3823,19 +3822,16 @@ static struct $B24 mc_objdecls_relocnames = {{
 (u64)"rel321_rel",
 (u64)"rel8_rel"}};
 
-static u64 mc_writegas_asmext = (u64)"asm";
+static u64 mc_writemasm_asmext = (u64)"masm";
 
-static struct $B42 mc_writegas_nregnames;
-static u8 mc_writegas_currseg;
-static struct $B20 mc_writegas_strmcl_str;
-static struct $B20 mc_writegas_mstropnd_str;
-static struct $B20 mc_writegas_strvalue_str;
-static struct $B17 mc_writegas_getxregname_str;
-static struct $B16 mc_writegas_getdispname_str;
-// Istatic skipped:mc_writegas.getdispname.specialnames
-
-static struct $B36 mc_writegas_gettempname_str;
-static struct $B3 mc_writegas_strreg_str;
+static struct $B42 mc_writemasm_nregnames;
+static u8 mc_writemasm_currseg;
+static struct $B20 mc_writemasm_strmcl_str;
+static struct $B20 mc_writemasm_mstropnd_str;
+static struct $B20 mc_writemasm_strvalue_str;
+static struct $B17 mc_writemasm_getxregname_str;
+static struct $B16 mc_writemasm_getdispname_str;
+static struct $B36 mc_writemasm_gettempname_str;
 static struct $B45 cc_cli_passnames = {{
 (u64)"load_pass",
 (u64)"pp_pass",
@@ -12441,7 +12437,7 @@ static u64 pc_api_pcl_writeasm(u64 filename, i64 atype) {
 L864:
 	R1 = 0;
 	mc_genmcl_genmcl(asu64(R1));
-	asu64(R1) = mc_writegas_getassemstr();
+	asu64(R1) = mc_writemasm_getassemstr();
 	asmstr = asu64(R1);
 	asu64(R1) = filename;
 	if (!asu64(R1)) goto L866;
@@ -22234,7 +22230,7 @@ L1883:
 	R2 = toi64(toi32(R2));
 	asu64(R1) = mc_libmcl_mgenint(asi64(R2), asi64(R1));
 	asu64(R2) = d;
-	asu64(R2) = mc_writegas_getdispname(asu64(R2));
+	asu64(R2) = mc_writemasm_getdispname(asu64(R2));
 	asu64(R2) = mc_libmcl_mgenname(asu64(R2));
 	R3 = 5;
 	mc_libmcl_genmc(asi64(R3), asu64(R2), asu64(R1));
@@ -22383,7 +22379,7 @@ L1896:
 	R2 = toi64(toi32(R2));
 	asu64(R1) = mc_libmcl_mgenint(asi64(R2), asi64(R1));
 	asu64(R2) = d;
-	asu64(R2) = mc_writegas_getdispname(asu64(R2));
+	asu64(R2) = mc_writemasm_getdispname(asu64(R2));
 	asu64(R2) = mc_libmcl_mgenname(asu64(R2));
 	R3 = 5;
 	mc_libmcl_genmc(asi64(R3), asu64(R2), asu64(R1));
@@ -22426,7 +22422,7 @@ L1897:
 	asu64(R1) = mc_libmcl_mgenint(asi64(R2), asi64(R1));
 	asi64(R2) = i;
 	asu64(R3) = pc_decls_currfunc;
-	asu64(R2) = mc_writegas_gettempname(asu64(R3), asi64(R2));
+	asu64(R2) = mc_writemasm_gettempname(asu64(R3), asi64(R2));
 	asu64(R2) = mc_libmcl_mgenname(asu64(R2));
 	R3 = 5;
 	mc_libmcl_genmc(asi64(R3), asu64(R2), asu64(R1));
@@ -31546,7 +31542,7 @@ L2882:
 	return;
 }
 
-static u64 mc_writegas_getassemstr() {
+static u64 mc_writemasm_getassemstr() {
     u64 R1, R2; 
 	u64 d;
 	u64 e;
@@ -31554,33 +31550,75 @@ static u64 mc_writegas_getassemstr() {
 	struct $B17 str2;
 	struct $B17 str3;
 	i64 i;
-	u8 first;
 	asu64(R1) = pc_decls_pdest;
 	mlib_gs_init(asu64(R1));
-	R1 = tou64("    .code64\n");
-	mc_writegas_asmstr(asu64(R1));
-	R1 = tou64("    .intel_syntax prefix\n");
-	mc_writegas_asmstr(asu64(R1));
+	R1 = tou64("; MASM VERSION\n");
+	mc_writemasm_asmstr(asu64(R1));
+	R1 = tou64("    option nokeyword:<fabs>\n\n");
+	mc_writemasm_asmstr(asu64(R1));
+	R1 = tou64("    extern fmod:proc\n");
+	mc_writemasm_asmstr(asu64(R1));
+	R1 = tou64("    extern sin:proc\n");
+	mc_writemasm_asmstr(asu64(R1));
+	R1 = tou64("    extern cos:proc\n");
+	mc_writemasm_asmstr(asu64(R1));
+	R1 = tou64("    extern tan:proc\n");
+	mc_writemasm_asmstr(asu64(R1));
+	R1 = tou64("    extern asin:proc\n");
+	mc_writemasm_asmstr(asu64(R1));
+	R1 = tou64("    extern acos:proc\n");
+	mc_writemasm_asmstr(asu64(R1));
+	R1 = tou64("    extern atan:proc\n");
+	mc_writemasm_asmstr(asu64(R1));
+	R1 = tou64("    extern log:proc\n");
+	mc_writemasm_asmstr(asu64(R1));
+	R1 = tou64("    extern log10:proc\n");
+	mc_writemasm_asmstr(asu64(R1));
+	R1 = tou64("    extern exp:proc\n");
+	mc_writemasm_asmstr(asu64(R1));
+	R1 = tou64("    extern floor:proc\n");
+	mc_writemasm_asmstr(asu64(R1));
+	R1 = tou64("    extern ceil:proc\n");
+	mc_writemasm_asmstr(asu64(R1));
+	R1 = tou64("    extern pow:proc\n");
+	mc_writemasm_asmstr(asu64(R1));
+	R1 = tou64("    extern exit:proc\n");
+	mc_writemasm_asmstr(asu64(R1));
+	R1 = tou64("    extern __getmainargs:proc\n");
+	mc_writemasm_asmstr(asu64(R1));
 	R1 = tou64("\n");
-	mc_writegas_asmstr(asu64(R1));
+	mc_writemasm_asmstr(asu64(R1));
 	asu64(R1) = pc_decls_psymboltable;
 	d = asu64(R1);
 	goto L2887;
 L2884:
 	asu64(R1) = d;
-	R2 = 81;
+	R2 = 80;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	if (!asu8(R1)) goto L2889;
-	R1 = tou64("    .global ");
-	mc_writegas_asmstr(asu64(R1));
+	R1 = tou64("    extern ");
+	mc_writemasm_asmstr(asu64(R1));
+	asu64(R1) = d;
+	R2 = 0;
+	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
+	mc_writemasm_asmstr(asu64(R1));
+	R1 = tou64(":proc\n");
+	mc_writemasm_asmstr(asu64(R1));
+L2889:
+	asu64(R1) = d;
+	R2 = 81;
+	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
+	if (!asu8(R1)) goto L2891;
+	R1 = tou64("    public ");
+	mc_writemasm_asmstr(asu64(R1));
 	asu64(R1) = d;
 	R2 = 0;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
 	asu64(R1) = pc_api_getbasename(asu64(R1));
-	mc_writegas_asmstr(asu64(R1));
+	mc_writemasm_asmstr(asu64(R1));
 	R1 = tou64("\n");
-	mc_writegas_asmstr(asu64(R1));
-L2889:
+	mc_writemasm_asmstr(asu64(R1));
+L2891:
 	asu64(R1) = d;
 	R2 = 8;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
@@ -31589,113 +31627,68 @@ L2887:
 	asu64(R1) = d;
 	if (asu64(R1)) goto L2884;
 	R1 = tou64("\n");
-	mc_writegas_asmstr(asu64(R1));
+	mc_writemasm_asmstr(asu64(R1));
 	asu64(R1) = mc_decls_mccode;
 	m = asu64(R1);
 	R1 = 1;
 	i = asi64(R1);
-	goto L2891;
-L2890:
+	goto L2893;
+L2892:
 	asu64(R1) = m;
 	asi64(R2) = i;
-	mc_writegas_writemcl(asi64(R2), asu64(R1));
+	mc_writemasm_writemcl(asi64(R2), asu64(R1));
 	R1 = (u64)&i;
 	(*toi64p(R1)) += 1;
 	asu64(R1) = m;
 	R2 = 8;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
 	m = asu64(R1);
-L2891:
-	asu64(R1) = m;
-	if (asu64(R1)) goto L2890;
-	R1 = 1;
-	first = asu8(R1);
-	asu64(R1) = pc_decls_psymboltable;
-	d = asu64(R1);
-	goto L2896;
 L2893:
-	asu64(R1) = d;
-	R2 = 104;
-	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
-	R1 = toi64(tou8(R1));
-	R2 = 2;
-    asi64(R1) = Getdotindex(asu64(R1), asi64(R2));
-	if (!asu64(R1)) goto L2898;
-	asu8(R1) = first;
-	if (!asu8(R1)) goto L2900;
-	R1 = 0;
-	first = asu8(R1);
-	R1 = tou64("    .section .drectve\n");
-	mc_writegas_asmstr(asu64(R1));
-L2900:
-	R1 = tou64("    .ascii \" -export:\\\"");
-	mc_writegas_asmstr(asu64(R1));
-	asu64(R1) = d;
-	asu64(R1) = mc_writegas_getdispname(asu64(R1));
-	mc_writegas_asmstr(asu64(R1));
-	R1 = tou64("\\\"\"\n");
-	mc_writegas_asmstr(asu64(R1));
-L2898:
-	asu64(R1) = d;
-	R2 = 8;
-	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
-	d = asu64(R1);
-L2896:
-	asu64(R1) = d;
-	if (asu64(R1)) goto L2893;
-	R1 = tou64("\n");
-	mc_writegas_asmstr(asu64(R1));
+	asu64(R1) = m;
+	if (asu64(R1)) goto L2892;
+	R1 = tou64("end");
+	asu64(R2) = pc_decls_pdest;
+	mlib_gs_strln(asu64(R2), asu64(R1));
 	asu64(R1) = pc_decls_pdest;
 	goto L2883;
 L2883:
 	return asu64(R1);
 }
 
-static void mc_writegas_writemcl(i64 index, u64 mcl) {
-    u64 R1, R2; 
+static void mc_writemasm_writemcl(i64 index, u64 mcl) {
+    u64 R1; 
 	asu64(R1) = mcl;
-	R2 = 33;
-	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
-	R1 = toi64(tou8(R1));
-	R2 = 6;
-	if (asi64(R1) == asi64(R2)) goto L2903;
-	goto L2904;
-L2903:
-	goto L2902;
-L2904:
-	asu64(R1) = mcl;
-	mc_writegas_strmcl(asu64(R1));
+	mc_writemasm_strmcl(asu64(R1));
 	asu64(R1) = pc_decls_pdest;
 	mlib_gs_line(asu64(R1));
-L2902:
 	return;
 }
 
-static void mc_writegas_start() {
+static void mc_writemasm_start() {
     u64 R1, R2, R3; 
 	u8 flag;
 	i64 av_1;
 	i64 i;
 	i64 r;
 	i64 k;
-	R1 = 5456199;
+	R1 = 1297301838;
 	pc_decls_assemtype = asi64(R1);
 	R1 = 1;
 	i = asi64(R1);
-L2906:
+L2897:
 	asi64(R1) = i;
 	R2 = 1;
-	if (asi64(R1) == asi64(R2)) goto L2911;
+	if (asi64(R1) == asi64(R2)) goto L2902;
 	R2 = 2;
-	if (asi64(R1) == asi64(R2)) goto L2911;
+	if (asi64(R1) == asi64(R2)) goto L2902;
 	R2 = 4;
-	if (asi64(R1) == asi64(R2)) goto L2911;
+	if (asi64(R1) == asi64(R2)) goto L2902;
 	R2 = 8;
-	if (asi64(R1) != asi64(R2)) goto L2910;
-L2911:
+	if (asi64(R1) != asi64(R2)) goto L2901;
+L2902:
 	R1 = 1;
 	r = asi64(R1);
-L2912:
+L2903:
 	R1 = 0;
 	flag = asu8(R1);
 	R1 = 1;
@@ -31704,52 +31697,52 @@ L2912:
 	av_1 = asi64(R1);
 	asi64(R1) = av_1;
 	R2 = 1;
-	if (asi64(R1) < asi64(R2)) goto L2917;
-L2915:
+	if (asi64(R1) < asi64(R2)) goto L2908;
+L2906:
 	asu8(R1) = flag;
-	if (!asu8(R1)) goto L2919;
+	if (!asu8(R1)) goto L2910;
 	R1 = (u64)&mc_decls_regsizes;
 	asi64(R2) = k;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2-1));
 	R1 = toi64(tou8(R1));
 	asi64(R2) = i;
-	if (asi64(R1) != asi64(R2)) goto L2921;
+	if (asi64(R1) != asi64(R2)) goto L2912;
 	R1 = (u64)&mc_decls_regindices;
 	asi64(R2) = k;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2-1));
 	R1 = toi64(tou8(R1));
 	asi64(R2) = r;
-	if (asi64(R1) != asi64(R2)) goto L2921;
+	if (asi64(R1) != asi64(R2)) goto L2912;
 	R1 = (u64)&mc_decls_dregnames;
 	asi64(R2) = k;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2*8-8));
-	R2 = (u64)&mc_writegas_nregnames;
+	R2 = (u64)&mc_writemasm_nregnames;
 	asi64(R3) = i;
 	R2 += (i64)R3*128-128;
 	asi64(R3) = r;
 	*tou64p(((i64)R2+(i64)R3*8-8)) = asu64(R1);
-L2921:
-	goto L2918;
-L2919:
+L2912:
+	goto L2909;
+L2910:
 	R1 = (u64)&mc_decls_regsizes;
 	asi64(R2) = k;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2-1));
 	R1 = toi64(tou8(R1));
 	R2 = 0;
-	if (asi64(R1) != asi64(R2)) goto L2922;
+	if (asi64(R1) != asi64(R2)) goto L2913;
 	R1 = 1;
 	flag = asu8(R1);
-L2922:
-L2918:
-	k += 1; if (k <= av_1) goto L2915;
-L2917:
-	r += 1; if (r <= 16) goto L2912;
-L2910:
-	i += 1; if (i <= 8) goto L2906;
+L2913:
+L2909:
+	k += 1; if (k <= av_1) goto L2906;
+L2908:
+	r += 1; if (r <= 16) goto L2903;
+L2901:
+	i += 1; if (i <= 8) goto L2897;
 	return;
 }
 
-static void mc_writegas_strmcl(u64 mcl) {
+static void mc_writemasm_strmcl(u64 mcl) {
     u64 R1, R2, R3; 
 	struct $B36 opcname;
 	u64 a;
@@ -31782,56 +31775,60 @@ static void mc_writegas_strmcl(u64 mcl) {
 	comment = asu64(R1);
 	asi64(R1) = opcode;
 	R2 = 1;
-	if (asi64(R1) == asi64(R2)) goto L2925;
+	if (asi64(R1) == asi64(R2)) goto L2916;
 	R2 = 2;
-	if (asi64(R1) == asi64(R2)) goto L2926;
+	if (asi64(R1) == asi64(R2)) goto L2917;
 	R2 = 3;
-	if (asi64(R1) == asi64(R2)) goto L2927;
+	if (asi64(R1) == asi64(R2)) goto L2918;
 	R2 = 4;
-	if (asi64(R1) == asi64(R2)) goto L2928;
+	if (asi64(R1) == asi64(R2)) goto L2919;
 	R2 = 9;
-	if (asi64(R1) == asi64(R2)) goto L2929;
+	if (asi64(R1) == asi64(R2)) goto L2920;
 	R2 = 5;
-	if (asi64(R1) == asi64(R2)) goto L2930;
+	if (asi64(R1) == asi64(R2)) goto L2921;
+	R2 = 6;
+	if (asi64(R1) == asi64(R2)) goto L2922;
 	R2 = 123;
-	if (asi64(R1) == asi64(R2)) goto L2931;
+	if (asi64(R1) == asi64(R2)) goto L2923;
 	R2 = 121;
-	if (asi64(R1) == asi64(R2)) goto L2932;
+	if (asi64(R1) == asi64(R2)) goto L2924;
 	R2 = 122;
-	if (asi64(R1) == asi64(R2)) goto L2933;
-	goto L2934;
-L2925:
-	R1 = tou64("# Proc ");
-	mc_writegas_asmstr(asu64(R1));
+	if (asi64(R1) == asi64(R2)) goto L2925;
+	R2 = 125;
+	if (asi64(R1) == asi64(R2)) goto L2926;
+	goto L2927;
+L2916:
+	R1 = tou64(";Proc ");
+	mc_writemasm_asmstr(asu64(R1));
 	asu64(R1) = a;
 	R2 = 0;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
 	R2 = 0;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
-	mc_writegas_asmstr(asu64(R1));
+	mc_writemasm_asmstr(asu64(R1));
 	asu64(R1) = a;
 	R2 = 0;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
 	mc_decls_currasmproc = asu64(R1);
-	goto L2923;
-	goto L2924;
-L2926:
-	R1 = tou64("# End ");
-	mc_writegas_asmstr(asu64(R1));
+	goto L2914;
+	goto L2915;
+L2917:
+	R1 = tou64(";End ");
+	mc_writemasm_asmstr(asu64(R1));
 	R1 = 0;
 	mc_decls_currasmproc = asu64(R1);
-	goto L2923;
-	goto L2924;
-L2927:
-	R1 = 8227;
-	mc_writegas_asmchar(asi64(R1));
+	goto L2914;
+	goto L2915;
+L2918:
+	R1 = 59;
+	mc_writemasm_asmchar(asi64(R1));
 	asu64(R1) = a;
 	R2 = 0;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
-	mc_writegas_asmstr(asu64(R1));
-	goto L2923;
-	goto L2924;
-L2928:
+	mc_writemasm_asmstr(asu64(R1));
+	goto L2914;
+	goto L2915;
+L2919:
 	asu64(R1) = a;
 	R2 = 0;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
@@ -31844,33 +31841,33 @@ L2928:
 	R3 = 15;
     asi64(R1) = Getdotslice((u64)R1, (i64)R2, (i64)R3);
 	R2 = 5;
-	if (asu64(R1) == asu64(R2)) goto L2936;
+	if (asu64(R1) == asu64(R2)) goto L2929;
 	R2 = 4;
-	if (asu64(R1) == asu64(R2)) goto L2937;
-	goto L2938;
-L2936:
+	if (asu64(R1) == asu64(R2)) goto L2930;
+	goto L2931;
+L2929:
 	asu64(R1) = d;
-	asu64(R1) = mc_writegas_getdispname(asu64(R1));
-	mc_writegas_asmstr(asu64(R1));
-	goto L2935;
-L2937:
+	asu64(R1) = mc_writemasm_getdispname(asu64(R1));
+	mc_writemasm_asmstr(asu64(R1));
+	goto L2928;
+L2930:
 	asu64(R1) = a;
 	R2 = 0;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
-	mc_writegas_asmstr(asu64(R1));
-	goto L2923;
-	goto L2935;
-L2938:
+	mc_writemasm_asmstr(asu64(R1));
+	goto L2914;
+	goto L2928;
+L2931:
 	R1 = tou64("");
 	R2 = tou64("strmcl/lab");
 	pc_api_merror(asu64(R2), asu64(R1));
-L2935:
+L2928:
 	R1 = tou64(":");
-	mc_writegas_asmstr(asu64(R1));
+	mc_writemasm_asmstr(asu64(R1));
 	asu64(R1) = d;
 	R2 = 81;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
-	if (!asu8(R1)) goto L2940;
+	if (!asu8(R1)) goto L2933;
 	asu64(R1) = d;
 	R2 = 0;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
@@ -31879,23 +31876,23 @@ L2935:
 	asu64(R2) = *tou64p(((i64)R2+(i64)R3));
 	asu64(R2) = pc_api_getbasename(asu64(R2));
 	asi64(R1) = mlib_eqstring(asu64(R2), asu64(R1));
-	if (!asi64(R1)) goto L2942;
-	goto L2941;
-L2942:
+	if (!asi64(R1)) goto L2935;
+	goto L2934;
+L2935:
 	R1 = tou64("\n");
-	mc_writegas_asmstr(asu64(R1));
+	mc_writemasm_asmstr(asu64(R1));
 	asu64(R1) = d;
 	R2 = 0;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
 	asu64(R1) = pc_api_getbasename(asu64(R1));
-	mc_writegas_asmstr(asu64(R1));
+	mc_writemasm_asmstr(asu64(R1));
 	R1 = tou64(":");
-	mc_writegas_asmstr(asu64(R1));
-L2941:
-L2940:
-	goto L2923;
-	goto L2924;
-L2929:
+	mc_writemasm_asmstr(asu64(R1));
+L2934:
+L2933:
+	goto L2914;
+	goto L2915;
+L2920:
 	asu64(R1) = a;
 	R2 = 8;
 	asu16(R1) = *tou16p(((i64)R1+(i64)R2));
@@ -31904,8 +31901,8 @@ L2929:
 	R3 = 15;
     asi64(R1) = Getdotslice((u64)R1, (i64)R2, (i64)R3);
 	R2 = 6;
-	if (asi64(R1) != asi64(R2)) goto L2944;
-	R1 = (u64)&mc_writegas_strmcl_str;
+	if (asi64(R1) != asi64(R2)) goto L2937;
+	R1 = (u64)&mc_writemasm_strmcl_str;
 	msysc_m$print_startstr(asu64(R1));
 	R1 = tou64("L#:");
 	msysc_m$print_setfmt(asu64(R1));
@@ -31914,96 +31911,154 @@ L2929:
 	asi64(R1) = *toi64p(((i64)R1+(i64)R2));
 	msysc_m$print_i64_nf(asi64(R1));
 	msysc_m$print_end();
-	goto L2943;
-L2944:
-	goto L2928;
-L2943:
-	R1 = (u64)&mc_writegas_strmcl_str;
-	mc_writegas_asmstr(asu64(R1));
-	goto L2923;
-	goto L2924;
-L2930:
-	R1 = tou64("    .set ");
-	mc_writegas_asmstr(asu64(R1));
+	goto L2936;
+L2937:
+	goto L2919;
+L2936:
+	R1 = (u64)&mc_writemasm_strmcl_str;
+	mc_writemasm_asmstr(asu64(R1));
+	goto L2914;
+	goto L2915;
+L2921:
+	R1 = tou64("    ");
+	mc_writemasm_asmstr(asu64(R1));
 	asu64(R1) = a;
 	R2 = 0;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
-	mc_writegas_asmstr(asu64(R1));
-	R1 = tou64(", ");
-	mc_writegas_asmstr(asu64(R1));
+	mc_writemasm_asmstr(asu64(R1));
+	R1 = tou64(" equ ");
+	mc_writemasm_asmstr(asu64(R1));
 	R1 = 0;
 	R2 = 0;
 	asu64(R3) = b;
-	mc_writegas_asmopnd(asu64(R3), asi64(R2), asi64(R1));
-	goto L2923;
-	goto L2923;
-	goto L2924;
-L2931:
-	R1 = tou64("    .text");
-	mc_writegas_asmstr(asu64(R1));
+	mc_writemasm_asmopnd(asu64(R3), asi64(R2), asi64(R1));
+	goto L2914;
+	goto L2915;
+L2922:
+	goto L2914;
+	asu64(R1) = a;
+	R2 = 0;
+	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
+	d = asu64(R1);
+	R1 = tou64("   %define ");
+	mc_writemasm_asmstr(asu64(R1));
+	asu64(R1) = d;
+	asu64(R1) = mc_writemasm_getdispname(asu64(R1));
+	mc_writemasm_asmstr(asu64(R1));
+	R1 = tou64(" ");
+	mc_writemasm_asmstr(asu64(R1));
+	asu64(R1) = b;
+	R2 = 8;
+	asu16(R1) = *tou16p(((i64)R1+(i64)R2));
+	R1 = toi64(tou16(R1));
+	R2 = 9;
+	R3 = 11;
+    asi64(R1) = Getdotslice((u64)R1, (i64)R2, (i64)R3);
+	R2 = 1;
+	if (asu64(R1) == asu64(R2)) goto L2939;
+	goto L2940;
+L2939:
+	asu64(R1) = b;
+	R2 = 8;
+	asu16(R1) = *tou16p(((i64)R1+(i64)R2));
+	R1 = toi64(tou16(R1));
+	R2 = 0;
+	R3 = 4;
+    asi64(R1) = Getdotslice((u64)R1, (i64)R2, (i64)R3);
+	asu64(R2) = b;
+	R3 = 10;
+	asu8(R2) = *tou8p(((i64)R2+(i64)R3));
+	R2 = toi64(tou8(R2));
+	asu64(R1) = mc_writemasm_strreg(asi64(R2), asi64(R1));
+	mc_writemasm_asmstr(asu64(R1));
+	goto L2938;
+L2940:
+	asu64(R1) = b;
+	R2 = 8;
+	asu16(R1) = *tou16p(((i64)R1+(i64)R2));
+	R1 = toi64(tou16(R1));
+	R2 = 0;
+	R3 = 4;
+    asi64(R1) = Getdotslice((u64)R1, (i64)R2, (i64)R3);
+	asu64(R2) = b;
+	R3 = 10;
+	asu8(R2) = *tou8p(((i64)R2+(i64)R3));
+	R2 = toi64(tou8(R2));
+	asu64(R1) = mc_writemasm_strxreg(asi64(R2), asi64(R1));
+	mc_writemasm_asmstr(asu64(R1));
+L2938:
+	goto L2914;
+	goto L2914;
+	goto L2915;
+L2923:
+	R1 = tou64("    .code");
+	mc_writemasm_asmstr(asu64(R1));
 	R1 = 1;
-	mc_writegas_currseg = asu8(R1);
-	goto L2923;
-	goto L2924;
-L2932:
-	R1 = tou64("    .data");
-	mc_writegas_asmstr(asu64(R1));
-	R1 = 2;
-	mc_writegas_currseg = asu8(R1);
-	goto L2923;
-	goto L2924;
-L2933:
-	R1 = tou64("    .bss");
-	mc_writegas_asmstr(asu64(R1));
-	R1 = 3;
-	mc_writegas_currseg = asu8(R1);
-	goto L2923;
-	goto L2924;
-L2934:
+	mc_writemasm_currseg = asu8(R1);
+	goto L2914;
+	goto L2915;
 L2924:
+	R1 = tou64("    .data");
+	mc_writemasm_asmstr(asu64(R1));
+	R1 = 2;
+	mc_writemasm_currseg = asu8(R1);
+	goto L2914;
+	goto L2915;
+L2925:
+	R1 = tou64("    .data?");
+	mc_writemasm_asmstr(asu64(R1));
+	R1 = 3;
+	mc_writemasm_currseg = asu8(R1);
+	goto L2914;
+	goto L2915;
+L2926:
+	R1 = tou64("    db ");
+	mc_writemasm_asmstr(asu64(R1));
+	R1 = 0;
+	asu64(R2) = a;
+	R3 = 0;
+	asi64(R2) = *toi64p(((i64)R2+(i64)R3));
+	asu64(R1) = msysc_strint(asi64(R2), asu64(R1));
+	mc_writemasm_asmstr(asu64(R1));
+	R1 = tou64(" dup(?)");
+	mc_writemasm_asmstr(asu64(R1));
+	goto L2914;
+	goto L2915;
+L2927:
+L2915:
 	asi64(R1) = opcode;
 	R2 = 26;
-	if (asi64(R1) == asi64(R2)) goto L2946;
+	if (asi64(R1) == asi64(R2)) goto L2942;
 	R2 = 58;
-	if (asi64(R1) == asi64(R2)) goto L2947;
+	if (asi64(R1) == asi64(R2)) goto L2943;
 	R2 = 15;
-	if (asi64(R1) == asi64(R2)) goto L2948;
+	if (asi64(R1) == asi64(R2)) goto L2944;
 	R2 = 38;
-	if (asi64(R1) == asi64(R2)) goto L2949;
+	if (asi64(R1) == asi64(R2)) goto L2945;
 	R2 = 39;
-	if (asi64(R1) == asi64(R2)) goto L2950;
+	if (asi64(R1) == asi64(R2)) goto L2946;
 	R2 = 40;
-	if (asi64(R1) == asi64(R2)) goto L2951;
+	if (asi64(R1) == asi64(R2)) goto L2947;
 	R2 = 51;
-	if (asi64(R1) == asi64(R2)) goto L2952;
+	if (asi64(R1) == asi64(R2)) goto L2948;
 	R2 = 34;
-	if (asi64(R1) == asi64(R2)) goto L2953;
+	if (asi64(R1) == asi64(R2)) goto L2949;
 	R2 = 19;
-	if (asi64(R1) == asi64(R2)) goto L2954;
+	if (asi64(R1) == asi64(R2)) goto L2950;
 	R2 = 18;
-	if (asi64(R1) == asi64(R2)) goto L2955;
+	if (asi64(R1) == asi64(R2)) goto L2951;
 	R2 = 16;
-	if (asi64(R1) == asi64(R2)) goto L2956;
-	R2 = 11;
-	if (asi64(R1) == asi64(R2)) goto L2957;
+	if (asi64(R1) == asi64(R2)) goto L2952;
+	R2 = 17;
+	if (asi64(R1) == asi64(R2)) goto L2953;
 	R2 = 124;
-	if (asi64(R1) == asi64(R2)) goto L2958;
-	R2 = 125;
-	if (asi64(R1) == asi64(R2)) goto L2959;
-	R2 = 116;
-	if (asi64(R1) == asi64(R2)) goto L2960;
-	R2 = 117;
-	if (asi64(R1) == asi64(R2)) goto L2961;
-	R2 = 118;
-	if (asi64(R1) == asi64(R2)) goto L2962;
-	R2 = 119;
-	if (asi64(R1) == asi64(R2)) goto L2963;
-	R2 = 120;
-	if (asi64(R1) == asi64(R2)) goto L2964;
+	if (asi64(R1) == asi64(R2)) goto L2954;
 	R2 = 8;
-	if (asi64(R1) == asi64(R2)) goto L2965;
-	goto L2966;
-L2946:
+	if (asi64(R1) == asi64(R2)) goto L2955;
+	R2 = 120;
+	if (asi64(R1) == asi64(R2)) goto L2956;
+	goto L2957;
+L2942:
 	R1 = (u64)&opcname;
 	msysc_m$print_startstr(asu64(R1));
 	R1 = tou64("j");
@@ -32014,8 +32069,8 @@ L2946:
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2*8));
 	msysc_m$print_str_nf(asu64(R1));
 	msysc_m$print_end();
-	goto L2945;
-L2947:
+	goto L2941;
+L2943:
 	R1 = (u64)&opcname;
 	msysc_m$print_startstr(asu64(R1));
 	R1 = tou64("set");
@@ -32026,8 +32081,8 @@ L2947:
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2*8));
 	msysc_m$print_str_nf(asu64(R1));
 	msysc_m$print_end();
-	goto L2945;
-L2948:
+	goto L2941;
+L2944:
 	R1 = (u64)&opcname;
 	msysc_m$print_startstr(asu64(R1));
 	R1 = tou64("cmov");
@@ -32038,33 +32093,33 @@ L2948:
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2*8));
 	msysc_m$print_str_nf(asu64(R1));
 	msysc_m$print_end();
-	goto L2945;
-L2949:
+	goto L2941;
+L2945:
 	R1 = tou64("and");
 	R2 = (u64)&opcname;
 	asu64(R1) = strcpy(asu64(R2), asu64(R1));
-	goto L2945;
-L2950:
+	goto L2941;
+L2946:
 	R1 = tou64("or");
 	R2 = (u64)&opcname;
 	asu64(R1) = strcpy(asu64(R2), asu64(R1));
-	goto L2945;
-L2951:
+	goto L2941;
+L2947:
 	R1 = tou64("xor");
 	R2 = (u64)&opcname;
 	asu64(R1) = strcpy(asu64(R2), asu64(R1));
-	goto L2945;
-L2952:
+	goto L2941;
+L2948:
 	R1 = tou64("not");
 	R2 = (u64)&opcname;
 	asu64(R1) = strcpy(asu64(R2), asu64(R1));
-	goto L2945;
-L2953:
+	goto L2941;
+L2949:
 	R1 = tou64("imul");
 	R2 = (u64)&opcname;
 	asu64(R1) = strcpy(asu64(R2), asu64(R1));
-	goto L2945;
-L2954:
+	goto L2941;
+L2950:
 	asu64(R1) = a;
 	R2 = 8;
 	asu16(R1) = *tou16p(((i64)R1+(i64)R2));
@@ -32073,7 +32128,7 @@ L2954:
 	R3 = 4;
     asi64(R1) = Getdotslice((u64)R1, (i64)R2, (i64)R3);
 	R2 = 8;
-	if (asi64(R1) != asi64(R2)) goto L2968;
+	if (asi64(R1) != asi64(R2)) goto L2959;
 	asu64(R1) = b;
 	R2 = 8;
 	asu16(R1) = *tou16p(((i64)R1+(i64)R2));
@@ -32082,7 +32137,7 @@ L2954:
 	R3 = 4;
     asi64(R1) = Getdotslice((u64)R1, (i64)R2, (i64)R3);
 	R2 = 4;
-	if (asi64(R1) != asi64(R2)) goto L2968;
+	if (asi64(R1) != asi64(R2)) goto L2959;
 	R1 = 4;
 	asu64(R2) = a;
 	asu64(R1) = mc_libmcl_changeopndsize(asu64(R2), asi64(R1));
@@ -32093,11 +32148,11 @@ L2954:
 	*tou64p(((i64)R2+(i64)R3)) = asu64(R1);
 	R1 = 11;
 	opcode = asi64(R1);
-L2968:
-	goto L2966;
-	goto L2966;
-	goto L2945;
-L2955:
+L2959:
+	goto L2957;
+	goto L2957;
+	goto L2941;
+L2951:
 	asu64(R1) = a;
 	R2 = 8;
 	asu16(R1) = *tou16p(((i64)R1+(i64)R2));
@@ -32106,7 +32161,7 @@ L2955:
 	R3 = 4;
     asi64(R1) = Getdotslice((u64)R1, (i64)R2, (i64)R3);
 	R2 = 8;
-	if (asi64(R1) != asi64(R2)) goto L2970;
+	if (asi64(R1) != asi64(R2)) goto L2961;
 	asu64(R1) = b;
 	R2 = 8;
 	asu16(R1) = *tou16p(((i64)R1+(i64)R2));
@@ -32115,17 +32170,17 @@ L2955:
 	R3 = 4;
     asi64(R1) = Getdotslice((u64)R1, (i64)R2, (i64)R3);
 	R2 = 4;
-	if (asi64(R1) != asi64(R2)) goto L2970;
+	if (asi64(R1) != asi64(R2)) goto L2961;
 	R1 = tou64("movsxd");
 	R2 = (u64)&opcname;
 	asu64(R1) = strcpy(asu64(R2), asu64(R1));
-	goto L2969;
-L2970:
-	goto L2966;
-	goto L2966;
-L2969:
-	goto L2945;
-L2956:
+	goto L2960;
+L2961:
+	goto L2957;
+	goto L2957;
+L2960:
+	goto L2941;
+L2952:
 	asu64(R1) = a;
 	R2 = 8;
 	asu16(R1) = *tou16p(((i64)R1+(i64)R2));
@@ -32134,7 +32189,7 @@ L2956:
 	R3 = 11;
     asi64(R1) = Getdotslice((u64)R1, (i64)R2, (i64)R3);
 	R2 = 5;
-	if (asi64(R1) != asi64(R2)) goto L2972;
+	if (asi64(R1) != asi64(R2)) goto L2963;
 	asu64(R1) = b;
 	R2 = 8;
 	asu16(R1) = *tou16p(((i64)R1+(i64)R2));
@@ -32143,14 +32198,14 @@ L2956:
 	R3 = 11;
     asi64(R1) = Getdotslice((u64)R1, (i64)R2, (i64)R3);
 	R2 = 5;
-	if (asi64(R1) != asi64(R2)) goto L2972;
+	if (asi64(R1) != asi64(R2)) goto L2963;
 	R1 = 17;
 	opcode = asi64(R1);
-L2972:
-	goto L2966;
-	goto L2966;
-	goto L2945;
-L2957:
+L2963:
+	goto L2957;
+	goto L2957;
+	goto L2941;
+L2953:
 	asu64(R1) = a;
 	R2 = 8;
 	asu16(R1) = *tou16p(((i64)R1+(i64)R2));
@@ -32158,8 +32213,8 @@ L2957:
 	R2 = 9;
 	R3 = 11;
     asi64(R1) = Getdotslice((u64)R1, (i64)R2, (i64)R3);
-	R2 = 1;
-	if (asi64(R1) != asi64(R2)) goto L2974;
+	R2 = 5;
+	if (asi64(R1) != asi64(R2)) goto L2966;
 	asu64(R1) = b;
 	R2 = 8;
 	asu16(R1) = *tou16p(((i64)R1+(i64)R2));
@@ -32167,82 +32222,38 @@ L2957:
 	R2 = 9;
 	R3 = 11;
     asi64(R1) = Getdotslice((u64)R1, (i64)R2, (i64)R3);
-	R2 = 2;
-	if (asi64(R1) != asi64(R2)) goto L2974;
-	asu64(R1) = b;
-	R2 = 8;
-	asu16(R1) = *tou16p(((i64)R1+(i64)R2));
-	R1 = toi64(tou16(R1));
-	R2 = 12;
-	R3 = 15;
-    asi64(R1) = Getdotslice((u64)R1, (i64)R2, (i64)R3);
-	R2 = 1;
-	if (asi64(R1) != asi64(R2)) goto L2974;
-	asu64(R1) = b;
-	R2 = 0;
-	asi64(R1) = *toi64p(((i64)R1+(i64)R2));
-	R2 = -2147483648;
-	if (asi64(R1) < asi64(R2)) goto L2975;
-	R2 = 2147483647;
-	if (asi64(R1) <= asi64(R2)) goto L2974;
-L2975:
-	R1 = 17;
-	asu64(R2) = mcl;
-	R3 = 33;
-	*tou8p(((i64)R2+(i64)R3)) = asu8(R1);
-L2974:
-	goto L2966;
-	goto L2966;
-	goto L2945;
-L2958:
-	R1 = tou64(".align");
-	R2 = (u64)&opcname;
-	asu64(R1) = strcpy(asu64(R2), asu64(R1));
-	goto L2945;
-L2959:
-	R1 = tou64(".space");
-	R2 = (u64)&opcname;
-	asu64(R1) = strcpy(asu64(R2), asu64(R1));
-	goto L2945;
-L2960:
-	R1 = tou64(".byte");
-	R2 = (u64)&opcname;
-	asu64(R1) = strcpy(asu64(R2), asu64(R1));
-	goto L2945;
-L2961:
-	R1 = tou64(".word");
-	R2 = (u64)&opcname;
-	asu64(R1) = strcpy(asu64(R2), asu64(R1));
-	goto L2945;
-L2962:
-	R1 = tou64(".long");
-	R2 = (u64)&opcname;
-	asu64(R1) = strcpy(asu64(R2), asu64(R1));
-	goto L2945;
-L2963:
-	R1 = tou64(".quad");
-	R2 = (u64)&opcname;
-	asu64(R1) = strcpy(asu64(R2), asu64(R1));
-	goto L2945;
-L2964:
-	R1 = tou64(".ascii");
-	R2 = (u64)&opcname;
-	asu64(R1) = strcpy(asu64(R2), asu64(R1));
-	goto L2945;
-L2965:
-	goto L2923;
-	goto L2945;
+	R2 = 5;
+	if (asi64(R1) == asi64(R2)) goto L2965;
 L2966:
+	R1 = 16;
+	opcode = asi64(R1);
+L2965:
+	goto L2957;
+	goto L2957;
+	goto L2941;
+L2954:
+	goto L2957;
+	goto L2957;
+	goto L2941;
+L2955:
+	goto L2914;
+	goto L2941;
+L2956:
+	R1 = tou64("db");
+	R2 = (u64)&opcname;
+	asu64(R1) = strcpy(asu64(R2), asu64(R1));
+	goto L2941;
+L2957:
 	asi64(R1) = opcode;
 	R2 = 152;
-	if (asi64(R1) <= asi64(R2)) goto L2977;
+	if (asi64(R1) <= asi64(R2)) goto L2968;
 	R1 = 0;
 	asi64(R2) = opcode;
 	asu64(R1) = msysc_strint(asi64(R2), asu64(R1));
 	R2 = (u64)&opcname;
 	asu64(R1) = strcpy(asu64(R2), asu64(R1));
-	goto L2976;
-L2977:
+	goto L2967;
+L2968:
 	R1 = (u64)&mc_decls_mclnames;
 	asi64(R2) = opcode;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2*8-8));
@@ -32250,61 +32261,68 @@ L2977:
 	R1 += (i64)R2;
 	R2 = (u64)&opcname;
 	asu64(R1) = strcpy(asu64(R2), asu64(R1));
-L2976:
-L2945:
+L2967:
+L2941:
 	R1 = tou64(" ");
+	asi64(R2) = opcode;
+	R3 = 119;
+	if (asi64(R2) != asi64(R3)) goto L2970;
+	R2 = 4;
+	goto L2969;
+L2970:
 	R2 = 10;
+L2969:
 	R3 = (u64)&opcname;
 	mlib_ipadstr(asu64(R3), asi64(R2), asu64(R1));
 	R1 = tou64("  ");
-	R2 = (u64)&mc_writegas_strmcl_str;
+	R2 = (u64)&mc_writemasm_strmcl_str;
 	asu64(R1) = strcpy(asu64(R2), asu64(R1));
 	R1 = tou64(" ");
 	R2 = 4;
-	R3 = (u64)&mc_writegas_strmcl_str;
+	R3 = (u64)&mc_writemasm_strmcl_str;
 	mlib_ipadstr(asu64(R3), asi64(R2), asu64(R1));
 	R1 = (u64)&opcname;
-	R2 = (u64)&mc_writegas_strmcl_str;
+	R2 = (u64)&mc_writemasm_strmcl_str;
 	asu64(R1) = strcat(asu64(R2), asu64(R1));
-	R1 = (u64)&mc_writegas_strmcl_str;
-	mc_writegas_asmstr(asu64(R1));
+	R1 = (u64)&mc_writemasm_strmcl_str;
+	mc_writemasm_asmstr(asu64(R1));
 	asu64(R1) = a;
-	if (!asu64(R1)) goto L2979;
+	if (!asu64(R1)) goto L2972;
 	asu64(R1) = b;
-	if (!asu64(R1)) goto L2979;
+	if (!asu64(R1)) goto L2972;
 	asu64(R1) = b;
 	asu64(R2) = a;
 	asi64(R3) = opcode;
-	asi64(R1) = mc_writegas_needsizeprefix(asi64(R3), asu64(R2), asu64(R1));
+	asi64(R1) = mc_writemasm_needsizeprefix(asi64(R3), asu64(R2), asu64(R1));
 	sizepref = asi64(R1);
 	R1 = 0;
 	asi64(R2) = sizepref;
 	asu64(R3) = a;
-	mc_writegas_asmopnd(asu64(R3), asi64(R2), asi64(R1));
+	mc_writemasm_asmopnd(asu64(R3), asi64(R2), asi64(R1));
 	R1 = tou64(",\t");
-	mc_writegas_asmstr(asu64(R1));
+	mc_writemasm_asmstr(asu64(R1));
 	R1 = 0;
 	asi64(R2) = sizepref;
 	asu64(R3) = b;
-	mc_writegas_asmopnd(asu64(R3), asi64(R2), asi64(R1));
+	mc_writemasm_asmopnd(asu64(R3), asi64(R2), asi64(R1));
 	asu64(R1) = mcl;
 	R2 = 32;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
-	if (!asu8(R1)) goto L2981;
+	if (!asu8(R1)) goto L2974;
 	R1 = tou64(",");
-	mc_writegas_asmstr(asu64(R1));
+	mc_writemasm_asmstr(asu64(R1));
 	R1 = 0;
 	asu64(R2) = mcl;
 	R3 = 32;
 	asu8(R2) = *tou8p(((i64)R2+(i64)R3));
 	R2 = toi64(tou8(R2));
 	asu64(R1) = msysc_strint(asi64(R2), asu64(R1));
-	mc_writegas_asmstr(asu64(R1));
-L2981:
-	goto L2978;
-L2979:
+	mc_writemasm_asmstr(asu64(R1));
+L2974:
+	goto L2971;
+L2972:
 	asu64(R1) = a;
-	if (!asu64(R1)) goto L2982;
+	if (!asu64(R1)) goto L2975;
 	asu64(R1) = a;
 	R2 = 8;
 	asu16(R1) = *tou16p(((i64)R1+(i64)R2));
@@ -32312,42 +32330,42 @@ L2979:
 	R2 = 9;
 	R3 = 11;
     asi64(R1) = Getdotslice((u64)R1, (i64)R2, (i64)R3);
-	if (!asu64(R1)) goto L2982;
+	if (!asu64(R1)) goto L2975;
 	asi64(R1) = opcode;
 	R2 = 21;
-	if (asi64(R1) != asi64(R2)) goto L2984;
+	if (asi64(R1) != asi64(R2)) goto L2977;
 	asi64(R1) = opcode;
 	R2 = 0;
 	asu64(R3) = a;
-	mc_writegas_asmopnd(asu64(R3), asi64(R2), asi64(R1));
-	goto L2983;
-L2984:
+	mc_writemasm_asmopnd(asu64(R3), asi64(R2), asi64(R1));
+	goto L2976;
+L2977:
 	asi64(R1) = opcode;
 	R2 = 1;
 	asu64(R3) = a;
-	mc_writegas_asmopnd(asu64(R3), asi64(R2), asi64(R1));
-L2983:
-L2982:
-L2978:
-L2923:
+	mc_writemasm_asmopnd(asu64(R3), asi64(R2), asi64(R1));
+L2976:
+L2975:
+L2971:
+L2914:
 	return;
 }
 
-static u64 mc_writegas_strmclstr(u64 m) {
+static u64 mc_writemasm_strmclstr(u64 m) {
     u64 R1, R2; 
 	asu64(R1) = pc_decls_pdest;
 	mlib_gs_init(asu64(R1));
 	asu64(R1) = m;
-	mc_writegas_strmcl(asu64(R1));
+	mc_writemasm_strmcl(asu64(R1));
 	asu64(R1) = pc_decls_pdest;
 	R2 = 0;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
-	goto L2985;
-L2985:
+	goto L2978;
+L2978:
 	return asu64(R1);
 }
 
-static u64 mc_writegas_mstropnd(u64 a, i64 sizeprefix, i64 opcode) {
+static u64 mc_writemasm_mstropnd(u64 a, i64 sizeprefix, i64 opcode) {
     u64 R1, R2, R3, R4; 
 	struct $B36 str2;
 	u64 plus;
@@ -32355,7 +32373,7 @@ static u64 mc_writegas_mstropnd(u64 a, i64 sizeprefix, i64 opcode) {
 	i64 offset;
 	i64 tc;
 	R1 = 0;
-	R2 = (u64)&mc_writegas_mstropnd_str;
+	R2 = (u64)&mc_writemasm_mstropnd_str;
 	R3 = 1;
 	*tou8p(((i64)R2+(i64)R3-1)) = asu8(R1);
 	asu64(R1) = a;
@@ -32366,15 +32384,15 @@ static u64 mc_writegas_mstropnd(u64 a, i64 sizeprefix, i64 opcode) {
 	R3 = 11;
     asi64(R1) = Getdotslice((u64)R1, (i64)R2, (i64)R3);
 	R2 = 1;
-	if (asu64(R1) == asu64(R2)) goto L2988;
+	if (asu64(R1) == asu64(R2)) goto L2981;
 	R2 = 2;
-	if (asu64(R1) == asu64(R2)) goto L2989;
+	if (asu64(R1) == asu64(R2)) goto L2982;
 	R2 = 3;
-	if (asu64(R1) == asu64(R2)) goto L2990;
+	if (asu64(R1) == asu64(R2)) goto L2983;
 	R2 = 5;
-	if (asu64(R1) == asu64(R2)) goto L2991;
-	goto L2992;
-L2988:
+	if (asu64(R1) == asu64(R2)) goto L2984;
+	goto L2985;
+L2981:
 	asu64(R1) = a;
 	R2 = 8;
 	asu16(R1) = *tou16p(((i64)R1+(i64)R2));
@@ -32386,13 +32404,13 @@ L2988:
 	R3 = 10;
 	asu8(R2) = *tou8p(((i64)R2+(i64)R3));
 	R2 = toi64(tou8(R2));
-	asu64(R1) = mc_writegas_strreg(asi64(R2), asi64(R1));
-	goto L2986;
-	goto L2987;
-L2989:
+	asu64(R1) = mc_writemasm_strreg(asi64(R2), asi64(R1));
+	goto L2979;
+	goto L2980;
+L2982:
 	asi64(R1) = opcode;
 	R2 = 119;
-	if (asi64(R1) != asi64(R2)) goto L2994;
+	if (asi64(R1) != asi64(R2)) goto L2987;
 	asu64(R1) = a;
 	R2 = 8;
 	asu16(R1) = *tou16p(((i64)R1+(i64)R2));
@@ -32401,43 +32419,118 @@ L2989:
 	R3 = 15;
     asi64(R1) = Getdotslice((u64)R1, (i64)R2, (i64)R3);
 	R2 = 1;
-	if (asi64(R1) != asi64(R2)) goto L2994;
+	if (asi64(R1) != asi64(R2)) goto L2987;
 	asu64(R1) = a;
 	R2 = 0;
 	asi64(R1) = *toi64p(((i64)R1+(i64)R2));
 	R2 = 0;
-	if (asi64(R1) < asi64(R2)) goto L2996;
+	if (asi64(R1) < asi64(R2)) goto L2989;
 	R2 = 9;
-	if (asi64(R1) > asi64(R2)) goto L2996;
+	if (asi64(R1) > asi64(R2)) goto L2989;
 	R1 = 0;
 	asu64(R2) = a;
 	R3 = 0;
 	asi64(R2) = *toi64p(((i64)R2+(i64)R3));
 	asu64(R1) = msysc_strint(asi64(R2), asu64(R1));
-	R2 = (u64)&mc_writegas_mstropnd_str;
+	R2 = (u64)&mc_writemasm_mstropnd_str;
 	asu64(R1) = strcat(asu64(R2), asu64(R1));
-	goto L2995;
-L2996:
-	R1 = tou64("0x");
-	R2 = (u64)&mc_writegas_mstropnd_str;
+	goto L2988;
+L2989:
+	R1 = tou64("0");
+	R2 = (u64)&mc_writemasm_mstropnd_str;
 	asu64(R1) = strcat(asu64(R2), asu64(R1));
 	R1 = tou64("H");
 	asu64(R2) = a;
 	R3 = 0;
 	asu64(R2) = *tou64p(((i64)R2+(i64)R3));
 	asu64(R1) = msysc_strword(asu64(R2), asu64(R1));
-	R2 = (u64)&mc_writegas_mstropnd_str;
+	R2 = (u64)&mc_writemasm_mstropnd_str;
 	asu64(R1) = strcat(asu64(R2), asu64(R1));
-L2995:
-	goto L2993;
-L2994:
+	R1 = tou64("H");
+	R2 = (u64)&mc_writemasm_mstropnd_str;
+	asu64(R1) = strcat(asu64(R2), asu64(R1));
+L2988:
+	goto L2986;
+L2987:
 	asu64(R1) = a;
-	asu64(R1) = mc_writegas_strvalue(asu64(R1));
-	R2 = (u64)&mc_writegas_mstropnd_str;
+	asu64(R1) = mc_writemasm_strvalue(asu64(R1));
+	R2 = (u64)&mc_writemasm_mstropnd_str;
 	asu64(R1) = strcpy(asu64(R2), asu64(R1));
+L2986:
+	goto L2980;
+L2983:
+	asu64(R1) = a;
+	R2 = 8;
+	asu16(R1) = *tou16p(((i64)R1+(i64)R2));
+	R1 = toi64(tou16(R1));
+	R2 = 12;
+	R3 = 15;
+    asi64(R1) = Getdotslice((u64)R1, (i64)R2, (i64)R3);
+	R2 = 1;
+	if (asu64(R1) == asu64(R2)) goto L2991;
+	R2 = 2;
+	if (asu64(R1) == asu64(R2)) goto L2992;
+	R2 = 3;
+	if (asu64(R1) == asu64(R2)) goto L2993;
+	goto L2994;
+L2991:
+	R1 = 0;
+	asu64(R2) = a;
+	R3 = 0;
+	asi64(R2) = *toi64p(((i64)R2+(i64)R3));
+	asu64(R1) = msysc_strint(asi64(R2), asu64(R1));
+	R2 = (u64)&mc_writemasm_mstropnd_str;
+	asu64(R1) = strcpy(asu64(R2), asu64(R1));
+	goto L2990;
+L2992:
+	R1 = 0;
+	asu64(R2) = a;
+	R3 = 0;
+	asr64(R2) = *tor64p(((i64)R2+(i64)R3));
+	asu64(R1) = msysc_strreal(asr64(R2), asu64(R1));
+	R2 = (u64)&mc_writemasm_mstropnd_str;
+	asu64(R1) = strcpy(asu64(R2), asu64(R1));
+	goto L2990;
 L2993:
-	goto L2987;
+	R1 = (u64)&mc_writemasm_mstropnd_str;
+	msysc_m$print_startstr(asu64(R1));
+	R1 = tou64("M#");
+	msysc_m$print_setfmt(asu64(R1));
+	R1 = 0;
+	asu64(R2) = a;
+	R3 = 0;
+	asr64(R2) = *tor64p(((i64)R2+(i64)R3));
+	msysc_m$print_r64(asr64(R2), asi64(R1));
+	msysc_m$print_end();
+	goto L2990;
+L2994:
 L2990:
+	asu64(R1) = a;
+	R2 = 8;
+	asu16(R1) = *tou16p(((i64)R1+(i64)R2));
+	R1 = toi64(tou16(R1));
+	R2 = 0;
+	R3 = 4;
+    asi64(R1) = Getdotslice((u64)R1, (i64)R2, (i64)R3);
+	R2 = 0;
+	if (asi64(R1) != asi64(R2)) goto L2996;
+	asu64(R1) = a;
+	R2 = 8;
+	asu16(R1) = *tou16p(((i64)R1+(i64)R2));
+	R1 = toi64(tou16(R1));
+	R2 = 12;
+	R3 = 15;
+    asi64(R1) = Getdotslice((u64)R1, (i64)R2, (i64)R3);
+	R2 = 6;
+	if (asi64(R1) != asi64(R2)) goto L2996;
+	R1 = 8;
+	asu64(R2) = a;
+	R3 = 8;
+	R2 += (i64)R3;
+	R3 = 0;
+	R4 = 4;
+    *toi64p(R2) = Setdotslice(*toi64p(R2), (i64)R3, (i64)R4, (i64)R1);
+L2996:
 	asi64(R1) = sizeprefix;
 	asu64(R2) = a;
 	R3 = 8;
@@ -32446,11 +32539,11 @@ L2990:
 	R3 = 0;
 	R4 = 4;
     asi64(R2) = Getdotslice((u64)R2, (i64)R3, (i64)R4);
-	asu64(R1) = mc_writegas_getsizeprefix(asi64(R2), asi64(R1));
-	R2 = (u64)&mc_writegas_mstropnd_str;
+	asu64(R1) = mc_writemasm_getsizeprefix(asi64(R2), asi64(R1));
+	R2 = (u64)&mc_writemasm_mstropnd_str;
 	asu64(R1) = strcat(asu64(R2), asu64(R1));
 	R1 = tou64("[");
-	R2 = (u64)&mc_writegas_mstropnd_str;
+	R2 = (u64)&mc_writemasm_mstropnd_str;
 	asu64(R1) = strcat(asu64(R2), asu64(R1));
 	R1 = tou64("");
 	plus = asu64(R1);
@@ -32463,8 +32556,8 @@ L2990:
 	R3 = 10;
 	asu8(R2) = *tou8p(((i64)R2+(i64)R3));
 	R2 = toi64(tou8(R2));
-	asu64(R1) = mc_writegas_strreg(asi64(R2), asi64(R1));
-	R2 = (u64)&mc_writegas_mstropnd_str;
+	asu64(R1) = mc_writemasm_strreg(asi64(R2), asi64(R1));
+	R2 = (u64)&mc_writemasm_mstropnd_str;
 	asu64(R1) = strcat(asu64(R2), asu64(R1));
 	R1 = tou64(" + ");
 	plus = asu64(R1);
@@ -32474,15 +32567,15 @@ L2998:
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	if (!asu8(R1)) goto L3000;
 	asu64(R1) = plus;
-	R2 = (u64)&mc_writegas_mstropnd_str;
+	R2 = (u64)&mc_writemasm_mstropnd_str;
 	asu64(R1) = strcat(asu64(R2), asu64(R1));
 	R1 = 8;
 	asu64(R2) = a;
 	R3 = 11;
 	asu8(R2) = *tou8p(((i64)R2+(i64)R3));
 	R2 = toi64(tou8(R2));
-	asu64(R1) = mc_writegas_strreg(asi64(R2), asi64(R1));
-	R2 = (u64)&mc_writegas_mstropnd_str;
+	asu64(R1) = mc_writemasm_strreg(asi64(R2), asi64(R1));
+	R2 = (u64)&mc_writemasm_mstropnd_str;
 	asu64(R1) = strcat(asu64(R2), asu64(R1));
 	R1 = tou64(" + ");
 	plus = asu64(R1);
@@ -32496,7 +32589,7 @@ L2998:
 	R2 = 1;
 	if (asi64(R1) <= asi64(R2)) goto L3002;
 	R1 = tou64("*");
-	R2 = (u64)&mc_writegas_mstropnd_str;
+	R2 = (u64)&mc_writemasm_mstropnd_str;
 	asu64(R1) = strcat(asu64(R2), asu64(R1));
 	R1 = 0;
 	asu64(R2) = a;
@@ -32507,7 +32600,7 @@ L2998:
 	R4 = 8;
     asi64(R2) = Getdotslice((u64)R2, (i64)R3, (i64)R4);
 	asu64(R1) = msysc_strint(asi64(R2), asu64(R1));
-	R2 = (u64)&mc_writegas_mstropnd_str;
+	R2 = (u64)&mc_writemasm_mstropnd_str;
 	asu64(R1) = strcat(asu64(R2), asu64(R1));
 L3002:
 L3000:
@@ -32525,41 +32618,16 @@ L3000:
 	R2 = 8;
 	if (asi64(R1) != asi64(R2)) goto L3004;
 L3005:
-	asu64(R1) = a;
-	R2 = 10;
-	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
-	R1 = toi64(tou8(R1));
-	asu64(R2) = a;
-	R3 = 11;
-	asu8(R2) = *tou8p(((i64)R2+(i64)R3));
-	R2 = toi64(tou8(R2));
-    {u64 temp = R1; R1 = R2; R2 = temp;}
-	if (asi64(R1) != asi64(R2)) goto L3008;
-	R2 = 0;
-	if (asi64(R1) != asi64(R2)) goto L3008;
-	R1 = 1;
-	goto L3009;
-L3008:
-	R1 = 0;
-L3009:
-	asu16(R1) = !!asi64(R1);
-	if (!asu16(R1)) goto L3007;
-	asu8(R1) = pc_api_phighmem;
-	if (!asu8(R1)) goto L3007;
-	R1 = tou64("%rip+");
-	R2 = (u64)&mc_writegas_mstropnd_str;
-	asu64(R1) = strcat(asu64(R2), asu64(R1));
-L3007:
 	asu64(R1) = plus;
 	asu8(R1) = *tou8p(R1);
-	if (!asu8(R1)) goto L3011;
+	if (!asu8(R1)) goto L3007;
 	asu64(R1) = plus;
-	R2 = (u64)&mc_writegas_mstropnd_str;
+	R2 = (u64)&mc_writemasm_mstropnd_str;
 	asu64(R1) = strcat(asu64(R2), asu64(R1));
-L3011:
+L3007:
 	asu64(R1) = a;
-	asu64(R1) = mc_writegas_strvalue(asu64(R1));
-	R2 = (u64)&mc_writegas_mstropnd_str;
+	asu64(R1) = mc_writemasm_strvalue(asu64(R1));
+	R2 = (u64)&mc_writemasm_mstropnd_str;
 	asu64(R1) = strcat(asu64(R2), asu64(R1));
 	goto L3003;
 L3004:
@@ -32569,7 +32637,7 @@ L3004:
 	R1 = toi64(toi32(R1));
 	R2 = R1;
 	offset = asi64(R2);
-	if (!asi64(R1)) goto L3012;
+	if (!asi64(R1)) goto L3008;
 	R1 = (u64)&str2;
 	msysc_m$print_startstr(asu64(R1));
 	R1 = tou64(" + ");
@@ -32577,15 +32645,15 @@ L3004:
 	msysc_m$print_i64(asi64(R2), asu64(R1));
 	msysc_m$print_end();
 	R1 = (u64)&str2;
-	R2 = (u64)&mc_writegas_mstropnd_str;
+	R2 = (u64)&mc_writemasm_mstropnd_str;
 	asu64(R1) = strcat(asu64(R2), asu64(R1));
-L3012:
+L3008:
 L3003:
 	R1 = tou64("]");
-	R2 = (u64)&mc_writegas_mstropnd_str;
+	R2 = (u64)&mc_writemasm_mstropnd_str;
 	asu64(R1) = strcat(asu64(R2), asu64(R1));
-	goto L2987;
-L2991:
+	goto L2980;
+L2984:
 	asu64(R1) = a;
 	R2 = 8;
 	asu16(R1) = *tou16p(((i64)R1+(i64)R2));
@@ -32597,10 +32665,10 @@ L2991:
 	R3 = 10;
 	asu8(R2) = *tou8p(((i64)R2+(i64)R3));
 	R2 = toi64(tou8(R2));
-	asu64(R1) = mc_writegas_strxreg(asi64(R2), asi64(R1));
-	goto L2986;
-	goto L2987;
-L2992:
+	asu64(R1) = mc_writemasm_strxreg(asi64(R2), asi64(R1));
+	goto L2979;
+	goto L2980;
+L2985:
 	msysc_m$print_startcon();
 	R1 = tou64("BAD OPND");
 	msysc_m$print_str_nf(asu64(R1));
@@ -32616,15 +32684,15 @@ L2992:
 	msysc_m$print_newline();
 	msysc_m$print_end();
 	R1 = tou64("<BAD OPND>");
-	goto L2986;
-L2987:
-	R1 = (u64)&mc_writegas_mstropnd_str;
-	goto L2986;
-L2986:
+	goto L2979;
+L2980:
+	R1 = (u64)&mc_writemasm_mstropnd_str;
+	goto L2979;
+L2979:
 	return asu64(R1);
 }
 
-static u64 mc_writegas_strvalue(u64 a) {
+static u64 mc_writemasm_strvalue(u64 a) {
     u64 R1, R2, R3; 
 	struct $B36 str2;
 	u64 def;
@@ -32641,7 +32709,7 @@ static u64 mc_writegas_strvalue(u64 a) {
 	asi64(R1) = *toi64p(((i64)R1+(i64)R2));
 	value = asi64(R1);
 	R1 = tou64("");
-	R2 = (u64)&mc_writegas_strvalue_str;
+	R2 = (u64)&mc_writemasm_strvalue_str;
 	asu64(R1) = strcpy(asu64(R2), asu64(R1));
 	asu64(R1) = a;
 	R2 = 8;
@@ -32651,65 +32719,65 @@ static u64 mc_writegas_strvalue(u64 a) {
 	R3 = 15;
     asi64(R1) = Getdotslice((u64)R1, (i64)R2, (i64)R3);
 	R2 = 5;
-	if (asu64(R1) == asu64(R2)) goto L3015;
+	if (asu64(R1) == asu64(R2)) goto L3011;
 	R2 = 1;
-	if (asu64(R1) == asu64(R2)) goto L3016;
+	if (asu64(R1) == asu64(R2)) goto L3012;
 	R2 = 2;
-	if (asu64(R1) == asu64(R2)) goto L3017;
+	if (asu64(R1) == asu64(R2)) goto L3013;
 	R2 = 3;
-	if (asu64(R1) == asu64(R2)) goto L3018;
+	if (asu64(R1) == asu64(R2)) goto L3014;
 	R2 = 4;
-	if (asu64(R1) == asu64(R2)) goto L3019;
+	if (asu64(R1) == asu64(R2)) goto L3015;
 	R2 = 7;
-	if (asu64(R1) == asu64(R2)) goto L3020;
+	if (asu64(R1) == asu64(R2)) goto L3016;
 	R2 = 6;
-	if (asu64(R1) == asu64(R2)) goto L3021;
+	if (asu64(R1) == asu64(R2)) goto L3017;
 	R2 = 8;
-	if (asu64(R1) == asu64(R2)) goto L3022;
-	goto L3023;
-L3015:
+	if (asu64(R1) == asu64(R2)) goto L3018;
+	goto L3019;
+L3011:
 	asu64(R1) = def;
-	asu64(R1) = mc_writegas_getdispname(asu64(R1));
-	R2 = (u64)&mc_writegas_strvalue_str;
+	asu64(R1) = mc_writemasm_getdispname(asu64(R1));
+	R2 = (u64)&mc_writemasm_strvalue_str;
 	asu64(R1) = strcat(asu64(R2), asu64(R1));
-// mc_writegas.strvalue.addoffset:
-L3024:
+// mc_writemasm.strvalue.addoffset:
+L3020:
 	asu64(R1) = a;
 	R2 = 12;
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
 	R1 = toi64(toi32(R1));
 	R2 = R1;
 	offset = asi64(R2);
-	if (!asi64(R1)) goto L3026;
+	if (!asi64(R1)) goto L3022;
 	R1 = (u64)&str2;
 	msysc_m$print_startstr(asu64(R1));
 	asi64(R1) = offset;
 	R2 = 0;
-	if (asi64(R1) <= asi64(R2)) goto L3028;
+	if (asi64(R1) <= asi64(R2)) goto L3024;
 	R1 = tou64("+");
-	goto L3027;
-L3028:
+	goto L3023;
+L3024:
 	R1 = tou64("");
-L3027:
+L3023:
 	msysc_m$print_str_nf(asu64(R1));
 	msysc_m$print_nogap();
 	asi64(R1) = offset;
 	msysc_m$print_i64_nf(asi64(R1));
 	msysc_m$print_end();
 	R1 = (u64)&str2;
-	R2 = (u64)&mc_writegas_strvalue_str;
+	R2 = (u64)&mc_writemasm_strvalue_str;
 	asu64(R1) = strcat(asu64(R2), asu64(R1));
-L3026:
-	goto L3014;
-L3016:
+L3022:
+	goto L3010;
+L3012:
 	R1 = 0;
 	asi64(R2) = value;
 	asu64(R1) = msysc_strint(asi64(R2), asu64(R1));
-	R2 = (u64)&mc_writegas_strvalue_str;
+	R2 = (u64)&mc_writemasm_strvalue_str;
 	asu64(R1) = strcat(asu64(R2), asu64(R1));
-	goto L3014;
-L3017:
-	R1 = (u64)&mc_writegas_strvalue_str;
+	goto L3010;
+L3013:
+	R1 = (u64)&mc_writemasm_strvalue_str;
 	msysc_m$print_startstr(asu64(R1));
 	R1 = tou64("20.20");
 	asu64(R2) = a;
@@ -32717,92 +32785,92 @@ L3017:
 	asr64(R2) = *tor64p(((i64)R2+(i64)R3));
 	msysc_m$print_r64(asr64(R2), asu64(R1));
 	msysc_m$print_end();
-	goto L3014;
-L3018:
+	goto L3010;
+L3014:
 	R1 = tou64("M");
-	R2 = (u64)&mc_writegas_strvalue_str;
+	R2 = (u64)&mc_writemasm_strvalue_str;
 	asu64(R1) = strcat(asu64(R2), asu64(R1));
 	R1 = 0;
 	asu64(R2) = a;
 	R3 = 0;
 	asr64(R2) = *tor64p(((i64)R2+(i64)R3));
 	asu64(R1) = msysc_strreal(asr64(R2), asu64(R1));
-	R2 = (u64)&mc_writegas_strvalue_str;
+	R2 = (u64)&mc_writemasm_strvalue_str;
 	asu64(R1) = strcat(asu64(R2), asu64(R1));
-	goto L3014;
-L3019:
+	goto L3010;
+L3015:
 	R1 = tou64("\"");
-	R2 = (u64)&mc_writegas_strvalue_str;
+	R2 = (u64)&mc_writemasm_strvalue_str;
 	asu64(R1) = strcat(asu64(R2), asu64(R1));
 	asu64(R1) = a;
 	R2 = 0;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
-	R2 = (u64)&mc_writegas_strvalue_str;
+	R2 = (u64)&mc_writemasm_strvalue_str;
 	asu64(R1) = strcat(asu64(R2), asu64(R1));
 	R1 = tou64("\"");
-	R2 = (u64)&mc_writegas_strvalue_str;
+	R2 = (u64)&mc_writemasm_strvalue_str;
 	asu64(R1) = strcat(asu64(R2), asu64(R1));
-	goto L3014;
-L3020:
+	goto L3010;
+L3016:
 	asu64(R1) = a;
 	R2 = 0;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
-	R2 = (u64)&mc_writegas_strvalue_str;
+	R2 = (u64)&mc_writemasm_strvalue_str;
 	asu64(R1) = strcat(asu64(R2), asu64(R1));
-	goto L3014;
-L3021:
+	goto L3010;
+L3017:
 	R1 = tou64("L");
-	R2 = (u64)&mc_writegas_strvalue_str;
+	R2 = (u64)&mc_writemasm_strvalue_str;
 	asu64(R1) = strcat(asu64(R2), asu64(R1));
 	R1 = 0;
 	asu64(R2) = a;
 	R3 = 0;
 	asi64(R2) = *toi64p(((i64)R2+(i64)R3));
 	asu64(R1) = msysc_strint(asi64(R2), asu64(R1));
-	R2 = (u64)&mc_writegas_strvalue_str;
+	R2 = (u64)&mc_writemasm_strvalue_str;
 	asu64(R1) = strcat(asu64(R2), asu64(R1));
-	goto L3024;
-	goto L3014;
-L3022:
+	goto L3020;
+	goto L3010;
+L3018:
 	asu64(R1) = a;
 	R2 = 0;
 	asi64(R1) = *toi64p(((i64)R1+(i64)R2));
 	asu64(R2) = mc_decls_currasmproc;
-	asu64(R1) = mc_writegas_gettempname(asu64(R2), asi64(R1));
-	goto L3013;
-	goto L3014;
-L3023:
+	asu64(R1) = mc_writemasm_gettempname(asu64(R2), asi64(R1));
+	goto L3009;
+	goto L3010;
+L3019:
 	R1 = tou64("");
 	R2 = tou64("Stropnd?");
 	pc_api_merror(asu64(R2), asu64(R1));
-L3014:
-	R1 = (u64)&mc_writegas_strvalue_str;
-	goto L3013;
-L3013:
+L3010:
+	R1 = (u64)&mc_writemasm_strvalue_str;
+	goto L3009;
+L3009:
 	return asu64(R1);
 }
 
-static void mc_writegas_asmopnd(u64 a, i64 sizeprefix, i64 opcode) {
+static void mc_writemasm_asmopnd(u64 a, i64 sizeprefix, i64 opcode) {
     u64 R1, R2, R3; 
 	asi64(R1) = opcode;
 	asi64(R2) = sizeprefix;
 	asu64(R3) = a;
-	asu64(R1) = mc_writegas_mstropnd(asu64(R3), asi64(R2), asi64(R1));
-	mc_writegas_asmstr(asu64(R1));
+	asu64(R1) = mc_writemasm_mstropnd(asu64(R3), asi64(R2), asi64(R1));
+	mc_writemasm_asmstr(asu64(R1));
 	return;
 }
 
-static u64 mc_writegas_getxregname(i64 reg, i64 size) {
+static u64 mc_writemasm_getxregname(i64 reg, i64 size) {
     u64 R1, R2; 
 	asi64(R1) = reg;
 	R2 = 0;
-	if (asi64(R1) != asi64(R2)) goto L3032;
+	if (asi64(R1) != asi64(R2)) goto L3028;
 	R1 = tou64("-");
-	goto L3030;
-L3032:
-	R1 = (u64)&mc_writegas_getxregname_str;
+	goto L3026;
+L3028:
+	R1 = (u64)&mc_writemasm_getxregname_str;
 	msysc_m$print_startstr(asu64(R1));
-	R1 = tou64("%XMM");
+	R1 = tou64("XMM");
 	msysc_m$print_str_nf(asu64(R1));
 	msysc_m$print_nogap();
 	asi64(R1) = reg;
@@ -32810,13 +32878,13 @@ L3032:
 	asi64(R1) -= asi64(R2);
 	msysc_m$print_i64_nf(asi64(R1));
 	msysc_m$print_end();
-	R1 = (u64)&mc_writegas_getxregname_str;
-	goto L3030;
-L3030:
+	R1 = (u64)&mc_writemasm_getxregname_str;
+	goto L3026;
+L3026:
 	return asu64(R1);
 }
 
-static void mc_writegas_asmstr(u64 s) {
+static void mc_writemasm_asmstr(u64 s) {
     u64 R1, R2; 
 	asu64(R1) = s;
 	asu64(R2) = pc_decls_pdest;
@@ -32824,7 +32892,7 @@ static void mc_writegas_asmstr(u64 s) {
 	return;
 }
 
-static void mc_writegas_asmchar(i64 c) {
+static void mc_writemasm_asmchar(i64 c) {
     u64 R1, R2; 
 	asi64(R1) = c;
 	asu64(R2) = pc_decls_pdest;
@@ -32832,56 +32900,52 @@ static void mc_writegas_asmchar(i64 c) {
 	return;
 }
 
-static u64 mc_writegas_getdispname(u64 d) {
-    u64 R1, R2, R3; 
-	i64 av_1;
-	i64 i;
-// PROC LOCAL STATICS GO HERE
-	static struct $B3 mc_writegas_getdispname_specialnames = {{
-	(u64)"eq",
-	(u64)"ne"    }};
-	R1 = 1;
-	i = asi64(R1);
-	R1 = 2;
-	av_1 = asi64(R1);
-	asi64(R1) = av_1;
-	R2 = 1;
-	if (asi64(R1) < asi64(R2)) goto L3038;
-L3036:
-	R1 = (u64)&mc_writegas_getdispname_specialnames;
-	asi64(R2) = i;
-	asu64(R1) = *tou64p(((i64)R1+(i64)R2*8-8));
-	asu64(R2) = d;
-	R3 = 0;
-	asu64(R2) = *tou64p(((i64)R2+(i64)R3));
-	asi64(R1) = mlib_eqstring(asu64(R2), asu64(R1));
-	if (!asi64(R1)) goto L3040;
-	R1 = tou64("$");
-	R2 = (u64)&mc_writegas_getdispname_str;
-	asu64(R1) = strcpy(asu64(R2), asu64(R1));
+static u64 mc_writemasm_getdispname(u64 d) {
+    u64 R1, R2; 
+	u64 s;
 	asu64(R1) = d;
-	R2 = 0;
-	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
-	R2 = (u64)&mc_writegas_getdispname_str;
-	asu64(R1) = strcat(asu64(R2), asu64(R1));
-	R1 = (u64)&mc_writegas_getdispname_str;
-	goto L3035;
-L3040:
-	i += 1; if (i <= av_1) goto L3036;
-L3038:
+	R2 = 90;
+	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
+	if (!asu8(R1)) goto L3033;
+	R1 = tou64("");
+	R2 = tou64("GDN/REG");
+	pc_api_merror(asu64(R2), asu64(R1));
+L3033:
+	R1 = (u64)&mc_writemasm_getdispname_str;
+	s = asu64(R1);
 	R1 = 0;
 	asu64(R2) = d;
 	asu64(R1) = pc_api_getfullname(asu64(R2), asi64(R1));
+	asu64(R2) = s;
+	asu64(R1) = strcpy(asu64(R2), asu64(R1));
 	goto L3035;
+L3034:
+	asu64(R1) = s;
+	asu8(R1) = *tou8p(R1);
+	R1 = tou64(tou8(R1));
+	R2 = 46;
+	if (asu64(R1) != asu64(R2)) goto L3038;
+	R1 = 36;
+	asu64(R2) = s;
+	*tou8p(R2) = asu8(R1);
+L3038:
+	R1 = (u64)&s;
+	(*tou64p(R1)) += 1;
 L3035:
+	asu64(R1) = s;
+	asu8(R1) = *tou8p(R1);
+	if (asu8(R1)) goto L3034;
+	R1 = (u64)&mc_writemasm_getdispname_str;
+	goto L3031;
+L3031:
 	return asu64(R1);
 }
 
-static u64 mc_writegas_gettempname(u64 d, i64 n) {
+static u64 mc_writemasm_gettempname(u64 d, i64 n) {
     u64 R1; 
 	asu8(R1) = pc_api_fpshortnames;
-	if (!asu8(R1)) goto L3043;
-	R1 = (u64)&mc_writegas_gettempname_str;
+	if (!asu8(R1)) goto L3041;
+	R1 = (u64)&mc_writemasm_gettempname_str;
 	msysc_m$print_startstr(asu64(R1));
 	R1 = tou64("T");
 	msysc_m$print_str_nf(asu64(R1));
@@ -32889,103 +32953,102 @@ static u64 mc_writegas_gettempname(u64 d, i64 n) {
 	asi64(R1) = n;
 	msysc_m$print_i64_nf(asi64(R1));
 	msysc_m$print_end();
-	goto L3042;
-L3043:
-	R1 = (u64)&mc_writegas_gettempname_str;
+	goto L3040;
+L3041:
+	R1 = (u64)&mc_writemasm_gettempname_str;
 	msysc_m$print_startstr(asu64(R1));
-	R1 = tou64("#.$T#");
+	R1 = tou64("#$$T#");
 	msysc_m$print_setfmt(asu64(R1));
 	asu64(R1) = d;
-	asu64(R1) = mc_writegas_getdispname(asu64(R1));
+	asu64(R1) = mc_writemasm_getdispname(asu64(R1));
 	msysc_m$print_str_nf(asu64(R1));
 	asi64(R1) = n;
 	msysc_m$print_i64_nf(asi64(R1));
 	msysc_m$print_end();
-L3042:
-	R1 = (u64)&mc_writegas_gettempname_str;
-	goto L3041;
-L3041:
+L3040:
+	R1 = (u64)&mc_writemasm_gettempname_str;
+	goto L3039;
+L3039:
 	return asu64(R1);
 }
 
-static u64 mc_writegas_strreg(i64 reg, i64 size) {
+static u64 mc_writemasm_strreg(i64 reg, i64 size) {
     u64 R1, R2; 
-	R1 = tou64("%");
-	R2 = (u64)&mc_writegas_strreg_str;
-	asu64(R1) = strcpy(asu64(R2), asu64(R1));
-	R1 = (u64)&mc_writegas_nregnames;
+	u64 d;
+	R1 = (u64)&mc_writemasm_nregnames;
 	asi64(R2) = size;
 	R1 += (i64)R2*128-128;
 	asi64(R2) = reg;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2*8-8));
-	R2 = (u64)&mc_writegas_strreg_str;
-	asu64(R1) = strcat(asu64(R2), asu64(R1));
-	R1 = (u64)&mc_writegas_strreg_str;
-	goto L3044;
-L3044:
+	goto L3042;
+L3042:
 	return asu64(R1);
 }
 
-static u64 mc_writegas_strxreg(i64 reg, i64 size) {
+static u64 mc_writemasm_strxreg(i64 reg, i64 size) {
     u64 R1, R2; 
 	u64 d;
 	R1 = 1;
 	asi64(R2) = reg;
-	asu64(R1) = mc_writegas_checkregvar(asi64(R2), asi64(R1));
+	asu64(R1) = mc_writemasm_checkregvar(asi64(R2), asi64(R1));
 	d = asu64(R1);
 	asi64(R1) = size;
 	R2 = 8;
-	if (asi64(R1) != asi64(R2)) goto L3047;
+	if (asi64(R1) != asi64(R2)) goto L3045;
 	asu64(R1) = d;
-	if (!asu64(R1)) goto L3047;
+	if (!asu64(R1)) goto L3045;
 	asu64(R1) = d;
-	asu64(R1) = mc_writegas_getdispname(asu64(R1));
-	goto L3046;
-L3047:
+	asu64(R1) = mc_writemasm_getdispname(asu64(R1));
+	goto L3044;
+L3045:
 	asi64(R1) = size;
 	asi64(R2) = reg;
-	asu64(R1) = mc_writegas_getxregname(asi64(R2), asi64(R1));
-L3046:
-	goto L3045;
-L3045:
+	asu64(R1) = mc_writemasm_getxregname(asi64(R2), asi64(R1));
+L3044:
+	goto L3043;
+L3043:
 	return asu64(R1);
 }
 
-static i64 mc_writegas_needsizeprefix(i64 opcode, u64 a, u64 b) {
+static i64 mc_writemasm_needsizeprefix(i64 opcode, u64 a, u64 b) {
     u64 R1, R2, R3; 
 	asi64(R1) = opcode;
 	R2 = 18;
-	if (asi64(R1) == asi64(R2)) goto L3050;
+	if (asi64(R1) == asi64(R2)) goto L3048;
 	R2 = 19;
-	if (asi64(R1) == asi64(R2)) goto L3050;
+	if (asi64(R1) == asi64(R2)) goto L3048;
 	R2 = 86;
-	if (asi64(R1) == asi64(R2)) goto L3050;
+	if (asi64(R1) == asi64(R2)) goto L3048;
 	R2 = 87;
-	if (asi64(R1) == asi64(R2)) goto L3050;
+	if (asi64(R1) == asi64(R2)) goto L3048;
 	R2 = 82;
-	if (asi64(R1) == asi64(R2)) goto L3051;
+	if (asi64(R1) == asi64(R2)) goto L3049;
 	R2 = 83;
-	if (asi64(R1) == asi64(R2)) goto L3051;
+	if (asi64(R1) == asi64(R2)) goto L3049;
 	R2 = 84;
-	if (asi64(R1) == asi64(R2)) goto L3051;
+	if (asi64(R1) == asi64(R2)) goto L3049;
 	R2 = 85;
-	if (asi64(R1) == asi64(R2)) goto L3051;
+	if (asi64(R1) == asi64(R2)) goto L3049;
 	R2 = 43;
-	if (asi64(R1) == asi64(R2)) goto L3052;
+	if (asi64(R1) == asi64(R2)) goto L3050;
 	R2 = 45;
-	if (asi64(R1) == asi64(R2)) goto L3052;
+	if (asi64(R1) == asi64(R2)) goto L3050;
 	R2 = 44;
-	if (asi64(R1) == asi64(R2)) goto L3052;
-	goto L3053;
+	if (asi64(R1) == asi64(R2)) goto L3050;
+	R2 = 16;
+	if (asi64(R1) == asi64(R2)) goto L3051;
+	R2 = 17;
+	if (asi64(R1) == asi64(R2)) goto L3051;
+	goto L3052;
+L3048:
+	R1 = 1;
+	goto L3046;
+	goto L3047;
+L3049:
+	R1 = 1;
+	goto L3046;
+	goto L3047;
 L3050:
-	R1 = 1;
-	goto L3048;
-	goto L3049;
-L3051:
-	R1 = 1;
-	goto L3048;
-	goto L3049;
-L3052:
 	asu64(R1) = a;
 	R2 = 8;
 	asu16(R1) = *tou16p(((i64)R1+(i64)R2));
@@ -32994,15 +33057,27 @@ L3052:
 	R3 = 11;
     asi64(R1) = Getdotslice((u64)R1, (i64)R2, (i64)R3);
 	R2 = 3;
-	if (asi64(R1) != asi64(R2)) goto L3055;
+	if (asi64(R1) != asi64(R2)) goto L3054;
 	R1 = 1;
-	goto L3048;
-L3055:
+	goto L3046;
+L3054:
 	R1 = 0;
-	goto L3048;
-	goto L3049;
-L3053:
-L3049:
+	goto L3046;
+	goto L3047;
+L3051:
+	R1 = 1;
+	goto L3046;
+	goto L3047;
+L3052:
+	asi64(R1) = opcode;
+	R2 = 63;
+	if (asi64(R1) < asi64(R2)) goto L3056;
+	R2 = 89;
+	if (asi64(R1) > asi64(R2)) goto L3056;
+	R1 = 1;
+	goto L3046;
+L3056:
+L3047:
 	asu64(R1) = a;
 	R2 = 8;
 	asu16(R1) = *tou16p(((i64)R1+(i64)R2));
@@ -33011,7 +33086,7 @@ L3049:
 	R3 = 11;
     asi64(R1) = Getdotslice((u64)R1, (i64)R2, (i64)R3);
 	R2 = 1;
-	if (asi64(R1) == asi64(R2)) goto L3058;
+	if (asi64(R1) == asi64(R2)) goto L3059;
 	asu64(R1) = a;
 	R2 = 8;
 	asu16(R1) = *tou16p(((i64)R1+(i64)R2));
@@ -33020,7 +33095,7 @@ L3049:
 	R3 = 11;
     asi64(R1) = Getdotslice((u64)R1, (i64)R2, (i64)R3);
 	R2 = 5;
-	if (asi64(R1) == asi64(R2)) goto L3058;
+	if (asi64(R1) == asi64(R2)) goto L3059;
 	asu64(R1) = b;
 	R2 = 8;
 	asu16(R1) = *tou16p(((i64)R1+(i64)R2));
@@ -33029,7 +33104,7 @@ L3049:
 	R3 = 11;
     asi64(R1) = Getdotslice((u64)R1, (i64)R2, (i64)R3);
 	R2 = 1;
-	if (asi64(R1) == asi64(R2)) goto L3058;
+	if (asi64(R1) == asi64(R2)) goto L3059;
 	asu64(R1) = b;
 	R2 = 8;
 	asu16(R1) = *tou16p(((i64)R1+(i64)R2));
@@ -33038,64 +33113,64 @@ L3049:
 	R3 = 11;
     asi64(R1) = Getdotslice((u64)R1, (i64)R2, (i64)R3);
 	R2 = 5;
-	if (asi64(R1) != asi64(R2)) goto L3057;
+	if (asi64(R1) != asi64(R2)) goto L3058;
+L3059:
+	R1 = 0;
+	goto L3046;
 L3058:
-	R1 = 0;
-	goto L3048;
-L3057:
 	R1 = 1;
-	goto L3048;
-L3048:
+	goto L3046;
+L3046:
 	return asi64(R1);
 }
 
-static u64 mc_writegas_getsizeprefix(i64 size, i64 enable) {
+static u64 mc_writemasm_getsizeprefix(i64 size, i64 enable) {
     u64 R1, R2; 
 	asi64(R1) = enable;
-	if (asi64(R1)) goto L3061;
+	if (asi64(R1)) goto L3062;
 	R1 = tou64("");
-	goto L3059;
-L3061:
+	goto L3060;
+L3062:
 	asi64(R1) = size;
 	R2 = 1;
-	if (asi64(R1) == asi64(R2)) goto L3063;
-	R2 = 2;
 	if (asi64(R1) == asi64(R2)) goto L3064;
-	R2 = 4;
+	R2 = 2;
 	if (asi64(R1) == asi64(R2)) goto L3065;
-	R2 = 8;
+	R2 = 4;
 	if (asi64(R1) == asi64(R2)) goto L3066;
-	goto L3067;
-L3063:
-	R1 = tou64("byte ptr");
-	goto L3059;
-	goto L3062;
+	R2 = 8;
+	if (asi64(R1) == asi64(R2)) goto L3067;
+	goto L3068;
 L3064:
-	R1 = tou64("word ptr");
-	goto L3059;
-	goto L3062;
+	R1 = tou64("byte ptr ");
+	goto L3060;
+	goto L3063;
 L3065:
-	R1 = tou64("dword ptr");
-	goto L3059;
-	goto L3062;
+	R1 = tou64("word ptr ");
+	goto L3060;
+	goto L3063;
 L3066:
-	R1 = tou64("qword ptr");
-	goto L3059;
-	goto L3062;
+	R1 = tou64("dword ptr ");
+	goto L3060;
+	goto L3063;
 L3067:
-L3062:
+	R1 = tou64("qword ptr ");
+	goto L3060;
+	goto L3063;
+L3068:
+L3063:
 	R1 = tou64("");
-	goto L3059;
-L3059:
+	goto L3060;
+L3060:
 	return asu64(R1);
 }
 
-static u64 mc_writegas_checkregvar(i64 reg, i64 ispfloat) {
+static u64 mc_writemasm_checkregvar(i64 reg, i64 ispfloat) {
     u64 R1; 
 	u64 d;
 	R1 = 0;
-	goto L3068;
-L3068:
+	goto L3069;
+L3069:
 	return asu64(R1);
 }
 
@@ -33114,14 +33189,14 @@ void cc_cli_main() {
 	asu8(R1) = cc_cli_fverbose;
 	R1 = toi64(tou8(R1));
 	R2 = 3;
-	if (asi64(R1) != asi64(R2)) goto L3071;
+	if (asi64(R1) != asi64(R2)) goto L3072;
 	cc_cli_showsearchdirs();
-L3071:
+L3072:
 	cc_cli_initlogfile();
 	asi64(R1) = cc_cli_gettiming();
 	cc_cli_inittime = asi64(R1);
 	asu8(R1) = cc_cli_fverbose;
-	if (!asu8(R1)) goto L3073;
+	if (!asu8(R1)) goto L3074;
 	msysc_m$print_startcon();
 	R1 = tou64("Compiling # to #");
 	msysc_m$print_setfmt(asu64(R1));
@@ -33131,7 +33206,7 @@ L3071:
 	msysc_m$print_str_nf(asu64(R1));
 	msysc_m$print_newline();
 	msysc_m$print_end();
-L3073:
+L3074:
 	asu64(R1) = cc_decls_inputfile;
 	asu64(R1) = mlib_extractbasefile(asu64(R1));
 	asu64(R1) = mlib_pcm_copyheapstring(asu64(R1));
@@ -33143,51 +33218,51 @@ L3073:
 	asu8(R1) = cc_cli_cc_pass;
 	R1 = toi64(tou8(R1));
 	R2 = 6;
-	if (asi64(R1) == asi64(R2)) goto L3075;
-	R2 = 7;
 	if (asi64(R1) == asi64(R2)) goto L3076;
-	R2 = 8;
+	R2 = 7;
 	if (asi64(R1) == asi64(R2)) goto L3077;
-	R2 = 10;
+	R2 = 8;
 	if (asi64(R1) == asi64(R2)) goto L3078;
-	R2 = 11;
+	R2 = 10;
 	if (asi64(R1) == asi64(R2)) goto L3079;
-	R2 = 12;
+	R2 = 11;
 	if (asi64(R1) == asi64(R2)) goto L3080;
-	R2 = 9;
+	R2 = 12;
 	if (asi64(R1) == asi64(R2)) goto L3081;
-	R2 = 13;
+	R2 = 9;
 	if (asi64(R1) == asi64(R2)) goto L3082;
-	goto L3083;
-L3075:
-	pepcl_pcl_runpcl();
-	goto L3074;
+	R2 = 13;
+	if (asi64(R1) == asi64(R2)) goto L3083;
+	goto L3084;
 L3076:
-	cc_cli_do_genmcl();
-	goto L3074;
+	pepcl_pcl_runpcl();
+	goto L3075;
 L3077:
-	cc_cli_do_asm();
-	goto L3074;
+	cc_cli_do_genmcl();
+	goto L3075;
 L3078:
-	cc_cli_do_obj();
-	goto L3074;
+	cc_cli_do_asm();
+	goto L3075;
 L3079:
-	cc_cli_do_dll();
-	goto L3074;
+	cc_cli_do_obj();
+	goto L3075;
 L3080:
-	cc_cli_do_exe();
-	goto L3074;
+	cc_cli_do_dll();
+	goto L3075;
 L3081:
-	cc_cli_do_mx();
-	goto L3074;
+	cc_cli_do_exe();
+	goto L3075;
 L3082:
-	cc_cli_do_run();
-	goto L3074;
+	cc_cli_do_mx();
+	goto L3075;
 L3083:
+	cc_cli_do_run();
+	goto L3075;
+L3084:
 	asu8(R1) = cc_cli_cc_pass;
 	R1 = toi64(tou8(R1));
 	R2 = 7;
-	if (asi64(R1) < asi64(R2)) goto L3085;
+	if (asi64(R1) < asi64(R2)) goto L3086;
 	msysc_m$print_startcon();
 	R1 = (u64)&cc_cli_passnames;
 	asu8(R2) = cc_cli_cc_pass;
@@ -33198,22 +33273,22 @@ L3083:
 	msysc_m$print_str_nf(asu64(R1));
 	msysc_m$print_newline();
 	msysc_m$print_end();
-L3085:
-L3074:
+L3086:
+L3075:
 	asu8(R1) = cc_cli_fverbose;
 	R1 = toi64(tou8(R1));
 	R2 = 2;
-	if (asi64(R1) < asi64(R2)) goto L3087;
+	if (asi64(R1) < asi64(R2)) goto L3088;
 	msysc_m$print_startcon();
 	R1 = tou64("Done.");
 	msysc_m$print_str_nf(asu64(R1));
 	msysc_m$print_newline();
 	msysc_m$print_end();
-L3087:
+L3088:
 	asu8(R1) = cc_cli_fshowtiming;
-	if (!asu8(R1)) goto L3089;
+	if (!asu8(R1)) goto L3090;
 	cc_cli_showtiming();
-L3089:
+L3090:
 	cc_cli_closelogfile();
 	R1 = 0;
 	exit(R1);
@@ -33227,7 +33302,7 @@ static void cc_cli_do_preprocess() {
 	asu8(R1) = cc_cli_cc_pass;
 	R1 = toi64(tou8(R1));
 	R2 = 2;
-	if (asi64(R1) != asi64(R2)) goto L3092;
+	if (asi64(R1) != asi64(R2)) goto L3093;
 	asu8(R1) = cc_cli_fstdout;
 	R1 = toi64(tou8(R1));
 	asu64(R2) = cc_cli_outfile;
@@ -33235,7 +33310,7 @@ static void cc_cli_do_preprocess() {
 	cc_lex_lex_preprocess_only(asu64(R3), asu64(R2), asi64(R1));
 	R1 = 0;
 	exit(R1);
-L3092:
+L3093:
 	return;
 }
 
@@ -33249,7 +33324,7 @@ static void cc_cli_do_loadmodule() {
 	asu8(R1) = cc_cli_fverbose;
 	R1 = toi64(tou8(R1));
 	R2 = 3;
-	if (asi64(R1) != asi64(R2)) goto L3095;
+	if (asi64(R1) != asi64(R2)) goto L3096;
 	msysc_m$print_startcon();
 	R1 = tou64("Loading:");
 	msysc_m$print_str_nf(asu64(R1));
@@ -33257,7 +33332,7 @@ static void cc_cli_do_loadmodule() {
 	msysc_m$print_str_nf(asu64(R1));
 	msysc_m$print_newline();
 	msysc_m$print_end();
-L3095:
+L3096:
 	cc_cli_starttiming();
 	R1 = tou64("<dummy file>");
 	R2 = (u64)&cc_decls_sourcefilenames;
@@ -33286,11 +33361,11 @@ L3095:
 	cc_decls_stprogram = asu64(R1);
 	asu64(R1) = cc_decls_inputfile;
 	asi64(R1) = mlib_checkfile(asu64(R1));
-	if (asi64(R1)) goto L3097;
+	if (asi64(R1)) goto L3098;
 	asu64(R1) = cc_decls_inputfile;
 	R2 = tou64("Can't load main module: #");
 	cc_support_loaderror(asu64(R2), asu64(R1));
-L3097:
+L3098:
 	asu64(R1) = cc_decls_inputfile;
 	asu64(R2) = cc_decls_inputfile;
 	asi64(R1) = cc_support_loadsourcefile(asu64(R2), asu64(R1));
@@ -33311,29 +33386,29 @@ L3097:
 	R1 = (u64)&path;
 	R2 = 1;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2-1));
-	if (!asu8(R1)) goto L3099;
+	if (!asu8(R1)) goto L3100;
 	R1 = (u64)&cc_decls_nsearchdirs;
 	(*toi64p(R1)) += 1;
 	asi64(R1) = cc_decls_nsearchdirs;
 	i = asi64(R1);
 	asi64(R1) = i;
 	R2 = 2;
-	if (asi64(R1) < asi64(R2)) goto L3102;
-L3100:
+	if (asi64(R1) < asi64(R2)) goto L3103;
+L3101:
 	R1 = (u64)&cc_decls_searchdirs;
 	asi64(R2) = i;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2*8-16));
 	R2 = (u64)&cc_decls_searchdirs;
 	asi64(R3) = i;
 	*tou64p(((i64)R2+(i64)R3*8-8)) = asu64(R1);
-	i += -1; if (i >= 2) goto L3100;
-L3102:
+	i += -1; if (i >= 2) goto L3101;
+L3103:
 	R1 = (u64)&path;
 	asu64(R1) = mlib_pcm_copyheapstring(asu64(R1));
 	R2 = (u64)&cc_decls_searchdirs;
 	R3 = 1;
 	*tou64p(((i64)R2+(i64)R3*8-8)) = asu64(R1);
-L3099:
+L3100:
 	asi64(R1) = cc_cli_gettiming();
 	cc_cli_loadtime = asi64(R1);
 	return;
@@ -33356,28 +33431,28 @@ static void cc_cli_do_genpcl() {
 	asu8(R1) = cc_cli_cc_pass;
 	R1 = toi64(tou8(R1));
 	R2 = 5;
-	if (asi64(R1) >= asi64(R2)) goto L3106;
-	goto L3104;
-L3106:
+	if (asi64(R1) >= asi64(R2)) goto L3107;
+	goto L3105;
+L3107:
 	cc_cli_starttiming();
 	cc_genpcl_codegen_pcl();
 	asi64(R1) = cc_cli_gettiming();
 	cc_cli_pcltime = asi64(R1);
 	asu8(R1) = pc_decls_fregoptim;
-	if (asu8(R1)) goto L3109;
+	if (asu8(R1)) goto L3110;
 	asu8(R1) = pc_decls_fpeephole;
-	if (!asu8(R1)) goto L3108;
-L3109:
+	if (!asu8(R1)) goto L3109;
+L3110:
 	pc_reduce_pcl_reducetest();
-L3108:
+L3109:
 	asu8(R1) = cc_cli_cc_pass;
 	R1 = toi64(tou8(R1));
 	R2 = 5;
-	if (asi64(R1) != asi64(R2)) goto L3111;
+	if (asi64(R1) != asi64(R2)) goto L3112;
 	asu64(R1) = cc_cli_outfile;
 	asu64(R1) = pc_api_pcl_writepcl(asu64(R1));
-L3111:
-L3104:
+L3112:
+L3105:
 	return;
 }
 
@@ -33386,18 +33461,18 @@ static void cc_cli_do_genmcl() {
 	asu8(R1) = cc_cli_cc_pass;
 	R1 = toi64(tou8(R1));
 	R2 = 7;
-	if (asi64(R1) >= asi64(R2)) goto L3114;
-	goto L3112;
-L3114:
+	if (asi64(R1) >= asi64(R2)) goto L3115;
+	goto L3113;
+L3115:
 	asu8(R1) = cc_cli_cc_pass;
 	R1 = toi64(tou8(R1));
 	R2 = 7;
-	if (asi64(R1) != asi64(R2)) goto L3116;
+	if (asi64(R1) != asi64(R2)) goto L3117;
 	R1 = 16705;
 	asu64(R2) = cc_cli_outfile;
 	asu64(R1) = pc_api_pcl_writeasm(asu64(R2), asi64(R1));
-L3116:
-L3112:
+L3117:
+L3113:
 	return;
 }
 
@@ -33406,13 +33481,13 @@ static void cc_cli_do_asm() {
 	asu8(R1) = cc_cli_cc_pass;
 	R1 = toi64(tou8(R1));
 	R2 = 8;
-	if (asi64(R1) >= asi64(R2)) goto L3119;
-	goto L3117;
-L3119:
+	if (asi64(R1) >= asi64(R2)) goto L3120;
+	goto L3118;
+L3120:
 	R1 = 16705;
 	asu64(R2) = cc_cli_outfile;
 	asu64(R1) = pc_api_pcl_writeasm(asu64(R2), asi64(R1));
-L3117:
+L3118:
 	return;
 }
 
@@ -33421,12 +33496,12 @@ static void cc_cli_do_obj() {
 	asu8(R1) = cc_cli_cc_pass;
 	R1 = toi64(tou8(R1));
 	R2 = 10;
-	if (asi64(R1) == asi64(R2)) goto L3122;
-	goto L3120;
-L3122:
+	if (asi64(R1) == asi64(R2)) goto L3123;
+	goto L3121;
+L3123:
 	asu64(R1) = cc_cli_outfile;
 	pc_api_pcl_writeobj(asu64(R1));
-L3120:
+L3121:
 	return;
 }
 
@@ -33435,12 +33510,12 @@ static void cc_cli_do_dll() {
 	asu8(R1) = cc_cli_cc_pass;
 	R1 = toi64(tou8(R1));
 	R2 = 11;
-	if (asi64(R1) == asi64(R2)) goto L3125;
-	goto L3123;
-L3125:
+	if (asi64(R1) == asi64(R2)) goto L3126;
+	goto L3124;
+L3126:
 	asu64(R1) = cc_cli_outfile;
 	pc_api_pcl_writedll(asu64(R1));
-L3123:
+L3124:
 	return;
 }
 
@@ -33449,12 +33524,12 @@ static void cc_cli_do_exe() {
 	asu8(R1) = cc_cli_cc_pass;
 	R1 = toi64(tou8(R1));
 	R2 = 12;
-	if (asi64(R1) == asi64(R2)) goto L3128;
-	goto L3126;
-L3128:
+	if (asi64(R1) == asi64(R2)) goto L3129;
+	goto L3127;
+L3129:
 	asu64(R1) = cc_cli_outfile;
 	pc_api_pcl_writeexe(asu64(R1));
-L3126:
+L3127:
 	return;
 }
 
@@ -33463,12 +33538,12 @@ static void cc_cli_do_mx() {
 	asu8(R1) = cc_cli_cc_pass;
 	R1 = toi64(tou8(R1));
 	R2 = 9;
-	if (asi64(R1) == asi64(R2)) goto L3131;
-	goto L3129;
-L3131:
+	if (asi64(R1) == asi64(R2)) goto L3132;
+	goto L3130;
+L3132:
 	asu64(R1) = cc_cli_outfile;
 	pc_api_pcl_writemx(asu64(R1));
-L3129:
+L3130:
 	return;
 }
 
@@ -33477,11 +33552,11 @@ static void cc_cli_do_run() {
 	asu8(R1) = cc_cli_cc_pass;
 	R1 = toi64(tou8(R1));
 	R2 = 13;
-	if (asi64(R1) == asi64(R2)) goto L3134;
-	goto L3132;
-L3134:
+	if (asi64(R1) == asi64(R2)) goto L3135;
+	goto L3133;
+L3135:
 	pc_api_pcl_exec();
-L3132:
+L3133:
 	return;
 }
 
@@ -33490,14 +33565,14 @@ static void cc_cli_initlogfile() {
 	asu8(R1) = cc_cli_debugmode;
 	R1 = toi64(tou8(R1));
 	R2 = 2;
-	if (asi64(R1) < asi64(R2)) goto L3137;
+	if (asi64(R1) < asi64(R2)) goto L3138;
 	R1 = tou64("mcc.log");
 	asi32(R1) = remove(asu64(R1));
 	R1 = tou64("w");
 	R2 = tou64("mcc.log");
 	asu64(R1) = fopen(asu64(R2), asu64(R1));
 	cc_decls_logdev = asu64(R1);
-L3137:
+L3138:
 	return;
 }
 
@@ -33508,15 +33583,15 @@ static void cc_cli_closelogfile() {
 	asu8(R1) = cc_cli_debugmode;
 	R1 = toi64(tou8(R1));
 	R2 = 2;
-	if (asi64(R1) >= asi64(R2)) goto L3140;
-	goto L3138;
-L3140:
+	if (asi64(R1) >= asi64(R2)) goto L3141;
+	goto L3139;
+L3141:
 	asu8(R1) = cc_cli_fshowmcl;
-	if (!asu8(R1)) goto L3142;
+	if (!asu8(R1)) goto L3143;
 	asu8(R1) = cc_cli_cc_pass;
 	R1 = toi64(tou8(R1));
 	R2 = 7;
-	if (asi64(R1) < asi64(R2)) goto L3142;
+	if (asi64(R1) < asi64(R2)) goto L3143;
 	asu64(R1) = cc_decls_logdev;
 	msysc_m$print_startfile(asu64(R1));
 	R1 = tou64("PROC ASM");
@@ -33531,13 +33606,13 @@ L3140:
 	msysc_m$print_str_nf(asu64(R1));
 	msysc_m$print_newline();
 	msysc_m$print_end();
-L3142:
+L3143:
 	asu8(R1) = cc_cli_fshowpcl;
-	if (!asu8(R1)) goto L3144;
+	if (!asu8(R1)) goto L3145;
 	asu8(R1) = cc_cli_cc_pass;
 	R1 = toi64(tou8(R1));
 	R2 = 5;
-	if (asi64(R1) < asi64(R2)) goto L3144;
+	if (asi64(R1) < asi64(R2)) goto L3145;
 	asu64(R1) = cc_decls_logdev;
 	msysc_m$print_startfile(asu64(R1));
 	R1 = tou64("!PROC PCL");
@@ -33552,35 +33627,35 @@ L3142:
 	msysc_m$print_newline();
 	msysc_m$print_end();
 	asu8(R1) = cc_cli_fshowpst;
-	if (!asu8(R1)) goto L3146;
+	if (!asu8(R1)) goto L3147;
 	R1 = tou64("PSYMTAB");
 	asu64(R1) = pc_api_pcl_writepst(asu64(R1));
 	asu64(R1) = cc_decls_logdev;
 	R2 = tou64("PSYMTAB");
 	cc_lib_addtolog(asu64(R2), asu64(R1));
-L3146:
-L3144:
+L3147:
+L3145:
 	cc_cli_showast();
 	asu8(R1) = cc_cli_fshowst;
-	if (!asu8(R1)) goto L3148;
+	if (!asu8(R1)) goto L3149;
 	R1 = tou64("ST");
 	cc_cli_showst(asu64(R1));
-L3148:
+L3149:
 	asu8(R1) = cc_cli_fshowstflat;
-	if (!asu8(R1)) goto L3150;
+	if (!asu8(R1)) goto L3151;
 	R1 = tou64("STFLAT");
 	cc_cli_showstflat(asu64(R1));
-L3150:
+L3151:
 	asu8(R1) = cc_cli_fshowtypes;
-	if (!asu8(R1)) goto L3152;
+	if (!asu8(R1)) goto L3153;
 	asu64(R1) = cc_decls_logdev;
 	cc_show_printmodelist(asu64(R1));
-L3152:
+L3153:
 	asu64(R1) = cc_decls_logdev;
 	asi32(R1) = fclose(asu64(R1));
 	R1 = tou64("cc.m");
 	asi64(R1) = mlib_checkfile(asu64(R1));
-	if (!asi64(R1)) goto L3154;
+	if (!asi64(R1)) goto L3155;
 	msysc_m$print_startcon();
 	R1 = tou64("PRESS KEY");
 	msysc_m$print_str_nf(asu64(R1));
@@ -33588,10 +33663,10 @@ L3152:
 	msysc_m$print_end();
 	asi64(R1) = mnoos_os_getch();
 	R2 = 27;
-	if (asi64(R1) != asi64(R2)) goto L3156;
+	if (asi64(R1) != asi64(R2)) goto L3157;
 	R1 = 0;
 	exit(R1);
-L3156:
+L3157:
 	R1 = (u64)&str;
 	msysc_m$print_startstr(asu64(R1));
 	R1 = tou64("\\m\\scripts\\med.bat ");
@@ -33603,8 +33678,8 @@ L3156:
 	R2 = 0;
 	R3 = (u64)&str;
 	asi64(R1) = mnoos_os_execwait(asu64(R3), asi64(R2), asu64(R1));
-	goto L3153;
-L3154:
+	goto L3154;
+L3155:
 	msysc_m$print_startcon();
 	R1 = tou64("Diagnostic outputs written to");
 	msysc_m$print_str_nf(asu64(R1));
@@ -33612,8 +33687,8 @@ L3154:
 	msysc_m$print_str_nf(asu64(R1));
 	msysc_m$print_newline();
 	msysc_m$print_end();
-L3153:
-L3138:
+L3154:
+L3139:
 	return;
 }
 
@@ -33648,15 +33723,15 @@ static void cc_cli_initdata() {
 	R1 = (u64)&cc_cli_cgetsourceinfo;
 	pc_decls_igetmsourceinfo = asu64(R1);
 	asu8(R1) = pepcl_pdcc;
-	if (!asu8(R1)) goto L3159;
+	if (!asu8(R1)) goto L3160;
 	R1 = 2;
 	cc_cli_highmem = asu8(R1);
-L3159:
+L3160:
 	asu8(R1) = pepcl_pdcc;
-	if (!asu8(R1)) goto L3161;
+	if (!asu8(R1)) goto L3162;
 	R1 = 0;
 	cc_cli_fwriteerrors = asu8(R1);
-L3161:
+L3162:
 	return;
 }
 
@@ -33677,8 +33752,8 @@ static i64 cc_cli_cgetsourceinfo(i64 pos, u64 filename, u64 sourceline) {
 	R2 = 0;
 	R3 = 23;
     asi64(R1) = Getdotslice((u64)R1, (i64)R2, (i64)R3);
-	goto L3162;
-L3162:
+	goto L3163;
+L3163:
 	return asi64(R1);
 }
 
@@ -33708,13 +33783,13 @@ static void cc_cli_initsearchdirs() {
 	i = asi64(R1);
 	asi64(R1) = cc_decls_nincludepaths;
 	R2 = 1;
-	if (asi64(R1) < asi64(R2)) goto L3166;
-L3164:
+	if (asi64(R1) < asi64(R2)) goto L3167;
+L3165:
 	R1 = (u64)&cc_decls_includepaths;
 	asi64(R2) = i;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2*8-8));
 	asu8(R1) = *tou8p(R1);
-	if (!asu8(R1)) goto L3168;
+	if (!asu8(R1)) goto L3169;
 	R1 = (u64)&cc_decls_includepaths;
 	asi64(R2) = i;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2*8-8));
@@ -33722,9 +33797,9 @@ L3164:
 	R3 = (u64)&cc_decls_nsearchdirs;
 	asi64(R3) = *(toi64p(R3)) += 1;
 	*tou64p(((i64)R2+(i64)R3*8-8)) = asu64(R1);
-L3168:
-	i += 1; if (i <= cc_decls_nincludepaths) goto L3164;
-L3166:
+L3169:
+	i += 1; if (i <= cc_decls_nincludepaths) goto L3165;
+L3167:
 	return;
 }
 
@@ -33737,24 +33812,24 @@ static void cc_cli_showsearchdirs() {
 	msysc_m$print_newline();
 	msysc_m$print_end();
 	asu8(R1) = cc_cli_dointheaders;
-	if (!asu8(R1)) goto L3171;
+	if (!asu8(R1)) goto L3172;
 	msysc_m$print_startcon();
 	R1 = tou64("0: Internal standard headers (disable with -ext)");
 	msysc_m$print_str_nf(asu64(R1));
 	msysc_m$print_newline();
 	msysc_m$print_end();
-L3171:
+L3172:
 	R1 = 1;
 	i = asi64(R1);
 	asi64(R1) = cc_decls_nsearchdirs;
 	R2 = 1;
-	if (asi64(R1) < asi64(R2)) goto L3174;
-L3172:
+	if (asi64(R1) < asi64(R2)) goto L3175;
+L3173:
 	R1 = (u64)&cc_decls_searchdirs;
 	asi64(R2) = i;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2*8-8));
 	asu8(R1) = *tou8p(R1);
-	if (!asu8(R1)) goto L3176;
+	if (!asu8(R1)) goto L3177;
 	msysc_m$print_startcon();
 	asi64(R1) = i;
 	msysc_m$print_i64_nf(asi64(R1));
@@ -33767,8 +33842,8 @@ L3172:
 	msysc_m$print_str_nf(asu64(R1));
 	msysc_m$print_newline();
 	msysc_m$print_end();
-	goto L3175;
-L3176:
+	goto L3176;
+L3177:
 	msysc_m$print_startcon();
 	asi64(R1) = i;
 	msysc_m$print_i64_nf(asi64(R1));
@@ -33777,9 +33852,9 @@ L3176:
 	msysc_m$print_str_nf(asu64(R1));
 	msysc_m$print_newline();
 	msysc_m$print_end();
+L3176:
+	i += 1; if (i <= cc_decls_nsearchdirs) goto L3173;
 L3175:
-	i += 1; if (i <= cc_decls_nsearchdirs) goto L3172;
-L3174:
 	msysc_m$print_startcon();
 	msysc_m$print_newline();
 	msysc_m$print_end();
@@ -33789,7 +33864,7 @@ L3174:
 static void cc_cli_showast() {
     u64 R1, R2; 
 	asu8(R1) = cc_cli_fshowast;
-	if (!asu8(R1)) goto L3179;
+	if (!asu8(R1)) goto L3180;
 	R1 = tou64("PROC AST");
 	asu64(R2) = cc_decls_logdev;
 	cc_show_printcode(asu64(R2), asu64(R1));
@@ -33797,7 +33872,7 @@ static void cc_cli_showast() {
 	msysc_m$print_startfile(asu64(R1));
 	msysc_m$print_newline();
 	msysc_m$print_end();
-L3179:
+L3180:
 	return;
 }
 
@@ -33853,8 +33928,8 @@ static void cc_cli_showfiles() {
 	i = asi64(R1);
 	asi64(R1) = cc_decls_nsourcefiles;
 	R2 = 1;
-	if (asi64(R1) < asi64(R2)) goto L3185;
-L3183:
+	if (asi64(R1) < asi64(R2)) goto L3186;
+L3184:
 	msysc_m$print_startcon();
 	asi64(R1) = i;
 	msysc_m$print_i64_nf(asi64(R1));
@@ -33877,8 +33952,8 @@ L3183:
 	msysc_m$print_i64_nf(asi64(R1));
 	msysc_m$print_newline();
 	msysc_m$print_end();
-	i += 1; if (i <= cc_decls_nsourcefiles) goto L3183;
-L3185:
+	i += 1; if (i <= cc_decls_nsourcefiles) goto L3184;
+L3186:
 	msysc_m$print_startcon();
 	msysc_m$print_newline();
 	msysc_m$print_end();
@@ -33966,35 +34041,35 @@ static void cc_cli_getinputoptions() {
 	R1 = 0;
 	ncolons = asi64(R1);
 	asu8(R1) = pepcl_pc_userunpcl;
-	if (!asu8(R1)) goto L3190;
+	if (!asu8(R1)) goto L3191;
 	R1 = 6;
 	cc_cli_cc_pass = asu8(R1);
 	R1 = 0;
 	cc_cli_fverbose = asu8(R1);
-L3190:
+L3191:
 	R1 = tou64("ci.exe");
 	asu64(R2) = mnoos_os_gethostname();
 	asu64(R2) = mlib_extractfile(asu64(R2));
 	asi64(R1) = mlib_eqstring(asu64(R2), asu64(R1));
-	if (!asi64(R1)) goto L3192;
+	if (!asi64(R1)) goto L3193;
 	R1 = 0;
 	cc_cli_fverbose = asu8(R1);
 	R1 = tou64("");
 	R2 = 8;
 	cc_cli_do_option(asi64(R2), asu64(R1));
-L3192:
+L3193:
 	R1 = tou64("cs.exe");
 	asu64(R2) = mnoos_os_gethostname();
 	asu64(R2) = mlib_extractfile(asu64(R2));
 	asi64(R1) = mlib_eqstring(asu64(R2), asu64(R1));
-	if (!asi64(R1)) goto L3194;
+	if (!asi64(R1)) goto L3195;
 	R1 = 0;
 	cc_cli_fverbose = asu8(R1);
 	R1 = tou64("");
 	R2 = 17;
 	cc_cli_do_option(asi64(R2), asu64(R1));
-L3194:
 L3195:
+L3196:
 	R1 = tou64(".c");
 	R2 = (u64)&value;
 	R3 = (u64)&name;
@@ -34003,15 +34078,15 @@ L3195:
 	pmtype = asi64(R1);
 	asi64(R1) = pmtype;
 	R2 = 1;
-	if (asi64(R1) == asi64(R2)) goto L3198;
-	R2 = 2;
 	if (asi64(R1) == asi64(R2)) goto L3199;
-	R2 = 3;
+	R2 = 2;
 	if (asi64(R1) == asi64(R2)) goto L3200;
-	R2 = 0;
+	R2 = 3;
 	if (asi64(R1) == asi64(R2)) goto L3201;
-	goto L3202;
-L3198:
+	R2 = 0;
+	if (asi64(R1) == asi64(R2)) goto L3202;
+	goto L3203;
+L3199:
 	asu64(R1) = name;
 	asu64(R1) = mlib_convlcstring(asu64(R1));
 	R1 = 1;
@@ -34020,21 +34095,21 @@ L3198:
 	av_1 = asi64(R1);
 	asi64(R1) = av_1;
 	R2 = 1;
-	if (asi64(R1) < asi64(R2)) goto L3206;
-L3203:
+	if (asi64(R1) < asi64(R2)) goto L3207;
+L3204:
 	R1 = (u64)&cc_cli_optionnames;
 	asi64(R2) = sw;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2*8-8));
 	asu64(R2) = name;
 	asi64(R1) = mlib_eqstring(asu64(R2), asu64(R1));
-	if (!asi64(R1)) goto L3208;
+	if (!asi64(R1)) goto L3209;
 	asu64(R1) = value;
 	asi64(R2) = sw;
 	cc_cli_do_option(asi64(R2), asu64(R1));
-	goto L3205;
-L3208:
-	sw += 1; if (sw <= av_1) goto L3203;
-L3206:
+	goto L3206;
+L3209:
+	sw += 1; if (sw <= av_1) goto L3204;
+L3207:
 	msysc_m$print_startcon();
 	R1 = tou64("Unknown option:");
 	msysc_m$print_str_nf(asu64(R1));
@@ -34044,25 +34119,25 @@ L3206:
 	msysc_m$print_end();
 	R1 = 1;
 	exit(R1);
-L3205:
-	goto L3197;
-L3199:
+L3206:
+	goto L3198;
+L3200:
 	asu64(R1) = cc_decls_inputfile;
-	if (!asu64(R1)) goto L3210;
+	if (!asu64(R1)) goto L3211;
 	R1 = tou64("");
 	R2 = tou64("One input file only");
 	cc_support_loaderror(asu64(R2), asu64(R1));
-L3210:
+L3211:
 	asu64(R1) = name;
 	asu64(R1) = mlib_pcm_copyheapstring(asu64(R1));
 	cc_decls_inputfile = asu64(R1);
 	asu8(R1) = cc_cli_cc_pass;
 	R1 = toi64(tou8(R1));
 	R2 = 13;
-	if (asi64(R1) == asi64(R2)) goto L3213;
+	if (asi64(R1) == asi64(R2)) goto L3214;
 	R2 = 6;
-	if (asi64(R1) != asi64(R2)) goto L3212;
-L3213:
+	if (asi64(R1) != asi64(R2)) goto L3213;
+L3214:
 	asi64(R1) = paramno;
 	R2 = 1;
 	asi64(R1) -= asi64(R2);
@@ -34074,65 +34149,65 @@ L3213:
 	R2 = 6;
 	asi64(R1) = asi64(R1)  ==  asi64(R2);
 	cc_decls_pci_target = asu8(R1);
-	goto L3196;
-L3212:
 	goto L3197;
-L3200:
+L3213:
+	goto L3198;
+L3201:
 	asi64(R1) = cc_decls_nlibfiles;
 	R2 = 200;
-	if (asi64(R1) < asi64(R2)) goto L3215;
+	if (asi64(R1) < asi64(R2)) goto L3216;
 	R1 = tou64("");
 	R2 = tou64("Too many lib files");
 	cc_support_loaderror(asu64(R2), asu64(R1));
-L3215:
+L3216:
 	asu64(R1) = name;
 	asu64(R1) = mlib_pcm_copyheapstring(asu64(R1));
 	R2 = (u64)&cc_decls_libfiles;
 	R3 = (u64)&cc_decls_nlibfiles;
 	asi64(R3) = *(toi64p(R3)) += 1;
 	*tou64p(((i64)R2+(i64)R3*8)) = asu64(R1);
-	goto L3197;
-L3201:
-	goto L3196;
-	goto L3197;
+	goto L3198;
 L3202:
+	goto L3197;
+	goto L3198;
+L3203:
+L3198:
+	goto L3196;
 L3197:
-	goto L3195;
-L3196:
 	asu8(R1) = cc_cli_cc_pass;
 	R1 = toi64(tou8(R1));
 	R2 = 0;
-	if (asi64(R1) != asi64(R2)) goto L3217;
+	if (asi64(R1) != asi64(R2)) goto L3218;
 	R1 = 12;
 	cc_cli_cc_pass = asu8(R1);
 	asu8(R1) = pepcl_asmonly;
-	if (!asu8(R1)) goto L3219;
+	if (!asu8(R1)) goto L3220;
 	R1 = 8;
 	cc_cli_cc_pass = asu8(R1);
-L3219:
-L3217:
+L3220:
+L3218:
 	asu8(R1) = cc_cli_cc_pass;
 	R1 = toi64(tou8(R1));
 	R2 = 11;
-	if (asi64(R1) == asi64(R2)) goto L3222;
+	if (asi64(R1) == asi64(R2)) goto L3223;
 	R2 = 10;
-	if (asi64(R1) != asi64(R2)) goto L3221;
-L3222:
+	if (asi64(R1) != asi64(R2)) goto L3222;
+L3223:
 	R1 = 2;
 	cc_cli_highmem = asu8(R1);
-	goto L3220;
-L3221:
+	goto L3221;
+L3222:
 	asu8(R1) = cc_cli_cc_pass;
 	R1 = toi64(tou8(R1));
 	R2 = 9;
-	if (asi64(R1) == asi64(R2)) goto L3224;
+	if (asi64(R1) == asi64(R2)) goto L3225;
 	R2 = 13;
-	if (asi64(R1) != asi64(R2)) goto L3223;
-L3224:
+	if (asi64(R1) != asi64(R2)) goto L3224;
+L3225:
 	R1 = 0;
 	cc_cli_highmem = asu8(R1);
-L3223:
-L3220:
+L3224:
+L3221:
 	R1 = (u64)&cc_cli_extnames;
 	asu8(R2) = cc_cli_cc_pass;
 	R2 = toi64(tou8(R2));
@@ -34141,18 +34216,18 @@ L3220:
 	asu8(R1) = cc_cli_cc_pass;
 	R1 = toi64(tou8(R1));
 	R2 = 7;
-	if (asi64(R1) == asi64(R2)) goto L3227;
+	if (asi64(R1) == asi64(R2)) goto L3228;
 	R2 = 8;
-	if (asi64(R1) != asi64(R2)) goto L3226;
-L3227:
-	asu64(R1) = mc_writegas_asmext;
+	if (asi64(R1) != asi64(R2)) goto L3227;
+L3228:
+	asu64(R1) = mc_writemasm_asmext;
 	cc_cli_outext = asu64(R1);
-L3226:
+L3227:
 	asu64(R1) = cc_decls_inputfile;
 	R2 = 0;
-	if (asu64(R1) != asu64(R2)) goto L3229;
+	if (asu64(R1) != asu64(R2)) goto L3230;
 	asu8(R1) = cc_cli_fwriteheaders;
-	if (asu8(R1)) goto L3229;
+	if (asu8(R1)) goto L3230;
 	cc_cli_showcaption();
 	msysc_m$print_startcon();
 	R1 = tou64("Usage:");
@@ -34209,22 +34284,22 @@ L3226:
 	msysc_m$print_end();
 	R1 = 1;
 	exit(R1);
-L3229:
+L3230:
 	asu8(R1) = cc_cli_fwriteheaders;
-	if (!asu8(R1)) goto L3231;
+	if (!asu8(R1)) goto L3232;
 	cc_headersx_writeheaders();
 	R1 = 20;
 	exit(R1);
-L3231:
+L3232:
 	asu64(R1) = cc_cli_outfile;
 	R2 = 0;
-	if (asu64(R1) != asu64(R2)) goto L3233;
+	if (asu64(R1) != asu64(R2)) goto L3234;
 	asu64(R1) = cc_cli_outext;
 	asu64(R2) = cc_decls_inputfile;
 	asu64(R1) = mlib_changeext(asu64(R2), asu64(R1));
 	asu64(R1) = mlib_pcm_copyheapstring(asu64(R1));
 	cc_cli_outfile = asu64(R1);
-L3233:
+L3234:
 	asu8(R1) = cc_cli_fshortnames;
 	R1 = toi64(tou8(R1));
 	R2 = -1;
@@ -34249,7 +34324,7 @@ static void cc_cli_do_option(i64 sw, u64 value) {
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2*8-8));
 	p = asu64(R1);
 	asu64(R1) = p;
-	if (!asu64(R1)) goto L3236;
+	if (!asu64(R1)) goto L3237;
 	R1 = (u64)&cc_cli_optvalues;
 	asi64(R2) = sw;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2-1));
@@ -34257,64 +34332,64 @@ static void cc_cli_do_option(i64 sw, u64 value) {
 	*tou8p(R2) = asu8(R1);
 	asi64(R1) = sw;
 	R2 = 1;
-	if (asi64(R1) < asi64(R2)) goto L3238;
+	if (asi64(R1) < asi64(R2)) goto L3239;
 	R2 = 9;
-	if (asi64(R1) > asi64(R2)) goto L3238;
+	if (asi64(R1) > asi64(R2)) goto L3239;
 	R1 = 1;
 	R2 = (u64)&cc_cli_debugmode;
 	*tou8p(R2) |= asu8(R1);
-L3238:
+L3239:
 	asi64(R1) = sw;
 	R2 = 26;
-	if (asi64(R1) < asi64(R2)) goto L3240;
+	if (asi64(R1) < asi64(R2)) goto L3241;
 	R2 = 34;
-	if (asi64(R1) > asi64(R2)) goto L3240;
+	if (asi64(R1) > asi64(R2)) goto L3241;
 	R1 = 2;
 	R2 = (u64)&cc_cli_debugmode;
 	*tou8p(R2) |= asu8(R1);
-L3240:
+L3241:
 	asi64(R1) = sw;
 	R2 = 8;
-	if (asi64(R1) != asi64(R2)) goto L3242;
+	if (asi64(R1) != asi64(R2)) goto L3243;
 	asu64(R1) = cc_decls_inputfile;
-	if (!asu64(R1)) goto L3242;
+	if (!asu64(R1)) goto L3243;
 	R1 = tou64("");
 	R2 = tou64("-RUNP OUT OF ORDER");
 	cc_support_loaderror(asu64(R2), asu64(R1));
-L3242:
+L3243:
 	asi64(R1) = sw;
 	R2 = 3;
-	if (asi64(R1) == asi64(R2)) goto L3245;
+	if (asi64(R1) == asi64(R2)) goto L3246;
 	R2 = 7;
-	if (asi64(R1) != asi64(R2)) goto L3244;
-L3245:
+	if (asi64(R1) != asi64(R2)) goto L3245;
+L3246:
 	R1 = 1;
 	cc_decls_pci_target = asu8(R1);
-L3244:
-	goto L3234;
-L3236:
+L3245:
+	goto L3235;
+L3237:
 	asi64(R1) = sw;
 	R2 = 24;
-	if (asi64(R1) == asi64(R2)) goto L3247;
+	if (asi64(R1) == asi64(R2)) goto L3248;
 	R2 = 42;
-	if (asi64(R1) == asi64(R2)) goto L3248;
-	R2 = 43;
-	if (asi64(R1) == asi64(R2)) goto L3248;
-	R2 = 46;
 	if (asi64(R1) == asi64(R2)) goto L3249;
-	R2 = 20;
+	R2 = 43;
+	if (asi64(R1) == asi64(R2)) goto L3249;
+	R2 = 46;
 	if (asi64(R1) == asi64(R2)) goto L3250;
-	R2 = 51;
+	R2 = 20;
 	if (asi64(R1) == asi64(R2)) goto L3251;
-	goto L3252;
-L3247:
+	R2 = 51;
+	if (asi64(R1) == asi64(R2)) goto L3252;
+	goto L3253;
+L3248:
 	asi64(R1) = cc_decls_nincludepaths;
 	R2 = 20;
-	if (asi64(R1) <= asi64(R2)) goto L3254;
+	if (asi64(R1) <= asi64(R2)) goto L3255;
 	R1 = tou64("");
 	R2 = tou64("Too many include paths");
 	cc_support_loaderror(asu64(R2), asu64(R1));
-L3254:
+L3255:
 	asu64(R1) = value;
 	asi64(R1) = strlen(asu64(R1));
 	length = asi64(R1);
@@ -34326,13 +34401,13 @@ L3254:
 	asu8(R1) = *tou8p(R1);
 	R1 = tou64(tou8(R1));
 	R2 = 92;
-	if (asu64(R1) == asu64(R2)) goto L3256;
+	if (asu64(R1) == asu64(R2)) goto L3257;
 	R2 = 47;
-	if (asu64(R1) == asu64(R2)) goto L3256;
-	goto L3257;
-L3256:
-	goto L3255;
+	if (asu64(R1) == asu64(R2)) goto L3257;
+	goto L3258;
 L3257:
+	goto L3256;
+L3258:
 	asu64(R1) = value;
 	R2 = (u64)&str;
 	asu64(R1) = strcpy(asu64(R2), asu64(R1));
@@ -34341,39 +34416,39 @@ L3257:
 	asu64(R1) = strcat(asu64(R2), asu64(R1));
 	R1 = (u64)&str;
 	value = asu64(R1);
-L3255:
+L3256:
 	asu64(R1) = value;
 	asu64(R1) = mlib_pcm_copyheapstring(asu64(R1));
 	R2 = (u64)&cc_decls_includepaths;
 	R3 = (u64)&cc_decls_nincludepaths;
 	asi64(R3) = *(toi64p(R3)) += 1;
 	*tou64p(((i64)R2+(i64)R3*8-8)) = asu64(R1);
-	goto L3246;
-L3248:
-	cc_cli_showhelp();
-	goto L3246;
+	goto L3247;
 L3249:
+	cc_cli_showhelp();
+	goto L3247;
+L3250:
 	asu64(R1) = cc_cli_outext;
 	asu64(R2) = value;
 	asu64(R1) = mlib_addext(asu64(R2), asu64(R1));
 	asu64(R1) = mlib_pcm_copyheapstring(asu64(R1));
 	cc_cli_outfile = asu64(R1);
-	goto L3246;
-L3250:
+	goto L3247;
+L3251:
 	R1 = 0;
 	R2 = R1;
 	pc_decls_fpeephole = asu8(R2);
 	pc_decls_fregoptim = asu8(R1);
-	goto L3246;
-L3251:
+	goto L3247;
+L3252:
 	R1 = 1;
 	i = asi64(R1);
 	R1 = 53;
 	av_1 = asi64(R1);
 	asi64(R1) = av_1;
 	R2 = 1;
-	if (asi64(R1) < asi64(R2)) goto L3260;
-L3258:
+	if (asi64(R1) < asi64(R2)) goto L3261;
+L3259:
 	msysc_m$print_startcon();
 	R1 = tou64("   ");
 	msysc_m$print_str_nf(asu64(R1));
@@ -34383,12 +34458,12 @@ L3258:
 	msysc_m$print_str_nf(asu64(R1));
 	msysc_m$print_newline();
 	msysc_m$print_end();
-	i += 1; if (i <= av_1) goto L3258;
-L3260:
-	goto L3246;
-L3252:
-L3246:
-L3234:
+	i += 1; if (i <= av_1) goto L3259;
+L3261:
+	goto L3247;
+L3253:
+L3247:
+L3235:
 	return;
 }
 
@@ -34406,8 +34481,8 @@ static void cc_cli_showincludepaths() {
 	i = asi64(R1);
 	asi64(R1) = cc_decls_nincludepaths;
 	R2 = 1;
-	if (asi64(R1) < asi64(R2)) goto L3264;
-L3262:
+	if (asi64(R1) < asi64(R2)) goto L3265;
+L3263:
 	msysc_m$print_startcon();
 	asi64(R1) = i;
 	msysc_m$print_i64_nf(asi64(R1));
@@ -34417,8 +34492,8 @@ L3262:
 	msysc_m$print_str_nf(asu64(R1));
 	msysc_m$print_newline();
 	msysc_m$print_end();
-	i += 1; if (i <= cc_decls_nincludepaths) goto L3262;
-L3264:
+	i += 1; if (i <= cc_decls_nincludepaths) goto L3263;
+L3265:
 	msysc_m$print_startcon();
 	msysc_m$print_newline();
 	msysc_m$print_end();
@@ -34474,8 +34549,8 @@ static i64 cc_cli_gettiming() {
 	asi64(R1) = mnoos_os_clock();
 	asi64(R2) = cc_cli_ttt;
 	asi64(R1) -= asi64(R2);
-	goto L3269;
-L3269:
+	goto L3270;
+L3270:
 	return asi64(R1);
 }
 
@@ -34543,7 +34618,7 @@ static void cc_lex_lex_preprocess_only(u64 infile, u64 outfile, i64 toconsole) {
 	R2 = (u64)&cc_decls_nextlx;
 	R3 = 21;
 	*tou8p(((i64)R2+(i64)R3)) = asu8(R1);
-L3271:
+L3272:
 	cc_lex_lexm();
 	R1 = (u64)&ntokens;
 	(*toi64p(R1)) += 1;
@@ -34556,21 +34631,21 @@ L3271:
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 57;
-	if (asi64(R1) != asi64(R2)) goto L3271;
+	if (asi64(R1) != asi64(R2)) goto L3272;
 	asi64(R1) = cc_lex_ifcondlevel;
-	if (!asi64(R1)) goto L3275;
+	if (!asi64(R1)) goto L3276;
 	R1 = tou64("#endif missing");
 	cc_lex_lxerror(asu64(R1));
-L3275:
+L3276:
 	R1 = (u64)&cc_lex_showtokens;
-	if (!asu64(R1)) goto L3277;
+	if (!asu64(R1)) goto L3278;
 	asi64(R1) = toconsole;
-	if (!asi64(R1)) goto L3279;
+	if (!asi64(R1)) goto L3280;
 	R1 = 0;
 	asu64(R2) = cc_lex_lex_preprocess_only_dest;
 	mlib_gs_println(asu64(R2), asu64(R1));
-	goto L3278;
-L3279:
+	goto L3279;
+L3280:
 	R1 = tou64("wb");
 	asu64(R2) = outfile;
 	asu64(R1) = fopen(asu64(R2), asu64(R1));
@@ -34580,8 +34655,8 @@ L3279:
 	mlib_gs_println(asu64(R2), asu64(R1));
 	asu64(R1) = f;
 	asi32(R1) = fclose(asu64(R1));
+L3279:
 L3278:
-L3277:
 	return;
 }
 
@@ -34602,68 +34677,68 @@ static void cc_lex_lexreadtoken() {
 	R2 = (u64)&cc_decls_nextlx;
 	R3 = 23;
 	*tou8p(((i64)R2+(i64)R3)) = asu8(R1);
-	goto L3282;
-L3281:
+	goto L3283;
+L3282:
 	R1 = (u64)&cc_lex_lxsptr;
 	(*tou64p(R1)) += 1;
-L3282:
+L3283:
 	asu64(R1) = cc_lex_lxsptr;
 	asu8(R1) = *tou8p(R1);
 	R1 = toi64(tou8(R1));
 	R2 = 32;
-	if (asi64(R1) == asi64(R2)) goto L3281;
+	if (asi64(R1) == asi64(R2)) goto L3282;
 	R2 = 9;
-	if (asi64(R1) == asi64(R2)) goto L3281;
-L3284:
+	if (asi64(R1) == asi64(R2)) goto L3282;
+L3285:
 	R1 = (u64)&cc_lex_lxsptr;
 	asu64(R2) = *tou64p(R1); *(tou64p(R1)) += 1; asu64(R1) = asu64(R2);
 	asu8(R1) = *tou8p(R1);
 	R1 = toi64(tou8(R1));
 	switch (asi64(R1)) {
-	case 0: goto L3421;
-	case 1: case 2: case 3: case 4: case 5: case 6: case 7: case 8: case 11: case 14: case 15: case 16: case 17: case 18: case 19: case 20: case 21: case 22: case 23: case 24: case 25: case 26: case 27: case 28: case 29: case 30: case 31: case 96: goto L3287;
-	case 9: case 32: goto L3406;
-	case 10: goto L3407;
-	case 12: goto L3425;
-	case 13: goto L3415;
-	case 33: goto L3416;
-	case 34: goto L3405;
-	case 35: goto L3314;
-	case 36: case 65: case 66: case 67: case 68: case 69: case 70: case 71: case 72: case 73: case 74: case 75: case 76: case 77: case 78: case 79: case 80: case 81: case 82: case 83: case 84: case 85: case 86: case 87: case 88: case 89: case 90: case 95: case 97: case 98: case 99: case 100: case 101: case 102: case 103: case 104: case 105: case 106: case 107: case 108: case 109: case 110: case 111: case 112: case 113: case 114: case 115: case 116: case 117: case 118: case 119: case 120: case 121: case 122: goto L3288;
-	case 37: goto L3378;
-	case 38: goto L3399;
-	case 39: goto L3404;
-	case 40: goto L3344;
-	case 41: goto L3345;
-	case 42: goto L3369;
-	case 43: goto L3358;
-	case 44: goto L3338;
-	case 45: goto L3363;
-	case 46: goto L3330;
-	case 47: goto L3372;
-	case 48: goto L3305;
-	case 49: case 50: case 51: case 52: case 53: case 54: case 55: case 56: case 57: goto L3301;
-	case 58: goto L3340;
-	case 59: goto L3339;
-	case 60: goto L3385;
-	case 61: goto L3381;
-	case 62: goto L3392;
-	case 63: goto L3356;
-	case 64: goto L3420;
-	case 91: goto L3346;
-	case 92: goto L3318;
-	case 93: goto L3347;
-	case 94: goto L3353;
-	case 123: goto L3328;
-	case 124: goto L3348;
-	case 125: goto L3329;
-	case 126: goto L3357;
-	default: goto L3287;
+	case 0: goto L3422;
+	case 1: case 2: case 3: case 4: case 5: case 6: case 7: case 8: case 11: case 14: case 15: case 16: case 17: case 18: case 19: case 20: case 21: case 22: case 23: case 24: case 25: case 26: case 27: case 28: case 29: case 30: case 31: case 96: goto L3288;
+	case 9: case 32: goto L3407;
+	case 10: goto L3408;
+	case 12: goto L3426;
+	case 13: goto L3416;
+	case 33: goto L3417;
+	case 34: goto L3406;
+	case 35: goto L3315;
+	case 36: case 65: case 66: case 67: case 68: case 69: case 70: case 71: case 72: case 73: case 74: case 75: case 76: case 77: case 78: case 79: case 80: case 81: case 82: case 83: case 84: case 85: case 86: case 87: case 88: case 89: case 90: case 95: case 97: case 98: case 99: case 100: case 101: case 102: case 103: case 104: case 105: case 106: case 107: case 108: case 109: case 110: case 111: case 112: case 113: case 114: case 115: case 116: case 117: case 118: case 119: case 120: case 121: case 122: goto L3289;
+	case 37: goto L3379;
+	case 38: goto L3400;
+	case 39: goto L3405;
+	case 40: goto L3345;
+	case 41: goto L3346;
+	case 42: goto L3370;
+	case 43: goto L3359;
+	case 44: goto L3339;
+	case 45: goto L3364;
+	case 46: goto L3331;
+	case 47: goto L3373;
+	case 48: goto L3306;
+	case 49: case 50: case 51: case 52: case 53: case 54: case 55: case 56: case 57: goto L3302;
+	case 58: goto L3341;
+	case 59: goto L3340;
+	case 60: goto L3386;
+	case 61: goto L3382;
+	case 62: goto L3393;
+	case 63: goto L3357;
+	case 64: goto L3421;
+	case 91: goto L3347;
+	case 92: goto L3319;
+	case 93: goto L3348;
+	case 94: goto L3354;
+	case 123: goto L3329;
+	case 124: goto L3349;
+	case 125: goto L3330;
+	case 126: goto L3358;
+	default: goto L3288;
     };
 // SWITCH
-L3288:
-// cc_lex.lexreadtoken.doname:
 L3289:
+// cc_lex.lexreadtoken.doname:
+L3290:
 	asu64(R1) = cc_lex_lxsptr;
 	R2 = 1;
 	R1 -= (i64)R2;
@@ -34672,8 +34747,8 @@ L3289:
 	asu8(R1) = *tou8p(R1);
 	R1 = tou64(tou8(R1));
 	hsum = asu64(R1);
-	goto L3291;
-L3290:
+	goto L3292;
+L3291:
 	asu64(R1) = hsum;
 	R2 = 4;
 	asu64(R1) <<= asu64(R2);
@@ -34682,7 +34757,7 @@ L3290:
 	asu64(R2) = c;
 	asu64(R1) += asu64(R2);
 	hsum = asu64(R1);
-L3291:
+L3292:
 	R1 = (u64)&cc_lex_alphamap;
 	R2 = (u64)&cc_lex_lxsptr;
 	asu64(R3) = *tou64p(R2); *(tou64p(R2)) += 1; asu64(R2) = asu64(R3);
@@ -34691,7 +34766,7 @@ L3291:
 	R3 = R2;
 	c = asu64(R3);
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
-	if (asu8(R1)) goto L3290;
+	if (asu8(R1)) goto L3291;
 	R1 = (u64)&cc_lex_lxsptr;
 	(*tou64p(R1)) -=1;
 	R1 = 67;
@@ -34706,43 +34781,43 @@ L3291:
 	*toi32p(((i64)R2+(i64)R3)) = asi32(R1);
 	asu64(R1) = c;
 	R2 = 39;
-	if (asu64(R1) == asu64(R2)) goto L3294;
+	if (asu64(R1) == asu64(R2)) goto L3295;
 	R2 = 34;
-	if (asu64(R1) == asu64(R2)) goto L3294;
-	goto L3295;
-L3294:
+	if (asu64(R1) == asu64(R2)) goto L3295;
+	goto L3296;
+L3295:
 	R1 = (u64)&cc_decls_nextlx;
 	R2 = 24;
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
 	R1 = toi64(toi32(R1));
 	R2 = 1;
-	if (asi64(R1) != asi64(R2)) goto L3297;
+	if (asi64(R1) != asi64(R2)) goto L3298;
 	asu64(R1) = cc_lex_lxsvalue;
 	asu8(R1) = *tou8p(R1);
 	R1 = tou64(tou8(R1));
 	R2 = 108;
-	if (asu64(R1) == asu64(R2)) goto L3299;
+	if (asu64(R1) == asu64(R2)) goto L3300;
 	R2 = 76;
-	if (asu64(R1) == asu64(R2)) goto L3299;
+	if (asu64(R1) == asu64(R2)) goto L3300;
 	R2 = 117;
-	if (asu64(R1) == asu64(R2)) goto L3299;
+	if (asu64(R1) == asu64(R2)) goto L3300;
 	R2 = 85;
-	if (asu64(R1) == asu64(R2)) goto L3299;
-	goto L3300;
-L3299:
+	if (asu64(R1) == asu64(R2)) goto L3300;
+	goto L3301;
+L3300:
 	R1 = (u64)&cc_lex_lxsptr;
 	(*tou64p(R1)) += 1;
 	R1 = 1;
 	asu64(R2) = c;
 	cc_lex_lxreadstring(asi64(R2), asi64(R1));
-	goto L3280;
-	goto L3298;
-L3300:
+	goto L3281;
+	goto L3299;
+L3301:
+L3299:
 L3298:
-L3297:
-	goto L3293;
-L3295:
-L3293:
+	goto L3294;
+L3296:
+L3294:
 	asu64(R1) = hsum;
 	R2 = 5;
 	asu64(R1) <<= asu64(R2);
@@ -34750,24 +34825,24 @@ L3293:
 	asi64(R1) -= asi64(R2);
 	cc_lex_lxhashvalue = asi64(R1);
 	asi64(R1) = cc_lex_lookup();
-	goto L3280;
-	goto L3284;
-L3301:
+	goto L3281;
+	goto L3285;
+L3302:
 	asu64(R1) = cc_lex_lxsptr;
 	asu8(R1) = *tou8p(R1);
 	R1 = tou64(tou8(R1));
 	R2 = 32;
-	if (asu64(R1) == asu64(R2)) goto L3303;
+	if (asu64(R1) == asu64(R2)) goto L3304;
 	R2 = 41;
-	if (asu64(R1) == asu64(R2)) goto L3303;
+	if (asu64(R1) == asu64(R2)) goto L3304;
 	R2 = 13;
-	if (asu64(R1) == asu64(R2)) goto L3303;
+	if (asu64(R1) == asu64(R2)) goto L3304;
 	R2 = 44;
-	if (asu64(R1) == asu64(R2)) goto L3303;
+	if (asu64(R1) == asu64(R2)) goto L3304;
 	R2 = 59;
-	if (asu64(R1) == asu64(R2)) goto L3303;
-	goto L3304;
-L3303:
+	if (asu64(R1) == asu64(R2)) goto L3304;
+	goto L3305;
+L3304:
 	R1 = 59;
 	R2 = (u64)&cc_decls_nextlx;
 	R3 = 21;
@@ -34796,48 +34871,48 @@ L3303:
 	asu64(R2) = cc_lex_lxstart;
 	asi64(R1) -= asi64(R2);
 	cc_lex_setnumberoffset(asi64(R1));
-	goto L3302;
-L3304:
+	goto L3303;
+L3305:
 	asu64(R1) = cc_lex_lxsptr;
 	R2 = 1;
 	R1 -= (i64)R2;
 	cc_lex_readdecimal(asu64(R1));
-L3302:
-	goto L3280;
-	goto L3284;
-L3305:
+L3303:
+	goto L3281;
+	goto L3285;
+L3306:
 	asu64(R1) = cc_lex_lxsptr;
 	asu8(R1) = *tou8p(R1);
 	R1 = toi64(tou8(R1));
 	switch (asi64(R1)) {
-	case 10: case 13: case 32: case 38: case 41: case 44: case 58: case 59: case 61: case 63: case 93: case 125: goto L3313;
-	case 11: case 12: case 14: case 15: case 16: case 17: case 18: case 19: case 20: case 21: case 22: case 23: case 24: case 25: case 26: case 27: case 28: case 29: case 30: case 31: case 33: case 34: case 35: case 36: case 37: case 39: case 40: case 42: case 43: case 45: case 47: case 48: case 49: case 50: case 51: case 52: case 53: case 54: case 55: case 56: case 57: case 60: case 62: case 64: case 65: case 67: case 68: case 69: case 70: case 71: case 72: case 73: case 74: case 75: case 77: case 78: case 79: case 80: case 81: case 82: case 83: case 84: case 86: case 87: case 89: case 90: case 91: case 92: case 94: case 95: case 96: case 97: case 99: case 100: case 101: case 102: case 103: case 104: case 105: case 106: case 107: case 109: case 110: case 111: case 112: case 113: case 114: case 115: case 116: case 118: case 119: case 121: case 122: case 123: case 124: goto L3308;
-	case 46: goto L3311;
-	case 66: case 98: goto L3310;
-	case 76: case 85: case 108: case 117: goto L3312;
-	case 88: case 120: goto L3309;
-	default: goto L3308;
+	case 10: case 13: case 32: case 38: case 41: case 44: case 58: case 59: case 61: case 63: case 93: case 125: goto L3314;
+	case 11: case 12: case 14: case 15: case 16: case 17: case 18: case 19: case 20: case 21: case 22: case 23: case 24: case 25: case 26: case 27: case 28: case 29: case 30: case 31: case 33: case 34: case 35: case 36: case 37: case 39: case 40: case 42: case 43: case 45: case 47: case 48: case 49: case 50: case 51: case 52: case 53: case 54: case 55: case 56: case 57: case 60: case 62: case 64: case 65: case 67: case 68: case 69: case 70: case 71: case 72: case 73: case 74: case 75: case 77: case 78: case 79: case 80: case 81: case 82: case 83: case 84: case 86: case 87: case 89: case 90: case 91: case 92: case 94: case 95: case 96: case 97: case 99: case 100: case 101: case 102: case 103: case 104: case 105: case 106: case 107: case 109: case 110: case 111: case 112: case 113: case 114: case 115: case 116: case 118: case 119: case 121: case 122: case 123: case 124: goto L3309;
+	case 46: goto L3312;
+	case 66: case 98: goto L3311;
+	case 76: case 85: case 108: case 117: goto L3313;
+	case 88: case 120: goto L3310;
+	default: goto L3309;
     };
 // SWITCH
-L3309:
-	R1 = (u64)&cc_lex_lxsptr;
-	(*tou64p(R1)) += 1;
-	asu64(R1) = cc_lex_lxsptr;
-	R2 = 2;
-	R1 -= (i64)R2;
-	cc_lex_readhex(asu64(R1));
-	goto L3280;
-	goto L3306;
 L3310:
 	R1 = (u64)&cc_lex_lxsptr;
 	(*tou64p(R1)) += 1;
 	asu64(R1) = cc_lex_lxsptr;
 	R2 = 2;
 	R1 -= (i64)R2;
-	cc_lex_readbinary(asu64(R1));
-	goto L3280;
-	goto L3306;
+	cc_lex_readhex(asu64(R1));
+	goto L3281;
+	goto L3307;
 L3311:
+	R1 = (u64)&cc_lex_lxsptr;
+	(*tou64p(R1)) += 1;
+	asu64(R1) = cc_lex_lxsptr;
+	R2 = 2;
+	R1 -= (i64)R2;
+	cc_lex_readbinary(asu64(R1));
+	goto L3281;
+	goto L3307;
+L3312:
 	R1 = 10;
 	R2 = 1;
 	asu64(R3) = cc_lex_lxsptr;
@@ -34847,16 +34922,16 @@ L3311:
 	R5 = 1;
 	R4 -= (i64)R5;
 	cc_lex_readrealnumber(asu64(R4), asu64(R3), asi64(R2), asi64(R1));
-	goto L3280;
-	goto L3306;
-L3312:
+	goto L3281;
+	goto L3307;
+L3313:
 	asu64(R1) = cc_lex_lxsptr;
 	R2 = 1;
 	R1 -= (i64)R2;
 	cc_lex_readdecimal(asu64(R1));
-	goto L3280;
-	goto L3306;
-L3313:
+	goto L3281;
+	goto L3307;
+L3314:
 	R1 = 59;
 	R2 = (u64)&cc_decls_nextlx;
 	R3 = 21;
@@ -34879,80 +34954,80 @@ L3313:
 	asu64(R2) = cc_lex_lxstart;
 	asi64(R1) -= asi64(R2);
 	cc_lex_setnumberoffset(asi64(R1));
-	goto L3280;
-	goto L3306;
-L3308:
+	goto L3281;
+	goto L3307;
+L3309:
 	asu64(R1) = cc_lex_lxsptr;
 	R2 = 1;
 	R1 -= (i64)R2;
 	cc_lex_readoctal(asu64(R1));
-	goto L3280;
-L3306:
-	goto L3284;
-L3314:
+	goto L3281;
+L3307:
+	goto L3285;
+L3315:
 	R1 = (u64)&cc_decls_nextlx;
 	R2 = 21;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 56;
-	if (asi64(R1) != asi64(R2)) goto L3316;
+	if (asi64(R1) != asi64(R2)) goto L3317;
 	R1 = 4;
 	R2 = (u64)&cc_decls_nextlx;
 	R3 = 21;
 	*tou8p(((i64)R2+(i64)R3)) = asu8(R1);
-	goto L3280;
-	goto L3315;
-L3316:
+	goto L3281;
+	goto L3316;
+L3317:
 	asu64(R1) = cc_lex_lxsptr;
 	asu8(R1) = *tou8p(R1);
 	R1 = tou64(tou8(R1));
 	R2 = 35;
-	if (asu64(R1) != asu64(R2)) goto L3317;
+	if (asu64(R1) != asu64(R2)) goto L3318;
 	R1 = (u64)&cc_lex_lxsptr;
 	(*tou64p(R1)) += 1;
 	R1 = 7;
 	R2 = (u64)&cc_decls_nextlx;
 	R3 = 21;
 	*tou8p(((i64)R2+(i64)R3)) = asu8(R1);
-	goto L3280;
-	goto L3315;
-L3317:
+	goto L3281;
+	goto L3316;
+L3318:
 	R1 = 5;
 	R2 = (u64)&cc_decls_nextlx;
 	R3 = 21;
 	*tou8p(((i64)R2+(i64)R3)) = asu8(R1);
-	goto L3280;
-L3315:
-	goto L3284;
-L3318:
+	goto L3281;
+L3316:
+	goto L3285;
 L3319:
+L3320:
 	asu64(R1) = cc_lex_lxsptr;
 	asu8(R1) = *tou8p(R1);
 	R1 = tou64(tou8(R1));
 	R2 = 13;
-	if (asu64(R1) == asu64(R2)) goto L3321;
+	if (asu64(R1) == asu64(R2)) goto L3322;
 	R2 = 10;
-	if (asu64(R1) == asu64(R2)) goto L3321;
+	if (asu64(R1) == asu64(R2)) goto L3322;
 	R2 = 32;
-	if (asu64(R1) == asu64(R2)) goto L3322;
+	if (asu64(R1) == asu64(R2)) goto L3323;
 	R2 = 9;
-	if (asu64(R1) == asu64(R2)) goto L3322;
-	goto L3323;
-L3321:
-	goto L3320;
-	goto L3319;
+	if (asu64(R1) == asu64(R2)) goto L3323;
+	goto L3324;
 L3322:
+	goto L3321;
+	goto L3320;
+L3323:
 	R1 = (u64)&cc_lex_lxsptr;
 	(*tou64p(R1)) += 1;
-	goto L3319;
-L3323:
+	goto L3320;
+L3324:
 	R1 = 22;
 	R2 = (u64)&cc_decls_nextlx;
 	R3 = 21;
 	*tou8p(((i64)R2+(i64)R3)) = asu8(R1);
-	goto L3280;
-	goto L3319;
-L3320:
+	goto L3281;
+	goto L3320;
+L3321:
 	R1 = 32;
 	asu64(R2) = cc_lex_lxsptr;
 	R3 = 1;
@@ -34966,79 +35041,79 @@ L3320:
 	asu8(R1) = *tou8p(R1);
 	R1 = tou64(tou8(R1));
 	R2 = 13;
-	if (asu64(R1) == asu64(R2)) goto L3325;
-	R2 = 10;
 	if (asu64(R1) == asu64(R2)) goto L3326;
-	goto L3327;
-L3325:
+	R2 = 10;
+	if (asu64(R1) == asu64(R2)) goto L3327;
+	goto L3328;
+L3326:
 	R1 = (u64)&cc_lex_lxsptr;
 	(*tou64p(R1)) += 1;
 	R1 = 32;
 	R2 = (u64)&cc_lex_lxsptr;
 	asu64(R3) = *tou64p(R2); *(tou64p(R2)) += 1; asu64(R2) = asu64(R3);
 	*tou8p(R2) = asu8(R1);
-	goto L3324;
-L3326:
+	goto L3325;
+L3327:
 	R1 = 32;
 	R2 = (u64)&cc_lex_lxsptr;
 	asu64(R3) = *tou64p(R2); *(tou64p(R2)) += 1; asu64(R2) = asu64(R3);
 	*tou8p(R2) = asu8(R1);
-	goto L3324;
-L3327:
-L3324:
-	goto L3284;
+	goto L3325;
 L3328:
+L3325:
+	goto L3285;
+L3329:
 	R1 = 17;
 	R2 = (u64)&cc_decls_nextlx;
 	R3 = 21;
 	*tou8p(((i64)R2+(i64)R3)) = asu8(R1);
-	goto L3280;
-	goto L3284;
-L3329:
+	goto L3281;
+	goto L3285;
+L3330:
 	R1 = 18;
 	R2 = (u64)&cc_decls_nextlx;
 	R3 = 21;
 	*tou8p(((i64)R2+(i64)R3)) = asu8(R1);
-	goto L3280;
-	goto L3284;
-L3330:
+	goto L3281;
+	goto L3285;
+L3331:
 	asu64(R1) = cc_lex_lxsptr;
 	asu8(R1) = *tou8p(R1);
 	R1 = toi64(tou8(R1));
 	switch (asi64(R1)) {
-	case 46: goto L3334;
-	case 47: goto L3333;
-	case 48: case 49: case 50: case 51: case 52: case 53: case 54: case 55: case 56: case 57: goto L3337;
-	default: goto L3333;
+	case 46: goto L3335;
+	case 47: goto L3334;
+	case 48: case 49: case 50: case 51: case 52: case 53: case 54: case 55: case 56: case 57: goto L3338;
+	default: goto L3334;
     };
 // SWITCH
-L3334:
+L3335:
 	R1 = (u64)&cc_lex_lxsptr;
 	(*tou64p(R1)) += 1;
 	asu64(R1) = cc_lex_lxsptr;
 	asu8(R1) = *tou8p(R1);
 	R1 = tou64(tou8(R1));
 	R2 = 46;
-	if (asu64(R1) != asu64(R2)) goto L3336;
+	if (asu64(R1) != asu64(R2)) goto L3337;
 	R1 = (u64)&cc_lex_lxsptr;
 	(*tou64p(R1)) += 1;
 	R1 = 21;
 	R2 = (u64)&cc_decls_nextlx;
 	R3 = 21;
 	*tou8p(((i64)R2+(i64)R3)) = asu8(R1);
-	goto L3335;
-L3336:
+	goto L3336;
+L3337:
 	R1 = (u64)&cc_lex_lxsptr;
 	(*tou64p(R1)) -=1;
 	R1 = 2;
 	R2 = (u64)&cc_decls_nextlx;
 	R3 = 21;
 	*tou8p(((i64)R2+(i64)R3)) = asu8(R1);
-	goto L3280;
-L3335:
-	goto L3280;
-	goto L3331;
-L3337:
+	goto L3281;
+L3336:
+	goto L3281;
+	goto L3332;
+L3338:
 	R1 = (u64)&cc_lex_lxsptr;
 	(*tou64p(R1)) -=1;
 	R1 = 10;
@@ -35046,258 +35121,258 @@ L3337:
 	asu64(R3) = cc_lex_lxsptr;
 	asu64(R4) = cc_lex_lxsptr;
 	cc_lex_readrealnumber(asu64(R4), asu64(R3), asi64(R2), asi64(R1));
-	goto L3280;
-	goto L3331;
-L3333:
+	goto L3281;
+	goto L3332;
+L3334:
 	R1 = 2;
 	R2 = (u64)&cc_decls_nextlx;
 	R3 = 21;
 	*tou8p(((i64)R2+(i64)R3)) = asu8(R1);
-	goto L3280;
-L3331:
-	goto L3284;
-L3338:
+	goto L3281;
+L3332:
+	goto L3285;
+L3339:
 	R1 = 8;
 	R2 = (u64)&cc_decls_nextlx;
 	R3 = 21;
 	*tou8p(((i64)R2+(i64)R3)) = asu8(R1);
-	goto L3280;
-	goto L3284;
-L3339:
+	goto L3281;
+	goto L3285;
+L3340:
 	R1 = 9;
 	R2 = (u64)&cc_decls_nextlx;
 	R3 = 21;
 	*tou8p(((i64)R2+(i64)R3)) = asu8(R1);
-	goto L3280;
-	goto L3284;
-L3340:
+	goto L3281;
+	goto L3285;
+L3341:
 	asu64(R1) = cc_lex_lxsptr;
 	asu8(R1) = *tou8p(R1);
 	R1 = tou64(tou8(R1));
 	R2 = 61;
-	if (asu64(R1) == asu64(R2)) goto L3342;
-	goto L3343;
-L3342:
+	if (asu64(R1) == asu64(R2)) goto L3343;
+	goto L3344;
+L3343:
 	R1 = (u64)&cc_lex_lxsptr;
 	(*tou64p(R1)) += 1;
 	R1 = 11;
 	R2 = (u64)&cc_decls_nextlx;
 	R3 = 21;
 	*tou8p(((i64)R2+(i64)R3)) = asu8(R1);
-	goto L3341;
-L3343:
+	goto L3342;
+L3344:
 	R1 = 10;
 	R2 = (u64)&cc_decls_nextlx;
 	R3 = 21;
 	*tou8p(((i64)R2+(i64)R3)) = asu8(R1);
-L3341:
-	goto L3280;
-	goto L3284;
-L3344:
+L3342:
+	goto L3281;
+	goto L3285;
+L3345:
 	R1 = 13;
 	R2 = (u64)&cc_decls_nextlx;
 	R3 = 21;
 	*tou8p(((i64)R2+(i64)R3)) = asu8(R1);
-	goto L3280;
-	goto L3284;
-L3345:
+	goto L3281;
+	goto L3285;
+L3346:
 	R1 = 14;
 	R2 = (u64)&cc_decls_nextlx;
 	R3 = 21;
 	*tou8p(((i64)R2+(i64)R3)) = asu8(R1);
-	goto L3280;
-	goto L3284;
-L3346:
+	goto L3281;
+	goto L3285;
+L3347:
 	R1 = 15;
 	R2 = (u64)&cc_decls_nextlx;
 	R3 = 21;
 	*tou8p(((i64)R2+(i64)R3)) = asu8(R1);
-	goto L3280;
-	goto L3284;
-L3347:
+	goto L3281;
+	goto L3285;
+L3348:
 	R1 = 16;
 	R2 = (u64)&cc_decls_nextlx;
 	R3 = 21;
 	*tou8p(((i64)R2+(i64)R3)) = asu8(R1);
-	goto L3280;
-	goto L3284;
-L3348:
+	goto L3281;
+	goto L3285;
+L3349:
 	asu64(R1) = cc_lex_lxsptr;
 	asu8(R1) = *tou8p(R1);
 	R1 = tou64(tou8(R1));
 	R2 = 124;
-	if (asu64(R1) == asu64(R2)) goto L3350;
-	R2 = 61;
 	if (asu64(R1) == asu64(R2)) goto L3351;
-	goto L3352;
-L3350:
+	R2 = 61;
+	if (asu64(R1) == asu64(R2)) goto L3352;
+	goto L3353;
+L3351:
 	R1 = (u64)&cc_lex_lxsptr;
 	(*tou64p(R1)) += 1;
 	R1 = 31;
 	R2 = (u64)&cc_decls_nextlx;
 	R3 = 21;
 	*tou8p(((i64)R2+(i64)R3)) = asu8(R1);
-	goto L3349;
-L3351:
+	goto L3350;
+L3352:
 	R1 = (u64)&cc_lex_lxsptr;
 	(*tou64p(R1)) += 1;
 	R1 = 51;
 	R2 = (u64)&cc_decls_nextlx;
 	R3 = 21;
 	*tou8p(((i64)R2+(i64)R3)) = asu8(R1);
-	goto L3349;
-L3352:
+	goto L3350;
+L3353:
 	R1 = 28;
 	R2 = (u64)&cc_decls_nextlx;
 	R3 = 21;
 	*tou8p(((i64)R2+(i64)R3)) = asu8(R1);
-L3349:
-	goto L3280;
-	goto L3284;
-L3353:
+L3350:
+	goto L3281;
+	goto L3285;
+L3354:
 	asu64(R1) = cc_lex_lxsptr;
 	asu8(R1) = *tou8p(R1);
 	R1 = tou64(tou8(R1));
 	R2 = 61;
-	if (asu64(R1) != asu64(R2)) goto L3355;
+	if (asu64(R1) != asu64(R2)) goto L3356;
 	R1 = (u64)&cc_lex_lxsptr;
 	(*tou64p(R1)) += 1;
 	R1 = 53;
 	R2 = (u64)&cc_decls_nextlx;
 	R3 = 21;
 	*tou8p(((i64)R2+(i64)R3)) = asu8(R1);
-	goto L3354;
-L3355:
+	goto L3355;
+L3356:
 	R1 = 30;
 	R2 = (u64)&cc_decls_nextlx;
 	R3 = 21;
 	*tou8p(((i64)R2+(i64)R3)) = asu8(R1);
-L3354:
-	goto L3280;
-	goto L3284;
-L3356:
+L3355:
+	goto L3281;
+	goto L3285;
+L3357:
 	R1 = 19;
 	R2 = (u64)&cc_decls_nextlx;
 	R3 = 21;
 	*tou8p(((i64)R2+(i64)R3)) = asu8(R1);
-	goto L3280;
-	goto L3284;
-L3357:
+	goto L3281;
+	goto L3285;
+L3358:
 	R1 = 35;
 	R2 = (u64)&cc_decls_nextlx;
 	R3 = 21;
 	*tou8p(((i64)R2+(i64)R3)) = asu8(R1);
-	goto L3280;
-	goto L3284;
-L3358:
+	goto L3281;
+	goto L3285;
+L3359:
 	asu64(R1) = cc_lex_lxsptr;
 	asu8(R1) = *tou8p(R1);
 	R1 = tou64(tou8(R1));
 	R2 = 43;
-	if (asu64(R1) == asu64(R2)) goto L3360;
-	R2 = 61;
 	if (asu64(R1) == asu64(R2)) goto L3361;
-	goto L3362;
-L3360:
+	R2 = 61;
+	if (asu64(R1) == asu64(R2)) goto L3362;
+	goto L3363;
+L3361:
 	R1 = (u64)&cc_lex_lxsptr;
 	(*tou64p(R1)) += 1;
 	R1 = 37;
 	R2 = (u64)&cc_decls_nextlx;
 	R3 = 21;
 	*tou8p(((i64)R2+(i64)R3)) = asu8(R1);
-	goto L3359;
-L3361:
+	goto L3360;
+L3362:
 	R1 = (u64)&cc_lex_lxsptr;
 	(*tou64p(R1)) += 1;
 	R1 = 46;
 	R2 = (u64)&cc_decls_nextlx;
 	R3 = 21;
 	*tou8p(((i64)R2+(i64)R3)) = asu8(R1);
-	goto L3359;
-L3362:
+	goto L3360;
+L3363:
 	R1 = 23;
 	R2 = (u64)&cc_decls_nextlx;
 	R3 = 21;
 	*tou8p(((i64)R2+(i64)R3)) = asu8(R1);
-L3359:
-	goto L3280;
-	goto L3284;
-L3363:
+L3360:
+	goto L3281;
+	goto L3285;
+L3364:
 	asu64(R1) = cc_lex_lxsptr;
 	asu8(R1) = *tou8p(R1);
 	R1 = tou64(tou8(R1));
 	R2 = 45;
-	if (asu64(R1) == asu64(R2)) goto L3365;
-	R2 = 62;
 	if (asu64(R1) == asu64(R2)) goto L3366;
-	R2 = 61;
+	R2 = 62;
 	if (asu64(R1) == asu64(R2)) goto L3367;
-	goto L3368;
-L3365:
+	R2 = 61;
+	if (asu64(R1) == asu64(R2)) goto L3368;
+	goto L3369;
+L3366:
 	R1 = (u64)&cc_lex_lxsptr;
 	(*tou64p(R1)) += 1;
 	R1 = 38;
 	R2 = (u64)&cc_decls_nextlx;
 	R3 = 21;
 	*tou8p(((i64)R2+(i64)R3)) = asu8(R1);
-	goto L3364;
-L3366:
+	goto L3365;
+L3367:
 	R1 = (u64)&cc_lex_lxsptr;
 	(*tou64p(R1)) += 1;
 	R1 = 3;
 	R2 = (u64)&cc_decls_nextlx;
 	R3 = 21;
 	*tou8p(((i64)R2+(i64)R3)) = asu8(R1);
-	goto L3364;
-L3367:
+	goto L3365;
+L3368:
 	R1 = (u64)&cc_lex_lxsptr;
 	(*tou64p(R1)) += 1;
 	R1 = 47;
 	R2 = (u64)&cc_decls_nextlx;
 	R3 = 21;
 	*tou8p(((i64)R2+(i64)R3)) = asu8(R1);
-	goto L3364;
-L3368:
+	goto L3365;
+L3369:
 	R1 = 24;
 	R2 = (u64)&cc_decls_nextlx;
 	R3 = 21;
 	*tou8p(((i64)R2+(i64)R3)) = asu8(R1);
-L3364:
-	goto L3280;
-	goto L3284;
-L3369:
+L3365:
+	goto L3281;
+	goto L3285;
+L3370:
 	asu64(R1) = cc_lex_lxsptr;
 	asu8(R1) = *tou8p(R1);
 	R1 = tou64(tou8(R1));
 	R2 = 61;
-	if (asu64(R1) != asu64(R2)) goto L3371;
+	if (asu64(R1) != asu64(R2)) goto L3372;
 	R1 = (u64)&cc_lex_lxsptr;
 	(*tou64p(R1)) += 1;
 	R1 = 48;
 	R2 = (u64)&cc_decls_nextlx;
 	R3 = 21;
 	*tou8p(((i64)R2+(i64)R3)) = asu8(R1);
-	goto L3370;
-L3371:
+	goto L3371;
+L3372:
 	R1 = 25;
 	R2 = (u64)&cc_decls_nextlx;
 	R3 = 21;
 	*tou8p(((i64)R2+(i64)R3)) = asu8(R1);
-L3370:
-	goto L3280;
-	goto L3284;
-L3372:
+L3371:
+	goto L3281;
+	goto L3285;
+L3373:
 	asu64(R1) = cc_lex_lxsptr;
 	asu8(R1) = *tou8p(R1);
 	R1 = tou64(tou8(R1));
 	R2 = 47;
-	if (asu64(R1) == asu64(R2)) goto L3374;
-	R2 = 42;
 	if (asu64(R1) == asu64(R2)) goto L3375;
-	R2 = 61;
+	R2 = 42;
 	if (asu64(R1) == asu64(R2)) goto L3376;
-	goto L3377;
-L3374:
+	R2 = 61;
+	if (asu64(R1) == asu64(R2)) goto L3377;
+	goto L3378;
+L3375:
 	cc_lex_readlinecomment();
 	R1 = 56;
 	R2 = (u64)&cc_decls_nextlx;
@@ -35307,212 +35382,212 @@ L3374:
 	R2 = (u64)&cc_decls_nextlx;
 	R3 = 24;
 	*toi32p(((i64)R2+(i64)R3)) = asi32(R1);
-	goto L3280;
-	goto L3373;
-L3375:
-	cc_lex_readblockcomment();
-	goto L3373;
+	goto L3281;
+	goto L3374;
 L3376:
+	cc_lex_readblockcomment();
+	goto L3374;
+L3377:
 	R1 = (u64)&cc_lex_lxsptr;
 	(*tou64p(R1)) += 1;
 	R1 = 49;
 	R2 = (u64)&cc_decls_nextlx;
 	R3 = 21;
 	*tou8p(((i64)R2+(i64)R3)) = asu8(R1);
-	goto L3280;
-	goto L3373;
-L3377:
+	goto L3281;
+	goto L3374;
+L3378:
 	R1 = 26;
 	R2 = (u64)&cc_decls_nextlx;
 	R3 = 21;
 	*tou8p(((i64)R2+(i64)R3)) = asu8(R1);
-	goto L3280;
-L3373:
-	goto L3284;
-L3378:
+	goto L3281;
+L3374:
+	goto L3285;
+L3379:
 	asu64(R1) = cc_lex_lxsptr;
 	asu8(R1) = *tou8p(R1);
 	R1 = tou64(tou8(R1));
 	R2 = 61;
-	if (asu64(R1) != asu64(R2)) goto L3380;
+	if (asu64(R1) != asu64(R2)) goto L3381;
 	R1 = (u64)&cc_lex_lxsptr;
 	(*tou64p(R1)) += 1;
 	R1 = 50;
 	R2 = (u64)&cc_decls_nextlx;
 	R3 = 21;
 	*tou8p(((i64)R2+(i64)R3)) = asu8(R1);
-	goto L3379;
-L3380:
+	goto L3380;
+L3381:
 	R1 = 27;
 	R2 = (u64)&cc_decls_nextlx;
 	R3 = 21;
 	*tou8p(((i64)R2+(i64)R3)) = asu8(R1);
-L3379:
-	goto L3280;
-	goto L3284;
-L3381:
+L3380:
+	goto L3281;
+	goto L3285;
+L3382:
 	asu64(R1) = cc_lex_lxsptr;
 	asu8(R1) = *tou8p(R1);
 	R1 = tou64(tou8(R1));
 	R2 = 61;
-	if (asu64(R1) == asu64(R2)) goto L3383;
-	goto L3384;
-L3383:
+	if (asu64(R1) == asu64(R2)) goto L3384;
+	goto L3385;
+L3384:
 	R1 = 40;
 	R2 = (u64)&cc_decls_nextlx;
 	R3 = 21;
 	*tou8p(((i64)R2+(i64)R3)) = asu8(R1);
 	R1 = (u64)&cc_lex_lxsptr;
 	(*tou64p(R1)) += 1;
-	goto L3382;
-L3384:
+	goto L3383;
+L3385:
 	R1 = 11;
 	R2 = (u64)&cc_decls_nextlx;
 	R3 = 21;
 	*tou8p(((i64)R2+(i64)R3)) = asu8(R1);
-L3382:
-	goto L3280;
-	goto L3284;
-L3385:
+L3383:
+	goto L3281;
+	goto L3285;
+L3386:
 	asu64(R1) = cc_lex_lxsptr;
 	asu8(R1) = *tou8p(R1);
 	R1 = tou64(tou8(R1));
 	R2 = 61;
-	if (asu64(R1) == asu64(R2)) goto L3387;
-	R2 = 60;
 	if (asu64(R1) == asu64(R2)) goto L3388;
-	goto L3389;
-L3387:
+	R2 = 60;
+	if (asu64(R1) == asu64(R2)) goto L3389;
+	goto L3390;
+L3388:
 	R1 = (u64)&cc_lex_lxsptr;
 	(*tou64p(R1)) += 1;
 	R1 = 43;
 	R2 = (u64)&cc_decls_nextlx;
 	R3 = 21;
 	*tou8p(((i64)R2+(i64)R3)) = asu8(R1);
-	goto L3386;
-L3388:
+	goto L3387;
+L3389:
 	R1 = (u64)&cc_lex_lxsptr;
 	asu64(R1) = *(tou64p(R1)) += 1;
 	asu8(R1) = *tou8p(R1);
 	R1 = tou64(tou8(R1));
 	R2 = 61;
-	if (asu64(R1) != asu64(R2)) goto L3391;
+	if (asu64(R1) != asu64(R2)) goto L3392;
 	R1 = (u64)&cc_lex_lxsptr;
 	(*tou64p(R1)) += 1;
 	R1 = 54;
 	R2 = (u64)&cc_decls_nextlx;
 	R3 = 21;
 	*tou8p(((i64)R2+(i64)R3)) = asu8(R1);
-	goto L3390;
-L3391:
+	goto L3391;
+L3392:
 	R1 = 33;
 	R2 = (u64)&cc_decls_nextlx;
 	R3 = 21;
 	*tou8p(((i64)R2+(i64)R3)) = asu8(R1);
+L3391:
+	goto L3387;
 L3390:
-	goto L3386;
-L3389:
 	R1 = 42;
 	R2 = (u64)&cc_decls_nextlx;
 	R3 = 21;
 	*tou8p(((i64)R2+(i64)R3)) = asu8(R1);
-L3386:
-	goto L3280;
-	goto L3284;
-L3392:
+L3387:
+	goto L3281;
+	goto L3285;
+L3393:
 	asu64(R1) = cc_lex_lxsptr;
 	asu8(R1) = *tou8p(R1);
 	R1 = tou64(tou8(R1));
 	R2 = 61;
-	if (asu64(R1) == asu64(R2)) goto L3394;
-	R2 = 62;
 	if (asu64(R1) == asu64(R2)) goto L3395;
-	goto L3396;
-L3394:
+	R2 = 62;
+	if (asu64(R1) == asu64(R2)) goto L3396;
+	goto L3397;
+L3395:
 	R1 = (u64)&cc_lex_lxsptr;
 	(*tou64p(R1)) += 1;
 	R1 = 44;
 	R2 = (u64)&cc_decls_nextlx;
 	R3 = 21;
 	*tou8p(((i64)R2+(i64)R3)) = asu8(R1);
-	goto L3393;
-L3395:
+	goto L3394;
+L3396:
 	R1 = (u64)&cc_lex_lxsptr;
 	asu64(R1) = *(tou64p(R1)) += 1;
 	asu8(R1) = *tou8p(R1);
 	R1 = tou64(tou8(R1));
 	R2 = 61;
-	if (asu64(R1) != asu64(R2)) goto L3398;
+	if (asu64(R1) != asu64(R2)) goto L3399;
 	R1 = (u64)&cc_lex_lxsptr;
 	(*tou64p(R1)) += 1;
 	R1 = 55;
 	R2 = (u64)&cc_decls_nextlx;
 	R3 = 21;
 	*tou8p(((i64)R2+(i64)R3)) = asu8(R1);
-	goto L3397;
-L3398:
+	goto L3398;
+L3399:
 	R1 = 34;
 	R2 = (u64)&cc_decls_nextlx;
 	R3 = 21;
 	*tou8p(((i64)R2+(i64)R3)) = asu8(R1);
+L3398:
+	goto L3394;
 L3397:
-	goto L3393;
-L3396:
 	R1 = 45;
 	R2 = (u64)&cc_decls_nextlx;
 	R3 = 21;
 	*tou8p(((i64)R2+(i64)R3)) = asu8(R1);
-L3393:
-	goto L3280;
-	goto L3284;
-L3399:
+L3394:
+	goto L3281;
+	goto L3285;
+L3400:
 	asu64(R1) = cc_lex_lxsptr;
 	asu8(R1) = *tou8p(R1);
 	R1 = tou64(tou8(R1));
 	R2 = 38;
-	if (asu64(R1) == asu64(R2)) goto L3401;
-	R2 = 61;
 	if (asu64(R1) == asu64(R2)) goto L3402;
-	goto L3403;
-L3401:
+	R2 = 61;
+	if (asu64(R1) == asu64(R2)) goto L3403;
+	goto L3404;
+L3402:
 	R1 = (u64)&cc_lex_lxsptr;
 	(*tou64p(R1)) += 1;
 	R1 = 32;
 	R2 = (u64)&cc_decls_nextlx;
 	R3 = 21;
 	*tou8p(((i64)R2+(i64)R3)) = asu8(R1);
-	goto L3400;
-L3402:
+	goto L3401;
+L3403:
 	R1 = (u64)&cc_lex_lxsptr;
 	(*tou64p(R1)) += 1;
 	R1 = 52;
 	R2 = (u64)&cc_decls_nextlx;
 	R3 = 21;
 	*tou8p(((i64)R2+(i64)R3)) = asu8(R1);
-	goto L3400;
-L3403:
+	goto L3401;
+L3404:
 	R1 = 29;
 	R2 = (u64)&cc_decls_nextlx;
 	R3 = 21;
 	*tou8p(((i64)R2+(i64)R3)) = asu8(R1);
-L3400:
-	goto L3280;
-	goto L3284;
-L3404:
+L3401:
+	goto L3281;
+	goto L3285;
+L3405:
 	R1 = 0;
 	R2 = 39;
 	cc_lex_lxreadstring(asi64(R2), asi64(R1));
-	goto L3280;
-	goto L3284;
-L3405:
+	goto L3281;
+	goto L3285;
+L3406:
 	R1 = 0;
 	R2 = 34;
 	cc_lex_lxreadstring(asi64(R2), asi64(R1));
-	goto L3280;
-	goto L3284;
-L3406:
-	goto L3284;
+	goto L3281;
+	goto L3285;
 L3407:
+	goto L3285;
+L3408:
 	R1 = (u64)&cc_decls_nextlx;
 	R2 = 16;
 	R1 += (i64)R2;
@@ -35526,30 +35601,30 @@ L3407:
 	R3 = 24;
 	*toi32p(((i64)R2+(i64)R3)) = asi32(R1);
 	asi64(R1) = cc_lex_dowhitespace;
-	if (!asi64(R1)) goto L3409;
+	if (!asi64(R1)) goto L3410;
 	asu64(R1) = cc_lex_lxsptr;
 	R2 = (u64)&cc_decls_nextlx;
 	R3 = 0;
 	*tou64p(((i64)R2+(i64)R3)) = asu64(R1);
-L3410:
+L3411:
 	R1 = (u64)&cc_lex_lxsptr;
 	asu64(R2) = *tou64p(R1); *(tou64p(R1)) += 1; asu64(R1) = asu64(R2);
 	asu8(R1) = *tou8p(R1);
 	R1 = toi64(tou8(R1));
 	switch (asi64(R1)) {
-	case 9: case 32: goto L3414;
-	case 10: case 11: case 12: case 13: case 14: case 15: case 16: case 17: case 18: case 19: case 20: case 21: case 22: case 23: case 24: case 25: case 26: case 27: case 28: case 29: case 30: case 31: goto L3413;
-	default: goto L3413;
+	case 9: case 32: goto L3415;
+	case 10: case 11: case 12: case 13: case 14: case 15: case 16: case 17: case 18: case 19: case 20: case 21: case 22: case 23: case 24: case 25: case 26: case 27: case 28: case 29: case 30: case 31: goto L3414;
+	default: goto L3414;
     };
 // SWITCH
+L3415:
+	goto L3411;
 L3414:
-	goto L3410;
-L3413:
 	R1 = (u64)&cc_lex_lxsptr;
 	(*tou64p(R1)) -=1;
+	goto L3412;
 	goto L3411;
-	goto L3410;
-L3411:
+L3412:
 	asu64(R1) = cc_lex_lxsptr;
 	R2 = (u64)&cc_decls_nextlx;
 	R3 = 0;
@@ -35558,35 +35633,35 @@ L3411:
 	R2 = (u64)&cc_decls_nextlx;
 	R3 = 24;
 	*toi32p(((i64)R2+(i64)R3)) = asi32(R1);
-L3409:
-	goto L3280;
-	goto L3284;
-L3415:
-	goto L3284;
+L3410:
+	goto L3281;
+	goto L3285;
 L3416:
+	goto L3285;
+L3417:
 	asu64(R1) = cc_lex_lxsptr;
 	asu8(R1) = *tou8p(R1);
 	R1 = tou64(tou8(R1));
 	R2 = 61;
-	if (asu64(R1) == asu64(R2)) goto L3418;
-	goto L3419;
-L3418:
+	if (asu64(R1) == asu64(R2)) goto L3419;
+	goto L3420;
+L3419:
 	R1 = 41;
 	R2 = (u64)&cc_decls_nextlx;
 	R3 = 21;
 	*tou8p(((i64)R2+(i64)R3)) = asu8(R1);
 	R1 = (u64)&cc_lex_lxsptr;
 	(*tou64p(R1)) += 1;
-	goto L3417;
-L3419:
+	goto L3418;
+L3420:
 	R1 = 36;
 	R2 = (u64)&cc_decls_nextlx;
 	R3 = 21;
 	*tou8p(((i64)R2+(i64)R3)) = asu8(R1);
-L3417:
-	goto L3280;
-	goto L3284;
-L3420:
+L3418:
+	goto L3281;
+	goto L3285;
+L3421:
 	msysc_m$print_startcon();
 	R1 = tou64("@ SEEN");
 	msysc_m$print_str_nf(asu64(R1));
@@ -35606,30 +35681,30 @@ L3420:
 	msysc_m$print_i64_nf(asi64(R1));
 	msysc_m$print_newline();
 	msysc_m$print_end();
-	goto L3284;
-L3421:
+	goto L3285;
+L3422:
 // cc_lex.lexreadtoken.doeof:
 	R1 = (u64)&cc_lex_lxsptr;
 	(*tou64p(R1)) -=1;
 	asi64(R1) = cc_lex_lx_stackindex;
-	if (!asi64(R1)) goto L3424;
+	if (!asi64(R1)) goto L3425;
 	cc_lex_unstacksourcefile();
 	R1 = 56;
 	R2 = (u64)&cc_decls_nextlx;
 	R3 = 21;
 	*tou8p(((i64)R2+(i64)R3)) = asu8(R1);
-	goto L3423;
-L3424:
+	goto L3424;
+L3425:
 	R1 = 57;
 	R2 = (u64)&cc_decls_nextlx;
 	R3 = 21;
 	*tou8p(((i64)R2+(i64)R3)) = asu8(R1);
-L3423:
-	goto L3280;
-	goto L3284;
-L3425:
-	goto L3284;
-L3287:
+L3424:
+	goto L3281;
+	goto L3285;
+L3426:
+	goto L3285;
+L3288:
 	R1 = 128;
 	asu64(R2) = cc_lex_lxsptr;
 	R3 = 1;
@@ -35637,11 +35712,11 @@ L3287:
 	asu8(R2) = *tou8p(R2);
 	R2 = toi64(tou8(R2));
     {u64 temp = R1; R1 = R2; R2 = temp;}
-	if (asi64(R1) < asi64(R2)) goto L3427;
+	if (asi64(R1) < asi64(R2)) goto L3428;
 	R2 = 255;
-	if (asi64(R1) > asi64(R2)) goto L3427;
-	goto L3289;
-L3427:
+	if (asi64(R1) > asi64(R2)) goto L3428;
+	goto L3290;
+L3428:
 	msysc_m$print_startcon();
 	R1 = tou64("ERROR CHAR");
 	msysc_m$print_str_nf(asu64(R1));
@@ -35668,9 +35743,9 @@ L3427:
 	R2 = (u64)&cc_decls_nextlx;
 	R3 = 21;
 	*tou8p(((i64)R2+(i64)R3)) = asu8(R1);
-	goto L3280;
-	goto L3284;
-L3280:
+	goto L3281;
+	goto L3285;
+L3281:
 	return;
 }
 
@@ -35701,14 +35776,14 @@ static void cc_lex_readrealnumber(u64 pstart, u64 intstart, i64 intlen, i64 base
 	u64 xx2;
 	asi64(R1) = base;
 	R2 = 10;
-	if (asi64(R1) == asi64(R2)) goto L3430;
+	if (asi64(R1) == asi64(R2)) goto L3431;
 	asi64(R1) = base;
 	asi64(R2) = intlen;
 	asu64(R3) = intstart;
 	asu64(R4) = pstart;
 	cc_lex_old_readrealnumber(asu64(R4), asu64(R3), asi64(R2), asi64(R1));
-	goto L3428;
-L3430:
+	goto L3429;
+L3431:
 	R1 = 0;
 	fractstart = asu64(R1);
 	R1 = 0;
@@ -35719,7 +35794,7 @@ L3430:
 	asu8(R1) = *tou8p(R1);
 	R1 = tou64(tou8(R1));
 	R2 = 46;
-	if (asu64(R1) != asu64(R2)) goto L3432;
+	if (asu64(R1) != asu64(R2)) goto L3433;
 	R1 = (u64)&cc_lex_lxsptr;
 	asu64(R1) = *(tou64p(R1)) += 1;
 	fractstart = asu64(R1);
@@ -35728,84 +35803,84 @@ L3430:
 	asu64(R2) = fractstart;
 	asi64(R1) -= asi64(R2);
 	fractlen = asi64(R1);
-L3432:
+L3433:
 	R1 = 0;
 	badexpon = asi64(R1);
 	asu64(R1) = cc_lex_lxsptr;
 	asu8(R1) = *tou8p(R1);
 	R1 = tou64(tou8(R1));
 	R2 = 101;
-	if (asu64(R1) == asu64(R2)) goto L3434;
+	if (asu64(R1) == asu64(R2)) goto L3435;
 	R2 = 69;
-	if (asu64(R1) == asu64(R2)) goto L3434;
+	if (asu64(R1) == asu64(R2)) goto L3435;
 	R2 = 112;
-	if (asu64(R1) == asu64(R2)) goto L3435;
+	if (asu64(R1) == asu64(R2)) goto L3436;
 	R2 = 80;
-	if (asu64(R1) == asu64(R2)) goto L3435;
-	goto L3436;
-L3434:
-	asi64(R1) = base;
-	R2 = 16;
-	if (asi64(R1) == asi64(R2)) goto L3438;
-	R1 = (u64)&cc_lex_lxsptr;
-	(*tou64p(R1)) += 1;
-	R1 = (u64)&badexpon;
-	asi64(R1) = cc_lex_readexponent(asu64(R1));
-	expon = asi64(R1);
-L3438:
-	goto L3433;
+	if (asu64(R1) == asu64(R2)) goto L3436;
+	goto L3437;
 L3435:
 	asi64(R1) = base;
 	R2 = 16;
-	if (asi64(R1) != asi64(R2)) goto L3440;
+	if (asi64(R1) == asi64(R2)) goto L3439;
 	R1 = (u64)&cc_lex_lxsptr;
 	(*tou64p(R1)) += 1;
 	R1 = (u64)&badexpon;
 	asi64(R1) = cc_lex_readexponent(asu64(R1));
 	expon = asi64(R1);
-L3440:
-	goto L3433;
+L3439:
+	goto L3434;
 L3436:
-L3433:
+	asi64(R1) = base;
+	R2 = 16;
+	if (asi64(R1) != asi64(R2)) goto L3441;
+	R1 = (u64)&cc_lex_lxsptr;
+	(*tou64p(R1)) += 1;
+	R1 = (u64)&badexpon;
+	asi64(R1) = cc_lex_readexponent(asu64(R1));
+	expon = asi64(R1);
+L3441:
+	goto L3434;
+L3437:
+L3434:
 	asi64(R1) = badexpon;
-	if (!asi64(R1)) goto L3442;
+	if (!asi64(R1)) goto L3443;
 	R1 = (u64)&cc_lex_lxsptr;
 	(*tou64p(R1)) -=1;
 	asu64(R1) = pstart;
 	cc_lex_readalphanumeric(asu64(R1));
-	goto L3428;
-L3442:
+	goto L3429;
+L3443:
 	asu64(R1) = cc_lex_lxsptr;
 	asu8(R1) = *tou8p(R1);
 	R1 = tou64(tou8(R1));
 	R2 = 102;
-	if (asu64(R1) == asu64(R2)) goto L3444;
+	if (asu64(R1) == asu64(R2)) goto L3445;
 	R2 = 70;
-	if (asu64(R1) == asu64(R2)) goto L3444;
+	if (asu64(R1) == asu64(R2)) goto L3445;
 	R2 = 108;
-	if (asu64(R1) == asu64(R2)) goto L3444;
+	if (asu64(R1) == asu64(R2)) goto L3445;
 	R2 = 76;
-	if (asu64(R1) == asu64(R2)) goto L3444;
-	goto L3445;
-L3444:
+	if (asu64(R1) == asu64(R2)) goto L3445;
+	goto L3446;
+L3445:
 	R1 = (u64)&cc_lex_lxsptr;
 	(*tou64p(R1)) += 1;
-	goto L3443;
-L3445:
+	goto L3444;
+L3446:
 	R1 = (u64)&cc_lex_alphamap;
 	asu64(R2) = cc_lex_lxsptr;
 	asu8(R2) = *tou8p(R2);
 	R2 = toi64(tou8(R2));
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
-	if (!asu8(R1)) goto L3447;
+	if (!asu8(R1)) goto L3448;
 	asu64(R1) = pstart;
 	cc_lex_readalphanumeric(asu64(R1));
-	goto L3428;
-L3447:
-L3443:
+	goto L3429;
+L3448:
+L3444:
 	asi64(R1) = base;
 	R2 = 16;
-	if (asi64(R1) != asi64(R2)) goto L3449;
+	if (asi64(R1) != asi64(R2)) goto L3450;
 	R1 = 48;
 	R2 = (u64)&realstr;
 	R3 = 1;
@@ -35820,39 +35895,39 @@ L3443:
 	rs = asu64(R1);
 	R1 = 2;
 	pref = asi64(R1);
-	goto L3448;
-L3449:
+	goto L3449;
+L3450:
 	R1 = (u64)&realstr;
 	R2 = 0;
 	R1 += (i64)R2;
 	rs = asu64(R1);
 	R1 = 0;
 	pref = asi64(R1);
-L3448:
+L3449:
 	asi64(R1) = intlen;
 	asi64(R2) = fractlen;
 	asi64(R1) += asi64(R2);
 	R2 = 500;
-	if (asi64(R1) <= asi64(R2)) goto L3451;
+	if (asi64(R1) <= asi64(R2)) goto L3452;
 	R1 = tou64("Real too long");
 	cc_lex_lxerror(asu64(R1));
-L3451:
+L3452:
 	asi64(R1) = intlen;
-	if (!asi64(R1)) goto L3453;
+	if (!asi64(R1)) goto L3454;
 	asi64(R1) = intlen;
 	asu64(R2) = intstart;
 	asu64(R3) = rs;
 	memcpy(asu64(R3), asu64(R2), asu64(R1));
-L3453:
+L3454:
 	asi64(R1) = fractlen;
-	if (!asi64(R1)) goto L3455;
+	if (!asi64(R1)) goto L3456;
 	asi64(R1) = fractlen;
 	asu64(R2) = fractstart;
 	asu64(R3) = rs;
 	asi64(R4) = intlen;
 	R3 += (i64)R4;
 	memcpy(asu64(R3), asu64(R2), asu64(R1));
-L3455:
+L3456:
 	asi64(R1) = base;
 	asr64(R1) = tor64(asi64(R1));
 	R2 = R1;
@@ -35860,12 +35935,12 @@ L3455:
 	expbase = asr64(R1);
 	asi64(R1) = base;
 	R2 = 10;
-	if (asi64(R1) != asi64(R2)) goto L3457;
+	if (asi64(R1) != asi64(R2)) goto L3458;
 	asi64(R1) = fractlen;
 	R2 = (u64)&expon;
 	*toi64p(R2) -= asi64(R1);
-	goto L3456;
-L3457:
+	goto L3457;
+L3458:
 	asi64(R1) = fractlen;
 	R2 = 4;
 	asi64(R1) *= asi64(R2);
@@ -35873,7 +35948,7 @@ L3457:
 	*toi64p(R2) -= asi64(R1);
 	asr64(R1) = 2.000000000000000000e+000;
 	expbase = asr64(R1);
-L3456:
+L3457:
 	R1 = 0;
 	R2 = (u64)&realstr;
 	asi64(R3) = pref;
@@ -35886,12 +35961,12 @@ L3456:
 	msysc_m$print_startstr(asu64(R1));
 	asi64(R1) = base;
 	R2 = 10;
-	if (asi64(R1) != asi64(R2)) goto L3459;
+	if (asi64(R1) != asi64(R2)) goto L3460;
 	R1 = tou64("e");
-	goto L3458;
-L3459:
+	goto L3459;
+L3460:
 	R1 = tou64("p");
-L3458:
+L3459:
 	msysc_m$print_str_nf(asu64(R1));
 	msysc_m$print_nogap();
 	asi64(R1) = expon;
@@ -35902,10 +35977,10 @@ L3458:
 	asu64(R1) = strcat(asu64(R2), asu64(R1));
 	asi64(R1) = base;
 	R2 = 10;
-	if (asi64(R1) == asi64(R2)) goto L3461;
+	if (asi64(R1) == asi64(R2)) goto L3462;
 	R1 = tou64("Non-base-10 floats temporarily unavailable");
 	cc_lex_lxerror(asu64(R1));
-L3461:
+L3462:
 	R1 = 0;
 	R2 = (u64)&realstr;
 	asr64(R1) = strtod(asu64(R2), asu64(R1));
@@ -35932,7 +36007,7 @@ L3461:
 	R2 = (u64)&cc_decls_nextlx;
 	R3 = 24;
 	*toi32p(((i64)R2+(i64)R3)) = asi32(R1);
-L3428:
+L3429:
 	return;
 }
 
@@ -35950,22 +36025,22 @@ static i64 cc_lex_readexponent(u64 badexpon) {
 	asu8(R1) = *tou8p(R1);
 	R1 = tou64(tou8(R1));
 	R2 = 43;
-	if (asu64(R1) == asu64(R2)) goto L3464;
-	R2 = 45;
 	if (asu64(R1) == asu64(R2)) goto L3465;
-	goto L3466;
-L3464:
+	R2 = 45;
+	if (asu64(R1) == asu64(R2)) goto L3466;
+	goto L3467;
+L3465:
 	R1 = (u64)&cc_lex_lxsptr;
 	(*tou64p(R1)) += 1;
-	goto L3463;
-L3465:
+	goto L3464;
+L3466:
 	R1 = (u64)&cc_lex_lxsptr;
 	(*tou64p(R1)) += 1;
 	R1 = 1;
 	neg = asi64(R1);
-	goto L3463;
-L3466:
-L3463:
+	goto L3464;
+L3467:
+L3464:
 	asu64(R1) = cc_lex_lxsptr;
 	numstart = asu64(R1);
 	R1 = 10;
@@ -35975,21 +36050,21 @@ L3463:
 	length = asi64(R1);
 	asi64(R1) = length;
 	R2 = 0;
-	if (asi64(R1) != asi64(R2)) goto L3468;
+	if (asi64(R1) != asi64(R2)) goto L3469;
 	R1 = 1;
 	asu64(R2) = badexpon;
 	*toi64p(R2) = asi64(R1);
 	R1 = 0;
-	goto L3462;
-L3468:
+	goto L3463;
+L3469:
 	R1 = 0;
 	a = asi64(R1);
 	asi64(R1) = length;
 	av_1 = asi64(R1);
 	asi64(R1) = av_1;
 	R2 = 0;
-	if (asi64(R1) <= asi64(R2)) goto L3471;
-L3469:
+	if (asi64(R1) <= asi64(R2)) goto L3472;
+L3470:
 	R1 = (u64)&numstart;
 	asu64(R2) = *tou64p(R1); *(tou64p(R1)) += 1; asu64(R1) = asu64(R2);
 	asu8(R1) = *tou8p(R1);
@@ -36003,18 +36078,18 @@ L3469:
 	R2 = 48;
 	asi64(R1) -= asi64(R2);
 	a = asi64(R1);
-	if (--asi64(av_1)) goto L3469;
-L3471:
+	if (--asi64(av_1)) goto L3470;
+L3472:
 	asi64(R1) = neg;
-	if (!asi64(R1)) goto L3473;
+	if (!asi64(R1)) goto L3474;
 	asi64(R1) = a;
 	asi64(R1) = -asi64(R1);
-	goto L3472;
-L3473:
+	goto L3473;
+L3474:
 	asi64(R1) = a;
-L3472:
-	goto L3462;
-L3462:
+L3473:
+	goto L3463;
+L3463:
 	return asi64(R1);
 }
 
@@ -36074,17 +36149,17 @@ static void cc_lex_printsymbol(u64 lp) {
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 67;
-	if (asi64(R1) == asi64(R2)) goto L3477;
-	R2 = 59;
 	if (asi64(R1) == asi64(R2)) goto L3478;
-	R2 = 60;
+	R2 = 59;
 	if (asi64(R1) == asi64(R2)) goto L3479;
-	R2 = 63;
+	R2 = 60;
 	if (asi64(R1) == asi64(R2)) goto L3480;
-	R2 = 61;
+	R2 = 63;
 	if (asi64(R1) == asi64(R2)) goto L3481;
-	goto L3482;
-L3477:
+	R2 = 61;
+	if (asi64(R1) == asi64(R2)) goto L3482;
+	goto L3483;
+L3478:
 	R1 = 0;
 	R2 = (u64)&l;
 	R3 = 0;
@@ -36098,8 +36173,8 @@ L3477:
 	R4 = 0;
 	asu64(R3) = *tou64p(((i64)R3+(i64)R4));
 	cc_lex_printstrn(asu64(R3), asi64(R2), asu64(R1));
-	goto L3476;
-L3478:
+	goto L3477;
+L3479:
 	msysc_m$print_startcon();
 	R1 = (u64)&l;
 	R2 = 0;
@@ -36112,8 +36187,8 @@ L3478:
 	R1 = 0;
 	asu64(R2) = lp;
 	cc_lex_shownumberstr(asu64(R2), asu64(R1));
-	goto L3476;
-L3479:
+	goto L3477;
+L3480:
 	msysc_m$print_startcon();
 	R1 = 0;
 	R2 = (u64)&l;
@@ -36127,28 +36202,28 @@ L3479:
 	R1 = 0;
 	asu64(R2) = lp;
 	cc_lex_shownumberstr(asu64(R2), asu64(R1));
-	goto L3476;
-L3480:
-	msysc_m$print_startcon();
-	R1 = tou64("\"");
-	msysc_m$print_str_nf(asu64(R1));
-	msysc_m$print_end();
-	R1 = 0;
-	R2 = (u64)&l;
-	R3 = 24;
-	asi32(R2) = *toi32p(((i64)R2+(i64)R3));
-	R2 = toi64(toi32(R2));
-	R3 = (u64)&l;
-	R4 = 0;
-	asu64(R3) = *tou64p(((i64)R3+(i64)R4));
-	cc_lex_printstrn(asu64(R3), asi64(R2), asu64(R1));
-	msysc_m$print_startcon();
-	R1 = tou64("\"");
-	msysc_m$print_str_nf(asu64(R1));
-	msysc_m$print_end();
-	goto L3476;
+	goto L3477;
 L3481:
 	msysc_m$print_startcon();
+	R1 = tou64("\"");
+	msysc_m$print_str_nf(asu64(R1));
+	msysc_m$print_end();
+	R1 = 0;
+	R2 = (u64)&l;
+	R3 = 24;
+	asi32(R2) = *toi32p(((i64)R2+(i64)R3));
+	R2 = toi64(toi32(R2));
+	R3 = (u64)&l;
+	R4 = 0;
+	asu64(R3) = *tou64p(((i64)R3+(i64)R4));
+	cc_lex_printstrn(asu64(R3), asi64(R2), asu64(R1));
+	msysc_m$print_startcon();
+	R1 = tou64("\"");
+	msysc_m$print_str_nf(asu64(R1));
+	msysc_m$print_end();
+	goto L3477;
+L3482:
+	msysc_m$print_startcon();
 	R1 = tou64("'");
 	msysc_m$print_str_nf(asu64(R1));
 	msysc_m$print_end();
@@ -36165,12 +36240,12 @@ L3481:
 	R1 = tou64("'");
 	msysc_m$print_str_nf(asu64(R1));
 	msysc_m$print_end();
-	goto L3476;
-L3482:
+	goto L3477;
+L3483:
 	R1 = (u64)&l;
 	R2 = 22;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
-	if (!asu8(R1)) goto L3484;
+	if (!asu8(R1)) goto L3485;
 	msysc_m$print_startcon();
 	R1 = tou64("#");
 	msysc_m$print_str_nf(asu64(R1));
@@ -36180,8 +36255,8 @@ L3482:
 	R1 = toi64(tou8(R1));
 	msysc_m$print_i64_nf(asi64(R1));
 	msysc_m$print_end();
-L3484:
-L3476:
+L3485:
+L3477:
 	msysc_m$print_startcon();
 	msysc_m$print_newline();
 	msysc_m$print_end();
@@ -36195,36 +36270,36 @@ static void cc_lex_lexsetup() {
 	cc_lex_fillhashtable();
 	R1 = 0;
 	i = asi64(R1);
-L3486:
+L3487:
 	asi64(R1) = i;
 	switch (asi64(R1)) {
-	case 36: case 48: case 49: case 50: case 51: case 52: case 53: case 54: case 55: case 56: case 57: case 65: case 66: case 67: case 68: case 69: case 70: case 71: case 72: case 73: case 74: case 75: case 76: case 77: case 78: case 79: case 80: case 81: case 82: case 83: case 84: case 85: case 86: case 87: case 88: case 89: case 90: case 95: case 97: case 98: case 99: case 100: case 101: case 102: case 103: case 104: case 105: case 106: case 107: case 108: case 109: case 110: case 111: case 112: case 113: case 114: case 115: case 116: case 117: case 118: case 119: case 120: case 121: case 122: case 128: case 129: case 130: case 131: case 132: case 133: case 134: case 135: case 136: case 137: case 138: case 139: case 140: case 141: case 142: case 143: case 144: case 145: case 146: case 147: case 148: case 149: case 150: case 151: case 152: case 153: case 154: case 155: case 156: case 157: case 158: case 159: case 160: case 161: case 162: case 163: case 164: case 165: case 166: case 167: case 168: case 169: case 170: case 171: case 172: case 173: case 174: case 175: case 176: case 177: case 178: case 179: case 180: case 181: case 182: case 183: case 184: case 185: case 186: case 187: case 188: case 189: case 190: case 191: case 192: case 193: case 194: case 195: case 196: case 197: case 198: case 199: case 200: case 201: case 202: case 203: case 204: case 205: case 206: case 207: case 208: case 209: case 210: case 211: case 212: case 213: case 214: case 215: case 216: case 217: case 218: case 219: case 220: case 221: case 222: case 223: case 224: case 225: case 226: case 227: case 228: case 229: case 230: case 231: case 232: case 233: case 234: case 235: case 236: case 237: case 238: case 239: case 240: case 241: case 242: case 243: case 244: case 245: case 246: case 247: case 248: case 249: case 250: case 251: case 252: case 253: case 254: case 255: goto L3492;
-	case 37: case 38: case 39: case 40: case 41: case 42: case 43: case 44: case 45: case 46: case 47: case 58: case 59: case 60: case 61: case 62: case 63: case 64: case 91: case 92: case 93: case 94: case 96: case 123: case 124: case 125: case 126: case 127: goto L3491;
-	default: goto L3491;
+	case 36: case 48: case 49: case 50: case 51: case 52: case 53: case 54: case 55: case 56: case 57: case 65: case 66: case 67: case 68: case 69: case 70: case 71: case 72: case 73: case 74: case 75: case 76: case 77: case 78: case 79: case 80: case 81: case 82: case 83: case 84: case 85: case 86: case 87: case 88: case 89: case 90: case 95: case 97: case 98: case 99: case 100: case 101: case 102: case 103: case 104: case 105: case 106: case 107: case 108: case 109: case 110: case 111: case 112: case 113: case 114: case 115: case 116: case 117: case 118: case 119: case 120: case 121: case 122: case 128: case 129: case 130: case 131: case 132: case 133: case 134: case 135: case 136: case 137: case 138: case 139: case 140: case 141: case 142: case 143: case 144: case 145: case 146: case 147: case 148: case 149: case 150: case 151: case 152: case 153: case 154: case 155: case 156: case 157: case 158: case 159: case 160: case 161: case 162: case 163: case 164: case 165: case 166: case 167: case 168: case 169: case 170: case 171: case 172: case 173: case 174: case 175: case 176: case 177: case 178: case 179: case 180: case 181: case 182: case 183: case 184: case 185: case 186: case 187: case 188: case 189: case 190: case 191: case 192: case 193: case 194: case 195: case 196: case 197: case 198: case 199: case 200: case 201: case 202: case 203: case 204: case 205: case 206: case 207: case 208: case 209: case 210: case 211: case 212: case 213: case 214: case 215: case 216: case 217: case 218: case 219: case 220: case 221: case 222: case 223: case 224: case 225: case 226: case 227: case 228: case 229: case 230: case 231: case 232: case 233: case 234: case 235: case 236: case 237: case 238: case 239: case 240: case 241: case 242: case 243: case 244: case 245: case 246: case 247: case 248: case 249: case 250: case 251: case 252: case 253: case 254: case 255: goto L3493;
+	case 37: case 38: case 39: case 40: case 41: case 42: case 43: case 44: case 45: case 46: case 47: case 58: case 59: case 60: case 61: case 62: case 63: case 64: case 91: case 92: case 93: case 94: case 96: case 123: case 124: case 125: case 126: case 127: goto L3492;
+	default: goto L3492;
     };
 // SWITCH
-L3492:
+L3493:
 	R1 = 1;
 	R2 = (u64)&cc_lex_alphamap;
 	asi64(R3) = i;
 	*tou8p(((i64)R2+(i64)R3)) = asu8(R1);
-	goto L3489;
-L3491:
-L3489:
+	goto L3490;
+L3492:
+L3490:
 	asi64(R1) = i;
 	switch (asi64(R1)) {
-	case 48: case 49: case 50: case 51: case 52: case 53: case 54: case 55: case 56: case 57: goto L3496;
-	default: goto L3495;
+	case 48: case 49: case 50: case 51: case 52: case 53: case 54: case 55: case 56: case 57: goto L3497;
+	default: goto L3496;
     };
 // SWITCH
-L3496:
+L3497:
 	R1 = 1;
 	R2 = (u64)&cc_lex_digitmap;
 	asi64(R3) = i;
 	*tou8p(((i64)R2+(i64)R3)) = asu8(R1);
-	goto L3493;
-L3495:
-L3493:
+	goto L3494;
+L3496:
+L3494:
 	R1 = 1;
 	R2 = (u64)&cc_lex_commentmap;
 	asi64(R3) = i;
@@ -36237,7 +36312,7 @@ L3493:
 	R2 = (u64)&cc_lex_spacemap;
 	asi64(R3) = i;
 	*tou8p(((i64)R2+(i64)R3)) = asu8(R1);
-	i += 1; if (i <= 255) goto L3486;
+	i += 1; if (i <= 255) goto L3487;
 	R1 = 0;
 	R2 = (u64)&cc_lex_commentmap;
 	R3 = 42;
@@ -36282,10 +36357,10 @@ L3493:
 static void cc_lex_printstrn(u64 s, i64 length, u64 f) {
     u64 R1, R2; 
 	asi64(R1) = length;
-	if (!asi64(R1)) goto L3499;
+	if (!asi64(R1)) goto L3500;
 	asu64(R1) = f;
 	R2 = 0;
-	if (asu64(R1) != asu64(R2)) goto L3501;
+	if (asu64(R1) != asu64(R2)) goto L3502;
 	msysc_m$print_startcon();
 	R1 = tou64("v");
 	asi64(R2) = length;
@@ -36295,8 +36370,8 @@ static void cc_lex_printstrn(u64 s, i64 length, u64 f) {
 	asu64(R2) = s;
 	msysc_m$print_str(asu64(R2), asu64(R1));
 	msysc_m$print_end();
-	goto L3500;
-L3501:
+	goto L3501;
+L3502:
 	asu64(R1) = f;
 	msysc_m$print_startfile(asu64(R1));
 	R1 = tou64("v");
@@ -36307,8 +36382,8 @@ L3501:
 	asu64(R2) = s;
 	msysc_m$print_str(asu64(R2), asu64(R1));
 	msysc_m$print_end();
+L3501:
 L3500:
-L3499:
 	return;
 }
 
@@ -36318,7 +36393,7 @@ static u64 cc_lex_scannumber(i64 base) {
 	i64 c;
 	asu64(R1) = cc_lex_lxsptr;
 	dest = asu64(R1);
-L3503:
+L3504:
 	R1 = (u64)&cc_lex_lxsptr;
 	asu64(R2) = *tou64p(R1); *(tou64p(R1)) += 1; asu64(R1) = asu64(R2);
 	asu8(R1) = *tou8p(R1);
@@ -36326,14 +36401,14 @@ L3503:
 	R2 = R1;
 	c = asi64(R2);
 	switch (asi64(R1)) {
-	case 39: case 95: case 96: goto L3513;
-	case 40: case 41: case 42: case 43: case 44: case 45: case 46: case 47: case 58: case 59: case 60: case 61: case 62: case 63: case 64: case 71: case 72: case 73: case 74: case 75: case 76: case 77: case 78: case 79: case 80: case 81: case 82: case 83: case 84: case 85: case 86: case 87: case 88: case 89: case 90: case 91: case 92: case 93: case 94: goto L3506;
-	case 48: case 49: case 50: case 51: case 52: case 53: case 54: case 55: case 56: case 57: goto L3507;
-	case 65: case 66: case 67: case 68: case 69: case 70: case 97: case 98: case 99: case 100: case 101: case 102: goto L3510;
-	default: goto L3506;
+	case 39: case 95: case 96: goto L3514;
+	case 40: case 41: case 42: case 43: case 44: case 45: case 46: case 47: case 58: case 59: case 60: case 61: case 62: case 63: case 64: case 71: case 72: case 73: case 74: case 75: case 76: case 77: case 78: case 79: case 80: case 81: case 82: case 83: case 84: case 85: case 86: case 87: case 88: case 89: case 90: case 91: case 92: case 93: case 94: goto L3507;
+	case 48: case 49: case 50: case 51: case 52: case 53: case 54: case 55: case 56: case 57: goto L3508;
+	case 65: case 66: case 67: case 68: case 69: case 70: case 97: case 98: case 99: case 100: case 101: case 102: goto L3511;
+	default: goto L3507;
     };
 // SWITCH
-L3507:
+L3508:
 	asi64(R1) = c;
 	R2 = (u64)&dest;
 	asu64(R3) = *tou64p(R2); *(tou64p(R2)) += 1; asu64(R2) = asu64(R3);
@@ -36342,37 +36417,37 @@ L3507:
 	R2 = 48;
 	asi64(R3) = base;
 	asi64(R2) += asi64(R3);
-	if (asi64(R1) < asi64(R2)) goto L3509;
+	if (asi64(R1) < asi64(R2)) goto L3510;
 	R1 = tou64("Digit out of range");
 	cc_lex_lxerror(asu64(R1));
-L3509:
-	goto L3503;
 L3510:
+	goto L3504;
+L3511:
 	asi64(R1) = base;
 	R2 = 16;
-	if (asi64(R1) != asi64(R2)) goto L3512;
+	if (asi64(R1) != asi64(R2)) goto L3513;
 	asi64(R1) = c;
 	R2 = (u64)&dest;
 	asu64(R3) = *tou64p(R2); *(tou64p(R2)) += 1; asu64(R2) = asu64(R3);
 	*tou8p(R2) = asu8(R1);
-	goto L3511;
-L3512:
-	R1 = (u64)&cc_lex_lxsptr;
-	(*tou64p(R1)) -=1;
-	goto L3504;
-L3511:
-	goto L3503;
+	goto L3512;
 L3513:
-	goto L3503;
-L3506:
 	R1 = (u64)&cc_lex_lxsptr;
 	(*tou64p(R1)) -=1;
+	goto L3505;
+L3512:
 	goto L3504;
-	goto L3503;
-L3504:
+L3514:
+	goto L3504;
+L3507:
+	R1 = (u64)&cc_lex_lxsptr;
+	(*tou64p(R1)) -=1;
+	goto L3505;
+	goto L3504;
+L3505:
 	asu64(R1) = dest;
-	goto L3502;
-L3502:
+	goto L3503;
+L3503:
 	return asu64(R1);
 }
 
@@ -36382,14 +36457,14 @@ static i64 cc_lex_lookup() {
 	i64 wrapped;
 	i64 length;
 // cc_lex.lookup.retry:
-L3515:
+L3516:
 	asi64(R1) = cc_lex_lxhashvalue;
 	asi64(R2) = cc_decls_hstmask;
 	asi64(R1) &= asi64(R2);
 	j = asi64(R1);
 	R1 = 0;
 	wrapped = asi64(R1);
-L3516:
+L3517:
 	asu64(R1) = cc_decls_hashtable;
 	asi64(R2) = j;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2*8));
@@ -36404,15 +36479,15 @@ L3516:
 	R1 = toi64(tou8(R1));
 	length = asi64(R1);
 	asi64(R1) = length;
-	if (asi64(R1)) goto L3519;
-	goto L3517;
-L3519:
+	if (asi64(R1)) goto L3520;
+	goto L3518;
+L3520:
 	asi64(R1) = length;
 	R2 = (u64)&cc_decls_nextlx;
 	R3 = 24;
 	asi32(R2) = *toi32p(((i64)R2+(i64)R3));
 	R2 = toi64(toi32(R2));
-	if (asi64(R1) != asi64(R2)) goto L3521;
+	if (asi64(R1) != asi64(R2)) goto L3522;
 	asi64(R1) = length;
 	asu64(R2) = cc_lex_lxsvalue;
 	R3 = (u64)&cc_decls_nextlx;
@@ -36423,30 +36498,30 @@ L3519:
 	asi32(R1) = memcmp(asu64(R3), asu64(R2), asu64(R1));
 	R1 = toi64(toi32(R1));
 	R2 = 0;
-	if (asi64(R1) != asi64(R2)) goto L3523;
+	if (asi64(R1) != asi64(R2)) goto L3524;
 	R1 = 1;
-	goto L3514;
-L3523:
-L3521:
+	goto L3515;
+L3524:
+L3522:
 	R1 = (u64)&j;
 	asi64(R1) = *(toi64p(R1)) += 1;
 	asi64(R2) = cc_decls_hstsize;
-	if (asi64(R1) < asi64(R2)) goto L3525;
+	if (asi64(R1) < asi64(R2)) goto L3526;
 	asi64(R1) = wrapped;
-	if (!asi64(R1)) goto L3527;
+	if (!asi64(R1)) goto L3528;
 	R1 = tou64("HASHTABLE FULL");
 	mlib_abortprogram(asu64(R1));
-L3527:
+L3528:
 	R1 = 1;
 	wrapped = asi64(R1);
 	R1 = 0;
 	j = asi64(R1);
-L3525:
-	goto L3516;
-L3517:
+L3526:
+	goto L3517;
+L3518:
 	asi64(R1) = cc_lex_nhstsymbols;
 	asi64(R2) = cc_lex_hstthreshold;
-	if (asi64(R1) < asi64(R2)) goto L3529;
+	if (asi64(R1) < asi64(R2)) goto L3530;
 	cc_lex_newhashtable();
 	R1 = (u64)&cc_decls_nextlx;
 	R2 = 24;
@@ -36455,8 +36530,8 @@ L3517:
 	asu64(R2) = cc_lex_lxsvalue;
 	asi64(R1) = cc_lex_gethashvalue(asu64(R2), asi64(R1));
 	cc_lex_lxhashvalue = asi64(R1);
-	goto L3515;
-L3529:
+	goto L3516;
+L3530:
 	R1 = (u64)&cc_decls_nextlx;
 	R2 = 24;
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
@@ -36485,8 +36560,8 @@ L3529:
 	R1 = (u64)&cc_lex_nhstsymbols;
 	(*toi64p(R1)) += 1;
 	R1 = 0;
-	goto L3514;
-L3514:
+	goto L3515;
+L3515:
 	return asi64(R1);
 }
 
@@ -36497,19 +36572,19 @@ static u64 cc_lex_gethashvalue(u64 s, i64 length) {
 	i64 av_1;
 	asi64(R1) = length;
 	R2 = -1;
-	if (asi64(R1) != asi64(R2)) goto L3532;
+	if (asi64(R1) != asi64(R2)) goto L3533;
 	asu64(R1) = s;
 	asi64(R1) = strlen(asu64(R1));
 	length = asi64(R1);
-L3532:
+L3533:
 	R1 = 0;
 	hsum = asu64(R1);
 	asi64(R1) = length;
 	av_1 = asi64(R1);
 	asi64(R1) = av_1;
 	R2 = 0;
-	if (asi64(R1) <= asi64(R2)) goto L3535;
-L3533:
+	if (asi64(R1) <= asi64(R2)) goto L3536;
+L3534:
 	asu64(R1) = hsum;
 	R2 = 4;
 	asu64(R1) <<= asu64(R2);
@@ -36521,15 +36596,15 @@ L3533:
 	R2 = tou64(tou8(R2));
 	asu64(R1) += asu64(R2);
 	hsum = asu64(R1);
-	if (--asi64(av_1)) goto L3533;
-L3535:
+	if (--asi64(av_1)) goto L3534;
+L3536:
 	asu64(R1) = hsum;
 	R2 = 5;
 	asu64(R1) <<= asu64(R2);
 	asu64(R2) = hsum;
 	asu64(R1) -= asu64(R2);
-	goto L3530;
-L3530:
+	goto L3531;
+L3531:
 	return asu64(R1);
 }
 
@@ -36549,15 +36624,15 @@ static void cc_lex_inithashtable() {
 	i = asi64(R1);
 	asi64(R1) = cc_decls_hstmask;
 	R2 = 0;
-	if (asi64(R1) < asi64(R2)) goto L3539;
-L3537:
+	if (asi64(R1) < asi64(R2)) goto L3540;
+L3538:
 	R1 = 128;
 	asu64(R1) = mlib_pcm_allocz(asi64(R1));
 	asu64(R2) = cc_decls_hashtable;
 	asi64(R3) = i;
 	*tou64p(((i64)R2+(i64)R3*8)) = asu64(R1);
-	i += 1; if (i <= cc_decls_hstmask) goto L3537;
-L3539:
+	i += 1; if (i <= cc_decls_hstmask) goto L3538;
+L3540:
 	R1 = 0;
 	cc_lex_nhstsymbols = asi64(R1);
 	R1 = 6;
@@ -36580,8 +36655,8 @@ static void cc_lex_fillhashtable() {
 	av_1 = asi64(R1);
 	asi64(R1) = av_1;
 	R2 = 1;
-	if (asi64(R1) < asi64(R2)) goto L3543;
-L3541:
+	if (asi64(R1) < asi64(R2)) goto L3544;
+L3542:
 	R1 = (u64)&cc_tables_stnames;
 	asi64(R2) = i;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2*8-8));
@@ -36591,11 +36666,11 @@ L3541:
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2*4-4));
 	R1 = toi64(toi32(R1));
 	R2 = 68;
-	if (asi64(R1) != asi64(R2)) goto L3545;
+	if (asi64(R1) != asi64(R2)) goto L3546;
 	asu64(R1) = cc_lex_lxsvalue;
 	asu64(R1) = mlib_pcm_copyheapstring(asu64(R1));
 	cc_lex_lxsvalue = asu64(R1);
-L3545:
+L3546:
 	asu64(R1) = cc_lex_lxsvalue;
 	asi64(R1) = strlen(asu64(R1));
 	R2 = (u64)&cc_decls_nextlx;
@@ -36609,7 +36684,7 @@ L3545:
 	asi64(R1) = cc_lex_gethashvalue(asu64(R2), asi64(R1));
 	cc_lex_lxhashvalue = asi64(R1);
 	asi64(R1) = cc_lex_lookup();
-	if (!asi64(R1)) goto L3547;
+	if (!asi64(R1)) goto L3548;
 	msysc_m$print_startcon();
 	R1 = (u64)&cc_tables_stnames;
 	asi64(R2) = i;
@@ -36619,7 +36694,7 @@ L3545:
 	msysc_m$print_end();
 	R1 = tou64("Duplicate symbol table entry");
 	mlib_abortprogram(asu64(R1));
-L3547:
+L3548:
 	R1 = (u64)&cc_tables_stsymbols;
 	asi64(R2) = i;
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2*4-4));
@@ -36636,8 +36711,8 @@ L3547:
 	asu64(R2) = *tou64p(((i64)R2+(i64)R3));
 	R3 = 100;
 	*toi16p(((i64)R2+(i64)R3)) = asi16(R1);
-	i += 1; if (i <= av_1) goto L3541;
-L3543:
+	i += 1; if (i <= av_1) goto L3542;
+L3544:
 	return;
 }
 
@@ -36662,7 +36737,7 @@ static i64 cc_lex_dolexdirective() {
 	dir = asi64(R1);
 	asi64(R1) = dir;
 	R2 = 0;
-	if (asi64(R1) != asi64(R2)) goto L3550;
+	if (asi64(R1) != asi64(R2)) goto L3551;
 	R1 = 0;
 	asu64(R2) = cc_lex_lxsptr;
 	asu64(R3) = pstart;
@@ -36674,53 +36749,53 @@ static i64 cc_lex_dolexdirective() {
 	msysc_m$print_end();
 	R1 = tou64("Invalid # directive");
 	cc_lex_lxerror(asu64(R1));
-L3550:
+L3551:
 	asi64(R1) = dir;
 	R2 = 7;
-	if (asi64(R1) == asi64(R2)) goto L3552;
-	R2 = 1;
 	if (asi64(R1) == asi64(R2)) goto L3553;
-	R2 = 10;
+	R2 = 1;
 	if (asi64(R1) == asi64(R2)) goto L3554;
-	R2 = 8;
+	R2 = 10;
 	if (asi64(R1) == asi64(R2)) goto L3555;
-	R2 = 9;
+	R2 = 8;
 	if (asi64(R1) == asi64(R2)) goto L3556;
-	R2 = 3;
+	R2 = 9;
 	if (asi64(R1) == asi64(R2)) goto L3557;
+	R2 = 3;
+	if (asi64(R1) == asi64(R2)) goto L3558;
 	R2 = 4;
-	if (asi64(R1) == asi64(R2)) goto L3558;
-	R2 = 5;
-	if (asi64(R1) == asi64(R2)) goto L3558;
-	R2 = 6;
 	if (asi64(R1) == asi64(R2)) goto L3559;
-	R2 = 13;
+	R2 = 5;
+	if (asi64(R1) == asi64(R2)) goto L3559;
+	R2 = 6;
 	if (asi64(R1) == asi64(R2)) goto L3560;
-	R2 = 14;
+	R2 = 13;
 	if (asi64(R1) == asi64(R2)) goto L3561;
-	R2 = 11;
+	R2 = 14;
 	if (asi64(R1) == asi64(R2)) goto L3562;
-	R2 = 15;
+	R2 = 11;
 	if (asi64(R1) == asi64(R2)) goto L3563;
-	goto L3564;
-L3552:
+	R2 = 15;
+	if (asi64(R1) == asi64(R2)) goto L3564;
+	goto L3565;
+L3553:
 	R1 = 1;
 	cc_lex_isincludefile = asi64(R1);
-	goto L3566;
-L3565:
+	goto L3567;
+L3566:
 	R1 = (u64)&cc_lex_lxsptr;
 	(*tou64p(R1)) += 1;
-L3566:
+L3567:
 	asu64(R1) = cc_lex_lxsptr;
 	asu8(R1) = *tou8p(R1);
 	R1 = tou64(tou8(R1));
 	R2 = 32;
-	if (asu64(R1) == asu64(R2)) goto L3565;
+	if (asu64(R1) == asu64(R2)) goto L3566;
 	asu64(R1) = cc_lex_lxsptr;
 	asu8(R1) = *tou8p(R1);
 	R1 = toi64(tou8(R1));
 	R2 = 9;
-	if (asi64(R1) == asi64(R2)) goto L3565;
+	if (asi64(R1) == asi64(R2)) goto L3566;
 	asu64(R1) = cc_lex_lxsptr;
 	asu8(R1) = *tou8p(R1);
 	R1 = tou64(tou8(R1));
@@ -36735,34 +36810,34 @@ L3566:
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 42;
-	if (asi64(R1) != asi64(R2)) goto L3569;
+	if (asi64(R1) != asi64(R2)) goto L3570;
 	R1 = 1;
 	syshdr = asi64(R1);
 	R1 = (u64)&filename;
 	p = asu64(R1);
 	asi64(R1) = allowmacros;
-	if (!asi64(R1)) goto L3571;
-L3572:
+	if (!asi64(R1)) goto L3572;
+L3573:
 	cc_lex_lexm();
 	R1 = (u64)&cc_decls_nextlx;
 	R2 = 21;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 57;
-	if (asi64(R1) == asi64(R2)) goto L3575;
-	R2 = 56;
-	if (asi64(R1) == asi64(R2)) goto L3575;
-	R2 = 45;
 	if (asi64(R1) == asi64(R2)) goto L3576;
-	goto L3577;
-L3575:
+	R2 = 56;
+	if (asi64(R1) == asi64(R2)) goto L3576;
+	R2 = 45;
+	if (asi64(R1) == asi64(R2)) goto L3577;
+	goto L3578;
+L3576:
 	R1 = tou64("Bad include file");
 	cc_lex_lxerror(asu64(R1));
-	goto L3574;
-L3576:
-	goto L3573;
-	goto L3574;
+	goto L3575;
 L3577:
+	goto L3574;
+	goto L3575;
+L3578:
 	R1 = (u64)&length;
 	R2 = (u64)&cc_decls_nextlx;
 	asu64(R1) = cc_lex_strtoken(asu64(R2), asu64(R1));
@@ -36774,12 +36849,12 @@ L3577:
 	asi64(R1) = length;
 	R2 = (u64)&p;
 	*tou64p(R2) += asu64(R1);
+L3575:
+	goto L3573;
 L3574:
-	goto L3572;
-L3573:
-	goto L3570;
-L3571:
-L3578:
+	goto L3571;
+L3572:
+L3579:
 	R1 = (u64)&cc_lex_lxsptr;
 	asu64(R2) = *tou64p(R1); *(tou64p(R1)) += 1; asu64(R1) = asu64(R2);
 	asu8(R1) = *tou8p(R1);
@@ -36787,39 +36862,39 @@ L3578:
 	c = asi64(R1);
 	asi64(R1) = c;
 	R2 = 62;
-	if (asi64(R1) == asi64(R2)) goto L3581;
+	if (asi64(R1) == asi64(R2)) goto L3582;
 	R2 = 10;
-	if (asi64(R1) == asi64(R2)) goto L3582;
+	if (asi64(R1) == asi64(R2)) goto L3583;
 	R2 = 0;
-	if (asi64(R1) == asi64(R2)) goto L3582;
-	goto L3583;
-L3581:
-	goto L3579;
-	goto L3580;
+	if (asi64(R1) == asi64(R2)) goto L3583;
+	goto L3584;
 L3582:
+	goto L3580;
+	goto L3581;
+L3583:
 	R1 = tou64("include: > expected");
 	cc_lex_lxerror(asu64(R1));
-	goto L3580;
-L3583:
+	goto L3581;
+L3584:
 	asi64(R1) = c;
 	R2 = (u64)&p;
 	asu64(R3) = *tou64p(R2); *(tou64p(R2)) += 1; asu64(R2) = asu64(R3);
 	*tou8p(R2) = asu8(R1);
+L3581:
+	goto L3579;
 L3580:
-	goto L3578;
-L3579:
-L3570:
+L3571:
 	R1 = 0;
 	asu64(R2) = p;
 	*tou8p(R2) = asu8(R1);
-	goto L3568;
-L3569:
+	goto L3569;
+L3570:
 	R1 = (u64)&cc_decls_nextlx;
 	R2 = 21;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 63;
-	if (asi64(R1) != asi64(R2)) goto L3584;
+	if (asi64(R1) != asi64(R2)) goto L3585;
 	R1 = 0;
 	syshdr = asi64(R1);
 	R1 = (u64)&cc_decls_nextlx;
@@ -36827,14 +36902,14 @@ L3569:
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
 	R2 = (u64)&filename;
 	asu64(R1) = strcpy(asu64(R2), asu64(R1));
-	goto L3568;
-L3584:
+	goto L3569;
+L3585:
 	R1 = tou64("include?");
 	cc_lex_lxerror(asu64(R1));
-L3568:
+L3569:
 	cc_lex_lexm();
 	asu8(R1) = cc_cli_fshowincludes;
-	if (!asu8(R1)) goto L3586;
+	if (!asu8(R1)) goto L3587;
 	msysc_m$print_startcon();
 	R1 = tou64("INCLUDE");
 	msysc_m$print_str_nf(asu64(R1));
@@ -36857,27 +36932,27 @@ L3568:
 	msysc_m$print_i64_nf(asi64(R1));
 	msysc_m$print_newline();
 	msysc_m$print_end();
-L3586:
+L3587:
 	R1 = (u64)&cc_lex_nincludes;
 	(*toi64p(R1)) += 1;
 	asi64(R1) = syshdr;
 	R2 = (u64)&filename;
 	cc_lex_stacksourcefile(asu64(R2), asi64(R1));
-	goto L3551;
-L3553:
-	cc_lex_dodefine();
-	goto L3551;
+	goto L3552;
 L3554:
+	cc_lex_dodefine();
+	goto L3552;
+L3555:
 	cc_lex_lexreadtoken();
 	R1 = (u64)&cc_decls_nextlx;
 	R2 = 21;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 67;
-	if (asi64(R1) == asi64(R2)) goto L3588;
+	if (asi64(R1) == asi64(R2)) goto L3589;
 	R1 = tou64("undef: name expected");
 	cc_lex_lxerror(asu64(R1));
-L3588:
+L3589:
 	R1 = (u64)&cc_decls_nextlx;
 	R2 = 0;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
@@ -36887,9 +36962,9 @@ L3588:
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 1;
-	if (asi64(R1) == asi64(R2)) goto L3590;
-	goto L3589;
-L3590:
+	if (asi64(R1) == asi64(R2)) goto L3591;
+	goto L3590;
+L3591:
 	R1 = 0;
 	asu64(R2) = d;
 	R3 = 109;
@@ -36912,101 +36987,101 @@ L3590:
 	R2 += (i64)R3;
 	R3 = 2;
     *toi64p(R2) = Setdotindex(*toi64p(R2), (i64)R3, (i64)R1);
-L3589:
-	goto L3551;
-L3555:
+L3590:
+	goto L3552;
+L3556:
 	asi64(R1) = cc_lex_getifdef();
 	cond = asi64(R1);
-	goto L3591;
-	goto L3551;
-L3556:
+	goto L3592;
+	goto L3552;
+L3557:
 	asi64(R1) = cc_lex_getifdef();
 	asi64(R1) = !asi64(R1);
 	cond = asi64(R1);
-	goto L3591;
-	goto L3551;
-L3557:
+	goto L3592;
+	goto L3552;
+L3558:
 	asi64(R1) = cc_lex_getifexpr();
 	cond = asi64(R1);
 // cc_lex.dolexdirective.doif:
-L3591:
+L3592:
 	R1 = (u64)&cc_lex_ifcondlevel;
 	(*toi64p(R1)) += 1;
 	asi64(R1) = cond;
-	if (!asi64(R1)) goto L3593;
+	if (!asi64(R1)) goto L3594;
 	R1 = 0;
-	goto L3548;
-	goto L3592;
-L3593:
-// cc_lex.dolexdirective.doskipcode:
+	goto L3549;
+	goto L3593;
 L3594:
+// cc_lex.dolexdirective.doskipcode:
+L3595:
 	asi64(R1) = cc_lex_skipcode();
 	dir = asi64(R1);
 	asi64(R1) = dir;
 	R2 = 4;
-	if (asi64(R1) == asi64(R2)) goto L3596;
-	R2 = 5;
 	if (asi64(R1) == asi64(R2)) goto L3597;
-	R2 = 6;
+	R2 = 5;
 	if (asi64(R1) == asi64(R2)) goto L3598;
-	goto L3599;
-L3596:
+	R2 = 6;
+	if (asi64(R1) == asi64(R2)) goto L3599;
+	goto L3600;
+L3597:
 	asi64(R1) = cc_lex_getifexpr();
 	cond = asi64(R1);
 	asi64(R1) = cond;
-	if (!asi64(R1)) goto L3601;
+	if (!asi64(R1)) goto L3602;
 	R1 = 0;
-	goto L3548;
-L3601:
-	goto L3594;
+	goto L3549;
+L3602:
 	goto L3595;
-L3597:
-	goto L3595;
+	goto L3596;
 L3598:
+	goto L3596;
+L3599:
 	R1 = (u64)&cc_lex_ifcondlevel;
 	(*toi64p(R1)) -=1;
-	goto L3595;
-L3599:
-L3595:
-L3592:
-	goto L3551;
-L3558:
+	goto L3596;
+L3600:
+L3596:
+L3593:
+	goto L3552;
+L3559:
 	asi64(R1) = cc_lex_ifcondlevel;
-	if (asi64(R1)) goto L3603;
+	if (asi64(R1)) goto L3604;
 	R1 = tou64("#if missing/elif/else");
 	cc_lex_lxerror(asu64(R1));
-L3603:
 L3604:
+L3605:
 	asi64(R1) = cc_lex_skipcode();
 	dir = asi64(R1);
 	asi64(R1) = dir;
 	R2 = 6;
-	if (asi64(R1) != asi64(R2)) goto L3604;
+	if (asi64(R1) != asi64(R2)) goto L3605;
 	R1 = (u64)&cc_lex_ifcondlevel;
 	(*toi64p(R1)) -=1;
-	goto L3551;
-L3559:
+	goto L3552;
+L3560:
 	asi64(R1) = cc_lex_ifcondlevel;
-	if (asi64(R1)) goto L3608;
+	if (asi64(R1)) goto L3609;
 	R1 = tou64("#if missing/endif");
 	cc_lex_lxerror(asu64(R1));
-L3608:
+L3609:
 	R1 = (u64)&cc_lex_ifcondlevel;
 	(*toi64p(R1)) -=1;
-	goto L3551;
-L3560:
-	goto L3551;
+	goto L3552;
 L3561:
-L3609:
+	goto L3552;
+L3562:
+L3610:
 	cc_lex_lexreadtoken();
 	R1 = (u64)&cc_decls_nextlx;
 	R2 = 21;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 56;
-	if (asi64(R1) != asi64(R2)) goto L3609;
-	goto L3551;
-L3562:
+	if (asi64(R1) != asi64(R2)) goto L3610;
+	goto L3552;
+L3563:
 	cc_lex_lexm();
 	msysc_m$print_startcon();
 	R1 = tou64("#ERROR:");
@@ -37019,11 +37094,11 @@ L3562:
 	msysc_m$print_end();
 	R1 = tou64("ABORTING");
 	cc_lex_lxerror(asu64(R1));
-	goto L3551;
-L3563:
-	cc_lex_dopragmadir();
-	goto L3551;
+	goto L3552;
 L3564:
+	cc_lex_dopragmadir();
+	goto L3552;
+L3565:
 // cc_lex.dolexdirective.skip:
 	msysc_m$print_startcon();
 	R1 = tou64("DIRECTIVE NOT IMPL:");
@@ -37041,13 +37116,13 @@ L3564:
 	R3 = 21;
 	*tou8p(((i64)R2+(i64)R3)) = asu8(R1);
 	R1 = 1;
-	goto L3548;
+	goto L3549;
 	R1 = tou64("Directive not implemented");
 	cc_lex_lxerror(asu64(R1));
-L3551:
+L3552:
 	R1 = 0;
-	goto L3548;
-L3548:
+	goto L3549;
+L3549:
 	return asi64(R1);
 }
 
@@ -37060,41 +37135,41 @@ static i64 cc_lex_getlexdirective() {
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 67;
-	if (asi64(R1) == asi64(R2)) goto L3615;
-	R2 = 56;
 	if (asi64(R1) == asi64(R2)) goto L3616;
-	R2 = 59;
+	R2 = 56;
 	if (asi64(R1) == asi64(R2)) goto L3617;
-	goto L3618;
-L3615:
-	goto L3614;
+	R2 = 59;
+	if (asi64(R1) == asi64(R2)) goto L3618;
+	goto L3619;
 L3616:
-	R1 = 13;
-	goto L3613;
-	goto L3614;
+	goto L3615;
 L3617:
-L3619:
+	R1 = 13;
+	goto L3614;
+	goto L3615;
+L3618:
+L3620:
 	cc_lex_lexreadtoken();
 	R1 = (u64)&cc_decls_nextlx;
 	R2 = 21;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 56;
-	if (asi64(R1) == asi64(R2)) goto L3622;
+	if (asi64(R1) == asi64(R2)) goto L3623;
 	R1 = (u64)&cc_decls_nextlx;
 	R2 = 21;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 57;
-	if (asi64(R1) != asi64(R2)) goto L3619;
-L3622:
+	if (asi64(R1) != asi64(R2)) goto L3620;
+L3623:
 	R1 = 13;
-	goto L3613;
 	goto L3614;
-L3618:
+	goto L3615;
+L3619:
 	R1 = 0;
-	goto L3613;
-L3614:
+	goto L3614;
+L3615:
 	R1 = (u64)&cc_decls_nextlx;
 	R2 = 0;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
@@ -37102,37 +37177,37 @@ L3614:
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 68;
-	if (asi64(R1) == asi64(R2)) goto L3624;
-	R2 = 72;
 	if (asi64(R1) == asi64(R2)) goto L3625;
-	R2 = 73;
+	R2 = 72;
 	if (asi64(R1) == asi64(R2)) goto L3626;
-	R2 = 56;
+	R2 = 73;
 	if (asi64(R1) == asi64(R2)) goto L3627;
-	goto L3628;
-L3624:
+	R2 = 56;
+	if (asi64(R1) == asi64(R2)) goto L3628;
+	goto L3629;
+L3625:
 	R1 = (u64)&cc_decls_nextlx;
 	R2 = 0;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
 	R2 = 100;
 	asi16(R1) = *toi16p(((i64)R1+(i64)R2));
 	R1 = toi64(toi16(R1));
-	goto L3613;
-	goto L3623;
-L3625:
-	R1 = 3;
-	goto L3613;
-	goto L3623;
+	goto L3614;
+	goto L3624;
 L3626:
-	R1 = 5;
-	goto L3613;
-	goto L3623;
+	R1 = 3;
+	goto L3614;
+	goto L3624;
 L3627:
-	R1 = 13;
-	goto L3613;
-	goto L3623;
+	R1 = 5;
+	goto L3614;
+	goto L3624;
 L3628:
-L3623:
+	R1 = 13;
+	goto L3614;
+	goto L3624;
+L3629:
+L3624:
 	R1 = (u64)&cc_decls_nextlx;
 	R2 = 0;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
@@ -37142,23 +37217,23 @@ L3623:
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 1;
-	if (asi64(R1) != asi64(R2)) goto L3630;
+	if (asi64(R1) != asi64(R2)) goto L3631;
 	asu64(R1) = d;
 	R2 = 88;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 68;
-	if (asi64(R1) != asi64(R2)) goto L3632;
+	if (asi64(R1) != asi64(R2)) goto L3633;
 	asu64(R1) = d;
 	R2 = 100;
 	asi16(R1) = *toi16p(((i64)R1+(i64)R2));
 	R1 = toi64(toi16(R1));
-	goto L3613;
-L3632:
-L3630:
+	goto L3614;
+L3633:
+L3631:
 	R1 = 0;
-	goto L3613;
-L3613:
+	goto L3614;
+L3614:
 	return asi64(R1);
 }
 
@@ -37215,7 +37290,7 @@ static void cc_lex_startlex(u64 caption, i64 fileno) {
 static void cc_lex_endlex() {
     u64 R1; 
 	asi64(R1) = cc_lex_ifcondlevel;
-	if (!asi64(R1)) goto L3636;
+	if (!asi64(R1)) goto L3637;
 	msysc_m$print_startcon();
 	asi64(R1) = cc_lex_ifcondlevel;
 	msysc_m$print_i64_nf(asi64(R1));
@@ -37223,7 +37298,7 @@ static void cc_lex_endlex() {
 	msysc_m$print_end();
 	R1 = tou64("#endif missing");
 	cc_lex_lxerror(asu64(R1));
-L3636:
+L3637:
 	return;
 }
 
@@ -37265,68 +37340,68 @@ static i64 cc_lex_gethashtablesize() {
 	i = asi64(R1);
 	asi64(R1) = cc_decls_hstmask;
 	R2 = 0;
-	if (asi64(R1) < asi64(R2)) goto L3642;
-L3640:
+	if (asi64(R1) < asi64(R2)) goto L3643;
+L3641:
 	asu64(R1) = cc_decls_hashtable;
 	asi64(R2) = i;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2*8));
 	R2 = 0;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
-	if (!asu64(R1)) goto L3644;
+	if (!asu64(R1)) goto L3645;
 	R1 = (u64)&n;
 	(*toi64p(R1)) += 1;
-L3644:
-	i += 1; if (i <= cc_decls_hstmask) goto L3640;
-L3642:
+L3645:
+	i += 1; if (i <= cc_decls_hstmask) goto L3641;
+L3643:
 	asi64(R1) = n;
-	goto L3639;
-L3639:
+	goto L3640;
+L3640:
 	return asi64(R1);
 }
 
 static void cc_lex_readlinecomment() {
     u64 R1, R2; 
-L3646:
-	goto L3649;
-L3648:
+L3647:
+	goto L3650;
 L3649:
+L3650:
 	R1 = (u64)&cc_lex_linecommentmap;
 	R2 = (u64)&cc_lex_lxsptr;
 	asu64(R2) = *(tou64p(R2)) += 1;
 	asu8(R2) = *tou8p(R2);
 	R2 = toi64(tou8(R2));
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
-	if (asu8(R1)) goto L3648;
+	if (asu8(R1)) goto L3649;
 	asu64(R1) = cc_lex_lxsptr;
 	asu8(R1) = *tou8p(R1);
 	R1 = tou64(tou8(R1));
 	R2 = 10;
-	if (asu64(R1) == asu64(R2)) goto L3652;
-	R2 = 0;
 	if (asu64(R1) == asu64(R2)) goto L3653;
-	R2 = 92;
+	R2 = 0;
 	if (asu64(R1) == asu64(R2)) goto L3654;
-	goto L3655;
-L3652:
+	R2 = 92;
+	if (asu64(R1) == asu64(R2)) goto L3655;
+	goto L3656;
+L3653:
 	R1 = (u64)&cc_lex_lxsptr;
 	(*tou64p(R1)) += 1;
-	goto L3647;
-	goto L3651;
-L3653:
-	goto L3647;
-	goto L3651;
+	goto L3648;
+	goto L3652;
 L3654:
+	goto L3648;
+	goto L3652;
+L3655:
 	R1 = (u64)&cc_lex_lxsptr;
 	(*tou64p(R1)) += 1;
 	asu64(R1) = cc_lex_lxsptr;
 	asu8(R1) = *tou8p(R1);
 	R1 = tou64(tou8(R1));
 	R2 = 13;
-	if (asu64(R1) == asu64(R2)) goto L3657;
-	R2 = 10;
 	if (asu64(R1) == asu64(R2)) goto L3658;
-	goto L3659;
-L3657:
+	R2 = 10;
+	if (asu64(R1) == asu64(R2)) goto L3659;
+	goto L3660;
+L3658:
 	R1 = 2;
 	R2 = (u64)&cc_lex_lxsptr;
 	*tou64p(R2) += asu64(R1);
@@ -37334,22 +37409,22 @@ L3657:
 	R2 = 16;
 	R1 += (i64)R2;
 	(*tou32p(R1)) += 1;
-	goto L3656;
-L3658:
+	goto L3657;
+L3659:
 	R1 = (u64)&cc_lex_lxsptr;
 	(*tou64p(R1)) += 1;
 	R1 = (u64)&cc_decls_nextlx;
 	R2 = 16;
 	R1 += (i64)R2;
 	(*tou32p(R1)) += 1;
-	goto L3656;
-L3659:
+	goto L3657;
+L3660:
+L3657:
+	goto L3652;
 L3656:
-	goto L3651;
-L3655:
-L3651:
-	goto L3646;
-L3647:
+L3652:
+	goto L3647;
+L3648:
 	R1 = (u64)&cc_decls_nextlx;
 	R2 = 16;
 	R1 += (i64)R2;
@@ -37359,54 +37434,54 @@ L3647:
 
 static void cc_lex_readblockcomment() {
     u64 R1, R2; 
-L3661:
-	goto L3664;
-L3663:
+L3662:
+	goto L3665;
 L3664:
+L3665:
 	R1 = (u64)&cc_lex_commentmap;
 	R2 = (u64)&cc_lex_lxsptr;
 	asu64(R2) = *(tou64p(R2)) += 1;
 	asu8(R2) = *tou8p(R2);
 	R2 = toi64(tou8(R2));
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
-	if (asu8(R1)) goto L3663;
+	if (asu8(R1)) goto L3664;
 	asu64(R1) = cc_lex_lxsptr;
 	asu8(R1) = *tou8p(R1);
 	R1 = tou64(tou8(R1));
 	R2 = 10;
-	if (asu64(R1) == asu64(R2)) goto L3667;
-	R2 = 0;
 	if (asu64(R1) == asu64(R2)) goto L3668;
-	R2 = 42;
+	R2 = 0;
 	if (asu64(R1) == asu64(R2)) goto L3669;
-	goto L3670;
-L3667:
+	R2 = 42;
+	if (asu64(R1) == asu64(R2)) goto L3670;
+	goto L3671;
+L3668:
 	R1 = (u64)&cc_decls_nextlx;
 	R2 = 16;
 	R1 += (i64)R2;
 	(*tou32p(R1)) += 1;
-	goto L3666;
-L3668:
+	goto L3667;
+L3669:
 	R1 = tou64("block comment eof");
 	cc_lex_lxerror(asu64(R1));
-	goto L3666;
-L3669:
+	goto L3667;
+L3670:
 	asu64(R1) = cc_lex_lxsptr;
 	R2 = 1;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = tou64(tou8(R1));
 	R2 = 47;
-	if (asu64(R1) != asu64(R2)) goto L3672;
+	if (asu64(R1) != asu64(R2)) goto L3673;
 	R1 = 2;
 	R2 = (u64)&cc_lex_lxsptr;
 	*tou64p(R2) += asu64(R1);
+	goto L3663;
+L3673:
+	goto L3667;
+L3671:
+L3667:
 	goto L3662;
-L3672:
-	goto L3666;
-L3670:
-L3666:
-	goto L3661;
-L3662:
+L3663:
 	return;
 }
 
@@ -37431,7 +37506,7 @@ static void cc_lex_readhex(u64 pstart) {
 	ll = asi64(R1);
 	R1 = 0;
 	length = asi64(R1);
-L3674:
+L3675:
 	R1 = (u64)&cc_lex_lxsptr;
 	asu64(R2) = *tou64p(R1); *(tou64p(R1)) += 1; asu64(R1) = asu64(R2);
 	asu8(R1) = *tou8p(R1);
@@ -37439,18 +37514,18 @@ L3674:
 	R2 = R1;
 	c = asu64(R2);
 	switch (asi64(R1)) {
-	case 46: case 80: case 112: goto L3684;
-	case 47: case 58: case 59: case 60: case 61: case 62: case 63: case 64: case 71: case 72: case 73: case 74: case 75: case 77: case 78: case 79: case 81: case 82: case 83: case 84: case 86: case 87: case 88: case 89: case 90: case 91: case 92: case 93: case 94: case 95: case 96: case 103: case 104: case 105: case 106: case 107: case 109: case 110: case 111: case 113: case 114: case 115: case 116: goto L3677;
-	case 48: goto L3679;
-	case 49: case 50: case 51: case 52: case 53: case 54: case 55: case 56: case 57: goto L3678;
-	case 65: case 66: case 67: case 68: case 69: case 70: goto L3682;
-	case 76: case 108: goto L3685;
-	case 85: case 117: goto L3688;
-	case 97: case 98: case 99: case 100: case 101: case 102: goto L3683;
-	default: goto L3677;
+	case 46: case 80: case 112: goto L3685;
+	case 47: case 58: case 59: case 60: case 61: case 62: case 63: case 64: case 71: case 72: case 73: case 74: case 75: case 77: case 78: case 79: case 81: case 82: case 83: case 84: case 86: case 87: case 88: case 89: case 90: case 91: case 92: case 93: case 94: case 95: case 96: case 103: case 104: case 105: case 106: case 107: case 109: case 110: case 111: case 113: case 114: case 115: case 116: goto L3678;
+	case 48: goto L3680;
+	case 49: case 50: case 51: case 52: case 53: case 54: case 55: case 56: case 57: goto L3679;
+	case 65: case 66: case 67: case 68: case 69: case 70: goto L3683;
+	case 76: case 108: goto L3686;
+	case 85: case 117: goto L3689;
+	case 97: case 98: case 99: case 100: case 101: case 102: goto L3684;
+	default: goto L3678;
     };
 // SWITCH
-L3678:
+L3679:
 	R1 = 0;
 	leading = asi64(R1);
 	asu64(R1) = aa;
@@ -37463,23 +37538,23 @@ L3678:
 	aa = asu64(R1);
 	R1 = (u64)&length;
 	(*toi64p(R1)) += 1;
-	goto L3674;
-L3679:
+	goto L3675;
+L3680:
 	asi64(R1) = leading;
-	if (!asi64(R1)) goto L3681;
+	if (!asi64(R1)) goto L3682;
 	R1 = (u64)&p;
 	(*tou64p(R1)) += 1;
-	goto L3680;
-L3681:
+	goto L3681;
+L3682:
 	R1 = (u64)&length;
 	(*toi64p(R1)) += 1;
 	asu64(R1) = aa;
 	R2 = 16;
 	asu64(R1) *= asu64(R2);
 	aa = asu64(R1);
-L3680:
-	goto L3674;
-L3682:
+L3681:
+	goto L3675;
+L3683:
 	R1 = 0;
 	leading = asi64(R1);
 	R1 = (u64)&length;
@@ -37494,8 +37569,8 @@ L3682:
 	asi64(R2) += asi64(R3);
 	asu64(R1) += asu64(R2);
 	aa = asu64(R1);
-	goto L3674;
-L3683:
+	goto L3675;
+L3684:
 	R1 = 0;
 	leading = asi64(R1);
 	R1 = (u64)&length;
@@ -37510,8 +37585,8 @@ L3683:
 	asi64(R2) += asi64(R3);
 	asu64(R1) += asu64(R2);
 	aa = asu64(R1);
-	goto L3674;
-L3684:
+	goto L3675;
+L3685:
 	R1 = (u64)&cc_lex_lxsptr;
 	(*tou64p(R1)) -=1;
 	R1 = 16;
@@ -37521,33 +37596,33 @@ L3684:
 	asu64(R3) = p;
 	asu64(R4) = pstart;
 	cc_lex_readrealnumber(asu64(R4), asu64(R3), asi64(R2), asi64(R1));
-	goto L3673;
 	goto L3674;
-L3685:
+	goto L3675;
+L3686:
 	R1 = (u64)&ll;
 	(*toi64p(R1)) += 1;
 	asi64(R1) = ll;
 	R2 = 2;
-	if (asi64(R1) <= asi64(R2)) goto L3687;
+	if (asi64(R1) <= asi64(R2)) goto L3688;
 	R1 = tou64("-LL?");
 	cc_lex_lxerror(asu64(R1));
-L3687:
-	goto L3674;
 L3688:
+	goto L3675;
+L3689:
 	asi64(R1) = usigned;
-	if (!asi64(R1)) goto L3690;
+	if (!asi64(R1)) goto L3691;
 	R1 = tou64("-U?");
 	cc_lex_lxerror(asu64(R1));
-L3690:
+L3691:
 	R1 = 1;
 	usigned = asi64(R1);
-	goto L3674;
-L3677:
+	goto L3675;
+L3678:
 	R1 = (u64)&cc_lex_lxsptr;
 	(*tou64p(R1)) -=1;
+	goto L3676;
 	goto L3675;
-	goto L3674;
-L3675:
+L3676:
 	asu64(R1) = pstart;
 	asu64(R2) = cc_lex_lxstart;
 	asi64(R1) -= asi64(R2);
@@ -37560,111 +37635,111 @@ L3675:
 	*toi32p(((i64)R2+(i64)R3)) = asi32(R1);
 	asi64(R1) = length;
 	R2 = 16;
-	if (asi64(R1) <= asi64(R2)) goto L3692;
+	if (asi64(R1) <= asi64(R2)) goto L3693;
 	R1 = tou64("Overflow in hex number");
 	cc_lex_lxerror(asu64(R1));
-L3692:
+L3693:
 	R1 = 59;
 	R2 = (u64)&cc_decls_nextlx;
 	R3 = 21;
 	*tou8p(((i64)R2+(i64)R3)) = asu8(R1);
 	asu64(R1) = aa;
 	R2 = 9223372036854775807;
-	if (asu64(R1) <= asu64(R2)) goto L3694;
+	if (asu64(R1) <= asu64(R2)) goto L3695;
 	R1 = 9;
 	R2 = (u64)&cc_decls_nextlx;
 	R3 = 22;
 	*tou8p(((i64)R2+(i64)R3)) = asu8(R1);
-	goto L3693;
-L3694:
+	goto L3694;
+L3695:
 	asu64(R1) = aa;
 	R2 = 4294967295;
-	if (asu64(R1) <= asu64(R2)) goto L3695;
+	if (asu64(R1) <= asu64(R2)) goto L3696;
 	R1 = 4;
 	R2 = (u64)&cc_decls_nextlx;
 	R3 = 22;
 	*tou8p(((i64)R2+(i64)R3)) = asu8(R1);
-	goto L3693;
-L3695:
+	goto L3694;
+L3696:
 	asu64(R1) = aa;
 	R2 = 2147483647;
-	if (asu64(R1) <= asu64(R2)) goto L3696;
+	if (asu64(R1) <= asu64(R2)) goto L3697;
 	R1 = 8;
 	R2 = (u64)&cc_decls_nextlx;
 	R3 = 22;
 	*tou8p(((i64)R2+(i64)R3)) = asu8(R1);
-	goto L3693;
-L3696:
+	goto L3694;
+L3697:
 	R1 = 3;
 	R2 = (u64)&cc_decls_nextlx;
 	R3 = 22;
 	*tou8p(((i64)R2+(i64)R3)) = asu8(R1);
-L3693:
+L3694:
 	asu64(R1) = aa;
 	R2 = (u64)&cc_decls_nextlx;
 	R3 = 0;
 	*toi64p(((i64)R2+(i64)R3)) = asi64(R1);
 	asi64(R1) = ll;
 	R2 = 2;
-	if (asi64(R1) == asi64(R2)) goto L3699;
+	if (asi64(R1) == asi64(R2)) goto L3700;
 	asi64(R1) = ll;
 	R2 = 1;
-	if (asi64(R1) != asi64(R2)) goto L3698;
+	if (asi64(R1) != asi64(R2)) goto L3699;
 	asu8(R1) = pc_decls_flong64;
-	if (!asu8(R1)) goto L3698;
-L3699:
+	if (!asu8(R1)) goto L3699;
+L3700:
 	R1 = (u64)&cc_decls_nextlx;
 	R2 = 22;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 8;
-	if (asi64(R1) == asi64(R2)) goto L3701;
-	R2 = 3;
 	if (asi64(R1) == asi64(R2)) goto L3702;
-	goto L3703;
-L3701:
+	R2 = 3;
+	if (asi64(R1) == asi64(R2)) goto L3703;
+	goto L3704;
+L3702:
 	R1 = 9;
 	R2 = (u64)&cc_decls_nextlx;
 	R3 = 22;
 	*tou8p(((i64)R2+(i64)R3)) = asu8(R1);
-	goto L3700;
-L3702:
+	goto L3701;
+L3703:
 	R1 = 4;
 	R2 = (u64)&cc_decls_nextlx;
 	R3 = 22;
 	*tou8p(((i64)R2+(i64)R3)) = asu8(R1);
-	goto L3700;
-L3703:
-L3700:
-L3698:
+	goto L3701;
+L3704:
+L3701:
+L3699:
 	asi64(R1) = usigned;
-	if (!asi64(R1)) goto L3705;
+	if (!asi64(R1)) goto L3706;
 	R1 = (u64)&cc_decls_nextlx;
 	R2 = 22;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 3;
-	if (asi64(R1) == asi64(R2)) goto L3707;
-	R2 = 4;
 	if (asi64(R1) == asi64(R2)) goto L3708;
-	goto L3709;
-L3707:
+	R2 = 4;
+	if (asi64(R1) == asi64(R2)) goto L3709;
+	goto L3710;
+L3708:
 	R1 = 8;
 	R2 = (u64)&cc_decls_nextlx;
 	R3 = 22;
 	*tou8p(((i64)R2+(i64)R3)) = asu8(R1);
-	goto L3706;
-L3708:
+	goto L3707;
+L3709:
 	R1 = 9;
 	R2 = (u64)&cc_decls_nextlx;
 	R3 = 22;
 	*tou8p(((i64)R2+(i64)R3)) = asu8(R1);
-	goto L3706;
-L3709:
+	goto L3707;
+L3710:
+L3707:
 L3706:
-L3705:
 	asi64(R1) = cc_lex_checknumbersuffix();
-L3673:
+L3674:
 	return;
 }
 
@@ -37683,7 +37758,7 @@ static void cc_lex_readbinary(u64 pstart) {
 	p = asu64(R1);
 	R1 = 1;
 	leading = asi64(R1);
-L3711:
+L3712:
 	R1 = (u64)&cc_lex_lxsptr;
 	asu64(R2) = *tou64p(R1); *(tou64p(R1)) += 1; asu64(R1) = asu64(R2);
 	asu8(R1) = *tou8p(R1);
@@ -37691,39 +37766,39 @@ L3711:
 	R2 = R1;
 	c = asi64(R2);
 	switch (asi64(R1)) {
-	case 46: goto L3720;
-	case 47: goto L3714;
-	case 48: goto L3716;
-	case 49: goto L3715;
-	case 50: case 51: case 52: case 53: case 54: case 55: case 56: case 57: goto L3719;
-	default: goto L3714;
+	case 46: goto L3721;
+	case 47: goto L3715;
+	case 48: goto L3717;
+	case 49: goto L3716;
+	case 50: case 51: case 52: case 53: case 54: case 55: case 56: case 57: goto L3720;
+	default: goto L3715;
     };
 // SWITCH
-L3715:
+L3716:
 	R1 = 0;
 	leading = asi64(R1);
-	goto L3711;
-L3716:
+	goto L3712;
+L3717:
 	asi64(R1) = leading;
-	if (!asi64(R1)) goto L3718;
+	if (!asi64(R1)) goto L3719;
 	R1 = (u64)&p;
 	(*tou64p(R1)) += 1;
-L3718:
-	goto L3711;
 L3719:
+	goto L3712;
+L3720:
 	R1 = tou64("Binary bad digit");
 	cc_lex_lxerror(asu64(R1));
-	goto L3711;
-L3720:
+	goto L3712;
+L3721:
 	R1 = tou64("Binary fp");
 	cc_lex_lxerror(asu64(R1));
-	goto L3711;
-L3714:
+	goto L3712;
+L3715:
 	R1 = (u64)&cc_lex_lxsptr;
 	(*tou64p(R1)) -=1;
+	goto L3713;
 	goto L3712;
-	goto L3711;
-L3712:
+L3713:
 	asu64(R1) = cc_lex_lxsptr;
 	asu64(R2) = p;
 	asi64(R1) -= asi64(R2);
@@ -37740,16 +37815,16 @@ L3712:
 	*toi32p(((i64)R2+(i64)R3)) = asi32(R1);
 	asi64(R1) = length;
 	R2 = 64;
-	if (asi64(R1) <= asi64(R2)) goto L3722;
+	if (asi64(R1) <= asi64(R2)) goto L3723;
 	R1 = tou64("Overflow in binary number");
 	cc_lex_lxerror(asu64(R1));
-L3722:
+L3723:
 	asi64(R1) = length;
 	av_1 = asi64(R1);
 	asi64(R1) = av_1;
 	R2 = 0;
-	if (asi64(R1) <= asi64(R2)) goto L3725;
-L3723:
+	if (asi64(R1) <= asi64(R2)) goto L3726;
+L3724:
 	asu64(R1) = aa;
 	R2 = 2;
 	asi64(R1) *= asi64(R2);
@@ -37761,8 +37836,8 @@ L3723:
 	R2 = 48;
 	asu64(R1) -= asu64(R2);
 	aa = asu64(R1);
-	if (--asi64(av_1)) goto L3723;
-L3725:
+	if (--asi64(av_1)) goto L3724;
+L3726:
 	R1 = 59;
 	R2 = (u64)&cc_decls_nextlx;
 	R3 = 21;
@@ -37773,12 +37848,12 @@ L3725:
 	*tou8p(((i64)R2+(i64)R3)) = asu8(R1);
 	asu64(R1) = aa;
 	R2 = 2147483647;
-	if (asu64(R1) < asu64(R2)) goto L3727;
+	if (asu64(R1) < asu64(R2)) goto L3728;
 	R1 = 4;
 	R2 = (u64)&cc_decls_nextlx;
 	R3 = 22;
 	*tou8p(((i64)R2+(i64)R3)) = asu8(R1);
-L3727:
+L3728:
 	asu64(R1) = aa;
 	R2 = (u64)&cc_decls_nextlx;
 	R3 = 0;
@@ -37810,7 +37885,7 @@ static void cc_lex_readoctal(u64 pstart) {
 	ll = asi64(R1);
 	R1 = 0;
 	length = asi64(R1);
-L3729:
+L3730:
 	R1 = (u64)&cc_lex_lxsptr;
 	asu64(R2) = *tou64p(R1); *(tou64p(R1)) += 1; asu64(R1) = asu64(R2);
 	asu8(R1) = *tou8p(R1);
@@ -37818,33 +37893,33 @@ L3729:
 	R2 = R1;
 	c = asi64(R2);
 	switch (asi64(R1)) {
-	case 46: goto L3737;
-	case 47: case 56: case 57: case 58: case 59: case 60: case 61: case 62: case 63: case 64: case 65: case 66: case 67: case 68: case 69: case 70: case 71: case 72: case 73: case 74: case 75: case 77: case 78: case 79: case 80: case 81: case 82: case 83: case 84: case 86: case 87: case 88: case 89: case 90: case 91: case 92: case 93: case 94: case 95: case 96: case 97: case 98: case 99: case 100: case 101: case 102: case 103: case 104: case 105: case 106: case 107: case 109: case 110: case 111: case 112: case 113: case 114: case 115: case 116: goto L3732;
-	case 48: goto L3734;
-	case 49: case 50: case 51: case 52: case 53: case 54: case 55: goto L3733;
-	case 76: case 108: goto L3738;
-	case 85: case 117: goto L3741;
-	default: goto L3732;
+	case 46: goto L3738;
+	case 47: case 56: case 57: case 58: case 59: case 60: case 61: case 62: case 63: case 64: case 65: case 66: case 67: case 68: case 69: case 70: case 71: case 72: case 73: case 74: case 75: case 77: case 78: case 79: case 80: case 81: case 82: case 83: case 84: case 86: case 87: case 88: case 89: case 90: case 91: case 92: case 93: case 94: case 95: case 96: case 97: case 98: case 99: case 100: case 101: case 102: case 103: case 104: case 105: case 106: case 107: case 109: case 110: case 111: case 112: case 113: case 114: case 115: case 116: goto L3733;
+	case 48: goto L3735;
+	case 49: case 50: case 51: case 52: case 53: case 54: case 55: goto L3734;
+	case 76: case 108: goto L3739;
+	case 85: case 117: goto L3742;
+	default: goto L3733;
     };
 // SWITCH
-L3733:
+L3734:
 	R1 = 0;
 	leading = asi64(R1);
 	R1 = (u64)&length;
 	(*toi64p(R1)) += 1;
-	goto L3729;
-L3734:
+	goto L3730;
+L3735:
 	asi64(R1) = leading;
-	if (!asi64(R1)) goto L3736;
+	if (!asi64(R1)) goto L3737;
 	R1 = (u64)&p;
 	(*tou64p(R1)) += 1;
-	goto L3735;
-L3736:
+	goto L3736;
+L3737:
 	R1 = (u64)&length;
 	(*toi64p(R1)) += 1;
-L3735:
-	goto L3729;
-L3737:
+L3736:
+	goto L3730;
+L3738:
 	R1 = (u64)&cc_lex_lxsptr;
 	(*tou64p(R1)) -=1;
 	R1 = 10;
@@ -37854,42 +37929,42 @@ L3737:
 	asu64(R3) = p;
 	asu64(R4) = pstart;
 	cc_lex_readrealnumber(asu64(R4), asu64(R3), asi64(R2), asi64(R1));
-	goto L3728;
 	goto L3729;
-L3738:
+	goto L3730;
+L3739:
 	R1 = (u64)&ll;
 	(*toi64p(R1)) += 1;
 	asi64(R1) = ll;
 	R2 = 2;
-	if (asi64(R1) <= asi64(R2)) goto L3740;
+	if (asi64(R1) <= asi64(R2)) goto L3741;
 	R1 = tou64("-LL?");
 	cc_lex_lxerror(asu64(R1));
-L3740:
-	goto L3729;
 L3741:
+	goto L3730;
+L3742:
 	asi64(R1) = usigned;
-	if (!asi64(R1)) goto L3743;
+	if (!asi64(R1)) goto L3744;
 	R1 = tou64("-U?");
 	cc_lex_lxerror(asu64(R1));
-L3743:
+L3744:
 	R1 = 1;
 	usigned = asi64(R1);
-	goto L3729;
-L3732:
+	goto L3730;
+L3733:
 	R1 = (u64)&cc_lex_alphamap;
 	asi64(R2) = c;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
-	if (!asu8(R1)) goto L3745;
+	if (!asu8(R1)) goto L3746;
 // cc_lex.readoctal.doalpha:
 	asu64(R1) = pstart;
 	cc_lex_readalphanumeric(asu64(R1));
-	goto L3728;
-L3745:
+	goto L3729;
+L3746:
 	R1 = (u64)&cc_lex_lxsptr;
 	(*tou64p(R1)) -=1;
+	goto L3731;
 	goto L3730;
-	goto L3729;
-L3730:
+L3731:
 	asu64(R1) = pstart;
 	asu64(R2) = cc_lex_lxstart;
 	asi64(R1) -= asi64(R2);
@@ -37902,10 +37977,10 @@ L3730:
 	*toi32p(((i64)R2+(i64)R3)) = asi32(R1);
 	asi64(R1) = length;
 	R2 = 22;
-	if (asi64(R1) > asi64(R2)) goto L3749;
+	if (asi64(R1) > asi64(R2)) goto L3750;
 	asi64(R1) = length;
 	R2 = 22;
-	if (asi64(R1) != asi64(R2)) goto L3748;
+	if (asi64(R1) != asi64(R2)) goto L3749;
 	R1 = 22;
 	R2 = tou64("1777777777777777777777");
 	asu64(R3) = p;
@@ -37913,17 +37988,17 @@ L3730:
 	R2 = R1;
 	res = asi64(R2);
 	R2 = 0;
-	if (asi64(R1) <= asi64(R2)) goto L3748;
-L3749:
+	if (asi64(R1) <= asi64(R2)) goto L3749;
+L3750:
 	R1 = tou64("Overflow in octal number");
 	cc_lex_lxerror(asu64(R1));
-L3748:
+L3749:
 	asi64(R1) = length;
 	av_1 = asi64(R1);
 	asi64(R1) = av_1;
 	R2 = 0;
-	if (asi64(R1) <= asi64(R2)) goto L3752;
-L3750:
+	if (asi64(R1) <= asi64(R2)) goto L3753;
+L3751:
 	asu64(R1) = aa;
 	R2 = 8;
 	asi64(R1) *= asi64(R2);
@@ -37935,8 +38010,8 @@ L3750:
 	R2 = 48;
 	asu64(R1) -= asu64(R2);
 	aa = asu64(R1);
-	if (--asi64(av_1)) goto L3750;
-L3752:
+	if (--asi64(av_1)) goto L3751;
+L3753:
 	R1 = 59;
 	R2 = (u64)&cc_decls_nextlx;
 	R3 = 21;
@@ -37947,18 +38022,18 @@ L3752:
 	*tou8p(((i64)R2+(i64)R3)) = asu8(R1);
 	asu64(R1) = aa;
 	R2 = 2147483647;
-	if (asu64(R1) < asu64(R2)) goto L3754;
+	if (asu64(R1) < asu64(R2)) goto L3755;
 	R1 = 4;
 	R2 = (u64)&cc_decls_nextlx;
 	R3 = 22;
 	*tou8p(((i64)R2+(i64)R3)) = asu8(R1);
-L3754:
+L3755:
 	asu64(R1) = aa;
 	R2 = (u64)&cc_decls_nextlx;
 	R3 = 0;
 	*toi64p(((i64)R2+(i64)R3)) = asi64(R1);
 	asi64(R1) = cc_lex_checknumbersuffix();
-L3728:
+L3729:
 	return;
 }
 
@@ -37982,31 +38057,31 @@ static void cc_lex_readdecimal(u64 pstart) {
 	R1 = (u64)&cc_lex_lxsptr;
 	asu64(R1) = *(tou64p(R1)) -= 1;
 	p = asu64(R1);
-	goto L3757;
-L3756:
+	goto L3758;
 L3757:
+L3758:
 	R1 = (u64)&cc_lex_digitmap;
 	R2 = (u64)&cc_lex_lxsptr;
 	asu64(R2) = *(tou64p(R2)) += 1;
 	asu8(R2) = *tou8p(R2);
 	R2 = toi64(tou8(R2));
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
-	if (asu8(R1)) goto L3756;
-	goto L3760;
-L3759:
+	if (asu8(R1)) goto L3757;
+	goto L3761;
+L3760:
 	R1 = (u64)&p;
 	(*tou64p(R1)) += 1;
-L3760:
+L3761:
 	asu64(R1) = p;
 	asu8(R1) = *tou8p(R1);
 	R1 = tou64(tou8(R1));
 	R2 = 48;
-	if (asu64(R1) == asu64(R2)) goto L3759;
+	if (asu64(R1) == asu64(R2)) goto L3760;
 	asu64(R1) = cc_lex_lxsptr;
 	asu64(R2) = p;
 	asi64(R1) -= asi64(R2);
 	length = asi64(R1);
-L3762:
+L3763:
 	R1 = (u64)&cc_lex_lxsptr;
 	asu64(R2) = *tou64p(R1); *(tou64p(R1)) += 1; asu64(R1) = asu64(R2);
 	asu8(R1) = *tou8p(R1);
@@ -38014,14 +38089,14 @@ L3762:
 	R2 = R1;
 	c = asi64(R2);
 	switch (asi64(R1)) {
-	case 46: case 69: case 101: goto L3766;
-	case 47: case 48: case 49: case 50: case 51: case 52: case 53: case 54: case 55: case 56: case 57: case 58: case 59: case 60: case 61: case 62: case 63: case 64: case 65: case 66: case 67: case 68: case 70: case 71: case 72: case 73: case 74: case 75: case 77: case 78: case 79: case 80: case 81: case 82: case 83: case 84: case 86: case 87: case 88: case 89: case 90: case 91: case 92: case 93: case 94: case 95: case 96: case 97: case 98: case 99: case 100: case 102: case 103: case 104: case 105: case 106: case 107: case 109: case 110: case 111: case 112: case 113: case 114: case 115: case 116: goto L3765;
-	case 76: case 108: goto L3767;
-	case 85: case 117: goto L3770;
-	default: goto L3765;
+	case 46: case 69: case 101: goto L3767;
+	case 47: case 48: case 49: case 50: case 51: case 52: case 53: case 54: case 55: case 56: case 57: case 58: case 59: case 60: case 61: case 62: case 63: case 64: case 65: case 66: case 67: case 68: case 70: case 71: case 72: case 73: case 74: case 75: case 77: case 78: case 79: case 80: case 81: case 82: case 83: case 84: case 86: case 87: case 88: case 89: case 90: case 91: case 92: case 93: case 94: case 95: case 96: case 97: case 98: case 99: case 100: case 102: case 103: case 104: case 105: case 106: case 107: case 109: case 110: case 111: case 112: case 113: case 114: case 115: case 116: goto L3766;
+	case 76: case 108: goto L3768;
+	case 85: case 117: goto L3771;
+	default: goto L3766;
     };
 // SWITCH
-L3766:
+L3767:
 	R1 = (u64)&cc_lex_lxsptr;
 	(*tou64p(R1)) -=1;
 	R1 = 10;
@@ -38031,42 +38106,42 @@ L3766:
 	asu64(R3) = p;
 	asu64(R4) = pstart;
 	cc_lex_readrealnumber(asu64(R4), asu64(R3), asi64(R2), asi64(R1));
-	goto L3755;
-	goto L3762;
-L3767:
+	goto L3756;
+	goto L3763;
+L3768:
 	R1 = (u64)&ll;
 	(*tou8p(R1)) += 1;
 	asu8(R1) = ll;
 	R1 = toi64(tou8(R1));
 	R2 = 2;
-	if (asi64(R1) <= asi64(R2)) goto L3769;
+	if (asi64(R1) <= asi64(R2)) goto L3770;
 	R1 = tou64("-LL?");
 	cc_lex_lxerror(asu64(R1));
-L3769:
-	goto L3762;
 L3770:
+	goto L3763;
+L3771:
 	asu8(R1) = usigned;
-	if (!asu8(R1)) goto L3772;
+	if (!asu8(R1)) goto L3773;
 	R1 = tou64("-U?");
 	cc_lex_lxerror(asu64(R1));
-L3772:
+L3773:
 	R1 = 1;
 	usigned = asu8(R1);
-	goto L3762;
-L3765:
+	goto L3763;
+L3766:
 	R1 = (u64)&cc_lex_alphamap;
 	asi64(R2) = c;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
-	if (!asu8(R1)) goto L3774;
+	if (!asu8(R1)) goto L3775;
 	asu64(R1) = pstart;
 	cc_lex_readalphanumeric(asu64(R1));
-	goto L3755;
-L3774:
+	goto L3756;
+L3775:
 	R1 = (u64)&cc_lex_lxsptr;
 	(*tou64p(R1)) -=1;
+	goto L3764;
 	goto L3763;
-	goto L3762;
-L3763:
+L3764:
 	asu64(R1) = pstart;
 	asu64(R2) = cc_lex_lxstart;
 	asi64(R1) -= asi64(R2);
@@ -38079,10 +38154,10 @@ L3763:
 	*toi32p(((i64)R2+(i64)R3)) = asi32(R1);
 	asi64(R1) = length;
 	R2 = 20;
-	if (asi64(R1) > asi64(R2)) goto L3777;
+	if (asi64(R1) > asi64(R2)) goto L3778;
 	asi64(R1) = length;
 	R2 = 20;
-	if (asi64(R1) != asi64(R2)) goto L3776;
+	if (asi64(R1) != asi64(R2)) goto L3777;
 	R1 = 20;
 	R2 = tou64("18446744073709551615");
 	asu64(R3) = p;
@@ -38090,17 +38165,17 @@ L3763:
 	R2 = R1;
 	res = asi64(R2);
 	R2 = 0;
-	if (asi64(R1) <= asi64(R2)) goto L3776;
-L3777:
+	if (asi64(R1) <= asi64(R2)) goto L3777;
+L3778:
 	R1 = tou64("Overflow in decimal number");
 	cc_lex_lxerror(asu64(R1));
-L3776:
+L3777:
 	asi64(R1) = length;
 	av_1 = asi64(R1);
 	asi64(R1) = av_1;
 	R2 = 0;
-	if (asi64(R1) <= asi64(R2)) goto L3780;
-L3778:
+	if (asi64(R1) <= asi64(R2)) goto L3781;
+L3779:
 	asu64(R1) = aa;
 	R2 = 10;
 	asu64(R1) *= asu64(R2);
@@ -38112,8 +38187,8 @@ L3778:
 	asu64(R2) -= asu64(R3);
 	asu64(R1) += asu64(R2);
 	aa = asu64(R1);
-	if (--asi64(av_1)) goto L3778;
-L3780:
+	if (--asi64(av_1)) goto L3779;
+L3781:
 	R1 = 59;
 	R2 = (u64)&cc_decls_nextlx;
 	R3 = 21;
@@ -38121,123 +38196,123 @@ L3780:
 	asu8(R1) = ll;
 	R1 = toi64(tou8(R1));
 	R2 = 0;
-	if (asi64(R1) == asi64(R2)) goto L3782;
-	R2 = 1;
 	if (asi64(R1) == asi64(R2)) goto L3783;
-	R2 = 2;
+	R2 = 1;
 	if (asi64(R1) == asi64(R2)) goto L3784;
-	goto L3785;
-L3782:
-	asu64(R1) = aa;
-	R2 = 2147483647;
-	if (asi64(R1) < asi64(R2)) goto L3787;
-	R1 = 4;
-	R2 = (u64)&cc_decls_nextlx;
-	R3 = 22;
-	*tou8p(((i64)R2+(i64)R3)) = asu8(R1);
+	R2 = 2;
+	if (asi64(R1) == asi64(R2)) goto L3785;
 	goto L3786;
-L3787:
-	R1 = 3;
-	R2 = (u64)&cc_decls_nextlx;
-	R3 = 22;
-	*tou8p(((i64)R2+(i64)R3)) = asu8(R1);
-L3786:
-	asu8(R1) = usigned;
-	if (!asu8(R1)) goto L3789;
-	asu64(R1) = aa;
-	R2 = 4294967295;
-	if (asu64(R1) < asu64(R2)) goto L3791;
-	R1 = 9;
-	R2 = (u64)&cc_decls_nextlx;
-	R3 = 22;
-	*tou8p(((i64)R2+(i64)R3)) = asu8(R1);
-	goto L3790;
-L3791:
-	R1 = 8;
-	R2 = (u64)&cc_decls_nextlx;
-	R3 = 22;
-	*tou8p(((i64)R2+(i64)R3)) = asu8(R1);
-L3790:
-	goto L3788;
-L3789:
-	asu64(R1) = aa;
-	R2 = 2147483647;
-	if (asu64(R1) < asu64(R2)) goto L3793;
-	R1 = 4;
-	R2 = (u64)&cc_decls_nextlx;
-	R3 = 22;
-	*tou8p(((i64)R2+(i64)R3)) = asu8(R1);
-L3793:
-L3788:
-	goto L3781;
 L3783:
-	asu8(R1) = pc_decls_flong64;
-	if (!asu8(R1)) goto L3795;
-	goto L3784;
-L3795:
-	asu8(R1) = usigned;
-	if (!asu8(R1)) goto L3797;
-	asu64(R1) = aa;
-	R2 = 4294967295;
-	if (asu64(R1) < asu64(R2)) goto L3799;
-	R1 = 9;
-	R2 = (u64)&cc_decls_nextlx;
-	R3 = 22;
-	*tou8p(((i64)R2+(i64)R3)) = asu8(R1);
-	goto L3798;
-L3799:
-	R1 = 8;
-	R2 = (u64)&cc_decls_nextlx;
-	R3 = 22;
-	*tou8p(((i64)R2+(i64)R3)) = asu8(R1);
-L3798:
-	goto L3796;
-L3797:
 	asu64(R1) = aa;
 	R2 = 2147483647;
-	if (asu64(R1) < asu64(R2)) goto L3801;
+	if (asi64(R1) < asi64(R2)) goto L3788;
 	R1 = 4;
 	R2 = (u64)&cc_decls_nextlx;
 	R3 = 22;
 	*tou8p(((i64)R2+(i64)R3)) = asu8(R1);
-	goto L3800;
-L3801:
+	goto L3787;
+L3788:
 	R1 = 3;
 	R2 = (u64)&cc_decls_nextlx;
 	R3 = 22;
 	*tou8p(((i64)R2+(i64)R3)) = asu8(R1);
-L3800:
-L3796:
-	goto L3781;
-L3784:
+L3787:
 	asu8(R1) = usigned;
-	if (!asu8(R1)) goto L3803;
+	if (!asu8(R1)) goto L3790;
+	asu64(R1) = aa;
+	R2 = 4294967295;
+	if (asu64(R1) < asu64(R2)) goto L3792;
 	R1 = 9;
 	R2 = (u64)&cc_decls_nextlx;
 	R3 = 22;
 	*tou8p(((i64)R2+(i64)R3)) = asu8(R1);
-	goto L3802;
-L3803:
+	goto L3791;
+L3792:
+	R1 = 8;
+	R2 = (u64)&cc_decls_nextlx;
+	R3 = 22;
+	*tou8p(((i64)R2+(i64)R3)) = asu8(R1);
+L3791:
+	goto L3789;
+L3790:
+	asu64(R1) = aa;
+	R2 = 2147483647;
+	if (asu64(R1) < asu64(R2)) goto L3794;
 	R1 = 4;
 	R2 = (u64)&cc_decls_nextlx;
 	R3 = 22;
 	*tou8p(((i64)R2+(i64)R3)) = asu8(R1);
+L3794:
+L3789:
+	goto L3782;
+L3784:
+	asu8(R1) = pc_decls_flong64;
+	if (!asu8(R1)) goto L3796;
+	goto L3785;
+L3796:
+	asu8(R1) = usigned;
+	if (!asu8(R1)) goto L3798;
+	asu64(R1) = aa;
+	R2 = 4294967295;
+	if (asu64(R1) < asu64(R2)) goto L3800;
+	R1 = 9;
+	R2 = (u64)&cc_decls_nextlx;
+	R3 = 22;
+	*tou8p(((i64)R2+(i64)R3)) = asu8(R1);
+	goto L3799;
+L3800:
+	R1 = 8;
+	R2 = (u64)&cc_decls_nextlx;
+	R3 = 22;
+	*tou8p(((i64)R2+(i64)R3)) = asu8(R1);
+L3799:
+	goto L3797;
+L3798:
+	asu64(R1) = aa;
+	R2 = 2147483647;
+	if (asu64(R1) < asu64(R2)) goto L3802;
+	R1 = 4;
+	R2 = (u64)&cc_decls_nextlx;
+	R3 = 22;
+	*tou8p(((i64)R2+(i64)R3)) = asu8(R1);
+	goto L3801;
 L3802:
-	goto L3781;
+	R1 = 3;
+	R2 = (u64)&cc_decls_nextlx;
+	R3 = 22;
+	*tou8p(((i64)R2+(i64)R3)) = asu8(R1);
+L3801:
+L3797:
+	goto L3782;
 L3785:
-L3781:
+	asu8(R1) = usigned;
+	if (!asu8(R1)) goto L3804;
+	R1 = 9;
+	R2 = (u64)&cc_decls_nextlx;
+	R3 = 22;
+	*tou8p(((i64)R2+(i64)R3)) = asu8(R1);
+	goto L3803;
+L3804:
+	R1 = 4;
+	R2 = (u64)&cc_decls_nextlx;
+	R3 = 22;
+	*tou8p(((i64)R2+(i64)R3)) = asu8(R1);
+L3803:
+	goto L3782;
+L3786:
+L3782:
 	asu64(R1) = aa;
 	R2 = (u64)&cc_decls_nextlx;
 	R3 = 0;
 	*toi64p(((i64)R2+(i64)R3)) = asi64(R1);
-L3755:
+L3756:
 	return;
 }
 
 static i64 cc_lex_checknumbersuffix() {
     u64 R1, R2; 
 	u8 c;
-L3805:
+L3806:
 	R1 = (u64)&cc_lex_lxsptr;
 	asu64(R2) = *tou64p(R1); *(tou64p(R1)) += 1; asu64(R1) = asu64(R2);
 	asu8(R1) = *tou8p(R1);
@@ -38245,28 +38320,28 @@ L3805:
 	R2 = R1;
 	c = asu8(R2);
 	switch (asi64(R1)) {
-	case 76: case 85: case 108: case 117: goto L3809;
-	case 77: case 78: case 79: case 80: case 81: case 82: case 83: case 84: case 86: case 87: case 88: case 89: case 90: case 91: case 92: case 93: case 94: case 95: case 96: case 97: case 98: case 99: case 100: case 101: case 102: case 103: case 104: case 105: case 106: case 107: case 109: case 110: case 111: case 112: case 113: case 114: case 115: case 116: goto L3808;
-	default: goto L3808;
+	case 76: case 85: case 108: case 117: goto L3810;
+	case 77: case 78: case 79: case 80: case 81: case 82: case 83: case 84: case 86: case 87: case 88: case 89: case 90: case 91: case 92: case 93: case 94: case 95: case 96: case 97: case 98: case 99: case 100: case 101: case 102: case 103: case 104: case 105: case 106: case 107: case 109: case 110: case 111: case 112: case 113: case 114: case 115: case 116: goto L3809;
+	default: goto L3809;
     };
 // SWITCH
+L3810:
+	goto L3806;
 L3809:
-	goto L3805;
-L3808:
 	R1 = (u64)&cc_lex_alphamap;
 	asu8(R2) = c;
 	R2 = toi64(tou8(R2));
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
-	if (!asu8(R1)) goto L3811;
-L3811:
+	if (!asu8(R1)) goto L3812;
+L3812:
 	R1 = (u64)&cc_lex_lxsptr;
 	(*tou64p(R1)) -=1;
+	goto L3807;
 	goto L3806;
-	goto L3805;
-L3806:
+L3807:
 	R1 = 3;
-	goto L3804;
-L3804:
+	goto L3805;
+L3805:
 	return asi64(R1);
 }
 
@@ -38282,7 +38357,7 @@ static void cc_lex_stacksourcefile(u64 file, i64 syshdr) {
 	fileno = asi64(R1);
 	asi64(R1) = fileno;
 	R2 = 0;
-	if (asi64(R1) != asi64(R2)) goto L3814;
+	if (asi64(R1) != asi64(R2)) goto L3815;
 	msysc_m$print_startcon();
 	asu64(R1) = file;
 	msysc_m$print_str_nf(asu64(R1));
@@ -38293,13 +38368,13 @@ static void cc_lex_stacksourcefile(u64 file, i64 syshdr) {
 	msysc_m$print_end();
 	R1 = tou64("Can't find include file");
 	cc_lex_lxerror(asu64(R1));
-L3814:
+L3815:
 	asi64(R1) = cc_lex_lx_stackindex;
 	R2 = 20;
-	if (asi64(R1) < asi64(R2)) goto L3816;
+	if (asi64(R1) < asi64(R2)) goto L3817;
 	R1 = tou64("Too many nested includes");
 	cc_lex_lxerror(asu64(R1));
-L3816:
+L3817:
 	R1 = (u64)&cc_lex_lx_stackindex;
 	(*toi64p(R1)) += 1;
 	R1 = 0;
@@ -38308,22 +38383,22 @@ L3816:
 	*tou8p(((i64)R2+(i64)R3-1)) = asu8(R1);
 	asi64(R1) = cc_lex_lx_stackindex;
 	R2 = 1;
-	if (asi64(R1) <= asi64(R2)) goto L3818;
+	if (asi64(R1) <= asi64(R2)) goto L3819;
 	R1 = (u64)&cc_lex_headerpathlist;
 	asi64(R2) = cc_lex_lx_stackindex;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2*8-16));
 	R2 = (u64)&fullpath;
 	asu64(R1) = strcpy(asu64(R2), asu64(R1));
-L3818:
+L3819:
 	R1 = (u64)&cc_lex_headerpath;
 	R2 = 1;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2-1));
-	if (!asu8(R1)) goto L3820;
+	if (!asu8(R1)) goto L3821;
 	R1 = (u64)&cc_lex_headerpath;
 	asu64(R1) = mlib_pcm_copyheapstring(asu64(R1));
 	R2 = (u64)&fullpath;
 	asu64(R1) = strcat(asu64(R2), asu64(R1));
-L3820:
+L3821:
 	R1 = (u64)&fullpath;
 	asu64(R1) = mlib_pcm_copyheapstring(asu64(R1));
 	R2 = (u64)&cc_lex_headerpathlist;
@@ -38423,41 +38498,41 @@ static i64 cc_lex_getsourcefile(u64 file, i64 syshdr) {
 	i = asi64(R1);
 	asi64(R1) = cc_decls_nsourcefiles;
 	R2 = 1;
-	if (asi64(R1) < asi64(R2)) goto L3825;
-L3823:
+	if (asi64(R1) < asi64(R2)) goto L3826;
+L3824:
 	R1 = (u64)&cc_decls_sourcefilenames;
 	asi64(R2) = i;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2*8));
 	R2 = (u64)&cc_lex_getsourcefile_filespec;
 	asi64(R1) = mlib_eqstring(asu64(R2), asu64(R1));
-	if (!asi64(R1)) goto L3827;
+	if (!asi64(R1)) goto L3828;
 	asi64(R1) = i;
-	goto L3822;
-L3827:
-	i += 1; if (i <= cc_decls_nsourcefiles) goto L3823;
-L3825:
+	goto L3823;
+L3828:
+	i += 1; if (i <= cc_decls_nsourcefiles) goto L3824;
+L3826:
 	asu8(R1) = cc_cli_dointheaders;
-	if (!asu8(R1)) goto L3829;
+	if (!asu8(R1)) goto L3830;
 	R1 = (u64)&cc_lex_getsourcefile_filespec;
 	asu64(R1) = cc_headersx_findheader(asu64(R1));
 	hdrtext = asu64(R1);
 	asu64(R1) = hdrtext;
-	if (!asu64(R1)) goto L3831;
+	if (!asu64(R1)) goto L3832;
 	asu64(R1) = hdrtext;
 	R2 = (u64)&cc_lex_getsourcefile_filespec;
 	asi64(R1) = cc_support_loadbuiltin(asu64(R2), asu64(R1));
-	goto L3822;
-L3831:
-L3829:
+	goto L3823;
+L3832:
+L3830:
 	R1 = tou64("mcc.h");
 	asu64(R2) = file;
 	asi64(R1) = mlib_eqstring(asu64(R2), asu64(R1));
-	if (!asi64(R1)) goto L3833;
+	if (!asi64(R1)) goto L3834;
 	R1 = tou64("#define __attribute__(x)\n#define _WIN32\n#define WIN32\n#define __WIN32__\n#define __inline\n#define __dllimport(x)\n//#define __declspec(x)\n#define __stdcall\n#define CALLBACK $callback\n#define __cdecl\n#define EXTERN_C extern\n#define DECLSPEC_IMPORT\n#define __32BIT__\n#define register\n#define __MCCC__\n\n//typedef signed char\t\ti8;\n//typedef short\t\t\ti16;\n//typedef int\t\t\t\ti32;\n//typedef long long int\ti64;\n//typedef unsigned char\t\t\tu8;\n//typedef unsigned short\t\t\tu16;\n//typedef unsigned int\t\t\tu32;\n//typedef unsigned long long int\tu64;\n//\n//typedef unsigned char byte;\n//\n//typedef float r32;\n//typedef double r64;\n\n");
 	R2 = (u64)&cc_lex_getsourcefile_filespec;
 	asi64(R1) = cc_support_loadbuiltin(asu64(R2), asu64(R1));
-	goto L3822;
-L3833:
+	goto L3823;
+L3834:
 	asu64(R1) = file;
 	asu64(R1) = mlib_extractpath(asu64(R1));
 	R2 = (u64)&cc_lex_headerpath;
@@ -38465,44 +38540,44 @@ L3833:
 	R1 = (u64)&cc_lex_headerpath;
 	R2 = 1;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2-1));
-	if (!asu8(R1)) goto L3835;
+	if (!asu8(R1)) goto L3836;
 	R1 = (u64)&cc_lex_headerpath;
 	R2 = 1;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2-1));
 	R1 = tou64(tou8(R1));
 	R2 = 47;
-	if (asu64(R1) == asu64(R2)) goto L3838;
+	if (asu64(R1) == asu64(R2)) goto L3839;
 	R1 = (u64)&cc_lex_headerpath;
 	R2 = 2;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2-1));
 	R1 = tou64(tou8(R1));
 	R2 = 58;
-	if (asu64(R1) != asu64(R2)) goto L3837;
+	if (asu64(R1) != asu64(R2)) goto L3838;
 	R1 = (u64)&cc_lex_headerpath;
 	R2 = 3;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2-1));
 	R1 = tou64(tou8(R1));
 	R2 = 47;
-	if (asu64(R1) != asu64(R2)) goto L3837;
-L3838:
+	if (asu64(R1) != asu64(R2)) goto L3838;
+L3839:
 	asu64(R1) = file;
 	asi64(R1) = mlib_checkfile(asu64(R1));
-	if (!asi64(R1)) goto L3840;
+	if (!asi64(R1)) goto L3841;
 	asu64(R1) = file;
 	asu64(R2) = file;
 	asi64(R1) = cc_support_loadsourcefile(asu64(R2), asu64(R1));
-	goto L3822;
-L3840:
+	goto L3823;
+L3841:
 	R1 = 0;
-	goto L3822;
-L3837:
-L3835:
+	goto L3823;
+L3838:
+L3836:
 	asi64(R1) = cc_lex_lx_stackindex;
 	i = asi64(R1);
 	asi64(R1) = i;
 	R2 = 1;
-	if (asi64(R1) < asi64(R2)) goto L3843;
-L3841:
+	if (asi64(R1) < asi64(R2)) goto L3844;
+L3842:
 	R1 = (u64)&cc_lex_headerpathlist;
 	asi64(R2) = i;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2*8-8));
@@ -38513,20 +38588,20 @@ L3841:
 	asu64(R1) = strcat(asu64(R2), asu64(R1));
 	R1 = (u64)&cc_lex_getsourcefile_filespec;
 	asi64(R1) = mlib_checkfile(asu64(R1));
-	if (!asi64(R1)) goto L3845;
+	if (!asi64(R1)) goto L3846;
 	asu64(R1) = file;
 	R2 = (u64)&cc_lex_getsourcefile_filespec;
 	asi64(R1) = cc_support_loadsourcefile(asu64(R2), asu64(R1));
-	goto L3822;
-L3845:
-	i += -1; if (i >= 1) goto L3841;
-L3843:
+	goto L3823;
+L3846:
+	i += -1; if (i >= 1) goto L3842;
+L3844:
 	R1 = 1;
 	i = asi64(R1);
 	asi64(R1) = cc_decls_nsearchdirs;
 	R2 = 1;
-	if (asi64(R1) < asi64(R2)) goto L3848;
-L3846:
+	if (asi64(R1) < asi64(R2)) goto L3849;
+L3847:
 	R1 = (u64)&cc_decls_searchdirs;
 	asi64(R2) = i;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2*8-8));
@@ -38537,7 +38612,7 @@ L3846:
 	asu64(R1) = strcat(asu64(R2), asu64(R1));
 	R1 = (u64)&cc_lex_getsourcefile_filespec;
 	asi64(R1) = mlib_checkfile(asu64(R1));
-	if (!asi64(R1)) goto L3850;
+	if (!asi64(R1)) goto L3851;
 	R1 = (u64)&cc_lex_getsourcefile_filespec;
 	asu64(R1) = mlib_extractpath(asu64(R1));
 	R2 = (u64)&cc_lex_headerpath;
@@ -38545,13 +38620,13 @@ L3846:
 	asu64(R1) = file;
 	R2 = (u64)&cc_lex_getsourcefile_filespec;
 	asi64(R1) = cc_support_loadsourcefile(asu64(R2), asu64(R1));
-	goto L3822;
-L3850:
-	i += 1; if (i <= cc_decls_nsearchdirs) goto L3846;
-L3848:
+	goto L3823;
+L3851:
+	i += 1; if (i <= cc_decls_nsearchdirs) goto L3847;
+L3849:
 	R1 = 0;
-	goto L3822;
-L3822:
+	goto L3823;
+L3823:
 	return asi64(R1);
 }
 
@@ -38566,10 +38641,10 @@ static void cc_lex_lex() {
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 67;
-	if (asi64(R1) != asi64(R2)) goto L3854;
+	if (asi64(R1) != asi64(R2)) goto L3855;
 	asi64(R1) = cc_lex_lx_stackindex;
 	R2 = 0;
-	if (asi64(R1) != asi64(R2)) goto L3854;
+	if (asi64(R1) != asi64(R2)) goto L3855;
 	R1 = 0;
 	R2 = (u64)&cc_decls_lx;
 	R3 = 0;
@@ -38581,18 +38656,18 @@ static void cc_lex_lex() {
 	asi32(R3) = *toi32p(((i64)R3+(i64)R4));
 	R3 = toi64(toi32(R3));
 	*tou8p(((i64)R2+(i64)R3)) = asu8(R1);
-L3854:
 L3855:
+L3856:
 	R1 = (u64)&cc_decls_nextlx;
 	R2 = 21;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 67;
-	if (asi64(R1) == asi64(R2)) goto L3857;
-	R2 = 56;
 	if (asi64(R1) == asi64(R2)) goto L3858;
-	goto L3859;
-L3857:
+	R2 = 56;
+	if (asi64(R1) == asi64(R2)) goto L3859;
+	goto L3860;
+L3858:
 	R1 = (u64)&cc_decls_nextlx;
 	R2 = 0;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
@@ -38606,12 +38681,12 @@ L3857:
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 68;
-	if (asi64(R1) != asi64(R2)) goto L3861;
+	if (asi64(R1) != asi64(R2)) goto L3862;
 	R1 = 67;
 	R2 = (u64)&cc_decls_nextlx;
 	R3 = 21;
 	*tou8p(((i64)R2+(i64)R3)) = asu8(R1);
-L3861:
+L3862:
 	R1 = (u64)&cc_decls_nextlx;
 	R2 = 0;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
@@ -38620,15 +38695,15 @@ L3861:
 	R2 = (u64)&cc_decls_nextlx;
 	R3 = 22;
 	*tou8p(((i64)R2+(i64)R3)) = asu8(R1);
-	goto L3851;
-	goto L3855;
-L3858:
-	cc_lex_lexm();
-	goto L3855;
+	goto L3852;
+	goto L3856;
 L3859:
-	goto L3851;
-	goto L3855;
-L3851:
+	cc_lex_lexm();
+	goto L3856;
+L3860:
+	goto L3852;
+	goto L3856;
+L3852:
 	return;
 }
 
@@ -38637,7 +38712,7 @@ static void cc_lex_shownumberstr(u64 l, u64 f) {
 	u64 s;
 	asu64(R1) = l;
 	asi64(R1) = cc_lex_getfilenox(asu64(R1));
-	if (!asi64(R1)) goto L3864;
+	if (!asi64(R1)) goto L3865;
 	R1 = (u64)&cc_decls_sourcefiletext;
 	asu64(R2) = l;
 	asi64(R2) = cc_lex_getfilenox(asu64(R2));
@@ -38646,8 +38721,8 @@ static void cc_lex_shownumberstr(u64 l, u64 f) {
 	asi64(R2) = cc_lex_getnumberoffsetx(asu64(R2));
 	R1 += (i64)R2;
 	s = asu64(R1);
-	goto L3863;
-L3864:
+	goto L3864;
+L3865:
 	R1 = (u64)&cc_lex_pastedtokenlist;
 	asu64(R2) = l;
 	R3 = 28;
@@ -38655,7 +38730,7 @@ L3864:
 	R2 = toi64(toi16(R2));
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2*8-8));
 	s = asu64(R1);
-L3863:
+L3864:
 	asu64(R1) = f;
 	asu64(R2) = l;
 	R3 = 24;
@@ -38709,8 +38784,8 @@ static u64 cc_lex_addnamestr(u64 name) {
 	(R1_B17) = oldlx;
 	cc_decls_nextlx = (R1_B17);
 	asu64(R1) = symptr;
-	goto L3865;
-L3865:
+	goto L3866;
+L3866:
 	return asu64(R1);
 }
 
@@ -38729,51 +38804,51 @@ static void cc_lex_lxreadstring(i64 termchar, i64 fwide) {
 	i64 av_2;
 	asi64(R1) = termchar;
 	R2 = 34;
-	if (asi64(R1) != asi64(R2)) goto L3868;
+	if (asi64(R1) != asi64(R2)) goto L3869;
 	asi64(R1) = fwide;
-	if (!asi64(R1)) goto L3870;
+	if (!asi64(R1)) goto L3871;
 	R1 = 64;
-	goto L3869;
-L3870:
+	goto L3870;
+L3871:
 	R1 = 63;
-L3869:
+L3870:
 	R2 = (u64)&cc_decls_nextlx;
 	R3 = 21;
 	*tou8p(((i64)R2+(i64)R3)) = asu8(R1);
-	goto L3867;
-L3868:
+	goto L3868;
+L3869:
 	R1 = 61;
 	R2 = (u64)&cc_decls_nextlx;
 	R3 = 21;
 	*tou8p(((i64)R2+(i64)R3)) = asu8(R1);
-L3867:
+L3868:
 	asu64(R1) = cc_lex_lxsptr;
 	R2 = (u64)&cc_decls_nextlx;
 	R3 = 0;
 	*tou64p(((i64)R2+(i64)R3)) = asu64(R1);
 	asi64(R1) = cc_lex_lx_stackindex;
 	R2 = 0;
-	if (asi64(R1) != asi64(R2)) goto L3872;
+	if (asi64(R1) != asi64(R2)) goto L3873;
 	asi64(R1) = fwide;
-	if (asi64(R1)) goto L3872;
+	if (asi64(R1)) goto L3873;
 	asu64(R1) = cc_lex_lxsptr;
 	dest = asu64(R1);
 	asu64(R1) = dest;
 	ws = asu64(R1);
 	R1 = 0;
 	useheap = asi64(R1);
-	goto L3871;
-L3872:
+	goto L3872;
+L3873:
 	R1 = (u64)&str;
 	dest = asu64(R1);
 	asu64(R1) = dest;
 	ws = asu64(R1);
 	R1 = 1;
 	useheap = asi64(R1);
-L3871:
+L3872:
 	R1 = 0;
 	length = asi64(R1);
-L3873:
+L3874:
 	R1 = (u64)&cc_lex_lxsptr;
 	asu64(R2) = *tou64p(R1); *(tou64p(R1)) += 1; asu64(R1) = asu64(R2);
 	asu8(R1) = *tou8p(R1);
@@ -38781,21 +38856,21 @@ L3873:
 	R2 = R1;
 	c = asi64(R2);
 	R2 = 92;
-	if (asi64(R1) == asi64(R2)) goto L3876;
+	if (asi64(R1) == asi64(R2)) goto L3877;
 	R2 = 34;
-	if (asi64(R1) == asi64(R2)) goto L3877;
-	R2 = 39;
-	if (asi64(R1) == asi64(R2)) goto L3877;
-	R2 = 0;
 	if (asi64(R1) == asi64(R2)) goto L3878;
-	goto L3879;
-L3876:
+	R2 = 39;
+	if (asi64(R1) == asi64(R2)) goto L3878;
+	R2 = 0;
+	if (asi64(R1) == asi64(R2)) goto L3879;
+	goto L3880;
+L3877:
 	asi64(R1) = cc_lex_isincludefile;
-	if (!asi64(R1)) goto L3881;
+	if (!asi64(R1)) goto L3882;
 	R1 = 47;
 	c = asi64(R1);
-	goto L3882;
-L3881:
+	goto L3883;
+L3882:
 	R1 = (u64)&cc_lex_lxsptr;
 	asu64(R2) = *tou64p(R1); *(tou64p(R1)) += 1; asu64(R1) = asu64(R2);
 	asu8(R1) = *tou8p(R1);
@@ -38804,56 +38879,56 @@ L3881:
 // cc_lex.lxreadstring.reenter:
 	asi64(R1) = c;
 	switch (asi64(R1)) {
-	case 10: goto L3916;
-	case 11: case 12: case 14: case 15: case 16: case 17: case 18: case 19: case 20: case 21: case 22: case 23: case 24: case 25: case 26: case 27: case 28: case 29: case 30: case 31: case 32: case 33: case 35: case 36: case 37: case 38: case 40: case 41: case 42: case 43: case 44: case 45: case 46: case 47: case 56: case 57: case 58: case 59: case 60: case 61: case 62: case 63: case 64: case 65: case 66: case 67: case 68: case 69: case 70: case 71: case 72: case 73: case 74: case 75: case 76: case 77: case 78: case 79: case 80: case 81: case 82: case 83: case 84: case 85: case 86: case 87: case 88: case 89: case 90: case 91: case 93: case 94: case 95: case 96: case 99: case 100: case 101: case 103: case 104: case 105: case 106: case 107: case 108: case 109: case 111: case 112: case 113: case 115: case 117: case 119: goto L3886;
-	case 13: goto L3913;
-	case 34: goto L3910;
-	case 39: goto L3912;
-	case 48: case 49: case 50: case 51: case 52: case 53: case 54: case 55: goto L3903;
-	case 92: goto L3911;
-	case 97: goto L3887;
-	case 98: goto L3888;
-	case 102: goto L3889;
-	case 110: goto L3890;
-	case 114: goto L3891;
-	case 116: goto L3892;
-	case 118: goto L3893;
-	case 120: goto L3894;
-	default: goto L3886;
+	case 10: goto L3917;
+	case 11: case 12: case 14: case 15: case 16: case 17: case 18: case 19: case 20: case 21: case 22: case 23: case 24: case 25: case 26: case 27: case 28: case 29: case 30: case 31: case 32: case 33: case 35: case 36: case 37: case 38: case 40: case 41: case 42: case 43: case 44: case 45: case 46: case 47: case 56: case 57: case 58: case 59: case 60: case 61: case 62: case 63: case 64: case 65: case 66: case 67: case 68: case 69: case 70: case 71: case 72: case 73: case 74: case 75: case 76: case 77: case 78: case 79: case 80: case 81: case 82: case 83: case 84: case 85: case 86: case 87: case 88: case 89: case 90: case 91: case 93: case 94: case 95: case 96: case 99: case 100: case 101: case 103: case 104: case 105: case 106: case 107: case 108: case 109: case 111: case 112: case 113: case 115: case 117: case 119: goto L3887;
+	case 13: goto L3914;
+	case 34: goto L3911;
+	case 39: goto L3913;
+	case 48: case 49: case 50: case 51: case 52: case 53: case 54: case 55: goto L3904;
+	case 92: goto L3912;
+	case 97: goto L3888;
+	case 98: goto L3889;
+	case 102: goto L3890;
+	case 110: goto L3891;
+	case 114: goto L3892;
+	case 116: goto L3893;
+	case 118: goto L3894;
+	case 120: goto L3895;
+	default: goto L3887;
     };
 // SWITCH
-L3887:
+L3888:
 	R1 = 7;
 	c = asi64(R1);
-	goto L3884;
-L3888:
+	goto L3885;
+L3889:
 	R1 = 8;
 	c = asi64(R1);
-	goto L3884;
-L3889:
+	goto L3885;
+L3890:
 	R1 = 12;
 	c = asi64(R1);
-	goto L3884;
-L3890:
+	goto L3885;
+L3891:
 	R1 = 10;
 	c = asi64(R1);
-	goto L3884;
-L3891:
+	goto L3885;
+L3892:
 	R1 = 13;
 	c = asi64(R1);
-	goto L3884;
-L3892:
+	goto L3885;
+L3893:
 	R1 = 9;
 	c = asi64(R1);
-	goto L3884;
-L3893:
+	goto L3885;
+L3894:
 	R1 = 11;
 	c = asi64(R1);
-	goto L3884;
-L3894:
+	goto L3885;
+L3895:
 	R1 = 0;
 	c = asi64(R1);
-L3895:
+L3896:
 	R1 = (u64)&cc_lex_lxsptr;
 	asu64(R2) = *tou64p(R1); *(tou64p(R1)) += 1; asu64(R1) = asu64(R2);
 	asu8(R1) = *tou8p(R1);
@@ -38861,14 +38936,14 @@ L3895:
 	R2 = R1;
 	d = asi64(R2);
 	switch (asi64(R1)) {
-	case 48: case 49: case 50: case 51: case 52: case 53: case 54: case 55: case 56: case 57: goto L3902;
-	case 58: case 59: case 60: case 61: case 62: case 63: case 64: case 71: case 72: case 73: case 74: case 75: case 76: case 77: case 78: case 79: case 80: case 81: case 82: case 83: case 84: case 85: case 86: case 87: case 88: case 89: case 90: case 91: case 92: case 93: case 94: case 95: case 96: goto L3899;
-	case 65: case 66: case 67: case 68: case 69: case 70: goto L3900;
-	case 97: case 98: case 99: case 100: case 101: case 102: goto L3901;
-	default: goto L3899;
+	case 48: case 49: case 50: case 51: case 52: case 53: case 54: case 55: case 56: case 57: goto L3903;
+	case 58: case 59: case 60: case 61: case 62: case 63: case 64: case 71: case 72: case 73: case 74: case 75: case 76: case 77: case 78: case 79: case 80: case 81: case 82: case 83: case 84: case 85: case 86: case 87: case 88: case 89: case 90: case 91: case 92: case 93: case 94: case 95: case 96: goto L3900;
+	case 65: case 66: case 67: case 68: case 69: case 70: goto L3901;
+	case 97: case 98: case 99: case 100: case 101: case 102: goto L3902;
+	default: goto L3900;
     };
 // SWITCH
-L3900:
+L3901:
 	asi64(R1) = c;
 	R2 = 16;
 	asi64(R1) *= asi64(R2);
@@ -38879,8 +38954,8 @@ L3900:
 	R2 = 10;
 	asi64(R1) += asi64(R2);
 	c = asi64(R1);
-	goto L3897;
-L3901:
+	goto L3898;
+L3902:
 	asi64(R1) = c;
 	R2 = 16;
 	asi64(R1) *= asi64(R2);
@@ -38891,8 +38966,8 @@ L3901:
 	R2 = 10;
 	asi64(R1) += asi64(R2);
 	c = asi64(R1);
-	goto L3897;
-L3902:
+	goto L3898;
+L3903:
 	asi64(R1) = c;
 	R2 = 16;
 	asi64(R1) *= asi64(R2);
@@ -38901,22 +38976,22 @@ L3902:
 	R2 = 48;
 	asi64(R1) -= asi64(R2);
 	c = asi64(R1);
-	goto L3897;
-L3899:
+	goto L3898;
+L3900:
 	R1 = (u64)&cc_lex_lxsptr;
 	(*tou64p(R1)) -=1;
+	goto L3897;
+L3898:
 	goto L3896;
 L3897:
-	goto L3895;
-L3896:
-	goto L3884;
-L3903:
+	goto L3885;
+L3904:
 	R1 = 48;
 	R2 = (u64)&c;
 	*toi64p(R2) -= asi64(R1);
 	R1 = 2;
 	av_1 = asi64(R1);
-L3904:
+L3905:
 	R1 = (u64)&cc_lex_lxsptr;
 	asu64(R2) = *tou64p(R1); *(tou64p(R1)) += 1; asu64(R1) = asu64(R2);
 	asu8(R1) = *tou8p(R1);
@@ -38924,23 +38999,23 @@ L3904:
 	R2 = R1;
 	d = asi64(R2);
 	R2 = 48;
-	if (asi64(R1) == asi64(R2)) goto L3908;
+	if (asi64(R1) == asi64(R2)) goto L3909;
 	R2 = 49;
-	if (asi64(R1) == asi64(R2)) goto L3908;
+	if (asi64(R1) == asi64(R2)) goto L3909;
 	R2 = 50;
-	if (asi64(R1) == asi64(R2)) goto L3908;
+	if (asi64(R1) == asi64(R2)) goto L3909;
 	R2 = 51;
-	if (asi64(R1) == asi64(R2)) goto L3908;
+	if (asi64(R1) == asi64(R2)) goto L3909;
 	R2 = 52;
-	if (asi64(R1) == asi64(R2)) goto L3908;
+	if (asi64(R1) == asi64(R2)) goto L3909;
 	R2 = 53;
-	if (asi64(R1) == asi64(R2)) goto L3908;
+	if (asi64(R1) == asi64(R2)) goto L3909;
 	R2 = 54;
-	if (asi64(R1) == asi64(R2)) goto L3908;
+	if (asi64(R1) == asi64(R2)) goto L3909;
 	R2 = 55;
-	if (asi64(R1) == asi64(R2)) goto L3908;
-	goto L3909;
-L3908:
+	if (asi64(R1) == asi64(R2)) goto L3909;
+	goto L3910;
+L3909:
 	asi64(R1) = c;
 	R2 = 8;
 	asi64(R1) *= asi64(R2);
@@ -38949,28 +39024,28 @@ L3908:
 	R2 = 48;
 	asi64(R1) -= asi64(R2);
 	c = asi64(R1);
-	goto L3907;
-L3909:
+	goto L3908;
+L3910:
 	R1 = (u64)&cc_lex_lxsptr;
 	(*tou64p(R1)) -=1;
-	goto L3906;
+	goto L3907;
+L3908:
+	if (--asi64(av_1)) goto L3905;
 L3907:
-	if (--asi64(av_1)) goto L3904;
-L3906:
-	goto L3884;
-L3910:
+	goto L3885;
+L3911:
 	R1 = 34;
 	c = asi64(R1);
-	goto L3884;
-L3911:
+	goto L3885;
+L3912:
 	R1 = 92;
 	c = asi64(R1);
-	goto L3884;
-L3912:
+	goto L3885;
+L3913:
 	R1 = 39;
 	c = asi64(R1);
-	goto L3884;
-L3913:
+	goto L3885;
+L3914:
 	R1 = (u64)&cc_decls_nextlx;
 	R2 = 16;
 	R1 += (i64)R2;
@@ -38979,30 +39054,30 @@ L3913:
 	asu8(R1) = *tou8p(R1);
 	R1 = toi64(tou8(R1));
 	R2 = 10;
-	if (asi64(R1) != asi64(R2)) goto L3915;
+	if (asi64(R1) != asi64(R2)) goto L3916;
 	R1 = (u64)&cc_lex_lxsptr;
 	(*tou64p(R1)) += 1;
-L3915:
-	goto L3873;
-	goto L3884;
 L3916:
+	goto L3874;
+	goto L3885;
+L3917:
 	R1 = (u64)&cc_decls_nextlx;
 	R2 = 16;
 	R1 += (i64)R2;
 	(*tou32p(R1)) += 1;
-	goto L3873;
-	goto L3884;
-L3886:
-L3884:
-	goto L3875;
-L3877:
+	goto L3874;
+	goto L3885;
+L3887:
+L3885:
+	goto L3876;
+L3878:
 	asi64(R1) = c;
 	asi64(R2) = termchar;
-	if (asi64(R1) != asi64(R2)) goto L3918;
-	goto L3874;
-L3918:
+	if (asi64(R1) != asi64(R2)) goto L3919;
 	goto L3875;
-L3878:
+L3919:
+	goto L3876;
+L3879:
 	msysc_m$print_startcon();
 	R1 = tou64("NEXTLX.LINENO=");
 	msysc_m$print_str_nf(asu64(R1));
@@ -39015,39 +39090,39 @@ L3878:
 	msysc_m$print_end();
 	R1 = tou64("String not terminated");
 	cc_lex_lxerror(asu64(R1));
-	goto L3875;
-L3879:
-L3875:
+	goto L3876;
+L3880:
+L3876:
 // cc_lex.lxreadstring.normalchar:
-L3882:
+L3883:
 	asi64(R1) = useheap;
-	if (asi64(R1)) goto L3920;
+	if (asi64(R1)) goto L3921;
 	asi64(R1) = c;
 	R2 = (u64)&dest;
 	asu64(R3) = *tou64p(R2); *(tou64p(R2)) += 1; asu64(R2) = asu64(R3);
 	*tou8p(R2) = asu8(R1);
-	goto L3919;
-L3920:
+	goto L3920;
+L3921:
 	R1 = (u64)&length;
 	asi64(R1) = *(toi64p(R1)) += 1;
 	R2 = 2048;
-	if (asi64(R1) >= asi64(R2)) goto L3921;
+	if (asi64(R1) >= asi64(R2)) goto L3922;
 	asi64(R1) = c;
 	R2 = (u64)&dest;
 	asu64(R3) = *tou64p(R2); *(tou64p(R2)) += 1; asu64(R2) = asu64(R3);
 	*tou8p(R2) = asu8(R1);
-	goto L3919;
-L3921:
+	goto L3920;
+L3922:
 	R1 = tou64("Local str too long");
 	cc_lex_lxerror(asu64(R1));
-L3919:
-	goto L3873;
-L3874:
+L3920:
+	goto L3874;
+L3875:
 	R1 = 0;
 	asu64(R2) = dest;
 	*tou8p(R2) = asu8(R1);
 	asi64(R1) = fwide;
-	if (!asi64(R1)) goto L3923;
+	if (!asi64(R1)) goto L3924;
 	asi64(R1) = length;
 	R2 = 2;
 	asi64(R1) *= asi64(R2);
@@ -39061,8 +39136,8 @@ L3874:
 	av_2 = asi64(R1);
 	asi64(R1) = av_2;
 	R2 = 0;
-	if (asi64(R1) <= asi64(R2)) goto L3926;
-L3924:
+	if (asi64(R1) <= asi64(R2)) goto L3927;
+L3925:
 	R1 = (u64)&ws;
 	asu64(R2) = *tou64p(R1); *(tou64p(R1)) += 1; asu64(R1) = asu64(R2);
 	asu8(R1) = *tou8p(R1);
@@ -39070,8 +39145,8 @@ L3924:
 	R2 = (u64)&wd;
 	asu64(R3) = *tou64p(R2); *(tou64p(R2)) += 2; asu64(R2) = asu64(R3);
 	*tou16p(R2) = asu16(R1);
-	if (--asi64(av_2)) goto L3924;
-L3926:
+	if (--asi64(av_2)) goto L3925;
+L3927:
 	R1 = 0;
 	asu64(R2) = wd;
 	*tou16p(R2) = asu16(R1);
@@ -39079,10 +39154,10 @@ L3926:
 	R2 = (u64)&cc_decls_nextlx;
 	R3 = 0;
 	*tou64p(((i64)R2+(i64)R3)) = asu64(R1);
-	goto L3922;
-L3923:
+	goto L3923;
+L3924:
 	asi64(R1) = useheap;
-	if (!asi64(R1)) goto L3927;
+	if (!asi64(R1)) goto L3928;
 	asi64(R1) = length;
 	R2 = (u64)&cc_decls_nextlx;
 	R3 = 24;
@@ -39102,8 +39177,8 @@ L3923:
 	R4 = 0;
 	asu64(R3) = *tou64p(((i64)R3+(i64)R4));
 	memcpy(asu64(R3), asu64(R2), asu64(R1));
-	goto L3922;
-L3927:
+	goto L3923;
+L3928:
 	asu64(R1) = dest;
 	R2 = (u64)&cc_decls_nextlx;
 	R3 = 0;
@@ -39112,7 +39187,7 @@ L3927:
 	R2 = (u64)&cc_decls_nextlx;
 	R3 = 24;
 	*toi32p(((i64)R2+(i64)R3)) = asi32(R1);
-L3922:
+L3923:
 	return;
 }
 
@@ -39121,21 +39196,21 @@ static void cc_lex_addlisttoken(u64 ulist, u64 ulistx, u64 p) {
 	asu64(R1) = ulist;
 	asu64(R1) = *tou64p(R1);
 	R2 = 0;
-	if (asu64(R1) != asu64(R2)) goto L3930;
+	if (asu64(R1) != asu64(R2)) goto L3931;
 	asu64(R1) = p;
 	R2 = R1;
 	asu64(R3) = ulistx;
 	*tou64p(R3) = asu64(R2);
 	asu64(R2) = ulist;
 	*tou64p(R2) = asu64(R1);
-	goto L3929;
-L3930:
+	goto L3930;
+L3931:
 	asu64(R1) = p;
 	asu64(R2) = ulistx;
 	asu64(R2) = *tou64p(R2);
 	R3 = 8;
 	*tou64p(((i64)R2+(i64)R3)) = asu64(R1);
-L3929:
+L3930:
 	R1 = 0;
 	asu64(R2) = p;
 	R3 = 8;
@@ -39162,21 +39237,21 @@ static void cc_lex_addlisttoken_copy(u64 ulist, u64 ulistx, u64 q) {
 	asu64(R1) = ulist;
 	asu64(R1) = *tou64p(R1);
 	R2 = 0;
-	if (asu64(R1) != asu64(R2)) goto L3933;
+	if (asu64(R1) != asu64(R2)) goto L3934;
 	asu64(R1) = p;
 	R2 = R1;
 	asu64(R3) = ulistx;
 	*tou64p(R3) = asu64(R2);
 	asu64(R2) = ulist;
 	*tou64p(R2) = asu64(R1);
-	goto L3932;
-L3933:
+	goto L3933;
+L3934:
 	asu64(R1) = p;
 	asu64(R2) = ulistx;
 	asu64(R2) = *tou64p(R2);
 	R3 = 8;
 	*tou64p(((i64)R2+(i64)R3)) = asu64(R1);
-L3932:
+L3933:
 	R1 = 0;
 	asu64(R2) = p;
 	R3 = 8;
@@ -39202,21 +39277,21 @@ static void cc_lex_addlist_nextlx(u64 ulist, u64 ulistx) {
 	asu64(R1) = ulist;
 	asu64(R1) = *tou64p(R1);
 	R2 = 0;
-	if (asu64(R1) != asu64(R2)) goto L3936;
+	if (asu64(R1) != asu64(R2)) goto L3937;
 	asu64(R1) = p;
 	R2 = R1;
 	asu64(R3) = ulistx;
 	*tou64p(R3) = asu64(R2);
 	asu64(R2) = ulist;
 	*tou64p(R2) = asu64(R1);
-	goto L3935;
-L3936:
+	goto L3936;
+L3937:
 	asu64(R1) = p;
 	asu64(R2) = ulistx;
 	asu64(R2) = *tou64p(R2);
 	R3 = 8;
 	*tou64p(((i64)R2+(i64)R3)) = asu64(R1);
-L3935:
+L3936:
 	R1 = 0;
 	asu64(R2) = p;
 	R3 = 8;
@@ -39230,8 +39305,8 @@ L3935:
 static void cc_lex_addlisttoken_seq(u64 ulist, u64 ulistx, u64 seq) {
     u64 R1, R2, R3; struct $B17 R1_B17; 
 	u64 tk;
-	goto L3939;
-L3938:
+	goto L3940;
+L3939:
 	asu64(R1) = cc_lex_alloctoken();
 	tk = asu64(R1);
 	asu64(R1) = seq;
@@ -39241,21 +39316,21 @@ L3938:
 	asu64(R1) = ulist;
 	asu64(R1) = *tou64p(R1);
 	R2 = 0;
-	if (asu64(R1) != asu64(R2)) goto L3942;
+	if (asu64(R1) != asu64(R2)) goto L3943;
 	asu64(R1) = tk;
 	R2 = R1;
 	asu64(R3) = ulistx;
 	*tou64p(R3) = asu64(R2);
 	asu64(R2) = ulist;
 	*tou64p(R2) = asu64(R1);
-	goto L3941;
-L3942:
+	goto L3942;
+L3943:
 	asu64(R1) = tk;
 	asu64(R2) = ulistx;
 	asu64(R2) = *tou64p(R2);
 	R3 = 8;
 	*tou64p(((i64)R2+(i64)R3)) = asu64(R1);
-L3941:
+L3942:
 	R1 = 0;
 	asu64(R2) = tk;
 	R3 = 8;
@@ -39267,9 +39342,9 @@ L3941:
 	R2 = 8;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
 	seq = asu64(R1);
-L3939:
+L3940:
 	asu64(R1) = seq;
-	if (asu64(R1)) goto L3938;
+	if (asu64(R1)) goto L3939;
 	return;
 }
 
@@ -39278,21 +39353,21 @@ static void cc_lex_addlistmparam(u64 ulist, u64 ulistx, u64 p) {
 	asu64(R1) = ulist;
 	asu64(R1) = *tou64p(R1);
 	R2 = 0;
-	if (asu64(R1) != asu64(R2)) goto L3945;
+	if (asu64(R1) != asu64(R2)) goto L3946;
 	asu64(R1) = p;
 	R2 = R1;
 	asu64(R3) = ulistx;
 	*tou64p(R3) = asu64(R2);
 	asu64(R2) = ulist;
 	*tou64p(R2) = asu64(R1);
-	goto L3944;
-L3945:
+	goto L3945;
+L3946:
 	asu64(R1) = p;
 	asu64(R2) = ulistx;
 	asu64(R2) = *tou64p(R2);
 	R3 = 8;
 	*tou64p(((i64)R2+(i64)R3)) = asu64(R1);
-L3944:
+L3945:
 	asu64(R1) = p;
 	asu64(R2) = ulistx;
 	*tou64p(R2) = asu64(R1);
@@ -39319,10 +39394,10 @@ static void cc_lex_dodefine() {
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 67;
-	if (asi64(R1) == asi64(R2)) goto L3948;
+	if (asi64(R1) == asi64(R2)) goto L3949;
 	R1 = tou64("define: name expected");
 	cc_lex_lxerror(asu64(R1));
-L3948:
+L3949:
 	R1 = (u64)&cc_decls_nextlx;
 	R2 = 0;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
@@ -39359,7 +39434,7 @@ L3948:
 	asu8(R1) = *tou8p(R1);
 	R1 = tou64(tou8(R1));
 	R2 = 40;
-	if (asu64(R1) != asu64(R2)) goto L3950;
+	if (asu64(R1) != asu64(R2)) goto L3951;
 	R1 = (u64)&cc_lex_lxsptr;
 	(*tou64p(R1)) += 1;
 	R1 = 0;
@@ -39373,42 +39448,42 @@ L3948:
 	R3 = 2;
     *toi64p(R2) = Setdotindex(*toi64p(R2), (i64)R3, (i64)R1);
 	cc_lex_lexreadtoken();
-L3951:
+L3952:
 	R1 = (u64)&cc_decls_nextlx;
 	R2 = 21;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 67;
-	if (asi64(R1) == asi64(R2)) goto L3954;
-	R2 = 14;
 	if (asi64(R1) == asi64(R2)) goto L3955;
-	R2 = 21;
+	R2 = 14;
 	if (asi64(R1) == asi64(R2)) goto L3956;
-	goto L3957;
-L3954:
+	R2 = 21;
+	if (asi64(R1) == asi64(R2)) goto L3957;
+	goto L3958;
+L3955:
 	R1 = (u64)&cc_decls_nextlx;
 	R2 = 0;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
 	d = asu64(R1);
 	asu64(R1) = stlist;
 	p = asu64(R1);
-	goto L3959;
-L3958:
+	goto L3960;
+L3959:
 	asu64(R1) = p;
 	R2 = 0;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
 	asu64(R2) = d;
-	if (asu64(R1) != asu64(R2)) goto L3962;
+	if (asu64(R1) != asu64(R2)) goto L3963;
 	R1 = tou64("Dupl macro param");
 	cc_lex_lxerror(asu64(R1));
-L3962:
+L3963:
 	asu64(R1) = p;
 	R2 = 8;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
 	p = asu64(R1);
-L3959:
+L3960:
 	asu64(R1) = p;
-	if (asu64(R1)) goto L3958;
+	if (asu64(R1)) goto L3959;
 	R1 = 16;
 	asu64(R1) = mlib_pcm_alloc(asi64(R1));
 	q = asu64(R1);
@@ -39432,14 +39507,14 @@ L3959:
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 8;
-	if (asi64(R1) != asi64(R2)) goto L3964;
+	if (asi64(R1) != asi64(R2)) goto L3965;
 	cc_lex_lexreadtoken();
-L3964:
-	goto L3953;
-L3955:
-	goto L3952;
-	goto L3953;
+L3965:
+	goto L3954;
 L3956:
+	goto L3953;
+	goto L3954;
+L3957:
 	R1 = tou64("__VA_ARGS__");
 	asu64(R1) = cc_lex_addnamestr(asu64(R1));
 	d = asu64(R1);
@@ -39455,10 +39530,10 @@ L3956:
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 14;
-	if (asi64(R1) == asi64(R2)) goto L3966;
+	if (asi64(R1) == asi64(R2)) goto L3967;
 	R1 = tou64("')' expected");
 	cc_lex_lxerror(asu64(R1));
-L3966:
+L3967:
 	R1 = 16;
 	asu64(R1) = mlib_pcm_alloc(asi64(R1));
 	q = asu64(R1);
@@ -39476,57 +39551,57 @@ L3966:
 	cc_lex_addlistmparam(asu64(R3), asu64(R2), asu64(R1));
 	R1 = (u64)&nparams;
 	(*toi64p(R1)) += 1;
-	goto L3952;
 	goto L3953;
-L3957:
+	goto L3954;
+L3958:
 	R1 = tou64("macro params?");
 	cc_lex_lxerror(asu64(R1));
+L3954:
+	goto L3952;
 L3953:
-	goto L3951;
-L3952:
 	asu64(R1) = stlist;
 	asu64(R2) = stname;
 	R3 = 80;
 	*tou64p(((i64)R2+(i64)R3)) = asu64(R1);
-L3950:
+L3951:
 	R1 = 0;
 	R2 = R1;
 	tklistx = asu64(R2);
 	tklist = asu64(R1);
 	R1 = 0;
 	ntokens = asi64(R1);
-L3967:
+L3968:
 	cc_lex_lexreadtoken();
 	R1 = (u64)&cc_decls_nextlx;
 	R2 = 21;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 56;
-	if (asi64(R1) == asi64(R2)) goto L3970;
-	R2 = 57;
-	if (asi64(R1) == asi64(R2)) goto L3970;
-	R2 = 67;
 	if (asi64(R1) == asi64(R2)) goto L3971;
-	goto L3972;
-L3970:
-	goto L3968;
-	goto L3969;
+	R2 = 57;
+	if (asi64(R1) == asi64(R2)) goto L3971;
+	R2 = 67;
+	if (asi64(R1) == asi64(R2)) goto L3972;
+	goto L3973;
 L3971:
+	goto L3969;
+	goto L3970;
+L3972:
 	asu64(R1) = stname;
 	R2 = 80;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
 	p = asu64(R1);
 	R1 = 1;
 	paramno = asi64(R1);
-	goto L3974;
-L3973:
+	goto L3975;
+L3974:
 	asu64(R1) = p;
 	R2 = 0;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
 	R2 = (u64)&cc_decls_nextlx;
 	R3 = 0;
 	asu64(R2) = *tou64p(((i64)R2+(i64)R3));
-	if (asu64(R1) != asu64(R2)) goto L3977;
+	if (asu64(R1) != asu64(R2)) goto L3978;
 	R1 = 2;
 	R2 = (u64)&cc_decls_nextlx;
 	R3 = 23;
@@ -39536,32 +39611,32 @@ L3973:
 	R2 = (u64)&cc_decls_nextlx;
 	R3 = 28;
 	*toi16p(((i64)R2+(i64)R3)) = asi16(R1);
-	goto L3975;
-L3977:
+	goto L3976;
+L3978:
 	asu64(R1) = p;
 	R2 = 8;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
 	p = asu64(R1);
 	R1 = (u64)&paramno;
 	(*toi64p(R1)) += 1;
-L3974:
-	asu64(R1) = p;
-	if (asu64(R1)) goto L3973;
 L3975:
+	asu64(R1) = p;
+	if (asu64(R1)) goto L3974;
+L3976:
 	R1 = (u64)&cc_decls_nextlx;
 	R2 = 0;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
 	asu64(R2) = stname;
-	if (asu64(R1) != asu64(R2)) goto L3979;
+	if (asu64(R1) != asu64(R2)) goto L3980;
 	R1 = 1;
 	R2 = (u64)&cc_decls_nextlx;
 	R3 = 23;
 	R2 += (i64)R3;
 	*tou8p(R2) |= asu8(R1);
-L3979:
-	goto L3969;
-L3972:
-L3969:
+L3980:
+	goto L3970;
+L3973:
+L3970:
 	R1 = (u64)&ntokens;
 	(*toi64p(R1)) += 1;
 	asu64(R1) = cc_lex_alloctoken();
@@ -39573,8 +39648,8 @@ L3969:
 	R2 = (u64)&tklistx;
 	R3 = (u64)&tklist;
 	cc_lex_addlisttoken(asu64(R3), asu64(R2), asu64(R1));
-	goto L3967;
-L3968:
+	goto L3968;
+L3969:
 	asu64(R1) = tklist;
 	asu64(R2) = stname;
 	R3 = 72;
@@ -39588,16 +39663,16 @@ L3968:
 
 static void cc_lex_readalphanumeric(u64 pstart) {
     u64 R1, R2, R3; 
-	goto L3982;
-L3981:
+	goto L3983;
 L3982:
+L3983:
 	R1 = (u64)&cc_lex_alphamap;
 	R2 = (u64)&cc_lex_lxsptr;
 	asu64(R3) = *tou64p(R2); *(tou64p(R2)) += 1; asu64(R2) = asu64(R3);
 	asu8(R2) = *tou8p(R2);
 	R2 = toi64(tou8(R2));
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
-	if (asu8(R1)) goto L3981;
+	if (asu8(R1)) goto L3982;
 	R1 = (u64)&cc_lex_lxsptr;
 	(*tou64p(R1)) -=1;
 	asu64(R1) = pstart;
@@ -39619,26 +39694,26 @@ L3982:
 
 static i64 cc_lex_inmacrostack(u64 d, u64 macrostack) {
     u64 R1, R2; 
-	goto L3986;
-L3985:
+	goto L3987;
+L3986:
 	asu64(R1) = macrostack;
 	R2 = 0;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
 	asu64(R2) = d;
-	if (asu64(R1) != asu64(R2)) goto L3989;
+	if (asu64(R1) != asu64(R2)) goto L3990;
 	R1 = 1;
-	goto L3984;
-L3989:
+	goto L3985;
+L3990:
 	asu64(R1) = macrostack;
 	R2 = 8;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
 	macrostack = asu64(R1);
-L3986:
+L3987:
 	asu64(R1) = macrostack;
-	if (asu64(R1)) goto L3985;
+	if (asu64(R1)) goto L3986;
 	R1 = 0;
-	goto L3984;
-L3984:
+	goto L3985;
+L3985:
 	return asi64(R1);
 }
 
@@ -39651,17 +39726,17 @@ static void cc_lex_showtokens(u64 caption, u64 tk) {
 	R1 = tou64("<");
 	msysc_m$print_str_nf(asu64(R1));
 	msysc_m$print_end();
-	goto L3992;
-L3991:
+	goto L3993;
+L3992:
 	asu64(R1) = tk;
 	cc_lex_showtoken(asu64(R1));
 	asu64(R1) = tk;
 	R2 = 8;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
 	tk = asu64(R1);
-L3992:
+L3993:
 	asu64(R1) = tk;
-	if (asu64(R1)) goto L3991;
+	if (asu64(R1)) goto L3992;
 	msysc_m$print_startcon();
 	R1 = tou64(">");
 	msysc_m$print_str_nf(asu64(R1));
@@ -39675,20 +39750,20 @@ static void cc_lex_lexa(u64 tk) {
 	asu64(R1) = tk;
 	asu64(R1) = *tou64p(R1);
 	asu64(R2) = cc_lex_normaltk;
-	if (asu64(R1) != asu64(R2)) goto L3996;
+	if (asu64(R1) != asu64(R2)) goto L3997;
 	cc_lex_lexreadtoken();
-	goto L3994;
-L3996:
+	goto L3995;
+L3997:
 	asu64(R1) = tk;
 	asu64(R1) = *tou64p(R1);
 	R2 = 0;
-	if (asu64(R1) != asu64(R2)) goto L3998;
+	if (asu64(R1) != asu64(R2)) goto L3999;
 	R1 = 57;
 	R2 = (u64)&cc_decls_nextlx;
 	R3 = 21;
 	*tou8p(((i64)R2+(i64)R3)) = asu8(R1);
-	goto L3994;
-L3998:
+	goto L3995;
+L3999:
 	asu64(R1) = tk;
 	asu64(R1) = *tou64p(R1);
 	(R1_B17) = *(struct $B17*)(R1);
@@ -39699,7 +39774,7 @@ L3998:
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
 	asu64(R2) = tk;
 	*tou64p(R2) = asu64(R1);
-L3994:
+L3995:
 	return;
 }
 
@@ -39709,9 +39784,9 @@ static void cc_lex_lexm() {
 	i64 newlineno;
 // PROC LOCAL STATICS GO HERE
 	static i64 cc_lex_lexm_doreset = 0;
-L4000:
+L4001:
 	asu64(R1) = cc_lex_tkptr;
-	if (!asu64(R1)) goto L4003;
+	if (!asu64(R1)) goto L4004;
 	asu64(R1) = cc_lex_tkptr;
 	(R1_B17) = *(struct $B17*)(R1);
 	cc_decls_nextlx = (R1_B17);
@@ -39721,13 +39796,13 @@ L4000:
 	cc_lex_tkptr = asu64(R1);
 	asu64(R1) = cc_lex_tkptr;
 	R2 = 0;
-	if (asu64(R1) != asu64(R2)) goto L4005;
+	if (asu64(R1) != asu64(R2)) goto L4006;
 	R1 = (u64)&cc_decls_nextlx;
 	R2 = 21;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 67;
-	if (asi64(R1) != asi64(R2)) goto L4007;
+	if (asi64(R1) != asi64(R2)) goto L4008;
 	R1 = (u64)&cc_decls_nextlx;
 	R2 = 0;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
@@ -39735,9 +39810,9 @@ L4000:
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 1;
-	if (asi64(R1) != asi64(R2)) goto L4007;
+	if (asi64(R1) != asi64(R2)) goto L4008;
 	asi64(R1) = cc_lex_peeklb();
-	if (!asi64(R1)) goto L4007;
+	if (!asi64(R1)) goto L4008;
 	asi64(R1) = cc_decls_sfileno;
 	cc_lex_setfileno(asi64(R1));
 	asi64(R1) = cc_decls_slineno;
@@ -39746,15 +39821,15 @@ L4000:
 	*tou32p(((i64)R2+(i64)R3)) = asu32(R1);
 	R1 = 0;
 	cc_lex_lexm_doreset = asi64(R1);
-	goto L4008;
-L4007:
+	goto L4009;
+L4008:
 	R1 = 1;
 	cc_lex_lexm_doreset = asi64(R1);
-L4005:
-	goto L3999;
-L4003:
+L4006:
+	goto L4000;
+L4004:
 	asi64(R1) = cc_lex_lexm_doreset;
-	if (!asi64(R1)) goto L4010;
+	if (!asi64(R1)) goto L4011;
 	asi64(R1) = cc_decls_sfileno;
 	cc_lex_setfileno(asi64(R1));
 	asi64(R1) = cc_decls_slineno;
@@ -39763,33 +39838,33 @@ L4003:
 	*tou32p(((i64)R2+(i64)R3)) = asu32(R1);
 	R1 = 0;
 	cc_lex_lexm_doreset = asi64(R1);
-L4010:
+L4011:
 	asi64(R1) = cc_lex_firstsymbol;
-	if (!asi64(R1)) goto L4012;
+	if (!asi64(R1)) goto L4013;
 	R1 = 0;
 	cc_lex_firstsymbol = asi64(R1);
 	cc_lex_dospecialinclude();
-L4012:
+L4013:
 	cc_lex_lexreadtoken();
 // cc_lex.lexm.test1:
-L4008:
+L4009:
 	R1 = (u64)&cc_decls_nextlx;
 	R2 = 21;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 4;
-	if (asi64(R1) == asi64(R2)) goto L4014;
-	R2 = 67;
 	if (asi64(R1) == asi64(R2)) goto L4015;
-	goto L4016;
-L4014:
-	asi64(R1) = cc_lex_dolexdirective();
-	if (!asi64(R1)) goto L4018;
-	goto L3999;
-L4018:
-	goto L4000;
-	goto L4013;
+	R2 = 67;
+	if (asi64(R1) == asi64(R2)) goto L4016;
+	goto L4017;
 L4015:
+	asi64(R1) = cc_lex_dolexdirective();
+	if (!asi64(R1)) goto L4019;
+	goto L4000;
+L4019:
+	goto L4001;
+	goto L4014;
+L4016:
 	R1 = (u64)&cc_decls_nextlx;
 	R2 = 0;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
@@ -39799,9 +39874,9 @@ L4015:
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 69;
-	if (asi64(R1) == asi64(R2)) goto L4020;
-	goto L4021;
-L4020:
+	if (asi64(R1) == asi64(R2)) goto L4021;
+	goto L4022;
+L4021:
 	asi64(R1) = cc_lex_getfileno();
 	cc_decls_sfileno = asi64(R1);
 	R1 = (u64)&cc_decls_nextlx;
@@ -39818,25 +39893,25 @@ L4020:
 	cc_lex_expandpredefmacro(asi64(R3), asu64(R2), asi64(R1));
 	R1 = 1;
 	cc_lex_lexm_doreset = asi64(R1);
-	goto L3999;
-	goto L4019;
-L4021:
+	goto L4000;
+	goto L4020;
+L4022:
 	asu64(R1) = d;
 	R2 = 109;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 1;
-	if (asi64(R1) != asi64(R2)) goto L4024;
+	if (asi64(R1) != asi64(R2)) goto L4025;
 	asi64(R1) = cc_lex_noexpand;
-	if (!asi64(R1)) goto L4023;
+	if (!asi64(R1)) goto L4024;
+L4025:
+	goto L4000;
 L4024:
-	goto L3999;
-L4023:
-L4019:
-	goto L4013;
-L4016:
-	goto L3999;
-L4013:
+L4020:
+	goto L4014;
+L4017:
+	goto L4000;
+L4014:
 	asi64(R1) = cc_lex_getfileno();
 	cc_decls_sfileno = asi64(R1);
 	R1 = (u64)&cc_decls_nextlx;
@@ -39850,11 +39925,11 @@ L4013:
 	R1 = toi64(tou8(R1));
 	R2 = 2;
     asi64(R1) = Getdotindex(asu64(R1), asi64(R2));
-	if (!asu64(R1)) goto L4026;
+	if (!asu64(R1)) goto L4027;
 	asi64(R1) = cc_lex_peeklb();
-	if (asi64(R1)) goto L4028;
-	goto L3999;
-L4028:
+	if (asi64(R1)) goto L4029;
+	goto L4000;
+L4029:
 	R1 = (u64)&newlineno;
 	R2 = 1;
 	R3 = (u64)&cc_lex_normaltk;
@@ -39864,23 +39939,23 @@ L4028:
 	cc_lex_tkptr = asu64(R1);
 	asi64(R1) = newlineno;
 	cc_decls_slineno = asi64(R1);
-	goto L4025;
-L4026:
+	goto L4026;
+L4027:
 	R1 = 1;
 	R2 = (u64)&cc_lex_normaltk;
 	R3 = 0;
 	asu64(R4) = d;
 	asu64(R1) = cc_lex_expandobjmacro(asu64(R4), asu64(R3), asu64(R2), asi64(R1));
 	cc_lex_tkptr = asu64(R1);
-L4025:
+L4026:
 	asu64(R1) = cc_lex_tkptr;
 	R2 = 0;
-	if (asu64(R1) != asu64(R2)) goto L4030;
+	if (asu64(R1) != asu64(R2)) goto L4031;
 	R1 = 1;
 	cc_lex_lexm_doreset = asi64(R1);
-L4030:
-	goto L4000;
-L3999:
+L4031:
+	goto L4001;
+L4000:
 	return;
 }
 
@@ -39890,25 +39965,25 @@ static i64 cc_lex_peeklb() {
 	asu8(R1) = *tou8p(R1);
 	R1 = tou64(tou8(R1));
 	R2 = 40;
-	if (asu64(R1) == asu64(R2)) goto L4034;
+	if (asu64(R1) == asu64(R2)) goto L4035;
 	asu64(R1) = cc_lex_lxsptr;
 	asu8(R1) = *tou8p(R1);
 	R1 = tou64(tou8(R1));
 	R2 = 32;
-	if (asu64(R1) != asu64(R2)) goto L4033;
+	if (asu64(R1) != asu64(R2)) goto L4034;
 	asu64(R1) = cc_lex_lxsptr;
 	R2 = 1;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = tou64(tou8(R1));
 	R2 = 40;
-	if (asu64(R1) != asu64(R2)) goto L4033;
-L4034:
+	if (asu64(R1) != asu64(R2)) goto L4034;
+L4035:
 	R1 = 1;
-	goto L4031;
-L4033:
+	goto L4032;
+L4034:
 	R1 = 0;
-	goto L4031;
-L4031:
+	goto L4032;
+L4032:
 	return asi64(R1);
 }
 
@@ -39920,22 +39995,22 @@ static i64 cc_lex_peektk(u64 tk) {
 	tk = asu64(R1);
 	asu64(R1) = tk;
 	R2 = 0;
-	if (asu64(R1) != asu64(R2)) goto L4037;
+	if (asu64(R1) != asu64(R2)) goto L4038;
 	R1 = 0;
-	goto L4035;
-L4037:
+	goto L4036;
+L4038:
 	asu64(R1) = tk;
 	R2 = 21;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 13;
-	if (asi64(R1) != asi64(R2)) goto L4039;
+	if (asi64(R1) != asi64(R2)) goto L4040;
 	R1 = 1;
-	goto L4035;
-L4039:
+	goto L4036;
+L4040:
 	R1 = 0;
-	goto L4035;
-L4035:
+	goto L4036;
+L4036:
 	return asi64(R1);
 }
 
@@ -39959,14 +40034,14 @@ static u64 cc_lex_expandobjmacro(u64 m, u64 macrostack, u64 tksource, i64 fromba
 	R2 = R1;
 	useshh = asi64(R2);
 	iscomplex = asi64(R1);
-	goto L4042;
-L4041:
+	goto L4043;
+L4042:
 	asu64(R1) = p;
 	R2 = 21;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 67;
-	if (asi64(R1) != asi64(R2)) goto L4045;
+	if (asi64(R1) != asi64(R2)) goto L4046;
 	asu64(R1) = p;
 	R2 = 0;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
@@ -39976,46 +40051,46 @@ L4041:
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 1;
-	if (asi64(R1) == asi64(R2)) goto L4048;
+	if (asi64(R1) == asi64(R2)) goto L4049;
 	asu64(R1) = d;
 	R2 = 107;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 69;
-	if (asi64(R1) != asi64(R2)) goto L4047;
-L4048:
+	if (asi64(R1) != asi64(R2)) goto L4048;
+L4049:
 	R1 = 1;
 	iscomplex = asi64(R1);
-	goto L4043;
-L4047:
 	goto L4044;
-L4045:
+L4048:
+	goto L4045;
+L4046:
 	asu64(R1) = p;
 	R2 = 21;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 7;
-	if (asi64(R1) != asi64(R2)) goto L4049;
+	if (asi64(R1) != asi64(R2)) goto L4050;
 	R1 = 1;
 	R2 = R1;
 	useshh = asi64(R2);
 	iscomplex = asi64(R1);
-	goto L4043;
-L4049:
-L4044:
+	goto L4044;
+L4050:
+L4045:
 	asu64(R1) = p;
 	R2 = 8;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
 	p = asu64(R1);
-L4042:
-	asu64(R1) = p;
-	if (asu64(R1)) goto L4041;
 L4043:
+	asu64(R1) = p;
+	if (asu64(R1)) goto L4042;
+L4044:
 	asi64(R1) = iscomplex;
-	if (asi64(R1)) goto L4051;
+	if (asi64(R1)) goto L4052;
 	asu64(R1) = tk;
-	goto L4040;
-L4051:
+	goto L4041;
+L4052:
 	asu64(R1) = m;
 	R2 = (u64)&newmacro;
 	R3 = 0;
@@ -40025,7 +40100,7 @@ L4051:
 	R3 = 8;
 	*tou64p(((i64)R2+(i64)R3)) = asu64(R1);
 	asi64(R1) = useshh;
-	if (!asi64(R1)) goto L4053;
+	if (!asi64(R1)) goto L4054;
 	R1 = 0;
 	R2 = 0;
 	R3 = 0;
@@ -40033,21 +40108,21 @@ L4051:
 	asu64(R5) = m;
 	asu64(R1) = cc_lex_substituteargs(asu64(R5), asu64(R4), asu64(R3), asi64(R2), asu64(R1));
 	repl = asu64(R1);
-	goto L4052;
-L4053:
+	goto L4053;
+L4054:
 	asu64(R1) = m;
 	R2 = 72;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
 	repl = asu64(R1);
-L4052:
+L4053:
 	R1 = (u64)&expanded;
 	R2 = (u64)&newmacro;
 	asu64(R3) = repl;
 	asu64(R1) = cc_lex_scantokenseq(asu64(R3), asu64(R2), asu64(R1));
 	tk = asu64(R1);
 	asu64(R1) = tk;
-	goto L4040;
-L4040:
+	goto L4041;
+L4041:
 	return asu64(R1);
 }
 
@@ -40067,26 +40142,26 @@ static u64 cc_lex_expandfnmacro(u64 m, u64 macrostack, u64 tksource, i64 frombas
 	asi64(R1) = cc_lex_readmacrocall(asu64(R3), asu64(R2), asu64(R1));
 	nargs = asi64(R1);
 	asi64(R1) = frombaselevel;
-	if (!asi64(R1)) goto L4056;
+	if (!asi64(R1)) goto L4057;
 	R1 = (u64)&cc_decls_nextlx;
 	R2 = 16;
 	asu32(R1) = *tou32p(((i64)R1+(i64)R2));
 	R1 = toi64(tou32(R1));
 	asu64(R2) = endlineno;
 	*toi64p(R2) = asi64(R1);
-L4056:
+L4057:
 	R1 = 1;
 	i = asi64(R1);
 	asi64(R1) = nargs;
 	R2 = 1;
-	if (asi64(R1) < asi64(R2)) goto L4059;
-L4057:
+	if (asi64(R1) < asi64(R2)) goto L4060;
+L4058:
 	R1 = 0;
 	R2 = (u64)&expargs;
 	asi64(R3) = i;
 	*tou64p(((i64)R2+(i64)R3*8-8)) = asu64(R1);
-	i += 1; if (i <= nargs) goto L4057;
-L4059:
+	i += 1; if (i <= nargs) goto L4058;
+L4060:
 	asu64(R1) = macrostack;
 	asi64(R2) = nargs;
 	R3 = (u64)&expargs;
@@ -40108,8 +40183,8 @@ L4059:
 	asu64(R1) = cc_lex_scantokenseq(asu64(R3), asu64(R2), asu64(R1));
 	repl = asu64(R1);
 	asu64(R1) = repl;
-	goto L4054;
-L4054:
+	goto L4055;
+L4055:
 	return asu64(R1);
 }
 
@@ -40125,7 +40200,7 @@ static u64 cc_lex_scantokenseq(u64 tk, u64 macrostack, u64 expanded) {
 	i64 simple;
 	i64 dummy;
 // cc_lex.scantokenseq.reenter:
-L4061:
+L4062:
 	R1 = 0;
 	asu64(R2) = expanded;
 	*toi64p(R2) = asi64(R1);
@@ -40139,16 +40214,16 @@ L4061:
 	simple = asi64(R1);
 	asu64(R1) = tk;
 	oldtk = asu64(R1);
-	goto L4063;
-L4062:
+	goto L4064;
+L4063:
 	asu64(R1) = tk;
 	R2 = 21;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 67;
-	if (asi64(R1) == asi64(R2)) goto L4066;
-	goto L4067;
-L4066:
+	if (asi64(R1) == asi64(R2)) goto L4067;
+	goto L4068;
+L4067:
 	asu64(R1) = tk;
 	R2 = 0;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
@@ -40156,7 +40231,7 @@ L4066:
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 1;
-	if (asi64(R1) == asi64(R2)) goto L4070;
+	if (asi64(R1) == asi64(R2)) goto L4071;
 	asu64(R1) = tk;
 	R2 = 0;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
@@ -40164,45 +40239,45 @@ L4066:
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 69;
-	if (asi64(R1) != asi64(R2)) goto L4069;
-L4070:
+	if (asi64(R1) != asi64(R2)) goto L4070;
+L4071:
 	R1 = 0;
 	simple = asi64(R1);
-	goto L4064;
-L4069:
 	goto L4065;
-L4067:
-L4065:
+L4070:
+	goto L4066;
+L4068:
+L4066:
 	asu64(R1) = tk;
 	R2 = 0;
-	if (asu64(R1) != asu64(R2)) goto L4072;
-	goto L4064;
-L4072:
+	if (asu64(R1) != asu64(R2)) goto L4073;
+	goto L4065;
+L4073:
 	asu64(R1) = tk;
 	R2 = 8;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
 	tk = asu64(R1);
-L4063:
-	asu64(R1) = tk;
-	if (asu64(R1)) goto L4062;
 L4064:
+	asu64(R1) = tk;
+	if (asu64(R1)) goto L4063;
+L4065:
 	asi64(R1) = simple;
-	if (!asi64(R1)) goto L4074;
+	if (!asi64(R1)) goto L4075;
 	asu64(R1) = oldtk;
-	goto L4060;
-L4074:
+	goto L4061;
+L4075:
 	asu64(R1) = oldtk;
 	tk = asu64(R1);
-	goto L4076;
-L4075:
+	goto L4077;
+L4076:
 	asu64(R1) = tk;
 	R2 = 21;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 67;
-	if (asi64(R1) == asi64(R2)) goto L4079;
-	goto L4080;
-L4079:
+	if (asi64(R1) == asi64(R2)) goto L4080;
+	goto L4081;
+L4080:
 	asu64(R1) = tk;
 	R2 = 0;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
@@ -40212,25 +40287,25 @@ L4079:
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 1;
-	if (asi64(R1) != asi64(R2)) goto L4082;
+	if (asi64(R1) != asi64(R2)) goto L4083;
 	asi64(R1) = noexpandflag;
-	if (asi64(R1)) goto L4082;
+	if (asi64(R1)) goto L4083;
 	asu64(R1) = tk;
 	R2 = 23;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 4;
 	asi64(R1) &= asi64(R2);
-	if (asi64(R1)) goto L4085;
+	if (asi64(R1)) goto L4086;
 	asi64(R1) = cc_lex_noexpand;
-	if (!asi64(R1)) goto L4084;
+	if (!asi64(R1)) goto L4085;
+L4086:
+	goto L4087;
 L4085:
-	goto L4086;
-L4084:
 	asu64(R1) = macrostack;
 	asu64(R2) = m;
 	asi64(R1) = cc_lex_inmacrostack(asu64(R2), asu64(R1));
-	if (!asi64(R1)) goto L4088;
+	if (!asi64(R1)) goto L4089;
 	asu64(R1) = tk;
 	R2 = (u64)&newtkx;
 	R3 = (u64)&newtk;
@@ -40240,8 +40315,8 @@ L4084:
 	R3 = 23;
 	R2 += (i64)R3;
 	*tou8p(R2) |= asu8(R1);
-	goto L4089;
-L4088:
+	goto L4090;
+L4089:
 	R1 = 0;
 	simple = asi64(R1);
 	asu64(R1) = m;
@@ -40250,12 +40325,12 @@ L4088:
 	R1 = toi64(tou8(R1));
 	R2 = 2;
     asi64(R1) = Getdotindex(asu64(R1), asi64(R2));
-	if (!asu64(R1)) goto L4091;
+	if (!asu64(R1)) goto L4092;
 	asu64(R1) = tk;
 	asi64(R1) = cc_lex_peektk(asu64(R1));
-	if (asi64(R1)) goto L4093;
-	goto L4086;
-L4093:
+	if (asi64(R1)) goto L4094;
+	goto L4087;
+L4094:
 	R1 = (u64)&tk;
 	cc_lex_lexa(asu64(R1));
 	R1 = (u64)&dummy;
@@ -40272,9 +40347,9 @@ L4093:
 	R1 = 1;
 	asu64(R2) = expanded;
 	*toi64p(R2) = asi64(R1);
-	goto L4076;
-	goto L4090;
-L4091:
+	goto L4077;
+	goto L4091;
+L4092:
 	R1 = 0;
 	R2 = (u64)&tk;
 	asu64(R3) = macrostack;
@@ -40288,26 +40363,26 @@ L4091:
 	R2 = (u64)&newtkx;
 	R3 = (u64)&newtk;
 	cc_lex_addlisttoken_seq(asu64(R3), asu64(R2), asu64(R1));
-L4090:
-	goto L4081;
-L4082:
+L4091:
+	goto L4082;
+L4083:
 	asu64(R1) = m;
 	R2 = 107;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 93;
-	if (asi64(R1) != asi64(R2)) goto L4094;
+	if (asi64(R1) != asi64(R2)) goto L4095;
 	R1 = 1;
 	noexpandflag = asi64(R1);
-	goto L4086;
-	goto L4081;
-L4094:
+	goto L4087;
+	goto L4082;
+L4095:
 	asu64(R1) = m;
 	R2 = 107;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 69;
-	if (asi64(R1) != asi64(R2)) goto L4095;
+	if (asi64(R1) != asi64(R2)) goto L4096;
 	asu64(R1) = cc_lex_alloctokenz();
 	expandtk = asu64(R1);
 	asi64(R1) = cc_decls_slineno;
@@ -40321,49 +40396,49 @@ L4094:
 	R2 = (u64)&newtkx;
 	R3 = (u64)&newtk;
 	cc_lex_addlisttoken_copy(asu64(R3), asu64(R2), asu64(R1));
-	goto L4096;
-	goto L4081;
-L4095:
+	goto L4097;
+	goto L4082;
+L4096:
 	R1 = 0;
 	noexpandflag = asi64(R1);
-	goto L4086;
+	goto L4087;
+L4082:
+	goto L4079;
 L4081:
-	goto L4078;
-L4080:
 // cc_lex.scantokenseq.simpletoken:
-L4086:
+L4087:
 	asu64(R1) = tk;
 	R2 = (u64)&newtkx;
 	R3 = (u64)&newtk;
 	cc_lex_addlisttoken_copy(asu64(R3), asu64(R2), asu64(R1));
-L4078:
+L4079:
 // cc_lex.scantokenseq.skip:
-L4089:
+L4090:
 	asu64(R1) = tk;
 	R2 = 0;
-	if (asu64(R1) != asu64(R2)) goto L4098;
-	goto L4077;
-L4098:
+	if (asu64(R1) != asu64(R2)) goto L4099;
+	goto L4078;
+L4099:
 // cc_lex.scantokenseq.skip2:
-L4096:
+L4097:
 	asu64(R1) = tk;
 	R2 = 8;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
 	tk = asu64(R1);
-L4076:
-	asu64(R1) = tk;
-	if (asu64(R1)) goto L4075;
 L4077:
+	asu64(R1) = tk;
+	if (asu64(R1)) goto L4076;
+L4078:
 	asu64(R1) = expanded;
 	asi64(R1) = *toi64p(R1);
-	if (!asi64(R1)) goto L4100;
+	if (!asi64(R1)) goto L4101;
 	asu64(R1) = newtk;
 	tk = asu64(R1);
-	goto L4061;
-L4100:
+	goto L4062;
+L4101:
 	asu64(R1) = newtk;
-	goto L4060;
-L4060:
+	goto L4061;
+L4061:
 	return asu64(R1);
 }
 
@@ -40384,10 +40459,10 @@ static i64 cc_lex_readmacrocall(u64 d, u64 args, u64 tksource) {
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 13;
-	if (asi64(R1) == asi64(R2)) goto L4103;
+	if (asi64(R1) == asi64(R2)) goto L4104;
 	R1 = tou64("rmc: no '('");
 	cc_lex_lxerror(asu64(R1));
-L4103:
+L4104:
 	asu64(R1) = d;
 	R2 = 111;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
@@ -40397,7 +40472,7 @@ L4103:
 	nargs = asi64(R1);
 	asi64(R1) = nparams;
 	R2 = 0;
-	if (asi64(R1) != asi64(R2)) goto L4105;
+	if (asi64(R1) != asi64(R2)) goto L4106;
 	asu64(R1) = tksource;
 	cc_lex_lexa(asu64(R1));
 	R1 = (u64)&cc_decls_nextlx;
@@ -40405,13 +40480,13 @@ L4103:
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 14;
-	if (asi64(R1) == asi64(R2)) goto L4107;
+	if (asi64(R1) == asi64(R2)) goto L4108;
 	R1 = tou64("rmc: ')' expected");
 	cc_lex_lxerror(asu64(R1));
-L4107:
+L4108:
 	R1 = 0;
-	goto L4101;
-L4105:
+	goto L4102;
+L4106:
 	R1 = 1;
 	paramno = asi64(R1);
 	R1 = 1;
@@ -40429,15 +40504,15 @@ L4105:
 	usesvargs = asi64(R1);
 	R1 = 0;
 	varg = asi64(R1);
-L4108:
+L4109:
 	asi64(R1) = paramno;
 	asi64(R2) = nparams;
-	if (asi64(R1) != asi64(R2)) goto L4111;
+	if (asi64(R1) != asi64(R2)) goto L4112;
 	asi64(R1) = usesvargs;
-	if (!asi64(R1)) goto L4111;
+	if (!asi64(R1)) goto L4112;
 	R1 = 1;
 	varg = asi64(R1);
-L4111:
+L4112:
 	asu64(R1) = tksource;
 	cc_lex_lexa(asu64(R1));
 	R1 = (u64)&cc_decls_nextlx;
@@ -40445,23 +40520,23 @@ L4111:
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 8;
-	if (asi64(R1) == asi64(R2)) goto L4113;
-	R2 = 57;
 	if (asi64(R1) == asi64(R2)) goto L4114;
-	R2 = 13;
+	R2 = 57;
 	if (asi64(R1) == asi64(R2)) goto L4115;
-	R2 = 14;
+	R2 = 13;
 	if (asi64(R1) == asi64(R2)) goto L4116;
-	goto L4117;
-L4113:
+	R2 = 14;
+	if (asi64(R1) == asi64(R2)) goto L4117;
+	goto L4118;
+L4114:
 	asi64(R1) = lbcount;
 	R2 = 1;
-	if (asi64(R1) != asi64(R2)) goto L4119;
+	if (asi64(R1) != asi64(R2)) goto L4120;
 	asi64(R1) = varg;
-	if (asi64(R1)) goto L4119;
+	if (asi64(R1)) goto L4120;
 	asu64(R1) = tklist;
 	R2 = 0;
-	if (asu64(R1) != asu64(R2)) goto L4121;
+	if (asu64(R1) != asu64(R2)) goto L4122;
 	asu64(R1) = cc_lex_alloctokenz();
 	tklist = asu64(R1);
 	asi64(R1) = cc_lex_getfileno();
@@ -40471,7 +40546,7 @@ L4113:
 	asu64(R2) = tklist;
 	R3 = 21;
 	*tou8p(((i64)R2+(i64)R3)) = asu8(R1);
-L4121:
+L4122:
 	asu64(R1) = tklist;
 	asu64(R2) = args;
 	asi64(R3) = paramno;
@@ -40482,34 +40557,34 @@ L4121:
 	tklist = asu64(R1);
 	R1 = (u64)&paramno;
 	(*toi64p(R1)) += 1;
-	goto L4118;
+	goto L4119;
+L4120:
+	goto L4123;
 L4119:
-	goto L4122;
-L4118:
-	goto L4112;
-L4114:
+	goto L4113;
+L4115:
 	R1 = tou64("EOS in macro call");
 	cc_lex_lxerror(asu64(R1));
-	goto L4112;
-L4115:
+	goto L4113;
+L4116:
 	R1 = (u64)&lbcount;
 	(*toi64p(R1)) += 1;
-	goto L4122;
-	goto L4112;
-L4116:
+	goto L4123;
+	goto L4113;
+L4117:
 	asi64(R1) = lbcount;
 	R2 = 1;
-	if (asi64(R1) <= asi64(R2)) goto L4124;
+	if (asi64(R1) <= asi64(R2)) goto L4125;
 	R1 = (u64)&lbcount;
 	(*toi64p(R1)) -=1;
 	R1 = (u64)&tklistx;
 	R2 = (u64)&tklist;
 	cc_lex_addlist_nextlx(asu64(R2), asu64(R1));
-	goto L4123;
-L4124:
+	goto L4124;
+L4125:
 	asu64(R1) = tklist;
 	R2 = 0;
-	if (asu64(R1) != asu64(R2)) goto L4126;
+	if (asu64(R1) != asu64(R2)) goto L4127;
 	asu64(R1) = cc_lex_alloctokenz();
 	tklist = asu64(R1);
 	asi64(R1) = cc_lex_getfileno();
@@ -40519,46 +40594,46 @@ L4124:
 	asu64(R2) = tklist;
 	R3 = 21;
 	*tou8p(((i64)R2+(i64)R3)) = asu8(R1);
-L4126:
+L4127:
 	asu64(R1) = tklist;
 	asu64(R2) = args;
 	asi64(R3) = paramno;
 	*tou64p(((i64)R2+(i64)R3*8-8)) = asu64(R1);
-	goto L4109;
-L4123:
-	goto L4112;
-L4117:
+	goto L4110;
+L4124:
+	goto L4113;
+L4118:
 // cc_lex.readmacrocall.addtoken:
-L4122:
+L4123:
 	R1 = (u64)&tklistx;
 	R2 = (u64)&tklist;
 	cc_lex_addlist_nextlx(asu64(R2), asu64(R1));
-L4112:
-	goto L4108;
-L4109:
+L4113:
+	goto L4109;
+L4110:
 	asi64(R1) = paramno;
 	asi64(R2) = nparams;
-	if (asi64(R1) == asi64(R2)) goto L4128;
+	if (asi64(R1) == asi64(R2)) goto L4129;
 	asi64(R1) = paramno;
 	R2 = 1;
 	asi64(R1) += asi64(R2);
 	asi64(R2) = nparams;
-	if (asi64(R1) != asi64(R2)) goto L4130;
+	if (asi64(R1) != asi64(R2)) goto L4131;
 	asi64(R1) = usesvargs;
-	if (!asi64(R1)) goto L4130;
+	if (!asi64(R1)) goto L4131;
 	R1 = 0;
 	asu64(R2) = args;
 	asi64(R3) = nparams;
 	*tou64p(((i64)R2+(i64)R3*8-8)) = asu64(R1);
-	goto L4129;
-L4130:
+	goto L4130;
+L4131:
 	R1 = tou64("Wrong # macro params");
 	cc_lex_lxerror(asu64(R1));
+L4130:
 L4129:
-L4128:
 	asi64(R1) = nparams;
-	goto L4101;
-L4101:
+	goto L4102;
+L4102:
 	return asi64(R1);
 }
 
@@ -40596,40 +40671,40 @@ static u64 cc_lex_substituteargs(u64 m, u64 args, u64 expargs, i64 nargs, u64 ma
 	nhashhash = asi64(R1);
 	R1 = 0;
 	lasttoken = asu64(R1);
-	goto L4133;
-L4132:
+	goto L4134;
+L4133:
 	asu64(R1) = seq;
 	R2 = 21;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 5;
-	if (asi64(R1) == asi64(R2)) goto L4136;
-	R2 = 7;
 	if (asi64(R1) == asi64(R2)) goto L4137;
-	goto L4138;
-L4136:
+	R2 = 7;
+	if (asi64(R1) == asi64(R2)) goto L4138;
+	goto L4139;
+L4137:
 	asi64(R1) = nargs;
-	if (!asi64(R1)) goto L4140;
+	if (!asi64(R1)) goto L4141;
 	asu64(R1) = seq;
 	R2 = 8;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
 	seq = asu64(R1);
 	asu64(R1) = seq;
 	R2 = 0;
-	if (asu64(R1) != asu64(R2)) goto L4142;
+	if (asu64(R1) != asu64(R2)) goto L4143;
 	R1 = tou64("# at end");
 	cc_lex_lxerror(asu64(R1));
-L4142:
+L4143:
 	asu64(R1) = seq;
 	R2 = 23;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 2;
 	asi64(R1) &= asi64(R2);
-	if (asi64(R1)) goto L4144;
+	if (asi64(R1)) goto L4145;
 	R1 = tou64("# not followed by param");
 	cc_lex_lxerror(asu64(R1));
-L4144:
+L4145:
 	asu64(R1) = seq;
 	R2 = 28;
 	asi16(R1) = *toi16p(((i64)R1+(i64)R2));
@@ -40644,8 +40719,8 @@ L4144:
 	R2 = (u64)&newtkx;
 	R3 = (u64)&newtk;
 	cc_lex_addlisttoken_copy(asu64(R3), asu64(R2), asu64(R1));
-	goto L4139;
-L4140:
+	goto L4140;
+L4141:
 	asu64(R1) = seq;
 	R2 = (u64)&newtkx;
 	R3 = (u64)&newtk;
@@ -40654,43 +40729,43 @@ L4140:
 	asu64(R2) = newtkx;
 	R3 = 21;
 	*tou8p(((i64)R2+(i64)R3)) = asu8(R1);
-L4139:
-	goto L4135;
-L4137:
+L4140:
+	goto L4136;
+L4138:
 	asu64(R1) = seq;
 	asu64(R2) = seqstart;
-	if (asu64(R1) != asu64(R2)) goto L4146;
+	if (asu64(R1) != asu64(R2)) goto L4147;
 	R1 = tou64("## at start");
 	cc_lex_lxerror(asu64(R1));
-L4146:
+L4147:
 	asi64(R1) = nhashhash;
 	R2 = 250;
-	if (asi64(R1) < asi64(R2)) goto L4148;
+	if (asi64(R1) < asi64(R2)) goto L4149;
 	R1 = tou64("Too many ##");
 	cc_lex_lxerror(asu64(R1));
-L4148:
+L4149:
 	asu64(R1) = newtkx;
 	R2 = (u64)&hhpoints;
 	R3 = (u64)&nhashhash;
 	asi64(R3) = *(toi64p(R3)) += 1;
 	*tou64p(((i64)R2+(i64)R3*8-8)) = asu64(R1);
-	goto L4135;
-L4138:
+	goto L4136;
+L4139:
 	asu64(R1) = seq;
 	R2 = 21;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 67;
-	if (asi64(R1) != asi64(R2)) goto L4150;
+	if (asi64(R1) != asi64(R2)) goto L4151;
 	asu64(R1) = seq;
 	R2 = 23;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 2;
 	asi64(R1) &= asi64(R2);
-	if (!asi64(R1)) goto L4150;
+	if (!asi64(R1)) goto L4151;
 	asi64(R1) = nargs;
-	if (!asi64(R1)) goto L4150;
+	if (!asi64(R1)) goto L4151;
 	asu64(R1) = seq;
 	R2 = 28;
 	asi16(R1) = *toi16p(((i64)R1+(i64)R2));
@@ -40699,7 +40774,7 @@ L4138:
 	asu64(R1) = seq;
 	R2 = 8;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
-	if (!asu64(R1)) goto L4154;
+	if (!asu64(R1)) goto L4155;
 	asu64(R1) = seq;
 	R2 = 8;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
@@ -40707,32 +40782,32 @@ L4138:
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 7;
-	if (asi64(R1) == asi64(R2)) goto L4153;
-L4154:
+	if (asi64(R1) == asi64(R2)) goto L4154;
+L4155:
 	asu64(R1) = lasttoken;
-	if (!asu64(R1)) goto L4152;
+	if (!asu64(R1)) goto L4153;
 	asu64(R1) = lasttoken;
 	R2 = 21;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 7;
-	if (asi64(R1) != asi64(R2)) goto L4152;
-L4153:
+	if (asi64(R1) != asi64(R2)) goto L4153;
+L4154:
 	asu64(R1) = args;
 	asi64(R2) = n;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2*8-8));
 	R2 = (u64)&newtkx;
 	R3 = (u64)&newtk;
 	cc_lex_addlisttoken_seq(asu64(R3), asu64(R2), asu64(R1));
-	goto L4151;
-L4152:
+	goto L4152;
+L4153:
 	asu64(R1) = expargs;
 	asi64(R2) = n;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2*8-8));
 	tkexp = asu64(R1);
 	asu64(R1) = tkexp;
 	R2 = 0;
-	if (asu64(R1) != asu64(R2)) goto L4156;
+	if (asu64(R1) != asu64(R2)) goto L4157;
 	R1 = (u64)&expanded;
 	asu64(R2) = macrostack;
 	asu64(R3) = args;
@@ -40744,60 +40819,60 @@ L4152:
 	asi64(R4) = n;
 	*tou64p(((i64)R3+(i64)R4*8-8)) = asu64(R2);
 	tkexp = asu64(R1);
-L4156:
+L4157:
 	asu64(R1) = tkexp;
 	R2 = (u64)&newtkx;
 	R3 = (u64)&newtk;
 	cc_lex_addlisttoken_seq(asu64(R3), asu64(R2), asu64(R1));
+L4152:
+	goto L4150;
 L4151:
-	goto L4149;
-L4150:
 // cc_lex.substituteargs.doother:
 	asu64(R1) = seq;
 	R2 = (u64)&newtkx;
 	R3 = (u64)&newtk;
 	cc_lex_addlisttoken_copy(asu64(R3), asu64(R2), asu64(R1));
-L4149:
-L4135:
+L4150:
+L4136:
 	asu64(R1) = seq;
 	lasttoken = asu64(R1);
 	asu64(R1) = seq;
 	R2 = 8;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
 	seq = asu64(R1);
-L4133:
+L4134:
 	asu64(R1) = seq;
-	if (asu64(R1)) goto L4132;
+	if (asu64(R1)) goto L4133;
 	asi64(R1) = nhashhash;
-	if (!asi64(R1)) goto L4159;
+	if (!asi64(R1)) goto L4160;
 	R1 = 0;
 	niltk = asu64(R1);
 	R1 = 1;
 	i = asi64(R1);
 	asi64(R1) = nhashhash;
 	R2 = 1;
-	if (asi64(R1) < asi64(R2)) goto L4162;
-L4160:
+	if (asi64(R1) < asi64(R2)) goto L4163;
+L4161:
 	asi64(R1) = i;
 	asi64(R2) = nhashhash;
-	if (asi64(R1) >= asi64(R2)) goto L4164;
+	if (asi64(R1) >= asi64(R2)) goto L4165;
 	R1 = (u64)&hhpoints;
 	asi64(R2) = i;
 	R1 += (i64)R2*8;
-	goto L4163;
-L4164:
+	goto L4164;
+L4165:
 	R1 = (u64)&niltk;
-L4163:
+L4164:
 	R2 = (u64)&hhpoints;
 	asi64(R3) = i;
 	asu64(R2) = *tou64p(((i64)R2+(i64)R3*8-8));
 	cc_lex_pastetokens(asu64(R2), asu64(R1));
-	i += 1; if (i <= nhashhash) goto L4160;
-L4162:
-L4159:
+	i += 1; if (i <= nhashhash) goto L4161;
+L4163:
+L4160:
 	asu64(R1) = newtk;
-	goto L4131;
-L4131:
+	goto L4132;
+L4132:
 	return asu64(R1);
 }
 
@@ -40814,35 +40889,35 @@ static u64 cc_lex_strtoken(u64 lp, u64 length) {
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 67;
-	if (asi64(R1) == asi64(R2)) goto L4167;
+	if (asi64(R1) == asi64(R2)) goto L4168;
 	R2 = 59;
-	if (asi64(R1) == asi64(R2)) goto L4168;
-	R2 = 60;
-	if (asi64(R1) == asi64(R2)) goto L4168;
-	R2 = 58;
 	if (asi64(R1) == asi64(R2)) goto L4169;
+	R2 = 60;
+	if (asi64(R1) == asi64(R2)) goto L4169;
+	R2 = 58;
+	if (asi64(R1) == asi64(R2)) goto L4170;
 	R2 = 63;
-	if (asi64(R1) == asi64(R2)) goto L4170;
-	R2 = 64;
-	if (asi64(R1) == asi64(R2)) goto L4170;
-	R2 = 61;
 	if (asi64(R1) == asi64(R2)) goto L4171;
-	R2 = 56;
+	R2 = 64;
+	if (asi64(R1) == asi64(R2)) goto L4171;
+	R2 = 61;
 	if (asi64(R1) == asi64(R2)) goto L4172;
-	R2 = 57;
+	R2 = 56;
 	if (asi64(R1) == asi64(R2)) goto L4173;
+	R2 = 57;
+	if (asi64(R1) == asi64(R2)) goto L4174;
 	R2 = 71;
-	if (asi64(R1) == asi64(R2)) goto L4174;
+	if (asi64(R1) == asi64(R2)) goto L4175;
 	R2 = 87;
-	if (asi64(R1) == asi64(R2)) goto L4174;
+	if (asi64(R1) == asi64(R2)) goto L4175;
 	R2 = 86;
-	if (asi64(R1) == asi64(R2)) goto L4174;
+	if (asi64(R1) == asi64(R2)) goto L4175;
 	R2 = 89;
-	if (asi64(R1) == asi64(R2)) goto L4174;
-	goto L4175;
-L4167:
+	if (asi64(R1) == asi64(R2)) goto L4175;
+	goto L4176;
+L4168:
 // cc_lex.strtoken.doname:
-L4176:
+L4177:
 	R1 = (u64)&l;
 	R2 = 0;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
@@ -40856,9 +40931,9 @@ L4176:
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
 	R2 = 0;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
-	goto L4165;
 	goto L4166;
-L4168:
+	goto L4167;
+L4169:
 	R1 = (u64)&l;
 	R2 = 24;
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
@@ -40867,7 +40942,7 @@ L4168:
 	*toi64p(R2) = asi64(R1);
 	R1 = (u64)&l;
 	asi64(R1) = cc_lex_getfilenox(asu64(R1));
-	if (!asi64(R1)) goto L4178;
+	if (!asi64(R1)) goto L4179;
 	R1 = (u64)&cc_decls_sourcefiletext;
 	R2 = (u64)&l;
 	asi64(R2) = cc_lex_getfilenox(asu64(R2));
@@ -40875,19 +40950,19 @@ L4168:
 	R2 = (u64)&l;
 	asi64(R2) = cc_lex_getnumberoffsetx(asu64(R2));
 	R1 += (i64)R2;
-	goto L4165;
-	goto L4177;
-L4178:
+	goto L4166;
+	goto L4178;
+L4179:
 	R1 = (u64)&cc_lex_pastedtokenlist;
 	R2 = (u64)&l;
 	R3 = 28;
 	asi16(R2) = *toi16p(((i64)R2+(i64)R3));
 	R2 = toi64(toi16(R2));
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2*8-8));
-	goto L4165;
-L4177:
 	goto L4166;
-L4169:
+L4178:
+	goto L4167;
+L4170:
 	R1 = (u64)&l;
 	R2 = 24;
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
@@ -40897,9 +40972,9 @@ L4169:
 	R1 = (u64)&l;
 	R2 = 0;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
-	goto L4165;
 	goto L4166;
-L4170:
+	goto L4167;
+L4171:
 	R1 = 34;
 	asu64(R2) = length;
 	R3 = (u64)&l;
@@ -40912,9 +40987,9 @@ L4170:
 	asu64(R1) = cc_lex_strstring(asu64(R4), asi64(R3), asu64(R2), asi64(R1));
 	s = asu64(R1);
 	asu64(R1) = s;
-	goto L4165;
 	goto L4166;
-L4171:
+	goto L4167;
+L4172:
 	R1 = 39;
 	asu64(R2) = length;
 	R3 = (u64)&l;
@@ -40927,11 +41002,11 @@ L4171:
 	asu64(R1) = cc_lex_strstring(asu64(R4), asi64(R3), asu64(R2), asi64(R1));
 	s = asu64(R1);
 	asu64(R1) = s;
-	goto L4165;
 	goto L4166;
-L4172:
+	goto L4167;
+L4173:
 	asi64(R1) = cc_lex_dowhitespace;
-	if (!asi64(R1)) goto L4180;
+	if (!asi64(R1)) goto L4181;
 	R1 = (u64)&l;
 	R2 = 24;
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
@@ -40958,28 +41033,28 @@ L4172:
 	R4 = 1;
 	R3 += (i64)R4;
 	memcpy(asu64(R3), asu64(R2), asu64(R1));
-	goto L4179;
-L4180:
+	goto L4180;
+L4181:
 	R1 = 1;
 	asu64(R2) = length;
 	*toi64p(R2) = asi64(R1);
 	R1 = tou64("\n");
-	goto L4165;
-L4179:
-	asu64(R1) = s;
-	goto L4165;
 	goto L4166;
-L4173:
+L4180:
+	asu64(R1) = s;
+	goto L4166;
+	goto L4167;
+L4174:
 	R1 = 0;
 	asu64(R2) = length;
 	*toi64p(R2) = asi64(R1);
 	R1 = tou64("");
-	goto L4165;
 	goto L4166;
-L4174:
-	goto L4176;
-	goto L4166;
+	goto L4167;
 L4175:
+	goto L4177;
+	goto L4167;
+L4176:
 	R1 = (u64)&cc_tables_shortsymbolnames;
 	R2 = (u64)&l;
 	R3 = 21;
@@ -40992,16 +41067,16 @@ L4175:
 	R2 = R1;
 	asu64(R3) = length;
 	*toi64p(R3) = asi64(R2);
-	if (!asi64(R1)) goto L4182;
+	if (!asi64(R1)) goto L4183;
 	asu64(R1) = name;
 	asu8(R1) = *tou8p(R1);
 	R1 = tou64(tou8(R1));
 	R2 = 107;
-	if (asu64(R1) == asu64(R2)) goto L4184;
+	if (asu64(R1) == asu64(R2)) goto L4185;
 	asu64(R1) = name;
-	goto L4165;
-	goto L4183;
-L4184:
+	goto L4166;
+	goto L4184;
+L4185:
 	R1 = (u64)&cc_tables_symbolnames;
 	R2 = (u64)&l;
 	R3 = 21;
@@ -41021,17 +41096,17 @@ L4184:
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2*8-8));
 	R2 = 1;
 	R1 += (i64)R2;
-	goto L4165;
+	goto L4166;
+L4184:
+	goto L4182;
 L4183:
-	goto L4181;
+	R1 = tou64("");
+	goto L4166;
 L4182:
+L4167:
 	R1 = tou64("");
-	goto L4165;
-L4181:
+	goto L4166;
 L4166:
-	R1 = tou64("");
-	goto L4165;
-L4165:
 	return asu64(R1);
 }
 
@@ -41049,13 +41124,13 @@ static u64 cc_lex_strstring(u64 s, i64 length, u64 newlength, i64 quotechar) {
 	u = asu64(R2);
 	t = asu64(R1);
 	asi64(R1) = quotechar;
-	if (!asi64(R1)) goto L4187;
+	if (!asi64(R1)) goto L4188;
 	asi64(R1) = quotechar;
 	asu64(R2) = u;
 	*tou8p(R2) = asu8(R1);
 	R1 = (u64)&u;
 	(*tou64p(R1)) += 1;
-L4187:
+L4188:
 	asi64(R1) = length;
 	asu64(R2) = u;
 	asu64(R3) = s;
@@ -41065,7 +41140,7 @@ L4187:
 	asu64(R2) = newlength;
 	*toi64p(R2) = asi64(R1);
 	asi64(R1) = quotechar;
-	if (!asi64(R1)) goto L4189;
+	if (!asi64(R1)) goto L4190;
 	asi64(R1) = quotechar;
 	asu64(R2) = t;
 	asu64(R3) = newlength;
@@ -41073,10 +41148,10 @@ L4187:
 	*tou8p(((i64)R2+(i64)R3)) = asu8(R1);
 	asu64(R1) = newlength;
 	(*toi64p(R1)) += 1;
-L4189:
+L4190:
 	asu64(R1) = t;
-	goto L4185;
-L4185:
+	goto L4186;
+L4186:
 	return asu64(R1);
 }
 
@@ -41089,30 +41164,30 @@ static void cc_lex_emittoken(u64 lp, u64 dest, i64 forcespace) {
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 56;
-	if (asi64(R1) != asi64(R2)) goto L4192;
+	if (asi64(R1) != asi64(R2)) goto L4193;
 	asi64(R1) = cc_lex_lasttoken;
 	R2 = 56;
-	if (asi64(R1) != asi64(R2)) goto L4192;
-	goto L4190;
-L4192:
+	if (asi64(R1) != asi64(R2)) goto L4193;
+	goto L4191;
+L4193:
 	R1 = (u64)&length;
 	asu64(R2) = lp;
 	asu64(R1) = cc_lex_strtoken(asu64(R2), asu64(R1));
 	s = asu64(R1);
 	asi64(R1) = forcespace;
-	if (asi64(R1)) goto L4195;
+	if (asi64(R1)) goto L4196;
 	asu64(R1) = lp;
 	R2 = 21;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	asi64(R2) = cc_lex_lasttoken;
 	asi64(R1) = cc_lex_needspace(asi64(R2), asi64(R1));
-	if (!asi64(R1)) goto L4194;
-L4195:
+	if (!asi64(R1)) goto L4195;
+L4196:
 	R1 = 32;
 	asu64(R2) = dest;
 	mlib_gs_char(asu64(R2), asi64(R1));
-L4194:
+L4195:
 	asi64(R1) = length;
 	asu64(R2) = s;
 	asu64(R3) = dest;
@@ -41122,7 +41197,7 @@ L4194:
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	cc_lex_lasttoken = asi64(R1);
-L4190:
+L4191:
 	return;
 }
 
@@ -41172,7 +41247,7 @@ static void cc_lex_stringify(u64 seq, u64 dest) {
 	R2 = 8;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
 	R2 = 0;
-	if (asu64(R1) != asu64(R2)) goto L4199;
+	if (asu64(R1) != asu64(R2)) goto L4200;
 	R1 = (u64)&length;
 	asu64(R2) = seq;
 	asu64(R1) = cc_lex_strtoken(asu64(R2), asu64(R1));
@@ -41185,16 +41260,16 @@ static void cc_lex_stringify(u64 seq, u64 dest) {
 	asu64(R2) = dest;
 	R3 = 0;
 	*tou64p(((i64)R2+(i64)R3)) = asu64(R1);
-	goto L4197;
-L4199:
+	goto L4198;
+L4200:
 	asu64(R1) = cc_lex_stringify_deststr;
 	mlib_gs_init(asu64(R1));
 	R1 = 0;
 	cc_lex_lasttoken = asi64(R1);
 	R1 = 0;
 	addspace = asi64(R1);
-	goto L4201;
-L4200:
+	goto L4202;
+L4201:
 	asi64(R1) = addspace;
 	asu64(R2) = cc_lex_stringify_deststr;
 	asu64(R3) = seq;
@@ -41205,9 +41280,9 @@ L4200:
 	R2 = 8;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
 	seq = asu64(R1);
-L4201:
+L4202:
 	asu64(R1) = seq;
-	if (asu64(R1)) goto L4200;
+	if (asu64(R1)) goto L4201;
 	asi64(R1) = length;
 	asu64(R2) = dest;
 	R3 = 24;
@@ -41224,7 +41299,7 @@ L4201:
 	asu64(R2) = dest;
 	R3 = 24;
 	*toi32p(((i64)R2+(i64)R3)) = asi32(R1);
-L4197:
+L4198:
 	return;
 }
 
@@ -41247,11 +41322,11 @@ static void cc_lex_pastetokens(u64 tk, u64 tknext) {
 	asu64(R1) = tk2;
 	asu64(R2) = tknext;
 	asu64(R2) = *tou64p(R2);
-	if (asu64(R1) != asu64(R2)) goto L4205;
+	if (asu64(R1) != asu64(R2)) goto L4206;
 	asu64(R1) = tk;
 	asu64(R2) = tknext;
 	*tou64p(R2) = asu64(R1);
-L4205:
+L4206:
 	asu64(R1) = tk2;
 	R2 = 8;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
@@ -41263,30 +41338,30 @@ L4205:
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 66;
-	if (asi64(R1) != asi64(R2)) goto L4207;
-	asu64(R1) = tk2;
-	R2 = 21;
-	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
-	R1 = toi64(tou8(R1));
-	R2 = 66;
-	if (asi64(R1) != asi64(R2)) goto L4209;
-	goto L4208;
-L4209:
-	asu64(R1) = tk2;
-	(R1_B17) = *(struct $B17*)(R1);
-	asu64(R2) = tk;
-	*(struct $B17*)(R2) = (R1_B17);
-L4208:
-	goto L4206;
-L4207:
+	if (asi64(R1) != asi64(R2)) goto L4208;
 	asu64(R1) = tk2;
 	R2 = 21;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 66;
 	if (asi64(R1) != asi64(R2)) goto L4210;
-	goto L4206;
+	goto L4209;
 L4210:
+	asu64(R1) = tk2;
+	(R1_B17) = *(struct $B17*)(R1);
+	asu64(R2) = tk;
+	*(struct $B17*)(R2) = (R1_B17);
+L4209:
+	goto L4207;
+L4208:
+	asu64(R1) = tk2;
+	R2 = 21;
+	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
+	R1 = toi64(tou8(R1));
+	R2 = 66;
+	if (asi64(R1) != asi64(R2)) goto L4211;
+	goto L4207;
+L4211:
 	R1 = (u64)&length1;
 	asu64(R2) = tk;
 	asu64(R1) = cc_lex_strtoken(asu64(R2), asu64(R1));
@@ -41318,10 +41393,10 @@ L4210:
 	*tou8p(((i64)R2+(i64)R3)) = asu8(R1);
 	asi64(R1) = cc_lex_npastedtokens;
 	R2 = 87000;
-	if (asi64(R1) < asi64(R2)) goto L4212;
+	if (asi64(R1) < asi64(R2)) goto L4213;
 	R1 = tou64("Too many pasted tokens");
 	cc_lex_lxerror(asu64(R1));
-L4212:
+L4213:
 	asu64(R1) = u;
 	R2 = (u64)&cc_lex_pastedtokenlist;
 	R3 = (u64)&cc_lex_npastedtokens;
@@ -41352,8 +41427,8 @@ L4212:
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 57;
-	if (asi64(R1) == asi64(R2)) goto L4214;
-L4214:
+	if (asi64(R1) == asi64(R2)) goto L4215;
+L4215:
 	(R1_B17) = oldtoken;
 	cc_decls_nextlx = (R1_B17);
 	asu64(R1) = oldlxsptr;
@@ -41381,7 +41456,7 @@ L4214:
 	(R1_B17) = token;
 	asu64(R2) = tk;
 	*(struct $B17*)(R2) = (R1_B17);
-L4206:
+L4207:
 	return;
 }
 
@@ -41398,15 +41473,15 @@ static i64 cc_lex_getifexpr() {
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 56;
-	if (asi64(R1) == asi64(R2)) goto L4217;
+	if (asi64(R1) == asi64(R2)) goto L4218;
 	R1 = tou64("#if:eol expected");
 	cc_lex_lxerror(asu64(R1));
-L4217:
+L4218:
 	asi64(R1) = x;
 	R2 = 0;
 	asi64(R1) = asi64(R1)  !=  asi64(R2);
-	goto L4215;
-L4215:
+	goto L4216;
+L4216:
 	return asi64(R1);
 }
 
@@ -41425,7 +41500,7 @@ static i64 cc_lex_evalcondexpr(u64 sx) {
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 19;
-	if (asi64(R1) != asi64(R2)) goto L4220;
+	if (asi64(R1) != asi64(R2)) goto L4221;
 	cc_lex_lexm();
 	R1 = (u64)&sy;
 	asi64(R1) = cc_lex_evalcondexpr(asu64(R1));
@@ -41435,33 +41510,33 @@ static i64 cc_lex_evalcondexpr(u64 sx) {
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 10;
-	if (asi64(R1) == asi64(R2)) goto L4222;
+	if (asi64(R1) == asi64(R2)) goto L4223;
 	R1 = tou64(": expected");
 	cc_lex_lxerror(asu64(R1));
-L4222:
+L4223:
 	cc_lex_lexm();
 	R1 = (u64)&sz;
 	asi64(R1) = cc_lex_evalcondexpr(asu64(R1));
 	z = asi64(R1);
 	asi64(R1) = x;
-	if (!asi64(R1)) goto L4224;
+	if (!asi64(R1)) goto L4225;
 	asi64(R1) = sy;
 	asu64(R2) = sx;
 	*toi64p(R2) = asi64(R1);
 	asi64(R1) = y;
 	x = asi64(R1);
-	goto L4223;
-L4224:
+	goto L4224;
+L4225:
 	asi64(R1) = sz;
 	asu64(R2) = sx;
 	*toi64p(R2) = asi64(R1);
 	asi64(R1) = z;
 	x = asi64(R1);
-L4223:
-L4220:
+L4224:
+L4221:
 	asi64(R1) = x;
-	goto L4218;
-L4218:
+	goto L4219;
+L4219:
 	return asi64(R1);
 }
 
@@ -41474,33 +41549,33 @@ static i64 cc_lex_evalorexpr(u64 sx) {
 	asu64(R1) = sx;
 	asi64(R1) = cc_lex_evalandexpr(asu64(R1));
 	x = asi64(R1);
-	goto L4227;
-L4226:
+	goto L4228;
+L4227:
 	cc_lex_lexm();
 	R1 = (u64)&sy;
 	asi64(R1) = cc_lex_evalandexpr(asu64(R1));
 	y = asi64(R1);
 	asi64(R1) = x;
-	if (asi64(R1)) goto L4231;
+	if (asi64(R1)) goto L4232;
 	asi64(R1) = y;
-	if (!asi64(R1)) goto L4230;
-L4231:
+	if (!asi64(R1)) goto L4231;
+L4232:
 	R1 = 1;
-	goto L4229;
-L4230:
+	goto L4230;
+L4231:
 	R1 = 0;
-L4229:
+L4230:
 	x = asi64(R1);
-L4227:
+L4228:
 	R1 = (u64)&cc_decls_nextlx;
 	R2 = 21;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 31;
-	if (asi64(R1) == asi64(R2)) goto L4226;
+	if (asi64(R1) == asi64(R2)) goto L4227;
 	asi64(R1) = x;
-	goto L4225;
-L4225:
+	goto L4226;
+L4226:
 	return asi64(R1);
 }
 
@@ -41513,32 +41588,32 @@ static i64 cc_lex_evalandexpr(u64 sx) {
 	asu64(R1) = sx;
 	asi64(R1) = cc_lex_evaliorexpr(asu64(R1));
 	x = asi64(R1);
-	goto L4234;
-L4233:
+	goto L4235;
+L4234:
 	cc_lex_lexm();
 	R1 = (u64)&sy;
 	asi64(R1) = cc_lex_evaliorexpr(asu64(R1));
 	y = asi64(R1);
 	asi64(R1) = x;
-	if (!asi64(R1)) goto L4237;
+	if (!asi64(R1)) goto L4238;
 	asi64(R1) = y;
-	if (!asi64(R1)) goto L4237;
+	if (!asi64(R1)) goto L4238;
 	R1 = 1;
-	goto L4236;
-L4237:
+	goto L4237;
+L4238:
 	R1 = 0;
-L4236:
+L4237:
 	x = asi64(R1);
-L4234:
+L4235:
 	R1 = (u64)&cc_decls_nextlx;
 	R2 = 21;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 32;
-	if (asi64(R1) == asi64(R2)) goto L4233;
+	if (asi64(R1) == asi64(R2)) goto L4234;
 	asi64(R1) = x;
-	goto L4232;
-L4232:
+	goto L4233;
+L4233:
 	return asi64(R1);
 }
 
@@ -41551,23 +41626,23 @@ static i64 cc_lex_evaliorexpr(u64 sx) {
 	asu64(R1) = sx;
 	asi64(R1) = cc_lex_evalixorexpr(asu64(R1));
 	x = asi64(R1);
-	goto L4240;
-L4239:
+	goto L4241;
+L4240:
 	cc_lex_lexm();
 	R1 = (u64)&sy;
 	asi64(R1) = cc_lex_evalixorexpr(asu64(R1));
 	R2 = (u64)&x;
 	*toi64p(R2) |= asi64(R1);
-L4240:
+L4241:
 	R1 = (u64)&cc_decls_nextlx;
 	R2 = 21;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 28;
-	if (asi64(R1) == asi64(R2)) goto L4239;
+	if (asi64(R1) == asi64(R2)) goto L4240;
 	asi64(R1) = x;
-	goto L4238;
-L4238:
+	goto L4239;
+L4239:
 	return asi64(R1);
 }
 
@@ -41580,23 +41655,23 @@ static i64 cc_lex_evalixorexpr(u64 sx) {
 	asu64(R1) = sx;
 	asi64(R1) = cc_lex_evaliandexpr(asu64(R1));
 	x = asi64(R1);
-	goto L4244;
-L4243:
+	goto L4245;
+L4244:
 	cc_lex_lexm();
 	R1 = (u64)&sy;
 	asi64(R1) = cc_lex_evaliandexpr(asu64(R1));
 	R2 = (u64)&x;
 	*toi64p(R2) ^= asi64(R1);
-L4244:
+L4245:
 	R1 = (u64)&cc_decls_nextlx;
 	R2 = 21;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 30;
-	if (asi64(R1) == asi64(R2)) goto L4243;
+	if (asi64(R1) == asi64(R2)) goto L4244;
 	asi64(R1) = x;
-	goto L4242;
-L4242:
+	goto L4243;
+L4243:
 	return asi64(R1);
 }
 
@@ -41609,23 +41684,23 @@ static i64 cc_lex_evaliandexpr(u64 sx) {
 	asu64(R1) = sx;
 	asi64(R1) = cc_lex_evaleqexpr(asu64(R1));
 	x = asi64(R1);
-	goto L4248;
-L4247:
+	goto L4249;
+L4248:
 	cc_lex_lexm();
 	R1 = (u64)&sy;
 	asi64(R1) = cc_lex_evaleqexpr(asu64(R1));
 	R2 = (u64)&x;
 	*toi64p(R2) &= asi64(R1);
-L4248:
+L4249:
 	R1 = (u64)&cc_decls_nextlx;
 	R2 = 21;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 29;
-	if (asi64(R1) == asi64(R2)) goto L4247;
+	if (asi64(R1) == asi64(R2)) goto L4248;
 	asi64(R1) = x;
-	goto L4246;
-L4246:
+	goto L4247;
+L4247:
 	return asi64(R1);
 }
 
@@ -41638,33 +41713,33 @@ static i64 cc_lex_evaleqexpr(u64 sx) {
 	asu64(R1) = sx;
 	asi64(R1) = cc_lex_evalcmpexpr(asu64(R1));
 	x = asi64(R1);
-	goto L4252;
-L4251:
+	goto L4253;
+L4252:
 	cc_lex_lexm();
 	R1 = (u64)&sy;
 	asi64(R1) = cc_lex_evalcmpexpr(asu64(R1));
 	y = asi64(R1);
 	asi64(R1) = opc;
 	R2 = 40;
-	if (asi64(R1) == asi64(R2)) goto L4255;
-	R2 = 41;
 	if (asi64(R1) == asi64(R2)) goto L4256;
-	goto L4257;
-L4255:
+	R2 = 41;
+	if (asi64(R1) == asi64(R2)) goto L4257;
+	goto L4258;
+L4256:
 	asi64(R1) = x;
 	asi64(R2) = y;
 	asi64(R1) = asi64(R1)  ==  asi64(R2);
 	x = asi64(R1);
-	goto L4254;
-L4256:
+	goto L4255;
+L4257:
 	asi64(R1) = x;
 	asi64(R2) = y;
 	asi64(R1) = asi64(R1)  !=  asi64(R2);
 	x = asi64(R1);
-	goto L4254;
-L4257:
-L4254:
-L4252:
+	goto L4255;
+L4258:
+L4255:
+L4253:
 	R1 = (u64)&cc_decls_nextlx;
 	R2 = 21;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
@@ -41672,13 +41747,13 @@ L4252:
 	R2 = R1;
 	opc = asi64(R2);
 	R2 = 40;
-	if (asi64(R1) == asi64(R2)) goto L4251;
+	if (asi64(R1) == asi64(R2)) goto L4252;
 	asi64(R1) = opc;
 	R2 = 41;
-	if (asi64(R1) == asi64(R2)) goto L4251;
+	if (asi64(R1) == asi64(R2)) goto L4252;
 	asi64(R1) = x;
-	goto L4250;
-L4250:
+	goto L4251;
+L4251:
 	return asi64(R1);
 }
 
@@ -41691,49 +41766,49 @@ static i64 cc_lex_evalcmpexpr(u64 sx) {
 	asu64(R1) = sx;
 	asi64(R1) = cc_lex_evalshiftexpr(asu64(R1));
 	x = asi64(R1);
-	goto L4260;
-L4259:
+	goto L4261;
+L4260:
 	cc_lex_lexm();
 	R1 = (u64)&sy;
 	asi64(R1) = cc_lex_evalshiftexpr(asu64(R1));
 	y = asi64(R1);
 	asi64(R1) = opc;
 	R2 = 42;
-	if (asi64(R1) == asi64(R2)) goto L4263;
-	R2 = 43;
 	if (asi64(R1) == asi64(R2)) goto L4264;
-	R2 = 44;
+	R2 = 43;
 	if (asi64(R1) == asi64(R2)) goto L4265;
-	R2 = 45;
+	R2 = 44;
 	if (asi64(R1) == asi64(R2)) goto L4266;
-	goto L4267;
-L4263:
+	R2 = 45;
+	if (asi64(R1) == asi64(R2)) goto L4267;
+	goto L4268;
+L4264:
 	asi64(R1) = x;
 	asi64(R2) = y;
 	asi64(R1) = asi64(R1)  <  asi64(R2);
 	x = asi64(R1);
-	goto L4262;
-L4264:
+	goto L4263;
+L4265:
 	asi64(R1) = x;
 	asi64(R2) = y;
 	asi64(R1) = asi64(R1)  <=  asi64(R2);
 	x = asi64(R1);
-	goto L4262;
-L4265:
+	goto L4263;
+L4266:
 	asi64(R1) = x;
 	asi64(R2) = y;
 	asi64(R1) = asi64(R1)  >=  asi64(R2);
 	x = asi64(R1);
-	goto L4262;
-L4266:
+	goto L4263;
+L4267:
 	asi64(R1) = x;
 	asi64(R2) = y;
 	asi64(R1) = asi64(R1)  >  asi64(R2);
 	x = asi64(R1);
-	goto L4262;
-L4267:
-L4262:
-L4260:
+	goto L4263;
+L4268:
+L4263:
+L4261:
 	R1 = (u64)&cc_decls_nextlx;
 	R2 = 21;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
@@ -41741,19 +41816,19 @@ L4260:
 	R2 = R1;
 	opc = asi64(R2);
 	R2 = 42;
-	if (asi64(R1) == asi64(R2)) goto L4259;
+	if (asi64(R1) == asi64(R2)) goto L4260;
 	asi64(R1) = opc;
 	R2 = 43;
-	if (asi64(R1) == asi64(R2)) goto L4259;
+	if (asi64(R1) == asi64(R2)) goto L4260;
 	asi64(R1) = opc;
 	R2 = 44;
-	if (asi64(R1) == asi64(R2)) goto L4259;
+	if (asi64(R1) == asi64(R2)) goto L4260;
 	asi64(R1) = opc;
 	R2 = 45;
-	if (asi64(R1) == asi64(R2)) goto L4259;
+	if (asi64(R1) == asi64(R2)) goto L4260;
 	asi64(R1) = x;
-	goto L4258;
-L4258:
+	goto L4259;
+L4259:
 	return asi64(R1);
 }
 
@@ -41766,33 +41841,33 @@ static i64 cc_lex_evalshiftexpr(u64 sx) {
 	asu64(R1) = sx;
 	asi64(R1) = cc_lex_evaladdexpr(asu64(R1));
 	x = asi64(R1);
-	goto L4270;
-L4269:
+	goto L4271;
+L4270:
 	cc_lex_lexm();
 	R1 = (u64)&sy;
 	asi64(R1) = cc_lex_evaladdexpr(asu64(R1));
 	y = asi64(R1);
 	asi64(R1) = opc;
 	R2 = 34;
-	if (asi64(R1) == asi64(R2)) goto L4273;
-	R2 = 33;
 	if (asi64(R1) == asi64(R2)) goto L4274;
-	goto L4275;
-L4273:
+	R2 = 33;
+	if (asi64(R1) == asi64(R2)) goto L4275;
+	goto L4276;
+L4274:
 	asi64(R1) = x;
 	asi64(R2) = y;
 	asi64(R1) >>= asi64(R2);
 	x = asi64(R1);
-	goto L4272;
-L4274:
+	goto L4273;
+L4275:
 	asi64(R1) = x;
 	asi64(R2) = y;
 	asi64(R1) <<= asi64(R2);
 	x = asi64(R1);
-	goto L4272;
-L4275:
-L4272:
-L4270:
+	goto L4273;
+L4276:
+L4273:
+L4271:
 	R1 = (u64)&cc_decls_nextlx;
 	R2 = 21;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
@@ -41800,13 +41875,13 @@ L4270:
 	R2 = R1;
 	opc = asi64(R2);
 	R2 = 33;
-	if (asi64(R1) == asi64(R2)) goto L4269;
+	if (asi64(R1) == asi64(R2)) goto L4270;
 	asi64(R1) = opc;
 	R2 = 34;
-	if (asi64(R1) == asi64(R2)) goto L4269;
+	if (asi64(R1) == asi64(R2)) goto L4270;
 	asi64(R1) = x;
-	goto L4268;
-L4268:
+	goto L4269;
+L4269:
 	return asi64(R1);
 }
 
@@ -41819,31 +41894,31 @@ static i64 cc_lex_evaladdexpr(u64 sx) {
 	asu64(R1) = sx;
 	asi64(R1) = cc_lex_evalmulexpr(asu64(R1));
 	x = asi64(R1);
-	goto L4278;
-L4277:
+	goto L4279;
+L4278:
 	cc_lex_lexm();
 	R1 = (u64)&sy;
 	asi64(R1) = cc_lex_evalmulexpr(asu64(R1));
 	y = asi64(R1);
 	asi64(R1) = opc;
 	R2 = 23;
-	if (asi64(R1) == asi64(R2)) goto L4281;
-	R2 = 24;
 	if (asi64(R1) == asi64(R2)) goto L4282;
-	goto L4283;
-L4281:
-	asi64(R1) = y;
-	R2 = (u64)&x;
-	*toi64p(R2) += asi64(R1);
-	goto L4280;
+	R2 = 24;
+	if (asi64(R1) == asi64(R2)) goto L4283;
+	goto L4284;
 L4282:
 	asi64(R1) = y;
 	R2 = (u64)&x;
-	*toi64p(R2) -= asi64(R1);
-	goto L4280;
+	*toi64p(R2) += asi64(R1);
+	goto L4281;
 L4283:
-L4280:
-L4278:
+	asi64(R1) = y;
+	R2 = (u64)&x;
+	*toi64p(R2) -= asi64(R1);
+	goto L4281;
+L4284:
+L4281:
+L4279:
 	R1 = (u64)&cc_decls_nextlx;
 	R2 = 21;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
@@ -41851,13 +41926,13 @@ L4278:
 	R2 = R1;
 	opc = asi64(R2);
 	R2 = 23;
-	if (asi64(R1) == asi64(R2)) goto L4277;
+	if (asi64(R1) == asi64(R2)) goto L4278;
 	asi64(R1) = opc;
 	R2 = 24;
-	if (asi64(R1) == asi64(R2)) goto L4277;
+	if (asi64(R1) == asi64(R2)) goto L4278;
 	asi64(R1) = x;
-	goto L4276;
-L4276:
+	goto L4277;
+L4277:
 	return asi64(R1);
 }
 
@@ -41870,50 +41945,50 @@ static i64 cc_lex_evalmulexpr(u64 sx) {
 	asu64(R1) = sx;
 	asi64(R1) = cc_lex_evalunaryexpr(asu64(R1));
 	x = asi64(R1);
-	goto L4286;
-L4285:
+	goto L4287;
+L4286:
 	cc_lex_lexm();
 	R1 = (u64)&sy;
 	asi64(R1) = cc_lex_evalunaryexpr(asu64(R1));
 	y = asi64(R1);
 	asi64(R1) = y;
 	R2 = 0;
-	if (asi64(R1) != asi64(R2)) goto L4289;
+	if (asi64(R1) != asi64(R2)) goto L4290;
 	asi64(R1) = opc;
 	R2 = 25;
-	if (asi64(R1) == asi64(R2)) goto L4289;
+	if (asi64(R1) == asi64(R2)) goto L4290;
 	R1 = tou64("#if:div by zero");
 	cc_lex_lxerror(asu64(R1));
-L4289:
+L4290:
 	asi64(R1) = opc;
 	R2 = 25;
-	if (asi64(R1) == asi64(R2)) goto L4291;
-	R2 = 26;
 	if (asi64(R1) == asi64(R2)) goto L4292;
-	R2 = 27;
+	R2 = 26;
 	if (asi64(R1) == asi64(R2)) goto L4293;
-	goto L4294;
-L4291:
+	R2 = 27;
+	if (asi64(R1) == asi64(R2)) goto L4294;
+	goto L4295;
+L4292:
 	asi64(R1) = y;
 	R2 = (u64)&x;
 	*toi64p(R2) *= asi64(R1);
-	goto L4290;
-L4292:
+	goto L4291;
+L4293:
 	asi64(R1) = x;
 	asi64(R2) = y;
    if (asi64(R2) == 0) {puts((u64)"Divide by zero"); exit(1);}
 	asi64(R1) /= asi64(R2);
 	x = asi64(R1);
-	goto L4290;
-L4293:
+	goto L4291;
+L4294:
 	asi64(R1) = x;
 	asi64(R2) = y;
 	asi64(R1) %= asi64(R2);
 	x = asi64(R1);
-	goto L4290;
-L4294:
-L4290:
-L4286:
+	goto L4291;
+L4295:
+L4291:
+L4287:
 	R1 = (u64)&cc_decls_nextlx;
 	R2 = 21;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
@@ -41921,16 +41996,16 @@ L4286:
 	R2 = R1;
 	opc = asi64(R2);
 	R2 = 25;
-	if (asi64(R1) == asi64(R2)) goto L4285;
+	if (asi64(R1) == asi64(R2)) goto L4286;
 	asi64(R1) = opc;
 	R2 = 26;
-	if (asi64(R1) == asi64(R2)) goto L4285;
+	if (asi64(R1) == asi64(R2)) goto L4286;
 	asi64(R1) = opc;
 	R2 = 27;
-	if (asi64(R1) == asi64(R2)) goto L4285;
+	if (asi64(R1) == asi64(R2)) goto L4286;
 	asi64(R1) = x;
-	goto L4284;
-L4284:
+	goto L4285;
+L4285:
 	return asi64(R1);
 }
 
@@ -41943,15 +42018,15 @@ static i64 cc_lex_evalunaryexpr(u64 sx) {
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 23;
-	if (asi64(R1) == asi64(R2)) goto L4297;
+	if (asi64(R1) == asi64(R2)) goto L4298;
 	R2 = 24;
-	if (asi64(R1) == asi64(R2)) goto L4297;
+	if (asi64(R1) == asi64(R2)) goto L4298;
 	R2 = 36;
-	if (asi64(R1) == asi64(R2)) goto L4297;
+	if (asi64(R1) == asi64(R2)) goto L4298;
 	R2 = 35;
-	if (asi64(R1) == asi64(R2)) goto L4297;
-	goto L4298;
-L4297:
+	if (asi64(R1) == asi64(R2)) goto L4298;
+	goto L4299;
+L4298:
 	R1 = (u64)&cc_decls_nextlx;
 	R2 = 21;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
@@ -41963,42 +42038,42 @@ L4297:
 	x = asi64(R1);
 	asi64(R1) = opc;
 	R2 = 23;
-	if (asi64(R1) == asi64(R2)) goto L4300;
-	R2 = 24;
 	if (asi64(R1) == asi64(R2)) goto L4301;
-	R2 = 36;
+	R2 = 24;
 	if (asi64(R1) == asi64(R2)) goto L4302;
-	R2 = 35;
+	R2 = 36;
 	if (asi64(R1) == asi64(R2)) goto L4303;
-	goto L4304;
-L4300:
-	asi64(R1) = x;
-	goto L4295;
-	goto L4299;
+	R2 = 35;
+	if (asi64(R1) == asi64(R2)) goto L4304;
+	goto L4305;
 L4301:
 	asi64(R1) = x;
-	asi64(R1) = -asi64(R1);
-	goto L4295;
-	goto L4299;
+	goto L4296;
+	goto L4300;
 L4302:
 	asi64(R1) = x;
-	asi64(R1) = !asi64(R1);
-	goto L4295;
-	goto L4299;
+	asi64(R1) = -asi64(R1);
+	goto L4296;
+	goto L4300;
 L4303:
 	asi64(R1) = x;
-	asi64(R1) = ~asi64(R1);
-	goto L4295;
-	goto L4299;
-L4304:
-L4299:
+	asi64(R1) = !asi64(R1);
 	goto L4296;
-L4298:
-L4296:
+	goto L4300;
+L4304:
+	asi64(R1) = x;
+	asi64(R1) = ~asi64(R1);
+	goto L4296;
+	goto L4300;
+L4305:
+L4300:
+	goto L4297;
+L4299:
+L4297:
 	asu64(R1) = sx;
 	asi64(R1) = cc_lex_evalterm(asu64(R1));
-	goto L4295;
-L4295:
+	goto L4296;
+L4296:
 	return asi64(R1);
 }
 
@@ -42014,15 +42089,15 @@ static i64 cc_lex_evalterm(u64 sx) {
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 67;
-	if (asi64(R1) == asi64(R2)) goto L4307;
-	R2 = 59;
 	if (asi64(R1) == asi64(R2)) goto L4308;
-	R2 = 61;
+	R2 = 59;
 	if (asi64(R1) == asi64(R2)) goto L4309;
-	R2 = 13;
+	R2 = 61;
 	if (asi64(R1) == asi64(R2)) goto L4310;
-	goto L4311;
-L4307:
+	R2 = 13;
+	if (asi64(R1) == asi64(R2)) goto L4311;
+	goto L4312;
+L4308:
 	R1 = (u64)&cc_decls_nextlx;
 	R2 = 0;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
@@ -42030,11 +42105,11 @@ L4307:
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 93;
-	if (asi64(R1) == asi64(R2)) goto L4313;
-	R2 = 92;
 	if (asi64(R1) == asi64(R2)) goto L4314;
-	goto L4315;
-L4313:
+	R2 = 92;
+	if (asi64(R1) == asi64(R2)) goto L4315;
+	goto L4316;
+L4314:
 	R1 = 1;
 	cc_lex_noexpand = asi64(R1);
 	R1 = 0;
@@ -42045,20 +42120,20 @@ L4313:
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 13;
-	if (asi64(R1) != asi64(R2)) goto L4317;
+	if (asi64(R1) != asi64(R2)) goto L4318;
 	R1 = 1;
 	lb = asi64(R1);
 	cc_lex_lexm();
-L4317:
+L4318:
 	R1 = (u64)&cc_decls_nextlx;
 	R2 = 21;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 67;
-	if (asi64(R1) == asi64(R2)) goto L4319;
+	if (asi64(R1) == asi64(R2)) goto L4320;
 	R1 = tou64("defined?");
 	cc_lex_lxerror(asu64(R1));
-L4319:
+L4320:
 	R1 = (u64)&cc_decls_nextlx;
 	R2 = 0;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
@@ -42070,42 +42145,42 @@ L4319:
 	res = asi64(R1);
 	cc_lex_lexm();
 	asi64(R1) = lb;
-	if (!asi64(R1)) goto L4321;
+	if (!asi64(R1)) goto L4322;
 	R1 = (u64)&cc_decls_nextlx;
 	R2 = 21;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 14;
-	if (asi64(R1) == asi64(R2)) goto L4323;
+	if (asi64(R1) == asi64(R2)) goto L4324;
 	R1 = tou64("')' expected");
 	cc_lex_lxerror(asu64(R1));
-L4323:
+L4324:
 	cc_lex_lexm();
-L4321:
+L4322:
 	R1 = 0;
 	cc_lex_noexpand = asi64(R1);
-	goto L4312;
-L4314:
+	goto L4313;
+L4315:
 	cc_lex_lexm();
 	R1 = (u64)&cc_decls_nextlx;
 	R2 = 21;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 13;
-	if (asi64(R1) == asi64(R2)) goto L4325;
+	if (asi64(R1) == asi64(R2)) goto L4326;
 	R1 = tou64("'(' expected");
 	cc_lex_lxerror(asu64(R1));
-L4325:
+L4326:
 	cc_lex_lexm();
 	R1 = (u64)&cc_decls_nextlx;
 	R2 = 21;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 67;
-	if (asi64(R1) == asi64(R2)) goto L4327;
+	if (asi64(R1) == asi64(R2)) goto L4328;
 	R1 = tou64("name expected");
 	cc_lex_lxerror(asu64(R1));
-L4327:
+L4328:
 	R1 = (u64)&cc_decls_nextlx;
 	R2 = 0;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
@@ -42113,9 +42188,9 @@ L4327:
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 71;
-	if (asi64(R1) == asi64(R2)) goto L4329;
-	goto L4330;
-L4329:
+	if (asi64(R1) == asi64(R2)) goto L4330;
+	goto L4331;
+L4330:
 	R1 = (u64)&cc_tables_typespecsizes;
 	R2 = (u64)&cc_decls_nextlx;
 	R3 = 0;
@@ -42126,57 +42201,57 @@ L4329:
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2-1));
 	R1 = toi64(tou8(R1));
 	res = asi64(R1);
-	goto L4328;
-L4330:
+	goto L4329;
+L4331:
 	R1 = tou64("sizeof2");
 	cc_lex_lxerror(asu64(R1));
-L4328:
+L4329:
 	cc_lex_lexm();
 	R1 = (u64)&cc_decls_nextlx;
 	R2 = 21;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 14;
-	if (asi64(R1) == asi64(R2)) goto L4332;
+	if (asi64(R1) == asi64(R2)) goto L4333;
 	R1 = tou64("')' expected");
 	cc_lex_lxerror(asu64(R1));
-L4332:
+L4333:
 	cc_lex_lexm();
-	goto L4312;
-L4315:
+	goto L4313;
+L4316:
 	cc_lex_lexm();
 	R1 = 0;
-	goto L4305;
-L4312:
 	goto L4306;
-L4308:
+L4313:
+	goto L4307;
+L4309:
 	R1 = (u64)&cc_decls_nextlx;
 	R2 = 0;
 	asi64(R1) = *toi64p(((i64)R1+(i64)R2));
 	res = asi64(R1);
 	cc_lex_lexm();
-	goto L4306;
-L4309:
+	goto L4307;
+L4310:
 	R1 = (u64)&cc_decls_nextlx;
 	R2 = 24;
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
 	R1 = toi64(toi32(R1));
 	R2 = 0;
-	if (asi64(R1) != asi64(R2)) goto L4334;
+	if (asi64(R1) != asi64(R2)) goto L4335;
 	R1 = 0;
 	res = asi64(R1);
-	goto L4333;
-L4334:
+	goto L4334;
+L4335:
 	R1 = (u64)&cc_decls_nextlx;
 	R2 = 0;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
 	asu8(R1) = *tou8p(R1);
 	R1 = toi64(tou8(R1));
 	res = asi64(R1);
-L4333:
+L4334:
 	cc_lex_lexm();
-	goto L4306;
-L4310:
+	goto L4307;
+L4311:
 	cc_lex_lexm();
 	asu64(R1) = sx;
 	asi64(R1) = cc_lex_evalcondexpr(asu64(R1));
@@ -42186,13 +42261,13 @@ L4310:
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 14;
-	if (asi64(R1) == asi64(R2)) goto L4336;
+	if (asi64(R1) == asi64(R2)) goto L4337;
 	R1 = tou64(") expected");
 	cc_lex_lxerror(asu64(R1));
-L4336:
+L4337:
 	cc_lex_lexm();
-	goto L4306;
-L4311:
+	goto L4307;
+L4312:
 	R1 = (u64)&cc_decls_nextlx;
 	cc_lex_printsymbol(asu64(R1));
 	R1 = 0;
@@ -42209,10 +42284,10 @@ L4311:
 	msysc_m$print_end();
 	R1 = tou64("evalterm?");
 	cc_lex_lxerror(asu64(R1));
-L4306:
+L4307:
 	asi64(R1) = res;
-	goto L4305;
-L4305:
+	goto L4306;
+L4306:
 	return asi64(R1);
 }
 
@@ -42230,10 +42305,10 @@ static i64 cc_lex_getifdef() {
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 67;
-	if (asi64(R1) == asi64(R2)) goto L4339;
+	if (asi64(R1) == asi64(R2)) goto L4340;
 	R1 = tou64("Name expected");
 	cc_lex_lxerror(asu64(R1));
-L4339:
+L4340:
 	R1 = (u64)&cc_decls_nextlx;
 	R2 = 0;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
@@ -42245,34 +42320,34 @@ L4339:
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 1;
-	if (asi64(R1) != asi64(R2)) goto L4341;
+	if (asi64(R1) != asi64(R2)) goto L4342;
 	R1 = 1;
 	res = asi64(R1);
-	goto L4340;
-L4341:
+	goto L4341;
+L4342:
 	asu64(R1) = d;
 	R2 = 107;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 69;
-	if (asi64(R1) != asi64(R2)) goto L4342;
+	if (asi64(R1) != asi64(R2)) goto L4343;
 	R1 = 1;
 	res = asi64(R1);
-L4342:
-L4340:
+L4343:
+L4341:
 	cc_lex_lexreadtoken();
 	R1 = (u64)&cc_decls_nextlx;
 	R2 = 21;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 56;
-	if (asi64(R1) == asi64(R2)) goto L4344;
+	if (asi64(R1) == asi64(R2)) goto L4345;
 	R1 = tou64("EOL expected");
 	cc_lex_lxerror(asu64(R1));
-L4344:
+L4345:
 	asi64(R1) = res;
-	goto L4337;
-L4337:
+	goto L4338;
+L4338:
 	return asi64(R1);
 }
 
@@ -42283,86 +42358,86 @@ static i64 cc_lex_skipcode() {
 	u64 pp;
 	R1 = 0;
 	level = asi64(R1);
-L4346:
+L4347:
 	cc_lex_fastreadtoken();
 	R1 = (u64)&cc_decls_nextlx;
 	R2 = 21;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 4;
-	if (asi64(R1) == asi64(R2)) goto L4349;
-	R2 = 57;
 	if (asi64(R1) == asi64(R2)) goto L4350;
-	goto L4351;
-L4349:
+	R2 = 57;
+	if (asi64(R1) == asi64(R2)) goto L4351;
+	goto L4352;
+L4350:
 	asi64(R1) = cc_lex_getlexdirective();
 	dir = asi64(R1);
 	asi64(R1) = dir;
 	R2 = 3;
-	if (asi64(R1) == asi64(R2)) goto L4353;
+	if (asi64(R1) == asi64(R2)) goto L4354;
 	R2 = 8;
-	if (asi64(R1) == asi64(R2)) goto L4353;
+	if (asi64(R1) == asi64(R2)) goto L4354;
 	R2 = 9;
-	if (asi64(R1) == asi64(R2)) goto L4353;
+	if (asi64(R1) == asi64(R2)) goto L4354;
 	R2 = 4;
-	if (asi64(R1) == asi64(R2)) goto L4354;
-	R2 = 5;
-	if (asi64(R1) == asi64(R2)) goto L4354;
-	R2 = 6;
 	if (asi64(R1) == asi64(R2)) goto L4355;
-	goto L4356;
-L4353:
+	R2 = 5;
+	if (asi64(R1) == asi64(R2)) goto L4355;
+	R2 = 6;
+	if (asi64(R1) == asi64(R2)) goto L4356;
+	goto L4357;
+L4354:
 	R1 = (u64)&level;
 	(*toi64p(R1)) += 1;
-	goto L4352;
-L4354:
-	asi64(R1) = level;
-	R2 = 0;
-	if (asi64(R1) != asi64(R2)) goto L4358;
-	asi64(R1) = dir;
-	goto L4345;
-L4358:
-	goto L4352;
+	goto L4353;
 L4355:
 	asi64(R1) = level;
 	R2 = 0;
-	if (asi64(R1) != asi64(R2)) goto L4360;
+	if (asi64(R1) != asi64(R2)) goto L4359;
 	asi64(R1) = dir;
-	goto L4345;
-L4360:
+	goto L4346;
+L4359:
+	goto L4353;
+L4356:
+	asi64(R1) = level;
+	R2 = 0;
+	if (asi64(R1) != asi64(R2)) goto L4361;
+	asi64(R1) = dir;
+	goto L4346;
+L4361:
 	R1 = (u64)&level;
 	(*toi64p(R1)) -=1;
-	goto L4352;
-L4356:
-L4352:
-	goto L4348;
-L4350:
+	goto L4353;
+L4357:
+L4353:
+	goto L4349;
+L4351:
 	R1 = tou64("#if:Unexpected eof");
 	cc_lex_lxerror(asu64(R1));
-	goto L4348;
-L4351:
-L4348:
-	goto L4346;
+	goto L4349;
+L4352:
+L4349:
+	goto L4347;
 	R1 = 0;
-	goto L4345;
-L4345:
+	goto L4346;
+L4346:
 	return asi64(R1);
 }
 
 static void cc_lex_freetokens(u64 tk) {
     u64 R1, R2; 
 	u64 nexttk;
-	goto L4363;
-L4362:
+	goto L4364;
+L4363:
 	asu64(R1) = tk;
 	R2 = 8;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
 	nexttk = asu64(R1);
 	asu64(R1) = nexttk;
 	tk = asu64(R1);
-L4363:
+L4364:
 	asu64(R1) = tk;
-	if (asu64(R1)) goto L4362;
+	if (asu64(R1)) goto L4363;
 	return;
 }
 
@@ -42377,7 +42452,7 @@ static void cc_lex_fastreadtoken() {
 	u64 pstart;
 	u64 p;
 	u64 ss;
-L4366:
+L4367:
 	R1 = (u64)&cc_lex_lxsptr;
 	asu64(R2) = *tou64p(R1); *(tou64p(R1)) += 1; asu64(R1) = asu64(R2);
 	asu8(R1) = *tou8p(R1);
@@ -42385,121 +42460,105 @@ L4366:
 	R2 = R1;
 	c = asi64(R2);
 	switch (asi64(R1)) {
-	case 0: goto L4391;
-	case 1: case 2: case 3: case 4: case 5: case 6: case 7: case 8: case 9: case 11: case 14: case 15: case 16: case 17: case 18: case 19: case 20: case 21: case 22: case 23: case 24: case 25: case 26: case 27: case 28: case 29: case 30: case 31: case 32: case 33: case 36: case 37: case 38: case 40: case 41: case 42: case 43: case 44: case 45: case 46: goto L4369;
-	case 10: goto L4390;
-	case 12: goto L4394;
-	case 13: goto L4389;
-	case 34: goto L4388;
-	case 35: goto L4370;
-	case 39: goto L4387;
-	case 47: goto L4382;
-	default: goto L4369;
+	case 0: goto L4392;
+	case 1: case 2: case 3: case 4: case 5: case 6: case 7: case 8: case 9: case 11: case 14: case 15: case 16: case 17: case 18: case 19: case 20: case 21: case 22: case 23: case 24: case 25: case 26: case 27: case 28: case 29: case 30: case 31: case 32: case 33: case 36: case 37: case 38: case 40: case 41: case 42: case 43: case 44: case 45: case 46: goto L4370;
+	case 10: goto L4391;
+	case 12: goto L4395;
+	case 13: goto L4390;
+	case 34: goto L4389;
+	case 35: goto L4371;
+	case 39: goto L4388;
+	case 47: goto L4383;
+	default: goto L4370;
     };
 // SWITCH
-L4370:
+L4371:
 	asu64(R1) = cc_lex_lxsptr;
 	R2 = 2;
 	R1 -= (i64)R2;
 	p = asu64(R1);
 	R1 = 0;
 	dodir = asi64(R1);
-	goto L4372;
-L4371:
+	goto L4373;
+L4372:
 	asu64(R1) = p;
 	asu8(R1) = *tou8p(R1);
 	R1 = tou64(tou8(R1));
 	R2 = 10;
-	if (asu64(R1) == asu64(R2)) goto L4375;
+	if (asu64(R1) == asu64(R2)) goto L4376;
 	R2 = 9;
-	if (asu64(R1) == asu64(R2)) goto L4376;
+	if (asu64(R1) == asu64(R2)) goto L4377;
 	R2 = 32;
-	if (asu64(R1) == asu64(R2)) goto L4376;
-	goto L4377;
-L4375:
+	if (asu64(R1) == asu64(R2)) goto L4377;
+	goto L4378;
+L4376:
 	R1 = 1;
 	dodir = asi64(R1);
-	goto L4373;
 	goto L4374;
-L4376:
-	goto L4374;
+	goto L4375;
 L4377:
-	goto L4373;
-L4374:
+	goto L4375;
+L4378:
+	goto L4374;
+L4375:
 	R1 = (u64)&p;
 	(*tou64p(R1)) -=1;
-L4372:
-	asu64(R1) = p;
-	asu64(R2) = cc_lex_lxstart;
-	if (asu64(R1) >= asu64(R2)) goto L4371;
 L4373:
-	asi64(R1) = dodir;
-	if (asi64(R1)) goto L4380;
 	asu64(R1) = p;
 	asu64(R2) = cc_lex_lxstart;
-	if (asu64(R1) >= asu64(R2)) goto L4379;
-L4380:
+	if (asu64(R1) >= asu64(R2)) goto L4372;
+L4374:
+	asi64(R1) = dodir;
+	if (asi64(R1)) goto L4381;
+	asu64(R1) = p;
+	asu64(R2) = cc_lex_lxstart;
+	if (asu64(R1) >= asu64(R2)) goto L4380;
+L4381:
 	R1 = 4;
 	R2 = (u64)&cc_decls_nextlx;
 	R3 = 21;
 	*tou8p(((i64)R2+(i64)R3)) = asu8(R1);
-	goto L4365;
-	goto L4378;
-L4379:
+	goto L4366;
+	goto L4379;
+L4380:
 	asu64(R1) = cc_lex_lxsptr;
 	asu8(R1) = *tou8p(R1);
 	R1 = tou64(tou8(R1));
 	R2 = 35;
-	if (asu64(R1) != asu64(R2)) goto L4381;
+	if (asu64(R1) != asu64(R2)) goto L4382;
 	R1 = (u64)&cc_lex_lxsptr;
 	(*tou64p(R1)) += 1;
-L4381:
-L4378:
-	goto L4366;
 L4382:
+L4379:
+	goto L4367;
+L4383:
 	asu64(R1) = cc_lex_lxsptr;
 	asu8(R1) = *tou8p(R1);
 	R1 = tou64(tou8(R1));
 	R2 = 47;
-	if (asu64(R1) == asu64(R2)) goto L4384;
-	R2 = 42;
 	if (asu64(R1) == asu64(R2)) goto L4385;
-	goto L4386;
-L4384:
-	cc_lex_readlinecomment();
-	goto L4383;
+	R2 = 42;
+	if (asu64(R1) == asu64(R2)) goto L4386;
+	goto L4387;
 L4385:
-	cc_lex_readblockcomment();
-	goto L4383;
+	cc_lex_readlinecomment();
+	goto L4384;
 L4386:
-L4383:
-	goto L4366;
+	cc_lex_readblockcomment();
+	goto L4384;
 L4387:
+L4384:
+	goto L4367;
+L4388:
 	R1 = 0;
 	R2 = 39;
 	cc_lex_lxreadstring(asi64(R2), asi64(R1));
-	goto L4366;
-L4388:
+	goto L4367;
+L4389:
 	R1 = 0;
 	R2 = 34;
 	cc_lex_lxreadstring(asi64(R2), asi64(R1));
-	goto L4366;
-L4389:
-	R1 = (u64)&cc_decls_nextlx;
-	R2 = 16;
-	R1 += (i64)R2;
-	(*tou32p(R1)) += 1;
-	R1 = 56;
-	R2 = (u64)&cc_decls_nextlx;
-	R3 = 21;
-	*tou8p(((i64)R2+(i64)R3)) = asu8(R1);
-	R1 = 0;
-	R2 = (u64)&cc_decls_nextlx;
-	R3 = 24;
-	*toi32p(((i64)R2+(i64)R3)) = asi32(R1);
-	R1 = (u64)&cc_lex_lxsptr;
-	(*tou64p(R1)) += 1;
-	goto L4366;
+	goto L4367;
 L4390:
 	R1 = (u64)&cc_decls_nextlx;
 	R2 = 16;
@@ -42513,27 +42572,43 @@ L4390:
 	R2 = (u64)&cc_decls_nextlx;
 	R3 = 24;
 	*toi32p(((i64)R2+(i64)R3)) = asi32(R1);
-	goto L4366;
+	R1 = (u64)&cc_lex_lxsptr;
+	(*tou64p(R1)) += 1;
+	goto L4367;
 L4391:
+	R1 = (u64)&cc_decls_nextlx;
+	R2 = 16;
+	R1 += (i64)R2;
+	(*tou32p(R1)) += 1;
+	R1 = 56;
+	R2 = (u64)&cc_decls_nextlx;
+	R3 = 21;
+	*tou8p(((i64)R2+(i64)R3)) = asu8(R1);
+	R1 = 0;
+	R2 = (u64)&cc_decls_nextlx;
+	R3 = 24;
+	*toi32p(((i64)R2+(i64)R3)) = asi32(R1);
+	goto L4367;
+L4392:
 	R1 = (u64)&cc_lex_lxsptr;
 	(*tou64p(R1)) -=1;
 	asi64(R1) = cc_lex_lx_stackindex;
-	if (!asi64(R1)) goto L4393;
+	if (!asi64(R1)) goto L4394;
 	cc_lex_unstacksourcefile();
-	goto L4392;
-L4393:
+	goto L4393;
+L4394:
 	R1 = 57;
 	R2 = (u64)&cc_decls_nextlx;
 	R3 = 21;
 	*tou8p(((i64)R2+(i64)R3)) = asu8(R1);
-	goto L4365;
-L4392:
 	goto L4366;
-L4394:
-	goto L4366;
-L4369:
-	goto L4366;
-L4365:
+L4393:
+	goto L4367;
+L4395:
+	goto L4367;
+L4370:
+	goto L4367;
+L4366:
 	return;
 }
 
@@ -42544,8 +42619,8 @@ static u64 cc_lex_alloctoken() {
 	asu64(R1) = mlib_pcm_alloc(asi64(R1));
 	tk = asu64(R1);
 	asu64(R1) = tk;
-	goto L4395;
-L4395:
+	goto L4396;
+L4396:
 	return asu64(R1);
 }
 
@@ -42560,8 +42635,8 @@ static u64 cc_lex_alloctokenz() {
 	R3 = 8;
 	*tou64p(((i64)R2+(i64)R3)) = asu64(R1);
 	asu64(R1) = tk;
-	goto L4396;
-L4396:
+	goto L4397;
+L4397:
 	return asu64(R1);
 }
 
@@ -42586,28 +42661,28 @@ static void cc_lex_expandpredefmacro(i64 pdmcode, u64 tk, i64 lineno) {
 	(u64)"Nov",
 	(u64)"Dec"    }};
 	asi64(R1) = cc_lex_noexpand;
-	if (!asi64(R1)) goto L4399;
-	goto L4397;
-L4399:
+	if (!asi64(R1)) goto L4400;
+	goto L4398;
+L4400:
 	asi64(R1) = pdmcode;
 	R2 = 1;
-	if (asi64(R1) == asi64(R2)) goto L4401;
-	R2 = 2;
 	if (asi64(R1) == asi64(R2)) goto L4402;
-	R2 = 3;
+	R2 = 2;
 	if (asi64(R1) == asi64(R2)) goto L4403;
-	R2 = 5;
+	R2 = 3;
 	if (asi64(R1) == asi64(R2)) goto L4404;
-	R2 = 4;
+	R2 = 5;
 	if (asi64(R1) == asi64(R2)) goto L4405;
-	R2 = 9;
+	R2 = 4;
 	if (asi64(R1) == asi64(R2)) goto L4406;
-	R2 = 7;
+	R2 = 9;
 	if (asi64(R1) == asi64(R2)) goto L4407;
-	R2 = 8;
+	R2 = 7;
 	if (asi64(R1) == asi64(R2)) goto L4408;
-	goto L4409;
-L4401:
+	R2 = 8;
+	if (asi64(R1) == asi64(R2)) goto L4409;
+	goto L4410;
+L4402:
 	R1 = (u64)&tm;
 	mnoos_os_getsystime(asu64(R1));
 	R1 = (u64)&str;
@@ -42642,8 +42717,8 @@ L4401:
 	asu64(R2) = tk;
 	R3 = 0;
 	*tou64p(((i64)R2+(i64)R3)) = asu64(R1);
-	goto L4400;
-L4402:
+	goto L4401;
+L4403:
 	R1 = (u64)&tm;
 	mnoos_os_getsystime(asu64(R1));
 	R1 = (u64)&str;
@@ -42678,8 +42753,8 @@ L4402:
 	asu64(R2) = tk;
 	R3 = 0;
 	*tou64p(((i64)R2+(i64)R3)) = asu64(R1);
-	goto L4400;
-L4403:
+	goto L4401;
+L4404:
 	R1 = 63;
 	asu64(R2) = tk;
 	R3 = 21;
@@ -42689,48 +42764,48 @@ L4403:
 	fileno = asi64(R1);
 	asi64(R1) = fileno;
 	R2 = 0;
-	if (asi64(R1) != asi64(R2)) goto L4411;
+	if (asi64(R1) != asi64(R2)) goto L4412;
 	asi64(R1) = cc_decls_sfileno;
 	fileno = asi64(R1);
-L4411:
+L4412:
 	asi64(R1) = cc_decls_sfileno;
-	if (!asi64(R1)) goto L4413;
+	if (!asi64(R1)) goto L4414;
 	R1 = (u64)&cc_decls_sourcefilenames;
 	asi64(R2) = cc_decls_sfileno;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2*8));
 	asu64(R2) = tk;
 	R3 = 0;
 	*tou64p(((i64)R2+(i64)R3)) = asu64(R1);
-	goto L4412;
-L4413:
+	goto L4413;
+L4414:
 	R1 = tou64("(File not available)");
 	asu64(R2) = tk;
 	R3 = 0;
 	*tou64p(((i64)R2+(i64)R3)) = asu64(R1);
-L4412:
-	goto L4400;
-L4404:
+L4413:
+	goto L4401;
+L4405:
 	R1 = 63;
 	asu64(R2) = tk;
 	R3 = 21;
 	*tou8p(((i64)R2+(i64)R3)) = asu8(R1);
 	asu64(R1) = cc_decls_currproc;
-	if (!asu64(R1)) goto L4415;
+	if (!asu64(R1)) goto L4416;
 	asu64(R1) = cc_decls_currproc;
 	R2 = 0;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
 	asu64(R2) = tk;
 	R3 = 0;
 	*tou64p(((i64)R2+(i64)R3)) = asu64(R1);
-	goto L4414;
-L4415:
+	goto L4415;
+L4416:
 	R1 = tou64("???");
 	asu64(R2) = tk;
 	R3 = 0;
 	*tou64p(((i64)R2+(i64)R3)) = asu64(R1);
-L4414:
-	goto L4400;
-L4405:
+L4415:
+	goto L4401;
+L4406:
 	R1 = 59;
 	asu64(R2) = tk;
 	R3 = 21;
@@ -42739,17 +42814,7 @@ L4405:
 	asu64(R2) = tk;
 	R3 = 0;
 	*toi64p(((i64)R2+(i64)R3)) = asi64(R1);
-	goto L4400;
-L4406:
-	R1 = 59;
-	asu64(R2) = tk;
-	R3 = 21;
-	*tou8p(((i64)R2+(i64)R3)) = asu8(R1);
-	R1 = 1;
-	asu64(R2) = tk;
-	R3 = 0;
-	*toi64p(((i64)R2+(i64)R3)) = asi64(R1);
-	goto L4400;
+	goto L4401;
 L4407:
 	R1 = 59;
 	asu64(R2) = tk;
@@ -42759,8 +42824,18 @@ L4407:
 	asu64(R2) = tk;
 	R3 = 0;
 	*toi64p(((i64)R2+(i64)R3)) = asi64(R1);
-	goto L4400;
+	goto L4401;
 L4408:
+	R1 = 59;
+	asu64(R2) = tk;
+	R3 = 21;
+	*tou8p(((i64)R2+(i64)R3)) = asu8(R1);
+	R1 = 1;
+	asu64(R2) = tk;
+	R3 = 0;
+	*toi64p(((i64)R2+(i64)R3)) = asi64(R1);
+	goto L4401;
+L4409:
 	R1 = 59;
 	asu64(R2) = tk;
 	R3 = 21;
@@ -42770,8 +42845,8 @@ L4408:
 	asu64(R2) = tk;
 	R3 = 0;
 	*toi64p(((i64)R2+(i64)R3)) = asi64(R1);
-	goto L4400;
-L4409:
+	goto L4401;
+L4410:
 	msysc_m$print_startcon();
 	asi64(R1) = pdmcode;
 	msysc_m$print_i64_nf(asi64(R1));
@@ -42779,13 +42854,13 @@ L4409:
 	msysc_m$print_end();
 	R1 = tou64("PDM");
 	cc_lex_lxerror(asu64(R1));
-L4400:
+L4401:
 	asu64(R1) = tk;
 	R2 = 21;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 63;
-	if (asi64(R1) != asi64(R2)) goto L4417;
+	if (asi64(R1) != asi64(R2)) goto L4418;
 	asu64(R1) = tk;
 	R2 = 0;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
@@ -42797,8 +42872,8 @@ L4400:
 	asu64(R2) = tk;
 	R3 = 22;
 	*tou8p(((i64)R2+(i64)R3)) = asu8(R1);
-	goto L4416;
-L4417:
+	goto L4417;
+L4418:
 	R1 = 3;
 	asu64(R2) = tk;
 	R3 = 22;
@@ -42818,10 +42893,10 @@ L4417:
 	*toi32p(((i64)R2+(i64)R3)) = asi32(R1);
 	asi64(R1) = cc_lex_npastedtokens;
 	R2 = 87000;
-	if (asi64(R1) < asi64(R2)) goto L4419;
+	if (asi64(R1) < asi64(R2)) goto L4420;
 	R1 = tou64("2:Too many pasted tokens");
 	cc_lex_lxerror(asu64(R1));
-L4419:
+L4420:
 	asu64(R1) = s;
 	R2 = (u64)&cc_lex_pastedtokenlist;
 	R3 = (u64)&cc_lex_npastedtokens;
@@ -42834,8 +42909,8 @@ L4419:
 	asu64(R2) = tk;
 	R3 = 28;
 	*toi16p(((i64)R2+(i64)R3)) = asi16(R1);
-L4416:
-L4397:
+L4417:
+L4398:
 	return;
 }
 
@@ -42847,7 +42922,7 @@ static void cc_lex_dopragmadir() {
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 67;
-	if (asi64(R1) != asi64(R2)) goto L4422;
+	if (asi64(R1) != asi64(R2)) goto L4423;
 	R1 = 4;
 	R2 = tou64("pack");
 	R3 = (u64)&cc_decls_nextlx;
@@ -42858,54 +42933,54 @@ static void cc_lex_dopragmadir() {
 	asi32(R1) = memcmp(asu64(R3), asu64(R2), asu64(R1));
 	R1 = toi64(toi32(R1));
 	R2 = 0;
-	if (asi64(R1) != asi64(R2)) goto L4424;
+	if (asi64(R1) != asi64(R2)) goto L4425;
 	cc_lex_lexm();
 	R1 = (u64)&cc_decls_nextlx;
 	R2 = 21;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 13;
-	if (asi64(R1) == asi64(R2)) goto L4426;
+	if (asi64(R1) == asi64(R2)) goto L4427;
 	R1 = tou64("'(' expected");
 	cc_lex_lxerror(asu64(R1));
-L4426:
+L4427:
 	cc_lex_lexm();
 	R1 = (u64)&cc_decls_nextlx;
 	R2 = 21;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 59;
-	if (asi64(R1) != asi64(R2)) goto L4428;
+	if (asi64(R1) != asi64(R2)) goto L4429;
 	R1 = (u64)&cc_decls_nextlx;
 	R2 = 0;
 	asi64(R1) = *toi64p(((i64)R1+(i64)R2));
 	R2 = 1;
-	if (asi64(R1) == asi64(R2)) goto L4430;
-	goto L4431;
-L4430:
+	if (asi64(R1) == asi64(R2)) goto L4431;
+	goto L4432;
+L4431:
 	R1 = 0;
 	cc_decls_structpadding = asi64(R1);
-	goto L4429;
-L4431:
-	goto L4432;
+	goto L4430;
+L4432:
+	goto L4433;
 	R1 = tou64("Only pack(1) or () allowed");
 	cc_lex_lxerror(asu64(R1));
-L4429:
+L4430:
 	cc_lex_lexm();
-	goto L4427;
-L4428:
+	goto L4428;
+L4429:
 	R1 = (u64)&cc_decls_nextlx;
 	R2 = 21;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 14;
-	if (asi64(R1) != asi64(R2)) goto L4433;
+	if (asi64(R1) != asi64(R2)) goto L4434;
 	R1 = 1;
 	cc_decls_structpadding = asi64(R1);
-L4433:
-L4427:
-	goto L4423;
-L4424:
+L4434:
+L4428:
+	goto L4424;
+L4425:
 	R1 = 6;
 	R2 = tou64("module");
 	R3 = (u64)&cc_decls_nextlx;
@@ -42916,11 +42991,11 @@ L4424:
 	asi32(R1) = memcmp(asu64(R3), asu64(R2), asu64(R1));
 	R1 = toi64(toi32(R1));
 	R2 = 0;
-	if (asi64(R1) != asi64(R2)) goto L4434;
+	if (asi64(R1) != asi64(R2)) goto L4435;
 	R1 = 77;
 	cc_lex_addbuildinfo(asi64(R1));
-	goto L4423;
-L4434:
+	goto L4424;
+L4435:
 	R1 = 6;
 	R2 = tou64("header");
 	R3 = (u64)&cc_decls_nextlx;
@@ -42931,11 +43006,11 @@ L4434:
 	asi32(R1) = memcmp(asu64(R3), asu64(R2), asu64(R1));
 	R1 = toi64(toi32(R1));
 	R2 = 0;
-	if (asi64(R1) != asi64(R2)) goto L4435;
+	if (asi64(R1) != asi64(R2)) goto L4436;
 	R1 = 72;
 	cc_lex_addbuildinfo(asi64(R1));
-	goto L4423;
-L4435:
+	goto L4424;
+L4436:
 	R1 = 4;
 	R2 = tou64("link");
 	R3 = (u64)&cc_decls_nextlx;
@@ -42946,31 +43021,31 @@ L4435:
 	asi32(R1) = memcmp(asu64(R3), asu64(R2), asu64(R1));
 	R1 = toi64(toi32(R1));
 	R2 = 0;
-	if (asi64(R1) != asi64(R2)) goto L4436;
+	if (asi64(R1) != asi64(R2)) goto L4437;
 	R1 = 76;
 	cc_lex_addbuildinfo(asi64(R1));
-L4436:
-L4423:
-L4422:
-// cc_lex.dopragmadir.finish:
-L4432:
-	goto L4438;
 L4437:
-	cc_lex_lexm();
+L4424:
+L4423:
+// cc_lex.dopragmadir.finish:
+L4433:
+	goto L4439;
 L4438:
+	cc_lex_lexm();
+L4439:
 	R1 = (u64)&cc_decls_nextlx;
 	R2 = 21;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 56;
-	if (asi64(R1) == asi64(R2)) goto L4440;
+	if (asi64(R1) == asi64(R2)) goto L4441;
 	R1 = (u64)&cc_decls_nextlx;
 	R2 = 21;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 57;
-	if (asi64(R1) != asi64(R2)) goto L4437;
-L4440:
+	if (asi64(R1) != asi64(R2)) goto L4438;
+L4441:
 	return;
 }
 
@@ -42984,10 +43059,10 @@ static void cc_lex_addbuildinfo(i64 code) {
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 63;
-	if (asi64(R1) == asi64(R2)) goto L4443;
+	if (asi64(R1) == asi64(R2)) goto L4444;
 	R1 = tou64("Str expected");
 	cc_lex_lxerror(asu64(R1));
-L4443:
+L4444:
 	R1 = (u64)&cc_decls_nextlx;
 	R2 = 0;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
@@ -42995,53 +43070,53 @@ L4443:
 	file = asu64(R1);
 	asi64(R1) = code;
 	R2 = 77;
-	if (asi64(R1) == asi64(R2)) goto L4445;
-	R2 = 72;
 	if (asi64(R1) == asi64(R2)) goto L4446;
-	R2 = 76;
+	R2 = 72;
 	if (asi64(R1) == asi64(R2)) goto L4447;
-	goto L4448;
-L4445:
+	R2 = 76;
+	if (asi64(R1) == asi64(R2)) goto L4448;
+	goto L4449;
+L4446:
 	asi64(R1) = cc_decls_npmodules;
 	R2 = 199;
-	if (asi64(R1) < asi64(R2)) goto L4450;
+	if (asi64(R1) < asi64(R2)) goto L4451;
 	R1 = tou64("TMM");
 	cc_lex_lxerror(asu64(R1));
-L4450:
+L4451:
 	asu64(R1) = file;
 	R2 = (u64)&cc_decls_pmodulelist;
 	R3 = (u64)&cc_decls_npmodules;
 	asi64(R3) = *(toi64p(R3)) += 1;
 	*tou64p(((i64)R2+(i64)R3*8-8)) = asu64(R1);
-	goto L4444;
-L4446:
+	goto L4445;
+L4447:
 	asi64(R1) = cc_decls_npheaders;
 	R2 = 100;
-	if (asi64(R1) < asi64(R2)) goto L4452;
+	if (asi64(R1) < asi64(R2)) goto L4453;
 	R1 = tou64("TMH");
 	cc_lex_lxerror(asu64(R1));
-L4452:
+L4453:
 	asu64(R1) = file;
 	R2 = (u64)&cc_decls_pheaderlist;
 	R3 = (u64)&cc_decls_npheaders;
 	asi64(R3) = *(toi64p(R3)) += 1;
 	*tou64p(((i64)R2+(i64)R3*8-8)) = asu64(R1);
-	goto L4444;
-L4447:
+	goto L4445;
+L4448:
 	asi64(R1) = cc_decls_nplibs;
 	R2 = 100;
-	if (asi64(R1) < asi64(R2)) goto L4454;
+	if (asi64(R1) < asi64(R2)) goto L4455;
 	R1 = tou64("TMLM");
 	cc_lex_lxerror(asu64(R1));
-L4454:
+L4455:
 	asu64(R1) = file;
 	R2 = (u64)&cc_decls_pliblist;
 	R3 = (u64)&cc_decls_nplibs;
 	asi64(R3) = *(toi64p(R3)) += 1;
 	*tou64p(((i64)R2+(i64)R3*8-8)) = asu64(R1);
-	goto L4444;
-L4448:
-L4444:
+	goto L4445;
+L4449:
+L4445:
 	cc_lex_lexm();
 	return;
 }
@@ -43052,10 +43127,10 @@ static i64 cc_lex_needspace(i64 a, i64 b) {
 	u64 bname;
 	asi64(R1) = a;
 	R2 = 0;
-	if (asi64(R1) != asi64(R2)) goto L4457;
+	if (asi64(R1) != asi64(R2)) goto L4458;
 	R1 = 0;
-	goto L4455;
-L4457:
+	goto L4456;
+L4458:
 	R1 = (u64)&cc_tables_shortsymbolnames;
 	asi64(R2) = a;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2*8-8));
@@ -43068,51 +43143,51 @@ L4457:
 	asu8(R1) = *tou8p(R1);
 	R1 = tou64(tou8(R1));
 	R2 = 110;
-	if (asu64(R1) == asu64(R2)) goto L4459;
+	if (asu64(R1) == asu64(R2)) goto L4460;
 	R2 = 107;
-	if (asu64(R1) == asu64(R2)) goto L4459;
+	if (asu64(R1) == asu64(R2)) goto L4460;
 	R2 = 45;
-	if (asu64(R1) == asu64(R2)) goto L4460;
+	if (asu64(R1) == asu64(R2)) goto L4461;
 	R2 = 43;
-	if (asu64(R1) == asu64(R2)) goto L4460;
-	goto L4461;
-L4459:
-	asu64(R1) = aname;
-	asu8(R1) = *tou8p(R1);
-	R1 = tou64(tou8(R1));
-	R2 = 110;
-	if (asu64(R1) == asu64(R2)) goto L4463;
-	R2 = 107;
-	if (asu64(R1) == asu64(R2)) goto L4463;
-	goto L4464;
-L4463:
-	R1 = 1;
-	goto L4455;
+	if (asu64(R1) == asu64(R2)) goto L4461;
 	goto L4462;
-L4464:
-L4462:
-	goto L4458;
 L4460:
 	asu64(R1) = aname;
 	asu8(R1) = *tou8p(R1);
 	R1 = tou64(tou8(R1));
-	R2 = 45;
-	if (asu64(R1) == asu64(R2)) goto L4466;
-	R2 = 43;
-	if (asu64(R1) == asu64(R2)) goto L4466;
-	goto L4467;
-L4466:
-	R1 = 1;
-	goto L4455;
+	R2 = 110;
+	if (asu64(R1) == asu64(R2)) goto L4464;
+	R2 = 107;
+	if (asu64(R1) == asu64(R2)) goto L4464;
 	goto L4465;
-L4467:
+L4464:
+	R1 = 1;
+	goto L4456;
+	goto L4463;
 L4465:
-	goto L4458;
+L4463:
+	goto L4459;
 L4461:
-L4458:
+	asu64(R1) = aname;
+	asu8(R1) = *tou8p(R1);
+	R1 = tou64(tou8(R1));
+	R2 = 45;
+	if (asu64(R1) == asu64(R2)) goto L4467;
+	R2 = 43;
+	if (asu64(R1) == asu64(R2)) goto L4467;
+	goto L4468;
+L4467:
+	R1 = 1;
+	goto L4456;
+	goto L4466;
+L4468:
+L4466:
+	goto L4459;
+L4462:
+L4459:
 	R1 = 0;
-	goto L4455;
-L4455:
+	goto L4456;
+L4456:
 	return asi64(R1);
 }
 
@@ -43122,11 +43197,11 @@ static void cc_lex_dospecialinclude() {
 	R2 = tou64("mcc.h");
 	cc_lex_stacksourcefile(asu64(R2), asi64(R1));
 	asu64(R1) = cc_decls_dheaderfile;
-	if (!asu64(R1)) goto L4470;
+	if (!asu64(R1)) goto L4471;
 	R1 = 1;
 	asu64(R2) = cc_decls_dheaderfile;
 	cc_lex_stacksourcefile(asu64(R2), asi64(R1));
-L4470:
+L4471:
 	return;
 }
 
@@ -43215,8 +43290,8 @@ static i64 cc_lex_getfileno() {
 	asu8(R2) = *tou8p(((i64)R2+(i64)R3));
 	R2 = toi64(tou8(R2));
 	asi64(R1) |= asi64(R2);
-	goto L4474;
-L4474:
+	goto L4475;
+L4475:
 	return asi64(R1);
 }
 
@@ -43235,8 +43310,8 @@ static i64 cc_lex_getfilenox(u64 tk) {
 	asu8(R2) = *tou8p(((i64)R2+(i64)R3));
 	R2 = toi64(tou8(R2));
 	asi64(R1) |= asi64(R2);
-	goto L4475;
-L4475:
+	goto L4476;
+L4476:
 	return asi64(R1);
 }
 
@@ -43248,8 +43323,8 @@ static i64 cc_lex_getnumberoffsetx(u64 tk) {
 	R1 = toi64(toi32(R1));
 	R2 = 16777215;
 	asi64(R1) &= asi64(R2);
-	goto L4476;
-L4476:
+	goto L4477;
+L4477:
 	return asi64(R1);
 }
 
@@ -43263,8 +43338,8 @@ static void cc_lex_freehashtable() {
 	i = asi64(R1);
 	asi64(R1) = cc_decls_hstmask;
 	R2 = 0;
-	if (asi64(R1) < asi64(R2)) goto L4480;
-L4478:
+	if (asi64(R1) < asi64(R2)) goto L4481;
+L4479:
 	asu64(R1) = cc_decls_hashtable;
 	asi64(R2) = i;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2*8));
@@ -43272,30 +43347,30 @@ L4478:
 	asu64(R1) = d;
 	R2 = 0;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
-	if (!asu64(R1)) goto L4482;
+	if (!asu64(R1)) goto L4483;
 	asu64(R1) = d;
 	R2 = 107;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 67;
-	if (asi64(R1) != asi64(R2)) goto L4482;
+	if (asi64(R1) != asi64(R2)) goto L4483;
 	asu64(R1) = d;
 	R2 = 109;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 1;
-	if (asi64(R1) != asi64(R2)) goto L4484;
+	if (asi64(R1) != asi64(R2)) goto L4485;
 	asu64(R1) = d;
 	R2 = 72;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
 	cc_lex_freetokens(asu64(R1));
-L4484:
+L4485:
 	asu64(R1) = d;
 	R2 = 40;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
 	f = asu64(R1);
-	goto L4486;
-L4485:
+	goto L4487;
+L4486:
 	asu64(R1) = f;
 	R2 = 40;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
@@ -43305,28 +43380,28 @@ L4485:
 	mlib_pcm_free(asu64(R2), asi64(R1));
 	asu64(R1) = e;
 	f = asu64(R1);
-L4486:
+L4487:
 	asu64(R1) = f;
-	if (asu64(R1)) goto L4485;
+	if (asu64(R1)) goto L4486;
 	R1 = 128;
 	asu64(R2) = cc_decls_hashtable;
 	asi64(R3) = i;
 	asu64(R2) = *tou64p(((i64)R2+(i64)R3*8));
 	mlib_pcm_clearmem(asu64(R2), asi64(R1));
-	goto L4481;
-L4482:
+	goto L4482;
+L4483:
 	asu64(R1) = d;
 	R2 = 0;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
-	if (!asu64(R1)) goto L4488;
+	if (!asu64(R1)) goto L4489;
 	R1 = 0;
 	asu64(R2) = d;
 	R3 = 40;
 	*tou64p(((i64)R2+(i64)R3)) = asu64(R1);
-L4488:
+L4489:
+L4482:
+	i += 1; if (i <= cc_decls_hstmask) goto L4479;
 L4481:
-	i += 1; if (i <= cc_decls_hstmask) goto L4478;
-L4480:
 	return;
 }
 
@@ -43349,7 +43424,7 @@ static void cc_lex_regenlookup(u64 d) {
 	j = asi64(R1);
 	R1 = 0;
 	wrapped = asi64(R1);
-L4490:
+L4491:
 	asu64(R1) = cc_decls_hashtable;
 	asi64(R2) = j;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2*8));
@@ -43360,7 +43435,7 @@ L4490:
 	R1 = toi64(tou8(R1));
 	length = asi64(R1);
 	asi64(R1) = length;
-	if (asi64(R1)) goto L4493;
+	if (asi64(R1)) goto L4494;
 	R1 = 128;
 	asu64(R2) = cc_decls_hashtable;
 	asi64(R3) = j;
@@ -43372,14 +43447,14 @@ L4490:
 	*tou64p(((i64)R2+(i64)R3*8)) = asu64(R1);
 	R1 = (u64)&cc_lex_nhstsymbols;
 	(*toi64p(R1)) += 1;
-	goto L4489;
-L4493:
+	goto L4490;
+L4494:
 	asi64(R1) = length;
 	asu64(R2) = d;
 	R3 = 106;
 	asu8(R2) = *tou8p(((i64)R2+(i64)R3));
 	R2 = toi64(tou8(R2));
-	if (asi64(R1) != asi64(R2)) goto L4495;
+	if (asi64(R1) != asi64(R2)) goto L4496;
 	asi64(R1) = length;
 	asu64(R2) = d;
 	R3 = 0;
@@ -43390,27 +43465,27 @@ L4493:
 	asi32(R1) = memcmp(asu64(R3), asu64(R2), asu64(R1));
 	R1 = toi64(toi32(R1));
 	R2 = 0;
-	if (asi64(R1) != asi64(R2)) goto L4497;
+	if (asi64(R1) != asi64(R2)) goto L4498;
 	R1 = tou64("regenhst dupl?");
 	cc_lex_lxerror(asu64(R1));
-L4497:
-L4495:
+L4498:
+L4496:
 	R1 = (u64)&j;
 	asi64(R1) = *(toi64p(R1)) += 1;
 	asi64(R2) = cc_decls_hstsize;
-	if (asi64(R1) < asi64(R2)) goto L4499;
+	if (asi64(R1) < asi64(R2)) goto L4500;
 	asi64(R1) = wrapped;
-	if (!asi64(R1)) goto L4501;
+	if (!asi64(R1)) goto L4502;
 	R1 = tou64("REGENHST FULL?");
 	mlib_abortprogram(asu64(R1));
-L4501:
+L4502:
 	R1 = 1;
 	wrapped = asi64(R1);
 	R1 = 0;
 	j = asi64(R1);
-L4499:
-	goto L4490;
-L4489:
+L4500:
+	goto L4491;
+L4490:
 	return;
 }
 
@@ -43450,15 +43525,15 @@ static void cc_lex_newhashtable() {
 	i = asi64(R1);
 	asi64(R1) = cc_decls_hstmask;
 	R2 = 0;
-	if (asi64(R1) < asi64(R2)) goto L4505;
-L4503:
+	if (asi64(R1) < asi64(R2)) goto L4506;
+L4504:
 	R1 = 128;
 	asu64(R1) = mlib_pcm_allocz(asi64(R1));
 	asu64(R2) = cc_decls_hashtable;
 	asi64(R3) = i;
 	*tou64p(((i64)R2+(i64)R3*8)) = asu64(R1);
-	i += 1; if (i <= cc_decls_hstmask) goto L4503;
-L4505:
+	i += 1; if (i <= cc_decls_hstmask) goto L4504;
+L4506:
 	R1 = 0;
 	i = asi64(R1);
 	asi64(R1) = oldhstsize;
@@ -43467,8 +43542,8 @@ L4505:
 	av_1 = asi64(R1);
 	asi64(R1) = av_1;
 	R2 = 0;
-	if (asi64(R1) < asi64(R2)) goto L4508;
-L4506:
+	if (asi64(R1) < asi64(R2)) goto L4509;
+L4507:
 	asu64(R1) = oldhashtable;
 	asi64(R2) = i;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2*8));
@@ -43476,12 +43551,12 @@ L4506:
 	asu64(R1) = d;
 	R2 = 0;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
-	if (!asu64(R1)) goto L4510;
+	if (!asu64(R1)) goto L4511;
 	asu64(R1) = d;
 	cc_lex_regenlookup(asu64(R1));
-L4510:
-	i += 1; if (i <= av_1) goto L4506;
-L4508:
+L4511:
+	i += 1; if (i <= av_1) goto L4507;
+L4509:
 	asi64(R1) = oldhstsize;
 	R2 = 8;
 	asi64(R1) *= asi64(R2);
@@ -43515,7 +43590,7 @@ static void cc_lex_old_readrealnumber(u64 pstart, u64 intstart, i64 intlen, i64 
 	asu8(R1) = *tou8p(R1);
 	R1 = tou64(tou8(R1));
 	R2 = 46;
-	if (asu64(R1) != asu64(R2)) goto L4513;
+	if (asu64(R1) != asu64(R2)) goto L4514;
 	R1 = (u64)&cc_lex_lxsptr;
 	asu64(R1) = *(tou64p(R1)) += 1;
 	fractstart = asu64(R1);
@@ -43524,98 +43599,98 @@ static void cc_lex_old_readrealnumber(u64 pstart, u64 intstart, i64 intlen, i64 
 	asu64(R2) = fractstart;
 	asi64(R1) -= asi64(R2);
 	fractlen = asi64(R1);
-L4513:
+L4514:
 	R1 = 0;
 	badexpon = asi64(R1);
 	asu64(R1) = cc_lex_lxsptr;
 	asu8(R1) = *tou8p(R1);
 	R1 = tou64(tou8(R1));
 	R2 = 101;
-	if (asu64(R1) == asu64(R2)) goto L4515;
+	if (asu64(R1) == asu64(R2)) goto L4516;
 	R2 = 69;
-	if (asu64(R1) == asu64(R2)) goto L4515;
+	if (asu64(R1) == asu64(R2)) goto L4516;
 	R2 = 112;
-	if (asu64(R1) == asu64(R2)) goto L4516;
+	if (asu64(R1) == asu64(R2)) goto L4517;
 	R2 = 80;
-	if (asu64(R1) == asu64(R2)) goto L4516;
-	goto L4517;
-L4515:
-	asi64(R1) = base;
-	R2 = 16;
-	if (asi64(R1) == asi64(R2)) goto L4519;
-	R1 = (u64)&cc_lex_lxsptr;
-	(*tou64p(R1)) += 1;
-	R1 = (u64)&badexpon;
-	asi64(R1) = cc_lex_readexponent(asu64(R1));
-	expon = asi64(R1);
-L4519:
-	goto L4514;
+	if (asu64(R1) == asu64(R2)) goto L4517;
+	goto L4518;
 L4516:
 	asi64(R1) = base;
 	R2 = 16;
-	if (asi64(R1) != asi64(R2)) goto L4521;
+	if (asi64(R1) == asi64(R2)) goto L4520;
 	R1 = (u64)&cc_lex_lxsptr;
 	(*tou64p(R1)) += 1;
 	R1 = (u64)&badexpon;
 	asi64(R1) = cc_lex_readexponent(asu64(R1));
 	expon = asi64(R1);
-L4521:
-	goto L4514;
+L4520:
+	goto L4515;
 L4517:
-L4514:
+	asi64(R1) = base;
+	R2 = 16;
+	if (asi64(R1) != asi64(R2)) goto L4522;
+	R1 = (u64)&cc_lex_lxsptr;
+	(*tou64p(R1)) += 1;
+	R1 = (u64)&badexpon;
+	asi64(R1) = cc_lex_readexponent(asu64(R1));
+	expon = asi64(R1);
+L4522:
+	goto L4515;
+L4518:
+L4515:
 	asi64(R1) = badexpon;
-	if (!asi64(R1)) goto L4523;
+	if (!asi64(R1)) goto L4524;
 	R1 = (u64)&cc_lex_lxsptr;
 	(*tou64p(R1)) -=1;
 	asu64(R1) = pstart;
 	cc_lex_readalphanumeric(asu64(R1));
-	goto L4511;
-L4523:
+	goto L4512;
+L4524:
 	asu64(R1) = cc_lex_lxsptr;
 	asu8(R1) = *tou8p(R1);
 	R1 = tou64(tou8(R1));
 	R2 = 102;
-	if (asu64(R1) == asu64(R2)) goto L4525;
+	if (asu64(R1) == asu64(R2)) goto L4526;
 	R2 = 70;
-	if (asu64(R1) == asu64(R2)) goto L4525;
+	if (asu64(R1) == asu64(R2)) goto L4526;
 	R2 = 108;
-	if (asu64(R1) == asu64(R2)) goto L4525;
+	if (asu64(R1) == asu64(R2)) goto L4526;
 	R2 = 76;
-	if (asu64(R1) == asu64(R2)) goto L4525;
-	goto L4526;
-L4525:
+	if (asu64(R1) == asu64(R2)) goto L4526;
+	goto L4527;
+L4526:
 	R1 = (u64)&cc_lex_lxsptr;
 	(*tou64p(R1)) += 1;
-	goto L4524;
-L4526:
+	goto L4525;
+L4527:
 	R1 = (u64)&cc_lex_alphamap;
 	asu64(R2) = cc_lex_lxsptr;
 	asu8(R2) = *tou8p(R2);
 	R2 = toi64(tou8(R2));
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
-	if (!asu8(R1)) goto L4528;
+	if (!asu8(R1)) goto L4529;
 	asu64(R1) = pstart;
 	cc_lex_readalphanumeric(asu64(R1));
-	goto L4511;
-L4528:
-L4524:
+	goto L4512;
+L4529:
+L4525:
 	asi64(R1) = intlen;
 	asi64(R2) = fractlen;
 	asi64(R1) += asi64(R2);
 	R2 = 500;
-	if (asi64(R1) <= asi64(R2)) goto L4530;
+	if (asi64(R1) <= asi64(R2)) goto L4531;
 	R1 = tou64("Real too long");
 	cc_lex_lxerror(asu64(R1));
-L4530:
+L4531:
 	asi64(R1) = intlen;
-	if (!asi64(R1)) goto L4532;
+	if (!asi64(R1)) goto L4533;
 	asi64(R1) = intlen;
 	asu64(R2) = intstart;
 	R3 = (u64)&realstr;
 	memcpy(asu64(R3), asu64(R2), asu64(R1));
-L4532:
+L4533:
 	asi64(R1) = fractlen;
-	if (!asi64(R1)) goto L4534;
+	if (!asi64(R1)) goto L4535;
 	asi64(R1) = fractlen;
 	asu64(R2) = fractstart;
 	R3 = (u64)&realstr;
@@ -43624,7 +43699,7 @@ L4532:
 	asi64(R4) = intlen;
 	R3 += (i64)R4;
 	memcpy(asu64(R3), asu64(R2), asu64(R1));
-L4534:
+L4535:
 	asi64(R1) = base;
 	asr64(R1) = tor64(asi64(R1));
 	R2 = R1;
@@ -43632,12 +43707,12 @@ L4534:
 	expbase = asr64(R1);
 	asi64(R1) = base;
 	R2 = 10;
-	if (asi64(R1) != asi64(R2)) goto L4536;
+	if (asi64(R1) != asi64(R2)) goto L4537;
 	asi64(R1) = fractlen;
 	R2 = (u64)&expon;
 	*toi64p(R2) -= asi64(R1);
-	goto L4535;
-L4536:
+	goto L4536;
+L4537:
 	asi64(R1) = fractlen;
 	R2 = 4;
 	asi64(R1) *= asi64(R2);
@@ -43645,7 +43720,7 @@ L4536:
 	*toi64p(R2) -= asi64(R1);
 	asr64(R1) = 2.000000000000000000e+000;
 	expbase = asr64(R1);
-L4535:
+L4536:
 	asr64(R1) = 0.000000000000000000e+000;
 	x = asr64(R1);
 	R1 = 1;
@@ -43656,8 +43731,8 @@ L4535:
 	av_1 = asi64(R1);
 	asi64(R1) = av_1;
 	R2 = 1;
-	if (asi64(R1) < asi64(R2)) goto L4539;
-L4537:
+	if (asi64(R1) < asi64(R2)) goto L4540;
+L4538:
 	R1 = (u64)&realstr;
 	asi64(R2) = i;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2-1));
@@ -43665,10 +43740,10 @@ L4537:
 	c = asi64(R1);
 	asi64(R1) = c;
 	R2 = 48;
-	if (asi64(R1) < asi64(R2)) goto L4541;
+	if (asi64(R1) < asi64(R2)) goto L4542;
 	asi64(R1) = c;
 	R2 = 57;
-	if (asi64(R1) > asi64(R2)) goto L4541;
+	if (asi64(R1) > asi64(R2)) goto L4542;
 	asr64(R1) = x;
 	asr64(R2) = basex;
 	asr64(R1) *= asr64(R2);
@@ -43678,11 +43753,11 @@ L4537:
 	asr64(R2) = tor64(asi64(R2));
 	asr64(R1) += asr64(R2);
 	x = asr64(R1);
-	goto L4540;
-L4541:
+	goto L4541;
+L4542:
 	asi64(R1) = c;
 	R2 = 97;
-	if (asi64(R1) <= asi64(R2)) goto L4542;
+	if (asi64(R1) <= asi64(R2)) goto L4543;
 	asr64(R1) = x;
 	asr64(R2) = basex;
 	asr64(R1) *= asr64(R2);
@@ -43695,8 +43770,8 @@ L4541:
 	asr64(R2) = 1.000000000000000000e+001;
 	asr64(R1) += asr64(R2);
 	x = asr64(R1);
-	goto L4540;
-L4542:
+	goto L4541;
+L4543:
 	asr64(R1) = x;
 	asr64(R2) = basex;
 	asr64(R1) *= asr64(R2);
@@ -43709,38 +43784,38 @@ L4542:
 	asr64(R2) = 1.000000000000000000e+001;
 	asr64(R1) += asr64(R2);
 	x = asr64(R1);
+L4541:
+	i += 1; if (i <= av_1) goto L4538;
 L4540:
-	i += 1; if (i <= av_1) goto L4537;
-L4539:
 	asi64(R1) = expon;
 	R2 = 0;
-	if (asi64(R1) < asi64(R2)) goto L4544;
+	if (asi64(R1) < asi64(R2)) goto L4545;
 	asi64(R1) = expon;
 	av_2 = asi64(R1);
 	asi64(R1) = av_2;
 	R2 = 0;
-	if (asi64(R1) <= asi64(R2)) goto L4547;
-L4545:
+	if (asi64(R1) <= asi64(R2)) goto L4548;
+L4546:
 	asr64(R1) = expbase;
 	R2 = (u64)&x;
 	*tor64p(R2) *= asr64(R1);
-	if (--asi64(av_2)) goto L4545;
-L4547:
-	goto L4543;
-L4544:
+	if (--asi64(av_2)) goto L4546;
+L4548:
+	goto L4544;
+L4545:
 	asi64(R1) = expon;
 	asi64(R1) = -asi64(R1);
 	av_3 = asi64(R1);
 	asi64(R1) = av_3;
 	R2 = 0;
-	if (asi64(R1) <= asi64(R2)) goto L4550;
-L4548:
+	if (asi64(R1) <= asi64(R2)) goto L4551;
+L4549:
 	asr64(R1) = expbase;
 	R2 = (u64)&x;
 	*tor64p(R2) /= asr64(R1);
-	if (--asi64(av_3)) goto L4548;
-L4550:
-L4543:
+	if (--asi64(av_3)) goto L4549;
+L4551:
+L4544:
 	R1 = 60;
 	R2 = (u64)&cc_decls_nextlx;
 	R3 = 21;
@@ -43763,7 +43838,7 @@ L4543:
 	R2 = (u64)&cc_decls_nextlx;
 	R3 = 24;
 	*toi32p(((i64)R2+(i64)R3)) = asi32(R1);
-L4511:
+L4512:
 	return;
 }
 
@@ -43783,8 +43858,8 @@ static i64 cc_lex_issimpleconstmacro(u64 m) {
 	av_1 = asi64(R1);
 	asi64(R1) = av_1;
 	R2 = 1;
-	if (asi64(R1) < asi64(R2)) goto L4554;
-L4552:
+	if (asi64(R1) < asi64(R2)) goto L4555;
+L4553:
 	asu64(R1) = m;
 	R2 = 0;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
@@ -43792,43 +43867,43 @@ L4552:
 	asi64(R3) = i;
 	asu64(R2) = *tou64p(((i64)R2+(i64)R3*8-8));
 	asi64(R1) = mlib_eqstring(asu64(R2), asu64(R1));
-	if (!asi64(R1)) goto L4556;
+	if (!asi64(R1)) goto L4557;
 	R1 = 2;
-	goto L4551;
-L4556:
-	i += 1; if (i <= av_1) goto L4552;
-L4554:
+	goto L4552;
+L4557:
+	i += 1; if (i <= av_1) goto L4553;
+L4555:
 	asu64(R1) = m;
 	R2 = 72;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
 	tk = asu64(R1);
 	asu64(R1) = tk;
-	if (!asu64(R1)) goto L4558;
+	if (!asu64(R1)) goto L4559;
 	asu64(R1) = tk;
 	R2 = 8;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
 	R2 = 0;
-	if (asu64(R1) != asu64(R2)) goto L4558;
+	if (asu64(R1) != asu64(R2)) goto L4559;
 	asu64(R1) = tk;
 	R2 = 21;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 59;
-	if (asi64(R1) == asi64(R2)) goto L4561;
+	if (asi64(R1) == asi64(R2)) goto L4562;
 	asu64(R1) = tk;
 	R2 = 21;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 60;
-	if (asi64(R1) != asi64(R2)) goto L4560;
-L4561:
+	if (asi64(R1) != asi64(R2)) goto L4561;
+L4562:
 	R1 = 1;
-	goto L4551;
-L4560:
-L4558:
+	goto L4552;
+L4561:
+L4559:
 	R1 = 0;
-	goto L4551;
-L4551:
+	goto L4552;
+L4552:
 	return asi64(R1);
 }
 
@@ -43846,8 +43921,8 @@ static void cc_parse_readmodule() {
 	i64 nitems;
 	i64 wasenum;
 	i64 exported;
-	goto L4564;
-L4563:
+	goto L4565;
+L4564:
 	R1 = 0;
 	nitems = asi64(R1);
 	R1 = (u64)&cc_decls_lx;
@@ -43855,14 +43930,14 @@ L4563:
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 9;
-	if (asi64(R1) == asi64(R2)) goto L4567;
-	goto L4568;
-L4567:
+	if (asi64(R1) == asi64(R2)) goto L4568;
+	goto L4569;
+L4568:
 	R1 = tou64("Extra semicolon 2");
 	cc_support_serror(asu64(R1));
-	goto L4566;
-L4568:
-L4566:
+	goto L4567;
+L4569:
+L4567:
 	R1 = (u64)&cc_decls_lx;
 	R2 = 21;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
@@ -43875,10 +43950,10 @@ L4566:
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 70;
-	if (asi64(R1) != asi64(R2)) goto L4570;
+	if (asi64(R1) != asi64(R2)) goto L4571;
 	asi64(R1) = cc_parse_readdllexport();
 	exported = asi64(R1);
-L4570:
+L4571:
 	R1 = (u64)&linkage;
 	asu64(R2) = cc_decls_stmodule;
 	asi64(R1) = cc_parse_readdeclspec(asu64(R2), asu64(R1));
@@ -43888,25 +43963,25 @@ L4570:
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 70;
-	if (asi64(R1) != asi64(R2)) goto L4572;
+	if (asi64(R1) != asi64(R2)) goto L4573;
 	asi64(R1) = cc_parse_readdllexport();
 	exported = asi64(R1);
-L4572:
+L4573:
 	R1 = 0;
 	commaseen = asi64(R1);
-L4573:
+L4574:
 	R1 = (u64)&cc_decls_lx;
 	R2 = 21;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 67;
-	if (asi64(R1) == asi64(R2)) goto L4575;
+	if (asi64(R1) == asi64(R2)) goto L4576;
 	R2 = 25;
-	if (asi64(R1) == asi64(R2)) goto L4575;
+	if (asi64(R1) == asi64(R2)) goto L4576;
 	R2 = 13;
-	if (asi64(R1) == asi64(R2)) goto L4575;
-	goto L4576;
-L4575:
+	if (asi64(R1) == asi64(R2)) goto L4576;
+	goto L4577;
+L4576:
 	R1 = (u64)&nitems;
 	(*toi64p(R1)) += 1;
 	R1 = (u64)&pm;
@@ -43917,37 +43992,37 @@ L4575:
 	m = asi64(R1);
 	asu64(R1) = d;
 	R2 = 0;
-	if (asu64(R1) != asu64(R2)) goto L4578;
+	if (asu64(R1) != asu64(R2)) goto L4579;
 	R1 = tou64("Var name expected");
 	cc_support_serror(asu64(R1));
-L4578:
+L4579:
 	asi64(R1) = linkage;
 	R2 = 5;
-	if (asi64(R1) != asi64(R2)) goto L4580;
+	if (asi64(R1) != asi64(R2)) goto L4581;
 	asu64(R1) = pm;
-	if (!asu64(R1)) goto L4582;
+	if (!asu64(R1)) goto L4583;
 	asu64(R1) = pm;
 	asi64(R2) = m;
 	asi64(R1) = cc_lib_createprocmode(asi64(R2), asu64(R1));
 	m = asi64(R1);
-L4582:
+L4583:
 	asi64(R1) = m;
 	asu64(R2) = d;
 	asu64(R3) = cc_decls_stmodule;
 	asu64(R1) = cc_parse_createtypedef(asu64(R3), asu64(R2), asi64(R1));
 	d = asu64(R1);
-	goto L4579;
-L4580:
+	goto L4580;
+L4581:
 	asi64(R1) = linkage;
 	R2 = 6;
-	if (asi64(R1) != asi64(R2)) goto L4583;
+	if (asi64(R1) != asi64(R2)) goto L4584;
 	asu64(R1) = pm;
-	if (!asu64(R1)) goto L4585;
+	if (!asu64(R1)) goto L4586;
 	asu64(R1) = pm;
 	asi64(R2) = m;
 	asi64(R1) = cc_lib_createprocmode(asi64(R2), asu64(R1));
 	m = asi64(R1);
-L4585:
+L4586:
 	msysc_m$print_startcon();
 	asu64(R1) = d;
 	R2 = 0;
@@ -43963,23 +44038,23 @@ L4585:
 	msysc_m$print_end();
 	R1 = 0;
 	exit(R1);
-	goto L4579;
-L4583:
+	goto L4580;
+L4584:
 	asu64(R1) = pm;
-	if (!asu64(R1)) goto L4586;
+	if (!asu64(R1)) goto L4587;
 // cc_parse.readmodule.readfn:
-L4587:
+L4588:
 	R1 = (u64)&cc_decls_lx;
 	R2 = 21;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 17;
-	if (asi64(R1) != asi64(R2)) goto L4589;
+	if (asi64(R1) != asi64(R2)) goto L4590;
 	asi64(R1) = commaseen;
-	if (!asi64(R1)) goto L4589;
+	if (!asi64(R1)) goto L4590;
 	R1 = tou64("fn def after comma");
 	cc_support_serror(asu64(R1));
-L4589:
+L4590:
 	asi64(R1) = exported;
 	R2 = (u64)&wasdef;
 	asu64(R3) = pm;
@@ -43989,17 +44064,17 @@ L4589:
 	asu64(R1) = cc_parse_readfunction(asu64(R6), asi64(R5), asi64(R4), asu64(R3), asu64(R2), asi64(R1));
 	d = asu64(R1);
 	asi64(R1) = wasdef;
-	if (!asi64(R1)) goto L4591;
-	goto L4574;
-L4591:
-	goto L4579;
-L4586:
+	if (!asi64(R1)) goto L4592;
+	goto L4575;
+L4592:
+	goto L4580;
+L4587:
 	R1 = (u64)&cc_decls_ttbasetype;
 	asi64(R2) = m;
 	asi16(R1) = *toi16p(((i64)R1+(i64)R2*2));
 	R1 = toi64(toi16(R1));
 	R2 = 14;
-	if (asi64(R1) != asi64(R2)) goto L4592;
+	if (asi64(R1) != asi64(R2)) goto L4593;
 	R1 = (u64)&cc_decls_ttparams;
 	asi64(R2) = m;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2*8));
@@ -44009,72 +44084,72 @@ L4586:
 	asi16(R1) = *toi16p(((i64)R1+(i64)R2*2));
 	R1 = toi64(toi16(R1));
 	m = asi64(R1);
-	goto L4587;
-	goto L4579;
-L4592:
+	goto L4588;
+	goto L4580;
+L4593:
 	asi64(R1) = linkage;
 	asi64(R2) = m;
 	asu64(R3) = d;
 	asu64(R1) = cc_parse_readmodulevar(asu64(R3), asi64(R2), asi64(R1));
 	d = asu64(R1);
-L4579:
+L4580:
 	R1 = (u64)&cc_decls_lx;
 	R2 = 21;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 8;
-	if (asi64(R1) == asi64(R2)) goto L4594;
-	goto L4595;
-L4594:
+	if (asi64(R1) == asi64(R2)) goto L4595;
+	goto L4596;
+L4595:
 	R1 = 1;
 	commaseen = asi64(R1);
 	cc_lex_lex();
-	goto L4593;
-L4595:
+	goto L4594;
+L4596:
 	R1 = 9;
 	cc_lib_skipsymbol(asi64(R1));
+	goto L4575;
+L4594:
 	goto L4574;
-L4593:
-	goto L4573;
-L4576:
+L4577:
 	R1 = (u64)&cc_decls_ttbasetype;
 	asi64(R2) = mbase;
 	asi16(R1) = *toi16p(((i64)R1+(i64)R2*2));
 	R1 = toi64(toi16(R1));
 	R2 = 12;
-	if (asi64(R1) == asi64(R2)) goto L4597;
-	R2 = 18;
-	if (asi64(R1) == asi64(R2)) goto L4597;
-	R2 = 19;
-	if (asi64(R1) == asi64(R2)) goto L4597;
-	R2 = 3;
 	if (asi64(R1) == asi64(R2)) goto L4598;
-	goto L4599;
-L4597:
-	R1 = 9;
-	cc_lib_skipsymbol(asi64(R1));
-	goto L4574;
-	goto L4596;
+	R2 = 18;
+	if (asi64(R1) == asi64(R2)) goto L4598;
+	R2 = 19;
+	if (asi64(R1) == asi64(R2)) goto L4598;
+	R2 = 3;
+	if (asi64(R1) == asi64(R2)) goto L4599;
+	goto L4600;
 L4598:
 	R1 = 9;
 	cc_lib_skipsymbol(asi64(R1));
-	goto L4574;
-	goto L4596;
+	goto L4575;
+	goto L4597;
 L4599:
+	R1 = 9;
+	cc_lib_skipsymbol(asi64(R1));
+	goto L4575;
+	goto L4597;
+L4600:
 	asi64(R1) = mbase;
 	asu64(R1) = cc_lib_typename(asi64(R1));
 	R2 = tou64("Decl error #");
 	cc_support_serror_s(asu64(R2), asu64(R1));
-L4596:
-	goto L4573;
-L4574:
-L4564:
+L4597:
+	goto L4574;
+L4575:
+L4565:
 	R1 = (u64)&cc_decls_lx;
 	R2 = 21;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 57;
-	if (asi64(R1) != asi64(R2)) goto L4563;
+	if (asi64(R1) != asi64(R2)) goto L4564;
 	return;
 }
 
@@ -44087,7 +44162,7 @@ static i64 cc_parse_parsemodule() {
 	asu8(R1) = cc_cli_fverbose;
 	R1 = toi64(tou8(R1));
 	R2 = 3;
-	if (asi64(R1) != asi64(R2)) goto L4602;
+	if (asi64(R1) != asi64(R2)) goto L4603;
 	msysc_m$print_startcon();
 	R1 = tou64("Parsing:");
 	msysc_m$print_str_nf(asu64(R1));
@@ -44095,7 +44170,7 @@ static i64 cc_parse_parsemodule() {
 	msysc_m$print_str_nf(asu64(R1));
 	msysc_m$print_newline();
 	msysc_m$print_end();
-L4602:
+L4603:
 	R1 = 0;
 	R2 = R1;
 	cc_parse_ingeneric = asu8(R2);
@@ -44119,8 +44194,8 @@ L4602:
 	cc_parse_readmodule();
 	cc_lex_endlex();
 	R1 = 1;
-	goto L4600;
-L4600:
+	goto L4601;
+L4601:
 	return asi64(R1);
 }
 
@@ -44146,25 +44221,25 @@ static i64 cc_parse_readdeclspec(u64 owner, u64 linkage) {
 	R2 = R1;
 	mod = asi64(R2);
 	fstruct = asi64(R1);
-L4604:
+L4605:
 	R1 = (u64)&cc_decls_lx;
 	R2 = 21;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	switch (asi64(R1)) {
-	case 67: goto L4657;
-	case 68: case 69: case 70: case 72: case 73: case 74: case 75: case 76: case 77: case 78: case 79: case 80: case 81: case 82: case 83: case 90: goto L4607;
-	case 71: goto L4609;
-	case 84: case 85: goto L4651;
-	case 86: goto L4644;
-	case 87: goto L4636;
-	case 88: goto L4608;
-	case 89: goto L4647;
-	case 91: goto L4654;
-	default: goto L4607;
+	case 67: goto L4658;
+	case 68: case 69: case 70: case 72: case 73: case 74: case 75: case 76: case 77: case 78: case 79: case 80: case 81: case 82: case 83: case 90: goto L4608;
+	case 71: goto L4610;
+	case 84: case 85: goto L4652;
+	case 86: goto L4645;
+	case 87: goto L4637;
+	case 88: goto L4609;
+	case 89: goto L4648;
+	case 91: goto L4655;
+	default: goto L4608;
     };
 // SWITCH
-L4608:
+L4609:
 	R1 = (u64)&cc_decls_lx;
 	R2 = 22;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
@@ -44173,37 +44248,37 @@ L4608:
 	R3 = 0;
 	*toi32p(((i64)R2+(i64)R3)) = asi32(R1);
 	cc_lex_lex();
-	goto L4604;
-L4609:
+	goto L4605;
+L4610:
 	R1 = (u64)&cc_decls_lx;
 	R2 = 22;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	switch (asi64(R1)) {
-	case 1: case 2: case 5: case 6: case 7: case 10: goto L4613;
-	case 3: goto L4619;
-	case 4: goto L4623;
-	case 8: goto L4628;
-	case 9: goto L4632;
-	default: goto L4612;
+	case 1: case 2: case 5: case 6: case 7: case 10: goto L4614;
+	case 3: goto L4620;
+	case 4: goto L4624;
+	case 8: goto L4629;
+	case 9: goto L4633;
+	default: goto L4613;
     };
 // SWITCH
-L4613:
+L4614:
 	R1 = (u64)&d;
 	R2 = 0;
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
 	R1 = toi64(toi32(R1));
 	R2 = 20;
-	if (asi64(R1) == asi64(R2)) goto L4615;
+	if (asi64(R1) == asi64(R2)) goto L4616;
 	asi64(R1) = fstruct;
-	if (!asi64(R1)) goto L4617;
+	if (!asi64(R1)) goto L4618;
 	R1 = 9;
 	cc_lib_checksymbol(asi64(R1));
-	goto L4616;
+	goto L4617;
+L4618:
+	goto L4619;
 L4617:
-	goto L4618;
 L4616:
-L4615:
 	R1 = (u64)&cc_tables_typespectypes;
 	R2 = (u64)&cc_decls_lx;
 	R3 = 22;
@@ -44213,47 +44288,47 @@ L4615:
 	R2 = (u64)&d;
 	R3 = 0;
 	*toi32p(((i64)R2+(i64)R3)) = asi32(R1);
-	goto L4610;
-L4619:
+	goto L4611;
+L4620:
 	R1 = (u64)&d;
 	R2 = 9;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
-	if (asu8(R1)) goto L4622;
+	if (asu8(R1)) goto L4623;
 	R1 = (u64)&d;
 	R2 = 10;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
-	if (asu8(R1)) goto L4622;
+	if (asu8(R1)) goto L4623;
 	R1 = (u64)&d;
 	R2 = 11;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
-	if (!asu8(R1)) goto L4621;
+	if (!asu8(R1)) goto L4622;
+L4623:
+	goto L4619;
 L4622:
-	goto L4618;
-L4621:
 	R1 = 1;
 	R2 = R1;
 	mod = asi64(R2);
 	R2 = (u64)&d;
 	R3 = 9;
 	*tou8p(((i64)R2+(i64)R3)) = asu8(R1);
-	goto L4610;
-L4623:
+	goto L4611;
+L4624:
 	R1 = (u64)&d;
 	R2 = 11;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
-	if (asu8(R1)) goto L4626;
+	if (asu8(R1)) goto L4627;
 	R1 = (u64)&d;
 	R2 = 9;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
-	if (!asu8(R1)) goto L4625;
+	if (!asu8(R1)) goto L4626;
+L4627:
+	goto L4619;
+	goto L4625;
 L4626:
-	goto L4618;
-	goto L4624;
-L4625:
 	R1 = (u64)&d;
 	R2 = 10;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
-	if (!asu8(R1)) goto L4627;
+	if (!asu8(R1)) goto L4628;
 	R1 = 0;
 	R2 = (u64)&d;
 	R3 = 10;
@@ -44262,57 +44337,57 @@ L4625:
 	R2 = (u64)&d;
 	R3 = 11;
 	*tou8p(((i64)R2+(i64)R3)) = asu8(R1);
-	goto L4624;
-L4627:
+	goto L4625;
+L4628:
 	R1 = 1;
 	R2 = (u64)&d;
 	R3 = 10;
 	*tou8p(((i64)R2+(i64)R3)) = asu8(R1);
-L4624:
+L4625:
 	R1 = 1;
 	mod = asi64(R1);
-	goto L4610;
-L4628:
+	goto L4611;
+L4629:
 	R1 = (u64)&d;
 	R2 = 12;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
-	if (asu8(R1)) goto L4631;
+	if (asu8(R1)) goto L4632;
 	R1 = (u64)&d;
 	R2 = 13;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
-	if (!asu8(R1)) goto L4630;
+	if (!asu8(R1)) goto L4631;
+L4632:
+	goto L4619;
 L4631:
-	goto L4618;
-L4630:
 	R1 = 1;
 	R2 = R1;
 	mod = asi64(R2);
 	R2 = (u64)&d;
 	R3 = 12;
 	*tou8p(((i64)R2+(i64)R3)) = asu8(R1);
-	goto L4610;
-L4632:
+	goto L4611;
+L4633:
 	R1 = (u64)&d;
 	R2 = 12;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
-	if (asu8(R1)) goto L4635;
+	if (asu8(R1)) goto L4636;
 	R1 = (u64)&d;
 	R2 = 13;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
-	if (!asu8(R1)) goto L4634;
+	if (!asu8(R1)) goto L4635;
+L4636:
+	goto L4619;
 L4635:
-	goto L4618;
-L4634:
 	R1 = 1;
 	R2 = R1;
 	mod = asi64(R2);
 	R2 = (u64)&d;
 	R3 = 13;
 	*tou8p(((i64)R2+(i64)R3)) = asu8(R1);
-	goto L4610;
-L4612:
+	goto L4611;
+L4613:
 // cc_parse.readdeclspec.tserror:
-L4618:
+L4619:
 	R1 = (u64)&cc_tables_typespecnames;
 	R2 = (u64)&cc_decls_lx;
 	R3 = 22;
@@ -44321,54 +44396,54 @@ L4618:
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2*8-8));
 	R2 = tou64("declspec/ts #");
 	cc_support_serror_s(asu64(R2), asu64(R1));
-L4610:
+L4611:
 	cc_lex_lex();
-	goto L4604;
-L4636:
+	goto L4605;
+L4637:
 	R1 = (u64)&cc_decls_lx;
 	R2 = 22;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 1;
-	if (asi64(R1) == asi64(R2)) goto L4638;
-	R2 = 2;
 	if (asi64(R1) == asi64(R2)) goto L4639;
-	R2 = 3;
+	R2 = 2;
 	if (asi64(R1) == asi64(R2)) goto L4640;
-	goto L4641;
-L4638:
+	R2 = 3;
+	if (asi64(R1) == asi64(R2)) goto L4641;
+	goto L4642;
+L4639:
 	asu8(R1) = pc_decls_fnoconst;
-	if (asu8(R1)) goto L4643;
+	if (asu8(R1)) goto L4644;
 	R1 = 1;
 	R2 = (u64)&d;
 	R3 = 4;
 	*tou8p(((i64)R2+(i64)R3)) = asu8(R1);
-L4643:
-	goto L4637;
-L4639:
+L4644:
+	goto L4638;
+L4640:
 	R1 = 1;
 	R2 = (u64)&d;
 	R3 = 5;
 	*tou8p(((i64)R2+(i64)R3)) = asu8(R1);
-	goto L4637;
-L4640:
+	goto L4638;
+L4641:
 	R1 = 1;
 	R2 = (u64)&d;
 	R3 = 6;
 	*tou8p(((i64)R2+(i64)R3)) = asu8(R1);
-	goto L4637;
-L4641:
-L4637:
+	goto L4638;
+L4642:
+L4638:
 	cc_lex_lex();
-	goto L4604;
-L4644:
+	goto L4605;
+L4645:
 	R1 = (u64)&d;
 	R2 = 7;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
-	if (!asu8(R1)) goto L4646;
+	if (!asu8(R1)) goto L4647;
 	R1 = tou64("Dual storage spec");
 	cc_support_serror(asu64(R1));
-L4646:
+L4647:
 	R1 = (u64)&cc_decls_lx;
 	R2 = 22;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
@@ -44376,35 +44451,35 @@ L4646:
 	R3 = 7;
 	*tou8p(((i64)R2+(i64)R3)) = asu8(R1);
 	cc_lex_lex();
-	goto L4604;
-L4647:
+	goto L4605;
+L4648:
 	R1 = (u64)&cc_decls_lx;
 	R2 = 22;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 1;
-	if (asi64(R1) == asi64(R2)) goto L4649;
-	goto L4650;
-L4649:
+	if (asi64(R1) == asi64(R2)) goto L4650;
+	goto L4651;
+L4650:
 	R1 = 1;
 	R2 = (u64)&d;
 	R3 = 8;
 	*tou8p(((i64)R2+(i64)R3)) = asu8(R1);
-	goto L4648;
-L4650:
-L4648:
-	cc_lex_lex();
-	goto L4604;
+	goto L4649;
 L4651:
+L4649:
+	cc_lex_lex();
+	goto L4605;
+L4652:
 	R1 = (u64)&d;
 	R2 = 0;
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
 	R1 = toi64(toi32(R1));
 	R2 = 20;
-	if (asi64(R1) == asi64(R2)) goto L4653;
+	if (asi64(R1) == asi64(R2)) goto L4654;
 	R1 = tou64("struct?");
 	cc_support_serror(asu64(R1));
-L4653:
+L4654:
 	asu64(R1) = owner;
 	asi64(R1) = cc_parse_readstructdecl(asu64(R1));
 	R2 = (u64)&d;
@@ -44416,17 +44491,17 @@ L4653:
 	*tou8p(((i64)R2+(i64)R3)) = asu8(R1);
 	R1 = 1;
 	fstruct = asi64(R1);
-	goto L4604;
-L4654:
+	goto L4605;
+L4655:
 	R1 = (u64)&d;
 	R2 = 0;
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
 	R1 = toi64(toi32(R1));
 	R2 = 20;
-	if (asi64(R1) == asi64(R2)) goto L4656;
+	if (asi64(R1) == asi64(R2)) goto L4657;
 	R1 = tou64("enum?");
 	cc_support_serror(asu64(R1));
-L4656:
+L4657:
 	asu64(R1) = owner;
 	asi64(R1) = cc_parse_readenumdecl(asu64(R1));
 	R1 = 3;
@@ -44437,28 +44512,28 @@ L4656:
 	R2 = (u64)&d;
 	R3 = 14;
 	*tou8p(((i64)R2+(i64)R3)) = asu8(R1);
-	goto L4604;
-L4657:
+	goto L4605;
+L4658:
 	R1 = (u64)&d;
 	R2 = 0;
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
 	R1 = toi64(toi32(R1));
 	R2 = 20;
-	if (asi64(R1) != asi64(R2)) goto L4659;
+	if (asi64(R1) != asi64(R2)) goto L4660;
 	asu64(R1) = owner;
 	asi64(R1) = cc_parse_isusertype(asu64(R1));
 	R2 = R1;
 	m = asi64(R2);
 	R2 = 20;
-	if (asi64(R1) == asi64(R2)) goto L4659;
+	if (asi64(R1) == asi64(R2)) goto L4660;
 	asi64(R1) = mod;
-	if (!asi64(R1)) goto L4661;
+	if (!asi64(R1)) goto L4662;
 	R1 = 3;
 	R2 = (u64)&d;
 	R3 = 0;
 	*toi32p(((i64)R2+(i64)R3)) = asi32(R1);
-	goto L4605;
-L4661:
+	goto L4606;
+L4662:
 	asi64(R1) = m;
 	R2 = (u64)&d;
 	R3 = 0;
@@ -44468,16 +44543,16 @@ L4661:
 	R3 = 14;
 	*tou8p(((i64)R2+(i64)R3)) = asu8(R1);
 	cc_lex_lex();
-	goto L4658;
-L4659:
+	goto L4659;
+L4660:
 	R1 = (u64)&d;
 	R2 = 0;
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
 	R1 = toi64(toi32(R1));
 	R2 = 20;
-	if (asi64(R1) != asi64(R2)) goto L4663;
+	if (asi64(R1) != asi64(R2)) goto L4664;
 	asi64(R1) = mod;
-	if (asi64(R1)) goto L4663;
+	if (asi64(R1)) goto L4664;
 	R1 = (u64)&cc_decls_lx;
 	R2 = 0;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
@@ -44485,191 +44560,191 @@ L4659:
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
 	R2 = tou64("Implicit decls not allowed: #");
 	cc_support_serror_s(asu64(R2), asu64(R1));
-L4663:
+L4664:
 	R1 = (u64)&d;
 	R2 = 0;
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
 	R1 = toi64(toi32(R1));
 	R2 = 20;
-	if (asi64(R1) != asi64(R2)) goto L4665;
+	if (asi64(R1) != asi64(R2)) goto L4666;
 	R1 = 3;
 	R2 = (u64)&d;
 	R3 = 0;
 	*toi32p(((i64)R2+(i64)R3)) = asi32(R1);
-L4665:
+L4666:
+	goto L4606;
+L4659:
 	goto L4605;
-L4658:
-	goto L4604;
-L4607:
+L4608:
+	goto L4606;
 	goto L4605;
-	goto L4604;
-L4605:
+L4606:
 	R1 = (u64)&d;
 	R2 = 0;
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
 	R1 = toi64(toi32(R1));
 	R2 = 20;
-	if (asi64(R1) == asi64(R2)) goto L4667;
+	if (asi64(R1) == asi64(R2)) goto L4668;
 	R1 = (u64)&d;
 	R2 = 0;
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
 	R1 = toi64(toi32(R1));
-	goto L4666;
-L4667:
+	goto L4667;
+L4668:
 	R1 = 3;
-L4666:
+L4667:
 	t = asi64(R1);
 	R1 = (u64)&d;
 	R2 = 14;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
-	if (asu8(R1)) goto L4669;
+	if (asu8(R1)) goto L4670;
 	asi64(R1) = t;
 	R2 = 3;
-	if (asi64(R1) == asi64(R2)) goto L4671;
-	R2 = 1;
 	if (asi64(R1) == asi64(R2)) goto L4672;
-	R2 = 11;
+	R2 = 1;
 	if (asi64(R1) == asi64(R2)) goto L4673;
-	goto L4674;
-L4671:
-	R1 = (u64)&d;
-	R2 = 9;
-	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
-	if (!asu8(R1)) goto L4676;
-	R1 = (u64)&d;
-	R2 = 13;
-	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
-	if (!asu8(R1)) goto L4678;
-	R1 = 7;
-	goto L4677;
-L4678:
-	R1 = 2;
-L4677:
-	t = asi64(R1);
-	goto L4675;
-L4676:
-	R1 = (u64)&d;
-	R2 = 10;
-	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
-	if (!asu8(R1)) goto L4679;
-	asu8(R1) = pc_decls_flong64;
-	if (!asu8(R1)) goto L4681;
-	R1 = (u64)&d;
-	R2 = 13;
-	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
-	if (!asu8(R1)) goto L4683;
-	R1 = 9;
-	goto L4682;
-L4683:
-	R1 = 4;
-L4682:
-	t = asi64(R1);
-	goto L4680;
-L4681:
-	R1 = (u64)&d;
-	R2 = 13;
-	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
-	if (!asu8(R1)) goto L4685;
-	R1 = 8;
-	goto L4684;
-L4685:
-	R1 = 3;
-L4684:
-	t = asi64(R1);
-L4680:
-	goto L4675;
-L4679:
-	R1 = (u64)&d;
 	R2 = 11;
-	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
-	if (!asu8(R1)) goto L4686;
-	R1 = (u64)&d;
-	R2 = 13;
-	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
-	if (!asu8(R1)) goto L4688;
-	R1 = 9;
-	goto L4687;
-L4688:
-	R1 = 4;
-L4687:
-	t = asi64(R1);
+	if (asi64(R1) == asi64(R2)) goto L4674;
 	goto L4675;
-L4686:
-	R1 = (u64)&d;
-	R2 = 13;
-	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
-	if (!asu8(R1)) goto L4689;
-	R1 = 8;
-	t = asi64(R1);
-L4689:
-L4675:
-	goto L4670;
 L4672:
 	R1 = (u64)&d;
 	R2 = 9;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
-	if (asu8(R1)) goto L4692;
-	R1 = (u64)&d;
-	R2 = 10;
-	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
-	if (asu8(R1)) goto L4692;
-	R1 = (u64)&d;
-	R2 = 11;
-	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
-	if (!asu8(R1)) goto L4691;
-L4692:
-	R1 = tou64("char decl?");
-	cc_support_serror(asu64(R1));
-L4691:
+	if (!asu8(R1)) goto L4677;
 	R1 = (u64)&d;
 	R2 = 13;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
-	if (!asu8(R1)) goto L4694;
-	R1 = 6;
-	goto L4693;
-L4694:
-	R1 = 1;
-L4693:
+	if (!asu8(R1)) goto L4679;
+	R1 = 7;
+	goto L4678;
+L4679:
+	R1 = 2;
+L4678:
 	t = asi64(R1);
-	goto L4670;
+	goto L4676;
+L4677:
+	R1 = (u64)&d;
+	R2 = 10;
+	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
+	if (!asu8(R1)) goto L4680;
+	asu8(R1) = pc_decls_flong64;
+	if (!asu8(R1)) goto L4682;
+	R1 = (u64)&d;
+	R2 = 13;
+	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
+	if (!asu8(R1)) goto L4684;
+	R1 = 9;
+	goto L4683;
+L4684:
+	R1 = 4;
+L4683:
+	t = asi64(R1);
+	goto L4681;
+L4682:
+	R1 = (u64)&d;
+	R2 = 13;
+	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
+	if (!asu8(R1)) goto L4686;
+	R1 = 8;
+	goto L4685;
+L4686:
+	R1 = 3;
+L4685:
+	t = asi64(R1);
+L4681:
+	goto L4676;
+L4680:
+	R1 = (u64)&d;
+	R2 = 11;
+	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
+	if (!asu8(R1)) goto L4687;
+	R1 = (u64)&d;
+	R2 = 13;
+	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
+	if (!asu8(R1)) goto L4689;
+	R1 = 9;
+	goto L4688;
+L4689:
+	R1 = 4;
+L4688:
+	t = asi64(R1);
+	goto L4676;
+L4687:
+	R1 = (u64)&d;
+	R2 = 13;
+	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
+	if (!asu8(R1)) goto L4690;
+	R1 = 8;
+	t = asi64(R1);
+L4690:
+L4676:
+	goto L4671;
 L4673:
 	R1 = (u64)&d;
 	R2 = 9;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
-	if (asu8(R1)) goto L4697;
+	if (asu8(R1)) goto L4693;
+	R1 = (u64)&d;
+	R2 = 10;
+	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
+	if (asu8(R1)) goto L4693;
 	R1 = (u64)&d;
 	R2 = 11;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
-	if (asu8(R1)) goto L4697;
-	R1 = (u64)&d;
-	R2 = 12;
-	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
-	if (asu8(R1)) goto L4697;
+	if (!asu8(R1)) goto L4692;
+L4693:
+	R1 = tou64("char decl?");
+	cc_support_serror(asu64(R1));
+L4692:
 	R1 = (u64)&d;
 	R2 = 13;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
-	if (!asu8(R1)) goto L4696;
-L4697:
+	if (!asu8(R1)) goto L4695;
+	R1 = 6;
+	goto L4694;
+L4695:
+	R1 = 1;
+L4694:
+	t = asi64(R1);
+	goto L4671;
+L4674:
+	R1 = (u64)&d;
+	R2 = 9;
+	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
+	if (asu8(R1)) goto L4698;
+	R1 = (u64)&d;
+	R2 = 11;
+	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
+	if (asu8(R1)) goto L4698;
+	R1 = (u64)&d;
+	R2 = 12;
+	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
+	if (asu8(R1)) goto L4698;
+	R1 = (u64)&d;
+	R2 = 13;
+	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
+	if (!asu8(R1)) goto L4697;
+L4698:
 	R1 = tou64("dbl decl?");
 	cc_support_serror(asu64(R1));
-L4696:
-	goto L4670;
-L4674:
+L4697:
+	goto L4671;
+L4675:
 	asi64(R1) = mod;
-	if (!asi64(R1)) goto L4699;
+	if (!asi64(R1)) goto L4700;
 	R1 = tou64("declspec/float");
 	cc_support_serror(asu64(R1));
-L4699:
+L4700:
+L4671:
 L4670:
-L4669:
 	R1 = (u64)&d;
 	R2 = 4;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
-	if (!asu8(R1)) goto L4701;
+	if (!asu8(R1)) goto L4702;
 	asi64(R1) = t;
 	asi64(R1) = cc_lib_createconstmode(asi64(R1));
 	t = asi64(R1);
-L4701:
+L4702:
 	R1 = (u64)&d;
 	R2 = 7;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
@@ -44677,8 +44752,8 @@ L4701:
 	asu64(R2) = linkage;
 	*toi64p(R2) = asi64(R1);
 	asi64(R1) = t;
-	goto L4603;
-L4603:
+	goto L4604;
+L4604:
 	return asi64(R1);
 }
 
@@ -44690,45 +44765,45 @@ static i64 cc_parse_istypestarter() {
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 71;
-	if (asi64(R1) == asi64(R2)) goto L4704;
-	R2 = 88;
-	if (asi64(R1) == asi64(R2)) goto L4704;
-	R2 = 87;
 	if (asi64(R1) == asi64(R2)) goto L4705;
-	R2 = 67;
+	R2 = 88;
+	if (asi64(R1) == asi64(R2)) goto L4705;
+	R2 = 87;
 	if (asi64(R1) == asi64(R2)) goto L4706;
+	R2 = 67;
+	if (asi64(R1) == asi64(R2)) goto L4707;
 	R2 = 84;
-	if (asi64(R1) == asi64(R2)) goto L4707;
+	if (asi64(R1) == asi64(R2)) goto L4708;
 	R2 = 85;
-	if (asi64(R1) == asi64(R2)) goto L4707;
+	if (asi64(R1) == asi64(R2)) goto L4708;
 	R2 = 91;
-	if (asi64(R1) == asi64(R2)) goto L4707;
-	goto L4708;
-L4704:
-	R1 = 1;
-	goto L4702;
-	goto L4703;
+	if (asi64(R1) == asi64(R2)) goto L4708;
+	goto L4709;
 L4705:
 	R1 = 1;
-	goto L4702;
 	goto L4703;
+	goto L4704;
 L4706:
+	R1 = 1;
+	goto L4703;
+	goto L4704;
+L4707:
 	asi64(R1) = cc_decls_currblockno;
 	R2 = 1;
 	R3 = (u64)&cc_decls_lx;
 	R4 = 0;
 	asu64(R3) = *tou64p(((i64)R3+(i64)R4));
 	asu64(R4) = cc_decls_currproc;
-	if (!asu64(R4)) goto L4710;
+	if (!asu64(R4)) goto L4711;
 	asu64(R4) = cc_decls_currproc;
-	goto L4709;
-L4710:
+	goto L4710;
+L4711:
 	asu64(R4) = cc_decls_stmodule;
-L4709:
+L4710:
 	asu64(R1) = cc_lib_resolvename(asu64(R4), asu64(R3), asi64(R2), asi64(R1));
 	d = asu64(R1);
 	asu64(R1) = d;
-	if (!asu64(R1)) goto L4712;
+	if (!asu64(R1)) goto L4713;
 	asu64(R1) = d;
 	R2 = (u64)&cc_decls_lx;
 	R3 = 0;
@@ -44739,18 +44814,18 @@ L4709:
 	R1 = toi64(tou8(R1));
 	R2 = 5;
 	asi64(R1) = asi64(R1)  ==  asi64(R2);
-	goto L4702;
-L4712:
 	goto L4703;
-L4707:
-	R1 = 1;
-	goto L4702;
-	goto L4703;
+L4713:
+	goto L4704;
 L4708:
-L4703:
+	R1 = 1;
+	goto L4703;
+	goto L4704;
+L4709:
+L4704:
 	R1 = 0;
-	goto L4702;
-L4702:
+	goto L4703;
+L4703:
 	return asi64(R1);
 }
 
@@ -44762,45 +44837,45 @@ static i64 cc_parse_istypestarter_next() {
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 71;
-	if (asi64(R1) == asi64(R2)) goto L4715;
-	R2 = 88;
-	if (asi64(R1) == asi64(R2)) goto L4715;
-	R2 = 87;
 	if (asi64(R1) == asi64(R2)) goto L4716;
-	R2 = 67;
+	R2 = 88;
+	if (asi64(R1) == asi64(R2)) goto L4716;
+	R2 = 87;
 	if (asi64(R1) == asi64(R2)) goto L4717;
+	R2 = 67;
+	if (asi64(R1) == asi64(R2)) goto L4718;
 	R2 = 84;
-	if (asi64(R1) == asi64(R2)) goto L4718;
+	if (asi64(R1) == asi64(R2)) goto L4719;
 	R2 = 85;
-	if (asi64(R1) == asi64(R2)) goto L4718;
+	if (asi64(R1) == asi64(R2)) goto L4719;
 	R2 = 91;
-	if (asi64(R1) == asi64(R2)) goto L4718;
-	goto L4719;
-L4715:
-	R1 = 1;
-	goto L4713;
-	goto L4714;
+	if (asi64(R1) == asi64(R2)) goto L4719;
+	goto L4720;
 L4716:
 	R1 = 1;
-	goto L4713;
 	goto L4714;
+	goto L4715;
 L4717:
+	R1 = 1;
+	goto L4714;
+	goto L4715;
+L4718:
 	asi64(R1) = cc_decls_currblockno;
 	R2 = 1;
 	R3 = (u64)&cc_decls_nextlx;
 	R4 = 0;
 	asu64(R3) = *tou64p(((i64)R3+(i64)R4));
 	asu64(R4) = cc_decls_currproc;
-	if (!asu64(R4)) goto L4721;
+	if (!asu64(R4)) goto L4722;
 	asu64(R4) = cc_decls_currproc;
-	goto L4720;
-L4721:
+	goto L4721;
+L4722:
 	asu64(R4) = cc_decls_stmodule;
-L4720:
+L4721:
 	asu64(R1) = cc_lib_resolvename(asu64(R4), asu64(R3), asi64(R2), asi64(R1));
 	d = asu64(R1);
 	asu64(R1) = d;
-	if (!asu64(R1)) goto L4723;
+	if (!asu64(R1)) goto L4724;
 	asu64(R1) = d;
 	R2 = (u64)&cc_decls_nextlx;
 	R3 = 0;
@@ -44811,18 +44886,18 @@ L4720:
 	R1 = toi64(tou8(R1));
 	R2 = 5;
 	asi64(R1) = asi64(R1)  ==  asi64(R2);
-	goto L4713;
-L4723:
 	goto L4714;
-L4718:
-	R1 = 1;
-	goto L4713;
-	goto L4714;
+L4724:
+	goto L4715;
 L4719:
-L4714:
+	R1 = 1;
+	goto L4714;
+	goto L4715;
+L4720:
+L4715:
 	R1 = 0;
-	goto L4713;
-L4713:
+	goto L4714;
+L4714:
 	return asi64(R1);
 }
 
@@ -44837,16 +44912,16 @@ static u64 cc_parse_readexpression() {
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 9;
-	if (asi64(R1) == asi64(R2)) goto L4726;
+	if (asi64(R1) == asi64(R2)) goto L4727;
 	R2 = 14;
-	if (asi64(R1) == asi64(R2)) goto L4726;
-	goto L4727;
-L4726:
-	asu64(R1) = cc_parse_readterm();
-	goto L4724;
-	goto L4725;
+	if (asi64(R1) == asi64(R2)) goto L4727;
+	goto L4728;
 L4727:
-L4725:
+	asu64(R1) = cc_parse_readterm();
+	goto L4725;
+	goto L4726;
+L4728:
+L4726:
 	asu64(R1) = cc_parse_readassignexpr();
 	p = asu64(R1);
 	R1 = (u64)&cc_decls_lx;
@@ -44854,12 +44929,12 @@ L4725:
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 8;
-	if (asi64(R1) != asi64(R2)) goto L4729;
+	if (asi64(R1) != asi64(R2)) goto L4730;
 	R1 = 0;
 	R2 = R1;
 	ulistx = asu64(R2);
 	ulist = asu64(R1);
-L4730:
+L4731:
 	asu64(R1) = p;
 	R2 = (u64)&ulistx;
 	R3 = (u64)&ulist;
@@ -44869,33 +44944,33 @@ L4730:
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 8;
-	if (asi64(R1) == asi64(R2)) goto L4733;
-	goto L4731;
-L4733:
+	if (asi64(R1) == asi64(R2)) goto L4734;
+	goto L4732;
+L4734:
 	cc_lex_lex();
 	asu64(R1) = cc_parse_readassignexpr();
 	p = asu64(R1);
-	goto L4730;
-L4731:
+	goto L4731;
+L4732:
 	asu64(R1) = ulist;
 	R2 = 29;
 	asu64(R1) = cc_lib_createunit1(asi64(R2), asu64(R1));
 	p = asu64(R1);
 	asu64(R1) = ulistx;
-	if (!asu64(R1)) goto L4735;
+	if (!asu64(R1)) goto L4736;
 	asu64(R1) = ulistx;
 	R2 = 52;
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
 	asu64(R2) = p;
 	R3 = 52;
 	*toi32p(((i64)R2+(i64)R3)) = asi32(R1);
-L4735:
+L4736:
 	asu64(R1) = p;
-	goto L4724;
-L4729:
+	goto L4725;
+L4730:
 	asu64(R1) = p;
-	goto L4724;
-L4724:
+	goto L4725;
+L4725:
 	return asu64(R1);
 }
 
@@ -44911,19 +44986,19 @@ static u64 cc_parse_readassignexpr() {
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 8;
-	if (asi64(R1) == asi64(R2)) goto L4738;
-	R2 = 9;
-	if (asi64(R1) == asi64(R2)) goto L4738;
-	R2 = 14;
-	if (asi64(R1) == asi64(R2)) goto L4738;
-	R2 = 11;
 	if (asi64(R1) == asi64(R2)) goto L4739;
-	goto L4740;
-L4738:
-	asu64(R1) = cc_parse_readterm();
-	goto L4736;
-	goto L4737;
+	R2 = 9;
+	if (asi64(R1) == asi64(R2)) goto L4739;
+	R2 = 14;
+	if (asi64(R1) == asi64(R2)) goto L4739;
+	R2 = 11;
+	if (asi64(R1) == asi64(R2)) goto L4740;
+	goto L4741;
 L4739:
+	asu64(R1) = cc_parse_readterm();
+	goto L4737;
+	goto L4738;
+L4740:
 	asu64(R1) = cc_parse_readterm();
 	p = asu64(R1);
 	R1 = (u64)&cc_decls_lx;
@@ -44931,10 +45006,10 @@ L4739:
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	opc = asi64(R1);
-	goto L4741;
-	goto L4737;
-L4740:
-L4737:
+	goto L4742;
+	goto L4738;
+L4741:
+L4738:
 	asu64(R1) = cc_parse_readcondexpr();
 	p = asu64(R1);
 	R1 = (u64)&cc_decls_lx;
@@ -44944,14 +45019,14 @@ L4737:
 	R2 = R1;
 	opc = asi64(R2);
 	switch (asi64(R1)) {
-	case 11: case 46: case 47: case 48: case 49: case 50: case 51: case 52: case 53: case 54: case 55: goto L4745;
-	case 12: case 13: case 14: case 15: case 16: case 17: case 18: case 19: case 20: case 21: case 22: case 23: case 24: case 25: case 26: case 27: case 28: case 29: case 30: case 31: case 32: case 33: case 34: case 35: case 36: case 37: case 38: case 39: case 40: case 41: case 42: case 43: case 44: case 45: goto L4744;
-	default: goto L4744;
+	case 11: case 46: case 47: case 48: case 49: case 50: case 51: case 52: case 53: case 54: case 55: goto L4746;
+	case 12: case 13: case 14: case 15: case 16: case 17: case 18: case 19: case 20: case 21: case 22: case 23: case 24: case 25: case 26: case 27: case 28: case 29: case 30: case 31: case 32: case 33: case 34: case 35: case 36: case 37: case 38: case 39: case 40: case 41: case 42: case 43: case 44: case 45: goto L4745;
+	default: goto L4745;
     };
 // SWITCH
-L4745:
+L4746:
 // cc_parse.readassignexpr.gotp:
-L4741:
+L4742:
 	cc_lex_lex();
 	asu64(R1) = p;
 	R2 = 52;
@@ -44969,13 +45044,13 @@ L4741:
 	asi32(R2) = *toi32p(((i64)R2+(i64)R3));
 	R2 = toi64(toi32(R2));
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
-	if (!asu8(R1)) goto L4747;
+	if (!asu8(R1)) goto L4748;
 	asu64(R1) = q;
 	asu64(R2) = p;
 	asi64(R3) = opc;
 	asu64(R1) = cc_parse_createassignopref(asi64(R3), asu64(R2), asu64(R1));
-	goto L4736;
-L4747:
+	goto L4737;
+L4748:
 	asi64(R1) = oldpmode;
 	asu64(R2) = q;
 	asu64(R1) = cc_parse_coercemode(asu64(R2), asi64(R1));
@@ -44983,16 +45058,16 @@ L4747:
 	R1 = (u64)&cc_decls_ttconst;
 	asi64(R2) = oldpmode;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
-	if (!asu8(R1)) goto L4749;
+	if (!asu8(R1)) goto L4750;
 	R1 = tou64("Modifying read-only var");
 	cc_support_terror(asu64(R1));
-L4749:
+L4750:
 	asu64(R1) = p;
 	R2 = 40;
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
 	R1 = toi64(toi32(R1));
 	R2 = 52;
-	if (asi64(R1) != asi64(R2)) goto L4751;
+	if (asi64(R1) != asi64(R2)) goto L4752;
 	asu64(R1) = p;
 	R2 = 16;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
@@ -45000,10 +45075,10 @@ L4749:
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
 	R1 = toi64(toi32(R1));
 	R2 = 1;
-	if (asi64(R1) != asi64(R2)) goto L4751;
+	if (asi64(R1) != asi64(R2)) goto L4752;
 	R1 = tou64("Modifying constant?");
 	cc_support_terror(asu64(R1));
-L4751:
+L4752:
 	asu64(R1) = q;
 	asu64(R2) = p;
 	R3 = (u64)&cc_tables_symboltojtag;
@@ -45017,13 +45092,13 @@ L4751:
 	R3 = 52;
 	*toi32p(((i64)R2+(i64)R3)) = asi32(R1);
 	asu64(R1) = r;
-	goto L4736;
-	goto L4742;
-L4744:
-L4742:
+	goto L4737;
+	goto L4743;
+L4745:
+L4743:
 	asu64(R1) = p;
-	goto L4736;
-L4736:
+	goto L4737;
+L4737:
 	return asu64(R1);
 }
 
@@ -45042,7 +45117,7 @@ static u64 cc_parse_readcondexpr() {
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 19;
-	if (asi64(R1) != asi64(R2)) goto L4754;
+	if (asi64(R1) != asi64(R2)) goto L4755;
 	asu64(R1) = pcond;
 	cc_parse_coercecond(asu64(R1));
 	cc_lex_lex();
@@ -45076,7 +45151,7 @@ static u64 cc_parse_readcondexpr() {
 	R1 = toi64(tou8(R1));
 	R2 = R1;
 	u = asi64(R2);
-	if (!asi64(R1)) goto L4756;
+	if (!asi64(R1)) goto L4757;
 	asi64(R1) = u;
 	asu64(R2) = x;
 	asu64(R1) = cc_parse_coercemode(asu64(R2), asi64(R1));
@@ -45090,62 +45165,62 @@ static u64 cc_parse_readcondexpr() {
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
 	R1 = toi64(toi32(R1));
 	R2 = 1;
-	if (asi64(R1) != asi64(R2)) goto L4758;
+	if (asi64(R1) != asi64(R2)) goto L4759;
 	asu64(R1) = x;
 	R2 = 40;
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
 	R1 = toi64(toi32(R1));
 	R2 = 1;
-	if (asi64(R1) != asi64(R2)) goto L4758;
+	if (asi64(R1) != asi64(R2)) goto L4759;
 	asu64(R1) = y;
 	R2 = 40;
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
 	R1 = toi64(toi32(R1));
 	R2 = 1;
-	if (asi64(R1) != asi64(R2)) goto L4758;
+	if (asi64(R1) != asi64(R2)) goto L4759;
 	asu64(R1) = pcond;
 	R2 = 0;
 	asi64(R1) = *toi64p(((i64)R1+(i64)R2));
-	if (!asi64(R1)) goto L4760;
+	if (!asi64(R1)) goto L4761;
 	asu64(R1) = x;
-	goto L4759;
-L4760:
+	goto L4760;
+L4761:
 	asu64(R1) = y;
+L4760:
+	goto L4753;
 L4759:
-	goto L4752;
-L4758:
-	goto L4755;
-L4756:
+	goto L4756;
+L4757:
 	asi64(R1) = s;
 	R2 = 13;
-	if (asi64(R1) != asi64(R2)) goto L4761;
+	if (asi64(R1) != asi64(R2)) goto L4762;
 	asi64(R1) = t;
 	R2 = 13;
-	if (asi64(R1) != asi64(R2)) goto L4761;
+	if (asi64(R1) != asi64(R2)) goto L4762;
 	asu64(R1) = x;
 	R2 = 52;
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
 	R1 = toi64(toi32(R1));
 	u = asi64(R1);
-	goto L4755;
-L4761:
+	goto L4756;
+L4762:
 	asi64(R1) = s;
 	R2 = 13;
-	if (asi64(R1) != asi64(R2)) goto L4762;
+	if (asi64(R1) != asi64(R2)) goto L4763;
 	asi64(R1) = t;
 	R2 = 3;
-	if (asi64(R1) != asi64(R2)) goto L4762;
+	if (asi64(R1) != asi64(R2)) goto L4763;
 	asu64(R1) = y;
 	R2 = 40;
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
 	R1 = toi64(toi32(R1));
 	R2 = 1;
-	if (asi64(R1) != asi64(R2)) goto L4762;
+	if (asi64(R1) != asi64(R2)) goto L4763;
 	asu64(R1) = y;
 	R2 = 0;
 	asi64(R1) = *toi64p(((i64)R1+(i64)R2));
 	R2 = 0;
-	if (asi64(R1) != asi64(R2)) goto L4762;
+	if (asi64(R1) != asi64(R2)) goto L4763;
 	asu64(R1) = x;
 	R2 = 52;
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
@@ -45154,25 +45229,25 @@ L4761:
 	asi64(R1) = u;
 	asu64(R2) = y;
 	asu64(R1) = cc_parse_coercemode(asu64(R2), asi64(R1));
-	goto L4755;
-L4762:
+	goto L4756;
+L4763:
 	asi64(R1) = s;
 	R2 = 3;
-	if (asi64(R1) != asi64(R2)) goto L4763;
+	if (asi64(R1) != asi64(R2)) goto L4764;
 	asi64(R1) = t;
 	R2 = 13;
-	if (asi64(R1) != asi64(R2)) goto L4763;
+	if (asi64(R1) != asi64(R2)) goto L4764;
 	asu64(R1) = x;
 	R2 = 40;
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
 	R1 = toi64(toi32(R1));
 	R2 = 1;
-	if (asi64(R1) != asi64(R2)) goto L4763;
+	if (asi64(R1) != asi64(R2)) goto L4764;
 	asu64(R1) = x;
 	R2 = 0;
 	asi64(R1) = *toi64p(((i64)R1+(i64)R2));
 	R2 = 0;
-	if (asi64(R1) != asi64(R2)) goto L4763;
+	if (asi64(R1) != asi64(R2)) goto L4764;
 	asu64(R1) = y;
 	R2 = 52;
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
@@ -45181,44 +45256,44 @@ L4762:
 	asi64(R1) = u;
 	asu64(R2) = x;
 	asu64(R1) = cc_parse_coercemode(asu64(R2), asi64(R1));
-	goto L4755;
-L4763:
-	asi64(R1) = s;
-	R2 = 18;
-	if (asi64(R1) != asi64(R2)) goto L4764;
-	asi64(R1) = t;
-	R2 = 18;
-	if (asi64(R1) != asi64(R2)) goto L4764;
-	asu64(R1) = x;
-	R2 = 52;
-	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
-	R1 = toi64(toi32(R1));
-	u = asi64(R1);
-	goto L4755;
+	goto L4756;
 L4764:
 	asi64(R1) = s;
-	R2 = 19;
+	R2 = 18;
 	if (asi64(R1) != asi64(R2)) goto L4765;
 	asi64(R1) = t;
-	R2 = 19;
+	R2 = 18;
 	if (asi64(R1) != asi64(R2)) goto L4765;
 	asu64(R1) = x;
 	R2 = 52;
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
 	R1 = toi64(toi32(R1));
 	u = asi64(R1);
-	goto L4755;
+	goto L4756;
 L4765:
+	asi64(R1) = s;
+	R2 = 19;
+	if (asi64(R1) != asi64(R2)) goto L4766;
+	asi64(R1) = t;
+	R2 = 19;
+	if (asi64(R1) != asi64(R2)) goto L4766;
+	asu64(R1) = x;
+	R2 = 52;
+	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
+	R1 = toi64(toi32(R1));
+	u = asi64(R1);
+	goto L4756;
+L4766:
 	asi64(R1) = s;
 	asi64(R2) = t;
     {u64 temp = R1; R1 = R2; R2 = temp;}
-	if (asi64(R1) != asi64(R2)) goto L4766;
+	if (asi64(R1) != asi64(R2)) goto L4767;
 	R2 = 0;
-	if (asi64(R1) != asi64(R2)) goto L4766;
+	if (asi64(R1) != asi64(R2)) goto L4767;
 	R1 = 0;
 	u = asi64(R1);
-	goto L4755;
-L4766:
+	goto L4756;
+L4767:
 	msysc_m$print_startcon();
 	R1 = 1;
 	asu64(R2) = x;
@@ -45238,7 +45313,7 @@ L4766:
 	msysc_m$print_end();
 	R1 = tou64("?: incompatible types");
 	cc_support_terror(asu64(R1));
-L4755:
+L4756:
 	asu64(R1) = y;
 	asu64(R2) = x;
 	asu64(R3) = pcond;
@@ -45249,10 +45324,10 @@ L4755:
 	asu64(R2) = pcond;
 	R3 = 52;
 	*toi32p(((i64)R2+(i64)R3)) = asi32(R1);
-L4754:
+L4755:
 	asu64(R1) = pcond;
-	goto L4752;
-L4752:
+	goto L4753;
+L4753:
 	return asu64(R1);
 }
 
@@ -45262,8 +45337,8 @@ static u64 cc_parse_readorlexpr() {
 	u64 y;
 	asu64(R1) = cc_parse_readandlexpr();
 	x = asu64(R1);
-	goto L4769;
-L4768:
+	goto L4770;
+L4769:
 	cc_lex_lex();
 	asu64(R1) = cc_parse_readandlexpr();
 	y = asu64(R1);
@@ -45276,32 +45351,32 @@ L4768:
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
 	R1 = toi64(toi32(R1));
 	R2 = 1;
-	if (asi64(R1) != asi64(R2)) goto L4772;
+	if (asi64(R1) != asi64(R2)) goto L4773;
 	asu64(R1) = y;
 	R2 = 40;
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
 	R1 = toi64(toi32(R1));
 	R2 = 1;
-	if (asi64(R1) != asi64(R2)) goto L4772;
+	if (asi64(R1) != asi64(R2)) goto L4773;
 	asu64(R1) = x;
 	R2 = 0;
 	asi64(R1) = *toi64p(((i64)R1+(i64)R2));
-	if (asi64(R1)) goto L4775;
+	if (asi64(R1)) goto L4776;
 	asu64(R1) = y;
 	R2 = 0;
 	asi64(R1) = *toi64p(((i64)R1+(i64)R2));
-	if (!asi64(R1)) goto L4774;
-L4775:
+	if (!asi64(R1)) goto L4775;
+L4776:
 	R1 = 1;
-	goto L4773;
-L4774:
+	goto L4774;
+L4775:
 	R1 = 0;
-L4773:
+L4774:
 	asu64(R2) = x;
 	R3 = 0;
 	*toi64p(((i64)R2+(i64)R3)) = asi64(R1);
-	goto L4769;
-L4772:
+	goto L4770;
+L4773:
 	asu64(R1) = y;
 	asu64(R2) = x;
 	R3 = 25;
@@ -45311,16 +45386,16 @@ L4772:
 	asu64(R2) = x;
 	R3 = 52;
 	*toi32p(((i64)R2+(i64)R3)) = asi32(R1);
-L4769:
+L4770:
 	R1 = (u64)&cc_decls_lx;
 	R2 = 21;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 31;
-	if (asi64(R1) == asi64(R2)) goto L4768;
+	if (asi64(R1) == asi64(R2)) goto L4769;
 	asu64(R1) = x;
-	goto L4767;
-L4767:
+	goto L4768;
+L4768:
 	return asu64(R1);
 }
 
@@ -45330,8 +45405,8 @@ static u64 cc_parse_readandlexpr() {
 	u64 y;
 	asu64(R1) = cc_parse_readiorexpr();
 	x = asu64(R1);
-	goto L4778;
-L4777:
+	goto L4779;
+L4778:
 	cc_lex_lex();
 	asu64(R1) = cc_parse_readiorexpr();
 	y = asu64(R1);
@@ -45344,31 +45419,31 @@ L4777:
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
 	R1 = toi64(toi32(R1));
 	R2 = 1;
-	if (asi64(R1) != asi64(R2)) goto L4781;
+	if (asi64(R1) != asi64(R2)) goto L4782;
 	asu64(R1) = y;
 	R2 = 40;
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
 	R1 = toi64(toi32(R1));
 	R2 = 1;
-	if (asi64(R1) != asi64(R2)) goto L4781;
+	if (asi64(R1) != asi64(R2)) goto L4782;
 	asu64(R1) = x;
 	R2 = 0;
 	asi64(R1) = *toi64p(((i64)R1+(i64)R2));
-	if (!asi64(R1)) goto L4783;
+	if (!asi64(R1)) goto L4784;
 	asu64(R1) = y;
 	R2 = 0;
 	asi64(R1) = *toi64p(((i64)R1+(i64)R2));
-	if (!asi64(R1)) goto L4783;
+	if (!asi64(R1)) goto L4784;
 	R1 = 1;
-	goto L4782;
-L4783:
+	goto L4783;
+L4784:
 	R1 = 0;
-L4782:
+L4783:
 	asu64(R2) = x;
 	R3 = 0;
 	*toi64p(((i64)R2+(i64)R3)) = asi64(R1);
-	goto L4778;
-L4781:
+	goto L4779;
+L4782:
 	asu64(R1) = y;
 	asu64(R2) = x;
 	R3 = 24;
@@ -45378,16 +45453,16 @@ L4781:
 	asu64(R2) = x;
 	R3 = 52;
 	*toi32p(((i64)R2+(i64)R3)) = asi32(R1);
-L4778:
+L4779:
 	R1 = (u64)&cc_decls_lx;
 	R2 = 21;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 32;
-	if (asi64(R1) == asi64(R2)) goto L4777;
+	if (asi64(R1) == asi64(R2)) goto L4778;
 	asu64(R1) = x;
-	goto L4776;
-L4776:
+	goto L4777;
+L4777:
 	return asu64(R1);
 }
 
@@ -45398,8 +45473,8 @@ static u64 cc_parse_readiorexpr() {
 	i64 u;
 	asu64(R1) = cc_parse_readixorexpr();
 	x = asu64(R1);
-	goto L4786;
-L4785:
+	goto L4787;
+L4786:
 	cc_lex_lex();
 	asu64(R1) = cc_parse_readixorexpr();
 	y = asu64(R1);
@@ -45423,13 +45498,13 @@ L4785:
 	R1 = toi64(tou8(R1));
 	R2 = R1;
 	u = asi64(R2);
-	if (!asi64(R1)) goto L4789;
+	if (!asi64(R1)) goto L4790;
 	asi64(R1) = u;
 	R2 = 10;
-	if (asi64(R1) < asi64(R2)) goto L4791;
+	if (asi64(R1) < asi64(R2)) goto L4792;
 	R1 = tou64("float|float");
 	cc_support_terror(asu64(R1));
-L4791:
+L4792:
 	asi64(R1) = u;
 	asu64(R2) = x;
 	asu64(R1) = cc_parse_coercemode(asu64(R2), asi64(R1));
@@ -45438,44 +45513,44 @@ L4791:
 	asu64(R2) = y;
 	asu64(R1) = cc_parse_coercemode(asu64(R2), asi64(R1));
 	y = asu64(R1);
-	goto L4788;
-L4789:
+	goto L4789;
+L4790:
 	R1 = tou64("invalid | operands");
 	cc_support_terror(asu64(R1));
-L4788:
+L4789:
 	asu64(R1) = x;
 	R2 = 40;
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
 	R1 = toi64(toi32(R1));
 	R2 = 1;
-	if (asi64(R1) != asi64(R2)) goto L4793;
+	if (asi64(R1) != asi64(R2)) goto L4794;
 	asu64(R1) = y;
 	R2 = 40;
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
 	R1 = toi64(toi32(R1));
 	R2 = 1;
-	if (asi64(R1) != asi64(R2)) goto L4793;
+	if (asi64(R1) != asi64(R2)) goto L4794;
 	asi64(R1) = u;
 	R2 = 3;
-	if (asi64(R1) == asi64(R2)) goto L4795;
+	if (asi64(R1) == asi64(R2)) goto L4796;
 	R2 = 4;
-	if (asi64(R1) == asi64(R2)) goto L4795;
+	if (asi64(R1) == asi64(R2)) goto L4796;
 	R2 = 8;
-	if (asi64(R1) == asi64(R2)) goto L4795;
+	if (asi64(R1) == asi64(R2)) goto L4796;
 	R2 = 9;
-	if (asi64(R1) == asi64(R2)) goto L4795;
-	goto L4796;
-L4795:
+	if (asi64(R1) == asi64(R2)) goto L4796;
+	goto L4797;
+L4796:
 	asu64(R1) = y;
 	R2 = 0;
 	asi64(R1) = *toi64p(((i64)R1+(i64)R2));
 	asu64(R2) = x;
 	*toi64p(R2) |= asi64(R1);
-	goto L4786;
-	goto L4794;
-L4796:
+	goto L4787;
+	goto L4795;
+L4797:
+L4795:
 L4794:
-L4793:
 	asu64(R1) = y;
 	asu64(R2) = x;
 	R3 = 45;
@@ -45485,16 +45560,16 @@ L4793:
 	asu64(R2) = x;
 	R3 = 52;
 	*toi32p(((i64)R2+(i64)R3)) = asi32(R1);
-L4786:
+L4787:
 	R1 = (u64)&cc_decls_lx;
 	R2 = 21;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 28;
-	if (asi64(R1) == asi64(R2)) goto L4785;
+	if (asi64(R1) == asi64(R2)) goto L4786;
 	asu64(R1) = x;
-	goto L4784;
-L4784:
+	goto L4785;
+L4785:
 	return asu64(R1);
 }
 
@@ -45505,8 +45580,8 @@ static u64 cc_parse_readixorexpr() {
 	i64 u;
 	asu64(R1) = cc_parse_readiandexpr();
 	x = asu64(R1);
-	goto L4799;
-L4798:
+	goto L4800;
+L4799:
 	cc_lex_lex();
 	asu64(R1) = cc_parse_readiandexpr();
 	y = asu64(R1);
@@ -45530,13 +45605,13 @@ L4798:
 	R1 = toi64(tou8(R1));
 	R2 = R1;
 	u = asi64(R2);
-	if (!asi64(R1)) goto L4802;
+	if (!asi64(R1)) goto L4803;
 	asi64(R1) = u;
 	R2 = 10;
-	if (asi64(R1) < asi64(R2)) goto L4804;
+	if (asi64(R1) < asi64(R2)) goto L4805;
 	R1 = tou64("float^float");
 	cc_support_terror(asu64(R1));
-L4804:
+L4805:
 	asi64(R1) = u;
 	asu64(R2) = x;
 	asu64(R1) = cc_parse_coercemode(asu64(R2), asi64(R1));
@@ -45545,44 +45620,44 @@ L4804:
 	asu64(R2) = y;
 	asu64(R1) = cc_parse_coercemode(asu64(R2), asi64(R1));
 	y = asu64(R1);
-	goto L4801;
-L4802:
+	goto L4802;
+L4803:
 	R1 = tou64("invalid ^ operands");
 	cc_support_terror(asu64(R1));
-L4801:
+L4802:
 	asu64(R1) = x;
 	R2 = 40;
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
 	R1 = toi64(toi32(R1));
 	R2 = 1;
-	if (asi64(R1) != asi64(R2)) goto L4806;
+	if (asi64(R1) != asi64(R2)) goto L4807;
 	asu64(R1) = y;
 	R2 = 40;
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
 	R1 = toi64(toi32(R1));
 	R2 = 1;
-	if (asi64(R1) != asi64(R2)) goto L4806;
+	if (asi64(R1) != asi64(R2)) goto L4807;
 	asi64(R1) = u;
 	R2 = 3;
-	if (asi64(R1) == asi64(R2)) goto L4808;
+	if (asi64(R1) == asi64(R2)) goto L4809;
 	R2 = 4;
-	if (asi64(R1) == asi64(R2)) goto L4808;
+	if (asi64(R1) == asi64(R2)) goto L4809;
 	R2 = 8;
-	if (asi64(R1) == asi64(R2)) goto L4808;
+	if (asi64(R1) == asi64(R2)) goto L4809;
 	R2 = 9;
-	if (asi64(R1) == asi64(R2)) goto L4808;
-	goto L4809;
-L4808:
+	if (asi64(R1) == asi64(R2)) goto L4809;
+	goto L4810;
+L4809:
 	asu64(R1) = y;
 	R2 = 0;
 	asi64(R1) = *toi64p(((i64)R1+(i64)R2));
 	asu64(R2) = x;
 	*toi64p(R2) ^= asi64(R1);
-	goto L4799;
-	goto L4807;
-L4809:
+	goto L4800;
+	goto L4808;
+L4810:
+L4808:
 L4807:
-L4806:
 	asu64(R1) = y;
 	asu64(R2) = x;
 	R3 = 46;
@@ -45592,16 +45667,16 @@ L4806:
 	asu64(R2) = x;
 	R3 = 52;
 	*toi32p(((i64)R2+(i64)R3)) = asi32(R1);
-L4799:
+L4800:
 	R1 = (u64)&cc_decls_lx;
 	R2 = 21;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 30;
-	if (asi64(R1) == asi64(R2)) goto L4798;
+	if (asi64(R1) == asi64(R2)) goto L4799;
 	asu64(R1) = x;
-	goto L4797;
-L4797:
+	goto L4798;
+L4798:
 	return asu64(R1);
 }
 
@@ -45612,8 +45687,8 @@ static u64 cc_parse_readiandexpr() {
 	i64 u;
 	asu64(R1) = cc_parse_readeqexpr();
 	x = asu64(R1);
-	goto L4812;
-L4811:
+	goto L4813;
+L4812:
 	cc_lex_lex();
 	asu64(R1) = cc_parse_readeqexpr();
 	y = asu64(R1);
@@ -45637,13 +45712,13 @@ L4811:
 	R1 = toi64(tou8(R1));
 	R2 = R1;
 	u = asi64(R2);
-	if (!asi64(R1)) goto L4815;
+	if (!asi64(R1)) goto L4816;
 	asi64(R1) = u;
 	R2 = 10;
-	if (asi64(R1) < asi64(R2)) goto L4817;
+	if (asi64(R1) < asi64(R2)) goto L4818;
 	R1 = tou64("float&float");
 	cc_support_terror(asu64(R1));
-L4817:
+L4818:
 	asi64(R1) = u;
 	asu64(R2) = x;
 	asu64(R1) = cc_parse_coercemode(asu64(R2), asi64(R1));
@@ -45652,8 +45727,8 @@ L4817:
 	asu64(R2) = y;
 	asu64(R1) = cc_parse_coercemode(asu64(R2), asi64(R1));
 	y = asu64(R1);
-	goto L4814;
-L4815:
+	goto L4815;
+L4816:
 	msysc_m$print_startcon();
 	R1 = 1;
 	asu64(R2) = x;
@@ -45676,40 +45751,40 @@ L4815:
 	msysc_m$print_end();
 	R1 = tou64("invalid & operands");
 	cc_support_terror(asu64(R1));
-L4814:
+L4815:
 	asu64(R1) = x;
 	R2 = 40;
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
 	R1 = toi64(toi32(R1));
 	R2 = 1;
-	if (asi64(R1) != asi64(R2)) goto L4819;
+	if (asi64(R1) != asi64(R2)) goto L4820;
 	asu64(R1) = y;
 	R2 = 40;
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
 	R1 = toi64(toi32(R1));
 	R2 = 1;
-	if (asi64(R1) != asi64(R2)) goto L4819;
+	if (asi64(R1) != asi64(R2)) goto L4820;
 	asi64(R1) = u;
 	R2 = 3;
-	if (asi64(R1) == asi64(R2)) goto L4821;
+	if (asi64(R1) == asi64(R2)) goto L4822;
 	R2 = 4;
-	if (asi64(R1) == asi64(R2)) goto L4821;
+	if (asi64(R1) == asi64(R2)) goto L4822;
 	R2 = 8;
-	if (asi64(R1) == asi64(R2)) goto L4821;
+	if (asi64(R1) == asi64(R2)) goto L4822;
 	R2 = 9;
-	if (asi64(R1) == asi64(R2)) goto L4821;
-	goto L4822;
-L4821:
+	if (asi64(R1) == asi64(R2)) goto L4822;
+	goto L4823;
+L4822:
 	asu64(R1) = y;
 	R2 = 0;
 	asi64(R1) = *toi64p(((i64)R1+(i64)R2));
 	asu64(R2) = x;
 	*toi64p(R2) &= asi64(R1);
-	goto L4812;
-	goto L4820;
-L4822:
+	goto L4813;
+	goto L4821;
+L4823:
+L4821:
 L4820:
-L4819:
 	asu64(R1) = y;
 	asu64(R2) = x;
 	R3 = 44;
@@ -45719,16 +45794,16 @@ L4819:
 	asu64(R2) = x;
 	R3 = 52;
 	*toi32p(((i64)R2+(i64)R3)) = asi32(R1);
-L4812:
+L4813:
 	R1 = (u64)&cc_decls_lx;
 	R2 = 21;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 29;
-	if (asi64(R1) == asi64(R2)) goto L4811;
+	if (asi64(R1) == asi64(R2)) goto L4812;
 	asu64(R1) = x;
-	goto L4810;
-L4810:
+	goto L4811;
+L4811:
 	return asu64(R1);
 }
 
@@ -45744,8 +45819,8 @@ static u64 cc_parse_readeqexpr() {
 	i64 tt;
 	asu64(R1) = cc_parse_readrelexpr();
 	x = asu64(R1);
-	goto L4825;
-L4824:
+	goto L4826;
+L4825:
 	cc_lex_lex();
 	asu64(R1) = cc_parse_readrelexpr();
 	y = asu64(R1);
@@ -45773,7 +45848,7 @@ L4824:
 	R1 = toi64(tou8(R1));
 	R2 = R1;
 	u = asi64(R2);
-	if (!asi64(R1)) goto L4828;
+	if (!asi64(R1)) goto L4829;
 	asi64(R1) = u;
 	asu64(R2) = x;
 	asu64(R1) = cc_parse_coercemode(asu64(R2), asi64(R1));
@@ -45782,14 +45857,14 @@ L4824:
 	asu64(R2) = y;
 	asu64(R1) = cc_parse_coercemode(asu64(R2), asi64(R1));
 	y = asu64(R1);
-	goto L4827;
-L4828:
+	goto L4828;
+L4829:
 	asi64(R1) = s;
 	R2 = 13;
-	if (asi64(R1) != asi64(R2)) goto L4829;
+	if (asi64(R1) != asi64(R2)) goto L4830;
 	asi64(R1) = t;
 	R2 = 13;
-	if (asi64(R1) != asi64(R2)) goto L4829;
+	if (asi64(R1) != asi64(R2)) goto L4830;
 	R1 = (u64)&cc_decls_tttarget;
 	asu64(R2) = x;
 	R3 = 52;
@@ -45808,13 +45883,13 @@ L4828:
 	R2 = toi64(toi16(R2));
 	R3 = R2;
 	tt = asi64(R3);
-	if (asi64(R1) == asi64(R2)) goto L4831;
+	if (asi64(R1) == asi64(R2)) goto L4832;
 	asi64(R1) = ss;
 	R2 = 0;
-	if (asi64(R1) == asi64(R2)) goto L4833;
+	if (asi64(R1) == asi64(R2)) goto L4834;
 	asi64(R1) = tt;
 	R2 = 0;
-	if (asi64(R1) == asi64(R2)) goto L4833;
+	if (asi64(R1) == asi64(R2)) goto L4834;
 	R1 = 1;
 	asu64(R2) = y;
 	R3 = 52;
@@ -45825,60 +45900,60 @@ L4828:
 	asi32(R3) = *toi32p(((i64)R3+(i64)R4));
 	R3 = toi64(toi32(R3));
 	asi64(R1) = cc_parse_checkpointertypes(asi64(R3), asi64(R2), asi64(R1));
-	if (asi64(R1)) goto L4835;
+	if (asi64(R1)) goto L4836;
 	R1 = tou64("Comparing distinct pointers/eq");
 	cc_support_terror(asu64(R1));
-L4835:
-L4833:
-L4831:
-	goto L4827;
-L4829:
+L4836:
+L4834:
+L4832:
+	goto L4828;
+L4830:
 	asi64(R1) = s;
 	R2 = 13;
-	if (asi64(R1) != asi64(R2)) goto L4836;
+	if (asi64(R1) != asi64(R2)) goto L4837;
 	asi64(R1) = t;
 	R2 = 3;
-	if (asi64(R1) != asi64(R2)) goto L4836;
+	if (asi64(R1) != asi64(R2)) goto L4837;
 	asu64(R1) = y;
 	R2 = 40;
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
 	R1 = toi64(toi32(R1));
 	R2 = 1;
-	if (asi64(R1) != asi64(R2)) goto L4839;
+	if (asi64(R1) != asi64(R2)) goto L4840;
 	asu64(R1) = y;
 	R2 = 0;
 	asi64(R1) = *toi64p(((i64)R1+(i64)R2));
 	R2 = 0;
-	if (asi64(R1) == asi64(R2)) goto L4838;
-L4839:
+	if (asi64(R1) == asi64(R2)) goto L4839;
+L4840:
 	R1 = tou64("Can't compare pointer to int");
 	cc_support_terror(asu64(R1));
-L4838:
-	goto L4827;
-L4836:
+L4839:
+	goto L4828;
+L4837:
 	asi64(R1) = s;
 	R2 = 3;
-	if (asi64(R1) != asi64(R2)) goto L4840;
+	if (asi64(R1) != asi64(R2)) goto L4841;
 	asi64(R1) = t;
 	R2 = 13;
-	if (asi64(R1) != asi64(R2)) goto L4840;
+	if (asi64(R1) != asi64(R2)) goto L4841;
 	asu64(R1) = x;
 	R2 = 40;
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
 	R1 = toi64(toi32(R1));
 	R2 = 1;
-	if (asi64(R1) != asi64(R2)) goto L4843;
+	if (asi64(R1) != asi64(R2)) goto L4844;
 	asu64(R1) = x;
 	R2 = 0;
 	asi64(R1) = *toi64p(((i64)R1+(i64)R2));
 	R2 = 0;
-	if (asi64(R1) == asi64(R2)) goto L4842;
-L4843:
+	if (asi64(R1) == asi64(R2)) goto L4843;
+L4844:
 	R1 = tou64("Can't compare pointer to int2");
 	cc_support_terror(asu64(R1));
-L4842:
-	goto L4827;
-L4840:
+L4843:
+	goto L4828;
+L4841:
 	msysc_m$print_startcon();
 	R1 = tou64("U=");
 	msysc_m$print_str_nf(asu64(R1));
@@ -45888,35 +45963,35 @@ L4840:
 	msysc_m$print_end();
 	R1 = tou64("invalid == operands");
 	cc_support_terror(asu64(R1));
-L4827:
+L4828:
 	asu64(R1) = x;
 	R2 = 40;
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
 	R1 = toi64(toi32(R1));
 	R2 = 1;
-	if (asi64(R1) != asi64(R2)) goto L4845;
+	if (asi64(R1) != asi64(R2)) goto L4846;
 	asu64(R1) = y;
 	R2 = 40;
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
 	R1 = toi64(toi32(R1));
 	R2 = 1;
-	if (asi64(R1) != asi64(R2)) goto L4845;
+	if (asi64(R1) != asi64(R2)) goto L4846;
 	asi64(R1) = u;
 	R2 = 3;
-	if (asi64(R1) == asi64(R2)) goto L4847;
+	if (asi64(R1) == asi64(R2)) goto L4848;
 	R2 = 4;
-	if (asi64(R1) == asi64(R2)) goto L4847;
+	if (asi64(R1) == asi64(R2)) goto L4848;
 	R2 = 8;
-	if (asi64(R1) == asi64(R2)) goto L4847;
+	if (asi64(R1) == asi64(R2)) goto L4848;
 	R2 = 9;
-	if (asi64(R1) == asi64(R2)) goto L4847;
+	if (asi64(R1) == asi64(R2)) goto L4848;
 	R2 = 0;
-	if (asi64(R1) == asi64(R2)) goto L4847;
-	goto L4848;
-L4847:
+	if (asi64(R1) == asi64(R2)) goto L4848;
+	goto L4849;
+L4848:
 	asi64(R1) = opc;
 	R2 = 40;
-	if (asi64(R1) != asi64(R2)) goto L4850;
+	if (asi64(R1) != asi64(R2)) goto L4851;
 	asu64(R1) = x;
 	R2 = 0;
 	asi64(R1) = *toi64p(((i64)R1+(i64)R2));
@@ -45927,8 +46002,8 @@ L4847:
 	asu64(R2) = x;
 	R3 = 0;
 	*toi64p(((i64)R2+(i64)R3)) = asi64(R1);
-	goto L4849;
-L4850:
+	goto L4850;
+L4851:
 	asu64(R1) = x;
 	R2 = 0;
 	asi64(R1) = *toi64p(((i64)R1+(i64)R2));
@@ -45939,12 +46014,12 @@ L4850:
 	asu64(R2) = x;
 	R3 = 0;
 	*toi64p(((i64)R2+(i64)R3)) = asi64(R1);
+L4850:
+	goto L4826;
+	goto L4847;
 L4849:
-	goto L4825;
-	goto L4846;
-L4848:
+L4847:
 L4846:
-L4845:
 	asu64(R1) = y;
 	asu64(R2) = x;
 	R3 = (u64)&cc_tables_symboltojtag;
@@ -45957,7 +46032,7 @@ L4845:
 	asu64(R2) = x;
 	R3 = 52;
 	*toi32p(((i64)R2+(i64)R3)) = asi32(R1);
-L4825:
+L4826:
 	R1 = (u64)&cc_decls_lx;
 	R2 = 21;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
@@ -45965,13 +46040,13 @@ L4825:
 	R2 = R1;
 	opc = asi64(R2);
 	R2 = 40;
-	if (asi64(R1) == asi64(R2)) goto L4824;
+	if (asi64(R1) == asi64(R2)) goto L4825;
 	asi64(R1) = opc;
 	R2 = 41;
-	if (asi64(R1) == asi64(R2)) goto L4824;
+	if (asi64(R1) == asi64(R2)) goto L4825;
 	asu64(R1) = x;
-	goto L4823;
-L4823:
+	goto L4824;
+L4824:
 	return asu64(R1);
 }
 
@@ -45991,8 +46066,8 @@ static u64 cc_parse_readrelexpr() {
 	u64 cc;
 	asu64(R1) = cc_parse_readshiftexpr();
 	x = asu64(R1);
-	goto L4853;
-L4852:
+	goto L4854;
+L4853:
 	cc_lex_lex();
 	asu64(R1) = cc_parse_readshiftexpr();
 	y = asu64(R1);
@@ -46020,7 +46095,7 @@ L4852:
 	R1 = toi64(tou8(R1));
 	R2 = R1;
 	u = asi64(R2);
-	if (!asi64(R1)) goto L4856;
+	if (!asi64(R1)) goto L4857;
 	asi64(R1) = u;
 	asu64(R2) = x;
 	asu64(R1) = cc_parse_coercemode(asu64(R2), asi64(R1));
@@ -46029,14 +46104,14 @@ L4852:
 	asu64(R2) = y;
 	asu64(R1) = cc_parse_coercemode(asu64(R2), asi64(R1));
 	y = asu64(R1);
-	goto L4855;
-L4856:
+	goto L4856;
+L4857:
 	asi64(R1) = s;
 	R2 = 13;
-	if (asi64(R1) != asi64(R2)) goto L4857;
+	if (asi64(R1) != asi64(R2)) goto L4858;
 	asi64(R1) = t;
 	R2 = 13;
-	if (asi64(R1) != asi64(R2)) goto L4857;
+	if (asi64(R1) != asi64(R2)) goto L4858;
 	R1 = 1;
 	asu64(R2) = y;
 	R3 = 52;
@@ -46047,27 +46122,27 @@ L4856:
 	asi32(R3) = *toi32p(((i64)R3+(i64)R4));
 	R3 = toi64(toi32(R3));
 	asi64(R1) = cc_parse_checkpointertypes(asi64(R3), asi64(R2), asi64(R1));
-	if (asi64(R1)) goto L4859;
+	if (asi64(R1)) goto L4860;
 	R1 = tou64("Comparing distinct pointers/rel");
 	cc_support_terror(asu64(R1));
-L4859:
-	goto L4855;
-L4857:
+L4860:
+	goto L4856;
+L4858:
 	R1 = tou64("invalid rel operands");
 	cc_support_terror(asu64(R1));
-L4855:
+L4856:
 	asu64(R1) = x;
 	R2 = 40;
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
 	R1 = toi64(toi32(R1));
 	R2 = 1;
-	if (asi64(R1) != asi64(R2)) goto L4861;
+	if (asi64(R1) != asi64(R2)) goto L4862;
 	asu64(R1) = y;
 	R2 = 40;
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
 	R1 = toi64(toi32(R1));
 	R2 = 1;
-	if (asi64(R1) != asi64(R2)) goto L4861;
+	if (asi64(R1) != asi64(R2)) goto L4862;
 	asu64(R1) = x;
 	R2 = 0;
 	asi64(R1) = *toi64p(((i64)R1+(i64)R2));
@@ -46078,54 +46153,54 @@ L4855:
 	b = asi64(R1);
 	asi64(R1) = u;
 	R2 = 3;
-	if (asi64(R1) == asi64(R2)) goto L4863;
+	if (asi64(R1) == asi64(R2)) goto L4864;
 	R2 = 4;
-	if (asi64(R1) == asi64(R2)) goto L4863;
+	if (asi64(R1) == asi64(R2)) goto L4864;
 	R2 = 8;
-	if (asi64(R1) == asi64(R2)) goto L4864;
+	if (asi64(R1) == asi64(R2)) goto L4865;
 	R2 = 9;
-	if (asi64(R1) == asi64(R2)) goto L4864;
-	goto L4865;
-L4863:
+	if (asi64(R1) == asi64(R2)) goto L4865;
+	goto L4866;
+L4864:
 	asi64(R1) = opc;
 	R2 = 42;
-	if (asi64(R1) == asi64(R2)) goto L4867;
-	R2 = 43;
 	if (asi64(R1) == asi64(R2)) goto L4868;
-	R2 = 44;
+	R2 = 43;
 	if (asi64(R1) == asi64(R2)) goto L4869;
-	goto L4870;
-L4867:
+	R2 = 44;
+	if (asi64(R1) == asi64(R2)) goto L4870;
+	goto L4871;
+L4868:
 	asi64(R1) = a;
 	asi64(R2) = b;
 	asi64(R1) = asi64(R1)  <  asi64(R2);
 	c = asi64(R1);
-	goto L4866;
-L4868:
+	goto L4867;
+L4869:
 	asi64(R1) = a;
 	asi64(R2) = b;
 	asi64(R1) = asi64(R1)  <=  asi64(R2);
 	c = asi64(R1);
-	goto L4866;
-L4869:
+	goto L4867;
+L4870:
 	asi64(R1) = a;
 	asi64(R2) = b;
 	asi64(R1) = asi64(R1)  >=  asi64(R2);
 	c = asi64(R1);
-	goto L4866;
-L4870:
+	goto L4867;
+L4871:
 	asi64(R1) = a;
 	asi64(R2) = b;
 	asi64(R1) = asi64(R1)  >  asi64(R2);
 	c = asi64(R1);
-L4866:
+L4867:
 	asi64(R1) = c;
 	asu64(R2) = x;
 	R3 = 0;
 	*toi64p(((i64)R2+(i64)R3)) = asi64(R1);
-	goto L4853;
-	goto L4862;
-L4864:
+	goto L4854;
+	goto L4863;
+L4865:
 	asu64(R1) = x;
 	R2 = 0;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
@@ -46136,45 +46211,45 @@ L4864:
 	bb = asu64(R1);
 	asi64(R1) = opc;
 	R2 = 42;
-	if (asi64(R1) == asi64(R2)) goto L4872;
-	R2 = 43;
 	if (asi64(R1) == asi64(R2)) goto L4873;
-	R2 = 44;
+	R2 = 43;
 	if (asi64(R1) == asi64(R2)) goto L4874;
-	goto L4875;
-L4872:
+	R2 = 44;
+	if (asi64(R1) == asi64(R2)) goto L4875;
+	goto L4876;
+L4873:
 	asu64(R1) = aa;
 	asu64(R2) = bb;
 	asi64(R1) = asu64(R1)  <  asu64(R2);
 	cc = asu64(R1);
-	goto L4871;
-L4873:
+	goto L4872;
+L4874:
 	asu64(R1) = aa;
 	asu64(R2) = bb;
 	asi64(R1) = asu64(R1)  <=  asu64(R2);
 	cc = asu64(R1);
-	goto L4871;
-L4874:
+	goto L4872;
+L4875:
 	asu64(R1) = aa;
 	asu64(R2) = bb;
 	asi64(R1) = asu64(R1)  >=  asu64(R2);
 	cc = asu64(R1);
-	goto L4871;
-L4875:
+	goto L4872;
+L4876:
 	asu64(R1) = aa;
 	asu64(R2) = bb;
 	asi64(R1) = asu64(R1)  >  asu64(R2);
 	cc = asu64(R1);
-L4871:
+L4872:
 	asu64(R1) = cc;
 	asu64(R2) = x;
 	R3 = 0;
 	*toi64p(((i64)R2+(i64)R3)) = asi64(R1);
-	goto L4853;
-	goto L4862;
-L4865:
+	goto L4854;
+	goto L4863;
+L4866:
+L4863:
 L4862:
-L4861:
 	asu64(R1) = y;
 	asu64(R2) = x;
 	R3 = (u64)&cc_tables_symboltojtag;
@@ -46187,7 +46262,7 @@ L4861:
 	asu64(R2) = x;
 	R3 = 52;
 	*toi32p(((i64)R2+(i64)R3)) = asi32(R1);
-L4853:
+L4854:
 	R1 = (u64)&cc_decls_lx;
 	R2 = 21;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
@@ -46195,19 +46270,19 @@ L4853:
 	R2 = R1;
 	opc = asi64(R2);
 	R2 = 42;
-	if (asi64(R1) == asi64(R2)) goto L4852;
+	if (asi64(R1) == asi64(R2)) goto L4853;
 	asi64(R1) = opc;
 	R2 = 43;
-	if (asi64(R1) == asi64(R2)) goto L4852;
+	if (asi64(R1) == asi64(R2)) goto L4853;
 	asi64(R1) = opc;
 	R2 = 44;
-	if (asi64(R1) == asi64(R2)) goto L4852;
+	if (asi64(R1) == asi64(R2)) goto L4853;
 	asi64(R1) = opc;
 	R2 = 45;
-	if (asi64(R1) == asi64(R2)) goto L4852;
+	if (asi64(R1) == asi64(R2)) goto L4853;
 	asu64(R1) = x;
-	goto L4851;
-L4851:
+	goto L4852;
+L4852:
 	return asu64(R1);
 }
 
@@ -46219,8 +46294,8 @@ static u64 cc_parse_readshiftexpr() {
 	i64 u;
 	asu64(R1) = cc_parse_readaddexpr();
 	x = asu64(R1);
-	goto L4878;
-L4877:
+	goto L4879;
+L4878:
 	cc_lex_lex();
 	asu64(R1) = cc_parse_readaddexpr();
 	y = asu64(R1);
@@ -46236,14 +46311,14 @@ L4877:
 	R2 = R1;
 	u = asi64(R2);
 	R2 = 1;
-	if (asi64(R1) < asi64(R2)) goto L4882;
+	if (asi64(R1) < asi64(R2)) goto L4883;
 	asi64(R1) = u;
 	R2 = 9;
-	if (asi64(R1) <= asi64(R2)) goto L4881;
-L4882:
+	if (asi64(R1) <= asi64(R2)) goto L4882;
+L4883:
 	R1 = tou64("shift:Not an int");
 	cc_support_terror(asu64(R1));
-L4881:
+L4882:
 	R1 = 3;
 	asu64(R2) = y;
 	asu64(R1) = cc_parse_coercemode(asu64(R2), asi64(R1));
@@ -46253,27 +46328,27 @@ L4881:
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
 	R1 = toi64(toi32(R1));
 	R2 = 1;
-	if (asi64(R1) != asi64(R2)) goto L4884;
+	if (asi64(R1) != asi64(R2)) goto L4885;
 	asu64(R1) = y;
 	R2 = 40;
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
 	R1 = toi64(toi32(R1));
 	R2 = 1;
-	if (asi64(R1) != asi64(R2)) goto L4884;
+	if (asi64(R1) != asi64(R2)) goto L4885;
 	asi64(R1) = u;
 	R2 = 3;
-	if (asi64(R1) == asi64(R2)) goto L4886;
+	if (asi64(R1) == asi64(R2)) goto L4887;
 	R2 = 4;
-	if (asi64(R1) == asi64(R2)) goto L4886;
+	if (asi64(R1) == asi64(R2)) goto L4887;
 	R2 = 8;
-	if (asi64(R1) == asi64(R2)) goto L4887;
+	if (asi64(R1) == asi64(R2)) goto L4888;
 	R2 = 9;
-	if (asi64(R1) == asi64(R2)) goto L4887;
-	goto L4888;
-L4886:
+	if (asi64(R1) == asi64(R2)) goto L4888;
+	goto L4889;
+L4887:
 	asi64(R1) = opc;
 	R2 = 33;
-	if (asi64(R1) != asi64(R2)) goto L4890;
+	if (asi64(R1) != asi64(R2)) goto L4891;
 	asu64(R1) = x;
 	R2 = 0;
 	asi64(R1) = *toi64p(((i64)R1+(i64)R2));
@@ -46284,8 +46359,8 @@ L4886:
 	asu64(R2) = x;
 	R3 = 0;
 	*toi64p(((i64)R2+(i64)R3)) = asi64(R1);
-	goto L4889;
-L4890:
+	goto L4890;
+L4891:
 	asu64(R1) = x;
 	R2 = 0;
 	asi64(R1) = *toi64p(((i64)R1+(i64)R2));
@@ -46296,13 +46371,13 @@ L4890:
 	asu64(R2) = x;
 	R3 = 0;
 	*toi64p(((i64)R2+(i64)R3)) = asi64(R1);
-L4889:
-	goto L4878;
-	goto L4885;
-L4887:
+L4890:
+	goto L4879;
+	goto L4886;
+L4888:
 	asi64(R1) = opc;
 	R2 = 33;
-	if (asi64(R1) != asi64(R2)) goto L4892;
+	if (asi64(R1) != asi64(R2)) goto L4893;
 	asu64(R1) = x;
 	R2 = 0;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
@@ -46313,8 +46388,8 @@ L4887:
 	asu64(R2) = x;
 	R3 = 0;
 	*tou64p(((i64)R2+(i64)R3)) = asu64(R1);
-	goto L4891;
-L4892:
+	goto L4892;
+L4893:
 	asu64(R1) = x;
 	R2 = 0;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
@@ -46325,29 +46400,29 @@ L4892:
 	asu64(R2) = x;
 	R3 = 0;
 	*tou64p(((i64)R2+(i64)R3)) = asu64(R1);
-L4891:
-	goto L4878;
-	goto L4885;
-L4888:
+L4892:
+	goto L4879;
+	goto L4886;
+L4889:
+L4886:
 L4885:
-L4884:
 	asu64(R1) = y;
 	asu64(R2) = x;
 	asi64(R3) = opc;
 	R4 = 33;
-	if (asi64(R3) != asi64(R4)) goto L4894;
+	if (asi64(R3) != asi64(R4)) goto L4895;
 	R3 = 47;
-	goto L4893;
-L4894:
+	goto L4894;
+L4895:
 	R3 = 48;
-L4893:
+L4894:
 	asu64(R1) = cc_lib_createunit2(asi64(R3), asu64(R2), asu64(R1));
 	x = asu64(R1);
 	asi64(R1) = u;
 	asu64(R2) = x;
 	R3 = 52;
 	*toi32p(((i64)R2+(i64)R3)) = asi32(R1);
-L4878:
+L4879:
 	R1 = (u64)&cc_decls_lx;
 	R2 = 21;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
@@ -46355,13 +46430,13 @@ L4878:
 	R2 = R1;
 	opc = asi64(R2);
 	R2 = 33;
-	if (asi64(R1) == asi64(R2)) goto L4877;
+	if (asi64(R1) == asi64(R2)) goto L4878;
 	asi64(R1) = opc;
 	R2 = 34;
-	if (asi64(R1) == asi64(R2)) goto L4877;
+	if (asi64(R1) == asi64(R2)) goto L4878;
 	asu64(R1) = x;
-	goto L4876;
-L4876:
+	goto L4877;
+L4877:
 	return asu64(R1);
 }
 
@@ -46372,26 +46447,26 @@ static u64 cc_parse_readaddexpr() {
 	i64 opc;
 	asu64(R1) = cc_parse_readmulexpr();
 	p = asu64(R1);
-	goto L4897;
-L4896:
+	goto L4898;
+L4897:
 	cc_lex_lex();
 	asu64(R1) = cc_parse_readmulexpr();
 	q = asu64(R1);
 	asi64(R1) = opc;
 	R2 = 23;
-	if (asi64(R1) != asi64(R2)) goto L4900;
+	if (asi64(R1) != asi64(R2)) goto L4901;
 	asu64(R1) = q;
 	asu64(R2) = p;
 	asu64(R1) = cc_parse_createaddop(asu64(R2), asu64(R1));
 	p = asu64(R1);
-	goto L4899;
-L4900:
+	goto L4900;
+L4901:
 	asu64(R1) = q;
 	asu64(R2) = p;
 	asu64(R1) = cc_parse_createsubop(asu64(R2), asu64(R1));
 	p = asu64(R1);
-L4899:
-L4897:
+L4900:
+L4898:
 	R1 = (u64)&cc_decls_lx;
 	R2 = 21;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
@@ -46399,13 +46474,13 @@ L4897:
 	R2 = R1;
 	opc = asi64(R2);
 	R2 = 23;
-	if (asi64(R1) == asi64(R2)) goto L4896;
+	if (asi64(R1) == asi64(R2)) goto L4897;
 	asi64(R1) = opc;
 	R2 = 24;
-	if (asi64(R1) == asi64(R2)) goto L4896;
+	if (asi64(R1) == asi64(R2)) goto L4897;
 	asu64(R1) = p;
-	goto L4895;
-L4895:
+	goto L4896;
+L4896:
 	return asu64(R1);
 }
 
@@ -46416,40 +46491,40 @@ static u64 cc_parse_readmulexpr() {
 	i64 opc;
 	asu64(R1) = cc_parse_readterm();
 	p = asu64(R1);
-	goto L4903;
-L4902:
+	goto L4904;
+L4903:
 	cc_lex_lex();
 	asu64(R1) = cc_parse_readterm();
 	q = asu64(R1);
 	asi64(R1) = opc;
 	R2 = 25;
-	if (asi64(R1) == asi64(R2)) goto L4906;
-	R2 = 26;
 	if (asi64(R1) == asi64(R2)) goto L4907;
-	R2 = 27;
+	R2 = 26;
 	if (asi64(R1) == asi64(R2)) goto L4908;
-	goto L4909;
-L4906:
+	R2 = 27;
+	if (asi64(R1) == asi64(R2)) goto L4909;
+	goto L4910;
+L4907:
 	asu64(R1) = q;
 	asu64(R2) = p;
 	asu64(R1) = cc_parse_createmulop(asu64(R2), asu64(R1));
 	p = asu64(R1);
-	goto L4905;
-L4907:
+	goto L4906;
+L4908:
 	asu64(R1) = q;
 	asu64(R2) = p;
 	asu64(R1) = cc_parse_createdivop(asu64(R2), asu64(R1));
 	p = asu64(R1);
-	goto L4905;
-L4908:
+	goto L4906;
+L4909:
 	asu64(R1) = q;
 	asu64(R2) = p;
 	asu64(R1) = cc_parse_createremop(asu64(R2), asu64(R1));
 	p = asu64(R1);
-	goto L4905;
-L4909:
-L4905:
-L4903:
+	goto L4906;
+L4910:
+L4906:
+L4904:
 	R1 = (u64)&cc_decls_lx;
 	R2 = 21;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
@@ -46457,16 +46532,16 @@ L4903:
 	R2 = R1;
 	opc = asi64(R2);
 	R2 = 25;
-	if (asi64(R1) == asi64(R2)) goto L4902;
+	if (asi64(R1) == asi64(R2)) goto L4903;
 	asi64(R1) = opc;
 	R2 = 26;
-	if (asi64(R1) == asi64(R2)) goto L4902;
+	if (asi64(R1) == asi64(R2)) goto L4903;
 	asi64(R1) = opc;
 	R2 = 27;
-	if (asi64(R1) == asi64(R2)) goto L4902;
+	if (asi64(R1) == asi64(R2)) goto L4903;
 	asu64(R1) = p;
-	goto L4901;
-L4901:
+	goto L4902;
+L4902:
 	return asu64(R1);
 }
 
@@ -46496,29 +46571,29 @@ static u64 cc_parse_readterm() {
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	switch (asi64(R1)) {
-	case 13: goto L4960;
-	case 14: case 15: case 16: case 17: case 18: case 19: case 20: case 21: case 22: case 26: case 27: case 28: case 30: case 31: case 33: case 34: case 40: case 41: case 42: case 43: case 44: case 45: case 46: case 47: case 48: case 49: case 50: case 51: case 52: case 53: case 54: case 55: case 56: case 57: case 58: case 62: case 65: case 66: case 68: case 69: case 70: case 71: case 72: case 73: case 74: case 75: case 76: case 77: case 78: case 79: case 80: case 81: case 82: case 83: case 84: case 85: case 86: case 87: case 88: case 89: case 90: case 91: case 93: goto L4913;
-	case 23: goto L4947;
-	case 24: goto L4948;
-	case 25: goto L4957;
-	case 29: goto L4953;
-	case 32: goto L4956;
-	case 35: goto L4952;
-	case 36: goto L4949;
-	case 37: case 38: goto L4958;
-	case 39: goto L4959;
-	case 59: case 60: goto L4914;
-	case 61: goto L4939;
-	case 63: case 64: goto L4933;
-	case 67: goto L4915;
-	case 92: goto L4965;
-	case 94: goto L4976;
-	case 95: goto L4977;
-	case 96: goto L4978;
-	default: goto L4913;
+	case 13: goto L4961;
+	case 14: case 15: case 16: case 17: case 18: case 19: case 20: case 21: case 22: case 26: case 27: case 28: case 30: case 31: case 33: case 34: case 40: case 41: case 42: case 43: case 44: case 45: case 46: case 47: case 48: case 49: case 50: case 51: case 52: case 53: case 54: case 55: case 56: case 57: case 58: case 62: case 65: case 66: case 68: case 69: case 70: case 71: case 72: case 73: case 74: case 75: case 76: case 77: case 78: case 79: case 80: case 81: case 82: case 83: case 84: case 85: case 86: case 87: case 88: case 89: case 90: case 91: case 93: goto L4914;
+	case 23: goto L4948;
+	case 24: goto L4949;
+	case 25: goto L4958;
+	case 29: goto L4954;
+	case 32: goto L4957;
+	case 35: goto L4953;
+	case 36: goto L4950;
+	case 37: case 38: goto L4959;
+	case 39: goto L4960;
+	case 59: case 60: goto L4915;
+	case 61: goto L4940;
+	case 63: case 64: goto L4934;
+	case 67: goto L4916;
+	case 92: goto L4966;
+	case 94: goto L4977;
+	case 95: goto L4978;
+	case 96: goto L4979;
+	default: goto L4914;
     };
 // SWITCH
-L4914:
+L4915:
 	R1 = (u64)&cc_decls_lx;
 	R2 = 22;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
@@ -46529,8 +46604,8 @@ L4914:
 	asu64(R1) = cc_lib_createconstunit(asu64(R2), asi64(R1));
 	p = asu64(R1);
 	cc_lex_lex();
-	goto L4911;
-L4915:
+	goto L4912;
+L4916:
 	R1 = (u64)&cc_decls_lx;
 	R2 = 0;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
@@ -46538,48 +46613,48 @@ L4915:
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 1;
-	if (asi64(R1) > asi64(R2)) goto L4917;
+	if (asi64(R1) > asi64(R2)) goto L4918;
 	asi64(R1) = cc_decls_currblockno;
 	R2 = 1;
 	R3 = (u64)&cc_decls_lx;
 	R4 = 0;
 	asu64(R3) = *tou64p(((i64)R3+(i64)R4));
 	asu64(R4) = cc_decls_currproc;
-	if (!asu64(R4)) goto L4919;
+	if (!asu64(R4)) goto L4920;
 	asu64(R4) = cc_decls_currproc;
-	goto L4918;
-L4919:
+	goto L4919;
+L4920:
 	asu64(R4) = cc_decls_stmodule;
-L4918:
+L4919:
 	asu64(R1) = cc_lib_resolvename(asu64(R4), asu64(R3), asi64(R2), asi64(R1));
 	d = asu64(R1);
 	asu64(R1) = d;
 	R2 = 0;
-	if (asu64(R1) != asu64(R2)) goto L4921;
+	if (asu64(R1) != asu64(R2)) goto L4922;
 	R1 = (u64)&cc_decls_lx;
 	R2 = 0;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
 	asu64(R1) = cc_lib_getstname(asu64(R1));
 	R2 = tou64("Undefined name \"#\"");
 	cc_support_serror_s(asu64(R2), asu64(R1));
-L4921:
-	goto L4916;
-L4917:
+L4922:
+	goto L4917;
+L4918:
 	R1 = (u64)&cc_decls_lx;
 	R2 = 0;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
 	d = asu64(R1);
-L4916:
+L4917:
 	asu64(R1) = d;
 	R2 = 109;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 11;
-	if (asi64(R1) == asi64(R2)) goto L4923;
-	R2 = 6;
 	if (asi64(R1) == asi64(R2)) goto L4924;
-	goto L4925;
-L4923:
+	R2 = 6;
+	if (asi64(R1) == asi64(R2)) goto L4925;
+	goto L4926;
+L4924:
 	R1 = 3;
 	asu64(R2) = d;
 	R3 = 88;
@@ -46587,14 +46662,14 @@ L4923:
 	R2 = tou64(toi32(R2));
 	asu64(R1) = cc_lib_createconstunit(asu64(R2), asi64(R1));
 	p = asu64(R1);
-	goto L4922;
-L4924:
+	goto L4923;
+L4925:
 	R1 = (u64)&cc_decls_nextlx;
 	R2 = 21;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 13;
-	if (asi64(R1) == asi64(R2)) goto L4927;
+	if (asi64(R1) == asi64(R2)) goto L4928;
 	R1 = 5;
 	asu64(R1) = cc_lib_createunit0(asi64(R1));
 	p = asu64(R1);
@@ -46614,14 +46689,14 @@ L4924:
 	asu64(R2) = p;
 	R3 = 52;
 	*toi32p(((i64)R2+(i64)R3)) = asi32(R1);
-	goto L4926;
-L4927:
-	goto L4928;
-L4926:
-	goto L4922;
-L4925:
-// cc_parse.readterm.doname:
+	goto L4927;
 L4928:
+	goto L4929;
+L4927:
+	goto L4923;
+L4926:
+// cc_parse.readterm.doname:
+L4929:
 	asu64(R1) = d;
 	asu64(R1) = cc_lib_createname(asu64(R1));
 	p = asu64(R1);
@@ -46639,7 +46714,7 @@ L4928:
 	asi16(R1) = *toi16p(((i64)R1+(i64)R2*2));
 	R1 = toi64(toi16(R1));
 	R2 = 17;
-	if (asi64(R1) != asi64(R2)) goto L4930;
+	if (asi64(R1) != asi64(R2)) goto L4931;
 	R1 = (u64)&cc_decls_ttlength;
 	asi64(R2) = t;
 	asi64(R1) = *toi64p(((i64)R1+(i64)R2*8));
@@ -46657,32 +46732,32 @@ L4928:
 	asu64(R2) = p;
 	R3 = 52;
 	*toi32p(((i64)R2+(i64)R3)) = asi32(R1);
-	goto L4929;
-L4930:
-	asu64(R1) = d;
-	R2 = 109;
-	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
-	R1 = toi64(tou8(R1));
-	R2 = 6;
-	if (asi64(R1) == asi64(R2)) goto L4931;
-	R1 = (u64)&cc_decls_ttsize;
-	asi64(R2) = t;
-	asi64(R1) = *toi64p(((i64)R1+(i64)R2*8));
-	R2 = 4;
-	if (asi64(R1) >= asi64(R2)) goto L4931;
-	asu64(R1) = p;
-	cc_parse_fixmemopnd(asu64(R1));
-	goto L4929;
+	goto L4930;
 L4931:
 	asu64(R1) = d;
 	R2 = 109;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
-	R2 = 9;
-	if (asi64(R1) != asi64(R2)) goto L4932;
+	R2 = 6;
+	if (asi64(R1) == asi64(R2)) goto L4932;
+	R1 = (u64)&cc_decls_ttsize;
+	asi64(R2) = t;
+	asi64(R1) = *toi64p(((i64)R1+(i64)R2*8));
+	R2 = 4;
+	if (asi64(R1) >= asi64(R2)) goto L4932;
+	asu64(R1) = p;
+	cc_parse_fixmemopnd(asu64(R1));
+	goto L4930;
 L4932:
-L4929:
-L4922:
+	asu64(R1) = d;
+	R2 = 109;
+	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
+	R1 = toi64(tou8(R1));
+	R2 = 9;
+	if (asi64(R1) != asi64(R2)) goto L4933;
+L4933:
+L4930:
+L4923:
 	R1 = (u64)&cc_decls_lx;
 	R2 = 16;
 	asu32(R1) = *tou32p(((i64)R1+(i64)R2));
@@ -46690,8 +46765,8 @@ L4922:
 	R3 = 44;
 	*tou32p(((i64)R2+(i64)R3)) = asu32(R1);
 	cc_lex_lex();
-	goto L4911;
-L4933:
+	goto L4912;
+L4934:
 	R1 = (u64)&cc_decls_lx;
 	R2 = 21;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
@@ -46708,8 +46783,8 @@ L4933:
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
 	R1 = toi64(toi32(R1));
 	slength = asi64(R1);
-	goto L4935;
-L4934:
+	goto L4936;
+L4935:
 	asi64(R1) = slength;
 	R2 = (u64)&cc_decls_nextlx;
 	R3 = 24;
@@ -46746,15 +46821,15 @@ L4934:
 	asi64(R1) = newlen;
 	slength = asi64(R1);
 	cc_lex_lex();
-L4935:
+L4936:
 	R1 = (u64)&cc_decls_nextlx;
 	R2 = 21;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 63;
-	if (asi64(R1) == asi64(R2)) goto L4934;
+	if (asi64(R1) == asi64(R2)) goto L4935;
 	asi64(R1) = fwide;
-	if (!asi64(R1)) goto L4938;
+	if (!asi64(R1)) goto L4939;
 	asi64(R1) = slength;
 	asu64(R2) = s;
 	asu64(R1) = cc_lib_createwstringconstunit(asu64(R2), asi64(R1));
@@ -46767,8 +46842,8 @@ L4935:
 	asu64(R2) = p;
 	R3 = 52;
 	*toi32p(((i64)R2+(i64)R3)) = asi32(R1);
-	goto L4937;
-L4938:
+	goto L4938;
+L4939:
 	asi64(R1) = slength;
 	asu64(R2) = s;
 	asu64(R1) = cc_lib_createstringconstunit(asu64(R2), asi64(R1));
@@ -46777,10 +46852,10 @@ L4938:
 	asu64(R2) = p;
 	R3 = 52;
 	*toi32p(((i64)R2+(i64)R3)) = asi32(R1);
-L4937:
+L4938:
 	cc_lex_lex();
-	goto L4911;
-L4939:
+	goto L4912;
+L4940:
 	R1 = 0;
 	a = asi64(R1);
 	R1 = 0;
@@ -46794,10 +46869,10 @@ L4939:
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
 	R1 = toi64(toi32(R1));
 	R2 = 8;
-	if (asi64(R1) <= asi64(R2)) goto L4941;
+	if (asi64(R1) <= asi64(R2)) goto L4942;
 	R1 = tou64("char const too long");
 	cc_support_serror(asu64(R1));
-L4941:
+L4942:
 	R1 = (u64)&cc_decls_lx;
 	R2 = 24;
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
@@ -46805,8 +46880,8 @@ L4941:
 	av_1 = asi64(R1);
 	asi64(R1) = av_1;
 	R2 = 0;
-	if (asi64(R1) <= asi64(R2)) goto L4944;
-L4942:
+	if (asi64(R1) <= asi64(R2)) goto L4945;
+L4943:
 	asi64(R1) = a;
 	asu64(R2) = pbyte;
 	asu8(R2) = *tou8p(R2);
@@ -46820,36 +46895,36 @@ L4942:
 	*toi64p(R2) += asi64(R1);
 	R1 = (u64)&pbyte;
 	(*tou64p(R1)) += 1;
-	if (--asi64(av_1)) goto L4942;
-L4944:
+	if (--asi64(av_1)) goto L4943;
+L4945:
 	R1 = (u64)&cc_decls_lx;
 	R2 = 24;
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
 	R1 = toi64(toi32(R1));
 	R2 = 4;
-	if (asi64(R1) > asi64(R2)) goto L4946;
+	if (asi64(R1) > asi64(R2)) goto L4947;
 	R1 = 3;
-	goto L4945;
-L4946:
+	goto L4946;
+L4947:
 	R1 = 4;
-L4945:
+L4946:
 	asi64(R2) = a;
 	asu64(R1) = cc_lib_createconstunit(asu64(R2), asi64(R1));
 	p = asu64(R1);
 	cc_lex_lex();
-	goto L4911;
-L4947:
+	goto L4912;
+L4948:
 	cc_lex_lex();
 	asu64(R1) = cc_parse_readterm();
 	p = asu64(R1);
-	goto L4911;
-L4948:
+	goto L4912;
+L4949:
 	cc_lex_lex();
 	asu64(R1) = cc_parse_readterm();
 	asu64(R1) = cc_parse_createnegop(asu64(R1));
 	p = asu64(R1);
-	goto L4911;
-L4949:
+	goto L4912;
+L4950:
 	cc_lex_lex();
 	asu64(R1) = cc_parse_readterm();
 	p = asu64(R1);
@@ -46870,7 +46945,7 @@ L4949:
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
 	R1 = toi64(toi32(R1));
 	R2 = 26;
-	if (asi64(R1) != asi64(R2)) goto L4951;
+	if (asi64(R1) != asi64(R2)) goto L4952;
 	asu64(R1) = p;
 	R2 = 16;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
@@ -46880,7 +46955,7 @@ L4949:
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
 	R1 = toi64(toi32(R1));
 	R2 = 26;
-	if (asi64(R1) != asi64(R2)) goto L4951;
+	if (asi64(R1) != asi64(R2)) goto L4952;
 	asu64(R1) = p;
 	R2 = 16;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
@@ -46891,43 +46966,43 @@ L4949:
 	asu64(R2) = p;
 	R3 = 16;
 	*tou64p(((i64)R2+(i64)R3)) = asu64(R1);
-L4951:
-	goto L4911;
 L4952:
+	goto L4912;
+L4953:
 	cc_lex_lex();
 	asu64(R1) = cc_parse_readterm();
 	asu64(R1) = cc_parse_createinotop(asu64(R1));
 	p = asu64(R1);
-	goto L4911;
-L4953:
+	goto L4912;
+L4954:
 	cc_lex_lex();
 	R1 = (u64)&cc_decls_lx;
 	R2 = 21;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 25;
-	if (asi64(R1) != asi64(R2)) goto L4955;
+	if (asi64(R1) != asi64(R2)) goto L4956;
 	cc_lex_lex();
 	asu64(R1) = cc_parse_readterm();
 	p = asu64(R1);
-	goto L4954;
-L4955:
+	goto L4955;
+L4956:
 	asu64(R1) = cc_parse_readterm();
 	asu64(R1) = cc_parse_createaddrofop(asu64(R1));
 	p = asu64(R1);
-L4954:
-	goto L4911;
-L4956:
+L4955:
+	goto L4912;
+L4957:
 	R1 = tou64("rt/&&label");
 	cc_support_serror(asu64(R1));
-	goto L4911;
-L4957:
+	goto L4912;
+L4958:
 	cc_lex_lex();
 	asu64(R1) = cc_parse_readterm();
 	asu64(R1) = cc_parse_createptrop(asu64(R1));
 	p = asu64(R1);
-	goto L4911;
-L4958:
+	goto L4912;
+L4959:
 	R1 = (u64)&cc_tables_symboltojtag;
 	R2 = (u64)&cc_decls_lx;
 	R3 = 21;
@@ -46941,8 +47016,8 @@ L4958:
 	asi64(R2) = opc;
 	asu64(R1) = cc_parse_createincrop(asi64(R2), asu64(R1));
 	p = asu64(R1);
-	goto L4911;
-L4959:
+	goto L4912;
+L4960:
 	cc_lex_lex();
 	R1 = 13;
 	cc_lib_skipsymbol(asi64(R1));
@@ -46951,11 +47026,11 @@ L4959:
 	p = asu64(R1);
 	R1 = 14;
 	cc_lib_skipsymbol(asi64(R1));
-	goto L4911;
-L4960:
+	goto L4912;
+L4961:
 	cc_lex_lex();
 	asi64(R1) = cc_parse_istypestarter();
-	if (!asi64(R1)) goto L4962;
+	if (!asi64(R1)) goto L4963;
 	R1 = 0;
 	R2 = 0;
 	R3 = (u64)&pm;
@@ -46970,41 +47045,41 @@ L4960:
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 17;
-	if (asi64(R1) != asi64(R2)) goto L4964;
+	if (asi64(R1) != asi64(R2)) goto L4965;
 	R1 = tou64("rt/compound lit");
 	cc_support_serror(asu64(R1));
-	goto L4963;
-L4964:
+	goto L4964;
+L4965:
 	R1 = 0;
 	R2 = 1;
 	asi64(R3) = t;
 	asu64(R4) = cc_parse_readterm();
 	asu64(R1) = cc_parse_docast(asu64(R4), asi64(R3), asi64(R2), asi64(R1));
 	p = asu64(R1);
+L4964:
+	goto L4962;
 L4963:
-	goto L4961;
-L4962:
 	asu64(R1) = cc_parse_readexpression();
 	p = asu64(R1);
 	R1 = 14;
 	cc_lib_skipsymbol(asi64(R1));
-L4961:
-	goto L4911;
-L4965:
+L4962:
+	goto L4912;
+L4966:
 	R1 = (u64)&cc_decls_lx;
 	R2 = 22;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
-	if (!asu8(R1)) goto L4967;
+	if (!asu8(R1)) goto L4968;
 	cc_lex_lex();
 	R1 = (u64)&cc_decls_lx;
 	R2 = 21;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 13;
-	if (asi64(R1) != asi64(R2)) goto L4969;
+	if (asi64(R1) != asi64(R2)) goto L4970;
 	cc_lex_lex();
 	asi64(R1) = cc_parse_istypestarter();
-	if (!asi64(R1)) goto L4971;
+	if (!asi64(R1)) goto L4972;
 	R1 = 0;
 	R2 = 0;
 	R3 = (u64)&pm;
@@ -47020,8 +47095,8 @@ L4965:
 	asu64(R2) = *tou64p(((i64)R2+(i64)R3*8));
 	asu64(R1) = cc_lib_createconstunit(asu64(R2), asi64(R1));
 	p = asu64(R1);
-	goto L4970;
-L4971:
+	goto L4971;
+L4972:
 	asu64(R1) = cc_parse_readexpression();
 	p = asu64(R1);
 	R1 = 14;
@@ -47030,25 +47105,25 @@ L4971:
 	asu64(R2) = p;
 	asu64(R1) = cc_parse_createsizeofop(asu64(R2), asi64(R1));
 	p = asu64(R1);
+L4971:
+	goto L4969;
 L4970:
-	goto L4968;
-L4969:
 	R1 = 1;
 	asu64(R2) = cc_parse_readterm();
 	asu64(R1) = cc_parse_createsizeofop(asu64(R2), asi64(R1));
 	p = asu64(R1);
+L4969:
+	goto L4967;
 L4968:
-	goto L4966;
-L4967:
 	cc_lex_lex();
 	R1 = (u64)&cc_decls_lx;
 	R2 = 21;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 13;
-	if (asi64(R1) != asi64(R2)) goto L4973;
+	if (asi64(R1) != asi64(R2)) goto L4974;
 	asi64(R1) = cc_parse_istypestarter_next();
-	if (!asi64(R1)) goto L4975;
+	if (!asi64(R1)) goto L4976;
 	cc_lex_lex();
 	R1 = 0;
 	R2 = 0;
@@ -47065,33 +47140,33 @@ L4967:
 	asu64(R2) = *tou64p(((i64)R2+(i64)R3*8));
 	asu64(R1) = cc_lib_createconstunit(asu64(R2), asi64(R1));
 	p = asu64(R1);
-	goto L4974;
-L4975:
+	goto L4975;
+L4976:
 	asu64(R1) = cc_parse_readterm();
 	p = asu64(R1);
 	R1 = 0;
 	asu64(R2) = p;
 	asu64(R1) = cc_parse_createsizeofop(asu64(R2), asi64(R1));
 	p = asu64(R1);
+L4975:
+	goto L4973;
 L4974:
-	goto L4972;
-L4973:
 	R1 = 0;
 	asu64(R2) = cc_parse_readterm();
 	asu64(R1) = cc_parse_createsizeofop(asu64(R2), asi64(R1));
 	p = asu64(R1);
-L4972:
-L4966:
-	goto L4911;
-L4976:
+L4973:
+L4967:
+	goto L4912;
+L4977:
 	asu64(R1) = cc_parse_readgeneric();
 	p = asu64(R1);
-	goto L4911;
-L4977:
+	goto L4912;
+L4978:
 	R1 = tou64("rt/alignof");
 	cc_support_serror(asu64(R1));
-	goto L4911;
-L4978:
+	goto L4912;
+L4979:
 	R1 = (u64)&cc_decls_lx;
 	R2 = 22;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
@@ -47105,17 +47180,17 @@ L4978:
 	p = asu64(R1);
 	asi64(R1) = tag;
 	R2 = 76;
-	if (asi64(R1) != asi64(R2)) goto L4980;
+	if (asi64(R1) != asi64(R2)) goto L4981;
 	R1 = 8;
 	cc_lib_checksymbol(asi64(R1));
 	cc_lex_lex();
 	asu64(R1) = cc_parse_readassignexpr();
 	q = asu64(R1);
-	goto L4979;
-L4980:
+	goto L4980;
+L4981:
 	R1 = 0;
 	q = asu64(R1);
-L4979:
+L4980:
 	asu64(R1) = q;
 	asu64(R2) = p;
 	asi64(R3) = tag;
@@ -47128,29 +47203,29 @@ L4979:
 	R1 = 14;
 	cc_lib_checksymbol(asi64(R1));
 	cc_lex_lex();
-	goto L4911;
-L4913:
+	goto L4912;
+L4914:
 	R1 = tou64("RT");
 	cc_lex_ps(asu64(R1));
 	R1 = tou64("Readterm?");
 	cc_support_serror(asu64(R1));
-L4911:
-L4981:
+L4912:
+L4982:
 	R1 = (u64)&cc_decls_lx;
 	R2 = 21;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	switch (asi64(R1)) {
-	case 2: case 3: goto L4986;
-	case 4: case 5: case 6: case 7: case 8: case 9: case 10: case 11: case 12: case 14: case 16: case 17: case 18: case 19: case 20: case 21: case 22: case 23: case 24: case 25: case 26: case 27: case 28: case 29: case 30: case 31: case 32: case 33: case 34: case 35: case 36: goto L4984;
-	case 13: goto L4987;
-	case 15: goto L4985;
-	case 37: goto L4990;
-	case 38: goto L4991;
-	default: goto L4984;
+	case 2: case 3: goto L4987;
+	case 4: case 5: case 6: case 7: case 8: case 9: case 10: case 11: case 12: case 14: case 16: case 17: case 18: case 19: case 20: case 21: case 22: case 23: case 24: case 25: case 26: case 27: case 28: case 29: case 30: case 31: case 32: case 33: case 34: case 35: case 36: goto L4985;
+	case 13: goto L4988;
+	case 15: goto L4986;
+	case 37: goto L4991;
+	case 38: goto L4992;
+	default: goto L4985;
     };
 // SWITCH
-L4985:
+L4986:
 	cc_lex_lex();
 	asu64(R1) = cc_parse_readexpression();
 	q = asu64(R1);
@@ -47160,8 +47235,8 @@ L4985:
 	asu64(R2) = p;
 	asu64(R1) = cc_parse_createindexop(asu64(R2), asu64(R1));
 	p = asu64(R1);
-	goto L4981;
-L4986:
+	goto L4982;
+L4987:
 	R1 = (u64)&cc_tables_symboltojtag;
 	R2 = (u64)&cc_decls_lx;
 	R3 = 21;
@@ -47183,52 +47258,52 @@ L4986:
 	asi64(R3) = opc;
 	asu64(R1) = cc_parse_createdotop(asi64(R3), asu64(R2), asu64(R1));
 	p = asu64(R1);
-	goto L4981;
-L4987:
+	goto L4982;
+L4988:
 	cc_lex_lex();
 	R1 = (u64)&cc_decls_lx;
 	R2 = 21;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 14;
-	if (asi64(R1) != asi64(R2)) goto L4989;
+	if (asi64(R1) != asi64(R2)) goto L4990;
 	R1 = 0;
 	q = asu64(R1);
 	cc_lex_lex();
-	goto L4988;
-L4989:
+	goto L4989;
+L4990:
 	R1 = 0;
 	asu64(R1) = cc_parse_readexprlist(asu64(R1));
 	q = asu64(R1);
 	R1 = 14;
 	cc_lib_skipsymbol(asi64(R1));
-L4988:
+L4989:
 	asu64(R1) = q;
 	asu64(R2) = p;
 	asu64(R1) = cc_parse_createcall(asu64(R2), asu64(R1));
 	p = asu64(R1);
-	goto L4981;
-L4990:
+	goto L4982;
+L4991:
 	cc_lex_lex();
 	asu64(R1) = p;
 	R2 = 73;
 	asu64(R1) = cc_parse_createincrop(asi64(R2), asu64(R1));
 	p = asu64(R1);
-	goto L4981;
-L4991:
+	goto L4982;
+L4992:
 	cc_lex_lex();
 	asu64(R1) = p;
 	R2 = 74;
 	asu64(R1) = cc_parse_createincrop(asi64(R2), asu64(R1));
 	p = asu64(R1);
-	goto L4981;
-L4984:
 	goto L4982;
-	goto L4981;
-L4982:
+L4985:
+	goto L4983;
+	goto L4982;
+L4983:
 	asu64(R1) = p;
-	goto L4910;
-L4910:
+	goto L4911;
+L4911:
 	return asu64(R1);
 }
 
@@ -47240,7 +47315,7 @@ static u64 cc_parse_readexprlist(u64 p) {
 	R2 = R1;
 	ulistx = asu64(R2);
 	ulist = asu64(R1);
-L4993:
+L4994:
 	asu64(R1) = cc_parse_readassignexpr();
 	p = asu64(R1);
 	asu64(R1) = p;
@@ -47252,15 +47327,15 @@ L4993:
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 8;
-	if (asi64(R1) == asi64(R2)) goto L4996;
-	goto L4994;
-L4996:
+	if (asi64(R1) == asi64(R2)) goto L4997;
+	goto L4995;
+L4997:
 	cc_lex_lex();
-	goto L4993;
-L4994:
+	goto L4994;
+L4995:
 	asu64(R1) = ulist;
-	goto L4992;
-L4992:
+	goto L4993;
+L4993:
 	return asu64(R1);
 }
 
@@ -47276,13 +47351,13 @@ static u64 cc_parse_readmodulevar(u64 d, i64 m, i64 linkage) {
 	asu64(R1) = cc_lib_checkdupl(asu64(R4), asu64(R3), asi64(R2), asi64(R1));
 	e = asu64(R1);
 	asu64(R1) = e;
-	if (!asu64(R1)) goto L4999;
+	if (!asu64(R1)) goto L5000;
 	asu64(R1) = e;
 	R2 = 109;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 7;
-	if (asi64(R1) == asi64(R2)) goto L5001;
+	if (asi64(R1) == asi64(R2)) goto L5002;
 	R1 = (u64)&cc_tables_namenames;
 	asu64(R2) = e;
 	R3 = 109;
@@ -47294,7 +47369,7 @@ static u64 cc_parse_readmodulevar(u64 d, i64 m, i64 linkage) {
 	asu64(R2) = *tou64p(((i64)R2+(i64)R3));
 	R3 = tou64("var: name in use # #");
 	cc_support_serror_ss(asu64(R3), asu64(R2), asu64(R1));
-L5001:
+L5002:
 	asu64(R1) = e;
 	R2 = 102;
 	asu16(R1) = *tou16p(((i64)R1+(i64)R2));
@@ -47302,56 +47377,56 @@ L5001:
 	emode = asi64(R1);
 	asi64(R1) = emode;
 	asi64(R2) = m;
-	if (asi64(R1) == asi64(R2)) goto L5003;
+	if (asi64(R1) == asi64(R2)) goto L5004;
 	asi64(R1) = m;
 	asi64(R2) = emode;
 	asi64(R1) = cc_parse_comparemode(asi64(R2), asi64(R1));
-	if (asi64(R1)) goto L5005;
+	if (asi64(R1)) goto L5006;
 // cc_parse.readmodulevar.redef:
-L5006:
+L5007:
 	asu64(R1) = e;
 	R2 = 0;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
 	R2 = tou64("var: redefining #");
 	cc_support_serror_s(asu64(R2), asu64(R1));
-L5005:
+L5006:
 	R1 = (u64)&cc_decls_ttbasetype;
 	asi64(R2) = emode;
 	asi16(R1) = *toi16p(((i64)R1+(i64)R2*2));
 	R1 = toi64(toi16(R1));
 	R2 = 17;
-	if (asi64(R1) == asi64(R2)) goto L5008;
-	goto L5009;
-L5008:
+	if (asi64(R1) == asi64(R2)) goto L5009;
+	goto L5010;
+L5009:
 	R1 = (u64)&cc_decls_ttlength;
 	asi64(R2) = emode;
 	asi64(R1) = *toi64p(((i64)R1+(i64)R2*8));
 	R2 = 0;
-	if (asi64(R1) != asi64(R2)) goto L5011;
+	if (asi64(R1) != asi64(R2)) goto L5012;
 	asi64(R1) = m;
 	asu64(R2) = e;
 	R3 = 102;
 	*tou16p(((i64)R2+(i64)R3)) = asu16(R1);
-	goto L5010;
-L5011:
+	goto L5011;
+L5012:
 	R1 = (u64)&cc_decls_ttlength;
 	asi64(R2) = m;
 	asi64(R1) = *toi64p(((i64)R1+(i64)R2*8));
-	if (!asi64(R1)) goto L5012;
+	if (!asi64(R1)) goto L5013;
 	R1 = (u64)&cc_decls_ttlength;
 	asi64(R2) = emode;
 	asi64(R1) = *toi64p(((i64)R1+(i64)R2*8));
 	R2 = (u64)&cc_decls_ttlength;
 	asi64(R3) = m;
 	asi64(R2) = *toi64p(((i64)R2+(i64)R3*8));
-	if (asi64(R1) == asi64(R2)) goto L5012;
-	goto L5006;
-L5012:
-L5010:
+	if (asi64(R1) == asi64(R2)) goto L5013;
 	goto L5007;
-L5009:
-L5007:
-L5003:
+L5013:
+L5011:
+	goto L5008;
+L5010:
+L5008:
+L5004:
 	asu64(R1) = e;
 	d = asu64(R1);
 	asu64(R1) = d;
@@ -47361,39 +47436,39 @@ L5003:
 	scope = asi64(R1);
 	asi64(R1) = scope;
 	R2 = 2;
-	if (asi64(R1) != asi64(R2)) goto L5016;
-	asi64(R1) = linkage;
-	R2 = 0;
-	if (asi64(R1) == asi64(R2)) goto L5015;
-L5016:
-	asi64(R1) = scope;
-	R2 = 4;
 	if (asi64(R1) != asi64(R2)) goto L5017;
 	asi64(R1) = linkage;
-	R2 = 1;
-	if (asi64(R1) == asi64(R2)) goto L5015;
+	R2 = 0;
+	if (asi64(R1) == asi64(R2)) goto L5016;
 L5017:
 	asi64(R1) = scope;
-	R2 = 3;
-	if (asi64(R1) != asi64(R2)) goto L5014;
+	R2 = 4;
+	if (asi64(R1) != asi64(R2)) goto L5018;
 	asi64(R1) = linkage;
 	R2 = 1;
-	if (asi64(R1) != asi64(R2)) goto L5014;
-L5015:
-	goto L5013;
-L5014:
+	if (asi64(R1) == asi64(R2)) goto L5016;
+L5018:
 	asi64(R1) = scope;
 	R2 = 3;
-	if (asi64(R1) != asi64(R2)) goto L5018;
+	if (asi64(R1) != asi64(R2)) goto L5015;
+	asi64(R1) = linkage;
+	R2 = 1;
+	if (asi64(R1) != asi64(R2)) goto L5015;
+L5016:
+	goto L5014;
+L5015:
+	asi64(R1) = scope;
+	R2 = 3;
+	if (asi64(R1) != asi64(R2)) goto L5019;
 	asi64(R1) = linkage;
 	R2 = 0;
-	if (asi64(R1) != asi64(R2)) goto L5018;
+	if (asi64(R1) != asi64(R2)) goto L5019;
 	R1 = 4;
 	scope = asi64(R1);
-L5018:
-L5013:
-	goto L4998;
-L4999:
+L5019:
+L5014:
+	goto L4999;
+L5000:
 	R1 = 7;
 	asu64(R2) = d;
 	asu64(R3) = cc_decls_stmodule;
@@ -47405,48 +47480,48 @@ L4999:
 	*tou16p(((i64)R2+(i64)R3)) = asu16(R1);
 	asi64(R1) = linkage;
 	R2 = 1;
-	if (asi64(R1) == asi64(R2)) goto L5020;
-	R2 = 4;
 	if (asi64(R1) == asi64(R2)) goto L5021;
-	goto L5022;
-L5020:
+	R2 = 4;
+	if (asi64(R1) == asi64(R2)) goto L5022;
+	goto L5023;
+L5021:
 	R1 = 2;
 	scope = asi64(R1);
-	goto L5019;
-L5021:
+	goto L5020;
+L5022:
 	R1 = 3;
 	scope = asi64(R1);
-	goto L5019;
-L5022:
+	goto L5020;
+L5023:
 	R1 = 4;
 	scope = asi64(R1);
-L5019:
-L4998:
+L5020:
+L4999:
 	R1 = (u64)&cc_decls_lx;
 	R2 = 21;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 11;
-	if (asi64(R1) != asi64(R2)) goto L5024;
+	if (asi64(R1) != asi64(R2)) goto L5025;
 	asu64(R1) = d;
 	R2 = 72;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
-	if (!asu64(R1)) goto L5026;
+	if (!asu64(R1)) goto L5027;
 	asu64(R1) = d;
 	R2 = 0;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
 	R2 = tou64("Can't init twice #");
 	cc_support_serror_s(asu64(R2), asu64(R1));
-L5026:
+L5027:
 	asi64(R1) = scope;
 	R2 = 3;
-	if (asi64(R1) != asi64(R2)) goto L5028;
+	if (asi64(R1) != asi64(R2)) goto L5029;
 	asu64(R1) = d;
 	R2 = 0;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
 	R2 = tou64("Can't init extern #");
 	cc_support_serror_s(asu64(R2), asu64(R1));
-L5028:
+L5029:
 	cc_lex_lex();
 	asu64(R1) = d;
 	R2 = 102;
@@ -47457,14 +47532,14 @@ L5028:
 	asu64(R2) = d;
 	R3 = 72;
 	*tou64p(((i64)R2+(i64)R3)) = asu64(R1);
-L5024:
+L5025:
 	asi64(R1) = scope;
 	asu64(R2) = d;
 	R3 = 110;
 	*tou8p(((i64)R2+(i64)R3)) = asu8(R1);
 	asu64(R1) = d;
-	goto L4997;
-L4997:
+	goto L4998;
+L4998:
 	return asu64(R1);
 }
 
@@ -47481,7 +47556,7 @@ static u64 cc_parse_readframevar(u64 d, i64 m, i64 linkage) {
 	asu64(R1) = cc_lib_checkdupl_inproc(asu64(R4), asu64(R3), asi64(R2), asi64(R1));
 	e = asu64(R1);
 	asu64(R1) = e;
-	if (!asu64(R1)) goto L5031;
+	if (!asu64(R1)) goto L5032;
 	asu64(R1) = e;
 	R2 = 0;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
@@ -47496,61 +47571,61 @@ static u64 cc_parse_readframevar(u64 d, i64 m, i64 linkage) {
 	scope = asi64(R1);
 	asi64(R1) = scope;
 	R2 = 2;
-	if (asi64(R1) != asi64(R2)) goto L5035;
-	asi64(R1) = linkage;
-	R2 = 0;
-	if (asi64(R1) == asi64(R2)) goto L5034;
-L5035:
-	asi64(R1) = scope;
-	R2 = 4;
 	if (asi64(R1) != asi64(R2)) goto L5036;
 	asi64(R1) = linkage;
-	R2 = 1;
-	if (asi64(R1) == asi64(R2)) goto L5034;
+	R2 = 0;
+	if (asi64(R1) == asi64(R2)) goto L5035;
 L5036:
 	asi64(R1) = scope;
-	R2 = 3;
-	if (asi64(R1) != asi64(R2)) goto L5033;
+	R2 = 4;
+	if (asi64(R1) != asi64(R2)) goto L5037;
 	asi64(R1) = linkage;
 	R2 = 1;
-	if (asi64(R1) != asi64(R2)) goto L5033;
-L5034:
-	goto L5032;
-L5033:
+	if (asi64(R1) == asi64(R2)) goto L5035;
+L5037:
 	asi64(R1) = scope;
 	R2 = 3;
-	if (asi64(R1) != asi64(R2)) goto L5037;
+	if (asi64(R1) != asi64(R2)) goto L5034;
+	asi64(R1) = linkage;
+	R2 = 1;
+	if (asi64(R1) != asi64(R2)) goto L5034;
+L5035:
+	goto L5033;
+L5034:
+	asi64(R1) = scope;
+	R2 = 3;
+	if (asi64(R1) != asi64(R2)) goto L5038;
 	asi64(R1) = linkage;
 	R2 = 0;
-	if (asi64(R1) != asi64(R2)) goto L5037;
+	if (asi64(R1) != asi64(R2)) goto L5038;
 	R1 = 4;
 	scope = asi64(R1);
-L5037:
+L5038:
+L5033:
+	goto L5031;
 L5032:
-	goto L5030;
-L5031:
 	R1 = 8;
 	id = asi64(R1);
 	R1 = 1;
 	scope = asi64(R1);
 	asi64(R1) = linkage;
 	R2 = 1;
-	if (asi64(R1) == asi64(R2)) goto L5039;
-	R2 = 4;
 	if (asi64(R1) == asi64(R2)) goto L5040;
-	goto L5041;
-L5039:
+	R2 = 4;
+	if (asi64(R1) == asi64(R2)) goto L5041;
+	goto L5042;
+L5040:
 	R1 = 7;
 	id = asi64(R1);
-	goto L5038;
-L5040:
+	goto L5039;
+L5041:
 	R1 = 3;
 	scope = asi64(R1);
 	R1 = 7;
 	id = asi64(R1);
-	goto L5038;
-L5041:
-L5038:
+	goto L5039;
+L5042:
+L5039:
 	asi64(R1) = id;
 	asu64(R2) = d;
 	asu64(R3) = cc_decls_currproc;
@@ -47568,32 +47643,32 @@ L5038:
 	R2 = (u64)&cc_decls_blockcounts;
 	asi64(R3) = cc_decls_currblockno;
 	*toi32p(((i64)R2+(i64)R3*4)) = asi32(R1);
-L5030:
+L5031:
 	R1 = (u64)&cc_decls_lx;
 	R2 = 21;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 11;
-	if (asi64(R1) != asi64(R2)) goto L5043;
+	if (asi64(R1) != asi64(R2)) goto L5044;
 	asu64(R1) = d;
 	R2 = 72;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
-	if (!asu64(R1)) goto L5045;
+	if (!asu64(R1)) goto L5046;
 	asu64(R1) = d;
 	R2 = 0;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
 	R2 = tou64("Can't init twice #");
 	cc_support_serror_s(asu64(R2), asu64(R1));
-L5045:
+L5046:
 	asi64(R1) = scope;
 	R2 = 3;
-	if (asi64(R1) != asi64(R2)) goto L5047;
+	if (asi64(R1) != asi64(R2)) goto L5048;
 	asu64(R1) = d;
 	R2 = 0;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
 	R2 = tou64("Can't init extern #");
 	cc_support_serror_s(asu64(R2), asu64(R1));
-L5047:
+L5048:
 	cc_lex_lex();
 	asu64(R1) = d;
 	R2 = 102;
@@ -47604,14 +47679,14 @@ L5047:
 	asu64(R2) = d;
 	R3 = 72;
 	*tou64p(((i64)R2+(i64)R3)) = asu64(R1);
-L5043:
+L5044:
 	asi64(R1) = scope;
 	asu64(R2) = d;
 	R3 = 110;
 	*tou8p(((i64)R2+(i64)R3)) = asu8(R1);
 	asu64(R1) = d;
-	goto L5029;
-L5029:
+	goto L5030;
+L5030:
 	return asu64(R1);
 }
 
@@ -47637,64 +47712,64 @@ static i64 cc_parse_readtype(u64 owner, u64 d, i64 m, u64 pm) {
 	i = asi64(R1);
 	asi64(R1) = i;
 	R2 = 1;
-	if (asi64(R1) < asi64(R2)) goto L5051;
-L5049:
+	if (asi64(R1) < asi64(R2)) goto L5052;
+L5050:
 	R1 = (u64)&modtype;
 	asi64(R2) = i;
 	asi64(R1) = *toi64p(((i64)R1+(i64)R2*8-8));
 	R2 = 65;
-	if (asi64(R1) == asi64(R2)) goto L5053;
-	R2 = 82;
 	if (asi64(R1) == asi64(R2)) goto L5054;
-	R2 = 67;
+	R2 = 82;
 	if (asi64(R1) == asi64(R2)) goto L5055;
-	R2 = 70;
+	R2 = 67;
 	if (asi64(R1) == asi64(R2)) goto L5056;
-	goto L5057;
-L5053:
+	R2 = 70;
+	if (asi64(R1) == asi64(R2)) goto L5057;
+	goto L5058;
+L5054:
 	R1 = (u64)&modvalue;
 	asi64(R2) = i;
 	asi64(R1) = *toi64p(((i64)R1+(i64)R2*8-8));
 	asi64(R2) = m;
 	asi64(R1) = cc_lib_createarraymode(asi64(R2), asi64(R1));
 	m = asi64(R1);
-	goto L5052;
-L5054:
+	goto L5053;
+L5055:
 	asi64(R1) = m;
 	asi64(R1) = cc_lib_createrefmode(asi64(R1));
 	m = asi64(R1);
-	goto L5052;
-L5055:
+	goto L5053;
+L5056:
 	asi64(R1) = m;
 	asi64(R1) = cc_lib_createconstmode(asi64(R1));
 	m = asi64(R1);
-	goto L5052;
-L5056:
+	goto L5053;
+L5057:
 	R1 = (u64)&modvalue;
 	asi64(R2) = i;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2*8-8));
 	pmx = asu64(R1);
 	asi64(R1) = i;
 	R2 = 1;
-	if (asi64(R1) != asi64(R2)) goto L5059;
+	if (asi64(R1) != asi64(R2)) goto L5060;
 	asu64(R1) = pmx;
 	asu64(R2) = pm;
 	*tou64p(R2) = asu64(R1);
-	goto L5058;
-L5059:
+	goto L5059;
+L5060:
 	asu64(R1) = pmx;
 	asi64(R2) = m;
 	asi64(R1) = cc_lib_createprocmode(asi64(R2), asu64(R1));
 	m = asi64(R1);
+L5059:
+	goto L5053;
 L5058:
-	goto L5052;
-L5057:
+L5053:
+	i += -1; if (i >= 1) goto L5050;
 L5052:
-	i += -1; if (i >= 1) goto L5049;
-L5051:
 	asi64(R1) = m;
-	goto L5048;
-L5048:
+	goto L5049;
+L5049:
 	return asi64(R1);
 }
 
@@ -47714,11 +47789,11 @@ static void cc_parse_readnamedtype(u64 owner, u64 d, u64 modtype, u64 modvalue, 
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 89;
-	if (asi64(R1) != asi64(R2)) goto L5062;
+	if (asi64(R1) != asi64(R2)) goto L5063;
 	cc_lex_lex();
-L5062:
-	goto L5064;
 L5063:
+	goto L5065;
+L5064:
 	R1 = (u64)&nrefs;
 	(*toi64p(R1)) += 1;
 	R1 = 0;
@@ -47726,64 +47801,64 @@ L5063:
 	asi64(R3) = nrefs;
 	*toi64p(((i64)R2+(i64)R3*8-8)) = asi64(R1);
 	cc_lex_lex();
-	goto L5067;
-L5066:
+	goto L5068;
+L5067:
 	R1 = (u64)&cc_decls_lx;
 	R2 = 22;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 1;
-	if (asi64(R1) == asi64(R2)) goto L5070;
+	if (asi64(R1) == asi64(R2)) goto L5071;
 	R2 = 2;
-	if (asi64(R1) == asi64(R2)) goto L5071;
+	if (asi64(R1) == asi64(R2)) goto L5072;
 	R2 = 3;
-	if (asi64(R1) == asi64(R2)) goto L5071;
-	goto L5072;
-L5070:
+	if (asi64(R1) == asi64(R2)) goto L5072;
+	goto L5073;
+L5071:
 	R1 = 1;
 	R2 = (u64)&fconst;
 	asi64(R3) = nrefs;
 	*toi64p(((i64)R2+(i64)R3*8-8)) = asi64(R1);
-	goto L5069;
-L5071:
-	goto L5069;
+	goto L5070;
 L5072:
+	goto L5070;
+L5073:
 	R1 = tou64("rnt1");
 	cc_support_serror(asu64(R1));
-L5069:
+L5070:
 	cc_lex_lex();
-L5067:
+L5068:
 	R1 = (u64)&cc_decls_lx;
 	R2 = 21;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 87;
-	if (asi64(R1) == asi64(R2)) goto L5066;
-L5064:
+	if (asi64(R1) == asi64(R2)) goto L5067;
+L5065:
 	R1 = (u64)&cc_decls_lx;
 	R2 = 21;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 25;
-	if (asi64(R1) == asi64(R2)) goto L5063;
+	if (asi64(R1) == asi64(R2)) goto L5064;
 	R1 = (u64)&cc_decls_lx;
 	R2 = 21;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 67;
-	if (asi64(R1) == asi64(R2)) goto L5074;
-	R2 = 13;
 	if (asi64(R1) == asi64(R2)) goto L5075;
-	goto L5076;
-L5074:
+	R2 = 13;
+	if (asi64(R1) == asi64(R2)) goto L5076;
+	goto L5077;
+L5075:
 	R1 = (u64)&cc_decls_lx;
 	R2 = 0;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
 	asu64(R2) = d;
 	*tou64p(R2) = asu64(R1);
 	cc_lex_lex();
-	goto L5073;
-L5075:
+	goto L5074;
+L5076:
 	cc_lex_lex();
 	asu64(R1) = nmodifiers;
 	asu64(R2) = modvalue;
@@ -47793,31 +47868,31 @@ L5075:
 	cc_parse_readnamedtype(asu64(R5), asu64(R4), asu64(R3), asu64(R2), asu64(R1));
 	R1 = 14;
 	cc_lib_skipsymbol(asi64(R1));
-	goto L5073;
-L5076:
-L5073:
+	goto L5074;
 L5077:
+L5074:
+L5078:
 	R1 = (u64)&cc_decls_lx;
 	R2 = 21;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 15;
-	if (asi64(R1) == asi64(R2)) goto L5079;
-	R2 = 13;
 	if (asi64(R1) == asi64(R2)) goto L5080;
-	goto L5081;
-L5079:
+	R2 = 13;
+	if (asi64(R1) == asi64(R2)) goto L5081;
+	goto L5082;
+L5080:
 	cc_lex_lex();
 	R1 = (u64)&cc_decls_lx;
 	R2 = 21;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 16;
-	if (asi64(R1) != asi64(R2)) goto L5083;
+	if (asi64(R1) != asi64(R2)) goto L5084;
 	R1 = 0;
 	length = asi64(R1);
-	goto L5082;
-L5083:
+	goto L5083;
+L5084:
 	asu64(R1) = cc_parse_readassignexpr();
 	pdim = asu64(R1);
 	asu64(R1) = pdim;
@@ -47825,31 +47900,31 @@ L5083:
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
 	R1 = toi64(toi32(R1));
 	R2 = 1;
-	if (asi64(R1) != asi64(R2)) goto L5085;
+	if (asi64(R1) != asi64(R2)) goto L5086;
 	asu64(R1) = pdim;
 	R2 = 0;
 	asi64(R1) = *toi64p(((i64)R1+(i64)R2));
 	length = asi64(R1);
-	goto L5084;
-L5085:
+	goto L5085;
+L5086:
 	R1 = tou64("Can't do VLAs");
 	cc_support_serror(asu64(R1));
-L5084:
+L5085:
 	R1 = 16;
 	cc_lib_checksymbol(asi64(R1));
 	asi64(R1) = length;
 	R2 = 0;
-	if (asi64(R1) != asi64(R2)) goto L5087;
+	if (asi64(R1) != asi64(R2)) goto L5088;
 	R1 = tou64("ZERO LEN ARRAY");
 	cc_support_serror(asu64(R1));
-L5087:
-L5082:
+L5088:
+L5083:
 	asi64(R1) = length;
 	R2 = 0;
-	if (asi64(R1) >= asi64(R2)) goto L5089;
+	if (asi64(R1) >= asi64(R2)) goto L5090;
 	R1 = tou64("Negative array dim");
 	cc_support_terror(asu64(R1));
-L5089:
+L5090:
 	cc_lex_lex();
 	R1 = 65;
 	asu64(R2) = modtype;
@@ -47861,8 +47936,8 @@ L5089:
 	asu64(R3) = nmodifiers;
 	asi64(R3) = *toi64p(R3);
 	*tou64p(((i64)R2+(i64)R3*8-8)) = asu64(R1);
-	goto L5077;
-L5080:
+	goto L5078;
+L5081:
 	cc_lex_lex();
 	R1 = 70;
 	asu64(R2) = modtype;
@@ -47875,23 +47950,23 @@ L5080:
 	asu64(R3) = nmodifiers;
 	asi64(R3) = *toi64p(R3);
 	*tou64p(((i64)R2+(i64)R3*8-8)) = asu64(R1);
-	goto L5077;
-L5081:
 	goto L5078;
-	goto L5077;
-L5078:
-	goto L5091;
-L5090:
+L5082:
+	goto L5079;
+	goto L5078;
+L5079:
+	goto L5092;
+L5091:
 	R1 = (u64)&fconst;
 	asi64(R2) = nrefs;
 	asi64(R1) = *toi64p(((i64)R1+(i64)R2*8-8));
-	if (!asi64(R1)) goto L5094;
+	if (!asi64(R1)) goto L5095;
 	R1 = 67;
 	asu64(R2) = modtype;
 	asu64(R3) = nmodifiers;
 	asi64(R3) = *(toi64p(R3)) += 1;
 	*toi64p(((i64)R2+(i64)R3*8-8)) = asi64(R1);
-L5094:
+L5095:
 	R1 = 82;
 	asu64(R2) = modtype;
 	asu64(R3) = nmodifiers;
@@ -47899,9 +47974,9 @@ L5094:
 	*toi64p(((i64)R2+(i64)R3*8-8)) = asi64(R1);
 	R1 = (u64)&nrefs;
 	(*toi64p(R1)) -=1;
-L5091:
+L5092:
 	asi64(R1) = nrefs;
-	if (asi64(R1)) goto L5090;
+	if (asi64(R1)) goto L5091;
 	return;
 }
 
@@ -47916,15 +47991,15 @@ static i64 cc_parse_readconstintexpr() {
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
 	R1 = toi64(toi32(R1));
 	R2 = 1;
-	if (asi64(R1) == asi64(R2)) goto L5097;
-	goto L5098;
-L5097:
+	if (asi64(R1) == asi64(R2)) goto L5098;
+	goto L5099;
+L5098:
 	asu64(R1) = p;
 	R2 = 0;
 	asi64(R1) = *toi64p(((i64)R1+(i64)R2));
-	goto L5095;
 	goto L5096;
-L5098:
+	goto L5097;
+L5099:
 	R1 = (u64)&cc_tables_jtagnames;
 	asu64(R2) = p;
 	R3 = 40;
@@ -47933,10 +48008,10 @@ L5098:
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2*8));
 	R2 = tou64("readconstint #");
 	cc_support_serror_s(asu64(R2), asu64(R1));
-L5096:
+L5097:
 	R1 = 0;
-	goto L5095;
-L5095:
+	goto L5096;
+L5096:
 	return asi64(R1);
 }
 
@@ -47950,8 +48025,8 @@ static u64 cc_parse_readinitexpr(u64 owner, i64 m) {
 	asu64(R1) = cc_parse_readinitexpr2(asu64(R3), asi64(R2), asi64(R1));
 	p = asu64(R1);
 	asu64(R1) = p;
-	goto L5099;
-L5099:
+	goto L5100;
+L5100:
 	return asu64(R1);
 }
 
@@ -47981,31 +48056,31 @@ static u64 cc_parse_readinitexpr2(u64 owner, i64 m, i64 istop) {
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 17;
-	if (asi64(R1) != asi64(R2)) goto L5102;
+	if (asi64(R1) != asi64(R2)) goto L5103;
 	cc_lex_lex();
 	R1 = 0;
 	count = asi64(R1);
 	asi64(R1) = mbase;
 	R2 = 17;
-	if (asi64(R1) == asi64(R2)) goto L5104;
+	if (asi64(R1) == asi64(R2)) goto L5105;
 	R2 = 18;
-	if (asi64(R1) == asi64(R2)) goto L5105;
+	if (asi64(R1) == asi64(R2)) goto L5106;
 	R2 = 19;
-	if (asi64(R1) == asi64(R2)) goto L5105;
-	goto L5106;
-L5104:
+	if (asi64(R1) == asi64(R2)) goto L5106;
+	goto L5107;
+L5105:
 	R1 = (u64)&cc_decls_ttlength;
 	asi64(R2) = m;
 	asi64(R1) = *toi64p(((i64)R1+(i64)R2*8));
 	dim = asi64(R1);
 	asi64(R1) = istop;
-	if (asi64(R1)) goto L5108;
+	if (asi64(R1)) goto L5109;
 	asi64(R1) = dim;
 	R2 = 0;
-	if (asi64(R1) != asi64(R2)) goto L5108;
+	if (asi64(R1) != asi64(R2)) goto L5109;
 	R1 = tou64("init/0-size array");
 	cc_support_terror(asu64(R1));
-L5108:
+L5109:
 	R1 = (u64)&cc_decls_tttarget;
 	asi64(R2) = m;
 	asi16(R1) = *toi16p(((i64)R1+(i64)R2*2));
@@ -48016,19 +48091,19 @@ L5108:
 	asi16(R1) = *toi16p(((i64)R1+(i64)R2*2));
 	R1 = toi64(toi16(R1));
 	R2 = 1;
-	if (asi64(R1) != asi64(R2)) goto L5110;
+	if (asi64(R1) != asi64(R2)) goto L5111;
 	R1 = (u64)&cc_decls_lx;
 	R2 = 21;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 63;
-	if (asi64(R1) != asi64(R2)) goto L5110;
+	if (asi64(R1) != asi64(R2)) goto L5111;
 	R1 = 1;
 	braces = asi64(R1);
-	goto L5111;
-L5110:
-	goto L5103;
-L5105:
+	goto L5112;
+L5111:
+	goto L5104;
+L5106:
 	R1 = (u64)&cc_decls_ttnamedef;
 	asi64(R2) = m;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2*8));
@@ -48039,17 +48114,17 @@ L5105:
 	e = asu64(R1);
 	asu64(R1) = e;
 	R2 = 0;
-	if (asu64(R1) != asu64(R2)) goto L5113;
+	if (asu64(R1) != asu64(R2)) goto L5114;
 	R1 = tou64("init/Empty struct");
 	cc_support_terror(asu64(R1));
-L5113:
+L5114:
 	asu64(R1) = e;
 	R2 = 102;
 	asu16(R1) = *tou16p(((i64)R1+(i64)R2));
 	R1 = toi64(tou16(R1));
 	melem = asi64(R1);
-	goto L5103;
-L5106:
+	goto L5104;
+L5107:
 	asu64(R1) = cc_parse_readassignexpr();
 	p = asu64(R1);
 	asi64(R1) = m;
@@ -48059,13 +48134,13 @@ L5106:
 	R1 = 18;
 	cc_lib_skipsymbol(asi64(R1));
 	asu64(R1) = p;
-	goto L5100;
-L5103:
+	goto L5101;
+L5104:
 	R1 = 0;
 	R2 = R1;
 	ulistx = asu64(R2);
 	ulist = asu64(R1);
-L5114:
+L5115:
 	R1 = 0;
 	asi64(R2) = melem;
 	asu64(R3) = owner;
@@ -48075,27 +48150,27 @@ L5114:
 	(*toi64p(R1)) += 1;
 	asi64(R1) = mbase;
 	R2 = 17;
-	if (asi64(R1) == asi64(R2)) goto L5117;
-	R2 = 18;
 	if (asi64(R1) == asi64(R2)) goto L5118;
-	R2 = 19;
+	R2 = 18;
 	if (asi64(R1) == asi64(R2)) goto L5119;
-	goto L5120;
-L5117:
+	R2 = 19;
+	if (asi64(R1) == asi64(R2)) goto L5120;
+	goto L5121;
+L5118:
 	asi64(R1) = dim;
-	if (!asi64(R1)) goto L5122;
+	if (!asi64(R1)) goto L5123;
 	asi64(R1) = count;
 	asi64(R2) = dim;
-	if (asi64(R1) <= asi64(R2)) goto L5122;
+	if (asi64(R1) <= asi64(R2)) goto L5123;
 	R1 = tou64("Too many array elems");
 	cc_support_terror(asu64(R1));
-L5122:
+L5123:
 	R1 = (u64)&cc_decls_ttbasetype;
 	asi64(R2) = melem;
 	asi16(R1) = *toi16p(((i64)R1+(i64)R2*2));
 	R1 = toi64(toi16(R1));
 	R2 = 17;
-	if (asi64(R1) != asi64(R2)) goto L5124;
+	if (asi64(R1) != asi64(R2)) goto L5125;
 	R1 = (u64)&cc_decls_ttbasetype;
 	R2 = (u64)&cc_decls_tttarget;
 	asi64(R3) = melem;
@@ -48104,22 +48179,22 @@ L5122:
 	asi16(R1) = *toi16p(((i64)R1+(i64)R2*2));
 	R1 = toi64(toi16(R1));
 	R2 = 1;
-	if (asi64(R1) != asi64(R2)) goto L5124;
+	if (asi64(R1) != asi64(R2)) goto L5125;
 	asu64(R1) = p;
 	R2 = 52;
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
 	R1 = toi64(toi32(R1));
 	asi64(R2) = cc_decls_trefchar;
-	if (asi64(R1) != asi64(R2)) goto L5124;
-	goto L5123;
-L5124:
+	if (asi64(R1) != asi64(R2)) goto L5125;
+	goto L5124;
+L5125:
 	asi64(R1) = melem;
 	asu64(R2) = p;
 	asu64(R1) = cc_parse_coercemode(asu64(R2), asi64(R1));
 	p = asu64(R1);
-L5123:
-	goto L5116;
-L5118:
+L5124:
+	goto L5117;
+L5119:
 	asu64(R1) = e;
 	R2 = 102;
 	asu16(R1) = *tou16p(((i64)R1+(i64)R2));
@@ -48130,7 +48205,7 @@ L5118:
 	asi16(R1) = *toi16p(((i64)R1+(i64)R2*2));
 	R1 = toi64(toi16(R1));
 	R2 = 17;
-	if (asi64(R1) != asi64(R2)) goto L5126;
+	if (asi64(R1) != asi64(R2)) goto L5127;
 	R1 = (u64)&cc_decls_ttbasetype;
 	R2 = (u64)&cc_decls_tttarget;
 	asi64(R3) = mm;
@@ -48139,52 +48214,52 @@ L5118:
 	asi16(R1) = *toi16p(((i64)R1+(i64)R2*2));
 	R1 = toi64(toi16(R1));
 	R2 = 6;
-	if (asi64(R1) != asi64(R2)) goto L5126;
+	if (asi64(R1) != asi64(R2)) goto L5127;
 	asu64(R1) = p;
 	R2 = 52;
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
 	R1 = toi64(toi32(R1));
 	asi64(R2) = cc_decls_trefchar;
-	if (asi64(R1) != asi64(R2)) goto L5126;
-	goto L5125;
-L5126:
+	if (asi64(R1) != asi64(R2)) goto L5127;
+	goto L5126;
+L5127:
 	asi64(R1) = mm;
 	asu64(R2) = p;
 	asu64(R1) = cc_parse_coercemode(asu64(R2), asi64(R1));
 	p = asu64(R1);
-L5125:
+L5126:
 	asu64(R1) = e;
 	R2 = 32;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
 	e = asu64(R1);
 	asu64(R1) = e;
 	R2 = 0;
-	if (asu64(R1) != asu64(R2)) goto L5128;
+	if (asu64(R1) != asu64(R2)) goto L5129;
 	R1 = (u64)&cc_decls_lx;
 	R2 = 21;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 8;
-	if (asi64(R1) != asi64(R2)) goto L5130;
+	if (asi64(R1) != asi64(R2)) goto L5131;
 	R1 = (u64)&cc_decls_nextlx;
 	R2 = 21;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 18;
-	if (asi64(R1) == asi64(R2)) goto L5130;
+	if (asi64(R1) == asi64(R2)) goto L5131;
 	R1 = tou64("Too many struct elems");
 	cc_support_terror(asu64(R1));
-L5130:
-	goto L5127;
-L5128:
+L5131:
+	goto L5128;
+L5129:
 	asu64(R1) = e;
 	R2 = 102;
 	asu16(R1) = *tou16p(((i64)R1+(i64)R2));
 	R1 = toi64(tou16(R1));
 	melem = asi64(R1);
-L5127:
-	goto L5116;
-L5119:
+L5128:
+	goto L5117;
+L5120:
 	asi64(R1) = melem;
 	asu64(R2) = p;
 	asu64(R1) = cc_parse_coercemode(asu64(R2), asi64(R1));
@@ -48193,10 +48268,10 @@ L5119:
 	R2 = R1;
 	ulistx = asu64(R2);
 	ulist = asu64(R1);
-	goto L5131;
-	goto L5116;
-L5120:
-L5116:
+	goto L5132;
+	goto L5117;
+L5121:
+L5117:
 	asu64(R1) = p;
 	R2 = (u64)&ulistx;
 	R3 = (u64)&ulist;
@@ -48206,27 +48281,27 @@ L5116:
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 8;
-	if (asi64(R1) == asi64(R2)) goto L5133;
-	goto L5115;
-L5133:
+	if (asi64(R1) == asi64(R2)) goto L5134;
+	goto L5116;
+L5134:
 	R1 = (u64)&cc_decls_nextlx;
 	R2 = 21;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 18;
-	if (asi64(R1) != asi64(R2)) goto L5135;
+	if (asi64(R1) != asi64(R2)) goto L5136;
+	cc_lex_lex();
+	goto L5116;
+L5136:
 	cc_lex_lex();
 	goto L5115;
-L5135:
-	cc_lex_lex();
-	goto L5114;
-L5115:
+L5116:
 	asi64(R1) = mbase;
 	R2 = 17;
-	if (asi64(R1) != asi64(R2)) goto L5137;
+	if (asi64(R1) != asi64(R2)) goto L5138;
 	asi64(R1) = dim;
 	R2 = 0;
-	if (asi64(R1) != asi64(R2)) goto L5137;
+	if (asi64(R1) != asi64(R2)) goto L5138;
 	asi64(R1) = count;
 	R2 = (u64)&cc_decls_ttlength;
 	asi64(R3) = m;
@@ -48239,9 +48314,9 @@ L5115:
 	R2 = (u64)&cc_decls_ttsize;
 	asi64(R3) = m;
 	*toi64p(((i64)R2+(i64)R3*8)) = asi64(R1);
-L5137:
+L5138:
 // cc_parse.readinitexpr2.donestruct:
-L5131:
+L5132:
 	R1 = 18;
 	cc_lib_skipsymbol(asi64(R1));
 	asu64(R1) = ulist;
@@ -48256,38 +48331,38 @@ L5131:
 	asu64(R2) = p;
 	R3 = 52;
 	*toi32p(((i64)R2+(i64)R3)) = asi32(R1);
-	goto L5101;
-L5102:
+	goto L5102;
+L5103:
 	R1 = 0;
 	braces = asi64(R1);
 	asi64(R1) = mbase;
 	R2 = 17;
-	if (asi64(R1) == asi64(R2)) goto L5139;
-	goto L5140;
-L5139:
+	if (asi64(R1) == asi64(R2)) goto L5140;
+	goto L5141;
+L5140:
 // cc_parse.readinitexpr2.doarraystring:
-L5111:
+L5112:
 	R1 = (u64)&cc_decls_lx;
 	R2 = 21;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 63;
-	if (asi64(R1) == asi64(R2)) goto L5142;
+	if (asi64(R1) == asi64(R2)) goto L5143;
 	R1 = (u64)&cc_decls_lx;
 	R2 = 21;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 64;
-	if (asi64(R1) == asi64(R2)) goto L5142;
+	if (asi64(R1) == asi64(R2)) goto L5143;
 	R1 = (u64)&cc_decls_tttarget;
 	asi64(R2) = m;
 	asi16(R1) = *toi16p(((i64)R1+(i64)R2*2));
 	R1 = toi64(toi16(R1));
 	R2 = 1;
-	if (asi64(R1) == asi64(R2)) goto L5142;
+	if (asi64(R1) == asi64(R2)) goto L5143;
 	R1 = tou64("{} initialiser expected");
 	cc_support_terror(asu64(R1));
-L5142:
+L5143:
 	asu64(R1) = cc_parse_readassignexpr();
 	p = asu64(R1);
 	asu64(R1) = p;
@@ -48295,18 +48370,18 @@ L5142:
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
 	R1 = toi64(toi32(R1));
 	asi64(R2) = cc_decls_trefchar;
-	if (asi64(R1) == asi64(R2)) goto L5144;
-	asi64(R2) = cc_decls_trefwchar;
 	if (asi64(R1) == asi64(R2)) goto L5145;
-	goto L5146;
-L5144:
-	goto L5143;
+	asi64(R2) = cc_decls_trefwchar;
+	if (asi64(R1) == asi64(R2)) goto L5146;
+	goto L5147;
 L5145:
-	goto L5143;
+	goto L5144;
 L5146:
+	goto L5144;
+L5147:
 	R1 = tou64("Array init");
 	cc_support_terror(asu64(R1));
-L5143:
+L5144:
 	asi64(R1) = m;
 	asu64(R2) = p;
 	R3 = 52;
@@ -48317,7 +48392,7 @@ L5143:
 	R2 = R1;
 	dim = asi64(R2);
 	R2 = 0;
-	if (asi64(R1) != asi64(R2)) goto L5148;
+	if (asi64(R1) != asi64(R2)) goto L5149;
 	asu64(R1) = p;
 	R2 = 48;
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
@@ -48329,14 +48404,14 @@ L5143:
 	R2 = (u64)&cc_decls_ttlength;
 	asi64(R3) = m;
 	*toi64p(((i64)R2+(i64)R3*8)) = asi64(R1);
-	goto L5147;
-L5148:
+	goto L5148;
+L5149:
 	asu64(R1) = p;
 	R2 = 48;
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
 	R1 = toi64(toi32(R1));
 	asi64(R2) = dim;
-	if (asi64(R1) <= asi64(R2)) goto L5150;
+	if (asi64(R1) <= asi64(R2)) goto L5151;
 	asu64(R1) = p;
 	R2 = 48;
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
@@ -48344,16 +48419,16 @@ L5148:
 	asi64(R2) = dim;
 	R3 = 1;
 	asi64(R2) += asi64(R3);
-	if (asi64(R1) == asi64(R2)) goto L5150;
+	if (asi64(R1) == asi64(R2)) goto L5151;
 	R1 = tou64("Init str too long");
 	cc_support_terror(asu64(R1));
-L5150:
+L5151:
 	asu64(R1) = p;
 	R2 = 48;
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
 	R1 = toi64(toi32(R1));
 	asi64(R2) = dim;
-	if (asi64(R1) >= asi64(R2)) goto L5152;
+	if (asi64(R1) >= asi64(R2)) goto L5153;
 	asi64(R1) = dim;
 	asu64(R1) = mlib_pcm_allocz(asi64(R1));
 	newstr = asu64(R1);
@@ -48370,32 +48445,32 @@ L5150:
 	asu64(R2) = p;
 	R3 = 0;
 	*tou64p(((i64)R2+(i64)R3)) = asu64(R1);
-L5152:
+L5153:
 	asi64(R1) = dim;
 	asu64(R2) = p;
 	R3 = 48;
 	*toi32p(((i64)R2+(i64)R3)) = asi32(R1);
-L5147:
+L5148:
 	asi64(R1) = braces;
-	if (!asi64(R1)) goto L5154;
+	if (!asi64(R1)) goto L5155;
 	R1 = 18;
 	cc_lib_skipsymbol(asi64(R1));
-L5154:
+L5155:
 	asu64(R1) = p;
-	goto L5100;
-	goto L5138;
-L5140:
-L5138:
+	goto L5101;
+	goto L5139;
+L5141:
+L5139:
 	asu64(R1) = cc_parse_readassignexpr();
 	p = asu64(R1);
 	asi64(R1) = m;
 	asu64(R2) = p;
 	asu64(R1) = cc_parse_coercemode(asu64(R2), asi64(R1));
 	p = asu64(R1);
-L5101:
+L5102:
 	asu64(R1) = p;
-	goto L5100;
-L5100:
+	goto L5101;
+L5101:
 	return asu64(R1);
 }
 
@@ -48405,16 +48480,16 @@ static void cc_parse_pushblock() {
 	i64 m;
 	asi64(R1) = cc_decls_blocklevel;
 	R2 = 100;
-	if (asi64(R1) < asi64(R2)) goto L5157;
+	if (asi64(R1) < asi64(R2)) goto L5158;
 	R1 = tou64("Too many block levels");
 	cc_support_serror(asu64(R1));
-L5157:
+L5158:
 	asi64(R1) = cc_decls_nextblockno;
 	R2 = 2100;
-	if (asi64(R1) < asi64(R2)) goto L5159;
+	if (asi64(R1) < asi64(R2)) goto L5160;
 	R1 = tou64("Too many blocks");
 	cc_support_serror(asu64(R1));
-L5159:
+L5160:
 	R1 = (u64)&cc_decls_blocklevel;
 	(*toi64p(R1)) += 1;
 	R1 = (u64)&cc_decls_nextblockno;
@@ -48423,8 +48498,8 @@ L5159:
 	n = asi64(R1);
 	asi64(R1) = cc_decls_blocklevel;
 	m = asi64(R1);
-	goto L5161;
-L5160:
+	goto L5162;
+L5161:
 	R1 = (u64)&m;
 	(*toi64p(R1)) -=1;
 	R1 = (u64)&cc_decls_blockstack;
@@ -48432,9 +48507,9 @@ L5160:
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2*4));
 	R1 = toi64(toi32(R1));
 	n = asi64(R1);
-L5161:
+L5162:
 	asi64(R1) = m;
-	if (!asi64(R1)) goto L5163;
+	if (!asi64(R1)) goto L5164;
 	R1 = (u64)&cc_decls_blockcounts;
 	R2 = (u64)&cc_decls_blockstack;
 	asi64(R3) = m;
@@ -48443,8 +48518,8 @@ L5161:
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2*4));
 	R1 = toi64(toi32(R1));
 	R2 = 0;
-	if (asi64(R1) == asi64(R2)) goto L5160;
-L5163:
+	if (asi64(R1) == asi64(R2)) goto L5161;
+L5164:
 	asi64(R1) = n;
 	R2 = (u64)&cc_decls_blockowner;
 	asi64(R3) = cc_decls_nextblockno;
@@ -48486,28 +48561,28 @@ static u64 cc_parse_readcompoundstmt(i64 params) {
 	cc_lex_lex();
 	cc_parse_pushblock();
 	asi64(R1) = params;
-	if (!asi64(R1)) goto L5167;
+	if (!asi64(R1)) goto L5168;
 	R1 = 1;
 	R2 = (u64)&cc_decls_blockcounts;
 	R3 = 1;
 	*toi32p(((i64)R2+(i64)R3*4)) = asi32(R1);
-L5167:
-	goto L5169;
 L5168:
+	goto L5170;
+L5169:
 	asu64(R1) = cc_parse_readstatement();
 	p = asu64(R1);
 	asu64(R1) = p;
 	R2 = 0;
-	if (asu64(R1) != asu64(R2)) goto L5172;
-	goto L5169;
-L5172:
+	if (asu64(R1) != asu64(R2)) goto L5173;
+	goto L5170;
+L5173:
 	asu64(R1) = p;
 	R2 = 40;
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
 	R1 = toi64(toi32(R1));
 	R2 = 7;
-	if (asi64(R1) != asi64(R2)) goto L5174;
-L5175:
+	if (asi64(R1) != asi64(R2)) goto L5175;
+L5176:
 	asu64(R1) = p;
 	R2 = 8;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
@@ -48517,7 +48592,7 @@ L5175:
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
 	R2 = 72;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
-	if (!asu64(R1)) goto L5179;
+	if (!asu64(R1)) goto L5180;
 	asu64(R1) = p;
 	R2 = 0;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
@@ -48525,7 +48600,7 @@ L5175:
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 7;
-	if (asi64(R1) == asi64(R2)) goto L5179;
+	if (asi64(R1) == asi64(R2)) goto L5180;
 	R1 = 8;
 	asu64(R2) = p;
 	R3 = 40;
@@ -48538,26 +48613,26 @@ L5175:
 	R2 = (u64)&ulistx;
 	R3 = (u64)&ulist;
 	cc_lib_addlistunit(asu64(R3), asu64(R2), asu64(R1));
-L5179:
+L5180:
 	asu64(R1) = q;
 	p = asu64(R1);
 	asu64(R1) = p;
 	R2 = 0;
-	if (asu64(R1) != asu64(R2)) goto L5175;
-	goto L5173;
-L5174:
+	if (asu64(R1) != asu64(R2)) goto L5176;
+	goto L5174;
+L5175:
 	asu64(R1) = p;
 	R2 = (u64)&ulistx;
 	R3 = (u64)&ulist;
 	cc_lib_addlistunit(asu64(R3), asu64(R2), asu64(R1));
-L5173:
-L5169:
+L5174:
+L5170:
 	R1 = (u64)&cc_decls_lx;
 	R2 = 21;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 18;
-	if (asi64(R1) != asi64(R2)) goto L5168;
+	if (asi64(R1) != asi64(R2)) goto L5169;
 	cc_lex_lex();
 	cc_parse_popblock();
 	asu64(R1) = ulistx;
@@ -48565,39 +48640,39 @@ L5169:
 	asu64(R3) = ulist;
 	R4 = 6;
 	asu64(R1) = cc_lib_createunit3(asi64(R4), asu64(R3), asu64(R2), asu64(R1));
-	goto L5165;
-L5165:
+	goto L5166;
+L5166:
 	return asu64(R1);
 }
 
 static u64 cc_parse_readblock(i64 ifelse) {
     u64 R1, R2; 
 	asu64(R1) = cc_parse_readstatement();
-	goto L5180;
+	goto L5181;
 	R1 = (u64)&cc_decls_lx;
 	R2 = 21;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 72;
-	if (asi64(R1) != asi64(R2)) goto L5182;
+	if (asi64(R1) != asi64(R2)) goto L5183;
 	asi64(R1) = ifelse;
-	if (!asi64(R1)) goto L5182;
+	if (!asi64(R1)) goto L5183;
 	asu64(R1) = cc_parse_readstatement();
-	goto L5180;
-L5182:
+	goto L5181;
+L5183:
 	R1 = (u64)&cc_decls_lx;
 	R2 = 21;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 17;
-	if (asi64(R1) == asi64(R2)) goto L5184;
+	if (asi64(R1) == asi64(R2)) goto L5185;
 	R1 = tou64("{...} statement expected");
 	cc_support_serror(asu64(R1));
-L5184:
+L5185:
 	R1 = 0;
 	asu64(R1) = cc_parse_readcompoundstmt(asi64(R1));
-	goto L5180;
-L5180:
+	goto L5181;
+L5181:
 	return asu64(R1);
 }
 
@@ -48613,138 +48688,138 @@ static u64 cc_parse_readstatement() {
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	switch (asi64(R1)) {
-	case 9: goto L5211;
-	case 10: case 11: case 12: case 13: case 14: case 15: case 16: case 18: case 19: case 20: case 21: case 22: case 23: case 24: case 25: case 26: case 27: case 28: case 29: case 30: case 31: case 32: case 33: case 34: case 35: case 36: case 37: case 38: case 39: case 40: case 41: case 42: case 43: case 44: case 45: case 46: case 47: case 48: case 49: case 50: case 51: case 52: case 53: case 54: case 55: case 56: case 57: case 58: case 59: case 60: case 61: case 62: case 63: case 64: case 65: case 66: case 68: case 69: case 70: case 73: case 90: case 92: case 93: case 94: case 95: case 96: goto L5188;
-	case 17: goto L5195;
-	case 67: goto L5212;
-	case 71: case 84: case 85: case 86: case 87: case 88: case 89: case 91: goto L5228;
-	case 72: goto L5189;
-	case 74: goto L5209;
-	case 75: goto L5210;
-	case 76: goto L5190;
-	case 77: goto L5191;
-	case 78: goto L5192;
-	case 79: goto L5193;
-	case 80: goto L5197;
-	case 81: goto L5202;
-	case 82: goto L5196;
-	case 83: goto L5194;
-	case 97: goto L5229;
-	default: goto L5188;
+	case 9: goto L5212;
+	case 10: case 11: case 12: case 13: case 14: case 15: case 16: case 18: case 19: case 20: case 21: case 22: case 23: case 24: case 25: case 26: case 27: case 28: case 29: case 30: case 31: case 32: case 33: case 34: case 35: case 36: case 37: case 38: case 39: case 40: case 41: case 42: case 43: case 44: case 45: case 46: case 47: case 48: case 49: case 50: case 51: case 52: case 53: case 54: case 55: case 56: case 57: case 58: case 59: case 60: case 61: case 62: case 63: case 64: case 65: case 66: case 68: case 69: case 70: case 73: case 90: case 92: case 93: case 94: case 95: case 96: goto L5189;
+	case 17: goto L5196;
+	case 67: goto L5213;
+	case 71: case 84: case 85: case 86: case 87: case 88: case 89: case 91: goto L5229;
+	case 72: goto L5190;
+	case 74: goto L5210;
+	case 75: goto L5211;
+	case 76: goto L5191;
+	case 77: goto L5192;
+	case 78: goto L5193;
+	case 79: goto L5194;
+	case 80: goto L5198;
+	case 81: goto L5203;
+	case 82: goto L5197;
+	case 83: goto L5195;
+	case 97: goto L5230;
+	default: goto L5189;
     };
 // SWITCH
-L5189:
-	asu64(R1) = cc_parse_readifstmt();
-	goto L5185;
-	goto L5186;
 L5190:
-	asu64(R1) = cc_parse_readforstmt();
-	goto L5185;
+	asu64(R1) = cc_parse_readifstmt();
 	goto L5186;
+	goto L5187;
 L5191:
-	asu64(R1) = cc_parse_readwhilestmt();
-	goto L5185;
+	asu64(R1) = cc_parse_readforstmt();
 	goto L5186;
+	goto L5187;
 L5192:
-	asu64(R1) = cc_parse_readdostmt();
-	goto L5185;
+	asu64(R1) = cc_parse_readwhilestmt();
 	goto L5186;
+	goto L5187;
 L5193:
-	asu64(R1) = cc_parse_readreturnstmt();
-	goto L5185;
+	asu64(R1) = cc_parse_readdostmt();
 	goto L5186;
+	goto L5187;
 L5194:
-	asu64(R1) = cc_parse_readswitchstmt();
-	goto L5185;
+	asu64(R1) = cc_parse_readreturnstmt();
 	goto L5186;
+	goto L5187;
 L5195:
+	asu64(R1) = cc_parse_readswitchstmt();
+	goto L5186;
+	goto L5187;
+L5196:
 	R1 = 0;
 	asu64(R1) = cc_parse_readcompoundstmt(asi64(R1));
-	goto L5185;
 	goto L5186;
-L5196:
-	asu64(R1) = cc_parse_readgotostmt();
-	goto L5185;
-	goto L5186;
+	goto L5187;
 L5197:
+	asu64(R1) = cc_parse_readgotostmt();
+	goto L5186;
+	goto L5187;
+L5198:
 	asi64(R1) = cc_parse_loopindex;
-	if (!asi64(R1)) goto L5199;
+	if (!asi64(R1)) goto L5200;
 	R1 = (u64)&cc_parse_looptypestack;
 	asi64(R2) = cc_parse_loopindex;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2-1));
 	R1 = toi64(tou8(R1));
 	R2 = 76;
-	if (asi64(R1) != asi64(R2)) goto L5201;
+	if (asi64(R1) != asi64(R2)) goto L5202;
 	R1 = 20;
 	asu64(R1) = cc_lib_createunit0(asi64(R1));
 	p = asu64(R1);
 	cc_lex_lex();
-	goto L5200;
-L5201:
+	goto L5201;
+L5202:
 	R1 = 23;
 	asu64(R1) = cc_lib_createunit0(asi64(R1));
 	p = asu64(R1);
 	cc_lex_lex();
+L5201:
+	goto L5199;
 L5200:
-	goto L5198;
-L5199:
 	R1 = tou64("break outside loop/sw");
 	cc_support_serror(asu64(R1));
-L5198:
-	goto L5186;
-L5202:
+L5199:
+	goto L5187;
+L5203:
 	asi64(R1) = cc_parse_loopindex;
 	index = asi64(R1);
-	goto L5204;
-L5203:
+	goto L5205;
+L5204:
 	R1 = (u64)&index;
 	(*toi64p(R1)) -=1;
-L5204:
+L5205:
 	asi64(R1) = index;
-	if (!asi64(R1)) goto L5206;
+	if (!asi64(R1)) goto L5207;
 	R1 = (u64)&cc_parse_looptypestack;
 	asi64(R2) = index;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2-1));
 	R1 = toi64(tou8(R1));
 	R2 = 76;
-	if (asi64(R1) != asi64(R2)) goto L5203;
-L5206:
+	if (asi64(R1) != asi64(R2)) goto L5204;
+L5207:
 	asi64(R1) = index;
 	R2 = 0;
-	if (asi64(R1) != asi64(R2)) goto L5208;
+	if (asi64(R1) != asi64(R2)) goto L5209;
 	R1 = tou64("continue outside loop");
 	cc_support_serror(asu64(R1));
-L5208:
+L5209:
 	R1 = 21;
 	asu64(R1) = cc_lib_createunit0(asi64(R1));
 	p = asu64(R1);
 	cc_lex_lex();
-	goto L5186;
-L5209:
-	asu64(R1) = cc_parse_readcaselabel();
-	goto L5185;
-	goto L5186;
+	goto L5187;
 L5210:
+	asu64(R1) = cc_parse_readcaselabel();
+	goto L5186;
+	goto L5187;
+L5211:
 	cc_lex_lex();
 	R1 = 10;
 	cc_lib_skipsymbol(asi64(R1));
 	asu64(R1) = cc_parse_readstatement();
 	R2 = 19;
 	asu64(R1) = cc_lib_createunit1(asi64(R2), asu64(R1));
-	goto L5185;
 	goto L5186;
-L5211:
+	goto L5187;
+L5212:
 	cc_lex_lex();
 	R1 = 0;
-	goto L5185;
 	goto L5186;
-L5212:
+	goto L5187;
+L5213:
 	R1 = (u64)&cc_decls_nextlx;
 	R2 = 21;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 10;
-	if (asi64(R1) != asi64(R2)) goto L5214;
+	if (asi64(R1) != asi64(R2)) goto L5215;
 	R1 = 0;
 	R2 = 17;
 	asu64(R1) = cc_lib_createunit1(asi64(R2), asu64(R1));
@@ -48758,13 +48833,13 @@ L5212:
 	asu64(R1) = cc_lib_resolvename(asu64(R4), asu64(R3), asi64(R2), asi64(R1));
 	d = asu64(R1);
 	asu64(R1) = d;
-	if (!asu64(R1)) goto L5216;
+	if (!asu64(R1)) goto L5217;
 	asu64(R1) = d;
 	R2 = 88;
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
 	R1 = toi64(toi32(R1));
 	R2 = -1;
-	if (asi64(R1) != asi64(R2)) goto L5218;
+	if (asi64(R1) != asi64(R2)) goto L5219;
 	msysc_m$print_startcon();
 	R1 = (u64)&cc_decls_lx;
 	R2 = 0;
@@ -48776,9 +48851,9 @@ L5212:
 	msysc_m$print_end();
 	R1 = tou64("2:Duplicate label");
 	cc_support_terror(asu64(R1));
-L5218:
-	goto L5215;
-L5216:
+L5219:
+	goto L5216;
+L5217:
 	R1 = 14;
 	R2 = (u64)&cc_decls_lx;
 	R3 = 0;
@@ -48790,7 +48865,7 @@ L5216:
 	asu64(R2) = d;
 	R3 = 102;
 	*tou16p(((i64)R2+(i64)R3)) = asu16(R1);
-L5215:
+L5216:
 	R1 = -1;
 	asu64(R2) = d;
 	R3 = 88;
@@ -48806,55 +48881,55 @@ L5215:
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 18;
-	if (asi64(R1) != asi64(R2)) goto L5220;
-	goto L5219;
-L5220:
+	if (asi64(R1) != asi64(R2)) goto L5221;
+	goto L5220;
+L5221:
 	asi64(R1) = cc_parse_istypestarter();
-	if (asi64(R1)) goto L5222;
+	if (asi64(R1)) goto L5223;
 	R1 = (u64)&cc_decls_lx;
 	R2 = 21;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 86;
-	if (asi64(R1) != asi64(R2)) goto L5221;
+	if (asi64(R1) != asi64(R2)) goto L5222;
+L5223:
+	goto L5220;
 L5222:
-	goto L5219;
-L5221:
 	asu64(R1) = cc_parse_readstatement();
 	asu64(R2) = p;
 	R3 = 16;
 	*tou64p(((i64)R2+(i64)R3)) = asu64(R1);
-L5219:
+L5220:
 	asu64(R1) = p;
-	goto L5185;
-	goto L5213;
-L5214:
+	goto L5186;
+	goto L5214;
+L5215:
 	R1 = 0;
 	cc_parse_ist_symptr = asu64(R1);
 	asu64(R1) = cc_decls_currproc;
 	asi64(R1) = cc_parse_isusertype(asu64(R1));
 	R2 = 20;
-	if (asi64(R1) == asi64(R2)) goto L5224;
-	goto L5225;
-L5224:
+	if (asi64(R1) == asi64(R2)) goto L5225;
+	goto L5226;
+L5225:
 	asu64(R1) = cc_parse_ist_symptr;
-	if (!asu64(R1)) goto L5227;
+	if (!asu64(R1)) goto L5228;
 	asu64(R1) = cc_parse_ist_symptr;
 	R2 = (u64)&cc_decls_lx;
 	R3 = 0;
 	*tou64p(((i64)R2+(i64)R3)) = asu64(R1);
-L5227:
+L5228:
 	asu64(R1) = cc_parse_readexpression();
 	p = asu64(R1);
-L5213:
-	goto L5186;
-L5228:
-// cc_parse.readstatement.doreaddecl:
-L5225:
-	asu64(R1) = cc_parse_readlocaldecl();
-	goto L5185;
-	goto L5186;
+L5214:
+	goto L5187;
 L5229:
+// cc_parse.readstatement.doreaddecl:
+L5226:
+	asu64(R1) = cc_parse_readlocaldecl();
+	goto L5186;
+	goto L5187;
+L5230:
 	cc_lex_lex();
 	asu64(R1) = cc_parse_readexpression();
 	p = asu64(R1);
@@ -48879,16 +48954,16 @@ L5229:
 	msysc_m$print_str_nf(asu64(R1));
 	msysc_m$print_newline();
 	msysc_m$print_end();
-	goto L5186;
-L5188:
+	goto L5187;
+L5189:
 	asu64(R1) = cc_parse_readexpression();
 	p = asu64(R1);
-L5186:
+L5187:
 	R1 = 9;
 	cc_lib_skipsymbol(asi64(R1));
 	asu64(R1) = p;
-	goto L5185;
-L5185:
+	goto L5186;
+L5186:
 	return asu64(R1);
 }
 
@@ -48919,12 +48994,12 @@ static u64 cc_parse_readifstmt() {
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 73;
-	if (asi64(R1) != asi64(R2)) goto L5232;
+	if (asi64(R1) != asi64(R2)) goto L5233;
 	cc_lex_lex();
 	R1 = 1;
 	asu64(R1) = cc_parse_readblock(asi64(R1));
 	pelse = asu64(R1);
-L5232:
+L5233:
 	asu64(R1) = pelse;
 	asu64(R2) = pbody;
 	asu64(R3) = pcond;
@@ -48937,37 +49012,37 @@ L5232:
 	*tou32p(((i64)R2+(i64)R3)) = asu32(R1);
 	asu64(R1) = pcond;
 	asi64(R1) = cc_parse_iscondtrue(asu64(R1));
-	if (!asi64(R1)) goto L5234;
+	if (!asi64(R1)) goto L5235;
 	asu64(R1) = pbody;
 	R2 = 0;
-	if (asu64(R1) != asu64(R2)) goto L5236;
+	if (asu64(R1) != asu64(R2)) goto L5237;
 	R1 = 6;
 	asu64(R1) = cc_lib_createunit0(asi64(R1));
 	pbody = asu64(R1);
-L5236:
+L5237:
 	asu64(R1) = pbody;
 	asu64(R2) = p;
 	cc_parse_deleteunit(asu64(R2), asu64(R1));
-	goto L5233;
-L5234:
+	goto L5234;
+L5235:
 	asu64(R1) = pcond;
 	asi64(R1) = cc_parse_iscondfalse(asu64(R1));
-	if (!asi64(R1)) goto L5237;
+	if (!asi64(R1)) goto L5238;
 	asu64(R1) = pelse;
 	R2 = 0;
-	if (asu64(R1) != asu64(R2)) goto L5239;
+	if (asu64(R1) != asu64(R2)) goto L5240;
 	R1 = 6;
 	asu64(R1) = cc_lib_createunit0(asi64(R1));
 	pelse = asu64(R1);
-L5239:
+L5240:
 	asu64(R1) = pelse;
 	asu64(R2) = p;
 	cc_parse_deleteunit(asu64(R2), asu64(R1));
-L5237:
-L5233:
+L5238:
+L5234:
 	asu64(R1) = p;
-	goto L5230;
-L5230:
+	goto L5231;
+L5231:
 	return asu64(R1);
 }
 
@@ -48978,19 +49053,19 @@ static i64 cc_parse_iscondtrue(u64 p) {
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
 	R1 = toi64(toi32(R1));
 	R2 = 1;
-	if (asi64(R1) != asi64(R2)) goto L5241;
+	if (asi64(R1) != asi64(R2)) goto L5242;
 	asu64(R1) = p;
 	R2 = 0;
 	asi64(R1) = *toi64p(((i64)R1+(i64)R2));
 	R2 = 0;
-	if (asi64(R1) == asi64(R2)) goto L5241;
+	if (asi64(R1) == asi64(R2)) goto L5242;
 	R1 = 1;
-	goto L5242;
-L5241:
-	R1 = 0;
+	goto L5243;
 L5242:
-	goto L5240;
-L5240:
+	R1 = 0;
+L5243:
+	goto L5241;
+L5241:
 	return asi64(R1);
 }
 
@@ -49001,19 +49076,19 @@ static i64 cc_parse_iscondfalse(u64 p) {
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
 	R1 = toi64(toi32(R1));
 	R2 = 1;
-	if (asi64(R1) != asi64(R2)) goto L5244;
+	if (asi64(R1) != asi64(R2)) goto L5245;
 	asu64(R1) = p;
 	R2 = 0;
 	asi64(R1) = *toi64p(((i64)R1+(i64)R2));
 	R2 = 0;
-	if (asi64(R1) != asi64(R2)) goto L5244;
+	if (asi64(R1) != asi64(R2)) goto L5245;
 	R1 = 1;
-	goto L5245;
-L5244:
-	R1 = 0;
+	goto L5246;
 L5245:
-	goto L5243;
-L5243:
+	R1 = 0;
+L5246:
+	goto L5244;
+L5244:
 	return asi64(R1);
 }
 
@@ -49060,9 +49135,9 @@ static u64 cc_parse_readforstmt() {
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 9;
-	if (asi64(R1) == asi64(R2)) goto L5249;
+	if (asi64(R1) == asi64(R2)) goto L5250;
 	asi64(R1) = cc_parse_istypestarter();
-	if (!asi64(R1)) goto L5251;
+	if (!asi64(R1)) goto L5252;
 	R1 = 1;
 	hasblock = asi64(R1);
 	cc_parse_pushblock();
@@ -49074,19 +49149,19 @@ static u64 cc_parse_readforstmt() {
 	R2 = R1;
 	ulistx = asu64(R2);
 	ulist = asu64(R1);
-L5252:
+L5253:
 	R1 = (u64)&cc_decls_lx;
 	R2 = 21;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 67;
-	if (asi64(R1) == asi64(R2)) goto L5254;
+	if (asi64(R1) == asi64(R2)) goto L5255;
 	R2 = 25;
-	if (asi64(R1) == asi64(R2)) goto L5254;
+	if (asi64(R1) == asi64(R2)) goto L5255;
 	R2 = 13;
-	if (asi64(R1) == asi64(R2)) goto L5254;
-	goto L5255;
-L5254:
+	if (asi64(R1) == asi64(R2)) goto L5255;
+	goto L5256;
+L5255:
 	R1 = (u64)&pm;
 	asi64(R2) = mbase;
 	R3 = (u64)&d;
@@ -49095,19 +49170,19 @@ L5254:
 	m = asi64(R1);
 	asu64(R1) = d;
 	R2 = 0;
-	if (asu64(R1) != asu64(R2)) goto L5257;
+	if (asu64(R1) != asu64(R2)) goto L5258;
 	R1 = tou64("Var name expected");
 	cc_support_serror(asu64(R1));
-L5257:
+L5258:
 	asi64(R1) = linkage;
 	R2 = 5;
-	if (asi64(R1) == asi64(R2)) goto L5260;
+	if (asi64(R1) == asi64(R2)) goto L5261;
 	asu64(R1) = pm;
-	if (!asu64(R1)) goto L5259;
-L5260:
+	if (!asu64(R1)) goto L5260;
+L5261:
 	R1 = tou64("Not allowed in for stmt");
 	cc_support_serror(asu64(R1));
-L5259:
+L5260:
 	asi64(R1) = linkage;
 	asi64(R2) = m;
 	asu64(R3) = d;
@@ -49116,7 +49191,7 @@ L5259:
 	asu64(R1) = d;
 	R2 = 72;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
-	if (!asu64(R1)) goto L5262;
+	if (!asu64(R1)) goto L5263;
 	R1 = 8;
 	asu64(R1) = cc_lib_createunit0(asi64(R1));
 	p = asu64(R1);
@@ -49128,43 +49203,43 @@ L5259:
 	R2 = (u64)&ulistx;
 	R3 = (u64)&ulist;
 	cc_lib_addlistunit(asu64(R3), asu64(R2), asu64(R1));
-L5262:
+L5263:
 	R1 = (u64)&cc_decls_lx;
 	R2 = 21;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 8;
-	if (asi64(R1) == asi64(R2)) goto L5264;
-	goto L5265;
-L5264:
-	cc_lex_lex();
-	goto L5263;
+	if (asi64(R1) == asi64(R2)) goto L5265;
+	goto L5266;
 L5265:
+	cc_lex_lex();
+	goto L5264;
+L5266:
+	goto L5254;
+L5264:
 	goto L5253;
-L5263:
-	goto L5252;
-L5255:
+L5256:
 	R1 = tou64("For decl error");
 	cc_support_serror(asu64(R1));
-	goto L5252;
-L5253:
+	goto L5253;
+L5254:
 	asu64(R1) = ulistx;
 	R2 = 0;
 	asu64(R3) = ulist;
 	R4 = 6;
 	asu64(R1) = cc_lib_createunit3(asi64(R4), asu64(R3), asu64(R2), asu64(R1));
 	pinit = asu64(R1);
-	goto L5250;
-L5251:
+	goto L5251;
+L5252:
 	asu64(R1) = cc_parse_readexpression();
 	pinit = asu64(R1);
+L5251:
+	goto L5249;
 L5250:
-	goto L5248;
-L5249:
 	R1 = 2;
 	asu64(R1) = cc_lib_createunit0(asi64(R1));
 	pinit = asu64(R1);
-L5248:
+L5249:
 	R1 = 9;
 	cc_lib_skipsymbol(asi64(R1));
 	R1 = (u64)&cc_decls_lx;
@@ -49172,17 +49247,17 @@ L5248:
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 9;
-	if (asi64(R1) == asi64(R2)) goto L5267;
+	if (asi64(R1) == asi64(R2)) goto L5268;
 	asu64(R1) = cc_parse_readexpression();
 	pcond = asu64(R1);
 	asu64(R1) = pcond;
 	cc_parse_coercecond(asu64(R1));
-	goto L5266;
-L5267:
+	goto L5267;
+L5268:
 	R1 = 2;
 	asu64(R1) = cc_lib_createunit0(asi64(R1));
 	pcond = asu64(R1);
-L5266:
+L5267:
 	R1 = 9;
 	cc_lib_skipsymbol(asi64(R1));
 	R1 = (u64)&cc_decls_lx;
@@ -49190,14 +49265,14 @@ L5266:
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 14;
-	if (asi64(R1) == asi64(R2)) goto L5269;
+	if (asi64(R1) == asi64(R2)) goto L5270;
 	asu64(R1) = cc_parse_readexprstmt();
 	pincr = asu64(R1);
-	goto L5268;
-L5269:
+	goto L5269;
+L5270:
 	R1 = 0;
 	pincr = asu64(R1);
-L5268:
+L5269:
 	R1 = 14;
 	cc_lib_skipsymbol(asi64(R1));
 	R1 = 76;
@@ -49207,9 +49282,9 @@ L5268:
 	pbody = asu64(R1);
 	cc_parse_poploop();
 	asi64(R1) = hasblock;
-	if (!asi64(R1)) goto L5271;
+	if (!asi64(R1)) goto L5272;
 	cc_parse_popblock();
-L5271:
+L5272:
 	asu64(R1) = pcond;
 	asu64(R2) = pinit;
 	R3 = 8;
@@ -49222,8 +49297,8 @@ L5271:
 	asu64(R2) = pinit;
 	R3 = 13;
 	asu64(R1) = cc_lib_createunit2(asi64(R3), asu64(R2), asu64(R1));
-	goto L5247;
-L5247:
+	goto L5248;
+L5248:
 	return asu64(R1);
 }
 
@@ -49246,8 +49321,8 @@ static u64 cc_parse_readwhilestmt() {
 	asu64(R2) = pcond;
 	R3 = 14;
 	asu64(R1) = cc_lib_createunit2(asi64(R3), asu64(R2), asu64(R1));
-	goto L5272;
-L5272:
+	goto L5273;
+L5273:
 	return asu64(R1);
 }
 
@@ -49274,8 +49349,8 @@ static u64 cc_parse_readdostmt() {
 	asu64(R2) = pbody;
 	R3 = 15;
 	asu64(R1) = cc_lib_createunit2(asi64(R3), asu64(R2), asu64(R1));
-	goto L5273;
-L5273:
+	goto L5274;
+L5274:
 	return asu64(R1);
 }
 
@@ -49290,16 +49365,16 @@ static u64 cc_parse_readreturnstmt() {
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 9;
-	if (asi64(R1) == asi64(R2)) goto L5276;
+	if (asi64(R1) == asi64(R2)) goto L5277;
 	asu64(R1) = cc_decls_currproc;
 	R2 = 102;
 	asu16(R1) = *tou16p(((i64)R1+(i64)R2));
 	R1 = toi64(tou16(R1));
 	R2 = 0;
-	if (asi64(R1) != asi64(R2)) goto L5278;
+	if (asi64(R1) != asi64(R2)) goto L5279;
 	R1 = tou64("Can't return value in void function");
 	cc_support_terror(asu64(R1));
-L5278:
+L5279:
 	asu64(R1) = cc_parse_readexpression();
 	p = asu64(R1);
 	asu64(R1) = cc_decls_currproc;
@@ -49311,24 +49386,24 @@ L5278:
 	p = asu64(R1);
 	R1 = 9;
 	cc_lib_checksymbol(asi64(R1));
-	goto L5275;
-L5276:
+	goto L5276;
+L5277:
 	asu64(R1) = cc_decls_currproc;
 	R2 = 102;
 	asu16(R1) = *tou16p(((i64)R1+(i64)R2));
 	R1 = toi64(tou16(R1));
 	R2 = 0;
-	if (asi64(R1) == asi64(R2)) goto L5279;
+	if (asi64(R1) == asi64(R2)) goto L5280;
 	R1 = tou64("Return value needed");
 	cc_support_terror(asu64(R1));
-L5279:
-L5275:
+L5280:
+L5276:
 	cc_lex_lex();
 	asu64(R1) = p;
 	R2 = 9;
 	asu64(R1) = cc_lib_createunit1(asi64(R2), asu64(R1));
-	goto L5274;
-L5274:
+	goto L5275;
+L5275:
 	return asu64(R1);
 }
 
@@ -49349,7 +49424,7 @@ static u64 cc_parse_readgotostmt() {
 	d = asu64(R1);
 	asu64(R1) = d;
 	R2 = 0;
-	if (asu64(R1) != asu64(R2)) goto L5282;
+	if (asu64(R1) != asu64(R2)) goto L5283;
 	R1 = 14;
 	R2 = (u64)&cc_decls_lx;
 	R3 = 0;
@@ -49361,7 +49436,7 @@ static u64 cc_parse_readgotostmt() {
 	asu64(R2) = d;
 	R3 = 102;
 	*tou16p(((i64)R2+(i64)R3)) = asu16(R1);
-L5282:
+L5283:
 	R1 = 0;
 	R2 = 16;
 	asu64(R1) = cc_lib_createunit1(asi64(R2), asu64(R1));
@@ -49374,8 +49449,8 @@ L5282:
 	R1 = 9;
 	cc_lib_skipsymbol(asi64(R1));
 	asu64(R1) = p;
-	goto L5280;
-L5280:
+	goto L5281;
+L5281:
 	return asu64(R1);
 }
 
@@ -49408,8 +49483,8 @@ static u64 cc_parse_readswitchstmt() {
 	*tou64p(((i64)R2+(i64)R3)) = asu64(R1);
 	cc_parse_poploop();
 	asu64(R1) = p;
-	goto L5283;
-L5283:
+	goto L5284;
+L5284:
 	return asu64(R1);
 }
 
@@ -49434,16 +49509,16 @@ static u64 cc_parse_readcaselabel() {
 	asi64(R1) = value;
 	cc_parse_addcasevalue(asi64(R1));
 	asu64(R1) = p;
-	goto L5284;
-L5284:
+	goto L5285;
+L5285:
 	return asu64(R1);
 }
 
 static u64 cc_parse_readexprstmt() {
     u64 R1; 
 	asu64(R1) = cc_parse_readexpression();
-	goto L5285;
-L5285:
+	goto L5286;
+L5286:
 	return asu64(R1);
 }
 
@@ -49457,8 +49532,8 @@ static u64 cc_parse_readcond() {
 	R1 = 14;
 	cc_lib_skipsymbol(asi64(R1));
 	asu64(R1) = pcond;
-	goto L5286;
-L5286:
+	goto L5287;
+L5287:
 	return asu64(R1);
 }
 
@@ -49474,25 +49549,25 @@ static i64 cc_parse_isusertype(u64 owner) {
 	asu64(R1) = cc_lib_resolvename(asu64(R4), asu64(R3), asi64(R2), asi64(R1));
 	d = asu64(R1);
 	asu64(R1) = d;
-	if (!asu64(R1)) goto L5289;
+	if (!asu64(R1)) goto L5290;
 	asu64(R1) = d;
 	R2 = 109;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 5;
-	if (asi64(R1) != asi64(R2)) goto L5291;
+	if (asi64(R1) != asi64(R2)) goto L5292;
 	asu64(R1) = d;
 	R2 = 102;
 	asu16(R1) = *tou16p(((i64)R1+(i64)R2));
 	R1 = toi64(tou16(R1));
-	goto L5287;
-L5291:
+	goto L5288;
+L5292:
 	asu64(R1) = d;
 	cc_parse_ist_symptr = asu64(R1);
-L5289:
+L5290:
 	R1 = 20;
-	goto L5287;
-L5287:
+	goto L5288;
+L5288:
 	return asi64(R1);
 }
 
@@ -49524,19 +49599,19 @@ static u64 cc_parse_readlocaldecl() {
 	mbase = asi64(R1);
 	R1 = 0;
 	nitems = asi64(R1);
-L5293:
+L5294:
 	R1 = (u64)&cc_decls_lx;
 	R2 = 21;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 67;
-	if (asi64(R1) == asi64(R2)) goto L5295;
+	if (asi64(R1) == asi64(R2)) goto L5296;
 	R2 = 25;
-	if (asi64(R1) == asi64(R2)) goto L5295;
+	if (asi64(R1) == asi64(R2)) goto L5296;
 	R2 = 13;
-	if (asi64(R1) == asi64(R2)) goto L5295;
-	goto L5296;
-L5295:
+	if (asi64(R1) == asi64(R2)) goto L5296;
+	goto L5297;
+L5296:
 	R1 = (u64)&nitems;
 	(*toi64p(R1)) += 1;
 	R1 = (u64)&pm;
@@ -49547,31 +49622,31 @@ L5295:
 	m = asi64(R1);
 	asu64(R1) = d;
 	R2 = 0;
-	if (asu64(R1) != asu64(R2)) goto L5298;
+	if (asu64(R1) != asu64(R2)) goto L5299;
 	R1 = tou64("Var name expected");
 	cc_support_serror(asu64(R1));
-L5298:
+L5299:
 	asi64(R1) = linkage;
 	R2 = 5;
-	if (asi64(R1) != asi64(R2)) goto L5300;
+	if (asi64(R1) != asi64(R2)) goto L5301;
 	asi64(R1) = m;
 	asu64(R2) = d;
 	asu64(R3) = cc_decls_currproc;
 	asu64(R1) = cc_parse_createtypedef(asu64(R3), asu64(R2), asi64(R1));
 	d = asu64(R1);
-	goto L5299;
-L5300:
+	goto L5300;
+L5301:
 	asu64(R1) = pm;
-	if (!asu64(R1)) goto L5301;
+	if (!asu64(R1)) goto L5302;
 	R1 = (u64)&cc_decls_lx;
 	R2 = 21;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 17;
-	if (asi64(R1) != asi64(R2)) goto L5303;
+	if (asi64(R1) != asi64(R2)) goto L5304;
 	R1 = tou64("Nested function");
 	cc_support_serror(asu64(R1));
-L5303:
+L5304:
 	R1 = 0;
 	R2 = (u64)&wasdef;
 	asu64(R3) = pm;
@@ -49580,8 +49655,8 @@ L5303:
 	asu64(R6) = d;
 	asu64(R1) = cc_parse_readfunction(asu64(R6), asi64(R5), asi64(R4), asu64(R3), asu64(R2), asi64(R1));
 	d = asu64(R1);
-	goto L5299;
-L5301:
+	goto L5300;
+L5302:
 	asi64(R1) = linkage;
 	asi64(R2) = m;
 	asu64(R3) = d;
@@ -49598,58 +49673,58 @@ L5301:
 	R2 = (u64)&ulistx;
 	R3 = (u64)&ulist;
 	cc_lib_addlistunit(asu64(R3), asu64(R2), asu64(R1));
-L5299:
+L5300:
 	R1 = (u64)&cc_decls_lx;
 	R2 = 21;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 8;
-	if (asi64(R1) == asi64(R2)) goto L5305;
-	goto L5306;
-L5305:
-	cc_lex_lex();
-	goto L5304;
+	if (asi64(R1) == asi64(R2)) goto L5306;
+	goto L5307;
 L5306:
+	cc_lex_lex();
+	goto L5305;
+L5307:
 	R1 = 9;
 	cc_lib_skipsymbol(asi64(R1));
+	goto L5295;
+L5305:
 	goto L5294;
-L5304:
-	goto L5293;
-L5296:
+L5297:
 	R1 = (u64)&cc_decls_ttbasetype;
 	asi64(R2) = mbase;
 	asi16(R1) = *toi16p(((i64)R1+(i64)R2*2));
 	R1 = toi64(toi16(R1));
 	R2 = 12;
-	if (asi64(R1) == asi64(R2)) goto L5308;
-	R2 = 18;
-	if (asi64(R1) == asi64(R2)) goto L5308;
-	R2 = 19;
-	if (asi64(R1) == asi64(R2)) goto L5308;
-	R2 = 3;
 	if (asi64(R1) == asi64(R2)) goto L5309;
-	goto L5310;
-L5308:
-	R1 = 9;
-	cc_lib_skipsymbol(asi64(R1));
-	goto L5294;
-	goto L5307;
+	R2 = 18;
+	if (asi64(R1) == asi64(R2)) goto L5309;
+	R2 = 19;
+	if (asi64(R1) == asi64(R2)) goto L5309;
+	R2 = 3;
+	if (asi64(R1) == asi64(R2)) goto L5310;
+	goto L5311;
 L5309:
 	R1 = 9;
 	cc_lib_skipsymbol(asi64(R1));
-	goto L5294;
-	goto L5307;
+	goto L5295;
+	goto L5308;
 L5310:
+	R1 = 9;
+	cc_lib_skipsymbol(asi64(R1));
+	goto L5295;
+	goto L5308;
+L5311:
 	asi64(R1) = m;
 	asu64(R1) = cc_lib_typename(asi64(R1));
 	R2 = tou64("Local decl error #");
 	cc_support_serror_s(asu64(R2), asu64(R1));
-L5307:
-	goto L5293;
-L5294:
+L5308:
+	goto L5294;
+L5295:
 	asu64(R1) = ulist;
-	goto L5292;
-L5292:
+	goto L5293;
+L5293:
 	return asu64(R1);
 }
 
@@ -49663,42 +49738,42 @@ static u64 cc_parse_createtypedef(u64 owner, u64 symptr, i64 mode) {
 	asu64(R1) = cc_lib_checkdupl(asu64(R4), asu64(R3), asi64(R2), asi64(R1));
 	d = asu64(R1);
 	asu64(R1) = d;
-	if (!asu64(R1)) goto L5313;
+	if (!asu64(R1)) goto L5314;
 	asu64(R1) = d;
 	R2 = 109;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 5;
-	if (asi64(R1) == asi64(R2)) goto L5315;
+	if (asi64(R1) == asi64(R2)) goto L5316;
 	asu64(R1) = d;
 	R2 = 0;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
 	R2 = tou64("Typedef name in use #");
 	cc_support_serror_s(asu64(R2), asu64(R1));
-L5315:
+L5316:
 	asu64(R1) = d;
 	R2 = 102;
 	asu16(R1) = *tou16p(((i64)R1+(i64)R2));
 	R1 = toi64(tou16(R1));
 	asi64(R2) = mode;
-	if (asi64(R1) == asi64(R2)) goto L5317;
+	if (asi64(R1) == asi64(R2)) goto L5318;
 	asi64(R1) = mode;
 	asu64(R2) = d;
 	R3 = 102;
 	asu16(R2) = *tou16p(((i64)R2+(i64)R3));
 	R2 = toi64(tou16(R2));
 	asi64(R1) = cc_parse_comparemode(asi64(R2), asi64(R1));
-	if (asi64(R1)) goto L5319;
+	if (asi64(R1)) goto L5320;
 	asu64(R1) = d;
 	R2 = 0;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
 	R2 = tou64("Typedef redefined or can't match types #");
 	cc_support_serror_s(asu64(R2), asu64(R1));
-L5319:
-L5317:
+L5320:
+L5318:
 	asu64(R1) = d;
-	goto L5311;
-L5313:
+	goto L5312;
+L5314:
 	R1 = 5;
 	asu64(R2) = symptr;
 	asu64(R3) = owner;
@@ -49721,8 +49796,8 @@ L5313:
 	asi64(R3) = cc_decls_currblockno;
 	*toi32p(((i64)R2+(i64)R3*4)) = asi32(R1);
 	asu64(R1) = d;
-	goto L5311;
-L5311:
+	goto L5312;
+L5312:
 	return asu64(R1);
 }
 
@@ -49762,21 +49837,21 @@ static u64 cc_parse_readparams(u64 owner) {
 	nonames = asi64(R1);
 	R1 = 0;
 	reported = asi64(R1);
-	goto L5322;
-L5321:
+	goto L5323;
+L5322:
 	R1 = (u64)&cc_decls_lx;
 	R2 = 21;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 21;
-	if (asi64(R1) != asi64(R2)) goto L5325;
+	if (asi64(R1) != asi64(R2)) goto L5326;
 	R1 = 1;
 	variadic = asi64(R1);
 	cc_lex_lex();
-	goto L5323;
-L5325:
+	goto L5324;
+L5326:
 	asi64(R1) = cc_parse_istypestarter();
-	if (!asi64(R1)) goto L5327;
+	if (!asi64(R1)) goto L5328;
 	R1 = (u64)&lastbasetype;
 	R2 = 0;
 	R3 = (u64)&pm;
@@ -49785,21 +49860,21 @@ L5325:
 	asi64(R1) = cc_parse_readcasttype(asu64(R5), asi64(R4), asu64(R3), asi64(R2), asu64(R1));
 	m = asi64(R1);
 	asu64(R1) = pm;
-	if (!asu64(R1)) goto L5329;
+	if (!asu64(R1)) goto L5330;
 	asu64(R1) = pm;
 	asi64(R2) = m;
 	asi64(R1) = cc_lib_createprocmode(asi64(R2), asu64(R1));
 	asi64(R1) = cc_lib_createrefmode(asi64(R1));
 	m = asi64(R1);
-L5329:
-	goto L5326;
-L5327:
+L5330:
+	goto L5327;
+L5328:
 	asi64(R1) = lastbasetype;
 	R2 = 0;
-	if (asi64(R1) != asi64(R2)) goto L5331;
+	if (asi64(R1) != asi64(R2)) goto L5332;
 	R1 = tou64("Param type missing or misspelt");
 	cc_support_serror(asu64(R1));
-L5331:
+L5332:
 	R1 = 0;
 	asi64(R2) = lastbasetype;
 	R3 = (u64)&pm;
@@ -49807,25 +49882,25 @@ L5331:
 	R5 = (u64)&d;
 	asi64(R1) = cc_parse_readcasttype(asu64(R5), asi64(R4), asu64(R3), asi64(R2), asu64(R1));
 	m = asi64(R1);
-L5326:
+L5327:
 	R1 = (u64)&cc_decls_ttbasetype;
 	asi64(R2) = m;
 	asi16(R1) = *toi16p(((i64)R1+(i64)R2*2));
 	R1 = toi64(toi16(R1));
 	R2 = 17;
-	if (asi64(R1) == asi64(R2)) goto L5333;
-	R2 = 14;
 	if (asi64(R1) == asi64(R2)) goto L5334;
-	goto L5335;
-L5333:
+	R2 = 14;
+	if (asi64(R1) == asi64(R2)) goto L5335;
+	goto L5336;
+L5334:
 	R1 = (u64)&cc_decls_tttarget;
 	asi64(R2) = m;
 	asi16(R1) = *toi16p(((i64)R1+(i64)R2*2));
 	R1 = toi64(toi16(R1));
 	asi64(R1) = cc_lib_createrefmode(asi64(R1));
 	m = asi64(R1);
-	goto L5332;
-L5334:
+	goto L5333;
+L5335:
 	R1 = (u64)&cc_decls_ttparams;
 	asi64(R2) = m;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2*8));
@@ -49833,9 +49908,9 @@ L5334:
 	asi64(R1) = cc_lib_createprocmode(asi64(R2), asu64(R1));
 	asi64(R1) = cc_lib_createrefmode(asi64(R1));
 	m = asi64(R1);
-	goto L5332;
-L5335:
-L5332:
+	goto L5333;
+L5336:
+L5333:
 	R1 = 24;
 	asu64(R1) = mlib_pcm_allocz(asi64(R1));
 	pm = asu64(R1);
@@ -49850,36 +49925,36 @@ L5332:
 	R1 = (u64)&nparams;
 	(*toi64p(R1)) += 1;
 	asu64(R1) = d;
-	if (!asu64(R1)) goto L5337;
+	if (!asu64(R1)) goto L5338;
 	R1 = 1;
 	names = asi64(R1);
-	goto L5336;
-L5337:
+	goto L5337;
+L5338:
 	R1 = 1;
 	nonames = asi64(R1);
-L5336:
+L5337:
 	asi64(R1) = names;
-	if (!asi64(R1)) goto L5339;
+	if (!asi64(R1)) goto L5340;
 	asi64(R1) = nonames;
-	if (!asi64(R1)) goto L5339;
+	if (!asi64(R1)) goto L5340;
 	asi64(R1) = reported;
-	if (asi64(R1)) goto L5339;
+	if (asi64(R1)) goto L5340;
 	R1 = 1;
 	reported = asi64(R1);
-L5339:
+L5340:
 	asu64(R1) = d;
-	if (!asu64(R1)) goto L5341;
+	if (!asu64(R1)) goto L5342;
 	R1 = (u64)&nnames;
 	(*toi64p(R1)) += 1;
 	asu64(R1) = ulist;
 	q = asu64(R1);
-	goto L5343;
-L5342:
+	goto L5344;
+L5343:
 	asu64(R1) = q;
 	R2 = 0;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
 	asu64(R2) = d;
-	if (asu64(R1) != asu64(R2)) goto L5346;
+	if (asu64(R1) != asu64(R2)) goto L5347;
 	R1 = (u64)&cc_tables_namenames;
 	asu64(R2) = d;
 	R3 = 109;
@@ -49891,15 +49966,15 @@ L5342:
 	asu64(R2) = *tou64p(((i64)R2+(i64)R3));
 	R3 = tou64("Param name reused # #");
 	cc_support_serror_ss(asu64(R3), asu64(R2), asu64(R1));
-L5346:
+L5347:
 	asu64(R1) = q;
 	R2 = 8;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
 	q = asu64(R1);
-L5343:
+L5344:
 	asu64(R1) = q;
-	if (asu64(R1)) goto L5342;
-L5341:
+	if (asu64(R1)) goto L5343;
+L5342:
 	asu64(R1) = pm;
 	R2 = (u64)&ulistx;
 	R3 = (u64)&ulist;
@@ -49909,52 +49984,52 @@ L5341:
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 8;
-	if (asi64(R1) == asi64(R2)) goto L5348;
+	if (asi64(R1) == asi64(R2)) goto L5349;
 	R2 = 21;
-	if (asi64(R1) == asi64(R2)) goto L5349;
+	if (asi64(R1) == asi64(R2)) goto L5350;
 	R2 = 14;
-	if (asi64(R1) == asi64(R2)) goto L5349;
-	goto L5350;
-L5348:
-	cc_lex_lex();
-	goto L5347;
+	if (asi64(R1) == asi64(R2)) goto L5350;
+	goto L5351;
 L5349:
-	goto L5347;
+	cc_lex_lex();
+	goto L5348;
 L5350:
+	goto L5348;
+L5351:
 	R1 = tou64("bad symbol in paramlist");
 	cc_support_serror(asu64(R1));
-L5347:
-L5322:
+L5348:
+L5323:
 	R1 = (u64)&cc_decls_lx;
 	R2 = 21;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 14;
-	if (asi64(R1) != asi64(R2)) goto L5321;
-L5323:
+	if (asi64(R1) != asi64(R2)) goto L5322;
+L5324:
 	R1 = 0;
 	flags = asi64(R1);
 	R1 = 14;
 	cc_lib_skipsymbol(asi64(R1));
 	asi64(R1) = variadic;
-	if (!asi64(R1)) goto L5352;
+	if (!asi64(R1)) goto L5353;
 	R1 = 3;
 	flags = asi64(R1);
-	goto L5351;
-L5352:
-	asi64(R1) = nparams;
-	R2 = 0;
-	if (asi64(R1) != asi64(R2)) goto L5353;
-	R1 = 1;
-	flags = asi64(R1);
-	goto L5351;
+	goto L5352;
 L5353:
 	asi64(R1) = nparams;
-	R2 = 1;
-	if (asi64(R1) != asi64(R2)) goto L5354;
-	asi64(R1) = m;
 	R2 = 0;
 	if (asi64(R1) != asi64(R2)) goto L5354;
+	R1 = 1;
+	flags = asi64(R1);
+	goto L5352;
+L5354:
+	asi64(R1) = nparams;
+	R2 = 1;
+	if (asi64(R1) != asi64(R2)) goto L5355;
+	asi64(R1) = m;
+	R2 = 0;
+	if (asi64(R1) != asi64(R2)) goto L5355;
 	R1 = 2;
 	flags = asi64(R1);
 	R1 = 0;
@@ -49963,15 +50038,15 @@ L5353:
 	asu64(R2) = ulist;
 	R3 = 16;
 	*toi32p(((i64)R2+(i64)R3)) = asi32(R1);
-L5354:
-L5351:
+L5355:
+L5352:
 	asu64(R1) = ulist;
 	R2 = 0;
-	if (asu64(R1) != asu64(R2)) goto L5356;
+	if (asu64(R1) != asu64(R2)) goto L5357;
 	R1 = 24;
 	asu64(R1) = mlib_pcm_allocz(asi64(R1));
 	ulist = asu64(R1);
-L5356:
+L5357:
 	asi64(R1) = nparams;
 	asu64(R2) = ulist;
 	R3 = 20;
@@ -49981,8 +50056,8 @@ L5356:
 	R3 = 22;
 	*toi16p(((i64)R2+(i64)R3)) = asi16(R1);
 	asu64(R1) = ulist;
-	goto L5320;
-L5320:
+	goto L5321;
+L5321:
 	return asu64(R1);
 }
 
@@ -49991,12 +50066,12 @@ static i64 cc_parse_readcasttype(u64 d, i64 allowname, u64 pm, i64 m, u64 mbase)
 	u64 owner;
 	i64 linkage;
 	asu64(R1) = cc_decls_currproc;
-	if (!asu64(R1)) goto L5359;
+	if (!asu64(R1)) goto L5360;
 	asu64(R1) = cc_decls_currproc;
-	goto L5358;
-L5359:
+	goto L5359;
+L5360:
 	asu64(R1) = cc_decls_stmodule;
-L5358:
+L5359:
 	owner = asu64(R1);
 	R1 = 0;
 	linkage = asi64(R1);
@@ -50005,18 +50080,18 @@ L5358:
 	*tou64p(R2) = asu64(R1);
 	asi64(R1) = m;
 	R2 = 0;
-	if (asi64(R1) != asi64(R2)) goto L5361;
+	if (asi64(R1) != asi64(R2)) goto L5362;
 	R1 = (u64)&linkage;
 	asu64(R2) = owner;
 	asi64(R1) = cc_parse_readdeclspec(asu64(R2), asu64(R1));
 	m = asi64(R1);
 	asu64(R1) = mbase;
-	if (!asu64(R1)) goto L5363;
+	if (!asu64(R1)) goto L5364;
 	asi64(R1) = m;
 	asu64(R2) = mbase;
 	*toi64p(R2) = asi64(R1);
-L5363:
-L5361:
+L5364:
+L5362:
 	R1 = 0;
 	asu64(R2) = pm;
 	*tou64p(R2) = asu64(R1);
@@ -50025,15 +50100,15 @@ L5361:
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 67;
-	if (asi64(R1) == asi64(R2)) goto L5365;
+	if (asi64(R1) == asi64(R2)) goto L5366;
 	R2 = 25;
-	if (asi64(R1) == asi64(R2)) goto L5365;
+	if (asi64(R1) == asi64(R2)) goto L5366;
 	R2 = 13;
-	if (asi64(R1) == asi64(R2)) goto L5365;
+	if (asi64(R1) == asi64(R2)) goto L5366;
 	R2 = 15;
-	if (asi64(R1) == asi64(R2)) goto L5365;
-	goto L5366;
-L5365:
+	if (asi64(R1) == asi64(R2)) goto L5366;
+	goto L5367;
+L5366:
 	asu64(R1) = pm;
 	asi64(R2) = m;
 	asu64(R3) = d;
@@ -50042,22 +50117,22 @@ L5365:
 	m = asi64(R1);
 	asu64(R1) = d;
 	asu64(R1) = *tou64p(R1);
-	if (!asu64(R1)) goto L5368;
+	if (!asu64(R1)) goto L5369;
 	asi64(R1) = allowname;
-	if (asi64(R1)) goto L5368;
+	if (asi64(R1)) goto L5369;
 	asu64(R1) = d;
 	asu64(R1) = *tou64p(R1);
 	R2 = 0;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
 	R2 = tou64("NAME not allowed in cast type #");
 	cc_support_serror_s(asu64(R2), asu64(R1));
-L5368:
-	goto L5364;
-L5366:
-L5364:
+L5369:
+	goto L5365;
+L5367:
+L5365:
 	asi64(R1) = m;
-	goto L5357;
-L5357:
+	goto L5358;
+L5358:
 	return asi64(R1);
 }
 
@@ -50078,19 +50153,19 @@ static u64 cc_parse_readfunction(u64 d, i64 m, i64 linkage, u64 pm, u64 wasdef, 
 	asu64(R1) = cc_lib_checkdupl(asu64(R4), asu64(R3), asi64(R2), asi64(R1));
 	f = asu64(R1);
 	asu64(R1) = f;
-	if (!asu64(R1)) goto L5371;
+	if (!asu64(R1)) goto L5372;
 	asu64(R1) = f;
 	R2 = 109;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 6;
-	if (asi64(R1) == asi64(R2)) goto L5373;
+	if (asi64(R1) == asi64(R2)) goto L5374;
 	asu64(R1) = d;
 	R2 = 0;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
 	R2 = tou64("fn: name in use #");
 	cc_support_serror_s(asu64(R2), asu64(R1));
-L5373:
+L5374:
 	asu64(R1) = f;
 	d = asu64(R1);
 	asu64(R1) = d;
@@ -50100,23 +50175,23 @@ L5373:
 	scope = asi64(R1);
 	asi64(R1) = scope;
 	R2 = 3;
-	if (asi64(R1) != asi64(R2)) goto L5375;
+	if (asi64(R1) != asi64(R2)) goto L5376;
 	asi64(R1) = linkage;
 	R2 = 0;
-	if (asi64(R1) != asi64(R2)) goto L5375;
+	if (asi64(R1) != asi64(R2)) goto L5376;
 	R1 = 4;
 	scope = asi64(R1);
-	goto L5374;
-L5375:
+	goto L5375;
+L5376:
 	asi64(R1) = linkage;
 	R2 = 1;
-	if (asi64(R1) != asi64(R2)) goto L5376;
+	if (asi64(R1) != asi64(R2)) goto L5377;
 	R1 = 2;
 	scope = asi64(R1);
-L5376:
-L5374:
-	goto L5370;
-L5371:
+L5377:
+L5375:
+	goto L5371;
+L5372:
 	R1 = 6;
 	asu64(R2) = d;
 	asu64(R3) = owner;
@@ -50128,23 +50203,23 @@ L5371:
 	*tou16p(((i64)R2+(i64)R3)) = asu16(R1);
 	asi64(R1) = linkage;
 	R2 = 1;
-	if (asi64(R1) == asi64(R2)) goto L5378;
-	R2 = 4;
 	if (asi64(R1) == asi64(R2)) goto L5379;
-	goto L5380;
-L5378:
+	R2 = 4;
+	if (asi64(R1) == asi64(R2)) goto L5380;
+	goto L5381;
+L5379:
 	R1 = 2;
 	scope = asi64(R1);
-	goto L5377;
-L5379:
+	goto L5378;
+L5380:
 	R1 = 3;
 	scope = asi64(R1);
-	goto L5377;
-L5380:
+	goto L5378;
+L5381:
 	R1 = 4;
 	scope = asi64(R1);
-L5377:
-L5370:
+L5378:
+L5371:
 	asu64(R1) = pm;
 	asu64(R2) = d;
 	R3 = 80;
@@ -50154,41 +50229,41 @@ L5370:
 	R3 = 110;
 	*tou8p(((i64)R2+(i64)R3)) = asu8(R1);
 	asi64(R1) = exported;
-	if (!asi64(R1)) goto L5382;
+	if (!asi64(R1)) goto L5383;
 	R1 = 1;
 	asu64(R2) = d;
 	R3 = 108;
 	R2 += (i64)R3;
 	R3 = 4;
     *toi64p(R2) = Setdotindex(*toi64p(R2), (i64)R3, (i64)R1);
-L5382:
+L5383:
 	R1 = (u64)&cc_decls_lx;
 	R2 = 21;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 17;
-	if (asi64(R1) != asi64(R2)) goto L5384;
+	if (asi64(R1) != asi64(R2)) goto L5385;
 	R1 = 1;
 	asu64(R2) = wasdef;
 	*toi64p(R2) = asi64(R1);
 	asu64(R1) = d;
 	R2 = 72;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
-	if (!asu64(R1)) goto L5386;
+	if (!asu64(R1)) goto L5387;
 	asu64(R1) = d;
 	R2 = 0;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
 	R2 = tou64("Can't define function twice #");
 	cc_support_serror_s(asu64(R2), asu64(R1));
-L5386:
+L5387:
 	asi64(R1) = scope;
 	R2 = 3;
-	if (asi64(R1) != asi64(R2)) goto L5388;
+	if (asi64(R1) != asi64(R2)) goto L5389;
 	R1 = 4;
 	asu64(R2) = d;
 	R3 = 110;
 	*tou8p(((i64)R2+(i64)R3)) = asu8(R1);
-L5388:
+L5389:
 	asu64(R1) = d;
 	cc_parse_readfunctionbody(asu64(R1));
 	R1 = (u64)&cc_decls_lx;
@@ -50196,14 +50271,14 @@ L5388:
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 9;
-	if (asi64(R1) != asi64(R2)) goto L5390;
+	if (asi64(R1) != asi64(R2)) goto L5391;
 	R1 = tou64("; after function def");
 	cc_support_serror(asu64(R1));
-L5390:
-L5384:
+L5391:
+L5385:
 	asu64(R1) = d;
-	goto L5369;
-L5369:
+	goto L5370;
+L5370:
 	return asu64(R1);
 }
 
@@ -50233,15 +50308,15 @@ static void cc_parse_readfunctionbody(u64 f) {
 	av_1 = asi64(R1);
 	asi64(R1) = av_1;
 	R2 = 0;
-	if (asi64(R1) <= asi64(R2)) goto L5394;
-L5392:
+	if (asi64(R1) <= asi64(R2)) goto L5395;
+L5393:
 	asu64(R1) = pm;
 	R2 = 0;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
 	R2 = 0;
-	if (asu64(R1) != asu64(R2)) goto L5396;
-	goto L5395;
-L5396:
+	if (asu64(R1) != asu64(R2)) goto L5397;
+	goto L5396;
+L5397:
 	R1 = 9;
 	asu64(R2) = pm;
 	R3 = 0;
@@ -50255,12 +50330,12 @@ L5396:
 	asu8(R1) = *tou8p(R1);
 	R1 = tou64(tou8(R1));
 	R2 = 36;
-	if (asu64(R1) != asu64(R2)) goto L5398;
+	if (asu64(R1) != asu64(R2)) goto L5399;
 	R1 = 1;
 	asu64(R2) = e;
 	R3 = 122;
 	*tou8p(((i64)R2+(i64)R3)) = asu8(R1);
-L5398:
+L5399:
 	R1 = 1;
 	asu64(R2) = e;
 	R3 = 96;
@@ -50271,15 +50346,15 @@ L5398:
 	asu64(R2) = e;
 	R3 = 102;
 	*tou16p(((i64)R2+(i64)R3)) = asu16(R1);
-L5395:
+L5396:
 	asu64(R1) = pm;
 	R2 = 8;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
 	pm = asu64(R1);
 	R1 = 1;
 	pmcount = asi64(R1);
-	if (--asi64(av_1)) goto L5392;
-L5394:
+	if (--asi64(av_1)) goto L5393;
+L5395:
 	asi64(R1) = pmcount;
 	asu64(R1) = cc_parse_readcompoundstmt(asi64(R1));
 	p = asu64(R1);
@@ -50306,20 +50381,20 @@ static u64 cc_parse_createnegop(u64 p) {
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
 	R1 = toi64(toi32(R1));
 	R2 = 1;
-	if (asi64(R1) != asi64(R2)) goto L5401;
+	if (asi64(R1) != asi64(R2)) goto L5402;
 	asi64(R1) = t;
 	R2 = 3;
-	if (asi64(R1) == asi64(R2)) goto L5403;
-	R2 = 4;
-	if (asi64(R1) == asi64(R2)) goto L5403;
-	R2 = 9;
-	if (asi64(R1) == asi64(R2)) goto L5403;
-	R2 = 8;
 	if (asi64(R1) == asi64(R2)) goto L5404;
-	R2 = 11;
+	R2 = 4;
+	if (asi64(R1) == asi64(R2)) goto L5404;
+	R2 = 9;
+	if (asi64(R1) == asi64(R2)) goto L5404;
+	R2 = 8;
 	if (asi64(R1) == asi64(R2)) goto L5405;
-	goto L5406;
-L5403:
+	R2 = 11;
+	if (asi64(R1) == asi64(R2)) goto L5406;
+	goto L5407;
+L5404:
 	asu64(R1) = p;
 	R2 = 0;
 	asi64(R1) = *toi64p(((i64)R1+(i64)R2));
@@ -50328,9 +50403,9 @@ L5403:
 	R3 = 0;
 	*toi64p(((i64)R2+(i64)R3)) = asi64(R1);
 	asu64(R1) = p;
-	goto L5399;
-	goto L5402;
-L5404:
+	goto L5400;
+	goto L5403;
+L5405:
 	asu64(R1) = p;
 	R2 = 0;
 	asi64(R1) = *toi64p(((i64)R1+(i64)R2));
@@ -50341,9 +50416,9 @@ L5404:
 	R3 = 0;
 	*toi64p(((i64)R2+(i64)R3)) = asi64(R1);
 	asu64(R1) = p;
-	goto L5399;
-	goto L5402;
-L5405:
+	goto L5400;
+	goto L5403;
+L5406:
 	asu64(R1) = p;
 	R2 = 0;
 	asr64(R1) = *tor64p(((i64)R1+(i64)R2));
@@ -50352,39 +50427,39 @@ L5405:
 	R3 = 0;
 	*tor64p(((i64)R2+(i64)R3)) = asr64(R1);
 	asu64(R1) = p;
-	goto L5399;
-	goto L5402;
-L5406:
-L5402:
-L5401:
-// cc_parse.createnegop.retry:
+	goto L5400;
+	goto L5403;
 L5407:
+L5403:
+L5402:
+// cc_parse.createnegop.retry:
+L5408:
 	asi64(R1) = t;
 	R2 = 1;
-	if (asi64(R1) < asi64(R2)) goto L5409;
+	if (asi64(R1) < asi64(R2)) goto L5410;
 	asi64(R1) = t;
 	R2 = 11;
-	if (asi64(R1) > asi64(R2)) goto L5409;
+	if (asi64(R1) > asi64(R2)) goto L5410;
 	asu64(R1) = p;
 	cc_parse_coercebasetype(asu64(R1));
 	asu64(R1) = p;
 	R2 = 58;
 	asu64(R1) = cc_lib_createunit1(asi64(R2), asu64(R1));
 	q = asu64(R1);
-	goto L5408;
-L5409:
+	goto L5409;
+L5410:
 	R1 = (u64)&cc_decls_ttconst;
 	asi64(R2) = t;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
-	if (!asu8(R1)) goto L5410;
+	if (!asu8(R1)) goto L5411;
 	R1 = (u64)&cc_decls_ttconsttype;
 	asi64(R2) = t;
 	asi16(R1) = *toi16p(((i64)R1+(i64)R2*2));
 	R1 = toi64(toi16(R1));
 	t = asi64(R1);
-	goto L5407;
 	goto L5408;
-L5410:
+	goto L5409;
+L5411:
 	msysc_m$print_startcon();
 	R1 = 1;
 	asi64(R2) = t;
@@ -50394,7 +50469,7 @@ L5410:
 	msysc_m$print_end();
 	R1 = tou64("neg bad type");
 	cc_support_terror(asu64(R1));
-L5408:
+L5409:
 	asu64(R1) = p;
 	R2 = 52;
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
@@ -50402,8 +50477,8 @@ L5408:
 	R3 = 52;
 	*toi32p(((i64)R2+(i64)R3)) = asi32(R1);
 	asu64(R1) = q;
-	goto L5399;
-L5399:
+	goto L5400;
+L5400:
 	return asu64(R1);
 }
 
@@ -50421,14 +50496,14 @@ static u64 cc_parse_createabsop(u64 p) {
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
 	R1 = toi64(toi32(R1));
 	R2 = 1;
-	if (asi64(R1) != asi64(R2)) goto L5413;
+	if (asi64(R1) != asi64(R2)) goto L5414;
 	asi64(R1) = t;
 	R2 = 3;
-	if (asi64(R1) == asi64(R2)) goto L5415;
+	if (asi64(R1) == asi64(R2)) goto L5416;
 	R2 = 4;
-	if (asi64(R1) == asi64(R2)) goto L5415;
-	goto L5416;
-L5415:
+	if (asi64(R1) == asi64(R2)) goto L5416;
+	goto L5417;
+L5416:
 	asu64(R1) = p;
 	R2 = 0;
 	asi64(R1) = *toi64p(((i64)R1+(i64)R2));
@@ -50437,25 +50512,25 @@ L5415:
 	R3 = 0;
 	*toi64p(((i64)R2+(i64)R3)) = asi64(R1);
 	asu64(R1) = p;
-	goto L5411;
-	goto L5414;
-L5416:
+	goto L5412;
+	goto L5415;
+L5417:
+L5415:
 L5414:
-L5413:
 	asi64(R1) = t;
 	asi64(R1) = cc_lib_isintcc(asi64(R1));
-	if (!asi64(R1)) goto L5418;
+	if (!asi64(R1)) goto L5419;
 	asu64(R1) = p;
 	cc_parse_coercebasetype(asu64(R1));
 	asu64(R1) = p;
 	R2 = 59;
 	asu64(R1) = cc_lib_createunit1(asi64(R2), asu64(R1));
 	q = asu64(R1);
-	goto L5417;
-L5418:
+	goto L5418;
+L5419:
 	R1 = tou64("abs bad type");
 	cc_support_terror(asu64(R1));
-L5417:
+L5418:
 	asu64(R1) = p;
 	R2 = 52;
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
@@ -50463,8 +50538,8 @@ L5417:
 	R3 = 52;
 	*toi32p(((i64)R2+(i64)R3)) = asi32(R1);
 	asu64(R1) = q;
-	goto L5411;
-L5411:
+	goto L5412;
+L5412:
 	return asu64(R1);
 }
 
@@ -50485,18 +50560,18 @@ static u64 cc_parse_createinotop(u64 p) {
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
 	R1 = toi64(toi32(R1));
 	R2 = 1;
-	if (asi64(R1) != asi64(R2)) goto L5421;
+	if (asi64(R1) != asi64(R2)) goto L5422;
 	asi64(R1) = t;
 	R2 = 3;
-	if (asi64(R1) == asi64(R2)) goto L5423;
+	if (asi64(R1) == asi64(R2)) goto L5424;
 	R2 = 4;
-	if (asi64(R1) == asi64(R2)) goto L5423;
+	if (asi64(R1) == asi64(R2)) goto L5424;
 	R2 = 8;
-	if (asi64(R1) == asi64(R2)) goto L5423;
+	if (asi64(R1) == asi64(R2)) goto L5424;
 	R2 = 9;
-	if (asi64(R1) == asi64(R2)) goto L5423;
-	goto L5424;
-L5423:
+	if (asi64(R1) == asi64(R2)) goto L5424;
+	goto L5425;
+L5424:
 	asu64(R1) = p;
 	R2 = 0;
 	asi64(R1) = *toi64p(((i64)R1+(i64)R2));
@@ -50505,22 +50580,22 @@ L5423:
 	R3 = 0;
 	*toi64p(((i64)R2+(i64)R3)) = asi64(R1);
 	asu64(R1) = p;
-	goto L5419;
-	goto L5422;
-L5424:
+	goto L5420;
+	goto L5423;
+L5425:
+L5423:
 L5422:
-L5421:
 	asi64(R1) = t;
 	asi64(R1) = cc_lib_isintcc(asi64(R1));
-	if (!asi64(R1)) goto L5426;
+	if (!asi64(R1)) goto L5427;
 	asu64(R1) = p;
 	cc_parse_coercebasetype(asu64(R1));
 	asu64(R1) = p;
 	R2 = 60;
 	asu64(R1) = cc_lib_createunit1(asi64(R2), asu64(R1));
 	q = asu64(R1);
-	goto L5425;
-L5426:
+	goto L5426;
+L5427:
 	msysc_m$print_startcon();
 	R1 = 1;
 	asi64(R2) = t;
@@ -50530,7 +50605,7 @@ L5426:
 	msysc_m$print_end();
 	R1 = tou64("! bad type");
 	cc_support_terror(asu64(R1));
-L5425:
+L5426:
 	asu64(R1) = p;
 	R2 = 52;
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
@@ -50538,8 +50613,8 @@ L5425:
 	R3 = 52;
 	*toi32p(((i64)R2+(i64)R3)) = asi32(R1);
 	asu64(R1) = q;
-	goto L5419;
-L5419:
+	goto L5420;
+L5420:
 	return asu64(R1);
 }
 
@@ -50556,7 +50631,7 @@ static u64 cc_parse_createptrop(u64 p) {
 	R3 = R2;
 	t = asi64(R3);
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
-	if (asu8(R1)) goto L5429;
+	if (asu8(R1)) goto L5430;
 	R1 = tou64("*");
 	R2 = 0;
 	asu64(R3) = p;
@@ -50564,7 +50639,7 @@ static u64 cc_parse_createptrop(u64 p) {
 	cc_show_printunit(asu64(R4), asu64(R3), asi64(R2), asu64(R1));
 	R1 = tou64("* not pointer");
 	cc_support_terror(asu64(R1));
-L5429:
+L5430:
 	R1 = (u64)&cc_decls_tttarget;
 	asi64(R2) = t;
 	asi16(R1) = *toi16p(((i64)R1+(i64)R2*2));
@@ -50575,9 +50650,9 @@ L5429:
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
 	R1 = toi64(toi32(R1));
 	R2 = 55;
-	if (asi64(R1) == asi64(R2)) goto L5431;
-	goto L5432;
-L5431:
+	if (asi64(R1) == asi64(R2)) goto L5432;
+	goto L5433;
+L5432:
 	asu64(R1) = p;
 	R2 = 16;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
@@ -50595,10 +50670,10 @@ L5431:
 	asu64(R1) = q;
 	cc_parse_fixmemopnd(asu64(R1));
 	asu64(R1) = q;
-	goto L5427;
-	goto L5430;
-L5432:
-L5430:
+	goto L5428;
+	goto L5431;
+L5433:
+L5431:
 	asu64(R1) = p;
 	R2 = 52;
 	asu64(R1) = cc_lib_createunit1(asi64(R2), asu64(R1));
@@ -50613,8 +50688,8 @@ L5430:
 	asu64(R1) = q;
 	cc_parse_fixmemopnd(asu64(R1));
 	asu64(R1) = q;
-	goto L5427;
-L5427:
+	goto L5428;
+L5428:
 	return asu64(R1);
 }
 
@@ -50632,18 +50707,18 @@ static u64 cc_parse_createincrop(i64 opc, u64 p) {
 	cc_parse_checklvalue(asu64(R2), asi64(R1));
 	asi64(R1) = t;
 	asi64(R1) = cc_lib_isintcc(asi64(R1));
-	if (!asi64(R1)) goto L5436;
+	if (!asi64(R1)) goto L5437;
 	asi64(R1) = t;
 	R2 = 5;
-	if (asi64(R1) != asi64(R2)) goto L5435;
-L5436:
+	if (asi64(R1) != asi64(R2)) goto L5436;
+L5437:
 	R1 = (u64)&cc_decls_ttisref;
 	asi64(R2) = t;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
-	if (asu8(R1)) goto L5435;
+	if (asu8(R1)) goto L5436;
 	R1 = tou64("++ bad type");
 	cc_support_terror(asu64(R1));
-L5435:
+L5436:
 	asu64(R1) = p;
 	asi64(R2) = opc;
 	asu64(R1) = cc_lib_createunit1(asi64(R2), asu64(R1));
@@ -50655,8 +50730,8 @@ L5435:
 	R3 = 52;
 	*toi32p(((i64)R2+(i64)R3)) = asi32(R1);
 	asu64(R1) = q;
-	goto L5433;
-L5433:
+	goto L5434;
+L5434:
 	return asu64(R1);
 }
 
@@ -50670,7 +50745,7 @@ static u64 cc_parse_createaddrofop(u64 p) {
 	R1 = 0;
 	alength = asi64(R1);
 // cc_parse.createaddrofop.restartx:
-L5438:
+L5439:
 	asu64(R1) = p;
 	R2 = 52;
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
@@ -50679,31 +50754,31 @@ L5438:
 	asu64(R1) = p;
 	R2 = 56;
 	asi16(R1) = *toi16p(((i64)R1+(i64)R2));
-	if (!asi16(R1)) goto L5440;
+	if (!asi16(R1)) goto L5441;
 	asu64(R1) = p;
 	R2 = 56;
 	asi16(R1) = *toi16p(((i64)R1+(i64)R2));
 	R1 = toi64(toi16(R1));
 	t = asi64(R1);
-L5440:
+L5441:
 	asu64(R1) = p;
 	R2 = 40;
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
 	R1 = toi64(toi32(R1));
 	R2 = 3;
-	if (asi64(R1) == asi64(R2)) goto L5442;
-	R2 = 55;
 	if (asi64(R1) == asi64(R2)) goto L5443;
-	R2 = 49;
+	R2 = 55;
 	if (asi64(R1) == asi64(R2)) goto L5444;
-	R2 = 53;
+	R2 = 49;
 	if (asi64(R1) == asi64(R2)) goto L5445;
-	R2 = 4;
+	R2 = 53;
 	if (asi64(R1) == asi64(R2)) goto L5446;
-	R2 = 5;
+	R2 = 4;
 	if (asi64(R1) == asi64(R2)) goto L5447;
-	goto L5448;
-L5442:
+	R2 = 5;
+	if (asi64(R1) == asi64(R2)) goto L5448;
+	goto L5449;
+L5443:
 	R1 = 1;
 	asu64(R2) = p;
 	R3 = 0;
@@ -50715,7 +50790,7 @@ L5442:
 	asu64(R1) = p;
 	R2 = 48;
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
-	if (!asi32(R1)) goto L5450;
+	if (!asi32(R1)) goto L5451;
 	asu64(R1) = p;
 	R2 = 0;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
@@ -50728,9 +50803,9 @@ L5442:
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
 	R1 = toi64(toi32(R1));
 	alength = asi64(R1);
-L5450:
-	goto L5441;
-L5443:
+L5451:
+	goto L5442;
+L5444:
 	asu64(R1) = p;
 	R2 = 16;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
@@ -50738,13 +50813,13 @@ L5443:
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
 	R1 = toi64(toi32(R1));
 	R2 = 3;
-	if (asi64(R1) != asi64(R2)) goto L5452;
+	if (asi64(R1) != asi64(R2)) goto L5453;
 	asu64(R1) = p;
 	R2 = 16;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
 	R2 = 48;
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
-	if (!asi32(R1)) goto L5452;
+	if (!asi32(R1)) goto L5453;
 	asu64(R1) = p;
 	R2 = 16;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
@@ -50766,10 +50841,10 @@ L5443:
 	R3 = 48;
 	*toi32p(((i64)R2+(i64)R3)) = asi32(R1);
 	asu64(R1) = p;
-	goto L5437;
-L5452:
-	goto L5441;
-L5444:
+	goto L5438;
+L5453:
+	goto L5442;
+L5445:
 	asu64(R1) = p;
 	R2 = 16;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
@@ -50779,7 +50854,7 @@ L5444:
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
 	R1 = toi64(toi32(R1));
 	R2 = 52;
-	if (asi64(R1) != asi64(R2)) goto L5454;
+	if (asi64(R1) != asi64(R2)) goto L5455;
 	asu64(R1) = q;
 	R2 = 16;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
@@ -50787,7 +50862,7 @@ L5444:
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
 	R1 = toi64(toi32(R1));
 	R2 = 1;
-	if (asi64(R1) != asi64(R2)) goto L5454;
+	if (asi64(R1) != asi64(R2)) goto L5455;
 	R1 = 3;
 	asu64(R2) = p;
 	R3 = 0;
@@ -50802,15 +50877,15 @@ L5444:
 	asu64(R1) = cc_lib_createconstunit(asu64(R2), asi64(R1));
 	p = asu64(R1);
 	asu64(R1) = p;
-	goto L5437;
-L5454:
-	goto L5455;
-	goto L5441;
-L5445:
+	goto L5438;
+L5455:
+	goto L5456;
+	goto L5442;
+L5446:
 	asu64(R1) = p;
 	R2 = 48;
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
-	if (!asi32(R1)) goto L5457;
+	if (!asi32(R1)) goto L5458;
 	asu64(R1) = p;
 	R2 = 48;
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
@@ -50828,27 +50903,27 @@ L5445:
 	R3 = 52;
 	*toi32p(((i64)R2+(i64)R3)) = asi32(R1);
 	asu64(R1) = p;
-	goto L5437;
-L5457:
-	goto L5441;
-L5446:
+	goto L5438;
+L5458:
+	goto L5442;
+L5447:
 	asu64(R1) = p;
 	R2 = 16;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
 	p = asu64(R1);
-	goto L5438;
-	goto L5441;
-L5447:
-	asu64(R1) = p;
-	goto L5437;
-	goto L5441;
+	goto L5439;
+	goto L5442;
 L5448:
+	asu64(R1) = p;
+	goto L5438;
+	goto L5442;
+L5449:
 // cc_parse.createaddrofop.cad1:
-L5455:
+L5456:
 	R1 = 0;
 	asu64(R2) = p;
 	cc_parse_checklvalue(asu64(R2), asi64(R1));
-L5441:
+L5442:
 	asu64(R1) = p;
 	R2 = 55;
 	asu64(R1) = cc_lib_createunit1(asi64(R2), asu64(R1));
@@ -50863,8 +50938,8 @@ L5441:
 	R3 = 48;
 	*toi32p(((i64)R2+(i64)R3)) = asi32(R1);
 	asu64(R1) = p;
-	goto L5437;
-L5437:
+	goto L5438;
+L5438:
 	return asu64(R1);
 }
 
@@ -50898,7 +50973,7 @@ static u64 cc_parse_createaddop(u64 x, u64 y) {
 	R1 = toi64(tou8(R1));
 	R2 = R1;
 	u = asi64(R2);
-	if (!asi64(R1)) goto L5460;
+	if (!asi64(R1)) goto L5461;
 	asi64(R1) = u;
 	asu64(R2) = x;
 	asu64(R1) = cc_parse_coercemode(asu64(R2), asi64(R1));
@@ -50907,13 +50982,13 @@ static u64 cc_parse_createaddop(u64 x, u64 y) {
 	asu64(R2) = y;
 	asu64(R1) = cc_parse_coercemode(asu64(R2), asi64(R1));
 	y = asu64(R1);
-	goto L5459;
-L5460:
+	goto L5460;
+L5461:
 	asi64(R1) = s;
 	R2 = 13;
-	if (asi64(R1) != asi64(R2)) goto L5461;
+	if (asi64(R1) != asi64(R2)) goto L5462;
 // cc_parse.createaddop.doaddref:
-L5462:
+L5463:
 	asu64(R1) = x;
 	R2 = 52;
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
@@ -50931,13 +51006,13 @@ L5462:
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
 	R1 = toi64(toi32(R1));
 	R2 = 1;
-	if (asi64(R1) != asi64(R2)) goto L5464;
+	if (asi64(R1) != asi64(R2)) goto L5465;
 	asu64(R1) = y;
 	R2 = 40;
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
 	R1 = toi64(toi32(R1));
 	R2 = 1;
-	if (asi64(R1) != asi64(R2)) goto L5464;
+	if (asi64(R1) != asi64(R2)) goto L5465;
 	asu64(R1) = y;
 	R2 = 0;
 	asi64(R1) = *toi64p(((i64)R1+(i64)R2));
@@ -50946,8 +51021,8 @@ L5462:
 	asu64(R2) = x;
 	*toi64p(R2) += asi64(R1);
 	asu64(R1) = x;
-	goto L5458;
-L5464:
+	goto L5459;
+L5465:
 	R1 = 4;
 	asu64(R2) = y;
 	asu64(R1) = cc_parse_coercemode(asu64(R2), asi64(R1));
@@ -50966,53 +51041,53 @@ L5464:
 	R3 = 0;
 	*toi32p(((i64)R2+(i64)R3)) = asi32(R1);
 	asu64(R1) = z;
-	goto L5458;
 	goto L5459;
-L5461:
+	goto L5460;
+L5462:
 	asi64(R1) = t;
 	R2 = 13;
-	if (asi64(R1) != asi64(R2)) goto L5465;
+	if (asi64(R1) != asi64(R2)) goto L5466;
 	R1 = (u64)&x;
 	R2 = (u64)&y;
 	{u64 temp; temp = *tou64p(R1); *tou64p(R1) = *tou64p(R2); *tou64p(R2) = temp; }
-	goto L5462;
+	goto L5463;
 	R1 = tou64("Sub bad types");
 	cc_support_terror(asu64(R1));
-L5465:
-L5459:
+L5466:
+L5460:
 	asu64(R1) = x;
 	R2 = 40;
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
 	R1 = toi64(toi32(R1));
 	R2 = 1;
-	if (asi64(R1) != asi64(R2)) goto L5467;
+	if (asi64(R1) != asi64(R2)) goto L5468;
 	asu64(R1) = y;
 	R2 = 40;
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
 	R1 = toi64(toi32(R1));
 	R2 = 1;
-	if (asi64(R1) != asi64(R2)) goto L5469;
+	if (asi64(R1) != asi64(R2)) goto L5470;
 	asi64(R1) = u;
 	asu64(R2) = y;
 	asu64(R3) = x;
 	asi64(R4) = opc;
 	asu64(R1) = cc_parse_eval_add(asi64(R4), asu64(R3), asu64(R2), asi64(R1));
-	goto L5458;
-	goto L5468;
-L5469:
+	goto L5459;
+	goto L5469;
+L5470:
 	R1 = (u64)&x;
 	R2 = (u64)&y;
 	{u64 temp; temp = *tou64p(R1); *tou64p(R1) = *tou64p(R2); *tou64p(R2) = temp; }
-L5468:
+L5469:
 	asu64(R1) = y;
 	R2 = 0;
 	asi64(R1) = *toi64p(((i64)R1+(i64)R2));
 	R2 = 0;
-	if (asi64(R1) != asi64(R2)) goto L5471;
+	if (asi64(R1) != asi64(R2)) goto L5472;
 	asu64(R1) = x;
-	goto L5458;
-L5471:
-L5467:
+	goto L5459;
+L5472:
+L5468:
 	asu64(R1) = y;
 	asu64(R2) = x;
 	asi64(R3) = opc;
@@ -51023,8 +51098,8 @@ L5467:
 	R3 = 52;
 	*toi32p(((i64)R2+(i64)R3)) = asi32(R1);
 	asu64(R1) = z;
-	goto L5458;
-L5458:
+	goto L5459;
+L5459:
 	return asu64(R1);
 }
 
@@ -51058,7 +51133,7 @@ static u64 cc_parse_createsubop(u64 x, u64 y) {
 	R1 = toi64(tou8(R1));
 	R2 = R1;
 	u = asi64(R2);
-	if (!asi64(R1)) goto L5474;
+	if (!asi64(R1)) goto L5475;
 	asi64(R1) = u;
 	asu64(R2) = x;
 	asu64(R1) = cc_parse_coercemode(asu64(R2), asi64(R1));
@@ -51067,14 +51142,14 @@ static u64 cc_parse_createsubop(u64 x, u64 y) {
 	asu64(R2) = y;
 	asu64(R1) = cc_parse_coercemode(asu64(R2), asi64(R1));
 	y = asu64(R1);
-	goto L5473;
-L5474:
+	goto L5474;
+L5475:
 	asi64(R1) = s;
 	R2 = 13;
-	if (asi64(R1) != asi64(R2)) goto L5475;
+	if (asi64(R1) != asi64(R2)) goto L5476;
 	asi64(R1) = t;
 	R2 = 13;
-	if (asi64(R1) == asi64(R2)) goto L5477;
+	if (asi64(R1) == asi64(R2)) goto L5478;
 	asu64(R1) = x;
 	R2 = 52;
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
@@ -51105,21 +51180,21 @@ L5474:
 	R3 = 0;
 	*toi32p(((i64)R2+(i64)R3)) = asi32(R1);
 	asu64(R1) = z;
-	goto L5472;
-	goto L5476;
-L5477:
+	goto L5473;
+	goto L5477;
+L5478:
 	asu64(R1) = x;
 	R2 = 40;
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
 	R1 = toi64(toi32(R1));
 	R2 = 1;
-	if (asi64(R1) != asi64(R2)) goto L5479;
+	if (asi64(R1) != asi64(R2)) goto L5480;
 	asu64(R1) = y;
 	R2 = 40;
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
 	R1 = toi64(toi32(R1));
 	R2 = 1;
-	if (asi64(R1) != asi64(R2)) goto L5479;
+	if (asi64(R1) != asi64(R2)) goto L5480;
 	asu64(R1) = y;
 	R2 = 0;
 	asi64(R1) = *toi64p(((i64)R1+(i64)R2));
@@ -51141,9 +51216,9 @@ L5477:
 	R3 = 52;
 	*toi32p(((i64)R2+(i64)R3)) = asi32(R1);
 	asu64(R1) = x;
-	goto L5472;
-	goto L5478;
-L5479:
+	goto L5473;
+	goto L5479;
+L5480:
 	asu64(R1) = y;
 	asu64(R2) = x;
 	asi64(R3) = opc;
@@ -51168,9 +51243,9 @@ L5479:
 	R3 = 52;
 	*toi32p(((i64)R2+(i64)R3)) = asi32(R1);
 	asu64(R1) = z;
-	goto L5472;
-L5478:
-L5476:
+	goto L5473;
+L5479:
+L5477:
 	R1 = (u64)&cc_decls_tttarget;
 	asu64(R2) = x;
 	R3 = 52;
@@ -51181,42 +51256,42 @@ L5476:
 	asu64(R2) = y;
 	asu64(R1) = cc_parse_mulunit(asu64(R2), asi64(R1));
 	y = asu64(R1);
-	goto L5473;
-L5475:
+	goto L5474;
+L5476:
 	R1 = tou64("Sub bad types");
 	cc_support_terror(asu64(R1));
-L5473:
+L5474:
 	asu64(R1) = x;
 	R2 = 40;
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
 	R1 = toi64(toi32(R1));
 	R2 = 1;
-	if (asi64(R1) != asi64(R2)) goto L5481;
+	if (asi64(R1) != asi64(R2)) goto L5482;
 	asu64(R1) = y;
 	R2 = 40;
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
 	R1 = toi64(toi32(R1));
 	R2 = 1;
-	if (asi64(R1) != asi64(R2)) goto L5481;
+	if (asi64(R1) != asi64(R2)) goto L5482;
 	asi64(R1) = u;
 	asu64(R2) = y;
 	asu64(R3) = x;
 	asi64(R4) = opc;
 	asu64(R1) = cc_parse_eval_sub(asi64(R4), asu64(R3), asu64(R2), asi64(R1));
-	goto L5472;
-L5481:
+	goto L5473;
+L5482:
 	asu64(R1) = y;
 	R2 = 40;
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
 	R1 = toi64(toi32(R1));
 	R2 = 1;
-	if (asi64(R1) != asi64(R2)) goto L5483;
+	if (asi64(R1) != asi64(R2)) goto L5484;
 	asu64(R1) = y;
 	R2 = 0;
 	asi64(R1) = *toi64p(((i64)R1+(i64)R2));
 	R2 = 0;
-	if (asi64(R1) != asi64(R2)) goto L5483;
-L5483:
+	if (asi64(R1) != asi64(R2)) goto L5484;
+L5484:
 	asu64(R1) = y;
 	asu64(R2) = x;
 	asi64(R3) = opc;
@@ -51227,8 +51302,8 @@ L5483:
 	R3 = 52;
 	*toi32p(((i64)R2+(i64)R3)) = asi32(R1);
 	asu64(R1) = z;
-	goto L5472;
-L5472:
+	goto L5473;
+L5473:
 	return asu64(R1);
 }
 
@@ -51261,7 +51336,7 @@ static u64 cc_parse_createmulop(u64 x, u64 y) {
 	R1 = toi64(tou8(R1));
 	R2 = R1;
 	u = asi64(R2);
-	if (!asi64(R1)) goto L5486;
+	if (!asi64(R1)) goto L5487;
 	asi64(R1) = u;
 	asu64(R2) = x;
 	asu64(R1) = cc_parse_coercemode(asu64(R2), asi64(R1));
@@ -51270,36 +51345,36 @@ static u64 cc_parse_createmulop(u64 x, u64 y) {
 	asu64(R2) = y;
 	asu64(R1) = cc_parse_coercemode(asu64(R2), asi64(R1));
 	y = asu64(R1);
-	goto L5485;
-L5486:
+	goto L5486;
+L5487:
 	R1 = tou64("Mul bad types");
 	cc_support_terror(asu64(R1));
-L5485:
+L5486:
 	asu64(R1) = x;
 	R2 = 40;
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
 	R1 = toi64(toi32(R1));
 	R2 = 1;
-	if (asi64(R1) != asi64(R2)) goto L5488;
+	if (asi64(R1) != asi64(R2)) goto L5489;
 	asu64(R1) = y;
 	R2 = 40;
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
 	R1 = toi64(toi32(R1));
 	R2 = 1;
-	if (asi64(R1) != asi64(R2)) goto L5490;
+	if (asi64(R1) != asi64(R2)) goto L5491;
 	asi64(R1) = u;
 	asu64(R2) = y;
 	asu64(R3) = x;
 	asi64(R4) = opc;
 	asu64(R1) = cc_parse_eval_mul(asi64(R4), asu64(R3), asu64(R2), asi64(R1));
-	goto L5484;
-	goto L5489;
-L5490:
+	goto L5485;
+	goto L5490;
+L5491:
 	R1 = (u64)&x;
 	R2 = (u64)&y;
 	{u64 temp; temp = *tou64p(R1); *tou64p(R1) = *tou64p(R2); *tou64p(R2) = temp; }
+L5490:
 L5489:
-L5488:
 	asu64(R1) = y;
 	asu64(R2) = x;
 	asi64(R3) = opc;
@@ -51310,8 +51385,8 @@ L5488:
 	R3 = 52;
 	*toi32p(((i64)R2+(i64)R3)) = asi32(R1);
 	asu64(R1) = z;
-	goto L5484;
-L5484:
+	goto L5485;
+L5485:
 	return asu64(R1);
 }
 
@@ -51344,7 +51419,7 @@ static u64 cc_parse_createdivop(u64 x, u64 y) {
 	R1 = toi64(tou8(R1));
 	R2 = R1;
 	u = asi64(R2);
-	if (!asi64(R1)) goto L5493;
+	if (!asi64(R1)) goto L5494;
 	asi64(R1) = u;
 	asu64(R2) = x;
 	asu64(R1) = cc_parse_coercemode(asu64(R2), asi64(R1));
@@ -51353,40 +51428,40 @@ static u64 cc_parse_createdivop(u64 x, u64 y) {
 	asu64(R2) = y;
 	asu64(R1) = cc_parse_coercemode(asu64(R2), asi64(R1));
 	y = asu64(R1);
-	goto L5492;
-L5493:
+	goto L5493;
+L5494:
 	R1 = tou64("Div bad types");
 	cc_support_terror(asu64(R1));
-L5492:
+L5493:
 	asu64(R1) = x;
 	R2 = 40;
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
 	R1 = toi64(toi32(R1));
 	R2 = 1;
-	if (asi64(R1) != asi64(R2)) goto L5495;
+	if (asi64(R1) != asi64(R2)) goto L5496;
 	asu64(R1) = y;
 	R2 = 40;
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
 	R1 = toi64(toi32(R1));
 	R2 = 1;
-	if (asi64(R1) != asi64(R2)) goto L5495;
+	if (asi64(R1) != asi64(R2)) goto L5496;
 	asi64(R1) = u;
 	asu64(R2) = y;
 	asu64(R3) = x;
 	asi64(R4) = opc;
 	asu64(R1) = cc_parse_eval_div(asi64(R4), asu64(R3), asu64(R2), asi64(R1));
-	goto L5491;
-	goto L5494;
-L5495:
+	goto L5492;
+	goto L5495;
+L5496:
 	asu64(R1) = y;
 	R2 = 40;
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
 	R1 = toi64(toi32(R1));
 	R2 = 1;
-	if (asi64(R1) != asi64(R2)) goto L5496;
+	if (asi64(R1) != asi64(R2)) goto L5497;
 	asi64(R1) = u;
 	R2 = 11;
-	if (asi64(R1) != asi64(R2)) goto L5496;
+	if (asi64(R1) != asi64(R2)) goto L5497;
 	R1 = 41;
 	opc = asi64(R1);
 	asr64(R1) = 1.000000000000000000e+000;
@@ -51397,8 +51472,8 @@ L5495:
 	asu64(R2) = y;
 	R3 = 0;
 	*tor64p(((i64)R2+(i64)R3)) = asr64(R1);
-L5496:
-L5494:
+L5497:
+L5495:
 	asu64(R1) = y;
 	asu64(R2) = x;
 	asi64(R3) = opc;
@@ -51409,8 +51484,8 @@ L5494:
 	R3 = 52;
 	*toi32p(((i64)R2+(i64)R3)) = asi32(R1);
 	asu64(R1) = z;
-	goto L5491;
-L5491:
+	goto L5492;
+L5492:
 	return asu64(R1);
 }
 
@@ -51447,17 +51522,17 @@ static u64 cc_parse_createremop(u64 x, u64 y) {
 	R1 = toi64(tou8(R1));
 	R2 = R1;
 	u = asi64(R2);
-	if (!asi64(R1)) goto L5499;
+	if (!asi64(R1)) goto L5500;
 	asi64(R1) = u;
 	R2 = 11;
-	if (asi64(R1) == asi64(R2)) goto L5502;
+	if (asi64(R1) == asi64(R2)) goto L5503;
 	asi64(R1) = u;
 	R2 = 10;
-	if (asi64(R1) != asi64(R2)) goto L5501;
-L5502:
+	if (asi64(R1) != asi64(R2)) goto L5502;
+L5503:
 	R1 = 3;
 	u = asi64(R1);
-L5501:
+L5502:
 	asi64(R1) = u;
 	asu64(R2) = x;
 	asu64(R1) = cc_parse_coercemode(asu64(R2), asi64(R1));
@@ -51466,30 +51541,30 @@ L5501:
 	asu64(R2) = y;
 	asu64(R1) = cc_parse_coercemode(asu64(R2), asi64(R1));
 	y = asu64(R1);
-	goto L5498;
-L5499:
+	goto L5499;
+L5500:
 	R1 = tou64("Rem bad types");
 	cc_support_terror(asu64(R1));
-L5498:
+L5499:
 	asu64(R1) = x;
 	R2 = 40;
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
 	R1 = toi64(toi32(R1));
 	R2 = 1;
-	if (asi64(R1) != asi64(R2)) goto L5504;
+	if (asi64(R1) != asi64(R2)) goto L5505;
 	asu64(R1) = y;
 	R2 = 40;
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
 	R1 = toi64(toi32(R1));
 	R2 = 1;
-	if (asi64(R1) != asi64(R2)) goto L5504;
+	if (asi64(R1) != asi64(R2)) goto L5505;
 	asi64(R1) = u;
 	asu64(R2) = y;
 	asu64(R3) = x;
 	asi64(R4) = opc;
 	asu64(R1) = cc_parse_eval_rem(asi64(R4), asu64(R3), asu64(R2), asi64(R1));
-	goto L5497;
-L5504:
+	goto L5498;
+L5505:
 	asu64(R1) = y;
 	asu64(R2) = x;
 	asi64(R3) = opc;
@@ -51500,8 +51575,8 @@ L5504:
 	R3 = 52;
 	*toi32p(((i64)R2+(i64)R3)) = asi32(R1);
 	asu64(R1) = z;
-	goto L5497;
-L5497:
+	goto L5498;
+L5498:
 	return asu64(R1);
 }
 
@@ -51559,41 +51634,41 @@ static u64 cc_parse_eval_add(i64 opc, u64 x, u64 y, i64 t) {
 	u64 z;
 	asi64(R1) = t;
 	R2 = 3;
-	if (asi64(R1) == asi64(R2)) goto L5508;
-	R2 = 4;
-	if (asi64(R1) == asi64(R2)) goto L5508;
-	R2 = 8;
-	if (asi64(R1) == asi64(R2)) goto L5508;
-	R2 = 9;
-	if (asi64(R1) == asi64(R2)) goto L5508;
-	R2 = 11;
 	if (asi64(R1) == asi64(R2)) goto L5509;
-	goto L5510;
-L5508:
+	R2 = 4;
+	if (asi64(R1) == asi64(R2)) goto L5509;
+	R2 = 8;
+	if (asi64(R1) == asi64(R2)) goto L5509;
+	R2 = 9;
+	if (asi64(R1) == asi64(R2)) goto L5509;
+	R2 = 11;
+	if (asi64(R1) == asi64(R2)) goto L5510;
+	goto L5511;
+L5509:
 	asu64(R1) = y;
 	R2 = 0;
 	asi64(R1) = *toi64p(((i64)R1+(i64)R2));
 	asu64(R2) = x;
 	*toi64p(R2) += asi64(R1);
 	asu64(R1) = x;
-	goto L5506;
 	goto L5507;
-L5509:
+	goto L5508;
+L5510:
 	asu64(R1) = y;
 	R2 = 0;
 	asr64(R1) = *tor64p(((i64)R1+(i64)R2));
 	asu64(R2) = x;
 	*tor64p(R2) += asr64(R1);
 	asu64(R1) = x;
-	goto L5506;
 	goto L5507;
-L5510:
+	goto L5508;
+L5511:
 	R1 = (u64)&cc_decls_ttbasetype;
 	asi64(R2) = t;
 	asi16(R1) = *toi16p(((i64)R1+(i64)R2*2));
 	R1 = toi64(toi16(R1));
 	R2 = 13;
-	if (asi64(R1) != asi64(R2)) goto L5512;
+	if (asi64(R1) != asi64(R2)) goto L5513;
 	asu64(R1) = y;
 	R2 = 0;
 	asi64(R1) = *toi64p(((i64)R1+(i64)R2));
@@ -51607,9 +51682,9 @@ L5510:
 	asu64(R2) = x;
 	*toi64p(R2) += asi64(R1);
 	asu64(R1) = x;
-	goto L5506;
-L5512:
-L5507:
+	goto L5507;
+L5513:
+L5508:
 	asu64(R1) = y;
 	asu64(R2) = x;
 	asi64(R3) = opc;
@@ -51620,8 +51695,8 @@ L5507:
 	R3 = 52;
 	*toi32p(((i64)R2+(i64)R3)) = asi32(R1);
 	asu64(R1) = z;
-	goto L5506;
-L5506:
+	goto L5507;
+L5507:
 	return asu64(R1);
 }
 
@@ -51630,41 +51705,41 @@ static u64 cc_parse_eval_sub(i64 opc, u64 x, u64 y, i64 t) {
 	u64 z;
 	asi64(R1) = t;
 	R2 = 3;
-	if (asi64(R1) == asi64(R2)) goto L5515;
-	R2 = 4;
-	if (asi64(R1) == asi64(R2)) goto L5515;
-	R2 = 8;
-	if (asi64(R1) == asi64(R2)) goto L5515;
-	R2 = 9;
-	if (asi64(R1) == asi64(R2)) goto L5515;
-	R2 = 11;
 	if (asi64(R1) == asi64(R2)) goto L5516;
-	goto L5517;
-L5515:
+	R2 = 4;
+	if (asi64(R1) == asi64(R2)) goto L5516;
+	R2 = 8;
+	if (asi64(R1) == asi64(R2)) goto L5516;
+	R2 = 9;
+	if (asi64(R1) == asi64(R2)) goto L5516;
+	R2 = 11;
+	if (asi64(R1) == asi64(R2)) goto L5517;
+	goto L5518;
+L5516:
 	asu64(R1) = y;
 	R2 = 0;
 	asi64(R1) = *toi64p(((i64)R1+(i64)R2));
 	asu64(R2) = x;
 	*toi64p(R2) -= asi64(R1);
 	asu64(R1) = x;
-	goto L5513;
 	goto L5514;
-L5516:
+	goto L5515;
+L5517:
 	asu64(R1) = y;
 	R2 = 0;
 	asr64(R1) = *tor64p(((i64)R1+(i64)R2));
 	asu64(R2) = x;
 	*tor64p(R2) -= asr64(R1);
 	asu64(R1) = x;
-	goto L5513;
 	goto L5514;
-L5517:
+	goto L5515;
+L5518:
 	R1 = (u64)&cc_decls_ttbasetype;
 	asi64(R2) = t;
 	asi16(R1) = *toi16p(((i64)R1+(i64)R2*2));
 	R1 = toi64(toi16(R1));
 	R2 = 13;
-	if (asi64(R1) != asi64(R2)) goto L5519;
+	if (asi64(R1) != asi64(R2)) goto L5520;
 	R1 = (u64)&cc_decls_ttbasetype;
 	asu64(R2) = y;
 	R3 = 52;
@@ -51673,14 +51748,14 @@ L5517:
 	asi16(R1) = *toi16p(((i64)R1+(i64)R2*2));
 	R1 = toi64(toi16(R1));
 	R2 = 13;
-	if (asi64(R1) != asi64(R2)) goto L5521;
+	if (asi64(R1) != asi64(R2)) goto L5522;
 	R1 = tou64("EVALSUB/REF");
 	cc_support_terror(asu64(R1));
-L5521:
+L5522:
 	asu64(R1) = x;
-	goto L5513;
-L5519:
-L5514:
+	goto L5514;
+L5520:
+L5515:
 	asu64(R1) = y;
 	asu64(R2) = x;
 	asi64(R3) = opc;
@@ -51691,8 +51766,8 @@ L5514:
 	R3 = 52;
 	*toi32p(((i64)R2+(i64)R3)) = asi32(R1);
 	asu64(R1) = z;
-	goto L5513;
-L5513:
+	goto L5514;
+L5514:
 	return asu64(R1);
 }
 
@@ -51701,34 +51776,34 @@ static u64 cc_parse_eval_mul(i64 opc, u64 x, u64 y, i64 t) {
 	u64 z;
 	asi64(R1) = t;
 	R2 = 3;
-	if (asi64(R1) == asi64(R2)) goto L5524;
+	if (asi64(R1) == asi64(R2)) goto L5525;
 	R2 = 4;
-	if (asi64(R1) == asi64(R2)) goto L5524;
+	if (asi64(R1) == asi64(R2)) goto L5525;
 	R2 = 2;
-	if (asi64(R1) == asi64(R2)) goto L5524;
+	if (asi64(R1) == asi64(R2)) goto L5525;
 	R2 = 1;
-	if (asi64(R1) == asi64(R2)) goto L5524;
+	if (asi64(R1) == asi64(R2)) goto L5525;
 	R2 = 8;
-	if (asi64(R1) == asi64(R2)) goto L5525;
-	R2 = 9;
-	if (asi64(R1) == asi64(R2)) goto L5525;
-	R2 = 7;
-	if (asi64(R1) == asi64(R2)) goto L5525;
-	R2 = 6;
-	if (asi64(R1) == asi64(R2)) goto L5525;
-	R2 = 11;
 	if (asi64(R1) == asi64(R2)) goto L5526;
-	goto L5527;
-L5524:
+	R2 = 9;
+	if (asi64(R1) == asi64(R2)) goto L5526;
+	R2 = 7;
+	if (asi64(R1) == asi64(R2)) goto L5526;
+	R2 = 6;
+	if (asi64(R1) == asi64(R2)) goto L5526;
+	R2 = 11;
+	if (asi64(R1) == asi64(R2)) goto L5527;
+	goto L5528;
+L5525:
 	asu64(R1) = y;
 	R2 = 0;
 	asi64(R1) = *toi64p(((i64)R1+(i64)R2));
 	asu64(R2) = x;
 	*toi64p(R2) *= asi64(R1);
 	asu64(R1) = x;
-	goto L5522;
 	goto L5523;
-L5525:
+	goto L5524;
+L5526:
 	asu64(R1) = x;
 	R2 = 0;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
@@ -51740,19 +51815,19 @@ L5525:
 	R3 = 0;
 	*tou64p(((i64)R2+(i64)R3)) = asu64(R1);
 	asu64(R1) = x;
-	goto L5522;
 	goto L5523;
-L5526:
+	goto L5524;
+L5527:
 	asu64(R1) = y;
 	R2 = 0;
 	asr64(R1) = *tor64p(((i64)R1+(i64)R2));
 	asu64(R2) = x;
 	*tor64p(R2) *= asr64(R1);
 	asu64(R1) = x;
-	goto L5522;
 	goto L5523;
-L5527:
-L5523:
+	goto L5524;
+L5528:
+L5524:
 	asu64(R1) = y;
 	asu64(R2) = x;
 	asi64(R3) = opc;
@@ -51763,8 +51838,8 @@ L5523:
 	R3 = 52;
 	*toi32p(((i64)R2+(i64)R3)) = asi32(R1);
 	asu64(R1) = z;
-	goto L5522;
-L5522:
+	goto L5523;
+L5523:
 	return asu64(R1);
 }
 
@@ -51773,25 +51848,25 @@ static u64 cc_parse_eval_div(i64 opc, u64 x, u64 y, i64 t) {
 	u64 z;
 	asi64(R1) = t;
 	R2 = 3;
-	if (asi64(R1) == asi64(R2)) goto L5530;
+	if (asi64(R1) == asi64(R2)) goto L5531;
 	R2 = 4;
-	if (asi64(R1) == asi64(R2)) goto L5530;
+	if (asi64(R1) == asi64(R2)) goto L5531;
 	R2 = 8;
-	if (asi64(R1) == asi64(R2)) goto L5531;
-	R2 = 9;
-	if (asi64(R1) == asi64(R2)) goto L5531;
-	R2 = 11;
 	if (asi64(R1) == asi64(R2)) goto L5532;
-	goto L5533;
-L5530:
+	R2 = 9;
+	if (asi64(R1) == asi64(R2)) goto L5532;
+	R2 = 11;
+	if (asi64(R1) == asi64(R2)) goto L5533;
+	goto L5534;
+L5531:
 	asu64(R1) = y;
 	R2 = 0;
 	asi64(R1) = *toi64p(((i64)R1+(i64)R2));
 	R2 = 0;
-	if (asi64(R1) != asi64(R2)) goto L5535;
+	if (asi64(R1) != asi64(R2)) goto L5536;
 	R1 = tou64("div 0");
 	cc_support_serror(asu64(R1));
-L5535:
+L5536:
 	asu64(R1) = x;
 	R2 = 0;
 	asi64(R1) = *toi64p(((i64)R1+(i64)R2));
@@ -51804,17 +51879,17 @@ L5535:
 	R3 = 0;
 	*toi64p(((i64)R2+(i64)R3)) = asi64(R1);
 	asu64(R1) = x;
-	goto L5528;
 	goto L5529;
-L5531:
+	goto L5530;
+L5532:
 	asu64(R1) = y;
 	R2 = 0;
 	asi64(R1) = *toi64p(((i64)R1+(i64)R2));
 	R2 = 0;
-	if (asi64(R1) != asi64(R2)) goto L5537;
+	if (asi64(R1) != asi64(R2)) goto L5538;
 	R1 = tou64("div 0");
 	cc_support_serror(asu64(R1));
-L5537:
+L5538:
 	asu64(R1) = x;
 	R2 = 0;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
@@ -51827,19 +51902,19 @@ L5537:
 	R3 = 0;
 	*tou64p(((i64)R2+(i64)R3)) = asu64(R1);
 	asu64(R1) = x;
-	goto L5528;
 	goto L5529;
-L5532:
+	goto L5530;
+L5533:
 	asu64(R1) = y;
 	R2 = 0;
 	asr64(R1) = *tor64p(((i64)R1+(i64)R2));
 	asu64(R2) = x;
 	*tor64p(R2) /= asr64(R1);
 	asu64(R1) = x;
-	goto L5528;
 	goto L5529;
-L5533:
-L5529:
+	goto L5530;
+L5534:
+L5530:
 	asu64(R1) = y;
 	asu64(R2) = x;
 	asi64(R3) = opc;
@@ -51850,8 +51925,8 @@ L5529:
 	R3 = 52;
 	*toi32p(((i64)R2+(i64)R3)) = asi32(R1);
 	asu64(R1) = z;
-	goto L5528;
-L5528:
+	goto L5529;
+L5529:
 	return asu64(R1);
 }
 
@@ -51860,19 +51935,19 @@ static u64 cc_parse_eval_rem(i64 opc, u64 x, u64 y, i64 t) {
 	u64 z;
 	asi64(R1) = t;
 	R2 = 3;
-	if (asi64(R1) == asi64(R2)) goto L5540;
+	if (asi64(R1) == asi64(R2)) goto L5541;
 	R2 = 4;
-	if (asi64(R1) == asi64(R2)) goto L5540;
-	goto L5541;
-L5540:
+	if (asi64(R1) == asi64(R2)) goto L5541;
+	goto L5542;
+L5541:
 	asu64(R1) = y;
 	R2 = 0;
 	asi64(R1) = *toi64p(((i64)R1+(i64)R2));
 	R2 = 0;
-	if (asi64(R1) != asi64(R2)) goto L5543;
+	if (asi64(R1) != asi64(R2)) goto L5544;
 	R1 = tou64("rem 0");
 	cc_support_serror(asu64(R1));
-L5543:
+L5544:
 	asu64(R1) = x;
 	R2 = 0;
 	asi64(R1) = *toi64p(((i64)R1+(i64)R2));
@@ -51884,10 +51959,10 @@ L5543:
 	R3 = 0;
 	*toi64p(((i64)R2+(i64)R3)) = asi64(R1);
 	asu64(R1) = x;
-	goto L5538;
 	goto L5539;
-L5541:
-L5539:
+	goto L5540;
+L5542:
+L5540:
 	asu64(R1) = y;
 	asu64(R2) = x;
 	asi64(R3) = opc;
@@ -51898,8 +51973,8 @@ L5539:
 	R3 = 52;
 	*toi32p(((i64)R2+(i64)R3)) = asi32(R1);
 	asu64(R1) = z;
-	goto L5538;
-L5538:
+	goto L5539;
+L5539:
 	return asu64(R1);
 }
 
@@ -51908,16 +51983,16 @@ static i64 cc_parse_eval_convert(u64 p, i64 t, i64 opc) {
 	i64 s;
 	asi64(R1) = opc;
 	R2 = 1;
-	if (asi64(R1) != asi64(R2)) goto L5546;
+	if (asi64(R1) != asi64(R2)) goto L5547;
 // cc_parse.eval_convert.dosoft:
-L5547:
+L5548:
 	asi64(R1) = t;
 	asu64(R2) = p;
 	R3 = 52;
 	*toi32p(((i64)R2+(i64)R3)) = asi32(R1);
 	R1 = 1;
-	goto L5544;
-L5546:
+	goto L5545;
+L5547:
 	asu64(R1) = p;
 	R2 = 52;
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
@@ -51925,54 +52000,54 @@ L5546:
 	s = asi64(R1);
 	asi64(R1) = s;
 	asi64(R2) = t;
-	if (asi64(R1) != asi64(R2)) goto L5549;
+	if (asi64(R1) != asi64(R2)) goto L5550;
 	R1 = 1;
-	goto L5544;
-L5549:
+	goto L5545;
+L5550:
 	asi64(R1) = s;
 	R2 = 3;
-	if (asi64(R1) == asi64(R2)) goto L5551;
+	if (asi64(R1) == asi64(R2)) goto L5552;
 	R2 = 2;
-	if (asi64(R1) == asi64(R2)) goto L5551;
+	if (asi64(R1) == asi64(R2)) goto L5552;
 	R2 = 1;
-	if (asi64(R1) == asi64(R2)) goto L5551;
+	if (asi64(R1) == asi64(R2)) goto L5552;
 	R2 = 4;
-	if (asi64(R1) == asi64(R2)) goto L5551;
+	if (asi64(R1) == asi64(R2)) goto L5552;
 	R2 = 8;
-	if (asi64(R1) == asi64(R2)) goto L5552;
-	R2 = 6;
-	if (asi64(R1) == asi64(R2)) goto L5552;
-	R2 = 7;
-	if (asi64(R1) == asi64(R2)) goto L5552;
-	R2 = 9;
-	if (asi64(R1) == asi64(R2)) goto L5552;
-	R2 = 11;
 	if (asi64(R1) == asi64(R2)) goto L5553;
-	goto L5554;
-L5551:
+	R2 = 6;
+	if (asi64(R1) == asi64(R2)) goto L5553;
+	R2 = 7;
+	if (asi64(R1) == asi64(R2)) goto L5553;
+	R2 = 9;
+	if (asi64(R1) == asi64(R2)) goto L5553;
+	R2 = 11;
+	if (asi64(R1) == asi64(R2)) goto L5554;
+	goto L5555;
+L5552:
 	asi64(R1) = t;
 	R2 = 11;
-	if (asi64(R1) == asi64(R2)) goto L5556;
+	if (asi64(R1) == asi64(R2)) goto L5557;
 	R2 = 10;
-	if (asi64(R1) == asi64(R2)) goto L5556;
+	if (asi64(R1) == asi64(R2)) goto L5557;
 	R2 = 9;
-	if (asi64(R1) == asi64(R2)) goto L5557;
+	if (asi64(R1) == asi64(R2)) goto L5558;
 	R2 = 4;
-	if (asi64(R1) == asi64(R2)) goto L5557;
+	if (asi64(R1) == asi64(R2)) goto L5558;
 	R2 = 8;
-	if (asi64(R1) == asi64(R2)) goto L5557;
+	if (asi64(R1) == asi64(R2)) goto L5558;
 	R2 = 3;
-	if (asi64(R1) == asi64(R2)) goto L5557;
+	if (asi64(R1) == asi64(R2)) goto L5558;
 	R2 = 2;
-	if (asi64(R1) == asi64(R2)) goto L5557;
+	if (asi64(R1) == asi64(R2)) goto L5558;
 	R2 = 1;
-	if (asi64(R1) == asi64(R2)) goto L5557;
+	if (asi64(R1) == asi64(R2)) goto L5558;
 	R2 = 6;
-	if (asi64(R1) == asi64(R2)) goto L5557;
+	if (asi64(R1) == asi64(R2)) goto L5558;
 	R2 = 7;
-	if (asi64(R1) == asi64(R2)) goto L5557;
-	goto L5558;
-L5556:
+	if (asi64(R1) == asi64(R2)) goto L5558;
+	goto L5559;
+L5557:
 	asu64(R1) = p;
 	R2 = 0;
 	asi64(R1) = *toi64p(((i64)R1+(i64)R2));
@@ -51985,29 +52060,29 @@ L5556:
 	R3 = 52;
 	*toi32p(((i64)R2+(i64)R3)) = asi32(R1);
 	R1 = 1;
-	goto L5544;
-	goto L5555;
-L5557:
+	goto L5545;
+	goto L5556;
+L5558:
 // cc_parse.eval_convert.dotrunc:
-L5559:
+L5560:
 	R1 = (u64)&cc_decls_ttsize;
 	asi64(R2) = t;
 	asi64(R1) = *toi64p(((i64)R1+(i64)R2*8));
 	R2 = 1;
-	if (asi64(R1) == asi64(R2)) goto L5561;
-	R2 = 2;
 	if (asi64(R1) == asi64(R2)) goto L5562;
-	R2 = 4;
+	R2 = 2;
 	if (asi64(R1) == asi64(R2)) goto L5563;
-	goto L5564;
-L5561:
+	R2 = 4;
+	if (asi64(R1) == asi64(R2)) goto L5564;
+	goto L5565;
+L5562:
 	R1 = 255;
 	asu64(R2) = p;
 	*toi64p(R2) &= asi64(R1);
 	R1 = (u64)&cc_tables_stdsigned;
 	asi64(R2) = t;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
-	if (!asu8(R1)) goto L5566;
+	if (!asu8(R1)) goto L5567;
 	asu64(R1) = p;
 	R2 = 0;
 	asi64(R1) = *toi64p(((i64)R1+(i64)R2));
@@ -52015,16 +52090,16 @@ L5561:
 	asu64(R2) = p;
 	R3 = 0;
 	*toi64p(((i64)R2+(i64)R3)) = asi64(R1);
-L5566:
-	goto L5560;
-L5562:
+L5567:
+	goto L5561;
+L5563:
 	R1 = 65535;
 	asu64(R2) = p;
 	*toi64p(R2) &= asi64(R1);
 	R1 = (u64)&cc_tables_stdsigned;
 	asi64(R2) = t;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
-	if (!asu8(R1)) goto L5568;
+	if (!asu8(R1)) goto L5569;
 	asu64(R1) = p;
 	R2 = 0;
 	asi64(R1) = *toi64p(((i64)R1+(i64)R2));
@@ -52032,9 +52107,9 @@ L5562:
 	asu64(R2) = p;
 	R3 = 0;
 	*toi64p(((i64)R2+(i64)R3)) = asi64(R1);
-L5568:
-	goto L5560;
-L5563:
+L5569:
+	goto L5561;
+L5564:
 	asu64(R1) = p;
 	R2 = 0;
 	asi64(R1) = *toi64p(((i64)R1+(i64)R2));
@@ -52046,7 +52121,7 @@ L5563:
 	R1 = (u64)&cc_tables_stdsigned;
 	asi64(R2) = t;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
-	if (!asu8(R1)) goto L5570;
+	if (!asu8(R1)) goto L5571;
 	asu64(R1) = p;
 	R2 = 0;
 	asi64(R1) = *toi64p(((i64)R1+(i64)R2));
@@ -52054,106 +52129,91 @@ L5563:
 	asu64(R2) = p;
 	R3 = 0;
 	*toi64p(((i64)R2+(i64)R3)) = asi64(R1);
-L5570:
-	goto L5560;
-L5564:
-L5560:
-	goto L5547;
-	goto L5555;
-L5558:
-L5555:
+L5571:
+	goto L5561;
+L5565:
+L5561:
+	goto L5548;
+	goto L5556;
+L5559:
+L5556:
 	R1 = (u64)&cc_decls_ttisref;
 	asi64(R2) = t;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
-	if (!asu8(R1)) goto L5572;
+	if (!asu8(R1)) goto L5573;
 	asi64(R1) = t;
 	asu64(R2) = p;
 	R3 = 52;
 	*toi32p(((i64)R2+(i64)R3)) = asi32(R1);
 	R1 = 1;
-	goto L5544;
-L5572:
-	goto L5550;
-L5552:
-	asi64(R1) = t;
-	R2 = 11;
-	if (asi64(R1) == asi64(R2)) goto L5574;
-	R2 = 10;
-	if (asi64(R1) == asi64(R2)) goto L5574;
-	R2 = 9;
-	if (asi64(R1) == asi64(R2)) goto L5575;
-	R2 = 4;
-	if (asi64(R1) == asi64(R2)) goto L5575;
-	R2 = 3;
-	if (asi64(R1) == asi64(R2)) goto L5575;
-	R2 = 8;
-	if (asi64(R1) == asi64(R2)) goto L5575;
-	R2 = 9;
-	if (asi64(R1) == asi64(R2)) goto L5575;
-	R2 = 7;
-	if (asi64(R1) == asi64(R2)) goto L5575;
-	R2 = 1;
-	if (asi64(R1) == asi64(R2)) goto L5575;
-	R2 = 6;
-	if (asi64(R1) == asi64(R2)) goto L5575;
-	R2 = 2;
-	if (asi64(R1) == asi64(R2)) goto L5575;
-	goto L5576;
-L5574:
-	R1 = 0;
-	goto L5544;
-	asi64(R1) = t;
-	asu64(R2) = p;
-	R3 = 52;
-	*toi32p(((i64)R2+(i64)R3)) = asi32(R1);
-	R1 = 1;
-	goto L5544;
-	goto L5573;
-L5575:
-	goto L5559;
-	goto L5573;
-L5576:
+	goto L5545;
 L5573:
-	R1 = (u64)&cc_decls_ttisref;
-	asi64(R2) = t;
-	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
-	if (!asu8(R1)) goto L5578;
-	asi64(R1) = t;
-	asu64(R2) = p;
-	R3 = 52;
-	*toi32p(((i64)R2+(i64)R3)) = asi32(R1);
-	R1 = 1;
-	goto L5544;
-L5578:
-	goto L5550;
+	goto L5551;
 L5553:
 	asi64(R1) = t;
-	R2 = 3;
-	if (asi64(R1) == asi64(R2)) goto L5580;
-	R2 = 4;
-	if (asi64(R1) == asi64(R2)) goto L5580;
-	R2 = 8;
-	if (asi64(R1) == asi64(R2)) goto L5581;
-	R2 = 9;
-	if (asi64(R1) == asi64(R2)) goto L5581;
+	R2 = 11;
+	if (asi64(R1) == asi64(R2)) goto L5575;
 	R2 = 10;
-	if (asi64(R1) == asi64(R2)) goto L5582;
-	goto L5583;
-L5580:
-	asu64(R1) = p;
-	R2 = 0;
-	asr64(R1) = *tor64p(((i64)R1+(i64)R2));
-	R1 = toi64(asr64(R1));
-	asu64(R2) = p;
-	R3 = 0;
-	*toi64p(((i64)R2+(i64)R3)) = asi64(R1);
+	if (asi64(R1) == asi64(R2)) goto L5575;
+	R2 = 9;
+	if (asi64(R1) == asi64(R2)) goto L5576;
+	R2 = 4;
+	if (asi64(R1) == asi64(R2)) goto L5576;
+	R2 = 3;
+	if (asi64(R1) == asi64(R2)) goto L5576;
+	R2 = 8;
+	if (asi64(R1) == asi64(R2)) goto L5576;
+	R2 = 9;
+	if (asi64(R1) == asi64(R2)) goto L5576;
+	R2 = 7;
+	if (asi64(R1) == asi64(R2)) goto L5576;
+	R2 = 1;
+	if (asi64(R1) == asi64(R2)) goto L5576;
+	R2 = 6;
+	if (asi64(R1) == asi64(R2)) goto L5576;
+	R2 = 2;
+	if (asi64(R1) == asi64(R2)) goto L5576;
+	goto L5577;
+L5575:
+	R1 = 0;
+	goto L5545;
 	asi64(R1) = t;
 	asu64(R2) = p;
 	R3 = 52;
 	*toi32p(((i64)R2+(i64)R3)) = asi32(R1);
 	R1 = 1;
-	goto L5544;
-	goto L5579;
+	goto L5545;
+	goto L5574;
+L5576:
+	goto L5560;
+	goto L5574;
+L5577:
+L5574:
+	R1 = (u64)&cc_decls_ttisref;
+	asi64(R2) = t;
+	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
+	if (!asu8(R1)) goto L5579;
+	asi64(R1) = t;
+	asu64(R2) = p;
+	R3 = 52;
+	*toi32p(((i64)R2+(i64)R3)) = asi32(R1);
+	R1 = 1;
+	goto L5545;
+L5579:
+	goto L5551;
+L5554:
+	asi64(R1) = t;
+	R2 = 3;
+	if (asi64(R1) == asi64(R2)) goto L5581;
+	R2 = 4;
+	if (asi64(R1) == asi64(R2)) goto L5581;
+	R2 = 8;
+	if (asi64(R1) == asi64(R2)) goto L5582;
+	R2 = 9;
+	if (asi64(R1) == asi64(R2)) goto L5582;
+	R2 = 10;
+	if (asi64(R1) == asi64(R2)) goto L5583;
+	goto L5584;
 L5581:
 	asu64(R1) = p;
 	R2 = 0;
@@ -52167,57 +52227,72 @@ L5581:
 	R3 = 52;
 	*toi32p(((i64)R2+(i64)R3)) = asi32(R1);
 	R1 = 1;
-	goto L5544;
-	goto L5579;
+	goto L5545;
+	goto L5580;
 L5582:
+	asu64(R1) = p;
+	R2 = 0;
+	asr64(R1) = *tor64p(((i64)R1+(i64)R2));
+	R1 = toi64(asr64(R1));
+	asu64(R2) = p;
+	R3 = 0;
+	*toi64p(((i64)R2+(i64)R3)) = asi64(R1);
+	asi64(R1) = t;
+	asu64(R2) = p;
+	R3 = 52;
+	*toi32p(((i64)R2+(i64)R3)) = asi32(R1);
+	R1 = 1;
+	goto L5545;
+	goto L5580;
+L5583:
 	R1 = 10;
 	asu64(R2) = p;
 	R3 = 52;
 	*toi32p(((i64)R2+(i64)R3)) = asi32(R1);
 	R1 = 1;
-	goto L5544;
-	goto L5579;
-L5583:
-L5579:
-	goto L5550;
-L5554:
+	goto L5545;
+	goto L5580;
+L5584:
+L5580:
+	goto L5551;
+L5555:
 	R1 = (u64)&cc_decls_ttisref;
 	asu64(R2) = p;
 	R3 = 52;
 	asi32(R2) = *toi32p(((i64)R2+(i64)R3));
 	R2 = toi64(toi32(R2));
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
-	if (!asu8(R1)) goto L5585;
+	if (!asu8(R1)) goto L5586;
 	asu64(R1) = p;
 	R2 = 61;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
-	if (asu8(R1)) goto L5587;
+	if (asu8(R1)) goto L5588;
 	asi64(R1) = t;
 	R2 = 3;
-	if (asi64(R1) == asi64(R2)) goto L5589;
+	if (asi64(R1) == asi64(R2)) goto L5590;
 	R2 = 4;
-	if (asi64(R1) == asi64(R2)) goto L5589;
+	if (asi64(R1) == asi64(R2)) goto L5590;
 	R2 = 8;
-	if (asi64(R1) == asi64(R2)) goto L5589;
+	if (asi64(R1) == asi64(R2)) goto L5590;
 	R2 = 9;
-	if (asi64(R1) == asi64(R2)) goto L5589;
-	goto L5590;
-L5589:
+	if (asi64(R1) == asi64(R2)) goto L5590;
+	goto L5591;
+L5590:
 	asi64(R1) = t;
 	asu64(R2) = p;
 	R3 = 52;
 	*toi32p(((i64)R2+(i64)R3)) = asi32(R1);
 	R1 = 1;
-	goto L5544;
-	goto L5588;
-L5590:
+	goto L5545;
+	goto L5589;
+L5591:
+L5589:
 L5588:
-L5587:
-L5585:
-L5550:
+L5586:
+L5551:
 	R1 = 0;
-	goto L5544;
-L5544:
+	goto L5545;
+L5545:
 	return asi64(R1);
 }
 
@@ -52231,47 +52306,31 @@ static void cc_parse_coercecond(u64 p) {
 	R2 = R1;
 	t = asi64(R2);
 	R2 = 3;
-	if (asi64(R1) != asi64(R2)) goto L5593;
-	goto L5591;
-L5593:
-// cc_parse.coercecond.retry:
+	if (asi64(R1) != asi64(R2)) goto L5594;
+	goto L5592;
 L5594:
+// cc_parse.coercecond.retry:
+L5595:
 	R1 = (u64)&cc_decls_ttbasetype;
 	asi64(R2) = t;
 	asi16(R1) = *toi16p(((i64)R1+(i64)R2*2));
 	R1 = toi64(toi16(R1));
 	R2 = 10;
-	if (asi64(R1) == asi64(R2)) goto L5596;
+	if (asi64(R1) == asi64(R2)) goto L5597;
 	R2 = 11;
-	if (asi64(R1) == asi64(R2)) goto L5596;
+	if (asi64(R1) == asi64(R2)) goto L5597;
 	R2 = 13;
-	if (asi64(R1) == asi64(R2)) goto L5596;
-	goto L5597;
-L5596:
+	if (asi64(R1) == asi64(R2)) goto L5597;
 	goto L5598;
-	goto L5595;
 L5597:
+	goto L5599;
+	goto L5596;
+L5598:
 	asi64(R1) = t;
 	asi64(R1) = cc_lib_isintcc(asi64(R1));
-	if (!asi64(R1)) goto L5600;
+	if (!asi64(R1)) goto L5601;
 // cc_parse.coercecond.doint:
-L5598:
-	asu64(R1) = p;
-	R2 = 40;
-	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
-	R1 = toi64(toi32(R1));
-	R2 = 1;
-	if (asi64(R1) != asi64(R2)) goto L5602;
-	asu64(R1) = p;
-	R2 = 0;
-	asi64(R1) = *toi64p(((i64)R1+(i64)R2));
-	if (!asi64(R1)) goto L5602;
-	R1 = 1;
-	asu64(R2) = p;
-	R3 = 0;
-	*toi64p(((i64)R2+(i64)R3)) = asi64(R1);
-	goto L5601;
-L5602:
+L5599:
 	asu64(R1) = p;
 	R2 = 40;
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
@@ -52281,43 +52340,59 @@ L5602:
 	asu64(R1) = p;
 	R2 = 0;
 	asi64(R1) = *toi64p(((i64)R1+(i64)R2));
-	if (asi64(R1)) goto L5603;
+	if (!asi64(R1)) goto L5603;
+	R1 = 1;
+	asu64(R2) = p;
+	R3 = 0;
+	*toi64p(((i64)R2+(i64)R3)) = asi64(R1);
+	goto L5602;
+L5603:
+	asu64(R1) = p;
+	R2 = 40;
+	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
+	R1 = toi64(toi32(R1));
+	R2 = 1;
+	if (asi64(R1) != asi64(R2)) goto L5604;
+	asu64(R1) = p;
+	R2 = 0;
+	asi64(R1) = *toi64p(((i64)R1+(i64)R2));
+	if (asi64(R1)) goto L5604;
 	R1 = 0;
 	asu64(R2) = p;
 	R3 = 0;
 	*toi64p(((i64)R2+(i64)R3)) = asi64(R1);
-	goto L5601;
-L5603:
+	goto L5602;
+L5604:
 	R1 = 27;
 	asu64(R2) = p;
 	cc_parse_insertunit(asu64(R2), asi64(R1));
+L5602:
+	goto L5600;
 L5601:
-	goto L5599;
-L5600:
 	R1 = (u64)&cc_decls_ttconst;
 	asi64(R2) = t;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
-	if (!asu8(R1)) goto L5604;
+	if (!asu8(R1)) goto L5605;
 	R1 = (u64)&cc_decls_ttconsttype;
 	asi64(R2) = t;
 	asi16(R1) = *toi16p(((i64)R1+(i64)R2*2));
 	R1 = toi64(toi16(R1));
 	t = asi64(R1);
-	goto L5594;
-	goto L5599;
-L5604:
+	goto L5595;
+	goto L5600;
+L5605:
 	R1 = 1;
 	asi64(R2) = t;
 	asu64(R1) = cc_lib_strmode(asi64(R2), asi64(R1));
 	R2 = tou64("Invalid condition #");
 	cc_support_serror_s(asu64(R2), asu64(R1));
-L5599:
-L5595:
+L5600:
+L5596:
 	R1 = 3;
 	asu64(R2) = p;
 	R3 = 52;
 	*toi32p(((i64)R2+(i64)R3)) = asi32(R1);
-L5591:
+L5592:
 	return;
 }
 
@@ -52331,28 +52406,28 @@ static void cc_parse_coercebasetype(u64 p) {
 	R2 = R1;
 	t = asi64(R2);
 	R2 = 1;
-	if (asi64(R1) < asi64(R2)) goto L5607;
+	if (asi64(R1) < asi64(R2)) goto L5608;
 	asi64(R1) = t;
 	R2 = 2;
-	if (asi64(R1) > asi64(R2)) goto L5607;
+	if (asi64(R1) > asi64(R2)) goto L5608;
 	R1 = 3;
 	asu64(R2) = p;
 	asu64(R1) = cc_parse_coercemode(asu64(R2), asi64(R1));
 	p = asu64(R1);
-	goto L5606;
-L5607:
+	goto L5607;
+L5608:
 	asi64(R1) = t;
 	R2 = 5;
-	if (asi64(R1) < asi64(R2)) goto L5608;
+	if (asi64(R1) < asi64(R2)) goto L5609;
 	asi64(R1) = t;
 	R2 = 7;
-	if (asi64(R1) > asi64(R2)) goto L5608;
+	if (asi64(R1) > asi64(R2)) goto L5609;
 	R1 = 8;
 	asu64(R2) = p;
 	asu64(R1) = cc_parse_coercemode(asu64(R2), asi64(R1));
 	p = asu64(R1);
-L5608:
-L5606:
+L5609:
+L5607:
 	return;
 }
 
@@ -52363,31 +52438,31 @@ static void cc_parse_checklvalue(u64 p, i64 assign) {
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
 	R1 = toi64(toi32(R1));
 	R2 = 3;
-	if (asi64(R1) == asi64(R2)) goto L5611;
-	R2 = 52;
 	if (asi64(R1) == asi64(R2)) goto L5612;
-	R2 = 5;
+	R2 = 52;
 	if (asi64(R1) == asi64(R2)) goto L5613;
-	R2 = 4;
+	R2 = 5;
 	if (asi64(R1) == asi64(R2)) goto L5614;
-	R2 = 49;
+	R2 = 4;
 	if (asi64(R1) == asi64(R2)) goto L5615;
-	R2 = 1;
+	R2 = 49;
 	if (asi64(R1) == asi64(R2)) goto L5616;
-	R2 = 56;
+	R2 = 1;
 	if (asi64(R1) == asi64(R2)) goto L5617;
-	goto L5618;
-L5611:
-	goto L5610;
+	R2 = 56;
+	if (asi64(R1) == asi64(R2)) goto L5618;
+	goto L5619;
 L5612:
-	goto L5610;
+	goto L5611;
 L5613:
-	asi64(R1) = assign;
-	if (!asi64(R1)) goto L5620;
-	goto L5621;
-L5620:
-	goto L5610;
+	goto L5611;
 L5614:
+	asi64(R1) = assign;
+	if (!asi64(R1)) goto L5621;
+	goto L5622;
+L5621:
+	goto L5611;
+L5615:
 	asu64(R1) = p;
 	R2 = 16;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
@@ -52395,47 +52470,47 @@ L5614:
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
 	R1 = toi64(toi32(R1));
 	R2 = 3;
-	if (asi64(R1) == asi64(R2)) goto L5623;
+	if (asi64(R1) == asi64(R2)) goto L5624;
 	R2 = 52;
-	if (asi64(R1) == asi64(R2)) goto L5623;
+	if (asi64(R1) == asi64(R2)) goto L5624;
 	R2 = 49;
-	if (asi64(R1) == asi64(R2)) goto L5623;
-	goto L5624;
-L5623:
+	if (asi64(R1) == asi64(R2)) goto L5624;
+	goto L5625;
+L5624:
 	asu64(R1) = p;
 	R2 = 16;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
 	(R1_B37) = *(struct $B37*)(R1);
 	asu64(R2) = p;
 	*(struct $B37*)(R2) = (R1_B37);
-	goto L5622;
-L5624:
+	goto L5623;
+L5625:
 	R1 = tou64("CHECKLV/WIDEN");
 	cc_support_terror(asu64(R1));
-L5622:
-	goto L5610;
-L5615:
-	goto L5610;
+L5623:
+	goto L5611;
 L5616:
+	goto L5611;
+L5617:
 	R1 = (u64)&cc_decls_ttisref;
 	asu64(R2) = p;
 	R3 = 52;
 	asi32(R2) = *toi32p(((i64)R2+(i64)R3));
 	R2 = toi64(toi32(R2));
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
-	if (asu8(R1)) goto L5626;
-	goto L5621;
-L5626:
-	goto L5610;
-L5617:
-	asi64(R1) = assign;
-	if (!asi64(R1)) goto L5628;
-	goto L5621;
-L5628:
-	goto L5610;
+	if (asu8(R1)) goto L5627;
+	goto L5622;
+L5627:
+	goto L5611;
 L5618:
+	asi64(R1) = assign;
+	if (!asi64(R1)) goto L5629;
+	goto L5622;
+L5629:
+	goto L5611;
+L5619:
 // cc_parse.checklvalue.notlv:
-L5621:
+L5622:
 	R1 = tou64("*");
 	R2 = 0;
 	asu64(R3) = p;
@@ -52449,7 +52524,7 @@ L5621:
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2*8));
 	R2 = tou64("value: #");
 	cc_support_terror_s(asu64(R2), asu64(R1));
-L5610:
+L5611:
 	return;
 }
 
@@ -52479,32 +52554,32 @@ static u64 cc_parse_createcall(u64 p, u64 q) {
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
 	R1 = toi64(toi32(R1));
 	R2 = 52;
-	if (asi64(R1) == asi64(R2)) goto L5631;
+	if (asi64(R1) == asi64(R2)) goto L5632;
 	R2 = 3;
-	if (asi64(R1) == asi64(R2)) goto L5632;
+	if (asi64(R1) == asi64(R2)) goto L5633;
 	R2 = 5;
-	if (asi64(R1) == asi64(R2)) goto L5632;
+	if (asi64(R1) == asi64(R2)) goto L5633;
 	R2 = 49;
-	if (asi64(R1) == asi64(R2)) goto L5633;
+	if (asi64(R1) == asi64(R2)) goto L5634;
 	R2 = 30;
-	if (asi64(R1) == asi64(R2)) goto L5633;
+	if (asi64(R1) == asi64(R2)) goto L5634;
 	R2 = 31;
-	if (asi64(R1) == asi64(R2)) goto L5633;
+	if (asi64(R1) == asi64(R2)) goto L5634;
 	R2 = 56;
-	if (asi64(R1) == asi64(R2)) goto L5633;
+	if (asi64(R1) == asi64(R2)) goto L5634;
 	R2 = 29;
-	if (asi64(R1) == asi64(R2)) goto L5633;
-	goto L5634;
-L5631:
+	if (asi64(R1) == asi64(R2)) goto L5634;
+	goto L5635;
+L5632:
 // cc_parse.createcall.doptr:
-L5635:
+L5636:
 	asu64(R1) = p;
 	R2 = 52;
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
 	R1 = toi64(toi32(R1));
 	mproc = asi64(R1);
-	goto L5637;
-L5636:
+	goto L5638;
+L5637:
 	asu64(R1) = p;
 	R2 = 52;
 	asu64(R1) = cc_lib_createunit1(asi64(R2), asu64(R1));
@@ -52520,24 +52595,24 @@ L5636:
 	*toi32p(((i64)R2+(i64)R3)) = asi32(R1);
 	asu64(R1) = r;
 	p = asu64(R1);
-L5637:
+L5638:
 	R1 = (u64)&cc_decls_ttbasetype;
 	asi64(R2) = mproc;
 	asi16(R1) = *toi16p(((i64)R1+(i64)R2*2));
 	R1 = toi64(toi16(R1));
 	R2 = 13;
-	if (asi64(R1) == asi64(R2)) goto L5636;
+	if (asi64(R1) == asi64(R2)) goto L5637;
 	R1 = (u64)&cc_decls_ttbasetype;
 	asi64(R2) = mproc;
 	asi16(R1) = *toi16p(((i64)R1+(i64)R2*2));
 	R1 = toi64(toi16(R1));
 	R2 = 14;
-	if (asi64(R1) == asi64(R2)) goto L5640;
+	if (asi64(R1) == asi64(R2)) goto L5641;
 	asi64(R1) = mproc;
 	asu64(R1) = cc_lib_typename(asi64(R1));
 	R2 = tou64("Not function pointer: #");
 	cc_support_serror_s(asu64(R2), asu64(R1));
-L5640:
+L5641:
 	R1 = (u64)&cc_decls_ttparams;
 	asi64(R2) = mproc;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2*8));
@@ -52547,8 +52622,8 @@ L5640:
 	asi16(R1) = *toi16p(((i64)R1+(i64)R2*2));
 	R1 = toi64(toi16(R1));
 	retmode = asi64(R1);
-	goto L5630;
-L5632:
+	goto L5631;
+L5633:
 	asu64(R1) = p;
 	R2 = 0;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
@@ -52558,7 +52633,7 @@ L5632:
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 6;
-	if (asi64(R1) != asi64(R2)) goto L5642;
+	if (asi64(R1) != asi64(R2)) goto L5643;
 	asu64(R1) = d;
 	R2 = 80;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
@@ -52568,12 +52643,12 @@ L5632:
 	asu16(R1) = *tou16p(((i64)R1+(i64)R2));
 	R1 = toi64(tou16(R1));
 	retmode = asi64(R1);
-	goto L5641;
+	goto L5642;
+L5643:
+	goto L5636;
 L5642:
-	goto L5635;
-L5641:
-	goto L5630;
-L5633:
+	goto L5631;
+L5634:
 	asu64(R1) = p;
 	R2 = 52;
 	asu64(R1) = cc_lib_createunit1(asi64(R2), asu64(R1));
@@ -52590,9 +52665,9 @@ L5633:
 	*toi32p(((i64)R2+(i64)R3)) = asi32(R1);
 	asu64(R1) = r;
 	p = asu64(R1);
-	goto L5635;
-	goto L5630;
-L5634:
+	goto L5636;
+	goto L5631;
+L5635:
 	msysc_m$print_startcon();
 	R1 = tou64("JTAGNAMES[P.TAG]=");
 	msysc_m$print_str_nf(asu64(R1));
@@ -52612,7 +52687,7 @@ L5634:
 	cc_show_printunit(asu64(R4), asu64(R3), asi64(R2), asu64(R1));
 	R1 = tou64("ccall?");
 	cc_support_serror(asu64(R1));
-L5630:
+L5631:
 	asu64(R1) = pm;
 	R2 = 20;
 	asi16(R1) = *toi16p(((i64)R1+(i64)R2));
@@ -52622,45 +52697,45 @@ L5630:
 	aparams = asi64(R1);
 	asu64(R1) = q;
 	s = asu64(R1);
-	goto L5644;
-L5643:
+	goto L5645;
+L5644:
 	R1 = (u64)&aparams;
 	(*toi64p(R1)) += 1;
 	asu64(R1) = s;
 	R2 = 8;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
 	s = asu64(R1);
-L5644:
+L5645:
 	asu64(R1) = s;
-	if (asu64(R1)) goto L5643;
+	if (asu64(R1)) goto L5644;
 	asi64(R1) = aparams;
 	asi64(R2) = nparams;
-	if (asi64(R1) >= asi64(R2)) goto L5647;
+	if (asi64(R1) >= asi64(R2)) goto L5648;
 	R1 = tou64("1:Too few args");
 	cc_support_terror(asu64(R1));
-	goto L5646;
-L5647:
+	goto L5647;
+L5648:
 	asi64(R1) = aparams;
 	asi64(R2) = nparams;
-	if (asi64(R1) <= asi64(R2)) goto L5648;
+	if (asi64(R1) <= asi64(R2)) goto L5649;
 	asu64(R1) = pm;
 	R2 = 22;
 	asi16(R1) = *toi16p(((i64)R1+(i64)R2));
 	R1 = toi64(toi16(R1));
 	R2 = 3;
-	if (asi64(R1) == asi64(R2)) goto L5648;
+	if (asi64(R1) == asi64(R2)) goto L5649;
 	asu64(R1) = pm;
 	R2 = 22;
 	asi16(R1) = *toi16p(((i64)R1+(i64)R2));
 	R1 = toi64(toi16(R1));
 	R2 = 1;
-	if (asi64(R1) == asi64(R2)) goto L5648;
+	if (asi64(R1) == asi64(R2)) goto L5649;
 	asu64(R1) = pm;
 	R2 = 22;
 	asi16(R1) = *toi16p(((i64)R1+(i64)R2));
 	R1 = toi64(toi16(R1));
 	R2 = 1;
-	if (asi64(R1) == asi64(R2)) goto L5650;
+	if (asi64(R1) == asi64(R2)) goto L5651;
 	msysc_m$print_startcon();
 	asi64(R1) = aparams;
 	msysc_m$print_i64_nf(asi64(R1));
@@ -52670,20 +52745,20 @@ L5647:
 	msysc_m$print_end();
 	R1 = tou64("Too many args");
 	cc_support_terror(asu64(R1));
-L5650:
-L5648:
-L5646:
+L5651:
+L5649:
+L5647:
 	asu64(R1) = q;
 	s = asu64(R1);
 	R1 = 1;
 	i = asi64(R1);
 	asi64(R1) = aparams;
 	R2 = 1;
-	if (asi64(R1) < asi64(R2)) goto L5653;
-L5651:
+	if (asi64(R1) < asi64(R2)) goto L5654;
+L5652:
 	asi64(R1) = i;
 	asi64(R2) = nparams;
-	if (asi64(R1) > asi64(R2)) goto L5655;
+	if (asi64(R1) > asi64(R2)) goto L5656;
 	asu64(R1) = pm;
 	R2 = 16;
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
@@ -52694,26 +52769,26 @@ L5651:
 	R2 = 8;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
 	pm = asu64(R1);
-	goto L5654;
-L5655:
+	goto L5655;
+L5656:
 	asu64(R1) = s;
 	R2 = 52;
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
 	R1 = toi64(toi32(R1));
 	R2 = 0;
-	if (asi64(R1) != asi64(R2)) goto L5657;
+	if (asi64(R1) != asi64(R2)) goto L5658;
 	R1 = tou64("Variadic param is void");
 	cc_support_terror(asu64(R1));
-L5657:
+L5658:
 	asu64(R1) = s;
 	cc_parse_coercebasetype(asu64(R1));
-L5654:
+L5655:
 	asu64(R1) = s;
 	R2 = 8;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
 	s = asu64(R1);
-	i += 1; if (i <= aparams) goto L5651;
-L5653:
+	i += 1; if (i <= aparams) goto L5652;
+L5654:
 	asu64(R1) = q;
 	asu64(R2) = p;
 	R3 = 30;
@@ -52730,8 +52805,8 @@ L5653:
 	R3 = 48;
 	*toi32p(((i64)R2+(i64)R3)) = asi32(R1);
 	asu64(R1) = r;
-	goto L5629;
-L5629:
+	goto L5630;
+L5630:
 	return asu64(R1);
 }
 
@@ -52757,7 +52832,7 @@ static u64 cc_parse_arraytopointer(u64 p) {
 	asi16(R1) = *toi16p(((i64)R1+(i64)R2*2));
 	R1 = toi64(toi16(R1));
 	R2 = 17;
-	if (asi64(R1) != asi64(R2)) goto L5660;
+	if (asi64(R1) != asi64(R2)) goto L5661;
 	asi64(R1) = elemmode;
 	asi64(R1) = cc_lib_createrefmode(asi64(R1));
 	refmode = asi64(R1);
@@ -52766,17 +52841,17 @@ static u64 cc_parse_arraytopointer(u64 p) {
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
 	R1 = toi64(toi32(R1));
 	R2 = 52;
-	if (asi64(R1) == asi64(R2)) goto L5662;
-	R2 = 49;
 	if (asi64(R1) == asi64(R2)) goto L5663;
-	goto L5664;
-L5662:
+	R2 = 49;
+	if (asi64(R1) == asi64(R2)) goto L5664;
+	goto L5665;
+L5663:
 	asu64(R1) = p;
 	R2 = 16;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
 	p = asu64(R1);
-	goto L5661;
-L5663:
+	goto L5662;
+L5664:
 	asu64(R1) = p;
 	R2 = 0;
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
@@ -52810,8 +52885,8 @@ L5663:
 	asu64(R2) = p;
 	R3 = 24;
 	*tou64p(((i64)R2+(i64)R3)) = asu64(R1);
-	goto L5661;
-L5664:
+	goto L5662;
+L5665:
 	msysc_m$print_startcon();
 	R1 = tou64("ATP:");
 	msysc_m$print_str_nf(asu64(R1));
@@ -52824,7 +52899,7 @@ L5664:
 	cc_show_printunit(asu64(R4), asu64(R3), asi64(R2), asu64(R1));
 	R1 = tou64("ATP?");
 	cc_support_terror(asu64(R1));
-L5661:
+L5662:
 	asi64(R1) = refmode;
 	asu64(R2) = p;
 	R3 = 52;
@@ -52835,10 +52910,10 @@ L5661:
 	asu64(R2) = p;
 	R3 = 48;
 	*toi32p(((i64)R2+(i64)R3)) = asi32(R1);
-L5660:
+L5661:
 	asu64(R1) = p;
-	goto L5658;
-L5658:
+	goto L5659;
+L5659:
 	return asu64(R1);
 }
 
@@ -52851,8 +52926,8 @@ static u64 cc_parse_createindexop(u64 p, u64 q) {
 	a = asu64(R1);
 	asu64(R1) = a;
 	asu64(R1) = cc_parse_createptrop(asu64(R1));
-	goto L5665;
-L5665:
+	goto L5666;
+L5666:
 	return asu64(R1);
 }
 
@@ -52886,24 +52961,24 @@ static i64 cc_parse_readstructdecl(u64 owner) {
 	funion = asi64(R1);
 	cc_lex_lex();
 	asu64(R1) = cc_decls_currproc;
-	if (!asu64(R1)) goto L5668;
+	if (!asu64(R1)) goto L5669;
 	asu64(R1) = cc_decls_currproc;
-	goto L5667;
-L5668:
+	goto L5668;
+L5669:
 	asu64(R1) = cc_decls_stmodule;
-L5667:
+L5668:
 	tagowner = asu64(R1);
 	R1 = (u64)&cc_decls_lx;
 	R2 = 21;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 17;
-	if (asi64(R1) != asi64(R2)) goto L5670;
+	if (asi64(R1) != asi64(R2)) goto L5671;
 	asu64(R1) = cc_lib_nextautotype();
 	asu64(R1) = cc_lex_addnamestr(asu64(R1));
 	d = asu64(R1);
-	goto L5669;
-L5670:
+	goto L5670;
+L5671:
 	R1 = 67;
 	cc_lib_checksymbol(asi64(R1));
 	R1 = (u64)&cc_decls_lx;
@@ -52916,7 +52991,7 @@ L5670:
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 17;
-	if (asi64(R1) == asi64(R2)) goto L5672;
+	if (asi64(R1) == asi64(R2)) goto L5673;
 	asi64(R1) = cc_decls_currblockno;
 	R2 = 2;
 	asu64(R3) = d;
@@ -52924,37 +52999,37 @@ L5670:
 	asu64(R1) = cc_lib_resolvename(asu64(R4), asu64(R3), asi64(R2), asi64(R1));
 	e = asu64(R1);
 	asu64(R1) = e;
-	if (!asu64(R1)) goto L5674;
+	if (!asu64(R1)) goto L5675;
 	asu64(R1) = e;
 	R2 = 109;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 13;
-	if (asi64(R1) == asi64(R2)) goto L5676;
+	if (asi64(R1) == asi64(R2)) goto L5677;
 	asu64(R1) = e;
 	R2 = 0;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
 	R2 = tou64("Struct tag in use #");
 	cc_support_serror_s(asu64(R2), asu64(R1));
-L5676:
+L5677:
 	asu64(R1) = e;
 	R2 = 102;
 	asu16(R1) = *tou16p(((i64)R1+(i64)R2));
 	R1 = toi64(tou16(R1));
-	goto L5666;
-L5674:
+	goto L5667;
+L5675:
 	R1 = 13;
 	asu64(R2) = d;
 	asu64(R3) = tagowner;
 	asu64(R1) = cc_lib_createdupldef(asu64(R3), asu64(R2), asi64(R1));
 	e = asu64(R1);
 	asi64(R1) = funion;
-	if (!asi64(R1)) goto L5678;
+	if (!asi64(R1)) goto L5679;
 	R1 = 19;
-	goto L5677;
-L5678:
+	goto L5678;
+L5679:
 	R1 = 18;
-L5677:
+L5678:
 	asu64(R2) = e;
 	asi64(R1) = cc_lib_createstructmode(asu64(R2), asi64(R1));
 	asu64(R2) = e;
@@ -52972,9 +53047,9 @@ L5677:
 	R2 = 102;
 	asu16(R1) = *tou16p(((i64)R1+(i64)R2));
 	R1 = toi64(tou16(R1));
-	goto L5666;
-L5672:
-L5669:
+	goto L5667;
+L5673:
+L5670:
 	asi64(R1) = cc_decls_currblockno;
 	R2 = 2;
 	asu64(R3) = d;
@@ -52982,23 +53057,23 @@ L5669:
 	asu64(R1) = cc_lib_checkdupl(asu64(R4), asu64(R3), asi64(R2), asi64(R1));
 	e = asu64(R1);
 	asu64(R1) = e;
-	if (!asu64(R1)) goto L5680;
+	if (!asu64(R1)) goto L5681;
 	asu64(R1) = e;
 	R2 = 109;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 13;
-	if (asi64(R1) == asi64(R2)) goto L5682;
+	if (asi64(R1) == asi64(R2)) goto L5683;
 	asu64(R1) = e;
 	R2 = 0;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
 	R2 = tou64("Struct tag in use #");
 	cc_support_serror_s(asu64(R2), asu64(R1));
-L5682:
+L5683:
 	asu64(R1) = e;
 	R2 = 16;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
-	if (!asu64(R1)) goto L5684;
+	if (!asu64(R1)) goto L5685;
 	msysc_m$print_startcon();
 	R1 = tou64("Prev");
 	msysc_m$print_str_nf(asu64(R1));
@@ -53034,21 +53109,21 @@ L5682:
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
 	R2 = tou64("Redefining struct #");
 	cc_support_serror_s(asu64(R2), asu64(R1));
-L5684:
-	goto L5679;
-L5680:
+L5685:
+	goto L5680;
+L5681:
 	R1 = 13;
 	asu64(R2) = d;
 	asu64(R3) = tagowner;
 	asu64(R1) = cc_lib_createdupldef(asu64(R3), asu64(R2), asi64(R1));
 	e = asu64(R1);
 	asi64(R1) = funion;
-	if (!asi64(R1)) goto L5686;
+	if (!asi64(R1)) goto L5687;
 	R1 = 19;
-	goto L5685;
-L5686:
+	goto L5686;
+L5687:
 	R1 = 18;
-L5685:
+L5686:
 	asu64(R2) = e;
 	asi64(R1) = cc_lib_createstructmode(asu64(R2), asi64(R1));
 	asu64(R2) = e;
@@ -53062,7 +53137,7 @@ L5685:
 	R2 = (u64)&cc_decls_blockcounts;
 	asi64(R3) = cc_decls_currblockno;
 	*toi32p(((i64)R2+(i64)R3*4)) = asi32(R1);
-L5679:
+L5680:
 	cc_lex_lex();
 	asu64(R1) = e;
 	currrecord = asu64(R1);
@@ -53082,27 +53157,27 @@ L5679:
 	fieldlist = asu64(R1);
 	R1 = -1;
 	m = asi64(R1);
-	goto L5688;
-L5687:
+	goto L5689;
+L5688:
 	R1 = (u64)&linkage;
 	asu64(R2) = currrecord;
 	asi64(R1) = cc_parse_readdeclspec(asu64(R2), asu64(R1));
 	mbase = asi64(R1);
-L5690:
+L5691:
 	R1 = (u64)&cc_decls_lx;
 	R2 = 21;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 67;
-	if (asi64(R1) == asi64(R2)) goto L5692;
-	R2 = 25;
-	if (asi64(R1) == asi64(R2)) goto L5692;
-	R2 = 13;
-	if (asi64(R1) == asi64(R2)) goto L5692;
-	R2 = 10;
 	if (asi64(R1) == asi64(R2)) goto L5693;
-	goto L5694;
-L5692:
+	R2 = 25;
+	if (asi64(R1) == asi64(R2)) goto L5693;
+	R2 = 13;
+	if (asi64(R1) == asi64(R2)) goto L5693;
+	R2 = 10;
+	if (asi64(R1) == asi64(R2)) goto L5694;
+	goto L5695;
+L5693:
 	R1 = (u64)&pm;
 	asi64(R2) = mbase;
 	R3 = (u64)&d;
@@ -53111,19 +53186,19 @@ L5692:
 	m = asi64(R1);
 	asu64(R1) = d;
 	R2 = 0;
-	if (asu64(R1) != asu64(R2)) goto L5696;
+	if (asu64(R1) != asu64(R2)) goto L5697;
 	R1 = tou64("Field name expected");
 	cc_support_serror(asu64(R1));
-L5696:
+L5697:
 	asi64(R1) = linkage;
 	R2 = 5;
-	if (asi64(R1) == asi64(R2)) goto L5699;
+	if (asi64(R1) == asi64(R2)) goto L5700;
 	asu64(R1) = pm;
-	if (!asu64(R1)) goto L5698;
-L5699:
+	if (!asu64(R1)) goto L5699;
+L5700:
 	R1 = tou64("typedef or function inside struct");
 	cc_support_serror(asu64(R1));
-L5698:
+L5699:
 	R1 = 0;
 	R2 = 4;
 	asu64(R3) = d;
@@ -53131,21 +53206,21 @@ L5698:
 	asu64(R1) = cc_lib_checkdupl(asu64(R4), asu64(R3), asi64(R2), asi64(R1));
 	e = asu64(R1);
 	asu64(R1) = e;
-	if (!asu64(R1)) goto L5701;
+	if (!asu64(R1)) goto L5702;
 	asu64(R1) = e;
 	R2 = 0;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
 	R2 = tou64("member name in use #");
 	cc_support_serror_s(asu64(R2), asu64(R1));
-L5701:
+L5702:
 	asi64(R1) = linkage;
 	R2 = 0;
-	if (asi64(R1) == asi64(R2)) goto L5703;
+	if (asi64(R1) == asi64(R2)) goto L5704;
 	R1 = tou64("Can't use ss in struct");
 	cc_support_serror(asu64(R1));
-L5703:
-// cc_parse.readstructdecl.addanonfield:
 L5704:
+// cc_parse.readstructdecl.addanonfield:
+L5705:
 	R1 = 10;
 	asu64(R2) = d;
 	R3 = 0;
@@ -53176,10 +53251,10 @@ L5704:
 	alignment = asi64(R1);
 	asi64(R1) = alignment;
 	asi64(R2) = maxalignment;
-	if (asi64(R1) <= asi64(R2)) goto L5706;
+	if (asi64(R1) <= asi64(R2)) goto L5707;
 	asi64(R1) = alignment;
 	maxalignment = asi64(R1);
-L5706:
+L5707:
 	asi64(R1) = alignment;
 	asi64(R2) = offset;
 	asi64(R1) = cc_parse_roundoffset(asi64(R2), asi64(R1));
@@ -53208,92 +53283,92 @@ L5706:
 	R3 = (u64)&fieldlist;
 	cc_parse_addnewfield(asu64(R3), asu64(R2), asi64(R1));
 	asi64(R1) = funion;
-	if (!asi64(R1)) goto L5708;
+	if (!asi64(R1)) goto L5709;
 	asi64(R1) = maxsize;
 	asi64(R2) = size;
 	asi64(R1) = Max(asi64(R1), asi64(R2));
 	maxsize = asi64(R1);
-	goto L5707;
-L5708:
+	goto L5708;
+L5709:
 	asi64(R1) = size;
 	R2 = (u64)&offset;
 	*toi64p(R2) += asi64(R1);
 	asi64(R1) = size;
 	R2 = (u64)&recsize;
 	*toi64p(R2) += asi64(R1);
-L5707:
+L5708:
 	R1 = (u64)&cc_decls_lx;
 	R2 = 21;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 10;
-	if (asi64(R1) != asi64(R2)) goto L5710;
+	if (asi64(R1) != asi64(R2)) goto L5711;
 	cc_lex_lex();
 	asu64(R1) = cc_parse_readassignexpr();
-L5710:
+L5711:
 	R1 = (u64)&cc_decls_lx;
 	R2 = 21;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 8;
-	if (asi64(R1) == asi64(R2)) goto L5712;
-	goto L5713;
-L5712:
-	cc_lex_lex();
-	goto L5711;
+	if (asi64(R1) == asi64(R2)) goto L5713;
+	goto L5714;
 L5713:
+	cc_lex_lex();
+	goto L5712;
+L5714:
 	R1 = 9;
 	cc_lib_skipsymbol(asi64(R1));
+	goto L5692;
+L5712:
 	goto L5691;
-L5711:
-	goto L5690;
-L5693:
+L5694:
 	cc_lex_lex();
 	asu64(R1) = cc_parse_readassignexpr();
 	R1 = 9;
 	cc_lib_skipsymbol(asi64(R1));
+	goto L5692;
 	goto L5691;
-	goto L5690;
-L5694:
+L5695:
 	R1 = (u64)&cc_decls_ttbasetype;
 	asi64(R2) = mbase;
 	asi16(R1) = *toi16p(((i64)R1+(i64)R2*2));
 	R1 = toi64(toi16(R1));
 	R2 = 18;
-	if (asi64(R1) == asi64(R2)) goto L5715;
+	if (asi64(R1) == asi64(R2)) goto L5716;
 	R2 = 19;
-	if (asi64(R1) == asi64(R2)) goto L5715;
-	goto L5716;
-L5715:
+	if (asi64(R1) == asi64(R2)) goto L5716;
+	goto L5717;
+L5716:
 	asu64(R1) = cc_lib_getautofieldname();
 	d = asu64(R1);
 	asi64(R1) = mbase;
 	m = asi64(R1);
-	goto L5704;
-	goto L5714;
-L5716:
+	goto L5705;
+	goto L5715;
+L5717:
 	asi64(R1) = m;
 	R2 = -1;
-	if (asi64(R1) != asi64(R2)) goto L5718;
+	if (asi64(R1) != asi64(R2)) goto L5719;
 	R1 = tou64("Struct decl error");
 	cc_support_serror(asu64(R1));
-	goto L5717;
-L5718:
+	goto L5718;
+L5719:
 	asi64(R1) = m;
 	asu64(R1) = cc_lib_typename(asi64(R1));
 	R2 = tou64("Struct decl error #");
 	cc_support_serror_s(asu64(R2), asu64(R1));
-L5717:
-L5714:
-	goto L5690;
-L5691:
-L5688:
+L5718:
+L5715:
+	goto L5691;
+L5692:
+L5689:
 	R1 = (u64)&cc_decls_lx;
 	R2 = 21;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 18;
-	if (asi64(R1) != asi64(R2)) goto L5687;
+	if (asi64(R1) != asi64(R2)) goto L5688;
 	R1 = 18;
 	cc_lib_skipsymbol(asi64(R1));
 	asu64(R1) = fieldlist;
@@ -53302,12 +53377,12 @@ L5688:
 	*tou64p(((i64)R2+(i64)R3)) = asu64(R1);
 	asi64(R1) = maxalignment;
 	asi64(R2) = funion;
-	if (!asi64(R2)) goto L5720;
+	if (!asi64(R2)) goto L5721;
 	asi64(R2) = maxsize;
-	goto L5719;
-L5720:
+	goto L5720;
+L5721:
 	asi64(R2) = recsize;
-L5719:
+L5720:
 	asi64(R1) = cc_parse_roundoffset(asi64(R2), asi64(R1));
 	R2 = (u64)&cc_decls_ttsize;
 	asu64(R3) = currrecord;
@@ -53327,7 +53402,7 @@ L5719:
 	R1 = (u64)&cc_decls_ttconsttype;
 	asi64(R2) = m;
 	asi16(R1) = *toi16p(((i64)R1+(i64)R2*2));
-	if (!asi16(R1)) goto L5722;
+	if (!asi16(R1)) goto L5723;
 	R1 = (u64)&cc_decls_ttsize;
 	asi64(R2) = m;
 	asi64(R1) = *toi64p(((i64)R1+(i64)R2*8));
@@ -53337,7 +53412,7 @@ L5719:
 	asi16(R3) = *toi16p(((i64)R3+(i64)R4*2));
 	R3 = toi64(toi16(R3));
 	*toi64p(((i64)R2+(i64)R3*8)) = asi64(R1);
-L5722:
+L5723:
 	R1 = (u64)&cc_decls_ttsize;
 	asu64(R2) = currrecord;
 	R3 = 102;
@@ -53345,14 +53420,14 @@ L5722:
 	R2 = toi64(tou16(R2));
 	asi64(R1) = *toi64p(((i64)R1+(i64)R2*8));
 	R2 = 1;
-	if (asi64(R1) == asi64(R2)) goto L5725;
+	if (asi64(R1) == asi64(R2)) goto L5726;
 	R2 = 2;
-	if (asi64(R1) == asi64(R2)) goto L5725;
+	if (asi64(R1) == asi64(R2)) goto L5726;
 	R2 = 4;
-	if (asi64(R1) == asi64(R2)) goto L5725;
+	if (asi64(R1) == asi64(R2)) goto L5726;
 	R2 = 8;
-	if (asi64(R1) != asi64(R2)) goto L5724;
-L5725:
+	if (asi64(R1) != asi64(R2)) goto L5725;
+L5726:
 	R1 = 0;
 	R2 = (u64)&cc_decls_ttisblock;
 	asu64(R3) = currrecord;
@@ -53360,13 +53435,13 @@ L5725:
 	asu16(R3) = *tou16p(((i64)R3+(i64)R4));
 	R3 = toi64(tou16(R3));
 	*tou8p(((i64)R2+(i64)R3)) = asu8(R1);
-L5724:
+L5725:
 	asu64(R1) = currrecord;
 	R2 = 102;
 	asu16(R1) = *tou16p(((i64)R1+(i64)R2));
 	R1 = toi64(tou16(R1));
-	goto L5666;
-L5666:
+	goto L5667;
+L5667:
 	return asi64(R1);
 }
 
@@ -53395,7 +53470,7 @@ static i64 cc_parse_checkpointertypes(i64 s, i64 t, i64 hard) {
 	R1 = (u64)&cc_decls_ttconst;
 	asi64(R2) = starget;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
-	if (!asu8(R1)) goto L5728;
+	if (!asu8(R1)) goto L5729;
 	R1 = (u64)&cc_decls_ttconsttype;
 	asi64(R2) = starget;
 	asi16(R1) = *toi16p(((i64)R1+(i64)R2*2));
@@ -53403,11 +53478,11 @@ static i64 cc_parse_checkpointertypes(i64 s, i64 t, i64 hard) {
 	starget = asi64(R1);
 	R1 = 1;
 	sconst = asi64(R1);
-L5728:
+L5729:
 	R1 = (u64)&cc_decls_ttconst;
 	asi64(R2) = ttarget;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
-	if (!asu8(R1)) goto L5730;
+	if (!asu8(R1)) goto L5731;
 	R1 = (u64)&cc_decls_ttconsttype;
 	asi64(R2) = ttarget;
 	asi16(R1) = *toi16p(((i64)R1+(i64)R2*2));
@@ -53415,13 +53490,13 @@ L5728:
 	ttarget = asi64(R1);
 	R1 = 1;
 	tconst = asi64(R1);
-L5730:
+L5731:
 	asi64(R1) = hard;
-	if (asi64(R1)) goto L5732;
+	if (asi64(R1)) goto L5733;
 	asi64(R1) = sconst;
-	if (!asi64(R1)) goto L5732;
+	if (!asi64(R1)) goto L5733;
 	asi64(R1) = tconst;
-	if (asi64(R1)) goto L5732;
+	if (asi64(R1)) goto L5733;
 	msysc_m$print_startcon();
 	R1 = 1;
 	asi64(R2) = s;
@@ -53438,13 +53513,13 @@ L5730:
 	msysc_m$print_end();
 	R1 = tou64("const to non-const pointer");
 	cc_support_terror(asu64(R1));
-L5732:
+L5733:
 	asi64(R1) = starget;
 	asi64(R2) = ttarget;
-	if (asi64(R1) != asi64(R2)) goto L5734;
+	if (asi64(R1) != asi64(R2)) goto L5735;
 	R1 = 1;
-	goto L5726;
-L5734:
+	goto L5727;
+L5735:
 	asi64(R1) = starget;
 	s = asi64(R1);
 	asi64(R1) = ttarget;
@@ -53461,88 +53536,88 @@ L5734:
 	tbase = asi64(R1);
 	asi64(R1) = sbase;
 	R2 = 1;
-	if (asi64(R1) < asi64(R2)) goto L5736;
+	if (asi64(R1) < asi64(R2)) goto L5737;
 	R2 = 9;
-	if (asi64(R1) > asi64(R2)) goto L5736;
+	if (asi64(R1) > asi64(R2)) goto L5737;
 	asi64(R1) = tbase;
 	R2 = 1;
-	if (asi64(R1) < asi64(R2)) goto L5736;
+	if (asi64(R1) < asi64(R2)) goto L5737;
 	R2 = 9;
-	if (asi64(R1) > asi64(R2)) goto L5736;
+	if (asi64(R1) > asi64(R2)) goto L5737;
 	R1 = (u64)&cc_decls_ttsize;
 	asi64(R2) = sbase;
 	asi64(R1) = *toi64p(((i64)R1+(i64)R2*8));
 	R2 = (u64)&cc_decls_ttsize;
 	asi64(R3) = tbase;
 	asi64(R2) = *toi64p(((i64)R2+(i64)R3*8));
-	if (asi64(R1) != asi64(R2)) goto L5738;
+	if (asi64(R1) != asi64(R2)) goto L5739;
 	R1 = 1;
-	goto L5726;
-L5738:
-L5736:
+	goto L5727;
+L5739:
+L5737:
 	asi64(R1) = sbase;
 	R2 = 0;
-	if (asi64(R1) == asi64(R2)) goto L5741;
+	if (asi64(R1) == asi64(R2)) goto L5742;
 	asi64(R1) = tbase;
 	R2 = 0;
-	if (asi64(R1) != asi64(R2)) goto L5740;
-L5741:
+	if (asi64(R1) != asi64(R2)) goto L5741;
+L5742:
 	R1 = 1;
-	goto L5726;
-L5740:
+	goto L5727;
+L5741:
 	R1 = (u64)&cc_decls_ttisref;
 	asi64(R2) = s;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
-	if (!asu8(R1)) goto L5743;
+	if (!asu8(R1)) goto L5744;
 	R1 = (u64)&cc_decls_ttisref;
 	asi64(R2) = t;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
-	if (!asu8(R1)) goto L5743;
+	if (!asu8(R1)) goto L5744;
 	asi64(R1) = hard;
 	asi64(R2) = t;
 	asi64(R3) = s;
 	asi64(R1) = cc_parse_checkpointertypes(asi64(R3), asi64(R2), asi64(R1));
-	goto L5726;
-	goto L5742;
-L5743:
+	goto L5727;
+	goto L5743;
+L5744:
 	R1 = (u64)&cc_decls_ttbasetype;
 	asi64(R2) = s;
 	asi16(R1) = *toi16p(((i64)R1+(i64)R2*2));
 	R1 = toi64(toi16(R1));
 	R2 = 17;
-	if (asi64(R1) != asi64(R2)) goto L5744;
+	if (asi64(R1) != asi64(R2)) goto L5745;
 	R1 = (u64)&cc_decls_ttbasetype;
 	asi64(R2) = t;
 	asi16(R1) = *toi16p(((i64)R1+(i64)R2*2));
 	R1 = toi64(toi16(R1));
 	R2 = 17;
-	if (asi64(R1) != asi64(R2)) goto L5744;
+	if (asi64(R1) != asi64(R2)) goto L5745;
 	R1 = (u64)&cc_decls_ttlength;
 	asi64(R2) = s;
 	asi64(R1) = *toi64p(((i64)R1+(i64)R2*8));
 	R2 = (u64)&cc_decls_ttlength;
 	asi64(R3) = t;
 	asi64(R2) = *toi64p(((i64)R2+(i64)R3*8));
-	if (asi64(R1) == asi64(R2)) goto L5746;
+	if (asi64(R1) == asi64(R2)) goto L5747;
 	R1 = (u64)&cc_decls_ttlength;
 	asi64(R2) = s;
 	asi64(R1) = *toi64p(((i64)R1+(i64)R2*8));
-	if (!asi64(R1)) goto L5748;
+	if (!asi64(R1)) goto L5749;
 	R1 = (u64)&cc_decls_ttlength;
 	asi64(R2) = t;
 	asi64(R1) = *toi64p(((i64)R1+(i64)R2*8));
-	if (!asi64(R1)) goto L5748;
+	if (!asi64(R1)) goto L5749;
 	msysc_m$print_startcon();
 	R1 = tou64("BAD REF[]");
 	msysc_m$print_str_nf(asu64(R1));
 	msysc_m$print_newline();
 	msysc_m$print_end();
 	R1 = 1;
-	goto L5726;
+	goto L5727;
 	R1 = 0;
-	goto L5726;
-L5748:
-L5746:
+	goto L5727;
+L5749:
+L5747:
 	R1 = (u64)&cc_decls_tttarget;
 	asi64(R2) = s;
 	asi16(R1) = *toi16p(((i64)R1+(i64)R2*2));
@@ -53555,63 +53630,63 @@ L5746:
 	ttarget = asi64(R1);
 	asi64(R1) = starget;
 	asi64(R2) = ttarget;
-	if (asi64(R1) != asi64(R2)) goto L5750;
+	if (asi64(R1) != asi64(R2)) goto L5751;
 	R1 = 1;
-	goto L5726;
-L5750:
+	goto L5727;
+L5751:
 	R1 = (u64)&cc_decls_ttisref;
 	asi64(R2) = starget;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
-	if (!asu8(R1)) goto L5752;
+	if (!asu8(R1)) goto L5753;
 	R1 = (u64)&cc_decls_ttisref;
 	asi64(R2) = ttarget;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
-	if (!asu8(R1)) goto L5752;
+	if (!asu8(R1)) goto L5753;
 	asi64(R1) = hard;
 	asi64(R2) = ttarget;
 	asi64(R3) = starget;
 	asi64(R1) = cc_parse_checkpointertypes(asi64(R3), asi64(R2), asi64(R1));
-	goto L5726;
-L5752:
+	goto L5727;
+L5753:
 	R1 = (u64)&cc_decls_ttbasetype;
 	asi64(R2) = starget;
 	asi16(R1) = *toi16p(((i64)R1+(i64)R2*2));
 	R1 = toi64(toi16(R1));
 	R2 = 17;
-	if (asi64(R1) != asi64(R2)) goto L5754;
+	if (asi64(R1) != asi64(R2)) goto L5755;
 	R1 = (u64)&cc_decls_ttbasetype;
 	asi64(R2) = ttarget;
 	asi16(R1) = *toi16p(((i64)R1+(i64)R2*2));
 	R1 = toi64(toi16(R1));
 	R2 = 17;
-	if (asi64(R1) != asi64(R2)) goto L5754;
+	if (asi64(R1) != asi64(R2)) goto L5755;
 	asi64(R1) = hard;
 	asi64(R2) = ttarget;
 	asi64(R3) = starget;
 	asi64(R1) = cc_parse_checkpointertypes(asi64(R3), asi64(R2), asi64(R1));
-	goto L5726;
-L5754:
-	goto L5742;
-L5744:
+	goto L5727;
+L5755:
+	goto L5743;
+L5745:
 	R1 = (u64)&cc_decls_ttbasetype;
 	asi64(R2) = s;
 	asi16(R1) = *toi16p(((i64)R1+(i64)R2*2));
 	R1 = toi64(toi16(R1));
 	R2 = 14;
-	if (asi64(R1) != asi64(R2)) goto L5755;
+	if (asi64(R1) != asi64(R2)) goto L5756;
 	R1 = (u64)&cc_decls_ttbasetype;
 	asi64(R2) = t;
 	asi16(R1) = *toi16p(((i64)R1+(i64)R2*2));
 	R1 = toi64(toi16(R1));
 	R2 = 14;
-	if (asi64(R1) != asi64(R2)) goto L5755;
+	if (asi64(R1) != asi64(R2)) goto L5756;
 	R1 = 1;
-	goto L5726;
-L5755:
-L5742:
+	goto L5727;
+L5756:
+L5743:
 	R1 = 0;
-	goto L5726;
-L5726:
+	goto L5727;
+L5727:
 	return asi64(R1);
 }
 
@@ -53619,22 +53694,22 @@ static i64 cc_parse_comparemode(i64 s, i64 t) {
     u64 R1, R2, R3; 
 	asi64(R1) = s;
 	asi64(R2) = t;
-	if (asi64(R1) != asi64(R2)) goto L5758;
+	if (asi64(R1) != asi64(R2)) goto L5759;
 	R1 = 1;
-	goto L5756;
-L5758:
+	goto L5757;
+L5759:
 	R1 = (u64)&cc_decls_ttbasetype;
 	asi64(R2) = s;
 	asi16(R1) = *toi16p(((i64)R1+(i64)R2*2));
 	R1 = toi64(toi16(R1));
 	R2 = 17;
-	if (asi64(R1) != asi64(R2)) goto L5760;
+	if (asi64(R1) != asi64(R2)) goto L5761;
 	R1 = (u64)&cc_decls_ttbasetype;
 	asi64(R2) = s;
 	asi16(R1) = *toi16p(((i64)R1+(i64)R2*2));
 	R1 = toi64(toi16(R1));
 	R2 = 17;
-	if (asi64(R1) != asi64(R2)) goto L5760;
+	if (asi64(R1) != asi64(R2)) goto L5761;
 	R1 = (u64)&cc_decls_tttarget;
 	asi64(R2) = t;
 	asi16(R1) = *toi16p(((i64)R1+(i64)R2*2));
@@ -53645,35 +53720,35 @@ L5758:
 	R2 = toi64(toi16(R2));
 	asi64(R1) = cc_parse_comparemode(asi64(R2), asi64(R1));
 	R2 = 0;
-	if (asi64(R1) != asi64(R2)) goto L5762;
+	if (asi64(R1) != asi64(R2)) goto L5763;
 	R1 = 0;
-	goto L5756;
-L5762:
+	goto L5757;
+L5763:
 	R1 = (u64)&cc_decls_ttlength;
 	asi64(R2) = s;
 	asi64(R1) = *toi64p(((i64)R1+(i64)R2*8));
 	R2 = 0;
-	if (asi64(R1) == asi64(R2)) goto L5765;
+	if (asi64(R1) == asi64(R2)) goto L5766;
 	R1 = (u64)&cc_decls_ttlength;
 	asi64(R2) = t;
 	asi64(R1) = *toi64p(((i64)R1+(i64)R2*8));
 	R2 = 0;
-	if (asi64(R1) == asi64(R2)) goto L5765;
+	if (asi64(R1) == asi64(R2)) goto L5766;
 	R1 = (u64)&cc_decls_ttlength;
 	asi64(R2) = s;
 	asi64(R1) = *toi64p(((i64)R1+(i64)R2*8));
 	R2 = (u64)&cc_decls_ttlength;
 	asi64(R3) = t;
 	asi64(R2) = *toi64p(((i64)R2+(i64)R3*8));
-	if (asi64(R1) != asi64(R2)) goto L5764;
-L5765:
+	if (asi64(R1) != asi64(R2)) goto L5765;
+L5766:
 	R1 = 1;
-	goto L5756;
-L5764:
-L5760:
+	goto L5757;
+L5765:
+L5761:
 	R1 = 0;
-	goto L5756;
-L5756:
+	goto L5757;
+L5757:
 	return asi64(R1);
 }
 
@@ -53687,12 +53762,12 @@ static i64 cc_parse_readenumdecl(u64 owner) {
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 17;
-	if (asi64(R1) != asi64(R2)) goto L5768;
+	if (asi64(R1) != asi64(R2)) goto L5769;
 	asu64(R1) = owner;
 	cc_parse_readenumnames(asu64(R1));
 	R1 = 12;
-	goto L5766;
-L5768:
+	goto L5767;
+L5769:
 	R1 = 67;
 	cc_lib_checksymbol(asi64(R1));
 	R1 = (u64)&cc_decls_lx;
@@ -53705,7 +53780,7 @@ L5768:
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 17;
-	if (asi64(R1) == asi64(R2)) goto L5770;
+	if (asi64(R1) == asi64(R2)) goto L5771;
 	asi64(R1) = cc_decls_currblockno;
 	R2 = 2;
 	asu64(R3) = d;
@@ -53713,20 +53788,20 @@ L5768:
 	asu64(R1) = cc_lib_checkdupl(asu64(R4), asu64(R3), asi64(R2), asi64(R1));
 	e = asu64(R1);
 	asu64(R1) = e;
-	if (!asu64(R1)) goto L5772;
+	if (!asu64(R1)) goto L5773;
 	asu64(R1) = e;
 	R2 = 109;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 12;
-	if (asi64(R1) == asi64(R2)) goto L5774;
+	if (asi64(R1) == asi64(R2)) goto L5775;
 	asu64(R1) = e;
 	R2 = 0;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
 	R2 = tou64("Enum tag in use #");
 	cc_support_serror_s(asu64(R2), asu64(R1));
-L5774:
-L5772:
+L5775:
+L5773:
 	R1 = 12;
 	asu64(R2) = d;
 	asu64(R3) = owner;
@@ -53749,8 +53824,8 @@ L5772:
 	R2 = 102;
 	asu16(R1) = *tou16p(((i64)R1+(i64)R2));
 	R1 = toi64(tou16(R1));
-	goto L5766;
-L5770:
+	goto L5767;
+L5771:
 	asi64(R1) = cc_decls_currblockno;
 	R2 = 2;
 	asu64(R3) = d;
@@ -53758,31 +53833,31 @@ L5770:
 	asu64(R1) = cc_lib_checkdupl(asu64(R4), asu64(R3), asi64(R2), asi64(R1));
 	e = asu64(R1);
 	asu64(R1) = e;
-	if (!asu64(R1)) goto L5776;
+	if (!asu64(R1)) goto L5777;
 	asu64(R1) = e;
 	R2 = 109;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 12;
-	if (asi64(R1) == asi64(R2)) goto L5778;
+	if (asi64(R1) == asi64(R2)) goto L5779;
 	asu64(R1) = e;
 	R2 = 0;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
 	R2 = tou64("Enum tag in use #");
 	cc_support_serror_s(asu64(R2), asu64(R1));
-L5778:
+L5779:
 	asu64(R1) = e;
 	R2 = 16;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
-	if (!asu64(R1)) goto L5780;
+	if (!asu64(R1)) goto L5781;
 	asu64(R1) = e;
 	R2 = 0;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
 	R2 = tou64("Redefining enum #");
 	cc_support_serror_s(asu64(R2), asu64(R1));
-L5780:
-	goto L5775;
-L5776:
+L5781:
+	goto L5776;
+L5777:
 	R1 = 12;
 	asu64(R2) = d;
 	asu64(R3) = owner;
@@ -53801,7 +53876,7 @@ L5776:
 	R2 = (u64)&cc_decls_blockcounts;
 	asi64(R3) = cc_decls_currblockno;
 	*toi32p(((i64)R2+(i64)R3*4)) = asi32(R1);
-L5775:
+L5776:
 	asu64(R1) = owner;
 	cc_parse_readenumnames(asu64(R1));
 	asu64(R1) = e;
@@ -53815,8 +53890,8 @@ L5775:
 	R2 = 102;
 	asu16(R1) = *tou16p(((i64)R1+(i64)R2));
 	R1 = toi64(tou16(R1));
-	goto L5766;
-L5766:
+	goto L5767;
+L5767:
 	return asi64(R1);
 }
 
@@ -53839,24 +53914,24 @@ static void cc_parse_readenumnames(u64 owner) {
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 6;
-	if (asi64(R1) == asi64(R2)) goto L5783;
+	if (asi64(R1) == asi64(R2)) goto L5784;
 	R2 = 3;
-	if (asi64(R1) == asi64(R2)) goto L5783;
-	goto L5784;
-L5783:
-	goto L5782;
-L5784:
-	asu64(R1) = cc_decls_currproc;
-	if (!asu64(R1)) goto L5786;
-	asu64(R1) = cc_decls_currproc;
+	if (asi64(R1) == asi64(R2)) goto L5784;
 	goto L5785;
-L5786:
-	asu64(R1) = cc_decls_stmodule;
+L5784:
+	goto L5783;
 L5785:
-	owner = asu64(R1);
-L5782:
-	goto L5788;
+	asu64(R1) = cc_decls_currproc;
+	if (!asu64(R1)) goto L5787;
+	asu64(R1) = cc_decls_currproc;
+	goto L5786;
 L5787:
+	asu64(R1) = cc_decls_stmodule;
+L5786:
+	owner = asu64(R1);
+L5783:
+	goto L5789;
+L5788:
 	asi64(R1) = cc_decls_currblockno;
 	R2 = 1;
 	R3 = (u64)&cc_decls_lx;
@@ -53866,13 +53941,13 @@ L5787:
 	asu64(R1) = cc_lib_checkdupl(asu64(R4), asu64(R3), asi64(R2), asi64(R1));
 	d = asu64(R1);
 	asu64(R1) = d;
-	if (!asu64(R1)) goto L5791;
+	if (!asu64(R1)) goto L5792;
 	asu64(R1) = d;
 	R2 = 0;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
 	R2 = tou64("enum name reused #");
 	cc_support_serror_s(asu64(R2), asu64(R1));
-L5791:
+L5792:
 	R1 = 11;
 	R2 = (u64)&cc_decls_lx;
 	R3 = 0;
@@ -53886,11 +53961,11 @@ L5791:
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 11;
-	if (asi64(R1) != asi64(R2)) goto L5793;
+	if (asi64(R1) != asi64(R2)) goto L5794;
 	cc_lex_lex();
 	asi64(R1) = cc_parse_readconstintexpr();
 	enumseq = asi64(R1);
-L5793:
+L5794:
 	asi64(R1) = enumseq;
 	asu64(R2) = d;
 	R3 = 88;
@@ -53910,16 +53985,16 @@ L5793:
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 8;
-	if (asi64(R1) != asi64(R2)) goto L5795;
+	if (asi64(R1) != asi64(R2)) goto L5796;
 	cc_lex_lex();
-L5795:
-L5788:
+L5796:
+L5789:
 	R1 = (u64)&cc_decls_lx;
 	R2 = 21;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 67;
-	if (asi64(R1) == asi64(R2)) goto L5787;
+	if (asi64(R1) == asi64(R2)) goto L5788;
 	R1 = 18;
 	cc_lib_skipsymbol(asi64(R1));
 	return;
@@ -53949,89 +54024,89 @@ static u64 cc_parse_createdotop(i64 opc, u64 p, u64 d) {
 	m = asi64(R1);
 	asi64(R1) = opc;
 	R2 = 50;
-	if (asi64(R1) != asi64(R2)) goto L5798;
+	if (asi64(R1) != asi64(R2)) goto L5799;
 	R1 = (u64)&cc_decls_ttisref;
 	asi64(R2) = m;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
-	if (asu8(R1)) goto L5800;
+	if (asu8(R1)) goto L5801;
 	R1 = tou64("-> needs pointer");
 	cc_support_serror(asu64(R1));
-L5800:
+L5801:
 	R1 = (u64)&cc_decls_tttarget;
 	asi64(R2) = m;
 	asi16(R1) = *toi16p(((i64)R1+(i64)R2*2));
 	R1 = toi64(toi16(R1));
 	m = asi64(R1);
-L5798:
+L5799:
 	R1 = (u64)&cc_decls_ttbasetype;
 	asi64(R2) = m;
 	asi16(R1) = *toi16p(((i64)R1+(i64)R2*2));
 	R1 = toi64(toi16(R1));
 	R2 = 18;
-	if (asi64(R1) == asi64(R2)) goto L5802;
+	if (asi64(R1) == asi64(R2)) goto L5803;
 	R2 = 19;
-	if (asi64(R1) == asi64(R2)) goto L5802;
-	goto L5803;
-L5802:
-	goto L5801;
+	if (asi64(R1) == asi64(R2)) goto L5803;
+	goto L5804;
 L5803:
+	goto L5802;
+L5804:
 	R1 = tou64(". -> not a struct");
 	cc_support_serror(asu64(R1));
-L5801:
+L5802:
 	R1 = (u64)&cc_decls_ttnamedef;
 	asi64(R2) = m;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2*8));
 	prec = asu64(R1);
 	asu64(R1) = d;
 	f = asu64(R1);
-	goto L5805;
-L5804:
+	goto L5806;
+L5805:
 	asu64(R1) = f;
 	R2 = 8;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
 	asu64(R2) = prec;
-	if (asu64(R1) != asu64(R2)) goto L5808;
+	if (asu64(R1) != asu64(R2)) goto L5809;
 	asu64(R1) = f;
 	R2 = 88;
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
 	R1 = toi64(toi32(R1));
 	offset = asi64(R1);
-	goto L5806;
-L5808:
-L5805:
+	goto L5807;
+L5809:
+L5806:
 	asu64(R1) = f;
 	R2 = 40;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
 	R2 = R1;
 	f = asu64(R2);
-	if (asu64(R1)) goto L5804;
-L5806:
+	if (asu64(R1)) goto L5805;
+L5807:
 	asu64(R1) = f;
-	if (asu64(R1)) goto L5810;
+	if (asu64(R1)) goto L5811;
 	asu64(R1) = d;
 	gend = asu64(R1);
-	goto L5812;
-L5811:
-	asu64(R1) = gend;
-	R2 = 48;
-	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
-	gend = asu64(R1);
+	goto L5813;
 L5812:
 	asu64(R1) = gend;
 	R2 = 48;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
-	if (asu64(R1)) goto L5811;
+	gend = asu64(R1);
+L5813:
+	asu64(R1) = gend;
+	R2 = 48;
+	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
+	if (asu64(R1)) goto L5812;
 	asu64(R1) = prec;
 	R2 = 64;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
 	fl = asu64(R1);
-	goto L5815;
-L5814:
+	goto L5816;
+L5815:
 	asu64(R1) = fl;
 	R2 = 8;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
 	asu64(R2) = gend;
-	if (asu64(R1) != asu64(R2)) goto L5818;
+	if (asu64(R1) != asu64(R2)) goto L5819;
 	asu64(R1) = fl;
 	R2 = 0;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
@@ -54040,19 +54115,19 @@ L5814:
 	R2 = 24;
 	asi64(R1) = *toi64p(((i64)R1+(i64)R2));
 	offset = asi64(R1);
-	goto L5816;
-L5818:
+	goto L5817;
+L5819:
 	asu64(R1) = fl;
 	R2 = 16;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
 	fl = asu64(R1);
-L5815:
-	asu64(R1) = fl;
-	if (asu64(R1)) goto L5814;
 L5816:
-L5810:
+	asu64(R1) = fl;
+	if (asu64(R1)) goto L5815;
+L5817:
+L5811:
 	asu64(R1) = f;
-	if (asu64(R1)) goto L5820;
+	if (asu64(R1)) goto L5821;
 	R1 = 1;
 	asi64(R2) = m;
 	asu64(R1) = cc_lib_strmode(asi64(R2), asi64(R1));
@@ -54061,18 +54136,18 @@ L5810:
 	asu64(R2) = *tou64p(((i64)R2+(i64)R3));
 	R3 = tou64("Not a field of struct # #");
 	cc_support_terror_ss(asu64(R3), asu64(R2), asu64(R1));
-L5820:
+L5821:
 	R1 = 3;
 	asi64(R2) = offset;
 	asu64(R1) = cc_lib_createconstunit(asu64(R2), asi64(R1));
 	poffset = asu64(R1);
 	asi64(R1) = opc;
 	R2 = 50;
-	if (asi64(R1) != asi64(R2)) goto L5822;
+	if (asi64(R1) != asi64(R2)) goto L5823;
 	asu64(R1) = p;
 	asu64(R1) = cc_parse_createptrop(asu64(R1));
 	p = asu64(R1);
-L5822:
+L5823:
 	asu64(R1) = p;
 	R2 = 49;
 	asu64(R1) = cc_lib_createunit1(asi64(R2), asu64(R1));
@@ -54094,8 +54169,8 @@ L5822:
 	asu64(R1) = p;
 	cc_parse_fixmemopnd(asu64(R1));
 	asu64(R1) = p;
-	goto L5796;
-L5796:
+	goto L5797;
+L5797:
 	return asu64(R1);
 }
 
@@ -54108,13 +54183,13 @@ static u64 cc_parse_mulunit(u64 p, i64 elemtype) {
 	R2 = R1;
 	elemsize = asi64(R2);
 	R2 = 1;
-	if (asi64(R1) == asi64(R2)) goto L5825;
+	if (asi64(R1) == asi64(R2)) goto L5826;
 	asu64(R1) = p;
 	R2 = 40;
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
 	R1 = toi64(toi32(R1));
 	R2 = 1;
-	if (asi64(R1) != asi64(R2)) goto L5827;
+	if (asi64(R1) != asi64(R2)) goto L5828;
 	asu64(R1) = p;
 	R2 = 0;
 	asi64(R1) = *toi64p(((i64)R1+(i64)R2));
@@ -54123,8 +54198,8 @@ static u64 cc_parse_mulunit(u64 p, i64 elemtype) {
 	asu64(R2) = p;
 	R3 = 0;
 	*toi64p(((i64)R2+(i64)R3)) = asi64(R1);
-	goto L5826;
-L5827:
+	goto L5827;
+L5828:
 	asu64(R1) = p;
 	R2 = 57;
 	asu64(R1) = cc_lib_createunit1(asi64(R2), asu64(R1));
@@ -54137,11 +54212,11 @@ L5827:
 	asu64(R2) = p;
 	R3 = 52;
 	*toi32p(((i64)R2+(i64)R3)) = asi32(R1);
+L5827:
 L5826:
-L5825:
 	asu64(R1) = p;
-	goto L5823;
-L5823:
+	goto L5824;
+L5824:
 	return asu64(R1);
 }
 
@@ -54154,13 +54229,13 @@ static u64 cc_parse_divunit(u64 p, i64 elemtype) {
 	R2 = R1;
 	elemsize = asi64(R2);
 	R2 = 1;
-	if (asi64(R1) == asi64(R2)) goto L5830;
+	if (asi64(R1) == asi64(R2)) goto L5831;
 	asu64(R1) = p;
 	R2 = 40;
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
 	R1 = toi64(toi32(R1));
 	R2 = 1;
-	if (asi64(R1) != asi64(R2)) goto L5832;
+	if (asi64(R1) != asi64(R2)) goto L5833;
 	asu64(R1) = p;
 	R2 = 0;
 	asi64(R1) = *toi64p(((i64)R1+(i64)R2));
@@ -54170,8 +54245,8 @@ static u64 cc_parse_divunit(u64 p, i64 elemtype) {
 	asu64(R2) = p;
 	R3 = 0;
 	*toi64p(((i64)R2+(i64)R3)) = asi64(R1);
-	goto L5831;
-L5832:
+	goto L5832;
+L5833:
 	asu64(R1) = p;
 	R2 = 57;
 	asu64(R1) = cc_lib_createunit1(asi64(R2), asu64(R1));
@@ -54185,11 +54260,11 @@ L5832:
 	asu64(R2) = p;
 	R3 = 52;
 	*toi32p(((i64)R2+(i64)R3)) = asi32(R1);
+L5832:
 L5831:
-L5830:
 	asu64(R1) = p;
-	goto L5828;
-L5828:
+	goto L5829;
+L5829:
 	return asu64(R1);
 }
 
@@ -54219,13 +54294,13 @@ static u64 cc_parse_createassignopref(i64 opc, u64 p, u64 q) {
 	qmode = asi64(R1);
 	asi64(R1) = opc;
 	R2 = 11;
-	if (asi64(R1) == asi64(R2)) goto L5835;
-	R2 = 46;
 	if (asi64(R1) == asi64(R2)) goto L5836;
-	R2 = 47;
+	R2 = 46;
 	if (asi64(R1) == asi64(R2)) goto L5837;
-	goto L5838;
-L5835:
+	R2 = 47;
+	if (asi64(R1) == asi64(R2)) goto L5838;
+	goto L5839;
+L5836:
 	asi64(R1) = pmode;
 	asu64(R2) = q;
 	asu64(R1) = cc_parse_coercemode(asu64(R2), asi64(R1));
@@ -54235,15 +54310,15 @@ L5835:
 	R3 = 11;
 	asu64(R1) = cc_lib_createunit2(asi64(R3), asu64(R2), asu64(R1));
 	r = asu64(R1);
-	goto L5834;
-L5836:
+	goto L5835;
+L5837:
 	R1 = (u64)&cc_decls_ttisref;
 	asi64(R2) = qmode;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
-	if (!asu8(R1)) goto L5840;
+	if (!asu8(R1)) goto L5841;
 	R1 = tou64("ptr+=ptr");
 	cc_support_serror(asu64(R1));
-L5840:
+L5841:
 	R1 = 4;
 	asu64(R2) = q;
 	asu64(R1) = cc_parse_coercemode(asu64(R2), asi64(R1));
@@ -54255,19 +54330,19 @@ L5840:
 	R3 = 61;
 	asu64(R1) = cc_lib_createunit2(asi64(R3), asu64(R2), asu64(R1));
 	r = asu64(R1);
-	goto L5834;
-L5837:
+	goto L5835;
+L5838:
 	R1 = (u64)&cc_decls_ttisref;
 	asi64(R2) = qmode;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
-	if (!asu8(R1)) goto L5842;
+	if (!asu8(R1)) goto L5843;
 	asi64(R1) = qmode;
 	asi64(R2) = pmode;
 	asi64(R1) = cc_parse_comparemode(asi64(R2), asi64(R1));
-	if (asi64(R1)) goto L5844;
+	if (asi64(R1)) goto L5845;
 	R1 = tou64("-= refs don't match");
 	cc_support_serror(asu64(R1));
-L5844:
+L5845:
 	asi64(R1) = elemmode;
 	asu64(R2) = q;
 	asu64(R3) = p;
@@ -54277,8 +54352,8 @@ L5844:
 	r = asu64(R1);
 	R1 = 3;
 	rmode = asi64(R1);
-	goto L5841;
-L5842:
+	goto L5842;
+L5843:
 	asi64(R1) = elemmode;
 	asu64(R2) = q;
 	asu64(R1) = cc_parse_mulunit(asu64(R2), asi64(R1));
@@ -54286,19 +54361,19 @@ L5842:
 	R3 = 62;
 	asu64(R1) = cc_lib_createunit2(asi64(R3), asu64(R2), asu64(R1));
 	r = asu64(R1);
-L5841:
-	goto L5834;
-L5838:
+L5842:
+	goto L5835;
+L5839:
 	R1 = tou64("Not allowed on ptrs");
 	cc_support_serror(asu64(R1));
-L5834:
+L5835:
 	asi64(R1) = rmode;
 	asu64(R2) = r;
 	R3 = 52;
 	*toi32p(((i64)R2+(i64)R3)) = asi32(R1);
 	asu64(R1) = r;
-	goto L5833;
-L5833:
+	goto L5834;
+L5834:
 	return asu64(R1);
 }
 
@@ -54312,7 +54387,7 @@ static void cc_parse_addnewfield(u64 flist, u64 d, i64 offset) {
 	asu8(R1) = *tou8p(R1);
 	R1 = tou64(tou8(R1));
 	R2 = 36;
-	if (asu64(R1) == asu64(R2)) goto L5847;
+	if (asu64(R1) == asu64(R2)) goto L5848;
 	R1 = 32;
 	asu64(R1) = mlib_pcm_allocz(asi64(R1));
 	f = asu64(R1);
@@ -54320,17 +54395,17 @@ static void cc_parse_addnewfield(u64 flist, u64 d, i64 offset) {
 	asu64(R2) = f;
 	R3 = 0;
 	*tou64p(((i64)R2+(i64)R3)) = asu64(R1);
-	goto L5849;
-L5848:
-	asu64(R1) = d;
-	R2 = 48;
-	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
-	d = asu64(R1);
+	goto L5850;
 L5849:
 	asu64(R1) = d;
 	R2 = 48;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
-	if (asu64(R1)) goto L5848;
+	d = asu64(R1);
+L5850:
+	asu64(R1) = d;
+	R2 = 48;
+	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
+	if (asu64(R1)) goto L5849;
 	asu64(R1) = d;
 	asu64(R2) = f;
 	R3 = 8;
@@ -54347,8 +54422,8 @@ L5849:
 	asu64(R1) = f;
 	asu64(R2) = flist;
 	*tou64p(R2) = asu64(R1);
-	goto L5846;
-L5847:
+	goto L5847;
+L5848:
 	R1 = (u64)&cc_decls_ttnamedef;
 	asu64(R2) = d;
 	R3 = 102;
@@ -54358,8 +54433,8 @@ L5847:
 	R2 = 16;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
 	e = asu64(R1);
-	goto L5852;
-L5851:
+	goto L5853;
+L5852:
 	asi64(R1) = offset;
 	asu64(R2) = e;
 	R3 = 88;
@@ -54373,10 +54448,10 @@ L5851:
 	R2 = 32;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
 	e = asu64(R1);
-L5852:
+L5853:
 	asu64(R1) = e;
-	if (asu64(R1)) goto L5851;
-L5846:
+	if (asu64(R1)) goto L5852;
+L5847:
 	return;
 }
 
@@ -54384,10 +54459,10 @@ static void cc_parse_pushloop(i64 looptype) {
     u64 R1, R2, R3; 
 	asi64(R1) = cc_parse_loopindex;
 	R2 = 64;
-	if (asi64(R1) < asi64(R2)) goto L5856;
+	if (asi64(R1) < asi64(R2)) goto L5857;
 	R1 = tou64("Too many nested loop or switch");
 	cc_support_serror(asu64(R1));
-L5856:
+L5857:
 	R1 = (u64)&cc_parse_loopindex;
 	(*toi64p(R1)) += 1;
 	asi64(R1) = looptype;
@@ -54404,14 +54479,14 @@ L5856:
 static void cc_parse_poploop() {
     u64 R1; 
 	asi64(R1) = cc_parse_loopindex;
-	if (!asi64(R1)) goto L5859;
+	if (!asi64(R1)) goto L5860;
 	R1 = (u64)&cc_parse_loopindex;
 	(*toi64p(R1)) -=1;
-	goto L5858;
-L5859:
+	goto L5859;
+L5860:
 	R1 = tou64("poploop?");
 	cc_support_serror(asu64(R1));
-L5858:
+L5859:
 	return;
 }
 
@@ -54421,26 +54496,26 @@ static void cc_parse_addcasevalue(i64 value) {
 	i64 index;
 	asi64(R1) = cc_parse_loopindex;
 	index = asi64(R1);
-	goto L5862;
-L5861:
+	goto L5863;
+L5862:
 	R1 = (u64)&index;
 	(*toi64p(R1)) -=1;
-L5862:
+L5863:
 	asi64(R1) = index;
-	if (!asi64(R1)) goto L5864;
+	if (!asi64(R1)) goto L5865;
 	R1 = (u64)&cc_parse_looptypestack;
 	asi64(R2) = index;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2-1));
 	R1 = toi64(tou8(R1));
 	R2 = 83;
-	if (asi64(R1) != asi64(R2)) goto L5861;
-L5864:
+	if (asi64(R1) != asi64(R2)) goto L5862;
+L5865:
 	asi64(R1) = index;
 	R2 = 0;
-	if (asi64(R1) != asi64(R2)) goto L5866;
+	if (asi64(R1) != asi64(R2)) goto L5867;
 	R1 = tou64("case not inside switch stmt");
 	cc_support_serror(asu64(R1));
-L5866:
+L5867:
 	R1 = 16;
 	asu64(R1) = mlib_pcm_alloc(asi64(R1));
 	p = asu64(R1);
@@ -54465,30 +54540,30 @@ static i64 cc_parse_roundoffset(i64 offset, i64 alignment) {
     u64 R1, R2; 
 	i64 mask;
 	asi64(R1) = cc_decls_structpadding;
-	if (!asi64(R1)) goto L5869;
+	if (!asi64(R1)) goto L5870;
 	asi64(R1) = alignment;
 	R2 = 1;
-	if (asi64(R1) != asi64(R2)) goto L5871;
+	if (asi64(R1) != asi64(R2)) goto L5872;
 	asi64(R1) = offset;
-	goto L5867;
-L5871:
+	goto L5868;
+L5872:
 	asi64(R1) = alignment;
 	R2 = 1;
 	asi64(R1) -= asi64(R2);
 	mask = asi64(R1);
-	goto L5873;
-L5872:
+	goto L5874;
+L5873:
 	R1 = (u64)&offset;
 	(*toi64p(R1)) += 1;
-L5873:
+L5874:
 	asi64(R1) = offset;
 	asi64(R2) = mask;
 	asi64(R1) &= asi64(R2);
-	if (asi64(R1)) goto L5872;
-L5869:
+	if (asi64(R1)) goto L5873;
+L5870:
 	asi64(R1) = offset;
-	goto L5867;
-L5867:
+	goto L5868;
+L5868:
 	return asi64(R1);
 }
 
@@ -54496,9 +54571,9 @@ static void cc_parse_fixmemopnd(u64 p) {
     u64 R1, R2, R3; 
 	i64 t;
 	asu8(R1) = cc_parse_ingeneric;
-	if (!asu8(R1)) goto L5877;
-	goto L5875;
-L5877:
+	if (!asu8(R1)) goto L5878;
+	goto L5876;
+L5878:
 	R1 = (u64)&cc_decls_ttbasetype;
 	asu64(R2) = p;
 	R3 = 52;
@@ -54509,17 +54584,17 @@ L5877:
 	R2 = R1;
 	t = asi64(R2);
 	R2 = 1;
-	if (asi64(R1) == asi64(R2)) goto L5879;
+	if (asi64(R1) == asi64(R2)) goto L5880;
 	R2 = 2;
-	if (asi64(R1) == asi64(R2)) goto L5879;
+	if (asi64(R1) == asi64(R2)) goto L5880;
 	R2 = 6;
-	if (asi64(R1) == asi64(R2)) goto L5879;
+	if (asi64(R1) == asi64(R2)) goto L5880;
 	R2 = 7;
-	if (asi64(R1) == asi64(R2)) goto L5879;
+	if (asi64(R1) == asi64(R2)) goto L5880;
 	R2 = 5;
-	if (asi64(R1) == asi64(R2)) goto L5879;
-	goto L5880;
-L5879:
+	if (asi64(R1) == asi64(R2)) goto L5880;
+	goto L5881;
+L5880:
 	asi64(R1) = t;
 	asu64(R2) = p;
 	R3 = 56;
@@ -54528,10 +54603,10 @@ L5879:
 	asu64(R2) = p;
 	R3 = 52;
 	*toi32p(((i64)R2+(i64)R3)) = asi32(R1);
-	goto L5878;
-L5880:
-L5878:
-L5875:
+	goto L5879;
+L5881:
+L5879:
+L5876:
 	return;
 }
 
@@ -54546,21 +54621,21 @@ static u64 cc_parse_docast(u64 p, i64 t, i64 hard, i64 inplace) {
 	R1 = toi64(toi32(R1));
 	s = asi64(R1);
 // cc_parse.docast.retry:
-L5882:
+L5883:
 	asi64(R1) = s;
 	asi64(R2) = t;
-	if (asi64(R1) != asi64(R2)) goto L5884;
+	if (asi64(R1) != asi64(R2)) goto L5885;
 	asu64(R1) = p;
-	goto L5881;
-L5884:
+	goto L5882;
+L5885:
 	R1 = 0;
 	opc = asi64(R1);
 	asi64(R1) = s;
 	R2 = 16;
-	if (asi64(R1) >= asi64(R2)) goto L5886;
+	if (asi64(R1) >= asi64(R2)) goto L5887;
 	asi64(R1) = t;
 	R2 = 16;
-	if (asi64(R1) >= asi64(R2)) goto L5886;
+	if (asi64(R1) >= asi64(R2)) goto L5887;
 	R1 = (u64)&cc_tables_conversionops;
 	asi64(R2) = s;
 	R1 += (i64)R2*16;
@@ -54568,81 +54643,81 @@ L5884:
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	opc = asi64(R1);
-	goto L5885;
-L5886:
+	goto L5886;
+L5887:
 	R1 = (u64)&cc_decls_ttisref;
 	asi64(R2) = s;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
-	if (!asu8(R1)) goto L5887;
+	if (!asu8(R1)) goto L5888;
 	R1 = (u64)&cc_decls_ttisref;
 	asi64(R2) = t;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
-	if (!asu8(R1)) goto L5887;
+	if (!asu8(R1)) goto L5888;
 	asi64(R1) = hard;
 	asi64(R2) = t;
 	asi64(R3) = s;
 	asi64(R1) = cc_parse_checkpointertypes(asi64(R3), asi64(R2), asi64(R1));
-	if (!asi64(R1)) goto L5889;
+	if (!asi64(R1)) goto L5890;
 	asi64(R1) = t;
 	asu64(R2) = p;
 	R3 = 52;
 	*toi32p(((i64)R2+(i64)R3)) = asi32(R1);
 	asu64(R1) = p;
-	goto L5881;
-L5889:
-	goto L5885;
-L5887:
+	goto L5882;
+L5890:
+	goto L5886;
+L5888:
 	R1 = (u64)&cc_decls_ttconst;
 	asi64(R2) = s;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
-	if (!asu8(R1)) goto L5890;
+	if (!asu8(R1)) goto L5891;
 	R1 = (u64)&cc_decls_ttconsttype;
 	asi64(R2) = s;
 	asi16(R1) = *toi16p(((i64)R1+(i64)R2*2));
 	R1 = toi64(toi16(R1));
 	s = asi64(R1);
-	goto L5882;
-	goto L5885;
-L5890:
+	goto L5883;
+	goto L5886;
+L5891:
 	R1 = (u64)&cc_decls_ttconst;
 	asi64(R2) = t;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
-	if (!asu8(R1)) goto L5891;
+	if (!asu8(R1)) goto L5892;
 	R1 = (u64)&cc_decls_ttconsttype;
 	asi64(R2) = t;
 	asi16(R1) = *toi16p(((i64)R1+(i64)R2*2));
 	R1 = toi64(toi16(R1));
 	t = asi64(R1);
-	goto L5882;
-	goto L5885;
-L5891:
+	goto L5883;
+	goto L5886;
+L5892:
 	R1 = (u64)&cc_decls_ttisref;
 	asi64(R2) = t;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
-	if (!asu8(R1)) goto L5892;
+	if (!asu8(R1)) goto L5893;
 	asi64(R1) = s;
 	asi64(R1) = cc_lib_isintcc(asi64(R1));
-	if (!asi64(R1)) goto L5892;
+	if (!asi64(R1)) goto L5893;
 	asu64(R1) = p;
 	R2 = 40;
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
 	R1 = toi64(toi32(R1));
 	R2 = 1;
-	if (asi64(R1) != asi64(R2)) goto L5892;
+	if (asi64(R1) != asi64(R2)) goto L5893;
 	asu64(R1) = p;
 	R2 = 0;
 	asi64(R1) = *toi64p(((i64)R1+(i64)R2));
 	R2 = 0;
-	if (asi64(R1) != asi64(R2)) goto L5892;
+	if (asi64(R1) != asi64(R2)) goto L5893;
 	R1 = 1;
 	opc = asi64(R1);
-L5892:
-L5885:
+L5893:
+L5886:
 	asi64(R1) = opc;
 	R2 = 0;
-	if (asi64(R1) != asi64(R2)) goto L5894;
+	if (asi64(R1) != asi64(R2)) goto L5895;
 	asi64(R1) = hard;
-	if (asi64(R1)) goto L5896;
+	if (asi64(R1)) goto L5897;
 	msysc_m$print_startcon();
 	R1 = 1;
 	asi64(R2) = s;
@@ -54668,40 +54743,40 @@ L5885:
 	asu64(R2) = cc_lib_typename(asi64(R2));
 	R3 = tou64("Can't do conversion # => #");
 	cc_support_terror_ss(asu64(R3), asu64(R2), asu64(R1));
-L5896:
+L5897:
 	R1 = 2;
 	opc = asi64(R1);
-L5894:
+L5895:
 	asu64(R1) = p;
 	R2 = 40;
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
 	R1 = toi64(toi32(R1));
 	R2 = 1;
-	if (asi64(R1) == asi64(R2)) goto L5898;
-	R2 = 5;
 	if (asi64(R1) == asi64(R2)) goto L5899;
-	R2 = 39;
+	R2 = 5;
 	if (asi64(R1) == asi64(R2)) goto L5900;
-	goto L5901;
-L5898:
+	R2 = 39;
+	if (asi64(R1) == asi64(R2)) goto L5901;
+	goto L5902;
+L5899:
 	asi64(R1) = opc;
 	asi64(R2) = t;
 	asu64(R3) = p;
 	asi64(R1) = cc_parse_eval_convert(asu64(R3), asi64(R2), asi64(R1));
-	if (!asi64(R1)) goto L5903;
+	if (!asi64(R1)) goto L5904;
 	asu64(R1) = p;
-	goto L5881;
-L5903:
-	goto L5897;
-L5899:
+	goto L5882;
+L5904:
+	goto L5898;
+L5900:
 	asi64(R1) = t;
 	asu64(R2) = p;
 	R3 = 52;
 	*toi32p(((i64)R2+(i64)R3)) = asi32(R1);
 	asu64(R1) = p;
-	goto L5881;
-	goto L5897;
-L5900:
+	goto L5882;
+	goto L5898;
+L5901:
 	asu64(R1) = p;
 	R2 = 16;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
@@ -54709,7 +54784,7 @@ L5900:
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
 	R1 = toi64(toi32(R1));
 	R2 = 1;
-	if (asi64(R1) != asi64(R2)) goto L5905;
+	if (asi64(R1) != asi64(R2)) goto L5906;
 	asu64(R1) = p;
 	R2 = 24;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
@@ -54717,7 +54792,7 @@ L5900:
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
 	R1 = toi64(toi32(R1));
 	R2 = 1;
-	if (asi64(R1) != asi64(R2)) goto L5905;
+	if (asi64(R1) != asi64(R2)) goto L5906;
 	asu64(R1) = p;
 	R2 = 16;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
@@ -54741,13 +54816,13 @@ L5900:
 	R3 = 40;
 	*toi32p(((i64)R2+(i64)R3)) = asi32(R1);
 	asu64(R1) = p;
-	goto L5881;
-L5905:
-	goto L5897;
-L5901:
-L5897:
+	goto L5882;
+L5906:
+	goto L5898;
+L5902:
+L5898:
 	asi64(R1) = inplace;
-	if (!asi64(R1)) goto L5907;
+	if (!asi64(R1)) goto L5908;
 	R1 = 56;
 	asu64(R2) = p;
 	cc_parse_insertunit(asu64(R2), asi64(R1));
@@ -54765,9 +54840,9 @@ L5897:
 	R3 = 48;
 	*toi32p(((i64)R2+(i64)R3)) = asi32(R1);
 	R1 = 0;
-	goto L5881;
-	goto L5906;
-L5907:
+	goto L5882;
+	goto L5907;
+L5908:
 	asu64(R1) = p;
 	R2 = 56;
 	asu64(R1) = cc_lib_createunit1(asi64(R2), asu64(R1));
@@ -54785,10 +54860,10 @@ L5907:
 	asu64(R2) = q;
 	R3 = 52;
 	*toi32p(((i64)R2+(i64)R3)) = asi32(R1);
-L5906:
+L5907:
 	asu64(R1) = q;
-	goto L5881;
-L5881:
+	goto L5882;
+L5882:
 	return asu64(R1);
 }
 
@@ -54802,18 +54877,18 @@ static u64 cc_parse_coercemode(u64 p, i64 t) {
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
 	R1 = toi64(toi32(R1));
 	asi64(R2) = t;
-	if (asi64(R1) != asi64(R2)) goto L5910;
+	if (asi64(R1) != asi64(R2)) goto L5911;
 	asu64(R1) = p;
-	goto L5908;
-L5910:
+	goto L5909;
+L5911:
 	R1 = 1;
 	R2 = 0;
 	asi64(R3) = t;
 	asu64(R4) = p;
 	asu64(R1) = cc_parse_docast(asu64(R4), asi64(R3), asi64(R2), asi64(R1));
 	asu64(R1) = p;
-	goto L5908;
-L5908:
+	goto L5909;
+L5909:
 	return asu64(R1);
 }
 
@@ -54827,15 +54902,15 @@ static void cc_parse_coercemode_inplace(u64 p, i64 t) {
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
 	R1 = toi64(toi32(R1));
 	asi64(R2) = t;
-	if (asi64(R1) != asi64(R2)) goto L5913;
-	goto L5911;
-L5913:
+	if (asi64(R1) != asi64(R2)) goto L5914;
+	goto L5912;
+L5914:
 	R1 = 1;
 	R2 = 0;
 	asi64(R3) = t;
 	asu64(R4) = p;
 	asu64(R1) = cc_parse_docast(asu64(R4), asi64(R3), asi64(R2), asi64(R1));
-L5911:
+L5912:
 	return;
 }
 
@@ -54845,15 +54920,15 @@ static u64 cc_parse_createsizeofop(u64 p, i64 islength) {
 	i64 t;
 	i64 size;
 	asi64(R1) = islength;
-	if (!asi64(R1)) goto L5916;
+	if (!asi64(R1)) goto L5917;
 	asu64(R1) = p;
 	R2 = 40;
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
 	R1 = toi64(toi32(R1));
 	R2 = 53;
-	if (asi64(R1) == asi64(R2)) goto L5916;
+	if (asi64(R1) == asi64(R2)) goto L5917;
 	R2 = 55;
-	if (asi64(R1) == asi64(R2)) goto L5916;
+	if (asi64(R1) == asi64(R2)) goto L5917;
 	R1 = tou64("*");
 	R2 = 0;
 	asu64(R3) = p;
@@ -54861,7 +54936,7 @@ static u64 cc_parse_createsizeofop(u64 p, i64 islength) {
 	cc_show_printunit(asu64(R4), asu64(R3), asi64(R2), asu64(R1));
 	R1 = tou64("Not array");
 	cc_support_serror(asu64(R1));
-L5916:
+L5917:
 	asu64(R1) = p;
 	asi64(R1) = cc_parse_getmemmode(asu64(R1));
 	t = asi64(R1);
@@ -54870,23 +54945,23 @@ L5916:
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
 	R1 = toi64(toi32(R1));
 	R2 = 3;
-	if (asi64(R1) == asi64(R2)) goto L5918;
-	R2 = 1;
 	if (asi64(R1) == asi64(R2)) goto L5919;
-	R2 = 52;
+	R2 = 1;
 	if (asi64(R1) == asi64(R2)) goto L5920;
-	R2 = 53;
+	R2 = 52;
 	if (asi64(R1) == asi64(R2)) goto L5921;
-	R2 = 55;
+	R2 = 53;
 	if (asi64(R1) == asi64(R2)) goto L5922;
-	R2 = 4;
+	R2 = 55;
 	if (asi64(R1) == asi64(R2)) goto L5923;
-	goto L5924;
-L5918:
+	R2 = 4;
+	if (asi64(R1) == asi64(R2)) goto L5924;
+	goto L5925;
+L5919:
 	asu64(R1) = p;
 	R2 = 48;
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
-	if (!asi32(R1)) goto L5926;
+	if (!asi32(R1)) goto L5927;
 	R1 = (u64)&cc_decls_ttsize;
 	asu64(R2) = p;
 	R3 = 0;
@@ -54902,8 +54977,8 @@ L5918:
    if (asi64(R2) == 0) {puts((u64)"Divide by zero"); exit(1);}
 	asi64(R1) /= asi64(R2);
 	size = asi64(R1);
-	goto L5925;
-L5926:
+	goto L5926;
+L5927:
 	R1 = (u64)&cc_decls_ttsize;
 	asu64(R2) = p;
 	R3 = 0;
@@ -54913,23 +54988,23 @@ L5926:
 	R2 = toi64(tou16(R2));
 	asi64(R1) = *toi64p(((i64)R1+(i64)R2*8));
 	size = asi64(R1);
-L5925:
-	goto L5917;
-L5919:
+L5926:
+	goto L5918;
+L5920:
 	asi64(R1) = t;
 	asi64(R2) = cc_decls_trefchar;
-	if (asi64(R1) == asi64(R2)) goto L5928;
-	asi64(R2) = cc_decls_trefwchar;
 	if (asi64(R1) == asi64(R2)) goto L5929;
-	goto L5930;
-L5928:
+	asi64(R2) = cc_decls_trefwchar;
+	if (asi64(R1) == asi64(R2)) goto L5930;
+	goto L5931;
+L5929:
 	asu64(R1) = p;
 	R2 = 48;
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
 	R1 = toi64(toi32(R1));
 	size = asi64(R1);
-	goto L5927;
-L5929:
+	goto L5928;
+L5930:
 	asu64(R1) = p;
 	R2 = 48;
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
@@ -54937,23 +55012,23 @@ L5929:
 	R2 = 2;
 	asi64(R1) *= asi64(R2);
 	size = asi64(R1);
-	goto L5927;
-L5930:
+	goto L5928;
+L5931:
 	R1 = (u64)&cc_decls_ttsize;
 	asi64(R2) = t;
 	asi64(R1) = *toi64p(((i64)R1+(i64)R2*8));
 	size = asi64(R1);
-L5927:
-	goto L5917;
-L5920:
+L5928:
+	goto L5918;
+L5921:
 	R1 = (u64)&cc_decls_ttisref;
 	asi64(R2) = t;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
-	if (!asu8(R1)) goto L5932;
+	if (!asu8(R1)) goto L5933;
 	asu64(R1) = p;
 	R2 = 48;
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
-	if (!asi32(R1)) goto L5932;
+	if (!asi32(R1)) goto L5933;
 	R1 = (u64)&cc_decls_ttsize;
 	R2 = (u64)&cc_decls_tttarget;
 	asi64(R3) = t;
@@ -54966,28 +55041,28 @@ L5920:
 	R2 = toi64(toi32(R2));
 	asi64(R1) *= asi64(R2);
 	size = asi64(R1);
-	goto L5931;
-L5932:
+	goto L5932;
+L5933:
 	R1 = (u64)&cc_decls_ttsize;
 	asi64(R2) = t;
 	asi64(R1) = *toi64p(((i64)R1+(i64)R2*8));
 	size = asi64(R1);
-L5931:
-	goto L5917;
-L5921:
+L5932:
+	goto L5918;
+L5922:
 	asu64(R1) = p;
 	R2 = 48;
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
-	if (!asi32(R1)) goto L5934;
+	if (!asi32(R1)) goto L5935;
 	asi64(R1) = islength;
-	if (!asi64(R1)) goto L5936;
+	if (!asi64(R1)) goto L5937;
 	asu64(R1) = p;
 	R2 = 48;
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
 	R1 = toi64(toi32(R1));
 	size = asi64(R1);
-	goto L5935;
-L5936:
+	goto L5936;
+L5937:
 	R1 = (u64)&cc_decls_ttsize;
 	R2 = (u64)&cc_decls_tttarget;
 	asi64(R3) = t;
@@ -55000,13 +55075,13 @@ L5936:
 	R2 = toi64(toi32(R2));
 	asi64(R1) *= asi64(R2);
 	size = asi64(R1);
+L5936:
+	goto L5934;
 L5935:
-	goto L5933;
+	goto L5938;
 L5934:
-	goto L5937;
-L5933:
-	goto L5917;
-L5922:
+	goto L5918;
+L5923:
 	asu64(R1) = p;
 	R2 = 16;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
@@ -55014,15 +55089,15 @@ L5922:
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
 	R1 = toi64(toi32(R1));
 	R2 = 3;
-	if (asi64(R1) != asi64(R2)) goto L5939;
+	if (asi64(R1) != asi64(R2)) goto L5940;
 	asu64(R1) = p;
 	R2 = 16;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
 	R2 = 48;
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
-	if (!asi32(R1)) goto L5939;
+	if (!asi32(R1)) goto L5940;
 	asi64(R1) = islength;
-	if (!asi64(R1)) goto L5941;
+	if (!asi64(R1)) goto L5942;
 	asu64(R1) = p;
 	R2 = 16;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
@@ -55030,8 +55105,8 @@ L5922:
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
 	R1 = toi64(toi32(R1));
 	size = asi64(R1);
-	goto L5940;
-L5941:
+	goto L5941;
+L5942:
 	R1 = (u64)&cc_decls_ttsize;
 	asu64(R2) = p;
 	R3 = 16;
@@ -55043,36 +55118,36 @@ L5941:
 	R2 = toi64(tou16(R2));
 	asi64(R1) = *toi64p(((i64)R1+(i64)R2*8));
 	size = asi64(R1);
+L5941:
+	goto L5939;
 L5940:
-	goto L5938;
-L5939:
 	R1 = 8;
 	size = asi64(R1);
-L5938:
-	goto L5917;
-L5923:
+L5939:
+	goto L5918;
+L5924:
 	R1 = 0;
 	asu64(R2) = p;
 	R3 = 16;
 	asu64(R2) = *tou64p(((i64)R2+(i64)R3));
 	asu64(R1) = cc_parse_createsizeofop(asu64(R2), asi64(R1));
-	goto L5914;
-	goto L5917;
-L5924:
+	goto L5915;
+	goto L5918;
+L5925:
 // cc_parse.createsizeofop.cad1:
-L5937:
+L5938:
 	R1 = (u64)&cc_decls_ttsize;
 	asi64(R2) = t;
 	asi64(R1) = *toi64p(((i64)R1+(i64)R2*8));
 	size = asi64(R1);
-L5917:
+L5918:
 	R1 = 9;
 	asi64(R2) = size;
 	asu64(R1) = cc_lib_createconstunit(asu64(R2), asi64(R1));
 	q = asu64(R1);
 	asu64(R1) = q;
-	goto L5914;
-L5914:
+	goto L5915;
+L5915:
 	return asu64(R1);
 }
 
@@ -55114,34 +55189,34 @@ static u64 cc_parse_readgeneric() {
 	count = asi64(R1);
 	R1 = 8;
 	cc_lib_checksymbol(asi64(R1));
-L5943:
+L5944:
 	cc_lex_lex();
 	R1 = (u64)&cc_decls_lx;
 	R2 = 21;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 75;
-	if (asi64(R1) != asi64(R2)) goto L5947;
+	if (asi64(R1) != asi64(R2)) goto L5948;
 	asi64(R1) = def;
-	if (!asi64(R1)) goto L5949;
+	if (!asi64(R1)) goto L5950;
 	R1 = tou64("generic/default twice");
 	cc_support_serror(asu64(R1));
-L5949:
+L5950:
 	R1 = 1;
 	def = asi64(R1);
 	asi64(R1) = count;
 	R2 = 0;
-	if (asi64(R1) != asi64(R2)) goto L5951;
+	if (asi64(R1) != asi64(R2)) goto L5952;
 	R1 = -1;
 	t = asi64(R1);
-	goto L5950;
-L5951:
+	goto L5951;
+L5952:
 	R1 = -2;
 	t = asi64(R1);
-L5950:
+L5951:
 	cc_lex_lex();
-	goto L5946;
-L5947:
+	goto L5947;
+L5948:
 	R1 = 0;
 	R2 = 0;
 	R3 = (u64)&pm;
@@ -55149,7 +55224,7 @@ L5947:
 	R5 = (u64)&d;
 	asi64(R1) = cc_parse_readcasttype(asu64(R5), asi64(R4), asu64(R3), asi64(R2), asu64(R1));
 	t = asi64(R1);
-L5946:
+L5947:
 	R1 = 10;
 	cc_lib_checksymbol(asi64(R1));
 	cc_lex_lex();
@@ -55157,39 +55232,39 @@ L5946:
 	p = asu64(R1);
 	asi64(R1) = t;
 	R2 = -1;
-	if (asi64(R1) == asi64(R2)) goto L5954;
+	if (asi64(R1) == asi64(R2)) goto L5955;
 	asi64(R1) = t;
 	asi64(R2) = m;
-	if (asi64(R1) != asi64(R2)) goto L5953;
-L5954:
+	if (asi64(R1) != asi64(R2)) goto L5954;
+L5955:
 	asu64(R1) = p;
 	pmatch = asu64(R1);
 	R1 = (u64)&count;
 	(*toi64p(R1)) += 1;
-L5953:
+L5954:
 	R1 = (u64)&cc_decls_lx;
 	R2 = 21;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 8;
-	if (asi64(R1) == asi64(R2)) goto L5943;
+	if (asi64(R1) == asi64(R2)) goto L5944;
 	R1 = 14;
 	cc_lib_checksymbol(asi64(R1));
 	cc_lex_lex();
 	asu64(R1) = pmatch;
-	if (asu64(R1)) goto L5956;
+	if (asu64(R1)) goto L5957;
 	R1 = tou64("Generic: no type match");
 	cc_support_serror(asu64(R1));
-L5956:
+L5957:
 	asi64(R1) = count;
 	R2 = 1;
-	if (asi64(R1) <= asi64(R2)) goto L5958;
+	if (asi64(R1) <= asi64(R2)) goto L5959;
 	R1 = tou64("Generic: multiple types match");
 	cc_support_serror(asu64(R1));
-L5958:
+L5959:
 	asu64(R1) = pmatch;
-	goto L5942;
-L5942:
+	goto L5943;
+L5943:
 	return asu64(R1);
 }
 
@@ -55198,20 +55273,20 @@ static i64 cc_parse_getmemmode(u64 p) {
 	asu64(R1) = p;
 	R2 = 56;
 	asi16(R1) = *toi16p(((i64)R1+(i64)R2));
-	if (!asi16(R1)) goto L5961;
+	if (!asi16(R1)) goto L5962;
 	asu64(R1) = p;
 	R2 = 56;
 	asi16(R1) = *toi16p(((i64)R1+(i64)R2));
 	R1 = toi64(toi16(R1));
-	goto L5960;
-L5961:
+	goto L5961;
+L5962:
 	asu64(R1) = p;
 	R2 = 52;
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
 	R1 = toi64(toi32(R1));
+L5961:
+	goto L5960;
 L5960:
-	goto L5959;
-L5959:
 	return asi64(R1);
 }
 
@@ -55219,21 +55294,21 @@ static i64 cc_parse_getpromotedtype(i64 t) {
     u64 R1, R2; 
 	asi64(R1) = t;
 	R2 = 0;
-	if (asi64(R1) != asi64(R2)) goto L5964;
+	if (asi64(R1) != asi64(R2)) goto L5965;
 	R1 = 0;
-	goto L5962;
-L5964:
+	goto L5963;
+L5965:
 	R1 = (u64)&cc_decls_ttsize;
 	asi64(R2) = t;
 	asi64(R1) = *toi64p(((i64)R1+(i64)R2*8));
 	R2 = 4;
-	if (asi64(R1) >= asi64(R2)) goto L5966;
+	if (asi64(R1) >= asi64(R2)) goto L5967;
 	R1 = 3;
-	goto L5962;
-L5966:
+	goto L5963;
+L5967:
 	asi64(R1) = t;
-	goto L5962;
-L5962:
+	goto L5963;
+L5963:
 	return asi64(R1);
 }
 
@@ -55251,7 +55326,7 @@ static i64 cc_parse_readdllexport() {
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 67;
-	if (asi64(R1) != asi64(R2)) goto L5969;
+	if (asi64(R1) != asi64(R2)) goto L5970;
 	R1 = tou64("dllexport");
 	R2 = (u64)&cc_decls_lx;
 	R3 = 0;
@@ -55259,17 +55334,17 @@ static i64 cc_parse_readdllexport() {
 	R3 = 0;
 	asu64(R2) = *tou64p(((i64)R2+(i64)R3));
 	asi64(R1) = mlib_eqstring(asu64(R2), asu64(R1));
-	if (!asi64(R1)) goto L5969;
+	if (!asi64(R1)) goto L5970;
 	R1 = 1;
 	exported = asi64(R1);
-L5969:
+L5970:
 	cc_lex_lex();
 	R1 = 14;
 	cc_lib_checksymbol(asi64(R1));
 	cc_lex_lex();
 	asi64(R1) = exported;
-	goto L5967;
-L5967:
+	goto L5968;
+L5968:
 	return asi64(R1);
 }
 
@@ -55281,7 +55356,7 @@ static void cc_genpcl_codegen_pcl() {
 	asu8(R1) = cc_cli_fverbose;
 	R1 = toi64(tou8(R1));
 	R2 = 3;
-	if (asi64(R1) != asi64(R2)) goto L5972;
+	if (asi64(R1) != asi64(R2)) goto L5973;
 	msysc_m$print_startcon();
 	R1 = tou64("GenPCL:");
 	msysc_m$print_str_nf(asu64(R1));
@@ -55289,7 +55364,7 @@ static void cc_genpcl_codegen_pcl() {
 	msysc_m$print_str_nf(asu64(R1));
 	msysc_m$print_newline();
 	msysc_m$print_end();
-L5972:
+L5973:
 	asi64(R1) = cc_decls_nunits;
 	R2 = 0;
 	asu64(R1) = pc_api_pcl_start(asu64(R2), asi64(R1));
@@ -55300,83 +55375,83 @@ L5972:
 	R2 = 16;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
 	d = asu64(R1);
-	goto L5974;
-L5973:
+	goto L5975;
+L5974:
 	asu64(R1) = d;
 	R2 = 109;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 7;
-	if (asi64(R1) == asi64(R2)) goto L5977;
-	R2 = 6;
 	if (asi64(R1) == asi64(R2)) goto L5978;
-	goto L5979;
-L5977:
+	R2 = 6;
+	if (asi64(R1) == asi64(R2)) goto L5979;
+	goto L5980;
+L5978:
 	asu64(R1) = d;
 	cc_genpcl_dostaticvar(asu64(R1));
-	goto L5976;
-L5978:
+	goto L5977;
+L5979:
 	asu64(R1) = d;
 	R2 = 110;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 4;
-	if (asi64(R1) == asi64(R2)) goto L5981;
-	R2 = 2;
 	if (asi64(R1) == asi64(R2)) goto L5982;
-	goto L5983;
-L5981:
-	asu64(R1) = d;
-	R2 = 72;
-	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
-	R2 = 0;
-	if (asu64(R1) != asu64(R2)) goto L5985;
-	R1 = 3;
-	asu64(R2) = d;
-	R3 = 110;
-	*tou8p(((i64)R2+(i64)R3)) = asu8(R1);
-L5985:
-	goto L5980;
+	R2 = 2;
+	if (asi64(R1) == asi64(R2)) goto L5983;
+	goto L5984;
 L5982:
 	asu64(R1) = d;
 	R2 = 72;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
 	R2 = 0;
-	if (asu64(R1) != asu64(R2)) goto L5987;
+	if (asu64(R1) != asu64(R2)) goto L5986;
+	R1 = 3;
+	asu64(R2) = d;
+	R3 = 110;
+	*tou8p(((i64)R2+(i64)R3)) = asu8(R1);
+L5986:
+	goto L5981;
+L5983:
+	asu64(R1) = d;
+	R2 = 72;
+	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
+	R2 = 0;
+	if (asu64(R1) != asu64(R2)) goto L5988;
 	R1 = 0;
 	asu64(R2) = d;
 	R3 = 0;
 	asu64(R2) = *tou64p(((i64)R2+(i64)R3));
 	R3 = tou64("Static fn not defined: #");
 	cc_support_gerror_s(asu64(R3), asu64(R2), asu64(R1));
-L5987:
-	goto L5980;
-L5983:
-L5980:
+L5988:
+	goto L5981;
+L5984:
+L5981:
 	asu64(R1) = d;
 	R2 = 16;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
 	e = asu64(R1);
-	goto L5989;
-L5988:
+	goto L5990;
+L5989:
 	asu64(R1) = e;
 	R2 = 109;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 7;
-	if (asi64(R1) == asi64(R2)) goto L5992;
-	R2 = 8;
 	if (asi64(R1) == asi64(R2)) goto L5993;
-	goto L5994;
-L5992:
+	R2 = 8;
+	if (asi64(R1) == asi64(R2)) goto L5994;
+	goto L5995;
+L5993:
 	asu64(R1) = e;
 	cc_genpcl_dostaticvar(asu64(R1));
-	goto L5991;
-L5993:
+	goto L5992;
+L5994:
 	asu64(R1) = e;
 	R2 = 72;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
-	if (!asu64(R1)) goto L5996;
+	if (!asu64(R1)) goto L5997;
 	asu64(R1) = e;
 	R2 = 72;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
@@ -55384,7 +55459,7 @@ L5993:
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
 	R1 = toi64(toi32(R1));
 	R2 = 28;
-	if (asi64(R1) == asi64(R2)) goto L5999;
+	if (asi64(R1) == asi64(R2)) goto L6000;
 	R1 = (u64)&cc_decls_ttbasetype;
 	asu64(R2) = e;
 	R3 = 102;
@@ -55393,7 +55468,7 @@ L5993:
 	asi16(R1) = *toi16p(((i64)R1+(i64)R2*2));
 	R1 = toi64(toi16(R1));
 	R2 = 17;
-	if (asi64(R1) != asi64(R2)) goto L5998;
+	if (asi64(R1) != asi64(R2)) goto L5999;
 	asu64(R1) = e;
 	R2 = 72;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
@@ -55401,65 +55476,65 @@ L5993:
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
 	R1 = toi64(toi32(R1));
 	R2 = 1;
-	if (asi64(R1) != asi64(R2)) goto L5998;
-L5999:
+	if (asi64(R1) != asi64(R2)) goto L5999;
+L6000:
 	asu64(R1) = e;
 	cc_genpcl_dostaticvar(asu64(R1));
-L5998:
-L5996:
-	goto L5991;
-L5994:
-L5991:
+L5999:
+L5997:
+	goto L5992;
+L5995:
+L5992:
 	asu64(R1) = e;
 	R2 = 32;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
 	e = asu64(R1);
-L5989:
+L5990:
 	asu64(R1) = e;
-	if (asu64(R1)) goto L5988;
-	goto L5976;
-L5979:
-L5976:
+	if (asu64(R1)) goto L5989;
+	goto L5977;
+L5980:
+L5977:
 	asu64(R1) = d;
 	R2 = 32;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
 	d = asu64(R1);
-L5974:
+L5975:
 	asu64(R1) = d;
-	if (asu64(R1)) goto L5973;
+	if (asu64(R1)) goto L5974;
 	R1 = tou64("");
 	pc_api_gencomment(asu64(R1));
 	asu64(R1) = cc_decls_stmodule;
 	R2 = 16;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
 	d = asu64(R1);
-	goto L6001;
-L6000:
+	goto L6002;
+L6001:
 	asu64(R1) = d;
 	R2 = 109;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 6;
-	if (asi64(R1) == asi64(R2)) goto L6004;
-	goto L6005;
-L6004:
+	if (asi64(R1) == asi64(R2)) goto L6005;
+	goto L6006;
+L6005:
 	asu64(R1) = d;
 	R2 = 72;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
-	if (!asu64(R1)) goto L6007;
+	if (!asu64(R1)) goto L6008;
 	asu64(R1) = d;
 	cc_genpcl_genprocdef(asu64(R1));
-L6007:
-	goto L6003;
-L6005:
-L6003:
+L6008:
+	goto L6004;
+L6006:
+L6004:
 	asu64(R1) = d;
 	R2 = 32;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
 	d = asu64(R1);
-L6001:
+L6002:
 	asu64(R1) = d;
-	if (asu64(R1)) goto L6000;
+	if (asu64(R1)) goto L6001;
 	pc_api_pcl_end();
 	return;
 }
@@ -55477,7 +55552,7 @@ static void cc_genpcl_genprocdef(u64 p) {
 	R3 = 0;
 	asu64(R2) = *tou64p(((i64)R2+(i64)R3));
 	asi64(R1) = mlib_eqstring(asu64(R2), asu64(R1));
-	if (!asi64(R1)) goto L6010;
+	if (!asi64(R1)) goto L6011;
 	R1 = 1;
 	ismain = asi64(R1);
 	R1 = 1;
@@ -55486,7 +55561,7 @@ static void cc_genpcl_genprocdef(u64 p) {
 	R2 += (i64)R3;
 	R3 = 3;
     *toi64p(R2) = Setdotindex(*toi64p(R2), (i64)R3, (i64)R1);
-L6010:
+L6011:
 	asu64(R1) = p;
 	cc_decls_currproc = asu64(R1);
 	R1 = 0;
@@ -55512,36 +55587,36 @@ L6010:
 	R2 = 16;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
 	d = asu64(R1);
-	goto L6014;
-L6011:
+	goto L6015;
+L6012:
 	asu64(R1) = d;
 	R2 = 109;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 9;
-	if (asi64(R1) == asi64(R2)) goto L6016;
-	R2 = 8;
 	if (asi64(R1) == asi64(R2)) goto L6017;
-	goto L6018;
-L6016:
-	asu64(R1) = d;
-	asu64(R1) = cc_libpcl_getpsymbol(asu64(R1));
-	pc_api_pc_addparam(asu64(R1));
-	goto L6015;
+	R2 = 8;
+	if (asi64(R1) == asi64(R2)) goto L6018;
+	goto L6019;
 L6017:
 	asu64(R1) = d;
 	asu64(R1) = cc_libpcl_getpsymbol(asu64(R1));
-	pc_api_pc_addlocal(asu64(R1));
-	goto L6015;
+	pc_api_pc_addparam(asu64(R1));
+	goto L6016;
 L6018:
-L6015:
+	asu64(R1) = d;
+	asu64(R1) = cc_libpcl_getpsymbol(asu64(R1));
+	pc_api_pc_addlocal(asu64(R1));
+	goto L6016;
+L6019:
+L6016:
 	asu64(R1) = d;
 	R2 = 32;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
 	d = asu64(R1);
-L6014:
+L6015:
 	asu64(R1) = d;
-	if (asu64(R1)) goto L6011;
+	if (asu64(R1)) goto L6012;
 	asi64(R1) = cc_libpcl_createfwdlabel();
 	cc_genpcl_retindex = asi64(R1);
 	R1 = tou64("------------------------");
@@ -55553,9 +55628,9 @@ L6014:
 	R1 = tou64("------------------------");
 	pc_api_gencomment(asu64(R1));
 	asi64(R1) = ismain;
-	if (!asi64(R1)) goto L6020;
+	if (!asi64(R1)) goto L6021;
 	asu8(R1) = pepcl_pdcc;
-	if (!asu8(R1)) goto L6020;
+	if (!asu8(R1)) goto L6021;
 	R1 = 0;
 	asu64(R1) = pc_api_genint(asi64(R1));
 	R2 = 1;
@@ -55568,13 +55643,13 @@ L6014:
 	pc_api_pc_gen(asi64(R2), asu64(R1));
 	R1 = 3;
 	cc_libpcl_setmode(asi64(R1));
-L6020:
+L6021:
 	asi64(R1) = cc_genpcl_retindex;
 	cc_libpcl_definefwdlabel(asi64(R1));
 	asi64(R1) = ismain;
-	if (!asi64(R1)) goto L6022;
+	if (!asi64(R1)) goto L6023;
 	asu8(R1) = pepcl_pdcc;
-	if (asu8(R1)) goto L6022;
+	if (asu8(R1)) goto L6023;
 	R1 = 0;
 	asu64(R1) = pc_api_genint(asi64(R1));
 	R2 = 1;
@@ -55584,19 +55659,19 @@ L6020:
 	R1 = 0;
 	R2 = 32;
 	pc_api_pc_gen(asi64(R2), asu64(R1));
-L6022:
+L6023:
 	R1 = 0;
 	asu64(R2) = p;
 	R3 = 102;
 	asu16(R2) = *tou16p(((i64)R2+(i64)R3));
 	R2 = toi64(tou16(R2));
 	R3 = 0;
-	if (asi64(R2) == asi64(R3)) goto L6024;
+	if (asi64(R2) == asi64(R3)) goto L6025;
 	R2 = 23;
-	goto L6023;
-L6024:
+	goto L6024;
+L6025:
 	R2 = 20;
-L6023:
+L6024:
 	pc_api_pc_gen(asi64(R2), asu64(R1));
 	asu64(R1) = p;
 	R2 = 102;
@@ -55620,9 +55695,9 @@ static void cc_genpcl_dostaticvar(u64 d) {
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 3;
-	if (asi64(R1) != asi64(R2)) goto L6027;
-	goto L6025;
-L6027:
+	if (asi64(R1) != asi64(R2)) goto L6028;
+	goto L6026;
+L6028:
 	asu64(R1) = d;
 	R2 = 102;
 	asu16(R1) = *tou16p(((i64)R1+(i64)R2));
@@ -55632,13 +55707,13 @@ L6027:
 	asu64(R1) = d;
 	R2 = 72;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
-	if (!asu64(R1)) goto L6029;
+	if (!asu64(R1)) goto L6030;
 	asu64(R1) = d;
 	R2 = 109;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 8;
-	if (asi64(R1) != asi64(R2)) goto L6031;
+	if (asi64(R1) != asi64(R2)) goto L6032;
 	R1 = (u64)&str;
 	msysc_m$print_startstr(asu64(R1));
 	R1 = tou64("$#.#.#");
@@ -55676,13 +55751,13 @@ L6027:
 	asu64(R1) = pc_api_genmem(asu64(R1));
 	R2 = 123;
 	pc_api_pc_gen(asi64(R2), asu64(R1));
-	goto L6030;
-L6031:
+	goto L6031;
+L6032:
 	asu64(R1) = d;
 	asu64(R1) = cc_libpcl_genmem_d(asu64(R1));
 	R2 = 123;
 	pc_api_pc_gen(asi64(R2), asu64(R1));
-L6030:
+L6031:
 	asu64(R1) = d;
 	R2 = 102;
 	asu16(R1) = *tou16p(((i64)R1+(i64)R2));
@@ -55697,8 +55772,8 @@ L6030:
 	R5 = 72;
 	asu64(R4) = *tou64p(((i64)R4+(i64)R5));
 	cc_genpcl_genidata(asu64(R4), asi64(R3), asi64(R2), asi64(R1));
-	goto L6028;
-L6029:
+	goto L6029;
+L6030:
 	asu64(R1) = d;
 	asu64(R1) = cc_libpcl_genmem_d(asu64(R1));
 	R2 = 124;
@@ -55710,8 +55785,8 @@ L6029:
 	cc_libpcl_setmode(asi64(R1));
 	asi64(R1) = align;
 	pc_api_pc_setalign(asi64(R1));
-L6028:
-L6025:
+L6029:
+L6026:
 	return;
 }
 
@@ -55754,25 +55829,25 @@ static void cc_genpcl_genidata(u64 p, i64 doterm, i64 am, i64 offset) {
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
 	R1 = toi64(toi32(R1));
 	R2 = 28;
-	if (asi64(R1) == asi64(R2)) goto L6034;
-	R2 = 1;
 	if (asi64(R1) == asi64(R2)) goto L6035;
+	R2 = 1;
+	if (asi64(R1) == asi64(R2)) goto L6036;
 	R2 = 3;
-	if (asi64(R1) == asi64(R2)) goto L6036;
-	R2 = 5;
-	if (asi64(R1) == asi64(R2)) goto L6036;
-	R2 = 39;
 	if (asi64(R1) == asi64(R2)) goto L6037;
-	R2 = 55;
+	R2 = 5;
+	if (asi64(R1) == asi64(R2)) goto L6037;
+	R2 = 39;
 	if (asi64(R1) == asi64(R2)) goto L6038;
+	R2 = 55;
+	if (asi64(R1) == asi64(R2)) goto L6039;
 	R2 = 53;
-	if (asi64(R1) == asi64(R2)) goto L6039;
-	R2 = 54;
-	if (asi64(R1) == asi64(R2)) goto L6039;
-	R2 = 56;
 	if (asi64(R1) == asi64(R2)) goto L6040;
-	goto L6041;
-L6034:
+	R2 = 54;
+	if (asi64(R1) == asi64(R2)) goto L6040;
+	R2 = 56;
+	if (asi64(R1) == asi64(R2)) goto L6041;
+	goto L6042;
+L6035:
 	asu64(R1) = p;
 	R2 = 48;
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
@@ -55783,7 +55858,7 @@ L6034:
 	asi16(R1) = *toi16p(((i64)R1+(i64)R2*2));
 	R1 = toi64(toi16(R1));
 	R2 = 17;
-	if (asi64(R1) != asi64(R2)) goto L6043;
+	if (asi64(R1) != asi64(R2)) goto L6044;
 	R1 = (u64)&cc_decls_ttlength;
 	asi64(R2) = t;
 	asi64(R1) = *toi64p(((i64)R1+(i64)R2*8));
@@ -55794,8 +55869,8 @@ L6034:
 	i = asi64(R1);
 	asi64(R1) = n;
 	R2 = 1;
-	if (asi64(R1) < asi64(R2)) goto L6046;
-L6044:
+	if (asi64(R1) < asi64(R2)) goto L6047;
+L6045:
 	R1 = 0;
 	R2 = 1;
 	R3 = 1;
@@ -55805,11 +55880,11 @@ L6044:
 	R2 = 8;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
 	q = asu64(R1);
-	i += 1; if (i <= n) goto L6044;
-L6046:
+	i += 1; if (i <= n) goto L6045;
+L6047:
 	asi64(R1) = n;
 	asi64(R2) = length;
-	if (asi64(R1) >= asi64(R2)) goto L6048;
+	if (asi64(R1) >= asi64(R2)) goto L6049;
 	asi64(R1) = length;
 	asi64(R2) = n;
 	asi64(R1) -= asi64(R2);
@@ -55821,9 +55896,9 @@ L6046:
 	asi64(R2) = *toi64p(((i64)R2+(i64)R3*8));
 	asi64(R1) *= asi64(R2);
 	cc_genpcl_doresb(asi64(R1));
-L6048:
-	goto L6042;
-L6043:
+L6049:
+	goto L6043;
+L6044:
 	R1 = (u64)&cc_decls_ttbasetype;
 	asi64(R2) = t;
 	asi16(R1) = *toi16p(((i64)R1+(i64)R2*2));
@@ -55851,8 +55926,8 @@ L6043:
 	i = asi64(R1);
 	asi64(R1) = n;
 	R2 = 1;
-	if (asi64(R1) < asi64(R2)) goto L6051;
-L6049:
+	if (asi64(R1) < asi64(R2)) goto L6052;
+L6050:
 	R1 = 0;
 	R2 = 1;
 	R3 = 0;
@@ -55871,61 +55946,61 @@ L6049:
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
 	d = asu64(R1);
 	asu64(R1) = d;
-	if (!asu64(R1)) goto L6053;
+	if (!asu64(R1)) goto L6054;
 	asi64(R1) = isunion;
-	if (asi64(R1)) goto L6053;
+	if (asi64(R1)) goto L6054;
 	asu64(R1) = d;
 	R2 = 88;
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
 	R1 = toi64(toi32(R1));
 	offset2 = asi64(R1);
-	goto L6052;
-L6053:
+	goto L6053;
+L6054:
 	asi64(R1) = size;
 	offset2 = asi64(R1);
-L6052:
+L6053:
 	asi64(R1) = offset2;
 	asi64(R2) = offset1;
 	asi64(R1) -= asi64(R2);
 	padding = asi64(R1);
 	asi64(R1) = padding;
 	R2 = 0;
-	if (asi64(R1) <= asi64(R2)) goto L6055;
+	if (asi64(R1) <= asi64(R2)) goto L6056;
 	asi64(R1) = offset2;
 	asi64(R2) = offset1;
 	asi64(R1) -= asi64(R2);
 	cc_genpcl_doresb(asi64(R1));
 	asi64(R1) = offset2;
 	offset1 = asi64(R1);
-L6055:
+L6056:
 	asu64(R1) = q;
 	R2 = 8;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
 	q = asu64(R1);
-	i += 1; if (i <= n) goto L6049;
-L6051:
+	i += 1; if (i <= n) goto L6050;
+L6052:
 	asi64(R1) = offset2;
 	asi64(R2) = size;
-	if (asi64(R1) >= asi64(R2)) goto L6057;
+	if (asi64(R1) >= asi64(R2)) goto L6058;
 	asi64(R1) = size;
 	asi64(R2) = offset2;
 	asi64(R1) -= asi64(R2);
 	cc_genpcl_doresb(asi64(R1));
-L6057:
-L6042:
-	goto L6032;
+L6058:
+L6043:
 	goto L6033;
-L6035:
+	goto L6034;
+L6036:
 	asi64(R1) = t;
 	asi64(R1) = cc_lib_isintcc(asi64(R1));
-	if (asi64(R1)) goto L6060;
+	if (asi64(R1)) goto L6061;
 	asi64(R1) = t;
 	asi64(R1) = cc_lib_isrealcc(asi64(R1));
-	if (!asi64(R1)) goto L6059;
-L6060:
+	if (!asi64(R1)) goto L6060;
+L6061:
 	asi64(R1) = t;
 	R2 = 10;
-	if (asi64(R1) != asi64(R2)) goto L6062;
+	if (asi64(R1) != asi64(R2)) goto L6063;
 	asu64(R1) = p;
 	R2 = 0;
 	asr64(R1) = *tor64p(((i64)R1+(i64)R2));
@@ -55937,25 +56012,25 @@ L6060:
 	asu64(R1) = pc_api_genint(asi64(R1));
 	R2 = 125;
 	pc_api_pc_gen(asi64(R2), asu64(R1));
-	goto L6061;
-L6062:
+	goto L6062;
+L6063:
 	asu64(R1) = p;
 	R2 = 0;
 	asi64(R1) = *toi64p(((i64)R1+(i64)R2));
 	asu64(R1) = pc_api_genint(asi64(R1));
 	R2 = 125;
 	pc_api_pc_gen(asi64(R2), asu64(R1));
-L6061:
+L6062:
 	asi64(R1) = t;
 	cc_libpcl_setmode(asi64(R1));
-	goto L6058;
-L6059:
+	goto L6059;
+L6060:
 	R1 = (u64)&cc_decls_ttbasetype;
 	asi64(R2) = t;
 	asi16(R1) = *toi16p(((i64)R1+(i64)R2*2));
 	R1 = toi64(toi16(R1));
 	R2 = 13;
-	if (asi64(R1) != asi64(R2)) goto L6063;
+	if (asi64(R1) != asi64(R2)) goto L6064;
 	R1 = 0;
 	padding = asi64(R1);
 // cc_genpcl.genidata.doref:
@@ -55963,17 +56038,17 @@ L6059:
 	R2 = 0;
 	asi64(R1) = *toi64p(((i64)R1+(i64)R2));
 	R2 = 0;
-	if (asi64(R1) != asi64(R2)) goto L6066;
+	if (asi64(R1) != asi64(R2)) goto L6067;
 	R1 = 0;
 	asu64(R1) = pc_api_genint(asi64(R1));
 	R2 = 125;
 	pc_api_pc_gen(asi64(R2), asu64(R1));
-	goto L6065;
-L6066:
+	goto L6066;
+L6067:
 	asu64(R1) = p;
 	R2 = 61;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
-	if (!asu8(R1)) goto L6067;
+	if (!asu8(R1)) goto L6068;
 	asu64(R1) = p;
 	R2 = 48;
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
@@ -55984,36 +56059,36 @@ L6066:
 	asu64(R1) = pc_api_genstring(asu64(R2), asi64(R1));
 	R2 = 125;
 	pc_api_pc_gen(asi64(R2), asu64(R1));
-	goto L6065;
-L6067:
+	goto L6066;
+L6068:
 	asu64(R1) = p;
 	R2 = 62;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
-	if (!asu8(R1)) goto L6068;
+	if (!asu8(R1)) goto L6069;
 	R1 = 0;
 	R2 = tou64("GENIDATA/WSTRING2");
 	cc_support_gerror(asu64(R2), asu64(R1));
 	asi64(R1) = padding;
 	cc_genpcl_doresb(asi64(R1));
-	goto L6065;
-L6068:
+	goto L6066;
+L6069:
 	asu64(R1) = p;
 	R2 = 0;
 	asi64(R1) = *toi64p(((i64)R1+(i64)R2));
 	asu64(R1) = pc_api_genint(asi64(R1));
 	R2 = 125;
 	pc_api_pc_gen(asi64(R2), asu64(R1));
-L6065:
+L6066:
 	asi64(R1) = t;
 	cc_libpcl_setmode(asi64(R1));
-	goto L6058;
-L6063:
+	goto L6059;
+L6064:
 	R1 = (u64)&cc_decls_ttbasetype;
 	asi64(R2) = t;
 	asi16(R1) = *toi16p(((i64)R1+(i64)R2*2));
 	R1 = toi64(toi16(R1));
 	R2 = 17;
-	if (asi64(R1) != asi64(R2)) goto L6069;
+	if (asi64(R1) != asi64(R2)) goto L6070;
 	R1 = (u64)&cc_decls_ttlength;
 	asi64(R2) = t;
 	asi64(R1) = *toi64p(((i64)R1+(i64)R2*8));
@@ -56039,8 +56114,8 @@ L6063:
 	av_1 = asi64(R1);
 	asi64(R1) = av_1;
 	R2 = 1;
-	if (asi64(R1) < asi64(R2)) goto L6072;
-L6070:
+	if (asi64(R1) < asi64(R2)) goto L6073;
+L6071:
 	asu64(R1) = p;
 	R2 = 0;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
@@ -56055,12 +56130,12 @@ L6070:
 	pc_api_pc_gen(asi64(R2), asu64(R1));
 	R1 = 6;
 	cc_libpcl_setmode(asi64(R1));
-	i += 1; if (i <= av_1) goto L6070;
-L6072:
+	i += 1; if (i <= av_1) goto L6071;
+L6073:
 	asi64(R1) = padding;
 	cc_genpcl_doresb(asi64(R1));
-	goto L6058;
-L6069:
+	goto L6059;
+L6070:
 	msysc_m$print_startcon();
 	R1 = 1;
 	asi64(R2) = t;
@@ -56071,10 +56146,10 @@ L6069:
 	R1 = 0;
 	R2 = tou64("IDATA/SCALAR");
 	cc_support_gerror(asu64(R2), asu64(R1));
-L6058:
-	goto L6032;
+L6059:
 	goto L6033;
-L6036:
+	goto L6034;
+L6037:
 	asu64(R1) = p;
 	R2 = 0;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
@@ -56084,11 +56159,11 @@ L6036:
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 7;
-	if (asi64(R1) == asi64(R2)) goto L6074;
+	if (asi64(R1) == asi64(R2)) goto L6075;
 	R2 = 6;
-	if (asi64(R1) == asi64(R2)) goto L6074;
-	goto L6075;
-L6074:
+	if (asi64(R1) == asi64(R2)) goto L6075;
+	goto L6076;
+L6075:
 	asu64(R1) = d;
 	asu64(R1) = cc_libpcl_genmemaddr_d(asu64(R1));
 	R2 = 125;
@@ -56103,27 +56178,27 @@ L6074:
 	*toi32p(((i64)R2+(i64)R3)) = asi32(R1);
 	R1 = 9;
 	cc_libpcl_setmode(asi64(R1));
-	goto L6073;
-L6075:
+	goto L6074;
+L6076:
 	asu64(R1) = p;
 	R2 = tou64("Idata &frame");
 	cc_support_gerror(asu64(R2), asu64(R1));
-L6073:
-	goto L6032;
+L6074:
 	goto L6033;
-L6037:
+	goto L6034;
+L6038:
 	asu64(R1) = a;
 	R2 = 40;
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
 	R1 = toi64(toi32(R1));
 	R2 = 3;
-	if (asi64(R1) != asi64(R2)) goto L6077;
+	if (asi64(R1) != asi64(R2)) goto L6078;
 	asu64(R1) = b;
 	R2 = 40;
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
 	R1 = toi64(toi32(R1));
 	R2 = 1;
-	if (asi64(R1) != asi64(R2)) goto L6077;
+	if (asi64(R1) != asi64(R2)) goto L6078;
 	asu64(R1) = a;
 	R2 = 0;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
@@ -56133,9 +56208,9 @@ L6037:
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 7;
-	if (asi64(R1) == asi64(R2)) goto L6079;
-	goto L6080;
-L6079:
+	if (asi64(R1) == asi64(R2)) goto L6080;
+	goto L6081;
+L6080:
 	R1 = tou64("`");
 	R2 = (u64)&str;
 	asu64(R1) = strcpy(asu64(R2), asu64(R1));
@@ -56144,7 +56219,7 @@ L6079:
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 1;
-	if (asi64(R1) != asi64(R2)) goto L6082;
+	if (asi64(R1) != asi64(R2)) goto L6083;
 	asu64(R1) = cc_decls_currproc;
 	R2 = 0;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
@@ -56153,7 +56228,7 @@ L6079:
 	R1 = tou64(",");
 	R2 = (u64)&str;
 	asu64(R1) = strcat(asu64(R2), asu64(R1));
-L6082:
+L6083:
 	asu64(R1) = d;
 	R2 = 0;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
@@ -56174,26 +56249,26 @@ L6082:
 	asu64(R1) = pc_api_genname(asu64(R1));
 	R2 = 125;
 	pc_api_pc_gen(asi64(R2), asu64(R1));
-	goto L6078;
-L6080:
+	goto L6079;
+L6081:
 	R1 = 0;
 	R2 = tou64("Add/Idata &frame");
 	cc_support_gerror(asu64(R2), asu64(R1));
+L6079:
+	goto L6077;
 L6078:
-	goto L6076;
-L6077:
 	asu64(R1) = a;
 	R2 = 40;
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
 	R1 = toi64(toi32(R1));
 	R2 = 1;
-	if (asi64(R1) != asi64(R2)) goto L6083;
+	if (asi64(R1) != asi64(R2)) goto L6084;
 	asu64(R1) = b;
 	R2 = 40;
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
 	R1 = toi64(toi32(R1));
 	R2 = 1;
-	if (asi64(R1) != asi64(R2)) goto L6083;
+	if (asi64(R1) != asi64(R2)) goto L6084;
 	R1 = (u64)&cc_decls_ttbasetype;
 	asu64(R2) = a;
 	R3 = 52;
@@ -56202,7 +56277,7 @@ L6077:
 	asi16(R1) = *toi16p(((i64)R1+(i64)R2*2));
 	R1 = toi64(toi16(R1));
 	R2 = 13;
-	if (asi64(R1) != asi64(R2)) goto L6083;
+	if (asi64(R1) != asi64(R2)) goto L6084;
 	R1 = (u64)&str;
 	msysc_m$print_startstr(asu64(R1));
 	asu64(R1) = a;
@@ -56222,25 +56297,25 @@ L6077:
 	asu64(R1) = pc_api_genname(asu64(R1));
 	R2 = 125;
 	pc_api_pc_gen(asi64(R2), asu64(R1));
-	goto L6076;
-L6083:
+	goto L6077;
+L6084:
 	R1 = 0;
 	R2 = tou64("1:Runtime or unsupported expr in static data");
 	cc_support_gerror(asu64(R2), asu64(R1));
-L6076:
-	goto L6032;
+L6077:
 	goto L6033;
-L6038:
+	goto L6034;
+L6039:
 	asu64(R1) = a;
 	R2 = 40;
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
 	R1 = toi64(toi32(R1));
 	R2 = 52;
-	if (asi64(R1) == asi64(R2)) goto L6085;
-	R2 = 49;
 	if (asi64(R1) == asi64(R2)) goto L6086;
-	goto L6087;
-L6085:
+	R2 = 49;
+	if (asi64(R1) == asi64(R2)) goto L6087;
+	goto L6088;
+L6086:
 	asi64(R1) = offset;
 	R2 = 1;
 	R3 = 1;
@@ -56248,8 +56323,8 @@ L6085:
 	R5 = 16;
 	asu64(R4) = *tou64p(((i64)R4+(i64)R5));
 	cc_genpcl_genidata(asu64(R4), asi64(R3), asi64(R2), asi64(R1));
-	goto L6084;
-L6086:
+	goto L6085;
+L6087:
 	asu64(R1) = a;
 	R2 = 16;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
@@ -56257,7 +56332,7 @@ L6086:
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
 	R1 = toi64(toi32(R1));
 	R2 = 3;
-	if (asi64(R1) != asi64(R2)) goto L6089;
+	if (asi64(R1) != asi64(R2)) goto L6090;
 	asi64(R1) = offset;
 	asu64(R2) = a;
 	R3 = 0;
@@ -56270,30 +56345,30 @@ L6086:
 	R5 = 16;
 	asu64(R4) = *tou64p(((i64)R4+(i64)R5));
 	cc_genpcl_genidata(asu64(R4), asi64(R3), asi64(R2), asi64(R1));
-	goto L6088;
+	goto L6089;
+L6090:
+	goto L6091;
 L6089:
-	goto L6090;
+	goto L6085;
 L6088:
-	goto L6084;
-L6087:
 	asi64(R1) = offset;
 	R2 = 0;
 	R3 = 1;
 	asu64(R4) = a;
 	cc_genpcl_genidata(asu64(R4), asi64(R3), asi64(R2), asi64(R1));
-L6084:
-	goto L6033;
-L6039:
+L6085:
+	goto L6034;
+L6040:
 	asu64(R1) = b;
 	R2 = 40;
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
 	R1 = toi64(toi32(R1));
 	R2 = 1;
-	if (asi64(R1) == asi64(R2)) goto L6092;
+	if (asi64(R1) == asi64(R2)) goto L6093;
 	R1 = 0;
 	R2 = tou64("Complex ptr expr in static data");
 	cc_support_gerror(asu64(R2), asu64(R1));
-L6092:
+L6093:
 	asu64(R1) = b;
 	R2 = 0;
 	asi64(R1) = *toi64p(((i64)R1+(i64)R2));
@@ -56308,17 +56383,17 @@ L6092:
 	R3 = 1;
 	asu64(R4) = a;
 	cc_genpcl_genidata(asu64(R4), asi64(R3), asi64(R2), asi64(R1));
-	goto L6033;
-L6040:
+	goto L6034;
+L6041:
 	asi64(R1) = offset;
 	R2 = 1;
 	R3 = 1;
 	asu64(R4) = a;
 	cc_genpcl_genidata(asu64(R4), asi64(R3), asi64(R2), asi64(R1));
-	goto L6033;
-L6041:
+	goto L6034;
+L6042:
 // cc_genpcl.genidata.error:
-L6090:
+L6091:
 	R1 = tou64("*");
 	R2 = 0;
 	asu64(R3) = p;
@@ -56327,16 +56402,16 @@ L6090:
 	asu64(R1) = p;
 	R2 = tou64("2:Runtime expr in static data");
 	cc_support_gerror(asu64(R2), asu64(R1));
+L6034:
 L6033:
-L6032:
 	return;
 }
 
 static void cc_genpcl_doresb(i64 n) {
     u64 R1, R2; 
 	i64 av_1;
-	goto L6095;
-L6094:
+	goto L6096;
+L6095:
 	R1 = 0;
 	asu64(R1) = pc_api_genint(asi64(R1));
 	R2 = 125;
@@ -56346,24 +56421,24 @@ L6094:
 	*toi64p(R2) -= asi64(R1);
 	R1 = 9;
 	cc_libpcl_setmode(asi64(R1));
-L6095:
+L6096:
 	asi64(R1) = n;
 	R2 = 8;
-	if (asi64(R1) >= asi64(R2)) goto L6094;
+	if (asi64(R1) >= asi64(R2)) goto L6095;
 	asi64(R1) = n;
 	av_1 = asi64(R1);
 	asi64(R1) = av_1;
 	R2 = 0;
-	if (asi64(R1) <= asi64(R2)) goto L6099;
-L6097:
+	if (asi64(R1) <= asi64(R2)) goto L6100;
+L6098:
 	R1 = 0;
 	asu64(R1) = pc_api_genint(asi64(R1));
 	R2 = 125;
 	pc_api_pc_gen(asi64(R2), asu64(R1));
 	R1 = 6;
 	cc_libpcl_setmode(asi64(R1));
-	if (--asi64(av_1)) goto L6097;
-L6099:
+	if (--asi64(av_1)) goto L6098;
+L6100:
 	return;
 }
 
@@ -56383,14 +56458,14 @@ static void cc_genpcl_dolibs() {
 	i = asi64(R1);
 	asi64(R1) = cc_decls_nlibfiles;
 	R2 = 1;
-	if (asi64(R1) < asi64(R2)) goto L6104;
-L6102:
+	if (asi64(R1) < asi64(R2)) goto L6105;
+L6103:
 	R1 = (u64)&cc_decls_libfiles;
 	asi64(R2) = i;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2*8));
 	pc_api_pc_addplib(asu64(R1));
-	i += 1; if (i <= cc_decls_nlibfiles) goto L6102;
-L6104:
+	i += 1; if (i <= cc_decls_nlibfiles) goto L6103;
+L6105:
 	return;
 }
 
@@ -56401,9 +56476,9 @@ static void cc_blockpcl_do_stmt(u64 p) {
 	u64 b;
 	u64 d;
 	asu64(R1) = p;
-	if (asu64(R1)) goto L6107;
-	goto L6105;
-L6107:
+	if (asu64(R1)) goto L6108;
+	goto L6106;
+L6108:
 	asi64(R1) = cc_decls_clineno;
 	oldclineno = asi64(R1);
 	asu64(R1) = p;
@@ -56435,120 +56510,120 @@ L6107:
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
 	R1 = toi64(toi32(R1));
 	switch (asi64(R1)) {
-	case 6: goto L6111;
-	case 7: case 10: case 24: case 25: case 26: case 27: case 28: case 32: case 33: case 34: case 35: case 36: case 37: case 38: case 39: case 40: case 41: case 42: case 43: case 44: case 45: case 46: case 47: case 48: case 49: case 50: case 51: case 52: case 53: case 54: case 55: case 56: case 57: case 58: case 59: case 60: goto L6110;
-	case 8: goto L6115;
-	case 9: goto L6117;
-	case 11: goto L6118;
-	case 12: case 31: goto L6119;
-	case 13: goto L6120;
-	case 14: goto L6121;
-	case 15: goto L6122;
-	case 16: goto L6123;
-	case 17: goto L6124;
-	case 18: goto L6125;
-	case 19: goto L6126;
-	case 20: goto L6128;
-	case 21: goto L6129;
-	case 22: goto L6130;
-	case 23: goto L6127;
-	case 29: goto L6145;
-	case 30: goto L6116;
-	case 61: goto L6131;
-	case 62: goto L6132;
-	case 63: goto L6133;
-	case 64: goto L6134;
-	case 65: goto L6137;
-	case 66: goto L6138;
-	case 67: goto L6139;
-	case 68: goto L6140;
-	case 69: goto L6141;
-	case 70: goto L6142;
-	case 71: case 73: goto L6143;
-	case 72: case 74: goto L6144;
-	default: goto L6110;
+	case 6: goto L6112;
+	case 7: case 10: case 24: case 25: case 26: case 27: case 28: case 32: case 33: case 34: case 35: case 36: case 37: case 38: case 39: case 40: case 41: case 42: case 43: case 44: case 45: case 46: case 47: case 48: case 49: case 50: case 51: case 52: case 53: case 54: case 55: case 56: case 57: case 58: case 59: case 60: goto L6111;
+	case 8: goto L6116;
+	case 9: goto L6118;
+	case 11: goto L6119;
+	case 12: case 31: goto L6120;
+	case 13: goto L6121;
+	case 14: goto L6122;
+	case 15: goto L6123;
+	case 16: goto L6124;
+	case 17: goto L6125;
+	case 18: goto L6126;
+	case 19: goto L6127;
+	case 20: goto L6129;
+	case 21: goto L6130;
+	case 22: goto L6131;
+	case 23: goto L6128;
+	case 29: goto L6146;
+	case 30: goto L6117;
+	case 61: goto L6132;
+	case 62: goto L6133;
+	case 63: goto L6134;
+	case 64: goto L6135;
+	case 65: goto L6138;
+	case 66: goto L6139;
+	case 67: goto L6140;
+	case 68: goto L6141;
+	case 69: goto L6142;
+	case 70: goto L6143;
+	case 71: case 73: goto L6144;
+	case 72: case 74: goto L6145;
+	default: goto L6111;
     };
 // SWITCH
-L6111:
-	goto L6113;
 L6112:
+	goto L6114;
+L6113:
 	asu64(R1) = a;
 	cc_blockpcl_do_stmt(asu64(R1));
 	asu64(R1) = a;
 	R2 = 8;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
 	a = asu64(R1);
-L6113:
+L6114:
 	asu64(R1) = a;
-	if (asu64(R1)) goto L6112;
-	goto L6108;
-L6115:
+	if (asu64(R1)) goto L6113;
+	goto L6109;
+L6116:
 	asu64(R1) = p;
 	R2 = 0;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
 	cc_blockpcl_do_decl(asu64(R1));
-	goto L6108;
-L6116:
+	goto L6109;
+L6117:
 	R1 = 0;
 	asu64(R2) = b;
 	asu64(R3) = a;
 	asu64(R4) = p;
 	cc_blockpcl_dx_call(asu64(R4), asu64(R3), asu64(R2), asi64(R1));
-	goto L6108;
-L6117:
+	goto L6109;
+L6118:
 	asu64(R1) = a;
 	asu64(R2) = p;
 	cc_blockpcl_do_return(asu64(R2), asu64(R1));
-	goto L6108;
-L6118:
+	goto L6109;
+L6119:
 	R1 = 0;
 	asu64(R2) = b;
 	asu64(R3) = a;
 	cc_blockpcl_do_assign(asu64(R3), asu64(R2), asi64(R1));
-	goto L6108;
-L6119:
+	goto L6109;
+L6120:
 	asu64(R1) = p;
 	R2 = 32;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
 	asu64(R2) = b;
 	asu64(R3) = a;
 	cc_blockpcl_do_if(asu64(R3), asu64(R2), asu64(R1));
-	goto L6108;
-L6120:
-	asu64(R1) = b;
-	asu64(R2) = a;
-	cc_blockpcl_do_for(asu64(R2), asu64(R1));
-	goto L6108;
+	goto L6109;
 L6121:
 	asu64(R1) = b;
 	asu64(R2) = a;
-	cc_blockpcl_do_while(asu64(R2), asu64(R1));
-	goto L6108;
+	cc_blockpcl_do_for(asu64(R2), asu64(R1));
+	goto L6109;
 L6122:
 	asu64(R1) = b;
 	asu64(R2) = a;
-	cc_blockpcl_do_dowhile(asu64(R2), asu64(R1));
-	goto L6108;
+	cc_blockpcl_do_while(asu64(R2), asu64(R1));
+	goto L6109;
 L6123:
+	asu64(R1) = b;
+	asu64(R2) = a;
+	cc_blockpcl_do_dowhile(asu64(R2), asu64(R1));
+	goto L6109;
+L6124:
 	asu64(R1) = p;
 	R2 = 0;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
 	cc_blockpcl_do_goto(asu64(R1));
-	goto L6108;
-L6124:
+	goto L6109;
+L6125:
 	asu64(R1) = p;
 	R2 = 0;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
 	cc_blockpcl_do_labeldef(asu64(R1));
 	asu64(R1) = a;
 	cc_blockpcl_do_stmt(asu64(R1));
-	goto L6108;
-L6125:
+	goto L6109;
+L6126:
 	asu64(R1) = a;
 	asu64(R2) = p;
 	cc_blockpcl_do_casestmt(asu64(R2), asu64(R1));
-	goto L6108;
-L6126:
+	goto L6109;
+L6127:
 	R1 = 1;
 	cc_blockpcl_sw_defaultseen = asu8(R1);
 	asi64(R1) = cc_blockpcl_sw_defaultlabel;
@@ -56557,133 +56632,133 @@ L6126:
 	pc_api_pc_gen(asi64(R2), asu64(R1));
 	asu64(R1) = a;
 	cc_blockpcl_do_stmt(asu64(R1));
-	goto L6108;
-L6127:
+	goto L6109;
+L6128:
 	asi64(R1) = cc_blockpcl_sw_breaklabel;
 	cc_blockpcl_genjumpl(asi64(R1));
-	goto L6108;
-L6128:
+	goto L6109;
+L6129:
 	R1 = (u64)&cc_blockpcl_breakstack;
 	asi64(R2) = cc_blockpcl_loopindex;
 	asi64(R1) = *toi64p(((i64)R1+(i64)R2*8-8));
 	cc_blockpcl_genjumpl(asi64(R1));
-	goto L6108;
-L6129:
+	goto L6109;
+L6130:
 	R1 = (u64)&cc_blockpcl_continuestack;
 	asi64(R2) = cc_blockpcl_loopindex;
 	asi64(R1) = *toi64p(((i64)R1+(i64)R2*8-8));
 	cc_blockpcl_genjumpl(asi64(R1));
-	goto L6108;
-L6130:
+	goto L6109;
+L6131:
 	asu64(R1) = b;
 	asu64(R2) = a;
 	asu64(R3) = p;
 	cc_blockpcl_do_switch(asu64(R3), asu64(R2), asu64(R1));
-	goto L6108;
-L6131:
+	goto L6109;
+L6132:
 	R1 = 0;
 	R2 = 90;
 	asu64(R3) = b;
 	asu64(R4) = a;
 	cc_blockpcl_dx_binto(asu64(R4), asu64(R3), asi64(R2), asi64(R1));
-	goto L6108;
-L6132:
+	goto L6109;
+L6133:
 	R1 = 0;
 	R2 = 91;
 	asu64(R3) = b;
 	asu64(R4) = a;
 	cc_blockpcl_dx_binto(asu64(R4), asu64(R3), asi64(R2), asi64(R1));
-	goto L6108;
-L6133:
+	goto L6109;
+L6134:
 	R1 = 0;
 	R2 = 92;
 	asu64(R3) = b;
 	asu64(R4) = a;
 	cc_blockpcl_dx_binto(asu64(R4), asu64(R3), asi64(R2), asi64(R1));
-	goto L6108;
-L6134:
+	goto L6109;
+L6135:
 	R1 = 0;
 	asu64(R2) = a;
 	R3 = 52;
 	asi32(R2) = *toi32p(((i64)R2+(i64)R3));
 	R2 = toi64(toi32(R2));
 	asi64(R2) = cc_lib_isrealcc(asi64(R2));
-	if (!asi64(R2)) goto L6136;
+	if (!asi64(R2)) goto L6137;
 	R2 = 93;
-	goto L6135;
-L6136:
+	goto L6136;
+L6137:
 	R2 = 94;
-L6135:
+L6136:
 	asu64(R3) = b;
 	asu64(R4) = a;
 	cc_blockpcl_dx_binto(asu64(R4), asu64(R3), asi64(R2), asi64(R1));
-	goto L6108;
-L6137:
+	goto L6109;
+L6138:
 	R1 = 0;
 	R2 = 95;
 	asu64(R3) = b;
 	asu64(R4) = a;
 	cc_blockpcl_dx_binto(asu64(R4), asu64(R3), asi64(R2), asi64(R1));
-	goto L6108;
-L6138:
+	goto L6109;
+L6139:
 	R1 = 0;
 	R2 = 96;
 	asu64(R3) = b;
 	asu64(R4) = a;
 	cc_blockpcl_dx_binto(asu64(R4), asu64(R3), asi64(R2), asi64(R1));
-	goto L6108;
-L6139:
+	goto L6109;
+L6140:
 	R1 = 0;
 	R2 = 97;
 	asu64(R3) = b;
 	asu64(R4) = a;
 	cc_blockpcl_dx_binto(asu64(R4), asu64(R3), asi64(R2), asi64(R1));
-	goto L6108;
-L6140:
+	goto L6109;
+L6141:
 	R1 = 0;
 	R2 = 98;
 	asu64(R3) = b;
 	asu64(R4) = a;
 	cc_blockpcl_dx_binto(asu64(R4), asu64(R3), asi64(R2), asi64(R1));
-	goto L6108;
-L6141:
+	goto L6109;
+L6142:
 	R1 = 0;
 	R2 = 99;
 	asu64(R3) = b;
 	asu64(R4) = a;
 	cc_blockpcl_dx_binto(asu64(R4), asu64(R3), asi64(R2), asi64(R1));
-	goto L6108;
-L6142:
+	goto L6109;
+L6143:
 	R1 = 0;
 	R2 = 100;
 	asu64(R3) = b;
 	asu64(R4) = a;
 	cc_blockpcl_dx_binto(asu64(R4), asu64(R3), asi64(R2), asi64(R1));
-	goto L6108;
-L6143:
+	goto L6109;
+L6144:
 	R1 = 84;
 	asu64(R2) = a;
 	cc_blockpcl_do_preincr(asu64(R2), asi64(R1));
-	goto L6108;
-L6144:
+	goto L6109;
+L6145:
 	R1 = 85;
 	asu64(R2) = a;
 	cc_blockpcl_do_preincr(asu64(R2), asi64(R1));
-	goto L6108;
-L6145:
-	goto L6147;
+	goto L6109;
 L6146:
+	goto L6148;
+L6147:
 	asu64(R1) = a;
 	cc_blockpcl_do_stmt(asu64(R1));
 	asu64(R1) = a;
 	R2 = 8;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
 	a = asu64(R1);
-L6147:
+L6148:
 	asu64(R1) = a;
-	if (asu64(R1)) goto L6146;
-	goto L6108;
-L6110:
+	if (asu64(R1)) goto L6147;
+	goto L6109;
+L6111:
 	R1 = 0;
 	asu64(R2) = p;
 	cc_blockpcl_dx_expr(asu64(R2), asi64(R1));
@@ -56691,15 +56766,15 @@ L6110:
 	R2 = 11;
 	pc_api_pc_gen(asi64(R2), asu64(R1));
 	asu64(R1) = a;
-	if (!asu64(R1)) goto L6150;
+	if (!asu64(R1)) goto L6151;
 	asu64(R1) = a;
-	goto L6149;
-L6150:
+	goto L6150;
+L6151:
 	asu64(R1) = p;
-L6149:
+L6150:
 	cc_libpcl_setmode_u(asu64(R1));
-L6108:
-L6105:
+L6109:
+L6106:
 	return;
 }
 
@@ -56713,9 +56788,9 @@ static void cc_blockpcl_dx_expr(u64 p, i64 am) {
 	struct $B16 str;
 	u64 d;
 	asu64(R1) = p;
-	if (asu64(R1)) goto L6153;
-	goto L6151;
-L6153:
+	if (asu64(R1)) goto L6154;
+	goto L6152;
+L6154:
 	asi64(R1) = cc_decls_clineno;
 	oldclineno = asi64(R1);
 	asu64(R1) = p;
@@ -56746,70 +56821,70 @@ L6153:
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
 	R1 = toi64(toi32(R1));
 	switch (asi64(R1)) {
-	case 1: goto L6157;
-	case 2: case 6: case 7: case 8: case 9: case 10: case 12: case 13: case 14: case 15: case 16: case 17: case 18: case 19: case 20: case 21: case 22: case 23: case 28: case 32: case 50: case 51: case 59: goto L6156;
-	case 3: goto L6158;
-	case 4: goto L6159;
-	case 5: goto L6160;
-	case 11: goto L6161;
-	case 24: case 25: goto L6162;
-	case 26: goto L6163;
-	case 27: goto L6170;
-	case 29: goto L6173;
-	case 30: goto L6184;
-	case 31: goto L6185;
-	case 33: case 34: case 35: case 36: case 37: case 38: goto L6186;
-	case 39: goto L6187;
-	case 40: goto L6190;
-	case 41: goto L6191;
-	case 42: goto L6192;
-	case 43: goto L6195;
-	case 44: goto L6196;
-	case 45: goto L6197;
-	case 46: goto L6198;
-	case 47: goto L6199;
-	case 48: goto L6200;
-	case 49: goto L6225;
-	case 52: goto L6201;
-	case 53: goto L6202;
-	case 54: goto L6203;
-	case 55: goto L6224;
-	case 56: goto L6204;
-	case 57: goto L6207;
-	case 58: goto L6208;
-	case 60: goto L6209;
-	case 61: goto L6212;
-	case 62: goto L6213;
-	case 63: goto L6214;
-	case 64: goto L6215;
-	case 65: goto L6218;
-	case 66: goto L6219;
-	case 67: goto L6220;
-	case 68: goto L6221;
-	case 69: goto L6222;
-	case 70: goto L6223;
-	case 71: case 72: goto L6210;
-	case 73: case 74: goto L6211;
-	case 75: goto L6226;
-	case 76: goto L6227;
-	default: goto L6156;
+	case 1: goto L6158;
+	case 2: case 6: case 7: case 8: case 9: case 10: case 12: case 13: case 14: case 15: case 16: case 17: case 18: case 19: case 20: case 21: case 22: case 23: case 28: case 32: case 50: case 51: case 59: goto L6157;
+	case 3: goto L6159;
+	case 4: goto L6160;
+	case 5: goto L6161;
+	case 11: goto L6162;
+	case 24: case 25: goto L6163;
+	case 26: goto L6164;
+	case 27: goto L6171;
+	case 29: goto L6174;
+	case 30: goto L6185;
+	case 31: goto L6186;
+	case 33: case 34: case 35: case 36: case 37: case 38: goto L6187;
+	case 39: goto L6188;
+	case 40: goto L6191;
+	case 41: goto L6192;
+	case 42: goto L6193;
+	case 43: goto L6196;
+	case 44: goto L6197;
+	case 45: goto L6198;
+	case 46: goto L6199;
+	case 47: goto L6200;
+	case 48: goto L6201;
+	case 49: goto L6226;
+	case 52: goto L6202;
+	case 53: goto L6203;
+	case 54: goto L6204;
+	case 55: goto L6225;
+	case 56: goto L6205;
+	case 57: goto L6208;
+	case 58: goto L6209;
+	case 60: goto L6210;
+	case 61: goto L6213;
+	case 62: goto L6214;
+	case 63: goto L6215;
+	case 64: goto L6216;
+	case 65: goto L6219;
+	case 66: goto L6220;
+	case 67: goto L6221;
+	case 68: goto L6222;
+	case 69: goto L6223;
+	case 70: goto L6224;
+	case 71: case 72: goto L6211;
+	case 73: case 74: goto L6212;
+	case 75: goto L6227;
+	case 76: goto L6228;
+	default: goto L6157;
     };
 // SWITCH
-L6157:
+L6158:
 	asu64(R1) = p;
 	cc_blockpcl_dx_const(asu64(R1));
-	goto L6154;
-L6158:
+	goto L6155;
+L6159:
 	asi64(R1) = am;
 	asu64(R2) = p;
 	cc_blockpcl_dx_name(asu64(R2), asi64(R1));
-	goto L6154;
-L6159:
+	goto L6155;
+L6160:
 	asi64(R1) = am;
 	asu64(R2) = a;
 	cc_blockpcl_dx_expr(asu64(R2), asi64(R1));
-	goto L6154;
-L6160:
+	goto L6155;
+L6161:
 	asu64(R1) = p;
 	R2 = 0;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
@@ -56818,24 +56893,24 @@ L6160:
 	pc_api_pc_gen(asi64(R2), asu64(R1));
 	R1 = 9;
 	cc_libpcl_setmode(asi64(R1));
-	goto L6154;
-L6161:
+	goto L6155;
+L6162:
 	R1 = 1;
 	asu64(R2) = b;
 	asu64(R3) = a;
 	cc_blockpcl_do_assign(asu64(R3), asu64(R2), asi64(R1));
-	goto L6154;
-L6162:
+	goto L6155;
+L6163:
 	asu64(R1) = p;
 	cc_blockpcl_dx_andorl(asu64(R1));
-	goto L6154;
-L6163:
+	goto L6155;
+L6164:
 	asu64(R1) = a;
 	R2 = 40;
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
 	R1 = toi64(toi32(R1));
 	R2 = 26;
-	if (asi64(R1) != asi64(R2)) goto L6165;
+	if (asi64(R1) != asi64(R2)) goto L6166;
 	R1 = 0;
 	asu64(R2) = a;
 	R3 = 16;
@@ -56845,7 +56920,7 @@ L6163:
 	R2 = 16;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
 	asi64(R1) = cc_blockpcl_isboolexpr(asu64(R1));
-	if (asi64(R1)) goto L6167;
+	if (asi64(R1)) goto L6168;
 	R1 = 0;
 	R2 = 64;
 	pc_api_pc_gen(asi64(R2), asu64(R1));
@@ -56858,35 +56933,35 @@ L6163:
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
 	R1 = toi64(toi32(R1));
 	cc_libpcl_setmode2(asi64(R1));
-L6167:
-	goto L6164;
-L6165:
+L6168:
+	goto L6165;
+L6166:
 	R1 = 0;
 	asu64(R2) = a;
 	cc_blockpcl_dx_expr(asu64(R2), asi64(R1));
 	asu64(R1) = a;
 	asi64(R1) = cc_blockpcl_isboolexpr(asu64(R1));
-	if (asi64(R1)) goto L6169;
+	if (asi64(R1)) goto L6170;
 	R1 = 0;
 	R2 = 65;
 	pc_api_pc_gen(asi64(R2), asu64(R1));
-	goto L6168;
-L6169:
+	goto L6169;
+L6170:
 	R1 = 0;
 	R2 = 63;
 	pc_api_pc_gen(asi64(R2), asu64(R1));
-L6168:
+L6169:
 	asu64(R1) = a;
 	cc_libpcl_setmode_u(asu64(R1));
-L6164:
-	goto L6154;
-L6170:
+L6165:
+	goto L6155;
+L6171:
 	R1 = 0;
 	asu64(R2) = a;
 	cc_blockpcl_dx_expr(asu64(R2), asi64(R1));
 	asu64(R1) = a;
 	asi64(R1) = cc_blockpcl_isboolexpr(asu64(R1));
-	if (asi64(R1)) goto L6172;
+	if (asi64(R1)) goto L6173;
 	R1 = 0;
 	R2 = 64;
 	pc_api_pc_gen(asi64(R2), asu64(R1));
@@ -56897,69 +56972,69 @@ L6170:
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
 	R1 = toi64(toi32(R1));
 	cc_libpcl_setmode2(asi64(R1));
-L6172:
-	goto L6154;
 L6173:
-	goto L6177;
+	goto L6155;
 L6174:
+	goto L6178;
+L6175:
 	asu64(R1) = a;
 	R2 = 8;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
 	b = asu64(R1);
 	asu64(R1) = b;
-	if (!asu64(R1)) goto L6179;
+	if (!asu64(R1)) goto L6180;
 	asu64(R1) = a;
 	R2 = 40;
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
 	R1 = toi64(toi32(R1));
 	R2 = 11;
-	if (asi64(R1) == asi64(R2)) goto L6180;
+	if (asi64(R1) == asi64(R2)) goto L6181;
 	R2 = 56;
-	if (asi64(R1) == asi64(R2)) goto L6180;
+	if (asi64(R1) == asi64(R2)) goto L6181;
 	R2 = 31;
-	if (asi64(R1) != asi64(R2)) goto L6179;
-L6180:
+	if (asi64(R1) != asi64(R2)) goto L6180;
+L6181:
 	asu64(R1) = a;
 	cc_blockpcl_do_stmt(asu64(R1));
-	goto L6178;
-L6179:
+	goto L6179;
+L6180:
 	R1 = 0;
 	asu64(R2) = a;
 	cc_blockpcl_dx_expr(asu64(R2), asi64(R1));
 	asu64(R1) = b;
-	if (!asu64(R1)) goto L6182;
+	if (!asu64(R1)) goto L6183;
 	asu64(R1) = a;
 	R2 = 52;
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
 	R1 = toi64(toi32(R1));
 	R2 = 0;
-	if (asi64(R1) != asi64(R2)) goto L6183;
+	if (asi64(R1) != asi64(R2)) goto L6184;
 	asu64(R1) = a;
 	R2 = 40;
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
 	R1 = toi64(toi32(R1));
 	R2 = 56;
-	if (asi64(R1) != asi64(R2)) goto L6182;
-L6183:
+	if (asi64(R1) != asi64(R2)) goto L6183;
+L6184:
 	R1 = 0;
 	R2 = 134;
 	pc_api_pc_gen(asi64(R2), asu64(R1));
-L6182:
-L6178:
+L6183:
+L6179:
 	asu64(R1) = b;
 	a = asu64(R1);
-L6177:
+L6178:
 	asu64(R1) = a;
-	if (asu64(R1)) goto L6174;
-	goto L6154;
-L6184:
+	if (asu64(R1)) goto L6175;
+	goto L6155;
+L6185:
 	R1 = 1;
 	asu64(R2) = b;
 	asu64(R3) = a;
 	asu64(R4) = p;
 	cc_blockpcl_dx_call(asu64(R4), asu64(R3), asu64(R2), asi64(R1));
-	goto L6154;
-L6185:
+	goto L6155;
+L6186:
 	asu64(R1) = p;
 	R2 = 32;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
@@ -56967,21 +57042,21 @@ L6185:
 	asu64(R3) = a;
 	asu64(R4) = p;
 	cc_blockpcl_dx_ifx(asu64(R4), asu64(R3), asu64(R2), asu64(R1));
-	goto L6154;
-L6186:
+	goto L6155;
+L6187:
 	asu64(R1) = b;
 	asu64(R2) = a;
 	asu64(R3) = p;
 	cc_blockpcl_dx_eq(asu64(R3), asu64(R2), asu64(R1));
-	goto L6154;
-L6187:
+	goto L6155;
+L6188:
 	R1 = (u64)&cc_decls_ttisref;
 	asu64(R2) = a;
 	R3 = 52;
 	asi32(R2) = *toi32p(((i64)R2+(i64)R3));
 	R2 = toi64(toi32(R2));
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
-	if (!asu8(R1)) goto L6189;
+	if (!asu8(R1)) goto L6190;
 	R1 = (u64)&cc_decls_ttsize;
 	asu64(R2) = b;
 	R3 = 52;
@@ -56989,115 +57064,115 @@ L6187:
 	R2 = toi64(toi32(R2));
 	asi64(R1) = *toi64p(((i64)R1+(i64)R2*8));
 	R2 = 4;
-	if (asi64(R1) > asi64(R2)) goto L6189;
+	if (asi64(R1) > asi64(R2)) goto L6190;
 	R1 = 9;
 	asu64(R2) = b;
 	R3 = 52;
 	*toi32p(((i64)R2+(i64)R3)) = asi32(R1);
-L6189:
+L6190:
 	R1 = 43;
 	asu64(R2) = b;
 	asu64(R3) = a;
 	cc_blockpcl_dx_bin(asu64(R3), asu64(R2), asi64(R1));
-	goto L6154;
-L6190:
+	goto L6155;
+L6191:
 	R1 = 44;
 	asu64(R2) = b;
 	asu64(R3) = a;
 	cc_blockpcl_dx_bin(asu64(R3), asu64(R2), asi64(R1));
-	goto L6154;
-L6191:
+	goto L6155;
+L6192:
 	R1 = 45;
 	asu64(R2) = b;
 	asu64(R3) = a;
 	cc_blockpcl_dx_bin(asu64(R3), asu64(R2), asi64(R1));
-	goto L6154;
-L6192:
+	goto L6155;
+L6193:
 	asu64(R1) = a;
 	R2 = 52;
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
 	R1 = toi64(toi32(R1));
 	asi64(R1) = cc_lib_isrealcc(asi64(R1));
-	if (!asi64(R1)) goto L6194;
+	if (!asi64(R1)) goto L6195;
 	R1 = 46;
-	goto L6193;
-L6194:
+	goto L6194;
+L6195:
 	R1 = 47;
-L6193:
+L6194:
 	asu64(R2) = b;
 	asu64(R3) = a;
 	cc_blockpcl_dx_bin(asu64(R3), asu64(R2), asi64(R1));
-	goto L6154;
-L6195:
+	goto L6155;
+L6196:
 	R1 = 48;
 	asu64(R2) = b;
 	asu64(R3) = a;
 	cc_blockpcl_dx_bin(asu64(R3), asu64(R2), asi64(R1));
-	goto L6154;
-L6196:
+	goto L6155;
+L6197:
 	R1 = 50;
 	asu64(R2) = b;
 	asu64(R3) = a;
 	cc_blockpcl_dx_bin(asu64(R3), asu64(R2), asi64(R1));
-	goto L6154;
-L6197:
+	goto L6155;
+L6198:
 	R1 = 51;
 	asu64(R2) = b;
 	asu64(R3) = a;
 	cc_blockpcl_dx_bin(asu64(R3), asu64(R2), asi64(R1));
-	goto L6154;
-L6198:
+	goto L6155;
+L6199:
 	R1 = 52;
 	asu64(R2) = b;
 	asu64(R3) = a;
 	cc_blockpcl_dx_bin(asu64(R3), asu64(R2), asi64(R1));
-	goto L6154;
-L6199:
+	goto L6155;
+L6200:
 	R1 = 53;
 	asu64(R2) = b;
 	asu64(R3) = a;
 	cc_blockpcl_dx_bin(asu64(R3), asu64(R2), asi64(R1));
-	goto L6154;
-L6200:
+	goto L6155;
+L6201:
 	R1 = 54;
 	asu64(R2) = b;
 	asu64(R3) = a;
 	cc_blockpcl_dx_bin(asu64(R3), asu64(R2), asi64(R1));
-	goto L6154;
-L6201:
+	goto L6155;
+L6202:
 	asi64(R1) = am;
 	asu64(R2) = a;
 	asu64(R3) = p;
 	cc_blockpcl_dx_ptr(asu64(R3), asu64(R2), asi64(R1));
-	goto L6154;
-L6202:
+	goto L6155;
+L6203:
 	asi64(R1) = am;
 	R2 = 57;
 	asu64(R3) = b;
 	asu64(R4) = a;
 	asu64(R5) = p;
 	cc_blockpcl_dx_addptr(asu64(R5), asu64(R4), asu64(R3), asi64(R2), asi64(R1));
-	goto L6154;
-L6203:
+	goto L6155;
+L6204:
 	asi64(R1) = am;
 	R2 = 58;
 	asu64(R3) = b;
 	asu64(R4) = a;
 	asu64(R5) = p;
 	cc_blockpcl_dx_addptr(asu64(R5), asu64(R4), asu64(R3), asi64(R2), asi64(R1));
-	goto L6154;
-L6204:
+	goto L6155;
+L6205:
 	asu64(R1) = p;
 	R2 = 58;
 	asi16(R1) = *toi16p(((i64)R1+(i64)R2));
 	R1 = toi64(toi16(R1));
 	R2 = 0;
-	if (asi64(R1) != asi64(R2)) goto L6206;
+	if (asi64(R1) != asi64(R2)) goto L6207;
 	R1 = 0;
 	asu64(R2) = a;
 	cc_blockpcl_dx_expr(asu64(R2), asi64(R1));
-	goto L6205;
-L6206:
+	goto L6206;
+L6207:
 	asu64(R1) = p;
 	R2 = 48;
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
@@ -57109,15 +57184,15 @@ L6206:
 	asu64(R3) = a;
 	asu64(R4) = p;
 	cc_blockpcl_dx_convert(asu64(R4), asu64(R3), asi64(R2), asi64(R1));
-L6205:
-	goto L6154;
-L6207:
+L6206:
+	goto L6155;
+L6208:
 	asu64(R1) = b;
 	asu64(R2) = a;
 	asu64(R3) = p;
 	cc_blockpcl_dx_scale(asu64(R3), asu64(R2), asu64(R1));
-	goto L6154;
-L6208:
+	goto L6155;
+L6209:
 	R1 = 0;
 	asu64(R2) = a;
 	cc_blockpcl_dx_expr(asu64(R2), asi64(R1));
@@ -57126,8 +57201,8 @@ L6208:
 	pc_api_pc_gen(asi64(R2), asu64(R1));
 	asu64(R1) = a;
 	cc_libpcl_setmode_u(asu64(R1));
-	goto L6154;
-L6209:
+	goto L6155;
+L6210:
 	R1 = 0;
 	asu64(R2) = a;
 	cc_blockpcl_dx_expr(asu64(R2), asi64(R1));
@@ -57136,119 +57211,119 @@ L6209:
 	pc_api_pc_gen(asi64(R2), asu64(R1));
 	asu64(R1) = a;
 	cc_libpcl_setmode_u(asu64(R1));
-	goto L6154;
-L6210:
-	asu64(R1) = a;
-	asu64(R2) = p;
-	cc_blockpcl_dx_preincrx(asu64(R2), asu64(R1));
-	goto L6154;
+	goto L6155;
 L6211:
 	asu64(R1) = a;
 	asu64(R2) = p;
-	cc_blockpcl_dx_postincrx(asu64(R2), asu64(R1));
-	goto L6154;
+	cc_blockpcl_dx_preincrx(asu64(R2), asu64(R1));
+	goto L6155;
 L6212:
+	asu64(R1) = a;
+	asu64(R2) = p;
+	cc_blockpcl_dx_postincrx(asu64(R2), asu64(R1));
+	goto L6155;
+L6213:
 	R1 = 1;
 	R2 = 90;
 	asu64(R3) = b;
 	asu64(R4) = a;
 	cc_blockpcl_dx_binto(asu64(R4), asu64(R3), asi64(R2), asi64(R1));
-	goto L6154;
-L6213:
+	goto L6155;
+L6214:
 	R1 = 1;
 	R2 = 91;
 	asu64(R3) = b;
 	asu64(R4) = a;
 	cc_blockpcl_dx_binto(asu64(R4), asu64(R3), asi64(R2), asi64(R1));
-	goto L6154;
-L6214:
+	goto L6155;
+L6215:
 	R1 = 1;
 	R2 = 92;
 	asu64(R3) = b;
 	asu64(R4) = a;
 	cc_blockpcl_dx_binto(asu64(R4), asu64(R3), asi64(R2), asi64(R1));
-	goto L6154;
-L6215:
+	goto L6155;
+L6216:
 	R1 = 1;
 	asu64(R2) = a;
 	R3 = 52;
 	asi32(R2) = *toi32p(((i64)R2+(i64)R3));
 	R2 = toi64(toi32(R2));
 	asi64(R2) = cc_lib_isrealcc(asi64(R2));
-	if (!asi64(R2)) goto L6217;
+	if (!asi64(R2)) goto L6218;
 	R2 = 93;
-	goto L6216;
-L6217:
+	goto L6217;
+L6218:
 	R2 = 94;
-L6216:
+L6217:
 	asu64(R3) = b;
 	asu64(R4) = a;
 	cc_blockpcl_dx_binto(asu64(R4), asu64(R3), asi64(R2), asi64(R1));
-	goto L6154;
-L6218:
+	goto L6155;
+L6219:
 	R1 = 1;
 	R2 = 95;
 	asu64(R3) = b;
 	asu64(R4) = a;
 	cc_blockpcl_dx_binto(asu64(R4), asu64(R3), asi64(R2), asi64(R1));
-	goto L6154;
-L6219:
+	goto L6155;
+L6220:
 	R1 = 1;
 	R2 = 96;
 	asu64(R3) = b;
 	asu64(R4) = a;
 	cc_blockpcl_dx_binto(asu64(R4), asu64(R3), asi64(R2), asi64(R1));
-	goto L6154;
-L6220:
+	goto L6155;
+L6221:
 	R1 = 1;
 	R2 = 97;
 	asu64(R3) = b;
 	asu64(R4) = a;
 	cc_blockpcl_dx_binto(asu64(R4), asu64(R3), asi64(R2), asi64(R1));
-	goto L6154;
-L6221:
+	goto L6155;
+L6222:
 	R1 = 1;
 	R2 = 98;
 	asu64(R3) = b;
 	asu64(R4) = a;
 	cc_blockpcl_dx_binto(asu64(R4), asu64(R3), asi64(R2), asi64(R1));
-	goto L6154;
-L6222:
+	goto L6155;
+L6223:
 	R1 = 1;
 	R2 = 99;
 	asu64(R3) = b;
 	asu64(R4) = a;
 	cc_blockpcl_dx_binto(asu64(R4), asu64(R3), asi64(R2), asi64(R1));
-	goto L6154;
-L6223:
+	goto L6155;
+L6224:
 	R1 = 1;
 	R2 = 100;
 	asu64(R3) = b;
 	asu64(R4) = a;
 	cc_blockpcl_dx_binto(asu64(R4), asu64(R3), asi64(R2), asi64(R1));
-	goto L6154;
-L6224:
+	goto L6155;
+L6225:
 	asi64(R1) = am;
 	asu64(R2) = a;
 	asu64(R3) = p;
 	cc_blockpcl_dx_addrof(asu64(R3), asu64(R2), asi64(R1));
-	goto L6154;
-L6225:
+	goto L6155;
+L6226:
 	asi64(R1) = am;
 	asu64(R2) = b;
 	asu64(R3) = a;
 	asu64(R4) = p;
 	cc_blockpcl_dx_dot(asu64(R4), asu64(R3), asu64(R2), asi64(R1));
-	goto L6154;
-L6226:
+	goto L6155;
+L6227:
 	R1 = 0;
 	asu64(R2) = a;
 	cc_blockpcl_dx_expr(asu64(R2), asi64(R1));
 	R1 = 0;
 	R2 = 129;
 	pc_api_pc_gen(asi64(R2), asu64(R1));
-	goto L6154;
-L6227:
+	goto L6155;
+L6228:
 	R1 = 0;
 	asu64(R2) = a;
 	cc_blockpcl_dx_expr(asu64(R2), asi64(R1));
@@ -57258,8 +57333,8 @@ L6227:
 	R1 = 0;
 	R2 = 130;
 	pc_api_pc_gen(asi64(R2), asu64(R1));
-	goto L6154;
-L6156:
+	goto L6155;
+L6157:
 	R1 = 0;
 	R2 = (u64)&cc_tables_jtagnames;
 	asu64(R3) = p;
@@ -57269,10 +57344,10 @@ L6156:
 	asu64(R2) = *tou64p(((i64)R2+(i64)R3*8));
 	R3 = tou64("DX-EXPR: can't do tag: #");
 	cc_support_gerror_s(asu64(R3), asu64(R2), asu64(R1));
-L6154:
+L6155:
 	asi64(R1) = oldclineno;
 	cc_decls_clineno = asi64(R1);
-L6151:
+L6152:
 	return;
 }
 
@@ -57289,24 +57364,24 @@ static void cc_blockpcl_dx_const(u64 p) {
 	t = asi64(R1);
 	asi64(R1) = t;
 	R2 = 1;
-	if (asi64(R1) < asi64(R2)) goto L6230;
+	if (asi64(R1) < asi64(R2)) goto L6231;
 	R2 = 9;
-	if (asi64(R1) > asi64(R2)) goto L6230;
+	if (asi64(R1) > asi64(R2)) goto L6231;
 	asu64(R1) = p;
 	R2 = 0;
 	asi64(R1) = *toi64p(((i64)R1+(i64)R2));
 	asu64(R1) = pc_api_genint(asi64(R1));
 	R2 = 1;
 	pc_api_pc_gen(asi64(R2), asu64(R1));
-	goto L6229;
-L6230:
+	goto L6230;
+L6231:
 	asi64(R1) = t;
 	R2 = 10;
-	if (asi64(R1) == asi64(R2)) goto L6232;
-	R2 = 11;
 	if (asi64(R1) == asi64(R2)) goto L6233;
-	goto L6234;
-L6232:
+	R2 = 11;
+	if (asi64(R1) == asi64(R2)) goto L6234;
+	goto L6235;
+L6233:
 	R1 = 1;
 	asu64(R2) = p;
 	R3 = 0;
@@ -57314,8 +57389,8 @@ L6232:
 	asu64(R1) = pc_api_genreal(asr64(R2), asi64(R1));
 	R2 = 1;
 	pc_api_pc_gen(asi64(R2), asu64(R1));
-	goto L6231;
-L6233:
+	goto L6232;
+L6234:
 	R1 = 2;
 	asu64(R2) = p;
 	R3 = 0;
@@ -57323,14 +57398,14 @@ L6233:
 	asu64(R1) = pc_api_genreal(asr64(R2), asi64(R1));
 	R2 = 1;
 	pc_api_pc_gen(asi64(R2), asu64(R1));
-	goto L6231;
-L6234:
+	goto L6232;
+L6235:
 	asi64(R1) = t;
 	R2 = 10;
-	if (asi64(R1) < asi64(R2)) goto L6236;
+	if (asi64(R1) < asi64(R2)) goto L6237;
 	asi64(R1) = t;
 	R2 = 11;
-	if (asi64(R1) > asi64(R2)) goto L6236;
+	if (asi64(R1) > asi64(R2)) goto L6237;
 	R1 = 2;
 	asu64(R2) = p;
 	R3 = 0;
@@ -57338,15 +57413,15 @@ L6234:
 	asu64(R1) = pc_api_genreal(asr64(R2), asi64(R1));
 	R2 = 1;
 	pc_api_pc_gen(asi64(R2), asu64(R1));
-	goto L6235;
-L6236:
+	goto L6236;
+L6237:
 	asi64(R1) = t;
 	R2 = 13;
-	if (asi64(R1) != asi64(R2)) goto L6237;
+	if (asi64(R1) != asi64(R2)) goto L6238;
 	asu64(R1) = p;
 	R2 = 61;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
-	if (!asu8(R1)) goto L6239;
+	if (!asu8(R1)) goto L6240;
 	asu64(R1) = p;
 	R2 = 48;
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
@@ -57357,32 +57432,32 @@ L6236:
 	asu64(R1) = pc_api_genstring(asu64(R2), asi64(R1));
 	R2 = 1;
 	pc_api_pc_gen(asi64(R2), asu64(R1));
-	goto L6238;
-L6239:
+	goto L6239;
+L6240:
 	asu64(R1) = p;
 	R2 = 62;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
-	if (!asu8(R1)) goto L6240;
+	if (!asu8(R1)) goto L6241;
 	R1 = 0;
 	R2 = tou64("CONST/WSTRING");
 	cc_support_gerror(asu64(R2), asu64(R1));
-	goto L6238;
-L6240:
+	goto L6239;
+L6241:
 	asu64(R1) = p;
 	R2 = 0;
 	asi64(R1) = *toi64p(((i64)R1+(i64)R2));
 	asu64(R1) = pc_api_genint(asi64(R1));
 	R2 = 1;
 	pc_api_pc_gen(asi64(R2), asu64(R1));
+L6239:
+	goto L6236;
 L6238:
-	goto L6235;
-L6237:
 	R1 = 0;
 	R2 = tou64("const?");
 	cc_support_gerror(asu64(R2), asu64(R1));
-L6235:
-L6231:
-L6229:
+L6236:
+L6232:
+L6230:
 	asu64(R1) = p;
 	R2 = 52;
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
@@ -57403,36 +57478,36 @@ static void cc_blockpcl_dx_name(u64 p, i64 am) {
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 7;
-	if (asi64(R1) == asi64(R2)) goto L6243;
+	if (asi64(R1) == asi64(R2)) goto L6244;
 	R2 = 8;
-	if (asi64(R1) == asi64(R2)) goto L6243;
+	if (asi64(R1) == asi64(R2)) goto L6244;
 	R2 = 9;
-	if (asi64(R1) == asi64(R2)) goto L6243;
-	goto L6244;
-L6243:
+	if (asi64(R1) == asi64(R2)) goto L6244;
+	goto L6245;
+L6244:
 	asi64(R1) = am;
-	if (!asi64(R1)) goto L6246;
+	if (!asi64(R1)) goto L6247;
 	asu64(R1) = d;
 	asu64(R1) = cc_libpcl_genmemaddr_d(asu64(R1));
 	R2 = 1;
 	pc_api_pc_gen(asi64(R2), asu64(R1));
 	R1 = 9;
 	cc_libpcl_setmode(asi64(R1));
-	goto L6245;
-L6246:
+	goto L6246;
+L6247:
 	asu64(R1) = d;
 	asu64(R1) = cc_libpcl_genmem_d(asu64(R1));
 	R2 = 1;
 	pc_api_pc_gen(asi64(R2), asu64(R1));
 	asu64(R1) = p;
 	cc_blockpcl_widen(asu64(R1));
+L6246:
+	goto L6243;
 L6245:
-	goto L6242;
-L6244:
 	R1 = 0;
 	R2 = tou64("dxname");
 	cc_support_gerror(asu64(R2), asu64(R1));
-L6242:
+L6243:
 	return;
 }
 
@@ -57464,16 +57539,16 @@ static void cc_blockpcl_dx_binto(u64 a, u64 b, i64 opc, i64 res) {
 	asu64(R2) = a;
 	cc_blockpcl_dx_expr(asu64(R2), asi64(R1));
 	asi64(R1) = res;
-	if (asi64(R1)) goto L6250;
+	if (asi64(R1)) goto L6251;
 	asi64(R1) = opc;
 	R2 = 94;
-	if (asi64(R1) == asi64(R2)) goto L6250;
+	if (asi64(R1) == asi64(R2)) goto L6251;
 	R2 = 95;
-	if (asi64(R1) == asi64(R2)) goto L6250;
+	if (asi64(R1) == asi64(R2)) goto L6251;
 	cc_blockpcl_do_setinplace();
-L6250:
+L6251:
 	asi64(R1) = res;
-	if (!asi64(R1)) goto L6252;
+	if (!asi64(R1)) goto L6253;
 	R1 = 0;
 	R2 = 8;
 	pc_api_pc_gen(asi64(R2), asu64(R1));
@@ -57482,7 +57557,7 @@ L6250:
 	R3 = 2;
 	R4 = 10;
 	pc_api_pc_genxy(asi64(R4), asi64(R3), asi64(R2), asu64(R1));
-L6252:
+L6253:
 	R1 = 0;
 	asi64(R2) = opc;
 	pc_api_pc_gen(asi64(R2), asu64(R1));
@@ -57490,14 +57565,14 @@ L6252:
 	asi64(R1) = cc_parse_getmemmode(asu64(R1));
 	cc_libpcl_setmode(asi64(R1));
 	asi64(R1) = res;
-	if (!asi64(R1)) goto L6254;
+	if (!asi64(R1)) goto L6255;
 	R1 = 0;
 	R2 = 2;
 	pc_api_pc_gen(asi64(R2), asu64(R1));
 	asu64(R1) = a;
 	asi64(R1) = cc_parse_getmemmode(asu64(R1));
 	cc_libpcl_setmode(asi64(R1));
-L6254:
+L6255:
 	return;
 }
 
@@ -57510,23 +57585,23 @@ static void cc_blockpcl_do_assign(u64 a, u64 b, i64 res) {
 	asu64(R2) = b;
 	cc_blockpcl_dx_expr(asu64(R2), asi64(R1));
 	asi64(R1) = res;
-	if (!asi64(R1)) goto L6257;
+	if (!asi64(R1)) goto L6258;
 	R1 = 0;
 	R2 = 9;
 	pc_api_pc_gen(asi64(R2), asu64(R1));
-L6257:
+L6258:
 	asu64(R1) = a;
 	R2 = 40;
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
 	R1 = toi64(toi32(R1));
 	R2 = 3;
-	if (asi64(R1) == asi64(R2)) goto L6259;
-	R2 = 52;
 	if (asi64(R1) == asi64(R2)) goto L6260;
-	R2 = 49;
+	R2 = 52;
 	if (asi64(R1) == asi64(R2)) goto L6261;
-	goto L6262;
-L6259:
+	R2 = 49;
+	if (asi64(R1) == asi64(R2)) goto L6262;
+	goto L6263;
+L6260:
 	asu64(R1) = a;
 	R2 = 0;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
@@ -57536,8 +57611,8 @@ L6259:
 	asu64(R1) = a;
 	asi64(R1) = cc_parse_getmemmode(asu64(R1));
 	cc_libpcl_setmode(asi64(R1));
-	goto L6258;
-L6260:
+	goto L6259;
+L6261:
 	R1 = 1;
 	asu64(R2) = a;
 	cc_blockpcl_dx_expr(asu64(R2), asi64(R1));
@@ -57548,8 +57623,8 @@ L6260:
 	asu64(R1) = a;
 	asi64(R1) = cc_parse_getmemmode(asu64(R1));
 	cc_libpcl_setmode(asi64(R1));
-	goto L6258;
-L6261:
+	goto L6259;
+L6262:
 	R1 = 1;
 	asu64(R2) = a;
 	R3 = 16;
@@ -57584,8 +57659,8 @@ L6261:
 	asu64(R1) = a;
 	asi64(R1) = cc_parse_getmemmode(asu64(R1));
 	cc_libpcl_setmode(asi64(R1));
-	goto L6258;
-L6262:
+	goto L6259;
+L6263:
 	R1 = 0;
 	R2 = (u64)&cc_tables_jtagnames;
 	asu64(R3) = a;
@@ -57595,7 +57670,7 @@ L6262:
 	asu64(R2) = *tou64p(((i64)R2+(i64)R3*8));
 	R3 = tou64("DOASSIGN not ready: #");
 	cc_support_gerror_s(asu64(R3), asu64(R2), asu64(R1));
-L6258:
+L6259:
 	return;
 }
 
@@ -57606,14 +57681,14 @@ static void cc_blockpcl_dx_ptr(u64 p, u64 a, i64 am) {
 	cc_blockpcl_dx_expr(asu64(R2), asi64(R1));
 	asi64(R1) = am;
 	R2 = 0;
-	if (asi64(R1) != asi64(R2)) goto L6265;
+	if (asi64(R1) != asi64(R2)) goto L6266;
 	R1 = 0;
 	R2 = 1;
 	R3 = 2;
 	pc_api_pc_genix(asi64(R3), asi64(R2), asi64(R1));
 	asu64(R1) = p;
 	cc_blockpcl_widen(asu64(R1));
-L6265:
+L6266:
 	return;
 }
 
@@ -57674,96 +57749,96 @@ static void cc_blockpcl_dx_convert(u64 p, u64 a, i64 t, i64 opc) {
 	cc_blockpcl_dx_expr(asu64(R2), asi64(R1));
 	asi64(R1) = opc;
 	R2 = 1;
-	if (asi64(R1) == asi64(R2)) goto L6270;
-	R2 = 2;
 	if (asi64(R1) == asi64(R2)) goto L6271;
+	R2 = 2;
+	if (asi64(R1) == asi64(R2)) goto L6272;
 	R2 = 3;
-	if (asi64(R1) == asi64(R2)) goto L6272;
+	if (asi64(R1) == asi64(R2)) goto L6273;
 	R2 = 4;
-	if (asi64(R1) == asi64(R2)) goto L6272;
+	if (asi64(R1) == asi64(R2)) goto L6273;
 	R2 = 5;
-	if (asi64(R1) == asi64(R2)) goto L6273;
+	if (asi64(R1) == asi64(R2)) goto L6274;
 	R2 = 6;
-	if (asi64(R1) == asi64(R2)) goto L6273;
+	if (asi64(R1) == asi64(R2)) goto L6274;
 	R2 = 7;
-	if (asi64(R1) == asi64(R2)) goto L6274;
-	R2 = 8;
-	if (asi64(R1) == asi64(R2)) goto L6274;
-	R2 = 9;
 	if (asi64(R1) == asi64(R2)) goto L6275;
-	R2 = 10;
+	R2 = 8;
+	if (asi64(R1) == asi64(R2)) goto L6275;
+	R2 = 9;
 	if (asi64(R1) == asi64(R2)) goto L6276;
+	R2 = 10;
+	if (asi64(R1) == asi64(R2)) goto L6277;
 	R2 = 11;
-	if (asi64(R1) == asi64(R2)) goto L6277;
+	if (asi64(R1) == asi64(R2)) goto L6278;
 	R2 = 12;
-	if (asi64(R1) == asi64(R2)) goto L6277;
-	goto L6278;
-L6270:
-	goto L6268;
-	goto L6269;
+	if (asi64(R1) == asi64(R2)) goto L6278;
+	goto L6279;
 L6271:
+	goto L6269;
+	goto L6270;
+L6272:
 	R1 = (u64)&cc_decls_ttbasetype;
 	asi64(R2) = s;
 	asi16(R1) = *toi16p(((i64)R1+(i64)R2*2));
 	R1 = toi64(toi16(R1));
 	R2 = 10;
-	if (asi64(R1) == asi64(R2)) goto L6281;
+	if (asi64(R1) == asi64(R2)) goto L6282;
 	R2 = 11;
-	if (asi64(R1) != asi64(R2)) goto L6280;
-L6281:
+	if (asi64(R1) != asi64(R2)) goto L6281;
+L6282:
 	R1 = 0;
 	R2 = tou64("Bad cast");
 	cc_support_gerror(asu64(R2), asu64(R1));
-L6280:
+L6281:
 	asi64(R1) = tsize;
 	asi64(R2) = ssize;
-	if (asi64(R1) <= asi64(R2)) goto L6283;
+	if (asi64(R1) <= asi64(R2)) goto L6284;
 	R1 = 0;
 	R2 = 114;
 	pc_api_pc_gen(asi64(R2), asu64(R1));
-	goto L6282;
-L6283:
+	goto L6283;
+L6284:
 	asi64(R1) = tsize;
 	asi64(R2) = ssize;
-	if (asi64(R1) >= asi64(R2)) goto L6284;
-	goto L6285;
-	goto L6268;
-L6284:
-L6282:
+	if (asi64(R1) >= asi64(R2)) goto L6285;
+	goto L6286;
 	goto L6269;
-L6272:
+L6285:
+L6283:
+	goto L6270;
+L6273:
 	asi64(R1) = ssize;
 	asi64(R2) = tsize;
-	if (asi64(R1) != asi64(R2)) goto L6287;
-	goto L6268;
-L6287:
+	if (asi64(R1) != asi64(R2)) goto L6288;
+	goto L6269;
+L6288:
 	R1 = 0;
 	R2 = 114;
 	pc_api_pc_gen(asi64(R2), asu64(R1));
-	goto L6269;
-L6273:
+	goto L6270;
+L6274:
 	R1 = 0;
 	R2 = 111;
 	pc_api_pc_gen(asi64(R2), asu64(R1));
-	goto L6269;
-L6274:
+	goto L6270;
+L6275:
 	R1 = 0;
 	R2 = 112;
 	pc_api_pc_gen(asi64(R2), asu64(R1));
-	goto L6269;
-L6275:
+	goto L6270;
+L6276:
 	R1 = 0;
 	R2 = 115;
 	pc_api_pc_gen(asi64(R2), asu64(R1));
-	goto L6269;
-L6276:
+	goto L6270;
+L6277:
 	R1 = 0;
 	R2 = 116;
 	pc_api_pc_gen(asi64(R2), asu64(R1));
-	goto L6269;
-L6277:
+	goto L6270;
+L6278:
 // cc_blockpcl.dx_convert.dotruncate:
-L6285:
+L6286:
 	R1 = 0;
 	R2 = 113;
 	pc_api_pc_gen(asi64(R2), asu64(R1));
@@ -57771,21 +57846,21 @@ L6285:
 	cc_libpcl_setmode(asi64(R1));
 	asi64(R1) = t;
 	cc_libpcl_setmode2(asi64(R1));
-	goto L6268;
 	goto L6269;
-L6278:
+	goto L6270;
+L6279:
 	R1 = 0;
 	R2 = (u64)&cc_tables_convnames;
 	asi64(R3) = opc;
 	asu64(R2) = *tou64p(((i64)R2+(i64)R3*8));
 	R3 = tou64("Convert op not implem: #");
 	cc_support_gerror_s(asu64(R3), asu64(R2), asu64(R1));
-L6269:
+L6270:
 	asi64(R1) = t;
 	cc_libpcl_setmode(asi64(R1));
 	asi64(R1) = s;
 	cc_libpcl_setmode2(asi64(R1));
-L6268:
+L6269:
 	return;
 }
 
@@ -57802,7 +57877,7 @@ static void cc_blockpcl_do_if(u64 a, u64 b, u64 c) {
 	asu64(R1) = b;
 	cc_blockpcl_do_stmt(asu64(R1));
 	asu64(R1) = c;
-	if (!asu64(R1)) goto L6290;
+	if (!asu64(R1)) goto L6291;
 	asi64(R1) = cc_libpcl_createfwdlabel();
 	lab2 = asi64(R1);
 	asi64(R1) = lab2;
@@ -57813,11 +57888,11 @@ static void cc_blockpcl_do_if(u64 a, u64 b, u64 c) {
 	cc_blockpcl_do_stmt(asu64(R1));
 	asi64(R1) = lab2;
 	cc_libpcl_definefwdlabel(asi64(R1));
-	goto L6289;
-L6290:
+	goto L6290;
+L6291:
 	asi64(R1) = lab1;
 	cc_libpcl_definefwdlabel(asi64(R1));
-L6289:
+L6290:
 	return;
 }
 
@@ -57839,58 +57914,58 @@ static void cc_blockpcl_genjumpcond(i64 opc, u64 p, i64 lab) {
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
 	R1 = toi64(toi32(R1));
 	switch (asi64(R1)) {
-	case 24: goto L6295;
-	case 25: goto L6300;
-	case 26: goto L6305;
-	case 27: goto L6310;
-	case 28: case 30: case 31: case 32: goto L6294;
-	case 29: goto L6312;
-	case 33: case 34: case 35: case 36: case 37: case 38: goto L6311;
-	default: goto L6294;
+	case 24: goto L6296;
+	case 25: goto L6301;
+	case 26: goto L6306;
+	case 27: goto L6311;
+	case 28: case 30: case 31: case 32: goto L6295;
+	case 29: goto L6313;
+	case 33: case 34: case 35: case 36: case 37: case 38: goto L6312;
+	default: goto L6295;
     };
 // SWITCH
-L6295:
-	asi64(R1) = opc;
-	R2 = 28;
-	if (asi64(R1) == asi64(R2)) goto L6297;
-	R2 = 27;
-	if (asi64(R1) == asi64(R2)) goto L6298;
-	goto L6299;
-L6297:
-	asi64(R1) = lab;
-	asu64(R2) = q;
-	R3 = 28;
-	cc_blockpcl_genjumpcond(asi64(R3), asu64(R2), asi64(R1));
-	asi64(R1) = lab;
-	asu64(R2) = r;
-	R3 = 28;
-	cc_blockpcl_genjumpcond(asi64(R3), asu64(R2), asi64(R1));
-	goto L6296;
-L6298:
-	asi64(R1) = cc_libpcl_createfwdlabel();
-	lab2 = asi64(R1);
-	asi64(R1) = lab2;
-	asu64(R2) = q;
-	R3 = 28;
-	cc_blockpcl_genjumpcond(asi64(R3), asu64(R2), asi64(R1));
-	asi64(R1) = lab;
-	asu64(R2) = r;
-	R3 = 27;
-	cc_blockpcl_genjumpcond(asi64(R3), asu64(R2), asi64(R1));
-	asi64(R1) = lab2;
-	cc_libpcl_definefwdlabel(asi64(R1));
-	goto L6296;
-L6299:
 L6296:
-	goto L6292;
-L6300:
 	asi64(R1) = opc;
 	R2 = 28;
-	if (asi64(R1) == asi64(R2)) goto L6302;
+	if (asi64(R1) == asi64(R2)) goto L6298;
 	R2 = 27;
+	if (asi64(R1) == asi64(R2)) goto L6299;
+	goto L6300;
+L6298:
+	asi64(R1) = lab;
+	asu64(R2) = q;
+	R3 = 28;
+	cc_blockpcl_genjumpcond(asi64(R3), asu64(R2), asi64(R1));
+	asi64(R1) = lab;
+	asu64(R2) = r;
+	R3 = 28;
+	cc_blockpcl_genjumpcond(asi64(R3), asu64(R2), asi64(R1));
+	goto L6297;
+L6299:
+	asi64(R1) = cc_libpcl_createfwdlabel();
+	lab2 = asi64(R1);
+	asi64(R1) = lab2;
+	asu64(R2) = q;
+	R3 = 28;
+	cc_blockpcl_genjumpcond(asi64(R3), asu64(R2), asi64(R1));
+	asi64(R1) = lab;
+	asu64(R2) = r;
+	R3 = 27;
+	cc_blockpcl_genjumpcond(asi64(R3), asu64(R2), asi64(R1));
+	asi64(R1) = lab2;
+	cc_libpcl_definefwdlabel(asi64(R1));
+	goto L6297;
+L6300:
+L6297:
+	goto L6293;
+L6301:
+	asi64(R1) = opc;
+	R2 = 28;
 	if (asi64(R1) == asi64(R2)) goto L6303;
-	goto L6304;
-L6302:
+	R2 = 27;
+	if (asi64(R1) == asi64(R2)) goto L6304;
+	goto L6305;
+L6303:
 	asi64(R1) = cc_libpcl_createfwdlabel();
 	lab2 = asi64(R1);
 	asi64(R1) = lab2;
@@ -57903,8 +57978,8 @@ L6302:
 	cc_blockpcl_genjumpcond(asi64(R3), asu64(R2), asi64(R1));
 	asi64(R1) = lab2;
 	cc_libpcl_definefwdlabel(asi64(R1));
-	goto L6301;
-L6303:
+	goto L6302;
+L6304:
 	asi64(R1) = lab;
 	asu64(R2) = q;
 	R3 = 27;
@@ -57913,69 +57988,69 @@ L6303:
 	asu64(R2) = r;
 	R3 = 27;
 	cc_blockpcl_genjumpcond(asi64(R3), asu64(R2), asi64(R1));
-	goto L6301;
-L6304:
-L6301:
-	goto L6292;
+	goto L6302;
 L6305:
+L6302:
+	goto L6293;
+L6306:
 	asi64(R1) = opc;
 	R2 = 28;
-	if (asi64(R1) == asi64(R2)) goto L6307;
-	R2 = 27;
 	if (asi64(R1) == asi64(R2)) goto L6308;
-	goto L6309;
-L6307:
-	asi64(R1) = lab;
-	asu64(R2) = q;
-	R3 = 27;
-	cc_blockpcl_genjumpcond(asi64(R3), asu64(R2), asi64(R1));
-	goto L6306;
+	R2 = 27;
+	if (asi64(R1) == asi64(R2)) goto L6309;
+	goto L6310;
 L6308:
 	asi64(R1) = lab;
 	asu64(R2) = q;
+	R3 = 27;
+	cc_blockpcl_genjumpcond(asi64(R3), asu64(R2), asi64(R1));
+	goto L6307;
+L6309:
+	asi64(R1) = lab;
+	asu64(R2) = q;
 	R3 = 28;
 	cc_blockpcl_genjumpcond(asi64(R3), asu64(R2), asi64(R1));
-	goto L6306;
-L6309:
-L6306:
-	goto L6292;
+	goto L6307;
 L6310:
+L6307:
+	goto L6293;
+L6311:
 	asi64(R1) = lab;
 	asu64(R2) = q;
 	asi64(R3) = opc;
 	cc_blockpcl_genjumpcond(asi64(R3), asu64(R2), asi64(R1));
-	goto L6292;
-L6311:
+	goto L6293;
+L6312:
 	asi64(R1) = lab;
 	asu64(R2) = r;
 	asu64(R3) = q;
 	asu64(R4) = p;
 	asi64(R5) = opc;
 	cc_blockpcl_gcomparejump(asi64(R5), asu64(R4), asu64(R3), asu64(R2), asi64(R1));
-	goto L6292;
-L6312:
-	goto L6314;
+	goto L6293;
 L6313:
+	goto L6315;
+L6314:
 	asu64(R1) = q;
 	cc_blockpcl_do_stmt(asu64(R1));
 	asu64(R1) = r;
 	q = asu64(R1);
-L6314:
+L6315:
 	asu64(R1) = q;
-	if (!asu64(R1)) goto L6316;
+	if (!asu64(R1)) goto L6317;
 	asu64(R1) = q;
 	R2 = 8;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
 	R2 = R1;
 	r = asu64(R2);
-	if (asu64(R1)) goto L6313;
-L6316:
+	if (asu64(R1)) goto L6314;
+L6317:
 	asi64(R1) = lab;
 	asu64(R2) = q;
 	asi64(R3) = opc;
 	cc_blockpcl_genjumpcond(asi64(R3), asu64(R2), asi64(R1));
-	goto L6292;
-L6294:
+	goto L6293;
+L6295:
 	R1 = 0;
 	asu64(R2) = p;
 	cc_blockpcl_dx_expr(asu64(R2), asi64(R1));
@@ -57985,7 +58060,7 @@ L6294:
 	pc_api_pc_gen(asi64(R2), asu64(R1));
 	asu64(R1) = p;
 	cc_libpcl_setmode_u(asu64(R1));
-L6292:
+L6293:
 	return;
 }
 
@@ -58000,11 +58075,11 @@ static void cc_blockpcl_gcomparejump(i64 jumpopc, u64 p, u64 lhs, u64 rhs, i64 l
 	cond = asi64(R1);
 	asi64(R1) = jumpopc;
 	R2 = 28;
-	if (asi64(R1) != asi64(R2)) goto L6319;
+	if (asi64(R1) != asi64(R2)) goto L6320;
 	asi64(R1) = cond;
 	asi64(R1) = cc_blockpcl_reversecond(asi64(R1));
 	cond = asi64(R1);
-L6319:
+L6320:
 	asu64(R1) = rhs;
 	asu64(R2) = lhs;
 	cc_blockpcl_do_fixwiden(asu64(R2), asu64(R1));
@@ -58031,47 +58106,47 @@ static i64 cc_blockpcl_getpclcond(i64 op) {
     u64 R1, R2; 
 	asi64(R1) = op;
 	R2 = 33;
-	if (asi64(R1) == asi64(R2)) goto L6322;
-	R2 = 34;
 	if (asi64(R1) == asi64(R2)) goto L6323;
-	R2 = 35;
+	R2 = 34;
 	if (asi64(R1) == asi64(R2)) goto L6324;
-	R2 = 36;
+	R2 = 35;
 	if (asi64(R1) == asi64(R2)) goto L6325;
-	R2 = 38;
+	R2 = 36;
 	if (asi64(R1) == asi64(R2)) goto L6326;
-	R2 = 37;
+	R2 = 38;
 	if (asi64(R1) == asi64(R2)) goto L6327;
-	goto L6328;
-L6322:
-	R1 = 1;
-	goto L6320;
-	goto L6321;
+	R2 = 37;
+	if (asi64(R1) == asi64(R2)) goto L6328;
+	goto L6329;
 L6323:
-	R1 = 2;
-	goto L6320;
+	R1 = 1;
 	goto L6321;
+	goto L6322;
 L6324:
-	R1 = 3;
-	goto L6320;
+	R1 = 2;
 	goto L6321;
+	goto L6322;
 L6325:
-	R1 = 4;
-	goto L6320;
+	R1 = 3;
 	goto L6321;
+	goto L6322;
 L6326:
-	R1 = 5;
-	goto L6320;
+	R1 = 4;
 	goto L6321;
+	goto L6322;
 L6327:
-	R1 = 6;
-	goto L6320;
+	R1 = 5;
 	goto L6321;
+	goto L6322;
 L6328:
-L6321:
+	R1 = 6;
+	goto L6321;
+	goto L6322;
+L6329:
+L6322:
 	R1 = 0;
-	goto L6320;
-L6320:
+	goto L6321;
+L6321:
 	return asi64(R1);
 }
 
@@ -58079,47 +58154,47 @@ static i64 cc_blockpcl_reversecond(i64 cc) {
     u64 R1, R2; 
 	asi64(R1) = cc;
 	R2 = 1;
-	if (asi64(R1) == asi64(R2)) goto L6331;
-	R2 = 2;
 	if (asi64(R1) == asi64(R2)) goto L6332;
-	R2 = 3;
+	R2 = 2;
 	if (asi64(R1) == asi64(R2)) goto L6333;
-	R2 = 4;
+	R2 = 3;
 	if (asi64(R1) == asi64(R2)) goto L6334;
-	R2 = 5;
+	R2 = 4;
 	if (asi64(R1) == asi64(R2)) goto L6335;
-	R2 = 6;
+	R2 = 5;
 	if (asi64(R1) == asi64(R2)) goto L6336;
-	goto L6337;
-L6331:
+	R2 = 6;
+	if (asi64(R1) == asi64(R2)) goto L6337;
+	goto L6338;
+L6332:
 	R1 = 2;
 	cc = asi64(R1);
-	goto L6330;
-L6332:
+	goto L6331;
+L6333:
 	R1 = 1;
 	cc = asi64(R1);
-	goto L6330;
-L6333:
+	goto L6331;
+L6334:
 	R1 = 5;
 	cc = asi64(R1);
-	goto L6330;
-L6334:
+	goto L6331;
+L6335:
 	R1 = 6;
 	cc = asi64(R1);
-	goto L6330;
-L6335:
+	goto L6331;
+L6336:
 	R1 = 3;
 	cc = asi64(R1);
-	goto L6330;
-L6336:
+	goto L6331;
+L6337:
 	R1 = 4;
 	cc = asi64(R1);
-	goto L6330;
-L6337:
-L6330:
+	goto L6331;
+L6338:
+L6331:
 	asi64(R1) = cc;
-	goto L6329;
-L6329:
+	goto L6330;
+L6330:
 	return asi64(R1);
 }
 
@@ -58142,15 +58217,15 @@ static void cc_blockpcl_do_while(u64 pcond, u64 pbody) {
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
 	R1 = toi64(toi32(R1));
 	R2 = 1;
-	if (asi64(R1) != asi64(R2)) goto L6341;
+	if (asi64(R1) != asi64(R2)) goto L6342;
 	asu64(R1) = pcond;
 	R2 = 0;
 	asi64(R1) = *toi64p(((i64)R1+(i64)R2));
-	if (!asi64(R1)) goto L6341;
+	if (!asi64(R1)) goto L6342;
 	asu64(R1) = pbody;
 	cc_blockpcl_do_while1(asu64(R1));
-	goto L6339;
-L6341:
+	goto L6340;
+L6342:
 	asi64(R1) = cc_libpcl_createfwdlabel();
 	lab_c = asi64(R1);
 	asi64(R1) = cc_libpcl_createfwdlabel();
@@ -58174,7 +58249,7 @@ L6341:
 	cc_libpcl_definefwdlabel(asi64(R1));
 	R1 = (u64)&cc_blockpcl_loopindex;
 	(*toi64p(R1)) -=1;
-L6339:
+L6340:
 	return;
 }
 
@@ -58225,12 +58300,12 @@ static void cc_blockpcl_do_dowhile(u64 pbody, u64 pcond) {
 	cc_libpcl_definefwdlabel(asi64(R1));
 	asu64(R1) = pcond;
 	asi64(R1) = cc_parse_iscondfalse(asu64(R1));
-	if (asi64(R1)) goto L6345;
+	if (asi64(R1)) goto L6346;
 	asi64(R1) = lab_b;
 	asu64(R2) = pcond;
 	R3 = 27;
 	cc_blockpcl_genjumpcond(asi64(R3), asu64(R2), asi64(R1));
-L6345:
+L6346:
 	asi64(R1) = lab_d;
 	cc_libpcl_definefwdlabel(asi64(R1));
 	R1 = (u64)&cc_blockpcl_loopindex;
@@ -58256,24 +58331,24 @@ static void cc_blockpcl_do_return(u64 p, u64 a) {
     u64 R1, R2; 
 	u64 e;
 	asu64(R1) = a;
-	if (!asu64(R1)) goto L6349;
+	if (!asu64(R1)) goto L6350;
 	asu64(R1) = cc_decls_currproc;
 	R2 = 108;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 3;
     asi64(R1) = Getdotindex(asu64(R1), asi64(R2));
-	if (!asu64(R1)) goto L6351;
+	if (!asu64(R1)) goto L6352;
 	asu8(R1) = pepcl_pdcc;
-	if (asu8(R1)) goto L6351;
+	if (asu8(R1)) goto L6352;
 	R1 = 0;
 	asu64(R2) = a;
 	cc_blockpcl_dx_expr(asu64(R2), asi64(R1));
 	R1 = 0;
 	R2 = 32;
 	pc_api_pc_gen(asi64(R2), asu64(R1));
-	goto L6350;
-L6351:
+	goto L6351;
+L6352:
 	R1 = 0;
 	asu64(R2) = a;
 	cc_blockpcl_dx_expr(asu64(R2), asi64(R1));
@@ -58283,12 +58358,12 @@ L6351:
 	pc_api_pc_gen(asi64(R2), asu64(R1));
 	asu64(R1) = a;
 	cc_libpcl_setmode_u(asu64(R1));
+L6351:
+	goto L6349;
 L6350:
-	goto L6348;
-L6349:
 	asi64(R1) = cc_genpcl_retindex;
 	cc_blockpcl_genjumpl(asi64(R1));
-L6348:
+L6349:
 	return;
 }
 
@@ -58322,10 +58397,10 @@ static void cc_blockpcl_dx_call(u64 p, u64 a, u64 b, i64 res) {
 	retmode = asi64(R1);
 	asi64(R1) = retmode;
 	R2 = 0;
-	if (asi64(R1) != asi64(R2)) goto L6354;
+	if (asi64(R1) != asi64(R2)) goto L6355;
 	R1 = 3;
 	retmode = asi64(R1);
-L6354:
+L6355:
 	R1 = 0;
 	isfn = asi64(R1);
 	asu64(R1) = a;
@@ -58333,28 +58408,28 @@ L6354:
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
 	R1 = toi64(toi32(R1));
 	R2 = 52;
-	if (asi64(R1) == asi64(R2)) goto L6356;
-	goto L6357;
-L6356:
+	if (asi64(R1) == asi64(R2)) goto L6357;
+	goto L6358;
+L6357:
 	asu64(R1) = a;
 	R2 = 52;
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
 	R1 = toi64(toi32(R1));
 	m = asi64(R1);
-	goto L6359;
-L6358:
+	goto L6360;
+L6359:
 	R1 = (u64)&cc_decls_tttarget;
 	asi64(R2) = m;
 	asi16(R1) = *toi16p(((i64)R1+(i64)R2*2));
 	R1 = toi64(toi16(R1));
 	m = asi64(R1);
-L6359:
+L6360:
 	R1 = (u64)&cc_decls_ttbasetype;
 	asi64(R2) = m;
 	asi16(R1) = *toi16p(((i64)R1+(i64)R2*2));
 	R1 = toi64(toi16(R1));
 	R2 = 13;
-	if (asi64(R1) == asi64(R2)) goto L6358;
+	if (asi64(R1) == asi64(R2)) goto L6359;
 	R1 = (u64)&cc_decls_tttarget;
 	asi64(R2) = m;
 	asi16(R1) = *toi16p(((i64)R1+(i64)R2*2));
@@ -58368,8 +58443,8 @@ L6359:
 	pm = asu64(R1);
 	R1 = 1;
 	isfnptr = asi64(R1);
-	goto L6355;
-L6357:
+	goto L6356;
+L6358:
 	asu64(R1) = a;
 	R2 = 0;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
@@ -58387,7 +58462,7 @@ L6357:
 	R2 = 0;
 	asi64(R1) = asi64(R1)  !=  asi64(R2);
 	isfn = asi64(R1);
-L6355:
+L6356:
 	asu64(R1) = pm;
 	R2 = 22;
 	asi16(R1) = *toi16p(((i64)R1+(i64)R2));
@@ -58406,15 +58481,15 @@ L6355:
 	nparams = asi64(R1);
 	asu64(R1) = b;
 	q = asu64(R1);
-	goto L6364;
-L6361:
+	goto L6365;
+L6362:
 	asi64(R1) = nparams;
 	R2 = 32;
-	if (asi64(R1) < asi64(R2)) goto L6366;
+	if (asi64(R1) < asi64(R2)) goto L6367;
 	R1 = 0;
 	R2 = tou64("maxparams");
 	cc_support_gerror(asu64(R2), asu64(R1));
-L6366:
+L6367:
 	asu64(R1) = q;
 	R2 = (u64)&paramlist;
 	R3 = (u64)&nparams;
@@ -58425,22 +58500,22 @@ L6366:
 	asi64(R3) = nparams;
 	*tou8p(((i64)R2+(i64)R3-1)) = asu8(R1);
 	asi64(R1) = variadic;
-	if (!asi64(R1)) goto L6368;
+	if (!asi64(R1)) goto L6369;
 	asi64(R1) = nparams;
 	asi64(R2) = nfixedparams;
-	if (asi64(R1) <= asi64(R2)) goto L6368;
+	if (asi64(R1) <= asi64(R2)) goto L6369;
 	asi64(R1) = nparams;
 	R2 = 4;
-	if (asi64(R1) > asi64(R2)) goto L6368;
+	if (asi64(R1) > asi64(R2)) goto L6369;
 	asi64(R1) = nvariadics;
 	R2 = 0;
-	if (asi64(R1) != asi64(R2)) goto L6368;
+	if (asi64(R1) != asi64(R2)) goto L6369;
 	asi64(R1) = nparams;
 	nvariadics = asi64(R1);
-L6368:
+L6369:
 	asi64(R1) = nparams;
 	asi64(R2) = nfixedparams;
-	if (asi64(R1) > asi64(R2)) goto L6370;
+	if (asi64(R1) > asi64(R2)) goto L6371;
 	R1 = (u64)&cc_decls_ttconst;
 	asu64(R2) = pm;
 	R3 = 16;
@@ -58454,14 +58529,14 @@ L6368:
 	R2 = 8;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
 	pm = asu64(R1);
-L6370:
+L6371:
 	asu64(R1) = q;
 	R2 = 8;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
 	q = asu64(R1);
-L6364:
+L6365:
 	asu64(R1) = q;
-	if (asu64(R1)) goto L6361;
+	if (asu64(R1)) goto L6362;
 	R1 = 0;
 	R2 = 131;
 	pc_api_pc_gen(asi64(R2), asu64(R1));
@@ -58479,8 +58554,8 @@ L6364:
 	i = asi64(R1);
 	asi64(R1) = nparams;
 	R2 = 1;
-	if (asi64(R1) < asi64(R2)) goto L6373;
-L6371:
+	if (asi64(R1) < asi64(R2)) goto L6374;
+L6372:
 	R1 = (u64)&paramlist;
 	asi64(R2) = i;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2*8-8));
@@ -58490,32 +58565,32 @@ L6371:
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
 	R1 = toi64(toi32(R1));
 	R2 = 10;
-	if (asi64(R1) == asi64(R2)) goto L6376;
+	if (asi64(R1) == asi64(R2)) goto L6377;
 	R2 = 11;
-	if (asi64(R1) != asi64(R2)) goto L6375;
-L6376:
+	if (asi64(R1) != asi64(R2)) goto L6376;
+L6377:
 	R1 = (u64)&fparams;
 	asi64(R1) = *(toi64p(R1)) += 1;
 	asi64(R1) = -asi64(R1);
 	R2 = (u64)&argattr;
 	asi64(R3) = i;
 	*toi8p(((i64)R2+(i64)R3-1)) = asi8(R1);
-	goto L6374;
-L6375:
+	goto L6375;
+L6376:
 	R1 = (u64)&iparams;
 	asi64(R1) = *(toi64p(R1)) += 1;
 	R2 = (u64)&argattr;
 	asi64(R3) = i;
 	*toi8p(((i64)R2+(i64)R3-1)) = asi8(R1);
+L6375:
+	i += 1; if (i <= nparams) goto L6372;
 L6374:
-	i += 1; if (i <= nparams) goto L6371;
-L6373:
 	asi64(R1) = nparams;
 	i = asi64(R1);
 	asi64(R1) = i;
 	R2 = 1;
-	if (asi64(R1) < asi64(R2)) goto L6379;
-L6377:
+	if (asi64(R1) < asi64(R2)) goto L6380;
+L6378:
 	R1 = (u64)&paramlist;
 	asi64(R2) = i;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2*8-8));
@@ -58524,16 +58599,16 @@ L6377:
 	asu64(R2) = q;
 	cc_blockpcl_dx_expr(asu64(R2), asi64(R1));
 	asi64(R1) = nvariadics;
-	if (!asi64(R1)) goto L6381;
+	if (!asi64(R1)) goto L6382;
 	asi64(R1) = i;
 	asi64(R2) = nvariadics;
-	if (asi64(R1) < asi64(R2)) goto L6381;
+	if (asi64(R1) < asi64(R2)) goto L6382;
 	asu64(R1) = pc_api_pccurr;
 	R2 = 3;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 1;
-	if (asi64(R1) != asi64(R2)) goto L6381;
+	if (asi64(R1) != asi64(R2)) goto L6382;
 	R1 = 0;
 	R2 = 115;
 	pc_api_pc_gen(asi64(R2), asu64(R1));
@@ -58548,7 +58623,7 @@ L6377:
 	R3 = 0;
 	R4 = 7;
     *toi64p(R2) = Setdotslice(*toi64p(R2), (i64)R3, (i64)R4, (i64)R1);
-L6381:
+L6382:
 	R1 = 0;
 	R2 = 132;
 	pc_api_pc_gen(asi64(R2), asu64(R1));
@@ -58565,24 +58640,24 @@ L6381:
 	asu64(R2) = pc_api_pccurr;
 	R3 = 20;
 	*toi32p(((i64)R2+(i64)R3)) = asi32(R1);
-	i += -1; if (i >= 1) goto L6377;
-L6379:
+	i += -1; if (i >= 1) goto L6378;
+L6380:
 	asi64(R1) = isfnptr;
-	if (asi64(R1)) goto L6383;
+	if (asi64(R1)) goto L6384;
 	asu64(R1) = a;
 	R2 = 0;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
 	asu64(R1) = cc_libpcl_genmemaddr_d(asu64(R1));
 	asi64(R2) = isfn;
-	if (!asi64(R2)) goto L6385;
+	if (!asi64(R2)) goto L6386;
 	R2 = 21;
-	goto L6384;
-L6385:
+	goto L6385;
+L6386:
 	R2 = 18;
-L6384:
+L6385:
 	pc_api_pc_gen(asi64(R2), asu64(R1));
-	goto L6382;
-L6383:
+	goto L6383;
+L6384:
 	R1 = 0;
 	asu64(R2) = a;
 	R3 = 16;
@@ -58590,14 +58665,14 @@ L6383:
 	cc_blockpcl_dx_expr(asu64(R2), asi64(R1));
 	R1 = 0;
 	asi64(R2) = isfn;
-	if (!asi64(R2)) goto L6387;
+	if (!asi64(R2)) goto L6388;
 	R2 = 22;
-	goto L6386;
-L6387:
+	goto L6387;
+L6388:
 	R2 = 19;
-L6386:
+L6387:
 	pc_api_pc_gen(asi64(R2), asu64(R1));
-L6382:
+L6383:
 	asi64(R1) = nparams;
 	asu64(R2) = pc_api_pccurr;
 	R3 = 16;
@@ -58607,24 +58682,24 @@ L6382:
 	R3 = 20;
 	*toi32p(((i64)R2+(i64)R3)) = asi32(R1);
 	asi64(R1) = isfn;
-	if (!asi64(R1)) goto L6389;
+	if (!asi64(R1)) goto L6390;
 	asu64(R1) = p;
 	asi64(R1) = cc_parse_getmemmode(asu64(R1));
 	cc_libpcl_setmode(asi64(R1));
 	asi64(R1) = res;
-	if (asi64(R1)) goto L6391;
+	if (asi64(R1)) goto L6392;
 	R1 = 0;
 	R2 = 11;
 	pc_api_pc_gen(asi64(R2), asu64(R1));
 	asu64(R1) = p;
 	asi64(R1) = cc_parse_getmemmode(asu64(R1));
 	cc_libpcl_setmode(asi64(R1));
-	goto L6390;
-L6391:
+	goto L6391;
+L6392:
 	asu64(R1) = p;
 	cc_blockpcl_widen(asu64(R1));
+L6391:
 L6390:
-L6389:
 	return;
 }
 
@@ -58642,20 +58717,20 @@ static void cc_blockpcl_do_decl(u64 d) {
 	asu64(R1) = d;
 	R2 = 56;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
-	if (!asu64(R1)) goto L6394;
+	if (!asu64(R1)) goto L6395;
 	R1 = 1;
 	asu64(R2) = d;
 	R3 = 56;
 	asu64(R2) = *tou64p(((i64)R2+(i64)R3));
 	R3 = 92;
 	*tou8p(((i64)R2+(i64)R3)) = asu8(R1);
-L6394:
+L6395:
 	asu64(R1) = a;
 	R2 = 40;
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
 	R1 = toi64(toi32(R1));
 	R2 = 28;
-	if (asi64(R1) == asi64(R2)) goto L6396;
+	if (asi64(R1) == asi64(R2)) goto L6397;
 	R1 = (u64)&cc_decls_ttbasetype;
 	asu64(R2) = d;
 	R3 = 102;
@@ -58664,15 +58739,15 @@ L6394:
 	asi16(R1) = *toi16p(((i64)R1+(i64)R2*2));
 	R1 = toi64(toi16(R1));
 	R2 = 17;
-	if (asi64(R1) != asi64(R2)) goto L6398;
+	if (asi64(R1) != asi64(R2)) goto L6399;
 	asu64(R1) = a;
 	R2 = 40;
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
 	R1 = toi64(toi32(R1));
 	R2 = 1;
-	if (asi64(R1) != asi64(R2)) goto L6398;
-	goto L6399;
-L6398:
+	if (asi64(R1) != asi64(R2)) goto L6399;
+	goto L6400;
+L6399:
 	R1 = 0;
 	asu64(R2) = a;
 	cc_blockpcl_dx_expr(asu64(R2), asi64(R1));
@@ -58685,10 +58760,10 @@ L6398:
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
 	R1 = toi64(toi32(R1));
 	cc_libpcl_setmode(asi64(R1));
-	goto L6392;
-L6396:
+	goto L6393;
+L6397:
 // cc_blockpcl.do_decl.copyl:
-L6399:
+L6400:
 	asu64(R1) = d;
 	R2 = 114;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
@@ -58709,7 +58784,7 @@ L6399:
 	asu16(R1) = *tou16p(((i64)R1+(i64)R2));
 	R1 = toi64(tou16(R1));
 	cc_libpcl_setmode(asi64(R1));
-L6392:
+L6393:
 	return;
 }
 
@@ -58740,10 +58815,10 @@ static void cc_blockpcl_do_for(u64 pinit, u64 pbody) {
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
 	R1 = toi64(toi32(R1));
 	R2 = 2;
-	if (asi64(R1) == asi64(R2)) goto L6402;
+	if (asi64(R1) == asi64(R2)) goto L6403;
 	asu64(R1) = pinit;
 	cc_blockpcl_do_stmt(asu64(R1));
-L6402:
+L6403:
 	asi64(R1) = lab_cond;
 	cc_blockpcl_genjumpl(asi64(R1));
 	asi64(R1) = lab_d;
@@ -58764,16 +58839,16 @@ L6402:
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
 	R1 = toi64(toi32(R1));
 	R2 = 2;
-	if (asi64(R1) == asi64(R2)) goto L6404;
+	if (asi64(R1) == asi64(R2)) goto L6405;
 	asi64(R1) = lab_b;
 	asu64(R2) = pcond;
 	R3 = 27;
 	cc_blockpcl_genjumpcond(asi64(R3), asu64(R2), asi64(R1));
-	goto L6403;
-L6404:
+	goto L6404;
+L6405:
 	asi64(R1) = lab_b;
 	cc_blockpcl_genjumpl(asi64(R1));
-L6403:
+L6404:
 	asi64(R1) = lab_d;
 	cc_libpcl_definefwdlabel(asi64(R1));
 	R1 = (u64)&cc_blockpcl_loopindex;
@@ -58808,7 +58883,7 @@ static void cc_blockpcl_setincrstep(i64 m) {
 	R1 = (u64)&cc_decls_ttisref;
 	asi64(R2) = m;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
-	if (!asu8(R1)) goto L6408;
+	if (!asu8(R1)) goto L6409;
 	R1 = (u64)&cc_decls_ttsize;
 	R2 = (u64)&cc_decls_tttarget;
 	asi64(R3) = m;
@@ -58816,7 +58891,7 @@ static void cc_blockpcl_setincrstep(i64 m) {
 	R2 = toi64(toi16(R2));
 	asi64(R1) = *toi64p(((i64)R1+(i64)R2*8));
 	pc_api_pc_setincr(asi64(R1));
-L6408:
+L6409:
 	return;
 }
 
@@ -58832,12 +58907,12 @@ static void cc_blockpcl_dx_preincrx(u64 p, u64 a) {
 	asi32(R2) = *toi32p(((i64)R2+(i64)R3));
 	R2 = toi64(toi32(R2));
 	R3 = 71;
-	if (asi64(R2) != asi64(R3)) goto L6411;
+	if (asi64(R2) != asi64(R3)) goto L6412;
 	R2 = 86;
-	goto L6410;
-L6411:
+	goto L6411;
+L6412:
 	R2 = 87;
-L6410:
+L6411:
 	pc_api_pc_gen(asi64(R2), asu64(R1));
 	asu64(R1) = a;
 	R2 = 52;
@@ -58861,12 +58936,12 @@ static void cc_blockpcl_dx_postincrx(u64 p, u64 a) {
 	asi32(R2) = *toi32p(((i64)R2+(i64)R3));
 	R2 = toi64(toi32(R2));
 	R3 = 73;
-	if (asi64(R2) != asi64(R3)) goto L6414;
+	if (asi64(R2) != asi64(R3)) goto L6415;
 	R2 = 88;
-	goto L6413;
-L6414:
+	goto L6414;
+L6415:
 	R2 = 89;
-L6413:
+L6414:
 	pc_api_pc_gen(asi64(R2), asu64(R1));
 	asu64(R1) = a;
 	R2 = 52;
@@ -58894,7 +58969,7 @@ static void cc_blockpcl_dx_dot(u64 p, u64 a, u64 b, i64 am) {
 	cc_libpcl_setmode(asi64(R1));
 	asi64(R1) = am;
 	R2 = 0;
-	if (asi64(R1) != asi64(R2)) goto L6417;
+	if (asi64(R1) != asi64(R2)) goto L6418;
 	R1 = 0;
 	R2 = 1;
 	R3 = 57;
@@ -58911,8 +58986,8 @@ static void cc_blockpcl_dx_dot(u64 p, u64 a, u64 b, i64 am) {
 	pc_api_pc_genix(asi64(R3), asi64(R2), asi64(R1));
 	asu64(R1) = p;
 	cc_blockpcl_widen(asu64(R1));
-	goto L6416;
-L6417:
+	goto L6417;
+L6418:
 	R1 = 0;
 	R2 = 1;
 	R3 = 57;
@@ -58923,7 +58998,7 @@ L6417:
 	R1 = 0;
 	R2 = 1;
 	pc_api_pc_setscaleoff(asi64(R2), asi64(R1));
-L6416:
+L6417:
 	return;
 }
 
@@ -58961,13 +59036,13 @@ static void cc_blockpcl_do_labeldef(u64 d) {
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
 	R1 = toi64(toi32(R1));
 	R2 = 0;
-	if (asi64(R1) > asi64(R2)) goto L6421;
+	if (asi64(R1) > asi64(R2)) goto L6422;
 	R1 = (u64)&pc_api_mlabelno;
 	asi64(R1) = *(toi64p(R1)) += 1;
 	asu64(R2) = d;
 	R3 = 88;
 	*toi32p(((i64)R2+(i64)R3)) = asi32(R1);
-L6421:
+L6422:
 	asu64(R1) = d;
 	R2 = 0;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
@@ -58989,28 +59064,28 @@ static void cc_blockpcl_do_goto(u64 d) {
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
 	R1 = toi64(toi32(R1));
 	R2 = 0;
-	if (asi64(R1) != asi64(R2)) goto L6424;
+	if (asi64(R1) != asi64(R2)) goto L6425;
 	R1 = 0;
 	asu64(R2) = d;
 	R3 = 0;
 	asu64(R2) = *tou64p(((i64)R2+(i64)R3));
 	R3 = tou64("Label not defined: #");
 	cc_support_gerror_s(asu64(R3), asu64(R2), asu64(R1));
-	goto L6423;
-L6424:
+	goto L6424;
+L6425:
 	asu64(R1) = d;
 	R2 = 88;
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
 	R1 = toi64(toi32(R1));
 	R2 = 0;
-	if (asi64(R1) >= asi64(R2)) goto L6425;
+	if (asi64(R1) >= asi64(R2)) goto L6426;
 	R1 = (u64)&pc_api_mlabelno;
 	asi64(R1) = *(toi64p(R1)) += 1;
 	asu64(R2) = d;
 	R3 = 88;
 	*toi32p(((i64)R2+(i64)R3)) = asi32(R1);
-L6425:
-L6423:
+L6426:
+L6424:
 	asu64(R1) = d;
 	R2 = 88;
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
@@ -59038,11 +59113,11 @@ static void cc_blockpcl_dx_ifx(u64 p, u64 a, u64 b, u64 c) {
 	asi64(R1) = cc_libpcl_createfwdlabel();
 	lab2 = asi64(R1);
 	asi64(R1) = ismult;
-	if (!asi64(R1)) goto L6428;
+	if (!asi64(R1)) goto L6429;
 	R1 = 0;
 	R2 = 117;
 	pc_api_pc_gen(asi64(R2), asu64(R1));
-L6428:
+L6429:
 	asi64(R1) = lab1;
 	asu64(R2) = a;
 	R3 = 28;
@@ -59051,13 +59126,13 @@ L6428:
 	asu64(R2) = b;
 	cc_blockpcl_dx_expr(asu64(R2), asi64(R1));
 	asi64(R1) = ismult;
-	if (!asi64(R1)) goto L6430;
+	if (!asi64(R1)) goto L6431;
 	R1 = 0;
 	R2 = 118;
 	pc_api_pc_gen(asi64(R2), asu64(R1));
 	asu64(R1) = p;
 	cc_libpcl_setmode_u(asu64(R1));
-L6430:
+L6431:
 	asi64(R1) = lab2;
 	cc_blockpcl_genjumpl(asi64(R1));
 	asi64(R1) = lab1;
@@ -59066,13 +59141,13 @@ L6430:
 	asu64(R2) = c;
 	cc_blockpcl_dx_expr(asu64(R2), asi64(R1));
 	asi64(R1) = ismult;
-	if (!asi64(R1)) goto L6432;
+	if (!asi64(R1)) goto L6433;
 	R1 = 0;
 	R2 = 119;
 	pc_api_pc_gen(asi64(R2), asu64(R1));
 	asu64(R1) = p;
 	cc_libpcl_setmode_u(asu64(R1));
-L6432:
+L6433:
 	asi64(R1) = lab2;
 	cc_libpcl_definefwdlabel(asi64(R1));
 	return;
@@ -59084,7 +59159,7 @@ static void cc_blockpcl_do_casestmt(u64 p, u64 a) {
 	i64 i;
 	asi64(R1) = cc_blockpcl_sw_ncases;
 	R2 = 0;
-	if (asi64(R1) != asi64(R2)) goto L6435;
+	if (asi64(R1) != asi64(R2)) goto L6436;
 	asu64(R1) = cc_blockpcl_sw_labeltable;
 	asu64(R2) = p;
 	R3 = 0;
@@ -59096,8 +59171,8 @@ static void cc_blockpcl_do_casestmt(u64 p, u64 a) {
 	asu64(R1) = pc_api_genlabel(asi64(R1));
 	R2 = 127;
 	pc_api_pc_gen(asi64(R2), asu64(R1));
-	goto L6434;
-L6435:
+	goto L6435;
+L6436:
 	asu64(R1) = p;
 	R2 = 0;
 	asi64(R1) = *toi64p(((i64)R1+(i64)R2));
@@ -59106,14 +59181,14 @@ L6435:
 	i = asi64(R1);
 	asi64(R1) = cc_blockpcl_sw_ncases;
 	R2 = 1;
-	if (asi64(R1) < asi64(R2)) goto L6439;
-L6436:
+	if (asi64(R1) < asi64(R2)) goto L6440;
+L6437:
 	asu64(R1) = cc_blockpcl_sw_valuetable;
 	asi64(R2) = i;
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2*4-4));
 	R1 = toi64(toi32(R1));
 	asi64(R2) = value;
-	if (asi64(R1) != asi64(R2)) goto L6441;
+	if (asi64(R1) != asi64(R2)) goto L6442;
 	asu64(R1) = cc_blockpcl_sw_labeltable;
 	asi64(R2) = i;
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2*4-4));
@@ -59121,15 +59196,15 @@ L6436:
 	asu64(R1) = pc_api_genlabel(asi64(R1));
 	R2 = 127;
 	pc_api_pc_gen(asi64(R2), asu64(R1));
-	goto L6438;
-L6441:
-	i += 1; if (i <= cc_blockpcl_sw_ncases) goto L6436;
-L6439:
+	goto L6439;
+L6442:
+	i += 1; if (i <= cc_blockpcl_sw_ncases) goto L6437;
+L6440:
 	R1 = 0;
 	R2 = tou64("case: serial switch not found");
 	cc_support_gerror(asu64(R2), asu64(R1));
-L6438:
-L6434:
+L6439:
+L6435:
 	asu64(R1) = a;
 	cc_blockpcl_do_stmt(asu64(R1));
 	return;
@@ -59167,17 +59242,17 @@ static void cc_blockpcl_do_switch(u64 p, u64 a, u64 b) {
 	R2 = R1;
 	length = asi64(R2);
 	ncases = asi64(R1);
-	goto L6444;
-L6443:
+	goto L6445;
+L6444:
 	R1 = (u64)&ncases;
 	(*toi64p(R1)) += 1;
 	asi64(R1) = ncases;
 	R2 = 500;
-	if (asi64(R1) <= asi64(R2)) goto L6447;
+	if (asi64(R1) <= asi64(R2)) goto L6448;
 	R1 = 0;
 	R2 = tou64("Too many cases on one switch");
 	cc_support_gerror(asu64(R2), asu64(R1));
-L6447:
+L6448:
 	asu64(R1) = pcase;
 	R2 = 8;
 	asi64(R1) = *toi64p(((i64)R1+(i64)R2));
@@ -59188,13 +59263,13 @@ L6447:
 	*toi32p(((i64)R2+(i64)R3*4-4)) = asi32(R1);
 	asi64(R1) = ncases;
 	R2 = 1;
-	if (asi64(R1) != asi64(R2)) goto L6449;
+	if (asi64(R1) != asi64(R2)) goto L6450;
 	asi64(R1) = value;
 	R2 = R1;
 	upper = asi64(R2);
 	lower = asi64(R1);
-	goto L6448;
-L6449:
+	goto L6449;
+L6450:
 	asi64(R1) = lower;
 	asi64(R2) = value;
 	asi64(R1) = Min(asi64(R1), asi64(R2));
@@ -59203,40 +59278,40 @@ L6449:
 	asi64(R2) = value;
 	asi64(R1) = Max(asi64(R1), asi64(R2));
 	upper = asi64(R1);
-L6448:
+L6449:
 	asu64(R1) = pcase;
 	R2 = 0;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
 	pcase = asu64(R1);
-L6444:
+L6445:
 	asu64(R1) = pcase;
-	if (asu64(R1)) goto L6443;
+	if (asu64(R1)) goto L6444;
 	asu64(R1) = p;
 	R2 = 0;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
-	if (!asu64(R1)) goto L6451;
+	if (!asu64(R1)) goto L6452;
 	asi64(R1) = upper;
 	asi64(R2) = lower;
 	asi64(R1) -= asi64(R2);
 	R2 = 1;
 	asi64(R1) += asi64(R2);
 	length = asi64(R1);
-	goto L6450;
-L6451:
+	goto L6451;
+L6452:
 	R1 = 0;
 	length = asi64(R1);
-L6450:
+L6451:
 	asi64(R1) = cc_libpcl_createfwdlabel();
 	defaultlabel = asi64(R1);
 	asi64(R1) = cc_libpcl_createfwdlabel();
 	breakswlabel = asi64(R1);
 	asi64(R1) = length;
 	R2 = 500;
-	if (asi64(R1) > asi64(R2)) goto L6454;
+	if (asi64(R1) > asi64(R2)) goto L6455;
 	asi64(R1) = ncases;
 	R2 = 8;
-	if (asi64(R1) > asi64(R2)) goto L6453;
-L6454:
+	if (asi64(R1) > asi64(R2)) goto L6454;
+L6455:
 	R1 = 1;
 	serialsw = asu8(R1);
 	R1 = 0;
@@ -59246,8 +59321,8 @@ L6454:
 	i = asi64(R1);
 	asi64(R1) = ncases;
 	R2 = 1;
-	if (asi64(R1) < asi64(R2)) goto L6457;
-L6455:
+	if (asi64(R1) < asi64(R2)) goto L6458;
+L6456:
 	asi64(R1) = cc_libpcl_createfwdlabel();
 	R2 = (u64)&labeltable;
 	asi64(R3) = i;
@@ -59276,25 +59351,25 @@ L6455:
 	*tou8p(((i64)R2+(i64)R3)) = asu8(R1);
 	asi64(R1) = i;
 	asi64(R2) = ncases;
-	if (asi64(R1) >= asi64(R2)) goto L6459;
+	if (asi64(R1) >= asi64(R2)) goto L6460;
 	R1 = 1;
 	asu64(R2) = pc_api_pccurr;
 	R3 = 16;
 	*toi32p(((i64)R2+(i64)R3)) = asi32(R1);
-L6459:
-	i += 1; if (i <= ncases) goto L6455;
-L6457:
+L6460:
+	i += 1; if (i <= ncases) goto L6456;
+L6458:
 	asi64(R1) = defaultlabel;
 	cc_blockpcl_genjumpl(asi64(R1));
-	goto L6452;
-L6453:
+	goto L6453;
+L6454:
 	asi64(R1) = length;
 	R2 = 0;
-	if (asi64(R1) != asi64(R2)) goto L6460;
+	if (asi64(R1) != asi64(R2)) goto L6461;
 	asi64(R1) = defaultlabel;
 	cc_blockpcl_genjumpl(asi64(R1));
-	goto L6452;
-L6460:
+	goto L6453;
+L6461:
 	R1 = 0;
 	serialsw = asu8(R1);
 	asi64(R1) = length;
@@ -59305,20 +59380,20 @@ L6460:
 	i = asi64(R1);
 	asi64(R1) = length;
 	R2 = 1;
-	if (asi64(R1) < asi64(R2)) goto L6463;
-L6461:
+	if (asi64(R1) < asi64(R2)) goto L6464;
+L6462:
 	asi64(R1) = defaultlabel;
 	R2 = (u64)&labeltable;
 	asi64(R3) = i;
 	*toi32p(((i64)R2+(i64)R3*4-4)) = asi32(R1);
-	i += 1; if (i <= length) goto L6461;
-L6463:
+	i += 1; if (i <= length) goto L6462;
+L6464:
 	R1 = 1;
 	i = asi64(R1);
 	asi64(R1) = ncases;
 	R2 = 1;
-	if (asi64(R1) < asi64(R2)) goto L6466;
-L6464:
+	if (asi64(R1) < asi64(R2)) goto L6467;
+L6465:
 	R1 = (u64)&valuetable;
 	asi64(R2) = i;
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2*4-4));
@@ -59337,20 +59412,20 @@ L6464:
 	R1 = (u64)&flags;
 	asi64(R2) = index;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2-1));
-	if (!asu8(R1)) goto L6468;
+	if (!asu8(R1)) goto L6469;
 	R1 = 0;
 	R2 = 0;
 	asi64(R3) = value;
 	asu64(R2) = msysc_strint(asi64(R3), asu64(R2));
 	R3 = tou64("Dupl case value: #");
 	cc_support_gerror_s(asu64(R3), asu64(R2), asu64(R1));
-L6468:
+L6469:
 	R1 = 1;
 	R2 = (u64)&flags;
 	asi64(R3) = index;
 	*tou8p(((i64)R2+(i64)R3-1)) = asu8(R1);
-	i += 1; if (i <= ncases) goto L6464;
-L6466:
+	i += 1; if (i <= ncases) goto L6465;
+L6467:
 	asi64(R1) = cc_libpcl_createfwdlabel();
 	switchlabel = asi64(R1);
 	R1 = 0;
@@ -59381,8 +59456,8 @@ L6466:
 	i = asi64(R1);
 	asi64(R1) = length;
 	R2 = 1;
-	if (asi64(R1) < asi64(R2)) goto L6471;
-L6469:
+	if (asi64(R1) < asi64(R2)) goto L6472;
+L6470:
 	R1 = (u64)&labeltable;
 	asi64(R2) = i;
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2*4-4));
@@ -59390,12 +59465,12 @@ L6469:
 	asu64(R1) = pc_api_genlabel(asi64(R1));
 	R2 = 39;
 	pc_api_pc_gen(asi64(R2), asu64(R1));
-	i += 1; if (i <= length) goto L6469;
-L6471:
+	i += 1; if (i <= length) goto L6470;
+L6472:
 	R1 = 0;
 	R2 = 40;
 	pc_api_pc_gen(asi64(R2), asu64(R1));
-L6452:
+L6453:
 	asu64(R1) = cc_blockpcl_sw_labeltable;
 	old_labeltable = asu64(R1);
 	asu64(R1) = cc_blockpcl_sw_valuetable;
@@ -59417,12 +59492,12 @@ L6452:
 	asi64(R1) = lower;
 	cc_blockpcl_sw_lower = asi64(R1);
 	asu8(R1) = serialsw;
-	if (!asu8(R1)) goto L6473;
+	if (!asu8(R1)) goto L6474;
 	asi64(R1) = ncases;
-	goto L6472;
-L6473:
+	goto L6473;
+L6474:
 	R1 = 0;
-L6472:
+L6473:
 	cc_blockpcl_sw_ncases = asi64(R1);
 	R1 = 0;
 	cc_blockpcl_sw_defaultseen = asu8(R1);
@@ -59433,10 +59508,10 @@ L6472:
 	asu64(R1) = b;
 	cc_blockpcl_do_stmt(asu64(R1));
 	asu8(R1) = cc_blockpcl_sw_defaultseen;
-	if (asu8(R1)) goto L6475;
+	if (asu8(R1)) goto L6476;
 	asi64(R1) = defaultlabel;
 	cc_libpcl_definefwdlabel(asi64(R1));
-L6475:
+L6476:
 	asi64(R1) = breakswlabel;
 	cc_libpcl_definefwdlabel(asi64(R1));
 	asu64(R1) = old_labeltable;
@@ -59524,7 +59599,7 @@ static void cc_blockpcl_dx_scale(u64 p, u64 a, u64 b) {
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
 	R1 = toi64(toi32(R1));
 	R2 = 0;
-	if (asi64(R1) < asi64(R2)) goto L6479;
+	if (asi64(R1) < asi64(R2)) goto L6480;
 	asu64(R1) = p;
 	R2 = 48;
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
@@ -59537,8 +59612,8 @@ static void cc_blockpcl_dx_scale(u64 p, u64 a, u64 b) {
 	R1 = 0;
 	R2 = 45;
 	pc_api_pc_gen(asi64(R2), asu64(R1));
-	goto L6478;
-L6479:
+	goto L6479;
+L6480:
 	asu64(R1) = p;
 	R2 = 48;
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
@@ -59552,7 +59627,7 @@ L6479:
 	R1 = 0;
 	R2 = 47;
 	pc_api_pc_gen(asi64(R2), asu64(R1));
-L6478:
+L6479:
 	asu64(R1) = a;
 	cc_libpcl_setmode_u(asu64(R1));
 	return;
@@ -59566,14 +59641,14 @@ static void cc_blockpcl_widen(u64 p) {
 	asi16(R1) = *toi16p(((i64)R1+(i64)R2));
 	R1 = toi64(toi16(R1));
 	R2 = 0;
-	if (asi64(R1) != asi64(R2)) goto L6482;
+	if (asi64(R1) != asi64(R2)) goto L6483;
 	asu64(R1) = p;
 	R2 = 52;
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
 	R1 = toi64(toi32(R1));
 	cc_libpcl_setmode(asi64(R1));
-	goto L6480;
-L6482:
+	goto L6481;
+L6483:
 	asu64(R1) = p;
 	asi64(R1) = cc_parse_getmemmode(asu64(R1));
 	mode = asi64(R1);
@@ -59583,47 +59658,47 @@ L6482:
 	asi64(R2) = mode;
 	asi64(R1) = *toi64p(((i64)R1+(i64)R2*8));
 	R2 = 4;
-	if (asi64(R1) >= asi64(R2)) goto L6484;
+	if (asi64(R1) >= asi64(R2)) goto L6485;
 	asu64(R1) = pc_api_pccurr;
 	R2 = 0;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 1;
-	if (asi64(R1) == asi64(R2)) goto L6485;
+	if (asi64(R1) == asi64(R2)) goto L6486;
 	R2 = 2;
-	if (asi64(R1) == asi64(R2)) goto L6485;
+	if (asi64(R1) == asi64(R2)) goto L6486;
 	R2 = 3;
-	if (asi64(R1) == asi64(R2)) goto L6485;
+	if (asi64(R1) == asi64(R2)) goto L6486;
 	R2 = 86;
-	if (asi64(R1) == asi64(R2)) goto L6485;
+	if (asi64(R1) == asi64(R2)) goto L6486;
 	R2 = 87;
-	if (asi64(R1) == asi64(R2)) goto L6485;
+	if (asi64(R1) == asi64(R2)) goto L6486;
 	R2 = 88;
-	if (asi64(R1) == asi64(R2)) goto L6485;
+	if (asi64(R1) == asi64(R2)) goto L6486;
 	R2 = 89;
-	if (asi64(R1) == asi64(R2)) goto L6485;
+	if (asi64(R1) == asi64(R2)) goto L6486;
 	R2 = 21;
-	if (asi64(R1) != asi64(R2)) goto L6484;
-L6485:
+	if (asi64(R1) != asi64(R2)) goto L6485;
+L6486:
 	R1 = 0;
 	R2 = 114;
 	pc_api_pc_gen(asi64(R2), asu64(R1));
 	asi64(R1) = mode;
 	R2 = 1;
-	if (asi64(R1) == asi64(R2)) goto L6488;
+	if (asi64(R1) == asi64(R2)) goto L6489;
 	R2 = 2;
-	if (asi64(R1) != asi64(R2)) goto L6487;
-L6488:
+	if (asi64(R1) != asi64(R2)) goto L6488;
+L6489:
 	R1 = 3;
-	goto L6486;
-L6487:
+	goto L6487;
+L6488:
 	R1 = 8;
-L6486:
+L6487:
 	cc_libpcl_setmode(asi64(R1));
 	asi64(R1) = mode;
 	cc_libpcl_setmode2(asi64(R1));
-L6484:
-L6480:
+L6485:
+L6481:
 	return;
 }
 
@@ -59634,24 +59709,24 @@ static void cc_blockpcl_do_setinplace() {
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 1;
-	if (asi64(R1) != asi64(R2)) goto L6491;
+	if (asi64(R1) != asi64(R2)) goto L6492;
 	asu64(R1) = pc_api_pccurr;
 	R2 = 1;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 2;
-	if (asi64(R1) != asi64(R2)) goto L6491;
+	if (asi64(R1) != asi64(R2)) goto L6492;
 	R1 = 1;
 	asu64(R2) = pc_api_pccurr;
 	R3 = 16;
 	*toi32p(((i64)R2+(i64)R3)) = asi32(R1);
-L6491:
+L6492:
 	return;
 }
 
 static void cc_blockpcl_do_fixwiden(u64 a, u64 b) {
-	goto L6492;
-L6492:
+	goto L6493;
+L6493:
 	return;
 }
 
@@ -59662,32 +59737,32 @@ static i64 cc_blockpcl_isboolexpr(u64 p) {
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
 	R1 = toi64(toi32(R1));
 	R2 = 26;
-	if (asi64(R1) == asi64(R2)) goto L6495;
+	if (asi64(R1) == asi64(R2)) goto L6496;
 	R2 = 24;
-	if (asi64(R1) == asi64(R2)) goto L6495;
+	if (asi64(R1) == asi64(R2)) goto L6496;
 	R2 = 25;
-	if (asi64(R1) == asi64(R2)) goto L6495;
+	if (asi64(R1) == asi64(R2)) goto L6496;
 	R2 = 33;
-	if (asi64(R1) == asi64(R2)) goto L6495;
+	if (asi64(R1) == asi64(R2)) goto L6496;
 	R2 = 34;
-	if (asi64(R1) == asi64(R2)) goto L6495;
+	if (asi64(R1) == asi64(R2)) goto L6496;
 	R2 = 35;
-	if (asi64(R1) == asi64(R2)) goto L6495;
+	if (asi64(R1) == asi64(R2)) goto L6496;
 	R2 = 36;
-	if (asi64(R1) == asi64(R2)) goto L6495;
+	if (asi64(R1) == asi64(R2)) goto L6496;
 	R2 = 38;
-	if (asi64(R1) == asi64(R2)) goto L6495;
+	if (asi64(R1) == asi64(R2)) goto L6496;
 	R2 = 37;
-	if (asi64(R1) == asi64(R2)) goto L6495;
-	goto L6496;
-L6495:
-	R1 = 1;
-	goto L6494;
+	if (asi64(R1) == asi64(R2)) goto L6496;
+	goto L6497;
 L6496:
+	R1 = 1;
+	goto L6495;
+L6497:
 	R1 = 0;
+L6495:
+	goto L6494;
 L6494:
-	goto L6493;
-L6493:
 	return asi64(R1);
 }
 
@@ -59699,19 +59774,19 @@ static u64 cc_libpcl_getpsymbol(u64 d) {
 	struct $B16 str;
 	asu64(R1) = d;
 	R2 = 0;
-	if (asu64(R1) != asu64(R2)) goto L6499;
+	if (asu64(R1) != asu64(R2)) goto L6500;
 	R1 = 0;
-	goto L6497;
-L6499:
+	goto L6498;
+L6500:
 	asu64(R1) = d;
 	R2 = 56;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
-	if (!asu64(R1)) goto L6501;
+	if (!asu64(R1)) goto L6502;
 	asu64(R1) = d;
 	R2 = 56;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
-	goto L6497;
-L6501:
+	goto L6498;
+L6502:
 	asu64(R1) = d;
 	R2 = 0;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
@@ -59721,10 +59796,10 @@ L6501:
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 8;
-	if (asi64(R1) == asi64(R2)) goto L6504;
+	if (asi64(R1) == asi64(R2)) goto L6505;
 	R2 = 9;
-	if (asi64(R1) != asi64(R2)) goto L6503;
-L6504:
+	if (asi64(R1) != asi64(R2)) goto L6504;
+L6505:
 	asu64(R1) = d;
 	R2 = 0;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
@@ -59735,7 +59810,7 @@ L6504:
 	asu16(R1) = *tou16p(((i64)R1+(i64)R2));
 	R1 = toi64(tou16(R1));
 	R2 = 1;
-	if (asi64(R1) <= asi64(R2)) goto L6506;
+	if (asi64(R1) <= asi64(R2)) goto L6507;
 	R1 = tou64(".");
 	R2 = (u64)&str;
 	asu64(R1) = strcat(asu64(R2), asu64(R1));
@@ -59747,19 +59822,19 @@ L6504:
 	asu64(R1) = msysc_strint(asi64(R2), asu64(R1));
 	R2 = (u64)&str;
 	asu64(R1) = strcat(asu64(R2), asu64(R1));
-L6506:
-	goto L6502;
-L6503:
+L6507:
+	goto L6503;
+L6504:
 	asu64(R1) = d;
 	R2 = 109;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 7;
-	if (asi64(R1) != asi64(R2)) goto L6507;
+	if (asi64(R1) != asi64(R2)) goto L6508;
 	asu64(R1) = d;
 	R2 = 8;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
-	if (!asu64(R1)) goto L6507;
+	if (!asu64(R1)) goto L6508;
 	asu64(R1) = d;
 	R2 = 8;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
@@ -59767,7 +59842,7 @@ L6503:
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 6;
-	if (asi64(R1) != asi64(R2)) goto L6507;
+	if (asi64(R1) != asi64(R2)) goto L6508;
 	asu64(R1) = d;
 	R2 = 8;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
@@ -59788,7 +59863,7 @@ L6503:
 	asu16(R1) = *tou16p(((i64)R1+(i64)R2));
 	R1 = toi64(tou16(R1));
 	R2 = 1;
-	if (asi64(R1) <= asi64(R2)) goto L6509;
+	if (asi64(R1) <= asi64(R2)) goto L6510;
 	R1 = tou64(".");
 	R2 = (u64)&str;
 	asu64(R1) = strcat(asu64(R2), asu64(R1));
@@ -59800,15 +59875,15 @@ L6503:
 	asu64(R1) = msysc_strint(asi64(R2), asu64(R1));
 	R2 = (u64)&str;
 	asu64(R1) = strcat(asu64(R2), asu64(R1));
-L6509:
-	goto L6502;
-L6507:
+L6510:
+	goto L6503;
+L6508:
 	asu64(R1) = d;
 	R2 = 0;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
 	R2 = (u64)&str;
 	asu64(R1) = strcpy(asu64(R2), asu64(R1));
-L6502:
+L6503:
 	R1 = (u64)&cc_tables_name2pid;
 	asu64(R2) = d;
 	R3 = 109;
@@ -59843,13 +59918,13 @@ L6502:
 	asu64(R1) = d;
 	R2 = 8;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
-	if (!asu64(R1)) goto L6511;
+	if (!asu64(R1)) goto L6512;
 	asu64(R1) = d;
 	R2 = 8;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
 	R2 = 8;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
-	if (!asu64(R1)) goto L6511;
+	if (!asu64(R1)) goto L6512;
 	asu64(R1) = d;
 	R2 = 8;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
@@ -59857,38 +59932,38 @@ L6502:
 	asu64(R2) = p;
 	R3 = 32;
 	*tou64p(((i64)R2+(i64)R3)) = asu64(R1);
-L6511:
+L6512:
 	asu64(R1) = d;
 	R2 = 110;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 4;
-	if (asi64(R1) != asi64(R2)) goto L6513;
+	if (asi64(R1) != asi64(R2)) goto L6514;
 	R1 = 1;
 	asu64(R2) = p;
 	R3 = 81;
 	*tou8p(((i64)R2+(i64)R3)) = asu8(R1);
-L6513:
+L6514:
 	asu64(R1) = d;
 	R2 = 108;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 4;
     asi64(R1) = Getdotindex(asu64(R1), asi64(R2));
-	if (!asu64(R1)) goto L6515;
+	if (!asu64(R1)) goto L6516;
 	R1 = 1;
 	asu64(R2) = p;
 	R3 = 104;
 	R2 += (i64)R3;
 	R3 = 2;
     *toi64p(R2) = Setdotindex(*toi64p(R2), (i64)R3, (i64)R1);
-L6515:
+L6516:
 	asu64(R1) = d;
 	R2 = 110;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 3;
-	if (asi64(R1) != asi64(R2)) goto L6517;
+	if (asi64(R1) != asi64(R2)) goto L6518;
 	R1 = 1;
 	asu64(R2) = p;
 	R3 = 80;
@@ -59897,7 +59972,7 @@ L6515:
 	asu64(R2) = p;
 	R3 = 72;
 	*tou8p(((i64)R2+(i64)R3)) = asu8(R1);
-L6517:
+L6518:
 	asu64(R1) = d;
 	R2 = 122;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
@@ -59915,13 +59990,13 @@ L6517:
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 6;
-	if (asi64(R1) != asi64(R2)) goto L6519;
+	if (asi64(R1) != asi64(R2)) goto L6520;
 	R1 = tou64("main");
 	asu64(R2) = d;
 	R3 = 0;
 	asu64(R2) = *tou64p(((i64)R2+(i64)R3));
 	asi64(R1) = mlib_eqstring(asu64(R2), asu64(R1));
-	if (!asi64(R1)) goto L6519;
+	if (!asi64(R1)) goto L6520;
 	R1 = 1;
 	R2 = R1;
 	asu64(R3) = p;
@@ -59932,10 +60007,10 @@ L6517:
 	R2 += (i64)R3;
 	R3 = 3;
     *toi64p(R2) = Setdotindex(*toi64p(R2), (i64)R3, (i64)R1);
-L6519:
+L6520:
 	asu64(R1) = p;
-	goto L6497;
-L6497:
+	goto L6498;
+L6498:
 	return asu64(R1);
 }
 
@@ -59980,8 +60055,8 @@ static u64 cc_libpcl_genmem_d(u64 d) {
 	asu64(R1) = d;
 	asu64(R1) = cc_libpcl_getpsymbol(asu64(R1));
 	asu64(R1) = pc_api_genmem(asu64(R1));
-	goto L6523;
-L6523:
+	goto L6524;
+L6524:
 	return asu64(R1);
 }
 
@@ -59990,8 +60065,8 @@ static u64 cc_libpcl_genmemaddr_d(u64 d) {
 	asu64(R1) = d;
 	asu64(R1) = cc_libpcl_getpsymbol(asu64(R1));
 	asu64(R1) = pc_api_genmemaddr(asu64(R1));
-	goto L6524;
-L6524:
+	goto L6525;
+L6525:
 	return asu64(R1);
 }
 
@@ -60003,8 +60078,8 @@ static i64 cc_libpcl_definelabel() {
 	R2 = 127;
 	pc_api_pc_gen(asi64(R2), asu64(R1));
 	asi64(R1) = pc_api_mlabelno;
-	goto L6525;
-L6525:
+	goto L6526;
+L6526:
 	return asi64(R1);
 }
 
@@ -60012,8 +60087,8 @@ static i64 cc_libpcl_createfwdlabel() {
     u64 R1; 
 	R1 = (u64)&pc_api_mlabelno;
 	asi64(R1) = *(toi64p(R1)) += 1;
-	goto L6526;
-L6526:
+	goto L6527;
+L6527:
 	return asi64(R1);
 }
 
@@ -60047,8 +60122,8 @@ static u64 cc_lib_newstrec() {
 	R3 = 113;
 	*tou8p(((i64)R2+(i64)R3)) = asu8(R1);
 	asu64(R1) = p;
-	goto L6528;
-L6528:
+	goto L6529;
+L6529:
 	return asu64(R1);
 }
 
@@ -60070,8 +60145,8 @@ static u64 cc_lib_createname(u64 p) {
 	R3 = 0;
 	*tou64p(((i64)R2+(i64)R3)) = asu64(R1);
 	asu64(R1) = u;
-	goto L6530;
-L6530:
+	goto L6531;
+L6531:
 	return asu64(R1);
 }
 
@@ -60085,8 +60160,8 @@ static u64 cc_lib_createunit0(i64 tag) {
 	R3 = 40;
 	*toi32p(((i64)R2+(i64)R3)) = asi32(R1);
 	asu64(R1) = u;
-	goto L6531;
-L6531:
+	goto L6532;
+L6532:
 	return asu64(R1);
 }
 
@@ -60104,8 +60179,8 @@ static u64 cc_lib_createunit1(i64 tag, u64 p) {
 	R3 = 16;
 	*tou64p(((i64)R2+(i64)R3)) = asu64(R1);
 	asu64(R1) = u;
-	goto L6532;
-L6532:
+	goto L6533;
+L6533:
 	return asu64(R1);
 }
 
@@ -60127,8 +60202,8 @@ static u64 cc_lib_createunit2(i64 tag, u64 p, u64 q) {
 	R3 = 24;
 	*tou64p(((i64)R2+(i64)R3)) = asu64(R1);
 	asu64(R1) = u;
-	goto L6533;
-L6533:
+	goto L6534;
+L6534:
 	return asu64(R1);
 }
 
@@ -60154,8 +60229,8 @@ static u64 cc_lib_createunit3(i64 tag, u64 p, u64 q, u64 r) {
 	R3 = 32;
 	*tou64p(((i64)R2+(i64)R3)) = asu64(R1);
 	asu64(R1) = u;
-	goto L6534;
-L6534:
+	goto L6535;
+L6535:
 	return asu64(R1);
 }
 
@@ -60177,8 +60252,8 @@ static u64 cc_lib_createconstunit(u64 a, i64 t) {
 	R3 = 52;
 	*toi32p(((i64)R2+(i64)R3)) = asi32(R1);
 	asu64(R1) = u;
-	goto L6535;
-L6535:
+	goto L6536;
+L6536:
 	return asu64(R1);
 }
 
@@ -60201,7 +60276,7 @@ static u64 cc_lib_createstringconstunit(u64 s, i64 length) {
 	*toi32p(((i64)R2+(i64)R3)) = asi32(R1);
 	asi64(R1) = length;
 	R2 = -1;
-	if (asi64(R1) != asi64(R2)) goto L6538;
+	if (asi64(R1) != asi64(R2)) goto L6539;
 	asu64(R1) = s;
 	asi64(R1) = strlen(asu64(R1));
 	R2 = 1;
@@ -60209,22 +60284,22 @@ static u64 cc_lib_createstringconstunit(u64 s, i64 length) {
 	asu64(R2) = u;
 	R3 = 48;
 	*toi32p(((i64)R2+(i64)R3)) = asi32(R1);
-	goto L6537;
-L6538:
+	goto L6538;
+L6539:
 	asi64(R1) = length;
 	R2 = 1;
 	asi64(R1) += asi64(R2);
 	asu64(R2) = u;
 	R3 = 48;
 	*toi32p(((i64)R2+(i64)R3)) = asi32(R1);
-L6537:
+L6538:
 	R1 = 1;
 	asu64(R2) = u;
 	R3 = 61;
 	*tou8p(((i64)R2+(i64)R3)) = asu8(R1);
 	asu64(R1) = u;
-	goto L6536;
-L6536:
+	goto L6537;
+L6537:
 	return asu64(R1);
 }
 
@@ -60256,8 +60331,8 @@ static u64 cc_lib_createwstringconstunit(u64 s, i64 length) {
 	R3 = 62;
 	*tou8p(((i64)R2+(i64)R3)) = asu8(R1);
 	asu64(R1) = u;
-	goto L6539;
-L6539:
+	goto L6540;
+L6540:
 	return asu64(R1);
 }
 
@@ -60274,10 +60349,10 @@ static i64 cc_lib_getoptocode(i64 opc) {
 	R1 = toi64(toi16(R1));
 	opcto = asi64(R1);
 	asi64(R1) = opcto;
-	if (!asi64(R1)) goto L6542;
+	if (!asi64(R1)) goto L6543;
 	asi64(R1) = opcto;
-	goto L6540;
-L6542:
+	goto L6541;
+L6543:
 	R1 = (u64)&cc_tables_jtagnames;
 	asi64(R2) = opc;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2*8));
@@ -60292,23 +60367,23 @@ L6542:
 	av_1 = asi64(R1);
 	asi64(R1) = av_1;
 	R2 = 0;
-	if (asi64(R1) < asi64(R2)) goto L6545;
-L6543:
+	if (asi64(R1) < asi64(R2)) goto L6546;
+L6544:
 	R1 = (u64)&str;
 	R2 = (u64)&cc_tables_jtagnames;
 	asi64(R3) = i;
 	asu64(R2) = *tou64p(((i64)R2+(i64)R3*8));
 	asi64(R1) = mlib_eqstring(asu64(R2), asu64(R1));
-	if (!asi64(R1)) goto L6547;
+	if (!asi64(R1)) goto L6548;
 	asi64(R1) = i;
 	R2 = (u64)&cc_lib_getoptocode_opctotable;
 	asi64(R3) = opc;
 	*toi16p(((i64)R2+(i64)R3*2)) = asi16(R1);
 	asi64(R1) = i;
-	goto L6540;
-L6547:
-	i += 1; if (i <= av_1) goto L6543;
-L6545:
+	goto L6541;
+L6548:
+	i += 1; if (i <= av_1) goto L6544;
+L6546:
 	msysc_m$print_startcon();
 	R1 = (u64)&cc_tables_jtagnames;
 	asi64(R2) = opc;
@@ -60319,31 +60394,31 @@ L6545:
 	R1 = tou64("Can't find -to version");
 	cc_support_serror(asu64(R1));
 	R1 = 0;
-	goto L6540;
-L6540:
+	goto L6541;
+L6541:
 	return asi64(R1);
 }
 
 static i64 cc_lib_getconstvalue(u64 p, i64 id) {
     u64 R1, R2; 
 	asu64(R1) = p;
-	if (!asu64(R1)) goto L6550;
+	if (!asu64(R1)) goto L6551;
 	asu64(R1) = p;
 	R2 = 40;
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
 	R1 = toi64(toi32(R1));
 	R2 = 1;
-	if (asi64(R1) != asi64(R2)) goto L6550;
+	if (asi64(R1) != asi64(R2)) goto L6551;
 	asu64(R1) = p;
 	R2 = 0;
 	asi64(R1) = *toi64p(((i64)R1+(i64)R2));
-	goto L6548;
-L6550:
+	goto L6549;
+L6551:
 	R1 = tou64("GCV Not constant");
 	cc_support_serror(asu64(R1));
 	R1 = 0;
-	goto L6548;
-L6548:
+	goto L6549;
+L6549:
 	return asi64(R1);
 }
 
@@ -60359,8 +60434,8 @@ static u64 cc_lib_nextautotype() {
 	msysc_m$print_i64_nf(asi64(R1));
 	msysc_m$print_end();
 	R1 = (u64)&cc_lib_nextautotype_str;
-	goto L6551;
-L6551:
+	goto L6552;
+L6552:
 	return asu64(R1);
 }
 
@@ -60370,20 +60445,20 @@ static i64 cc_lib_createconstmode(i64 m) {
 	R1 = (u64)&cc_decls_ttconst;
 	asi64(R2) = m;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
-	if (!asu8(R1)) goto L6554;
+	if (!asu8(R1)) goto L6555;
 	asi64(R1) = m;
-	goto L6552;
-L6554:
+	goto L6553;
+L6555:
 	R1 = (u64)&cc_decls_ttconsttype;
 	asi64(R2) = m;
 	asi16(R1) = *toi16p(((i64)R1+(i64)R2*2));
-	if (!asi16(R1)) goto L6556;
+	if (!asi16(R1)) goto L6557;
 	R1 = (u64)&cc_decls_ttconsttype;
 	asi64(R2) = m;
 	asi16(R1) = *toi16p(((i64)R1+(i64)R2*2));
 	R1 = toi64(toi16(R1));
-	goto L6552;
-L6556:
+	goto L6553;
+L6557:
 	asi64(R1) = m;
 	asi64(R1) = cc_lib_copymode(asi64(R1));
 	newm = asi64(R1);
@@ -60400,8 +60475,8 @@ L6556:
 	asi64(R3) = newm;
 	*toi16p(((i64)R2+(i64)R3*2)) = asi16(R1);
 	asi64(R1) = newm;
-	goto L6552;
-L6552:
+	goto L6553;
+L6553:
 	return asi64(R1);
 }
 
@@ -60411,7 +60486,7 @@ static i64 cc_lib_createrefmode(i64 m) {
 	R1 = (u64)&cc_decls_ttreftype;
 	asi64(R2) = m;
 	asi16(R1) = *toi16p(((i64)R1+(i64)R2*2));
-	if (!asi16(R1)) goto L6559;
+	if (!asi16(R1)) goto L6560;
 	R1 = (u64)&cc_decls_ttshared;
 	R2 = (u64)&cc_decls_ttreftype;
 	asi64(R3) = m;
@@ -60423,8 +60498,8 @@ static i64 cc_lib_createrefmode(i64 m) {
 	asi64(R2) = m;
 	asi16(R1) = *toi16p(((i64)R1+(i64)R2*2));
 	R1 = toi64(toi16(R1));
-	goto L6557;
-L6559:
+	goto L6558;
+L6560:
 	R1 = 13;
 	asi64(R1) = cc_lib_createnewmode(asi64(R1));
 	newm = asi64(R1);
@@ -60441,8 +60516,8 @@ L6559:
 	asi64(R3) = newm;
 	*tou8p(((i64)R2+(i64)R3)) = asu8(R1);
 	asi64(R1) = newm;
-	goto L6557;
-L6557:
+	goto L6558;
+L6558:
 	return asi64(R1);
 }
 
@@ -60461,8 +60536,8 @@ static i64 cc_lib_createprocmode(i64 m, u64 pm) {
 	asi64(R3) = newm;
 	*toi16p(((i64)R2+(i64)R3*2)) = asi16(R1);
 	asi64(R1) = newm;
-	goto L6560;
-L6560:
+	goto L6561;
+L6561:
 	return asi64(R1);
 }
 
@@ -60493,8 +60568,8 @@ static i64 cc_lib_createarraymode(i64 m, i64 length) {
 	asi64(R3) = newm;
 	*tou8p(((i64)R2+(i64)R3)) = asu8(R1);
 	asi64(R1) = newm;
-	goto L6561;
-L6561:
+	goto L6562;
+L6562:
 	return asi64(R1);
 }
 
@@ -60509,8 +60584,8 @@ static i64 cc_lib_createenummode(u64 e) {
 	asi64(R3) = newm;
 	*tou64p(((i64)R2+(i64)R3*8)) = asu64(R1);
 	asi64(R1) = newm;
-	goto L6562;
-L6562:
+	goto L6563;
+L6563:
 	return asi64(R1);
 }
 
@@ -60529,8 +60604,8 @@ static i64 cc_lib_createstructmode(u64 s, i64 smode) {
 	asi64(R3) = newm;
 	*tou8p(((i64)R2+(i64)R3)) = asu8(R1);
 	asi64(R1) = newm;
-	goto L6563;
-L6563:
+	goto L6564;
+L6564:
 	return asi64(R1);
 }
 
@@ -60563,8 +60638,8 @@ static u64 cc_lib_getautofieldname() {
 	name = asu64(R1);
 	asu64(R1) = name;
 	asu64(R1) = cc_lex_addnamestr(asu64(R1));
-	goto L6565;
-L6565:
+	goto L6566;
+L6566:
 	return asu64(R1);
 }
 
@@ -60576,19 +60651,19 @@ static i64 cc_lib_convertstringc(u64 s, u64 t, i64 length) {
 	i64 av_1;
 	asi64(R1) = length;
 	R2 = -1;
-	if (asi64(R1) != asi64(R2)) goto L6568;
+	if (asi64(R1) != asi64(R2)) goto L6569;
 	asu64(R1) = s;
 	asi64(R1) = strlen(asu64(R1));
 	length = asi64(R1);
-L6568:
+L6569:
 	asu64(R1) = t;
 	t0 = asu64(R1);
 	asi64(R1) = length;
 	av_1 = asi64(R1);
 	asi64(R1) = av_1;
 	R2 = 0;
-	if (asi64(R1) <= asi64(R2)) goto L6571;
-L6569:
+	if (asi64(R1) <= asi64(R2)) goto L6572;
+L6570:
 	R1 = (u64)&s;
 	asu64(R2) = *tou64p(R1); *(tou64p(R1)) += 1; asu64(R1) = asu64(R2);
 	asu8(R1) = *tou8p(R1);
@@ -60596,21 +60671,21 @@ L6569:
 	c = asi64(R1);
 	asi64(R1) = c;
 	switch (asi64(R1)) {
-	case 7: goto L6581;
-	case 8: goto L6582;
-	case 9: goto L6579;
-	case 10: goto L6577;
-	case 11: goto L6584;
-	case 12: goto L6583;
-	case 13: goto L6578;
-	case 14: case 15: case 16: case 17: case 18: case 19: case 20: case 21: case 22: case 23: case 24: case 25: case 26: case 27: case 28: case 29: case 30: case 31: case 32: case 33: case 35: case 36: case 37: case 38: case 40: case 41: case 42: case 43: case 44: case 45: case 46: case 47: case 48: case 49: case 50: case 51: case 52: case 53: case 54: case 55: case 56: case 57: case 58: case 59: case 60: case 61: case 62: case 63: case 64: case 65: case 66: case 67: case 68: case 69: case 70: case 71: case 72: case 73: case 74: case 75: case 76: case 77: case 78: case 79: case 80: case 81: case 82: case 83: case 84: case 85: case 86: case 87: case 88: case 89: case 90: case 91: goto L6574;
-	case 34: goto L6575;
-	case 39: goto L6576;
-	case 92: goto L6580;
-	default: goto L6574;
+	case 7: goto L6582;
+	case 8: goto L6583;
+	case 9: goto L6580;
+	case 10: goto L6578;
+	case 11: goto L6585;
+	case 12: goto L6584;
+	case 13: goto L6579;
+	case 14: case 15: case 16: case 17: case 18: case 19: case 20: case 21: case 22: case 23: case 24: case 25: case 26: case 27: case 28: case 29: case 30: case 31: case 32: case 33: case 35: case 36: case 37: case 38: case 40: case 41: case 42: case 43: case 44: case 45: case 46: case 47: case 48: case 49: case 50: case 51: case 52: case 53: case 54: case 55: case 56: case 57: case 58: case 59: case 60: case 61: case 62: case 63: case 64: case 65: case 66: case 67: case 68: case 69: case 70: case 71: case 72: case 73: case 74: case 75: case 76: case 77: case 78: case 79: case 80: case 81: case 82: case 83: case 84: case 85: case 86: case 87: case 88: case 89: case 90: case 91: goto L6575;
+	case 34: goto L6576;
+	case 39: goto L6577;
+	case 92: goto L6581;
+	default: goto L6575;
     };
 // SWITCH
-L6575:
+L6576:
 	R1 = 92;
 	R2 = (u64)&t;
 	asu64(R3) = *tou64p(R2); *(tou64p(R2)) += 1; asu64(R2) = asu64(R3);
@@ -60619,8 +60694,8 @@ L6575:
 	R2 = (u64)&t;
 	asu64(R3) = *tou64p(R2); *(tou64p(R2)) += 1; asu64(R2) = asu64(R3);
 	*tou8p(R2) = asu8(R1);
-	goto L6572;
-L6576:
+	goto L6573;
+L6577:
 	R1 = 92;
 	R2 = (u64)&t;
 	asu64(R3) = *tou64p(R2); *(tou64p(R2)) += 1; asu64(R2) = asu64(R3);
@@ -60629,8 +60704,8 @@ L6576:
 	R2 = (u64)&t;
 	asu64(R3) = *tou64p(R2); *(tou64p(R2)) += 1; asu64(R2) = asu64(R3);
 	*tou8p(R2) = asu8(R1);
-	goto L6572;
-L6577:
+	goto L6573;
+L6578:
 	R1 = 92;
 	R2 = (u64)&t;
 	asu64(R3) = *tou64p(R2); *(tou64p(R2)) += 1; asu64(R2) = asu64(R3);
@@ -60639,8 +60714,8 @@ L6577:
 	R2 = (u64)&t;
 	asu64(R3) = *tou64p(R2); *(tou64p(R2)) += 1; asu64(R2) = asu64(R3);
 	*tou8p(R2) = asu8(R1);
-	goto L6572;
-L6578:
+	goto L6573;
+L6579:
 	R1 = 92;
 	R2 = (u64)&t;
 	asu64(R3) = *tou64p(R2); *(tou64p(R2)) += 1; asu64(R2) = asu64(R3);
@@ -60649,8 +60724,8 @@ L6578:
 	R2 = (u64)&t;
 	asu64(R3) = *tou64p(R2); *(tou64p(R2)) += 1; asu64(R2) = asu64(R3);
 	*tou8p(R2) = asu8(R1);
-	goto L6572;
-L6579:
+	goto L6573;
+L6580:
 	R1 = 92;
 	R2 = (u64)&t;
 	asu64(R3) = *tou64p(R2); *(tou64p(R2)) += 1; asu64(R2) = asu64(R3);
@@ -60659,18 +60734,18 @@ L6579:
 	R2 = (u64)&t;
 	asu64(R3) = *tou64p(R2); *(tou64p(R2)) += 1; asu64(R2) = asu64(R3);
 	*tou8p(R2) = asu8(R1);
-	goto L6572;
-L6580:
-	R1 = 92;
-	R2 = (u64)&t;
-	asu64(R3) = *tou64p(R2); *(tou64p(R2)) += 1; asu64(R2) = asu64(R3);
-	*tou8p(R2) = asu8(R1);
-	R1 = 92;
-	R2 = (u64)&t;
-	asu64(R3) = *tou64p(R2); *(tou64p(R2)) += 1; asu64(R2) = asu64(R3);
-	*tou8p(R2) = asu8(R1);
-	goto L6572;
+	goto L6573;
 L6581:
+	R1 = 92;
+	R2 = (u64)&t;
+	asu64(R3) = *tou64p(R2); *(tou64p(R2)) += 1; asu64(R2) = asu64(R3);
+	*tou8p(R2) = asu8(R1);
+	R1 = 92;
+	R2 = (u64)&t;
+	asu64(R3) = *tou64p(R2); *(tou64p(R2)) += 1; asu64(R2) = asu64(R3);
+	*tou8p(R2) = asu8(R1);
+	goto L6573;
+L6582:
 	R1 = 92;
 	R2 = (u64)&t;
 	asu64(R3) = *tou64p(R2); *(tou64p(R2)) += 1; asu64(R2) = asu64(R3);
@@ -60679,8 +60754,8 @@ L6581:
 	R2 = (u64)&t;
 	asu64(R3) = *tou64p(R2); *(tou64p(R2)) += 1; asu64(R2) = asu64(R3);
 	*tou8p(R2) = asu8(R1);
-	goto L6572;
-L6582:
+	goto L6573;
+L6583:
 	R1 = 92;
 	R2 = (u64)&t;
 	asu64(R3) = *tou64p(R2); *(tou64p(R2)) += 1; asu64(R2) = asu64(R3);
@@ -60689,8 +60764,8 @@ L6582:
 	R2 = (u64)&t;
 	asu64(R3) = *tou64p(R2); *(tou64p(R2)) += 1; asu64(R2) = asu64(R3);
 	*tou8p(R2) = asu8(R1);
-	goto L6572;
-L6583:
+	goto L6573;
+L6584:
 	R1 = 92;
 	R2 = (u64)&t;
 	asu64(R3) = *tou64p(R2); *(tou64p(R2)) += 1; asu64(R2) = asu64(R3);
@@ -60699,8 +60774,8 @@ L6583:
 	R2 = (u64)&t;
 	asu64(R3) = *tou64p(R2); *(tou64p(R2)) += 1; asu64(R2) = asu64(R3);
 	*tou8p(R2) = asu8(R1);
-	goto L6572;
-L6584:
+	goto L6573;
+L6585:
 	R1 = 92;
 	R2 = (u64)&t;
 	asu64(R3) = *tou64p(R2); *(tou64p(R2)) += 1; asu64(R2) = asu64(R3);
@@ -60709,15 +60784,15 @@ L6584:
 	R2 = (u64)&t;
 	asu64(R3) = *tou64p(R2); *(tou64p(R2)) += 1; asu64(R2) = asu64(R3);
 	*tou8p(R2) = asu8(R1);
-	goto L6572;
-L6574:
+	goto L6573;
+L6575:
 	asi64(R1) = c;
 	R2 = 32;
-	if (asi64(R1) < asi64(R2)) goto L6587;
+	if (asi64(R1) < asi64(R2)) goto L6588;
 	asi64(R1) = c;
 	R2 = 127;
-	if (asi64(R1) < asi64(R2)) goto L6586;
-L6587:
+	if (asi64(R1) < asi64(R2)) goto L6587;
+L6588:
 	R1 = (u64)&str;
 	msysc_m$print_startstr(asu64(R1));
 	R1 = tou64("\\#o");
@@ -60750,24 +60825,24 @@ L6587:
 	R2 = (u64)&t;
 	asu64(R3) = *tou64p(R2); *(tou64p(R2)) += 1; asu64(R2) = asu64(R3);
 	*tou8p(R2) = asu8(R1);
-	goto L6585;
-L6586:
+	goto L6586;
+L6587:
 	asi64(R1) = c;
 	R2 = (u64)&t;
 	asu64(R3) = *tou64p(R2); *(tou64p(R2)) += 1; asu64(R2) = asu64(R3);
 	*tou8p(R2) = asu8(R1);
-L6585:
+L6586:
+L6573:
+	if (--asi64(av_1)) goto L6570;
 L6572:
-	if (--asi64(av_1)) goto L6569;
-L6571:
 	R1 = 0;
 	asu64(R2) = t;
 	*tou8p(R2) = asu8(R1);
 	asu64(R1) = t;
 	asu64(R2) = t0;
 	asi64(R1) -= asi64(R2);
-	goto L6566;
-L6566:
+	goto L6567;
+L6567:
 	return asi64(R1);
 }
 
@@ -60784,7 +60859,7 @@ static u64 cc_lib_getopcjname(i64 opc) {
 	asu64(R1) = strchr(asu64(R2), asi32(R1));
 	s = asu64(R1);
 	asu64(R1) = s;
-	if (!asu64(R1)) goto L6590;
+	if (!asu64(R1)) goto L6591;
 	asu64(R1) = s;
 	asu64(R2) = name;
 	asu64(R1) -= asu64(R2);
@@ -60798,12 +60873,12 @@ static u64 cc_lib_getopcjname(i64 opc) {
 	asi64(R3) -= asi64(R4);
 	*tou8p(((i64)R2+(i64)R3)) = asu8(R1);
 	R1 = (u64)&cc_lib_getopcjname_str;
-	goto L6589;
-L6590:
+	goto L6590;
+L6591:
 	asu64(R1) = name;
+L6590:
+	goto L6589;
 L6589:
-	goto L6588;
-L6588:
 	return asu64(R1);
 }
 
@@ -60814,8 +60889,8 @@ static u64 cc_lib_strmode(i64 m, i64 expand) {
 	asi64(R3) = m;
 	cc_lib_istrmode(asi64(R3), asi64(R2), asu64(R1));
 	R1 = (u64)&cc_lib_strmode_str;
-	goto L6591;
-L6591:
+	goto L6592;
+L6592:
 	return asu64(R1);
 }
 
@@ -60826,8 +60901,8 @@ static u64 cc_lib_strmode2(i64 m, i64 expand) {
 	asi64(R3) = m;
 	cc_lib_istrmode(asi64(R3), asi64(R2), asu64(R1));
 	R1 = (u64)&cc_lib_strmode2_str;
-	goto L6592;
-L6592:
+	goto L6593;
+L6593:
 	return asu64(R1);
 }
 
@@ -60853,13 +60928,13 @@ static void cc_lib_istrmode(i64 m, i64 expand, u64 dest) {
 	xx = asu64(R1);
 	asi64(R1) = m;
 	R2 = 21;
-	if (asi64(R1) >= asi64(R2)) goto L6595;
+	if (asi64(R1) >= asi64(R2)) goto L6596;
 	asi64(R1) = m;
 	asu64(R1) = cc_lib_typename(asi64(R1));
 	asu64(R2) = dest;
 	asu64(R1) = strcpy(asu64(R2), asu64(R1));
-	goto L6593;
-L6595:
+	goto L6594;
+L6596:
 	R1 = (u64)&cc_decls_ttbasetype;
 	asi64(R2) = m;
 	asi16(R1) = *toi16p(((i64)R1+(i64)R2*2));
@@ -60867,34 +60942,34 @@ L6595:
 	t = asi64(R1);
 	asi64(R1) = t;
 	R2 = 13;
-	if (asi64(R1) == asi64(R2)) goto L6597;
-	R2 = 17;
 	if (asi64(R1) == asi64(R2)) goto L6598;
-	R2 = 12;
+	R2 = 17;
 	if (asi64(R1) == asi64(R2)) goto L6599;
+	R2 = 12;
+	if (asi64(R1) == asi64(R2)) goto L6600;
 	R2 = 18;
-	if (asi64(R1) == asi64(R2)) goto L6600;
-	R2 = 19;
-	if (asi64(R1) == asi64(R2)) goto L6600;
-	R2 = 0;
 	if (asi64(R1) == asi64(R2)) goto L6601;
-	R2 = 14;
+	R2 = 19;
+	if (asi64(R1) == asi64(R2)) goto L6601;
+	R2 = 0;
 	if (asi64(R1) == asi64(R2)) goto L6602;
-	goto L6603;
-L6597:
+	R2 = 14;
+	if (asi64(R1) == asi64(R2)) goto L6603;
+	goto L6604;
+L6598:
 	R1 = (u64)&cc_decls_ttconst;
 	asi64(R2) = m;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
-	if (!asu8(R1)) goto L6605;
+	if (!asu8(R1)) goto L6606;
 	R1 = tou64("const ref ");
 	asu64(R2) = dest;
 	asu64(R1) = strcpy(asu64(R2), asu64(R1));
-	goto L6604;
-L6605:
+	goto L6605;
+L6606:
 	R1 = tou64("ref ");
 	asu64(R2) = dest;
 	asu64(R1) = strcpy(asu64(R2), asu64(R1));
-L6604:
+L6605:
 	R1 = (u64)&cc_decls_tttarget;
 	asi64(R2) = m;
 	asi16(R1) = *toi16p(((i64)R1+(i64)R2*2));
@@ -60902,7 +60977,7 @@ L6604:
 	target = asi64(R1);
 	asi64(R1) = target;
 	R2 = 0;
-	if (asi64(R1) < asi64(R2)) goto L6607;
+	if (asi64(R1) < asi64(R2)) goto L6608;
 	R1 = (u64)&cc_decls_ttbasetype;
 	R2 = (u64)&cc_decls_tttarget;
 	asi64(R3) = m;
@@ -60911,7 +60986,7 @@ L6604:
 	asi16(R1) = *toi16p(((i64)R1+(i64)R2*2));
 	R1 = toi64(toi16(R1));
 	R2 = 18;
-	if (asi64(R1) != asi64(R2)) goto L6607;
+	if (asi64(R1) != asi64(R2)) goto L6608;
 	R1 = (u64)&cc_decls_tttarget;
 	asi64(R2) = m;
 	asi16(R1) = *toi16p(((i64)R1+(i64)R2*2));
@@ -60919,39 +60994,7 @@ L6604:
 	asu64(R1) = cc_lib_typename(asi64(R1));
 	asu64(R2) = dest;
 	asu64(R1) = strcat(asu64(R2), asu64(R1));
-	goto L6606;
-L6607:
-	asu64(R1) = dest;
-	asu64(R2) = dest;
-	asi64(R2) = strlen(asu64(R2));
-	R1 += (i64)R2;
-	R2 = 0;
-	R3 = (u64)&cc_decls_tttarget;
-	asi64(R4) = m;
-	asi16(R3) = *toi16p(((i64)R3+(i64)R4*2));
-	R3 = toi64(toi16(R3));
-	cc_lib_istrmode(asi64(R3), asi64(R2), asu64(R1));
-L6606:
-	goto L6596;
-L6598:
-	R1 = (u64)&cc_decls_ttlength;
-	asi64(R2) = m;
-	asi64(R1) = *toi64p(((i64)R1+(i64)R2*8));
-	if (!asi64(R1)) goto L6609;
-	asu64(R1) = dest;
-	msysc_m$print_startstr(asu64(R1));
-	R1 = tou64("[#]");
-	msysc_m$print_setfmt(asu64(R1));
-	R1 = (u64)&cc_decls_ttlength;
-	asi64(R2) = m;
-	asi64(R1) = *toi64p(((i64)R1+(i64)R2*8));
-	msysc_m$print_i64_nf(asi64(R1));
-	msysc_m$print_end();
-	goto L6608;
-L6609:
-	R1 = tou64("[]");
-	asu64(R2) = dest;
-	asu64(R1) = strcpy(asu64(R2), asu64(R1));
+	goto L6607;
 L6608:
 	asu64(R1) = dest;
 	asu64(R2) = dest;
@@ -60963,8 +61006,40 @@ L6608:
 	asi16(R3) = *toi16p(((i64)R3+(i64)R4*2));
 	R3 = toi64(toi16(R3));
 	cc_lib_istrmode(asi64(R3), asi64(R2), asu64(R1));
-	goto L6596;
+L6607:
+	goto L6597;
 L6599:
+	R1 = (u64)&cc_decls_ttlength;
+	asi64(R2) = m;
+	asi64(R1) = *toi64p(((i64)R1+(i64)R2*8));
+	if (!asi64(R1)) goto L6610;
+	asu64(R1) = dest;
+	msysc_m$print_startstr(asu64(R1));
+	R1 = tou64("[#]");
+	msysc_m$print_setfmt(asu64(R1));
+	R1 = (u64)&cc_decls_ttlength;
+	asi64(R2) = m;
+	asi64(R1) = *toi64p(((i64)R1+(i64)R2*8));
+	msysc_m$print_i64_nf(asi64(R1));
+	msysc_m$print_end();
+	goto L6609;
+L6610:
+	R1 = tou64("[]");
+	asu64(R2) = dest;
+	asu64(R1) = strcpy(asu64(R2), asu64(R1));
+L6609:
+	asu64(R1) = dest;
+	asu64(R2) = dest;
+	asi64(R2) = strlen(asu64(R2));
+	R1 += (i64)R2;
+	R2 = 0;
+	R3 = (u64)&cc_decls_tttarget;
+	asi64(R4) = m;
+	asi16(R3) = *toi16p(((i64)R3+(i64)R4*2));
+	R3 = toi64(toi16(R3));
+	cc_lib_istrmode(asi64(R3), asi64(R2), asu64(R1));
+	goto L6597;
+L6600:
 	R1 = tou64("enum ");
 	asu64(R2) = dest;
 	asu64(R1) = strcpy(asu64(R2), asu64(R1));
@@ -60972,16 +61047,16 @@ L6599:
 	asu64(R1) = cc_lib_typename(asi64(R1));
 	asu64(R2) = dest;
 	asu64(R1) = strcat(asu64(R2), asu64(R1));
-	goto L6596;
-L6600:
+	goto L6597;
+L6601:
 	asi64(R1) = expand;
-	if (asi64(R1)) goto L6611;
+	if (asi64(R1)) goto L6612;
 	asi64(R1) = m;
 	asu64(R1) = cc_lib_typename(asi64(R1));
 	asu64(R2) = dest;
 	asu64(R1) = strcpy(asu64(R2), asu64(R1));
-	goto L6593;
-L6611:
+	goto L6594;
+L6612:
 	R1 = (u64)&cc_decls_ttbasetype;
 	asi64(R2) = m;
 	asi16(R1) = *toi16p(((i64)R1+(i64)R2*2));
@@ -61002,14 +61077,14 @@ L6611:
 	R2 = 16;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
 	q = asu64(R1);
-	goto L6613;
-L6612:
+	goto L6614;
+L6613:
 	asi64(R1) = needcomma;
-	if (!asi64(R1)) goto L6616;
+	if (!asi64(R1)) goto L6617;
 	R1 = tou64(",");
 	asu64(R2) = dest;
 	asu64(R1) = strcat(asu64(R2), asu64(R1));
-L6616:
+L6617:
 	R1 = 1;
 	needcomma = asi64(R1);
 	asu64(R1) = dest;
@@ -61034,20 +61109,20 @@ L6616:
 	R2 = 32;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
 	q = asu64(R1);
-L6613:
+L6614:
 	asu64(R1) = q;
-	if (asu64(R1)) goto L6612;
+	if (asu64(R1)) goto L6613;
 	R1 = tou64(")");
 	asu64(R2) = dest;
 	asu64(R1) = strcat(asu64(R2), asu64(R1));
-	goto L6596;
-L6601:
+	goto L6597;
+L6602:
 	asi64(R1) = m;
 	asu64(R1) = cc_lib_typename(asi64(R1));
 	asu64(R2) = dest;
 	asu64(R1) = strcpy(asu64(R2), asu64(R1));
-	goto L6596;
-L6602:
+	goto L6597;
+L6603:
 	R1 = tou64("proc(");
 	asu64(R2) = dest;
 	asu64(R1) = strcpy(asu64(R2), asu64(R1));
@@ -61064,8 +61139,8 @@ L6602:
 	i = asi64(R1);
 	asi64(R1) = n;
 	R2 = 1;
-	if (asi64(R1) < asi64(R2)) goto L6619;
-L6617:
+	if (asi64(R1) < asi64(R2)) goto L6620;
+L6618:
 	asu64(R1) = dest;
 	asu64(R2) = dest;
 	asi64(R2) = strlen(asu64(R2));
@@ -61078,17 +61153,17 @@ L6617:
 	cc_lib_istrmode(asi64(R3), asi64(R2), asu64(R1));
 	asi64(R1) = i;
 	asi64(R2) = n;
-	if (asi64(R1) == asi64(R2)) goto L6621;
+	if (asi64(R1) == asi64(R2)) goto L6622;
 	R1 = tou64(",");
 	asu64(R2) = dest;
 	asu64(R1) = strcat(asu64(R2), asu64(R1));
-L6621:
+L6622:
 	asu64(R1) = pm;
 	R2 = 8;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
 	pm = asu64(R1);
-	i += 1; if (i <= n) goto L6617;
-L6619:
+	i += 1; if (i <= n) goto L6618;
+L6620:
 	R1 = tou64(")");
 	asu64(R2) = dest;
 	asu64(R1) = strcat(asu64(R2), asu64(R1));
@@ -61102,18 +61177,18 @@ L6619:
 	asi16(R3) = *toi16p(((i64)R3+(i64)R4*2));
 	R3 = toi64(toi16(R3));
 	cc_lib_istrmode(asi64(R3), asi64(R2), asu64(R1));
-	goto L6596;
-L6603:
+	goto L6597;
+L6604:
 	asi64(R1) = t;
 	R2 = 21;
-	if (asi64(R1) >= asi64(R2)) goto L6623;
+	if (asi64(R1) >= asi64(R2)) goto L6624;
 	asi64(R1) = m;
 	asu64(R1) = cc_lib_typename(asi64(R1));
 	asu64(R2) = dest;
 	asu64(R1) = strcpy(asu64(R2), asu64(R1));
-	goto L6593;
-	goto L6622;
-L6623:
+	goto L6594;
+	goto L6623;
+L6624:
 	msysc_m$print_startcon();
 	asi64(R1) = m;
 	asu64(R1) = cc_lib_typename(asi64(R1));
@@ -61122,9 +61197,9 @@ L6623:
 	msysc_m$print_end();
 	R1 = tou64("NEWSTRMODE");
 	cc_support_mcerror(asu64(R1));
-L6622:
-L6596:
-L6593:
+L6623:
+L6597:
+L6594:
 	return;
 }
 
@@ -61138,29 +61213,29 @@ static u64 cc_lib_typename(i64 m) {
 	basem = asi64(R1);
 	asi64(R1) = basem;
 	R2 = 18;
-	if (asi64(R1) == asi64(R2)) goto L6626;
-	R2 = 19;
-	if (asi64(R1) == asi64(R2)) goto L6626;
-	R2 = 17;
 	if (asi64(R1) == asi64(R2)) goto L6627;
-	R2 = 12;
+	R2 = 19;
+	if (asi64(R1) == asi64(R2)) goto L6627;
+	R2 = 17;
 	if (asi64(R1) == asi64(R2)) goto L6628;
-	goto L6629;
-L6626:
+	R2 = 12;
+	if (asi64(R1) == asi64(R2)) goto L6629;
+	goto L6630;
+L6627:
 	asi64(R1) = basem;
 	R2 = 18;
-	if (asi64(R1) != asi64(R2)) goto L6631;
+	if (asi64(R1) != asi64(R2)) goto L6632;
 	R1 = tou64("struct ");
-	goto L6630;
-L6631:
+	goto L6631;
+L6632:
 	R1 = tou64("union ");
-L6630:
+L6631:
 	R2 = (u64)&cc_lib_typename_str;
 	asu64(R1) = strcpy(asu64(R2), asu64(R1));
 	R1 = (u64)&cc_decls_ttnamedef;
 	asi64(R2) = m;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2*8));
-	if (!asu64(R1)) goto L6633;
+	if (!asu64(R1)) goto L6634;
 	R1 = (u64)&cc_decls_ttnamedef;
 	asi64(R2) = m;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2*8));
@@ -61181,34 +61256,34 @@ L6630:
 	asu64(R1) = msysc_strint(asi64(R2), asu64(R1));
 	R2 = (u64)&cc_lib_typename_str;
 	asu64(R1) = strcat(asu64(R2), asu64(R1));
-L6633:
+L6634:
 	R1 = (u64)&cc_lib_typename_str;
-	goto L6624;
 	goto L6625;
-L6627:
-	R1 = tou64("<array>");
-	goto L6624;
-	goto L6625;
+	goto L6626;
 L6628:
+	R1 = tou64("<array>");
+	goto L6625;
+	goto L6626;
+L6629:
 	R1 = (u64)&cc_decls_ttnamedef;
 	asi64(R2) = m;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2*8));
-	if (!asu64(R1)) goto L6635;
+	if (!asu64(R1)) goto L6636;
 	R1 = (u64)&cc_decls_ttnamedef;
 	asi64(R2) = m;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2*8));
 	R2 = 0;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
-	goto L6624;
-L6635:
-	R1 = tou64("<enum>");
-	goto L6624;
 	goto L6625;
-L6629:
+L6636:
+	R1 = tou64("<enum>");
+	goto L6625;
+	goto L6626;
+L6630:
 	R1 = (u64)&cc_decls_ttconst;
 	asi64(R2) = m;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
-	if (!asu8(R1)) goto L6637;
+	if (!asu8(R1)) goto L6638;
 	R1 = tou64("const ");
 	R2 = (u64)&cc_lib_typename_str;
 	asu64(R1) = strcpy(asu64(R2), asu64(R1));
@@ -61218,16 +61293,16 @@ L6629:
 	R2 = (u64)&cc_lib_typename_str;
 	asu64(R1) = strcat(asu64(R2), asu64(R1));
 	R1 = (u64)&cc_lib_typename_str;
-	goto L6624;
-L6637:
+	goto L6625;
+L6638:
 	R1 = (u64)&cc_tables_stdtypenames;
 	asi64(R2) = basem;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2*8));
-	goto L6624;
-L6625:
+	goto L6625;
+L6626:
 	R1 = tou64("");
-	goto L6624;
-L6624:
+	goto L6625;
+L6625:
 	return asu64(R1);
 }
 
@@ -61240,7 +61315,7 @@ static u64 cc_lib_allocunitrec() {
 	(*toi64p(R1)) += 1;
 	R1 = (u64)&cc_lib_remainingunits;
 	asi64(R2) = *toi64p(R1); *(toi64p(R1)) -= 1; asi64(R1) = asi64(R2);
-	if (!asi64(R1)) goto L6640;
+	if (!asi64(R1)) goto L6641;
 	asu64(R1) = cc_lib_unitheapptr;
 	p = asu64(R1);
 	R1 = (u64)&cc_lib_unitheapptr;
@@ -61256,17 +61331,17 @@ static u64 cc_lib_allocunitrec() {
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 255;
-	if (asi64(R1) > asi64(R2)) goto L6642;
+	if (asi64(R1) > asi64(R2)) goto L6643;
 	R1 = (u64)&cc_decls_lx;
 	R2 = 20;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	asu64(R2) = p;
 	R3 = 60;
 	*tou8p(((i64)R2+(i64)R3)) = asu8(R1);
-L6642:
+L6643:
 	asu64(R1) = p;
-	goto L6638;
-L6640:
+	goto L6639;
+L6641:
 	R1 = 3200000;
 	asu64(R1) = mlib_pcm_alloc(asi64(R1));
 	R2 = R1;
@@ -61291,17 +61366,17 @@ L6640:
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 255;
-	if (asi64(R1) > asi64(R2)) goto L6644;
+	if (asi64(R1) > asi64(R2)) goto L6645;
 	R1 = (u64)&cc_decls_lx;
 	R2 = 20;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	asu64(R2) = p;
 	R3 = 60;
 	*tou8p(((i64)R2+(i64)R3)) = asu8(R1);
-L6644:
+L6645:
 	asu64(R1) = p;
-	goto L6638;
-L6638:
+	goto L6639;
+L6639:
 	return asu64(R1);
 }
 
@@ -61309,10 +61384,10 @@ static i64 cc_lib_copymode(i64 m) {
     u64 R1, R2, R3; 
 	asi64(R1) = cc_decls_ntypes;
 	R2 = 80000;
-	if (asi64(R1) < asi64(R2)) goto L6647;
+	if (asi64(R1) < asi64(R2)) goto L6648;
 	R1 = tou64("Too many types");
 	cc_support_serror(asu64(R1));
-L6647:
+L6648:
 	R1 = (u64)&cc_decls_ntypes;
 	(*toi64p(R1)) += 1;
 	R1 = (u64)&cc_decls_ttnamedef;
@@ -61370,8 +61445,8 @@ L6647:
 	asi64(R3) = cc_decls_ntypes;
 	*tou8p(((i64)R2+(i64)R3)) = asu8(R1);
 	asi64(R1) = cc_decls_ntypes;
-	goto L6645;
-L6645:
+	goto L6646;
+L6646:
 	return asi64(R1);
 }
 
@@ -61379,7 +61454,7 @@ static i64 cc_lib_createnewmode(i64 m) {
     u64 R1, R2, R3; 
 	asi64(R1) = cc_decls_ntypes;
 	R2 = 80000;
-	if (asi64(R1) < asi64(R2)) goto L6650;
+	if (asi64(R1) < asi64(R2)) goto L6651;
 	msysc_m$print_startcon();
 	R1 = tou64("STRMODE(M)=");
 	msysc_m$print_str_nf(asu64(R1));
@@ -61391,7 +61466,7 @@ static i64 cc_lib_createnewmode(i64 m) {
 	msysc_m$print_end();
 	R1 = tou64("Too many types/cnm");
 	cc_support_serror(asu64(R1));
-L6650:
+L6651:
 	R1 = (u64)&cc_decls_ntypes;
 	(*toi64p(R1)) += 1;
 	asi64(R1) = m;
@@ -61405,8 +61480,8 @@ L6650:
 	asi64(R3) = cc_decls_ntypes;
 	*toi64p(((i64)R2+(i64)R3*8)) = asi64(R1);
 	asi64(R1) = cc_decls_ntypes;
-	goto L6648;
-L6648:
+	goto L6649;
+L6649:
 	return asi64(R1);
 }
 
@@ -61415,21 +61490,21 @@ static void cc_lib_addlistunit(u64 ulist, u64 ulistx, u64 p) {
 	asu64(R1) = ulist;
 	asu64(R1) = *tou64p(R1);
 	R2 = 0;
-	if (asu64(R1) != asu64(R2)) goto L6653;
+	if (asu64(R1) != asu64(R2)) goto L6654;
 	asu64(R1) = p;
 	R2 = R1;
 	asu64(R3) = ulistx;
 	*tou64p(R3) = asu64(R2);
 	asu64(R2) = ulist;
 	*tou64p(R2) = asu64(R1);
-	goto L6652;
-L6653:
+	goto L6653;
+L6654:
 	asu64(R1) = p;
 	asu64(R2) = ulistx;
 	asu64(R2) = *tou64p(R2);
 	R3 = 8;
 	*tou64p(((i64)R2+(i64)R3)) = asu64(R1);
-L6652:
+L6653:
 	R1 = 0;
 	asu64(R2) = p;
 	R3 = 8;
@@ -61445,21 +61520,21 @@ static void cc_lib_addlistdef(u64 ulist, u64 ulistx, u64 p) {
 	asu64(R1) = ulist;
 	asu64(R1) = *tou64p(R1);
 	R2 = 0;
-	if (asu64(R1) != asu64(R2)) goto L6656;
+	if (asu64(R1) != asu64(R2)) goto L6657;
 	asu64(R1) = p;
 	R2 = R1;
 	asu64(R3) = ulistx;
 	*tou64p(R3) = asu64(R2);
 	asu64(R2) = ulist;
 	*tou64p(R2) = asu64(R1);
-	goto L6655;
-L6656:
+	goto L6656;
+L6657:
 	asu64(R1) = p;
 	asu64(R2) = ulistx;
 	asu64(R2) = *tou64p(R2);
 	R3 = 32;
 	*tou64p(((i64)R2+(i64)R3)) = asu64(R1);
-L6655:
+L6656:
 	R1 = 0;
 	asu64(R2) = p;
 	R3 = 32;
@@ -61475,21 +61550,21 @@ static void cc_lib_addlistparam(u64 ulist, u64 ulistx, u64 p) {
 	asu64(R1) = ulist;
 	asu64(R1) = *tou64p(R1);
 	R2 = 0;
-	if (asu64(R1) != asu64(R2)) goto L6659;
+	if (asu64(R1) != asu64(R2)) goto L6660;
 	asu64(R1) = p;
 	R2 = R1;
 	asu64(R3) = ulistx;
 	*tou64p(R3) = asu64(R2);
 	asu64(R2) = ulist;
 	*tou64p(R2) = asu64(R1);
-	goto L6658;
-L6659:
+	goto L6659;
+L6660:
 	asu64(R1) = p;
 	asu64(R2) = ulistx;
 	asu64(R2) = *tou64p(R2);
 	R3 = 8;
 	*tou64p(((i64)R2+(i64)R3)) = asu64(R1);
-L6658:
+L6659:
 	R1 = 0;
 	asu64(R2) = p;
 	R3 = 8;
@@ -61508,7 +61583,7 @@ static void cc_lib_checksymbol(i64 symbol) {
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	asi64(R2) = symbol;
-	if (asi64(R1) == asi64(R2)) goto L6662;
+	if (asi64(R1) == asi64(R2)) goto L6663;
 	R1 = (u64)&str;
 	msysc_m$print_startstr(asu64(R1));
 	R1 = tou64("# expected, not #");
@@ -61530,7 +61605,7 @@ static void cc_lib_checksymbol(i64 symbol) {
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 67;
-	if (asi64(R1) != asi64(R2)) goto L6664;
+	if (asi64(R1) != asi64(R2)) goto L6665;
 	R1 = tou64(" \"");
 	R2 = (u64)&str;
 	asu64(R1) = strcat(asu64(R2), asu64(R1));
@@ -61543,10 +61618,10 @@ static void cc_lib_checksymbol(i64 symbol) {
 	R1 = tou64("\"");
 	R2 = (u64)&str;
 	asu64(R1) = strcat(asu64(R2), asu64(R1));
-L6664:
+L6665:
 	R1 = (u64)&str;
 	cc_support_serror(asu64(R1));
-L6662:
+L6663:
 	return;
 }
 
@@ -61557,10 +61632,10 @@ static void cc_lib_skipsymbol(i64 symbol) {
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	asi64(R2) = symbol;
-	if (asi64(R1) == asi64(R2)) goto L6667;
+	if (asi64(R1) == asi64(R2)) goto L6668;
 	asi64(R1) = symbol;
 	cc_lib_checksymbol(asi64(R1));
-L6667:
+L6668:
 	cc_lex_lex();
 	return;
 }
@@ -61583,8 +61658,8 @@ static void cc_lib_inittypetables() {
 	av_1 = asi64(R1);
 	asi64(R1) = av_1;
 	R2 = 0;
-	if (asi64(R1) < asi64(R2)) goto L6671;
-L6669:
+	if (asi64(R1) < asi64(R2)) goto L6672;
+L6670:
 	asi64(R1) = i;
 	R2 = (u64)&cc_decls_ttbasetype;
 	asi64(R3) = i;
@@ -61605,17 +61680,17 @@ L6669:
 	*toi64p(((i64)R2+(i64)R3*8)) = asi64(R1);
 	asi64(R1) = i;
 	R2 = 17;
-	if (asi64(R1) == asi64(R2)) goto L6674;
+	if (asi64(R1) == asi64(R2)) goto L6675;
 	R2 = 18;
-	if (asi64(R1) != asi64(R2)) goto L6673;
-L6674:
+	if (asi64(R1) != asi64(R2)) goto L6674;
+L6675:
 	R1 = 1;
 	R2 = (u64)&cc_decls_ttisblock;
 	asi64(R3) = i;
 	*tou8p(((i64)R2+(i64)R3)) = asu8(R1);
-L6673:
-	i += 1; if (i <= av_1) goto L6669;
-L6671:
+L6674:
+	i += 1; if (i <= av_1) goto L6670;
+L6672:
 	R1 = 20;
 	cc_decls_ntypes = asi64(R1);
 	R1 = 1;
@@ -61630,8 +61705,8 @@ L6671:
 	av_2 = asi64(R1);
 	asi64(R1) = av_2;
 	R2 = 1;
-	if (asi64(R1) < asi64(R2)) goto L6677;
-L6675:
+	if (asi64(R1) < asi64(R2)) goto L6678;
+L6676:
 	R1 = (u64)&cc_tables_dominantsetuptable;
 	asi64(R2) = i;
 	R1 += (i64)R2*3-3;
@@ -61659,16 +61734,16 @@ L6675:
 	R2 += (i64)R3*32;
 	asi64(R3) = t;
 	*tou8p(((i64)R2+(i64)R3)) = asu8(R1);
-	i += 1; if (i <= av_2) goto L6675;
-L6677:
+	i += 1; if (i <= av_2) goto L6676;
+L6678:
 	R1 = 1;
 	i = asi64(R1);
 	R1 = 121;
 	av_3 = asi64(R1);
 	asi64(R1) = av_3;
 	R2 = 1;
-	if (asi64(R1) < asi64(R2)) goto L6680;
-L6678:
+	if (asi64(R1) < asi64(R2)) goto L6681;
+L6679:
 	R1 = (u64)&cc_tables_convsetuptable;
 	asi64(R2) = i;
 	R1 += (i64)R2*3-3;
@@ -61696,8 +61771,8 @@ L6678:
 	R2 += (i64)R3*16;
 	asi64(R3) = t;
 	*tou8p(((i64)R2+(i64)R3)) = asu8(R1);
-	i += 1; if (i <= av_3) goto L6678;
-L6680:
+	i += 1; if (i <= av_3) goto L6679;
+L6681:
 	return;
 }
 
@@ -61742,12 +61817,12 @@ static u64 cc_lib_createdupldef(u64 owner, u64 symptr, i64 id) {
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
 	R2 = R1;
 	q = asu64(R2);
-	if (!asu64(R1)) goto L6683;
+	if (!asu64(R1)) goto L6684;
 	asu64(R1) = p;
 	asu64(R2) = q;
 	R3 = 48;
 	*tou64p(((i64)R2+(i64)R3)) = asu64(R1);
-L6683:
+L6684:
 	asu64(R1) = q;
 	asu64(R2) = p;
 	R3 = 40;
@@ -61761,12 +61836,12 @@ L6683:
 	R3 = 40;
 	*tou64p(((i64)R2+(i64)R3)) = asu64(R1);
 	asu64(R1) = owner;
-	if (!asu64(R1)) goto L6685;
+	if (!asu64(R1)) goto L6686;
 	asu64(R1) = owner;
 	R2 = 16;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
 	R2 = 0;
-	if (asu64(R1) != asu64(R2)) goto L6687;
+	if (asu64(R1) != asu64(R2)) goto L6688;
 	asu64(R1) = p;
 	R2 = R1;
 	asu64(R3) = owner;
@@ -61775,8 +61850,8 @@ L6683:
 	asu64(R2) = owner;
 	R3 = 16;
 	*tou64p(((i64)R2+(i64)R3)) = asu64(R1);
-	goto L6686;
-L6687:
+	goto L6687;
+L6688:
 	asu64(R1) = p;
 	asu64(R2) = owner;
 	R3 = 24;
@@ -61787,11 +61862,11 @@ L6687:
 	asu64(R2) = owner;
 	R3 = 24;
 	*tou64p(((i64)R2+(i64)R3)) = asu64(R1);
+L6687:
 L6686:
-L6685:
 	asu64(R1) = p;
-	goto L6681;
-L6681:
+	goto L6682;
+L6682:
 	return asu64(R1);
 }
 
@@ -61805,8 +61880,8 @@ static u64 cc_lib_createnewmoduledef(u64 owner, u64 symptr) {
 	asu64(R1) = cc_lib_createdupldef(asu64(R3), asu64(R2), asi64(R1));
 	p = asu64(R1);
 	asu64(R1) = p;
-	goto L6688;
-L6688:
+	goto L6689;
+L6689:
 	return asu64(R1);
 }
 
@@ -61821,13 +61896,13 @@ static u64 cc_lib_createnewproc(u64 owner, u64 symptr) {
 	p = asu64(R1);
 	asu64(R1) = p;
 	q = asu64(R1);
-	goto L6691;
-L6690:
+	goto L6692;
+L6691:
 	asu64(R1) = q;
 	R2 = 8;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
 	asu64(R2) = owner;
-	if (asu64(R1) != asu64(R2)) goto L6694;
+	if (asu64(R1) != asu64(R2)) goto L6695;
 	msysc_m$print_startcon();
 	asu64(R1) = q;
 	R2 = 0;
@@ -61843,17 +61918,17 @@ L6690:
 	msysc_m$print_end();
 	R1 = tou64("Dupl proc name");
 	cc_support_serror(asu64(R1));
-L6694:
-L6691:
+L6695:
+L6692:
 	asu64(R1) = q;
 	R2 = 40;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
 	R2 = R1;
 	q = asu64(R2);
-	if (asu64(R1)) goto L6690;
+	if (asu64(R1)) goto L6691;
 	asu64(R1) = p;
-	goto L6689;
-L6689:
+	goto L6690;
+L6690:
 	return asu64(R1);
 }
 
@@ -61866,33 +61941,33 @@ static u64 cc_lib_resolvename(u64 owner, u64 symptr, i64 ns, i64 blockno) {
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 1;
-	if (asi64(R1) <= asi64(R2)) goto L6697;
+	if (asi64(R1) <= asi64(R2)) goto L6698;
 	asu64(R1) = symptr;
-	goto L6695;
-L6697:
+	goto L6696;
+L6698:
 	asi64(R1) = ns;
 	R2 = 3;
-	if (asi64(R1) != asi64(R2)) goto L6699;
+	if (asi64(R1) != asi64(R2)) goto L6700;
 	asu64(R1) = symptr;
 	asu64(R2) = owner;
 	asu64(R1) = cc_lib_resolvelabel(asu64(R2), asu64(R1));
-	goto L6695;
-L6699:
+	goto L6696;
+L6700:
 	asi64(R1) = blockno;
-	if (!asi64(R1)) goto L6701;
+	if (!asi64(R1)) goto L6702;
 	R1 = (u64)&cc_decls_blockcounts;
 	asi64(R2) = blockno;
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2*4));
 	R1 = toi64(toi32(R1));
 	R2 = 0;
-	if (asi64(R1) != asi64(R2)) goto L6701;
+	if (asi64(R1) != asi64(R2)) goto L6702;
 	R1 = (u64)&cc_decls_blockowner;
 	asi64(R2) = blockno;
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2*4));
 	R1 = toi64(toi32(R1));
 	blockno = asi64(R1);
-L6701:
 L6702:
+L6703:
 	asi64(R1) = ns;
 	R2 = 16;
 	asi64(R1) <<= asi64(R2);
@@ -61901,19 +61976,19 @@ L6702:
 	nsblock = asi64(R1);
 	asu64(R1) = symptr;
 	d = asu64(R1);
-	goto L6705;
-L6704:
+	goto L6706;
+L6705:
 	asu64(R1) = owner;
 	R2 = 109;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 6;
-	if (asi64(R1) != asi64(R2)) goto L6708;
+	if (asi64(R1) != asi64(R2)) goto L6709;
 	asu64(R1) = d;
 	R2 = 8;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
 	asu64(R2) = owner;
-	if (asu64(R1) == asu64(R2)) goto L6708;
+	if (asu64(R1) == asu64(R2)) goto L6709;
 	asu64(R1) = d;
 	R2 = 8;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
@@ -61921,77 +61996,77 @@ L6704:
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 6;
-	if (asi64(R1) != asi64(R2)) goto L6708;
-	goto L6706;
-L6708:
+	if (asi64(R1) != asi64(R2)) goto L6709;
+	goto L6707;
+L6709:
 	asu64(R1) = d;
 	R2 = 8;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
 	asu64(R2) = owner;
-	if (asu64(R1) != asu64(R2)) goto L6710;
+	if (asu64(R1) != asu64(R2)) goto L6711;
 	asu64(R1) = d;
 	R2 = 96;
 	asu32(R1) = *tou32p(((i64)R1+(i64)R2));
 	R1 = toi64(tou32(R1));
 	asi64(R2) = nsblock;
-	if (asi64(R1) != asi64(R2)) goto L6710;
+	if (asi64(R1) != asi64(R2)) goto L6711;
 	asu64(R1) = d;
 	R2 = 122;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 255;
-	if (asi64(R1) >= asi64(R2)) goto L6712;
+	if (asi64(R1) >= asi64(R2)) goto L6713;
 	asu64(R1) = d;
 	R2 = 122;
 	R1 += (i64)R2;
 	(*tou8p(R1)) += 1;
-L6712:
+L6713:
 	asu64(R1) = d;
-	goto L6695;
-L6710:
-L6705:
+	goto L6696;
+L6711:
+L6706:
 	asu64(R1) = d;
 	R2 = 40;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
 	R2 = R1;
 	d = asu64(R2);
-	if (asu64(R1)) goto L6704;
-L6706:
+	if (asu64(R1)) goto L6705;
+L6707:
 	asi64(R1) = blockno;
 	R2 = 0;
-	if (asi64(R1) != asi64(R2)) goto L6714;
+	if (asi64(R1) != asi64(R2)) goto L6715;
 	asu64(R1) = owner;
 	R2 = 109;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 6;
-	if (asi64(R1) == asi64(R2)) goto L6716;
-	R2 = 13;
 	if (asi64(R1) == asi64(R2)) goto L6717;
-	goto L6718;
-L6716:
+	R2 = 13;
+	if (asi64(R1) == asi64(R2)) goto L6718;
+	goto L6719;
+L6717:
 	asu64(R1) = cc_decls_stmodule;
 	owner = asu64(R1);
-	goto L6702;
-	goto L6715;
-L6717:
+	goto L6703;
+	goto L6716;
+L6718:
 	asu64(R1) = owner;
 	R2 = 8;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
 	owner = asu64(R1);
 	asu64(R1) = owner;
 	R2 = 0;
-	if (asu64(R1) != asu64(R2)) goto L6720;
+	if (asu64(R1) != asu64(R2)) goto L6721;
 	R1 = 0;
-	goto L6695;
-L6720:
-	goto L6715;
-L6718:
+	goto L6696;
+L6721:
+	goto L6716;
+L6719:
 	R1 = 0;
-	goto L6695;
+	goto L6696;
+L6716:
+	goto L6714;
 L6715:
-	goto L6713;
-L6714:
 	R1 = (u64)&cc_decls_blockowner;
 	asi64(R2) = blockno;
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2*4));
@@ -61999,15 +62074,15 @@ L6714:
 	R2 = R1;
 	blockno = asi64(R2);
 	R2 = 0;
-	if (asi64(R1) != asi64(R2)) goto L6721;
+	if (asi64(R1) != asi64(R2)) goto L6722;
 	asu64(R1) = cc_decls_stmodule;
 	owner = asu64(R1);
-L6721:
-L6713:
-	goto L6702;
+L6722:
+L6714:
+	goto L6703;
 	R1 = 0;
-	goto L6695;
-L6695:
+	goto L6696;
+L6696:
 	return asu64(R1);
 }
 
@@ -62016,19 +62091,19 @@ static u64 cc_lib_resolvelabel(u64 owner, u64 symptr) {
 	u64 d;
 	asu64(R1) = symptr;
 	d = asu64(R1);
-	goto L6724;
-L6723:
+	goto L6725;
+L6724:
 	asu64(R1) = owner;
 	R2 = 109;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 6;
-	if (asi64(R1) != asi64(R2)) goto L6727;
+	if (asi64(R1) != asi64(R2)) goto L6728;
 	asu64(R1) = d;
 	R2 = 8;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
 	asu64(R2) = owner;
-	if (asu64(R1) == asu64(R2)) goto L6727;
+	if (asu64(R1) == asu64(R2)) goto L6728;
 	asu64(R1) = d;
 	R2 = 8;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
@@ -62036,34 +62111,34 @@ L6723:
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 6;
-	if (asi64(R1) != asi64(R2)) goto L6727;
-	goto L6725;
-L6727:
+	if (asi64(R1) != asi64(R2)) goto L6728;
+	goto L6726;
+L6728:
 	asu64(R1) = d;
 	R2 = 8;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
 	asu64(R2) = owner;
-	if (asu64(R1) != asu64(R2)) goto L6729;
+	if (asu64(R1) != asu64(R2)) goto L6730;
 	asu64(R1) = d;
 	R2 = 98;
 	asu16(R1) = *tou16p(((i64)R1+(i64)R2));
 	R1 = toi64(tou16(R1));
 	R2 = 3;
-	if (asi64(R1) != asi64(R2)) goto L6729;
+	if (asi64(R1) != asi64(R2)) goto L6730;
 	asu64(R1) = d;
-	goto L6722;
-L6729:
-L6724:
+	goto L6723;
+L6730:
+L6725:
 	asu64(R1) = d;
 	R2 = 40;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
 	R2 = R1;
 	d = asu64(R2);
-	if (asu64(R1)) goto L6723;
-L6725:
+	if (asu64(R1)) goto L6724;
+L6726:
 	R1 = 0;
-	goto L6722;
-L6722:
+	goto L6723;
+L6723:
 	return asu64(R1);
 }
 
@@ -62079,32 +62154,32 @@ static u64 cc_lib_checkdupl(u64 owner, u64 symptr, i64 ns, i64 blockno) {
 	asi64(R2) = blockno;
 	asi64(R1) |= asi64(R2);
 	nsblock = asi64(R1);
-	goto L6732;
-L6731:
+	goto L6733;
+L6732:
 	asu64(R1) = d;
 	R2 = 8;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
 	asu64(R2) = owner;
-	if (asu64(R1) != asu64(R2)) goto L6735;
+	if (asu64(R1) != asu64(R2)) goto L6736;
 	asu64(R1) = d;
 	R2 = 96;
 	asu32(R1) = *tou32p(((i64)R1+(i64)R2));
 	R1 = toi64(tou32(R1));
 	asi64(R2) = nsblock;
-	if (asi64(R1) != asi64(R2)) goto L6735;
+	if (asi64(R1) != asi64(R2)) goto L6736;
 	asu64(R1) = d;
-	goto L6730;
-L6735:
-L6732:
+	goto L6731;
+L6736:
+L6733:
 	asu64(R1) = d;
 	R2 = 40;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
 	R2 = R1;
 	d = asu64(R2);
-	if (asu64(R1)) goto L6731;
+	if (asu64(R1)) goto L6732;
 	R1 = 0;
-	goto L6730;
-L6730:
+	goto L6731;
+L6731:
 	return asu64(R1);
 }
 
@@ -62120,33 +62195,33 @@ static u64 cc_lib_checkdupl_inproc(u64 owner, u64 symptr, i64 ns, i64 blockno) {
 	asi64(R2) = blockno;
 	asi64(R1) |= asi64(R2);
 	nsblock = asi64(R1);
-	goto L6738;
-L6737:
+	goto L6739;
+L6738:
 	asu64(R1) = d;
 	R2 = 96;
 	asu32(R1) = *tou32p(((i64)R1+(i64)R2));
 	R1 = toi64(tou32(R1));
 	asi64(R2) = nsblock;
-	if (asi64(R1) != asi64(R2)) goto L6741;
+	if (asi64(R1) != asi64(R2)) goto L6742;
 	asu64(R1) = d;
-	goto L6736;
-L6741:
-L6738:
+	goto L6737;
+L6742:
+L6739:
 	asu64(R1) = d;
 	R2 = 40;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
 	R2 = R1;
 	d = asu64(R2);
-	if (!asu64(R1)) goto L6742;
+	if (!asu64(R1)) goto L6743;
 	asu64(R1) = d;
 	R2 = 8;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
 	asu64(R2) = owner;
-	if (asu64(R1) == asu64(R2)) goto L6737;
-L6742:
+	if (asu64(R1) == asu64(R2)) goto L6738;
+L6743:
 	R1 = 0;
-	goto L6736;
-L6736:
+	goto L6737;
+L6737:
 	return asu64(R1);
 }
 
@@ -62158,21 +62233,21 @@ static i64 cc_lib_getalignment(i64 m) {
 	asi16(R1) = *toi16p(((i64)R1+(i64)R2*2));
 	R1 = toi64(toi16(R1));
 	R2 = 17;
-	if (asi64(R1) == asi64(R2)) goto L6745;
+	if (asi64(R1) == asi64(R2)) goto L6746;
 	R2 = 18;
-	if (asi64(R1) == asi64(R2)) goto L6746;
+	if (asi64(R1) == asi64(R2)) goto L6747;
 	R2 = 19;
-	if (asi64(R1) == asi64(R2)) goto L6746;
-	goto L6747;
-L6745:
+	if (asi64(R1) == asi64(R2)) goto L6747;
+	goto L6748;
+L6746:
 	R1 = (u64)&cc_decls_tttarget;
 	asi64(R2) = m;
 	asi16(R1) = *toi16p(((i64)R1+(i64)R2*2));
 	R1 = toi64(toi16(R1));
 	asi64(R1) = cc_lib_getalignment(asi64(R1));
-	goto L6743;
 	goto L6744;
-L6746:
+	goto L6745;
+L6747:
 	R1 = (u64)&cc_decls_ttnamedef;
 	asi64(R2) = m;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2*8));
@@ -62182,35 +62257,35 @@ L6746:
 	a = asi64(R1);
 	asi64(R1) = a;
 	R2 = 0;
-	if (asi64(R1) != asi64(R2)) goto L6749;
+	if (asi64(R1) != asi64(R2)) goto L6750;
 	R1 = 16;
-	goto L6743;
-L6749:
-	asi64(R1) = a;
-	goto L6743;
 	goto L6744;
-L6747:
-L6744:
+L6750:
+	asi64(R1) = a;
+	goto L6744;
+	goto L6745;
+L6748:
+L6745:
 	R1 = (u64)&cc_decls_ttsize;
 	asi64(R2) = m;
 	asi64(R1) = *toi64p(((i64)R1+(i64)R2*8));
 	a = asi64(R1);
 	asi64(R1) = a;
 	R2 = 1;
-	if (asi64(R1) == asi64(R2)) goto L6751;
+	if (asi64(R1) == asi64(R2)) goto L6752;
 	R2 = 2;
-	if (asi64(R1) == asi64(R2)) goto L6751;
+	if (asi64(R1) == asi64(R2)) goto L6752;
 	R2 = 4;
-	if (asi64(R1) == asi64(R2)) goto L6751;
+	if (asi64(R1) == asi64(R2)) goto L6752;
 	R2 = 8;
-	if (asi64(R1) == asi64(R2)) goto L6751;
-	goto L6752;
-L6751:
-	asi64(R1) = a;
-	goto L6743;
-	goto L6750;
+	if (asi64(R1) == asi64(R2)) goto L6752;
+	goto L6753;
 L6752:
-L6750:
+	asi64(R1) = a;
+	goto L6744;
+	goto L6751;
+L6753:
+L6751:
 	msysc_m$print_startcon();
 	R1 = 1;
 	asi64(R2) = m;
@@ -62223,8 +62298,8 @@ L6750:
 	R1 = tou64("GETALIGN SIZE NOT 1248");
 	cc_support_serror(asu64(R1));
 	R1 = 0;
-	goto L6743;
-L6743:
+	goto L6744;
+L6744:
 	return asi64(R1);
 }
 
@@ -62235,42 +62310,42 @@ static i64 cc_lib_isexported(u64 d) {
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 6;
-	if (asi64(R1) != asi64(R2)) goto L6755;
+	if (asi64(R1) != asi64(R2)) goto L6756;
 	asu64(R1) = d;
 	R2 = 72;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
-	if (!asu64(R1)) goto L6757;
+	if (!asu64(R1)) goto L6758;
 	asu64(R1) = d;
 	R2 = 110;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 3;
-	if (asi64(R1) == asi64(R2)) goto L6758;
+	if (asi64(R1) == asi64(R2)) goto L6759;
 	asu64(R1) = d;
 	R2 = 110;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 4;
-	if (asi64(R1) != asi64(R2)) goto L6757;
-L6758:
+	if (asi64(R1) != asi64(R2)) goto L6758;
+L6759:
 	R1 = 1;
-	goto L6753;
-L6757:
 	goto L6754;
-L6755:
+L6758:
+	goto L6755;
+L6756:
 	asu64(R1) = d;
 	R2 = 110;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 4;
-	if (asi64(R1) != asi64(R2)) goto L6760;
+	if (asi64(R1) != asi64(R2)) goto L6761;
 	R1 = 1;
-	goto L6753;
-L6760:
-L6754:
+	goto L6754;
+L6761:
+L6755:
 	R1 = 0;
-	goto L6753;
-L6753:
+	goto L6754;
+L6754:
 	return asi64(R1);
 }
 
@@ -62281,43 +62356,43 @@ static i64 cc_lib_isimported(u64 d) {
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 6;
-	if (asi64(R1) != asi64(R2)) goto L6763;
+	if (asi64(R1) != asi64(R2)) goto L6764;
 	asu64(R1) = d;
 	R2 = 72;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
 	R2 = 0;
-	if (asu64(R1) != asu64(R2)) goto L6765;
+	if (asu64(R1) != asu64(R2)) goto L6766;
 	asu64(R1) = d;
 	R2 = 110;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 3;
-	if (asi64(R1) == asi64(R2)) goto L6766;
+	if (asi64(R1) == asi64(R2)) goto L6767;
 	asu64(R1) = d;
 	R2 = 110;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 4;
-	if (asi64(R1) != asi64(R2)) goto L6765;
-L6766:
+	if (asi64(R1) != asi64(R2)) goto L6766;
+L6767:
 	R1 = 1;
-	goto L6761;
-L6765:
 	goto L6762;
-L6763:
+L6766:
+	goto L6763;
+L6764:
 	asu64(R1) = d;
 	R2 = 110;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 3;
-	if (asi64(R1) != asi64(R2)) goto L6768;
+	if (asi64(R1) != asi64(R2)) goto L6769;
 	R1 = 1;
-	goto L6761;
-L6768:
-L6762:
+	goto L6762;
+L6769:
+L6763:
 	R1 = 0;
-	goto L6761;
-L6761:
+	goto L6762;
+L6762:
 	return asi64(R1);
 }
 
@@ -62340,8 +62415,8 @@ static u64 cc_lib_getstname(u64 d) {
 	R3 = toi64(tou8(R3));
 	*tou8p(((i64)R2+(i64)R3)) = asu8(R1);
 	R1 = (u64)&cc_lib_getstname_name;
-	goto L6769;
-L6769:
+	goto L6770;
+L6770:
 	return asu64(R1);
 }
 
@@ -62355,16 +62430,16 @@ static i64 cc_lib_isrealcc(i64 m) {
 	R1 = 10;
 	asi64(R2) = m;
     {u64 temp = R1; R1 = R2; R2 = temp;}
-	if (asi64(R1) < asi64(R2)) goto L6771;
+	if (asi64(R1) < asi64(R2)) goto L6772;
 	R2 = 11;
-	if (asi64(R1) > asi64(R2)) goto L6771;
+	if (asi64(R1) > asi64(R2)) goto L6772;
 	R1 = 1;
-	goto L6772;
-L6771:
-	R1 = 0;
+	goto L6773;
 L6772:
-	goto L6770;
-L6770:
+	R1 = 0;
+L6773:
+	goto L6771;
+L6771:
 	return asi64(R1);
 }
 
@@ -62378,16 +62453,16 @@ static i64 cc_lib_isintcc(i64 m) {
 	R1 = 1;
 	asi64(R2) = m;
     {u64 temp = R1; R1 = R2; R2 = temp;}
-	if (asi64(R1) < asi64(R2)) goto L6774;
+	if (asi64(R1) < asi64(R2)) goto L6775;
 	R2 = 9;
-	if (asi64(R1) > asi64(R2)) goto L6774;
+	if (asi64(R1) > asi64(R2)) goto L6775;
 	R1 = 1;
-	goto L6775;
-L6774:
-	R1 = 0;
+	goto L6776;
 L6775:
-	goto L6773;
-L6773:
+	R1 = 0;
+L6776:
+	goto L6774;
+L6774:
 	return asi64(R1);
 }
 
@@ -62432,41 +62507,41 @@ static i64 cc_lib_getpclmode(i64 t) {
 	u = asi64(R1);
 	asi64(R1) = u;
 	R2 = 11;
-	if (asi64(R1) != asi64(R2)) goto L6780;
+	if (asi64(R1) != asi64(R2)) goto L6781;
 	R1 = (u64)&cc_decls_ttsize;
 	asi64(R2) = t;
 	asi64(R1) = *toi64p(((i64)R1+(i64)R2*8));
 	R2 = 8;
-	if (asi64(R1) == asi64(R2)) goto L6782;
-	R2 = 4;
 	if (asi64(R1) == asi64(R2)) goto L6783;
-	R2 = 2;
+	R2 = 4;
 	if (asi64(R1) == asi64(R2)) goto L6784;
-	R2 = 1;
+	R2 = 2;
 	if (asi64(R1) == asi64(R2)) goto L6785;
-	goto L6786;
-L6782:
+	R2 = 1;
+	if (asi64(R1) == asi64(R2)) goto L6786;
+	goto L6787;
+L6783:
 	R1 = 6;
 	u = asi64(R1);
-	goto L6781;
-L6783:
+	goto L6782;
+L6784:
 	R1 = 5;
 	u = asi64(R1);
-	goto L6781;
-L6784:
+	goto L6782;
+L6785:
 	R1 = 4;
 	u = asi64(R1);
-	goto L6781;
-L6785:
+	goto L6782;
+L6786:
 	R1 = 3;
 	u = asi64(R1);
-	goto L6781;
-L6786:
+	goto L6782;
+L6787:
+L6782:
 L6781:
-L6780:
 	asi64(R1) = u;
-	goto L6778;
-L6778:
+	goto L6779;
+L6779:
 	return asi64(R1);
 }
 
@@ -62480,7 +62555,7 @@ static void cc_lib_addtolog(u64 filename, u64 logdest) {
 	f = asu64(R1);
 	asu64(R1) = f;
 	R2 = 0;
-	if (asu64(R1) != asu64(R2)) goto L6789;
+	if (asu64(R1) != asu64(R2)) goto L6790;
 	msysc_m$print_startcon();
 	R1 = tou64("ATL ERROR");
 	msysc_m$print_str_nf(asu64(R1));
@@ -62488,26 +62563,26 @@ static void cc_lib_addtolog(u64 filename, u64 logdest) {
 	msysc_m$print_str_nf(asu64(R1));
 	msysc_m$print_newline();
 	msysc_m$print_end();
-	goto L6787;
-L6789:
+	goto L6788;
 L6790:
+L6791:
 	asu64(R1) = f;
 	asi32(R1) = fgetc(asu64(R1));
 	R1 = toi64(toi32(R1));
 	c = asi64(R1);
 	asi64(R1) = c;
 	R2 = -1;
-	if (asi64(R1) != asi64(R2)) goto L6793;
-	goto L6791;
-L6793:
+	if (asi64(R1) != asi64(R2)) goto L6794;
+	goto L6792;
+L6794:
 	asu64(R1) = logdest;
 	asi64(R2) = c;
 	asi32(R1) = fputc(asi32(R2), asu64(R1));
-	goto L6790;
-L6791:
+	goto L6791;
+L6792:
 	asu64(R1) = f;
 	asi32(R1) = fclose(asu64(R1));
-L6787:
+L6788:
 	return;
 }
 
@@ -62515,7 +62590,7 @@ static void cc_support_stopcompiler(u64 filename, i64 lineno) {
     u64 R1, R2; 
 	u64 f;
 	asu8(R1) = cc_cli_fwriteerrors;
-	if (!asu8(R1)) goto L6796;
+	if (!asu8(R1)) goto L6797;
 	R1 = tou64("w");
 	R2 = tou64("$error.tmp");
 	asu64(R1) = fopen(asu64(R2), asu64(R1));
@@ -62530,7 +62605,7 @@ static void cc_support_stopcompiler(u64 filename, i64 lineno) {
 	msysc_m$print_end();
 	asu64(R1) = f;
 	asi32(R1) = fclose(asu64(R1));
-L6796:
+L6797:
 	msysc_m$print_startcon();
 	msysc_m$print_newline();
 	msysc_m$print_end();
@@ -62566,7 +62641,7 @@ static void cc_support_serror(u64 mess) {
 static void cc_support_serror_gen(u64 mess) {
     u64 R1, R2, R3, R4; 
 	asu64(R1) = cc_decls_currproc;
-	if (!asu64(R1)) goto L6801;
+	if (!asu64(R1)) goto L6802;
 	msysc_m$print_startcon();
 	R1 = tou64("\nIn function");
 	msysc_m$print_str_nf(asu64(R1));
@@ -62578,14 +62653,14 @@ static void cc_support_serror_gen(u64 mess) {
 	R1 = tou64(" ");
 	msysc_m$print_str_nf(asu64(R1));
 	msysc_m$print_end();
-	goto L6800;
-L6801:
+	goto L6801;
+L6802:
 	msysc_m$print_startcon();
 	R1 = tou64("OUTSIDE PROC");
 	msysc_m$print_str_nf(asu64(R1));
 	msysc_m$print_newline();
 	msysc_m$print_end();
-L6800:
+L6801:
 	msysc_m$print_startcon();
 	R1 = tou64("On line");
 	msysc_m$print_str_nf(asu64(R1));
@@ -62677,7 +62752,7 @@ static void cc_support_serror_s(u64 mess, u64 a) {
 static void cc_support_terror_gen(u64 mess) {
     u64 R1, R2, R3, R4; 
 	asu64(R1) = cc_decls_currproc;
-	if (!asu64(R1)) goto L6806;
+	if (!asu64(R1)) goto L6807;
 	msysc_m$print_startcon();
 	R1 = tou64("\nIn function");
 	msysc_m$print_str_nf(asu64(R1));
@@ -62687,7 +62762,7 @@ static void cc_support_terror_gen(u64 mess) {
 	msysc_m$print_str_nf(asu64(R1));
 	msysc_m$print_newline();
 	msysc_m$print_end();
-L6806:
+L6807:
 	msysc_m$print_startcon();
 	R1 = tou64("Type error:");
 	msysc_m$print_str_nf(asu64(R1));
@@ -62768,7 +62843,7 @@ static void cc_support_gerror_gen(u64 mess, u64 p) {
 	i64 lineno;
 	i64 fileno;
 	asu64(R1) = p;
-	if (!asu64(R1)) goto L6812;
+	if (!asu64(R1)) goto L6813;
 	asu64(R1) = p;
 	R2 = 44;
 	asu32(R1) = *tou32p(((i64)R1+(i64)R2));
@@ -62779,15 +62854,15 @@ static void cc_support_gerror_gen(u64 mess, u64 p) {
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	fileno = asi64(R1);
-	goto L6811;
-L6812:
+	goto L6812;
+L6813:
 	asi64(R1) = cc_decls_clineno;
 	lineno = asi64(R1);
 	asi64(R1) = cc_decls_cfileno;
 	fileno = asi64(R1);
-L6811:
+L6812:
 	asu64(R1) = cc_decls_currproc;
-	if (!asu64(R1)) goto L6814;
+	if (!asu64(R1)) goto L6815;
 	msysc_m$print_startcon();
 	R1 = tou64("In function");
 	msysc_m$print_str_nf(asu64(R1));
@@ -62799,7 +62874,7 @@ L6811:
 	R1 = tou64(" ");
 	msysc_m$print_str_nf(asu64(R1));
 	msysc_m$print_end();
-L6814:
+L6815:
 	msysc_m$print_startcon();
 	R1 = tou64("On line");
 	msysc_m$print_str_nf(asu64(R1));
@@ -62864,24 +62939,24 @@ static i64 cc_support_nextpoweroftwo(i64 x) {
 	i64 a;
 	asi64(R1) = x;
 	R2 = 0;
-	if (asi64(R1) != asi64(R2)) goto L6819;
+	if (asi64(R1) != asi64(R2)) goto L6820;
 	R1 = 0;
-	goto L6817;
-L6819:
+	goto L6818;
+L6820:
 	R1 = 1;
 	a = asi64(R1);
-	goto L6821;
-L6820:
+	goto L6822;
+L6821:
 	R1 = 1;
 	R2 = (u64)&a;
 	*toi64p(R2) <<= asi64(R1);
-L6821:
+L6822:
 	asi64(R1) = a;
 	asi64(R2) = x;
-	if (asi64(R1) < asi64(R2)) goto L6820;
+	if (asi64(R1) < asi64(R2)) goto L6821;
 	asi64(R1) = a;
-	goto L6817;
-L6817:
+	goto L6818;
+L6818:
 	return asi64(R1);
 }
 
@@ -62917,11 +62992,11 @@ static i64 cc_support_loadsourcefile(u64 file, u64 shortfile) {
 	u64 s;
 	asi64(R1) = cc_decls_nsourcefiles;
 	R2 = 200;
-	if (asi64(R1) <= asi64(R2)) goto L6826;
+	if (asi64(R1) <= asi64(R2)) goto L6827;
 	R1 = tou64("");
 	R2 = tou64("Too many source files");
 	cc_support_loaderror(asu64(R2), asu64(R1));
-L6826:
+L6827:
 	R1 = (u64)&cc_decls_nsourcefiles;
 	(*toi64p(R1)) += 1;
 	asu64(R1) = file;
@@ -62938,11 +63013,11 @@ L6826:
 	asu64(R1) = mlib_readfile(asu64(R1));
 	s = asu64(R1);
 	asu64(R1) = s;
-	if (asu64(R1)) goto L6828;
+	if (asu64(R1)) goto L6829;
 	asu64(R1) = file;
 	R2 = tou64("LSF can't load ");
 	cc_support_loaderror(asu64(R2), asu64(R1));
-L6828:
+L6829:
 	asu64(R1) = s;
 	R2 = (u64)&cc_decls_sourcefiletext;
 	asi64(R3) = cc_decls_nsourcefiles;
@@ -62956,8 +63031,8 @@ L6828:
 	asi64(R3) = mlib_rfsize;
 	*tou8p(((i64)R2+(i64)R3)) = asu8(R1);
 	asi64(R1) = cc_decls_nsourcefiles;
-	goto L6824;
-L6824:
+	goto L6825;
+L6825:
 	return asi64(R1);
 }
 
@@ -62973,24 +63048,8 @@ static u64 cc_support_splicelines(u64 s) {
 	R2 = R1;
 	u = asu64(R2);
 	t = asu64(R1);
-	goto L6831;
-L6830:
-	asu64(R1) = s;
-	asu8(R1) = *tou8p(R1);
-	R1 = tou64(tou8(R1));
-	R2 = 92;
-	if (asu64(R1) != asu64(R2)) goto L6834;
-	asu64(R1) = s;
-	R2 = 1;
-	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
-	R1 = toi64(tou8(R1));
-	R2 = 10;
-	if (asi64(R1) != asi64(R2)) goto L6834;
-	R1 = 2;
-	R2 = (u64)&s;
-	*tou64p(R2) += asu64(R1);
-	goto L6833;
-L6834:
+	goto L6832;
+L6831:
 	asu64(R1) = s;
 	asu8(R1) = *tou8p(R1);
 	R1 = tou64(tou8(R1));
@@ -63000,36 +63059,52 @@ L6834:
 	R2 = 1;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
-	R2 = 13;
+	R2 = 10;
 	if (asi64(R1) != asi64(R2)) goto L6835;
+	R1 = 2;
+	R2 = (u64)&s;
+	*tou64p(R2) += asu64(R1);
+	goto L6834;
+L6835:
+	asu64(R1) = s;
+	asu8(R1) = *tou8p(R1);
+	R1 = tou64(tou8(R1));
+	R2 = 92;
+	if (asu64(R1) != asu64(R2)) goto L6836;
+	asu64(R1) = s;
+	R2 = 1;
+	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
+	R1 = toi64(tou8(R1));
+	R2 = 13;
+	if (asi64(R1) != asi64(R2)) goto L6836;
 	asu64(R1) = s;
 	R2 = 2;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 10;
-	if (asi64(R1) != asi64(R2)) goto L6835;
+	if (asi64(R1) != asi64(R2)) goto L6836;
 	R1 = 3;
 	R2 = (u64)&s;
 	*tou64p(R2) += asu64(R1);
-	goto L6833;
-L6835:
+	goto L6834;
+L6836:
 	R1 = (u64)&s;
 	asu64(R2) = *tou64p(R1); *(tou64p(R1)) += 1; asu64(R1) = asu64(R2);
 	asu8(R1) = *tou8p(R1);
 	R2 = (u64)&t;
 	asu64(R3) = *tou64p(R2); *(tou64p(R2)) += 1; asu64(R2) = asu64(R3);
 	*tou8p(R2) = asu8(R1);
-L6833:
+L6834:
 	R1 = 0;
 	asu64(R2) = t;
 	*tou8p(R2) = asu8(R1);
-L6831:
+L6832:
 	asu64(R1) = s;
 	asu8(R1) = *tou8p(R1);
-	if (asu8(R1)) goto L6830;
+	if (asu8(R1)) goto L6831;
 	asu64(R1) = u;
-	goto L6829;
-L6829:
+	goto L6830;
+L6830:
 	return asu64(R1);
 }
 
@@ -63038,11 +63113,11 @@ static i64 cc_support_loadbuiltin(u64 shortfile, u64 hdrtext) {
 	u64 s;
 	asi64(R1) = cc_decls_nsourcefiles;
 	R2 = 200;
-	if (asi64(R1) <= asi64(R2)) goto L6838;
+	if (asi64(R1) <= asi64(R2)) goto L6839;
 	R1 = tou64("");
 	R2 = tou64("Too many source files");
 	cc_support_loaderror(asu64(R2), asu64(R1));
-L6838:
+L6839:
 	R1 = (u64)&cc_decls_nsourcefiles;
 	(*toi64p(R1)) += 1;
 	R1 = tou64("<builtin>");
@@ -63065,8 +63140,8 @@ L6838:
 	asi64(R3) = cc_decls_nsourcefiles;
 	*toi32p(((i64)R2+(i64)R3*4)) = asi32(R1);
 	asi64(R1) = cc_decls_nsourcefiles;
-	goto L6836;
-L6836:
+	goto L6837;
+L6837:
 	return asi64(R1);
 }
 
@@ -63075,7 +63150,7 @@ static void cc_support_gs_copytostr(u64 source, u64 s) {
 	asu64(R1) = source;
 	R2 = 8;
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
-	if (!asi32(R1)) goto L6841;
+	if (!asi32(R1)) goto L6842;
 	asu64(R1) = source;
 	R2 = 8;
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
@@ -63092,12 +63167,12 @@ static void cc_support_gs_copytostr(u64 source, u64 s) {
 	asi32(R3) = *toi32p(((i64)R3+(i64)R4));
 	R3 = toi64(toi32(R3));
 	*tou8p(((i64)R2+(i64)R3)) = asu8(R1);
-	goto L6840;
-L6841:
+	goto L6841;
+L6842:
 	R1 = 0;
 	asu64(R2) = s;
 	*tou8p(R2) = asu8(R1);
-L6840:
+L6841:
 	return;
 }
 
@@ -63113,7 +63188,7 @@ static void cc_support_gs_additem(u64 dest, u64 s) {
 	asu64(R1) = dest;
 	R2 = 8;
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
-	if (!asi32(R1)) goto L6844;
+	if (!asi32(R1)) goto L6845;
 	asu64(R1) = d;
 	asu64(R2) = dest;
 	R3 = 8;
@@ -63131,16 +63206,16 @@ static void cc_support_gs_additem(u64 dest, u64 s) {
 	nextchar = asi64(R1);
 	asi64(R1) = lastchar;
 	asi64(R1) = cc_support_isalphanum(asi64(R1));
-	if (!asi64(R1)) goto L6846;
+	if (!asi64(R1)) goto L6847;
 	asi64(R1) = nextchar;
 	asi64(R1) = cc_support_isalphanum(asi64(R1));
-	if (!asi64(R1)) goto L6846;
+	if (!asi64(R1)) goto L6847;
 	R1 = -1;
 	R2 = tou64(" ");
 	asu64(R3) = dest;
 	mlib_strbuffer_add(asu64(R3), asu64(R2), asi64(R1));
-L6846:
-L6844:
+L6847:
+L6845:
 	R1 = -1;
 	asu64(R2) = s;
 	asu64(R3) = dest;
@@ -63152,47 +63227,47 @@ static i64 cc_support_isalphanum(i64 c) {
     u64 R1, R2; 
 	asi64(R1) = c;
 	R2 = 65;
-	if (asi64(R1) < asi64(R2)) goto L6851;
-	asi64(R1) = c;
-	R2 = 90;
-	if (asi64(R1) <= asi64(R2)) goto L6850;
-L6851:
-	asi64(R1) = c;
-	R2 = 97;
 	if (asi64(R1) < asi64(R2)) goto L6852;
 	asi64(R1) = c;
-	R2 = 122;
-	if (asi64(R1) <= asi64(R2)) goto L6850;
+	R2 = 90;
+	if (asi64(R1) <= asi64(R2)) goto L6851;
 L6852:
 	asi64(R1) = c;
+	R2 = 97;
+	if (asi64(R1) < asi64(R2)) goto L6853;
+	asi64(R1) = c;
+	R2 = 122;
+	if (asi64(R1) <= asi64(R2)) goto L6851;
+L6853:
+	asi64(R1) = c;
 	R2 = 48;
-	if (asi64(R1) < asi64(R2)) goto L6849;
+	if (asi64(R1) < asi64(R2)) goto L6850;
 	asi64(R1) = c;
 	R2 = 57;
-	if (asi64(R1) > asi64(R2)) goto L6849;
-L6850:
+	if (asi64(R1) > asi64(R2)) goto L6850;
+L6851:
 	R1 = 1;
-	goto L6847;
-L6849:
+	goto L6848;
+L6850:
 	R1 = 0;
-	goto L6847;
-L6847:
+	goto L6848;
+L6848:
 	return asi64(R1);
 }
 
 static void cc_support_showmacrolineno() {
     u64 R1; 
 	asi64(R1) = cc_decls_slineno;
-	if (!asi64(R1)) goto L6855;
-L6855:
+	if (!asi64(R1)) goto L6856;
+L6856:
 	return;
 }
 
 static u64 cc_headersx_findheader(u64 name) {
     u64 R1; 
 	R1 = 0;
-	goto L6856;
-L6856:
+	goto L6857;
+L6857:
 	return asu64(R1);
 }
 
@@ -63206,8 +63281,8 @@ static void cc_headersx_writeheaders() {
 static i64 cc_headersx_isheaderfile(u64 file) {
     u64 R1; 
 	R1 = 0;
-	goto L6858;
-L6858:
+	goto L6859;
+L6859:
 	return asi64(R1);
 }
 
@@ -63225,20 +63300,20 @@ static void cc_show_printcode(u64 f, u64 caption) {
 	R2 = 16;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
 	p = asu64(R1);
-	goto L6861;
-L6860:
+	goto L6862;
+L6861:
 	asu64(R1) = p;
 	R2 = 109;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 6;
-	if (asi64(R1) == asi64(R2)) goto L6864;
-	goto L6865;
-L6864:
+	if (asi64(R1) == asi64(R2)) goto L6865;
+	goto L6866;
+L6865:
 	asu64(R1) = p;
 	R2 = 72;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
-	if (!asu64(R1)) goto L6867;
+	if (!asu64(R1)) goto L6868;
 	asu64(R1) = f;
 	msysc_m$print_startfile(asu64(R1));
 	asu64(R1) = p;
@@ -63268,17 +63343,17 @@ L6864:
 	msysc_m$print_startfile(asu64(R1));
 	msysc_m$print_newline();
 	msysc_m$print_end();
-L6867:
-	goto L6863;
-L6865:
-L6863:
+L6868:
+	goto L6864;
+L6866:
+L6864:
 	asu64(R1) = p;
 	R2 = 32;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
 	p = asu64(R1);
-L6861:
+L6862:
 	asu64(R1) = p;
-	if (asu64(R1)) goto L6860;
+	if (asu64(R1)) goto L6861;
 	return;
 }
 
@@ -63293,15 +63368,15 @@ static void cc_show_printunit(u64 dev, u64 p, i64 level, u64 prefix) {
 	u64 pc;
 	asu64(R1) = p;
 	R2 = 0;
-	if (asu64(R1) != asu64(R2)) goto L6870;
-	goto L6868;
-L6870:
+	if (asu64(R1) != asu64(R2)) goto L6871;
+	goto L6869;
+L6871:
 	asu64(R1) = p;
 	R2 = 40;
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
 	R1 = toi64(toi32(R1));
 	R2 = 77;
-	if (asi64(R1) < asi64(R2)) goto L6872;
+	if (asi64(R1) < asi64(R2)) goto L6873;
 	msysc_m$print_startcon();
 	R1 = tou64("print unit: bad tag");
 	msysc_m$print_str_nf(asu64(R1));
@@ -63314,11 +63389,11 @@ L6870:
 	msysc_m$print_end();
 	R1 = 30;
 	exit(R1);
-L6872:
+L6873:
 	asu64(R1) = p;
 	R2 = 44;
 	asu32(R1) = *tou32p(((i64)R1+(i64)R2));
-	if (!asu32(R1)) goto L6874;
+	if (!asu32(R1)) goto L6875;
 	asu64(R1) = p;
 	R2 = 44;
 	asu32(R1) = *tou32p(((i64)R1+(i64)R2));
@@ -63329,12 +63404,12 @@ L6872:
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	cc_show_currfileno = asi64(R1);
-L6874:
+L6875:
 	R1 = 1;
 	lincr = asi64(R1);
 	asi64(R1) = level;
 	R2 = 0;
-	if (asi64(R1) >= asi64(R2)) goto L6876;
+	if (asi64(R1) >= asi64(R2)) goto L6877;
 	R1 = -1;
 	lincr = asi64(R1);
 	asu64(R1) = dev;
@@ -63342,7 +63417,7 @@ L6874:
 	R1 = tou64("             ");
 	msysc_m$print_str_nf(asu64(R1));
 	msysc_m$print_end();
-L6876:
+L6877:
 	asu64(R1) = dev;
 	msysc_m$print_startfile(asu64(R1));
 	asu64(R1) = p;
@@ -63363,10 +63438,10 @@ L6876:
 	asu8(R1) = *tou8p(R1);
 	R1 = tou64(tou8(R1));
 	R2 = 106;
-	if (asu64(R1) != asu64(R2)) goto L6878;
+	if (asu64(R1) != asu64(R2)) goto L6879;
 	R1 = (u64)&idname;
 	(*tou64p(R1)) += 1;
-L6878:
+L6879:
 	asu64(R1) = dev;
 	msysc_m$print_startfile(asu64(R1));
 	asu64(R1) = idname;
@@ -63380,41 +63455,41 @@ L6878:
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
 	R1 = toi64(toi32(R1));
 	R2 = 3;
-	if (asi64(R1) == asi64(R2)) goto L6880;
+	if (asi64(R1) == asi64(R2)) goto L6881;
 	R2 = 5;
-	if (asi64(R1) == asi64(R2)) goto L6880;
+	if (asi64(R1) == asi64(R2)) goto L6881;
 	R2 = 7;
-	if (asi64(R1) == asi64(R2)) goto L6881;
+	if (asi64(R1) == asi64(R2)) goto L6882;
 	R2 = 8;
-	if (asi64(R1) == asi64(R2)) goto L6881;
-	R2 = 16;
-	if (asi64(R1) == asi64(R2)) goto L6881;
+	if (asi64(R1) == asi64(R2)) goto L6882;
 	R2 = 16;
 	if (asi64(R1) == asi64(R2)) goto L6882;
-	R2 = 17;
+	R2 = 16;
 	if (asi64(R1) == asi64(R2)) goto L6883;
-	R2 = 18;
+	R2 = 17;
 	if (asi64(R1) == asi64(R2)) goto L6884;
-	R2 = 1;
+	R2 = 18;
 	if (asi64(R1) == asi64(R2)) goto L6885;
-	R2 = 56;
+	R2 = 1;
 	if (asi64(R1) == asi64(R2)) goto L6886;
-	R2 = 57;
+	R2 = 56;
 	if (asi64(R1) == asi64(R2)) goto L6887;
+	R2 = 57;
+	if (asi64(R1) == asi64(R2)) goto L6888;
 	R2 = 53;
-	if (asi64(R1) == asi64(R2)) goto L6888;
-	R2 = 54;
-	if (asi64(R1) == asi64(R2)) goto L6888;
-	R2 = 22;
 	if (asi64(R1) == asi64(R2)) goto L6889;
-	R2 = 30;
+	R2 = 54;
+	if (asi64(R1) == asi64(R2)) goto L6889;
+	R2 = 22;
 	if (asi64(R1) == asi64(R2)) goto L6890;
-	R2 = 52;
+	R2 = 30;
 	if (asi64(R1) == asi64(R2)) goto L6891;
-	R2 = 49;
+	R2 = 52;
 	if (asi64(R1) == asi64(R2)) goto L6892;
-	goto L6893;
-L6880:
+	R2 = 49;
+	if (asi64(R1) == asi64(R2)) goto L6893;
+	goto L6894;
+L6881:
 	asu64(R1) = p;
 	R2 = 0;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
@@ -63436,7 +63511,7 @@ L6880:
 	asu64(R1) = d;
 	R2 = 72;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
-	if (!asu64(R1)) goto L6895;
+	if (!asu64(R1)) goto L6896;
 	asu64(R1) = dev;
 	msysc_m$print_startfile(asu64(R1));
 	R1 = tou64(" {");
@@ -63455,7 +63530,7 @@ L6880:
 	R1 = tou64("}");
 	msysc_m$print_str_nf(asu64(R1));
 	msysc_m$print_end();
-L6895:
+L6896:
 	asu64(R1) = dev;
 	msysc_m$print_startfile(asu64(R1));
 	R1 = tou64(" ");
@@ -63468,7 +63543,7 @@ L6895:
 	asu64(R1) = p;
 	R2 = 32;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
-	if (!asu64(R1)) goto L6897;
+	if (!asu64(R1)) goto L6898;
 	asu64(R1) = dev;
 	msysc_m$print_startfile(asu64(R1));
 	R1 = tou64(" Lastcall:");
@@ -63478,9 +63553,9 @@ L6895:
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
 	msysc_m$print_ptr_nf(asu64(R1));
 	msysc_m$print_end();
-L6897:
-	goto L6879;
-L6881:
+L6898:
+	goto L6880;
+L6882:
 	asu64(R1) = p;
 	R2 = 0;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
@@ -63512,9 +63587,9 @@ L6881:
 	asu64(R3) = *tou64p(((i64)R3+(i64)R4));
 	asu64(R4) = dev;
 	cc_show_printunit(asu64(R4), asu64(R3), asi64(R2), asu64(R1));
-	goto L6868;
-	goto L6879;
-L6882:
+	goto L6869;
+	goto L6880;
+L6883:
 	asu64(R1) = p;
 	R2 = 0;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
@@ -63533,8 +63608,8 @@ L6882:
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2*8));
 	msysc_m$print_str_nf(asu64(R1));
 	msysc_m$print_end();
-	goto L6879;
-L6883:
+	goto L6880;
+L6884:
 	asu64(R1) = dev;
 	msysc_m$print_startfile(asu64(R1));
 	asu64(R1) = p;
@@ -63544,8 +63619,8 @@ L6883:
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
 	msysc_m$print_str_nf(asu64(R1));
 	msysc_m$print_end();
-	goto L6879;
-L6884:
+	goto L6880;
+L6885:
 	asu64(R1) = dev;
 	msysc_m$print_startfile(asu64(R1));
 	R1 = tou64("Value:");
@@ -63555,8 +63630,8 @@ L6884:
 	asi64(R1) = *toi64p(((i64)R1+(i64)R2));
 	msysc_m$print_i64_nf(asi64(R1));
 	msysc_m$print_end();
-	goto L6879;
-L6885:
+	goto L6880;
+L6886:
 	asu64(R1) = p;
 	R2 = 52;
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
@@ -63564,21 +63639,21 @@ L6885:
 	t = asi64(R1);
 	asi64(R1) = t;
 	asi64(R2) = cc_decls_trefchar;
-	if (asi64(R1) != asi64(R2)) goto L6899;
+	if (asi64(R1) != asi64(R2)) goto L6900;
 	asu64(R1) = p;
 	R2 = 61;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
-	if (asu8(R1)) goto L6901;
-	goto L6902;
-L6901:
+	if (asu8(R1)) goto L6902;
+	goto L6903;
+L6902:
 // cc_show.printunit.dostring:
-L6903:
+L6904:
 	asu64(R1) = p;
 	R2 = 48;
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
 	R1 = toi64(toi32(R1));
 	R2 = 256;
-	if (asi64(R1) <= asi64(R2)) goto L6905;
+	if (asi64(R1) <= asi64(R2)) goto L6906;
 	asu64(R1) = dev;
 	msysc_m$print_startfile(asu64(R1));
 	R1 = tou64("\"");
@@ -63595,8 +63670,8 @@ L6903:
 	R1 = toi64(toi32(R1));
 	msysc_m$print_i64_nf(asi64(R1));
 	msysc_m$print_end();
-	goto L6904;
-L6905:
+	goto L6905;
+L6906:
 	asu64(R1) = dev;
 	msysc_m$print_startfile(asu64(R1));
 	R1 = tou64("\"");
@@ -63616,18 +63691,18 @@ L6905:
 	R1 = toi64(toi32(R1));
 	msysc_m$print_i64_nf(asi64(R1));
 	msysc_m$print_end();
-L6904:
-	goto L6898;
-L6899:
+L6905:
+	goto L6899;
+L6900:
 	asi64(R1) = t;
 	asi64(R2) = cc_decls_trefwchar;
-	if (asi64(R1) != asi64(R2)) goto L6906;
+	if (asi64(R1) != asi64(R2)) goto L6907;
 	asu64(R1) = p;
 	R2 = 62;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
-	if (asu8(R1)) goto L6908;
-	goto L6902;
-L6908:
+	if (asu8(R1)) goto L6909;
+	goto L6903;
+L6909:
 	asu64(R1) = dev;
 	msysc_m$print_startfile(asu64(R1));
 	R1 = tou64("\"");
@@ -63644,14 +63719,14 @@ L6908:
 	R1 = toi64(toi32(R1));
 	msysc_m$print_i64_nf(asi64(R1));
 	msysc_m$print_end();
-	goto L6898;
-L6906:
+	goto L6899;
+L6907:
 	asi64(R1) = t;
 	R2 = 1;
-	if (asi64(R1) < asi64(R2)) goto L6909;
+	if (asi64(R1) < asi64(R2)) goto L6910;
 	asi64(R1) = t;
 	R2 = 4;
-	if (asi64(R1) > asi64(R2)) goto L6909;
+	if (asi64(R1) > asi64(R2)) goto L6910;
 	asu64(R1) = dev;
 	msysc_m$print_startfile(asu64(R1));
 	asu64(R1) = p;
@@ -63659,14 +63734,14 @@ L6906:
 	asi64(R1) = *toi64p(((i64)R1+(i64)R2));
 	msysc_m$print_i64_nf(asi64(R1));
 	msysc_m$print_end();
-	goto L6898;
-L6909:
+	goto L6899;
+L6910:
 	asi64(R1) = t;
 	R2 = 6;
-	if (asi64(R1) < asi64(R2)) goto L6910;
+	if (asi64(R1) < asi64(R2)) goto L6911;
 	asi64(R1) = t;
 	R2 = 9;
-	if (asi64(R1) > asi64(R2)) goto L6910;
+	if (asi64(R1) > asi64(R2)) goto L6911;
 	asu64(R1) = dev;
 	msysc_m$print_startfile(asu64(R1));
 	R1 = 0;
@@ -63675,11 +63750,11 @@ L6909:
 	asu64(R2) = *tou64p(((i64)R2+(i64)R3));
 	msysc_m$print_u64(asu64(R2), asi64(R1));
 	msysc_m$print_end();
-	goto L6898;
-L6910:
+	goto L6899;
+L6911:
 	asi64(R1) = t;
 	asi64(R1) = cc_lib_isrealcc(asi64(R1));
-	if (!asi64(R1)) goto L6911;
+	if (!asi64(R1)) goto L6912;
 	asu64(R1) = dev;
 	msysc_m$print_startfile(asu64(R1));
 	R1 = 0;
@@ -63688,22 +63763,22 @@ L6910:
 	asr64(R2) = *tor64p(((i64)R2+(i64)R3));
 	msysc_m$print_r64(asr64(R2), asi64(R1));
 	msysc_m$print_end();
-	goto L6898;
-L6911:
+	goto L6899;
+L6912:
 	R1 = (u64)&cc_decls_ttbasetype;
 	asi64(R2) = t;
 	asi16(R1) = *toi16p(((i64)R1+(i64)R2*2));
 	R1 = toi64(toi16(R1));
 	R2 = 13;
-	if (asi64(R1) != asi64(R2)) goto L6912;
+	if (asi64(R1) != asi64(R2)) goto L6913;
 	asu64(R1) = p;
 	R2 = 61;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
-	if (!asu8(R1)) goto L6914;
-	goto L6903;
-L6914:
+	if (!asu8(R1)) goto L6915;
+	goto L6904;
+L6915:
 // cc_show.printunit.doref:
-L6902:
+L6903:
 	asu64(R1) = dev;
 	msysc_m$print_startfile(asu64(R1));
 	asu64(R1) = p;
@@ -63711,24 +63786,24 @@ L6902:
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
 	msysc_m$print_ptr_nf(asu64(R1));
 	msysc_m$print_end();
-	goto L6898;
-L6912:
+	goto L6899;
+L6913:
 	R1 = (u64)&cc_decls_ttbasetype;
 	asi64(R2) = t;
 	asi16(R1) = *toi16p(((i64)R1+(i64)R2*2));
 	R1 = toi64(toi16(R1));
 	R2 = 17;
-	if (asi64(R1) != asi64(R2)) goto L6915;
+	if (asi64(R1) != asi64(R2)) goto L6916;
 	asu64(R1) = p;
 	R2 = 61;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
-	if (!asu8(R1)) goto L6917;
-	goto L6903;
-L6917:
+	if (!asu8(R1)) goto L6918;
+	goto L6904;
+L6918:
 	R1 = tou64("PRINTUNIT/CONST/aRRAY");
 	cc_support_serror(asu64(R1));
-	goto L6898;
-L6915:
+	goto L6899;
+L6916:
 	msysc_m$print_startcon();
 	asi64(R1) = t;
 	asu64(R1) = cc_lib_typename(asi64(R1));
@@ -63740,7 +63815,7 @@ L6915:
 	msysc_m$print_str_nf(asu64(R1));
 	msysc_m$print_newline();
 	msysc_m$print_end();
-L6898:
+L6899:
 	asu64(R1) = dev;
 	msysc_m$print_startfile(asu64(R1));
 	R1 = tou64(" ");
@@ -63754,25 +63829,25 @@ L6898:
 	asu64(R1) = p;
 	R2 = 61;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
-	if (!asu8(R1)) goto L6919;
+	if (!asu8(R1)) goto L6920;
 	asu64(R1) = dev;
 	msysc_m$print_startfile(asu64(R1));
 	R1 = tou64("<STRCONST>");
 	msysc_m$print_str_nf(asu64(R1));
 	msysc_m$print_end();
-L6919:
+L6920:
 	asu64(R1) = p;
 	R2 = 62;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
-	if (!asu8(R1)) goto L6921;
+	if (!asu8(R1)) goto L6922;
 	asu64(R1) = dev;
 	msysc_m$print_startfile(asu64(R1));
 	R1 = tou64("<WSTRCONST>");
 	msysc_m$print_str_nf(asu64(R1));
 	msysc_m$print_end();
-L6921:
-	goto L6879;
-L6886:
+L6922:
+	goto L6880;
+L6887:
 	asu64(R1) = dev;
 	msysc_m$print_startfile(asu64(R1));
 	R1 = (u64)&cc_tables_convnames;
@@ -63813,8 +63888,8 @@ L6886:
 	asu64(R1) = cc_lib_typename(asi64(R1));
 	msysc_m$print_str_nf(asu64(R1));
 	msysc_m$print_end();
-	goto L6879;
-L6887:
+	goto L6880;
+L6888:
 	asu64(R1) = dev;
 	msysc_m$print_startfile(asu64(R1));
 	R1 = tou64("Scale:");
@@ -63825,8 +63900,8 @@ L6887:
 	R1 = toi64(toi32(R1));
 	msysc_m$print_i64_nf(asi64(R1));
 	msysc_m$print_end();
-	goto L6879;
-L6888:
+	goto L6880;
+L6889:
 	asu64(R1) = dev;
 	msysc_m$print_startfile(asu64(R1));
 	R1 = tou64("Ptrscale:");
@@ -63837,32 +63912,32 @@ L6888:
 	R1 = toi64(toi32(R1));
 	msysc_m$print_i64_nf(asi64(R1));
 	msysc_m$print_end();
-	goto L6879;
-L6889:
+	goto L6880;
+L6890:
 	asu64(R1) = p;
 	R2 = 0;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
 	pc = asu64(R1);
 	R1 = 0;
 	n = asi64(R1);
-	goto L6923;
-L6922:
+	goto L6924;
+L6923:
 	R1 = (u64)&n;
 	(*toi64p(R1)) += 1;
 	asu64(R1) = pc;
 	R2 = 0;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
 	pc = asu64(R1);
-L6923:
+L6924:
 	asu64(R1) = pc;
-	if (asu64(R1)) goto L6922;
+	if (asu64(R1)) goto L6923;
 	asu64(R1) = dev;
 	msysc_m$print_startfile(asu64(R1));
 	asi64(R1) = n;
 	msysc_m$print_i64_nf(asi64(R1));
 	msysc_m$print_end();
-	goto L6879;
-L6890:
+	goto L6880;
+L6891:
 	asu64(R1) = dev;
 	msysc_m$print_startfile(asu64(R1));
 	R1 = tou64(" Aparams:");
@@ -63873,10 +63948,10 @@ L6890:
 	R1 = toi64(toi32(R1));
 	msysc_m$print_i64_nf(asi64(R1));
 	msysc_m$print_end();
-	goto L6879;
-L6891:
-	goto L6879;
+	goto L6880;
 L6892:
+	goto L6880;
+L6893:
 	asu64(R1) = dev;
 	msysc_m$print_startfile(asu64(R1));
 	R1 = tou64(" Offset:");
@@ -63887,13 +63962,13 @@ L6892:
 	R1 = toi64(toi32(R1));
 	msysc_m$print_i64_nf(asi64(R1));
 	msysc_m$print_end();
-	goto L6879;
-L6893:
-L6879:
+	goto L6880;
+L6894:
+L6880:
 	asu64(R1) = p;
 	R2 = 56;
 	asi16(R1) = *toi16p(((i64)R1+(i64)R2));
-	if (!asi16(R1)) goto L6926;
+	if (!asi16(R1)) goto L6927;
 	asu64(R1) = dev;
 	msysc_m$print_startfile(asu64(R1));
 	R1 = tou64(" Widen from:");
@@ -63906,11 +63981,11 @@ L6879:
 	asu64(R1) = cc_lib_strmode(asi64(R2), asi64(R1));
 	msysc_m$print_str_nf(asu64(R1));
 	msysc_m$print_end();
-L6926:
+L6927:
 	asu64(R1) = p;
 	R2 = 48;
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
-	if (!asi32(R1)) goto L6928;
+	if (!asi32(R1)) goto L6929;
 	asu64(R1) = dev;
 	msysc_m$print_startfile(asu64(R1));
 	R1 = tou64(" ALENGTH=");
@@ -63921,7 +63996,7 @@ L6926:
 	R1 = toi64(toi32(R1));
 	msysc_m$print_i64_nf(asi64(R1));
 	msysc_m$print_end();
-L6928:
+L6929:
 	asu64(R1) = dev;
 	msysc_m$print_startfile(asu64(R1));
 	msysc_m$print_newline();
@@ -63949,7 +64024,7 @@ L6928:
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
 	R1 = toi64(toi32(R1));
 	R2 = 6;
-	if (asi64(R1) == asi64(R2)) goto L6930;
+	if (asi64(R1) == asi64(R2)) goto L6931;
 	R1 = tou64("3");
 	asi64(R2) = level;
 	asi64(R3) = lincr;
@@ -63959,8 +64034,8 @@ L6928:
 	asu64(R3) = *tou64p(((i64)R3+(i64)R4));
 	asu64(R4) = dev;
 	cc_show_printunitlist(asu64(R4), asu64(R3), asi64(R2), asu64(R1));
-L6930:
-L6868:
+L6931:
+L6869:
 	return;
 }
 
@@ -63968,11 +64043,11 @@ static void cc_show_printunitlist(u64 dev, u64 p, i64 level, u64 prefix) {
     u64 R1, R2, R3, R4; 
 	asu64(R1) = p;
 	R2 = 0;
-	if (asu64(R1) != asu64(R2)) goto L6933;
-	goto L6931;
-L6933:
-	goto L6935;
+	if (asu64(R1) != asu64(R2)) goto L6934;
+	goto L6932;
 L6934:
+	goto L6936;
+L6935:
 	asu64(R1) = prefix;
 	asi64(R2) = level;
 	asu64(R3) = p;
@@ -63982,10 +64057,10 @@ L6934:
 	R2 = 8;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
 	p = asu64(R1);
-L6935:
+L6936:
 	asu64(R1) = p;
-	if (asu64(R1)) goto L6934;
-L6931:
+	if (asu64(R1)) goto L6935;
+L6932:
 	return;
 }
 
@@ -64001,10 +64076,10 @@ static u64 cc_show_getprefix(i64 level, u64 prefix, u64 p) {
 	*tou8p(((i64)R2+(i64)R3-1)) = asu8(R1);
 	asi64(R1) = level;
 	R2 = 10;
-	if (asi64(R1) <= asi64(R2)) goto L6939;
+	if (asi64(R1) <= asi64(R2)) goto L6940;
 	R1 = 10;
 	level = asi64(R1);
-L6939:
+L6940:
 	R1 = tou64("-----------------------");
 	R2 = (u64)&indentstr;
 	asu64(R1) = strcpy(asu64(R2), asu64(R1));
@@ -64021,28 +64096,28 @@ L6939:
 	asi64(R1) = length;
 	R2 = (u64)&indentstr;
 	asi64(R2) = strlen(asu64(R2));
-	if (asi64(R1) >= asi64(R2)) goto L6941;
+	if (asi64(R1) >= asi64(R2)) goto L6942;
 	asi64(R1) = length;
 	asu64(R2) = modestr;
 	R3 = (u64)&indentstr;
 	memcpy(asu64(R3), asu64(R2), asu64(R1));
-	goto L6940;
-L6941:
+	goto L6941;
+L6942:
 	asu64(R1) = modestr;
 	R2 = (u64)&indentstr;
 	asu64(R1) = strcpy(asu64(R2), asu64(R1));
-L6940:
+L6941:
 	asi64(R1) = level;
 	av_1 = asi64(R1);
 	asi64(R1) = av_1;
 	R2 = 0;
-	if (asi64(R1) <= asi64(R2)) goto L6944;
-L6942:
+	if (asi64(R1) <= asi64(R2)) goto L6945;
+L6943:
 	R1 = tou64("|---");
 	R2 = (u64)&indentstr;
 	asu64(R1) = strcat(asu64(R2), asu64(R1));
-	if (--asi64(av_1)) goto L6942;
-L6944:
+	if (--asi64(av_1)) goto L6943;
+L6945:
 	asu64(R1) = cc_show_getlineinfok();
 	R2 = (u64)&cc_show_getprefix_str;
 	asu64(R1) = strcpy(asu64(R2), asu64(R1));
@@ -64054,14 +64129,14 @@ L6944:
 	asu64(R1) = strcat(asu64(R2), asu64(R1));
 	asu64(R1) = prefix;
 	asu8(R1) = *tou8p(R1);
-	if (!asu8(R1)) goto L6946;
+	if (!asu8(R1)) goto L6947;
 	R1 = tou64(" ");
 	R2 = (u64)&cc_show_getprefix_str;
 	asu64(R1) = strcat(asu64(R2), asu64(R1));
-L6946:
+L6947:
 	R1 = (u64)&cc_show_getprefix_str;
-	goto L6937;
-L6937:
+	goto L6938;
+L6938:
 	return asu64(R1);
 }
 
@@ -64078,8 +64153,8 @@ static u64 cc_show_getdottedname(u64 p) {
 	R2 = 8;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
 	owner = asu64(R1);
-	goto L6949;
-L6948:
+	goto L6950;
+L6949:
 	R1 = (u64)&cc_show_getdottedname_str;
 	R2 = (u64)&str2;
 	asu64(R1) = strcpy(asu64(R2), asu64(R1));
@@ -64098,20 +64173,20 @@ L6948:
 	R2 = 8;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
 	owner = asu64(R1);
-L6949:
+L6950:
 	asu64(R1) = owner;
-	if (!asu64(R1)) goto L6951;
+	if (!asu64(R1)) goto L6952;
 	asu64(R1) = owner;
 	R2 = 109;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 2;
-	if (asi64(R1) != asi64(R2)) goto L6948;
-L6951:
+	if (asi64(R1) != asi64(R2)) goto L6949;
+L6952:
 	asu64(R1) = p;
 	R2 = 96;
 	asu16(R1) = *tou16p(((i64)R1+(i64)R2));
-	if (!asu16(R1)) goto L6953;
+	if (!asu16(R1)) goto L6954;
 	R1 = (u64)&str2;
 	msysc_m$print_startstr(asu64(R1));
 	R1 = tou64(".");
@@ -64126,10 +64201,10 @@ L6951:
 	R1 = (u64)&str2;
 	R2 = (u64)&cc_show_getdottedname_str;
 	asu64(R1) = strcat(asu64(R2), asu64(R1));
-L6953:
+L6954:
 	R1 = (u64)&cc_show_getdottedname_str;
-	goto L6947;
-L6947:
+	goto L6948;
+L6948:
 	return asu64(R1);
 }
 
@@ -64147,8 +64222,8 @@ static u64 cc_show_getlineinfok() {
 	msysc_m$print_space();
 	msysc_m$print_end();
 	R1 = (u64)&cc_show_getlineinfok_str;
-	goto L6954;
-L6954:
+	goto L6955;
+L6955:
 	return asu64(R1);
 }
 
@@ -64160,10 +64235,10 @@ static void cc_show_printst(u64 f, u64 p, i64 level) {
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 67;
-	if (asi64(R1) == asi64(R2)) goto L6957;
+	if (asi64(R1) == asi64(R2)) goto L6958;
 	R1 = tou64("PRINTST not name");
 	cc_support_mcerror(asu64(R1));
-L6957:
+L6958:
 	asi64(R1) = level;
 	asu64(R2) = p;
 	asu64(R3) = f;
@@ -64172,8 +64247,8 @@ L6957:
 	R2 = 16;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
 	q = asu64(R1);
-	goto L6959;
-L6958:
+	goto L6960;
+L6959:
 	asi64(R1) = level;
 	R2 = 1;
 	asi64(R1) += asi64(R2);
@@ -64184,10 +64259,10 @@ L6958:
 	R2 = 32;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
 	q = asu64(R1);
-L6959:
+L6960:
 	asu64(R1) = q;
 	R2 = 0;
-	if (asu64(R1) != asu64(R2)) goto L6958;
+	if (asu64(R1) != asu64(R2)) goto L6959;
 	return;
 }
 
@@ -64212,23 +64287,23 @@ static void cc_show_printstrec(u64 f, u64 p, i64 level) {
 	av_1 = asi64(R1);
 	asi64(R1) = av_1;
 	R2 = 0;
-	if (asi64(R1) <= asi64(R2)) goto L6964;
-L6962:
+	if (asi64(R1) <= asi64(R2)) goto L6965;
+L6963:
 	R1 = tou64("    ");
 	asu64(R2) = d;
 	mlib_gs_str(asu64(R2), asu64(R1));
 	R1 = 4;
 	R2 = (u64)&offset;
 	*toi64p(R2) += asi64(R1);
-	if (--asi64(av_1)) goto L6962;
-L6964:
+	if (--asi64(av_1)) goto L6963;
+L6965:
 	R1 = tou64(":");
 	asu64(R2) = d;
 	mlib_gs_str(asu64(R2), asu64(R1));
 	asu64(R1) = p;
 	R2 = 96;
 	asu16(R1) = *tou16p(((i64)R1+(i64)R2));
-	if (!asu16(R1)) goto L6966;
+	if (!asu16(R1)) goto L6967;
 	R1 = (u64)&str;
 	msysc_m$print_startstr(asu64(R1));
 	asu64(R1) = p;
@@ -64252,8 +64327,8 @@ L6964:
 	R3 = (u64)&str;
 	asu64(R4) = d;
 	mlib_gs_leftstr(asu64(R4), asu64(R3), asi64(R2), asi64(R1));
-	goto L6965;
-L6966:
+	goto L6966;
+L6967:
 	R1 = 45;
 	R2 = 28;
 	asi64(R3) = offset;
@@ -64263,7 +64338,7 @@ L6966:
 	asu64(R3) = *tou64p(((i64)R3+(i64)R4));
 	asu64(R4) = d;
 	mlib_gs_leftstr(asu64(R4), asu64(R3), asi64(R2), asi64(R1));
-L6965:
+L6966:
 	R1 = 46;
 	R2 = 12;
 	R3 = (u64)&cc_tables_namenames;
@@ -64307,7 +64382,7 @@ L6965:
 	asu64(R1) = p;
 	R2 = 112;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
-	if (!asu8(R1)) goto L6968;
+	if (!asu8(R1)) goto L6969;
 	R1 = tou64("@@");
 	asu64(R2) = d;
 	mlib_gs_str(asu64(R2), asu64(R1));
@@ -64320,30 +64395,30 @@ L6965:
 	R1 = tou64(" ");
 	asu64(R2) = d;
 	mlib_gs_str(asu64(R2), asu64(R1));
-L6968:
+L6969:
 	asu64(R1) = p;
 	R2 = 108;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 1;
     asi64(R1) = Getdotindex(asu64(R1), asi64(R2));
-	if (!asu64(R1)) goto L6970;
+	if (!asu64(R1)) goto L6971;
 	R1 = tou64("Var ");
 	asu64(R2) = d;
 	mlib_gs_str(asu64(R2), asu64(R1));
-L6970:
+L6971:
 	asu64(R1) = p;
 	R2 = 122;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
-	if (!asu8(R1)) goto L6972;
+	if (!asu8(R1)) goto L6973;
 	R1 = tou64("Used ");
 	asu64(R2) = d;
 	mlib_gs_str(asu64(R2), asu64(R1));
-L6972:
+L6973:
 	asu64(R1) = p;
 	R2 = 111;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
-	if (!asu8(R1)) goto L6974;
+	if (!asu8(R1)) goto L6975;
 	R1 = (u64)&str;
 	msysc_m$print_startstr(asu64(R1));
 	R1 = tou64("Pm:# ");
@@ -64357,7 +64432,7 @@ L6972:
 	R1 = (u64)&str;
 	asu64(R2) = d;
 	mlib_gs_str(asu64(R2), asu64(R1));
-L6974:
+L6975:
 	R1 = tou64("]");
 	asu64(R2) = d;
 	mlib_gs_str(asu64(R2), asu64(R1));
@@ -64370,7 +64445,7 @@ L6974:
 	asu64(R1) = p;
 	R2 = 8;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
-	if (!asu64(R1)) goto L6976;
+	if (!asu64(R1)) goto L6977;
 	R1 = (u64)&str;
 	msysc_m$print_startstr(asu64(R1));
 	R1 = tou64("(#)");
@@ -64387,27 +64462,27 @@ L6974:
 	R3 = (u64)&str;
 	asu64(R4) = d;
 	mlib_gs_leftstr(asu64(R4), asu64(R3), asi64(R2), asi64(R1));
-	goto L6975;
-L6976:
+	goto L6976;
+L6977:
 	R1 = 32;
 	R2 = 18;
 	R3 = tou64("()");
 	asu64(R4) = d;
 	mlib_gs_leftstr(asu64(R4), asu64(R3), asi64(R2), asi64(R1));
-L6975:
+L6976:
 	asu64(R1) = p;
 	R2 = 102;
 	asu16(R1) = *tou16p(((i64)R1+(i64)R2));
 	R1 = toi64(tou16(R1));
 	R2 = 0;
-	if (asi64(R1) == asi64(R2)) goto L6978;
-	goto L6979;
-L6978:
+	if (asi64(R1) == asi64(R2)) goto L6979;
+	goto L6980;
+L6979:
 	R1 = tou64("Void ");
 	asu64(R2) = d;
 	mlib_gs_str(asu64(R2), asu64(R1));
-	goto L6977;
-L6979:
+	goto L6978;
+L6980:
 	R1 = 1;
 	asu64(R2) = p;
 	R3 = 102;
@@ -64416,25 +64491,25 @@ L6979:
 	asu64(R1) = cc_lib_strmode(asi64(R2), asi64(R1));
 	asu64(R2) = d;
 	mlib_gs_strsp(asu64(R2), asu64(R1));
-L6977:
+L6978:
 	asu64(R1) = p;
 	R2 = 109;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 10;
-	if (asi64(R1) == asi64(R2)) goto L6981;
+	if (asi64(R1) == asi64(R2)) goto L6982;
 	R2 = 8;
-	if (asi64(R1) == asi64(R2)) goto L6982;
-	R2 = 9;
-	if (asi64(R1) == asi64(R2)) goto L6982;
-	R2 = 6;
 	if (asi64(R1) == asi64(R2)) goto L6983;
-	R2 = 11;
+	R2 = 9;
+	if (asi64(R1) == asi64(R2)) goto L6983;
+	R2 = 6;
 	if (asi64(R1) == asi64(R2)) goto L6984;
-	R2 = 7;
+	R2 = 11;
 	if (asi64(R1) == asi64(R2)) goto L6985;
-	goto L6986;
-L6981:
+	R2 = 7;
+	if (asi64(R1) == asi64(R2)) goto L6986;
+	goto L6987;
+L6982:
 	R1 = tou64("Offset:");
 	asu64(R2) = d;
 	mlib_gs_str(asu64(R2), asu64(R1));
@@ -64444,12 +64519,12 @@ L6981:
 	R1 = toi64(toi32(R1));
 	asu64(R2) = d;
 	mlib_gs_strint(asu64(R2), asi64(R1));
-	goto L6980;
-L6982:
+	goto L6981;
+L6983:
 	asu64(R1) = p;
 	R2 = 72;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
-	if (!asu64(R1)) goto L6988;
+	if (!asu64(R1)) goto L6989;
 	R1 = tou64("=");
 	asu64(R2) = d;
 	mlib_gs_str(asu64(R2), asu64(R1));
@@ -64459,7 +64534,7 @@ L6982:
 	asu64(R1) = cc_show_strexpr(asu64(R1));
 	asu64(R2) = d;
 	mlib_gs_strvar(asu64(R2), asu64(R1));
-L6988:
+L6989:
 	R1 = tou64(" Offset: ");
 	asu64(R2) = d;
 	mlib_gs_str(asu64(R2), asu64(R1));
@@ -64469,8 +64544,8 @@ L6988:
 	R1 = toi64(toi32(R1));
 	asu64(R2) = d;
 	mlib_gs_strint(asu64(R2), asi64(R1));
-	goto L6980;
-L6983:
+	goto L6981;
+L6984:
 	R1 = tou64("Index:");
 	asu64(R2) = d;
 	mlib_gs_str(asu64(R2), asu64(R1));
@@ -64480,8 +64555,8 @@ L6983:
 	R1 = toi64(toi32(R1));
 	asu64(R2) = d;
 	mlib_gs_strint(asu64(R2), asi64(R1));
-	goto L6980;
-L6984:
+	goto L6981;
+L6985:
 	R1 = tou64("Enum:");
 	asu64(R2) = d;
 	mlib_gs_str(asu64(R2), asu64(R1));
@@ -64491,12 +64566,12 @@ L6984:
 	R1 = toi64(toi32(R1));
 	asu64(R2) = d;
 	mlib_gs_strint(asu64(R2), asi64(R1));
-	goto L6980;
-L6985:
+	goto L6981;
+L6986:
 	asu64(R1) = p;
 	R2 = 72;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
-	if (!asu64(R1)) goto L6990;
+	if (!asu64(R1)) goto L6991;
 	R1 = tou64("=");
 	asu64(R2) = d;
 	mlib_gs_str(asu64(R2), asu64(R1));
@@ -64506,13 +64581,13 @@ L6985:
 	asu64(R1) = cc_show_strexpr(asu64(R1));
 	asu64(R2) = d;
 	mlib_gs_strvar(asu64(R2), asu64(R1));
-L6990:
+L6991:
 	R1 = tou64("STATIC********");
 	asu64(R2) = d;
 	mlib_gs_str(asu64(R2), asu64(R1));
-	goto L6980;
-L6986:
-L6980:
+	goto L6981;
+L6987:
+L6981:
 	R1 = tou64(" ");
 	asu64(R2) = d;
 	mlib_gs_str(asu64(R2), asu64(R1));
@@ -64545,15 +64620,15 @@ L6980:
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 6;
-	if (asi64(R1) != asi64(R2)) goto L6992;
+	if (asi64(R1) != asi64(R2)) goto L6993;
 	asu64(R1) = d;
 	mlib_gs_line(asu64(R1));
 	asu64(R1) = p;
 	R2 = 80;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
 	pm = asu64(R1);
-	goto L6994;
-L6993:
+	goto L6995;
+L6994:
 	R1 = tou64("\t\tParam: ");
 	asu64(R2) = d;
 	mlib_gs_str(asu64(R2), asu64(R1));
@@ -64562,16 +64637,16 @@ L6993:
 	asu64(R3) = pm;
 	R4 = 0;
 	asu64(R3) = *tou64p(((i64)R3+(i64)R4));
-	if (!asu64(R3)) goto L6997;
+	if (!asu64(R3)) goto L6998;
 	asu64(R3) = pm;
 	R4 = 0;
 	asu64(R3) = *tou64p(((i64)R3+(i64)R4));
 	R4 = 0;
 	asu64(R3) = *tou64p(((i64)R3+(i64)R4));
-	goto L6996;
-L6997:
+	goto L6997;
+L6998:
 	R3 = tou64("Anon");
-L6996:
+L6997:
 	asu64(R4) = d;
 	mlib_gs_leftstr(asu64(R4), asu64(R3), asi64(R2), asi64(R1));
 	R1 = (u64)&cc_tables_pmflagnames;
@@ -64607,27 +64682,27 @@ L6996:
 	R2 = 8;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
 	pm = asu64(R1);
-L6994:
+L6995:
 	asu64(R1) = pm;
-	if (asu64(R1)) goto L6993;
-L6992:
+	if (asu64(R1)) goto L6994;
+L6993:
 	asu64(R1) = f;
 	asu64(R2) = d;
 	mlib_gs_println(asu64(R2), asu64(R1));
 	asu64(R1) = p;
 	R2 = 72;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
-	if (!asu64(R1)) goto L6999;
+	if (!asu64(R1)) goto L7000;
 	asu64(R1) = p;
 	R2 = 109;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 8;
-	if (asi64(R1) == asi64(R2)) goto L7001;
+	if (asi64(R1) == asi64(R2)) goto L7002;
 	R2 = 7;
-	if (asi64(R1) == asi64(R2)) goto L7001;
-	goto L7002;
-L7001:
+	if (asi64(R1) == asi64(R2)) goto L7002;
+	goto L7003;
+L7002:
 	R1 = tou64("*");
 	R2 = -3;
 	asu64(R3) = p;
@@ -64635,10 +64710,10 @@ L7001:
 	asu64(R3) = *tou64p(((i64)R3+(i64)R4));
 	asu64(R4) = f;
 	cc_show_printunit(asu64(R4), asu64(R3), asi64(R2), asu64(R1));
-	goto L7000;
-L7002:
+	goto L7001;
+L7003:
+L7001:
 L7000:
-L6999:
 	return;
 }
 
@@ -64662,8 +64737,8 @@ static void cc_show_printstflat(u64 f) {
 	av_1 = asi64(R1);
 	asi64(R1) = av_1;
 	R2 = 0;
-	if (asi64(R1) < asi64(R2)) goto L7006;
-L7004:
+	if (asi64(R1) < asi64(R2)) goto L7007;
+L7005:
 	asu64(R1) = cc_decls_hashtable;
 	asi64(R2) = i;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2*8));
@@ -64671,19 +64746,19 @@ L7004:
 	asu64(R1) = p;
 	R2 = 0;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
-	if (!asu64(R1)) goto L7008;
+	if (!asu64(R1)) goto L7009;
 	asu64(R1) = p;
 	R2 = 107;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
 	R1 = toi64(tou8(R1));
 	R2 = 67;
-	if (asi64(R1) == asi64(R2)) goto L7010;
+	if (asi64(R1) == asi64(R2)) goto L7011;
 	R2 = 71;
-	if (asi64(R1) == asi64(R2)) goto L7010;
+	if (asi64(R1) == asi64(R2)) goto L7011;
 	R2 = 68;
-	if (asi64(R1) == asi64(R2)) goto L7010;
-	goto L7011;
-L7010:
+	if (asi64(R1) == asi64(R2)) goto L7011;
+	goto L7012;
+L7011:
 	asu64(R1) = f;
 	msysc_m$print_startfile(asu64(R1));
 	asi64(R1) = i;
@@ -64715,8 +64790,8 @@ L7010:
 	R2 = 40;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
 	p = asu64(R1);
-	goto L7013;
-L7012:
+	goto L7014;
+L7013:
 	asu64(R1) = f;
 	msysc_m$print_startfile(asu64(R1));
 	R1 = tou64("\t");
@@ -64752,15 +64827,15 @@ L7012:
 	asu64(R1) = p;
 	R2 = 8;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
-	if (!asu64(R1)) goto L7016;
+	if (!asu64(R1)) goto L7017;
 	asu64(R1) = p;
 	R2 = 8;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
 	asu64(R1) = cc_lib_getstname(asu64(R1));
-	goto L7015;
-L7016:
+	goto L7016;
+L7017:
 	R1 = tou64("-");
-L7015:
+L7016:
 	msysc_m$print_str_nf(asu64(R1));
 	msysc_m$print_nogap();
 	R1 = tou64(")");
@@ -64771,15 +64846,15 @@ L7015:
 	R2 = 40;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
 	p = asu64(R1);
-L7013:
+L7014:
 	asu64(R1) = p;
-	if (asu64(R1)) goto L7012;
-	goto L7009;
-L7011:
+	if (asu64(R1)) goto L7013;
+	goto L7010;
+L7012:
+L7010:
 L7009:
-L7008:
-	i += 1; if (i <= av_1) goto L7004;
-L7006:
+	i += 1; if (i <= av_1) goto L7005;
+L7007:
 	return;
 }
 
@@ -64791,8 +64866,8 @@ static u64 cc_show_strexpr(u64 p) {
 	asu64(R2) = cc_show_exprstr;
 	cc_show_jeval(asu64(R2), asu64(R1));
 	asu64(R1) = cc_show_exprstr;
-	goto L7017;
-L7017:
+	goto L7018;
+L7018:
 	return asu64(R1);
 }
 
@@ -64807,117 +64882,117 @@ static void cc_show_jeval(u64 dest, u64 p) {
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
 	R1 = toi64(toi32(R1));
 	R2 = 1;
-	if (asi64(R1) == asi64(R2)) goto L7020;
-	R2 = 3;
 	if (asi64(R1) == asi64(R2)) goto L7021;
-	R2 = 5;
+	R2 = 3;
 	if (asi64(R1) == asi64(R2)) goto L7022;
+	R2 = 5;
+	if (asi64(R1) == asi64(R2)) goto L7023;
 	R2 = 24;
-	if (asi64(R1) == asi64(R2)) goto L7023;
+	if (asi64(R1) == asi64(R2)) goto L7024;
 	R2 = 25;
-	if (asi64(R1) == asi64(R2)) goto L7023;
+	if (asi64(R1) == asi64(R2)) goto L7024;
 	R2 = 32;
-	if (asi64(R1) == asi64(R2)) goto L7023;
+	if (asi64(R1) == asi64(R2)) goto L7024;
 	R2 = 33;
-	if (asi64(R1) == asi64(R2)) goto L7023;
+	if (asi64(R1) == asi64(R2)) goto L7024;
 	R2 = 34;
-	if (asi64(R1) == asi64(R2)) goto L7023;
+	if (asi64(R1) == asi64(R2)) goto L7024;
 	R2 = 35;
-	if (asi64(R1) == asi64(R2)) goto L7023;
+	if (asi64(R1) == asi64(R2)) goto L7024;
 	R2 = 36;
-	if (asi64(R1) == asi64(R2)) goto L7023;
+	if (asi64(R1) == asi64(R2)) goto L7024;
 	R2 = 37;
-	if (asi64(R1) == asi64(R2)) goto L7023;
+	if (asi64(R1) == asi64(R2)) goto L7024;
 	R2 = 38;
-	if (asi64(R1) == asi64(R2)) goto L7023;
+	if (asi64(R1) == asi64(R2)) goto L7024;
 	R2 = 39;
-	if (asi64(R1) == asi64(R2)) goto L7023;
+	if (asi64(R1) == asi64(R2)) goto L7024;
 	R2 = 40;
-	if (asi64(R1) == asi64(R2)) goto L7023;
+	if (asi64(R1) == asi64(R2)) goto L7024;
 	R2 = 41;
-	if (asi64(R1) == asi64(R2)) goto L7023;
+	if (asi64(R1) == asi64(R2)) goto L7024;
 	R2 = 42;
-	if (asi64(R1) == asi64(R2)) goto L7023;
+	if (asi64(R1) == asi64(R2)) goto L7024;
 	R2 = 43;
-	if (asi64(R1) == asi64(R2)) goto L7023;
+	if (asi64(R1) == asi64(R2)) goto L7024;
 	R2 = 44;
-	if (asi64(R1) == asi64(R2)) goto L7023;
+	if (asi64(R1) == asi64(R2)) goto L7024;
 	R2 = 45;
-	if (asi64(R1) == asi64(R2)) goto L7023;
+	if (asi64(R1) == asi64(R2)) goto L7024;
 	R2 = 46;
-	if (asi64(R1) == asi64(R2)) goto L7023;
+	if (asi64(R1) == asi64(R2)) goto L7024;
 	R2 = 47;
-	if (asi64(R1) == asi64(R2)) goto L7023;
+	if (asi64(R1) == asi64(R2)) goto L7024;
 	R2 = 48;
-	if (asi64(R1) == asi64(R2)) goto L7023;
+	if (asi64(R1) == asi64(R2)) goto L7024;
 	R2 = 61;
-	if (asi64(R1) == asi64(R2)) goto L7023;
+	if (asi64(R1) == asi64(R2)) goto L7024;
 	R2 = 62;
-	if (asi64(R1) == asi64(R2)) goto L7023;
+	if (asi64(R1) == asi64(R2)) goto L7024;
 	R2 = 63;
-	if (asi64(R1) == asi64(R2)) goto L7023;
+	if (asi64(R1) == asi64(R2)) goto L7024;
 	R2 = 64;
-	if (asi64(R1) == asi64(R2)) goto L7023;
+	if (asi64(R1) == asi64(R2)) goto L7024;
 	R2 = 65;
-	if (asi64(R1) == asi64(R2)) goto L7023;
+	if (asi64(R1) == asi64(R2)) goto L7024;
 	R2 = 66;
-	if (asi64(R1) == asi64(R2)) goto L7023;
+	if (asi64(R1) == asi64(R2)) goto L7024;
 	R2 = 67;
-	if (asi64(R1) == asi64(R2)) goto L7023;
+	if (asi64(R1) == asi64(R2)) goto L7024;
 	R2 = 68;
-	if (asi64(R1) == asi64(R2)) goto L7023;
+	if (asi64(R1) == asi64(R2)) goto L7024;
 	R2 = 69;
-	if (asi64(R1) == asi64(R2)) goto L7023;
+	if (asi64(R1) == asi64(R2)) goto L7024;
 	R2 = 70;
-	if (asi64(R1) == asi64(R2)) goto L7023;
+	if (asi64(R1) == asi64(R2)) goto L7024;
 	R2 = 58;
-	if (asi64(R1) == asi64(R2)) goto L7024;
-	R2 = 59;
-	if (asi64(R1) == asi64(R2)) goto L7024;
-	R2 = 60;
-	if (asi64(R1) == asi64(R2)) goto L7024;
-	R2 = 26;
-	if (asi64(R1) == asi64(R2)) goto L7024;
-	R2 = 27;
-	if (asi64(R1) == asi64(R2)) goto L7024;
-	R2 = 30;
 	if (asi64(R1) == asi64(R2)) goto L7025;
-	R2 = 49;
+	R2 = 59;
+	if (asi64(R1) == asi64(R2)) goto L7025;
+	R2 = 60;
+	if (asi64(R1) == asi64(R2)) goto L7025;
+	R2 = 26;
+	if (asi64(R1) == asi64(R2)) goto L7025;
+	R2 = 27;
+	if (asi64(R1) == asi64(R2)) goto L7025;
+	R2 = 30;
 	if (asi64(R1) == asi64(R2)) goto L7026;
-	R2 = 50;
+	R2 = 49;
 	if (asi64(R1) == asi64(R2)) goto L7027;
+	R2 = 50;
+	if (asi64(R1) == asi64(R2)) goto L7028;
 	R2 = 28;
-	if (asi64(R1) == asi64(R2)) goto L7028;
-	R2 = 29;
-	if (asi64(R1) == asi64(R2)) goto L7028;
-	R2 = 11;
 	if (asi64(R1) == asi64(R2)) goto L7029;
-	R2 = 31;
+	R2 = 29;
+	if (asi64(R1) == asi64(R2)) goto L7029;
+	R2 = 11;
 	if (asi64(R1) == asi64(R2)) goto L7030;
-	R2 = 56;
+	R2 = 31;
 	if (asi64(R1) == asi64(R2)) goto L7031;
-	R2 = 52;
+	R2 = 56;
 	if (asi64(R1) == asi64(R2)) goto L7032;
-	R2 = 6;
+	R2 = 52;
 	if (asi64(R1) == asi64(R2)) goto L7033;
-	R2 = 71;
+	R2 = 6;
 	if (asi64(R1) == asi64(R2)) goto L7034;
-	R2 = 72;
+	R2 = 71;
 	if (asi64(R1) == asi64(R2)) goto L7035;
-	R2 = 73;
+	R2 = 72;
 	if (asi64(R1) == asi64(R2)) goto L7036;
-	R2 = 74;
+	R2 = 73;
 	if (asi64(R1) == asi64(R2)) goto L7037;
-	R2 = 2;
+	R2 = 74;
 	if (asi64(R1) == asi64(R2)) goto L7038;
-	R2 = 57;
+	R2 = 2;
 	if (asi64(R1) == asi64(R2)) goto L7039;
-	R2 = 53;
+	R2 = 57;
 	if (asi64(R1) == asi64(R2)) goto L7040;
-	R2 = 4;
+	R2 = 53;
 	if (asi64(R1) == asi64(R2)) goto L7041;
-	goto L7042;
-L7020:
+	R2 = 4;
+	if (asi64(R1) == asi64(R2)) goto L7042;
+	goto L7043;
+L7021:
 	asu64(R1) = p;
 	R2 = 52;
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
@@ -64925,38 +65000,38 @@ L7020:
 	R2 = R1;
 	t = asi64(R2);
 	asi64(R2) = cc_decls_trefchar;
-	if (asi64(R1) != asi64(R2)) goto L7044;
+	if (asi64(R1) != asi64(R2)) goto L7045;
 	asu64(R1) = p;
 	R2 = 48;
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
 	R1 = toi64(toi32(R1));
 	R2 = 0;
-	if (asi64(R1) != asi64(R2)) goto L7046;
-	goto L7047;
-L7046:
+	if (asi64(R1) != asi64(R2)) goto L7047;
+	goto L7048;
+L7047:
 	asu64(R1) = p;
 	R2 = 61;
 	asu8(R1) = *tou8p(((i64)R1+(i64)R2));
-	if (asu8(R1)) goto L7049;
-	goto L7047;
-L7049:
+	if (asu8(R1)) goto L7050;
+	goto L7048;
+L7050:
 	asu64(R1) = p;
 	R2 = 48;
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
 	R1 = toi64(toi32(R1));
 	R2 = 8000;
-	if (asi64(R1) <= asi64(R2)) goto L7051;
+	if (asi64(R1) <= asi64(R2)) goto L7052;
 	R1 = tou64("LONGSTR)");
 	R2 = (u64)&str;
 	asu64(R1) = strcpy(asu64(R2), asu64(R1));
-	goto L7050;
-L7051:
+	goto L7051;
+L7052:
 	R1 = (u64)&str;
 	asu64(R2) = p;
 	R3 = 0;
 	asu64(R2) = *tou64p(((i64)R2+(i64)R3));
 	asi64(R1) = pc_api_convertstring(asu64(R2), asu64(R1));
-L7050:
+L7051:
 	R1 = tou64("\"");
 	asu64(R2) = dest;
 	cc_support_gs_additem(asu64(R2), asu64(R1));
@@ -64966,28 +65041,28 @@ L7050:
 	R1 = tou64("\"");
 	asu64(R2) = dest;
 	cc_support_gs_additem(asu64(R2), asu64(R1));
-	goto L7018;
-	goto L7043;
-L7044:
+	goto L7019;
+	goto L7044;
+L7045:
 	asi64(R1) = t;
 	R2 = 1;
-	if (asi64(R1) < asi64(R2)) goto L7052;
+	if (asi64(R1) < asi64(R2)) goto L7053;
 	asi64(R1) = t;
 	R2 = 4;
-	if (asi64(R1) > asi64(R2)) goto L7052;
+	if (asi64(R1) > asi64(R2)) goto L7053;
 	R1 = (u64)&str;
 	asu64(R2) = p;
 	R3 = 0;
 	asi64(R2) = *toi64p(((i64)R2+(i64)R3));
 	msysc_getstrint(asi64(R2), asu64(R1));
-	goto L7043;
-L7052:
+	goto L7044;
+L7053:
 	asi64(R1) = t;
 	R2 = 6;
-	if (asi64(R1) < asi64(R2)) goto L7053;
+	if (asi64(R1) < asi64(R2)) goto L7054;
 	asi64(R1) = t;
 	R2 = 9;
-	if (asi64(R1) > asi64(R2)) goto L7053;
+	if (asi64(R1) > asi64(R2)) goto L7054;
 	R1 = 0;
 	asu64(R2) = p;
 	R3 = 0;
@@ -64995,15 +65070,15 @@ L7052:
 	asu64(R1) = msysc_strword(asu64(R2), asu64(R1));
 	R2 = (u64)&str;
 	asu64(R1) = strcpy(asu64(R2), asu64(R1));
-	goto L7043;
-L7053:
+	goto L7044;
+L7054:
 	asi64(R1) = t;
 	R2 = 11;
-	if (asi64(R1) == asi64(R2)) goto L7055;
+	if (asi64(R1) == asi64(R2)) goto L7056;
 	asi64(R1) = t;
 	R2 = 10;
-	if (asi64(R1) != asi64(R2)) goto L7054;
-L7055:
+	if (asi64(R1) != asi64(R2)) goto L7055;
+L7056:
 	R1 = 0;
 	asu64(R2) = p;
 	R3 = 0;
@@ -65011,8 +65086,8 @@ L7055:
 	asu64(R1) = msysc_strreal(asr64(R2), asu64(R1));
 	R2 = (u64)&str;
 	asu64(R1) = strcpy(asu64(R2), asu64(R1));
-	goto L7043;
-L7054:
+	goto L7044;
+L7055:
 	R1 = (u64)&cc_decls_ttbasetype;
 	asu64(R2) = p;
 	R3 = 52;
@@ -65021,13 +65096,13 @@ L7054:
 	asi16(R1) = *toi16p(((i64)R1+(i64)R2*2));
 	R1 = toi64(toi16(R1));
 	R2 = 13;
-	if (asi64(R1) == asi64(R2)) goto L7057;
-	R2 = 17;
 	if (asi64(R1) == asi64(R2)) goto L7058;
-	goto L7059;
-L7057:
+	R2 = 17;
+	if (asi64(R1) == asi64(R2)) goto L7059;
+	goto L7060;
+L7058:
 // cc_show.jeval.doref:
-L7047:
+L7048:
 	R1 = (u64)&str;
 	msysc_m$print_startstr(asu64(R1));
 	asu64(R1) = p;
@@ -65035,13 +65110,13 @@ L7047:
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
 	msysc_m$print_ptr_nf(asu64(R1));
 	msysc_m$print_end();
-	goto L7056;
-L7058:
+	goto L7057;
+L7059:
 	R1 = tou64("ARRAY");
 	R2 = (u64)&str;
 	asu64(R1) = strcpy(asu64(R2), asu64(R1));
-	goto L7056;
-L7059:
+	goto L7057;
+L7060:
 	msysc_m$print_startcon();
 	asu64(R1) = p;
 	R2 = 52;
@@ -65053,13 +65128,13 @@ L7059:
 	msysc_m$print_end();
 	R1 = tou64("EVAL/C");
 	mlib_abortprogram(asu64(R1));
-L7056:
-L7043:
+L7057:
+L7044:
 	R1 = (u64)&str;
 	asu64(R2) = dest;
 	cc_support_gs_additem(asu64(R2), asu64(R1));
-	goto L7019;
-L7021:
+	goto L7020;
+L7022:
 	asu64(R1) = p;
 	R2 = 0;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
@@ -65067,8 +65142,8 @@ L7021:
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
 	asu64(R2) = dest;
 	cc_support_gs_additem(asu64(R2), asu64(R1));
-	goto L7019;
-L7022:
+	goto L7020;
+L7023:
 	R1 = tou64("&");
 	asu64(R2) = dest;
 	mlib_gs_str(asu64(R2), asu64(R1));
@@ -65079,35 +65154,7 @@ L7022:
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
 	asu64(R2) = dest;
 	cc_support_gs_additem(asu64(R2), asu64(R1));
-	goto L7019;
-L7023:
-	asu64(R1) = p;
-	R2 = 40;
-	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
-	R1 = toi64(toi32(R1));
-	asu64(R1) = cc_lib_getopcjname(asi64(R1));
-	R2 = (u64)&str;
-	asu64(R1) = strcpy(asu64(R2), asu64(R1));
-	R1 = tou64("(");
-	asu64(R2) = dest;
-	cc_support_gs_additem(asu64(R2), asu64(R1));
-	asu64(R1) = p;
-	R2 = 16;
-	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
-	asu64(R2) = dest;
-	cc_show_jeval(asu64(R2), asu64(R1));
-	R1 = (u64)&str;
-	asu64(R2) = dest;
-	cc_support_gs_additem(asu64(R2), asu64(R1));
-	asu64(R1) = p;
-	R2 = 24;
-	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
-	asu64(R2) = dest;
-	cc_show_jeval(asu64(R2), asu64(R1));
-	R1 = tou64(")");
-	asu64(R2) = dest;
-	cc_support_gs_additem(asu64(R2), asu64(R1));
-	goto L7019;
+	goto L7020;
 L7024:
 	asu64(R1) = p;
 	R2 = 40;
@@ -65116,6 +65163,34 @@ L7024:
 	asu64(R1) = cc_lib_getopcjname(asi64(R1));
 	R2 = (u64)&str;
 	asu64(R1) = strcpy(asu64(R2), asu64(R1));
+	R1 = tou64("(");
+	asu64(R2) = dest;
+	cc_support_gs_additem(asu64(R2), asu64(R1));
+	asu64(R1) = p;
+	R2 = 16;
+	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
+	asu64(R2) = dest;
+	cc_show_jeval(asu64(R2), asu64(R1));
+	R1 = (u64)&str;
+	asu64(R2) = dest;
+	cc_support_gs_additem(asu64(R2), asu64(R1));
+	asu64(R1) = p;
+	R2 = 24;
+	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
+	asu64(R2) = dest;
+	cc_show_jeval(asu64(R2), asu64(R1));
+	R1 = tou64(")");
+	asu64(R2) = dest;
+	cc_support_gs_additem(asu64(R2), asu64(R1));
+	goto L7020;
+L7025:
+	asu64(R1) = p;
+	R2 = 40;
+	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
+	R1 = toi64(toi32(R1));
+	asu64(R1) = cc_lib_getopcjname(asi64(R1));
+	R2 = (u64)&str;
+	asu64(R1) = strcpy(asu64(R2), asu64(R1));
 	R1 = (u64)&str;
 	asu64(R2) = dest;
 	cc_support_gs_additem(asu64(R2), asu64(R1));
@@ -65130,8 +65205,8 @@ L7024:
 	R1 = tou64(")");
 	asu64(R2) = dest;
 	cc_support_gs_additem(asu64(R2), asu64(R1));
-	goto L7019;
-L7025:
+	goto L7020;
+L7026:
 	asu64(R1) = p;
 	R2 = 16;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
@@ -65144,8 +65219,8 @@ L7025:
 	R2 = 24;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
 	q = asu64(R1);
-	goto L7061;
-L7060:
+	goto L7062;
+L7061:
 	asu64(R1) = q;
 	asu64(R2) = dest;
 	cc_show_jeval(asu64(R2), asu64(R1));
@@ -65154,19 +65229,19 @@ L7060:
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
 	q = asu64(R1);
 	asu64(R1) = q;
-	if (!asu64(R1)) goto L7064;
+	if (!asu64(R1)) goto L7065;
 	R1 = tou64(",");
 	asu64(R2) = dest;
 	cc_support_gs_additem(asu64(R2), asu64(R1));
-L7064:
-L7061:
+L7065:
+L7062:
 	asu64(R1) = q;
-	if (asu64(R1)) goto L7060;
+	if (asu64(R1)) goto L7061;
 	R1 = tou64(")");
 	asu64(R2) = dest;
 	cc_support_gs_additem(asu64(R2), asu64(R1));
-	goto L7019;
-L7026:
+	goto L7020;
+L7027:
 	asu64(R1) = p;
 	R2 = 16;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
@@ -65178,8 +65253,8 @@ L7026:
 	R1 = tou64("???");
 	asu64(R2) = dest;
 	mlib_gs_str(asu64(R2), asu64(R1));
-	goto L7019;
-L7027:
+	goto L7020;
+L7028:
 	asu64(R1) = p;
 	R2 = 16;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
@@ -65193,8 +65268,8 @@ L7027:
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
 	asu64(R2) = dest;
 	cc_show_jeval(asu64(R2), asu64(R1));
-	goto L7019;
-L7028:
+	goto L7020;
+L7029:
 	asu64(R1) = p;
 	R2 = 40;
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
@@ -65203,20 +65278,20 @@ L7028:
 	asi64(R1) = asi64(R1)  ==  asi64(R2);
 	lb = asi64(R1);
 	asi64(R1) = lb;
-	if (!asi64(R1)) goto L7066;
+	if (!asi64(R1)) goto L7067;
 	R1 = tou64("(");
-	goto L7065;
-L7066:
+	goto L7066;
+L7067:
 	R1 = tou64("{");
-L7065:
+L7066:
 	asu64(R2) = dest;
 	cc_support_gs_additem(asu64(R2), asu64(R1));
 	asu64(R1) = p;
 	R2 = 16;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
 	q = asu64(R1);
-	goto L7068;
-L7067:
+	goto L7069;
+L7068:
 	asu64(R1) = q;
 	asu64(R2) = dest;
 	cc_show_jeval(asu64(R2), asu64(R1));
@@ -65225,25 +65300,25 @@ L7067:
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
 	q = asu64(R1);
 	asu64(R1) = q;
-	if (!asu64(R1)) goto L7071;
+	if (!asu64(R1)) goto L7072;
 	R1 = tou64(",");
 	asu64(R2) = dest;
 	cc_support_gs_additem(asu64(R2), asu64(R1));
-L7071:
-L7068:
-	asu64(R1) = q;
-	if (asu64(R1)) goto L7067;
-	asi64(R1) = lb;
-	if (!asi64(R1)) goto L7073;
-	R1 = tou64(")");
-	goto L7072;
-L7073:
-	R1 = tou64("}");
 L7072:
+L7069:
+	asu64(R1) = q;
+	if (asu64(R1)) goto L7068;
+	asi64(R1) = lb;
+	if (!asi64(R1)) goto L7074;
+	R1 = tou64(")");
+	goto L7073;
+L7074:
+	R1 = tou64("}");
+L7073:
 	asu64(R2) = dest;
 	cc_support_gs_additem(asu64(R2), asu64(R1));
-	goto L7019;
-L7029:
+	goto L7020;
+L7030:
 	asu64(R1) = p;
 	R2 = 16;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
@@ -65257,8 +65332,8 @@ L7029:
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
 	asu64(R2) = dest;
 	cc_show_jeval(asu64(R2), asu64(R1));
-	goto L7019;
-L7030:
+	goto L7020;
+L7031:
 	asu64(R1) = p;
 	R2 = 16;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
@@ -65280,8 +65355,8 @@ L7030:
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
 	asu64(R2) = dest;
 	cc_show_jeval(asu64(R2), asu64(R1));
-	goto L7019;
-L7031:
+	goto L7020;
+L7032:
 	R1 = 1;
 	asu64(R2) = p;
 	R3 = 52;
@@ -65301,8 +65376,8 @@ L7031:
 	R1 = tou64(")");
 	asu64(R2) = dest;
 	cc_support_gs_additem(asu64(R2), asu64(R1));
-	goto L7019;
-L7032:
+	goto L7020;
+L7033:
 	R1 = tou64("*(");
 	asu64(R2) = dest;
 	cc_support_gs_additem(asu64(R2), asu64(R1));
@@ -65314,7 +65389,7 @@ L7032:
 	asu64(R1) = p;
 	R2 = 24;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
-	if (!asu64(R1)) goto L7075;
+	if (!asu64(R1)) goto L7076;
 	R1 = tou64("+");
 	asu64(R2) = dest;
 	cc_support_gs_additem(asu64(R2), asu64(R1));
@@ -65323,17 +65398,17 @@ L7032:
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
 	asu64(R2) = dest;
 	cc_show_jeval(asu64(R2), asu64(R1));
-L7075:
+L7076:
 	R1 = tou64(")");
 	asu64(R2) = dest;
 	cc_support_gs_additem(asu64(R2), asu64(R1));
-	goto L7019;
-L7033:
+	goto L7020;
+L7034:
 	R1 = tou64("<JBLOCK>");
 	asu64(R2) = dest;
 	cc_support_gs_additem(asu64(R2), asu64(R1));
-	goto L7019;
-L7034:
+	goto L7020;
+L7035:
 	R1 = tou64("++");
 	asu64(R2) = dest;
 	cc_support_gs_additem(asu64(R2), asu64(R1));
@@ -65342,8 +65417,8 @@ L7034:
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
 	asu64(R2) = dest;
 	cc_show_jeval(asu64(R2), asu64(R1));
-	goto L7019;
-L7035:
+	goto L7020;
+L7036:
 	R1 = tou64("--");
 	asu64(R2) = dest;
 	cc_support_gs_additem(asu64(R2), asu64(R1));
@@ -65352,33 +65427,33 @@ L7035:
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
 	asu64(R2) = dest;
 	cc_show_jeval(asu64(R2), asu64(R1));
-	goto L7019;
-L7036:
-	asu64(R1) = p;
-	R2 = 16;
-	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
-	asu64(R2) = dest;
-	cc_show_jeval(asu64(R2), asu64(R1));
-	R1 = tou64("++");
-	asu64(R2) = dest;
-	cc_support_gs_additem(asu64(R2), asu64(R1));
-	goto L7019;
+	goto L7020;
 L7037:
 	asu64(R1) = p;
 	R2 = 16;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
 	asu64(R2) = dest;
 	cc_show_jeval(asu64(R2), asu64(R1));
+	R1 = tou64("++");
+	asu64(R2) = dest;
+	cc_support_gs_additem(asu64(R2), asu64(R1));
+	goto L7020;
+L7038:
+	asu64(R1) = p;
+	R2 = 16;
+	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
+	asu64(R2) = dest;
+	cc_show_jeval(asu64(R2), asu64(R1));
 	R1 = tou64("--");
 	asu64(R2) = dest;
 	cc_support_gs_additem(asu64(R2), asu64(R1));
-	goto L7019;
-L7038:
+	goto L7020;
+L7039:
 	R1 = tou64("<nullunit>");
 	asu64(R2) = dest;
 	mlib_gs_str(asu64(R2), asu64(R1));
-	goto L7019;
-L7039:
+	goto L7020;
+L7040:
 	R1 = tou64("scale((");
 	asu64(R2) = dest;
 	mlib_gs_str(asu64(R2), asu64(R1));
@@ -65392,7 +65467,7 @@ L7039:
 	asi32(R1) = *toi32p(((i64)R1+(i64)R2));
 	R1 = toi64(toi32(R1));
 	R2 = 0;
-	if (asi64(R1) <= asi64(R2)) goto L7077;
+	if (asi64(R1) <= asi64(R2)) goto L7078;
 	R1 = tou64(")*");
 	asu64(R2) = dest;
 	mlib_gs_str(asu64(R2), asu64(R1));
@@ -65402,8 +65477,8 @@ L7039:
 	R1 = toi64(toi32(R1));
 	asu64(R2) = dest;
 	mlib_gs_strint(asu64(R2), asi64(R1));
-	goto L7076;
-L7077:
+	goto L7077;
+L7078:
 	R1 = tou64(")/");
 	asu64(R2) = dest;
 	mlib_gs_str(asu64(R2), asu64(R1));
@@ -65414,12 +65489,12 @@ L7077:
 	asi64(R1) = -asi64(R1);
 	asu64(R2) = dest;
 	mlib_gs_strint(asu64(R2), asi64(R1));
-L7076:
+L7077:
 	R1 = tou64(")");
 	asu64(R2) = dest;
 	mlib_gs_str(asu64(R2), asu64(R1));
-	goto L7019;
-L7040:
+	goto L7020;
+L7041:
 	R1 = tou64("(");
 	asu64(R2) = dest;
 	mlib_gs_str(asu64(R2), asu64(R1));
@@ -65439,20 +65514,20 @@ L7040:
 	R1 = tou64(")");
 	asu64(R2) = dest;
 	mlib_gs_str(asu64(R2), asu64(R1));
-	goto L7019;
-L7041:
+	goto L7020;
+L7042:
 	asu64(R1) = p;
 	R2 = 16;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2));
 	asu64(R2) = dest;
 	cc_show_jeval(asu64(R2), asu64(R1));
-	goto L7019;
-L7042:
+	goto L7020;
+L7043:
 	R1 = tou64("<CAN'T DO JEVAL>");
 	asu64(R2) = dest;
 	mlib_gs_str(asu64(R2), asu64(R1));
+L7020:
 L7019:
-L7018:
 	return;
 }
 
@@ -65471,8 +65546,8 @@ static void cc_show_printfilelist(u64 f) {
 	i = asi64(R1);
 	asi64(R1) = cc_decls_nsourcefiles;
 	R2 = 1;
-	if (asi64(R1) < asi64(R2)) goto L7081;
-L7079:
+	if (asi64(R1) < asi64(R2)) goto L7082;
+L7080:
 	asu64(R1) = f;
 	msysc_m$print_startfile(asu64(R1));
 	R1 = tou64("# # (#)");
@@ -65490,8 +65565,8 @@ L7079:
 	msysc_m$print_str_nf(asu64(R1));
 	msysc_m$print_newline();
 	msysc_m$print_end();
-	i += 1; if (i <= cc_decls_nsourcefiles) goto L7079;
-L7081:
+	i += 1; if (i <= cc_decls_nsourcefiles) goto L7080;
+L7082:
 	asu64(R1) = f;
 	msysc_m$print_startfile(asu64(R1));
 	R1 = tou64("\nInput file:");
@@ -65512,8 +65587,8 @@ L7081:
 	i = asi64(R1);
 	asi64(R1) = cc_decls_nlibfiles;
 	R2 = 1;
-	if (asi64(R1) < asi64(R2)) goto L7084;
-L7082:
+	if (asi64(R1) < asi64(R2)) goto L7085;
+L7083:
 	asu64(R1) = f;
 	msysc_m$print_startfile(asu64(R1));
 	asi64(R1) = i;
@@ -65524,8 +65599,8 @@ L7082:
 	msysc_m$print_str_nf(asu64(R1));
 	msysc_m$print_newline();
 	msysc_m$print_end();
-	i += 1; if (i <= cc_decls_nlibfiles) goto L7082;
-L7084:
+	i += 1; if (i <= cc_decls_nlibfiles) goto L7083;
+L7085:
 	return;
 }
 
@@ -65546,8 +65621,8 @@ static void cc_show_printmodelist(u64 f) {
 	m = asi64(R1);
 	asi64(R1) = cc_decls_ntypes;
 	R2 = 0;
-	if (asi64(R1) < asi64(R2)) goto L7088;
-L7086:
+	if (asi64(R1) < asi64(R2)) goto L7089;
+L7087:
 	asu64(R1) = f;
 	msysc_m$print_startfile(asu64(R1));
 	R1 = tou64("4");
@@ -65567,7 +65642,7 @@ L7086:
 	R1 = (u64)&cc_decls_tttypedef;
 	asi64(R2) = m;
 	asu64(R1) = *tou64p(((i64)R1+(i64)R2*8));
-	if (!asu64(R1)) goto L7090;
+	if (!asu64(R1)) goto L7091;
 	asu64(R1) = f;
 	msysc_m$print_startfile(asu64(R1));
 	R1 = tou64("\t");
@@ -65582,7 +65657,7 @@ L7086:
 	msysc_m$print_str_nf(asu64(R1));
 	msysc_m$print_newline();
 	msysc_m$print_end();
-L7090:
+L7091:
 	asu64(R1) = f;
 	msysc_m$print_startfile(asu64(R1));
 	R1 = tou64("\t");
@@ -65623,7 +65698,7 @@ L7090:
 	msysc_m$print_space();
 	msysc_m$print_end();
 	asu64(R1) = d;
-	if (!asu64(R1)) goto L7092;
+	if (!asu64(R1)) goto L7093;
 	asu64(R1) = f;
 	msysc_m$print_startfile(asu64(R1));
 	asu64(R1) = d;
@@ -65640,14 +65715,14 @@ L7090:
 	R1 = toi64(tou16(R1));
 	msysc_m$print_i64_nf(asi64(R1));
 	msysc_m$print_end();
-	goto L7091;
-L7092:
+	goto L7092;
+L7093:
 	asu64(R1) = f;
 	msysc_m$print_startfile(asu64(R1));
 	R1 = tou64("-");
 	msysc_m$print_str_nf(asu64(R1));
 	msysc_m$print_end();
-L7091:
+L7092:
 	asu64(R1) = f;
 	msysc_m$print_startfile(asu64(R1));
 	msysc_m$print_newline();
@@ -65775,8 +65850,8 @@ L7091:
 	msysc_m$print_startfile(asu64(R1));
 	msysc_m$print_newline();
 	msysc_m$print_end();
-	m += 1; if (m <= cc_decls_ntypes) goto L7086;
-L7088:
+	m += 1; if (m <= cc_decls_ntypes) goto L7087;
+L7089:
 	asu64(R1) = f;
 	msysc_m$print_startfile(asu64(R1));
 	msysc_m$print_newline();
@@ -65786,7 +65861,7 @@ L7088:
 
 static void pepcl_start() {
 	mc_decls_start();
-	mc_writegas_start();
+	mc_writemasm_start();
 	return;
 }
 
