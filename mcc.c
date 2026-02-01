@@ -157,10 +157,10 @@ struct $B45 {u64 a[13];};   // mem:104;
 struct $B46 {u32 a[5];};   // mem:20;
 struct $B47 {u64 a[53];};   // mem:424;
 struct $B48 {u8 a[53];};   // mem:53;
-struct $B49 {u64 a[80000];};   // mem:640000;
-struct $B50 {u64 a[20000];};   // mem:160000;
-struct $B51 {u64 a[10000];};   // mem:80000;
-struct $B52 {u64 a[40000];};   // mem:320000;
+struct $B49 {u64 a[10000];};   // mem:80000;
+struct $B50 {u64 a[2500];};   // mem:20000;
+struct $B51 {u64 a[1250];};   // mem:10000;
+struct $B52 {u64 a[5000];};   // mem:40000;
 struct $B53 {u64 a[201];};   // mem:1608;
 struct $B54 {u32 a[201];};   // mem:804;
 struct $B55 {u32 a[2101];};   // mem:8404;
@@ -4119,7 +4119,7 @@ static struct $B17 cc_decls_lx;
 static struct $B17 cc_decls_nextlx;
 static i64 cc_decls_debug = 0;
 
-static i64 cc_decls_hstsize = 65536;
+static i64 cc_decls_hstsize = 32768;
 
 static i64 cc_decls_hstmask;
 static u64 cc_decls_hashtable;
@@ -26108,7 +26108,7 @@ static void mc_auxmcl_do_maxto_real(i64 cond, i64 mode) {
 }
 
 static void mc_auxmcl_do_negreal(u64 ax, i64 mode) {
-    u64 R1, R2, R3; 
+    u64 R1, R2, R3, R4; 
 	asu8(R1) = mc_decls_pmode;
 	R1 = toi64(tou8(R1));
 	R2 = 1;
@@ -26137,11 +26137,20 @@ L2309:
 	R3 = 76;
 	mc_libmcl_genmc(asi64(R3), asu64(R2), asu64(R1));
 L2304:
+	R1 = 16;
+	asu64(R2) = mc_decls_mccodex;
+	R3 = 24;
+	asu64(R2) = *tou64p(((i64)R2+(i64)R3));
+	R3 = 8;
+	R2 += (i64)R3;
+	R3 = 0;
+	R4 = 4;
+    *toi64p(R2) = Setdotslice(*toi64p(R2), (i64)R3, (i64)R4, (i64)R1);
 	return;
 }
 
 static void mc_auxmcl_do_absreal(u64 ax, i64 mode) {
-    u64 R1, R2, R3; 
+    u64 R1, R2, R3, R4; 
 	asu8(R1) = mc_decls_pmode;
 	R1 = toi64(tou8(R1));
 	R2 = 1;
@@ -26170,6 +26179,15 @@ L2316:
 	R3 = 78;
 	mc_libmcl_genmc(asi64(R3), asu64(R2), asu64(R1));
 L2311:
+	R1 = 16;
+	asu64(R2) = mc_decls_mccodex;
+	R3 = 24;
+	asu64(R2) = *tou64p(((i64)R2+(i64)R3));
+	R3 = 8;
+	R2 += (i64)R3;
+	R3 = 0;
+	R4 = 4;
+    *toi64p(R2) = Setdotslice(*toi64p(R2), (i64)R3, (i64)R4, (i64)R1);
 	return;
 }
 
@@ -61429,7 +61447,7 @@ L6642:
 static i64 cc_lib_copymode(i64 m) {
     u64 R1, R2, R3; 
 	asi64(R1) = cc_decls_ntypes;
-	R2 = 80000;
+	R2 = 10000;
 	if (asi64(R1) < asi64(R2)) goto L6651;
 	R1 = tou64("Too many types");
 	cc_support_serror(asu64(R1));
@@ -61499,7 +61517,7 @@ L6649:
 static i64 cc_lib_createnewmode(i64 m) {
     u64 R1, R2, R3; 
 	asi64(R1) = cc_decls_ntypes;
-	R2 = 80000;
+	R2 = 10000;
 	if (asi64(R1) < asi64(R2)) goto L6654;
 	msysc_m$print_startcon();
 	R1 = tou64("STRMODE(M)=");
