@@ -1,0 +1,181 @@
+ADC	n
+	(n)
+	(nn)
+	(X+n)
+	(X+nn)
+	(Y+nn)
+	@(X+n)
+	@(Y+(n))
+
+AND	n
+	(n)
+	(nn)
+	(X+n)
+	(X+nn)
+	(Y+nn)
+	@(X+n)
+	@(Y+(n))
+
+SHL	(n)
+	(nn)
+	A
+	(X+n)
+	(X+nn)
+
+BCC d
+BCS d
+BEQ d
+BNE d
+BMI d
+BPL d
+BVC d
+BVS d
+
+BIT (n)
+	(nn)
+
+BRK
+
+CLC
+CLD
+CLI
+CLV
+
+CMP	n
+	(n)
+	(nn)
+	(X+n)
+	(X+nn)
+	(Y+nn)
+	@(X+n)
+	@(Y+(n))
+
+CPX	n
+	(n)
+	(nn)
+
+CPY	n
+	(n)
+	(nn)
+
+DEC	X
+	Y
+	(n)
+	(nn)
+	(X+n)
+	(X+nn)
+
+INC	X
+	Y
+	(n)
+	(nn)
+	(X+n)
+	(X+nn)
+
+XOR	n
+	(n)
+	(nn)
+	(X+n)
+	(X+nn)
+	(Y+nn)
+	@(X+n)
+	@(Y+(n))
+
+JMP	nn
+JMP	(nn)
+
+JSR	nn
+
+LDA	X
+	Y
+	n
+	(n)
+	(nn)
+	(X+n)
+	(X+nn)
+	(Y+nn)
+	@(X+n)
+	@(Y+(n))
+
+LDX	A
+	S
+	n
+	(n)
+	(nn)
+	(Y+n)
+	(Y+nn)
+
+LDY	A
+	n
+	(n)
+	(nn)
+	(X+n)
+	(X+nn)
+
+LDS	X
+
+SHR	A
+	(n)
+	(nn)
+	(X+n)
+	(X+nn)
+
+NOP
+
+OR	n
+	(n)
+	(nn)
+	(X+n)
+	(X+nn)
+	(Y+nn)
+	@(X+n)
+	@(Y+(n))
+
+PUSHA
+PUSHF
+POPA
+POPF
+
+ROL	A
+	(n)
+	(nn)
+	(X+n)
+	(X+nn)
+
+ROR	A
+	(n)
+	(nn)
+	(X+n)
+	(X+nn)
+
+RTI
+RTS
+
+SBC	n
+	(n)
+	(nn)
+	(X+n)
+	(X+nn)
+	(Y+nn)
+	@(X+n)
+	@(Y+(n))
+
+SEC
+SED
+SEI
+
+STA	(n)
+	(nn)
+	(X+n)
+	(X+nn)
+	(Y+nn)
+	@(X+n)
+	@(Y+(n))
+
+STX	(n)
+	(nn)
+	(Y+n)
+
+STY	(n)
+	(nn)
+	(X+n)
