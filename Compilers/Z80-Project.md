@@ -222,4 +222,4 @@ L1:
 ````
 (The first line refers to a 'main' routine that is not shown.)
 
-In this modified form, the code produced by SDCC for the C versions, gives comparable performance. Using 16-types throughout, SDCC is much better, about 30% faster.
+In this modified form, the code produced by SDCC for the C versions, gives comparable performance. Using 16-bit-types throughout, SDCC is about 30% faster.
