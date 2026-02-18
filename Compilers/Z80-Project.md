@@ -140,9 +140,9 @@ Perhaps I will emulate a more complete system, with its own terminal and graphic
 
 **Update** I did actually create a cut-down version of the emulator so that it could run on the Z80. I had to change the assembler so that it wrote only program+data to the binary, rather than pad it to 64KB. This allows it to be contained within the 64KB memory of the emulated device.
 
-Since the Z80 is still a bare CPU with no file system, the binary generated from the assembly (which still runs on Windows) is embedded into the cut-down emulator.
+Since the Z80 is still a bare CPU with no file system, the binary generated from the assembler (which still runs on Windows) is embedded into the cut-down emulator.
 
-I can tell you that, slow as programs are running on the Z80, under the emulator, they're about 100 times slower still.)
+I can tell you that, slow as programs are running on the Z80, under the emulator (that is, an emulator running on Z80 which is itself emulated on the PC), they're about 100 times slower still.)
 
 ### Related Projects
 
