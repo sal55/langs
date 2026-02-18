@@ -136,7 +136,13 @@ But seeing the Z80 come alive on my PC was great.
 
 Perhaps I will emulate a more complete system, with its own terminal and graphical windows. I might also see if I can slow down the emulation to the original speed.
 
-(I had thought briefly about running the Z80 emulator itself on the Z80, but there would be certain problems to solve. One of which is how I can emulate a 64KB system, on a machine which only has 64KB in total.)
+(I had thought briefly about running the Z80 emulator itself on the Z80, but there would be certain problems to solve. One of which is how I can emulate a 64KB system, on a machine which only has 64KB in total.
+
+**Update** I did actually create a cut-down version of the emulator so that it could run on the Z80. I had to change the assembler so that it wrote only program+data to the binary, rather than pad it to 64KB. This allows it to be contained within the 64KB memory of the emulated device.
+
+Since the Z80 is still a bare CPU with no file system, the binary generated from the assembly (which still runs on Windows) is embedded into the cut-down emulator.
+
+I can tell you that, slow as programs are running on the Z80, under the emulator, they're about 100 times slower still.)
 
 ### Related Projects
 
