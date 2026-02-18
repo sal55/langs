@@ -1,5 +1,7 @@
 ## Language and Compiler Development
 
+(Site being rearranged.)
+
 I develop a number of small-scale language-related projects on my PC.
 
 This github site is used for associated resources such as source backups, essential binaries, and docs. Most projects are written in my M language, but the master sources and development are on my home PC.
@@ -14,7 +16,7 @@ This github site is used for associated resources such as source backups, essent
 
 ### Binaries
 
-Most things are written in my M languages, including its own compiler. So existing binaries for that are critical. So the [Binaries](Binaries) folder keeps two versions in hex format (due to AV implications of EXE files)
+Most things are written in my M language, including its own compiler. So existing binaries for that are critical. So the [Binaries](Binaries) folder keeps two versions in hex format (due to AV implications of EXE files)
 
 ### Compilers
 
@@ -36,11 +38,9 @@ Most products now target x64 running Windows. There have also been experimental 
 
 * Single-file, self-contained executables
 * Smallish size (0.1 to 0.6MB)
-* Usually providing very fast compilation, or competitive interpretation
-* Utterly trivial and near-instant build process
+* Usually providing very fast compilation or interpretation
+* Effortless and near-instant build process
 * Sources for any tool can be rendered as one self-contained amalgamated source file
-
-Basically, I'm aiming for the complete opposite of products like LLVM, in terms of size, complexity and processing speed
 
 ### mcc.c
 
