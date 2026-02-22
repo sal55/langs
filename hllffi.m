@@ -20,19 +20,6 @@ type dll0_r64x = ref func:r64
 type dll1_r64x = ref func(real)r64
 type dll2_r64x = ref func(real, real)r64
 
-type m_dll0_int = ref func:int
-type m_dll1_int = ref func(int)int
-type m_dll2_int = ref func(int, int)int
-type m_dll3_int = ref func(int, int, int)int
-type m_dll4_int = ref func(int, int, int, int)int
-type m_dll5_int = ref func(int, int, int, int, int)int
-type m_dll12_int = ref func(int, int, int, int, int, int, int, int, int, int, int, int)int
-
-type m_dll0_r64 = ref func:r64
-type m_dll1_r64 = ref func(int)r64
-type m_dll2_r64 = ref func(int, int)r64
-
-
 export func os_calldllfunc(ref proc fnaddr, 
         int retcode, nargs, ref[]i64 args, ref[]byte argcodes)u64  = 
 !retcode is 'R' or 'I'
