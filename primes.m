@@ -7,7 +7,7 @@ func countprimes:int =
     sieve[0]  := 4
 
     ++nsieve
-    int nprimes :=1, trial := 3, sq := 2
+    int nprimes := 1, trial := 3, sq := 2
 
     do
         while sqr(sq) <= trial do ++sq end
