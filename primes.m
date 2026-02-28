@@ -1,6 +1,6 @@
 const sz = 1000
 [0:sz]int primes, sieve
-int nsieve=0
+int nsieve
 
 func countprimes:int =
     primes[0] := 2
@@ -46,7 +46,7 @@ proc main =
     res := countprimes()
     ms := clock() - ms
 
-    codesz:=main-countprimes
+    codesz := main - countprimes
 
     fprintln "# primes found in # ms", res, ms
     println "Code size is:", codesz
