@@ -1,3 +1,7 @@
+# Notes: "%" is integer divide
+# Command line is copied into read buffer when it starts
+# 'read' will read zero-values if it hits end-of-line
+
 enumdata =
     start=0,
     afu,
@@ -41,7 +45,7 @@ proc main =
 
     when root then
         h := (c<2 | 1 | (c<5 | 2 | (h + c%h)%2))
-        h+ := h*h<c
+        h +:= h*h<c
         w := h
         done := c<2 or h*h < c+2*h and c<= h*h
         good := c<2 or h*h < c+h and c<= h*h
