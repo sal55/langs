@@ -4,21 +4,18 @@
 
 The name of the compiler is `MM` or `mm.exe`. It is a whole-program compiler, written in M, that converts M programs to x64 native code running under Windows ABI.
 
-There is also a newer version called 'BB' (v8 versus v7 of MM). That as a simplified 'PCL' intermediate language, and omits RUNP (interpreter), and C source options.
-
-Plus there is an experimental version for Z80 target 'MZ': there is only one option after 'PCL', and that is for Z80 assembly file.
+This describes MM7 (v8). There is also MM8 which has fewer output optios and a simpler IL. Plus there is an experimental version for Z80 target 'MZ': there is only one option after 'PCL', and that is for a Z80 assembly file.
 
 ````
     Inputs             Intermediates                                                              Outputs
-                                               A           B        C       D       (F)     E        
+
     Ext Libs      ───>───────────────────────────┐
     Source File   ─┬─> AST1 ─> AST2 ─┬─> AST3 ─┬─┴──> PCL ─┬─> MCL ─┬─> SS ─┬─> EXE Image ──┬───> EXE File
     Include Files ─┘                 │         │           │        │       │               └───> DLL File
     Strinclude    ───>───────────────┘         │           │        │       ├───────────────────> OBJ File
                                                │           │        │       └─> MCU ─┬─> MCB ───> ML/MX Files
                                                │           │        │                └─> MCX ───> (RUN native code) 
-                                               │           │        ├───────────────────────────> ASM File (AA syntax)
-                                               │           │        └───────────────────────────> ASM File (GAS syntax; config option)
+                                               │           │        └───────────────────────────> ASM File (AA/GAS/NASM/MASM config options)
                                                │           ├────────────────────────────────────> (RUNP Interpret PCL)
                                                │           ├────────────────────────────────────> PCL Source File
                                                │           └────────────────────────────────────> C Source File (Config option)
