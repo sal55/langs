@@ -4,7 +4,7 @@
 
 The name of the compiler is `MM` or `mm.exe`. It is a whole-program compiler, written in M, that converts M programs to x64 native code running under Windows ABI.
 
-This describes MM7 (v8). There is also MM8 which has fewer output optios and a simpler IL. Plus there is an experimental version for Z80 target 'MZ': there is only one option after 'PCL', and that is for a Z80 assembly file.
+This describes MM7 (v7). There is also MM8 which has fewer output optios and a simpler IL. Plus there is an experimental version for Z80 target 'MZ': there is only one option after 'PCL', and that is for a Z80 assembly file.
 
 ````
     Inputs             Intermediates                                                              Outputs
