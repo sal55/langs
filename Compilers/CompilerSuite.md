@@ -2,7 +2,7 @@
 
 All tools run on and for x64 with Windows.
 
-**'BB' M Systems Compiler (v8 using PCL8)**
+**'MM8' M Systems Compiler (v8 using PCL8)**
 ````
 .m/.ma ────┬─> [bb.exe] ─┬────> .exe/.dll Files (+ M/Q Interface module for DLL/ML)
 .ml/.dll ──┘             ├────> .ml/.mx Files
@@ -14,7 +14,7 @@ All tools run on and for x64 with Windows.
                          └────> .list/.proj Files (info for my IDE)
 ````
 
-**'MM' M Systems Compiler (v7 using PCL7)**
+**'MM7' M Systems Compiler (v7 using PCL7)**
 ````
 .m/.ma ────┬─> [mm.exe] ─┬────> .exe/.dll Files (+ M/Q Interface module for DLL/ML)
 .ml/.dll ──┘             ├────> .ml/.mx Files
@@ -43,7 +43,7 @@ All tools run on and for x64 with Windows.
 .q/.qa ────┬─> [qq.exe] ──┬───> Run (compile to internal bytecode and immediately interpret)
 .ml/.dll ──┘              └───> .qa File (create single amalgamated source file)
 ````
-**'MZ' M Systems Compiler for Z80 (Derived from BB)**
+**'MZ' M Systems Compiler for Z80 (Derived from MM8)**
 ````
 .m/.ma ──────> [mz.exe] ─┬────> .za Z80 Assembly file
                          ├────> .z Z80 binary (via ZA)
@@ -68,4 +68,4 @@ All tools run on and for x64 with Windows.
 
 ### Packaging
 
-All the above programs are single-file, self-contained executables, and all are under 1MB. All (except za.q) are written in my M systems language, and can be compiled with MM or BB.
+All the above programs are single-file, self-contained executables, and all are under 1MB. All (except za.q) are written in my M systems language, and can be compiled with MM7 or MM8.
