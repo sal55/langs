@@ -1,3 +1,6 @@
+// Run as: 'prog'; no command line inputs used
+// Reads input from local text file 'unsorted'
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -44,7 +47,7 @@ void readwords() {
     FILE* f;
     int c;
 
-    f=fopen("/texts/unsorted", "r");
+    f=fopen("unsorted", "r");
     if (f==NULL) exit(1);
 
 //first pass counts all words and subsets
