@@ -1,4 +1,4 @@
-// Run as: 'prog'; no command line inputs used
+// Run as: 'prog' or ./prog; no command line inputs used
 // Reads input from local text file 'unsorted'
 
 #include <stdio.h>
@@ -37,9 +37,10 @@ void readlinen(FILE* f, char* buffer, int size) {
     if (*p==10) *p=0;
 }
 
-int random(int n) {
-    int a = (rand()<<15) | rand();
-    return a%n;
+int random2(int n) {
+//  int a = (rand()<<15) | rand();     // these 2 lines are for Windows
+//  return a%n;
+    return rand() % n;
 }
 
 void readwords() {
@@ -54,7 +55,7 @@ void readwords() {
     while (!myeof(f)) {
         readlinen(f, buffer, sizeof(buffer));
         ++nwords;
-        ++nbig[buffer[0]];
+        ++nbig[(unsigned char)buffer[0]];
     }
 
 //allocate memory
@@ -71,7 +72,8 @@ void readwords() {
         readlinen(f, buffer, sizeof(buffer));
         words[n++]=strdup(buffer);
         c=buffer[0];
-        big[c][++nbig[c]]=words[n-1];
+//      big[c][++nbig[c]]=words[n-1];
+        big[c][nbig[c]++]=words[n-1];
     }
     fclose(f);
 }
@@ -88,7 +90,7 @@ void getsmall() {
         ns=0;
 
         do {
-            r=random(nbig[c]);
+            r=random2(nbig[c]);
             w=s[r];
             found=0;
             for (int i=0; i<ns; ++i) {
