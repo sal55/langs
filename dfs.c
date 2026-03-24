@@ -72,7 +72,6 @@ void readwords() {
         readlinen(f, buffer, sizeof(buffer));
         words[n++]=strdup(buffer);
         c=buffer[0];
-//      big[c][++nbig[c]]=words[n-1];
         big[c][nbig[c]++]=words[n-1];
     }
     fclose(f);
