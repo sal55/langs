@@ -1,6 +1,3 @@
-// Run as: 'prog' or ./prog; no command line inputs used
-// Reads input from local text file 'unsorted'
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -38,8 +35,6 @@ void readlinen(FILE* f, char* buffer, int size) {
 }
 
 int random2(int n) {
-//  int a = (rand()<<15) | rand();     // these 2 lines are for Windows
-//  return a%n;
     return rand() % n;
 }
 
@@ -131,35 +126,17 @@ void challenge1() {
 void challenge2() {
     enum {maxdupl=100};
     char* dupls[maxdupl];
-    unsigned char flags[maxdupl];
     int ndupls=0;
-    char** words2;
 
-    words2=malloc(sizeof(char*)*nwords);
-    for (int i=0; i<nwords; ++i) words2[i]=words[i];
-
-    isort(words2, 0, nwords-1);
+    isort(words, 0, nwords-1);
 
     for (int i=1; i<nwords; ++i) {
-        if (strcmp(words2[i-1], words2[i])==0 && ndupls<maxdupl-1) {
-            dupls[ndupls]=words2[i];
-            flags[ndupls++]=0;
+        if (strcmp(words[i-1], words[i])==0 && ndupls<maxdupl-1) {
+            dupls[ndupls++]=words[i];
         }
     }
 
-    printf("found:  ");
-    for (int i=0; i<nwords; ++i) {
-        for (int j=0; j<ndupls; ++j) if (!flags[j]) {
-            if (strcmp(words[i], dupls[j])==0) {
-                printf("%s ", dupls[j]);
-                flags[j]=1;
-                break;
-            }
-        }
-    }
-    puts("");
-
-    isort(dupls, 0, ndupls-1);
+    if (ndupls) isort(dupls, 0, ndupls-1);
 
     printf("output: ");
     for (int i=0; i<ndupls; ++i)
@@ -207,3 +184,4 @@ int main() {
     challenge2();
     challenge3();
 }
+
