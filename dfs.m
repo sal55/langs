@@ -105,7 +105,6 @@ end
 
 proc challenge2=
     [100]ichar dupls
-    [256]char str
     int ndupls:=0
 
     isort(words, 1, nwords)
@@ -115,12 +114,6 @@ proc challenge2=
             dupls[++ndupls]:=words[i]
         end
     end
-
-    print "found:  "
-    for i to ndupls do print dupls[i],$ end
-    println
-
-    isort(&dupls, 1, ndupls)
 
     print "output: "
     for i to ndupls do
