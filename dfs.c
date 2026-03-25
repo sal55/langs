@@ -136,8 +136,6 @@ void challenge2() {
         }
     }
 
-    if (ndupls) isort(dupls, 0, ndupls-1);
-
     printf("output: ");
     for (int i=0; i<ndupls; ++i)
         printf("%c%s ", toupper(*dupls[i]), dupls[i]+1);
