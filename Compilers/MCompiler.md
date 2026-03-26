@@ -4,23 +4,19 @@
 
 The name of the compiler is `MM` or `mm.exe`. It is a whole-program compiler, written in M, that converts M programs to x64 native code running under Windows ABI.
 
-This describes MM7 (v7). There is also MM8 which has fewer output optioNs and a simpler IL. Plus there is an experimental version for Z80 target 'MZ': there is only one option after 'PCL', and that is for a Z80 assembly file.
+This describes MM8 (v8). The older MM7 more output options which have been dropped; MM8 is more streamlined.
+
 
 ````
     Inputs             Intermediates                                                              Outputs
 
     Ext Libs      ───>───────────────────────────┐
-    Source File   ─┬─> AST1 ─> AST2 ─┬─> AST3 ─┬─┴──> PCL ─┬─> MCL ─┬─> SS ─┬─> EXE Image ──┬───> EXE File
-    Include Files ─┘                 │         │           │        │       │               └───> DLL File
-    Strinclude    ───>───────────────┘         │           │        │       ├───────────────────> OBJ File
-                                               │           │        │       └─> MCU ─┬─> MCB ───> ML/MX Files
-                                               │           │        │                └─> MCX ───> (RUN native code) 
-                                               │           │        └───────────────────────────> ASM File (AA/GAS/NASM/MASM config options)
-                                               │           ├────────────────────────────────────> (RUNP Interpret PCL)
-                                               │           ├────────────────────────────────────> PCL Source File
-                                               │           └────────────────────────────────────> C Source File (Config option)
-                                               ├────────────────────────────────────────────────> MA File
-                                               └────────────────────────────────────────────────> LIST/PROJ Files
+    Source File   ─┬─> AST1 ─> AST2 ─┬─> AST3 ─┬─┴─> PCL ─> MCL ─┬─> SS ─┬─> EXE Image ─┬──> EXE File
+    Include Files ─┘                 │         │                 │       │              └──> DLL File + EXP File
+    Strinclude    ───>───────────────┘         │                 │       └─────────────────> RUN SS
+                                               │                 └─────────────────────────> AA/GAS/NASM/MASM ASM file
+                                               ├───────────────────────────────────────────> MA File
+                                               └───────────────────────────────────────────> LIST/PROJ Files
 ````
 
 #### Inputs
@@ -51,15 +47,6 @@ MCL           A representation of the generated native code, in this case it is 
 
 SS            A set of data structures containing binary native code and data, organised into code and data
               segments and with reloc info
-
-EXE Image     An internal representation of what will go into the EXE file.
-
-MCU           The binary code/data/import/reloc info for my private executable format
-
-MCB           MCU rendered to a flat data block, written out as an ML/MX file
-
-MCX           MCU with allocations, imports and fixups done to make it ready to run
-              in-memory.
 ````
 #### Outputs
 ````
@@ -67,34 +54,29 @@ EXE           The Windows executable file format (PE+)
 
 DLL           The Windows shared library format.
 
-ML            My private shared library format which had taken over DLL tasks for a while.
-
-MX            The same format, used to write a complete executable. (Needs RUNMX app to load and run.
-              In this form it is believed to attract less attention from AV software)
-
 EXP           Export files. These are under review, but when generating ML (it was done for DLL too), it also generated an
               import module, which I plan to do for both M and Q languages, which simplify using the library from an M or
               Q application. Just import that generated module.
 
-ASM (AA)      x64 assembly source code, in a syntax used by my own assembler 'AA'.
+ASM (AA)      x64 assembly source code, in a syntax used by my own assembler 'AA'. Only one of the ASM options will be present,
+              it depends on how the project file is configured. Production versions will generate AA syntax.
 
 ASM (GAS)     AT&T or 'GAS' x64 assembly format source code. Need to be processed with gcc or directly with 'as', and needs
               a conventional linker to process further
 
-OBJ           The single OBJ file produced represents the whole program. OBJ files allow M code to be statically linked with other
-              languages, but require an external linker.
+ASM (NASM)    NASM format assembly.
+
+ASM (MASM)    MASM format assembly for ml64.exe
+
+(OBJ          No longer an option. OBJ format can still be generated via any of ASM formats, then assembling.)
 
 RUN           Not an output, the program is run immediately in memory without generating any executable file. This allows M to be used
               like a scripting language, running programs directly from source code.
 
-RUNP          This interprets the PCL intermediate representation in memory without translation to native code. (This has fallen into
-              disuse and may be buggy.)
+(PCL          A dump of the IL as textual source code. This is debug option only and is only used during development.)
 
-PCL           A dump of the IL as textual source code. This can be processed by the separate PC application. (That product is deprecated.
-              For BB v8, the PCL dump does not form a viable source format anyway; it is only for viewing.)
-
-C             Single C source file represents the entire program. No headers are generated. No headers are used in the file.
-              Not all M programs can be transpiled as some features are not supported. Requires 64-bit C compiler; some features need gcc extensions.
+(C            Low-level linear C source code generated from PCL IL. This is only available from v7, and only from the specially
+              configured MC7.EXE version.)
 
 MA            A single-file amalgamation of all source and support files needed to build a program.
               It can be directly built by MM to make for a tidy way of distributing and building M applications from source.
@@ -112,8 +94,4 @@ The compiler is a single 300KB to 400KB EXE file depending on configuration. It 
 
 It translates M source code to binary at speeds of at least 500K lines per seconds, generating code at up to 5MB per second.
 
-The smallest M compiler, minus std library, and with only an IL interpreter is about 220KB.
-
-#### ML and MX Files
-
-These were a by-product of problems I'd had with generating DLL files. They were due to be dropped but are being kept on as they have some interesting properties that could turn out to be useful. Basically they are much simpler (and I believe portable) versions of DLL and EXE files.
+ simpler (and I believe portable) versions of DLL and EXE files.
