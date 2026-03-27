@@ -11,12 +11,12 @@ This describes MM8 (v8). The older MM7 more output options which have been dropp
     Inputs             Intermediates                                                              Outputs
 
     Ext Libs      ───>───────────────────────────┐
-    Source File   ─┬─> AST1 ─> AST2 ─┬─> AST3 ─┬─┴─> PCL ─> MCL ─┬─> SS ─┬─> EXE Image ─┬──> EXE File
-    Include Files ─┘                 │         │                 │       │              └──> DLL File + EXP File
-    Strinclude    ───>───────────────┘         │                 │       └─────────────────> RUN SS
-                                               │                 └─────────────────────────> AA/GAS/NASM/MASM ASM file
-                                               ├───────────────────────────────────────────> MA File
-                                               └───────────────────────────────────────────> LIST/PROJ Files
+    Source File   ─┬─> AST1 ─> AST2 ─┬─> AST3 ─┬─┴─> PCL ─> MCL ─┬─> SS ─┬──┬──> EXE File
+    Include Files ─┘                 │         │                 │       │  └──> DLL File + EXP File
+    Strinclude    ───>───────────────┘         │                 │       └─────> RUN SS
+                                               │                 └─────────────> AA/GAS/NASM/MASM ASM file
+                                               ├───────────────────────────────> MA File
+                                               └───────────────────────────────> LIST/PROJ Files
 ````
 
 #### Inputs
