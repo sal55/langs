@@ -57,8 +57,8 @@ EXP           Export files. These are under review, but when generating ML (it w
               import module, which I plan to do for both M and Q languages, which simplify using the library from an M or
               Q application. Just import that generated module.
 
-ASM (AA)      x64 assembly source code, in a syntax used by my own assembler 'AA'. Only one of the ASM options will be present,
-              it depends on how the project file is configured. Production versions will generate AA syntax.
+ASM (AA)      x64 assembly source code, in a syntax used by my own assembler 'AA'. Only one of the ASM options will
+              be present, it depends on how the project file is configured. Production versions will generate AA syntax.
 
 ASM (GAS)     AT&T or 'GAS' x64 assembly format source code. Need to be processed with gcc or directly with 'as', and needs
               a conventional linker to process further
@@ -67,18 +67,19 @@ ASM (NASM)    NASM format assembly.
 
 ASM (MASM)    MASM format assembly for ml64.exe
 
-RUN           Not an output, the program is run immediately in memory without generating any executable file. This allows M to be used
-              like a scripting language, running programs directly from source code.
+RUN           Not an output, the program is run immediately in memory without generating any executable file. This allows M
+              to be used like a scripting language, running programs directly from source code.
 
-MA            A single-file amalgamation of all source and support files needed to build a program.
-              It can be directly built by MM to make for a tidy way of distributing and building M applications from source.
+MA            A single-file amalgamation of all source and support files needed to build a program. It can be directly
+             built by MM to make for a tidy way of distributing and building M applications from source.
 
 LIST          A dump of the top-level symbols (functions, variables, types, macros, enums) used across the project. These and
               the PROJ option are used by my IDE
 
 PROJ          A summary of modules and subprograms used by the project
-
+````
 #### Other Outputs
+````
 (OBJ          No longer an option within MM. OBJ format can still be generated via any of ASM formats, then assembling.)
 
 (PCL          A dump of the IL as textual source code. This is a debug option only and is only used during development.)
