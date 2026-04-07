@@ -68,15 +68,8 @@ ASM (NASM)    NASM format assembly.
 
 ASM (MASM)    MASM format assembly for ml64.exe
 
-(OBJ          No longer an option. OBJ format can still be generated via any of ASM formats, then assembling.)
-
 RUN           Not an output, the program is run immediately in memory without generating any executable file. This allows M to be used
               like a scripting language, running programs directly from source code.
-
-(PCL          A dump of the IL as textual source code. This is debug option only and is only used during development.)
-
-(C            Low-level linear C source code generated from PCL IL. This is only available from v7, and only from the specially
-              configured MC7.EXE version.)
 
 MA            A single-file amalgamation of all source and support files needed to build a program.
               It can be directly built by MM to make for a tidy way of distributing and building M applications from source.
@@ -86,12 +79,19 @@ LIST          A dump of the top-level symbols (functions, variables, types, macr
 
 PROJ          A summary of modules and subprograms used by the project
 
+#### Other Outputs
+(OBJ          No longer an option within MM. OBJ format can still be generated via any of ASM formats, then assembling.)
+
+(PCL          A dump of the IL as textual source code. This is a debug option only and is only used during development.)
+
+(C            Low-level linear C source code generated from PCL IL. This is only available from v7, and only from the specially
+              configured MC7.EXE version.)
+
 ````
 
 #### Compiler Size and Presentation
 
-The compiler is a single 300KB to 400KB EXE file depending on configuration. It is self-contained, and contains the sources for the language's standard library. So the whole installation is a single file, `mm.exe`, or `bb.exe`.
+The compiler is a single 250KB to 350KB EXE file depending on configuration. It is self-contained, and contains the sources for the language's standard library. So the whole installation is a single file, `mm.exe`.
 
 It translates M source code to binary at speeds of at least 500K lines per seconds, generating code at up to 5MB per second.
 
- simpler (and I believe portable) versions of DLL and EXE files.
