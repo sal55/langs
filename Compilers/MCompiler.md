@@ -40,8 +40,7 @@ AST2          Has all name references resolved (language allows out of order def
 
 AST3          Has type info filled in, any conversions applied, and constant expressions reduced
 
-PCL           The generated IL (sometimes called IR) instructions from the AST. PCL uses a separate library that provides
-              an API to generate internal PCL representation, which can then be processed in multiple different ways.
+PCL           The generated IL (sometimes called IR) instructions from the AST.
 
 MCL           A representation of the generated native code, in this case it is for x64.
 
