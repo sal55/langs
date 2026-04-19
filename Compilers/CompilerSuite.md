@@ -5,11 +5,8 @@ All tools run on and for x64 with Windows.
 **'MM8' M Systems Compiler (v8 using PCL8)**
 ````
 .m/.ma ────┬─> [bb.exe] ─┬────> .exe/.dll Files (+ M/Q Interface module for DLL/ML)
-.ml/.dll ──┘             ├────> .ml/.mx Files
-                         ├────> .obj File
-                         ├────>  Run (native code in memory)
-                         ├────> .asm File (syntax for my AA assembler)
-                         ├────> .asm File (AT&T/GAS syntax, if configured)
+.ml/.dll ──┘             ├────>  Run (native code in memory)
+                         ├────> .asm File (AA/GAS/NASM/MASM syntax)
                          ├────> .ma File (create single amalgamated source file)
                          └────> .list/.proj Files (info for my IDE)
 ````
