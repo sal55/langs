@@ -25,7 +25,7 @@ At this point, this is already useful: effectively, Q programs can turned into t
 
 However, the potential for further work is extensive:
 
-* There various speedups that can be done to improve the generated M, even without type annotations
+* There are various speedups that can be done to improve the generated M, even without type annotations
 * With type info, some sequences can be compiled into more or less normal, efficient M code
 * I may be able to have hybrid B/M programs more easily
 * Callbacks (from external libraries) should be easier
