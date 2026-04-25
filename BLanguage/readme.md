@@ -5,7 +5,7 @@ This had been a new attempt to create a hybrid of my Q and M languages. But afte
 This is the current state:
 
 * The B language is basically Q, but with optional type annotations
-* There may be certain features of Q which can be used in B, or work differently
+* There may be certain features of Q which can't be used in B, or work differently
 * QQ (Q interpreter) has been modified to accept those type annotations, but ignores them
 * So, the idea is that a valid B program is also a valid Q program, and can be simply interpreted by QQ as before
 * What's left of the B project at this point, which started off by taking the QQ sources, is this:
