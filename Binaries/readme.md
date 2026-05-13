@@ -8,7 +8,7 @@ However, Windows is likely to flag my EXE files (ie. any EXEs produced by the M 
 
 A trivial program in any language can be used to reconstruct the original EXEs.
 
-* There are two versions stored here: v7 as mm.exe, and v8 as bb.exe
+* There are two versions stored here: v7 as mm7.exe, and v8 as mm8.exe
 * Files are UPX-compressed before being converted to hex
 
 Other possibilities considered were:
