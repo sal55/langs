@@ -1,4 +1,4 @@
-(Source backups via amalgamated source file bundles.)
+(Source backups via amalgamated source file bundles, but also via ZIPs, which are password-protected those include everything including stuff I don't want to share.)
 
 The .ma files each represent one project, and are an amalgamation of its source files.
 
