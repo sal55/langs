@@ -166,6 +166,16 @@ The names of imported functions are automatically reexported from their containi
 
 This is unlike C where such attributes, I believe called 'linkage', apply only to symbols with associated storage, such as functions and variables. Shared types for example need to to use shared header files.
 
+### Block Scopes
+
+Block scopes as they are used in other languages do not exist.
+
+Any entity defined within a function body has function-wide scope, no matter where in the function it is defined.
+
+Where a variable definition is initialised, then that generates an assignment at that location in the code, so the placement becomes important.
+
+(Note this differs from Q: there, the initialisation of a variable is moved to function entry.)
+
 ### 'Units' and 'S-units'
 
 The syntax is expression-based, which means expressions and statements are interchangeable.
