@@ -309,13 +309,13 @@ static void enter(char const *id, idkind k, int t) {
     if (ix==IMAX)
         error(104);
     ix++;
-    strcpy(itab[0].name, id);
+    snprintf(itab[0].name, sizeof(itab[0].name), "%s", id);
     j = namelist[lev+1];
     while (strcmp(itab[j].name, id) != 0)
         j = itab[j].link;
     if (j!=0)
         error(105);
-    strcpy(itab[ix].name, id);
+    snprintf(itab[ix].name, sizeof(itab[ix].name), "%s", id);
     itab[ix].link = namelist[lev+1];
     itab[ix].tip = t;
     itab[ix].kind = k;
@@ -324,7 +324,7 @@ static void enter(char const *id, idkind k, int t) {
 
 static int position(void) {
     int i, j;
-    strcpy(itab[0].name, lex.id);
+    snprintf(itab[0].name, sizeof(itab[0].name), "%s", lex.id);
     i = lev;
     do {
         j = namelist[i+1];
@@ -466,7 +466,7 @@ static int selector(int* ref) {
                     getsym();
                     check(ident);
                     j = ttab[t-1].u.fields;
-                    strcpy(itab[0].name, lex.id);
+                    snprintf(itab[0].name, sizeof(itab[0].name), "%s", lex.id);
                     while (strcmp(itab[j].name, lex.id) != 0)
                         j = itab[j].link;
                     if (j==0)
@@ -1022,7 +1022,7 @@ static void constant(int* c, int* t) {
 static void constdeclaration(void) {
     alfa a;
     int t, c;
-    strcpy(a, lex.id);
+    snprintf(a, sizeof(a), "%s", lex.id);
     getsym();
     skip(eql);
     constant(&c, &t);
@@ -1118,7 +1118,7 @@ static void typ(int* t) {
 static void typedeclaration(void) {
     alfa a;
     int t;
-    strcpy(a, lex.id);
+    snprintf(a, sizeof(a), "%s", lex.id);
     getsym();
     skip(eql);
     typ(&t);
@@ -1481,8 +1481,8 @@ static void interpret(void) {
       CASE wri  : printf("%*d", s[sp], s[sp+1]); sp+=2; pc++; NEXT;
       CASE wrc  : printf("%c", chr(s[sp])); sp++; pc++; NEXT;
       CASE wrl  : printf("\n"); pc++; NEXT;
-      CASE rdi  : if (scanf("%d", &s[s[sp]])) {;} sp++; pc++; NEXT;
-      CASE rdc  : { char c; if (scanf("%c", &c)) {;} s[s[sp]]= ord(c); sp++; } pc++; NEXT;
+      CASE rdi  : { char _buf[32]; if (fgets(_buf,sizeof(_buf),stdin)) sscanf(_buf,"%d",&s[s[sp]]); sp++; pc++; NEXT; }
+      CASE rdc  : { char _buf[32]; char c=0; if (fgets(_buf,sizeof(_buf),stdin)) c=_buf[0]; s[s[sp]]=ord(c); sp++; } pc++; NEXT;
       CASE rdl  : { int c; while ((c = getc(stdin)) != EOF && c != '\n'); } pc++; NEXT;
       CASE eofi : sp--; s[sp] = feof(stdin); pc++; NEXT;
       CASE eol  : { int c = getc(stdin); ungetc(c, stdin); sp--; s[sp]= c == '\n'; } pc++; NEXT;
@@ -1562,15 +1562,15 @@ int main(int argc, char *argv[]) {
         exit(1);
     }
 
-    strcpy(fn, argv[i]);
+    snprintf(fn, sizeof(fn), "%s", argv[i]);
 
     infile = fopen(fn, "r");
     if (infile == NULL)
-        strcat(fn, ".pas");
+        snprintf(fn + strlen(fn), sizeof(fn) - strlen(fn), ".pas");
 
     infile = fopen(fn, "r");
     if (infile == NULL) {
-        printf("Can't open %s", argv[1]);
+        fputs("Can't open ", stderr); fputs(argv[1], stderr);
         exit(0);
     }
 
