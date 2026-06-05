@@ -1,6 +1,6 @@
 (PART I)
 
-Glossary:
+**Glossary**
 ````
 Q        My dynamically typed and interpreted scripting language
 QQ       (qq.exe) Q bytecode compiler and interpreter
@@ -89,7 +89,9 @@ So, BB gives the same 5.2s timing as QQ via the regular bytecode. But QQ bytecod
 
 I'm hoping that the next stage will make things significantly faster, such as 5-10 times for such benchmarks, and should be on a par with those JIT products. The difference is I will need type annotations, which are not always practical: sometimes generic code is needed.
 
-**Compilation Speed** QQ's compiler works at 1.5Mlps, and M's at 0.5Mlps. So having to do type analysis, writing M source files then compiling dense, long-winded M sources, will be much slower, eg. 0.2Mlps. However it is expected that QQ is used for development, and BB for one-off buillds.
+**Compilation Speed** QQ's compiler works at 1.5Mlps, and M's at 0.5Mlps. So having to do type analysis, writing M source files then compiling dense, long-winded M sources, will be much slower, eg. 0.2Mlps. Doesn't sound too bad, but the line-count may be 4-5 times bigger.
+
+While it is expected that QQ is used for development, and BB for one-off buillds, if this product works, the native code generation can be taken directly inside BB.
 
 **Examples** To keep things short, the example is very simple:
 `````
@@ -104,7 +106,7 @@ Proc add
      setret           var
 End
 
-# M code that BB generates from that (varrec is (tag, pointer); variant a rtegete
+# M code that BB generates from that (t_ is the Q module name):
 proc t_add*(variant $Result, variant x, variant y) =
     k_push(&$T1, x)              # $T1 is an alias for Stack[1]
     k_push(&$T2, y)
@@ -118,4 +120,6 @@ end
 
 # varrec is a 16-byte (tag, value/pointer) descriptor
 # variant is a reference to varrec
+# The '*' is an M feature that puts the function into an internal table
+# for access by apps, in this base the Q language support.
 ````
