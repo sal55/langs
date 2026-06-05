@@ -1,6 +1,6 @@
 ### B Language
 
-This had been a new attempt to create a hybrid of my Q (dynamic/intepreted) and M (static/compiled) languages. But after several experiments, all have been abandoned.
+This had been a new attempt to create a hybrid of my Q and M. But after several experiments, all have been abandoned.
 
 This is the current state:
 
