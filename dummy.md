@@ -118,3 +118,7 @@ end
 #   for access by apps, in this base the Q language support.
 # M language allows out-of-order declarations.
 ````
+This is the full generated code for the Fannkuch example. This was compiled without a standard library (not needed for text apps) as others that 10Kloc of Q code would have added to 30Kloc to the M file:
+
+https://github.com/sal55/langs/blob/master/fann.m
+
