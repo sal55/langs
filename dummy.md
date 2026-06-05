@@ -63,5 +63,7 @@ Callbacks are function references passed to external native code libraries, whic
 
 **FFI**
 This is very well developed in Q, with support for the low-level types used already existing. Calls to FFI functions needed to use a 'LIBFFI' table-driven solution. Native code would allow them to be called directly, but the mechanisms for that are not yet in place, even the new type-annotations are not needed here. The table-driven method is therefore still used.
-**Speed**
-**Code Size**
+
+**Code Size** The generated M code is sprawling, and then generated EXE files are quite large: perhaps 60 bytes per line of Q code, more if inlining is used. It is more typically 10 bytes per line of M code, but this generated M is also dense: each line is a function call. Still the size is not signicantly higher than the bytecode size would be in-memory.
+
+**Speed** OK, this is the important bit. I've done experiments on these lines in the past, and already knew the code was not going to be magically fast just before it was 'native code'. On whole it is roughly the same speed as interpreted Q code. This set of results is from
