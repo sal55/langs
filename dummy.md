@@ -16,7 +16,9 @@ Having mixed Q/M applications is unwieldy. So I'm looking at ways of speeding up
 I decided to add optional type annotations to the Q languages, which has been done. Currenty that is parsed by QQ but is otherwise ignored.
 
 There are two major stages that come next:
+
 **(1)** Turning my Q code, designed to be interpreted via bytecode, into native code
+
 **(2)** Making use of any type annotations to write efficient native code that can run perhaps a magnitude faster
 
 I have just completel **(1)**, and that's what this post is about. The next stage (the harder one) is still to come, and the results will be described in Part II if and when it is completed. (I didn't put 'Part I' in the title in case it doesn't happen; titles can't be edited!)
@@ -43,11 +45,23 @@ The type analysis is primitive right now, and many things are temporarily suppre
 The 'PCL' bytecode need to change quite a bit; for example:
 * Each instruction type info (as stated, most will be 'Var' for variant)
 * Rather than have a program-wide bytecode sequence, each function (and initialised data) has its own PCL sequence
+
 **Control Flow**
 Things like function calls, gotos, conditionals are implemented as M HLL features; they are not interpreted. Each Q function becomes an M function, with a decorated name to implement Q's modules and namespaces within M. Function signatures however
+
 **The Interpreter Stack**
-This software stack no longer exists
+This software stack no longer exists. Function calls and local stack frames will use the usual hardware stack. A mini-stack does exist within each function (it might appear as `[4]varrec Stack` in a function), and is used to evaluate expressions. I still need the concept of 'pushing' and 'popping' to/from the stack since is where reference counting is managed.
+
+This means some features that depended on the stack, such as exception-handling, can't be used. But that only existed in experimental form.
 
 **CallBacks**
+Callbacks are function references passed to external native code libraries, which can then call those functions within your. They won't work with bytecode; they need to native code functions. Well, Q functions are now native, but I still can't use them because currently all Q functions still have variant-based signatures. So the same workarounds (currently used for Q to work with Windows graphics) remain in place. But the mechanism needed for interpreter to be reentrant is no longer needed.
+
+**Compiler Symbol Table** This had been accessible from Q programs, and function references, member lookups etc used ST entries. This is now longer available. It could have made available - various other tables are - but it would be too complicated. Alternate solutions are in place.
+
+**Error Reporting** In the interpreter, it was easy to report error locations. That info does not exist in the M code. Instead, a global position variable it kept updated within the M code, but it optional to keep the code size down.
+
+**FFI**
+This is very well developed in Q, with support for the low-level types used already existing. Calls to FFI functions needed to use a 'LIBFFI' table-driven solution. Native code would allow them to be called directly, but the mechanisms for that are not yet in place, even the new type-annotations are not needed here. The table-driven method is therefore still used.
 **Speed**
 **Code Size**
