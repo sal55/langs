@@ -1,37 +1,24 @@
 ### B Language
 
-This had been a new attempt to create a hybrid of my Q and M languages. But after several experiments, all have been abandoned.
+This had been a new attempt to create a hybrid of my Q and M. But after several experiments, all have been abandoned.
 
 This is the current state:
 
-* The B language is basically Q, but with optional type annotations
-* There may be certain features of Q which can't be used in B, or work differently
+* The B language is now basically Q, but with optional type annotations
+* There may be certain features of Q which can't be used in B, or work differently (try-except for example, or anything involving the front-end's symbol table)
 * QQ (Q interpreter) has been modified to accept those type annotations, but ignores them
-* So, the idea is that a valid B program is also a valid Q program, and can be simply interpreted by QQ as before
-* What's left of the B project at this point, which started off by taking the QQ sources, is this:
-  * The runtime backend is in its own project, in the form of a library that can deals with VARIANT types and data structures, and does the memory management
-  * The frontend can compile B code into PCL
-* The library is called VAR, and the front end compiler is called BB
+* A BB transpiler has been created from the front-end of QQ, which generates a version QQ's 'PCL' bytecode, which is then written as M language source code.
+* A library called VAR exists, derived from the backend of QQ, providing all the support needed for managing Q's variant dynamic types. This is a set of nearly 20 M modules.
 
-These are the plans:
+BB takes a Q program prog.q say (it can be multiple modules), and generates a single M source file prog.m. To that is prepended a project info block that incorporates the VAR library.
 
-* The BB frontend, instead of compiling to PCL bytecode, will instead compile to high level M source code (that is, structured, not linear)
-* The generated M code will deal with variants and involve lots of function calls, including into the VAR library
-* This M code, which is in one file, will be compiled with the VAR library into an executable
+prog.m is then compiled by MM (the M compiler) into prog.exe.
 
-So, the B code will be compiled into inefficient native code. However I expect execution to be more brisk than with the interpreter.
+So far, this all seems to work. However:
 
-At this point, this is already useful: effectively, Q programs can turned into tidy, standalone binaries.
+* The type annotations are not used
+* All generated functions have a VARIANT interface
+* The generated M code consists of sequences of function calls that effectively handled each PCL instruction
 
-However, the potential for further work is extensive:
-
-* There are various speedups that can be done to improve the generated M, even without type annotations
-* With type info, some sequences can be compiled into more or less normal, efficient M code
-* I may be able to have hybrid B/M programs more easily
-* Callbacks (from external libraries) should be easier
-* DLL calls can be more efficient
-
-So it sounds very promising. If it works, the BB frontend might directly use M's backend.
-
-There is still the possibility that B can morph into its own language, which is the Q/M hybrid I'd had in mind. But previous experiments just didn't do it right, eg. tried to replace both Q and M, started from the wrong end etc.
+The speed of prog.exe is on a par with running prog.q directly.
 
