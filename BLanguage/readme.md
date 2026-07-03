@@ -1,5 +1,9 @@
 ### B Language
 
-This has been archived again and a new approach tried.
+This project has taken various directions this year.
 
-The new 'B' language is experimental. More info here when it gains shape.
+But it looks like it will settle down into a somewhat simplified and tightened up version of the Q language, with the
+possibility of some experiments in JIT.
+
+I decided I didn't like writing dynamic code with type annotations to speed up bottlenecks. That experiment was starting to converge too much with
+my M static language.
