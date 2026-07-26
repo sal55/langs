@@ -1,15 +1,16 @@
 
-Compilers
+## Compilers
 
-Plans:
+I had had two M compiles, MM7 and MM8. MM8 was a smaller, streamlined version, with a more compact IL.
 
-* Archive MM7 compiler
-* MM7's IL backend was also used by my 'MCC' C compiler project. That will also be archived in that form. Probably only the front half will be retained to use as a tool to convert C APIs into M bindings.
-* MM7's MCL backend (the part that comes after the IL) was also used by my 'AA7' assembler. That needs to be revised to use the backend of MM8
-* The AA6 assembler will also be archived. That was needed to allow MCC to compile multi-module apps (only single-module apps can be compiled directly to EXE). AA7 only deals with single-file inputs
-* MM7 has an interpret option, but this was little used
-* MM7 was also the basis for the 'MC' transpiler, which can turn M programs via ILv7, into linear C. To retain this, I can revise MC to be based around MM8 instead.
+However other tools such as AA7, BCC and MC all depended on MM7's IL. Further, MM7 generated somewhat smaller
+code. It also still had inline assembly. And it retained features like multiple function return values, and slices,
+that MM8 had dropped, even if they were very little used. Oh, and MM7 still had the IL interpreter!
 
-Summary: get rid of MM7; reduce what MCC does; overhaul AA7 and MC so they work with MM8. That will tidy things up.
+Basically, MM7 is a better and more useful version.
 
-In practice, I'll probably just keep using binaries of AA7, MCC and MC until I get round to any changes.
+So, MM8 is being dropped. That is, archived.
+
+MM8 had the smaller and tider IL (some 80 ops instead of 130), so where those provided some advantage, I'll try and
+
+
