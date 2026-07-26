@@ -42,6 +42,3 @@ Most products now target x64 running Windows. There have also been experimental 
 * Effortless and near-instant build process
 * Sources for any tool can be rendered as one self-contained amalgamated source file
 
-### mcc.c
-
-This file that sometimes appears is a version of my C-subset compiler, transpiled to OS-agnostic C code, that someone is using. It's how updates are made available.
