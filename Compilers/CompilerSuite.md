@@ -2,14 +2,6 @@
 
 All tools run on and for x64 with Windows.
 
-**'MM8' M Systems Compiler (v8 using PCL8)**
-````
-.m/.ma ────┬─> [bb.exe] ─┬────> .exe/.dll Files (+ M/Q Interface module for DLL/ML)
-.ml/.dll ──┘             ├────>  Run (native code in memory)
-                         ├────> .asm File (AA/GAS/NASM/MASM syntax)
-                         ├────> .ma File (create single amalgamated source file)
-                         └────> .list/.proj Files (info for my IDE)
-````
 
 **'MM7' M Systems Compiler (v7 using PCL7)**
 ````
@@ -40,7 +32,7 @@ All tools run on and for x64 with Windows.
 .q/.qa ────┬─> [qq.exe] ──┬───> Run (compile to internal bytecode and immediately interpret)
 .ml/.dll ──┘              └───> .qa File (create single amalgamated source file)
 ````
-**'MZ' M Systems Compiler for Z80 (Derived from MM8)**
+**'MZ' M Systems Compiler for Z80 (Derived from MM8 and PCL v8)**
 ````
 .m/.ma ──────> [mz.exe] ─┬────> .za Z80 Assembly file
                          ├────> .z Z80 binary (via ZA)
