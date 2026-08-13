@@ -9,8 +9,7 @@ All tools run on and for x64 with Windows.
 .ml/.dll ──┘             ├────> .ml/.mx Files
                          ├────> .obj File
                          ├────>  Run (native code in memory)
-                         ├────> .asm File (syntax for my AA assembler)
-                         ├────> .asm File (AT&T/GAS syntax, if configured)
+                         ├────> .asm (AA/AS/NASM/ML360 depends on config)
                          ├────> .pcl IL File
                          ├────>  Interpret (IL code in memory)
                          ├────> .ma File (create single amalgamated source file)
@@ -27,6 +26,21 @@ All tools run on and for x64 with Windows.
                          └────> .asm File (AT&T/GAS syntax when configured)                      
 ````
 
+**'PC' PCLv7 Processor**
+````
+.pcl ────────> [pc.exe] ─┬────> .exe/.dll Files
+                         ├────> .ml/.mx Files
+                         ├────> .obj File
+                         ├────>  Run (native code in memory)
+                         ├────> .asm (AA/AS/NASM/ML360 depends on config)
+                         ├────> .pct IL File
+                         └────>  Interpret (IL code in memory)
+````
+**'MC' M to C Transpiler via PCLv7**
+````
+.m/.ma ──────> [mc.exe] ──────> .c Self-contained C source file
+````
+        
 **'QQ' Q Interpreter**
 ````                 
 .q/.qa ────┬─> [qq.exe] ──┬───> Run (compile to internal bytecode and immediately interpret)
@@ -43,17 +57,35 @@ All tools run on and for x64 with Windows.
 .z ──────────> [zz.exe] ──────> Run (Z80 binary via emulator)
 ````
 
+**'BCC' C-subset Compiler (using PCLv7)**
+````
+.c ───────┬─> [bcc.exe] ─┬────> .exe/.dll Files
+.ml/.dll ─┘              ├────> .ml/.mx Files
+                         ├────> .obj File
+                         ├────>  Run (native code in memory)
+                         ├────> .asm (AA/AS/NASM/ML360 depends on config)
+                         ├────> .pcl IL File
+                         └────>  Interpret (IL code in memory)
+````
+The C subset is somewhere between C90 and C99. The compiler is non-conforming in many ways, but it can compile the
+output of the MC product for example.
+
+BCC is based around the MM7 backend which is designed for a whole-program compiler. C needs independent compilation, so BCC
+can only build or compile one C source file at a time, and can only produce EXE/DLL for a one-module program.
+
+For multi-module C programs, they are compiled one at a time to .asm files, then AA6 (which can still process multiple .asm
+files) is used to assemble to EXE. Or another ASM format is chosen, then external assemblers and linkers can be used.
 
 **'RUNMX' Launch MX Programs**
 ````
 .mx ───────┬─> [runmx.exe] ───> Run (Load, fix up, and execute the MX-format executable)
 .ml/.dll ──┘
 ````
-**'MC' M to C Transpiler (MC7)**
-````
-.m/.ma ──────> [mc.exe] ──────> .c File (linear, stripped C generated via PCL/IL)
+### MM8
+This was a streamlined version of MM7, with a leaner PCLv8 IL. However products like MC, BCC, AA depended on the MM7 backend, and
+it was too much work to port them across. The PCL interpreter was also missing. MM7 also still managed somewhat smaller executables.
 
-````
+So although it was a tider product, it was dropped and I moved back to MM7
 
 ### Packaging
 
