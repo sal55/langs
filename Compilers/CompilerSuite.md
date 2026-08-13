@@ -85,7 +85,7 @@ files) is used to assemble to EXE. Or another ASM format is chosen, then externa
 This was a streamlined version of MM7, with a leaner PCLv8 IL. However products like MC, BCC, AA depended on the MM7 backend, and
 it was too much work to port them across. The PCL interpreter was also missing. MM7 also still managed somewhat smaller executables.
 
-So although it was a tider product, it was dropped and I moved back to MM7
+So although it was a tidier product, it was dropped and I moved back to MM7
 
 ### Packaging
 
