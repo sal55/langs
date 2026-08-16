@@ -123,4 +123,5 @@ AA ─────────────────────────�
                                            ├───> ASM (AA/NASM/GAS/ML360) File
                                            └───> Run in-memory
 ````
+Not all paths are available for every front-end; it depends on configuration. Eg. Linear C is only for MC. One ASM format must be chosen per build.
 
