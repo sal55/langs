@@ -2,15 +2,13 @@ Blog Post.
 
 I develop small-scale lower-level languages and tools on my Windows PC. This year I tried a number of experimental projects but none has gone anywhere. Even a working production compiler has been abandoned; the previous version was better and did more!
 
-It doesn't look like I have anything new to add here, so I'm consolidating what I have so far. I've settled on a set of 6 tools that I will keep, which are in the general class of "Assemblers, Compilers, Interpreters". I haven't included emulators which is a separate area.
-
-So, these languages and tools are what are summarised here.
+It doesn't look like I have anything new to add here, so I'm consolidating what I have so far. I've settled on a set of 6 tools that I will keep, which are in the general class of "Assemblers, Compilers, Interpreters", that are summarised here. I haven't included emulators which is a newer, separate interest.
 
 **Languages**
 ````
 M            Systems language
 Q            Dynamic scripting language (both of these are lower level than most)
-ASM          x64 Assembly, but specifically my syntax
+ASM/AA       x64 Assembly, but specifically the syntax of my AA assembler
 C            C subset, roughly between C90-C99
 PC/IL        IR/IL used by the compiler products, which also exists as
              a textual source format
@@ -110,3 +108,19 @@ For the dynamic scripting one, this is something I looked at, but it is beyond m
 So I'll concentrate on a two-language approach to applications. With the ability to package everything into an EXE file, this can be extended to helper libraries that would normally reside in a DLL. So an app using both languages can still be built into a single tidy, binary.
 
 **Links** I don't really do these any more. These products are anyway for my personal use and are not supported. Some many identify me, or my stuff, from previous accounts. But if interested, google for 'github' and 'sal55', where you can see some outdated docs.
+
+**A Handy Chart** Shows how all the tools (not QQ) fit together:
+````
+Front-end        IL           Back-end Options
+
+MM ────────┬───> PCL ──┬────> Interpret IL
+BCC ───────┤           ├────> Linear C Source File
+MC ────────┤           ├────> PCL File
+PC ────────┘           └────> Win64 ──┬────┬───> EXE File
+AA ───────────────────────────────────┘    ├───> DLL File
+                                           ├───> MX/ML File
+                                           ├───> OBJ File
+                                           ├───> ASM (AA/NASM/GAS/ML360) File
+                                           └───> Run in-memory
+````
+
